@@ -1,4 +1,4 @@
-create table config_google_sheets(
+create table googlesheets_config(
 	id 		int unsigned auto_increment primary key,
 	course int unsigned not null,
 	key_ varchar(200) not null,

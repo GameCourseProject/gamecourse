@@ -6,6 +6,7 @@ include('../../config.php');
 use \GameCourse\Core;
 use \GameCourse\User;
 use \GameCourse\Course;
+use Modules\QR\QR;
 
 Core::init();
 
@@ -94,12 +95,12 @@ if (isset($_REQUEST["key"])  && isset($_REQUEST["aula"]) && isset($_REQUEST["sub
 
     $user = User::getUserByStudentNumber($_REQUEST["aluno"]);
     try {
-      $check = Core::$systemDB->select("qr_code", ["qrkey" => $_REQUEST["key"], "course" => $_REQUEST["course"]], "*");
+      $check = Core::$systemDB->select(QR::TABLE, ["qrkey" => $_REQUEST["key"], "course" => $_REQUEST["course"]], "*");
       // Code exists?
       if($check) {
         // Code has already been redeemed?
         if(!($check["studentNumber"])){
-          Core::$systemDB->update("qr_code", ["studentNumber" => $user->getId(), "classNumber" =>  $_REQUEST['aula'], "classType" => $_REQUEST['classtype'] ], ["qrkey" => $_REQUEST["key"]]);
+          Core::$systemDB->update(QR::TABLE, ["studentNumber" => $user->getId(), "classNumber" =>  $_REQUEST['aula'], "classType" => $_REQUEST['classtype'] ], ["qrkey" => $_REQUEST["key"]]);
           $type = "";
           if ($_REQUEST['classtype'] == "Lecture") {
               $type = "participated in lecture";
@@ -111,7 +112,7 @@ if (isset($_REQUEST["key"])  && isset($_REQUEST["aula"]) && isset($_REQUEST["sub
         }
         else {
           echo "<span class='error'>Sorry. This code has already been redeemed.<br />The participation was not registered. </span>";
-          Core::$systemDB->insert("qr_error", [
+          Core::$systemDB->insert(QR::TABLE_ERROR, [
             "user" => $user->getId(), "course" => $_REQUEST["course"],
             "ip" => $_SERVER['REMOTE_ADDR'], "qrkey" => $_REQUEST["key"], "msg" => "Code has already been redeemed."
           ]);
@@ -119,7 +120,7 @@ if (isset($_REQUEST["key"])  && isset($_REQUEST["aula"]) && isset($_REQUEST["sub
       } 
       else {
         echo "<span class='error'>Sorry. This code does not exist.<br />The participation was not registered. </span>";
-        Core::$systemDB->insert("qr_error", [
+        Core::$systemDB->insert(QR::TABLE_ERROR, [
           "user" => $user->getId(), "course" => $_REQUEST["course"],
           "ip" => $_SERVER['REMOTE_ADDR'], "qrkey" => $_REQUEST["key"], "msg" => "Code not found for this course."
         ]);
@@ -127,7 +128,7 @@ if (isset($_REQUEST["key"])  && isset($_REQUEST["aula"]) && isset($_REQUEST["sub
     } catch (PDOException $e) {
       echo "<br/><span class='error'>Sorry. An error occured. Contact your class professor with your QRCode and this message. Your student ID and IP number was registered.</span>\n";
       $erro = $e->getMessage();
-      Core::$systemDB->insert("qr_error", [
+      Core::$systemDB->insert(QR::TABLE_ERROR, [
         "user" => $user->getId(), "course" => $_REQUEST["course"],
         "ip" => $_SERVER['REMOTE_ADDR'], "qrkey" => $_REQUEST["key"], "msg" => $erro
       ]);

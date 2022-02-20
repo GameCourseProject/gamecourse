@@ -1,14 +1,12 @@
 <?php
 namespace Modules\ClassCheck;
 
-use GameCourse\Course;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\CronJob;
-use Modules\Plugin\ClassCheck;
 
 class ClassCheckModule extends Module
 {
@@ -254,7 +252,7 @@ class ClassCheckModule extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'classcheck',
+    'id' => ClassCheckModule::ID,
     'name' => 'ClassCheck',
     'description' => 'Allows ClassCheck to be automaticaly included on GameCourse.',
     'type' => 'DataSource',

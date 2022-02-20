@@ -45,12 +45,12 @@ class ModuleProfilingSetupTest extends TestCase
     public function testAddTablesSuccess(){
 
         //When
-        $result = $this->profiling->addTables("profiling", "profiling_config");
+        $result = $this->profiling->addTables(Profiling::ID, Profiling::TABLE_CONFIG);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'profiling_config';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'saved_user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_SAVED_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertTrue($result);
         $this->assertCount(1, $table1);
@@ -70,12 +70,12 @@ class ModuleProfilingSetupTest extends TestCase
         );
         
         //When
-        $result = $this->profiling->addTables("profiling", "profiling_config");
+        $result = $this->profiling->addTables(Profiling::ID, Profiling::TABLE_CONFIG);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'profiling_config';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'saved_user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_SAVED_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertFalse($result);
         $this->assertCount(1, $table1);
@@ -93,15 +93,15 @@ class ModuleProfilingSetupTest extends TestCase
         $this->profiling->setupData($courseId);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'profiling_config';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'saved_user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_SAVED_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
         $this->assertCount(1, $table3);
 
-        $profilingRow = Core::$systemDB->select("profiling_config", ["course" => $courseId]);
+        $profilingRow = Core::$systemDB->select(Profiling::TABLE_CONFIG, ["course" => $courseId]);
         $expectedProfilingRow = array("course" => $courseId, "lastRun" => null);
         $this->assertEquals($expectedProfilingRow, $profilingRow);
 
@@ -136,15 +136,15 @@ class ModuleProfilingSetupTest extends TestCase
         $this->profiling->setupData($courseId2);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'profiling_config';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'saved_user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_SAVED_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
         $this->assertCount(1, $table3);
 
-        $profilingRows = Core::$systemDB->selectMultiple("profiling_config");
+        $profilingRows = Core::$systemDB->selectMultiple(Profiling::TABLE_CONFIG);
         $expectedProfilingRows = array(
             array("course" => $courseId, "lastRun" => null),
             array("course" => $courseId2, "lastRun" => null)
@@ -210,15 +210,15 @@ class ModuleProfilingSetupTest extends TestCase
         $this->profiling->setupData($courseId);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'profiling_config';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'saved_user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_SAVED_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
         $this->assertCount(1, $table3);
 
-        $profilingRow = Core::$systemDB->select("profiling_config", ["course" => $courseId]);
+        $profilingRow = Core::$systemDB->select(Profiling::TABLE_CONFIG, ["course" => $courseId]);
         $expectedProfilingRow = array("course" => $courseId, "lastRun" => null);
         $this->assertEquals($expectedProfilingRow, $profilingRow);
 
@@ -250,15 +250,15 @@ class ModuleProfilingSetupTest extends TestCase
         $this->profiling->setupData($courseId);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'profiling_config';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'saved_user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_SAVED_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
         $this->assertCount(1, $table3);
 
-        $profilingRow = Core::$systemDB->select("profiling_config", ["course" => $courseId]);
+        $profilingRow = Core::$systemDB->select(Profiling::TABLE_CONFIG, ["course" => $courseId]);
         $expectedProfilingRow = array("course" => $courseId, "lastRun" => null);
         $this->assertEquals($expectedProfilingRow, $profilingRow);
 
@@ -279,15 +279,15 @@ class ModuleProfilingSetupTest extends TestCase
         $this->profiling->setupData($courseId);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'profiling_config';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'saved_user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_SAVED_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
         $this->assertCount(1, $table3);
 
-        $profilingRow = Core::$systemDB->select("profiling_config", ["course" => $courseId]);
+        $profilingRow = Core::$systemDB->select(Profiling::TABLE_CONFIG, ["course" => $courseId]);
         $expectedProfilingRow = array("course" => $courseId, "lastRun" => null);
         $this->assertEquals($expectedProfilingRow, $profilingRow);
 
@@ -319,15 +319,15 @@ class ModuleProfilingSetupTest extends TestCase
             $this->fail("PDOException should have been thrown for invalid argument on setupData.");
 
         } catch (\PDOException $e) {
-            $table1 = Core::$systemDB->executeQuery("show tables like 'profiling_config';")->fetchAll(\PDO::FETCH_ASSOC);
-            $table2 = Core::$systemDB->executeQuery("show tables like 'user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
-            $table3 = Core::$systemDB->executeQuery("show tables like 'saved_user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
+            $table1 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+            $table2 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+            $table3 = Core::$systemDB->executeQuery("show tables like '" . Profiling::TABLE_SAVED_USER_PROFILE . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
             $this->assertCount(1, $table1);
             $this->assertCount(1, $table2);
             $this->assertCount(1, $table3);
 
-            $profilingRow = Core::$systemDB->selectMultiple("profiling_config");
+            $profilingRow = Core::$systemDB->selectMultiple(Profiling::TABLE_CONFIG);
             $this->assertEmpty($profilingRow);
 
         }

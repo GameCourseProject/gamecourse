@@ -38,7 +38,7 @@ class Overview extends Module
     }
 }
 ModuleLoader::registerModule(array(
-    'id' => 'overview',
+    'id' => Overview::ID,
     'name' => 'Overview',
     'description' => 'Creates a view template with all the skills done.',
     'type' => 'GameElement',

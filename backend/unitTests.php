@@ -7,6 +7,11 @@ use GameCourse\Course;
 use GameCourse\CourseUser;
 use GameCourse\User;
 use GameCourse\GoogleHandler;
+use Modules\Badges\Badges;
+use Modules\ClassCheck\ClassCheckModule;
+use Modules\Fenix\Fenix;
+use Modules\GoogleSheets\GoogleSheetsModule;
+use Modules\Moodle\MoodleModule;
 
 Core::init();
 
@@ -122,7 +127,7 @@ function testFenix()
 
         $course = $_GET["course"];
         $courseObj = Course::getCourse($course);
-        if ($courseObj->getModule("fenix")) {
+        if ($courseObj->getModule(Fenix::ID)) {
             return 1;
         } else {
             return 0;
@@ -136,7 +141,7 @@ function testMoodle()
 
         $course = $_GET["course"];
         $courseObj = Course::getCourse($course);
-        if ($courseObj->getModule("moodle")) {
+        if ($courseObj->getModule(MoodleModule::ID)) {
             return 1;
         } else {
             return 0;
@@ -150,7 +155,7 @@ function testClassCheck()
 
         $course = $_GET["course"];
         $courseObj = Course::getCourse($course);
-        if ($courseObj->getModule("classcheck")) {
+        if ($courseObj->getModule(ClassCheckModule::ID)) {
             return 1;
         } else {
             return 0;
@@ -164,7 +169,7 @@ function testGoogleSheets()
 
         $course = $_GET["course"];
         $courseObj = Course::getCourse($course);
-        if ($courseObj->getModule("googlesheets")) {
+        if ($courseObj->getModule(GoogleSheetsModule::ID)) {
             return 1;
         } else {
             return 0;
@@ -196,16 +201,16 @@ if ($GLOBALS['courseInfo'] == 0) {
 } else if ($GLOBALS['courseInfo'] == 1) {
     $course = $_GET["course"];
     $courseObj = Course::getCourse($course);
-    if ($courseObj->getModule("fenix")) {
+    if ($courseObj->getModule(Fenix::ID)) {
         testFenixPlugin($course);
     }
-    if ($courseObj->getModule("moodle")) {
+    if ($courseObj->getModule(MoodleModule::ID)) {
         testMoodlePlugin($course);
     }
-    if ($courseObj->getModule("classcheck")) {
+    if ($courseObj->getModule(ClassCheckModule::ID)) {
         testClassCheckPlugin($course);
     }
-    if ($courseObj->getModule("googlesheets")) {
+    if ($courseObj->getModule(GoogleSheetsModule::ID)) {
         testGoogleSheetsPlugin($course);
     }
     //testDictionaryManagement($course);
@@ -342,7 +347,7 @@ function testMoodlePlugin($course)
     ];
     $resultMoodle = setMoodleVars($course, $moodleVar);
     if ($resultMoodle) {
-        if (Core::$systemDB->select("config_moodle", [
+        if (Core::$systemDB->select(MoodleModule::TABLE_CONFIG, [
             "dbServer" => "localhost",
             "dbUser" => "root",
             "dbPass" => null,
@@ -374,7 +379,7 @@ function testClassCheckPlugin($course)
     $ccVar = ["tsvCode" => "8c691b7fc14a0455386d4cb599958d3"];
     $resultCC = setClassCheckVars($course, $ccVar);
     if ($resultCC) {
-        if (Core::$systemDB->select("classcheck_config", $ccVar)) {
+        if (Core::$systemDB->select(ClassCheckModule::TABLE_CONFIG, $ccVar)) {
             // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Class Check variables were set.</h3>";
             $GLOBALS['p_2'] =  ["success", "<strong style='color:green; '>Success:</strong> Class Check variables were set."];
             $GLOBALS['success']++;
@@ -392,7 +397,7 @@ function testClassCheckPlugin($course)
 
 function testGoogleSheetsPlugin($course)
 {
-    if (Core::$systemDB->select("config_google_sheets", ["course" => $course])) {
+    if (Core::$systemDB->select(GoogleSheetsModule::TABLE_CONFIG, ["course" => $course])) {
 
 
         $resultGSVars = setGoogleSheetsVars($course, array(
@@ -404,7 +409,7 @@ function testGoogleSheetsPlugin($course)
                 "spreadsheetId" => "19nAT-76e-YViXk-l-BOig9Wm0knVtwaH2_pxm4mrd7U",
                 "sheetName" => "ist13898_"
             );
-            if (Core::$systemDB->select("config_google_sheets", $checkDB_GS)) {
+            if (Core::$systemDB->select(GoogleSheetsModule::TABLE_CONFIG, $checkDB_GS)) {
                 // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Google Sheets variables were set.</h3>";
                 $GLOBALS['p_3'] =  ["success", "<strong style='color:green; '>Success:</strong> Google Sheets variables were set."];
                 $GLOBALS['success']++;
@@ -765,7 +770,7 @@ function testCourseImport()
                         $viewIdTemplate =  Core::$systemDB->select("view_template", ["templateId" => $templateId], "viewId");
                         if ($viewIdTemplate) {
                             if (Core::$systemDB->select("view", ["partType" => "image", "parent" => $viewIdTemplate])) {
-                                if (Core::$systemDB->select("badges_config", ["maxBonusReward" => "2000", "course" => $courseID])) {
+                                if (Core::$systemDB->select(Badges::TABLE_CONFIG, ["maxBonusReward" => "2000", "course" => $courseID])) {
                                     $json = Course::exportCourses();
                                     // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Courses exported.</h3>";
                                     $GLOBALS['c_1'] = ["success", "<strong style='color:green'>Success:</strong> Courses exported."];
@@ -955,19 +960,19 @@ function importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId
         Course::importCourses($jsonContent, false);
         if (Core::$systemDB->select("view", ["partType" => "text", "parent" => $viewPage])) {
             if (Core::$systemDB->select("view", ["partType" => "image", "parent" => $viewIdTemplate])) {
-                if (Core::$systemDB->select("badges_config", ["maxBonusReward" => "2000", "course" => $courseID])) {
+                if (Core::$systemDB->select(Badges::TABLE_CONFIG, ["maxBonusReward" => "2000", "course" => $courseID])) {
                     // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Courses imported - updated (not replaced).</h3>";
                     $GLOBALS['c_2'] = ["success", "<strong style='color:green;'>Success: </strong>Courses imported - updated (not replaced)."];
                     $GLOBALS['success']++;
                     //mudar o maxReward
-                    Core::$systemDB->update("badges_config", ["maxBonusReward" => "1000"], ["maxBonusReward" => "2000", "course" => $courseID]);
+                    Core::$systemDB->update(Badges::TABLE_CONFIG, ["maxBonusReward" => "1000"], ["maxBonusReward" => "2000", "course" => $courseID]);
                     //mudar de text para image (dentro da page)
                     Core::$systemDB->update("view", ["partType" => "image"], ["partType" => "text", "parent" => $viewPage]);
                     //mudar de image para text (dentro template)
                     Core::$systemDB->update("view", ["partType" => "text"], ["partType" => "image", "parent" => $viewIdTemplate]);
                     Course::importCourses($jsonContent, true);
                     if (
-                        Core::$systemDB->select("badges_config", ["maxBonusReward" => "2000", "course" => $courseID])
+                        Core::$systemDB->select(Badges::TABLE_CONFIG, ["maxBonusReward" => "2000", "course" => $courseID])
                         // && Core::$systemDB->select("view", ["partType" => "text", "parent" => $viewPage])
                         // && Core::$systemDB->select("view", ["partType" => "image", "parent" => $viewIdTemplate])
                     ) {
@@ -1075,7 +1080,7 @@ function checkFenix($fenix, $course)
 //moodle plugin
 function setMoodleVars($courseId, $moodleVar)
 {
-    $moodleVars = Core::$systemDB->select("config_moodle", ["course" => $courseId], "*");
+    $moodleVars = Core::$systemDB->select(MoodleModule::TABLE_CONFIG, ["course" => $courseId], "*");
 
     $arrayToDb = [
         "course" => $courseId,
@@ -1093,9 +1098,9 @@ function setMoodleVars($courseId, $moodleVar)
         return false;
     } else {
         if (empty($moodleVars)) {
-            Core::$systemDB->insert("config_moodle", $arrayToDb);
+            Core::$systemDB->insert(MoodleModule::TABLE_CONFIG, $arrayToDb);
         } else {
-            Core::$systemDB->update("config_moodle", $arrayToDb);
+            Core::$systemDB->update(MoodleModule::TABLE_CONFIG, $arrayToDb);
         }
         return true;
     }
@@ -1104,7 +1109,7 @@ function setMoodleVars($courseId, $moodleVar)
 //classcheck plugin
 function setClassCheckVars($courseId, $classCheck)
 {
-    $classCheckVars = Core::$systemDB->select("classcheck_config", ["course" => $courseId], "*");
+    $classCheckVars = Core::$systemDB->select(ClassCheckModule::TABLE_CONFIG, ["course" => $courseId], "*");
 
     $arrayToDb = ["course" => $courseId, "tsvCode" => $classCheck['tsvCode']];
 
@@ -1112,9 +1117,9 @@ function setClassCheckVars($courseId, $classCheck)
         return false;
     } else {
         if (empty($classCheckVars)) {
-            Core::$systemDB->insert("classcheck_config", $arrayToDb);
+            Core::$systemDB->insert(ClassCheckModule::TABLE_CONFIG, $arrayToDb);
         } else {
-            Core::$systemDB->update("classcheck_config", $arrayToDb);
+            Core::$systemDB->update(ClassCheckModule::TABLE_CONFIG, $arrayToDb);
         }
         return true;
     }
@@ -1125,7 +1130,7 @@ function setGSCredentials($courseId, $gsCredentials)
 {
     $credentialKey = key($gsCredentials[0]);
     $credentials = $gsCredentials[0][$credentialKey];
-    $googleSheetCredentialsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
+    $googleSheetCredentialsVars = Core::$systemDB->select(GoogleSheetsModule::TABLE_CONFIG, ["course" => $courseId], "*");
 
     $uris = "";
     for ($uri = 0; $uri < sizeof($credentials["redirect_uris"]); $uri++) {
@@ -1145,9 +1150,9 @@ function setGSCredentials($courseId, $gsCredentials)
         return false;
     } else {
         if (empty($googleSheetCredentialsVars)) {
-            Core::$systemDB->insert("config_google_sheets", $arrayToDb);
+            Core::$systemDB->insert(GoogleSheetsModule::TABLE_CONFIG, $arrayToDb);
         } else {
-            Core::$systemDB->update("config_google_sheets", $arrayToDb);
+            Core::$systemDB->update(GoogleSheetsModule::TABLE_CONFIG, $arrayToDb);
         }
         setCredentials($courseId);
         return true;
@@ -1161,7 +1166,7 @@ function setCredentials($courseId)
 
 function getCredentialsFromDB($courseId)
 {
-    $credentialDB = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
+    $credentialDB = Core::$systemDB->select(GoogleSheetsModule::TABLE_CONFIG, ["course" => $courseId], "*");
 
     $uris = explode(";", $credentialDB["redirectUris"]);
 
@@ -1183,9 +1188,9 @@ function handleToken($courseId)
 
 function getTokenFromDB($courseId)
 {
-    $accessExists = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "accessToken");
+    $accessExists = Core::$systemDB->select(GoogleSheetsModule::TABLE_CONFIG, ["course" => $courseId], "accessToken");
     if ($accessExists) {
-        $credentialDB = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
+        $credentialDB = Core::$systemDB->select(GoogleSheetsModule::TABLE_CONFIG, ["course" => $courseId], "*");
 
         $arrayToken = array(
             'access_token' => $credentialDB['accessToken'], "expires_in" => $credentialDB["expiresIn"],
@@ -1201,7 +1206,7 @@ function getTokenFromDB($courseId)
 //google sheets plugin - vars
 function setGoogleSheetsVars($courseId, $googleSheets)
 {
-    $googleSheetsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
+    $googleSheetsVars = Core::$systemDB->select(GoogleSheetsModule::TABLE_CONFIG, ["course" => $courseId], "*");
     $names = "";
     foreach ($googleSheets["sheetName"] as $name) {
         if (strlen($name) != 0) {
@@ -1217,9 +1222,9 @@ function setGoogleSheetsVars($courseId, $googleSheets)
         return false;
     } else {
         if (empty($googleSheetsVars)) {
-            Core::$systemDB->insert("config_google_sheets", $arrayToDb);
+            Core::$systemDB->insert(GoogleSheetsModule::TABLE_CONFIG, $arrayToDb);
         } else {
-            Core::$systemDB->update("config_google_sheets", $arrayToDb);
+            Core::$systemDB->update(GoogleSheetsModule::TABLE_CONFIG, $arrayToDb);
         }
         saveTokenToDB($courseId);
         return true;
@@ -1241,7 +1246,7 @@ function saveTokenToDB($courseId)
             "created" => $token["created"],
             "refreshToken" => $token["refresh_token"]
         );
-        Core::$systemDB->update("config_google_sheets", $arrayToDB);
+        Core::$systemDB->update(GoogleSheetsModule::TABLE_CONFIG, $arrayToDB);
     }
 }
 

@@ -122,7 +122,7 @@ class Fenix extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'fenix',
+    'id' => Fenix::ID,
     'name' => 'Fenix',
     'description' => 'Allows Fenix students to be imported into GameCourse.',
     'type' => 'DataSource',

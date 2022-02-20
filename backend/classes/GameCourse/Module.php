@@ -3,6 +3,7 @@ namespace GameCourse;
 
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Views;
+use Modules\AwardList\AwardList;
 use Utils;
 
 abstract class Module
@@ -396,7 +397,7 @@ abstract class Module
         $module = ModuleLoader::getModule($name);
         $handler = $module["factory"]();
         foreach ($courses as $course) {
-            if ($handler->is_configurable() && ($name != "awardlist")) {
+            if ($handler->is_configurable() && ($name != AwardList::ID)) {
                 $moduleArray = $handler->moduleConfigJson($course["id"]);
                 if ($moduleArray) {
                     if (array_key_exists($name, $moduleArr)) {

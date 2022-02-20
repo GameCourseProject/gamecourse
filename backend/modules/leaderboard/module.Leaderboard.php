@@ -4,6 +4,7 @@ namespace Modules\Leaderboard;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Views\Views;
+use Modules\Charts\Charts;
 
 class Leaderboard extends Module
 {
@@ -44,14 +45,14 @@ class Leaderboard extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'leaderboard',
+    'id' => Leaderboard::ID,
     'name' => 'Leaderboard',
     'description' => 'Creates a vew template with a leaderboard of the students progress on the course.',
     'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(
-        array('id' => 'charts', 'mode' => 'hard')
+        array('id' => Charts::ID, 'mode' => 'hard')
     ),
     'factory' => function() {
         return new Leaderboard();

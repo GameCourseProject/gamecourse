@@ -8,6 +8,9 @@ use GameCourse\ModuleLoader;
 use GameCourse\Course;
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Expression\ValueNode;
+use Modules\AwardList\AwardList;
+use Modules\Badges\Badges;
+use Modules\Skills\Skills;
 
 class XPLevels extends Module
 {
@@ -33,21 +36,21 @@ class XPLevels extends Module
 
         /*** ------------ Libraries ------------ ***/
 
-        Dictionary::registerLibrary("xp", "xp", "This library provides information regarding XP and Levels. It is provided by the xp module.");
+        Dictionary::registerLibrary(self::ID, self::ID, "This library provides information regarding XP and Levels. It is provided by the xp module.");
 
 
         /*** ------------ Functions ------------ ***/
 
         //xp.allLevels returns collection of level objects
         Dictionary::registerFunction(
-            'xp',
+            self::ID,
             'getAllLevels',
             function () use ($courseId)/*use ($levelWhere, $levelTable)*/ {
-                $badgesExist = ($this->getParent()->getModule("badges") !== null);
+                $badgesExist = ($this->getParent()->getModule(Badges::ID) !== null);
                 $table = self::TABLE_LEVELS;
                 $where = ["course" => $courseId];
                 $levels = Core::$systemDB->selectMultiple($table, $where);
-                return Dictionary::createNode($levels, 'xp', "collection");
+                return Dictionary::createNode($levels, self::ID, "collection");
             },
             'Returns a collection with all the levels on a Course.',
             'collection',
@@ -59,7 +62,7 @@ class XPLevels extends Module
 
         //xp.getLevel(user,number,goal) returns level object
         Dictionary::registerFunction(
-            'xp',
+            self::ID,
             'getLevel',
             function ($user = null, int $number = null, string $goal = null) use ($courseId) {
 
@@ -88,7 +91,7 @@ class XPLevels extends Module
                 $level = Core::$systemDB->select($table, $where);
                 if (empty($level))
                     throw new Exception("In function xp.getLevel(...): couldn't find level with the given information");
-                return Dictionary::createNode($level, 'xp');
+                return Dictionary::createNode($level, self::ID);
             },
             "Returns a level object. The optional parameters can be used to find levels that specify a given combination of conditions:\nuser: The id of a GameCourseUser.\nnumber: The number to which the level corresponds to.\ngoal: The goal required to achieve the target level.",
             'object',
@@ -100,7 +103,7 @@ class XPLevels extends Module
 
         //xp.getBadgesXP(user) returns value of badge xp for user
         Dictionary::registerFunction(
-            'xp',
+            self::ID,
             'getBadgesXP',
             function ($user) use ($courseId) {
                 $userId = $this->getUserId($user);
@@ -117,7 +120,7 @@ class XPLevels extends Module
 
         //xp.getBonusBadgesXP(user) returns value xp of extra credit badges for user
         Dictionary::registerFunction(
-            'xp',
+            self::ID,
             'getBonusBadgesXP',
             function ($user) use ($courseId) {
                 $userId = $this->getUserId($user);
@@ -134,7 +137,7 @@ class XPLevels extends Module
 
         //xp.getXPByType(user, type) returns value xp of a type of award for user
         Dictionary::registerFunction(
-            'xp',
+            self::ID,
             'getXPByType',
             function ($user, $type) use ($courseId) {
                 $userId = $this->getUserId($user);
@@ -153,7 +156,7 @@ class XPLevels extends Module
 
         //xp.getSkillTreeXP(user) returns value of skill xp for user
         Dictionary::registerFunction(
-            'xp',
+            self::ID,
             'getSkillTreeXP',
             function ($user) use ($courseId) {
                 $userId = $this->getUserId($user);
@@ -170,7 +173,7 @@ class XPLevels extends Module
 
         //xp.getXP(user) returns value of xp for user
         Dictionary::registerFunction(
-            'xp',
+            self::ID,
             'getXP',
             function ($user) use ($courseId) {
                 //return new ValueNode($this->calculateXP($user, $courseId));
@@ -186,7 +189,7 @@ class XPLevels extends Module
 
         //%level.description
         Dictionary::registerFunction(
-            'xp',
+            self::ID,
             'description',
             function ($level) {
                 return Dictionary::basicGetterFunction($level, "description");
@@ -201,7 +204,7 @@ class XPLevels extends Module
 
         //%level.goal
         Dictionary::registerFunction(
-            'xp',
+            self::ID,
             'goal',
             function ($level) {
                 return Dictionary::basicGetterFunction($level, "goal");
@@ -216,7 +219,7 @@ class XPLevels extends Module
 
         //%level.number
         Dictionary::registerFunction(
-            'xp',
+            self::ID,
             'number',
             function ($level) {
                 return Dictionary::basicGetterFunction($level, "number");
@@ -235,7 +238,7 @@ class XPLevels extends Module
     }
 
     public function setupData(int $courseId){
-        $this->addTables("xp", self::TABLE_LEVELS);
+        $this->addTables(self::ID, self::TABLE_LEVELS);
 
         //create level zero
         $levelZero = Core::$systemDB->select(self::TABLE_LEVELS, ["course" => $courseId, "number" => 0], "id");
@@ -448,9 +451,9 @@ class XPLevels extends Module
 
     public function calculateBonusBadgeXP($userId, $courseId)
     {
-        $table = "award a join badge b on moduleInstance=b.id";
+        $table = AwardList::TABLE . " a join " . Badges::TABLE . " b on moduleInstance=b.id";
         $where = ["a.course" => $courseId, "user" => $userId, "type" => "badge"];
-        $maxBonusXP = Core::$systemDB->select("badges_config", ["course" => $courseId], "maxBonusReward");
+        $maxBonusXP = Core::$systemDB->select(Badges::TABLE_CONFIG, ["course" => $courseId], "maxBonusReward");
         $bonusBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => true, "isActive" => true]), "sum(reward)");
         $value = min($bonusBadgeXP, $maxBonusXP);
         return (is_null($value))? 0 : $value;
@@ -459,7 +462,7 @@ class XPLevels extends Module
     public function calculateBadgeXP($userId, $courseId)
     {
         //badges XP (bonus badges have a maximum value of XP)
-        $table = "award a join badge b on moduleInstance=b.id";
+        $table = AwardList::TABLE . " a join " . Badges::TABLE . " b on moduleInstance=b.id";
         $where = ["a.course" => $courseId, "user" => $userId, "type" => "badge"];
         $normalBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => false, "isActive" => true]), "sum(reward)");
         $badgeXP = $normalBadgeXP + $this->calculateBonusBadgeXP($userId, $courseId);
@@ -469,7 +472,7 @@ class XPLevels extends Module
     public function calculateSkillXP($userId, $courseId, $isActive = true)
     {
         //skills XP (skill trees have a maximum value of XP)
-        $skillTrees = Core::$systemDB->selectMultiple("skill_tree", ["course" => $courseId]);
+        $skillTrees = Core::$systemDB->selectMultiple(Skills::TABLE_TREES, ["course" => $courseId]);
         $skillTreeXP = 0;
         foreach ($skillTrees as $tree) {
             $where = ["a.course" => $courseId, "user" => $userId, "type" => "skill", "treeId" => $tree["id"]];
@@ -477,7 +480,7 @@ class XPLevels extends Module
                 $where["isActive"] = true;
             }
             $fullTreeXP = Core::$systemDB->select(
-                "award a join skill s on moduleInstance=s.id",
+                AwardList::TABLE . " a join skill s on moduleInstance=s.id",
                 $where,
                 "sum(reward)"
             );
@@ -496,22 +499,22 @@ class XPLevels extends Module
         $xp["skillXP"] = $this->calculateSkillXP($userId, $courseId);
 
         $xp["labXP"] = Core::$systemDB->select(
-            "award",
+            AwardList::TABLE,
             ["course" => $courseId, "user" => $userId, "type" => "labs"],
             "sum(reward)"
         );
         $xp["quizXP"] = Core::$systemDB->select(
-            "award",
+            AwardList::TABLE,
             ["course" => $courseId, "user" => $userId, "type" => "quiz"],
             "sum(reward)"
         );
         $xp["presentationXP"] = Core::$systemDB->select(
-            "award",
+            AwardList::TABLE,
             ["course" => $courseId, "user" => $userId, "type" => "presentation"],
             "sum(reward)"
         );
         $xp["bonusXP"] = Core::$systemDB->select(
-            "award",
+            AwardList::TABLE,
             ["course" => $courseId, "user" => $userId, "type" => "bonus"],
             "sum(reward)"
         );
@@ -531,7 +534,7 @@ class XPLevels extends Module
         $skillXP = $this->calculateSkillXP($userId, $courseId);
         //XP of everything else
         $otherXP = Core::$systemDB->select(
-            "award",
+            AwardList::TABLE,
             ["course" => $courseId, "user" => $userId],
             "sum(reward)",
             null, //where
@@ -546,7 +549,7 @@ class XPLevels extends Module
     public function calculateXPByType($user, $courseId, $type)
     {
         $userId = $this->getUserId($user);
-        $xp = Core::$systemDB->select("award", ["course" => $courseId, "user" => $userId, "type" => $type], "sum(reward)");
+        $xp = Core::$systemDB->select(AwardList::TABLE, ["course" => $courseId, "user" => $userId, "type" => $type], "sum(reward)");
         return $xp;
     }
 
@@ -614,7 +617,7 @@ class XPLevels extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'xp',
+    'id' => XPLevels::ID,
     'name' => 'XP and Levels',
     'description' => 'Enables user vocabulary to use the terms xp and points to use around the course.',
     'type' => 'GameElement',

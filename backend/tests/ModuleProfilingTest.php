@@ -17,7 +17,7 @@ class ModuleProfilingTest extends TestCase
 
     public static function setUpBeforeClass():void {
         Core::init();
-        Core::$systemDB->executeQuery(file_get_contents("modules/profiling/create.sql"));
+        Core::$systemDB->executeQuery(file_get_contents("modules/" . Profiling::ID . "/create.sql"));
     }
 
     protected function setUp():void {
@@ -30,7 +30,7 @@ class ModuleProfilingTest extends TestCase
     }
 
     public static function tearDownAfterClass(): void {
-        Core::$systemDB->executeQuery(file_get_contents("modules/profiling/delete.sql"));
+        Core::$systemDB->executeQuery(file_get_contents("modules/" . Profiling::ID . "/delete.sql"));
     }
 
     //Data Providers
@@ -94,15 +94,15 @@ class ModuleProfilingTest extends TestCase
         $cluster1 = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Cluster 1"]);
         $cluster2 = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Cluster 2"]);
         
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user2, "course" => $courseId, "cluster" => $cluster2]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user3, "course" => $courseId, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user2, "course" => $courseId, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user3, "course" => $courseId, "cluster" => $cluster2]);
 
         //When
         $this->profiling->deleteSaved($courseId);
 
         //Then
-        $records = Core::$systemDB->selectMultiple("saved_user_profile", ["course" => $courseId]);
+        $records = Core::$systemDB->selectMultiple(Profiling::TABLE_SAVED_USER_PROFILE, ["course" => $courseId]);
         $courseUsers = Core::$systemDB->selectMultiple("course_user", ["course" => $courseId]);
         $gamecourseUsers = Core::$systemDB->selectMultiple("game_course_user", []);
 
@@ -130,17 +130,17 @@ class ModuleProfilingTest extends TestCase
         $cluster2 = Core::$systemDB->insert("role", ["course" => $course1, "name" => "Cluster 2"]);
         $clusterA = Core::$systemDB->insert("role", ["course" => $course2, "name" => "Cluster A"]);
         
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user1, "course" => $course1, "cluster" => $cluster1]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user1, "course" => $course2, "cluster" => $clusterA]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user2, "course" => $course1, "cluster" => $cluster1]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user3, "course" => $course1, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user1, "course" => $course1, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user1, "course" => $course2, "cluster" => $clusterA]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user2, "course" => $course1, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user3, "course" => $course1, "cluster" => $cluster2]);
 
         //When
         $this->profiling->deleteSaved($course1);
 
         //Then
-        $recordsCourse1 = Core::$systemDB->selectMultiple("saved_user_profile", ["course" => $course1]);
-        $recordsCourse2 = Core::$systemDB->selectMultiple("saved_user_profile", ["course" => $course2]);
+        $recordsCourse1 = Core::$systemDB->selectMultiple(Profiling::TABLE_SAVED_USER_PROFILE, ["course" => $course1]);
+        $recordsCourse2 = Core::$systemDB->selectMultiple(Profiling::TABLE_SAVED_USER_PROFILE, ["course" => $course2]);
         $courseUsersCourse1 = Core::$systemDB->selectMultiple("course_user", ["course" => $course1]);
         $courseUsersCourse2 = Core::$systemDB->selectMultiple("course_user", ["course" => $course2]);
         $gamecourseUsers = Core::$systemDB->selectMultiple("game_course_user", []);
@@ -169,15 +169,15 @@ class ModuleProfilingTest extends TestCase
         $cluster1 = Core::$systemDB->insert("role", ["course" => $course1, "name" => "Cluster 1"]);
         $cluster2 = Core::$systemDB->insert("role", ["course" => $course1, "name" => "Cluster 2"]);
         
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user1, "course" => $course1, "cluster" => $cluster1]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user2, "course" => $course1, "cluster" => $cluster2]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user3, "course" => $course1, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user1, "course" => $course1, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user2, "course" => $course1, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user3, "course" => $course1, "cluster" => $cluster2]);
 
         //When
         $this->profiling->deleteSaved($course1 + 3);
         
         //Then
-        $records = Core::$systemDB->selectMultiple("saved_user_profile", ["course" => $course1]);
+        $records = Core::$systemDB->selectMultiple(Profiling::TABLE_SAVED_USER_PROFILE, ["course" => $course1]);
         $courseUsers = Core::$systemDB->selectMultiple("course_user", ["course" => $course1]);
         $gamecourseUsers = Core::$systemDB->selectMultiple("game_course_user", []);
 
@@ -203,15 +203,15 @@ class ModuleProfilingTest extends TestCase
         $cluster1 = Core::$systemDB->insert("role", ["course" => $course1, "name" => "Cluster 1"]);
         $cluster2 = Core::$systemDB->insert("role", ["course" => $course1, "name" => "Cluster 2"]);
         
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user1, "course" => $course1, "cluster" => $cluster1]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user2, "course" => $course1, "cluster" => $cluster2]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user3, "course" => $course1, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user1, "course" => $course1, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user2, "course" => $course1, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user3, "course" => $course1, "cluster" => $cluster2]);
 
         //When
         $this->profiling->deleteSaved(null);
         
         //Then
-        $records = Core::$systemDB->selectMultiple("saved_user_profile", ["course" => $course1]);
+        $records = Core::$systemDB->selectMultiple(Profiling::TABLE_SAVED_USER_PROFILE, ["course" => $course1]);
         $courseUsers = Core::$systemDB->selectMultiple("course_user", ["course" => $course1]);
         $gamecourseUsers = Core::$systemDB->selectMultiple("game_course_user", []);
 
@@ -240,10 +240,10 @@ class ModuleProfilingTest extends TestCase
         $cluster2 = Core::$systemDB->insert("role", ["course" => $course1, "name" => "Cluster 2"]);
         $clusterA = Core::$systemDB->insert("role", ["course" => $course2, "name" => "Cluster A"]);
         
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user1, "course" => $course1, "cluster" => $cluster1]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user1, "course" => $course2, "cluster" => $clusterA]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user2, "course" => $course1, "cluster" => $cluster1]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user3, "course" => $course1, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user1, "course" => $course1, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user1, "course" => $course2, "cluster" => $clusterA]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user2, "course" => $course1, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user3, "course" => $course1, "cluster" => $cluster2]);
 
         //When
         $clusters = $this->profiling->getSavedClusters($course1);
@@ -252,10 +252,10 @@ class ModuleProfilingTest extends TestCase
         $expectedClusters =  array($user1 => $cluster1, $user2 => $cluster1, $user3 => $cluster2);
         $this->assertEquals($expectedClusters, $clusters);
 
-        $records = Core::$systemDB->selectMultiple("saved_user_profile", ["course" => $course1]);
+        $records = Core::$systemDB->selectMultiple(Profiling::TABLE_SAVED_USER_PROFILE, ["course" => $course1]);
         $this->assertCount(3, $records);
 
-        $records = Core::$systemDB->selectMultiple("saved_user_profile", []);
+        $records = Core::$systemDB->selectMultiple(Profiling::TABLE_SAVED_USER_PROFILE, []);
         $this->assertCount(4, $records);
     }
 
@@ -275,9 +275,9 @@ class ModuleProfilingTest extends TestCase
         $cluster1 = Core::$systemDB->insert("role", ["course" => $course1, "name" => "Cluster 1"]);
         $cluster2 = Core::$systemDB->insert("role", ["course" => $course1, "name" => "Cluster 2"]);
         
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user1, "course" => $course1, "cluster" => $cluster1]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user2, "course" => $course1, "cluster" => $cluster1]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user3, "course" => $course1, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user1, "course" => $course1, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user2, "course" => $course1, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user3, "course" => $course1, "cluster" => $cluster2]);
 
         //When
         $clusters = $this->profiling->getSavedClusters($cluster1 + 4);
@@ -285,7 +285,7 @@ class ModuleProfilingTest extends TestCase
         //Then
         $this->assertEmpty($clusters);
 
-        $records = Core::$systemDB->selectMultiple("saved_user_profile", ["course" => $course1]);
+        $records = Core::$systemDB->selectMultiple(Profiling::TABLE_SAVED_USER_PROFILE, ["course" => $course1]);
         $this->assertCount(3, $records);
 
     }
@@ -306,9 +306,9 @@ class ModuleProfilingTest extends TestCase
         $cluster1 = Core::$systemDB->insert("role", ["course" => $course1, "name" => "Cluster 1"]);
         $cluster2 = Core::$systemDB->insert("role", ["course" => $course1, "name" => "Cluster 2"]);
         
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user1, "course" => $course1, "cluster" => $cluster1]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user2, "course" => $course1, "cluster" => $cluster1]);
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user3, "course" => $course1, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user1, "course" => $course1, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user2, "course" => $course1, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user3, "course" => $course1, "cluster" => $cluster2]);
 
         //When
         $clusters = $this->profiling->getSavedClusters(null);
@@ -316,7 +316,7 @@ class ModuleProfilingTest extends TestCase
         //Then
         $this->assertEmpty($clusters);
 
-        $records = Core::$systemDB->selectMultiple("saved_user_profile", ["course" => $course1]);
+        $records = Core::$systemDB->selectMultiple(Profiling::TABLE_SAVED_USER_PROFILE, ["course" => $course1]);
         $this->assertCount(3, $records);
 
     }
@@ -341,12 +341,12 @@ class ModuleProfilingTest extends TestCase
         $this->profiling->saveClusters($courseId, $clusters);
 
         //Then
-        $entries = Core::$systemDB->select("saved_user_profile", []);
+        $entries = Core::$systemDB->select(Profiling::TABLE_SAVED_USER_PROFILE, []);
         $this->assertCount(3, $entries);
 
-        $clusterUser1 = Core::$systemDB->select("saved_user_profile", ["user" => $user1]);
-        $clusterUser2 = Core::$systemDB->select("saved_user_profile", ["user" => $user2]);
-        $clusterUser3 = Core::$systemDB->select("saved_user_profile", ["user" => $user3]);
+        $clusterUser1 = Core::$systemDB->select(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user1]);
+        $clusterUser2 = Core::$systemDB->select(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user2]);
+        $clusterUser3 = Core::$systemDB->select(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user3]);
 
         $expectedClusterUser1 = array("user" => $user1, "course" => $courseId, "cluster" => $cluster2);
         $expectedClusterUser2 = array("user" => $user2, "course" => $courseId, "cluster" => $cluster2);
@@ -372,7 +372,7 @@ class ModuleProfilingTest extends TestCase
         $cluster1 = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Cluster 1"]);
         $cluster2 = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Cluster 2"]);
 
-        Core::$systemDB->insert("saved_user_profile", ["user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
         
         $clusters = array($user1 => $cluster2, $user2 => $cluster2, $user3 => $cluster1);
         
@@ -380,12 +380,12 @@ class ModuleProfilingTest extends TestCase
         $this->profiling->saveClusters($courseId, $clusters);
 
         //Then
-        $entries = Core::$systemDB->select("saved_user_profile", []);
+        $entries = Core::$systemDB->select(Profiling::TABLE_SAVED_USER_PROFILE, []);
         $this->assertCount(3, $entries);
 
-        $clusterUser1 = Core::$systemDB->select("saved_user_profile", ["user" => $user1]);
-        $clusterUser2 = Core::$systemDB->select("saved_user_profile", ["user" => $user2]);
-        $clusterUser3 = Core::$systemDB->select("saved_user_profile", ["user" => $user3]);
+        $clusterUser1 = Core::$systemDB->select(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user1]);
+        $clusterUser2 = Core::$systemDB->select(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user2]);
+        $clusterUser3 = Core::$systemDB->select(Profiling::TABLE_SAVED_USER_PROFILE, ["user" => $user3]);
 
         $expectedClusterUser1 = array("user" => $user1, "course" => $courseId, "cluster" => $cluster2);
         $expectedClusterUser2 = array("user" => $user2, "course" => $courseId, "cluster" => $cluster2);
@@ -406,7 +406,7 @@ class ModuleProfilingTest extends TestCase
         $this->profiling->saveClusters($courseId, array());
 
         //Then
-        $entries = Core::$systemDB->select("saved_user_profile", []);
+        $entries = Core::$systemDB->select(Profiling::TABLE_SAVED_USER_PROFILE, []);
         $this->assertEmpty($entries);
 
     }
@@ -420,7 +420,7 @@ class ModuleProfilingTest extends TestCase
         $this->profiling->saveClusters($courseId, null);
 
         //Then
-        $entries = Core::$systemDB->select("saved_user_profile", []);
+        $entries = Core::$systemDB->select(Profiling::TABLE_SAVED_USER_PROFILE, []);
         $this->assertEmpty($entries);
 
     }
@@ -524,9 +524,9 @@ class ModuleProfilingTest extends TestCase
         $cluster2 = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Cluster 2"]);
         
         $time = date('Y-m-d H:i:s');
-        Core::$systemDB->insert("user_profile", ["user" => $user1, "course" => $courseId, "cluster" => $cluster1, "date" => $time]);
-        Core::$systemDB->insert("user_profile", ["user" => $user2, "course" => $courseId, "cluster" => $cluster2, "date" => $time]);
-        Core::$systemDB->insert("user_profile", ["user" => $user3, "course" => $courseId, "cluster" => $cluster2, "date" => $time]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user1, "course" => $courseId, "cluster" => $cluster1, "date" => $time]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user2, "course" => $courseId, "cluster" => $cluster2, "date" => $time]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user3, "course" => $courseId, "cluster" => $cluster2, "date" => $time]);
 
         Core::$systemDB->insert("user_role", ["id" => $user1, "course" => $courseId, "role" => $student]);
         Core::$systemDB->insert("user_role", ["id" => $user2, "course" => $courseId, "role" => $student]);
@@ -551,9 +551,9 @@ class ModuleProfilingTest extends TestCase
         $this->assertEquals($expectedRolesUser2, $rolesUser2);
         $this->assertEquals($expectedRolesUser3, $rolesUser3);
 
-        $profilesUser1 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user1]);
-        $profilesUser2 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user2]);
-        $profilesUser3 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user3]);
+        $profilesUser1 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user1]);
+        $profilesUser2 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user2]);
+        $profilesUser3 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user3]);
 
         $expectedProfilesUser1 = array(["user" => $user1, "course" => $courseId, "cluster" => $cluster1, "date" => $time]);
         $expectedProfilesUser2 = array(["user" => $user2, "course" => $courseId, "cluster" => $cluster2, "date" => $time]);
@@ -620,9 +620,9 @@ class ModuleProfilingTest extends TestCase
         $cluster2 = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Cluster 2"]);
         
         $time = date('Y-m-d H:i:s');
-        Core::$systemDB->insert("user_profile", ["user" => $user1, "course" => $courseId, "cluster" => $cluster1, "date" => $time]);
-        Core::$systemDB->insert("user_profile", ["user" => $user2, "course" => $courseId, "cluster" => $cluster2, "date" => $time]);
-        Core::$systemDB->insert("user_profile", ["user" => $user3, "course" => $courseId, "cluster" => $cluster2, "date" => $time]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user1, "course" => $courseId, "cluster" => $cluster1, "date" => $time]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user2, "course" => $courseId, "cluster" => $cluster2, "date" => $time]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user3, "course" => $courseId, "cluster" => $cluster2, "date" => $time]);
 
         Core::$systemDB->insert("user_role", ["id" => $user1, "course" => $courseId, "role" => $student]);
         Core::$systemDB->insert("user_role", ["id" => $user2, "course" => $courseId, "role" => $student]);
@@ -647,9 +647,9 @@ class ModuleProfilingTest extends TestCase
         $this->assertEquals($expectedRolesUser2, $rolesUser2);
         $this->assertEquals($expectedRolesUser3, $rolesUser3);
 
-        $profilesUser1 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user1]);
-        $profilesUser2 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user2]);
-        $profilesUser3 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user3]);
+        $profilesUser1 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user1]);
+        $profilesUser2 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user2]);
+        $profilesUser3 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user3]);
 
         $expectedProfilesUser1 = array(["user" => $user1, "course" => $courseId, "cluster" => $cluster1, "date" => $time]);
         $expectedProfilesUser2 = array(["user" => $user2, "course" => $courseId, "cluster" => $cluster2, "date" => $time]);
@@ -693,10 +693,10 @@ class ModuleProfilingTest extends TestCase
         $cluster4 = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Underachiever"]);
         $cluster5 = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Under Underachiever"]);
         
-        Core::$systemDB->insert("user_profile", ["user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
-        Core::$systemDB->insert("user_profile", ["user" => $user2, "course" => $courseId, "cluster" => $cluster2]);
-        Core::$systemDB->insert("user_profile", ["user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
-        Core::$systemDB->insert("user_profile", ["user" => $user3, "course" => $courseId, "cluster" => $cluster4]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user2, "course" => $courseId, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user3, "course" => $courseId, "cluster" => $cluster4]);
 
         Core::$systemDB->insert("user_role", ["id" => $user1, "course" => $courseId, "role" => $student]);
         Core::$systemDB->insert("user_role", ["id" => $user2, "course" => $courseId, "role" => $student]);
@@ -842,9 +842,9 @@ class ModuleProfilingTest extends TestCase
         $cluster2 = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Regular"]);
         $cluster3 = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Halfhearted"]);
         
-        Core::$systemDB->insert("user_profile", ["user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
-        Core::$systemDB->insert("user_profile", ["user" => $user2, "course" => $courseId, "cluster" => $cluster2]);
-        Core::$systemDB->insert("user_profile", ["user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user2, "course" => $courseId, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
 
         Core::$systemDB->insert("user_role", ["id" => $user1, "course" => $courseId, "role" => $student]);
         Core::$systemDB->insert("user_role", ["id" => $user2, "course" => $courseId, "role" => $student]);
@@ -945,9 +945,9 @@ class ModuleProfilingTest extends TestCase
         $cluster2Copy = Core::$systemDB->insert("role", ["course" => $course2Id, "name" => "Regular"]);
         $cluster3Copy = Core::$systemDB->insert("role", ["course" => $course2Id, "name" => "Halfhearted"]);
         
-        Core::$systemDB->insert("user_profile", ["user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
-        Core::$systemDB->insert("user_profile", ["user" => $user2, "course" => $courseId, "cluster" => $cluster2]);
-        Core::$systemDB->insert("user_profile", ["user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user2, "course" => $courseId, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
 
         Core::$systemDB->insert("user_role", ["id" => $user1, "course" => $courseId, "role" => $student]);
         Core::$systemDB->insert("user_role", ["id" => $user2, "course" => $courseId, "role" => $student]);
@@ -1228,11 +1228,11 @@ class ModuleProfilingTest extends TestCase
         $this->assertEquals($expectedRolesUser4, $rolesUser4);
         $this->assertEquals($expectedRolesUser5, $rolesUser5);
         
-        $profileUser1 = Core::$systemDB->select("user_profile", ["user" => $user1]);        
-        $profileUser2 = Core::$systemDB->select("user_profile", ["user" => $user2]);
-        $profileUser3 = Core::$systemDB->select("user_profile", ["user" => $user3]);
-        $profileUser4 = Core::$systemDB->select("user_profile", ["user" => $user4]);
-        $profileUser5 = Core::$systemDB->select("user_profile", ["user" => $user5]);
+        $profileUser1 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user1]);
+        $profileUser2 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user2]);
+        $profileUser3 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user3]);
+        $profileUser4 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user4]);
+        $profileUser5 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user5]);
 
         unset($profileUser1["date"]);        
         unset($profileUser2["date"]);
@@ -1252,7 +1252,7 @@ class ModuleProfilingTest extends TestCase
         $this->assertEquals($expectedProfileUser4, $profileUser4);
         $this->assertEquals($expectedProfileUser5, $profileUser5);
 
-        $dates = Core::$systemDB->selectMultiple("user_profile", ["course" => $courseId], "distinct date");
+        $dates = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["course" => $courseId], "distinct date");
         $this->assertCount(1, $dates);
 
     }
@@ -1373,11 +1373,11 @@ class ModuleProfilingTest extends TestCase
         $this->assertEquals($expectedRolesUser4, $rolesUser4);
         $this->assertEquals($expectedRolesUser5, $rolesUser5);
         
-        $profileUser1 = Core::$systemDB->select("user_profile", ["user" => $user1]);        
-        $profileUser2 = Core::$systemDB->select("user_profile", ["user" => $user2]);
-        $profileUser3 = Core::$systemDB->select("user_profile", ["user" => $user3]);
-        $profileUser4 = Core::$systemDB->select("user_profile", ["user" => $user4]);
-        $profileUser5 = Core::$systemDB->select("user_profile", ["user" => $user5]);
+        $profileUser1 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user1]);
+        $profileUser2 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user2]);
+        $profileUser3 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user3]);
+        $profileUser4 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user4]);
+        $profileUser5 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user5]);
 
         unset($profileUser1["date"]);        
         unset($profileUser2["date"]);
@@ -1397,7 +1397,7 @@ class ModuleProfilingTest extends TestCase
         $this->assertEquals($expectedProfileUser4, $profileUser4);
         $this->assertEquals($expectedProfileUser5, $profileUser5);
 
-        $dates = Core::$systemDB->selectMultiple("user_profile", ["course" => $courseId], "distinct date");
+        $dates = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["course" => $courseId], "distinct date");
         $this->assertCount(1, $dates);
 
     }
@@ -1510,11 +1510,11 @@ class ModuleProfilingTest extends TestCase
         $this->assertEquals($expectedRolesUser4, $rolesUser4);
         $this->assertEquals($expectedRolesUser5, $rolesUser5);
         
-        $profileUser1 = Core::$systemDB->select("user_profile", ["user" => $user1]);        
-        $profileUser2 = Core::$systemDB->select("user_profile", ["user" => $user2]);
-        $profileUser3 = Core::$systemDB->select("user_profile", ["user" => $user3]);
-        $profileUser4 = Core::$systemDB->select("user_profile", ["user" => $user4]);
-        $profileUser5 = Core::$systemDB->select("user_profile", ["user" => $user5]);
+        $profileUser1 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user1]);
+        $profileUser2 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user2]);
+        $profileUser3 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user3]);
+        $profileUser4 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user4]);
+        $profileUser5 = Core::$systemDB->select(Profiling::TABLE_USER_PROFILE, ["user" => $user5]);
 
         unset($profileUser1["date"]);        
         unset($profileUser2["date"]);
@@ -1534,7 +1534,7 @@ class ModuleProfilingTest extends TestCase
         $this->assertEquals($expectedProfileUser4, $profileUser4);
         $this->assertEquals($expectedProfileUser5, $profileUser5);
 
-        $dates = Core::$systemDB->selectMultiple("user_profile", ["course" => $courseId], "distinct date");
+        $dates = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["course" => $courseId], "distinct date");
         $this->assertCount(1, $dates);
     }
 
@@ -2029,17 +2029,17 @@ class ModuleProfilingTest extends TestCase
         Core::$systemDB->insert("user_role", ["id" => $user5, "course" => $courseId, "role" => $student]);
 
         $time1 = "2021-06-20 14:30:00";
-        Core::$systemDB->insert("user_profile", ["date" => $time1, "user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
-        Core::$systemDB->insert("user_profile", ["date" => $time1, "user" => $user2, "course" => $courseId, "cluster" => $cluster2]);
-        Core::$systemDB->insert("user_profile", ["date" => $time1, "user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
-        Core::$systemDB->insert("user_profile", ["date" => $time1, "user" => $user5, "course" => $courseId, "cluster" => $cluster4]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time1, "user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time1, "user" => $user2, "course" => $courseId, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time1, "user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time1, "user" => $user5, "course" => $courseId, "cluster" => $cluster4]);
 
         $time2 = "2021-08-20 18:10:42";
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user2, "course" => $courseId, "cluster" => $cluster1]);
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user5, "course" => $courseId, "cluster" => $cluster4]);
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user4, "course" => $courseId, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user2, "course" => $courseId, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user5, "course" => $courseId, "cluster" => $cluster4]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user4, "course" => $courseId, "cluster" => $cluster2]);
         
         //When
         $result = $this->profiling->getClusterHistory($courseId);
@@ -2132,24 +2132,24 @@ class ModuleProfilingTest extends TestCase
         Core::$systemDB->insert("user_role", ["id" => $user5, "course" => $courseId2, "role" => $studentCopy]);
 
         $time1 = "2021-06-20 14:30:00";
-        Core::$systemDB->insert("user_profile", ["date" => $time1, "user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
-        Core::$systemDB->insert("user_profile", ["date" => $time1, "user" => $user2, "course" => $courseId, "cluster" => $cluster2]);
-        Core::$systemDB->insert("user_profile", ["date" => $time1, "user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
-        Core::$systemDB->insert("user_profile", ["date" => $time1, "user" => $user5, "course" => $courseId, "cluster" => $cluster4]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time1, "user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time1, "user" => $user2, "course" => $courseId, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time1, "user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time1, "user" => $user5, "course" => $courseId, "cluster" => $cluster4]);
 
-        Core::$systemDB->insert("user_profile", ["date" => $time1, "user" => $user4, "course" => $courseId2, "cluster" => $cluster1Copy]);
-        Core::$systemDB->insert("user_profile", ["date" => $time1, "user" => $user5, "course" => $courseId2, "cluster" => $cluster3Copy]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time1, "user" => $user4, "course" => $courseId2, "cluster" => $cluster1Copy]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time1, "user" => $user5, "course" => $courseId2, "cluster" => $cluster3Copy]);
 
         $time2 = "2021-08-19 18:10:42";
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user2, "course" => $courseId, "cluster" => $cluster1]);
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user5, "course" => $courseId, "cluster" => $cluster4]);
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user4, "course" => $courseId, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user2, "course" => $courseId, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user5, "course" => $courseId, "cluster" => $cluster4]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user4, "course" => $courseId, "cluster" => $cluster2]);
         
         $time3 = "2021-08-20 19:00:00";
-        Core::$systemDB->insert("user_profile", ["date" => $time3, "user" => $user4, "course" => $courseId2, "cluster" => $cluster1Copy]);
-        Core::$systemDB->insert("user_profile", ["date" => $time3, "user" => $user5, "course" => $courseId2, "cluster" => $cluster2Copy]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time3, "user" => $user4, "course" => $courseId2, "cluster" => $cluster1Copy]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time3, "user" => $user5, "course" => $courseId2, "cluster" => $cluster2Copy]);
 
         //When
         $result = $this->profiling->getClusterHistory($courseId);
@@ -2510,17 +2510,17 @@ class ModuleProfilingTest extends TestCase
         Core::$systemDB->insert("user_role", ["id" => $user5, "course" => $courseId, "role" => $student]);
 
         $time1 = "2021-06-20 14:30:00";
-        Core::$systemDB->insert("user_profile", ["date" => $time1, "user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
-        Core::$systemDB->insert("user_profile", ["date" => $time1, "user" => $user2, "course" => $courseId, "cluster" => $cluster2]);
-        Core::$systemDB->insert("user_profile", ["date" => $time1, "user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
-        Core::$systemDB->insert("user_profile", ["date" => $time1, "user" => $user5, "course" => $courseId, "cluster" => $cluster3]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time1, "user" => $user1, "course" => $courseId, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time1, "user" => $user2, "course" => $courseId, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time1, "user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time1, "user" => $user5, "course" => $courseId, "cluster" => $cluster3]);
 
         $time2 = "2021-08-20 18:10:42";
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user1, "course" => $courseId, "cluster" => $cluster2]);
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user2, "course" => $courseId, "cluster" => $cluster1]);
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user5, "course" => $courseId, "cluster" => $cluster2]);
-        Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user4, "course" => $courseId, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user1, "course" => $courseId, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user2, "course" => $courseId, "cluster" => $cluster1]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user3, "course" => $courseId, "cluster" => $cluster3]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user5, "course" => $courseId, "cluster" => $cluster2]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["date" => $time2, "user" => $user4, "course" => $courseId, "cluster" => $cluster1]);
         
         //When
         $result = $this->profiling->exportItems();
@@ -2762,11 +2762,11 @@ class ModuleProfilingTest extends TestCase
         $result = $this->profiling->importItems($file, false);
 
         //Then
-        $profileUser1 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user1]);        
-        $profileUser2 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user2]);
-        $profileUser3 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user3]);
-        $profileUser4 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user4]);
-        $profileUser5 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user5]);
+        $profileUser1 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user1]);
+        $profileUser2 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user2]);
+        $profileUser3 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user3]);
+        $profileUser4 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user4]);
+        $profileUser5 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user5]);
 
         $expectedProfileUser1 = array(
             array("user" => $user1, "course" => $courseId, "cluster" => $cluster1, "date" => $time1),
@@ -2875,11 +2875,11 @@ class ModuleProfilingTest extends TestCase
         $result = $this->profiling->importItems($file, false);
 
         //Then
-        $profileUser1 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user1]);        
-        $profileUser2 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user2]);
-        $profileUser3 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user3]);
-        $profileUser4 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user4]);
-        $profileUser5 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user5]);
+        $profileUser1 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user1]);
+        $profileUser2 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user2]);
+        $profileUser3 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user3]);
+        $profileUser4 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user4]);
+        $profileUser5 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user5]);
         
         $this->assertEmpty($profileUser1);
         $this->assertEmpty($profileUser2);
@@ -2951,12 +2951,12 @@ class ModuleProfilingTest extends TestCase
         $result = $this->profiling->importItems($file, false);
 
         //Then
-        $profiles = Core::$systemDB->selectMultiple("user_profile", ["course" => $courseId]);
+        $profiles = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["course" => $courseId]);
         $this->assertCount(6, $profiles);
 
-        $profileUser1 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user1]);        
-        $profileUser2 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user2]);
-        $profileUser3 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user3]);
+        $profileUser1 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user1]);
+        $profileUser2 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user2]);
+        $profileUser3 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user3]);
 
         $expectedProfileUser1 = array(
             array("user" => $user1, "course" => $courseId, "cluster" => $cluster1, "date" => $time1),
@@ -3041,12 +3041,12 @@ class ModuleProfilingTest extends TestCase
         $result = $this->profiling->importItems($file, false);
 
         //Then
-        $profiles = Core::$systemDB->selectMultiple("user_profile", ["course" => $courseId]);
+        $profiles = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["course" => $courseId]);
         $this->assertCount(4, $profiles);
 
-        $profileUser1 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user1]);        
-        $profileUser2 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user2]);
-        $profileUser3 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user3]);
+        $profileUser1 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user1]);
+        $profileUser2 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user2]);
+        $profileUser3 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user3]);
 
         $expectedProfileUser1 = array(
             array("user" => $user1, "course" => $courseId, "cluster" => $cluster1, "date" => $time1),
@@ -3128,12 +3128,12 @@ class ModuleProfilingTest extends TestCase
         Core::$systemDB->insert("user_role", ["id" => $user5, "course" => $courseId, "role" => $student]);
 
         $time1 = "2020-06-20 14:30:00";
-        Core::$systemDB->insert("user_profile", ["user" => $user1, "course" => $courseId, "cluster" => $cluster3, "date" => $time1]);
-        Core::$systemDB->insert("user_profile", ["user" => $user4, "course" => $courseId, "cluster" => $cluster2, "date" => $time1]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user1, "course" => $courseId, "cluster" => $cluster3, "date" => $time1]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user4, "course" => $courseId, "cluster" => $cluster2, "date" => $time1]);
         
         $time2 = "2020-06-23 18:10:42";
-        Core::$systemDB->insert("user_profile", ["user" => $user3, "course" => $courseId, "cluster" => $cluster1, "date" => $time2]);
-        Core::$systemDB->insert("user_profile", ["user" => $user5, "course" => $courseId, "cluster" => $cluster2, "date" => $time2]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user3, "course" => $courseId, "cluster" => $cluster1, "date" => $time2]);
+        Core::$systemDB->insert(Profiling::TABLE_USER_PROFILE, ["user" => $user5, "course" => $courseId, "cluster" => $cluster2, "date" => $time2]);
 
         $file = "username;" . $time1 . ";" . $time2 . "\n";
         $file .= "ist112122;Hacker;Spy\n";
@@ -3146,11 +3146,11 @@ class ModuleProfilingTest extends TestCase
         $result = $this->profiling->importItems($file);
 
         //Then
-        $profileUser1 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user1]);        
-        $profileUser2 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user2]);
-        $profileUser3 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user3]);
-        $profileUser4 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user4]);
-        $profileUser5 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user5]);
+        $profileUser1 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user1]);
+        $profileUser2 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user2]);
+        $profileUser3 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user3]);
+        $profileUser4 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user4]);
+        $profileUser5 = Core::$systemDB->selectMultiple(Profiling::TABLE_USER_PROFILE, ["user" => $user5]);
 
         $expectedProfileUser1 = array(
             array("user" => $user1, "course" => $courseId, "cluster" => $cluster1, "date" => $time1),
@@ -3224,13 +3224,13 @@ class ModuleProfilingTest extends TestCase
         ]);
 
         $baseTime = "2020-06-20 14:30:00";
-        Core::$systemDB->insert("profiling_config", ["course" => $courseId, "lastRun" => $baseTime]);
+        Core::$systemDB->insert(Profiling::TABLE_CONFIG, ["course" => $courseId, "lastRun" => $baseTime]);
 
         //When
         $result = $this->profiling->checkStatus($courseId);
 
         //Then
-        $newTime = Core::$systemDB->select("profiling_config", ["course" => $courseId], "lastRun");
+        $newTime = Core::$systemDB->select(Profiling::TABLE_CONFIG, ["course" => $courseId], "lastRun");
         $this->assertEquals($baseTime, $newTime);
         $this->assertEmpty($result);
     }
@@ -3251,7 +3251,7 @@ class ModuleProfilingTest extends TestCase
         ]);
 
         $baseTime = "2020-06-20 14:30:00";
-        Core::$systemDB->insert("profiling_config", ["course" => $courseId, "lastRun" => $baseTime]);
+        Core::$systemDB->insert(Profiling::TABLE_CONFIG, ["course" => $courseId, "lastRun" => $baseTime]);
 
         $myfile = fopen($this->profiling->getLogPath($courseId), "w");
 
@@ -3261,7 +3261,7 @@ class ModuleProfilingTest extends TestCase
         //Then
         $this->assertEmpty($result);
 
-        $newTime = Core::$systemDB->select("profiling_config", ["course" => $courseId], "lastRun");
+        $newTime = Core::$systemDB->select(Profiling::TABLE_CONFIG, ["course" => $courseId], "lastRun");
         $this->assertEquals($baseTime, $newTime);
 
         unlink($this->profiling->getLogPath($courseId));
@@ -3283,7 +3283,7 @@ class ModuleProfilingTest extends TestCase
         ]);
 
         $baseTime = "2020-06-20 14:30:00";
-        Core::$systemDB->insert("profiling_config", ["course" => $courseId, "lastRun" => $baseTime]);
+        Core::$systemDB->insert(Profiling::TABLE_CONFIG, ["course" => $courseId, "lastRun" => $baseTime]);
 
         $errorMessage = "Error: An error occured while running the profiler.";
         file_put_contents($this->profiling->getLogPath($courseId), $errorMessage);
@@ -3294,7 +3294,7 @@ class ModuleProfilingTest extends TestCase
         //Then
         $this->assertEquals(array("errorMessage" => $errorMessage), $result);
 
-        $newTime = Core::$systemDB->select("profiling_config", ["course" => $courseId], "lastRun");
+        $newTime = Core::$systemDB->select(Profiling::TABLE_CONFIG, ["course" => $courseId], "lastRun");
         $this->assertEquals($baseTime, $newTime);
 
         unlink($this->profiling->getLogPath($courseId));
@@ -3319,7 +3319,7 @@ class ModuleProfilingTest extends TestCase
         ]);
 
         $baseTime = "2020-06-20 14:30:00";
-        Core::$systemDB->insert("profiling_config", ["course" => $courseId, "lastRun" => $baseTime]);
+        Core::$systemDB->insert(Profiling::TABLE_CONFIG, ["course" => $courseId, "lastRun" => $baseTime]);
 
         $student = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Student"]);
         $profiling = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Profiling"]);
@@ -3367,7 +3367,7 @@ class ModuleProfilingTest extends TestCase
         );
         $this->assertEquals($expectedResult, $result);
 
-        $newTime = Core::$systemDB->select("profiling_config", ["course" => $courseId], "lastRun");
+        $newTime = Core::$systemDB->select(Profiling::TABLE_CONFIG, ["course" => $courseId], "lastRun");
         $this->assertNotEquals($baseTime, $newTime);
 
         unlink($this->profiling->getLogPath($courseId));
@@ -3392,7 +3392,7 @@ class ModuleProfilingTest extends TestCase
         ]);
 
         $baseTime = "2020-06-20 14:30:00";
-        Core::$systemDB->insert("profiling_config", ["course" => $courseId, "lastRun" => $baseTime]);
+        Core::$systemDB->insert(Profiling::TABLE_CONFIG, ["course" => $courseId, "lastRun" => $baseTime]);
 
         $student = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Student"]);
         $profiling = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Profiling"]);
@@ -3433,10 +3433,10 @@ class ModuleProfilingTest extends TestCase
         //Then
         $this->assertEmpty($result);
 
-        $newTime = Core::$systemDB->select("profiling_config", ["course" => $courseId], "lastRun");
+        $newTime = Core::$systemDB->select(Profiling::TABLE_CONFIG, ["course" => $courseId], "lastRun");
         $this->assertEquals($baseTime, $newTime);
 
-        $entry = Core::$systemDB->select("profiling_config", ["course" => $courseId + 1]);
+        $entry = Core::$systemDB->select(Profiling::TABLE_CONFIG, ["course" => $courseId + 1]);
         $this->assertEmpty($entry);
 
         unlink($this->profiling->getLogPath($courseId));
@@ -3458,7 +3458,7 @@ class ModuleProfilingTest extends TestCase
         ]);
 
         $baseTime = "2020-06-20 14:30:00";
-        Core::$systemDB->insert("profiling_config", ["course" => $courseId, "lastRun" => $baseTime]);
+        Core::$systemDB->insert(Profiling::TABLE_CONFIG, ["course" => $courseId, "lastRun" => $baseTime]);
 
         $student = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Student"]);
         $profiling = Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Profiling"]);
@@ -3499,7 +3499,7 @@ class ModuleProfilingTest extends TestCase
         //Then
         $this->assertEmpty($result);
 
-        $newTime = Core::$systemDB->select("profiling_config", ["course" => $courseId], "lastRun");
+        $newTime = Core::$systemDB->select(Profiling::TABLE_CONFIG, ["course" => $courseId], "lastRun");
         $this->assertEquals($baseTime, $newTime);
 
         unlink($this->profiling->getLogPath($courseId));

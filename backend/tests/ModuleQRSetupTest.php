@@ -34,11 +34,11 @@ class ModuleQRSetupTest extends TestCase
     public function testAddTablesSuccess(){
 
         //When
-        $result = $this->qr->addTables("qr", "qr_code");
+        $result = $this->qr->addTables(QR::ID, QR::TABLE);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'qr_code';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'qr_error';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . QR::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . QR::TABLE_ERROR . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertTrue($result);
         $this->assertCount(1, $table1);
@@ -70,11 +70,11 @@ class ModuleQRSetupTest extends TestCase
         );
         
         //When
-        $result = $this->qr->addTables("qr", "qr_code");
+        $result = $this->qr->addTables(QR::ID, QR::TABLE_ERROR);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'qr_code';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'qr_error';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . QR::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . QR::TABLE_ERROR . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertFalse($result);
         $this->assertCount(1, $table1);

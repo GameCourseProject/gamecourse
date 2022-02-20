@@ -36,13 +36,13 @@ class Streaks extends Module
 
         /*** ------------ Libraries ------------ ***/
 
-        Dictionary::registerLibrary("streaks", "streaks", "This library provides information regarding Streaks. It is provided by the streaks module.");
+        Dictionary::registerLibrary(self::ID, self::ID, "This library provides information regarding Streaks. It is provided by the streaks module.");
 
 
         /*** ------------ Functions ------------ ***/
         // streaks.getAllStreaks(isActive)
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'getAllStreaks',
             function (bool $isActive = true) {
                 $where = [];
@@ -59,7 +59,7 @@ class Streaks extends Module
 
         //streaks.getStreak(name)
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'getStreak',
             function (string $name = null) {
                 return $this->getStreak(false, ["name" => $name]);
@@ -74,7 +74,7 @@ class Streaks extends Module
 
         //%streak.description
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'description',
             function ($arg) {
                 return Dictionary::basicGetterFunction($arg, "description");
@@ -89,7 +89,7 @@ class Streaks extends Module
 
         //%streak.name
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'name',
             function ($streak) {
                 return Dictionary::basicGetterFunction($streak, "name");
@@ -104,7 +104,7 @@ class Streaks extends Module
 
         //%streak.color
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'color',
             function ($streak) {
                 return Dictionary::basicGetterFunction($streak, "color");
@@ -119,7 +119,7 @@ class Streaks extends Module
 
         //%streak.reward
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'reward',
             function ($streak) {
                 return Dictionary::basicGetterFunction($streak, "reward");
@@ -134,7 +134,7 @@ class Streaks extends Module
 
         //%streak.periodicity
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'periodicity',
             function ($streak) {
                 return Dictionary::basicGetterFunction($streak, "periodicity");
@@ -149,7 +149,7 @@ class Streaks extends Module
 
         //%streak.periodicityTime
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'periodicityTime',
             function ($streak) {
                 return Dictionary::basicGetterFunction($streak, "periodicityTime");
@@ -164,7 +164,7 @@ class Streaks extends Module
 
         //%streak.isRepeatable
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'isRepeatable',
             function ($streak) {
                 return Dictionary::basicGetterFunction($streak, "isRepeatable");
@@ -179,7 +179,7 @@ class Streaks extends Module
 
         //%streak.isCount
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'isCount',
             function ($streak) {
                 return Dictionary::basicGetterFunction($streak, "isCount");
@@ -194,7 +194,7 @@ class Streaks extends Module
 
         //%streak.isPeriodic
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'isPeriodic',
             function ($streak) {
                 return Dictionary::basicGetterFunction($streak, "isPeriodic");
@@ -209,7 +209,7 @@ class Streaks extends Module
 
         //%streak.isActive
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'isActive',
             function ($streak) {
                 return Dictionary::basicGetterFunction($streak, "isActive");
@@ -224,12 +224,12 @@ class Streaks extends Module
 
         //streaks.streakProgression(streak,user)
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'streakProgression',
 
             function ($streak, int $user) {
                 $streakParticipation = $this->getStreakProgression($streak, $user);
-                return Dictionary::createNode($streakParticipation, 'streaks', 'collection');
+                return Dictionary::createNode($streakParticipation, self::ID, 'collection');
             },
             'Returns a collection object corresponding to the intermediate progress of a GameCourseUser identified by user for that streak.',
             'collection',
@@ -471,7 +471,7 @@ class Streaks extends Module
                 throw new \Exception("In function streaks.getStreak(name): couldn't find streak with name '" . $where["name"] . "'.");
             $type = "object";
         }
-        return Dictionary::createNode($streakArray, 'streaks', $type);
+        return Dictionary::createNode($streakArray, self::ID, $type);
 
     }
               
@@ -563,7 +563,7 @@ class Streaks extends Module
 
 
 ModuleLoader::registerModule(array(
-    'id' => 'streaks',
+    'id' => Streaks::ID,
     'name' => 'Streaks',
     'description' => 'Enables Streaks and xp points that can be atributed to a student in certain conditions.',
     'type' => 'GameElement',

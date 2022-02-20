@@ -14,7 +14,7 @@ class GoogleSheetsModule extends Module
 {
     const ID = 'googlesheets';
 
-    const TABLE_CONFIG = 'config_google_sheets';
+    const TABLE_CONFIG = self::ID . '_config';
 
     private $googleSheets;
 
@@ -346,7 +346,7 @@ class GoogleSheetsModule extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'googlesheets',
+    'id' => GoogleSheetsModule::ID,
     'name' => 'GoogleSheets',
     'description' => 'Allows GoogleSheets to be automaticaly included on gamecourse.',
     'type' => 'DataSource',

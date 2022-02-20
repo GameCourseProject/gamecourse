@@ -4,6 +4,7 @@ namespace Modules\Profile;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Views\Views;
+use Modules\Charts\Charts;
 
 class Profile extends Module
 {
@@ -40,14 +41,14 @@ class Profile extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'profile',
+    'id' => Profile::ID,
     'name' => 'Profile',
     'description' => 'Creates a view template for a profile page where all the stats of the user are shown.',
     'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(
-        array('id' => 'charts', 'mode' => 'hard')
+        array('id' => Charts::ID, 'mode' => 'hard')
     ),
     'factory' => function() {
         return new Profile();

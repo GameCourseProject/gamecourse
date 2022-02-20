@@ -8,6 +8,7 @@ use GameCourse\Course;
 use GameCourse\ModuleLoader;
 use GameCourse\Views\Expression\EvaluateVisitor;
 use GameCourse\Views\Expression\ValueNode;
+use Modules\AwardList\AwardList;
 use ReflectionException;
 use ReflectionFunction;
 
@@ -826,7 +827,7 @@ class Dictionary
                 } else if ($item == "type") {
                     switch ($award["value"]['type']) {
                         case 'grade':
-                            return new ValueNode('modules/awardlist/imgs/quiz.svg');
+                            return new ValueNode('modules/' . AwardList::ID . '/imgs/quiz.svg');
                         case 'badge':
                             $name = self::getModuleNameOfAward($award);
                             if ($name === null)
@@ -837,9 +838,9 @@ class Dictionary
                         case 'skill':
                             return new ValueNode('modules/skills/imgs/skills.svg');
                         case 'bonus':
-                            return new ValueNode('modules/awardlist/imgs/awards.svg');
+                            return new ValueNode('modules/' . AwardList::ID . '/imgs/awards.svg');
                         default:
-                            return new ValueNode('modules/awardlist/imgs/quiz.svg');
+                            return new ValueNode('modules/' . AwardList::ID . '/imgs/quiz.svg');
                     }
                 } else
                     throw new \Exception("In function renderPicture(item): item must be 'user' or 'type'");

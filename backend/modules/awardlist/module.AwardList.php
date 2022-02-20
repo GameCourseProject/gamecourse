@@ -9,6 +9,8 @@ class AwardList extends Module
 {
     const ID = 'awardlist';
 
+    const TABLE = 'award';
+
     const AWARDS_PROFILE_TEMPLATE = 'Awards Profile - by awards';
     const FULL_AWARDS_TEMPLATE = 'Full Awards List - by awards';
 
@@ -46,7 +48,7 @@ class AwardList extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'awardlist',
+    'id' => AwardList::ID,
     'name' => 'Award List',
     'description' => 'Enables Awards and creates a view template with list of awards per student.',
     'type' => 'GameElement',

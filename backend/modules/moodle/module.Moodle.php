@@ -301,7 +301,7 @@ class MoodleModule extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'moodle',
+    'id' => MoodleModule::ID,
     'name' => 'Moodle',
     'description' => 'Allows Moodle to be automaticaly included on gamecourse.',
     'type' => 'DataSource',

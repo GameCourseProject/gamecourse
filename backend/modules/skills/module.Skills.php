@@ -11,15 +11,17 @@ use GameCourse\RuleSystem;
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Expression\ValueNode;
 use GameCourse\Views\Views;
+use Modules\AwardList\AwardList;
+use Modules\XP\XPLevels;
 
 class Skills extends Module
 {
     const ID = 'skills';
 
     const TABLE = 'skill';
-    const TABLE_TREES = 'skill_tree';
-    const TABLE_TIERS = 'skill_tier';
-    const TABLE_DEPENDENCIES = 'skill_dependency';
+    const TABLE_TREES = self::TABLE . '_tree';
+    const TABLE_TIERS = self::TABLE . '_tier';
+    const TABLE_DEPENDENCIES = self::TABLE . '_dependency';
     const TABLE_SUPER_SKILLS = 'dependency';
 
     const SKILL_TREE_TEMPLATE = 'Skill Tree - by skills';
@@ -43,7 +45,7 @@ class Skills extends Module
 
         /*** ------------ Libraries ------------ ***/
 
-        Dictionary::registerLibrary("skills", "skillTrees", "This library provides information regarding Skill Trees. It is provided by the skills module.");
+        Dictionary::registerLibrary(self::ID, "skillTrees", "This library provides information regarding Skill Trees. It is provided by the skills module.");
 
 
         /*** ------------ Functions ------------ ***/
@@ -422,10 +424,10 @@ class Skills extends Module
                 Dictionary::checkArray($skill, "object", "getPost()");
                 $userId = $this->getUserId($user);
 
-                $columns = "award left join award_participation on award.id=award_participation.award left join participation on award_participation.participation=participation.id";
+                $columns = AwardList::TABLE . " left join award_participation on " . AwardList::TABLE . ".id=award_participation.award left join participation on award_participation.participation=participation.id";
                 $post = Core::$systemDB->select(
                     $columns,
-                    ["award.type" => "skill", "award.moduleInstance" => $skill["value"]["id"], "award.user" => $userId, "award.course" => $courseId],
+                    [AwardList::TABLE . ".type" => "skill", AwardList::TABLE . ".moduleInstance" => $skill["value"]["id"], AwardList::TABLE . ".user" => $userId, AwardList::TABLE . ".course" => $courseId],
                     "post"
                 );
 
@@ -807,18 +809,18 @@ class Skills extends Module
 
     public function setupData($courseId)
     {
-        if ($this->addTables("skills", self::TABLE) || empty(Core::$systemDB->select(self::TABLE_TREES, ["course" => $courseId]))) {
+        if ($this->addTables(self::ID, self::TABLE) || empty(Core::$systemDB->select(self::TABLE_TREES, ["course" => $courseId]))) {
             Core::$systemDB->insert(self::TABLE_TREES, ["course" => $courseId, "maxReward" => DEFAULT_MAX_TREE_XP]);
         }
         $folder = Course::getCourseDataFolder($courseId);
-        if (!file_exists($folder . "/skills"))
-            mkdir($folder . "/skills");
+        if (!file_exists($folder . "/" . self::ID))
+            mkdir($folder . "/" . self::ID);
     }
 
     public function update_module($compatibleVersions)
     {
         //obter o ficheiro de configuração do module para depois o apagar
-        $configFile = MODULES_FOLDER . "/skills/config.json";
+        $configFile = MODULES_FOLDER . "/" . self::ID . "/config.json";
         $contents = array();
         if (file_exists($configFile)) {
             $contents = json_decode(file_get_contents($configFile));
@@ -1340,13 +1342,13 @@ class Skills extends Module
 
         // update description
         $folder = Course::getCourseDataFolder($courseId);
-        $path = $folder . '/skills/' . str_replace(' ', '', $skill['name']); //ex: course_data/1-PCM/skills/Director
+        $path = $folder . '/' . self::ID . '/' . str_replace(' ', '', $skill['name']); //ex: course_data/1-PCM/skills/Director
         $descriptionPage = @file_get_contents($path . '.html');
         if(!empty($skill['description'])){
             if ($descriptionPage === FALSE) {
 
                 // update image folder if exists
-                $oldDir = $folder . '/skills/' . str_replace(' ', '', $originalSkill['name']);
+                $oldDir = $folder . '/' . self::ID . '/' . str_replace(' ', '', $originalSkill['name']);
                 if (file_exists($oldDir)) {
                     if (!file_exists($path)) {
                         // if there are no new images simply rename old folder
@@ -1631,7 +1633,7 @@ class Skills extends Module
     private function skillCompletedBy($skill, $courseId)
     {
         $students = Core::$systemDB->selectMultiple(
-            "award a left join game_course_user u on a.user = u.id left join course_user c on u.id = c.id",
+            AwardList::TABLE . " a left join game_course_user u on a.user = u.id left join course_user c on u.id = c.id",
             ["a.course" => $courseId, "type" => "skill", "moduleInstance" => $skill],
             "u.id, a.course, lastActivity, previousActivity, name, email, major, nickname, studentNumber, isAdmin, isActive"
         );
@@ -1667,7 +1669,7 @@ class Skills extends Module
     {
         $folder = Course::getCourseDataFolder($courseId);
         $description = htmlspecialchars_decode($skill['page']);
-        $description = str_replace("\"" . str_replace(' ', '',  $skill['name']), "\"" . $folder . "/skills/" . str_replace(' ', '', $skill['name']), $description);
+        $description = str_replace("\"" . str_replace(' ', '',  $skill['name']), "\"" . $folder . "/" . self::ID . "/" . str_replace(' ', '', $skill['name']), $description);
         //$page = preg_replace( "/\r|\n/", "", $page );
         return $description;
     }
@@ -1675,9 +1677,9 @@ class Skills extends Module
     public function createFolderForSkillResources($skill, $courseId)
     {
         $courseFolder = Course::getCourseDataFolder($courseId);
-        $hasFolder = is_dir($courseFolder . "/skills/" . str_replace(' ', '',  $skill));
+        $hasFolder = is_dir($courseFolder . "/" . self::ID . "/" . str_replace(' ', '',  $skill));
         if (!$hasFolder) {
-            mkdir($courseFolder . "/skills/" . str_replace(' ', '',  $skill));
+            mkdir($courseFolder . "/" . self::ID . "/" . str_replace(' ', '',  $skill));
         }
     }
 
@@ -1727,7 +1729,7 @@ class Skills extends Module
         //this works because only one insertion is made in award_wildcard
         //on the first time that a skill rule is triggered
         $completedWildcards = Core::$systemDB->selectMultiple(
-            "award a left join " . self::TABLE . " s on a.moduleInstance = s.id left join " . self::TABLE_TIERS . " t on s.tier = t.tier and t.treeId = s.treeId",
+            AwardList::TABLE . " a left join " . self::TABLE . " s on a.moduleInstance = s.id left join " . self::TABLE_TIERS . " t on s.tier = t.tier and t.treeId = s.treeId",
             ["a.user" => $user, "t.tier" => $tier, "a.course" => $course],
             "count(a.id) as numCompleted"
         );
@@ -1735,7 +1737,7 @@ class Skills extends Module
         $usedWildcards = $this->getUsedWildcards($tier, $user, $course);
 
         $isCompleted = Core::$systemDB->selectMultiple(
-            "award a left join " . self::TABLE . " s on a.moduleInstance = s.id",
+            AwardList::TABLE . " a left join " . self::TABLE . " s on a.moduleInstance = s.id",
             ["a.user" => $user, "a.course" => $course, "s.name" => $skill]
         );
 
@@ -1746,7 +1748,7 @@ class Skills extends Module
     {
 
         $usedWildcards = Core::$systemDB->selectMultiple(
-            "award_wildcard w left join award a on w.awardId = a.id left join " . self::TABLE_TIERS . " t on w.tierId = t.id",
+            "award_wildcard w left join " . AwardList::TABLE . " a on w.awardId = a.id left join " . self::TABLE_TIERS . " t on w.tierId = t.id",
             ["a.user" => $user, "t.tier" => $tier, "a.course" => $course],
             "count(w.awardId) as numUsed"
         );
@@ -1799,12 +1801,12 @@ class Skills extends Module
         }
         // add generated
         $rule = array();
-        $rule["module"] = "skills";
-        $filename = $rs->getFilename("skills");
+        $rule["module"] = self::ID;
+        $filename = $rs->getFilename(self::ID);
         if ($filename == null) {
-            $filename = $rs->createNewRuleFile("skills", 1);
+            $filename = $rs->createNewRuleFile(self::ID, 1);
             $rs->fixPrecedences();
-            $filename = $rs->getFilename("skills");
+            $filename = $rs->getFilename(self::ID);
         }
         $rule["rulefile"] = $filename;
         if (sizeof($dependencies) == 0 || $dependencies == null) { // if is wilcard will be added to top
@@ -1857,10 +1859,10 @@ class Skills extends Module
 
         // add generated
         $rule = array();
-        $rule["module"] = "skills";
-        $filename = $rs->getFilename("skills");
+        $rule["module"] = self::ID;
+        $filename = $rs->getFilename(self::ID);
         if ($filename == null) {
-            $filename = $rs->createNewRuleFile("skills", 1);
+            $filename = $rs->createNewRuleFile(self::ID, 1);
             $rs->fixPrecedences();
         }
         $rule["rulefile"] = $filename;
@@ -1873,7 +1875,7 @@ class Skills extends Module
         $rule = array();
 
         $rule["name"] = $skillName;
-        $rule["rulefile"] = $rs->getFilename("skills");
+        $rule["rulefile"] = $rs->getFilename(self::ID);
         $position = $rs->getRulePosition($rule);
 
         if ($position !== false)
@@ -1924,14 +1926,14 @@ class Skills extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'skills',
+    'id' => Skills::ID,
     'name' => 'Skills',
     'description' => 'Generates a skill tree where students have to complete several skills to achieve a higher layer',
     'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(
-        array('id' => 'xp', 'mode' => 'hard')
+        array('id' => XPLevels::ID, 'mode' => 'hard')
     ),
     'factory' => function () {
         return new Skills();
