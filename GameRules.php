@@ -14,7 +14,7 @@ use GameCourse\ModuleLoader;
 
 class GameRules{
 
-	const ROOT_FOLDER = "/var/www/html/gamecourse_test/";
+	const ROOT_FOLDER = "/var/www/html/gamecourse/";
 
 	private $courseId;
 	private $host = "127.0.0.1";
