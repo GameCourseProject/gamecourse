@@ -1175,7 +1175,7 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
 
                     # if it gets here, streak periodicity was respected -> insert all participations
                     for log in contributions:
-                        query = "INSERT into streak_progression (course, user, streakselecId, participationId) values (%s,%s,%s,%s);"
+                        query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
                         cursor.execute(query, (course, target, streakid, log.log_id))
                         cnx.commit()
 
@@ -1192,23 +1192,39 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
     # table contains  user, course, description,  type, reward, date
     # table = filtered awards_table
     elif len(table) == 0:  # no streak has been awarded with this name for this user
+        isRepeatable = table_streak[0][5]
         streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
 
         # if streak is finished, award it
         if len(table_progressions) >= streak_count:
 
-            description = streak
+            if not isRepeatable:
+                description = streak
 
-            query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-            cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
-            cnx.commit()
-            cursor = cnx.cursor(prepared=True)
+                query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
+                cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
+                cnx.commit()
+                cursor = cnx.cursor(prepared=True)
 
-            # gets award_id
-            query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
-            cursor.execute(query, (target, course, description, typeof))
-            table_id = cursor.fetchall()
-            award_id = table_id[0][0]
+                # gets award_id
+                query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+                cursor.execute(query, (target, course, description, typeof))
+                table_id = cursor.fetchall()
+                award_id = table_id[0][0]
+            else:
+                totalAwards = len(table_progressions) // streak_count
+
+                # inserts in award table the new streaks that have not been awarded
+                for diff in range(len(table), totalAwards):
+                    repeated_info = " (Repeated for the " + str(diff + 1) + ")"
+                    description = streak + repeated_info
+
+                    query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
+                    cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
+                    cnx.commit()
+                    cursor = cnx.cursor(prepared=True)
+
+
 
 
     # if this streak has already been awarded, check if it is repeatable to award it again.
