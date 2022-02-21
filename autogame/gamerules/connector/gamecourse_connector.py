@@ -1152,11 +1152,13 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                             # if it disrespects streak periodicity, then return
                             if len(periodicityTime) == 7:  # minutes
                                 dif = secondParticipationObj - firstParticipationObj
-                                if dif < timedelta(minutes=periodicity) or dif > timedelta(minutes=periodicity*2):
+                                #if dif < timedelta(minutes=periodicity) or dif > timedelta(minutes=periodicity*2):
+                                if dif != timedelta(minutes=periodicity):
                                     return
                             elif len(periodicityTime) == 5:   # hours
                                 dif = secondParticipationObj - firstParticipationObj
-                                if dif < timedelta(hours=periodicity) or dif > timedelta(hours=periodicity*2):
+                                #if dif < timedelta(hours=periodicity) or dif > timedelta(hours=periodicity*2):
+                                if dif != timedelta(hours=periodicity):
                                     return
                             elif len(periodicityTime) == 4:   # days
                                 dif = secondParticipationObj.date() - firstParticipationObj.date()
@@ -1201,37 +1203,48 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
             cnx.commit()
             cursor = cnx.cursor(prepared=True)
 
-            # inserts in award_participation
+            # gets award_id
             query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
             cursor.execute(query, (target, course, description, typeof))
             table_id = cursor.fetchall()
             award_id = table_id[0][0]
 
-            # if not config.test_mode:
+            #if not config.test_mode:
+            #    # inserts in award_participation
+            #    for el in contributions:
+			#	    query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+			#	    cursor.execute(query, (award_id, el.log_id))
+            #        cnx.commit()
 
-               # * * * * * * TO DO * * * *  * * * * * * #
-               # falta inserir na award_participation  #
+            #    if contributions != None:
+			#		nr_contributions = str(len(contributions))
+			#	else:
+			#		nr_contributions = ''
+
+			#	config.award_list.append([str(target), str(streak), str(streak_reward), nr_contributions])
+            
 
     # if this streak has already been awarded, check if it is repeatable to award it again.
     elif len(table) > 0:
         isRepeatable = table_streak[0][5]
-        streak_id, streak_count, streak_reward = table_streak[0][0], table_streak[0][3], table_streak[0][4]
+        streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
 
         if isRepeatable and len(table_progressions) > streak_count:
             mod = len(table_progressions) % streak_count
             if (mod == 0):
                 totalAwards = len(table_progressions) / streak_count
 
+                # inserts in award table the new streaks that have not been awarded
                 for diff in range(len(table), totalAwards):
                     repeated_info = " (Repeated for the " + str(diff + 1) + ")"
                     description = badge + repeated_info
 
                     query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-                    cursor.execute(query, (target, course, description, typeof, streak_id, streak_reward))
+                    cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
                     cnx.commit()
                     cursor = cnx.cursor(prepared=True)
 
-                    # falta inserir na award_participation
+                    # inserir na award_participation ?
 
     cnx.commit()
     cnx.close()
