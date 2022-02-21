@@ -1156,9 +1156,9 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                                 if dif != timedelta(minutes=periodicity*2):
                                     return
                             elif len(periodicityTime) == 5:   # hours
-                                dif = secondParticipationObj - firstParticipationObj
+                                dif = secondParticipationObj.time().hour - firstParticipationObj.time().hour
                                 #if dif < timedelta(hours=periodicity) or dif > timedelta(hours=periodicity*2):
-                                if dif != timedelta(hours=periodicity*2):
+                                if dif != periodicity:
                                     return
                             elif len(periodicityTime) == 4:   # days
                                 dif = secondParticipationObj.date() - firstParticipationObj.date()
