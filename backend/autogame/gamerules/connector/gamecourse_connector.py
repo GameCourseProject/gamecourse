@@ -1152,8 +1152,7 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                             # if it disrespects streak periodicity, then return
                             if len(periodicityTime) == 7:  # minutes
                                 dif = secondParticipationObj - firstParticipationObj
-                                #if dif < timedelta(minutes=periodicity) or dif > timedelta(minutes=periodicity*2):
-                                if dif != timedelta(minutes=periodicity*2):
+                                if dif < timedelta(minutes=periodicity) or dif > timedelta(minutes=periodicity*2):
                                     return
                             elif len(periodicityTime) == 5:   # hours
                                 dif = secondParticipationObj.time().hour - firstParticipationObj.time().hour
