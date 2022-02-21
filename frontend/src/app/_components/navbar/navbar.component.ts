@@ -72,8 +72,8 @@ export class NavbarComponent implements OnInit {
             this.initNavigations();
           }
         });
-
-      })
+      },
+        error => ErrorService.set(error))
   }
 
 
@@ -89,6 +89,8 @@ export class NavbarComponent implements OnInit {
     else if (!isInCourse) this.navigation = this.getMainNavigation();
     else if (isInCourse) this.navigation = await this.getCourseNavigation();
     else this.navigation = [];
+
+    if (!isInCourse) this.course = null;
   }
 
   getMainNavigation(): Navigation[] {
@@ -147,7 +149,7 @@ export class NavbarComponent implements OnInit {
   }
 
   async getCourseNavigation(): Promise<Navigation[]> {
-    if (!this.course || !this.activePages) {
+    if (!this.course || this.course.id !== this.getCourseIDFromURL() || !this.activePages) {
       const courseInfo = await this.getCourseInfo();
       const isAdminOrTeacher = this.user.isAdmin || await this.isCourseTeacher();
       this.course = courseInfo.course;
@@ -225,18 +227,21 @@ export class NavbarComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async getCourseInfo(): Promise<{course: Course, activePages: Page[]}> {
-    const urlParts = this.router.url.substr(1).split('/');
-    if (urlParts.includes('courses') && urlParts.length >= 2) {
-      const courseID = parseInt(urlParts[1]);
-      return await this.api.getCourseWithInfo(courseID).toPromise();
-    } else return null;
+    const courseID = this.getCourseIDFromURL();
+    if (courseID) return await this.api.getCourseWithInfo(courseID).toPromise();
+    return null;
   }
 
   async isCourseTeacher(): Promise<boolean> {
+    const courseID = this.getCourseIDFromURL();
+    if (courseID) return await this.api.isCourseTeacher(courseID).toPromise()
+    return null;
+  }
+
+  getCourseIDFromURL(): number {
     const urlParts = this.router.url.substr(1).split('/');
     if (urlParts.includes('courses') && urlParts.length >= 2) {
-      const courseID = parseInt(urlParts[1]);
-      return await this.api.isCourseTeacher(courseID).toPromise();
+      return parseInt(urlParts[1]);
     } else return null;
   }
 

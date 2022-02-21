@@ -38,7 +38,7 @@ if (isset($_REQUEST["course"])){
     $courseAdmin = $course->getLoggedUser()->hasRole('Teacher');
     
     if (!Core::getLoggedUser()->isAdmin() && !$courseAdmin) {
-        API::error('You don\'t have permission to request this!', 401);
+        API::error('You don\'t have permission to request this!', 403);
     }
 }
 

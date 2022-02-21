@@ -11,16 +11,16 @@ class CronJob
 {
     public function __construct($script, $course, $number, $time, $remove = false)
     {
-        $cronFile = API_URL . "/crontab.txt";
+        $cronFile = SERVER_PATH . "/crontab.txt";
         $path = null;
         if ($script == "Moodle") {
-            $path = API_URL . "/modules/" . MoodleModule::ID. "/MoodleScript.php";
+            $path = SERVER_PATH . "/modules/" . MoodleModule::ID. "/MoodleScript.php";
         } else if ($script == "ClassCheck") {
-            $path = API_URL . "/modules/" . ClassCheckModule::ID. "/ClassCheckScript.php";
+            $path = SERVER_PATH . "/modules/" . ClassCheckModule::ID. "/ClassCheckScript.php";
         } else if ($script == "GoogleSheets") {
-            $path = API_URL . "/modules/" . GoogleSheetsModule::ID. "/GoogleSheetsScript.php";
+            $path = SERVER_PATH . "/modules/" . GoogleSheetsModule::ID. "/GoogleSheetsScript.php";
         }else if ($script == "QR"){
-            $path = API_URL . "/modules/" . QR::ID. "/QRScript.php";
+            $path = SERVER_PATH . "/modules/" . QR::ID. "/QRScript.php";
         }
         $output = shell_exec('crontab -l');
         if ($path) {

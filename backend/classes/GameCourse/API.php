@@ -119,7 +119,7 @@ class API {
         $courseUser = Course::getCourse(API::getValue('courseId'), false)->getLoggedUser();
         $isCourseUser = (!is_a($courseUser, "GameCourse\NullCourseUser"));
         if (!Core::getLoggedUser()->isAdmin() && !$isCourseUser) {
-            API::error('You don\'t have permission to access this course.', 401);
+            API::error('You don\'t have permission to access this course.', 403);
         }
     }
 
@@ -132,7 +132,7 @@ class API {
         API::requireValues('courseId');
         $courseAdmin = Course::getCourse(API::getValue('courseId'), false)->getLoggedUser()->hasRole('Teacher');
         if (!Core::getLoggedUser()->isAdmin() && !$courseAdmin) {
-            API::error('You don\'t have permission to request this - only course admins can.', 401);
+            API::error('You don\'t have permission to request this - only course admins can.', 403);
         }
     }
 
@@ -141,7 +141,7 @@ class API {
      */
     public static function requireAdminPermission() {
         if (!Core::getLoggedUser()->isAdmin())
-            API::error('You don\'t have permission to request this - only admins can.', 401);
+            API::error('You don\'t have permission to request this - only admins can.', 403);
     }
 
 

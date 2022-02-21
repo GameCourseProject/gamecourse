@@ -55,5 +55,6 @@ modules/quest/resources/
 cache/
 /nbproject/private/
 /setup.done
+/crontab.txt
 courses.zip
 badges.zip

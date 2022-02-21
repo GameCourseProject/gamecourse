@@ -5,11 +5,9 @@ import {
   HttpEvent,
   HttpInterceptor, HttpResponse
 } from '@angular/common/http';
-import {EMPTY, NEVER, Observable, of, Subject} from 'rxjs';
+import {Observable, of, Subject} from 'rxjs';
 import {share, take, tap} from "rxjs/operators";
 import {ApiHttpService} from "../_services/api/api-http.service";
-import {exists} from "../_utils/misc/misc";
-import {keyframes} from "@angular/animations";
 
 /**
  * This class is responsible for intercepting HTTP requests and caching them.
@@ -27,8 +25,9 @@ import {keyframes} from "@angular/animations";
 export class CacheInterceptor implements HttpInterceptor {
 
   private cache: Map<HttpRequest<any>['url'], HttpResponse<any>> = new Map<HttpRequest<any>['url'], HttpResponse<any>>();
-  private lastRequest: HttpRequest<any>['url'];
-  private lastRequestSubject: {[url: string]: Subject<HttpResponse<any>> } = {};
+
+  private lastGetRequest: HttpRequest<any>['url'];    // last GET request actually made
+  private lastGetRequestSubject: {[url: string]: Subject<HttpResponse<any>> } = {};
 
   private readonly dependencies: {[key: string]: string[]} = {};
 
@@ -55,6 +54,7 @@ export class CacheInterceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     if (request.method !== 'GET') {
+      this.lastGetRequest = null;
       this.resetCache(request);
       return next.handle(request);
     }
@@ -64,20 +64,20 @@ export class CacheInterceptor implements HttpInterceptor {
       // Has request cached
       return of(cachedResponse.clone());
 
-    } else if (this.lastRequest === request.url){
+    } else if (this.lastGetRequest === request.url){
       // Same request in a row, answer w/ 1st response
-      return this.lastRequestSubject[request.url].pipe( take(1) )
+      return this.lastGetRequestSubject[request.url].pipe( take(1) )
 
     } else {
       // Actually make the request
-      this.lastRequest = request.url;
-      this.lastRequestSubject[request.url] = new Subject<HttpResponse<any>>();
+      this.lastGetRequest = request.url;
+      this.lastGetRequestSubject[request.url] = new Subject<HttpResponse<any>>();
 
       return next.handle(request).pipe(
         tap(stateEvent => {
           if (stateEvent instanceof HttpResponse) {
             this.cache.set(request.url, stateEvent.clone());
-            this.lastRequestSubject[request.url].next(stateEvent.clone());
+            this.lastGetRequestSubject[request.url].next(stateEvent.clone());
           }
         }),
         share()

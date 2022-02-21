@@ -17,9 +17,9 @@ class Profiling extends Module
     const TABLE_USER_PROFILE = "user_profile";
     const TABLE_SAVED_USER_PROFILE = "saved_user_profile";
 
-    private $scriptPath = API_URL . "/" . MODULES_FOLDER . "/" . self::ID . "/profiler.py";
-    private $logPath = API_URL . "/" . MODULES_FOLDER . "/" . self::ID . "/";
-    private $predictorPath = API_URL . "/" . MODULES_FOLDER . "/" . self::ID . "/predictor.py";
+    private $scriptPath = SERVER_PATH . "/" . MODULES_FOLDER . "/" . self::ID . "/profiler.py";
+    private $logPath = SERVER_PATH . "/" . MODULES_FOLDER . "/" . self::ID . "/";
+    private $predictorPath = SERVER_PATH . "/" . MODULES_FOLDER . "/" . self::ID . "/predictor.py";
     
     // cluster names
     private $baseNames = ["Achiever", "Regular", "Halfhearted", "Underachiever"];

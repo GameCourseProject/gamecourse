@@ -1,6 +1,6 @@
 <?php
     const URL = '<WEBSITE_URL>';
-    const API_URL = '<API_URL>';
+    const SERVER_PATH = '<SERVER_PATH>';
 
     /** Database Connection */
     const CONNECTION_STRING = 'mysql:host=<DB_HOST>;dbname=<DB_NAME>';
@@ -10,23 +10,23 @@
     /** Fénix Auth */
     const FENIX_CLIENT_ID = '<FENIX_CLIENT_ID>';
     const FENIX_CLIENT_SECRET = '<FENIX_CLIENT_SECRET>';
-    const FENIX_REDIRECT_URL = API_URL . '/auth/';
+    const FENIX_REDIRECT_URL = SERVER_PATH . '/auth/';
     const FENIX_API_BASE_URL = 'https://fenix.tecnico.ulisboa.pt';
 
     /** Google Auth */
     const GOOGLE_CLIENT_ID = '<GOOGLE_CLIENT_ID>';
     const GOOGLE_CLIENT_SECRET = '<GOOGLE_CLIENT_SECRET>';
-    const GOOGLE_REDIRECT_URL = API_URL . '/auth?google';
+    const GOOGLE_REDIRECT_URL = SERVER_PATH . '/auth?google';
 
     /** Facebook Auth */
     const FACEBOOK_CLIENT_ID = '<FACEBOOK_CLIENT_ID>';
     const FACEBOOK_CLIENT_SECRET = '<FACEBOOK_CLIENT_SECRET>';
-    const FACEBOOK_REDIRECT_URL = API_URL . '/auth?facebook';
+    const FACEBOOK_REDIRECT_URL = SERVER_PATH . '/auth?facebook';
 
     /** Linkedin Auth */
     const LINKEDIN_CLIENT_ID = '<LINKEDIN_CLIENT_ID>';
     const LINKEDIN_CLIENT_SECRET = '<LINKEDIN_CLIENT_SECRET>';
-    const LINKEDIN_REDIRECT_URL = API_URL . '/auth?linkedin';
+    const LINKEDIN_REDIRECT_URL = SERVER_PATH . '/auth?linkedin';
 
     /** Folders */
     const MODULES_FOLDER = 'modules';
