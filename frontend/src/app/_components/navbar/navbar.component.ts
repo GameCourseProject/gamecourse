@@ -149,20 +149,21 @@ export class NavbarComponent implements OnInit {
   async getCourseNavigation(): Promise<Navigation[]> {
     if (!this.course || !this.activePages) {
       const courseInfo = await this.getCourseInfo();
+      const isAdminOrTeacher = this.user.isAdmin || await this.isCourseTeacher();
       this.course = courseInfo.course;
       this.activePages = courseInfo.activePages;
-      this.courseNavigation = buildCourseNavigation(this.user, this.course.id, this.activePages);
+      this.courseNavigation = buildCourseNavigation(isAdminOrTeacher, this.course.id, this.activePages);
     }
     return this.courseNavigation;
 
-    function buildCourseNavigation(user: User, courseID: number, activePages: Page[]): Navigation[] {
+    function buildCourseNavigation(isAdminOrTeacher: boolean, courseID: number, activePages: Page[]): Navigation[] {
       const path = '/courses/' + courseID + '/';
 
       const pages = activePages.map(page => {
         return {link: path + 'pages/' + page.id, name: page.name};
       });
 
-      if (user.isAdmin) {
+      if (isAdminOrTeacher) {
         const fixed = [
           {link: path + 'users', name: 'Users'},
           {link: path + 'settings', name: 'Course Settings', children: [
@@ -228,6 +229,14 @@ export class NavbarComponent implements OnInit {
     if (urlParts.includes('courses') && urlParts.length >= 2) {
       const courseID = parseInt(urlParts[1]);
       return await this.api.getCourseWithInfo(courseID).toPromise();
+    } else return null;
+  }
+
+  async isCourseTeacher(): Promise<boolean> {
+    const urlParts = this.router.url.substr(1).split('/');
+    if (urlParts.includes('courses') && urlParts.length >= 2) {
+      const courseID = parseInt(urlParts[1]);
+      return await this.api.isCourseTeacher(courseID).toPromise();
     } else return null;
   }
 

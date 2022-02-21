@@ -1110,6 +1110,19 @@ export class ApiHttpService {
       ) );
   }
 
+  public isCourseTeacher(courseID: number): Observable<boolean> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'isCourseTeacher');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['isTeacher']) );
+  }
+
 
   // General
   public getUsers(): Observable<User[]> {

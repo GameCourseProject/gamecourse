@@ -216,6 +216,7 @@ export class UsersComponent implements OnInit {
 
     this.api.createCourseUser(this.course.id, this.newUser)
       .pipe( finalize(() => {
+        this.isNewUserMethodModal = false;
         this.isUserModalOpen = false;
         this.clearObject(this.newUser);
         this.loadingAction = false;
@@ -241,6 +242,7 @@ export class UsersComponent implements OnInit {
 
     this.api.editCourseUser(this.course.id, this.newUser)
       .pipe( finalize(() => {
+        this.isNewUserMethodModal = false;
         this.isUserModalOpen = false;
         this.clearObject(this.newUser);
         this.loadingAction = false;
@@ -267,6 +269,7 @@ export class UsersComponent implements OnInit {
   submitUsers(): void {
     this.api.addUsersToCourse(this.course.id, this.selectedUsers, this.selectedUserRole)
       .pipe( finalize(() => {
+        this.isNewUserMethodModal = false;
         this.isSelectUserModalOpen = false;
         this.selectedUserRole = null;
         this.selectedUsers = null;
