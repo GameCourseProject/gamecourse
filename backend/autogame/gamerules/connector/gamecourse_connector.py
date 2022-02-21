@@ -1148,16 +1148,18 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                             firstParticipationObj = table_participations[i][1]  # YYYY-MM-DD HH:MM:SS
                             secondParticipationObj = table_participations[i+1][1]
 
-
                             # if it disrespects streak periodicity, then return
                             if len(periodicityTime) == 7:  # minutes
                                 dif = secondParticipationObj - firstParticipationObj
-                                if dif < timedelta(minutes=periodicity) or dif > timedelta(minutes=periodicity*2):
+                                #if dif < timedelta(minutes=periodicity) or dif > timedelta(minutes=periodicity*2):
+                                if dif != timedelta(minutes=periodicity):
                                     return
                             elif len(periodicityTime) == 5:   # hours
                                 dif = secondParticipationObj.time().hour - firstParticipationObj.time().hour
+                                difDay = secondParticipationObj.date() - firstParticipationObj.date()
+                                #dif = secondParticipationObj - firstParticipationObj
                                 #if dif < timedelta(hours=periodicity) or dif > timedelta(hours=periodicity*2):
-                                if dif != periodicity:
+                                if difDay != timedelta(days=0) or dif != periodicity:
                                     return
                             elif len(periodicityTime) == 4:   # days
                                 dif = secondParticipationObj.date() - firstParticipationObj.date()
@@ -1173,7 +1175,7 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
 
                     # if it gets here, streak periodicity was respected -> insert all participations
                     for log in contributions:
-                        query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
+                        query = "INSERT into streak_progression (course, user, streakselecId, participationId) values (%s,%s,%s,%s);"
                         cursor.execute(query, (course, target, streakid, log.log_id))
                         cnx.commit()
 
@@ -1208,41 +1210,27 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
             table_id = cursor.fetchall()
             award_id = table_id[0][0]
 
-            #if not config.test_mode:
-            #    # inserts in award_participation
-            #    for el in contributions:
-			#	    query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
-			#	    cursor.execute(query, (award_id, el.log_id))
-            #        cnx.commit()
-
-            #    if contributions != None:
-			#		nr_contributions = str(len(contributions))
-			#	else:
-			#		nr_contributions = ''
-
-			#	config.award_list.append([str(target), str(streak), str(streak_reward), nr_contributions])
-
 
     # if this streak has already been awarded, check if it is repeatable to award it again.
     elif len(table) > 0:
         isRepeatable = table_streak[0][5]
-        streak_id, streak_count, streak_reward = table_streak[0][0], table_streak[0][3], table_streak[0][4]
+        streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
 
         if isRepeatable and len(table_progressions) > streak_count:
-            mod = len(table_progressions) % streak_count
-            if (mod == 0):
-                totalAwards = len(table_progressions) / streak_count
 
-                for diff in range(len(table), totalAwards):
-                    repeated_info = " (Repeated for the " + str(diff + 1) + ")"
-                    description = badge + repeated_info
+            totalAwards = len(table_progressions) // streak_count
 
-                    query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-                    cursor.execute(query, (target, course, description, typeof, streak_id, streak_reward))
-                    cnx.commit()
-                    cursor = cnx.cursor(prepared=True)
+            # inserts in award table the new streaks that have not been awarded
+            for diff in range(len(table), totalAwards):
+                repeated_info = " (Repeated for the " + str(diff + 1) + ")"
+                description = streak + repeated_info
 
-                    # falta inserir na award_participation
+                query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
+                cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
+                cnx.commit()
+                cursor = cnx.cursor(prepared=True)
+
+                # inserir na award_participation ?
 
     cnx.commit()
     cnx.close()
