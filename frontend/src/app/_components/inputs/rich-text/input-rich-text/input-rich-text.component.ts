@@ -4,6 +4,7 @@ import {Observable} from "rxjs";
 import * as Quill from 'quill';
 import htmlEditButton from 'quill-html-edit-button';
 import imageResize from 'quill-image-resize';
+
 import {exists} from "../../../../_utils/misc/misc";
 import {ImageManager} from "../../../../_utils/images/image-manager";
 import {DomSanitizer} from "@angular/platform-browser";
@@ -101,7 +102,7 @@ export class InputRichTextComponent implements OnInit {
   addImage(imagePath: string) {
     this.imageManager.set(ApiEndpointsService.API_ENDPOINT + '/' + imagePath);
     const url = this.imageManager.get('URL');
-    this.quill.insertEmbed(this.quill.getSelection, 'image', url);
+    this.quill.insertEmbed(this.quill.getSelection().index, 'image', url);
   }
 
 }
