@@ -358,9 +358,20 @@ export class SkillsComponent implements OnInit {
     const tiersSeq: {[tier: string]: number} = {};
     this.tiers.forEach(tier => tiersSeq[tier.tier] = tier.seqId);
 
-    return this.skills
+    // Get a random wildcard skill if exists
+    // FIXME: find another way; if skill gets deleted it breaks everything
+    let wildcard: Skill;
+    if (this.tiers.find(tier => tier.tier === 'Wildcard')) {
+      wildcard = this.skills.find(skill => skill.tier === 'Wildcard');
+      wildcard.name = 'Wildcard';
+    }
+
+    const filteredSkills = this.skills
       .filter(skill => skill.id !== id && tiersSeq[skill.tier] === tiersSeq[tier] - 1)
       .sort((a, b) => a.name.localeCompare(b.name));
+
+    if (wildcard) filteredSkills.push(wildcard);
+    return filteredSkills;
   }
 
   filterSkillsByTier(tier: string): Skill[] {
