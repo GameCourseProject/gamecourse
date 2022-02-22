@@ -1449,16 +1449,18 @@ class Skills extends Module
 
     public function deleteSkill($skill, $courseId)
     {
-        $hasDep = Core::$systemDB->selectMultiple(self::TABLE_DEPENDENCIES, ["normalSkillId" => $skill["id"], "isTier" => false]);
-        if (!empty($hasDep)) {
-            echo "This skill is a dependency of others skills. You must remove them first.";
-            return null;
-        }
+        if (!empty(Core::$systemDB->selectMultiple(self::TABLE_DEPENDENCIES, ["normalSkillId" => $skill["id"], "isTier" => false])))
+            API::error("This skill is a dependency of others skills. You must remove them first.");
+
         $skillInfo = Core::$systemDB->select(self::TABLE . " left join " . self::TABLE_TREES . " on " . self::TABLE . ".treeId=" . self::TABLE_TREES . ".id", [self::TABLE . ".id" => $skill["id"], "course" => $courseId], "name, tier, treeId");
         if(!empty($skillInfo)){
             Core::$systemDB->delete(self::TABLE, ["id" => $skill['id']]);
             $course = Course::getCourse($courseId);
             $this->deleteGeneratedRule($course, $skillInfo['name']);
+
+            // Delete skill resources
+            $dir = Course::getCourseDataFolder($courseId) . "/skills/" . str_replace(" ", "", $skillInfo['name']);
+            Utils::deleteDirectory($dir);
         }
     }
 
