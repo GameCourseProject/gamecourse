@@ -131,8 +131,9 @@ export class FilePickerModalComponent implements OnInit {
       this.api.uploadFile(this.file, this.courseFolder + '/' + this.whereToStore, this.fileToUploadName)
         .subscribe(
           path => {
-            this.positiveBtnClicked.emit({path, type: this.fileToUpload.type as 'image' | 'video' | 'audio'});
+            this.positiveBtnClicked.emit({path, type: this.fileToUpload.type.split('/')[0] as 'image' | 'video' | 'audio'});
             this.closeBtnClicked.emit();
+            this.reset();
           },
           error => ErrorService.set(error)
         )
@@ -140,12 +141,20 @@ export class FilePickerModalComponent implements OnInit {
     } else {
       this.positiveBtnClicked.emit({path: this.file as string, type: this.fileType});
       this.closeBtnClicked.emit();
+      this.reset();
     }
   }
 
   isReadyToSubmit(): boolean {
     return (exists(this.fileToUpload) && exists(this.fileToUploadName) && !this.fileToUploadName.isEmpty()) ||
       exists(this.file);
+  }
+
+  reset() {
+    this.fileToUpload = null;
+    this.fileToUploadName = null;
+    this.file = null;
+    this.fileType = null;
   }
 
   getItemIcon(item: ContentItem): string {
