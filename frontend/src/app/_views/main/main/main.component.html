@@ -5,7 +5,7 @@
       <div class='title'>Welcome to the GameCourse system</div>
       <div id='active_courses_list'>
         <span class="label">Your active courses</span>
-        <span *ngFor="let course of activeCourses"  [routerLink]="'/courses/' + course.id">{{course.name}}</span>
+        <span *ngFor="let course of activeCourses"  [routerLink]="'/courses/' + course.id">{{course.name}} {{course.year}}</span>
       </div>
     </div>
   </div>
