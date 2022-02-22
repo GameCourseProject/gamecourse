@@ -232,6 +232,10 @@ select:focus {
 
 /*icons*/
 
+.preview_icon {
+  background-image: url("~src/assets/icons/preview-icon.svg");
+}
+
 .duplicate_icon {
   background-image: url("~src/assets/icons/duplicate_icon.svg");
 }

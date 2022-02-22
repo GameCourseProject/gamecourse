@@ -52,6 +52,7 @@ export class SkillsComponent implements OnInit {
   skillModalRendered: Subject<void> = new Subject<void>();
   isDeleteVerificationModalOpen: boolean;
   isImportModalOpen: boolean;
+  isSkillPreviewModalOpen: boolean;
   saving: boolean;
 
   selectedDependency1: Skill = null;

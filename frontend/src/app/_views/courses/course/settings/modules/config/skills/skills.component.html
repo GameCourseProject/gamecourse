@@ -83,6 +83,7 @@
             <th class="action-column"></th>
             <th class="action-column"></th>
             <th class="action-column"></th>
+            <th class="action-column"></th>
           </tr>
           </thead>
 
@@ -106,6 +107,9 @@
                 <input type="checkbox" [checked]="skill.isActive" (change)="toggleSkill(skill.id)">
                 <span class="slider round"></span>
               </label>
+            </td>
+            <td class="action-column">
+              <div class="icon preview_icon" title="Preview" (click)="navigate(skill.id)"></div>
             </td>
             <td class="action-column">
               <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(skill, 'skill'); isSkillModalOpen = true; initColorPicker(); initTextEditor()"></div>
@@ -212,7 +216,7 @@
     [isModalOpen]="isSkillModalOpen"
     [id]="mode === 'add' ? 'new-skill' : 'edit-skill'"
     [templateRef]="skillModal"
-    [width]="'700px'"
+    [width]="'calc(100% - 200px)'"
     (closeBtnClicked)="isSkillModalOpen = false; clearObject(newSkill); selectedDependency1 = null; selectedDependency2 = null"
     [actionInProgress]="saving"
     [innerClickEvents]="false">
@@ -228,7 +232,7 @@
 
       <div class="row_inputs">
         <!-- Tier -->
-        <div class="half">
+        <div class="third">
           <select class="form__input" id="skill-tier" [(ngModel)]="newSkill.tier">
             <option [value]="null" disabled>Select a Tier</option>
             <option *ngFor="let tier of tiers" [value]="tier.tier">{{tier.tier}}</option>
@@ -236,15 +240,13 @@
         </div>
 
         <!-- Name -->
-        <div class="half">
+        <div class="third">
           <input type="text" class="form__input" id="skill-name" placeholder="Name" [(ngModel)]="newSkill.name" [required]="true">
           <label for="skill-name" class="form__label">Name</label>
         </div>
-      </div>
 
-      <div class="row_inputs">
         <!-- Color -->
-        <div class="color_picker half">
+        <div class="color_picker third">
           <input type="text" class="form__input pickr" id="new_pickr" placeholder="Color" [(ngModel)]="newSkill.color" role="button" aria-label="toggle color picker dialog">
           <label for="new_pickr" class="form__label">Color</label>
           <div id="color-sample">
@@ -257,12 +259,12 @@
       <ng-container *ngIf="newSkill.tier && newSkill.tier !== 'Wildcard' && newSkill.tier !== '1'">
         <!-- Add dependencies -->
         <div [id]="'add_dependencies'" class="full">
-          <span style="margin-right: 10px; white-space: nowrap">New Dependency: </span>
-          <select [id]="'skill1'" class="form__input" name="skill1" style="margin-bottom: 0; margin-right: 5px" [(ngModel)]="selectedDependency1">
+          <span style="margin-right: 30px; white-space: nowrap">New Dependency: </span>
+          <select [id]="'skill1'" class="form__input" name="skill1" style="margin-bottom: 0; margin-right: 30px" [(ngModel)]="selectedDependency1">
             <option [value]="null" disabled selected>Select Skill 1</option>
             <option *ngFor="let skill of filterSkillsById(mode === 'add' ? null : skillToEdit.id)" [ngValue]="skill">{{skill.name}}</option>
           </select>
-          <select [id]="'skill2'" class="form__input" name="skill2" style="margin-bottom: 0; margin-right: 5px" [(ngModel)]="selectedDependency2">
+          <select [id]="'skill2'" class="form__input" name="skill2" style="margin-bottom: 0; margin-right: 20px" [(ngModel)]="selectedDependency2">
             <option [value]="null" disabled selected>Select Skill 2</option>
             <option *ngFor="let skill of filterSkillsById(mode === 'add' ? null : skillToEdit.id)" [ngValue]="skill">{{skill.name}}</option>
           </select>
@@ -278,7 +280,7 @@
         </div>
       </ng-container>
 
-      <div id="editor" style="height: 300px">
+      <div id="editor" style="height: 400px">
         <app-input-rich-text
           [id]="'skill-description'"
           [placeholder]="'Add the skill description here...'"
@@ -294,7 +296,7 @@
 
     <button *ngIf="mode === 'edit'" class="cancel" (click)="isSkillModalOpen = false; clearObject(newSkill); selectedDependency1 = null; selectedDependency2 = null">Cancel</button>
     <button class="save_btn" [disabled]="!isReadyToSubmit('skill')" (click)="mode === 'add' ? createSkill() : editSkill()">Save</button>
-    <button class="preview_btn" (click)="navigate(newSkill.id)">Preview</button>
+    <button class="preview_btn" (click)="isSkillPreviewModalOpen = true">Preview</button>
   </div>
 </ng-template>
 
@@ -313,3 +315,20 @@
     [actionInProgress]="saving">
   </app-verification-modal>
 </ng-container>
+
+
+<!-- Skill Preview Modal -->
+<ng-container *ngIf="isSkillPreviewModalOpen">
+  <app-modal
+    [isModalOpen]="isSkillPreviewModalOpen"
+    [id]="'skill-preview'"
+    [templateRef]="skillPreview"
+    [width]="'calc(100% - 200px)'"
+    (closeBtnClicked)="isSkillPreviewModalOpen = false"
+    [innerClickEvents]="false">
+  </app-modal>
+</ng-container>
+
+<ng-template #skillPreview>
+  <div [innerHTML]="newSkill.description"></div>
+</ng-template>

@@ -220,6 +220,11 @@ button {
   position: relative;
 }
 
+.modal_content .content .inputs .third {
+  width: calc(32%);
+  position: relative;
+}
+
 .modal_content .content .inputs .btn,
 #aspect .btn {
   display: flex;
