@@ -182,7 +182,7 @@
                                         "type": "text",
                                         "role": "role.Student>role.Default",
                                         "visibilityType": "visible",
-                                        "value": "TODO"
+                                        "value": "{xp.getSkillTreeXP(%user)}"
                                       }
                                     ]
                                   ]
