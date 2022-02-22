@@ -37,7 +37,7 @@ export class SkillsComponent implements OnInit {
   tierToDelete: Tier;
 
   newSkill: SkillData = {
-    name: null,
+    name: "",
     color: null,
     description: null,
     tier: null,
@@ -278,13 +278,13 @@ export class SkillsComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  initEditItem(item: any, type: 'tier' | 'skill'): void {
+  initItem(type: 'tier' | 'skill', item?: any): void {
     if (type === 'tier') {
       this.newTier = {
-        tier: item.tier,
-        seqId: item.seqId,
-        reward: item.reward,
-        treeId: item.treeId
+        tier: item?.tier || null,
+        seqId: item?.seqId || null,
+        reward: item?.reward || null,
+        treeId: item?.treeId || null
       };
       if (this.mode === 'edit') this.newTier.id = item.id;
       this.tierToEdit = item;
@@ -292,12 +292,12 @@ export class SkillsComponent implements OnInit {
 
     if (type === 'skill') {
       this.newSkill = {
-        name: item.name,
-        color: item.color,
-        description: item.description,
-        tier: item.tier,
-        dependencies: item.dependencies,
-        dependenciesList: item.dependenciesList,
+        name: item?.name || "",
+        color: item?.color || null,
+        description: item?.description || null,
+        tier: item?.tier || null,
+        dependencies: item?.dependencies || null,
+        dependenciesList: item?.dependenciesList || [],
       };
       if (this.mode === 'edit') this.newSkill.id = item.id;
       this.skillToEdit = item;

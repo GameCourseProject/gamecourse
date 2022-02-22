@@ -28,7 +28,7 @@
             <td><span>{{tier.tier}}</span></td>
             <td><span>{{tier.reward}}</span></td>
             <td class="action-column">
-              <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(tier, 'tier'); isTierModalOpen = true;"></div>
+              <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initItem('tier', tier); isTierModalOpen = true;"></div>
             </td>
             <td class="action-column">
               <div class="icon delete_icon" title="Remove" (click)="skillToDelete = null; tierToDelete = tier; isDeleteVerificationModalOpen = true"></div>
@@ -52,7 +52,7 @@
 
     <!-- Action Buttons -->
     <div class="action-buttons">
-      <div class="icon add_icon" title="New" (click)="mode = 'add'; isTierModalOpen = true;"></div>
+      <div class="icon add_icon" title="New" (click)="mode = 'add'; isTierModalOpen = true; initItem('tier')"></div>
     </div>
   </div>
 </div>
@@ -112,7 +112,7 @@
               <div class="icon preview_icon" title="Preview" (click)="navigate(skill.id)"></div>
             </td>
             <td class="action-column">
-              <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(skill, 'skill'); isSkillModalOpen = true; initColorPicker(); initTextEditor()"></div>
+              <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initItem('skill', skill); isSkillModalOpen = true; initColorPicker(); initTextEditor()"></div>
             </td>
             <td class="action-column">
               <div class="icon delete_icon" title="Remove" (click)="tierToDelete = null; skillToDelete = skill; isDeleteVerificationModalOpen = true"></div>
@@ -136,7 +136,7 @@
 
     <!-- Action Buttons -->
     <div class="action-buttons">
-      <div class="icon add_icon" title="New" (click)="mode = 'add'; isSkillModalOpen = true; initColorPicker(); initTextEditor()"></div>
+      <div class="icon add_icon" title="New" (click)="mode = 'add'; isSkillModalOpen = true; initItem('skill'); initColorPicker(); initTextEditor()"></div>
       <div class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true"></div>
       <div class="icon export_icon" title="Export All" (click)="exportAllSkills()"></div>
     </div>
