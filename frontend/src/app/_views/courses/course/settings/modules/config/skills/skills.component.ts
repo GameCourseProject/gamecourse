@@ -139,9 +139,7 @@ export class SkillsComponent implements OnInit {
         this.loading = false;
       }) )
       .subscribe(
-        res => {
-          this.getTiers();
-        },
+        res => this.getTiers(),
         error => ErrorService.set(error)
       )
   }
@@ -156,9 +154,7 @@ export class SkillsComponent implements OnInit {
         this.loading = false;
       }) )
       .subscribe(
-        res => {
-          this.getTiers();
-        },
+        res => this.getTiers(),
         error => ErrorService.set(error)
       )
   }
@@ -218,7 +214,7 @@ export class SkillsComponent implements OnInit {
     this.api.toggleItemParam(this.courseID, ApiHttpService.SKILLS, skillId, 'isActive')
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
-        res => {},
+        res => this.getSkills(),
         error => ErrorService.set(error)
       )
   }
@@ -242,8 +238,10 @@ export class SkillsComponent implements OnInit {
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
         res => {
-          this.getTiers();
-          if (oldSeq === 1 || newSeq === 1) this.getSkills();
+          if (type === 'tier') {
+            this.getTiers();
+            if (oldSeq === 1 || newSeq === 1) this.getSkills();
+          } else if (type === 'skill') this.getSkills();
         },
         error => ErrorService.set(error)
       )
@@ -359,7 +357,7 @@ export class SkillsComponent implements OnInit {
   }
 
   filterSkillsByTier(tier: string): Skill[] {
-    return this.skills.filter(skill => skill.tier === tier);
+    return this.skills.filter(skill => skill.tier === tier && skill.isActive);
   }
 
   initTextEditor() {
