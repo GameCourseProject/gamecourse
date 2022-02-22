@@ -353,8 +353,14 @@ export class SkillsComponent implements OnInit {
     }, 0);
   }
 
-  filterSkillsById(id: number): Skill[] {
-    return this.skills.filter(skill => skill.id !== id);
+  filterSkillsForDependencies(id: number, tier: string): Skill[] {
+    // Get tiers sequence order
+    const tiersSeq: {[tier: string]: number} = {};
+    this.tiers.forEach(tier => tiersSeq[tier.tier] = tier.seqId);
+
+    return this.skills
+      .filter(skill => skill.id !== id && tiersSeq[skill.tier] === tiersSeq[tier] - 1)
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   filterSkillsByTier(tier: string): Skill[] {
