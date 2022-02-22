@@ -32,7 +32,7 @@ import {BarChartComponent} from "./_components/charts/bar-chart/bar-chart.compon
 import {ProgressChartComponent} from "./_components/charts/progress-chart/progress-chart.component";
 import {RadarChartComponent} from "./_components/charts/radar-chart/radar-chart.component";
 import {InputRichTextComponent} from "./_components/inputs/rich-text/input-rich-text/input-rich-text.component";
-import {ImagePickerModalComponent} from "./_components/modals/image-picker-modal/image-picker-modal.component";
+import {FilePickerModalComponent} from "./_components/modals/file-picker-modal/file-picker-modal.component";
 import {SanitizeHTMLPipe} from "./_pipes/sanitize-html.pipe";
 
 
@@ -67,7 +67,7 @@ import {SanitizeHTMLPipe} from "./_pipes/sanitize-html.pipe";
     ProgressChartComponent,
     RadarChartComponent,
     InputRichTextComponent,
-    ImagePickerModalComponent,
+    FilePickerModalComponent,
     SanitizeHTMLPipe
   ],
   exports: [

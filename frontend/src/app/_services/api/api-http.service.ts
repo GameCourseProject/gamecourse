@@ -29,7 +29,7 @@ import {GeneralInput, ListingItems} from "../../_views/courses/course/settings/m
 import {Tier} from "../../_domain/skills/tier";
 import {SkillData, TierData} from "../../_views/courses/course/settings/modules/config/skills/skills.component";
 import {Skill} from "../../_domain/skills/skill";
-import {ContentItem} from "../../_components/modals/image-picker-modal/image-picker-modal.component";
+import {ContentItem} from "../../_components/modals/file-picker-modal/file-picker-modal.component";
 import {Credentials} from "../../_views/courses/course/settings/modules/config/googlesheets/googlesheets.component";
 
 @Injectable({
@@ -138,16 +138,16 @@ export class ApiHttpService {
   /*** ------------------ Course ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  public uploadImage(image: string | ArrayBuffer, folder: string, name: string): Observable<string> {
+  public uploadFile(file: string | ArrayBuffer, folder: string, name: string): Observable<string> {
     const data = {
-      image,
+      file,
       folder,
       name
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.CORE);
-      qs.push('request', 'uploadImage');
+      qs.push('request', 'uploadFile');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);

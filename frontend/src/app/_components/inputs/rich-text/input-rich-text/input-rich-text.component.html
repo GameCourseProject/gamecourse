@@ -2,10 +2,11 @@
   [id]="id"
   [ngClass]="classList"></div>
 
-<app-image-picker-modal
+<app-file-picker-modal
   [isModalOpen]="isPickingImage"
   [id]="'rick-text-image-picker'"
-  [whereToLook]="whereToLook"
+  [type]="'image/*, video/*'"
+  [courseFolder]="courseFolder"
   [whereToStore]="whereToStore"
   [positiveBtnText]="'Select'"
   (positiveBtnClicked)="addImage($event)"
@@ -13,4 +14,4 @@
   (closeBtnClicked)="isPickingImage = false"
   [actionInProgress]="isAddingImage"
   [innerClickEvents]="false">
-</app-image-picker-modal>
+</app-file-picker-modal>

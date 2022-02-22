@@ -7,15 +7,16 @@ import {finalize} from "rxjs/operators";
 import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
 
 @Component({
-  selector: 'app-image-picker-modal',
-  templateUrl: './image-picker-modal.component.html',
-  styleUrls: ['./image-picker-modal.component.scss']
+  selector: 'app-file-picker-modal',
+  templateUrl: './file-picker-modal.component.html',
+  styleUrls: ['./file-picker-modal.component.scss']
 })
-export class ImagePickerModalComponent implements OnInit {
+export class FilePickerModalComponent implements OnInit {
 
   @Input() id?: string;                                 // Modal id
-  @Input() whereToLook: string;                         // Folder path of where to look for images
-  @Input() whereToStore: string;                        // Folder path of where to store images
+  @Input() type: string;                                // File type to pick from
+  @Input() courseFolder: string;                        // Course data folder path (where to look for images)
+  @Input() whereToStore: string;                        // Folder path of where to store images (relative to course folder)
   @Input() classList?: string;                          // Classes to append
 
   @Input() isModalOpen: boolean;                        // Whether the modal is visible
@@ -29,10 +30,14 @@ export class ImagePickerModalComponent implements OnInit {
   @Output() positiveBtnClicked: EventEmitter<string> = new EventEmitter();
   @Output() negativeBtnClicked: EventEmitter<void> = new EventEmitter();
 
-  imageToUpload: File;
-  imageToUploadName: string;
+  readonly imageExtensions = ['.png', '.jpg', '.jpeg', '.gif'];
+  readonly videoExtensions = ['.mp4', '.mov', '.wmv', '.avi', '.avchd', '.webm', '.mpeg-2'];
+  readonly audioExtensions = ['.wav', '.wave', '.mid', '.midi'];
 
-  image: string | ArrayBuffer;
+  fileToUpload: File;
+  fileToUploadName: string;
+
+  file: string | ArrayBuffer;
 
   mode: 'upload' | 'browse' = 'upload';
 
@@ -53,18 +58,17 @@ export class ImagePickerModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.path = this.whereToLook;
+    this.path = this.courseFolder;
     this.getContents();
   }
 
   onFileSelected(files: FileList): void {
-    this.imageToUpload = files.item(0);
+    this.fileToUpload = files.item(0);
   }
 
   getContents() {
-    // FIXME: should allow for other folders apart from course_data
     this.loading = true;
-    const courseID = parseInt(this.whereToLook.split('/')[1].split('-')[0]);
+    const courseID = parseInt(this.courseFolder.split('/')[1].split('-')[0]);
     this.api.getCourseDataFolderContents(courseID)
       .pipe(finalize(() => this.loading = false))
       .subscribe(
@@ -74,20 +78,28 @@ export class ImagePickerModalComponent implements OnInit {
   }
 
   getFolderContents(folder: any, path: string): ContentItem[] {
-    path = path.removeWord(this.whereToLook);
+    path = path.removeWord(this.courseFolder);
     if (path[0] === '/') path = path.substr(1);
 
     if (path === '')
-      return this.filterFoldersOrImages(folder.hasOwnProperty('files') ? folder.files : folder);
+      return this.filterItems(folder.hasOwnProperty('files') ? folder.files : folder, this.type);
 
     const split = path.split('/');
     const f = folder.find(el => el.name === split[0]);
     return this.getFolderContents(f.files, split.length === 1 ? '' : split.slice(1).join('/'));
   }
 
-  filterFoldersOrImages(items: ContentItem[]): ContentItem[] {
-    return items.filter(item => item.filetype === ContentType.FOLDER || item.extension === '.png' || item.extension === '.jpg'
-    || item.extension === '.gif');
+  filterItems(items: ContentItem[], type: string): ContentItem[] {
+    if (type.containsWord('image'))
+      return items.filter(item => item.filetype === ContentType.FOLDER || this.imageExtensions.includes(item.extension.toLowerCase()))
+
+    if (type.containsWord('video'))
+      return items.filter(item => item.filetype === ContentType.FOLDER || this.videoExtensions.includes(item.extension.toLowerCase()))
+
+    if (type.containsWord('audio'))
+      return items.filter(item => item.filetype === ContentType.FOLDER || this.audioExtensions.includes(item.extension.toLowerCase()))
+
+    return [];
   }
 
   goInside(item: ContentItem) {
@@ -99,19 +111,20 @@ export class ImagePickerModalComponent implements OnInit {
   }
 
   goOutside() {
+    if (this.path === this.courseFolder) return;
     const split = this.path.split('/');
     this.path = split.slice(0, split.length - 1).join('/');
   }
 
   selectItem(item: ContentItem) {
-    this.image = this.path + '/' + item.name;
+    this.file = this.path + '/' + item.name;
   }
 
   async submit() {
-    if (this.imageToUpload) {
-      // Save image in server
-      await ImageManager.getBase64(this.imageToUpload).then(data => this.image = data);
-      this.api.uploadImage(this.image, this.whereToStore, this.imageToUploadName)
+    if (this.fileToUpload) {
+      // Save file in server
+      await ImageManager.getBase64(this.fileToUpload).then(data => this.file = data);
+      this.api.uploadFile(this.file, this.courseFolder + '/' + this.whereToStore, this.fileToUploadName)
         .subscribe(
           path => {
             this.positiveBtnClicked.emit(path);
@@ -121,14 +134,30 @@ export class ImagePickerModalComponent implements OnInit {
         )
 
     } else {
-      this.positiveBtnClicked.emit(this.image as string);
+      this.positiveBtnClicked.emit(this.file as string);
       this.closeBtnClicked.emit();
     }
   }
 
   isReadyToSubmit(): boolean {
-    return (exists(this.imageToUpload) && exists(this.imageToUploadName) && !this.imageToUploadName.isEmpty()) ||
-      exists(this.image);
+    return (exists(this.fileToUpload) && exists(this.fileToUploadName) && !this.fileToUploadName.isEmpty()) ||
+      exists(this.file);
+  }
+
+  getItemIcon(item: ContentItem): string {
+    if (item.filetype === ContentType.FOLDER)
+      return 'assets/icons/folder.svg';
+
+    if (this.imageExtensions.includes(item.extension.toLowerCase()))
+      return ApiEndpointsService.API_ENDPOINT + '/' + this.path + '/' + item.name;
+
+    if (this.videoExtensions.includes(item.extension.toLowerCase()))
+      return 'assets/icons/file-video.svg';
+
+    if (this.audioExtensions.includes(item.extension.toLowerCase()))
+      return 'assets/icons/file-audio.svg';
+
+    return 'assets/icons/file.svg';
   }
 
 }

@@ -28,8 +28,8 @@ export class InputRichTextComponent implements OnInit {
   @Input() container?: string;                // Container ID
 
   // Image upload & search
-  @Input() whereToLook: string;               // Folder path of where to look for images
-  @Input() whereToStore: string;              // Folder path of where to store images
+  @Input() courseFolder: string;              // Course data folder path (where to look for images)
+  @Input() whereToStore: string;              // Folder path of where to store images (relative to course folder)
 
   @Output() valueChange = new EventEmitter<string>();
 
@@ -98,8 +98,8 @@ export class InputRichTextComponent implements OnInit {
     });
   }
 
-  addImage(image: string) {
-    this.imageManager.set(ApiEndpointsService.API_ENDPOINT + '/' + image);
+  addImage(imagePath: string) {
+    this.imageManager.set(ApiEndpointsService.API_ENDPOINT + '/' + imagePath);
     const url = this.imageManager.get('URL');
     this.quill.insertEmbed(this.quill.getSelection, 'image', url);
   }

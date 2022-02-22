@@ -1,14 +1,14 @@
 <app-modal
   [isModalOpen]="isModalOpen"
   [id]="id"
-  [classList]="'image-picker ' + classList"
-  [templateRef]="imagePickerModal"
+  [classList]="'file-picker ' + classList"
+  [templateRef]="filePickerModal"
   (closeBtnClicked)="isModalOpen = false; closeBtnClicked.emit()"
   [actionInProgress]="actionInProgress"
   [innerClickEvents]="innerClickEvents">
 </app-modal>
 
-<ng-template #imagePickerModal>
+<ng-template #filePickerModal>
   <div class="wrapper">
     <div class="tab">
       <button class="tablinks" [ngClass]="{'active': mode === 'upload'}" (click)="mode = 'upload'">Upload file</button>
@@ -19,13 +19,13 @@
       <ng-container *ngIf="mode === 'upload'">
         <div class="full" style="margin-top: 20px">
           <app-input-file
-            [id]="'input-image'"
-            [accept]="'image/*'"
+            [id]="'input-file'"
+            [accept]="type"
             (valueChange)="onFileSelected($event)">
           </app-input-file>
 
           <div class="name full">
-            <input type="text" id="name" placeholder="Image name *" class="form__input" required [(ngModel)]="imageToUploadName">
+            <input type="text" id="name" placeholder="File name *" class="form__input" required [(ngModel)]="fileToUploadName">
               <label for="name" class="form__label">Name</label>
           </div>
         </div>
@@ -43,8 +43,8 @@
           <ng-container *ngFor="let item of getFolderContents(contents, path)">
             <div class="square" [ngClass]="{'folder': item.filetype === ContentType.FOLDER, 'image': item.filetype === ContentType.FILE}"
               (click)="goInside(item)">
-              <img style="width: 60px; height: 60px;" [ngClass]="{'selected': path + '/' + item.name === this.image}"
-                   [src]="(item.filetype === ContentType.FOLDER ? 'assets/icons/folder.svg' : ApiEndpointsService.API_ENDPOINT + '/' + path + '/' + item.name)">
+              <img style="width: 60px; height: 60px;" [ngClass]="{'selected': path + '/' + item.name === this.file}"
+                   [src]="getItemIcon(item)">
               <span>{{item.name}}</span>
             </div>
           </ng-container>
