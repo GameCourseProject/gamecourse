@@ -18,7 +18,12 @@ API::registerFunction($MODULE, 'uploadFile', function () {
 
     $file = base64_decode(preg_replace('#^data:\w+/\w+;base64,#i', '', API::getValue('file')));
     $folder = API::getValue('folder');
-    $path = $folder . "/" . API::getValue('name') . ".png";
+
+    $matches = null;
+    preg_match('#^data:\w+/(\w+);base64,#i', API::getValue('file'), $matches);
+    $extension = $matches[1];
+
+    $path = $folder . "/" . API::getValue('name') . "." . $extension;
 
     if (!is_dir($folder))
         mkdir($folder, 0777, true);

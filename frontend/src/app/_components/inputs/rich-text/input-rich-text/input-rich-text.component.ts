@@ -99,10 +99,10 @@ export class InputRichTextComponent implements OnInit {
     });
   }
 
-  addImage(imagePath: string) {
-    this.imageManager.set(ApiEndpointsService.API_ENDPOINT + '/' + imagePath);
+  addFile(file: {path: string, type: 'image' | 'video' | 'audio'}) {
+    this.imageManager.set(ApiEndpointsService.API_ENDPOINT + '/' + file.path);
     const url = this.imageManager.get('URL');
-    this.quill.insertEmbed(this.quill.getSelection().index, 'image', url);
+    this.quill.insertEmbed(this.quill.getSelection(true).index, file.type, url); // FIXME: embed audio
   }
 
 }

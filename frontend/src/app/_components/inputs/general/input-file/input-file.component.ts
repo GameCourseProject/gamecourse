@@ -60,20 +60,6 @@ export class InputFileComponent implements OnInit, AfterViewInit, OnChanges {
 
   onFilesSelected(event) {
     this.files = event.target.files;
-
-    // Check if file format correct
-    if (this.accept.includes('image')) {
-      for (let i = 0; i < this.files.length; i++) {
-        const file = this.files.item(i);
-
-        if (!file.type.includes('image')) {
-          // this.dialogManagerService.createAlert("error", 'You can only upload images.'); TODO: error dialog
-          this.files = null;
-          return;
-        }
-      }
-    }
-
     this.valueChange.emit(this.files);
   }
 

@@ -161,9 +161,9 @@ class Utils {
         $courseDataFolder = Course::getCourseDataFolder($courseId);
         $courseDataFolderPath = API_URL . "/" . $courseDataFolder . "/";
 
-        if ($to === "absolute") return $courseDataFolderPath . $url;
-        elseif ($to === "relative") return str_replace($courseDataFolderPath, "", $url);
-        return "";
+        if ($to === "absolute" && strpos($url, 'http') !== 0) return $courseDataFolderPath . $url;
+        elseif ($to === "relative" && strpos($url, API_URL) === 0) return str_replace($courseDataFolderPath, "", $url);
+        return $url;
     }
 }
 ?>

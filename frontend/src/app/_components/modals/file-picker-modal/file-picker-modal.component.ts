@@ -27,17 +27,18 @@ export class FilePickerModalComponent implements OnInit {
   @Input() negativeBtnText: string = 'Cancel';          // Negative btn text
 
   @Output() closeBtnClicked: EventEmitter<void> = new EventEmitter();
-  @Output() positiveBtnClicked: EventEmitter<string> = new EventEmitter();
+  @Output() positiveBtnClicked: EventEmitter<{path: string, type: 'image' | 'video' | 'audio'}> = new EventEmitter();
   @Output() negativeBtnClicked: EventEmitter<void> = new EventEmitter();
 
   readonly imageExtensions = ['.png', '.jpg', '.jpeg', '.gif'];
   readonly videoExtensions = ['.mp4', '.mov', '.wmv', '.avi', '.avchd', '.webm', '.mpeg-2'];
-  readonly audioExtensions = ['.wav', '.wave', '.mid', '.midi'];
+  readonly audioExtensions = ['.mp3', '.mpeg', '.wav', '.wave', '.mid', '.midi'];
 
   fileToUpload: File;
   fileToUploadName: string;
 
   file: string | ArrayBuffer;
+  fileType: 'image' | 'video' | 'audio';
 
   mode: 'upload' | 'browse' = 'upload';
 
@@ -90,16 +91,17 @@ export class FilePickerModalComponent implements OnInit {
   }
 
   filterItems(items: ContentItem[], type: string): ContentItem[] {
+    let files = [];
     if (type.containsWord('image'))
-      return items.filter(item => item.filetype === ContentType.FOLDER || this.imageExtensions.includes(item.extension.toLowerCase()))
+      files = files.concat(items.filter(item => item.filetype === ContentType.FILE && this.imageExtensions.includes(item.extension.toLowerCase())));
 
     if (type.containsWord('video'))
-      return items.filter(item => item.filetype === ContentType.FOLDER || this.videoExtensions.includes(item.extension.toLowerCase()))
+      files = files.concat(items.filter(item => item.filetype === ContentType.FILE &&  this.videoExtensions.includes(item.extension.toLowerCase())));
 
     if (type.containsWord('audio'))
-      return items.filter(item => item.filetype === ContentType.FOLDER || this.audioExtensions.includes(item.extension.toLowerCase()))
+      files = files.concat(items.filter(item => item.filetype === ContentType.FILE &&  this.audioExtensions.includes(item.extension.toLowerCase())));
 
-    return [];
+    return files.concat(items.filter(item => item.filetype === ContentType.FOLDER));
   }
 
   goInside(item: ContentItem) {
@@ -118,6 +120,8 @@ export class FilePickerModalComponent implements OnInit {
 
   selectItem(item: ContentItem) {
     this.file = this.path + '/' + item.name;
+    this.fileType = this.imageExtensions.includes(item.extension.toLowerCase()) ? 'image' :
+      this.videoExtensions.includes(item.extension.toLowerCase()) ? 'video' : 'audio';
   }
 
   async submit() {
@@ -127,14 +131,14 @@ export class FilePickerModalComponent implements OnInit {
       this.api.uploadFile(this.file, this.courseFolder + '/' + this.whereToStore, this.fileToUploadName)
         .subscribe(
           path => {
-            this.positiveBtnClicked.emit(path);
+            this.positiveBtnClicked.emit({path, type: this.fileToUpload.type as 'image' | 'video' | 'audio'});
             this.closeBtnClicked.emit();
           },
           error => ErrorService.set(error)
         )
 
     } else {
-      this.positiveBtnClicked.emit(this.file as string);
+      this.positiveBtnClicked.emit({path: this.file as string, type: this.fileType});
       this.closeBtnClicked.emit();
     }
   }

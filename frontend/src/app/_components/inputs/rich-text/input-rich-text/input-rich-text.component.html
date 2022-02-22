@@ -5,11 +5,11 @@
 <app-file-picker-modal
   [isModalOpen]="isPickingImage"
   [id]="'rick-text-image-picker'"
-  [type]="'image/*, video/*'"
+  [type]="'image/*, video/*, audio/*'"
   [courseFolder]="courseFolder"
   [whereToStore]="whereToStore"
   [positiveBtnText]="'Select'"
-  (positiveBtnClicked)="addImage($event)"
+  (positiveBtnClicked)="addFile($event)"
   (negativeBtnClicked)="isPickingImage = false"
   (closeBtnClicked)="isPickingImage = false"
   [actionInProgress]="isAddingImage"
