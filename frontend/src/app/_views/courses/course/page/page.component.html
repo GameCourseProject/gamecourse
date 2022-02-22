@@ -10,7 +10,7 @@
     <span class="ng-binding">Skill - {{skill.name}}</span>
   </div>
 
-  <div [innerHTML]="skill.description"></div>
+  <div [innerHTML]="skill.description | sanitizeHTML"></div>
 </div>
 
 <!-- Loader -->

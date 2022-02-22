@@ -33,6 +33,7 @@ import {ProgressChartComponent} from "./_components/charts/progress-chart/progre
 import {RadarChartComponent} from "./_components/charts/radar-chart/radar-chart.component";
 import {InputRichTextComponent} from "./_components/inputs/rich-text/input-rich-text/input-rich-text.component";
 import {ImagePickerModalComponent} from "./_components/modals/image-picker-modal/image-picker-modal.component";
+import {SanitizeHTMLPipe} from "./_pipes/sanitize-html.pipe";
 
 
 @NgModule({
@@ -66,7 +67,8 @@ import {ImagePickerModalComponent} from "./_components/modals/image-picker-modal
     ProgressChartComponent,
     RadarChartComponent,
     InputRichTextComponent,
-    ImagePickerModalComponent
+    ImagePickerModalComponent,
+    SanitizeHTMLPipe
   ],
   exports: [
     NavbarComponent,
@@ -85,7 +87,8 @@ import {ImagePickerModalComponent} from "./_components/modals/image-picker-modal
     TableComponent,
     AsPipe,
     ClickedOutsideDirective,
-    InputRichTextComponent
+    InputRichTextComponent,
+    SanitizeHTMLPipe
   ],
     imports: [
         CommonModule,
