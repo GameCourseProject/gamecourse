@@ -72,8 +72,7 @@ export class NavbarComponent implements OnInit {
             this.initNavigations();
           }
         });
-      },
-        error => ErrorService.set(error))
+      })
   }
 
 
