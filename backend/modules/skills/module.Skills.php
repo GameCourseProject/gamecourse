@@ -1,7 +1,6 @@
 <?php
 namespace Modules\Skills;
 
-use DOMDocument;
 use GameCourse\API;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
@@ -1272,6 +1271,7 @@ class Skills extends Module
             "tier" => $skill['tier'],
             "color" => $skill['color'],
             "seqId" => $numSkills + 1,
+            "page" => $skill['description']
         ];
         Core::$systemDB->insert(self::TABLE, $skillData);
         $skillId = Core::$systemDB->getLastId();
@@ -1325,96 +1325,19 @@ class Skills extends Module
 
     public function editSkill($skill, $courseId)
     {
-
         $treeId = Core::$systemDB->select(self::TABLE_TREES, ["course" => $courseId], "id");
-        $originalSkill = Core::$systemDB->selectMultiple(self::TABLE, ["treeId" => $treeId, 'id' => $skill['id']], "*", "name");
-        if(empty($originalSkill))
-            return;
-        else
-            $originalSkill = $originalSkill[0];
 
         $skillData = [
             "name" => $skill['name'],
             "treeId" => $treeId,
             "tier" => $skill['tier'],
-            "color" => $skill['color']
+            "color" => $skill['color'],
+            "page" => $skill['description']
         ];
-
-        // update description
-        $folder = Course::getCourseDataFolder($courseId);
-        $path = $folder . '/' . self::ID . '/' . str_replace(' ', '', $skill['name']); //ex: course_data/1-PCM/skills/Director
-        $descriptionPage = @file_get_contents($path . '.html');
-        if(!empty($skill['description'])){
-            if ($descriptionPage === FALSE) {
-
-                // update image folder if exists
-                $oldDir = $folder . '/' . self::ID . '/' . str_replace(' ', '', $originalSkill['name']);
-                if (file_exists($oldDir)) {
-                    if (!file_exists($path)) {
-                        // if there are no new images simply rename old folder
-                        rename($oldDir, $path);
-                    } else {
-                        // if we have new and old images, copy each image from old folder to the new one
-                        if ($dh = opendir($oldDir)) {
-                            // ignore hidden files and directories
-                            $ignore = array('cgi-bin', '.', '..', '._');
-                            while (($file = readdir($dh)) !== false) {
-                                if (!in_array($file, $ignore) and substr($file, 0, 1) != '.') {
-                                    copy($oldDir . '/' . $file, $path . '/' . $file);
-                                }
-                            }
-                            closedir($dh);
-                            //rmdir($oldDir);
-                        }
-                    }
-                    //replace image source links in the html file
-                    $htmlDom = new DOMDocument;
-                    $htmlDom->preserveWhiteSpace = false;
-                    $htmlDom->loadHTML($skill['description']);
-                    $this->insertHeadHtml($htmlDom, $skill['name']);
-                    $htmlDom->formatOutput = true;
-                    $imageTags = $htmlDom->getElementsByTagName('img');
-                    foreach ($imageTags as $imageTag) {
-                        //Get the src attribute of the image.
-                        $imgSrc = $imageTag->getAttribute('src');
-                        $exploded = explode("/", $imgSrc);
-                        $imageName = end($exploded);
-                        $imageTag->setAttribute('src', "../gamecourse/" . $path . '/' . $imageName);
-                    }
-                    $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
-                } else {
-                    $htmlDom = new DOMDocument;
-
-                    $htmlDom->preserveWhiteSpace = false;
-                    $htmlDom->loadHTML($skill['description']);
-
-                    $this->insertHeadHtml($htmlDom, $skill['name']);
-                    $htmlDom->formatOutput = true;
-                    $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
-                }
-            } else {
-                $htmlDom = new DOMDocument;
-                $htmlDom->preserveWhiteSpace = false;
-                $htmlDom->loadHTML($skill['description']);
-
-                $this->insertHeadHtml($htmlDom, $skill['name']);
-                $htmlDom->formatOutput = true;
-                $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
-            }
-        }
-        file_put_contents($path . '.html', $skill['description']);
-        $descriptionPage = @file_get_contents($path . '.html');
-
-        $start = strpos($descriptionPage, '<body>') + 6;
-        $end = stripos($descriptionPage, '</body>');
-        $descriptionPage = substr($descriptionPage, $start, $end - $start);
-
-        $skillData['page'] = htmlspecialchars(utf8_encode($descriptionPage));
-
-
         Core::$systemDB->update(self::TABLE, $skillData, ["id" => $skill["id"]]);
-        $skillId = $originalSkill["id"];
+        $skillId = $skill["id"];
 
+        // Update dependencies
         $dependencyIds = Core::$systemDB->selectMultiple(self::TABLE_SUPER_SKILLS, ["superSkillId" => $skillId], "id");
         if ($skill["dependencies"] != "") {
             $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
@@ -1506,7 +1429,8 @@ class Skills extends Module
                     }
                 }
             }
-        } else if (!empty($dependencyIds) and $skill["dependencies"] == "") {
+
+        } else if (!empty($dependencyIds)) {
             //delete dependencies
             Core::$systemDB->delete(self::TABLE_SUPER_SKILLS, ["superSkillId" => $skillId]);
         }
@@ -1672,26 +1596,6 @@ class Skills extends Module
         $description = str_replace("\"" . str_replace(' ', '',  $skill['name']), "\"" . $folder . "/" . self::ID . "/" . str_replace(' ', '', $skill['name']), $description);
         //$page = preg_replace( "/\r|\n/", "", $page );
         return $description;
-    }
-
-    public function createFolderForSkillResources($skill, $courseId)
-    {
-        $courseFolder = Course::getCourseDataFolder($courseId);
-        $hasFolder = is_dir($courseFolder . "/" . self::ID . "/" . str_replace(' ', '',  $skill));
-        if (!$hasFolder) {
-            mkdir($courseFolder . "/" . self::ID . "/" . str_replace(' ', '',  $skill));
-        }
-    }
-
-    public function insertHeadHtml(&$htmlDom, $skillName)
-    {
-        $htmlTag = $htmlDom->getElementsByTagName('html')->item(0);
-        $bodyTag = $htmlDom->getElementsByTagName('body')->item(0);
-
-        $headNode = $htmlDom->createElement("head");
-        $titleNode = $htmlDom->createElement("title", "Skill Tree - " . $skillName);
-        $headNode->appendChild($titleNode);
-        $htmlTag->insertBefore($headNode, $bodyTag);
     }
 
     public function transformStringToList($skillDependencyString): array

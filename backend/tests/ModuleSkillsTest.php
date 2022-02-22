@@ -84,23 +84,6 @@ class ModuleSkillsTest extends TestCase
         );
     }
 
-    public function createFolderForSkillResourcesSuccessProvider(){
-        return array(
-            array("ReTrailer", "ReTrailer"),                    //standard skill name
-            array(" Name With Spaces ", "NameWithSpaces"),      //skill name with spaces
-            array("Re-edição", "Re-edição")                     //skill name with accented characters
-        );
-    }
-
-    public function invalidCreateFolderForSkillResourcesProvider(){
-        return array(
-            array("ReTrailer", "ReTrailer"),                    //standard skill names
-            array("NameWithSpaces", " Name With Spaces "),      //skill name with spaces
-            array("ReTrailer", "retrailer"),                    //case sensitive names
-            array("Re-edição", "Re-edição")                     //skill name with accented characters
-        );
-    }
-
     public function invalidImportFileProvider(){
         return array(
             array(""),                                               //empty file
@@ -1105,52 +1088,6 @@ class ModuleSkillsTest extends TestCase
         );
 
         $this->assertEquals($expectedSkills, $skills);
-    }
-
-    /**
-     * @dataProvider createFolderForSkillResourcesSuccessProvider
-     */
-    public function testCreateFolderForSkillResourcesSuccess($skillName, $dir){
-
-        //Given
-        $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1]);
-        $folder = COURSE_DATA_FOLDER . '/' . $courseId . '-' . "Multimedia Content Production";
-        $skillsFolder = $folder . "/" . Skills::ID;
-        mkdir($folder);
-        mkdir($skillsFolder);
-
-        //When
-        $this->skills->createFolderForSkillResources($skillName, $courseId);
-
-        //Then
-        $this->assertDirectoryExists($skillsFolder . "/" . $dir);
-        rmdir($skillsFolder . "/" . $dir);
-        rmdir($skillsFolder);
-        rmdir($folder);
-
-    }
-
-    /**
-     * @dataProvider invalidCreateFolderForSkillResourcesProvider
-     */
-    public function testCreateFolderForSkillResourcesDirAlreadyExists($originalSkill, $repeatedSkill){
-        
-        //Given
-        $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1]);
-        $folder = COURSE_DATA_FOLDER . '/' . $courseId . '-' . "Multimedia Content Production";
-        $skillsFolder = $folder . "/" . Skills::ID;
-        mkdir($folder);
-        mkdir($skillsFolder);
-        mkdir($skillsFolder . "/" . $originalSkill);
-
-        //When
-        $this->skills->createFolderForSkillResources($repeatedSkill, $courseId);
-
-        //Then
-        $this->assertDirectoryExists($skillsFolder . "/" . $originalSkill);
-        rmdir($skillsFolder . "/" . $originalSkill);
-        rmdir($skillsFolder);
-        rmdir($folder);
     }
 
     /**
