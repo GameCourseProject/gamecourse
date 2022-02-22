@@ -7,22 +7,22 @@ use GameCourse\API;
 $MODULE = 'core';
 
 /**
- * Upload image to server.
+ * Upload file to server.
  *
- * @param $image
+ * @param $file
  * @param string $folder
  * @param string $name
  */
-API::registerFunction($MODULE, 'uploadImage', function () {
-    API::requireValues('image', 'folder', 'name');
+API::registerFunction($MODULE, 'uploadFile', function () {
+    API::requireValues('file', 'folder', 'name');
 
-    $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('image')));
+    $file = base64_decode(preg_replace('#^data:\w+/\w+;base64,#i', '', API::getValue('file')));
     $folder = API::getValue('folder');
     $path = $folder . "/" . API::getValue('name') . ".png";
 
     if (!is_dir($folder))
         mkdir($folder, 0777, true);
-    file_put_contents($path, $img);
+    file_put_contents($path, $file);
 
     API::response(['path' => $path]);
 });

@@ -12,6 +12,7 @@ use GameCourse\Views\Expression\ValueNode;
 use GameCourse\Views\Views;
 use Modules\AwardList\AwardList;
 use Modules\XP\XPLevels;
+use Utils;
 
 class Skills extends Module
 {
@@ -1271,8 +1272,13 @@ class Skills extends Module
             "tier" => $skill['tier'],
             "color" => $skill['color'],
             "seqId" => $numSkills + 1,
-            "page" => $skill['description']
         ];
+
+        // Swap absolute URLs to relative ones
+        $skillData['page'] = preg_replace_callback('/src="(.*?)"/', function ($matches) use ($courseId) {
+            return "src=\"" . Utils::transformURL($matches[1], "relative", $courseId) . "\"";
+        }, $skill['description']);
+
         Core::$systemDB->insert(self::TABLE, $skillData);
         $skillId = Core::$systemDB->getLastId();
 
@@ -1331,9 +1337,14 @@ class Skills extends Module
             "name" => $skill['name'],
             "treeId" => $treeId,
             "tier" => $skill['tier'],
-            "color" => $skill['color'],
-            "page" => $skill['description']
+            "color" => $skill['color']
         ];
+
+        // Swap absolute URLs to relative ones
+        $skillData['page'] = preg_replace_callback('/src="(.*?)"/', function ($matches) use ($courseId) {
+            return "src=\"" . Utils::transformURL($matches[1], "relative", $courseId) . "\"";
+        }, $skill['description']);
+
         Core::$systemDB->update(self::TABLE, $skillData, ["id" => $skill["id"]]);
         $skillId = $skill["id"];
 
@@ -1591,11 +1602,10 @@ class Skills extends Module
 
     public function getDescriptionFromPage($skill, $courseId)
     {
-        $folder = Course::getCourseDataFolder($courseId);
-        $description = htmlspecialchars_decode($skill['page']);
-        $description = str_replace("\"" . str_replace(' ', '',  $skill['name']), "\"" . $folder . "/" . self::ID . "/" . str_replace(' ', '', $skill['name']), $description);
-        //$page = preg_replace( "/\r|\n/", "", $page );
-        return $description;
+        // Swap relative URLs to absolute ones
+        return preg_replace_callback('/src="(.*?)"/', function ($matches) use ($courseId) {
+            return "src=\"" . Utils::transformURL($matches[1], "absolute", $courseId) . "\"";
+        }, $skill['page']);
     }
 
     public function transformStringToList($skillDependencyString): array

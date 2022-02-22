@@ -1,5 +1,6 @@
 <?php
 
+use GameCourse\Course;
 
 class Utils {
     static function discoverFiles($baseDir, ...$files) {
@@ -136,6 +137,33 @@ class Utils {
             $file = readdir($dir);
         } 
         closedir($dir); 
+    }
+
+    /**
+     * Transforms a given URL path:
+     *  - from absolute to relative
+     *  - from relative to absolute
+     *
+     * @example absolute -> relative
+     *  URL: http://localhost/gamecourse/backend/course_data/<courseFolder>/skills/<skillName>/<filename>
+     *  NEW URL: skills/<skillName>/<filename>
+     *
+     * @example relative -> absolute
+     *  URL: skills/<skillName>/<filename>
+     *  NEW URL: http://localhost/gamecourse/backend/course_data/<courseFolder>/skills/<skillName>/<filename>
+     *
+     * @param string $url
+     * @param string $to (absolute | relative)
+     * @return string
+     */
+    public static function transformURL(string $url, string $to, int $courseId): string
+    {
+        $courseDataFolder = Course::getCourseDataFolder($courseId);
+        $courseDataFolderPath = API_URL . "/" . $courseDataFolder . "/";
+
+        if ($to === "absolute") return $courseDataFolderPath . $url;
+        elseif ($to === "relative") return str_replace($courseDataFolderPath, "", $url);
+        return "";
     }
 }
 ?>
