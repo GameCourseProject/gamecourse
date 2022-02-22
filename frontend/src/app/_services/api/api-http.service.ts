@@ -30,6 +30,7 @@ import {Tier} from "../../_domain/skills/tier";
 import {SkillData, TierData} from "../../_views/courses/course/settings/modules/config/skills/skills.component";
 import {Skill} from "../../_domain/skills/skill";
 import {ContentItem} from "../../_components/modals/image-picker-modal/image-picker-modal.component";
+import {Credentials} from "../../_views/courses/course/settings/modules/config/googlesheets/googlesheets.component";
 
 @Injectable({
   providedIn: 'root'
@@ -865,24 +866,6 @@ export class ApiHttpService {
   }
 
 
-  // Fenix
-  public importFenixStudents(courseID: number, file: string | ArrayBuffer): Observable<number> {
-    const data = {
-      courseId: courseID,
-      file,
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.FENIX);
-      qs.push('request', 'importFenixStudents');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => parseInt(res['data']['nrStudents'])) );
-  }
-
-
   // ClassCheck
   public getClassCheckVars(courseID: number): Observable<{tsvCode: string, periodicityNumber: number, periodicityTime: string, isEnabled: boolean}> {
     const params = (qs: QueryStringParameters) => {
@@ -916,6 +899,78 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
+  }
+
+
+  // Fenix
+  public importFenixStudents(courseID: number, file: string | ArrayBuffer): Observable<number> {
+    const data = {
+      courseId: courseID,
+      file,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.FENIX);
+      qs.push('request', 'importFenixStudents');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => parseInt(res['data']['nrStudents'])) );
+  }
+
+
+  // GoogleSheets
+  public getGoogleSheetsVars(courseID: number): Observable<{spreadsheetId: string, sheetName: string[], ownerName: string[], periodicityNumber: number, periodicityTime: string, isEnabled: boolean}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.GOOGLESHEETS);
+      qs.push('request', 'getGoogleSheetsVars');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['googleSheetsVars']) );
+  }
+
+  public setGoogleSheetsVars(courseID: number, spreadsheetId: string, sheets: {name: string, owner: string}[],  periodicityNr: number, periodicityTime: string, isEnabled: boolean): Observable<void> {
+    const data = {
+      courseId: courseID,
+      googleSheets: {
+        spreadsheetId,
+        sheetName: sheets.map(sheet => sheet.name),
+        ownerName: sheets.map(sheet => sheet.owner),
+        periodicityNumber: periodicityNr,
+        periodicityTime,
+        isEnabled
+      }
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.GOOGLESHEETS);
+      qs.push('request', 'setGoogleSheetsVars');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public setGoogleSheetsCredentials(courseID: number, credentials: Credentials): Observable<string> {
+    const data = {
+      courseId: courseID,
+      credentials
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.GOOGLESHEETS);
+      qs.push('request', 'setGoogleSheetsCredentials');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['authUrl']) );
   }
 
 

@@ -19,6 +19,7 @@ import { ConfigComponent } from './settings/modules/config/config/config.compone
 import { FenixComponent } from './settings/modules/config/fenix/fenix.component';
 import { ClasscheckComponent } from './settings/modules/config/classcheck/classcheck.component';
 import { SkillsComponent } from './settings/modules/config/skills/skills.component';
+import { GooglesheetsComponent } from './settings/modules/config/googlesheets/googlesheets.component';
 
 
 @NgModule({
@@ -37,7 +38,8 @@ import { SkillsComponent } from './settings/modules/config/skills/skills.compone
     ConfigComponent,
     FenixComponent,
     ClasscheckComponent,
-    SkillsComponent
+    SkillsComponent,
+    GooglesheetsComponent
   ],
   imports: [
     CommonModule,

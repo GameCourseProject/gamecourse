@@ -14,7 +14,7 @@ class ClassCheckModule extends Module
 
     const TABLE_CONFIG = self::ID . '_config';
 
-    private $classCheck;
+    static $classCheck;
 
 
     /*** ----------------------------------------------- ***/
@@ -69,7 +69,7 @@ class ClassCheckModule extends Module
     public function setupData(int $courseId)
     {
         $this->addTables(self::ID, self::TABLE_CONFIG);
-        $this->classCheck = new ClassCheck($courseId);
+        self::$classCheck = new ClassCheck($courseId);
     }
 
     public function update_module($compatibleVersions)
@@ -195,7 +195,7 @@ class ClassCheckModule extends Module
         if (empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*"))) {
             Core::$systemDB->insert(self::TABLE_CONFIG, $arrayToDb);
         } else {
-            Core::$systemDB->update(self::TABLE_CONFIG, $arrayToDb, ["course" => $courseId] );
+            Core::$systemDB->update(self::TABLE_CONFIG, $arrayToDb, ["course" => $courseId]);
         }
 
         if (!$classCheck['isEnabled']) { // disable classcheck
@@ -214,7 +214,7 @@ class ClassCheckModule extends Module
         $classCheckVars = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
         if ($classCheckVars){
             $result = ClassCheck::checkConnection($classCheckVars["tsvCode"]);
-            if ($result){
+            if ($result) {
                 new CronJob("ClassCheck", $courseId, $periodicityNumber, $periodicityTime);
                 Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 1, "periodicityNumber" => $periodicityNumber, 'periodicityTime' => $periodicityTime], ["course" => $courseId]);
             } else {
@@ -224,12 +224,6 @@ class ClassCheckModule extends Module
         } else {
             API::error("Please set the class check variables");
         }
-    }
-
-    private function removeCronJob($courseId)
-    {
-        Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 0, "tsvCode" => "", "periodicityNumber" => 0, 'periodicityTime' => NULL], ["course" => $courseId]);
-        new CronJob( "ClassCheck", $courseId, null, null, true);
     }
 
     public function setCourseCronJobs($courseId, $active)
@@ -248,6 +242,12 @@ class ClassCheckModule extends Module
                 }
             }
         }
+    }
+
+    private function removeCronJob($courseId)
+    {
+        Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 0, "tsvCode" => "", "periodicityNumber" => 0, 'periodicityTime' => NULL], ["course" => $courseId]);
+        new CronJob( "ClassCheck", $courseId, null, null, true);
     }
 }
 

@@ -2,7 +2,6 @@
 
 namespace Modules\GoogleSheets;
 
-use GameCourse\Course;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 
@@ -16,7 +15,7 @@ class GoogleSheetsModule extends Module
 
     const TABLE_CONFIG = self::ID . '_config';
 
-    private $googleSheets;
+    static $googleSheets;
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -29,53 +28,53 @@ class GoogleSheetsModule extends Module
     public function initAPIEndpoints()
     {
         /**
-         * TODO: what does this function do?
+         * Gets googlesheet variables.
          *
          * @param int $courseId
-         * @param $periodicity (optional) // TODO: type?
-         * @param $disablePeriodicity (optional) // TODO: type?
-         * @param $credentials (optional) // TODO: type?
-         * @param $googleSheets (optional) // TODO: type?
          */
-        API::registerFunction(self::ID, 'courseGoogleSheets', function () {
+        API::registerFunction(self::ID, 'getGoogleSheetsVars', function () {
             API::requireCourseAdminPermission();
             API:: requireValues('courseId');
 
             $courseId = API::getValue('courseId');
-            $course = Course::getCourse($courseId, false);
+            $course = API::verifyCourseExists($courseId);
 
-            if (!$course->exists())
-                API::error('There is no course with id = ' . $courseId);
+            API::response(array('googleSheetsVars' => $this->getGoogleSheetsVars($courseId)));
+        });
 
-            if (API::hasKey('periodicity')) {
-                $periodicity = API::getValue('periodicity');
-                if ($this->setCronJob( $courseId, $periodicity)) API::response(["updatedData" => ["Google Sheets enabled"]]);
-                else API::error("Please select a periodicity");
-                return;
-            }
+        /**
+         * Sets googlesheet variables.
+         *
+         * @param int $courseId
+         * @param $googleSheets
+         */
+        API::registerFunction(self::ID, 'setGoogleSheetsVars', function () {
+            API::requireCourseAdminPermission();
+            API:: requireValues('courseId', 'googleSheets');
 
-            if (API::hasKey('disablePeriodicity')) {
-                if ($this->removeCronJob($courseId)) API::response(["updatedData" => ["Google Sheets disabled"]]);
-                else API::error("Please select a periodicity");
-                return;
-            }
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
 
-            if (API::hasKey('credentials')) {
-                $credentials = API::getValue('credentials');
-                if ($this->setGSCredentials($courseId, $credentials)) API::response(["authUrl" => $this->getAuthUrl($courseId)]);
-                else API::error("Please select a JSON file");
-                return;
-            }
+            $googleSheets = API::getValue('googleSheets');
+            $this->setGoogleSheetsVars($courseId, $googleSheets);
+        });
 
-            if (API::hasKey('googleSheets')) {
-                $googleSheets = API::getValue('googleSheets');
-                if ($this->setGoogleSheetsVars($courseId, $googleSheets)) API::response(["updatedData" => ["Variables for Google Sheets saved"]]);
-                else API::error("Please fill the mandatory fields");
-                return;
-            }
+        /**
+         * Sets googlesheet credentials.
+         *
+         * @param int $courseId
+         * @param $credentials
+         */
+        API::registerFunction(self::ID, 'setGoogleSheetsCredentials', function () {
+            API::requireCourseAdminPermission();
+            API:: requireValues('courseId', 'credentials');
 
-            $googleSheetsVars = $this->getGoogleSheetsVars($courseId);
-            API::response(array('googleSheetsVars' => $googleSheetsVars));
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $credentials = API::getValue('credentials');
+            $this->setGSCredentials($courseId, $credentials);
+            API::response(['authUrl' => $this->getAuthUrl($courseId)]);
         });
     }
 
@@ -88,7 +87,7 @@ class GoogleSheetsModule extends Module
     public function setupData(int $courseId)
     {
         $this->addTables(self::ID, self::TABLE_CONFIG);
-        $this->googleSheets = new GoogleSheets($courseId);
+        self::$googleSheets = new GoogleSheets($courseId);
     }
 
     public function update_module($compatibleVersions)
@@ -174,22 +173,19 @@ class GoogleSheetsModule extends Module
     /*** -------------------- Utils -------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    private function getAuthUrl($courseId)
-    {
-        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "authUrl");
-    }
-
-    private function getGoogleSheetsVars($courseId)
+    private function getGoogleSheetsVars($courseId): array
     {
         $googleSheetsDB = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
 
         if (empty($googleSheetsDB)) {
             $googleSheetsVars = [
-                "token" => "",
                 "spreadsheetId" => "",
-                "sheetName" => "",
+                "sheetName" => [],
+                "ownerName" => [],
                 "periodicityNumber" => 0,
-                "periodicityTime" => 'Minutes'];
+                "periodicityTime" => 'Minutes',
+                "isEnabled" => false
+            ];
         } else {
             if (!$googleSheetsDB["periodicityNumber"]) {
                 $googleSheetsDB["periodicityNumber"] = 0;
@@ -207,30 +203,30 @@ class GoogleSheetsModule extends Module
                     array_push($ownerNames, $processedName[1]);
             }
 
-            $professors = Core::$systemDB->selectMultiple("user_role u join role r on u.role=r.id join auth a on u.id=a.game_course_user_id join game_course_user g on u.id=g.id",
-                ["u.course" => $courseId, "r.name" => "Teacher"],
-                "a.username, g.name");
-
             $googleSheetsVars = [
                 "spreadsheetId" => $googleSheetsDB["spreadsheetId"],
                 "sheetName" => $sheetNames,
                 "ownerName" => $ownerNames,
-                "professors" => $professors,
                 "periodicityNumber" => intval($googleSheetsDB["periodicityNumber"]),
-                "periodicityTime" => $googleSheetsDB["periodicityTime"]
+                "periodicityTime" => $googleSheetsDB["periodicityTime"],
+                "isEnabled" => filter_var($googleSheetsDB["isEnabled"], FILTER_VALIDATE_BOOLEAN)
             ];
         }
 
         return  $googleSheetsVars;
     }
 
+    private function getAuthUrl($courseId)
+    {
+        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "authUrl");
+    }
+
     private function setGSCredentials($courseId, $gsCredentials)
     {
-        if(!$gsCredentials){
-            return false;
-        }
-        $credentialKey = key($gsCredentials[0]);
-        $credentials = $gsCredentials[0][$credentialKey];
+        if (!$gsCredentials) API::error('No credentials key found.');;
+
+        $credentialKey = key($gsCredentials);
+        $credentials = $gsCredentials[$credentialKey];
         $googleSheetCredentialsVars = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
 
         $uris = "";
@@ -242,27 +238,32 @@ class GoogleSheetsModule extends Module
         }
 
         $arrayToDb = [
-            "course" => $courseId, "key_" => $credentialKey, "clientId" => $credentials["client_id"], "projectId" => $credentials["project_id"],
-            "authUri" => $credentials["auth_uri"], "tokenUri" => $credentials["token_uri"], "authProvider" => $credentials["auth_provider_x509_cert_url"],
-            "clientSecret" => $credentials["client_secret"], "redirectUris" => $uris
+            "course" => $courseId,
+            "key_" => $credentialKey,
+            "clientId" => $credentials["client_id"],
+            "projectId" => $credentials["project_id"],
+            "authUri" => $credentials["auth_uri"],
+            "tokenUri" => $credentials["token_uri"],
+            "authProvider" => $credentials["auth_provider_x509_cert_url"],
+            "clientSecret" => $credentials["client_secret"],
+            "redirectUris" => $uris
         ];
 
         if (empty($credentials)) {
-            return false;
+            API::error('No credentials found.');
+
         } else {
             if (empty($googleSheetCredentialsVars)) {
                 Core::$systemDB->insert(self::TABLE_CONFIG, $arrayToDb);
             } else {
                 Core::$systemDB->update(self::TABLE_CONFIG, $arrayToDb, ["course" => $courseId]);
             }
-            $this->googleSheets->setCredentials();
-            return true;
+            self::$googleSheets->setCredentials();
         }
     }
 
     private function setGoogleSheetsVars($courseId, $googleSheets)
     {
-        $googleSheetsVars = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
         $names = "";
         $i = 0;
         foreach ($googleSheets["sheetName"] as $name) {
@@ -273,56 +274,51 @@ class GoogleSheetsModule extends Module
             }
             $i++;
         }
-
         if ($names != "" && substr($names, -1) == ";") {
             $names = substr($names, 0, -1);
         }
-        $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $names];
-        if (empty($googleSheets["spreadsheetId"])) {
-            return false;
+
+        $arrayToDb = [
+            "course" => $courseId,
+            "spreadsheetId" => $googleSheets["spreadsheetId"],
+            "sheetName" => $names,
+            "periodicityNumber" => $googleSheets['periodicityNumber'],
+            "periodicityTime" => $googleSheets['periodicityTime'],
+            "isEnabled" => $googleSheets['isEnabled']
+        ];
+
+        if (empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*"))) {
+            Core::$systemDB->insert(self::TABLE_CONFIG, $arrayToDb);
         } else {
-            if (empty($googleSheetsVars)) {
-                Core::$systemDB->insert(self::TABLE_CONFIG, $arrayToDb);
-            } else {
-                Core::$systemDB->update(self::TABLE_CONFIG, $arrayToDb, ["course" => $courseId]);
-            }
-            $this->googleSheets->saveTokenToDB();
-            return true;
+            Core::$systemDB->update(self::TABLE_CONFIG, $arrayToDb, ["course" => $courseId]);
+        }
+        self::$googleSheets->saveTokenToDB();
+
+        if (!$googleSheets['isEnabled']) { // disable googlesheets
+            $this->removeCronJob($courseId);
+
+        } else { // enable googlesheets
+            $this->setCronJob($courseId, $googleSheets['periodicityNumber'], $googleSheets['periodicityTime']);
         }
     }
 
-    private function setCronJob($courseId, $vars)
+    // periodicity time: Minutes | Hours | Days
+    private function setCronJob(int $courseId, int $periodicityNumber, string $periodicityTime)
     {
-        if (!Core::$systemDB->select("course", ["id" => $courseId, "isActive" => true])) {
-            return array("result" => false, "errorMessage" => "Course must be active to enable Google Sheets");
-        }
-        if (empty($vars['number']) || empty($vars['time'])) {
-            return array("result" => false, "errorMessage" => "Select a periodicity");
-        } else {
-            $googleSheetsVars = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
-            if ($googleSheetsVars){
-                $result = GoogleSheets::checkConnection($googleSheetsVars["course"]);
-                if ($result) {
-                    new CronJob("GoogleSheets", $courseId, $vars['number'], $vars['time']['name']);
-                    Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 1, "periodicityNumber" => $vars['number'], 'periodicityTime' => $vars['time']['name']], ["course" => $courseId]);
-                    return array("result" => true);
-                } else {
-                    return array("result" => false, "errorMessage" => "Connection failed");
-                }
-            } else {
-                return array("result" => false, "errorMessage" => "Please set the class check variables");
-            }
-        }
-    }
+        API::verifyCourseIsActive($courseId);
 
-    private function removeCronJob($courseId)
-    {
-        if (self::TABLE_CONFIG) {
-            Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 0, "periodicityNumber" => 0, 'periodicityTime' => NULL], ["course" => $courseId]);
-            new CronJob("GoogleSheets", $courseId, null, null, true);
-            return array("result" => true);
+        $googleSheetsVars = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
+        if ($googleSheetsVars){
+            $result = GoogleSheets::checkConnection($googleSheetsVars["course"]);
+            if ($result) {
+                new CronJob("GoogleSheets", $courseId, $periodicityNumber, $periodicityTime);
+                Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 1, "periodicityNumber" => $periodicityNumber, 'periodicityTime' => $periodicityTime], ["course" => $courseId]);
+            } else {
+                API::error("Connection failed");
+            }
+
         } else {
-            return array("result" => false, "errorMessage" => "Could not find a table in DB for that " . "GoogleSheets" . " plugin");
+            API::error("Please set the googlesheets variables");
         }
     }
 
@@ -342,6 +338,12 @@ class GoogleSheetsModule extends Module
                 }
             }
         }
+    }
+
+    private function removeCronJob($courseId)
+    {
+        Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 0, "periodicityNumber" => 0, 'periodicityTime' => NULL], ["course" => $courseId]);
+        new CronJob("GoogleSheets", $courseId, null, null, true);
     }
 }
 

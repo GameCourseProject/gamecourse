@@ -15,7 +15,7 @@ class MoodleModule extends Module
 
     const TABLE_CONFIG = 'config_moodle';
 
-    private $moodle;
+    static $moodle;
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/

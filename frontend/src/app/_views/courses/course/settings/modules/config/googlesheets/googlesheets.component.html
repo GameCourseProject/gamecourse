@@ -1,0 +1,85 @@
+<div class="section auth">
+  <div class="divider">
+    <div class="title"><span>Authentication</span></div>
+  </div>
+
+  <div class="content">
+    <div class="row">
+      <app-input-file
+        [id]="'googlesheets-credentials'"
+        [accept]="'.json'"
+        [label]="'Credentials'"
+        [classList]="'config_input'"
+        (valueChange)="onFileSelected($event)">
+      </app-input-file>
+    </div>
+
+    <div class="action-buttons">
+      <button id="save-button1" class="button" [disabled]="!canAuthenticate" (click)="authenticate()">Authenticate</button>
+    </div>
+  </div>
+</div>
+
+<div class="section variables">
+  <div class="divider">
+    <div class="title"><span>GoogleSheets Variables</span></div>
+  </div>
+
+  <div class="content">
+    <div class="row" style="display: flex; justify-content: space-between">
+      <div class="on_off">
+        <span>Enabled</span>
+        <label class="switch"><input id="enabled" type="checkbox" [(ngModel)]="isEnabled" (ngModelChange)="hasUnsavedChanges = true"><span class="slider round"></span></label>
+      </div>
+
+      <div class="input-wrapper" style="width: 100%; margin-right: 60px; margin-left: 20px">
+        <span class="label">Spreadsheet ID</span>
+        <input type="text" id="spreadsheet-id" name="spreadsheet-id" class="input" [(ngModel)]="spreadsheetID" (ngModelChange)="hasUnsavedChanges = true">
+      </div>
+
+      <div class="input-wrapper" style="width: 100%;">
+        <span class="label">Periodicity</span>
+        <input type="number" min="0" max="59" id="periodicity-nr" name="periodicity-nr" class="input" [(ngModel)]="periodicity.nr" (ngModelChange)="hasUnsavedChanges = true">
+        <select id="periodicity-time" class="input" [(ngModel)]="periodicity.time" (ngModelChange)="hasUnsavedChanges = true">
+          <option [ngValue]="'Minutes'">Minutes</option>
+          <option [ngValue]="'Hours'">Hours</option>
+          <option [ngValue]="'Days'">Days</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Sheets -->
+    <div class="row" style="margin-top: 30px">
+      <p style="margin-bottom: 10px; font-weight: bold; font-size: 15px">Sheets</p>
+
+      <div id="sheets_list">
+        <div *ngFor="let sheet of sheets; let i = index" class="sheet">
+          <div class="input-wrapper">
+            <p class="label">Name</p>
+            <input type="text" id="sheet-name{{i}}" name="sheet-name{{i}}" class="input" [(ngModel)]="sheets[i].name" (ngModelChange)="hasUnsavedChanges = true">
+          </div>
+          <div class="input-wrapper" style="margin-left: 30px">
+            <p class="label">Owner</p>
+            <input type="text" id="sheet-owner{{i}}" name="sheet-owner{{i}}" class="input" [(ngModel)]="sheets[i].owner" (ngModelChange)="hasUnsavedChanges = true">
+          </div>
+          <img src="assets/icons/delete_icon.svg" (click)="removeSheet(sheet.name, sheet.owner)" style="height: 23px; width: 23px; margin-left: 20px; cursor: pointer" title="Remove" class="icon">
+        </div>
+      </div>
+
+      <button id="add-sheet" class="button" style="margin-top: 20px" (click)="addSheet()">Add sheet</button>
+    </div>
+
+    <div class="action-buttons">
+      <button id="save-button" class="button" [disabled]="!hasUnsavedChanges || !isReadyToSubmit()" (click)="saveGoogleSheets()">Save</button>
+    </div>
+  </div>
+
+  <div class="success_box">
+    <div id="action_completed" class="success_msg"></div>
+  </div>
+</div>
+
+<!-- Loader -->
+<div *ngIf="loading" id="page-loading">
+  <img src="assets/loader/loader.gif" alt="loader">
+</div>

@@ -61,6 +61,10 @@
       <ng-container *ngComponentOutlet="FenixConfig"></ng-container>
     </ng-container>
 
+    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.GOOGLESHEETS">
+      <ng-container *ngComponentOutlet="GoogleSheetsConfig"></ng-container>
+    </ng-container>
+
     <ng-container *ngIf="personalizedConfig === PersonalizedConfig.SKILLS">
       <ng-container *ngComponentOutlet="SkillsConfig"></ng-container>
     </ng-container>

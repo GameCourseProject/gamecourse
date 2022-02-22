@@ -13,6 +13,7 @@ import {DownloadManager} from "../../../../../../../_utils/download/download-man
 import {FenixComponent} from "../fenix/fenix.component";
 import {ClasscheckComponent} from "../classcheck/classcheck.component";
 import {SkillsComponent} from "../skills/skills.component";
+import {GooglesheetsComponent} from "../googlesheets/googlesheets.component";
 
 export interface GeneralInput {
   id: string,
@@ -106,6 +107,10 @@ export class ConfigComponent implements OnInit {
 
   get FenixConfig(): typeof FenixComponent {
     return FenixComponent;
+  }
+
+  get GoogleSheetsConfig(): typeof GooglesheetsComponent {
+    return GooglesheetsComponent;
   }
 
   get SkillsConfig(): typeof SkillsComponent {
