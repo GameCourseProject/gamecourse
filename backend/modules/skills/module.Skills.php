@@ -1603,9 +1603,9 @@ class Skills extends Module
     public function getDescriptionFromPage($skill, $courseId)
     {
         // Swap relative URLs to absolute ones
-        return preg_replace_callback('/src="(.*?)"/', function ($matches) use ($courseId) {
+        return htmlspecialchars_decode(preg_replace_callback('/src="(.*?)"/', function ($matches) use ($courseId) {
             return "src=\"" . Utils::transformURL($matches[1], "absolute", $courseId) . "\"";
-        }, $skill['page']);
+        }, $skill['page']));
     }
 
     public function transformStringToList($skillDependencyString): array

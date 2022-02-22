@@ -90,7 +90,6 @@ export class InputRichTextComponent implements OnInit {
     const container = $('#' + this.id)[0] as HTMLElement;
     this.quill = new Quill(container, this.options);
 
-
     if (exists(this.init) && !this.init.isEmpty())
       this.quill.clipboard.dangerouslyPasteHTML(this.init);
 
