@@ -96,7 +96,7 @@ def course_exists(course):
 	cnx = mysql.connector.connect(user=username, password=password,
 	host='localhost', database=database)
 	cursor = cnx.cursor(prepared=True)
-	
+
 	query = "SELECT isActive FROM course WHERE id = %s;"
 	args = (course,)
 
@@ -135,7 +135,7 @@ def check_dictionary(library, function):
 
 
 def get_targets(course, timestamp=None, all_targets=False):
-	"""	
+	"""
 	Returns targets for running rules (students)
 	"""
 
@@ -152,7 +152,7 @@ def get_targets(course, timestamp=None, all_targets=False):
 		cursor.execute(query, (course))
 		table = cursor.fetchall()
 		cnx.close()
-	
+
 	else:
 		if timestamp == None:
 			query = "SELECT user FROM participation LEFT JOIN user_role ON participation.user = user_role.id LEFT JOIN role ON user_role.role = role.id WHERE participation.course =%s AND role.name='Student';"
@@ -177,10 +177,10 @@ def get_targets(course, timestamp=None, all_targets=False):
 
 
 def delete_awards(course):
-	# -----------------------------------------------------------	
+	# -----------------------------------------------------------
 	# Deletes all awards of a given course
 	# -----------------------------------------------------------
-	
+
 	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
 	host='localhost', database=database)
@@ -196,10 +196,10 @@ def delete_awards(course):
 
 
 def count_awards(course):
-	# -----------------------------------------------------------	
+	# -----------------------------------------------------------
 	# Deletes all awards of a given course
 	# -----------------------------------------------------------
-	
+
 	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
 	host='localhost', database=database)
@@ -217,7 +217,7 @@ def count_awards(course):
 
 
 def calculate_xp(course, target):
-	# -----------------------------------------------------------   
+	# -----------------------------------------------------------
 	# Insert current XP values into user_xp table
 	# -----------------------------------------------------------
 
@@ -248,7 +248,7 @@ def calculate_xp(course, target):
 	cursor.execute(query, (course, "skill", target))
 	tree_xp = cursor.fetchall()
 
-	# if query returns empty set    
+	# if query returns empty set
 	if len(tree_xp) > 0:
 		if tree_xp[0][0] != None:
 			user_tree_xp = int(tree_xp[0][0])
@@ -311,11 +311,11 @@ def calculate_xp(course, target):
 
 	total_xp = total_badge_xp + total_skill_xp + total_other_xp
 
-	
+
 	query = "SELECT id, max(goal) from level where goal <= %s and course = %s group by id order by number desc limit 1;"
 	cursor.execute(query, (total_xp, course))
-	level_table = cursor.fetchall()	
-	
+	level_table = cursor.fetchall()
+
 	current_level = int(level_table[0][0])
 
 	query = "UPDATE user_xp set xp= %s, level=%s where course=%s and user=%s;"
@@ -327,20 +327,20 @@ def calculate_xp(course, target):
 
 
 def autogame_init(course):
-	# -----------------------------------------------------------	
+	# -----------------------------------------------------------
 	# Pulls gamerules related info for a given course
 	# -----------------------------------------------------------
-	
+
 	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
 	host='localhost', database=database)
 	cursor = cnx.cursor(prepared=True)
-	
+
 	query = "SELECT * FROM autogame where course = %s;"
 
 	cursor.execute(query, (course,))
 	table = cursor.fetchall()
-	
+
 	last_activity = None
 
 	if len(table) == 0:
@@ -356,7 +356,7 @@ def autogame_init(course):
 			cnx.close()
 			is_running = True
 			return last_activity, is_running
-		
+
 		last_activity = table[0][1]
 		query = "UPDATE autogame SET isRunning=%s WHERE course=%s;"
 
@@ -368,11 +368,11 @@ def autogame_init(course):
 
 
 def autogame_terminate(course, start_date, finish_date):
-	# -----------------------------------------------------------	
+	# -----------------------------------------------------------
 	# Finishes execution of gamerules, sets isRunning to False
 	# and notifies server to close the socket
 	# -----------------------------------------------------------
-	
+
 	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
 	host='localhost', database=database)
@@ -387,8 +387,8 @@ def autogame_terminate(course, start_date, finish_date):
 	cursor.execute(query, (True, 0))
 	table = cursor.fetchall()
 	cnx.close()
-	
-	
+
+
 	if len(table) == 0:
 		HOST = '127.0.0.1' # The server's hostname or IP address
 		PORT = 8004 # The port used by the server
@@ -405,7 +405,7 @@ def autogame_terminate(course, start_date, finish_date):
 
 			except socket.timeout as e:
 				print("\nError: Socket timeout, operation took longer than 3 minutes.")
-			
+
 			except KeyboardInterrupt:
 				print("\nInterrupt: You pressed CTRL+C!")
 				exit()
@@ -413,8 +413,8 @@ def autogame_terminate(course, start_date, finish_date):
 
 
 def clear_badge_progression(target):
-	# -----------------------------------------------------------	
-	# Clear all badge progression for a given user before  
+	# -----------------------------------------------------------
+	# Clear all badge progression for a given user before
 	# calculating new progression. Needs to be refresh everytime
 	# the rule system runs.
 	# -----------------------------------------------------------
@@ -433,8 +433,8 @@ def clear_badge_progression(target):
 
 
 def award_badge(target, badge, lvl, contributions=None, info=None):
-	# -----------------------------------------------------------	
-	# Writes and updates 'award' table with badge levels won by 
+	# -----------------------------------------------------------
+	# Writes and updates 'award' table with badge levels won by
 	# the user. Will retract if rules/participations have been
 	# changed.
 	# Is also responsible for creating indicators.
@@ -449,7 +449,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 	typeof = "badge"
 
 	achievement = {}
-		
+
 	if config.test_mode:
 		awards_table = "award_test"
 	else:
@@ -466,7 +466,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 	query = "SELECT number, badgeId, reward from badge_level left join badge on badge.id = badge_level.badgeId where badge.course = %s and badge.name = %s order by number;"
 	cursor.execute(query, (course, badge))
 	table_badge = cursor.fetchall()
-	
+
 	if not config.test_mode:
 		# update the badge_progression table with the current status
 		if contributions != None:
@@ -476,9 +476,9 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 				for log in contributions:
 					query = "INSERT into badge_progression (course, user, badgeId, participationId) values (%s,%s,%s,%s);"
 					cursor.execute(query, (course, target, badgeid, log.log_id))
-					cnx.commit()	
-		
-	
+					cnx.commit()
+
+
 	# Case 0: lvl is zero and there are no lines to be erased
 	# Simply return right away
 	if lvl == 0 and len(table) == 0:
@@ -508,7 +508,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 				cursor.execute(query, (target, course, description, "badge"))
 				table_id = cursor.fetchall()
 				award_id = table_id[0][0]
-				
+
 				if not config.test_mode:
 					for el in contributions:
 						participation_id = el.log_id
@@ -523,7 +523,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 					nr_contributions = ''
 
 				config.award_list.append([str(target), str(badge), str(level), nr_contributions])
-	
+
 	# Case 2: the rule/data sources have been updated, the 'award' table
 	# has badge levels attributed which are no longer valid. All levels
 	# no longer valid must be deleted
@@ -538,7 +538,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 			query = "DELETE FROM " + awards_table + " WHERE user = %s AND course = %s AND description = %s AND moduleInstance = %s AND type=%s;"
 			cursor.execute(query, (target, course, description, badge_id, typeof))
 			cnx.commit()
-	
+
 	# Case 3: there have been new participations, the new levels won
 	# by the user must be inserted into table 'award'
 	elif len(table) < lvl:
@@ -561,7 +561,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 				cursor.execute(query, (target, course, description, "badge"))
 				table_id = cursor.fetchall()
 				award_id = table_id[0][0]
-				
+
 				if not config.test_mode:
 					for el in contributions:
 						participation_id = el.log_id
@@ -569,16 +569,16 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 						cursor.execute(query, (award_id, participation_id))
 						cnx.commit()
 	cnx.close()
-	
+
 
 
 def award_skill(target, skill, rating, contributions=None, use_wildcard=False, wildcard_tier=None):
-	# -----------------------------------------------------------	
-	# Writes and updates 'award' table with skills completed by 
+	# -----------------------------------------------------------
+	# Writes and updates 'award' table with skills completed by
 	# the user. Will retract if rules/participations have been
 	# changed.
 	# -----------------------------------------------------------
-	
+
 	(username, password) = get_credentials()
 
 	course = config.course
@@ -602,7 +602,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 			table_tier = cursor.fetchall()
 			if len(table_tier) == 1:
 				tier_id = table_tier[0][0]
-			
+
 
 		query = "SELECT s.id, reward FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = %s and course = %s;"
 		cursor.execute(query, (skill, course))
@@ -640,7 +640,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 				cursor.execute(query, (award_id, tier_id))
 				cnx.commit()
 
-		
+
 		# If skill has already been awarded to used
 		# compare ratings given before and now
 		elif len(table) == 1:
@@ -649,7 +649,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 			if rating < 3:
 				query = "DELETE FROM award WHERE user = %s AND course = %s AND description = %s AND type=%s;"
 				cursor.execute(query, (target, course, skill, typeof))
-			
+
 			# If new rating is greater or equal to 3
 			# no changes to table award, so continue!
 			# There might be a change to the award_participation:
@@ -659,7 +659,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 
 				query = "UPDATE award_participation set participation=%s where award=%s;"
 				cursor.execute(query, (participation_id, award_id))
-			
+
 		else:
 			print("ERROR: More than one line for a skill found on the database.")
 
@@ -669,7 +669,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 
 
 def award_prize(target, reward_name, xp, contributions=None):
-	# -----------------------------------------------------------	
+	# -----------------------------------------------------------
 	# Writes 'award' table with reward that is not a badge or a
 	# skill. Will not retract effects, but will not award twice
 	# -----------------------------------------------------------
@@ -692,7 +692,7 @@ def award_prize(target, reward_name, xp, contributions=None):
 
 	cursor.execute(query, (target, course, reward_name, typeof))
 	table = cursor.fetchall()
-	
+
 	if len(table) == 0:
 		# simply award the prize
 		query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
@@ -710,7 +710,7 @@ def award_prize(target, reward_name, xp, contributions=None):
 
 
 def award_grade(target, item, contributions=None, extra=None):
-	# -----------------------------------------------------------	
+	# -----------------------------------------------------------
 	# Writes 'award' table with reward that is not a badge or a
 	# skill. Will not retract effects, but will not award twice
 	# -----------------------------------------------------------
@@ -721,7 +721,7 @@ def award_grade(target, item, contributions=None, extra=None):
 	cursor = cnx.cursor(prepared=True)
 
 	course = config.course
-	
+
 	if config.test_mode:
 		awards_table = "award_test"
 	else:
@@ -741,7 +741,7 @@ def award_grade(target, item, contributions=None, extra=None):
 	cursor.execute(query, (target, course, typeof, description))
 	table = cursor.fetchall()
 
-	
+
 	if item == "Presentation":
 		for line in contributions:
 			grade = int(line.rating)
@@ -755,7 +755,7 @@ def award_grade(target, item, contributions=None, extra=None):
 				query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s"
 				cursor.execute(query, (grade, course, target, typeof, description))
 				cnx.commit()
-		
+
 	elif item == "Quiz" and extra:
 		# add last quiz
 		if len(contributions) == 1:
@@ -782,13 +782,13 @@ def award_grade(target, item, contributions=None, extra=None):
 				cursor.execute(query, (target, course, description, typeof, grade, number))
 				cnx.commit()
 				#config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
-	
+
 
 	elif (item == "Quiz" and not extra) or item == "Lab":
 		for line in contributions:
 			if line.description == "Dry Run":
 				continue
-			
+
 			grade = int(line.rating)
 			nums = [int(s) for s in line.description.split() if s.isdigit()]
 			number = nums[0]
@@ -819,7 +819,7 @@ def award_grade(target, item, contributions=None, extra=None):
 	return
 
 def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ignore_case=None, extra=None):
-	# -----------------------------------------------------------	
+	# -----------------------------------------------------------
 	# Writes 'award' table with reward from a quiz.
 	# Will not retract effects, but will not award twice
 	# -----------------------------------------------------------
@@ -830,7 +830,7 @@ def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ign
 	cursor = cnx.cursor(prepared=True)
 
 	course = config.course
-	
+
 	if config.test_mode:
 		awards_table = "award_test"
 	else:
@@ -838,12 +838,12 @@ def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ign
 
 	description = "Quiz Grade"
 	typeof = "quiz"
-	
+
 
 	query = "SELECT moduleInstance, reward FROM " + awards_table + " where user = %s AND course = %s AND type=%s AND description = %s;"
 	cursor.execute(query, (target, course, typeof, description))
 	table = cursor.fetchall()
-		
+
 	if extra:
 		# add last quiz
 		if len(contributions) == 1:
@@ -870,13 +870,13 @@ def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ign
 				cursor.execute(query, (target, course, description, typeof, grade, number))
 				cnx.commit()
 				#config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
-	
+
 
 	else:
 		for line in contributions:
 			if ignore_case != None and ignore_case in line.description:
 				continue
-			
+
 			grade = (int(line.rating) / max_grade) * xp_per_quiz
 			nums = [int(s) for s in line.description.split() if s.isdigit()]
 			number = nums[0]
@@ -907,8 +907,8 @@ def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ign
 	return
 
 def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, forum=None):
-	# -----------------------------------------------------------	
-	# Writes 'award' table with reward that is a post 
+	# -----------------------------------------------------------
+	# Writes 'award' table with reward that is a post
 	# grade. Will not retract effects, but will not award twice
 	# -----------------------------------------------------------
 
@@ -953,7 +953,7 @@ def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, for
 				query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s;"
 				cursor.execute(query, (grade, course, target, typeof, description))
 				cnx.commit()
-		
+
 		else:
 			# if the line did not exist, add it
 			query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
@@ -965,7 +965,7 @@ def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, for
 
 
 def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_grade=1):
-	# -----------------------------------------------------------	
+	# -----------------------------------------------------------
 	# Writes 'award' table with reward from assigment grades.
 	# Will not retract effects, but will not award twice
 	# -----------------------------------------------------------
@@ -986,7 +986,7 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
 	cursor.execute(query, (target, course, typeof))
 	table = cursor.fetchall()
 
-	
+
 	for line in contributions:
 		grade = (int(line.rating) / max_grade) * xp_per_assignemnt
 		description = line.description
@@ -1005,7 +1005,7 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
 				query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s;"
 				cursor.execute(query, (grade, course, target, typeof, description))
 				cnx.commit()
-		
+
 		else:
 			# if the line did not exist, add it
 			query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
@@ -1083,7 +1083,7 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
 
                 # if isCount inserts all streak participations in the streak_progression.
                 if isCount and not isPeriodic:
-                
+
                     for log in contributions:
                         query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
                         cursor.execute(query, (course, target, streakid, log.log_id))
@@ -1116,7 +1116,6 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                         if dif > timedelta(hours=periodicity):
                             return
                     elif len(periodicityTime) == 4:   # days
-                        print("\nDentro do if Days")
                         dif = secondParticipationObj.date() - firstParticipationObj.date()
                         if dif > timedelta(days=periodicity):
                             return
@@ -1148,7 +1147,6 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                             firstParticipationObj = table_participations[i][1]  # YYYY-MM-DD HH:MM:SS
                             secondParticipationObj = table_participations[i+1][1]
 
-
                             # if it disrespects streak periodicity, then return
                             if len(periodicityTime) == 7:  # minutes
                                 dif = secondParticipationObj - firstParticipationObj
@@ -1156,9 +1154,11 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                                 if dif != timedelta(minutes=periodicity):
                                     return
                             elif len(periodicityTime) == 5:   # hours
-                                dif = secondParticipationObj - firstParticipationObj
+                                dif = secondParticipationObj.time().hour - firstParticipationObj.time().hour
+                                difDay = secondParticipationObj.date() - firstParticipationObj.date()
+                                #dif = secondParticipationObj - firstParticipationObj
                                 #if dif < timedelta(hours=periodicity) or dif > timedelta(hours=periodicity*2):
-                                if dif != timedelta(hours=periodicity):
+                                if difDay != timedelta(days=0) or dif != periodicity:
                                     return
                             elif len(periodicityTime) == 4:   # days
                                 dif = secondParticipationObj.date() - firstParticipationObj.date()
@@ -1191,38 +1191,39 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
     # table contains  user, course, description,  type, reward, date
     # table = filtered awards_table
     elif len(table) == 0:  # no streak has been awarded with this name for this user
+        isRepeatable = table_streak[0][5]
         streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
 
         # if streak is finished, award it
         if len(table_progressions) >= streak_count:
 
-            description = streak
+            if not isRepeatable:
+                description = streak
 
-            query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-            cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
-            cnx.commit()
-            cursor = cnx.cursor(prepared=True)
+                query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
+                cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
+                cnx.commit()
+                cursor = cnx.cursor(prepared=True)
 
-            # gets award_id
-            query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
-            cursor.execute(query, (target, course, description, typeof))
-            table_id = cursor.fetchall()
-            award_id = table_id[0][0]
+                # gets award_id
+                query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+                cursor.execute(query, (target, course, description, typeof))
+                table_id = cursor.fetchall()
+                award_id = table_id[0][0]
+            else:
+                totalAwards = len(table_progressions) // streak_count
 
-            #if not config.test_mode:
-            #    # inserts in award_participation
-            #    for el in contributions:
-			#	    query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
-			#	    cursor.execute(query, (award_id, el.log_id))
-            #        cnx.commit()
+                # inserts in award table the new streaks that have not been awarded
+                for diff in range(len(table), totalAwards):
+                    repeated_info = " (Repeated for the " + str(diff + 1) + ")"
+                    description = streak + repeated_info
 
-            #    if contributions != None:
-			#		nr_contributions = str(len(contributions))
-			#	else:
-			#		nr_contributions = ''
+                    query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
+                    cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
+                    cnx.commit()
+                    cursor = cnx.cursor(prepared=True)
 
-			#	config.award_list.append([str(target), str(streak), str(streak_reward), nr_contributions])
-            
+
 
     # if this streak has already been awarded, check if it is repeatable to award it again.
     elif len(table) > 0:
@@ -1230,21 +1231,35 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
         streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
 
         if isRepeatable and len(table_progressions) > streak_count:
-            mod = len(table_progressions) % streak_count
-            if (mod == 0):
-                totalAwards = len(table_progressions) / streak_count
 
-                # inserts in award table the new streaks that have not been awarded
-                for diff in range(len(table), totalAwards):
-                    repeated_info = " (Repeated for the " + str(diff + 1) + ")"
-                    description = badge + repeated_info
+            totalAwards = len(table_progressions) // streak_count
 
-                    query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-                    cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
-                    cnx.commit()
-                    cursor = cnx.cursor(prepared=True)
+            # inserts in award table the new streaks that have not been awarded
+            for diff in range(len(table), totalAwards):
+                repeated_info = " (Repeated for the " + str(diff + 1) + ")"
+                description = streak + repeated_info
 
-                    # inserir na award_participation ?
+                query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
+                cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
+                cnx.commit()
+                cursor = cnx.cursor(prepared=True)
+
+                # inserir na award_participation ?
+                if contributions != None:
+                    query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+                    cursor.execute(query, (target, course, description, typeof))
+                    table_id = cursor.fetchall()
+                    award_id = table_id[0][0]
+
+                    if not config.test_mode:
+                        for el in contributions:
+                            participation_id = el.log_id
+                            query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                            cursor.execute(query, (award_id, participation_id))
+                            cnx.commit()
+
+
+
 
     cnx.commit()
     cnx.close()
@@ -1253,7 +1268,7 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
 
 
 def get_campus(target):
-	# -----------------------------------------------------------	
+	# -----------------------------------------------------------
 	# Returns the campus of a target user
 	# -----------------------------------------------------------
 
@@ -1268,7 +1283,7 @@ def get_campus(target):
 	cursor.execute(query, (course, target))
 	table = cursor.fetchall()
 	cnx.close()
-	
+
 	if len(table) == 1:
 		major = table[0][0]
 		if major in config.majors_alameda:
@@ -1336,10 +1351,10 @@ def call_gamecourse(course, library, function, args):
 						data = s.recv(1024)
 						datad = data.decode()
 						collection += datad
-					
+
 					if not data:
 						all_logs = collection.split("\n")[:-1]
-						
+
 						# create loglines from each el in list
 						participations = []
 						for el in all_logs:
@@ -1357,10 +1372,10 @@ def call_gamecourse(course, library, function, args):
 							ll_date = log["date"]
 							ll_rating = None if log["rating"] is None else int(log["rating"])
 							ll_evaluator = None if log["evaluator"] is None else int(log["evaluator"])
-							
+
 							logline = LogLine(ll_id,ll_user,ll_course,ll_desc,ll_type,ll_post,ll_date,ll_rating,ll_evaluator)
 							participations.append(logline)
-							
+
 						result = participations
 						break
 
@@ -1378,7 +1393,7 @@ def call_gamecourse(course, library, function, args):
 
 		except socket.timeout as e:
 			print("\nError: Socket timeout, operation took longer than 3 minutes.")
-		
+
 		except KeyboardInterrupt:
 			print("\nInterrupt: You pressed CTRL+C!")
 			exit()
