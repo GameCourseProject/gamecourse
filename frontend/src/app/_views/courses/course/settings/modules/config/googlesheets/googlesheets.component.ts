@@ -88,8 +88,8 @@ export class GooglesheetsComponent implements OnInit {
         url => {
           const width = 550;
           const height = 650;
-          const left = (screen.width - width) / 2;
-          const top = (screen.height - height) / 4;
+          const top = (window.screen.availHeight + (window.screen.availHeight / 2)) - (height / 2);
+          const left = (window.screen.availWidth + (window.screen.availWidth / 2)) - (width / 2);
           window.open(url, 'Authenticate', 'toolbar=no, location=no, directories=no, status=no, menubar=no, ' +
             'scrollbars=no, resizable=no, copyhistory=no, width=' + width + ', height=' + height + ', top=' + top + ', left=' + left);
         },
