@@ -65,6 +65,10 @@
       <ng-container *ngComponentOutlet="GoogleSheetsConfig"></ng-container>
     </ng-container>
 
+    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.MOODLE">
+      <ng-container *ngComponentOutlet="MoodleConfig"></ng-container>
+    </ng-container>
+
     <ng-container *ngIf="personalizedConfig === PersonalizedConfig.SKILLS">
       <ng-container *ngComponentOutlet="SkillsConfig"></ng-container>
     </ng-container>
