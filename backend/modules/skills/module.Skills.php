@@ -1350,17 +1350,27 @@ class Skills extends Module
 
         // Update dependencies
         $dependencyIds = Core::$systemDB->selectMultiple(self::TABLE_SUPER_SKILLS, ["superSkillId" => $skillId], "id");
-        if ($skill["dependencies"] != "") {
+        if ($skill['tier'] == 1 || ($skill["dependencies"] == "" && !empty($dependencyIds))) { // 1st tier or no dependencies
+            // Delete dependencies
+            Core::$systemDB->delete(self::TABLE_SUPER_SKILLS, ["superSkillId" => $skillId]);
+            foreach ($dependencyIds as $dependency) {
+                Core::$systemDB->delete(self::TABLE_DEPENDENCIES, ["dependencyId" => $dependency["id"]]);
+            }
+
+        } else if ($skill["dependencies"] != "") { // has dependencies
             $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
 
             $numOfDep = count($dependencyIds);
             $numOfNewDep =  count($pairDep);
 
             if ($numOfDep > $numOfNewDep) {
-                //delete original dependencies
+                // Delete original dependencies
                 Core::$systemDB->delete(self::TABLE_SUPER_SKILLS, ["superSkillId" => $skillId]);
+                foreach ($dependencyIds as $dependency) {
+                    Core::$systemDB->delete(self::TABLE_DEPENDENCIES, ["dependencyId" => $dependency["id"]]);
+                }
 
-                //create new ones
+                // Create new ones
                 foreach ($pairDep as $dep) {
                     Core::$systemDB->insert(self::TABLE_SUPER_SKILLS, ["superSkillId" => $skillId]);
                     $dependencyId = Core::$systemDB->getLastId();
@@ -1377,7 +1387,7 @@ class Skills extends Module
                                     "isTier" => true
                                 ]);
                             } else {
-                                echo "The skill " . $d . " does not exist";
+                                API::error("The skill " . $d . " does not exist");
                             }
                         } else {
                             Core::$systemDB->insert(self::TABLE_DEPENDENCIES, [
@@ -1387,6 +1397,7 @@ class Skills extends Module
                         }
                     }
                 }
+
             } else {
                 for ($i = 0; $i < $numOfNewDep; $i++) {
                     $dependencies = explode("+", str_replace(" + ", "+", $pairDep[$i]));
@@ -1405,7 +1416,7 @@ class Skills extends Module
                                         "isTier" => true
                                     ]);
                                 } else {
-                                    echo "The skill " . $d . " does not exist";
+                                    API::error("The skill " . $d . " does not exist");
                                 }
                             } else {
                                 Core::$systemDB->insert(self::TABLE_DEPENDENCIES, [
@@ -1440,10 +1451,6 @@ class Skills extends Module
                     }
                 }
             }
-
-        } else if (!empty($dependencyIds)) {
-            //delete dependencies
-            Core::$systemDB->delete(self::TABLE_SUPER_SKILLS, ["superSkillId" => $skillId]);
         }
     }
 

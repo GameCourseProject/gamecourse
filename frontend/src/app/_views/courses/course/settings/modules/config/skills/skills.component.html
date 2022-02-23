@@ -262,11 +262,11 @@
           <span style="margin-right: 30px; white-space: nowrap">New Dependency: </span>
           <select [id]="'skill1'" class="form__input" name="skill1" style="margin-bottom: 0; margin-right: 30px" [(ngModel)]="selectedDependency1">
             <option [value]="null" disabled selected>Select Skill 1</option>
-            <option *ngFor="let skill of filterSkillsForDependencies(mode === 'add' ? null : skillToEdit.id, mode === 'add' ? newSkill.tier : skillToEdit.tier)" [ngValue]="skill">{{skill.name}}</option>
+            <option *ngFor="let skill of filterSkillsForDependencies(mode === 'add' ? null : skillToEdit.id, newSkill.tier)" [ngValue]="skill">{{skill.name}}</option>
           </select>
           <select [id]="'skill2'" class="form__input" name="skill2" style="margin-bottom: 0; margin-right: 20px" [(ngModel)]="selectedDependency2">
             <option [value]="null" disabled selected>Select Skill 2</option>
-            <option *ngFor="let skill of filterSkillsForDependencies(mode === 'add' ? null : skillToEdit.id, mode === 'add' ? newSkill.tier : skillToEdit.tier)" [ngValue]="skill">{{skill.name}}</option>
+            <option *ngFor="let skill of filterSkillsForDependencies(mode === 'add' ? null : skillToEdit.id, newSkill.tier)" [ngValue]="skill">{{skill.name}}</option>
           </select>
           <button (click)="addSkillDependency(selectedDependency1, selectedDependency2)">Add</button>
         </div>
