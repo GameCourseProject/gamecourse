@@ -4,7 +4,6 @@ namespace APIFunctions;
 
 use GameCourse\API;
 
-include('api_functions/core_endpoints.php');
 include('api_functions/course_endpoints.php');
 include('api_functions/module_endpoints.php');
 include('api_functions/themes_endpoints.php');
@@ -19,5 +18,6 @@ $MODULE = 'api';
  */
 API::registerFunction($MODULE, 'getAPIEndpoints', function () {
     // FIXME: return functions args and description as well
+    API::requireAdminPermission();
     API::response(array('endpoints' => API::getAllFunctions()));
 });

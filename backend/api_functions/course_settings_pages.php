@@ -24,29 +24,4 @@ API::registerFunction('settings', 'saveNewNavigationOrder', function () {
     }
 });
 
-API::registerFunction('settings', 'upload', function () {
-    API::requireCourseAdminPermission();
-    API::requireValues('course');
-    $course = API::getValue('course');
-    $module = API::getValue('module');
-    $file = API::getValue('newFile');
-    $fileName = API::getValue('fileName');
-    $subfolder = API::getValue('subfolder');
-
-    $courseObject = Course::getCourse($course, false);
-    $result = $courseObject->upload($file, $fileName, $module, $subfolder);
-    API::response(array('url' => $result));
-});
-
-API::registerFunction('settings', 'deleteFile', function () {
-    API::requireCourseAdminPermission();
-    API::requireValues('course', 'path');
-    $course = API::getValue('course');
-    $path =  API::getValue('path');
-    $courseObject = Course::getCourse($course, false);
-    $courseObject->deleteFile($path);
-    http_response_code(201);
-    return;
-});
-
 

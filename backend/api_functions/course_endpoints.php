@@ -180,7 +180,6 @@ API::registerFunction($MODULE, 'getCourseDataFolderContents', function () {
  * @param int $copyFrom (optional)
  */
 API::registerFunction($MODULE, 'createCourse', function() {
-    // FIXME: Teachers should be able to create as well: create new type of permission for teachers
     API::requireAdminPermission();
     API::requireValues('courseName', 'creationMode', 'courseShort', 'courseYear', 'courseColor', 'courseIsVisible', 'courseIsActive' );
 
@@ -203,7 +202,7 @@ API::registerFunction($MODULE, 'createCourse', function() {
  * @param int $courseIsActive
  */
 API::registerFunction($MODULE, 'editCourse', function() {
-    API::requireCourseAdminPermission();
+    API::requireAdminPermission();
     API::requireValues('courseId','courseName', 'courseShort', 'courseYear', 'courseColor', 'courseIsVisible', 'courseIsActive' );
 
     $courseId = API::getValue('courseId');
@@ -499,7 +498,7 @@ API::registerFunction($MODULE, 'addUsersToCourse', function () {
  * @param $userImage (optional)
  */
 API::registerFunction($MODULE, 'editCourseUser', function () {
-    API::requireAdminPermission();
+    API::requireCourseAdminPermission();
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
@@ -1215,6 +1214,46 @@ API::registerFunction($MODULE, 'updateCourseStyleFile', function () {
 
     $response = $course->updateStyleFile($content);
     API::response(array('url' => $response));
+});
+
+
+
+/*** --------------------------------------------- ***/
+/*** ----------------- Resources ----------------- ***/
+/*** --------------------------------------------- ***/
+
+/**
+ * Upload file to course data folder.
+ *
+ * @param $courseId
+ * @param $file
+ * @param string $folder
+ * @param string $fileName
+ */
+API::registerFunction($MODULE, 'uploadFileToCourse', function () {
+    API::requireCourseAdminPermission();
+    API::requireValues('courseId', 'file', 'folder', 'fileName');
+
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
+    API::response(['path' => $course->uploadFile(API::getValue('file'), API::getValue('folder'), API::getValue('fileName'))]);
+});
+
+/**
+ * Delete file from course data folder.
+ *
+ * @param $courseId
+ * @param $path
+ */
+API::registerFunction($MODULE, 'deleteFileFromCourse', function () {
+    API::requireCourseAdminPermission();
+    API::requireValues('courseId', 'path');
+
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
+    $course->deleteFile(API::getValue('path'));
 });
 
 

@@ -286,7 +286,7 @@
           [placeholder]="'Add the skill description here...'"
           [container]="'editor'"
           [courseFolder]="courseFolder"
-          [whereToStore]="'skills/' + newSkill.name.noWhiteSpace()"
+          [whereToStore]="'skills/' + newSkill.name"
           [init]="newSkill.description"
           [canInit]="skillModalRendered"
           (valueChange)="newSkill.description = $event">

@@ -138,29 +138,6 @@ export class ApiHttpService {
   /*** ------------------ Course ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  public uploadFile(file: string | ArrayBuffer, folder: string, name: string): Observable<string> {
-    const data = {
-      file,
-      folder,
-      name
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.CORE);
-      qs.push('request', 'uploadFile');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['path']) );
-  }
-
-
-
-  /*** --------------------------------------------- ***/
-  /*** ------------------ Course ------------------- ***/
-  /*** --------------------------------------------- ***/
-
   // General
   public getCourse(courseID: number): Observable<Course> {
     const params = (qs: QueryStringParameters) => {
@@ -650,6 +627,42 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['url']) );
+  }
+
+
+  // Resources
+  public uploadFileToCourse(courseID: number, file: string | ArrayBuffer, folder: string, fileName: string): Observable<string> {
+    const data = {
+      courseId: courseID,
+      file,
+      folder,
+      fileName
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'uploadFileToCourse');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['path']) );
+  }
+
+  public deleteFileFromCourse(courseID: number, filePath: string): Observable<void> {
+    const data = {
+      courseId: courseID,
+      path: filePath,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'deleteFileFromCourse');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
   }
 
 

@@ -655,7 +655,7 @@ class Skills extends Module
          * @param int $courseId
          */
         API::registerFunction(self::ID, 'getTiers', function () {
-            API::requireAdminPermission();
+            API::requireCourseAdminPermission();
             API::requireValues('courseId');
 
             $courseId = API::getValue('courseId');
@@ -671,7 +671,7 @@ class Skills extends Module
          * @param $tier
          */
         API::registerFunction(self::ID, 'createTier', function () {
-            API::requireAdminPermission();
+            API::requireCourseAdminPermission();
             API::requireValues('courseId', 'tier');
 
             $courseId = API::getValue('courseId');
@@ -687,7 +687,7 @@ class Skills extends Module
          * @param $tier
          */
         API::registerFunction(self::ID, 'editTier', function () {
-            API::requireAdminPermission();
+            API::requireCourseAdminPermission();
             API::requireValues('courseId', 'tier');
 
             $courseId = API::getValue('courseId');
@@ -703,7 +703,7 @@ class Skills extends Module
          * @param $tier
          */
         API::registerFunction(self::ID, 'deleteTier', function () {
-            API::requireAdminPermission();
+            API::requireCourseAdminPermission();
             API::requireValues('courseId', 'tier');
 
             $courseId = API::getValue('courseId');
@@ -720,7 +720,7 @@ class Skills extends Module
          * @param int $courseId
          */
         API::registerFunction(self::ID, 'getSkills', function () {
-            API::requireAdminPermission();
+            API::requireCourseAdminPermission();
             API::requireValues('courseId');
 
             $courseId = API::getValue('courseId');
@@ -736,7 +736,7 @@ class Skills extends Module
          * @param $skill
          */
         API::registerFunction(self::ID, 'createSkill', function () {
-            API::requireAdminPermission();
+            API::requireCourseAdminPermission();
             API::requireValues('courseId', 'skill');
 
             $courseId = API::getValue('courseId');
@@ -752,7 +752,7 @@ class Skills extends Module
          * @param $skill
          */
         API::registerFunction(self::ID, 'editSkill', function () {
-            API::requireAdminPermission();
+            API::requireCourseAdminPermission();
             API::requireValues('courseId', 'skill');
 
             $courseId = API::getValue('courseId');
@@ -768,7 +768,7 @@ class Skills extends Module
          * @param $skill
          */
         API::registerFunction(self::ID, 'deleteSkill', function () {
-            API::requireAdminPermission();
+            API::requireCourseAdminPermission();
             API::requireValues('courseId', 'skill');
 
             $courseId = API::getValue('courseId');

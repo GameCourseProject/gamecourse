@@ -251,7 +251,7 @@ API::registerFunction($MODULE, 'changeItemSequence', function () {
  * @param bool $replace (optional)
  */
 API::registerFunction($MODULE, 'importItems', function () {
-    API::requireAdminPermission();
+    API::requireCourseAdminPermission();
     API::requireValues('courseId', 'moduleId', 'file', 'replace');
 
     $courseId = API::getValue('courseId');

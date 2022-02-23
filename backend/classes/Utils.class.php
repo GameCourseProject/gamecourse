@@ -154,6 +154,7 @@ class Utils {
      *
      * @param string $url
      * @param string $to (absolute | relative)
+     * @param int $courseId
      * @return string
      */
     public static function transformURL(string $url, string $to, int $courseId): string

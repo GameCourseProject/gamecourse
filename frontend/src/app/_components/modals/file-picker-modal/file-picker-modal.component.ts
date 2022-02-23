@@ -128,7 +128,8 @@ export class FilePickerModalComponent implements OnInit {
     if (this.fileToUpload) {
       // Save file in server
       await ImageManager.getBase64(this.fileToUpload).then(data => this.file = data);
-      this.api.uploadFile(this.file, this.courseFolder + '/' + this.whereToStore, this.fileToUploadName)
+      const courseID = parseInt(this.courseFolder.split('/')[1].split('-')[0]);
+      this.api.uploadFileToCourse(courseID, this.file, this.whereToStore, this.fileToUploadName)
         .subscribe(
           path => {
             this.positiveBtnClicked.emit({path, type: this.fileToUpload.type.split('/')[0] as 'image' | 'video' | 'audio'});
