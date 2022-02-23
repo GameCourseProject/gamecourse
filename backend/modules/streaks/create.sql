@@ -17,6 +17,7 @@ create table streak(
     isRepeatable boolean not null default false,
     isCount boolean not null default false,
     isPeriodic boolean not null default false,
+    isAtMost boolean not null default false,
     isActive boolean not null default true,
     image varchar(50),
     foreign key(course) references course(id) on delete cascade

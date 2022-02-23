@@ -207,6 +207,21 @@ class Streaks extends Module
             true
         );
 
+        //%streak.isAtMost
+        Dictionary::registerFunction(
+            self::ID,
+            'isAtMost',
+            function ($streak) {
+                return Dictionary::basicGetterFunction($streak, "isAtMost");
+            },
+            "Returns a boolean regarding whether the steak is periodic and peridodicity is at most x participations.",
+            'boolean',
+            null,
+            'object',
+            'streak',
+            true
+        );
+
         //%streak.isActive
         Dictionary::registerFunction(
             self::ID,
@@ -389,10 +404,10 @@ class Streaks extends Module
     public function get_listing_items(int $courseId): array
     {
 
-        $header = ['Name', 'Description', 'Count', 'Periodicity', 'Periodicity Time', 'is Repeatable', 'is Periodic', 'is Count', 'Reward', 'Color', 'Active'];
-        $displayAtributes = ['name', 'description', 'count', 'periodicity', 'periodicityTime', 'isRepeatable', 'isPeriodic', 'isCount', 'reward' , 'color', 'isActive'];
+        $header = ['Name', 'Description', 'Count', 'Periodicity', 'Periodicity Time', 'is Repeatable', 'is Periodic', 'is Count', 'is At Most' , 'Reward', 'Color', 'Active'];
+        $displayAtributes = ['name', 'description', 'count', 'periodicity', 'periodicityTime', 'isRepeatable', 'isPeriodic', 'isCount', 'isAtMost', 'reward' , 'color', 'isActive'];
         $items = $this->getStreaks($courseId);
-        
+
         // Arguments for adding/editing
         $allAtributes = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => ""),
@@ -403,6 +418,7 @@ class Streaks extends Module
             array('name' => "Is Repeatable", 'id' => 'repeatable', 'type' => "on_off button", 'options' => ""),
             array('name' => "Is Periodic", 'id' => 'periodic', 'type' => "on_off button", 'options' => ""),
             array('name' => "Is Count", 'id' => 'countBased', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is At Most", 'id' => 'atMost', 'type' => "on_off button", 'options' => ""),
             array('name' => "Periodicity", 'id' => 'periodicity', 'type' => "number", 'options' => ""),
             array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "select", 'options' => ["Minutes","Hours","Days","Weeks_"])
         ];
@@ -454,6 +470,7 @@ class Streaks extends Module
             $streak['isRepeatable'] = boolval($streak["isRepeatable"]);
             $streak['isCount'] = boolval($streak["isCount"]);
             $streak['isPeriodic'] = boolval($streak["isPeriodic"]);
+            $streak['isAtMost'] = boolval($streak["isAtMost"]);
             $streak['isActive'] = boolval($streak["isActive"]);
         }
         return $streaks;
@@ -474,7 +491,7 @@ class Streaks extends Module
         return Dictionary::createNode($streakArray, self::ID, $type);
 
     }
-              
+
     // getStreakCount
     // getUsersWithStreak
 
@@ -507,7 +524,8 @@ class Streaks extends Module
             "reward" => $achievement['reward'],
             "isRepeatable" => ($achievement['repeatable']) ? 1 : 0,
             "isCount" => ($achievement['countBased']) ? 1 : 0,
-            "isPeriodic" => ($achievement['periodic']) ? 1 : 0
+            "isPeriodic" => ($achievement['periodic']) ? 1 : 0,
+            "isAtMost" => ($achievement['atMost']) ? 1 : 0
 
         ];
 
@@ -527,13 +545,15 @@ class Streaks extends Module
                 "reward" => $achievement['reward'],
                 "isRepeatable" => ($achievement['repeatable']) ? 1 : 0,
                 "isCount" => ($achievement['countBased']) ? 1 : 0,
-                "isPeriodic" => ($achievement['periodic']) ? 1 : 0
+                "isPeriodic" => ($achievement['periodic']) ? 1 : 0,
+                "isAtMost" => ($achievement['atMost']) ? 1 : 0
+
             ];
-            
+
             Core::$systemDB->update(self::TABLE, $streakData, ["id" => $achievement["id"]]);
         }
     }
-    
+
     public function deleteStreak($streak)
     {
         Core::$systemDB->delete(self::TABLE, ["id" => $streak['id']]);
