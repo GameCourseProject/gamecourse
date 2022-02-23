@@ -3,21 +3,18 @@
 namespace Streaks;
 
 use GameCourse\Core;
-use GameCourse\Views\Dictionary;
-use GameCourse\Views\Views;
-use GameCourse\Views\Expression\ValueNode;
+use Modules\Views\Expression\ValueNode;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
+
+use GameCourse\API;
 use GameCourse\Course;
 
 class Streaks extends Module
 {
 
-    const ID = 'streaks';
+    // adaptar de acordo com a nova organizacao
 
-    const TABLE = 'streak';
-    const TABLE_LEVEL = self::ID . '_level';
-    const TABLE_CONFIG = self::ID . '_config';
 
     const STREAKS_TEMPLATE_NAME = 'Streaks block - by streaks';
 
@@ -27,39 +24,34 @@ class Streaks extends Module
 
     public function init()
     {
-        $this->setupData($this->getCourseId());
-        $this->initDictionary();
-        $this->initTemplates();
-    }
 
-    public function initDictionary(){
+        $courseId = $this->getParent()->getId();
+        $this->setupData($courseId);
+        $viewsModule = $this->getParent()->getModule('views');
+        $viewHandler = $viewsModule->getViewHandler();
 
-        /*** ------------ Libraries ------------ ***/
+        $viewHandler->registerLibrary("streaks", "streaks", "This library provides information regarding Streaks. It is provided by the streaks module.");
 
-        Dictionary::registerLibrary(self::ID, self::ID, "This library provides information regarding Streaks. It is provided by the streaks module.");
-
-
-        /*** ------------ Functions ------------ ***/
         // streaks.getAllStreaks(isActive)
-        Dictionary::registerFunction(
-            self::ID,
+        $viewHandler->registerFunction(
+            'streaks',
             'getAllStreaks',
             function (bool $isActive = true) {
                 $where = [];
                 $where["isActive"] = $isActive;
                 return $this->getStreak(true, $where);
             },
-            "Returns a collection with all the streaks in the Course. The optional parameters can be used to find badges that specify a given combination of conditions:\nisActive: Streak is active.",
+            "Returns a collection with all the streaks in the Course. The optional parameters can be used to find streaks that specify a given combination of conditions:\nisActive: Streak is active.",
             'collection',
             'streak',
             'library',
-            null,
-            true
+            null
+
         );
 
         //streaks.getStreak(name)
-        Dictionary::registerFunction(
-            self::ID,
+        $viewHandler->registerFunction(
+            'streaks',
             'getStreak',
             function (string $name = null) {
                 return $this->getStreak(false, ["name" => $name]);
@@ -68,204 +60,58 @@ class Streaks extends Module
             'object',
             'streak',
             'library',
-            null,
-            true
+            null
         );
 
         //%streak.description
-        Dictionary::registerFunction(
-            self::ID,
+        $viewHandler->registerFunction(
+            'streaks',
             'description',
             function ($arg) {
-                return Dictionary::basicGetterFunction($arg, "description");
+                return $this->basicGetterFunction($arg, "description");
             },
             "Returns a string with information regarding the name of the streak, the goal to obtain it and the reward associated to it.",
             'string',
             null,
             'object',
-            'streak',
-            true
+            'streak'
         );
 
         //%streak.name
-        Dictionary::registerFunction(
-            self::ID,
+        $viewHandler->registerFunction(
+            'streaks',
             'name',
             function ($streak) {
-                return Dictionary::basicGetterFunction($streak, "name");
+                return $this->basicGetterFunction($streak, "name");
             },
             "Returns a string with the name of the streak.",
             'string',
             null,
             'object',
-            'streak',
-            true
-        );
-
-        //%streak.color
-        Dictionary::registerFunction(
-            self::ID,
-            'color',
-            function ($streak) {
-                return Dictionary::basicGetterFunction($streak, "color");
-            },
-            "Returns a string with the reference of the color in hexadecimal of the streak.",
-            'string',
-            null,
-            'object',
-            'streak',
-            true
-        );
-
-        //%streak.reward
-        Dictionary::registerFunction(
-            self::ID,
-            'reward',
-            function ($streak) {
-                return Dictionary::basicGetterFunction($streak, "reward");
-            },
-            "Returns a string with the reward of completing a streak.",
-            'string',
-            null,
-            'object',
-            'streak',
-            true
-        );
-
-        //%streak.periodicity
-        Dictionary::registerFunction(
-            self::ID,
-            'periodicity',
-            function ($streak) {
-                return Dictionary::basicGetterFunction($streak, "periodicity");
-            },
-            "Returns a string with periodicity to respect.",
-            'string',
-            null,
-            'object',
-            'streak',
-            true
-        );
-
-        //%streak.periodicityTime
-        Dictionary::registerFunction(
-            self::ID,
-            'periodicityTime',
-            function ($streak) {
-                return Dictionary::basicGetterFunction($streak, "periodicityTime");
-            },
-            "Returns a string with periodicity's time.",
-            'string',
-            null,
-            'object',
-            'streak',
-            true
-        );
-
-        //%streak.isRepeatable
-        Dictionary::registerFunction(
-            self::ID,
-            'isRepeatable',
-            function ($streak) {
-                return Dictionary::basicGetterFunction($streak, "isRepeatable");
-            },
-            "Returns a boolean regarding whether the steak is repeatable.",
-            'boolean',
-            null,
-            'object',
-            'streak',
-            true
-        );
-
-        //%streak.isCount
-        Dictionary::registerFunction(
-            self::ID,
-            'isCount',
-            function ($streak) {
-                return Dictionary::basicGetterFunction($streak, "isCount");
-            },
-            "Returns a boolean regarding whether the steak is count.",
-            'boolean',
-            null,
-            'object',
-            'streak',
-            true
-        );
-
-        //%streak.isPeriodic
-        Dictionary::registerFunction(
-            self::ID,
-            'isPeriodic',
-            function ($streak) {
-                return Dictionary::basicGetterFunction($streak, "isPeriodic");
-            },
-            "Returns a boolean regarding whether the steak is periodic.",
-            'boolean',
-            null,
-            'object',
-            'streak',
-            true
-        );
-
-        //%streak.isAtMost
-        Dictionary::registerFunction(
-            self::ID,
-            'isAtMost',
-            function ($streak) {
-                return Dictionary::basicGetterFunction($streak, "isAtMost");
-            },
-            "Returns a boolean regarding whether the steak is periodic and peridodicity is at most x participations.",
-            'boolean',
-            null,
-            'object',
-            'streak',
-            true
+            'streak'
         );
 
         //%streak.isActive
-        Dictionary::registerFunction(
-            self::ID,
+        $viewHandler->registerFunction(
+            'streaks',
             'isActive',
             function ($streak) {
-                return Dictionary::basicGetterFunction($streak, "isActive");
+                return $this->basicGetterFunction($streak, "isActive");
             },
             "Returns a boolean regarding whether the steak is active.",
             'boolean',
             null,
             'object',
-            'streak',
-            true
+            'streak'
         );
 
-        //streaks.streakProgression(streak,user)
-        Dictionary::registerFunction(
-            self::ID,
-            'streakProgression',
 
-            function ($streak, int $user) {
-                $streakParticipation = $this->getStreakProgression($streak, $user);
-                return Dictionary::createNode($streakParticipation, self::ID, 'collection');
-            },
-            'Returns a collection object corresponding to the intermediate progress of a GameCourseUser identified by user for that streak.',
-            'collection',
-            'badge',
-            'library',
-            null,
-            true
-        );
-
-        //streakProgression.post
-        //streakProgression.description
-
+       /* if (!$viewsModule->templateExists(self::STREAKS_TEMPLATE_NAME))
+            $viewsModule->setTemplate(self::STREAKS_TEMPLATE_NAME, file_get_contents(__DIR__ . '/streaks.txt'), true);
+       */
     }
 
-    public function initTemplates()
-    {
-        $courseId = $this->getCourseId();
-
-        if (!Views::templateExists($courseId, self::STREAKS_TEMPLATE_NAME))
-            Views::createTemplateFromFile(self::STREAKS_TEMPLATE_NAME, file_get_contents(__DIR__ . '/streaks.txt'), $courseId, self::ID);
-    }
+    // public function initDictionary
 
     public function setupResources()
     {
@@ -273,22 +119,22 @@ class Streaks extends Module
         parent::addResources('css/badges.css');
     }
 
-    public function setupData(int $courseId)
+    public function setupData($courseId)
     {
-        if ($this->addTables(self::ID, self::TABLE) || empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId]))) {
-            Core::$systemDB->insert(self::TABLE_CONFIG, ["maxBonusReward" => MAX_BONUS_STREAKS, "course" => $courseId]);
+        if ($this->addTables("streaks", "streak") || empty(Core::$systemDB->select("streaks_config", ["course" => $courseId]))) {
+            Core::$systemDB->insert("streaks_config", ["maxBonusReward" => MAX_BONUS_STREAKS, "course" => $courseId]);
         }
 
         $folder = Course::getCourseDataFolder($courseId, Course::getCourse($courseId, false)->getName());
-        if (!file_exists($folder . "/" . self::ID))
-            mkdir($folder . "/" . self::ID);
+        if (!file_exists($folder . "/streaks"))
+            mkdir($folder . "/streaks");
     }
 
     public function update_module($compatibleVersions)
     {
         /*
         //obter o ficheiro de configuração do module para depois o apagar
-        $configFile = "modules/" . self::ID . "/config.json";
+        $configFile = "modules/badges/config.json";
         $contents = array();
         if (file_exists($configFile)) {
             $contents = json_decode(file_get_contents($configFile));
@@ -304,28 +150,28 @@ class Streaks extends Module
     /*** ---------------- Module Config ---------------- ***/
     /*** ----------------------------------------------- ***/
 
-    public function moduleConfigJson(int $courseId)
+    public function moduleConfigJson($courseId)
     {
         $streaksConfigArray = array();
         $streaksArray = array();
         $streaksLevelArray = array();
 
         $streaksArr = array();
-        if (Core::$systemDB->tableExists(self::TABLE_CONFIG)) {
-            $streaksConfigVarDB = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
+        if (Core::$systemDB->tableExists("streaks_config")) {
+            $streaksConfigVarDB = Core::$systemDB->select("streaks_config", ["course" => $courseId], "*");
             if ($streaksConfigVarDB) {
                 unset($streaksConfigVarDB["course"]);
                 array_push($streaksConfigArray, $streaksConfigVarDB);
             }
         }
-        if (Core::$systemDB->tableExists(self::TABLE)) {
-            $streaksVarDB = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*");
+        if (Core::$systemDB->tableExists("streak")) {
+            $streaksVarDB = Core::$systemDB->selectMultiple("streak", ["course" => $courseId], "*");
             if ($streaksVarDB) {
                 unset($streaksConfigVarDB["course"]);
                 foreach (streakssVarDB as $streak) {
                     array_push($streaksArray, $streak);
 
-                    $streaksLevelVarDB_ = Core::$systemDB->selectMultiple(self::TABLE_LEVEL, ["streakId" => $streak["id"]], "*");
+                    $streaksLevelVarDB_ = Core::$systemDB->selectMultiple("streak_level", ["streakId" => $streak["id"]], "*");
                     foreach ($streaksLevelVarDB_ as $streaksLevelVarDB) {
                         array_push($streaksLevelArray, $streaksLevelVarDB);
                     }
@@ -333,9 +179,9 @@ class Streaks extends Module
             }
         }
 
-        $streaksArr[self::TABLE_CONFIG] = $streaksConfigArray;
-        $streaksArr[self::TABLE] = $streaksArray;
-        $streaksArr[self::TABLE_LEVEL] = $streaksLevelArray;
+        $streaksArr["streaks_config"] = $streaksConfigArray;
+        $streaksArr["streak"] = $streaksArray;
+        $streaksArr["streak_level"] = $streaksLevelArray;
 
         if ($streaksConfigArray || $streaksArray || $streaksLevelArray) {
             return $streaksArr;
@@ -344,7 +190,7 @@ class Streaks extends Module
         }
     }
 
-    public function readConfigJson(int $courseId, array $tables, bool $update = false): array
+    public function readConfigJson($courseId, $tables, $update = false)
     {
         $tableName = array_keys($tables);
         $i = 0;
@@ -352,14 +198,14 @@ class Streaks extends Module
         $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
         foreach ($tables as $table) {
             foreach ($table as $entry) {
-                if ($tableName[$i] == self::TABLE_CONFIG) {
+                if ($tableName[$i] == "streaks_config") {
                     if ($update && $existingCourse) {
                         Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
                     } else {
                         $entry["course"] = $courseId;
                         Core::$systemDB->insert($tableName[$i], $entry);
                     }
-                } else  if ($tableName[$i] == self::TABLE) {
+                } else  if ($tableName[$i] == "streak") {
                     $importId = $entry["id"];
                     unset($entry["id"]);
                     if ($update && $existingCourse) {
@@ -369,46 +215,56 @@ class Streaks extends Module
                         $newId = Core::$systemDB->insert($tableName[$i], $entry);
                     }
                     $streakIds[$importId] = $newId;
-                }
+                } /*else  if ($tableName[$i] == "badge_level") {
+                    $oldBadgeId = $streakIds[$entry["badgeId"]];
+                    $entry["badgeId"] = $oldBadgeId;
+                    unset($entry["id"]);
+                    if ($update) {
+                        Core::$systemDB->update($tableName[$i], $entry, ["badgeId" => $oldBadgeId, "number" => $entry["number"]]);
+                    } else {
+                        Core::$systemDB->insert($tableName[$i], $entry);
+                    };
+                } */
             }
             $i++;
         }
         return $streakIds;
     }
 
-    public function is_configurable(): bool
+    public function is_configurable()
     {
         return true;
     }
 
-    public function has_general_inputs(): bool
+    public function has_general_inputs()
     {
         return true;
     }
-    public function get_general_inputs(int $courseId): array
+    public function get_general_inputs($courseId)
     {
 
         $input = array('name' => "Max Streaks Reward", 'id' => 'maxBonusReward', 'type' => "number", 'options' => "", 'current_val' => intval($this->getMaxReward($courseId)));
         return [$input];
     }
-    public function save_general_inputs(array $generalInputs, int $courseId)
+    public function save_general_inputs($generalInputs, $courseId)
     {
         $maxVal = $generalInputs["maxBonusReward"];
         $this->saveMaxReward($maxVal, $courseId);
     }
 
-    public function has_listing_items(): bool
+    public function has_listing_items()
     {
         return  true;
     }
-    public function get_listing_items(int $courseId): array
+    public function get_listing_items($courseId)
     {
 
-        $header = ['Name', 'Description', 'Count', 'Periodicity', 'Periodicity Time', 'is Repeatable', 'is Periodic', 'is Count', 'is At Most' , 'Reward', 'Color', 'Active'];
+        //tenho de dar header
+        $header = ['Name', 'Description', 'Count', 'Periodicity', 'Periodicity Time', 'is Repeatable', 'is Periodic', 'is Count', 'is At Most', 'Reward', 'Color', 'Active'];
         $displayAtributes = ['name', 'description', 'count', 'periodicity', 'periodicityTime', 'isRepeatable', 'isPeriodic', 'isCount', 'isAtMost', 'reward' , 'color', 'isActive'];
+        // items (pela mesma ordem do header)
         $items = $this->getStreaks($courseId);
-
-        // Arguments for adding/editing
+        //argumentos para add/edit
         $allAtributes = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => ""),
             array('name' => "Description", 'id' => 'description', 'type' => "text", 'options' => ""),
@@ -420,11 +276,12 @@ class Streaks extends Module
             array('name' => "Is Count", 'id' => 'countBased', 'type' => "on_off button", 'options' => ""),
             array('name' => "Is At Most", 'id' => 'atMost', 'type' => "on_off button", 'options' => ""),
             array('name' => "Periodicity", 'id' => 'periodicity', 'type' => "number", 'options' => ""),
-            array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "select", 'options' => ["Minutes","Hours","Days","Weeks_"])
+            array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "select", 'options' => ["Minutes", "Hours", "Days","Weeks_"])
+
         ];
         return array('listName' => 'Streaks', 'itemName' => 'Streak', 'header' => $header, 'displayAtributes' => $displayAtributes, 'items' => $items, 'allAtributes' => $allAtributes);
     }
-    public function save_listing_item(string $actiontype, array $listingItem, int $courseId)
+    public function save_listing_item($actiontype, $listingItem, $courseId)
     {
         if ($actiontype == 'new') {
             $this->newStreak($listingItem, $courseId);
@@ -440,9 +297,10 @@ class Streaks extends Module
     /*** ------------ Database Manipulation ------------ ***/
     /*** ----------------------------------------------- ***/
 
-    public function deleteDataRows(int $courseId)
+    public function deleteDataRows($courseId)
     {
-        Core::$systemDB->delete(self::TABLE, ["course" => $courseId]);
+        //$this->deleteLevels($courseId);
+        Core::$systemDB->delete("streak", ["course" => $courseId]);
     }
 
 
@@ -450,11 +308,11 @@ class Streaks extends Module
     /*** --------------- Import / Export --------------- ***/
     /*** ----------------------------------------------- ***/
 
-    public function importItems(string $fileData, bool $replace = true): int{
+    public static function importItems($course, $fileData, $replace = true){
 
     }
 
-    public function exportItems(int $itemId = null): array{
+    public static function exportItems($course){
 
     }
 
@@ -463,53 +321,37 @@ class Streaks extends Module
     /*** -------------------- Utils -------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    public function getStreaks($courseId){
-        $streaks = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*", "name");
-        foreach ($streaks as &$streak) {
-            //information to match needing fields
-            $streak['isRepeatable'] = boolval($streak["isRepeatable"]);
-            $streak['isCount'] = boolval($streak["isCount"]);
-            $streak['isPeriodic'] = boolval($streak["isPeriodic"]);
-            $streak['isAtMost'] = boolval($streak["isAtMost"]);
-            $streak['isActive'] = boolval($streak["isActive"]);
-        }
-        return $streaks;
-    }
-
-    public function getStreak($selectMultiple, $where): ValueNode
+    public function getStreak($selectMultiple, $where)
     {
         $where["course"] = $this->getCourseId();
         if ($selectMultiple) {
-            $streakArray = Core::$systemDB->selectMultiple(self::TABLE, $where);
+            $streakArray = Core::$systemDB->selectMultiple("streak", $where);
             $type = "collection";
         } else {
-            $streakArray = Core::$systemDB->select(self::TABLE, $where);
+            $streakArray = Core::$systemDB->select("streak", $where);
             if (empty($streakArray))
                 throw new \Exception("In function streaks.getStreak(name): couldn't find streak with name '" . $where["name"] . "'.");
             $type = "object";
         }
-        return Dictionary::createNode($streakArray, self::ID, $type);
+        return $this->createNode($streakArray, 'streaks', $type);
 
     }
 
     // getStreakCount
-    // getUsersWithStreak
 
-    public function getStreakProgression($badge, $user)
-    {
+    // getUsersWithStreak - perguntar DG
 
-
-    }
 
     public function saveMaxReward($max, $courseId)
     {
-        Core::$systemDB->update(self::TABLE_CONFIG, ["maxBonusReward" => $max], ["course" => $courseId]);
+        Core::$systemDB->update("streaks_config", ["maxBonusReward" => $max], ["course" => $courseId]);
     }
 
     public function getMaxReward($courseId)
     {
-        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "maxBonusReward");
+        return Core::$systemDB->select("streaks_config", ["course" => $courseId], "maxBonusReward");
     }
+
 
     public static function newStreak($achievement, $courseId)
     {
@@ -528,43 +370,35 @@ class Streaks extends Module
             "isAtMost" => ($achievement['atMost']) ? 1 : 0
 
         ];
+        if (array_key_exists("image", $achievement)) {
+            $streakData["image"] = $achievement['image'];
+        }
+        $streakId = Core::$systemDB->insert("streak", $streakData);
 
-        Core::$systemDB->insert(self::TABLE, $streakData);
     }
 
     public static function editStreak($achievement, $courseId)
     {
-        $originalStreak = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'id' => $achievement['id']], "*");
 
-        if(!empty($originalStreak)) {
-            $streakData = [
-                "color" => $achievement['color'],
-                "periodicity" => $achievement['periodicity'],
-                "periodicityTime" => $achievement['periodicityTime'],
-                "count" => $achievement['count'],
-                "reward" => $achievement['reward'],
-                "isRepeatable" => ($achievement['repeatable']) ? 1 : 0,
-                "isCount" => ($achievement['countBased']) ? 1 : 0,
-                "isPeriodic" => ($achievement['periodic']) ? 1 : 0,
-                "isAtMost" => ($achievement['atMost']) ? 1 : 0
-
-            ];
-
-            Core::$systemDB->update(self::TABLE, $streakData, ["id" => $achievement["id"]]);
-        }
     }
 
     public function deleteStreak($streak)
     {
-        Core::$systemDB->delete(self::TABLE, ["id" => $streak['id']]);
+        Core::$systemDB->delete("streak", ["id" => $streak['id']]);
+    }
+
+
+    public function getStreaks($courseId)
+    {
+
     }
 
 
     public function activeItem($itemId)
     {
-        $active = Core::$systemDB->select(self::TABLE, ["id" => $itemId], "isActive");
+        $active = Core::$systemDB->select("streak", ["id" => $itemId], "isActive");
         if(!is_null($active)){
-            Core::$systemDB->update(self::TABLE, ["isActive" => $active ? 0 : 1], ["id" => $itemId]);
+            Core::$systemDB->update("streak", ["isActive" => $active ? 0 : 1], ["id" => $itemId]);
             //ToDo: ADD RULE MANIPULATION HERE
         }
     }
@@ -583,13 +417,14 @@ class Streaks extends Module
 
 
 ModuleLoader::registerModule(array(
-    'id' => Streaks::ID,
+    'id' => 'streaks',
     'name' => 'Streaks',
     'description' => 'Enables Streaks and xp points that can be atributed to a student in certain conditions.',
     'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(
+        array('id' => 'views', 'mode' => 'hard')
     ),
     'factory' => function () {
         return new Streaks();
