@@ -1116,7 +1116,6 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                         if dif > timedelta(hours=periodicity):
                             return
                     elif len(periodicityTime) == 4:   # days
-                        print("\nDentro do if Days")
                         dif = secondParticipationObj.date() - firstParticipationObj.date()
                         if dif > timedelta(days=periodicity):
                             return
@@ -1133,34 +1132,63 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                         cursor.execute(query, (course, target, streakid, log.log_id))
                         cnx.commit()
 
-
+                # check periodicity between participations
                 elif isPeriodic and not isCount:
 
-                    #for log in contributions:
-                    # get dates of participations that matter
-                    query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND type = %s;"
-                    cursor.execute(query, (target, course, participationType))
-                    table_participations = cursor.fetchall()
+                    # gets date of participations that matter, disgarding submission withtin the same time period
+                    if len(periodicityTime) == 7:  # minutes - gets all participations
+                        query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND type = %s;"
+                        cursor.execute(query, (target, course, participationType))
+                        table_participations = cursor.fetchall()
+                    elif len(periodicityTime) == 5:  # hours - gets participations with different hours only
+                        query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND type= %s GROUP BY hour(date), day(date) ORDER BY id;"
+                        cursor.execute(query, (target, course, participationType))
+                        table_participations = cursor.fetchall()
+                    elif len(periodicityTime) == 4 or len(periodicityTime) == 6:   # days or weeks - gets only distinct days
+                        query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND type= %s GROUP BY day(date);"
+                        cursor.execute(query, (target, course, participationType))
+                        table_participations = cursor.fetchall()
+                    else:
+                        return
 
-                    for i in range(nlogs):    # 0 to nlogs-1 -> te  tiver 2 participations, i = 0, i = 1
-                         if i+1 < nlogs:
+                    size = 0
+                    for item in table_participations:
+                        size += 1
+
+                    for i in range(size):
+                         j = i+1
+                         if j < size:
+                            firstParticipationId = table_participations[i][0]  # YYYY-MM-DD HH:MM:SS
+                            secondParticipationId = table_participations[j][0]
 
                             firstParticipationObj = table_participations[i][1]  # YYYY-MM-DD HH:MM:SS
-                            secondParticipationObj = table_participations[i+1][1]
+                            secondParticipationObj = table_participations[j][1]
 
                             # if it disrespects streak periodicity, then return
                             if len(periodicityTime) == 7:  # minutes
                                 dif = secondParticipationObj - firstParticipationObj
-                                #if dif < timedelta(minutes=periodicity) or dif > timedelta(minutes=periodicity*2):
-                                if dif != timedelta(minutes=periodicity):
+                                margin = 5 # time for any possible delay
+                                if dif < timedelta(minutes=periodicity-margin) or dif > timedelta(minutes=periodicity+margin):
                                     return
                             elif len(periodicityTime) == 5:   # hours
                                 dif = secondParticipationObj.time().hour - firstParticipationObj.time().hour
                                 difDay = secondParticipationObj.date() - firstParticipationObj.date()
-                                #dif = secondParticipationObj - firstParticipationObj
-                                #if dif < timedelta(hours=periodicity) or dif > timedelta(hours=periodicity*2):
-                                if difDay != timedelta(days=0) or dif != periodicity:
+
+                                if difDay  == timedelta(days=1):
+                                    sumHours =  secondParticipationObj.time().hour + firstParticipationObj.time().hour
+                                    limit = 23
+                                    difLimit = 0
+
+                                    if time3.time().hour < limit: # before 23
+                                        difLimit = limit - time3.time().hour
+                                        sumHours += difLimit
+
+                                    calculatedPeriodicity = (sumHours-limit) + 1 + difLimit
+                                    if calculatedPeriodicity != periodicity:
+                                        return
+                                elif dif != periodicity:
                                     return
+
                             elif len(periodicityTime) == 4:   # days
                                 dif = secondParticipationObj.date() - firstParticipationObj.date()
                                 if dif != timedelta(days=periodicity): # dif needs to be equal to periodicity
@@ -1173,12 +1201,16 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                             else:
                                 return
 
-                    # if it gets here, streak periodicity was respected -> insert all participations
-                    for log in contributions:
-                        query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
-                        cursor.execute(query, (course, target, streakid, log.log_id))
+                    for participation in table_participations:
+                        participation_id = participation[0]
+                        participation_date = participation[1]
+
+                        query = "INSERT into streak_progression (course, user, streakId, participationId, participationDate) values (%s,%s,%s,%s,%s);"
+                        cursor.execute(query, (course, target, streakid, participation_id, participation_date))
                         cnx.commit()
 
+
+                #elif isPeriodic and isAtMost and not isCount:
 
     # gets all streak progressions
     query = "SELECT * FROM streak_progression where user = %s AND course = %s AND streakId = %s ;"
@@ -1226,7 +1258,6 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
 
 
 
-
     # if this streak has already been awarded, check if it is repeatable to award it again.
     elif len(table) > 0:
         isRepeatable = table_streak[0][5]
@@ -1247,6 +1278,21 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                 cursor = cnx.cursor(prepared=True)
 
                 # inserir na award_participation ?
+                if contributions != None:
+                    query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+                    cursor.execute(query, (target, course, description, typeof))
+                    table_id = cursor.fetchall()
+                    award_id = table_id[0][0]
+
+                    if not config.test_mode:
+                        for el in contributions:
+                            participation_id = el.log_id
+                            query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                            cursor.execute(query, (award_id, participation_id))
+                            cnx.commit()
+
+
+
 
     cnx.commit()
     cnx.close()
