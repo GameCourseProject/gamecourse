@@ -1,0 +1,118 @@
+<div class="section">
+  <div class="divider">
+    <div class="title"><span>Moodle Variables</span></div>
+  </div>
+
+  <div class="content">
+
+    <div class="row">
+      <div class="on_off">
+        <span>Enabled</span>
+        <label class="switch"><input id="enabled" type="checkbox" [(ngModel)]="isEnabled" (ngModelChange)="hasUnsavedChanges = true"><span class="slider round"></span></label>
+      </div>
+
+      <div class="input-wrapper" style="max-width: 600px;">
+        <span class="label">Periodicity</span>
+        <input type="number" min="0" max="59" id="periodicity-nr" name="periodicity-nr" class="input" [(ngModel)]="periodicity.nr" (ngModelChange)="hasUnsavedChanges = true">
+        <select id="periodicity-time" class="input" [(ngModel)]="periodicity.time" (ngModelChange)="hasUnsavedChanges = true">
+          <option [ngValue]="'Minutes'">Minutes</option>
+          <option [ngValue]="'Hours'">Hours</option>
+          <option [ngValue]="'Days'">Days</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="inputs" style="margin-top: 40px">
+      <!-- Row #1 -->
+      <div class="row">
+        <div class="half">
+          <div class="input-wrapper">
+            <span class="label">DB Server</span>
+            <input type="text" id="db-server" name="db-server" class="input" [(ngModel)]="database.server" (ngModelChange)="hasUnsavedChanges = true">
+          </div>
+        </div>
+
+        <div class="half">
+          <div class="input-wrapper">
+            <span class="label">Tables Prefix</span>
+            <input type="text" id="prefix" name="prefix" class="input" [(ngModel)]="database.prefix" (ngModelChange)="hasUnsavedChanges = true">
+          </div>
+        </div>
+      </div>
+
+      <!-- Row #2 -->
+      <div class="row">
+        <div class="half">
+          <div class="input-wrapper">
+            <span class="label">DB Port</span>
+            <input type="text" id="db-port" name="db-port" class="input" [(ngModel)]="database.port" (ngModelChange)="hasUnsavedChanges = true">
+          </div>
+        </div>
+
+        <div class="half">
+          <div class="input-wrapper">
+            <span class="label">Moodle Course</span>
+            <input type="text" id="moodle-course" name="moodle-course" class="input" [(ngModel)]="moodle.course" (ngModelChange)="hasUnsavedChanges = true">
+          </div>
+        </div>
+      </div>
+
+      <!-- Row #3 -->
+      <div class="row">
+        <div class="half">
+          <div class="input-wrapper">
+            <span class="label">DB Name</span>
+            <input type="text" id="db-name" name="db-name" class="input" [(ngModel)]="database.name" (ngModelChange)="hasUnsavedChanges = true">
+          </div>
+        </div>
+
+        <div class="half">
+          <div class="input-wrapper">
+            <span class="label">Moodle User</span>
+            <input type="text" id="moodle-user" name="moodle-user" class="input" [(ngModel)]="moodle.user" (ngModelChange)="hasUnsavedChanges = true">
+          </div>
+        </div>
+      </div>
+
+      <!-- Row #4 -->
+      <div class="row">
+        <div class="half">
+          <div class="input-wrapper">
+            <span class="label">DB User</span>
+            <input type="text" id="db-user" name="db-user" class="input" [(ngModel)]="database.user" (ngModelChange)="hasUnsavedChanges = true">
+          </div>
+        </div>
+
+        <div class="half">
+          <div class="input-wrapper">
+            <span class="label">Moodle Time</span>
+            <input type="text" id="moodle-time" name="moodle-time" class="input" [(ngModel)]="moodle.time" (ngModelChange)="hasUnsavedChanges = true">
+          </div>
+        </div>
+      </div>
+
+      <!-- Row #5 -->
+      <div class="row">
+        <div class="half">
+          <div class="input-wrapper">
+            <span class="label">DB Password</span>
+            <input type="text" id="db-pass" name="db-pass" class="input" [(ngModel)]="database.password" (ngModelChange)="hasUnsavedChanges = true">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button id="save-button" class="button" [disabled]="!hasUnsavedChanges || !isReadyToSubmit()" (click)="saveMoodle()">Save</button>
+    </div>
+  </div>
+
+  <div class="success_box">
+    <div id="action_completed" class="success_msg"></div>
+  </div>
+</div>
+
+<!-- Loader -->
+<div *ngIf="loading" id="page-loading">
+  <img src="assets/loader/loader.gif" alt="loader">
+</div>

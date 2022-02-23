@@ -31,6 +31,7 @@ import {SkillData, TierData} from "../../_views/courses/course/settings/modules/
 import {Skill} from "../../_domain/skills/skill";
 import {ContentItem} from "../../_components/modals/file-picker-modal/file-picker-modal.component";
 import {Credentials} from "../../_views/courses/course/settings/modules/config/googlesheets/googlesheets.component";
+import {MoodleVars} from "../../_views/courses/course/settings/modules/config/moodle/moodle.component";
 
 @Injectable({
   providedIn: 'root'
@@ -984,6 +985,37 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['authUrl']) );
+  }
+
+
+  // Moodle
+  public getMoodleVars(courseID: number): Observable<MoodleVars> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MOODLE);
+      qs.push('request', 'getMoodleVars');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['moodleVars']) );
+  }
+
+  public setMoodleVars(courseID: number, moodleVars: MoodleVars): Observable<void> {
+    const data = {
+      courseId: courseID,
+      moodle: moodleVars
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MOODLE);
+      qs.push('request', 'setMoodleVars');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
   }
 
 

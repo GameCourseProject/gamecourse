@@ -80,7 +80,6 @@ class GoogleSheetsModule extends Module
 
     public function setupResources()
     {
-        parent::addResources('js/');
         parent::addResources('css/');
     }
 
@@ -342,7 +341,7 @@ class GoogleSheetsModule extends Module
 
     private function removeCronJob($courseId)
     {
-        Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 0, "periodicityNumber" => 0, 'periodicityTime' => NULL], ["course" => $courseId]);
+        Core::$systemDB->delete(self::TABLE_CONFIG, ["course" => $courseId]);
         new CronJob("GoogleSheets", $courseId, null, null, true);
     }
 }

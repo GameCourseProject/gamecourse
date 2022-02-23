@@ -14,6 +14,7 @@ import {FenixComponent} from "../fenix/fenix.component";
 import {ClasscheckComponent} from "../classcheck/classcheck.component";
 import {SkillsComponent} from "../skills/skills.component";
 import {GooglesheetsComponent} from "../googlesheets/googlesheets.component";
+import {MoodleComponent} from "../moodle/moodle.component";
 
 export interface GeneralInput {
   id: string,
@@ -111,6 +112,10 @@ export class ConfigComponent implements OnInit {
 
   get GoogleSheetsConfig(): typeof GooglesheetsComponent {
     return GooglesheetsComponent;
+  }
+
+  get MoodleConfig(): typeof MoodleComponent {
+    return MoodleComponent;
   }
 
   get SkillsConfig(): typeof SkillsComponent {

@@ -25,7 +25,7 @@ DROP TABLE IF EXISTS badge_progression;
 
 DROP TABLE IF EXISTS classcheck_config;
 DROP TABLE IF EXISTS googlesheets_config;
-DROP TABLE IF EXISTS config_moodle;
+DROP TABLE IF EXISTS moodle_config;
 DROP TABLE IF EXISTS config_qr;
 
 DROP TABLE IF EXISTS course;

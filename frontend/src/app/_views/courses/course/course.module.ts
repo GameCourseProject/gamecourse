@@ -20,6 +20,7 @@ import { FenixComponent } from './settings/modules/config/fenix/fenix.component'
 import { ClasscheckComponent } from './settings/modules/config/classcheck/classcheck.component';
 import { SkillsComponent } from './settings/modules/config/skills/skills.component';
 import { GooglesheetsComponent } from './settings/modules/config/googlesheets/googlesheets.component';
+import { MoodleComponent } from './settings/modules/config/moodle/moodle.component';
 
 
 @NgModule({
@@ -39,7 +40,8 @@ import { GooglesheetsComponent } from './settings/modules/config/googlesheets/go
     FenixComponent,
     ClasscheckComponent,
     SkillsComponent,
-    GooglesheetsComponent
+    GooglesheetsComponent,
+    MoodleComponent
   ],
   imports: [
     CommonModule,

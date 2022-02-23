@@ -1,17 +1,17 @@
-create table config_moodle(
-                              id 		int unsigned auto_increment primary key,
-                              course int unsigned not null,
-                              dbServer varchar(200) not null,
-                              dbUser varchar(200) not null,
-                              dbPass varchar(200) null,
-                              dbName varchar(200)  not null,
-                              dbPort int null,
-                              tablesPrefix varchar(200) null,
-                              moodleTime int null,
-                              moodleCourse varchar(200) null,
-                              moodleUser varchar(200) null,
-                              isEnabled boolean,
-                              periodicityNumber int,
-                              periodicityTime varchar(25),
-                              foreign key(course) references course(id) on delete cascade
+create table moodle_config (
+    id 		                int unsigned PRIMARY KEY AUTO_INCREMENT,
+    course                  int unsigned NOT NULL,
+    dbServer                varchar(200) NOT NULL,
+    dbUser                  varchar(200) NOT NULL,
+    dbPass                  varchar(200) NULL,
+    dbName                  varchar(200) NOT NULL,
+    dbPort                  int NULL,
+    tablesPrefix            varchar(200) NULL,
+    moodleTime              int null,
+    moodleCourse            varchar(200) NULL,
+    moodleUser              varchar(200) NULL,
+    isEnabled               boolean,
+    periodicityNumber       int,
+    periodicityTime         varchar(25),
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );

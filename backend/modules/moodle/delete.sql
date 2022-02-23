@@ -1,1 +1,1 @@
-drop table if exists config_moodle;
+drop table if exists moodle_config;

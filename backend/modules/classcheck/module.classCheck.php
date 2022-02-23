@@ -62,7 +62,6 @@ class ClassCheckModule extends Module
 
     public function setupResources()
     {
-        parent::addResources('js/');
         parent::addResources('css/');
     }
 
@@ -246,7 +245,7 @@ class ClassCheckModule extends Module
 
     private function removeCronJob($courseId)
     {
-        Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 0, "tsvCode" => "", "periodicityNumber" => 0, 'periodicityTime' => NULL], ["course" => $courseId]);
+        Core::$systemDB->delete(self::TABLE_CONFIG, ["course" => $courseId]);
         new CronJob( "ClassCheck", $courseId, null, null, true);
     }
 }
