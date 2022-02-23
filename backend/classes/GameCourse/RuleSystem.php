@@ -478,6 +478,15 @@ class RuleSystem
         return $newRule;
     }
 
+    public function changeRuleNameInFile($ruleFile, $oldName, $newName)
+    {
+        if ($this->ruleFileExists($ruleFile)) {
+            $txt = file_get_contents($this->rulesdir . $ruleFile);
+            $newTxt = str_replace($oldName, $newName, $txt);
+            file_put_contents($this->rulesdir . $ruleFile, $newTxt);
+        }
+    }
+
     public function changeRuleStatus($rule, $active) {
         $rows = explode("\n", $rule);
         if ((substr($rows[1], 0, 8) === "INACTIVE")) {

@@ -1338,6 +1338,7 @@ class Skills extends Module
     public function editSkill($skill, $courseId)
     {
         $treeId = Core::$systemDB->select(self::TABLE_TREES, ["course" => $courseId], "id");
+        $oldSkillData = Core::$systemDB->select(self::TABLE, ["treeId" => $treeId, "id" => $skill["id"]]);
 
         $skillData = [
             "name" => $skill['name'],
@@ -1460,7 +1461,21 @@ class Skills extends Module
         }
 
         // Update rule
-        // TODO: edit rule based on changes; only change the necessary
+        if ($oldSkillData["name"] != $skill["name"])
+            $this->editSkillRuleName($courseId, $oldSkillData["name"], $skill["name"]);
+
+        if ($oldSkillData["dependencies"] != $skill["dependencies"]) {
+            $dependencyList = [];
+            if ($skill["dependencies"] != "") {
+                $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
+                foreach ($pairDep as $dep) {
+                    $dependencies = explode("+", str_replace(" + ", "+", $dep));
+                    $dependencyList[] = $dependencies;
+                }
+            }
+            $hasWildcard = strpos($skill["dependencies"], "Wildcard") !== false;
+            $this->editSkillRuleDependencies($courseId, $dependencyList, $hasWildcard);
+        }
     }
 
     public function deleteSkill(int $skillId, int $courseId)
@@ -1817,6 +1832,18 @@ class Skills extends Module
         }
         $rule["rulefile"] = $filename;
         $rs->addRule($txt, 0, $rule); // add to top
+    }
+
+    public function editSkillRuleName(int $courseId, string $oldName, string $newName)
+    {
+        $rs = new RuleSystem(Course::getCourse($courseId));
+        $filename = $rs->getFilename(self::ID);
+        $rs->changeRuleNameInFile($filename, $oldName, $newName);
+    }
+
+    public function editSkillRuleDependencies(int $courseId, array $dependencies, bool $hasWildcard)
+    {
+        // TODO: edit rule based on changes; only change the necessary
     }
 
     public function deleteGeneratedRule(Course $course, string $skillName)
