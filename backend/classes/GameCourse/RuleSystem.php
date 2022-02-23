@@ -12,8 +12,6 @@ class RuleSystem
     private $rulesdir;
     private $ruletestpath;
     private $ruletestoutput;
-    private $templateRulePath = MODULES_FOLDER . "/skills/rules/rule_skill_template_basic.txt";
-    private $templateWildcardRulePath = MODULES_FOLDER . "/skills/rules/rule_skill_template_wildcard.txt";
     private $rules = array();
     private $tags = array();
 
@@ -72,14 +70,6 @@ class RuleSystem
 
     public function getRulesDir() {
         return $this->rulesdir;
-    }
-
-    public function getTemplateRulePath() {
-        return $this->templateRulePath;
-    }
-
-    public function getTemplateWildcardRulePath() {
-        return $this->templateWildcardRulePath;
     }
 
     public function getLastRunDate() {

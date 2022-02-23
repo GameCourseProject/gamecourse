@@ -1,16 +1,16 @@
-rule: $
+rule: <skill-name>
 
 	when:
-		%
-		
-		wildcard = GC.skillTrees.wildcardAvailable("$", "~", target)
-		%
-		use_wildcard = False
-		use_wildcard = False if skill_based else True
+	    wildcard = GC.skillTrees.wildcardAvailable("<skill-name>", "<tier-name>", target)
+
+		<skill-dependencies>
+
+        skill_based = <skill-based>
+        use_wildcard = False if skill_based else True
 	
-		logs = GC.participations.getSkillParticipations(target, "$")
+		logs = GC.participations.getSkillParticipations(target, "<skill-name>")
 		rating = get_rating(logs)
 		rating >= 3
 
 	then:
-		award_skill(target, "$", rating, logs, use_wildcard, "~")
+		award_skill(target, "<skill-name>", rating, logs, use_wildcard, "<tier-name>")

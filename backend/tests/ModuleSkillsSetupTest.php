@@ -54,7 +54,7 @@ class ModuleSkillsSetupTest extends TestCase
         $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table6 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_WILDCARD . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertTrue($result);
         $this->assertCount(1, $table1);
@@ -106,7 +106,7 @@ class ModuleSkillsSetupTest extends TestCase
         $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table6 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_WILDCARD . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertFalse($result);
         $this->assertCount(1, $table1);
@@ -133,7 +133,7 @@ class ModuleSkillsSetupTest extends TestCase
         $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table6 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_WILDCARD . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
@@ -170,7 +170,7 @@ class ModuleSkillsSetupTest extends TestCase
         $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table6 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_WILDCARD . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
@@ -254,7 +254,7 @@ class ModuleSkillsSetupTest extends TestCase
         $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table6 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_WILDCARD . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
@@ -291,7 +291,7 @@ class ModuleSkillsSetupTest extends TestCase
         $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table6 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_WILDCARD . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
@@ -333,7 +333,7 @@ class ModuleSkillsSetupTest extends TestCase
         $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table6 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_WILDCARD . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
@@ -373,7 +373,7 @@ class ModuleSkillsSetupTest extends TestCase
             $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
             $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
             $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
-            $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
+            $table6 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_WILDCARD . "';")->fetchAll(\PDO::FETCH_ASSOC);
     
             $this->assertCount(1, $table1);
             $this->assertCount(1, $table2);

@@ -2923,7 +2923,7 @@ class ModuleSkillsTest extends TestCase
         $skills = Core::$systemDB->selectMultiple(Skills::TABLE, []);
         $dependencies = Core::$systemDB->selectMultiple(Skills::TABLE_SUPER_SKILLS, []);
         $skillDependencies = Core::$systemDB->selectMultiple(Skills::TABLE_DEPENDENCIES, []);
-        $awardWildcard = Core::$systemDB->selectMultiple("award_wildcard", []);
+        $awardWildcard = Core::$systemDB->selectMultiple(Skills::TABLE_WILDCARD, []);
         $this->assertEmpty($tiers);
         $this->assertEmpty($trees);
         $this->assertEmpty($skills);

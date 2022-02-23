@@ -23,9 +23,13 @@ class Skills extends Module
     const TABLE_TIERS = self::TABLE . '_tier';
     const TABLE_DEPENDENCIES = self::TABLE . '_dependency';
     const TABLE_SUPER_SKILLS = 'dependency';
+    const TABLE_WILDCARD = 'award_wildcard';
 
     const SKILL_TREE_TEMPLATE = 'Skill Tree - by skills';
     const SKILLS_OVERVIEW_TEMPLATE = 'Skills Overview - by skills';
+
+    const SKILL_RULE_TEMPLATE = 'rule_skill_template_basic.txt';
+    const WILDCARD_RULE_TEMPLATE = 'rule_skill_template_wildcard.txt';
 
 
     /*** ----------------------------------------------- ***/
@@ -1326,7 +1330,9 @@ class Skills extends Module
 
         // Create rule
         $course = Course::getCourse($courseId, false);
-        $this->generateSkillRule($course, $skill['name'], $dependencyList);
+        if (strpos($skill["dependencies"], "Wildcard") !== false) // has wildcard dependency
+            $this->generateWildcardRule($course, $skill['name'], $dependencyList);
+        else $this->generateSkillRule($course, $skill['name'], $dependencyList);
     }
 
     public function editSkill($skill, $courseId)
@@ -1671,7 +1677,7 @@ class Skills extends Module
     {
 
         $usedWildcards = Core::$systemDB->selectMultiple(
-            "award_wildcard w left join " . AwardList::TABLE . " a on w.awardId = a.id left join " . self::TABLE_TIERS . " t on w.tierId = t.id",
+            self::TABLE_WILDCARD . " w left join " . AwardList::TABLE . " a on w.awardId = a.id left join " . self::TABLE_TIERS . " t on w.tierId = t.id",
             ["a.user" => $user, "t.tier" => $tier, "a.course" => $course],
             "count(w.awardId) as numUsed"
         );
@@ -1695,25 +1701,27 @@ class Skills extends Module
 
     /*** ----------- Rules ---------- ***/
 
-    public function generateSkillRule($course, $skillName, $dependencies = null)
+    public function generateSkillRule(Course $course, string $skillName, array $dependencies = null)
     {
-        $rs = new RuleSystem($course);
-        $template = file_get_contents($rs->getTemplateRulePath());
-        $newRule = str_replace("$", $skillName, $template);
+        $template = file_get_contents(MODULES_FOLDER . "/" . self::ID . "/rules/" . self::SKILL_RULE_TEMPLATE);
 
-        if (sizeof($dependencies) == 0) {
-            $txt = str_replace("\t\t%\n", "", $newRule);
-        }
-        else if (sizeof($dependencies) > 0) {
-            $ruletxt = explode("%", $newRule);
+        // Write skill name
+        $newRule = str_replace("<skill-name>", $skillName, $template);
+
+        // Write skill dependencies
+        if (sizeof($dependencies) == 0) { // no dependencies
+            $txt = preg_replace("/\t\t<skill-dependencies>\r*\n/", "", $newRule);
+
+        } else if (sizeof($dependencies) > 0) { // has dependencies
+            $ruletxt = explode("<skill-dependencies>", $newRule);
             $linesDependencies = "";
             $conditiontxt = array();
-            $nrdependencies = sizeof($dependencies);
+            $comboNr = 1;
             foreach ($dependencies as $dependency) {
-                $deptxt = "combo" . strval($nrdependencies) . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
+                $deptxt = "combo" . $comboNr . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
                 $linesDependencies .= $deptxt;
-                array_push($conditiontxt, "combo" . strval($nrdependencies));
-                $nrdependencies -= 1;
+                array_push($conditiontxt, "combo" . $comboNr);
+                $comboNr += 1;
             }
             $linesDependencies = trim($linesDependencies, "\t\n");
             $lineCombo = implode(" or ", $conditiontxt);
@@ -1722,7 +1730,9 @@ class Skills extends Module
             array_splice($ruletxt, 1, 0, $linesDependencies);
             $txt = implode("", $ruletxt);
         }
-        // add generated
+
+        // Add generated rule
+        $rs = new RuleSystem($course);
         $rule = array();
         $rule["module"] = self::ID;
         $filename = $rs->getFilename(self::ID);
@@ -1732,64 +1742,73 @@ class Skills extends Module
             $filename = $rs->getFilename(self::ID);
         }
         $rule["rulefile"] = $filename;
-        if (sizeof($dependencies) == 0 || $dependencies == null) { // if is wilcard will be added to top
-            $rs->addRule($txt, 0, $rule);
-        }
-        else { // add to end
-            $rs->addRule($txt, null, $rule);
-        }
+        $rs->addRule($txt, null, $rule); // add to end
     }
 
-    public function generateWildcardRule($course, $skillName, $dependencies = ["Doppleganger", "Alien Invasions"])
+    public function generateWildcardRule(Course $course, string $skillName, array $dependencies = null)
     {
-        $rs = new RuleSystem($course);
-        $template = file_get_contents($rs->getTemplateWildcardRulePath());
-        $tierName = "Wildcard";
-        $newRule = str_replace("$", $skillName, $template);
-        $newRuleAll = str_replace("~", $tierName, $newRule);
+        $template = file_get_contents(MODULES_FOLDER . "/" . self::ID . "/rules/" . self::WILDCARD_RULE_TEMPLATE);
 
-        $ruletxt = explode("%", $newRuleAll);
+        // Write skill name
+        $newRule = str_replace("<skill-name>", $skillName, $template);
 
-        $skillLines = array();
-        $skillsBoolList = array();
-        $condsLines = array();
-        $condsLineLines = array();
+        // Write tier name
+        $wildcard = "Wildcard";
+        $newRule = str_replace("<tier-name>", $wildcard, $newRule);
 
-        foreach ($dependencies as $i => $dependency) {
-            # skill dependencies
-            $skillLine = "skill" . strval($i + 1) . ' = rule_unlocked("' . $dependency . '", target)';
-            array_push($skillLines, $skillLine);
-            array_push($skillsBoolList, "skill" . strval($i + 1));
-            array_push($condsLines, "cond" . strval($i + 1) . " = skill" . strval($i + 1) . " and wildcard");
-            array_push($condsLineLines, "cond" . strval($i + 1));
+        if (sizeof($dependencies) == 0)
+            API::error("No dependencies found when generating wildcard rule");
+
+        // Write skill dependencies
+        $ruletxt = explode("<skill-dependencies>", $newRule);
+        $linesDependencies = "";
+        $skillBasedCombos = array();
+        $conditiontxt = array();
+        $comboNr = 1;
+        foreach ($dependencies as $dependency) {
+            if ($dependency[0]['name'] === $wildcard || $dependency[1]['name'] === $wildcard) { // has wildcard(s)
+                $deptxt = "combo" . $comboNr . " = " .
+                    ($dependency[0]['name'] === $wildcard ? "wildcard" : "rule_unlocked(\"" . $dependency[0]['name'] . "\", target)") . " and " .
+                    ($dependency[1]['name'] === $wildcard ? "wildcard" : "rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t");
+
+            } else { // no wildcard(s)
+                $deptxt = "combo" . $comboNr . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
+                array_push($skillBasedCombos, "combo" . $comboNr);
+            }
+            $linesDependencies .= $deptxt;
+            array_push($conditiontxt, "combo" . $comboNr);
+            $comboNr += 1;
         }
-
-        $skillLine = implode("\n\t\t", $skillLines);
-
-        $bools = implode(" and ", $skillsBoolList);
-        $lineBools = "skill_based = " . $bools . "\n\t\t";
-
-        $conds = implode("\n\t\t", $condsLines);
-        $condsLine = implode(" or ", $condsLineLines);
-        $allConds = "\n\t\t" . "skill_based or " . $condsLine . "\n";
-
-        array_splice($ruletxt, 1, 0, $skillLine);
-        array_splice($ruletxt, 3, 0, $conds);
-        array_splice($ruletxt, 3, 0, $lineBools);
-        array_splice($ruletxt, 5, 0, $allConds);
-
+        $linesDependencies = trim($linesDependencies, "\t\n");
+        $lineCombo = implode(" or ", $conditiontxt);
+        $linesDependencies .= "\n\t\t";
+        $linesDependencies .= $lineCombo;
+        array_splice($ruletxt, 1, 0, $linesDependencies);
         $txt = implode("", $ruletxt);
 
-        // add generated
+        // Write skill_based
+        if (count($skillBasedCombos) > 0) {
+            $skillBased = $skillBasedCombos[0];
+            foreach ($skillBasedCombos as $index => $combo) {
+                if ($index == 0) continue;
+                $skillBased .= " or " . $combo;
+            }
+
+        } else $skillBased = "False";
+        $txt = str_replace("<skill-based>", $skillBased, $txt);
+
+        // Add generated rule
+        $rs = new RuleSystem($course);
         $rule = array();
         $rule["module"] = self::ID;
         $filename = $rs->getFilename(self::ID);
         if ($filename == null) {
             $filename = $rs->createNewRuleFile(self::ID, 1);
             $rs->fixPrecedences();
+            $filename = $rs->getFilename(self::ID);
         }
         $rule["rulefile"] = $filename;
-        $rs->addRule($txt, 0, $rule);
+        $rs->addRule($txt, 0, $rule); // add to top
     }
 
     public function deleteGeneratedRule($course, $skillName)
