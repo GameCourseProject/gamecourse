@@ -16,7 +16,6 @@ class Streaks extends Module
     const ID = 'streaks';
 
     const TABLE = 'streak';
-    const TABLE_LEVEL = self::ID . '_level';
     const TABLE_CONFIG = self::ID . '_config';
 
     const STREAKS_TEMPLATE_NAME = 'Streaks block - by streaks';
@@ -308,7 +307,6 @@ class Streaks extends Module
     {
         $streaksConfigArray = array();
         $streaksArray = array();
-        $streaksLevelArray = array();
 
         $streaksArr = array();
         if (Core::$systemDB->tableExists(self::TABLE_CONFIG)) {
@@ -324,20 +322,15 @@ class Streaks extends Module
                 unset($streaksConfigVarDB["course"]);
                 foreach (streakssVarDB as $streak) {
                     array_push($streaksArray, $streak);
-
-                    $streaksLevelVarDB_ = Core::$systemDB->selectMultiple(self::TABLE_LEVEL, ["streakId" => $streak["id"]], "*");
-                    foreach ($streaksLevelVarDB_ as $streaksLevelVarDB) {
-                        array_push($streaksLevelArray, $streaksLevelVarDB);
-                    }
+                    
                 }
             }
         }
 
         $streaksArr[self::TABLE_CONFIG] = $streaksConfigArray;
         $streaksArr[self::TABLE] = $streaksArray;
-        $streaksArr[self::TABLE_LEVEL] = $streaksLevelArray;
 
-        if ($streaksConfigArray || $streaksArray || $streaksLevelArray) {
+        if ($streaksConfigArray || $streaksArray ) {
             return $streaksArr;
         } else {
             return false;
