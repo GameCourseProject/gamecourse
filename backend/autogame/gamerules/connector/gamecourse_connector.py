@@ -1289,7 +1289,49 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                         cnx.commit()
 
 
-                #elif isPeriodic and isAtMost and not isCount:
+                elif isPeriodic and isAtMost and not isCount:
+
+                    query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND type = %s;"
+                    cursor.execute(query, (target, course, participationType))
+                    table_participations = cursor.fetchall()
+
+                    size = 0
+                    for item in table_participations:
+                        size += 1
+
+                    for i in range(size):
+                         j = i+1
+                         if j < size:
+                            firstParticipationId = table_participations[i][0]  # YYYY-MM-DD HH:MM:SS
+                            secondParticipationId = table_participations[j][0]
+
+                            firstParticipationObj = table_participations[i][1]  # YYYY-MM-DD HH:MM:SS
+                            secondParticipationObj = table_participations[j][1]
+
+                            if len(periodicityTime) == 7:  # minutes
+                                dif = secondParticipationObj - firstParticipationObj
+                                if dif > timedelta(minutes=periodicity):
+                                    return
+                            elif len(periodicityTime) == 5:   # hours
+                                dif = secondParticipationObj - firstParticipationObj
+                                if dif > timedelta(hours=periodicity):
+                                    return
+                            elif len(periodicityTime) == 4:   # days
+                                dif = secondParticipationObj.date() - firstParticipationObj.date()
+                                if dif > timedelta(days=periodicity):
+                                    return
+                            elif len(periodicityTime) == 6:  # weeks_
+                                weeksInDays = periodicity*7
+                                dif = secondParticipationObj.date() - firstParticipationObj.date()
+                                if dif > timedelta(days=weeksInDays):
+                                   return
+                            else:
+                                return
+
+                    for log in contributions:
+                        query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
+                        cursor.execute(query, (course, target, streakid, log.log_id))
+                        cnx.commit()
 
     # gets all streak progressions
     query = "SELECT * FROM streak_progression where user = %s AND course = %s AND streakId = %s ;"
