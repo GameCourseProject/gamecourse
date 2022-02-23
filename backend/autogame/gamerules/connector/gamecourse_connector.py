@@ -1203,10 +1203,8 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
 
                     for participation in table_participations:
                         participation_id = participation[0]
-                        participation_date = participation[1]
-
-                        query = "INSERT into streak_progression (course, user, streakId, participationId, participationDate) values (%s,%s,%s,%s,%s);"
-                        cursor.execute(query, (course, target, streakid, participation_id, participation_date))
+                        query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
+                        cursor.execute(query, (course, target, streakid, participation_id))
                         cnx.commit()
 
 
