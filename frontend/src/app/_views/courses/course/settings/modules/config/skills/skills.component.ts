@@ -197,7 +197,7 @@ export class SkillsComponent implements OnInit {
 
   deleteSkill(): void {
     this.loading = true;
-    this.api.deleteSkill(this.courseID, this.skillToDelete)
+    this.api.deleteSkill(this.courseID, this.skillToDelete.id)
       .pipe( finalize(() => {
         this.tierToDelete = null;
         this.skillToDelete = null;

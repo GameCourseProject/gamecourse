@@ -627,7 +627,7 @@ class RuleSystem
             array_splice($sectionRules, $position, 1);
             $content = $this->joinRules($sectionRules);
 
-            $file = file_put_contents($this->rulesdir . $rule["rulefile"], $content);
+            file_put_contents($this->rulesdir . $rule["rulefile"], $content);
         }
     }
 

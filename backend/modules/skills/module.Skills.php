@@ -769,16 +769,16 @@ class Skills extends Module
          * Deletes a skill from the course skill tree.
          *
          * @param int $courseId
-         * @param $skill
+         * @param int $skillId
          */
         API::registerFunction(self::ID, 'deleteSkill', function () {
             API::requireCourseAdminPermission();
-            API::requireValues('courseId', 'skill');
+            API::requireValues('courseId', 'skillId');
 
             $courseId = API::getValue('courseId');
             $course = API::verifyCourseExists($courseId);
 
-            $this->deleteSkill(API::getValue('skill'), $courseId);
+            $this->deleteSkill(API::getValue('skillId'), $courseId);
         });
 
         /**
@@ -1458,16 +1458,24 @@ class Skills extends Module
                 }
             }
         }
+
+        // Update rule
+        // TODO: edit rule based on changes; only change the necessary
     }
 
-    public function deleteSkill($skill, $courseId)
+    public function deleteSkill(int $skillId, int $courseId)
     {
-        if (!empty(Core::$systemDB->selectMultiple(self::TABLE_DEPENDENCIES, ["normalSkillId" => $skill["id"], "isTier" => false])))
+        if (!empty(Core::$systemDB->selectMultiple(self::TABLE_DEPENDENCIES, ["normalSkillId" => $skillId, "isTier" => false])))
             API::error("This skill is a dependency of others skills. You must remove them first.");
 
-        $skillInfo = Core::$systemDB->select(self::TABLE . " left join " . self::TABLE_TREES . " on " . self::TABLE . ".treeId=" . self::TABLE_TREES . ".id", [self::TABLE . ".id" => $skill["id"], "course" => $courseId], "name, tier, treeId");
-        if(!empty($skillInfo)){
-            Core::$systemDB->delete(self::TABLE, ["id" => $skill['id']]);
+        $skillInfo = Core::$systemDB->select(
+            self::TABLE . " left join " . self::TABLE_TREES . " on " . self::TABLE . ".treeId=" . self::TABLE_TREES . ".id",
+            [self::TABLE . ".id" => $skillId, "course" => $courseId],
+            "name, tier, treeId"
+        );
+
+        if (!empty($skillInfo)) {
+            Core::$systemDB->delete(self::TABLE, ["id" => $skillId]);
             $course = Course::getCourse($courseId);
             $this->deleteGeneratedRule($course, $skillInfo['name']);
 
@@ -1710,7 +1718,7 @@ class Skills extends Module
 
         // Write skill dependencies
         if (sizeof($dependencies) == 0) { // no dependencies
-            $txt = preg_replace("/\t\t<skill-dependencies>\r*\n/", "", $newRule);
+            $txt = preg_replace("/\t\t<skill-dependencies>(\r*\n)*/", "", $newRule);
 
         } else if (sizeof($dependencies) > 0) { // has dependencies
             $ruletxt = explode("<skill-dependencies>", $newRule);
@@ -1811,7 +1819,7 @@ class Skills extends Module
         $rs->addRule($txt, 0, $rule); // add to top
     }
 
-    public function deleteGeneratedRule($course, $skillName)
+    public function deleteGeneratedRule(Course $course, string $skillName)
     {
         $rs = new RuleSystem($course);
         $rule = array();

@@ -1094,10 +1094,10 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public deleteSkill(courseID: number, skill: SkillData): Observable<void> {
+  public deleteSkill(courseID: number, skillID: number): Observable<void> {
     const data = {
       courseId: courseID,
-      skill
+      skillId: skillID
     };
 
     const params = (qs: QueryStringParameters) => {
