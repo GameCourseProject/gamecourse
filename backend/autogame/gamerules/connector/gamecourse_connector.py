@@ -1364,6 +1364,14 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                 cursor.execute(query, (target, course, description, typeof))
                 table_id = cursor.fetchall()
                 award_id = table_id[0][0]
+
+                if not config.test_mode:
+                    for el in table_progressions:
+                        participation_id = el[3]
+                        query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                        cursor.execute(query, (award_id, participation_id))
+                        cnx.commit()
+
             else:
                 totalAwards = len(table_progressions) // streak_count
 
@@ -1376,6 +1384,29 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                     cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
                     cnx.commit()
                     cursor = cnx.cursor(prepared=True)
+
+                    if diff == 0:
+                        if contributions != None:
+                            query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+                            cursor.execute(query, (target, course, description, typeof))
+                            table_id = cursor.fetchall()
+                            award_id = table_id[0][0]
+
+                            if not config.test_mode:
+                                for el in range(streak_count):
+                                    participation_id = table_progressions[el][3]
+                                    query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                                    cursor.execute(query, (award_id, participation_id))
+                                    cnx.commit()
+
+
+            if not config.test_mode:
+                if contributions != None and contributions != None:
+                    nr_contributions = str(len(contributions))
+                else:
+                    nr_contributions = ''
+
+                config.award_list.append([str(target), str(streak), str(streak_reward), nr_contributions])
 
 
 
