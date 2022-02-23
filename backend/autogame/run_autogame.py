@@ -219,6 +219,7 @@ if __name__ == "__main__":
 	for el in students.keys():
 		clear_badge_progression(el)
 		clear_streak_progression(el)
+		clear_streak_participations(el)
 	
 	# Save the start date
 	timestamp = datetime.now()
