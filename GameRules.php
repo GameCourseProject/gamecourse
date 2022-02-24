@@ -38,7 +38,7 @@ class GameRules{
 			if ($targets != null) {
 				$this->targets = $targets;
 			}
-		}                                                                                                                               re
+		}                                                                                                                            
 		if ($testMode) {
 			$this->autogamePath = self::ROOT_FOLDER . "autogame/run_autogame_test.py";
 			$this->testMode = True;
