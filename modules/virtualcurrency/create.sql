@@ -1,5 +1,5 @@
 create table config_virtual_currency(
-    name varchar(70) not null,,
+    name varchar(70) not null,
     course int unsigned not null,
     initialTokens int not null,
     cost1 int not null,

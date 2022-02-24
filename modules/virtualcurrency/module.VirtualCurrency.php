@@ -25,7 +25,7 @@ class VirtualCurrency extends Module
         $viewHandler = $viewsModule->getViewHandler();
 
         $viewHandler->registerLibrary("virtualcurrency", "virtualcurrency", "This library provides information regarding Virtual Currency. It is provided by the Virtual Currency module.");
-        
+
 
         //streaks.getVirtualCurrency(name)
         $viewHandler->registerFunction(
@@ -41,7 +41,7 @@ class VirtualCurrency extends Module
             null
         );
 
-        
+
     }
 
     // public function initDictionary
@@ -69,7 +69,7 @@ class VirtualCurrency extends Module
 
                 ]);
         }
-        
+
     }
 
     public function update_module($compatibleVersions)
@@ -94,7 +94,7 @@ class VirtualCurrency extends Module
 
     public function moduleConfigJson($courseId)
     {
-        
+
         $currencyConfigArray = array();
 
         if (Core::$systemDB->tableExists("config_virtual_currency")) {
@@ -185,7 +185,7 @@ class VirtualCurrency extends Module
     {
         return  false;
     }
-    
+
 
     /*** ----------------------------------------------- ***/
     /*** ------------ Database Manipulation ------------ ***/
@@ -193,7 +193,7 @@ class VirtualCurrency extends Module
 
     public function deleteDataRows($courseId)
     {
-        
+
     }
 
     /*** ----------------------------------------------- ***/
@@ -230,7 +230,7 @@ class VirtualCurrency extends Module
         Core::$systemDB->update("config_virtual_currency", [$cost => $value], ["course" => $courseId]);
     }
 
-    
+
 }
 
 ModuleLoader::registerModule(array(

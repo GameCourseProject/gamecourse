@@ -45,12 +45,7 @@ drop table if exists autogame;
 drop table if exists profiling_config;
 drop table if exists user_profile;
 drop table if exists saved_user_profile;
-drop table if exists streak_progression;
-drop table if exists streak;
-drop table if exists streaks_config;
-drop table if exists streak_participations;
-drop table if exists config_virtual_currency;
-drop table if exists user_wallet;
+
 
 create table game_course_user(
 	id 		int unsigned primary key auto_increment,
