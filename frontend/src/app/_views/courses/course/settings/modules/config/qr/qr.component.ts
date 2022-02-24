@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ApiHttpService} from "../../../../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
 import {finalize} from "rxjs/operators";
 import {ErrorService} from "../../../../../../../_services/error.service";
+import {TypeOfClass} from "../../../../page/page.component";
 
 @Component({
   selector: 'app-qr',
@@ -17,6 +18,30 @@ export class QrComponent implements OnInit {
   quantity: number;
   qrCodes: {qr: string, url: string}[];
 
+  tables: {
+    participation: {
+      loading: boolean,
+      headers: string[],
+      data: string[][]
+    },
+    qrError: {
+      loading: boolean,
+      headers: string[],
+      data: string[][]
+    }
+  } = {
+    participation: {
+      loading: true,
+      headers: null,
+      data: null
+    },
+    qrError: {
+      loading: true,
+      headers: null,
+      data: null
+    }
+  }
+
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute
@@ -26,6 +51,8 @@ export class QrComponent implements OnInit {
     this.loading = true;
     this.route.parent.params.subscribe(params => {
       this.courseID = parseInt(params.id);
+      this.buildParticipationTable();
+      this.buildQRErrorTable();
       this.loading = false;
     });
   }
@@ -57,6 +84,41 @@ export class QrComponent implements OnInit {
     myWindow.onafterprint = () => myWindow.close();
 
     this.loading = false;
+  }
+
+  buildParticipationTable() {
+    this.tables.participation.headers = [
+      'id', 'name', 'student nr', 'type', 'lecture nr', 'date'
+    ];
+
+    this.api.getTableData(this.courseID, 'participation')
+      .pipe(finalize(() => this.tables.participation.loading = false))
+      .subscribe(
+        data => {
+          const QRParticipations = data.entries.filter(entry => entry.type === 'participated in lecture' || entry.type === 'participated in lecture (invited)');
+          this.tables.participation.data = QRParticipations.map(entry => [
+            entry.id, entry.name, entry.studentNumber,  entry.type === 'participated in lecture' ? TypeOfClass.LECTURE : TypeOfClass.INVITED_LECTURE, entry.description, entry.date
+          ]);
+        },
+          error => ErrorService.set(error)
+      )
+  }
+
+  buildQRErrorTable() {
+    this.tables.qrError.headers = [
+      'date', 'name', 'student nr', 'error', 'QR key'
+    ];
+
+    this.api.getTableData(this.courseID, 'qr_error')
+      .pipe(finalize(() => this.tables.qrError.loading = false))
+      .subscribe(
+        data => {
+          this.tables.qrError.data = data.entries.map(entry => [
+            entry.date, entry.name, entry.studentNumber, entry.msg, entry.qrkey
+          ]);
+        },
+        error => ErrorService.set(error)
+      )
   }
 
 }

@@ -7,6 +7,8 @@ import { AppComponent } from './app.component';
 import { SharedModule } from "./shared.module";
 import {CacheInterceptor} from "./_interceptors/cache.interceptor";
 
+import {DataTablesModule} from "angular-datatables";
+
 @NgModule({
   declarations: [
     AppComponent
@@ -16,6 +18,7 @@ import {CacheInterceptor} from "./_interceptors/cache.interceptor";
     AppRoutingModule,
     HttpClientModule,
     SharedModule,
+    DataTablesModule,
   ],
   providers: [{
     provide: HTTP_INTERCEPTORS,

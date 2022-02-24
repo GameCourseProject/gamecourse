@@ -1,0 +1,27 @@
+<div class="data-table">
+  <!-- Table -->
+  <table [id]="id" class="hover order-column {{classList}}">
+
+    <!-- Table: header -->
+    <thead>
+    <tr>
+      <th *ngFor="let header of headers">{{header}}</th>
+    </tr>
+    </thead>
+
+    <!-- Table: body -->
+    <tbody>
+    <tr *ngFor="let tr of data; let i = index">
+      <td *ngFor="let td of tr; let col = index">{{td}}</td>
+    </tr>
+    </tbody>
+
+    <!-- Table: footer -->
+    <tfoot>
+    <tr>
+      <th *ngFor="let footer of footers">{{footer}}</th>
+    </tr>
+    </tfoot>
+
+  </table>
+</div>

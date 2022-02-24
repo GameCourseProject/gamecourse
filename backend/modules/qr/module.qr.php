@@ -79,7 +79,7 @@ class QR extends Module
          * @param int $lectureNr
          * @param string $typeOfClass
          */
-        API::registerFunction(self::ID, 'submitParticipation', function () {
+        API::registerFunction(self::ID, 'submitQRParticipation', function () {
             API::requireCoursePermission();
             API::requireValues('courseId', 'lectureNr', 'typeOfClass');
 

@@ -110,7 +110,7 @@ export class PageComponent implements OnInit {
 
   submitParticipation() {
     this.loading = true;
-    this.api.submitParticipation(this.courseID, this.participationKey, this.lectureNr, this.typeOfClass)
+    this.api.submitQRParticipation(this.courseID, this.participationKey, this.lectureNr, this.typeOfClass)
       .pipe(finalize(() => this.loading = false))
       .subscribe(
         res => {

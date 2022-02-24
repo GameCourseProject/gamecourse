@@ -1,5 +1,5 @@
 <div *ngIf="!qrCodes">
-  <div class="section">
+  <div class="section generator" style="margin-bottom: 70px">
     <div class="divider">
       <div class="title"><span>QR Code Generator</span></div>
     </div>
@@ -13,6 +13,36 @@
       <div class="action-buttons">
         <button id="generate-button" class="button" [disabled]="!quantity" (click)="generateQRCodes()">Generate</button>
       </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="divider">
+      <div class="title"><span>Participation List</span></div>
+    </div>
+
+    <div style="margin-top: 30px;">
+      <app-datatable
+        [id]="'participation-table'"
+        [headers]="tables.participation.headers"
+        [data]="tables.participation.data"
+        [loading]="tables.participation.loading">
+      </app-datatable>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="divider">
+      <div class="title"><span>Failed Attempts</span></div>
+    </div>
+
+    <div style="margin-top: 30px;">
+      <app-datatable
+        [id]="'qr-error-table'"
+        [headers]="tables.qrError.headers"
+        [data]="tables.qrError.data"
+        [loading]="tables.qrError.loading">
+      </app-datatable>
     </div>
   </div>
 </div>

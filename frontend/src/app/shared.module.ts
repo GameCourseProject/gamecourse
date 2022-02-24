@@ -34,6 +34,7 @@ import {RadarChartComponent} from "./_components/charts/radar-chart/radar-chart.
 import {InputRichTextComponent} from "./_components/inputs/rich-text/input-rich-text/input-rich-text.component";
 import {FilePickerModalComponent} from "./_components/modals/file-picker-modal/file-picker-modal.component";
 import {SanitizeHTMLPipe} from "./_pipes/sanitize-html.pipe";
+import {DatatableComponent} from "./_components/tables/datatable/datatable.component";
 
 
 @NgModule({
@@ -68,7 +69,8 @@ import {SanitizeHTMLPipe} from "./_pipes/sanitize-html.pipe";
     RadarChartComponent,
     InputRichTextComponent,
     FilePickerModalComponent,
-    SanitizeHTMLPipe
+    SanitizeHTMLPipe,
+    DatatableComponent
   ],
   exports: [
     NavbarComponent,
@@ -88,7 +90,8 @@ import {SanitizeHTMLPipe} from "./_pipes/sanitize-html.pipe";
     AsPipe,
     ClickedOutsideDirective,
     InputRichTextComponent,
-    SanitizeHTMLPipe
+    SanitizeHTMLPipe,
+    DatatableComponent
   ],
     imports: [
         CommonModule,

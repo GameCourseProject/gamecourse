@@ -1038,7 +1038,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']['QRCodes']) );
   }
 
-  public submitParticipation(courseID: number, key: string, lectureNr: number, typeOfClass: TypeOfClass): Observable<void> {
+  public submitQRParticipation(courseID: number, key: string, lectureNr: number, typeOfClass: TypeOfClass): Observable<void> {
     const data = {
       courseId: courseID,
       key,
@@ -1048,7 +1048,7 @@ export class ApiHttpService {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.QR);
-      qs.push('request', 'submitParticipation');
+      qs.push('request', 'submitQRParticipation');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);

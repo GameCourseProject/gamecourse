@@ -56,6 +56,7 @@
               "node_modules/codemirror/addon/hint/show-hint.css",
               "node_modules/nestable2/dist/jquery.nestable.min.css",
               "node_modules/quill/dist/quill.snow.css",
+              "node_modules/datatables.net-dt/css/jquery.dataTables.min.css",
               "src/styles/global.scss"
             ],
             "scripts": [
@@ -69,7 +70,8 @@
               "node_modules/nestable2/dist/jquery.nestable.min.js",
               "node_modules/apexcharts/dist/apexcharts.min.js",
               "node_modules/quill/dist/quill.min.js",
-              "node_modules/quill-image-resize/image-resize.min.js"
+              "node_modules/quill-image-resize/image-resize.min.js",
+              "node_modules/datatables.net/js/jquery.dataTables.min.js"
             ],
             "allowedCommonJsDependencies": [
               "codemirror"
