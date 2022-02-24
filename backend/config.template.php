@@ -29,6 +29,10 @@
     const LINKEDIN_CLIENT_SECRET = '<LINKEDIN_CLIENT_SECRET>';
     const LINKEDIN_REDIRECT_URL = API_URL . '/auth?linkedin';
 
+    /** Tiny URL Auth */
+    const TINY_API_TOKEN = '<TINY_API_TOKEN>';
+    const TINY_API_URL = '<TINY_API_URL>';
+
     /** Folders */
     const MODULES_FOLDER = 'modules';
     const COURSE_DATA_FOLDER = 'course_data';

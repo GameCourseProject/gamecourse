@@ -187,15 +187,23 @@ class QR extends Module
 
     public function getTinyURL(string $url): string
     {
-        return file_get_contents('https://tinyurl.com/api-create.php?url=' . $url);
-//        $ch = curl_init();
-//        $timeout = 5;
-//        curl_setopt($ch,CURLOPT_URL,'http://tinyurl.com/api-create.php?url=' . $url);
-//        curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
-//        curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,$timeout);
-//        $data = curl_exec($ch);
-//        curl_close($ch);
-//        return $data;
+        $ch = curl_init();
+        $timeout = 5;
+        $content = json_encode(array('url' => $url));
+
+        // Make a POST request to create tiny url
+        curl_setopt($ch,CURLOPT_URL,TINY_API_URL . '/create?api_token=' . TINY_API_TOKEN);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-type: application/json"));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $content);
+        curl_setopt($ch, CURLOPT_POST, true);
+
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+        curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,$timeout);
+
+        $data = json_decode(curl_exec($ch), true)['data'];
+        curl_close($ch);
+
+        return $data['tiny_url'];
     }
 }
 
@@ -211,4 +219,3 @@ ModuleLoader::registerModule(array(
         return new QR();
     }
 ));
-?>

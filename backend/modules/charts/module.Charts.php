@@ -446,4 +446,3 @@ ModuleLoader::registerModule(array(
         return new Charts();
     }
 ));
-?>

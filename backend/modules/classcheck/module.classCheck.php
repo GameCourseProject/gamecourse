@@ -262,5 +262,3 @@ ModuleLoader::registerModule(array(
         return new ClassCheckModule();
     }
 ));
-
-?>

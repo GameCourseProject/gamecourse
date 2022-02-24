@@ -715,4 +715,3 @@ ModuleLoader::registerModule(array(
         return new Profiling();
     }
 ));
-?>
