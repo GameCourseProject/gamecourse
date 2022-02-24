@@ -10,7 +10,6 @@ include 'classes/GameCourse/Course.php';
 
 use GameCourse\Core;
 use GameCourse\Course;
-use GameCourse\User;
 
 Core::init();
 $course = $argv[1];

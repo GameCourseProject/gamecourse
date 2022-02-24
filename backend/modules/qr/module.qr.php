@@ -140,20 +140,6 @@ class QR extends Module
                 API::error("Sorry. An error occured. Contact your class professor with your QRCode and this message. Your student ID and IP number was registered.");
             }
         });
-
-        API::registerFunction(self::ID, 'qrError', function () {
-            API::requireCourseAdminPermission();
-            $courseId = API::getValue('course');
-            $errors = Core::$systemDB->selectMultiple(QR::TABLE_ERROR . " q left join game_course_user u on q.user = u.id",
-                ["course" => $courseId],
-                "date, user, msg, qrkey",
-                "date DESC");
-            API::response(["errors" => $errors]);
-        });
-    }
-
-    public function setupResources() {
-        parent::addResources('css/');
     }
 
     public function setupData(){
