@@ -1,0 +1,37 @@
+<div *ngIf="!qrCodes">
+  <div class="section">
+    <div class="divider">
+      <div class="title"><span>QR Code Generator</span></div>
+    </div>
+
+    <div class="content">
+      <div class="input-wrapper" style="max-width: 250px">
+        <span class="label">How many QR codes?</span>
+        <input type="number" id="qr-quantity" name="qr-quantity" class="input" [(ngModel)]="quantity">
+      </div>
+
+      <div class="action-buttons">
+        <button id="generate-button" class="button" [disabled]="!quantity" (click)="generateQRCodes()">Generate</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="qrCodes">
+  <div class="qr-codes-btns">
+    <button id="back-button" class="button" style="margin-right: 10px" (click)="qrCodes = null">Go back</button>
+    <button id="print-button" class="button" (click)="printQRCodes()">Print</button>
+  </div>
+
+  <div class="qr-codes" id="print-qr-codes">
+    <div *ngFor="let QR of qrCodes" class="code">
+      <img [src]="QR.qr" alt="{{QR.url}}">
+<!--      <a href="{{QR.url}}" target="_blank">{{QR.url}}</a> FIXME -->
+    </div>
+  </div>
+</div>
+
+<!-- Loader -->
+<div *ngIf="loading" id="page-loading">
+  <img src="assets/loader/loader.gif" alt="loader">
+</div>

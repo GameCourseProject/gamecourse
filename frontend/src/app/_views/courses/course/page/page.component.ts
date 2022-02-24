@@ -6,6 +6,8 @@ import {View} from "../../../../_domain/views/view";
 import {Skill} from "../../../../_domain/skills/skill";
 import {ApiEndpointsService} from "../../../../_services/api/api-endpoints.service";
 import {finalize} from "rxjs/operators";
+import {Course} from "../../../../_domain/courses/course";
+import {exists} from "../../../../_utils/misc/misc";
 
 @Component({
   selector: 'app-page',
@@ -22,6 +24,11 @@ export class PageComponent implements OnInit {
 
   pageView: View;
   skill: Skill;
+
+  participationKey: string;
+  course: Course;
+  lectureNr: number;
+  typeOfClass: TypeOfClass;
 
   loading: boolean;
   isPreview: boolean;
@@ -45,6 +52,15 @@ export class PageComponent implements OnInit {
           this.skillID = parseInt(params.id);
           this.isPreview = !!params.preview;
           this.getSkill();
+
+        } else if (this.router.url.includes('participation')) {
+          this.participationKey = params.key;
+          this.api.getCourse(this.courseID)
+            .pipe(finalize(() => this.loading = false))
+            .subscribe(
+              course => this.course = course,
+              error => ErrorService.set(error)
+            )
 
         } else {
           this.pageID = parseInt(params.id);
@@ -88,4 +104,33 @@ export class PageComponent implements OnInit {
     this.router.navigate(['./settings/modules/skills/config'], {relativeTo: this.route.parent});
   }
 
+  getTypesOfClasses(): string[] {
+    return Object.values(TypeOfClass);
+  }
+
+  submitParticipation() {
+    this.loading = true;
+    this.api.submitParticipation(this.courseID, this.participationKey, this.lectureNr, this.typeOfClass)
+      .pipe(finalize(() => this.loading = false))
+      .subscribe(
+        res => {
+          const successBox = $('.success_msg');
+          successBox.empty();
+          successBox.append("Your active participation was registered.<br />Congratulations! Keep participating. ;)");
+          successBox.show().delay(5000).fadeOut();
+        },
+        error => ErrorService.set(error)
+      )
+  }
+
+  isReadyToSubmitParticipation(): boolean {
+    return exists(this.lectureNr) && this.lectureNr > 0 &&
+      exists(this.typeOfClass) && Object.values(TypeOfClass).includes(this.typeOfClass);
+  }
+
+}
+
+export enum TypeOfClass {
+  LECTURE = 'Lecture',
+  INVITED_LECTURE = 'Invited Lecture'
 }

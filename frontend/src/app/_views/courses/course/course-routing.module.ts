@@ -71,6 +71,10 @@ const routes: Routes = [
   {
     path: 'skills/:id/:preview',
     component: PageComponent
+  },
+  {
+    path: 'participation/:key',
+    component: PageComponent
   }
 ];
 

@@ -21,6 +21,7 @@ import { ClasscheckComponent } from './settings/modules/config/classcheck/classc
 import { SkillsComponent } from './settings/modules/config/skills/skills.component';
 import { GooglesheetsComponent } from './settings/modules/config/googlesheets/googlesheets.component';
 import { MoodleComponent } from './settings/modules/config/moodle/moodle.component';
+import { QrComponent } from './settings/modules/config/qr/qr.component';
 
 
 @NgModule({
@@ -41,7 +42,8 @@ import { MoodleComponent } from './settings/modules/config/moodle/moodle.compone
     ClasscheckComponent,
     SkillsComponent,
     GooglesheetsComponent,
-    MoodleComponent
+    MoodleComponent,
+    QrComponent
   ],
   imports: [
     CommonModule,

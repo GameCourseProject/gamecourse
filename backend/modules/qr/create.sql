@@ -1,18 +1,19 @@
 create table qr_code(
-	qrkey varchar(50) not null,
-	course int unsigned not null,
-	studentNumber int unsigned,
-	classNumber int,
-	classType  varchar(50),
-	foreign key (course) references course(id) on delete cascade
+	qrkey               varchar(50) NOT NULL,
+	course              int unsigned NOT NULL,
+	user                int unsigned,
+	classNumber         int,
+	classType           varchar(50),
+	FOREIGN key (course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN key (user) REFERENCES game_course_user(id) ON DELETE CASCADE
 );
 create table qr_error(
-	user int unsigned not null,
-	course  int unsigned not null,
-	ip varchar(50),
-	qrkey varchar(50), 
-	msg varchar(500),
-	date timestamp default CURRENT_TIMESTAMP,
-	foreign key (course) references course(id) on delete cascade,
-	foreign key (user) references game_course_user(id) on delete cascade
+	user                int unsigned NOT NULL,
+	course              int unsigned NOT NULL,
+	ip                  varchar(50),
+	qrkey               varchar(50),
+	msg                 varchar(500),
+	date                timestamp default CURRENT_TIMESTAMP,
+    FOREIGN key (course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN key (user) REFERENCES game_course_user(id) ON DELETE CASCADE
 );

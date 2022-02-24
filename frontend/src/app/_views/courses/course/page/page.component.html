@@ -13,6 +13,26 @@
   <div [innerHTML]="skill.description | sanitizeHTML"></div>
 </div>
 
+<div *ngIf="participationKey" class="page participation-page">
+  <h1>Bonus XP - Lecture Active Participation</h1>
+  <h4 *ngIf="course">{{course.name}} - {{course.year}}</h4>
+
+  <div class="row">
+    <div class="input-wrapper" style="width: 230px; margin-bottom: 20px;">
+      <span class="label">Lecture Nr.</span>
+      <input type="number" id="lecture-nr" name="lecture-nr" min="1" class="input" [(ngModel)]="lectureNr">
+    </div>
+
+    <select class="form__input" id="type-of-class" style="width: 230px" [(ngModel)]="typeOfClass">
+      <option disabled [value]="undefined">Select a type of class</option>
+      <option *ngFor="let type of getTypesOfClasses()" [label]="type" [value]="type">{{type}}</option>
+    </select>
+
+    <button class="button" [disabled]="!isReadyToSubmitParticipation()" style="display: block; width: 230px" (click)="submitParticipation()">Submit</button>
+    <p class="success_msg"></p>
+  </div>
+</div>
+
 <!-- Loader -->
 <div *ngIf="loading" id="page-loading">
   <img src="assets/loader/loader.gif" alt="loader">

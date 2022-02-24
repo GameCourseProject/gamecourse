@@ -32,6 +32,7 @@ import {Skill} from "../../_domain/skills/skill";
 import {ContentItem} from "../../_components/modals/file-picker-modal/file-picker-modal.component";
 import {Credentials} from "../../_views/courses/course/settings/modules/config/googlesheets/googlesheets.component";
 import {MoodleVars} from "../../_views/courses/course/settings/modules/config/moodle/moodle.component";
+import {TypeOfClass} from "../../_views/courses/course/page/page.component";
 
 @Injectable({
   providedIn: 'root'
@@ -1011,6 +1012,43 @@ export class ApiHttpService {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MOODLE);
       qs.push('request', 'setMoodleVars');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+
+  // QR
+  public generateQRCodes(courseID: number, nrCodes: number): Observable<{qr: string, url: string}[]> {
+    const data = {
+      courseId: courseID,
+      nrCodes
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.QR);
+      qs.push('request', 'generateQRCodes');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['QRCodes']) );
+  }
+
+  public submitParticipation(courseID: number, key: string, lectureNr: number, typeOfClass: TypeOfClass): Observable<void> {
+    const data = {
+      courseId: courseID,
+      key,
+      lectureNr,
+      typeOfClass
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.QR);
+      qs.push('request', 'submitParticipation');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
