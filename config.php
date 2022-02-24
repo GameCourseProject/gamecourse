@@ -29,4 +29,8 @@
     define('MAX_BONUS_BADGES', 1000); //this is the default value but can be changed in connfig page
     define('DEFAULT_MAX_TREE_XP', 5000); //this is the default value but can be changed in connfig page
     define('MAX_BONUS_STREAKS', 1000); //this is the default value but can be changed in connfig page
+    define('INITIAL_TOKENS', 10); //this is the default value but can be changed in config page
+    define('DEFAULT_COST', 0); //this is the default value but can be changed in config page
+
+
     ?>
