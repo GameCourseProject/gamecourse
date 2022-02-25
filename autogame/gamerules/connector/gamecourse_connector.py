@@ -608,6 +608,9 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 		cursor.execute(query, (skill, course))
 		table_skill = cursor.fetchall()
 
+        query = "SELECT COUNT(*) FROM informmation_schema.TABLES WHERE (TABLE_SCHEMA = %s) AND ()TABLE_NAME = 'config_virtual_currency');"
+        cursor.execute(query, (database))
+        table_exists = cursor.fetchall()
 
 		# If rating is not enough to win the award, return
 		if rating < 3 and len(table) == 0:
@@ -618,27 +621,72 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 		elif len(table) == 0:
 			skill_id, skill_reward = table_skill[0][0], table_skill[0][1]
 
-			query = "INSERT INTO award (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
-			cursor.execute(query, (target, course, skill, typeof, skill_id, skill_reward))
+			if table_exists[0][0] == 0: # virtual currency is not enabled
 
-			config.award_list.append([str(target), "Skill Tree", str(skill_reward), skill])
+                query = "INSERT INTO award (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
+                cursor.execute(query, (target, course, skill, typeof, skill_id, skill_reward))
 
-			query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
-			cursor.execute(query, (target, course, skill, typeof))
-			table_id = cursor.fetchall()
-			award_id = table_id[0][0]
-			# contributions is always len == 1, ensured by getSkillParticipations
-			participation_id = contributions[0].log_id
+                config.award_list.append([str(target), "Skill Tree", str(skill_reward), skill])
 
-			query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
-			cursor.execute(query, (award_id, participation_id))
-			cnx.commit()
+                query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
+                cursor.execute(query, (target, course, skill, typeof))
+                table_id = cursor.fetchall()
+                award_id = table_id[0][0]
+                # contributions is always len == 1, ensured by getSkillParticipations
+                participation_id = contributions[0].log_id
 
-			if use_wildcard != False and wildcard_tier != None:
-				# insert into wildcard table
-				query = "INSERT INTO award_wildcard (awardId, tierId) VALUES (%s,%s);"
-				cursor.execute(query, (award_id, tier_id))
-				cnx.commit()
+                query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                cursor.execute(query, (award_id, participation_id))
+                cnx.commit()
+
+                if use_wildcard != False and wildcard_tier != None:
+                    # insert into wildcard table
+                    query = "INSERT INTO award_wildcard (awardId, tierId) VALUES (%s,%s);"
+                    cursor.execute(query, (award_id, tier_id))
+                    cnx.commit()
+
+			else:
+                query = "SELECT skillCost from config_virtual_currency where course = %s;"
+                cursor.execute(query, (course))
+                table_currency = cursor.fetchall()
+                cost = table_currency[0][0]
+
+                # simply award the tokens
+                query = "SELECT tokens FROM user_wallet where user = %s AND course = %s;"
+                cursor.execute(query, (newTotal, course, target))
+                table_tokens = cursor.fetchall()
+                currentTokens = table_tokens[0][0]
+
+                newTotal = currentTokens - cost
+
+                if newTotal >= 0: # had enough tokens to spend -> skill is valid to be awarded
+
+                    query = "INSERT INTO award (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
+                    cursor.execute(query, (target, course, skill, typeof, skill_id, skill_reward))
+
+                    config.award_list.append([str(target), "Skill Tree", str(skill_reward), skill])
+
+                    query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
+                    cursor.execute(query, (target, course, skill, typeof))
+                    table_id = cursor.fetchall()
+                    award_id = table_id[0][0]
+                    # contributions is always len == 1, ensured by getSkillParticipations
+                    participation_id = contributions[0].log_id
+
+                    query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                    cursor.execute(query, (award_id, participation_id))
+                    cnx.commit()
+
+                    if use_wildcard != False and wildcard_tier != None:
+                        # insert into wildcard table
+                        query = "INSERT INTO award_wildcard (awardId, tierId) VALUES (%s,%s);"
+                        cursor.execute(query, (award_id, tier_id))
+                        cnx.commit()
+
+                    # simply award the tokens
+                    query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
+                    cursor.execute(query, (newTotal, course, target))
+                    cnx.commit()
 
 
 		# If skill has already been awarded to used
@@ -731,7 +779,7 @@ def award_tokens(target, reward_name, tokens, contributions=None):
     cursor.execute(query, (target, course, reward_name, typeof))
     table = cursor.fetchall()
 
-    query = "SELECT user FROM user_wallet where user = %s AND course = %s;"
+    query = "SELECT tokens FROM user_wallet where user = %s AND course = %s;"
     cursor.execute(query, (target, course))
     table_wallet = cursor.fetchall()
 
@@ -750,7 +798,7 @@ def award_tokens(target, reward_name, tokens, contributions=None):
         cursor.execute(query, (target, course, reward_name, typeof, reward))
         cnx.commit()
 
-        newTotal = reward + table[0][0]
+        newTotal = reward + table_wallet[0][0]
 
         # simply award the tokens
         query = "UPDATE " + wallet_table + " SET tokens=%s WHERE course=%s AND user = %s;"
