@@ -1,10 +1,7 @@
 create table config_virtual_currency(
     name varchar(70) not null,
     course int unsigned not null,
-    cost1 int not null,
-    cost2 int not null,
-    cost3 int not null,
-    costWildcard int not null,
+    skillCost int not null,
     foreign key(course) references course(id) on delete cascade
 );
 

@@ -61,11 +61,8 @@ class VirtualCurrency extends Module
                 [
                     "name" => "",
                     "course" => $courseId,
-                    "cost1" => DEFAULT_COST,
-                    "cost2" => DEFAULT_COST,
-                    "cost3" => DEFAULT_COST,
-                    "costWildcard" => DEFAULT_COST
-
+                    "skillCost" => DEFAULT_COST
+                    
                 ]);
         }
 
@@ -146,10 +143,7 @@ class VirtualCurrency extends Module
     {
         $input = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => "", 'current_val' => $this->getCurrencyName($courseId)),
-            array('name' => "Cost Tier 1", 'id' => 'cost1', 'type' => "number", 'options' => "", 'current_val' => intval($this->getTierCosts('cost1', $courseId))),
-            array('name' => "Cost Tier 2", 'id' => 'cost2', 'type' => "number", 'options' => "", 'current_val' => intval($this->getTierCosts('cost2', $courseId))),
-            array('name' => "Cost Tier 3", 'id' => 'cost3', 'type' => "number", 'options' => "", 'current_val' => intval($this->getTierCosts('cost3', $courseId))),
-            array('name' => "Cost Wildcard Tier", 'id' => 'costWildcard', 'type' => "number", 'options' => "", 'current_val' => intval($this->getTierCosts('costWildcard', $courseId)))
+            array('name' => "Skill Cost", 'id' => 'skillcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getSkillCost($courseId)))
         ];
         return $input;
     }
@@ -157,23 +151,10 @@ class VirtualCurrency extends Module
     {
         $currencyName = $generalInputs["name"];
         $this->saveCurrencyName($currencyName, $courseId);
-        
 
-        $costTier1 = $generalInputs["cost1"];
-        if ($costTier1 != "") {
-            $this->saveTierCosts('cost1', $costTier1, $courseId);
-        }
-        $costTier2 = $generalInputs["cost2"];
-        if ($costTier2 != "") {
-            $this->saveTierCosts('cost2', $costTier2, $courseId);
-        }
-        $costTier3 = $generalInputs["cost3"];
-        if ($costTier3 != "") {
-            $this->saveTierCosts('cost3', $costTier3, $courseId);
-        }
-        $costTierW = $generalInputs["costWildcard"];
-        if ($costTierW != "") {
-            $this->saveTierCosts('costWildcard', $costTierW, $courseId);
+        $skillCost = $generalInputs["skillcost"];
+        if ($skillCost != "") {
+            $this->saveSkillCost( $skillCost, $courseId);
         }
     }
 
@@ -187,9 +168,13 @@ class VirtualCurrency extends Module
     /*** ------------ Database Manipulation ------------ ***/
     /*** ----------------------------------------------- ***/
 
+    public function dropTables($moduleName)
+    {
+        parent::dropTables($moduleName);
+    }
     public function deleteDataRows($courseId)
     {
-
+       
     }
 
     /*** ----------------------------------------------- ***/
@@ -206,16 +191,14 @@ class VirtualCurrency extends Module
     }
 
 
-    public function getTierCosts($cost, $courseId)
+    public function getSkillCost( $courseId)
     {
-        $result = Core::$systemDB->select("config_virtual_currency", ["course" => $courseId], $cost);
-        if ($result == NULL)
-            return "";
-        return $result;
+        return Core::$systemDB->select("config_virtual_currency", ["course" => $courseId], "skillCost");
+        
     }
-    public function saveTierCosts($cost, $value, $courseId)
+    public function saveSkillCost($value, $courseId)
     {
-        Core::$systemDB->update("config_virtual_currency", [$cost => $value], ["course" => $courseId]);
+        Core::$systemDB->update("config_virtual_currency", ["skillCost" => $value], ["course" => $courseId]);
     }
 
 

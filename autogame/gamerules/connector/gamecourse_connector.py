@@ -707,7 +707,7 @@ def award_prize(target, reward_name, xp, contributions=None):
 	return
 
 
-def award_tokens(target, reward_name, tokens, is_one_timer = False, contributions=None):
+def award_tokens(target, reward_name, tokens, contributions=None):
     # -----------------------------------------------------------
     # Updates 'user_wallet' table with the new total tokens for
     # a user.
@@ -731,16 +731,20 @@ def award_tokens(target, reward_name, tokens, is_one_timer = False, contribution
     cursor.execute(query, (target, course, reward_name, typeof))
     table = cursor.fetchall()
 
-    if len(table) == 0:
+    query = "SELECT user FROM user_wallet where user = %s AND course = %s;"
+    cursor.execute(query, (target, course))
+    table_wallet = cursor.fetchall()
+
+    if len(table_wallet) == 0:  # user has not been inserted in user_wallet yet
         # insert in award
         query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
         cursor.execute(query, (target, course, reward_name, typeof, reward))
         cnx.commit()
-        # insert
+        # insert and give the award
         query = "INSERT INTO user_wallet (user, course, tokens) VALUES(%s, %s , %s);"
         cursor.execute(query, (target, course, reward))
         cnx.commit()
-    elif len(table) > 0 and not is_one_timer:
+    elif len(table) == 0:
         # insert in award
         query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
         cursor.execute(query, (target, course, reward_name, typeof, reward))

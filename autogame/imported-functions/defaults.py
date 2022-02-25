@@ -103,11 +103,11 @@ def award_prize(target, reward_name, xp, contributions=None):
 
 
 @rule_function
-def award_tokens(target, reward_name, tokens, is_one_timer, contributions=None):
+def award_tokens(target, reward_name, tokens, contributions=None):
     """
 	Awards tokens to students.
 	"""
-	connector.award_tokens(target, reward_name, tokens, is_one_timer, contributions)
+	connector.award_tokens(target, reward_name, tokens, contributions)
 	return
 
 @rule_function
