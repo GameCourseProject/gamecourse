@@ -19,7 +19,7 @@ from sklearn.ensemble import RandomForestRegressor
 
 
 DATABASE = "gamecourse"
-RESULTS_PATH = "/var/www/html/gamecourse/modules/profiling/"
+RESULTS_PATH = "/var/www/html/gamecourse/backend/modules/profiling/"
 
 def get_credentials():
 	with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),'credentials.txt'), 'r') as f:

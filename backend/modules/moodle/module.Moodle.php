@@ -7,7 +7,6 @@ use GameCourse\ModuleLoader;
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\CronJob;
-use Modules\ClassCheck\ClassCheck;
 
 class MoodleModule extends Module
 {
@@ -162,10 +161,10 @@ class MoodleModule extends Module
 
         if (empty($moodleVarsDB)) {
             $moodleVars = [
-                "dbServer" => "localhost",
-                "dbUser" => "root",
+                "dbServer" => "db.rnl.tecnico.ulisboa.pt",
+                "dbUser" => "pcm_moodle",
                 "dbPass" => "",
-                "dbName" => "moodle",
+                "dbName" => "pcm_moodle",
                 "dbPort" => "3306",
                 "tablesPrefix" => "mdl_",
                 "moodleTime" => "0",
@@ -216,7 +215,7 @@ class MoodleModule extends Module
             "moodleUser" => $moodle["moodleUser"],
             "periodicityNumber" => $moodle['periodicityNumber'],
             "periodicityTime" => $moodle['periodicityTime'],
-            "isEnabled" => $moodle['isEnabled']
+            "isEnabled" => $moodle['isEnabled'] ? 1 : 0
         ];
 
         if (empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*"))) {
@@ -282,7 +281,7 @@ class MoodleModule extends Module
 ModuleLoader::registerModule(array(
     'id' => MoodleModule::ID,
     'name' => 'Moodle',
-    'description' => 'Allows Moodle to be automaticaly included on gamecourse.',
+    'description' => 'Allows Moodle to be automaticaly included on GameCourse.',
     'type' => 'DataSource',
     'version' => '0.1',
     'compatibleVersions' => array(),

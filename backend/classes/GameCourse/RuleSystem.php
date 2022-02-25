@@ -16,7 +16,7 @@ class RuleSystem
     private $tags = array();
 
     private $ruleSeparator = "\n\n#########\n\n";
-    const ROOT_FOLDER = "/var/www/html/gamecourse/";
+    const ROOT_FOLDER = SERVER_PATH . "/";
 
 
     public function __construct($course)

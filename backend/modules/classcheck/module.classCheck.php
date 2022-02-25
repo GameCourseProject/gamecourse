@@ -188,7 +188,7 @@ class ClassCheckModule extends Module
             "tsvCode" => $classCheck['tsvCode'],
             "periodicityNumber" => $classCheck['periodicityNumber'],
             "periodicityTime" => $classCheck['periodicityTime'],
-            "isEnabled" => $classCheck['isEnabled']
+            "isEnabled" => $classCheck['isEnabled'] ? 1 : 0
         ];
 
         if (empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*"))) {

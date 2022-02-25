@@ -1,8 +1,10 @@
 <?php
-
 namespace Modules\QR;
 
-chdir('/var/www/html/gamecourse');
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+
+chdir('/var/www/html/gamecourse/backend');
 include 'classes/ClassLoader.class.php';
 include 'classes/GameCourse/Core.php';
 include 'classes/GameCourse/User.php';

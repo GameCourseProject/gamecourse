@@ -1,7 +1,5 @@
 <?php
 
-//
-
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
@@ -10,11 +8,11 @@ include 'classes/ClassLoader.class.php';
 
 use GameCourse\Core;
 use GameCourse\Course;
-use GameCourse\ViewHandler;
+use GameCourse\Views\ViewHandler;
 
 class GameRules{
 
-	const ROOT_FOLDER = "/var/www/html/gamecourse/";
+	const ROOT_FOLDER = SERVER_PATH . "/";
 
 	private $courseId;
 	private $host = "127.0.0.1";
@@ -115,10 +113,10 @@ class GameRules{
     public function startServerSocket(){
 
 		$server = "tcp://" . $this->host . ":" . $this->port;
-	    	$socket = stream_socket_server($server, $errno, $errstr) or die("Could not create socket\n");
+        $socket = stream_socket_server($server, $errno, $errstr) or die("Could not create socket\n");
 
 		if (!$socket) {
-		    echo "Error: Could not create server socket";
+            $this->logGameRules("Could not create server socket.");
 		} 
 		
 		else {
@@ -131,7 +129,7 @@ class GameRules{
 					if (!$conn){
 						$error= "No connections received on the server socket.";
 						$this->logGameRules($error, "WARNING");
-						return;
+						return $error;
 					}
 
 			        $msg = fgets($conn);
@@ -214,7 +212,7 @@ class GameRules{
 
 					Core::$systemDB->update("autogame", ["isRunning" => (int)0 ], ["course" => 0]);
 					fclose($conn);
-					return;
+					return $error;
 				}
 
 		    }
@@ -227,19 +225,21 @@ class GameRules{
 
 	public function run()
     {
-	// sets a custom error handler for correcting database inconsistencies
-	// set_error_handler("GameRules::noConnectionsHandler");
-	// set logfile path
-	$this->logFile .= strval($this->courseId) . ".txt";
+        // sets a custom error handler for correcting database inconsistencies
+        // set_error_handler("GameRules::noConnectionsHandler");
+        // set logfile path
+        $this->logFile .= strval($this->courseId) . ".txt";
 
 		if (!($this->checkCourseExists())) {
-			echo("ERROR: The course given does not exist.");
-			return;
+            $error = "The course given does not exist.";
+            $this->logGameRules($error);
+			return $error;
 		}
 	
 	    if ($this->checkAutoGameRunning()) {
-			echo("ERROR: Autogame for the given course id is already running.");
-	    	return;
+            $error = "Autogame for the given course id is already running.";
+            $this->logGameRules($error);
+	    	return $error;
 	    }
 
 	    if ($this->checkServerSocket()) {

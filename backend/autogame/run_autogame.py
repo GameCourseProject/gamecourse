@@ -12,9 +12,9 @@ import os, sys, config, logging, json
 # Folder where rule files will be defined
 RULES_FOLDER = "rules"
 AUTOSAVE = False
-BASE_DIR = '/var/www/html/gamecourse_test/'
+BASE_DIR = '/var/www/html/gamecourse/backend/'
 LOGFILE_BASE = BASE_DIR + 'logs/log_course_'
-IMPORTED_FUNCTIONS_FOLDER = "/var/www/html/gamecourse_test/autogame/imported-functions"
+IMPORTED_FUNCTIONS_FOLDER = "/var/www/html/gamecourse/backend/autogame/imported-functions"
 
 def write_to_log(text, course, logfile):
 	logfile_path = logfile + str(course) + ".txt"

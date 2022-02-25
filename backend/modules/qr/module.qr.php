@@ -58,7 +58,7 @@ class QR extends Module
 
                 // Get URL
                 $url = URL . "/#/courses/" . $courseId . "/participation/" . $key;
-                $tinyUrl = $this->getTinyURL($url); // FIXME: not working well
+                $tinyUrl = $this->getTinyURL($url);
 
                 // Generate QR Code with URL
                 QRcode::png($url, self::QR_FILE);
@@ -211,7 +211,7 @@ ModuleLoader::registerModule(array(
     'id' => QR::ID,
     'name' => 'QR',
     'description' => 'Generates a QR code to be used for student participation in class.',
-    'type' => 'GameElement',
+    'type' => 'DataSource',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(),

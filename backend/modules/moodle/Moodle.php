@@ -8,10 +8,10 @@ use mysqli;
 
 class Moodle
 {
-    private $dbserver; //"db.rnl.tecnico.ulisboa.pt";
-    private $dbuser; //"pcm_moodle";
-    private $dbpass; //"Dkr1iRwEekJiPSHX9CeNznHlks";
-    private $dbname; //"pcm_moodle";
+    private $dbserver;
+    private $dbuser;
+    private $dbpass;
+    private $dbname;
     private $dbport;
     private $prefix;
     private $time;

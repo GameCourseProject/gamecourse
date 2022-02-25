@@ -283,7 +283,7 @@ class GoogleSheetsModule extends Module
             "sheetName" => $names,
             "periodicityNumber" => $googleSheets['periodicityNumber'],
             "periodicityTime" => $googleSheets['periodicityTime'],
-            "isEnabled" => $googleSheets['isEnabled']
+            "isEnabled" => $googleSheets['isEnabled'] ? 1 : 0
         ];
 
         if (empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*"))) {
@@ -349,7 +349,7 @@ class GoogleSheetsModule extends Module
 ModuleLoader::registerModule(array(
     'id' => GoogleSheetsModule::ID,
     'name' => 'GoogleSheets',
-    'description' => 'Allows GoogleSheets to be automaticaly included on gamecourse.',
+    'description' => 'Allows GoogleSheets to be automaticaly included on GameCourse.',
     'type' => 'DataSource',
     'version' => '0.1',
     'compatibleVersions' => array(),

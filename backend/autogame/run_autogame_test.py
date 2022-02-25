@@ -15,13 +15,13 @@ RULES_TESTS_FOLDER = "rule-tests"
 RULES_TESTS_FILE = "rule.txt"
 
 AUTOSAVE = False
-LOGFILE = '/var/www/html/gamecourse/logs/autogame-python.log'
-IMPORTED_FUNCTIONS_FOLDER = "/var/www/html/gamecourse/autogame/imported-functions"
+LOGFILE = '/var/www/html/gamecourse/backend/logs/autogame-python.log'
+IMPORTED_FUNCTIONS_FOLDER = "/var/www/html/gamecourse/backend/autogame/imported-functions"
 
 
 def get_config_metadata(course):
 	CONFIGFILE = "config_" + str(course) + ".txt"
-	CONFIGPATH = os.path.join("/var/www/html/gamecourse/autogame/config",CONFIGFILE)
+	CONFIGPATH = os.path.join("/var/www/html/gamecourse/backend/autogame/config",CONFIGFILE)
 	try:
 		with open(CONFIGPATH, 'r') as f:
 			lines = f.read()
