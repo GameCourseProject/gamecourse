@@ -229,6 +229,14 @@ def award_prize(target, reward_name, xp, contributions=None):
 	# TODO possible upgrade: returning indicators to include these types of prizes as well
 	return
 
+@rule_function
+def award_tokens(target, reward_name, tokens, is_one_timer, contributions=None):
+    """
+	Awards tokens to students.
+	"""
+    connector.award_tokens(target, reward_name, tokens, is_one_timer, contributions)
+    return
+	
 @rule_effect
 def award_grade(target, item, contributions=None, extra=None):
 	""" 

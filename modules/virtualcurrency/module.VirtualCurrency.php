@@ -60,7 +60,6 @@ class VirtualCurrency extends Module
             Core::$systemDB->insert("config_virtual_currency",
                 [
                     "name" => "",
-                    "initialTokens" => INITIAL_TOKENS,
                     "course" => $courseId,
                     "cost1" => DEFAULT_COST,
                     "cost2" => DEFAULT_COST,
@@ -147,7 +146,6 @@ class VirtualCurrency extends Module
     {
         $input = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => "", 'current_val' => $this->getCurrencyName($courseId)),
-            array('name' => "Initial Tokens", 'id' => 'initialtokens', 'type' => "number", 'options' => "", 'current_val' => intval($this->getInitialTokens($courseId))),
             array('name' => "Cost Tier 1", 'id' => 'cost1', 'type' => "number", 'options' => "", 'current_val' => intval($this->getTierCosts('cost1', $courseId))),
             array('name' => "Cost Tier 2", 'id' => 'cost2', 'type' => "number", 'options' => "", 'current_val' => intval($this->getTierCosts('cost2', $courseId))),
             array('name' => "Cost Tier 3", 'id' => 'cost3', 'type' => "number", 'options' => "", 'current_val' => intval($this->getTierCosts('cost3', $courseId))),
@@ -159,9 +157,7 @@ class VirtualCurrency extends Module
     {
         $currencyName = $generalInputs["name"];
         $this->saveCurrencyName($currencyName, $courseId);
-
-        $initialTokensVal = $generalInputs["initialtokens"];
-        $this->saveInitialTokens($initialTokensVal, $courseId);
+        
 
         $costTier1 = $generalInputs["cost1"];
         if ($costTier1 != "") {
@@ -209,14 +205,6 @@ class VirtualCurrency extends Module
         Core::$systemDB->update("config_virtual_currency", ["name" => $currencyName], ["course" => $courseId]);
     }
 
-    public function getInitialTokens($courseId)
-    {
-        return Core::$systemDB->select("config_virtual_currency", ["course" => $courseId], "initialTokens");
-    }
-    public function saveInitialTokens($initialtokens, $courseId)
-    {
-        Core::$systemDB->update("config_virtual_currency", ["initialTokens" => $initialtokens], ["course" => $courseId]);
-    }
 
     public function getTierCosts($cost, $courseId)
     {

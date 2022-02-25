@@ -707,6 +707,56 @@ def award_prize(target, reward_name, xp, contributions=None):
 	return
 
 
+def award_tokens(target, reward_name, tokens, is_one_timer = False, contributions=None):
+    # -----------------------------------------------------------
+    # Updates 'user_wallet' table with the new total tokens for
+    # a user.
+    # -----------------------------------------------------------
+
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
+
+    course = config.course
+    typeof = "tokens"
+    reward = int(tokens)
+
+    if config.test_mode:
+        awards_table = "award_test"
+    else:
+        awards_table = "award"
+
+    query = "SELECT moduleInstance FROM " + awards_table + " where user = %s AND course = %s AND description = %s AND type=%s;"
+    cursor.execute(query, (target, course, reward_name, typeof))
+    table = cursor.fetchall()
+
+    if len(table) == 0:
+        # insert in award
+        query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
+        cursor.execute(query, (target, course, reward_name, typeof, reward))
+        cnx.commit()
+        # insert
+        query = "INSERT INTO user_wallet (user, course, tokens) VALUES(%s, %s , %s);"
+        cursor.execute(query, (target, course, reward))
+        cnx.commit()
+    elif len(table) > 0 and not is_one_timer:
+        # insert in award
+        query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
+        cursor.execute(query, (target, course, reward_name, typeof, reward))
+        cnx.commit()
+
+        newTotal = reward + table[0][0]
+
+        # simply award the tokens
+        query = "UPDATE " + wallet_table + " SET tokens=%s WHERE course=%s AND user = %s;"
+        cursor.execute(query, (newTotal, course, target))
+        cnx.commit()
+
+
+    cnx.close()
+
+    return
 
 
 def award_grade(target, item, contributions=None, extra=None):
