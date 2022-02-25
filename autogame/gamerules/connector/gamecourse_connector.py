@@ -819,7 +819,7 @@ def award_tokens(target, reward_name, tokens, contributions=None):
     return
 
 
-def award_tokens_type(target, element_name, type, tokens, contributions=None):
+def award_tokens_type(target, type, tokens, element_name = None, contributions=None):
     # -----------------------------------------------------------
     # To use after awarding users with a streak, skill, ...
     # Checks if type given was awarded and, if it was, updates
@@ -841,16 +841,21 @@ def award_tokens_type(target, element_name, type, tokens, contributions=None):
     else:
         awards_table = "award"
 
-    query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
-    name = element_name + '%'
-    cursor.execute(query, (target, course, name, type))
-    table_award = cursor.fetchall()
+    if element_name != None:
+        query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+        name = element_name + '%'
+        cursor.execute(query, (target, course, name, type))
+        table_award = cursor.fetchall()
+    else:
+        query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND type=%s;"
+        cursor.execute(query, (target, course, type))
+        table_award = cursor.fetchall()
 
-    if len(table_award) == 0: # Award was not given
+    if len(table_award) == 0: # No award was given
         return
     elif len(table_award) > 0: # Award was given
 
-        name_awarded = 'Completed '+ name
+        name_awarded = 'Completed '+ type
         query = "SELECT moduleInstance FROM " + awards_table + " where user = %s AND course = %s AND description = %s AND type=%s;"
         cursor.execute(query, (target, course, name_awarded, typeof))
         table = cursor.fetchall()

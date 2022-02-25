@@ -229,12 +229,20 @@ def award_prize(target, reward_name, xp, contributions=None):
 	# TODO possible upgrade: returning indicators to include these types of prizes as well
 	return
 
-@rule_function
+@rule_effect
 def award_tokens(target, reward_name, tokens, contributions=None):
     """
 	Awards tokens to students.
 	"""
     connector.award_tokens(target, reward_name, tokens, contributions)
+    return
+
+@rule_effect
+def award_tokens_type(target, type, tokens, element_name = None, contributions=None):
+    """
+    Awards tokens to students based on an award given.
+    """
+    connector.award_tokens(target, type, tokens, element_name, contributions)
     return
 	
 @rule_effect

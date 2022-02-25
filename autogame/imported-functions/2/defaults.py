@@ -110,6 +110,14 @@ def award_tokens(target, reward_name, tokens, contributions=None):
     return
 
 @rule_function
+def award_tokens_type(target, type, tokens, element_name = None, contributions=None):
+    """
+    Awards tokens to students based on an award given.
+    """
+    connector.award_tokens(target, type, tokens, element_name, contributions)
+    return
+
+@rule_function
 def award_badge(target, badge, lvl, contributions=None, info=None):
 	""" 
 	Awards a Badge type award called "badge" to "target". The "lvl" argument represents the level that can be attributed
