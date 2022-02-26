@@ -12,8 +12,8 @@ use GameCourse\Core;
 Core::init();
 
 // TODO find variables for each student
-$weekNr     = 1;
-$totalWeeks = 7;
+$weekNr     = 1; // FIXME: hard-coded
+$totalWeeks = 7; // FIXME: hard-coded
 $currentXP  = ["xp" => 13251, "status" => "green"]; // [0-10] red; ]10-15] yellow; [16-20] green
 $weeklyAvg  = ["xp" => 1201, "status" => "yellow"];
 $prediction = ["xp" => 18000, "status" => "green"];

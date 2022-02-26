@@ -119,9 +119,10 @@ class Notifications extends Module
         $isEmpty = empty($progressReportVarsDB);
 
         return [
+            "endDate" => $isEmpty ? "" : explode(" ", $progressReportVarsDB["endDate"])[0],
             "periodicityTime" => $isEmpty ? "Weekly" : $progressReportVarsDB["periodicityTime"],
-            "periodicityHours" => $isEmpty ? 18 : $progressReportVarsDB["periodicityHours"],
-            "periodicityDay" => $isEmpty ? 5 : $progressReportVarsDB["periodicityDay"],
+            "periodicityHours" => $isEmpty ? 18 : intval($progressReportVarsDB["periodicityHours"]),
+            "periodicityDay" => $isEmpty ? 5 : intval($progressReportVarsDB["periodicityDay"]),
             "isEnabled" => $isEmpty ? false : $progressReportVarsDB["isEnabled"]
         ];
     }
@@ -130,6 +131,7 @@ class Notifications extends Module
     {
         $arrayToDb = [
             "course" => $courseId,
+            "endDate" => $progressReport["endDate"] . " 23:59:59",
             "periodicityTime" => $progressReport['periodicityTime'],
             "periodicityHours" => $progressReport['periodicityHours'],
             "periodicityDay" => $progressReport['periodicityDay'],

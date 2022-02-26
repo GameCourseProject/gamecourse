@@ -37,6 +37,9 @@ import {
 import {MoodleVars} from "../../_views/courses/course/settings/modules/config/moodle/moodle.component";
 import {TypeOfClass} from "../../_views/courses/course/page/page.component";
 import {ClassCheckVars} from "../../_views/courses/course/settings/modules/config/classcheck/classcheck.component";
+import {
+  ProgressReportVars
+} from "../../_views/courses/course/settings/modules/config/notifications/notifications.component";
 
 @Injectable({
   providedIn: 'root'
@@ -59,6 +62,7 @@ export class ApiHttpService {
   static readonly FENIX: string = 'fenix';
   static readonly GOOGLESHEETS: string = 'googlesheets';
   static readonly MOODLE: string = 'moodle';
+  static readonly NOTIFICATIONS: string = 'notifications';
   static readonly PROFILING: string = 'profiling';
   static readonly QR: string = 'qr';
   static readonly QUEST: string = 'quest';
@@ -1008,6 +1012,37 @@ export class ApiHttpService {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MOODLE);
       qs.push('request', 'setMoodleVars');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+
+  // Notifications
+  public getProgressReportVars(courseID: number): Observable<ProgressReportVars> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATIONS);
+      qs.push('request', 'getProgressReportVars');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['getProgressReportVars']) );
+  }
+
+  public setProgressReportVars(courseID: number, progressReportVars: ProgressReportVars): Observable<void> {
+    const data = {
+      courseId: courseID,
+      progressReport: progressReportVars
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATIONS);
+      qs.push('request', 'setProgressReportVars');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);

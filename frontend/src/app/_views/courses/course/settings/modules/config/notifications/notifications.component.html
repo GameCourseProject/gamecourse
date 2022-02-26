@@ -5,9 +5,20 @@
 
   <div class="content">
 
-    <div class="on_off" style="margin-bottom: 20px">
-      <span>Enabled</span>
-      <label class="switch"><input id="enabled" type="checkbox" [(ngModel)]="progressReport.isEnabled" (ngModelChange)="hasUnsavedChanges = true"><span class="slider round"></span></label>
+    <div class="inputs" style="margin-top: 40px; margin-bottom: 20px">
+      <div class="row">
+        <div class="on_off" style="margin-right: 80px">
+          <span>Enabled</span>
+          <label class="switch"><input id="enabled" type="checkbox" [(ngModel)]="progressReport.isEnabled" (ngModelChange)="hasUnsavedChanges = true"><span class="slider round"></span></label>
+        </div>
+
+        <div class="half">
+          <div class="input-wrapper">
+            <span class="label">End Date</span>
+            <input type="date" id="end" name="end" class="input" [min]="currentDate" [(ngModel)]="progressReport.endDate" (ngModelChange)="hasUnsavedChanges = true">
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="input-wrapper" style="width: 100%;">

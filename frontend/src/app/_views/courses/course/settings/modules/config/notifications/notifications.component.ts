@@ -18,6 +18,7 @@ export class NotificationsComponent implements OnInit {
   courseID: number;
 
   progressReport = {
+    endDate: null,
     periodicity: {
       time: null,
       hours: null,
@@ -25,6 +26,8 @@ export class NotificationsComponent implements OnInit {
     },
     isEnabled: null
   }
+
+  currentDate = new Date().toISOString().split('T')[0];
 
   constructor(
     private api: ApiHttpService,
@@ -45,6 +48,7 @@ export class NotificationsComponent implements OnInit {
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
         vars => {
+          this.progressReport.endDate = vars.endDate;
           this.progressReport.periodicity.time = vars.periodicityTime;
           this.progressReport.periodicity.hours = vars.periodicityHours;
           this.progressReport.periodicity.day = vars.periodicityDay;
@@ -58,6 +62,7 @@ export class NotificationsComponent implements OnInit {
     this.loading = true;
 
     const progressReport = {
+      endDate: this.progressReport.endDate,
       periodicityTime: this.progressReport.periodicity.time,
       periodicityHours: this.progressReport.periodicity.hours,
       periodicityDay: this.progressReport.periodicity.day,
@@ -73,7 +78,8 @@ export class NotificationsComponent implements OnInit {
   }
 
   isReadyToSubmit(): boolean {
-    return exists(this.progressReport.periodicity.time) && !this.progressReport.periodicity.time.isEmpty() &&
+    return exists(this.progressReport.endDate) &&
+      exists(this.progressReport.periodicity.time) && !this.progressReport.periodicity.time.isEmpty() &&
       exists(this.progressReport.periodicity.hours) && this.progressReport.periodicity.hours >= 0 && this.progressReport.periodicity.hours <= 24 &&
       (this.progressReport.periodicity.time === 'Weekly' ? exists(this.progressReport.periodicity.day) : true);
   }
@@ -81,6 +87,7 @@ export class NotificationsComponent implements OnInit {
 }
 
 export interface ProgressReportVars {
+  endDate: string,
   periodicityTime: "Weekly" | "Daily",
   periodicityHours: number,
   periodicityDay: 0 | 1 | 2 | 3 | 4 | 5 | 6,
