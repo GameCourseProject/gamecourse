@@ -74,33 +74,43 @@
                           {
                             "type": "block",
                             "role": "role.Student>role.Default",
-                            "class": "badge-imgs",
+                            "class": "badge-imgs-all",
                             "visibilityType": "visible",
-                            "loopData": "{%levels}",
-                            "variables": {
-                              "level": {
-                                "value": "{%item}"
-                              }
-                            },
                             "children": [
                               [
                                 {
-                                  "type": "image",
+                                  "type": "block",
                                   "role": "role.Student>role.Default",
-                                  "class": "badge-img",
-                                  "visibilityType": "conditional",
-                                  "visibilityCondition": "{%level.number <= %badgeLvl.number}",
-                                  "src": "{%badge.renderPicture(%level.number)}"
-                                }
-                              ],
-                              [
-                                {
-                                  "type": "image",
-                                  "role": "role.Student>role.Default",
-                                  "class": "badge-img",
-                                  "visibilityType": "conditional",
-                                  "visibilityCondition": "{%level.number>%badgeLvl.number}",
-                                  "src": "modules/badges/imgs/blank.png"
+                                  "class": "badge-imgs",
+                                  "visibilityType": "visible",
+                                  "loopData": "{%levels}",
+                                  "variables": {
+                                    "level": {
+                                      "value": "{%item}"
+                                    }
+                                  },
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "image",
+                                        "role": "role.Student>role.Default",
+                                        "class": "badge-img",
+                                        "visibilityType": "conditional",
+                                        "visibilityCondition": "{%level.number <= %badgeLvl.number}",
+                                        "src": "{%badge.renderPicture(%level.number)}"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "image",
+                                        "role": "role.Student>role.Default",
+                                        "class": "badge-img",
+                                        "visibilityType": "conditional",
+                                        "visibilityCondition": "{%level.number>%badgeLvl.number}",
+                                        "src": "modules/badges/imgs/blank.png"
+                                      }
+                                    ]
+                                  ]
                                 }
                               ]
                             ]

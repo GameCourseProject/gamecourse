@@ -24,12 +24,16 @@
   flex-direction: row !important;
 }
 
-.badges-list .badge .badge-top .badge-top-left .badge-imgs > * {
+.badges-list .badge .badge-top .badge-top-left .badge-imgs-all {
+  min-width: 240px;
+}
+
+.badges-list .badge .badge-top .badge-top-left .badge-imgs-all > * {
   flex-direction: row !important;
   align-items: center;
 }
 
-.badges-list .badge .badge-top .badge-top-left .badge-imgs .badge-img {
+.badges-list .badge .badge-top .badge-top-left .badge-imgs-all .badge-imgs .badge-img {
   width: 70px;
   height: 70px;
   padding: 5px;
