@@ -18,8 +18,6 @@ create table googlesheets_config(
 	refreshToken            varchar(500) NULL,
 	spreadsheetId           varchar(200) NULL,
 	sheetName               varchar(200) NULL,
-	isEnabled               boolean,
-	periodicityNumber       int,
-	periodicityTime         varchar(25),
+
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );

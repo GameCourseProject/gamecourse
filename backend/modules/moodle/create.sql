@@ -10,8 +10,6 @@ create table moodle_config (
     moodleTime              int null,
     moodleCourse            varchar(200) NULL,
     moodleUser              varchar(200) NULL,
-    isEnabled               boolean,
-    periodicityNumber       int,
-    periodicityTime         varchar(25),
+
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );

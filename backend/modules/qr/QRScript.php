@@ -6,17 +6,14 @@ ini_set('display_errors', '1');
 
 chdir('/var/www/html/gamecourse/backend');
 include 'classes/ClassLoader.class.php';
-include 'classes/GameCourse/Core.php';
-include 'classes/GameCourse/User.php';
-include 'classes/GameCourse/Course.php';
 
 use GameCourse\Core;
-use GameCourse\Course;
 
 Core::init();
-$course = $argv[1];
+
+$courseId = $argv[1];
 $inserted = 0;
-$qr_codes = Core::$systemDB->selectMultiple(QR::TABLE, ["course" => $course]);
+$qr_codes = Core::$systemDB->selectMultiple(QR::TABLE, ["course" => $courseId]);
 foreach ($qr_codes as $row) {
     $type = "";
     if ($row["classType"] == "Lecture") {
@@ -24,38 +21,39 @@ foreach ($qr_codes as $row) {
     } else if ($row["classType"] == "Invited Lecture") {
         $type = "participated in lecture (invited)";
     }
-    if ($row["studentNumber"] && $type) {
+    if ($row["user"] && $type) {
         if (!Core::$systemDB->select("participation", [
-            "user" => $row["studentNumber"],
-            "course" => $course,
+            "user" => $row["user"],
+            "course" => $courseId,
             "description" => $row["classNumber"],
             "type" => $type
         ])) {
             Core::$systemDB->insert("participation", [
-                "user" => $row["studentNumber"],
-                "course" => $course,
+                "user" => $row["user"],
+                "course" => $courseId,
                 "description" => $row["classNumber"],
                 "type" => $type
             ]);
             $inserted++;
+
         } else {
             $qr_repetidos_qr_code = Core::$systemDB->selectMultiple(QR::TABLE, [
-                "studentNumber" => $row["studentNumber"],
-                "course" => $course,
+                "user" => $row["user"],
+                "course" => $courseId,
                 "classNumber" => $row["classNumber"],
                 "classType" => $row["classType"]
             ]);
 
             $qr_repetidos_participation = Core::$systemDB->selectMultiple("participation", [
-                "user" => $row["studentNumber"],
-                "course" => $course,
+                "user" => $row["user"],
+                "course" => $courseId,
                 "description" => $row["classNumber"],
                 "type" => $type
             ]);
             if (count($qr_repetidos_participation) < count($qr_repetidos_qr_code)) {
                 Core::$systemDB->insert("participation", [
-                    "user" => $row["studentNumber"],
-                    "course" => $course,
+                    "user" => $row["user"],
+                    "course" => $courseId,
                     "description" => $row["classNumber"],
                     "type" => $type
                 ]);
@@ -65,5 +63,5 @@ foreach ($qr_codes as $row) {
     }
 }
 if ($inserted > 0) {
-    Course::newExternalData();
-}
+    return true;
+} else return false;

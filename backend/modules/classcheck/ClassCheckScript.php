@@ -6,20 +6,15 @@ ini_set('display_errors', '1');
 
 chdir('/var/www/html/gamecourse/backend');
 include 'classes/ClassLoader.class.php';
-include 'classes/GameCourse/Core.php';
-include 'classes/GameCourse/Course.php';
-include 'modules/classcheck/ClassCheck.php';
-
 
 use GameCourse\Core;
-use GameCourse\Course;
 
 Core::init();
 
-$cc = new ClassCheck($argv[1]);
-$code = $cc->getDBConfigValues();
+$classCheck = new ClassCheck($argv[1]);
+
+$code = $classCheck->getDBConfigValues();
 if ($code != null) {
-    if($cc->readAttendance($code)){
-      Course::newExternalData($argv[1]);
-    }
-}
+    if ($classCheck->readAttendance($code)) return true;
+    else return false;
+} return false;

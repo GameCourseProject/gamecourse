@@ -162,14 +162,6 @@ abstract class Module
     {
     }
 
-    /**
-     * Extra actions to do when disabling a module,
-     * apart from cleaning database.
-     */
-    public function disable(int $courseId)
-    {
-    }
-
     public static function deleteModule(string $moduleId)
     {
         $module = ModuleLoader::getModule($moduleId);
@@ -194,7 +186,6 @@ abstract class Module
     {
         $moduleInfo = ModuleLoader::getModule($moduleId);
         $module = $moduleInfo['factory']();
-        $module->disable($courseId);
 
         // Delete module templates in course
         $templates = array_map(function ($item) {

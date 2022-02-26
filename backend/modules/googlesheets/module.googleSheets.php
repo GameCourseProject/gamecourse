@@ -7,7 +7,6 @@ use GameCourse\ModuleLoader;
 
 use GameCourse\API;
 use GameCourse\Core;
-use GameCourse\CronJob;
 
 class GoogleSheetsModule extends Module
 {
@@ -94,11 +93,6 @@ class GoogleSheetsModule extends Module
         //verificar compatibilidade
     }
 
-    public function disable(int $courseId)
-    {
-        new CronJob("GoogleSheets", $courseId, null, null, true);
-    }
-
 
     /*** ----------------------------------------------- ***/
     /*** ---------------- Module Config ---------------- ***/
@@ -163,7 +157,6 @@ class GoogleSheetsModule extends Module
 
     public function deleteDataRows(int $courseId)
     {
-        new CronJob("GoogleSheets", $courseId, null, null, true);
         Core::$systemDB->delete(self::TABLE_CONFIG, ["course" => $courseId]);
     }
 
@@ -175,44 +168,23 @@ class GoogleSheetsModule extends Module
     private function getGoogleSheetsVars($courseId): array
     {
         $googleSheetsDB = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
+        $isEmpty = empty($googleSheetsDB);
 
-        if (empty($googleSheetsDB)) {
-            $googleSheetsVars = [
-                "spreadsheetId" => "",
-                "sheetName" => [],
-                "ownerName" => [],
-                "periodicityNumber" => 0,
-                "periodicityTime" => 'Minutes',
-                "isEnabled" => false
-            ];
-        } else {
-            if (!$googleSheetsDB["periodicityNumber"]) {
-                $googleSheetsDB["periodicityNumber"] = 0;
-            }
-            if (!$googleSheetsDB["periodicityTime"]) {
-                $googleSheetsDB["periodicityTime"] = 'Minutes';
-            }
-            $names = explode(";", $googleSheetsDB["sheetName"]);
-            $sheetNames = [];
-            $ownerNames = [];
-            foreach($names as $name){
-                $processedName = explode(",", $name);
-                array_push($sheetNames, $processedName[0]);
-                if(count($processedName) > 1)
-                    array_push($ownerNames, $processedName[1]);
-            }
-
-            $googleSheetsVars = [
-                "spreadsheetId" => $googleSheetsDB["spreadsheetId"],
-                "sheetName" => $sheetNames,
-                "ownerName" => $ownerNames,
-                "periodicityNumber" => intval($googleSheetsDB["periodicityNumber"]),
-                "periodicityTime" => $googleSheetsDB["periodicityTime"],
-                "isEnabled" => filter_var($googleSheetsDB["isEnabled"], FILTER_VALIDATE_BOOLEAN)
-            ];
+        $names = explode(";", $googleSheetsDB["sheetName"]);
+        $sheetNames = [];
+        $ownerNames = [];
+        foreach($names as $name){
+            $processedName = explode(",", $name);
+            array_push($sheetNames, $processedName[0]);
+            if(count($processedName) > 1)
+                array_push($ownerNames, $processedName[1]);
         }
 
-        return  $googleSheetsVars;
+        return [
+            "spreadsheetId" => $isEmpty ? "" : $googleSheetsDB["spreadsheetId"],
+            "sheetName" => $isEmpty ? [] : $sheetNames,
+            "ownerName" => $isEmpty ? [] : $ownerNames
+        ];
     }
 
     private function getAuthUrl($courseId)
@@ -281,10 +253,11 @@ class GoogleSheetsModule extends Module
             "course" => $courseId,
             "spreadsheetId" => $googleSheets["spreadsheetId"],
             "sheetName" => $names,
-            "periodicityNumber" => $googleSheets['periodicityNumber'],
-            "periodicityTime" => $googleSheets['periodicityTime'],
-            "isEnabled" => $googleSheets['isEnabled'] ? 1 : 0
         ];
+
+        // Verify connection to Google sheet
+        if (!GoogleSheets::checkConnection($courseId))
+            API::error("GoogleSheets connection failed.");
 
         if (empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*"))) {
             Core::$systemDB->insert(self::TABLE_CONFIG, $arrayToDb);
@@ -292,57 +265,6 @@ class GoogleSheetsModule extends Module
             Core::$systemDB->update(self::TABLE_CONFIG, $arrayToDb, ["course" => $courseId]);
         }
         self::$googleSheets->saveTokenToDB();
-
-        if (!$googleSheets['isEnabled']) { // disable googlesheets
-            $this->removeCronJob($courseId);
-
-        } else { // enable googlesheets
-            $this->setCronJob($courseId, $googleSheets['periodicityNumber'], $googleSheets['periodicityTime']);
-        }
-    }
-
-    // periodicity time: Minutes | Hours | Days
-    private function setCronJob(int $courseId, int $periodicityNumber, string $periodicityTime)
-    {
-        API::verifyCourseIsActive($courseId);
-
-        $googleSheetsVars = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
-        if ($googleSheetsVars){
-            $result = GoogleSheets::checkConnection($googleSheetsVars["course"]);
-            if ($result) {
-                new CronJob("GoogleSheets", $courseId, $periodicityNumber, $periodicityTime);
-                Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 1, "periodicityNumber" => $periodicityNumber, 'periodicityTime' => $periodicityTime], ["course" => $courseId]);
-            } else {
-                API::error("Connection failed");
-            }
-
-        } else {
-            API::error("Please set the googlesheets variables");
-        }
-    }
-
-    public function setCourseCronJobs($courseId, $active)
-    {
-        if(!$active){
-            new CronJob("GoogleSheets", $courseId, null, null, true);
-        }
-        else {
-            $plugins = $this->moduleConfigJson($courseId);
-            $pluginNames = array_keys($plugins);
-            foreach($pluginNames as $name){
-                $entry = $plugins[$name][0];
-                if($entry["isEnabled"]){
-                    $pluginName = (strcmp($name, self::TABLE_CONFIG) !== 0)? "GoogleSheets" : null;
-                    new CronJob($pluginName,  $courseId, $entry["periodicityNumber"], $entry["periodicityTime"]);
-                }
-            }
-        }
-    }
-
-    private function removeCronJob($courseId)
-    {
-        Core::$systemDB->delete(self::TABLE_CONFIG, ["course" => $courseId]);
-        new CronJob("GoogleSheets", $courseId, null, null, true);
     }
 }
 

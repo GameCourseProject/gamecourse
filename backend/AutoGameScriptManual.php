@@ -1,5 +1,4 @@
 <?php
-namespace Modules\Moodle;
 
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
@@ -15,14 +14,14 @@ use GameCourse\Course;
 Core::init();
 
 // This is a manual instance that starts Autogame/GameRules
-// without automatic invocation though the data source plugin
+// without automatic invocation through the data sources
 
 // To run, use the www-data user:
-// sudo -u www-data php modules/moodle/AutoGameScript.php 1
+// sudo -u www-data php /var/www/html/gamecourse/backend/AutoGameScriptManual.php 1
 // Replace "1" in the above command with the appropriate course id
 
-// The script receives an argument corresponding to the course
-// to run autogame over.
+// For testing run
+// sudo -u www-data php AutoGameScriptManual.php 1 test
 
 if (sizeof($argv) > 1) {
     if (sizeof($argv) == 2) {

@@ -3,7 +3,6 @@ import {ApiHttpService} from "../../../../../../../_services/api/api-http.servic
 import {ActivatedRoute} from "@angular/router";
 import {finalize} from "rxjs/operators";
 import {ErrorService} from "../../../../../../../_services/error.service";
-import {error} from "jquery";
 import {exists} from "../../../../../../../_utils/misc/misc";
 
 @Component({
@@ -21,11 +20,6 @@ export class GooglesheetsComponent implements OnInit {
 
   spreadsheetID: string;
   sheets: {name: string, owner: string}[];
-  periodicity = {
-    nr: 0,
-    time: 'Minutes'
-  };
-  isEnabled: boolean;
 
   credentials: Credentials;
 
@@ -53,9 +47,6 @@ export class GooglesheetsComponent implements OnInit {
           for (let i = 0; i < vars.sheetName.length; i++) {
             this.sheets.push({name: vars.sheetName[i], owner: vars.ownerName[i]});
           }
-          this.periodicity.nr = vars.periodicityNumber;
-          this.periodicity.time = vars.periodicityTime;
-          this.isEnabled = vars.isEnabled;
         },
         error => ErrorService.set(error)
       )
@@ -63,7 +54,7 @@ export class GooglesheetsComponent implements OnInit {
 
   saveGoogleSheets() {
     this.loading = true;
-    this.api.setGoogleSheetsVars(this.courseID, this.spreadsheetID, this.sheets, this.periodicity.nr, this.periodicity.time, this.isEnabled)
+    this.api.setGoogleSheetsVars(this.courseID, this.spreadsheetID, this.sheets)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
         res => this.getGoogleSheetsVars(),
@@ -123,4 +114,10 @@ export interface Credentials {
     client_secret: string,
     redirect_uris: string[]
   }
+}
+
+export interface GoogleSheetsVars {
+  spreadsheetId: string;
+  sheetName: string[];
+  ownerName: string[];
 }

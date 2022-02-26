@@ -17,11 +17,6 @@ export class ClasscheckComponent implements OnInit {
   courseID: number;
 
   TSVCode: string;
-  periodicity = {
-    nr: 0,
-    time: 'Minutes'
-  };
-  isEnabled: boolean;
 
   constructor(
     private api: ApiHttpService,
@@ -43,9 +38,6 @@ export class ClasscheckComponent implements OnInit {
       .subscribe(
         vars => {
           this.TSVCode = vars.tsvCode;
-          this.periodicity.nr = vars.periodicityNumber;
-          this.periodicity.time = vars.periodicityTime;
-          this.isEnabled = vars.isEnabled;
         },
         error => ErrorService.set(error)
       )
@@ -53,7 +45,7 @@ export class ClasscheckComponent implements OnInit {
 
   saveClassCheck() {
     this.loading = true;
-    this.api.setClassCheckVars(this.courseID, this.TSVCode, this.periodicity.nr, this.periodicity.time, this.isEnabled)
+    this.api.setClassCheckVars(this.courseID, {tsvCode: this.TSVCode})
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
         res => this.getClassCheckVars(),
@@ -61,4 +53,8 @@ export class ClasscheckComponent implements OnInit {
       )
   }
 
+}
+
+export interface ClassCheckVars {
+  tsvCode: string
 }

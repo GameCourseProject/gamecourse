@@ -6,7 +6,6 @@ use GameCourse\ModuleLoader;
 
 use GameCourse\API;
 use GameCourse\Core;
-use GameCourse\CronJob;
 
 class MoodleModule extends Module
 {
@@ -75,11 +74,6 @@ class MoodleModule extends Module
         //verificar compatibilidade
     }
 
-    public function disable(int $courseId)
-    {
-        new CronJob("Moodle", $courseId, null, null, true);
-    }
-
 
     /*** ----------------------------------------------- ***/
     /*** ---------------- Module Config ---------------- ***/
@@ -146,7 +140,6 @@ class MoodleModule extends Module
 
     public function deleteDataRows(int $courseId)
     {
-        new CronJob("Moodle", $courseId, null, null, true);
         Core::$systemDB->delete(self::TABLE_CONFIG, ["course" => $courseId]);
     }
 
@@ -158,46 +151,19 @@ class MoodleModule extends Module
     private function getMoodleVars($courseId): array
     {
         $moodleVarsDB = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
+        $isEmpty = empty($moodleVarsDB);
 
-        if (empty($moodleVarsDB)) {
-            $moodleVars = [
-                "dbServer" => "db.rnl.tecnico.ulisboa.pt",
-                "dbUser" => "pcm_moodle",
-                "dbPass" => "",
-                "dbName" => "pcm_moodle",
-                "dbPort" => "3306",
-                "tablesPrefix" => "mdl_",
-                "moodleTime" => "0",
-                "moodleCourse" => "",
-                "moodleUser" => "",
-                "periodicityNumber" => 0,
-                "periodicityTime" => 'Minutes',
-                "isEnabled" => false
-            ];
-        } else {
-            if (!$moodleVarsDB["periodicityNumber"]) {
-                $moodleVarsDB["periodicityNumber"] = 0;
-            }
-            if (!$moodleVarsDB["periodicityTime"]) {
-                $moodleVarsDB["periodicityTime"] = 'Minutes';
-            }
-            $moodleVars = [
-                "dbServer" => $moodleVarsDB["dbServer"],
-                "dbUser" => $moodleVarsDB["dbUser"],
-                "dbPass" => $moodleVarsDB["dbPass"],
-                "dbName" => $moodleVarsDB["dbName"],
-                "dbPort" => $moodleVarsDB["dbPort"],
-                "tablesPrefix" => $moodleVarsDB["tablesPrefix"],
-                "moodleTime" => $moodleVarsDB["moodleTime"],
-                "moodleCourse" => $moodleVarsDB["moodleCourse"],
-                "moodleUser" => $moodleVarsDB["moodleUser"],
-                "periodicityNumber" => intval($moodleVarsDB["periodicityNumber"]),
-                "periodicityTime" => $moodleVarsDB["periodicityTime"],
-                "isEnabled" => filter_var($moodleVarsDB["isEnabled"], FILTER_VALIDATE_BOOLEAN)
-            ];
-        }
-
-        return $moodleVars;
+        return [
+            "dbServer" => $isEmpty ? "db.rnl.tecnico.ulisboa.pt" : $moodleVarsDB["dbServer"],
+            "dbUser" => $isEmpty ? "pcm_moodle" : $moodleVarsDB["dbUser"],
+            "dbPass" => $isEmpty ? "" : $moodleVarsDB["dbPass"],
+            "dbName" => $isEmpty ? "pcm_moodle" : $moodleVarsDB["dbName"],
+            "dbPort" => $isEmpty ? "3306" : $moodleVarsDB["dbPort"],
+            "tablesPrefix" => $isEmpty ? "mdl_" : $moodleVarsDB["tablesPrefix"],
+            "moodleTime" => $isEmpty ? "0" : $moodleVarsDB["moodleTime"],
+            "moodleCourse" => $isEmpty ? "" : $moodleVarsDB["moodleCourse"],
+            "moodleUser" => $isEmpty ? "" : $moodleVarsDB["moodleUser"]
+        ];
     }
 
     private function setMoodleVars($courseId, $moodle)
@@ -212,69 +178,18 @@ class MoodleModule extends Module
             "tablesPrefix" => $moodle["tablesPrefix"],
             "moodleTime" => $moodle["moodleTime"],
             "moodleCourse" => $moodle["moodleCourse"],
-            "moodleUser" => $moodle["moodleUser"],
-            "periodicityNumber" => $moodle['periodicityNumber'],
-            "periodicityTime" => $moodle['periodicityTime'],
-            "isEnabled" => $moodle['isEnabled'] ? 1 : 0
+            "moodleUser" => $moodle["moodleUser"]
         ];
+
+        // Verify connection to Moodle database
+        if (!Moodle::checkConnection($moodle["dbServer"], $moodle["dbUser"], $moodle["dbPass"], $moodle["dbName"], $moodle["dbPort"]))
+            API::error("Moodle connection failed.");
 
         if (empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*"))) {
             Core::$systemDB->insert(self::TABLE_CONFIG, $arrayToDb);
         } else {
             Core::$systemDB->update(self::TABLE_CONFIG, $arrayToDb, ["course" => $courseId]);
         }
-
-        if (!$moodle['isEnabled']) { // disable classcheck
-            $this->removeCronJob($courseId);
-
-        } else { // enable classcheck
-            $this->setCronJob($courseId, $moodle['periodicityNumber'], $moodle['periodicityTime']);
-        }
-    }
-
-    // periodicity time: Minutes | Hours | Days
-    private function setCronJob(int $courseId, int $periodicityNumber, string $periodicityTime)
-    {
-        API::verifyCourseIsActive($courseId);
-
-        $moodleVars = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
-        if ($moodleVars){
-            $result = Moodle::checkConnection($moodleVars["dbServer"], $moodleVars["dbUser"], $moodleVars["dbPass"], $moodleVars["dbName"], $moodleVars["dbPort"]);
-            if ($result) {
-                new CronJob("Moodle", $courseId, $periodicityNumber, $periodicityTime);
-                Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 1, "periodicityNumber" => $periodicityNumber, 'periodicityTime' => $periodicityTime], ["course" => $courseId]);
-            } else {
-                API::error("Connection failed");
-            }
-
-        } else {
-            API::error("Please set the moodle variables");
-        }
-    }
-
-    //removes or adds all active cronjobs according to course's active state
-    public function setCourseCronJobs($courseId, $active)
-    {
-        if(!$active){
-            new CronJob("Moodle",  $courseId, null, null, true);
-        }
-        else {
-            $plugins = $this->moduleConfigJson($courseId);
-            $pluginNames = array_keys($plugins);
-            foreach($pluginNames as $name){
-                $entry = $plugins[$name][0];
-                if($entry["isEnabled"]){
-                    $pluginName =  (strcmp($name, self::TABLE_CONFIG) !== 0)? "Moodle" : null;
-                    new CronJob($pluginName,  $courseId, $entry["periodicityNumber"], $entry["periodicityTime"]);
-                }
-            }
-        }
-    }
-
-    private function removeCronJob($courseId)
-    {
-        Core::$systemDB->delete(self::TABLE_CONFIG, ["course" => $courseId]);
-        new CronJob( "Moodle", $courseId, null, null, true);
     }
 }
 

@@ -30,9 +30,13 @@ import {Tier} from "../../_domain/skills/tier";
 import {SkillData, TierData} from "../../_views/courses/course/settings/modules/config/skills/skills.component";
 import {Skill} from "../../_domain/skills/skill";
 import {ContentItem} from "../../_components/modals/file-picker-modal/file-picker-modal.component";
-import {Credentials} from "../../_views/courses/course/settings/modules/config/googlesheets/googlesheets.component";
+import {
+  Credentials,
+  GoogleSheetsVars
+} from "../../_views/courses/course/settings/modules/config/googlesheets/googlesheets.component";
 import {MoodleVars} from "../../_views/courses/course/settings/modules/config/moodle/moodle.component";
 import {TypeOfClass} from "../../_views/courses/course/page/page.component";
+import {ClassCheckVars} from "../../_views/courses/course/settings/modules/config/classcheck/classcheck.component";
 
 @Injectable({
   providedIn: 'root'
@@ -882,7 +886,7 @@ export class ApiHttpService {
 
 
   // ClassCheck
-  public getClassCheckVars(courseID: number): Observable<{tsvCode: string, periodicityNumber: number, periodicityTime: string, isEnabled: boolean}> {
+  public getClassCheckVars(courseID: number): Observable<ClassCheckVars> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.CLASSCHECK);
       qs.push('request', 'getClassCheckVars');
@@ -895,15 +899,10 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']['classCheckVars']) );
   }
 
-  public setClassCheckVars(courseID: number, tsvCode: string, periodicityNr: number, periodicityTime: string, isEnabled: boolean): Observable<void> {
+  public setClassCheckVars(courseID: number, classCheckVars: ClassCheckVars): Observable<void> {
     const data = {
       courseId: courseID,
-      classCheck: {
-        tsvCode,
-        periodicityNumber: periodicityNr,
-        periodicityTime,
-        isEnabled
-      }
+      classCheck: classCheckVars
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -936,7 +935,7 @@ export class ApiHttpService {
 
 
   // GoogleSheets
-  public getGoogleSheetsVars(courseID: number): Observable<{spreadsheetId: string, sheetName: string[], ownerName: string[], periodicityNumber: number, periodicityTime: string, isEnabled: boolean}> {
+  public getGoogleSheetsVars(courseID: number): Observable<GoogleSheetsVars> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.GOOGLESHEETS);
       qs.push('request', 'getGoogleSheetsVars');
@@ -949,16 +948,13 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']['googleSheetsVars']) );
   }
 
-  public setGoogleSheetsVars(courseID: number, spreadsheetId: string, sheets: {name: string, owner: string}[],  periodicityNr: number, periodicityTime: string, isEnabled: boolean): Observable<void> {
+  public setGoogleSheetsVars(courseID: number, spreadsheetId: string, sheets: {name: string, owner: string}[]): Observable<void> {
     const data = {
       courseId: courseID,
       googleSheets: {
         spreadsheetId,
         sheetName: sheets.map(sheet => sheet.name),
-        ownerName: sheets.map(sheet => sheet.owner),
-        periodicityNumber: periodicityNr,
-        periodicityTime,
-        isEnabled
+        ownerName: sheets.map(sheet => sheet.owner)
       }
     }
 

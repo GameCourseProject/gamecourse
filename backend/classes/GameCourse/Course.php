@@ -73,18 +73,7 @@ class Course
     public function setActiveState($active)
     {
         $this->setData("isActive", $active);
-
-        $module = ModuleLoader::getModule(GoogleSheetsModule::ID);
-        $handler = $module["factory"]();
-        $handler->setCourseCronJobs($this->cid, $active);
-
-        $module2 = ModuleLoader::getModule(ClassCheckModule::ID);
-        $handler2 = $module2["factory"]();
-        $handler2->setCourseCronJobs($this->cid, $active);
-
-        $module3 = ModuleLoader::getModule(MoodleModule::ID);
-        $handler3 = $module3["factory"]();
-        $handler3->setCourseCronJobs($this->cid, $active);
+        $this->setAutoGame((bool) $active);
     }
 
     public function setVisibleState($active)
@@ -1179,37 +1168,19 @@ class Course
 
 
     /*** --------------------------------------------- ***/
-    /*** ------------------- Utils ------------------- ***/
+    /*** ------------------ AutoGame ----------------- ***/
     /*** --------------------------------------------- ***/
 
-    public function exists(): bool
+    public function setAutoGame(bool $enabled)
     {
-        return (!empty($this->getData("id")));
-    }
+        if ($enabled) { // enable autogame
+            API::verifyCourseIsActive($this->getId());
+            $res = Core::$systemDB->select("autogame", ["course" => $this->getId()], "periodicityNumber, periodicityTime");
+            new CronJob("AutoGame",  $this->getId(), intval($res["periodicityNumber"]), $res["periodicityTime"]);
 
-    public static function insertBasicCourseData($db, $courseId)
-    {
-        $teacherId = $db->insert("role", ["name" => "Teacher", "course" => $courseId]);
-        $db->insert("role", ["name" => "Student", "course" => $courseId]);
-        $db->insert("role", ["name" => "Watcher", "course" => $courseId]);
-
-        $roles = [["name" => "Teacher"], ["name" => "Student"], ["name" => "Watcher"]];
-        $db->update("course", ["roleHierarchy" => json_encode($roles)], ["id" => $courseId]);
-
-        return $teacherId;
-    }
-
-    //copies content of a specified table in DB to new rows for the new course
-    private static function copyCourseContent($content, $fromCourseId, $newCourseId, $ignoreID = false)
-    {
-        $fromData = Core::$systemDB->selectMultiple($content, ["course" => $fromCourseId]);
-        foreach ($fromData as $data) {
-            $data['course'] = $newCourseId;
-            if ($ignoreID)
-                unset($data['id']);
-            Core::$systemDB->insert($content, $data);
+        } else { // disable autogame
+            new CronJob("AutoGame",  $this->getId(), null, null, true);
         }
-        return $fromData;
     }
 
     public static function newExternalData($courseId, $all = False, $targets = null, $test = False)
@@ -1244,5 +1215,40 @@ class Course
                 }
             }
         }
+    }
+
+
+    /*** --------------------------------------------- ***/
+    /*** ------------------- Utils ------------------- ***/
+    /*** --------------------------------------------- ***/
+
+    public function exists(): bool
+    {
+        return (!empty($this->getData("id")));
+    }
+
+    public static function insertBasicCourseData($db, $courseId)
+    {
+        $teacherId = $db->insert("role", ["name" => "Teacher", "course" => $courseId]);
+        $db->insert("role", ["name" => "Student", "course" => $courseId]);
+        $db->insert("role", ["name" => "Watcher", "course" => $courseId]);
+
+        $roles = [["name" => "Teacher"], ["name" => "Student"], ["name" => "Watcher"]];
+        $db->update("course", ["roleHierarchy" => json_encode($roles)], ["id" => $courseId]);
+
+        return $teacherId;
+    }
+
+    //copies content of a specified table in DB to new rows for the new course
+    private static function copyCourseContent($content, $fromCourseId, $newCourseId, $ignoreID = false)
+    {
+        $fromData = Core::$systemDB->selectMultiple($content, ["course" => $fromCourseId]);
+        foreach ($fromData as $data) {
+            $data['course'] = $newCourseId;
+            if ($ignoreID)
+                unset($data['id']);
+            Core::$systemDB->insert($content, $data);
+        }
+        return $fromData;
     }
 }

@@ -6,7 +6,6 @@ use GameCourse\ModuleLoader;
 
 use GameCourse\API;
 use GameCourse\Core;
-use GameCourse\CronJob;
 
 class ClassCheckModule extends Module
 {
@@ -76,11 +75,6 @@ class ClassCheckModule extends Module
         //verificar compatibilidade
     }
 
-    public function disable(int $courseId)
-    {
-        new CronJob("ClassCheck", $courseId, null, null, true);
-    }
-
 
     /*** ----------------------------------------------- ***/
     /*** ---------------- Module Config ---------------- ***/
@@ -143,7 +137,6 @@ class ClassCheckModule extends Module
 
     public function deleteDataRows(int $courseId)
     {
-        new CronJob("ClassCheck", $courseId, null, null, true);
         Core::$systemDB->delete(self::TABLE_CONFIG, ["course" => $courseId]);
     }
 
@@ -155,98 +148,29 @@ class ClassCheckModule extends Module
     private function getClassCheckVars($courseId): array
     {
         $classCheckDB = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
+        $isEmpty = empty($classCheckDB);
 
-        if (empty($classCheckDB)) {
-            $classCheckVars = [
-                "tsvCode" => "",
-                "periodicityNumber" => 0,
-                "periodicityTime" => 'Minutes',
-                "isEnabled" => false
-            ];
-        } else {
-            if (!$classCheckDB["periodicityNumber"]) {
-                $classCheckDB["periodicityNumber"] = 0;
-            }
-            if (!$classCheckDB["periodicityTime"]) {
-                $classCheckDB["periodicityTime"] = 'Minutes';
-            }
-            $classCheckVars = [
-                "tsvCode" => $classCheckDB["tsvCode"],
-                "periodicityNumber" => intval($classCheckDB["periodicityNumber"]),
-                "periodicityTime" => $classCheckDB["periodicityTime"],
-                "isEnabled" => filter_var($classCheckDB["isEnabled"], FILTER_VALIDATE_BOOLEAN)
-            ];
-        }
-
-        return  $classCheckVars;
+        return [
+            "tsvCode" => $isEmpty ? "" : $classCheckDB["tsvCode"]
+        ];
     }
 
     private function setClassCheckVars($courseId, $classCheck)
     {
         $arrayToDb = [
             "course" => $courseId,
-            "tsvCode" => $classCheck['tsvCode'],
-            "periodicityNumber" => $classCheck['periodicityNumber'],
-            "periodicityTime" => $classCheck['periodicityTime'],
-            "isEnabled" => $classCheck['isEnabled'] ? 1 : 0
+            "tsvCode" => $classCheck['tsvCode']
         ];
+
+        // Verify connection
+        if (!ClassCheck::checkConnection($classCheck["tsvCode"]))
+            API::error("ClassCheck connection failed.");
 
         if (empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*"))) {
             Core::$systemDB->insert(self::TABLE_CONFIG, $arrayToDb);
         } else {
             Core::$systemDB->update(self::TABLE_CONFIG, $arrayToDb, ["course" => $courseId]);
         }
-
-        if (!$classCheck['isEnabled']) { // disable classcheck
-            $this->removeCronJob($courseId);
-
-        } else { // enable classcheck
-            $this->setCronJob($courseId, $classCheck['periodicityNumber'], $classCheck['periodicityTime']);
-        }
-    }
-
-    // periodicity time: Minutes | Hours | Days
-    private function setCronJob(int $courseId, int $periodicityNumber, string $periodicityTime)
-    {
-        API::verifyCourseIsActive($courseId);
-
-        $classCheckVars = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
-        if ($classCheckVars){
-            $result = ClassCheck::checkConnection($classCheckVars["tsvCode"]);
-            if ($result) {
-                new CronJob("ClassCheck", $courseId, $periodicityNumber, $periodicityTime);
-                Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 1, "periodicityNumber" => $periodicityNumber, 'periodicityTime' => $periodicityTime], ["course" => $courseId]);
-            } else {
-                API::error("Connection failed");
-            }
-
-        } else {
-            API::error("Please set the class check variables");
-        }
-    }
-
-    public function setCourseCronJobs($courseId, $active)
-    {
-        if(!$active){
-            new CronJob("ClassCheck", $courseId, null, null, true);
-        }
-        else {
-            $plugins = $this->moduleConfigJson($courseId);
-            $pluginNames = array_keys($plugins);
-            foreach($pluginNames as $name){
-                $entry = $plugins[$name][0];
-                if($entry["isEnabled"]){
-                    $pluginName = (strcmp($name, self::TABLE_CONFIG) !== 0)? "ClassCheck" : null;
-                    new CronJob($pluginName,  $courseId, $entry["periodicityNumber"], $entry["periodicityTime"]);
-                }
-            }
-        }
-    }
-
-    private function removeCronJob($courseId)
-    {
-        Core::$systemDB->delete(self::TABLE_CONFIG, ["course" => $courseId]);
-        new CronJob( "ClassCheck", $courseId, null, null, true);
     }
 }
 

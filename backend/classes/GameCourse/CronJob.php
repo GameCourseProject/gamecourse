@@ -1,28 +1,16 @@
 <?php
-
 namespace GameCourse;
-
-use Modules\ClassCheck\ClassCheckModule;
-use Modules\GoogleSheets\GoogleSheetsModule;
-use Modules\Moodle\MoodleModule;
-use Modules\QR\QR;
 
 class CronJob
 {
     public function __construct($script, $course, $number, $time, $remove = false)
     {
         $cronFile = SERVER_PATH . "/crontab.txt";
+
         $path = null;
-        if ($script == "Moodle") {
-            $path = SERVER_PATH . "/modules/" . MoodleModule::ID. "/MoodleScript.php";
-        } else if ($script == "ClassCheck") {
-            $path = SERVER_PATH . "/modules/" . ClassCheckModule::ID. "/ClassCheckScript.php";
-        } else if ($script == "GoogleSheets") {
-            $path = SERVER_PATH . "/modules/" . GoogleSheetsModule::ID. "/GoogleSheetsScript.php";
-        }else if ($script == "QR"){
-            $path = SERVER_PATH . "/modules/" . QR::ID. "/QRScript.php";
-        }
+        if ($script == "AutoGame") $path = SERVER_PATH . "/AutoGameScript.php";
         $output = shell_exec('crontab -l');
+
         if ($path) {
             $file = $output;
             $lines = explode("\n", $file);

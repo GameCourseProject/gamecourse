@@ -6,12 +6,8 @@ ini_set('display_errors', '1');
 
 chdir('/var/www/html/gamecourse/backend');
 include 'classes/ClassLoader.class.php';
-include 'classes/GameCourse/Core.php';
-include 'classes/GameCourse/Course.php';
-include 'modules/moodle/Moodle.php';
 
 use GameCourse\Core;
-use GameCourse\Course;
 
 Core::init();
 
@@ -40,5 +36,5 @@ $moodle->updateMoodleConfigTime();
 
 
 if ($insertedLogs || $insertedVotes || $insertedQuiz || $insertedAssignment || $insertedPeergrades || $insertedProfessorRatings) {
-    Course::newExternalData($argv[1]);
-}
+    return true;
+} else return false;

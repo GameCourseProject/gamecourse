@@ -32,12 +32,6 @@ export class MoodleComponent implements OnInit {
     user: null
   }
 
-  periodicity = {
-    nr: 0,
-    time: 'Minutes'
-  };
-  isEnabled: boolean;
-
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute
@@ -66,9 +60,6 @@ export class MoodleComponent implements OnInit {
           this.moodle.time = vars.moodleTime;
           this.moodle.course = vars.moodleCourse;
           this.moodle.user = vars.moodleUser;
-          this.periodicity.nr = vars.periodicityNumber;
-          this.periodicity.time = vars.periodicityTime;
-          this.isEnabled = vars.isEnabled;
         },
         error => ErrorService.set(error)
       )
@@ -86,10 +77,7 @@ export class MoodleComponent implements OnInit {
       tablesPrefix: this.database.prefix,
       moodleTime: this.moodle.time,
       moodleCourse: this.moodle.course,
-      moodleUser: this.moodle.user,
-      periodicityNumber: this.periodicity.nr,
-      periodicityTime: this.periodicity.time,
-      isEnabled: this.isEnabled
+      moodleUser: this.moodle.user
     }
 
     this.api.setMoodleVars(this.courseID, moodleVars)
@@ -102,14 +90,13 @@ export class MoodleComponent implements OnInit {
 
   isReadyToSubmit(): boolean {
     return exists(this.database.server) && !this.database.server.isEmpty() &&
+      exists(this.database.port) && !this.database.port.isEmpty() &&
       exists(this.database.name) && !this.database.name.isEmpty() &&
       exists(this.database.user) && !this.database.user.isEmpty() &&
-      exists(this.database.port) && !this.database.port.isEmpty() &&
       exists(this.database.password) && !this.database.password.isEmpty() &&
       exists(this.database.prefix) && !this.database.prefix.isEmpty() &&
       exists(this.moodle.course) && !this.moodle.course.isEmpty() &&
-      exists(this.moodle.time) && !this.moodle.time.isEmpty() &&
-      exists(this.periodicity.nr) && exists(this.periodicity.time) && !this.periodicity.time.isEmpty();
+      exists(this.moodle.time) && !this.moodle.time.isEmpty();
   }
 
 }
@@ -123,8 +110,5 @@ export interface MoodleVars {
   tablesPrefix: string,
   moodleTime: string,
   moodleCourse: string,
-  moodleUser: string,
-  periodicityNumber: number,
-  periodicityTime: string,
-  isEnabled: boolean
+  moodleUser: string
 }

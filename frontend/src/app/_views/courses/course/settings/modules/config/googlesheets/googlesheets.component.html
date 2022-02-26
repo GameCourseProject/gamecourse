@@ -27,24 +27,9 @@
 
   <div class="content">
     <div class="row" style="display: flex; justify-content: space-between">
-      <div class="on_off">
-        <span>Enabled</span>
-        <label class="switch"><input id="enabled" type="checkbox" [(ngModel)]="isEnabled" (ngModelChange)="hasUnsavedChanges = true"><span class="slider round"></span></label>
-      </div>
-
-      <div class="input-wrapper" style="width: 100%; margin-right: 60px; margin-left: 20px">
+      <div class="input-wrapper" style="max-width: 600px">
         <span class="label">Spreadsheet ID</span>
         <input type="text" id="spreadsheet-id" name="spreadsheet-id" class="input" [(ngModel)]="spreadsheetID" (ngModelChange)="hasUnsavedChanges = true">
-      </div>
-
-      <div class="input-wrapper" style="width: 100%;">
-        <span class="label">Periodicity</span>
-        <input type="number" min="0" max="59" id="periodicity-nr" name="periodicity-nr" class="input" [(ngModel)]="periodicity.nr" (ngModelChange)="hasUnsavedChanges = true">
-        <select id="periodicity-time" class="input" [(ngModel)]="periodicity.time" (ngModelChange)="hasUnsavedChanges = true">
-          <option [ngValue]="'Minutes'">Minutes</option>
-          <option [ngValue]="'Hours'">Hours</option>
-          <option [ngValue]="'Days'">Days</option>
-        </select>
       </div>
     </div>
 
