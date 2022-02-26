@@ -16,6 +16,7 @@ import {SkillsComponent} from "../skills/skills.component";
 import {GooglesheetsComponent} from "../googlesheets/googlesheets.component";
 import {MoodleComponent} from "../moodle/moodle.component";
 import {QrComponent} from "../qr/qr.component";
+import {NotificationsComponent} from "../notifications/notifications.component";
 
 export interface GeneralInput {
   id: string,
@@ -40,6 +41,7 @@ export enum PersonalizedConfig {
   FENIX = 'fenix',
   GOOGLESHEETS = 'googlesheets',
   MOODLE = 'moodle',
+  NOTIFICATIONS = 'notifications',
   QR = 'qr',
   SKILLS = 'skills'
 }
@@ -118,6 +120,10 @@ export class ConfigComponent implements OnInit {
 
   get MoodleConfig(): typeof MoodleComponent {
     return MoodleComponent;
+  }
+
+  get NotificationsConfig(): typeof NotificationsComponent {
+    return NotificationsComponent;
   }
 
   get QRConfig(): typeof QrComponent {

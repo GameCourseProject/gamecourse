@@ -243,9 +243,7 @@ class Course
     {
         Course::removeCourseDataFolder(Course::getCourseDataFolder($courseId));
         unset(static::$courses[$courseId]);
-        new CronJob("Moodle", API::getValue('course'), null, null, true);
-        new CronJob("ClassCheck", API::getValue('course'), null, null, true);
-        new CronJob("GoogleSheets", API::getValue('course'), null, null, true);
+        new CronJob("AutoGame", API::getValue('course'), null, null, null, true);
         Core::$systemDB->delete("course", ["id" => $courseId]);
         Course::removeCourseDataFolder("autogame/imported-functions/" . strval($courseId));
         if (file_exists("autogame/config/config_" . strval($courseId) . ".txt")) {
@@ -1176,10 +1174,10 @@ class Course
         if ($enabled) { // enable autogame
             API::verifyCourseIsActive($this->getId());
             $res = Core::$systemDB->select("autogame", ["course" => $this->getId()], "periodicityNumber, periodicityTime");
-            new CronJob("AutoGame",  $this->getId(), intval($res["periodicityNumber"]), $res["periodicityTime"]);
+            new CronJob("AutoGame",  $this->getId(), intval($res["periodicityNumber"]), $res["periodicityTime"], null, true);
 
         } else { // disable autogame
-            new CronJob("AutoGame",  $this->getId(), null, null, true);
+            new CronJob("AutoGame",  $this->getId(), null, null, null, true);
         }
     }
 

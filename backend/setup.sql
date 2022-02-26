@@ -45,7 +45,7 @@ DROP TABLE IF EXISTS level;
 
 DROP TABLE IF EXISTS module;
 
-DROP TABLE IF EXISTS notification;
+DROP TABLE IF EXISTS notifications_progress_report;
 
 DROP TABLE IF EXISTS page;
 
@@ -226,14 +226,6 @@ CREATE TABLE award_test(
 	date                        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE
-);
-
-CREATE TABLE notification(
-	id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
-	award                       int unsigned NOT NULL,
-	checked                     boolean DEFAULT FALSE,
-
-	FOREIGN key(award) REFERENCES award(id) ON DELETE CASCADE
 );
 
 CREATE TABLE participation(

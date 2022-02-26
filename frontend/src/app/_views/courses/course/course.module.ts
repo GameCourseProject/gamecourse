@@ -22,6 +22,7 @@ import { SkillsComponent } from './settings/modules/config/skills/skills.compone
 import { GooglesheetsComponent } from './settings/modules/config/googlesheets/googlesheets.component';
 import { MoodleComponent } from './settings/modules/config/moodle/moodle.component';
 import { QrComponent } from './settings/modules/config/qr/qr.component';
+import { NotificationsComponent } from './settings/modules/config/notifications/notifications.component';
 
 
 @NgModule({
@@ -43,7 +44,8 @@ import { QrComponent } from './settings/modules/config/qr/qr.component';
     SkillsComponent,
     GooglesheetsComponent,
     MoodleComponent,
-    QrComponent
+    QrComponent,
+    NotificationsComponent
   ],
   imports: [
     CommonModule,

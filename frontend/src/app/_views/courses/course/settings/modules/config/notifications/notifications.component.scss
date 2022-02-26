@@ -1,0 +1,50 @@
+.divider .title:after {
+  width: calc(100% - 80px);
+}
+
+.content {
+  margin-top: 40px;
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .half {
+    width: calc(47%);
+    position: relative;
+  }
+
+  .inputs .row {
+    margin-bottom: 15px;
+  }
+
+  .action-buttons {
+    width: fit-content;
+    position: absolute;
+    top: -5px;
+    right: 0;
+  }
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  width: 100%;
+
+  .label {
+    margin-right: 20px;
+    white-space: nowrap;
+    min-width: 100px;
+  }
+
+  .input {
+    width: 100%;
+    padding: 7px;
+    color: #333;
+    background-color: white;
+    border-radius: 5px;
+    border: 2px solid lightgray;
+  }
+}

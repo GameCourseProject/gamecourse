@@ -1,20 +1,17 @@
 <?php
 namespace Modules\Notifications;
 
+use GameCourse\API;
 use GameCourse\Core;
+use GameCourse\CronJob;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
-use GameCourse\Views\Dictionary;
-use GameCourse\Views\Views;
-use Modules\AwardList\AwardList;
 
 class Notifications extends Module
 {
     const ID = 'notifications';
 
-    const NOTIFICATIONS_PROFILE_TEMPLATE = 'Notifications Profile - by notifications';
-
-    public $notificationList = []; //contains an array of notfics of current user
+    const TABLE_PROGRESS_REPORT = self::ID . '_progress_report';
 
 
     /*** ----------------------------------------------- ***/
@@ -23,101 +20,160 @@ class Notifications extends Module
 
     public function init()
     {
-        // TODO: iterate all courses the user is in..
-        $course = $this->getParent();
-        $courseId = $course->getId();
-        $user = $course->getLoggedUser();
-        $userId = $user->getId();
-        if ($user->hasRole('Student')) {
-            $activity = $user->getData("prevActivity");
-
-            $awards = Core::$systemDB->selectMultiple(AwardList::TABLE, ["course" => $courseId, "student" => $userId], "awardDate");
-            if (is_null($awards) || !is_array($awards))
-                return;
-
-            $notificationFor = array_filter($awards, function ($award) use ($activity) {
-                return $award['awardDate'] >= $activity;
-            });
-
-            $notifications = array();
-            foreach ($notificationFor as $award) {
-                if ($award['type'] == 'badge') {
-                    $badgeLevel = $award['level'];
-
-                    $notification = array(
-                        'type' => 'badge',
-                        //'badgeName' => $badgeName,
-                        'level' => $badgeLevel,
-                        //'reward' => $reward
-                        "name" => $award['name'],
-                        "awardDate" => $award["awardDate"]
-                    );
-
-                    //$notifications['badge-' . $badgeName . '-' . $badgeLevel] = $notification;
-                    $notifications[] = $notification;
-                    $this->notificationList[] = $notification;
-                } else if ($award['type'] == 'skill') {
-                    $notification = array(
-                        'type' => 'skill',
-                        //'skillName' => $award['name'],
-                        //'reward' => $award['reward']
-                        "name" => $award['name'],
-                        "awardDate" => $award["awardDate"]
-                    );
-
-                    //$notifications['skill-' . $award['name']] = $notification;
-                    //$notifications[]=$notification;
-                    $this->notificationList[] = $notification;
-                }
-            }
-
-            if (count($notifications) > 0) {
-                /*
-                //delete old notifications
-                Core::$systemDB->delete("notification",["course"=>$courseId,"student"=>$userId]);
-                //set new notifications
-                foreach($notifications as $notif){
-                    Core::$systemDB->insert("notification", array_merge($notif,["course"=>$courseId,"student"=>$userId,]));
-                }*/
-            }
-        }
-
-        $this->initTemplates();
-        $this->initDictionary();
+        $this->setupData();
     }
 
-    public function initTemplates() // FIXME: refactor templates
+    public function initAPIEndpoints()
     {
-        $courseId = $this->getCourseId();
+        /**
+         * Gets progress report variables.
+         *
+         * @param int $courseId
+         */
+        API::registerFunction(self::ID, 'getProgressReportVars', function () {
+            API::requireCourseAdminPermission();
+            API:: requireValues('courseId');
 
-        if (!Views::templateExists($courseId, self::NOTIFICATIONS_PROFILE_TEMPLATE))
-            Views::createTemplateFromFile(self::NOTIFICATIONS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/notifications.txt'), $courseId, self::ID);
-    }
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
 
-    public function initDictionary()
-    {
-        /*** ------------ Libraries ------------ ***/
+            API::response(array('getProgressReportVars' => $this->getProgressReportVars($courseId)));
+        });
 
-        Dictionary::registerLibrary(self::ID, self::ID, "This library provides information regarding notifications. It is provided by the notification module.");
+        /**
+         * Sets progress report variables.
+         *
+         * @param int $courseId
+         * @param $progressReport
+         */
+        API::registerFunction(self::ID, 'setProgressReportVars', function () {
+            API::requireCourseAdminPermission();
+            API:: requireValues('courseId', 'progressReport');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $progressReport = API::getValue('progressReport');
+            $this->setProgressReportVars($courseId, $progressReport);
+        });
     }
 
     public function setupResources()
     {
-        parent::addResources('js/');
-        parent::addResources('css/notifications.css');
         parent::addResources('imgs/');
+    }
+
+    public function setupData()
+    {
+        $this->addTables(self::ID, self::TABLE_PROGRESS_REPORT);
     }
 
     public function update_module($compatibleVersions)
     {
         //verificar compatibilidade
     }
+
+    public function disable(int $courseId)
+    {
+        new CronJob("ProgressReport", $courseId, null, null, null, true);
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ---------------- Module Config ---------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function is_configurable(): bool
+    {
+        return true;
+    }
+
+    public function has_personalized_config(): bool
+    {
+        return true;
+    }
+
+    public function get_personalized_function(): string
+    {
+        return self::ID;
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------ Database Manipulation ------------ ***/
+    /*** ----------------------------------------------- ***/
+
+    public function deleteDataRows(int $courseId)
+    {
+        Core::$systemDB->delete(self::TABLE_PROGRESS_REPORT, ["course" => $courseId]);
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Utils -------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    private function getProgressReportVars($courseId): array
+    {
+        $progressReportVarsDB = Core::$systemDB->select(self::TABLE_PROGRESS_REPORT, ["course" => $courseId], "*");
+        $isEmpty = empty($progressReportVarsDB);
+
+        return [
+            "periodicityTime" => $isEmpty ? "Weekly" : $progressReportVarsDB["periodicityTime"],
+            "periodicityHours" => $isEmpty ? 18 : $progressReportVarsDB["periodicityHours"],
+            "periodicityDay" => $isEmpty ? 5 : $progressReportVarsDB["periodicityDay"],
+            "isEnabled" => $isEmpty ? false : $progressReportVarsDB["isEnabled"]
+        ];
+    }
+
+    private function setProgressReportVars($courseId, $progressReport)
+    {
+        $arrayToDb = [
+            "course" => $courseId,
+            "periodicityTime" => $progressReport['periodicityTime'],
+            "periodicityHours" => $progressReport['periodicityHours'],
+            "periodicityDay" => $progressReport['periodicityDay'],
+            "isEnabled" => filter_var($progressReport["isEnabled"], FILTER_VALIDATE_BOOLEAN)
+        ];
+
+        if (empty(Core::$systemDB->select(self::TABLE_PROGRESS_REPORT, ["course" => $courseId], "*"))) {
+            Core::$systemDB->insert(self::TABLE_PROGRESS_REPORT, $arrayToDb);
+        } else {
+            Core::$systemDB->update(self::TABLE_PROGRESS_REPORT, $arrayToDb, ["course" => $courseId]);
+        }
+
+        if (!$progressReport['isEnabled']) { // disable progress report
+            $this->removeCronJob($courseId);
+
+        } else { // enable progress report
+            $this->setCronJob($courseId, $progressReport['periodicityHours'], $progressReport['periodicityTime'], $progressReport['periodicityDay']);
+        }
+    }
+
+    private function setCronJob(int $courseId, int $periodicityHours, string $periodicityTime, int $periodicityDay)
+    {
+        API::verifyCourseIsActive($courseId);
+
+        $progressReportVars = Core::$systemDB->select(self::TABLE_PROGRESS_REPORT, ["course" => $courseId], "*");
+        if ($progressReportVars){
+            new CronJob("ProgressReport", $courseId, $periodicityHours, $periodicityTime, $periodicityDay);
+
+        } else {
+            API::error("Please set the progress report variables");
+        }
+    }
+
+    private function removeCronJob($courseId)
+    {
+        Core::$systemDB->delete(self::TABLE_PROGRESS_REPORT, ["course" => $courseId]);
+        new CronJob("ProgressReport", $courseId, null, null, null, true);
+    }
 }
 
 ModuleLoader::registerModule(array(
     'id' => Notifications::ID,
     'name' => 'Notifications',
-    'description' => 'Allows email notifications when a badge or points are atributed to a student.',
+    'description' => 'Allows email notifications for progress reports.',
     'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),

@@ -1,0 +1,48 @@
+<div class="section">
+  <div class="divider">
+    <div class="title"><span>Progress Report</span></div>
+  </div>
+
+  <div class="content">
+
+    <div class="on_off" style="margin-bottom: 20px">
+      <span>Enabled</span>
+      <label class="switch"><input id="enabled" type="checkbox" [(ngModel)]="progressReport.isEnabled" (ngModelChange)="hasUnsavedChanges = true"><span class="slider round"></span></label>
+    </div>
+
+    <div class="input-wrapper" style="width: 100%;">
+      <span class="label">Periodicity</span>
+      <select id="periodicity-time" class="input" style="margin-right: 30px" [(ngModel)]="progressReport.periodicity.time" (ngModelChange)="hasUnsavedChanges = true">
+        <option [ngValue]="'Weekly'">Weekly</option>
+        <option [ngValue]="'Daily'">Daily</option>
+      </select>
+
+      <span class="label" style="min-width: unset;">Hours</span>
+      <input type="number" min="0" max="24" id="periodicity-nr" name="periodicity-nr" class="input" style="margin-right: 30px" [(ngModel)]="progressReport.periodicity.hours" (ngModelChange)="hasUnsavedChanges = true">
+
+      <span class="label" style="min-width: unset;">Weekday</span>
+      <select id="periodicity-day" class="input" [(ngModel)]="progressReport.periodicity.day" (ngModelChange)="hasUnsavedChanges = true">
+        <option [ngValue]="1">Monday</option>
+        <option [ngValue]="2">Tuesday</option>
+        <option [ngValue]="3">Wednesday</option>
+        <option [ngValue]="4">Thursday</option>
+        <option [ngValue]="5">Friday</option>
+        <option [ngValue]="6">Saturday</option>
+        <option [ngValue]="0">Sunday</option>
+      </select>
+    </div>
+
+    <div class="action-buttons">
+      <button id="save-button" class="button" [disabled]="!hasUnsavedChanges || !isReadyToSubmit()" (click)="saveProgressReport()">Save</button>
+    </div>
+  </div>
+
+  <div class="success_box">
+    <div id="action_completed" class="success_msg"></div>
+  </div>
+</div>
+
+<!-- Loader -->
+<div *ngIf="loading" id="page-loading">
+  <img src="assets/loader/loader.gif" alt="loader">
+</div>
