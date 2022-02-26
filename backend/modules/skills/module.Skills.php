@@ -1338,7 +1338,7 @@ class Skills extends Module
     public function editSkill($skill, $courseId)
     {
         $treeId = Core::$systemDB->select(self::TABLE_TREES, ["course" => $courseId], "id");
-        $oldSkillData = Core::$systemDB->select(self::TABLE, ["treeId" => $treeId, "id" => $skill["id"]]);
+        $oldName = Core::$systemDB->select(self::TABLE, ["treeId" => $treeId, "id" => $skill["id"]], "name");
 
         $skillData = [
             "name" => $skill['name'],
@@ -1461,21 +1461,21 @@ class Skills extends Module
         }
 
         // Update rule
-        if ($oldSkillData["name"] != $skill["name"])
-            $this->editSkillRuleName($courseId, $oldSkillData["name"], $skill["name"]);
+        if ($oldName != $skill["name"])
+            $this->editSkillRuleName($courseId, $oldName, $skill["name"]);
 
-        if ($oldSkillData["dependencies"] != $skill["dependencies"]) {
-            $dependencyList = [];
-            if ($skill["dependencies"] != "") {
-                $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
-                foreach ($pairDep as $dep) {
-                    $dependencies = explode("+", str_replace(" + ", "+", $dep));
-                    $dependencyList[] = $dependencies;
-                }
-            }
-            $hasWildcard = strpos($skill["dependencies"], "Wildcard") !== false;
-            $this->editSkillRuleDependencies($courseId, $dependencyList, $hasWildcard);
-        }
+//        if ($oldSkillData["dependencies"] != $skill["dependencies"]) { TODO
+//            $dependencyList = [];
+//            if ($skill["dependencies"] != "") {
+//                $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
+//                foreach ($pairDep as $dep) {
+//                    $dependencies = explode("+", str_replace(" + ", "+", $dep));
+//                    $dependencyList[] = $dependencies;
+//                }
+//            }
+//            $hasWildcard = strpos($skill["dependencies"], "Wildcard") !== false;
+//            $this->editSkillRuleDependencies($courseId, $dependencyList, $hasWildcard);
+//        }
     }
 
     public function deleteSkill(int $skillId, int $courseId)
@@ -1792,7 +1792,7 @@ class Skills extends Module
             if ($dependency[0]['name'] === $wildcard || $dependency[1]['name'] === $wildcard) { // has wildcard(s)
                 $deptxt = "combo" . $comboNr . " = " .
                     ($dependency[0]['name'] === $wildcard ? "wildcard" : "rule_unlocked(\"" . $dependency[0]['name'] . "\", target)") . " and " .
-                    ($dependency[1]['name'] === $wildcard ? "wildcard" : "rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t");
+                    ($dependency[1]['name'] === $wildcard ? "wildcard\n\t\t" : "rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t");
 
             } else { // no wildcard(s)
                 $deptxt = "combo" . $comboNr . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
