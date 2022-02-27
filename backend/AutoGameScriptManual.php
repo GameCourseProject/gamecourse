@@ -18,7 +18,7 @@ Core::init();
 
 // To run, use the www-data user:
 // sudo -u www-data php /var/www/html/gamecourse/backend/AutoGameScriptManual.php 1
-// Replace "1" in the above command with the appropriate course id
+// Replace "1" in the above command with the appropriate course ID
 
 // For testing run
 // sudo -u www-data php AutoGameScriptManual.php 1 test

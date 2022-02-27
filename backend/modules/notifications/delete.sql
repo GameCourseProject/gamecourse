@@ -1,1 +1,2 @@
+drop table if exists notifications_progress_report_config;
 drop table if exists notifications_progress_report;

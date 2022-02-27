@@ -46,6 +46,7 @@ DROP TABLE IF EXISTS level;
 DROP TABLE IF EXISTS module;
 
 DROP TABLE IF EXISTS notifications_progress_report;
+DROP TABLE IF EXISTS notifications_progress_report_config;
 
 DROP TABLE IF EXISTS page;
 

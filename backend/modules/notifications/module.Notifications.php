@@ -12,6 +12,7 @@ class Notifications extends Module
     const ID = 'notifications';
 
     const TABLE_PROGRESS_REPORT = self::ID . '_progress_report';
+    const TABLE_PROGRESS_REPORT_CONFIG = self::TABLE_PROGRESS_REPORT . '_config';
 
 
     /*** ----------------------------------------------- ***/
@@ -65,7 +66,7 @@ class Notifications extends Module
 
     public function setupData()
     {
-        $this->addTables(self::ID, self::TABLE_PROGRESS_REPORT);
+        $this->addTables(self::ID, self::TABLE_PROGRESS_REPORT_CONFIG);
     }
 
     public function update_module($compatibleVersions)
@@ -105,7 +106,7 @@ class Notifications extends Module
 
     public function deleteDataRows(int $courseId)
     {
-        Core::$systemDB->delete(self::TABLE_PROGRESS_REPORT, ["course" => $courseId]);
+        Core::$systemDB->delete(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $courseId]);
     }
 
 
@@ -115,7 +116,7 @@ class Notifications extends Module
 
     private function getProgressReportVars($courseId): array
     {
-        $progressReportVarsDB = Core::$systemDB->select(self::TABLE_PROGRESS_REPORT, ["course" => $courseId], "*");
+        $progressReportVarsDB = Core::$systemDB->select(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $courseId], "*");
         $isEmpty = empty($progressReportVarsDB);
 
         return [
@@ -138,14 +139,14 @@ class Notifications extends Module
             "isEnabled" => filter_var($progressReport["isEnabled"], FILTER_VALIDATE_BOOLEAN)
         ];
 
-        if (empty(Core::$systemDB->select(self::TABLE_PROGRESS_REPORT, ["course" => $courseId], "*"))) {
-            Core::$systemDB->insert(self::TABLE_PROGRESS_REPORT, $arrayToDb);
+        if (empty(Core::$systemDB->select(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $courseId], "*"))) {
+            Core::$systemDB->insert(self::TABLE_PROGRESS_REPORT_CONFIG, $arrayToDb);
         } else {
-            Core::$systemDB->update(self::TABLE_PROGRESS_REPORT, $arrayToDb, ["course" => $courseId]);
+            Core::$systemDB->update(self::TABLE_PROGRESS_REPORT_CONFIG, $arrayToDb, ["course" => $courseId]);
         }
 
         if (!$progressReport['isEnabled']) { // disable progress report
-            $this->removeCronJob($courseId);
+            Notifications::removeCronJob($courseId);
 
         } else { // enable progress report
             $this->setCronJob($courseId, $progressReport['periodicityHours'], $progressReport['periodicityTime'], $progressReport['periodicityDay']);
@@ -156,7 +157,7 @@ class Notifications extends Module
     {
         API::verifyCourseIsActive($courseId);
 
-        $progressReportVars = Core::$systemDB->select(self::TABLE_PROGRESS_REPORT, ["course" => $courseId], "*");
+        $progressReportVars = Core::$systemDB->select(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $courseId], "*");
         if ($progressReportVars){
             new CronJob("ProgressReport", $courseId, $periodicityHours, $periodicityTime, $periodicityDay);
 
@@ -165,9 +166,9 @@ class Notifications extends Module
         }
     }
 
-    private function removeCronJob($courseId)
+    public static function removeCronJob($courseId)
     {
-        Core::$systemDB->delete(self::TABLE_PROGRESS_REPORT, ["course" => $courseId]);
+        Core::$systemDB->delete(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $courseId]);
         new CronJob("ProgressReport", $courseId, null, null, null, true);
     }
 }
