@@ -159,12 +159,12 @@ def filter_quiz(logs, desc):
 	filtered_logs = []
 
 	for line in logs:
-		if desc not in line.description:
-			filtered_logs.append(line)	
+		if line.description != desc or line.description != "Dry Run":
+			filtered_logs.append(line)
 	return filtered_logs
 
 @rule_function
-def exclude_worst(logs, last, n_tests):
+def exclude_worst(logs, last):
 	"""
 	Will calculate the adjustment for getting rid of the
 	worst quiz in the bunch
@@ -173,39 +173,24 @@ def exclude_worst(logs, last, n_tests):
 	worst = int(config.metadata["quiz_max_grade"])
 	fix = last
 
-	if len(logs) == n_tests:
+	if len(logs) == 9:
 		for line in logs:
 			worst = min(int(line.rating), worst)
 
-		worst = worst if worst > 0 else 0
 		if len(last) == 1:
 			last_quiz = max(int(last[0].rating) - worst, 0)
 			fix[0].rating = last_quiz
-	
+
 	return fix
 
-
-@rule_function
-def compare_exam(total_quiz_grade, exam):
-	"""
-	Will calculate the adjustment for after the exam.
-	Decides between sum of quizzes or exam grade, and claculates adjustment.
-	"""
-	fix = 0
-	if len(exam) == 1:
-		adjustment = max(int(exam[0].rating) - total_quiz_grade, 0)
-		fix = adjustment
-	
-	return fix
-	
 @rule_effect
 def print_info(text):
-		""" 
+		"""
 		returns the output of a skill and writes the award to database
 		"""
 		sys.stderr.write(str(text))
 
-		
+
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Decorated Functions
@@ -220,7 +205,7 @@ def transform (val):
 
 @rule_effect
 def award_badge(target, badge, lvl, contributions=None, info=None):
-	""" 
+	"""
 	returns the output of a badge and writes the award to database
 	"""
 	result = connector.award_badge(target, badge, lvl, contributions, info)
@@ -229,24 +214,40 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
 @rule_effect
 def award_skill(target, skill, rating, contributions=None, use_wildcard=False, wildcard_tier=None):
-	""" 
+	"""
 	returns the output of a skill and writes the award to database
 	"""
 	result = connector.award_skill(target, skill, rating, contributions, use_wildcard, wildcard_tier)
 	return result
 
 @rule_effect
-def award_prize(target, reward_name, xp, typeof="bonus"):
-	""" 
+def award_prize(target, reward_name, xp, contributions=None):
+	"""
 	returns the output of a skill and writes the award to database
 	"""
-	connector.award_prize(target, reward_name, xp, typeof)
+	connector.award_prize(target, reward_name, xp, contributions)
 	# TODO possible upgrade: returning indicators to include these types of prizes as well
 	return
 
 @rule_effect
+def award_tokens(target, reward_name, tokens, contributions=None):
+    """
+	Awards tokens to students.
+	"""
+    connector.award_tokens(target, reward_name, tokens, contributions)
+    return
+
+@rule_effect
+def award_tokens_type(target, type, tokens, element_name = None, contributions=None):
+    """
+    Awards tokens to students based on an award given.
+    """
+    connector.award_tokens(target, type, tokens, element_name, contributions)
+    return
+
+@rule_effect
 def award_grade(target, item, contributions=None, extra=None):
-	""" 
+	"""
 	returns the output of a skill and writes the award to database
 	"""
 	connector.award_grade(target, item, contributions, extra)
@@ -255,38 +256,40 @@ def award_grade(target, item, contributions=None, extra=None):
 
 @rule_function
 def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ignore_case=None, extra=None):
-	""" 
+	"""
 	Awards a quiz grade (XP) to "target". Grades awarded will depend on the logs passed
-	, which contain the XP reward to be awarded. 
+	, which contain the XP reward to be awarded.
 	"""
 	connector.award_quiz_grade(target, contributions, xp_per_quiz, max_grade, ignore_case, extra)
 	return
 
 @rule_function
 def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, forum=None):
-	""" 
+	"""
 	Awards a post grade (XP) to "target". Grades awarded will depend on the logs passed
-	, which contain the XP reward to be awarded. 
+	, which contain the XP reward to be awarded.
 	"""
 	connector.award_post_grade(target, contributions, xp_per_post, max_grade, forum)
 	return
 
 @rule_function
 def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_grade=1):
-	""" 
+	"""
 	Awards an assignment grade (XP) to "target". Grades awarded will depend on the logs passed
-	, which contain the XP reward to be awarded. 
+	, which contain the XP reward to be awarded.
 	"""
 	connector.award_assignment_grade(target, contributions, xp_per_assignemnt, max_grade)
 	return
 
+
 @rule_effect
-def award_streak(target, streak, participationType, contributions=None, info=None):
+def award_streak(target, streak, contributions=None, info=None):
 	"""
 	returns the output of a streak and writes the award to database
 	"""
-	result = connector.award_streak(target, streak, participationType, contributions, info)
+	result = connector.award_streak(target, streak, contributions, info)
 	return result
+
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## GameCourse Wrapper Functions
