@@ -1297,11 +1297,6 @@ def clear_streak_participations(target):
 
 
 #  logs-> participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
-
-# * * * ** * * * * * * TO DO * * * * * * * * * * * * * *
-#  - Funcao recebe participationType mas nao e preciso.
-# Basta ir as contributions e ver o type que foi dado.
-# * * * ** * * * * * * * * * * * * * * * * * * * * * * *
 def award_streak(target, streak, contributions=None, info=None):
 	# -----------------------------------------------------------
 	# Writes and updates 'award' table with streaks won by the
