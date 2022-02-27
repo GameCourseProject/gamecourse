@@ -148,10 +148,10 @@ def award_grade(target, item, contributions=None):
 	return
 
 @rule_function
-def award_streak(target, streak, participationType, contributions=None, info=None):
+def award_streak(target, streak, contributions=None, info=None):
 	"""
 	Awards a Streak type award called "streak" to "target". The "contributions" parameter should
 	receive the participations that justify the attribution of the streak for a given target.
 	"""
-	result = connector.award_streak(target, streak, participationType, contributions, info)
+	result = connector.award_streak(target, streak, contributions, info)
 	return result

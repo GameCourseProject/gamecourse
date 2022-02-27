@@ -579,40 +579,40 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 	# changed.
 	# -----------------------------------------------------------
 
-	(username, password) = get_credentials()
+    (username, password) = get_credentials()
 
-	course = config.course
-	typeof = "skill"
+    course = config.course
+    typeof = "skill"
 
-	if not config.test_mode:
-		(database, username, password) = get_credentials()
-		cnx = mysql.connector.connect(user=username, password=password,
-		host='localhost', database=database)
-		cursor = cnx.cursor(prepared=True)
+    if not config.test_mode:
+        (database, username, password) = get_credentials()
+        cnx = mysql.connector.connect(user=username, password=password,
+        host='localhost', database=database)
+        cursor = cnx.cursor(prepared=True)
 
-		query = "SELECT * FROM award where user = %s AND course = %s AND description=%s AND type=%s;"
-		cursor.execute(query, (target, course, skill, typeof))
-		table = cursor.fetchall()
+        query = "SELECT * FROM award where user = %s AND course = %s AND description=%s AND type=%s;"
+        cursor.execute(query, (target, course, skill, typeof))
+        table = cursor.fetchall()
 
 
-		if use_wildcard != False and wildcard_tier != None:
+        if use_wildcard != False and wildcard_tier != None:
 			# get wildcard tier information
-			query = "select t.id from skill_tier t left join skill_tree s on t.treeId=s.id where tier =%s and course = %s;"
-			cursor.execute(query, (wildcard_tier, course))
-			table_tier = cursor.fetchall()
-			if len(table_tier) == 1:
-				tier_id = table_tier[0][0]
+            query = "select t.id from skill_tier t left join skill_tree s on t.treeId=s.id where tier =%s and course = %s;"
+            cursor.execute(query, (wildcard_tier, course))
+            table_tier = cursor.fetchall()
+            if len(table_tier) == 1:
+                tier_id = table_tier[0][0]
 
 
-		query = "SELECT s.id, reward FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = %s and course = %s;"
-		cursor.execute(query, (skill, course))
-		table_skill = cursor.fetchall()
+        query = "SELECT s.id, reward FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = %s and course = %s;"
+        cursor.execute(query, (skill, course))
+        table_skill = cursor.fetchall()
 
         query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = %s) AND (TABLE_NAME = 'config_virtual_currency');"
         cursor.execute(query, (database))
         table_exists = cursor.fetchall()
 
-        if table_exists[0][0] > 0 # virtual currency is enabled
+        if table_exists[0][0] > 0: # virtual currency is enabled
             query = "SELECT skillCost from config_virtual_currency where course = %s;"
             cursor.execute(query, (course))
             table_currency = cursor.fetchall()
@@ -625,16 +625,16 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 
             newTotal = currentTokens - cost
 
-		# If rating is not enough to win the award, return
-		if rating < 3 and len(table) == 0:
-			return
+        # If rating is not enough to win the award, return
+        if rating < 3 and len(table) == 0:
+            return
 
-		# If this skill has not been awarded to this user
-		# and rating is greater or equal to 3, award skill
-		elif len(table) == 0:
-			skill_id, skill_reward = table_skill[0][0], table_skill[0][1]
+        # If this skill has not been awarded to this user
+        # and rating is greater or equal to 3, award skill
+        elif len(table) == 0:
+            skill_id, skill_reward = table_skill[0][0], table_skill[0][1]
 
-			if table_exists[0][0] == 0: # virtual currency is not enabled
+            if table_exists[0][0] == 0: # virtual currency is not enabled
 
                 query = "INSERT INTO award (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
                 cursor.execute(query, (target, course, skill, typeof, skill_id, skill_reward))
@@ -658,7 +658,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
                     cursor.execute(query, (award_id, tier_id))
                     cnx.commit()
 
-			else:
+            else:
                 if newTotal >= 0: # had enough tokens to spend -> skill is valid to be awarded
 
                     query = "INSERT INTO award (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
@@ -691,14 +691,14 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 
 		# If skill has already been awarded to used
 		# compare ratings given before and now
-		elif len(table) == 1:
+        elif len(table) == 1:
 			# If new rating is lesser than 3
 			# delete the awarded skill
-			if rating < 3:
-				query = "DELETE FROM award WHERE user = %s AND course = %s AND description = %s AND type=%s;"
-				cursor.execute(query, (target, course, skill, typeof))
+            if rating < 3:
+                query = "DELETE FROM award WHERE user = %s AND course = %s AND description = %s AND type=%s;"
+                cursor.execute(query, (target, course, skill, typeof))
             else:
-                 if table_exists[0][0] > 0 and newTotal >= 0:  # virtual currency is enabled and user has enough tokens
+                if table_exists[0][0] > 0 and newTotal >= 0:  # virtual currency is enabled and user has enough tokens
                     # simply award the tokens
                     query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
                     cursor.execute(query, (newTotal, course, target))
@@ -707,18 +707,18 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 			# If new rating is greater or equal to 3
 			# no changes to table award, so continue!
 			# There might be a change to the award_participation:
-			if contributions[0].rating > table[0][5]:
-				award_id = table[0][0]
-				participation_id = contributions[0].log_id
+            if contributions[0].rating > table[0][5]:
+                award_id = table[0][0]
+                participation_id = contributions[0].log_id
 
-				query = "UPDATE award_participation set participation=%s where award=%s;"
-				cursor.execute(query, (participation_id, award_id))
+                query = "UPDATE award_participation set participation=%s where award=%s;"
+                cursor.execute(query, (participation_id, award_id))
 
-		else:
-			print("ERROR: More than one line for a skill found on the database.")
+        else:
+            print("ERROR: More than one line for a skill found on the database.")
 
-		cnx.commit()
-		cnx.close()
+        cnx.commit()
+        cnx.close()
 
 
 
@@ -782,7 +782,6 @@ def award_tokens(target, reward_name, tokens, contributions=None):
     else:
         awards_table = "award"
 
-
     query = "SELECT moduleInstance FROM " + awards_table + " where user = %s AND course = %s AND description = %s AND type=%s;"
     cursor.execute(query, (target, course, reward_name, typeof))
     table = cursor.fetchall()
@@ -806,12 +805,56 @@ def award_tokens(target, reward_name, tokens, contributions=None):
         cursor.execute(query, (target, course, reward_name, typeof, reward))
         cnx.commit()
 
-        newTotal = reward + table_wallet[0][0]
+        if contributions == None:
+            newTotal = reward + table_wallet[0][0]
 
-        # simply award the tokens
-        query = "UPDATE " + wallet_table + " SET tokens=%s WHERE course=%s AND user = %s;"
-        cursor.execute(query, (newTotal, course, target))
-        cnx.commit()
+            # simply award the tokens
+            query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
+            cursor.execute(query, (newTotal, course, target))
+            cnx.commit()
+        else:
+            query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
+            cursor.execute(query, (target, course, reward_name, typeof))
+            table_id = cursor.fetchall()
+            award_id = table_id[0][0]
+
+            # This query needs to be changed, we need to check award id of award_participation
+            query = "SELECT id FROM participation WHERE type = %s AND id NOT IN (SELECT participation FROM award_participation);"
+            cursor.execute(query, (contributions[0].log_type))
+            table_to_award = cursor.fetchall()
+            
+            if len(table_to_award) > 0:
+
+                for i in range(table_to_award):
+                    query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                    cursor.execute(query, (award_id, table_to_award[i][0]))
+                    cnx.commit()
+
+                newTotal = reward * len(table_to_award) + table_wallet[0][0] # awards all tokens for all participations
+
+                # simply award the tokens
+                query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
+                cursor.execute(query, (newTotal, course, target))
+                cnx.commit()
+
+    elif len(table) > 0 and contributions != None:
+         if len(table_to_award) > 0:
+             query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
+             cursor.execute(query, (target, course, reward_name, typeof))
+             table_id = cursor.fetchall()
+             award_id = table_id[0][0]
+
+             for i in range(table_to_award):
+                 query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                 cursor.execute(query, (award_id, table_to_award[i][0]))
+                 cnx.commit()
+
+             newTotal = reward * len(table_to_award) + table_wallet[0][0] # awards all tokens for all participations
+
+             # simply award the tokens
+             query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
+             cursor.execute(query, (newTotal, course, target))
+             cnx.commit()
 
 
     cnx.close()
@@ -1254,7 +1297,12 @@ def clear_streak_participations(target):
 
 
 #  logs-> participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
-def award_streak(target, streak, participationType, contributions=None, info=None):
+
+# * * * ** * * * * * * TO DO * * * * * * * * * * * * * *
+#  - Funcao recebe participationType mas nao e preciso.
+# Basta ir as contributions e ver o type que foi dado.
+# * * * ** * * * * * * * * * * * * * * * * * * * * * * *
+def award_streak(target, streak, contributions=None, info=None):
 	# -----------------------------------------------------------
 	# Writes and updates 'award' table with streaks won by the
 	# user. Will retract if rules/participations have been
@@ -1271,6 +1319,8 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
     typeof = "streak"
 
     nlogs = len(contributions)
+    if contributions != None:
+        participationType = contributions[0].log_type
 
     if config.test_mode:
         awards_table = "award_test"
@@ -1367,9 +1417,7 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                     else:
                         return
 
-                    size = 0
-                    for item in table_participations:
-                        size += 1
+                    size = len(table_participations)
 
                     for i in range(size):
                          j = i+1
@@ -1464,9 +1512,7 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                     cursor.execute(query, (target, course, streakid))
                     table_all_participations = cursor.fetchall()
 
-                    total = 0
-                    for item in table_all_participations:
-                        total += 1
+                    total = len(table_all_participations)
 
                     for p in range(total):
                         participationValid = table_all_participations[p][1]
@@ -1494,9 +1540,7 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                     cursor.execute(query, (target, course, participationType))
                     table_participations = cursor.fetchall()
                     
-                    size = 0
-                    for item in table_participations:
-                        size += 1
+                    size = len(table_participations)
 
                     for i in range(size):
                          j = i+1
