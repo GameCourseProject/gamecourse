@@ -819,13 +819,13 @@ def award_tokens(target, reward_name, tokens, contributions=None):
             award_id = table_id[0][0]
 
             # This query needs to be changed, we need to check award id of award_participation
-            query = "SELECT id FROM participation WHERE type = %s AND id NOT IN (SELECT participation FROM award_participation);"
-            cursor.execute(query, (contributions[0].log_type))
+            query = "SELECT id FROM participation WHERE user = %s AND course = %s AND type = %s AND id NOT IN (SELECT participation FROM award_participation WHERE award = %s);"
+            cursor.execute(query, (target, course, contributions[0].log_type, award_id))
             table_to_award = cursor.fetchall()
             
             if len(table_to_award) > 0:
 
-                for i in range(table_to_award):
+                for i in range(len(table_to_award)):
                     query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
                     cursor.execute(query, (award_id, table_to_award[i][0]))
                     cnx.commit()
@@ -838,13 +838,19 @@ def award_tokens(target, reward_name, tokens, contributions=None):
                 cnx.commit()
 
     elif len(table) > 0 and contributions != None:
-         if len(table_to_award) > 0:
-             query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
-             cursor.execute(query, (target, course, reward_name, typeof))
-             table_id = cursor.fetchall()
-             award_id = table_id[0][0]
+         query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
+         cursor.execute(query, (target, course, reward_name, typeof))
+         table_id = cursor.fetchall()
+         award_id = table_id[0][0]
 
-             for i in range(table_to_award):
+         query = "SELECT id FROM participation WHERE user = %s AND course = %s AND type = %s AND id NOT IN (SELECT participation FROM award_participation WHERE award = %s);"
+         cursor.execute(query, (target, course, contributions[0].log_type, award_id))
+         table_to_award = cursor.fetchall()
+         
+         if len(table_to_award) > 0:
+             
+
+             for i in range(len(table_to_award)):
                  query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
                  cursor.execute(query, (award_id, table_to_award[i][0]))
                  cnx.commit()
@@ -1297,11 +1303,6 @@ def clear_streak_participations(target):
 
 
 #  logs-> participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
-
-# * * * ** * * * * * * TO DO * * * * * * * * * * * * * *
-#  - Funcao recebe participationType mas nao e preciso.
-# Basta ir as contributions e ver o type que foi dado.
-# * * * ** * * * * * * * * * * * * * * * * * * * * * * *
 def award_streak(target, streak, contributions=None, info=None):
 	# -----------------------------------------------------------
 	# Writes and updates 'award' table with streaks won by the
