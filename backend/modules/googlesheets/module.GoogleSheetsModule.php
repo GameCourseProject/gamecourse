@@ -255,15 +255,16 @@ class GoogleSheetsModule extends Module
             "sheetName" => $names,
         ];
 
-        // Verify connection to Google sheet
-        if (!GoogleSheets::checkConnection($courseId))
-            API::error("GoogleSheets connection failed.");
-
         if (empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*"))) {
             Core::$systemDB->insert(self::TABLE_CONFIG, $arrayToDb);
         } else {
             Core::$systemDB->update(self::TABLE_CONFIG, $arrayToDb, ["course" => $courseId]);
         }
+
+        // Verify connection to Google sheet
+        if (!GoogleSheets::checkConnection($courseId))
+            API::error("GoogleSheets connection failed.");
+
         self::$googleSheets->saveTokenToDB();
     }
 }
