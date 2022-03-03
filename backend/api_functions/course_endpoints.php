@@ -1277,12 +1277,14 @@ API::registerFunction($MODULE, 'getTableData', function () {
 
     $tableName = API::getValue('table');
 
-    $data = Core::$systemDB->selectMultiple("game_course_user g join " . $tableName . " t on g.id=t.user", ["course" => $courseId], "t.*, g.name, g.studentNumber");
-    foreach ($data as &$d) {
-        $exploded =  explode(' ', $d["name"]);
-        $nickname = $exploded[0] . ' ' . end($exploded);
-        $d["name"] = $nickname;
-    }
+    if (isset(Core::$systemDB->select($tableName)["user"])) {
+        $data = Core::$systemDB->selectMultiple("game_course_user g join " . $tableName . " t on g.id=t.user", ["course" => $courseId], "t.*, g.name, g.studentNumber");
+        foreach ($data as &$d) {
+            $exploded =  explode(' ', $d["name"]);
+            $nickname = $exploded[0] . ' ' . end($exploded);
+            $d["name"] = $nickname;
+        }
+    } else $data = Core::$systemDB->selectMultiple($tableName, ["course" => $courseId], "*");
 
     // Get columns in order: id , name, studentNumber, (...)
     $orderedColumns = null;

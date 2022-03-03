@@ -120,11 +120,11 @@ class Notifications extends Module
         $isEmpty = empty($progressReportVarsDB);
 
         return [
-            "endDate" => $isEmpty ? "" : explode(" ", $progressReportVarsDB["endDate"])[0],
+            "endDate" => $isEmpty ? "" : $progressReportVarsDB["endDate"],
             "periodicityTime" => $isEmpty ? "Weekly" : $progressReportVarsDB["periodicityTime"],
             "periodicityHours" => $isEmpty ? 18 : intval($progressReportVarsDB["periodicityHours"]),
             "periodicityDay" => $isEmpty ? 5 : intval($progressReportVarsDB["periodicityDay"]),
-            "isEnabled" => $isEmpty ? false : $progressReportVarsDB["isEnabled"]
+            "isEnabled" => $isEmpty ? false : filter_var($progressReportVarsDB["isEnabled"], FILTER_VALIDATE_BOOLEAN)
         ];
     }
 
@@ -132,11 +132,11 @@ class Notifications extends Module
     {
         $arrayToDb = [
             "course" => $courseId,
-            "endDate" => $progressReport["endDate"] . " 23:59:59",
+            "endDate" => $progressReport["endDate"],
             "periodicityTime" => $progressReport['periodicityTime'],
             "periodicityHours" => $progressReport['periodicityHours'],
             "periodicityDay" => $progressReport['periodicityDay'],
-            "isEnabled" => filter_var($progressReport["isEnabled"], FILTER_VALIDATE_BOOLEAN)
+            "isEnabled" => $progressReport['isEnabled'] ? 1 : 0
         ];
 
         if (empty(Core::$systemDB->select(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $courseId], "*"))) {
