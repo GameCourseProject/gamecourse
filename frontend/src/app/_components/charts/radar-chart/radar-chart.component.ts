@@ -10,7 +10,6 @@ import {
 } from "ng-apexcharts";
 import {exists} from "../../../_utils/misc/misc";
 import * as _ from "lodash";
-import {colors} from "@angular/cli/utilities/color";
 
 export type ChartOptions = {
   series: ApexAxisChartSeries;
