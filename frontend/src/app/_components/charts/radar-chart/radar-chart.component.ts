@@ -112,7 +112,6 @@ export class RadarChartComponent implements OnInit {
         this.series[i]['data'][j] = this.series[i]['data'][j] * 100 / this.axisMax[j];
       }
     }
-    console.log(this.series)
   }
 
   unscale(val: number, index: number) {

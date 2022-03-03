@@ -98,7 +98,7 @@ class Charts extends Module
             $params = $visitor->getParams();
             $userID = $params['user'];
             $course = Course::getCourse($params['course'], false);
-            $xpModule = $course->getModule("xp");
+            $xpModule = $course->getModule(XPLevels::ID);
             $xp = $xpModule->getUserXP($userID,$params['course']);
 
             $cacheId = 'xpEvolution' . $params['course'] . '-' . $userID .'-'.$xp;
@@ -112,14 +112,10 @@ class Charts extends Module
 
             $awards = Core::$systemDB->selectMultiple(AwardList::TABLE,["user"=>$userID,"course"=>$course->getId()],"*","date");
 
-            if (array_key_exists(0, $awards)){
-                $currentDay = new DateTime(date('Y-m-d', strtotime($awards[0]['date'])));
-            }
-            else {
-                $currentDay = (new DateTime('2021-03-01'));
-            }
+            date_default_timezone_set('Europe/Lisbon');
+            $currentDay = (new DateTime('2022-03-07')); // FIXME: hard-coded
 
-            $xpDay = 0;
+            $xpDay = 1;
             $xpTotal = 0;
             $xpValue = array();
             foreach($awards as $award) {
@@ -158,7 +154,8 @@ class Charts extends Module
             $maxDay = 0;
             $minDay = PHP_INT_MAX;
 
-            $baseLine = (new DateTime('2015-01-01'));
+            date_default_timezone_set('Europe/Lisbon');
+            $baseLine = (new DateTime('2022-03-07'));
             $calcDay = function($date) use ($baseLine) {
                 if (is_string($date))
                     $date = strtotime($date);
