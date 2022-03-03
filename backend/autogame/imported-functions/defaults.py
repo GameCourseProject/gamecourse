@@ -94,17 +94,33 @@ def filter_excellence(logs, tiers, classes):
 
 
 @rule_function
-def award_prize(target, reward_name, xp, typeof="bonus"):
-	""" 
+def award_prize(target, reward_name, xp, contributions=None):
+	"""
 	Awards a prize called "reward_name" of "xp" points to students.
 	"""
-	connector.award_prize(target, reward_name, xp, typeof)
+	connector.award_prize(target, reward_name, xp, contributions)
 	return
 
 
 @rule_function
+def award_tokens(target, reward_name, tokens, contributions=None):
+    """
+	Awards tokens to students.
+	"""
+	connector.award_tokens(target, reward_name, tokens, contributions)
+	return
+
+@rule_function
+def award_tokens_type(target, type, tokens, element_name = None, contributions=None):
+    """
+    Awards tokens to students based on an award given.
+    """
+    connector.award_tokens(target, type, tokens, element_name, contributions)
+    return
+
+@rule_function
 def award_badge(target, badge, lvl, contributions=None, info=None):
-	""" 
+	"""
 	Awards a Badge type award called "badge" to "target". The "lvl" argument represents the level that can be attributed
 	to a given student (used in conjunction with compute_lvl). The "contributions" parameter should receive the participations
 	that justify the attribution of the badge for a given target.
@@ -115,7 +131,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
 @rule_function
 def award_skill(target, skill, rating, contributions=None, use_wildcard=False, wildcard_tier=None):
-	""" 
+	"""
 	Awards a Skill type award called "skill" to "target".
 	"""
 	result = connector.award_skill(target, skill, rating, contributions, use_wildcard, wildcard_tier)
@@ -124,9 +140,9 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 
 @rule_function
 def award_grade(target, item, contributions=None):
-	""" 
+	"""
 	Awards a grade (XP) to "target". Grades awarded will depend on the logs passed
-	in argument "item", which contain the XP reward to be awarded. 
+	in argument "item", which contain the XP reward to be awarded.
 	"""
 	connector.award_grade(target, item, contributions)
 	# TODO possible upgrade: returning indicators to include these types of prizes as well
@@ -134,27 +150,27 @@ def award_grade(target, item, contributions=None):
 
 @rule_function
 def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ignore_case=None, extra=None):
-	""" 
+	"""
 	Awards a quiz grade (XP) to "target". Grades awarded will depend on the logs passed
-	, which contain the XP reward to be awarded. 
+	, which contain the XP reward to be awarded.
 	"""
 	connector.award_quiz_grade(target, contributions, xp_per_quiz, max_grade, ignore_case, extra)
 	return
 
 @rule_function
 def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, forum=None):
-	""" 
+	"""
 	Awards a post grade (XP) to "target". Grades awarded will depend on the logs passed
-	, which contain the XP reward to be awarded. 
+	, which contain the XP reward to be awarded.
 	"""
 	connector.award_post_grade(target, contributions, xp_per_post, max_grade, forum)
 	return
-	
+
 @rule_function
 def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_grade=1):
-	""" 
+	"""
 	Awards an assignment grade (XP) to "target". Grades awarded will depend on the logs passed
-	, which contain the XP reward to be awarded. 
+	, which contain the XP reward to be awarded.
 	"""
 	connector.award_assignment_grade(target, contributions, xp_per_assignemnt, max_grade)
 	return

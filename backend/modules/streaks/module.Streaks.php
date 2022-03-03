@@ -16,8 +16,8 @@ class Streaks extends Module
     const ID = 'streaks';
 
     const TABLE = 'streak';
-    const TABLE_LEVEL = self::ID . '_level';
-    const TABLE_CONFIG = self::ID . '_config';
+    const TABLE_CONFIG ='streaks_config';
+    const TABLE_PROGRESSION = self::ID . '_progression';
 
     const STREAKS_TEMPLATE_NAME = 'Streaks block - by streaks';
 
@@ -207,6 +207,21 @@ class Streaks extends Module
             true
         );
 
+        //%streak.isAtMost
+        Dictionary::registerFunction(
+            self::ID,
+            'isAtMost',
+            function ($streak) {
+                return Dictionary::basicGetterFunction($streak, "isAtMost");
+            },
+            "Returns a boolean regarding whether the steak is periodic and peridodicity is at most x participations.",
+            'boolean',
+            null,
+            'object',
+            'streak',
+            true
+        );
+
         //%streak.isActive
         Dictionary::registerFunction(
             self::ID,
@@ -238,9 +253,6 @@ class Streaks extends Module
             null,
             true
         );
-
-        //streakProgression.post
-        //streakProgression.description
 
     }
 
@@ -293,7 +305,6 @@ class Streaks extends Module
     {
         $streaksConfigArray = array();
         $streaksArray = array();
-        $streaksLevelArray = array();
 
         $streaksArr = array();
         if (Core::$systemDB->tableExists(self::TABLE_CONFIG)) {
@@ -309,20 +320,15 @@ class Streaks extends Module
                 unset($streaksConfigVarDB["course"]);
                 foreach (streakssVarDB as $streak) {
                     array_push($streaksArray, $streak);
-
-                    $streaksLevelVarDB_ = Core::$systemDB->selectMultiple(self::TABLE_LEVEL, ["streakId" => $streak["id"]], "*");
-                    foreach ($streaksLevelVarDB_ as $streaksLevelVarDB) {
-                        array_push($streaksLevelArray, $streaksLevelVarDB);
-                    }
+                    
                 }
             }
         }
 
         $streaksArr[self::TABLE_CONFIG] = $streaksConfigArray;
         $streaksArr[self::TABLE] = $streaksArray;
-        $streaksArr[self::TABLE_LEVEL] = $streaksLevelArray;
 
-        if ($streaksConfigArray || $streaksArray || $streaksLevelArray) {
+        if ($streaksConfigArray || $streaksArray ) {
             return $streaksArr;
         } else {
             return false;
@@ -389,10 +395,10 @@ class Streaks extends Module
     public function get_listing_items(int $courseId): array
     {
 
-        $header = ['Name', 'Description', 'Count', 'Periodicity', 'Periodicity Time', 'is Repeatable', 'is Periodic', 'is Count', 'Reward', 'Color', 'Active'];
-        $displayAtributes = ['name', 'description', 'count', 'periodicity', 'periodicityTime', 'isRepeatable', 'isPeriodic', 'isCount', 'reward' , 'color', 'isActive'];
+        $header = ['Name', 'Description', 'Count', 'Periodicity', 'Periodicity Time', 'is Repeatable', 'is Periodic', 'is Count', 'is At Most' , 'Reward', 'Color', 'Active'];
+        $displayAtributes = ['name', 'description', 'count', 'periodicity', 'periodicityTime', 'isRepeatable', 'isPeriodic', 'isCount', 'isAtMost', 'reward' , 'color', 'isActive'];
         $items = $this->getStreaks($courseId);
-        
+
         // Arguments for adding/editing
         $allAtributes = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => ""),
@@ -403,8 +409,9 @@ class Streaks extends Module
             array('name' => "Is Repeatable", 'id' => 'repeatable', 'type' => "on_off button", 'options' => ""),
             array('name' => "Is Periodic", 'id' => 'periodic', 'type' => "on_off button", 'options' => ""),
             array('name' => "Is Count", 'id' => 'countBased', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is At Most", 'id' => 'atMost', 'type' => "on_off button", 'options' => ""),
             array('name' => "Periodicity", 'id' => 'periodicity', 'type' => "number", 'options' => ""),
-            array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "select", 'options' => ["Minutes","Days","Weeks"])
+            array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "select", 'options' => ["Minutes","Hours","Days","Weeks_"])
         ];
         return array('listName' => 'Streaks', 'itemName' => 'Streak', 'header' => $header, 'displayAtributes' => $displayAtributes, 'items' => $items, 'allAtributes' => $allAtributes);
     }
@@ -436,10 +443,90 @@ class Streaks extends Module
 
     public function importItems(string $fileData, bool $replace = true): int{
 
+        $courseId = $this->getCourseId();
+
+        $nrItemsImported = 0;
+        $separator = ",";
+        $headers = ["name", "description", "color", "isRepeatable", "isCount", "isPeriodic", "isAtMost", "isActive",
+            "periodicity", "periodicityTime", "count", "reward", "image"];
+        $lines = array_filter(explode("\n", $fileData), function ($line) { return !empty($line); });
+
+        if (count($lines) > 0) {
+            // Check if has header to ignore it
+            $firstLine = array_map('trim', explode($separator, trim($lines[0])));
+            $hasHeaders = true;
+            foreach ($headers as $header) {
+                if (!in_array($header, $firstLine)) $hasHeaders = false;
+            }
+            if ($hasHeaders) array_shift($lines);
+
+            // Import each item
+            foreach ($lines as $line) {
+                $item = array_map('trim', explode($separator, trim($line)));
+                $itemId = Core::$systemDB->select(self::TABLE, ["course" => $courseId, "name" => $item[array_search("name", $headers)]], "id");
+
+                $streakData = [
+                    "name" => $item[array_search("name", $headers)],
+                    "description" => $item[array_search("description", $headers)],
+                    "color" => $item[array_search("color", $headers)],
+                    "isRepeatable" => intval($item[array_search("isRepeatable", $headers)]),
+                    "isCount" => intval($item[array_search("isCount", $headers)]),
+                    "isPeriodic" => intval($item[array_search("isPeriodic", $headers)]),
+                    "isAtMost" => intval($item[array_search("isAtMost", $headers)]),
+                    "isActive" => intval($item[array_search("isActive", $headers)]),
+                    "periodicity" => intval($item[array_search("periodicity", $headers)]),
+                    "periodicityTime" => $item[array_search("periodicityTime", $headers)],
+                    "count" => intval($item[array_search("count", $headers)]),
+                    "reward" => intval($item[array_search("reward", $headers)]),
+                    "image" => $item[array_search("image", $headers)]
+                ];
+
+
+                if ($itemId && $replace) { // replace item
+                    $streakData["id"] = $itemId;
+                    Streaks::editStreak($streakData, $courseId);
+
+                } else { // create item
+                    Streaks::newStreak($streakData, $courseId);
+                    $nrItemsImported++;
+                }
+            }
+        }
+
+        return $nrItemsImported;
+
     }
 
     public function exportItems(int $itemId = null): array{
+        $courseId = $this->getCourseId();
+        $course = Course::getCourse($courseId, false);
 
+        // Get streaks to export
+        if (!is_null($itemId))
+            $listOfStreaks = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId, "id" => $itemId], "*");
+        else
+            $listOfStreaks = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*");
+
+        $file = "";
+        $separator = ",";
+        $len = count($listOfStreaks);
+
+        // Append headers
+        $headers = ["name", "description", "color", "isRepeatable", "isCount", "isPeriodic", "isAtMost", "isActive",
+            "periodicity", "periodicityTime", "count", "reward", "image"];
+        $file .= implode($separator, $headers) . "\n";
+
+        // Go over each badge and append it to file
+        foreach ($listOfStreaks as $index => $streak) {
+            $params = [$streak["name"], $streak["description"], $streak["color"], $streak["isRepeatable"], $streak["isCount"],
+                $streak["isPeriodic"], $streak["isAtMost"], $streak["isActive"], $streak["periodicity"],  $streak["periodicityTime"],
+                $streak["count"], $streak["reward"], $streak["image"]];
+
+            $file .= implode($separator, $params);
+            if ($index != $len - 1) $file .= "\n";
+        }
+
+        return ["Streaks - " . $course->getName(), $file];
     }
 
 
@@ -454,6 +541,7 @@ class Streaks extends Module
             $streak['isRepeatable'] = boolval($streak["isRepeatable"]);
             $streak['isCount'] = boolval($streak["isCount"]);
             $streak['isPeriodic'] = boolval($streak["isPeriodic"]);
+            $streak['isAtMost'] = boolval($streak["isAtMost"]);
             $streak['isActive'] = boolval($streak["isActive"]);
         }
         return $streaks;
@@ -474,13 +562,13 @@ class Streaks extends Module
         return Dictionary::createNode($streakArray, self::ID, $type);
 
     }
-              
+
     // getStreakCount
     // getUsersWithStreak
 
     public function getStreakProgression($badge, $user)
     {
-
+       
 
     }
 
@@ -507,7 +595,8 @@ class Streaks extends Module
             "reward" => $achievement['reward'],
             "isRepeatable" => ($achievement['repeatable']) ? 1 : 0,
             "isCount" => ($achievement['countBased']) ? 1 : 0,
-            "isPeriodic" => ($achievement['periodic']) ? 1 : 0
+            "isPeriodic" => ($achievement['periodic']) ? 1 : 0,
+            "isAtMost" => ($achievement['atMost']) ? 1 : 0
 
         ];
 
@@ -527,13 +616,15 @@ class Streaks extends Module
                 "reward" => $achievement['reward'],
                 "isRepeatable" => ($achievement['repeatable']) ? 1 : 0,
                 "isCount" => ($achievement['countBased']) ? 1 : 0,
-                "isPeriodic" => ($achievement['periodic']) ? 1 : 0
+                "isPeriodic" => ($achievement['periodic']) ? 1 : 0,
+                "isAtMost" => ($achievement['atMost']) ? 1 : 0
+
             ];
-            
+
             Core::$systemDB->update(self::TABLE, $streakData, ["id" => $achievement["id"]]);
         }
     }
-    
+
     public function deleteStreak($streak)
     {
         Core::$systemDB->delete(self::TABLE, ["id" => $streak['id']]);

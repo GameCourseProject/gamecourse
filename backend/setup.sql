@@ -68,6 +68,14 @@ DROP TABLE IF EXISTS skill_dependency;
 DROP TABLE IF EXISTS skill_tier;
 DROP TABLE IF EXISTS skill_tree;
 
+DROP TABLE IF EXISTS streak_progression;
+DROP TABLE IF EXISTS streak;
+DROP TABLE IF EXISTS streaks_config;
+DROP TABLE IF EXISTS streak_participations;
+
+DROP TABLE IF EXISTS config_virtual_currency;
+DROP TABLE IF EXISTS user_wallet;
+
 DROP TABLE IF EXISTS template;
 
 DROP TABLE IF EXISTS user_profile;
