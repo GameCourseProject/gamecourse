@@ -164,6 +164,21 @@ def filter_quiz(logs, desc):
 	return filtered_logs
 
 @rule_function
+def filter_graded_post(logs, desc):
+    """
+    Filters the list of logs in a way that certain
+    graded posts are removed
+    """
+
+    filtered_logs = []
+
+    for line in logs:
+        post = line.description
+        if not post.startswith(desc):
+            filtered_logs.append(line)
+    return filtered_logs
+
+@rule_function
 def exclude_worst(logs, last):
 	"""
 	Will calculate the adjustment for getting rid of the
@@ -230,7 +245,7 @@ def award_prize(target, reward_name, xp, contributions=None):
 	return
 
 @rule_effect
-def award_tokens(target, reward_name, tokens, contributions=None):
+def award_tokens(target, reward_name, tokens = None, contributions=None):
     """
 	Awards tokens to students.
 	"""
@@ -281,6 +296,13 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
 	connector.award_assignment_grade(target, contributions, xp_per_assignemnt, max_grade)
 	return
 
+@rule_effect
+def award_rating_streak(target, streak, rating, contributions=None, info=None):
+	"""
+	returns the output of a streak and writes the award to database
+	"""
+	result = connector.award_rating_streak(target, streak, rating, contributions, info)
+	return result
 
 @rule_effect
 def award_streak(target, streak, contributions=None, info=None):
