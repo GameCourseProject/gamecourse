@@ -171,7 +171,7 @@ class CourseUser extends User
     }
     function getXP()
     {
-        $xpMod = $this->course->getModule("xp");
+        $xpMod = $this->course->getModule(XPLevels::ID);
         if ($xpMod !== null) {
             return $xpMod->calculateXPComponents($this->id, $this->course->getId());
         }

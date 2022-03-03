@@ -88,6 +88,9 @@ export class RadarChartComponent implements OnInit {
       },
       yaxis: {
         show: false,
+        min: 0,
+        max: 100,
+        tickAmount: 5
       },
       tooltip: { }
     };
@@ -109,6 +112,7 @@ export class RadarChartComponent implements OnInit {
         this.series[i]['data'][j] = this.series[i]['data'][j] * 100 / this.axisMax[j];
       }
     }
+    console.log(this.series)
   }
 
   unscale(val: number, index: number) {

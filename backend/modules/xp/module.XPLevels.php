@@ -498,26 +498,26 @@ class XPLevels extends Module
         //skills XP
         $xp["skillXP"] = $this->calculateSkillXP($userId, $courseId);
 
-        $xp["labXP"] = Core::$systemDB->select(
+        $xp["labXP"] = intval(Core::$systemDB->select(
             AwardList::TABLE,
             ["course" => $courseId, "user" => $userId, "type" => "labs"],
             "sum(reward)"
-        );
-        $xp["quizXP"] = Core::$systemDB->select(
+        ));
+        $xp["quizXP"] = intval(Core::$systemDB->select(
             AwardList::TABLE,
             ["course" => $courseId, "user" => $userId, "type" => "quiz"],
             "sum(reward)"
-        );
-        $xp["presentationXP"] = Core::$systemDB->select(
+        ));
+        $xp["presentationXP"] = intval(Core::$systemDB->select(
             AwardList::TABLE,
             ["course" => $courseId, "user" => $userId, "type" => "presentation"],
             "sum(reward)"
-        );
-        $xp["bonusXP"] = Core::$systemDB->select(
+        ));
+        $xp["bonusXP"] = intval(Core::$systemDB->select(
             AwardList::TABLE,
             ["course" => $courseId, "user" => $userId, "type" => "bonus"],
             "sum(reward)"
-        );
+        ));
         $xp["xp"] = array_sum($xp);
         return $xp;
     }
