@@ -1,5 +1,4 @@
 <?php
-
 namespace Streaks;
 
 use GameCourse\Core;
@@ -29,7 +28,7 @@ class Streaks extends Module
     {
         $this->setupData($this->getCourseId());
         $this->initDictionary();
-        $this->initTemplates();
+//        $this->initTemplates();
     }
 
     public function initDictionary(){
@@ -266,8 +265,7 @@ class Streaks extends Module
 
     public function setupResources()
     {
-        parent::addResources('js/');
-        parent::addResources('css/badges.css');
+        parent::addResources('css/streaks.css');
     }
 
     public function setupData(int $courseId)
@@ -378,7 +376,6 @@ class Streaks extends Module
     }
     public function get_general_inputs(int $courseId): array
     {
-
         $input = array('name' => "Max Streaks Reward", 'id' => 'maxBonusReward', 'type' => "number", 'options' => "", 'current_val' => intval($this->getMaxReward($courseId)));
         return [$input];
     }
@@ -395,8 +392,23 @@ class Streaks extends Module
     public function get_listing_items(int $courseId): array
     {
 
-        $header = ['Name', 'Description', 'Count', 'Periodicity', 'Periodicity Time', 'is Repeatable', 'is Periodic', 'is Count', 'is At Most' , 'Reward', 'Color', 'Active'];
-        $displayAtributes = ['name', 'description', 'count', 'periodicity', 'periodicityTime', 'isRepeatable', 'isPeriodic', 'isCount', 'isAtMost', 'reward' , 'color', 'isActive'];
+        $header = ['Name', 'Description', 'Count', 'Reward', 'Color', 'is Repeatable', 'is Periodic', 'is Count', 'is At Most', 'Periodicity', 'Periodicity Time', 'Active'];
+        $displayAtributes = [
+            ['id' => 'name', 'type' => 'text'],
+            ['id' => 'description', 'type' => 'text'],
+            ['id' => 'count', 'type' => 'number'],
+            ['id' => 'reward', 'type' => 'number'],
+            ['id' => 'color', 'type' => 'text'],
+            ['id' => 'isRepeatable', 'type' => 'on_off button'],
+            ['id' => 'isPeriodic', 'type' => 'on_off button'],
+            ['id' => 'isCount', 'type' => 'on_off button'],
+            ['id' => 'isAtMost', 'type' => 'on_off button'],
+            ['id' => 'periodicity', 'type' => 'number'],
+            ['id' => 'periodicityTime', 'type' => 'text'],
+            ['id' => 'isActive', 'type' => 'on_off button']
+        ];
+        $actions = ['duplicate', 'edit', 'delete', 'export'];
+
         $items = $this->getStreaks($courseId);
 
         // Arguments for adding/editing
@@ -406,18 +418,19 @@ class Streaks extends Module
             array('name' => "Accomplishments Count", 'id' => 'count', 'type' => "number", 'options' => ""),
             array('name' => "Reward", 'id' => 'reward', 'type' => "number", 'options' => ""),
             array('name' => "Color", 'id' => 'color', 'type' => "color", 'options' => "", 'current_val' => ""),
-            array('name' => "Is Repeatable", 'id' => 'repeatable', 'type' => "on_off button", 'options' => ""),
-            array('name' => "Is Periodic", 'id' => 'periodic', 'type' => "on_off button", 'options' => ""),
-            array('name' => "Is Count", 'id' => 'countBased', 'type' => "on_off button", 'options' => ""),
-            array('name' => "Is At Most", 'id' => 'atMost', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Repeatable", 'id' => 'isRepeatable', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Periodic", 'id' => 'isPeriodic', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Count", 'id' => 'isCount', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is At Most", 'id' => 'isAtMost', 'type' => "on_off button", 'options' => ""),
             array('name' => "Periodicity", 'id' => 'periodicity', 'type' => "number", 'options' => ""),
-            array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "select", 'options' => ["Minutes","Hours","Days","Weeks_"])
+            array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "text", 'options' => ""),
+            array('name' => "Is Active", 'id' => 'isActive', 'type' => "on_off button", 'options' => "")
         ];
-        return array('listName' => 'Streaks', 'itemName' => 'Streak', 'header' => $header, 'displayAtributes' => $displayAtributes, 'items' => $items, 'allAtributes' => $allAtributes);
+        return array('listName' => 'Streaks', 'itemName' => 'streak', 'header' => $header, 'displayAttributes' => $displayAtributes, 'actions' => $actions, 'items' => $items, 'allAttributes' => $allAtributes);
     }
     public function save_listing_item(string $actiontype, array $listingItem, int $courseId)
     {
-        if ($actiontype == 'new') {
+        if ($actiontype == 'new' || $actiontype == 'duplicate') {
             $this->newStreak($listingItem, $courseId);
         } elseif ($actiontype == 'edit') {
             $this->editStreak($listingItem, $courseId);
@@ -593,11 +606,12 @@ class Streaks extends Module
             "periodicityTime" => $achievement['periodicityTime'],
             "count" => $achievement['count'],
             "reward" => $achievement['reward'],
-            "isRepeatable" => ($achievement['repeatable']) ? 1 : 0,
-            "isCount" => ($achievement['countBased']) ? 1 : 0,
-            "isPeriodic" => ($achievement['periodic']) ? 1 : 0,
-            "isAtMost" => ($achievement['atMost']) ? 1 : 0
-
+            "isRepeatable" => ($achievement['isRepeatable']) ? 1 : 0,
+            "isCount" => ($achievement['isCount']) ? 1 : 0,
+            "isPeriodic" => ($achievement['isPeriodic']) ? 1 : 0,
+            "isAtMost" => ($achievement['isAtMost']) ? 1 : 0,
+            "isActive" => ($achievement['isActive']) ? 1 : 0,
+            "image" => array_key_exists("image", $achievement) ? $achievement['image'] : null
         ];
 
         Core::$systemDB->insert(self::TABLE, $streakData);
@@ -609,16 +623,17 @@ class Streaks extends Module
 
         if(!empty($originalStreak)) {
             $streakData = [
+                "name" => $achievement['name'],
+                "description" => $achievement['description'],
                 "color" => $achievement['color'],
                 "periodicity" => $achievement['periodicity'],
                 "periodicityTime" => $achievement['periodicityTime'],
                 "count" => $achievement['count'],
                 "reward" => $achievement['reward'],
-                "isRepeatable" => ($achievement['repeatable']) ? 1 : 0,
-                "isCount" => ($achievement['countBased']) ? 1 : 0,
-                "isPeriodic" => ($achievement['periodic']) ? 1 : 0,
-                "isAtMost" => ($achievement['atMost']) ? 1 : 0
-
+                "isRepeatable" => ($achievement['isRepeatable']) ? 1 : 0,
+                "isCount" => ($achievement['isCount']) ? 1 : 0,
+                "isPeriodic" => ($achievement['isPeriodic']) ? 1 : 0,
+                "isAtMost" => ($achievement['isAtMost']) ? 1 : 0
             ];
 
             Core::$systemDB->update(self::TABLE, $streakData, ["id" => $achievement["id"]]);
@@ -630,14 +645,10 @@ class Streaks extends Module
         Core::$systemDB->delete(self::TABLE, ["id" => $streak['id']]);
     }
 
-
-    public function activeItem($itemId)
+    public function toggleItemParam(int $itemId, string $param)
     {
-        $active = Core::$systemDB->select(self::TABLE, ["id" => $itemId], "isActive");
-        if(!is_null($active)){
-            Core::$systemDB->update(self::TABLE, ["isActive" => $active ? 0 : 1], ["id" => $itemId]);
-            //ToDo: ADD RULE MANIPULATION HERE
-        }
+        $state = Core::$systemDB->select(self::TABLE, ["id" => $itemId], $param);
+        Core::$systemDB->update(self::TABLE, [$param => $state ? 0 : 1], ["id" => $itemId]);
     }
 
 
