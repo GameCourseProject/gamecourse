@@ -13,6 +13,7 @@ use DateTime;
 use GameCourse\Core;
 use GameCourse\Course;
 use Modules\AwardList\AwardList;
+use Modules\XP\XPLevels;
 
 Core::init();
 
@@ -106,7 +107,7 @@ foreach ($students as $student) {
     $pieChart = $pieChartURL . "?data1=" . implode(",", array_values($awardsByType)) .
                                 "&labels=" . implode(",", array_map(function ($label) { return ucfirst($label); }, array_keys($awardsByType)));
 
-    $totalXP = intval(Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $studentId], "xp"));
+    $totalXP = intval(Core::$systemDB->select(XPLevels::TABLE_XP, ["course" => $courseId, "user" => $studentId], "xp"));
     $currentPeriodXP = array_reduce($awardsCurrentPeriod, function ($carry, $award) {
         $carry += intval($award["reward"]);
         return $carry;

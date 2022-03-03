@@ -10,6 +10,7 @@ use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\CourseUser;
 use GameCourse\User;
+use Modules\XP\XPLevels;
 
 class Fenix extends Module
 {
@@ -106,6 +107,7 @@ class Fenix extends Module
                     $userId = User::addUserToDB($name, $username, "fenix", $email, $studentNumber, "", $major, 0, 1);
                     $courseUser = new CourseUser($userId, $course);
                     $courseUser->addCourseUserToDB($roleId);
+                    Core::$systemDB->insert(XPLevels::TABLE_XP, ["course" => $course->getId(), "user" => $userId, "xp" => 0, "level" => 1]);
                     $nrStudentsImported++;
 
                 } else { // edit user
@@ -113,6 +115,7 @@ class Fenix extends Module
                     $courseUser = new CourseUser($user->getId(), $course);
                     if (!CourseUser::userExists($course->getId(), $user->getId())) $courseUser->addCourseUserToDB($roleId);
                     else $courseUser->editCourseUser($user->getId(), $course->getId(), $major);
+                    Core::$systemDB->update(XPLevels::TABLE_XP, ["xp" => 0, "level" => 1], ["course" => $course->getId(), "user" => $user->getId()]);
                 }
             }
         }
