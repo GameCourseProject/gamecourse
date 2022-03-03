@@ -64,7 +64,6 @@ export class QrComponent implements OnInit {
       .subscribe(
         qrCodes => {
           this.qrCodes = qrCodes;
-          console.log(this.qrCodes)
         },
         error => ErrorService.set(error)
       )
@@ -74,9 +73,35 @@ export class QrComponent implements OnInit {
     this.loading = true;
 
     const myWindow = window.open('', 'PRINT');
+    const codes = document.getElementsByClassName("code");
 
-    myWindow.document.head.append(document.head.cloneNode(true));
-    myWindow.document.body.innerHTML = document.getElementById('print-qr-codes').outerHTML;
+    // Divide codes into pages
+    const maxPerPage = 16;
+    for (let i = 0; i < this.quantity; i += maxPerPage) {
+      // Create grid
+      const div = document.createElement("div");
+      div.classList.add("qr-codes");
+      div.style.display = "grid";
+      div.style.gridTemplateColumns = "25% 25% 25% 25%";
+      div.style.pageBreakInside = "avoid";
+
+      // Add codes
+      for (let j = i; j < (i + maxPerPage > this.quantity ? this.quantity : i + maxPerPage); j++) {
+        const code = codes[j].cloneNode(true) as HTMLElement;
+        code.style.display = "flex";
+        code.style.flexDirection = "column";
+        code.style.alignItems = "center";
+        code.style.width = "calc(100vw / 4)";
+        code.style.marginBottom = "25px";
+        code.style.marginLeft = "35px";
+        code.style.marginRight = "36px";
+        code.style.wordBreak = "break-all";
+        (code.children[1] as HTMLElement).style.fontSize = "14px";
+        div.append(code);
+      }
+
+      myWindow.document.body.append(div);
+    }
 
     myWindow.focus();
     myWindow.print();
