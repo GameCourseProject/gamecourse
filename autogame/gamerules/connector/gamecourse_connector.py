@@ -619,11 +619,16 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
             cost = table_currency[0][0]
 
             query = "SELECT tokens FROM user_wallet where user = %s AND course = %s;"
-            cursor.execute(query, (newTotal, course, target))
+            cursor.execute(query, (target, course))
             table_tokens = cursor.fetchall()
             currentTokens = table_tokens[0][0]
 
-            newTotal = currentTokens - cost
+            # gets all participations that have been already counted to remove tokens
+            query = "SELECT * FROM remove_tokens_participation where user = %s AND course = %s AND participation in (SELECT id from participation where description = %s );"
+            cursor.execute(query, (target, course))
+            table_counter_participations = cursor.fetchall()
+
+
 
         # If rating is not enough to win the award, return
         if rating < 3 and len(table) == 0:
@@ -659,6 +664,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
                     cnx.commit()
 
             else:
+
                 if newTotal >= 0: # had enough tokens to spend -> skill is valid to be awarded
 
                     query = "INSERT INTO award (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
@@ -761,7 +767,7 @@ def award_prize(target, reward_name, xp, contributions=None):
 	return
 
 
-def award_tokens(target, reward_name, tokens, contributions=None):
+def award_tokens(target, reward_name, tokens = None, contributions=None):
     # -----------------------------------------------------------
     # Simply awards tokens.
     # Updates 'user_wallet' table with the new total tokens for
@@ -775,7 +781,14 @@ def award_tokens(target, reward_name, tokens, contributions=None):
 
     course = config.course
     typeof = "tokens"
-    reward = int(tokens)
+    if tokens != None:
+        reward = int(tokens)
+    else:
+        query = "SELECT initialTokens from config_virtual_currency where course = %s;"
+        cursor.execute(query, (course))
+        table_currency = cursor.fetchall()
+        reward = table_currency[0][0]
+
 
     if config.test_mode:
         awards_table = "award_test"
@@ -790,7 +803,7 @@ def award_tokens(target, reward_name, tokens, contributions=None):
     cursor.execute(query, (target, course))
     table_wallet = cursor.fetchall()
 
-    if len(table_wallet) == 0:  # user has not been inserted in user_wallet yet
+    if len(table_wallet) == 0: # user has not been inserted in user_wallet yet and tokens to award are already defined => initialTokens
         # insert in award
         query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
         cursor.execute(query, (target, course, reward_name, typeof, reward))
@@ -818,7 +831,6 @@ def award_tokens(target, reward_name, tokens, contributions=None):
             table_id = cursor.fetchall()
             award_id = table_id[0][0]
 
-            # This query needs to be changed, we need to check award id of award_participation
             query = "SELECT id FROM participation WHERE user = %s AND course = %s AND type = %s AND id NOT IN (SELECT participation FROM award_participation WHERE award = %s);"
             cursor.execute(query, (target, course, contributions[0].log_type, award_id))
             table_to_award = cursor.fetchall()
@@ -849,7 +861,6 @@ def award_tokens(target, reward_name, tokens, contributions=None):
          
          if len(table_to_award) > 0:
              
-
              for i in range(len(table_to_award)):
                  query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
                  cursor.execute(query, (award_id, table_to_award[i][0]))
@@ -932,7 +943,7 @@ def award_tokens_type(target, type, tokens, element_name = None, contributions=N
 
     return
 
-def removes_tokens(target, reason_name, tokens, contributions=None):
+def removes_tokens(target, tokens, contributions=None):
     # -----------------------------------------------------------
     # Updates 'user_wallet' table with the new total tokens for
     # a user.
@@ -951,8 +962,36 @@ def removes_tokens(target, reason_name, tokens, contributions=None):
         awards_table = "award_test"
     else:
         awards_table = "award"
+        
+    query = "SELECT skillCost, attemptRating from config_virtual_currency where course = %s;"
+    cursor.execute(query, (course))
+    table_currency = cursor.fetchall()
+    cost = table_currency[0][0]
+    minRating = table_currency[0][1]
 
-    
+    query = "SELECT tokens FROM user_wallet where user = %s AND course = %s;"
+    cursor.execute(query, (target, course))
+    table_tokens = cursor.fetchall()
+    currentTokens = table_tokens[0][0]
+
+    if contributions != None:
+        # gets all participations that haven't been counted yet.
+        query = "SELECT id FROM participation WHERE user = %s AND course = %s AND type = %s AND rating >= %s, id NOT IN (SELECT participation FROM remove_tokens_participation);"
+        cursor.execute(query, (target, course, contributions[0].log_type, minRating))
+        table_to_remove = cursor.fetchall()
+
+        for i in range(len(table_to_remove)):
+            query = "INSERT INTO remove_tokens_participation (award, participation) VALUES(%s, %s);"
+            cursor.execute(query, (award_id, table_to_award[i][0]))
+            cnx.commit()
+
+        newTotal = reward * len(table_to_award) + table_wallet[0][0] # awards all tokens for all participations
+
+        # simply award the tokens
+        query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
+        cursor.execute(query, (newTotal, course, target))
+        cnx.commit()
+
     cnx.close()
 
     return
@@ -1301,6 +1340,417 @@ def clear_streak_participations(target):
       cnx.commit()
       cnx.close()
 
+def check_periodicity(target, course, participationType, periodicity, periodicityTime, streakid ):
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
+
+    course = config.course
+    typeof = "streak"
+
+    # gets date of participations that matter, disgarding submission withtin the same time period
+    if len(periodicityTime) == 7:  # minutes - gets all participations
+        query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND type = %s;"
+        cursor.execute(query, (target, course, participationType))
+        table_participations = cursor.fetchall()
+    elif len(periodicityTime) == 5:  # hours - gets participations with different hours only
+        query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND type= %s GROUP BY hour(date), day(date) ORDER BY id;"
+        cursor.execute(query, (target, course, participationType))
+        table_participations = cursor.fetchall()
+    elif len(periodicityTime) == 4 or len(periodicityTime) == 6:   # days or weeks - gets only distinct days
+        query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND type= %s GROUP BY day(date);"
+        cursor.execute(query, (target, course, participationType))
+        table_participations = cursor.fetchall()
+    else:
+        return
+
+    size = len(table_participations)
+
+    for i in range(size):
+         j = i+1
+         if j < size:
+            firstParticipationId = table_participations[i][0]  # YYYY-MM-DD HH:MM:SS
+            secondParticipationId = table_participations[j][0]
+
+            firstParticipationObj = table_participations[i][1]  # YYYY-MM-DD HH:MM:SS
+            secondParticipationObj = table_participations[j][1]
+
+            # if it disrespects streak periodicity, then return
+            if len(periodicityTime) == 7:  # minutes
+                dif = secondParticipationObj - firstParticipationObj
+                margin = 5 # time for any possible delay
+                if dif < timedelta(minutes=periodicity-margin) or dif > timedelta(minutes=periodicity+margin):
+                    query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                    cursor.execute(query, (course, target, streakid, firstParticipationId, '0'))
+                    cnx.commit()
+                else:
+                    query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                    cursor.execute(query, (course, target, streakid, firstParticipationId, '1'))
+                    cnx.commit()
+                    if j == size-1:
+                       query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                       cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
+                       cnx.commit()
+
+            elif len(periodicityTime) == 5:   # hours
+                dif = secondParticipationObj.time().hour - firstParticipationObj.time().hour
+                difDay = secondParticipationObj.date() - firstParticipationObj.date()
+
+                if difDay  == timedelta(days=1):
+                    sumHours =  secondParticipationObj.time().hour + firstParticipationObj.time().hour
+                    limit = 23
+                    difLimit = 0
+
+                    if time3.time().hour < limit: # before 23
+                        difLimit = limit - time3.time().hour
+                        sumHours += difLimit
+
+                    calculatedPeriodicity = (sumHours-limit) + 1 + difLimit
+                    if calculatedPeriodicity != periodicity:
+                        query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                        cursor.execute(query, (course, target, streakid, firstParticipationId, '0'))
+                        cnx.commit()
+                    else:
+                        query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                        cursor.execute(query, (course, target, streakid, firstParticipationId, '1'))
+                        cnx.commit()
+
+                        if j == size-1:
+                           query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                           cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
+                           cnx.commit()
+
+                elif dif != periodicity:
+                    query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                    cursor.execute(query, (course, target, streakid, firstParticipationId, '0'))
+                    cnx.commit()
+                else:
+                    query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                    cursor.execute(query, (course, target, streakid, firstParticipationId, '1'))
+                    cnx.commit()
+                    if j == size-1:
+                       query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                       cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
+                       cnx.commit()
+
+            elif len(periodicityTime) == 4 or len(periodicityTime) == 6:  # days or weeks
+                if len(periodicityTime) == 6:
+                    periodicityDays = periodicity * 7
+                else:
+                    periodicityDays = periodicity
+
+                dif = secondParticipationObj.date() - firstParticipationObj.date()
+                if dif != timedelta(days=periodicityDays): # dif needs to be equal to periodicity
+                    query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                    cursor.execute(query, (course, target, streakid, firstParticipationId, '0'))
+                    cnx.commit()
+                else:
+                    query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                    cursor.execute(query, (course, target, streakid, firstParticipationId, '1'))
+                    cnx.commit()
+                    if j == size-1:
+                       query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                       cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
+                       cnx.commit()
+            else:
+                return
+
+    query = "SELECT participationId, isValid FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s;"
+    cursor.execute(query, (target, course, streakid))
+    table_all_participations = cursor.fetchall()
+
+    total = len(table_all_participations)
+
+    for p in range(total):
+        participationValid = table_all_participations[p][1]
+
+        if not participationValid:
+            for i in range(p-1, 0, -1):
+                query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND participationId= %s;"
+                cursor.execute(query, (target, course, streakid))
+                cnx.commit()
+
+    query = "SELECT participationId FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s AND isValid = '1';"
+    cursor.execute(query, (target, course, streakid))
+    table_valid = cursor.fetchall()
+
+    for participation in table_valid:
+        participation_id = participation[0]
+        query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
+        cursor.execute(query, (course, target, streakid, participation_id))
+        cnx.commit()
+
+
+
+def check_is_consecutive(target, course, participationType, streakid):
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
+
+    course = config.course
+    typeof = "streak"
+
+    query = "SELECT id, description FROM participation WHERE user = %s AND course = %s AND type = %s;"
+    cursor.execute(query, (target, course, participationType))
+    table_participations = cursor.fetchall()
+
+    size = len(table_participations)
+
+    for i in range(size):
+        j = i+1
+        if j < size:
+            firstParticipationId = table_participations[i][0]
+            secondParticipationId = table_participations[j][0]
+
+            description1 = int(table_participations[i][1])
+            description2 = int(table_participations[j][1])
+
+            if description2 - description1 != 1:
+                query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                cursor.execute(query, (course, target, streakid, firstParticipationId, '0'))
+                cnx.commit()
+            else:
+                query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                cursor.execute(query, (course, target, streakid, firstParticipationId, '1'))
+                cnx.commit()
+                if j == size-1:
+                   query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                   cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
+                   cnx.commit()
+
+    query = "SELECT participationId, isValid FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s;"
+    cursor.execute(query, (target, course, streakid))
+    table_all_participations = cursor.fetchall()
+
+    total = len(table_all_participations)
+
+    for p in range(total):
+        participationValid = table_all_participations[p][1]
+
+        if not participationValid:
+            for i in range(p-1, 0, -1):
+                query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND participationId= %s;"
+                cursor.execute(query, (target, course, streakid))
+                cnx.commit()
+
+    query = "SELECT participationId FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s AND isValid = '1';"
+    cursor.execute(query, (target, course, streakid))
+    table_valid = cursor.fetchall()
+
+    for participation in table_valid:
+        participation_id = participation[0]
+        query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
+        cursor.execute(query, (course, target, streakid, participation_id))
+        cnx.commit()
+
+#  logs-> participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
+def award_rating_streak(target, streak, rating, contributions=None, info=None):
+	# -----------------------------------------------------------
+	# Writes and updates 'award' table with streaks won by the
+	# user. Will retract if rules/participations have been
+	# changed.
+	# Is also responsible for creating indicators.
+	# -----------------------------------------------------------
+
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
+
+    course = config.course
+    typeof = "streak"
+
+    nlogs = len(contributions)
+    if contributions != None:
+        participationType = contributions[0].log_type
+
+    if config.test_mode:
+        awards_table = "award_test"
+    else:
+        awards_table = "award"
+
+    # gets all awards for this user order by descending date (most recent on top)
+    query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description like %s AND type=%s;"
+    streak_name = streak + "%"
+    cursor.execute(query, (target, course, streak_name, typeof))
+    table = cursor.fetchall()
+
+
+    # get streak info
+    query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic from streak where course = %s and name = %s;"
+    cursor.execute(query, (course, streak))
+    table_streak = cursor.fetchall()
+
+    if not config.test_mode:
+    	if contributions != None:
+            # contributions = logs = nr of participations as per say like peergrading posts, skill tree posts, ...
+            if len(contributions) > 0:
+                streakid, isCount, isPeriodic  = table_streak[0][0], table_streak[0][6], table_streak[0][7]
+                periodicity, periodicityTime = table_streak[0][1], table_streak[0][2]
+
+                # if isCount inserts all streak participations in the streak_progression.
+                if isCount and not isPeriodic:
+
+                    query = "SELECT id, rating FROM participation WHERE user = %s AND course = %s AND type = %s;"
+                    cursor.execute(query, (target, course, participationType))
+                    table_participations = cursor.fetchall()
+
+                    size = len(table_participations)
+
+                    for i in range(size):
+
+                        participation = table_participations[i][0]
+                        participationRating = table_participations[i][1]
+
+                        if participationRating < rating:
+                            query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                            cursor.execute(query, (course, target, streakid, participation, '0'))
+                            cnx.commit()
+                        else:
+                            query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                            cursor.execute(query, (course, target, streakid, participation, '1'))
+                            cnx.commit()
+
+
+                    query = "SELECT participationId, isValid FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s;"
+                    cursor.execute(query, (target, course, streakid))
+                    table_all_participations = cursor.fetchall()
+
+                    total = len(table_all_participations)
+
+                    for p in range(total):
+                        participationValid = table_all_participations[p][1]
+
+                        if not participationValid:
+                            for i in range(p-1, 0, -1):
+                                query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND participationId= %s;"
+                                cursor.execute(query, (target, course, streakid))
+                                cnx.commit()
+
+                    query = "SELECT participationId FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s AND isValid = '1';"
+                    cursor.execute(query, (target, course, streakid))
+                    table_valid = cursor.fetchall()
+
+                    for participation in table_valid:
+                        participation_id = participation[0]
+                        query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
+                        cursor.execute(query, (course, target, streakid, participation_id))
+                        cnx.commit()
+
+    ###
+    # gets all streak progressions
+    query = "SELECT * FROM streak_progression where user = %s AND course = %s AND streakId = %s ;"
+    cursor.execute(query, (target, course, streakid))
+    table_progressions = cursor.fetchall()
+
+    # no valid progressions
+    if len(table_progressions) == 0:
+        return
+
+    # table contains  user, course, description,  type, reward, date
+    # table = filtered awards_table
+    elif len(table) == 0:  # no streak has been awarded with this name for this user
+        isRepeatable = table_streak[0][5]
+        streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
+
+        # if streak is finished, award it
+        if len(table_progressions) >= streak_count:
+
+            if not isRepeatable:
+                description = streak
+
+                query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
+                cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
+                cnx.commit()
+                cursor = cnx.cursor(prepared=True)
+
+                # gets award_id
+                query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+                cursor.execute(query, (target, course, description, typeof))
+                table_id = cursor.fetchall()
+                award_id = table_id[0][0]
+
+                if not config.test_mode:
+                    for el in table_progressions:
+                        participation_id = el[3]
+                        query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                        cursor.execute(query, (award_id, participation_id))
+                        cnx.commit()
+
+            else:
+                totalAwards = len(table_progressions) // streak_count
+
+                # inserts in award table the new streaks that have not been awarded
+                for diff in range(len(table), totalAwards):
+                    repeated_info = " (Repeated for the " + str(diff + 1) + ")"
+                    description = streak + repeated_info
+
+                    query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
+                    cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
+                    cnx.commit()
+                    cursor = cnx.cursor(prepared=True)
+
+                    if diff == 0:
+                        if contributions != None:
+                            query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+                            cursor.execute(query, (target, course, description, typeof))
+                            table_id = cursor.fetchall()
+                            award_id = table_id[0][0]
+
+                            if not config.test_mode:
+                                for el in range(streak_count):
+                                    participation_id = table_progressions[el][3]
+                                    query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                                    cursor.execute(query, (award_id, participation_id))
+                                    cnx.commit()
+
+
+            if not config.test_mode:
+                if contributions != None and contributions != None:
+                    nr_contributions = str(len(contributions))
+                else:
+                    nr_contributions = ''
+
+                config.award_list.append([str(target), str(streak), str(streak_reward), nr_contributions])
+
+    # if this streak has already been awarded, check if it is repeatable to award it again.
+    elif len(table) > 0:
+        isRepeatable = table_streak[0][5]
+        streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
+
+        if isRepeatable and len(table_progressions) > streak_count:
+
+            totalAwards = len(table_progressions) // streak_count
+
+            # inserts in award table the new streaks that have not been awarded
+            for diff in range(len(table), totalAwards):
+                repeated_info = " (Repeated for the " + str(diff + 1) + ")"
+                description = streak + repeated_info
+
+                query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
+                cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
+                cnx.commit()
+                cursor = cnx.cursor(prepared=True)
+
+                # inserir na award_participation ?
+                if contributions != None:
+                    query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+                    cursor.execute(query, (target, course, description, typeof))
+                    table_id = cursor.fetchall()
+                    award_id = table_id[0][0]
+
+                    if not config.test_mode:
+                        for el in contributions:
+                            participation_id = el.log_id
+                            query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                            cursor.execute(query, (award_id, participation_id))
+                            cnx.commit()
+
+    cnx.commit()
+    cnx.close()
+
 
 #  logs-> participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
 def award_streak(target, streak, contributions=None, info=None):
@@ -1330,9 +1780,7 @@ def award_streak(target, streak, contributions=None, info=None):
 
     # gets all awards for this user order by descending date (most recent on top)
     query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description like %s AND type=%s;"
-
     streak_name = streak + "%"
-
     cursor.execute(query, (target, course, streak_name, typeof))
     table = cursor.fetchall()
 
@@ -1351,11 +1799,74 @@ def award_streak(target, streak, contributions=None, info=None):
 
                 # if isCount inserts all streak participations in the streak_progression.
                 if isCount and not isPeriodic:
+                
+                    if participationType == "attended lecture" or participationType == "attended lab" or participationType == "quiz grade" or participationType == "lab grade":
+                        #check_is_consecutive(target, course, participationType, streakid)
+                        
+                        query = "SELECT id, description FROM participation WHERE user = %s AND course = %s AND type = %s;"
+                        cursor.execute(query, (target, course, participationType))
+                        table_participations = cursor.fetchall()
 
-                    for log in contributions:
-                        query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
-                        cursor.execute(query, (course, target, streakid, log.log_id))
-                        cnx.commit()
+                        size = len(table_participations)
+
+                        for i in range(size):
+                            j = i+1
+                            if j < size:
+                                firstParticipationId = table_participations[i][0]
+                                secondParticipationId = table_participations[j][0]
+                                if participationType == "quiz grade":
+                                    quiz1 = table_participations[i][1]
+                                    quiz2 = table_participations[j][1]
+                                    # gets quiz number since description = 'Quiz X'
+                                    description1 = int(quiz1[-1])
+                                    description2 = int(quiz2[-1])
+                                else:
+                                    description1 = int(table_participations[i][1])
+                                    description2 = int(table_participations[j][1])
+
+                                if description2 - description1 != 1:
+                                    query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                                    cursor.execute(query, (course, target, streakid, firstParticipationId, '0'))
+                                    cnx.commit()
+                                else:
+                                    query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                                    cursor.execute(query, (course, target, streakid, firstParticipationId, '1'))
+                                    cnx.commit()
+                                    if j == size-1:
+                                       query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                                       cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
+                                       cnx.commit()
+
+                        query = "SELECT participationId, isValid FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s;"
+                        cursor.execute(query, (target, course, streakid))
+                        table_all_participations = cursor.fetchall()
+
+                        total = len(table_all_participations)
+
+                        for p in range(total):
+                            participationValid = table_all_participations[p][1]
+
+                            if not participationValid:
+                                for i in range(p-1, 0, -1):
+                                    query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND participationId= %s;"
+                                    cursor.execute(query, (target, course, streakid))
+                                    cnx.commit()
+
+                        query = "SELECT participationId FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s AND isValid = '1';"
+                        cursor.execute(query, (target, course, streakid))
+                        table_valid = cursor.fetchall()
+
+                        for participation in table_valid:
+                            participation_id = participation[0]
+                            query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
+                            cursor.execute(query, (course, target, streakid, participation_id))
+                            cnx.commit()
+
+                    else:
+                        for log in contributions:
+                            query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
+                            cursor.execute(query, (course, target, streakid, log.log_id))
+                            cnx.commit()
 
                 # is Count & is Periodic =>  the streak periodicity is between the first participation and the last.
                 # example of streak: do 7 tasks in 1 week. We just need to check if the time interval was respected.
@@ -1401,6 +1912,7 @@ def award_streak(target, streak, contributions=None, info=None):
 
                 # check periodicity between participations
                 elif isPeriodic and not isCount:
+                    #check_periodicity(target, course, participationType, periodicity, periodicityTime, streakid)
 
                     # gets date of participations that matter, disgarding submission withtin the same time period
                     if len(periodicityTime) == 7:  # minutes - gets all participations
@@ -1425,7 +1937,7 @@ def award_streak(target, streak, contributions=None, info=None):
                          if j < size:
                             firstParticipationId = table_participations[i][0]  # YYYY-MM-DD HH:MM:SS
                             secondParticipationId = table_participations[j][0]
-        
+
                             firstParticipationObj = table_participations[i][1]  # YYYY-MM-DD HH:MM:SS
                             secondParticipationObj = table_participations[j][1]
 
@@ -1445,7 +1957,7 @@ def award_streak(target, streak, contributions=None, info=None):
                                        query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
                                        cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
                                        cnx.commit()
-                                       
+
                             elif len(periodicityTime) == 5:   # hours
                                 dif = secondParticipationObj.time().hour - firstParticipationObj.time().hour
                                 difDay = secondParticipationObj.date() - firstParticipationObj.date()
@@ -1473,7 +1985,7 @@ def award_streak(target, streak, contributions=None, info=None):
                                            query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
                                            cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
                                            cnx.commit()
-                                           
+
                                 elif dif != periodicity:
                                     query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
                                     cursor.execute(query, (course, target, streakid, firstParticipationId, '0'))
@@ -1486,13 +1998,13 @@ def award_streak(target, streak, contributions=None, info=None):
                                        query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
                                        cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
                                        cnx.commit()
-                                
+
                             elif len(periodicityTime) == 4 or len(periodicityTime) == 6:  # days or weeks
                                 if len(periodicityTime) == 6:
                                     periodicityDays = periodicity * 7
                                 else:
                                     periodicityDays = periodicity
-                                    
+
                                 dif = secondParticipationObj.date() - firstParticipationObj.date()
                                 if dif != timedelta(days=periodicityDays): # dif needs to be equal to periodicity
                                     query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
@@ -1533,8 +2045,6 @@ def award_streak(target, streak, contributions=None, info=None):
                         query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
                         cursor.execute(query, (course, target, streakid, participation_id))
                         cnx.commit()
-
-
                 elif isPeriodic and isAtMost and not isCount:
 
                     query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND type = %s;"
@@ -1687,12 +2197,8 @@ def award_streak(target, streak, contributions=None, info=None):
                             cursor.execute(query, (award_id, participation_id))
                             cnx.commit()
 
-
-
-
     cnx.commit()
     cnx.close()
-
 
 
 

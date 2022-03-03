@@ -94,6 +94,22 @@ def filter_excellence(logs, tiers, classes):
 
 
 @rule_function
+def filter_graded_post(logs, desc):
+    """
+    Filters the list of logs in a way that certain
+    graded posts are removed
+    """
+    
+    filtered_logs = []
+
+    for line in logs:
+        post = line.description
+        if not post.startswith(desc):
+            filtered_logs.append(line)
+    return filtered_logs
+
+
+@rule_function
 def award_prize(target, reward_name, xp, contributions=None):
 	""" 
 	Awards a prize called "reward_name" of "xp" points to students.
@@ -102,7 +118,7 @@ def award_prize(target, reward_name, xp, contributions=None):
 	return
 	
 @rule_function
-def award_tokens(target, reward_name, tokens, contributions=None):
+def award_tokens(target, reward_name, tokens = None, contributions=None):
     """
     Awards tokens to students.
     """
@@ -146,6 +162,16 @@ def award_grade(target, item, contributions=None):
 	connector.award_grade(target, item, contributions)
 	# TODO possible upgrade: returning indicators to include these types of prizes as well
 	return
+
+@rule_function
+def award_rating_streak(target, streak, rating, contributions=None, info=None):
+	"""
+	Awards a Streak type rating-related award called "streak" to "target". The "contributions"
+	parameter should receive the participations that justify the attribution of the streak for
+	a given target.
+	"""
+	result = connector.award_rating_streak(target, streak, rating, contributions, info)
+	return result
 
 @rule_function
 def award_streak(target, streak, contributions=None, info=None):

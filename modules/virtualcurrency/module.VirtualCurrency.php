@@ -61,7 +61,9 @@ class VirtualCurrency extends Module
                 [
                     "name" => "",
                     "course" => $courseId,
-                    "skillCost" => DEFAULT_COST
+                    "skillCost" => DEFAULT_COST,
+                    "wildcardCost" => DEFAULT_COST,
+                    "attemptRating" => ""
                     
                 ]);
         }
@@ -143,7 +145,10 @@ class VirtualCurrency extends Module
     {
         $input = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => "", 'current_val' => $this->getCurrencyName($courseId)),
-            array('name' => "Skill Cost", 'id' => 'skillcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getSkillCost($courseId)))
+            array('name' => "Skill Cost", 'id' => 'skillcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getSkillCost($courseId))),
+            array('name' => "Wildcard Cost", 'id' => 'wildcardcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getWildcardCost($courseId))),
+            array('name' => "Minimum Rating for Attempt", 'id' => 'attemptrating', 'type' => "number", 'options' => "", 'current_val' => intval($this->getAttemptRating($courseId)))
+
         ];
         return $input;
     }
@@ -156,6 +161,13 @@ class VirtualCurrency extends Module
         if ($skillCost != "") {
             $this->saveSkillCost( $skillCost, $courseId);
         }
+        $wildcardCost = $generalInputs["wildcardcost"];
+        if ($wildcardCost != "") {
+            $this->saveWildcardCost( $wildcardCost, $courseId);
+        }
+        $attemptRating = $generalInputs["attemptrating"];
+        $this->saveAttemptRating($attemptRating, $courseId);
+
     }
 
     public function has_listing_items()
@@ -189,8 +201,7 @@ class VirtualCurrency extends Module
     {
         Core::$systemDB->update("config_virtual_currency", ["name" => $currencyName], ["course" => $courseId]);
     }
-
-
+    
     public function getSkillCost( $courseId)
     {
         return Core::$systemDB->select("config_virtual_currency", ["course" => $courseId], "skillCost");
@@ -201,6 +212,25 @@ class VirtualCurrency extends Module
         Core::$systemDB->update("config_virtual_currency", ["skillCost" => $value], ["course" => $courseId]);
     }
 
+    public function getWildcardCost( $courseId)
+    {
+        return Core::$systemDB->select("config_virtual_currency", ["course" => $courseId], "wildcardCost");
+
+    }
+    public function saveWildcardCost($value, $courseId)
+    {
+        Core::$systemDB->update("config_virtual_currency", ["wildcardCost" => $value], ["course" => $courseId]);
+    }
+
+    public function getAttemptRating( $courseId)
+    {
+        return Core::$systemDB->select("config_virtual_currency", ["course" => $courseId], "attemptRating");
+
+    }
+    public function saveAttemptRating($value, $courseId)
+    {
+        Core::$systemDB->update("config_virtual_currency", ["attemptRating" => $value], ["course" => $courseId]);
+    }
 
 }
 
