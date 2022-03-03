@@ -15,7 +15,7 @@
         <div class="half">
           <div class="input-wrapper">
             <span class="label">End Date</span>
-            <input type="date" id="end" name="end" class="input" [min]="currentDate" [(ngModel)]="progressReport.endDate" (ngModelChange)="hasUnsavedChanges = true">
+            <input type="datetime-local" id="end" name="end" class="input" [min]="currentDate" [(ngModel)]="progressReport.endDate" (ngModelChange)="hasUnsavedChanges = true">
           </div>
         </div>
       </div>
@@ -50,6 +50,21 @@
 
   <div class="success_box">
     <div id="action_completed" class="success_msg"></div>
+  </div>
+</div>
+
+<div *ngIf="progressReport.isEnabled && tables.reports.data.length > 0" class="section reports-list">
+  <div class="divider">
+    <div class="title"><span>Progress Reports List</span></div>
+  </div>
+
+  <div style="margin-top: 30px;">
+    <app-datatable
+      [id]="'progress-reports-table'"
+      [headers]="tables.reports.headers"
+      [data]="tables.reports.data"
+      [loading]="tables.reports.loading">
+    </app-datatable>
   </div>
 </div>
 

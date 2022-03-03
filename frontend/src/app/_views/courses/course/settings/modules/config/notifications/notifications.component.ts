@@ -4,6 +4,7 @@ import {ActivatedRoute} from "@angular/router";
 import {finalize} from "rxjs/operators";
 import {ErrorService} from "../../../../../../../_services/error.service";
 import {exists} from "../../../../../../../_utils/misc/misc";
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-notifications',
@@ -27,7 +28,21 @@ export class NotificationsComponent implements OnInit {
     isEnabled: null
   }
 
-  currentDate = new Date().toISOString().split('T')[0];
+  currentDate = moment().format('YYYY-MM-DDTHH:mm:ss');
+
+  tables: {
+    reports: {
+      loading: boolean,
+      headers: string[],
+      data: string[][]
+    }
+  } = {
+    reports: {
+      loading: true,
+      headers: null,
+      data: null
+    }
+  }
 
   constructor(
     private api: ApiHttpService,
@@ -39,6 +54,7 @@ export class NotificationsComponent implements OnInit {
     this.route.parent.params.subscribe(params => {
       this.courseID = parseInt(params.id);
       this.getProgressReportVars();
+      this.buildReportsTable();
     });
   }
 
@@ -48,7 +64,7 @@ export class NotificationsComponent implements OnInit {
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
         vars => {
-          this.progressReport.endDate = vars.endDate;
+          this.progressReport.endDate = vars.endDate.isEmpty() ? null : moment(vars.endDate).format('YYYY-MM-DDTHH:mm:ss');
           this.progressReport.periodicity.time = vars.periodicityTime;
           this.progressReport.periodicity.hours = vars.periodicityHours;
           this.progressReport.periodicity.day = vars.periodicityDay;
@@ -62,7 +78,7 @@ export class NotificationsComponent implements OnInit {
     this.loading = true;
 
     const progressReport = {
-      endDate: this.progressReport.endDate,
+      endDate: moment(this.progressReport.endDate).format("YYYY-MM-DD HH:mm:ss"),
       periodicityTime: this.progressReport.periodicity.time,
       periodicityHours: this.progressReport.periodicity.hours,
       periodicityDay: this.progressReport.periodicity.day,
@@ -78,10 +94,30 @@ export class NotificationsComponent implements OnInit {
   }
 
   isReadyToSubmit(): boolean {
-    return exists(this.progressReport.endDate) &&
-      exists(this.progressReport.periodicity.time) && !this.progressReport.periodicity.time.isEmpty() &&
-      exists(this.progressReport.periodicity.hours) && this.progressReport.periodicity.hours >= 0 && this.progressReport.periodicity.hours <= 24 &&
-      (this.progressReport.periodicity.time === 'Weekly' ? exists(this.progressReport.periodicity.day) : true);
+    if (this.progressReport.isEnabled) {
+      return exists(this.progressReport.endDate) &&
+        exists(this.progressReport.periodicity.time) && !this.progressReport.periodicity.time.isEmpty() &&
+        exists(this.progressReport.periodicity.hours) && this.progressReport.periodicity.hours >= 0 && this.progressReport.periodicity.hours <= 24 &&
+        (this.progressReport.periodicity.time === 'Weekly' ? exists(this.progressReport.periodicity.day) : true);
+
+    } else return true;
+  }
+
+  buildReportsTable() {
+    this.tables.reports.headers = [
+      'id', 'report nr', 'date'
+    ];
+
+    this.api.getTableData(this.courseID, 'notifications_progress_report')
+      .pipe(finalize(() => this.tables.reports.loading = false))
+      .subscribe(
+        data => {
+          this.tables.reports.data = data.entries.map(entry => [
+            entry.id, entry.seqNr, entry.dateSend
+          ]);
+        },
+        error => ErrorService.set(error)
+      )
   }
 
 }

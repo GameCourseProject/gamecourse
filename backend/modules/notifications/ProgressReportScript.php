@@ -43,9 +43,11 @@ $endPreviousPeriodDate = $startPeriodDate;
 $timeLeft = datediff(date_create($currentDate), date_create($endDate), $isWeekly ? "weeks" : "days");
 
 $subject    = $courseName . " - " . $config["periodicityTime"] . " Report #" . $seqNr;
-$headers    = "From: noreply@pcm.rnl.tecnico.ulisboa.pt \r\n";
-$headers   .= "MIME-Version: 1.0\r\n";
-$headers   .= "Content-Type: text/html; charset=UTF-8\r\n";
+$headers    = "MIME-Version: 1.0" . "\r\n";
+$headers   .= "Content-Type: text/html; charset=UTF-8" . "\r\n";
+$headers   .= "From: GameCourse <noreply@pcm.rnl.tecnico.ulisboa.pt>" . "\r\n";
+$headers   .= "Reply-To: noreply@pcm.rnl.tecnico.ulisboa.pt" . "\r\n";
+$headers   .= "X-Mailer: PHP/" . phpversion();
 $error      = false;
 
 $pieChartURL = "https://quickchart.io/chart/render/zm-f7746c74-abbb-4250-a0c2-11451cb8f7d6"; // editor: https://quickchart.io/chart-maker/edit/zm-7f2783e0-a82c-41b0-920b-9ce72210fd0a
