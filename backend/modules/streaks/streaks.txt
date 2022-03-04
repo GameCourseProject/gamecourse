@@ -23,7 +23,7 @@
               "type": "text",
               "role": "role.Student>role.Default",
               "visibilityType": "visible",
-              "value": "Streaks ({xp.getStreaksXP(%user)} XP)"
+              "value": "Streaks ({xp.getStreaksXP(%user)} XP, {streaks.getStreaksTokens(%user)} {virtualcurrency.name})"
             }
           ]
         }
@@ -160,9 +160,35 @@
                           {
                             "type": "text",
                             "role": "role.Student>role.Default",
-                            "class": "streak-reward ",
+                            "class": "streak-reward-xp ",
                             "visibilityType": "visible",
-                            "value": "{%streak.reward} XP"
+                            "value": "{%streak.reward(\"xp\")} XP"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "block",
+                            "role": "role.Student>role.Default",
+                            "class": "streak-reward-token",
+                            "visibilityType": "visible",
+                            "children": [
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "visibilityType": "visible",
+                                  "value": "{%streak.reward(\"token\")}"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "image",
+                                  "role": "role.Student>role.Default",
+                                  "visibilityType": "visible",
+                                  "src": "modules/virtualcurrency/imgs/token.png"
+                                }
+                              ]
+                            ]
                           }
                         ]
                       ]
