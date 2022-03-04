@@ -217,113 +217,134 @@ def count_awards(course):
 
 
 def calculate_xp(course, target):
-	# -----------------------------------------------------------
-	# Insert current XP values into user_xp table
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Insert current XP values into user_xp table
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	# get max values for each type of award
-	query = "SELECT maxReward from skill_tree where course = %s;"
-	cursor.execute(query, (course,))
-	tree_table = cursor.fetchall()
+    # get max values for each type of award
+    query = "SELECT maxReward from skill_tree where course = %s;"
+    cursor.execute(query, (course,))
+    tree_table = cursor.fetchall()
 
-	query = "SELECT maxBonusReward from badges_config where course = %s;"
-	cursor.execute(query, (course,))
-	badge_table = cursor.fetchall()
+    query = "SELECT maxBonusReward from badges_config where course = %s;"
+    cursor.execute(query, (course,))
+    badge_table = cursor.fetchall()
 
-	if len(tree_table) == 1:
-		max_tree_reward = int(tree_table[0][0])
+    query = "SELECT maxBonusReward from streaks_config where course = %s;"
+    cursor.execute(query, (course))
+    streak_table = cursor.fetchall()
 
-	if len(badge_table) == 1:
-		max_badge_bonus_reward = int(badge_table[0][0])
+    if len(tree_table) == 1:
+        max_tree_reward = int(tree_table[0][0])
 
+    if len(badge_table) == 1:
+        max_badge_bonus_reward = int(badge_table[0][0])
 
-	# get atributed xp so far
+    if len(streak_table) == 1:
+        max_streak_bonus_reward = int(streak_table[0][0])
 
-	query = "SELECT sum(reward) from award where course=%s and type=%s and user=%s group by user;"
-	cursor.execute(query, (course, "skill", target))
-	tree_xp = cursor.fetchall()
+    # get atributed xp so far
 
-	# if query returns empty set
-	if len(tree_xp) > 0:
-		if tree_xp[0][0] != None:
-			user_tree_xp = int(tree_xp[0][0])
-		else:
-			user_tree_xp = 0
+    query = "SELECT sum(reward) from award where course=%s and type=%s and user=%s group by user;"
+    cursor.execute(query, (course, "skill", target))
+    tree_xp = cursor.fetchall()
 
-	else:
-		user_tree_xp = 0
+    # if query returns empty set
+    if len(tree_xp) > 0:
+        if tree_xp[0][0] != None:
+            user_tree_xp = int(tree_xp[0][0])
+        else:
+            user_tree_xp = 0
 
+    else:
+        user_tree_xp = 0
 
-	query = "SELECT sum(reward) from award where course=%s and (type !=%s and type !=%s) and user=%s group by user;"
-	cursor.execute(query, (course, "badge", "skill", target))
-	other_xp = cursor.fetchall()
+    query = "SELECT sum(reward) from award where course=%s and type=%s and user=%s group by user;"
+    cursor.execute(query, (course, "streak", target))
+    streak_xp = cursor.fetchall()
 
-	# if query returns empty set
-	if len(other_xp) > 0:
-		if other_xp[0][0] != None:
-			user_other_xp = int(other_xp[0][0])
-		else:
-			user_other_xp = 0
-	else:
-		user_other_xp = 0
+    # if query returns empty set
+    if len(streak_xp) > 0:
+        if streak_xp[0][0] != None:
+            user_streak_xp = int(streak_xp[0][0])
+        else:
+            user_streak_xp = 0
 
-
-	# rewards from badges where isExtra = 1
-	query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and isExtra =%s and user=%s;"
-	cursor.execute(query, (course, "badge", True, target))
-	badge_xp_extra = cursor.fetchall()
-
-	# if query returns empty set
-	if len(badge_xp_extra) > 0:
-		if badge_xp_extra[0][0] != None:
-			user_badge_xp_extra = int(badge_xp_extra[0][0])
-		else:
-			user_badge_xp_extra = 0
-
-	else:
-		user_badge_xp_extra = 0
+    else:
+        user_streak_xp = 0
 
 
-	# rewards from badges where isExtra = 0
-	query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and isExtra =%s and user=%s;"
-	cursor.execute(query, (course, "badge", False, target))
-	badge_xp = cursor.fetchall()
+    query = "SELECT sum(reward) from award where course=%s and (type !=%s and type !=%s and type !=%s and type !=%s) and user=%s group by user;"
+    cursor.execute(query, (course, "badge", "skill", "streak", "tokens" target))
+    other_xp = cursor.fetchall()
 
-	# if query returns empty set
-	if len(badge_xp) > 0:
-		if badge_xp[0][0] != None:
-			user_badge_xp = int(badge_xp[0][0])
-		else:
-			user_badge_xp = 0
-
-	else:
-		user_badge_xp = 0
-
-	total_skill_xp = min(user_tree_xp, max_tree_reward)
-	total_other_xp = user_other_xp
-	total_badge_extra_xp = min(user_badge_xp_extra, max_badge_bonus_reward)
-	total_badge_xp = user_badge_xp + total_badge_extra_xp
-
-	total_xp = total_badge_xp + total_skill_xp + total_other_xp
+    # if query returns empty set
+    if len(other_xp) > 0:
+        if other_xp[0][0] != None:
+            user_other_xp = int(other_xp[0][0])
+        else:
+            user_other_xp = 0
+    else:
+        user_other_xp = 0
 
 
-	query = "SELECT id, max(goal) from level where goal <= %s and course = %s group by id order by number desc limit 1;"
-	cursor.execute(query, (total_xp, course))
-	level_table = cursor.fetchall()
+    # rewards from badges where isExtra = 1
+    query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and isExtra =%s and user=%s;"
+    cursor.execute(query, (course, "badge", True, target))
+    badge_xp_extra = cursor.fetchall()
 
-	current_level = int(level_table[0][0])
+    # if query returns empty set
+    if len(badge_xp_extra) > 0:
+        if badge_xp_extra[0][0] != None:
+            user_badge_xp_extra = int(badge_xp_extra[0][0])
+        else:
+            user_badge_xp_extra = 0
 
-	query = "UPDATE user_xp set xp= %s, level=%s where course=%s and user=%s;"
-	cursor.execute(query, (total_xp, current_level, course, target))
+    else:
+        user_badge_xp_extra = 0
 
 
-	cnx.commit()
-	cnx.close()
+    # rewards from badges where isExtra = 0
+    query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and isExtra =%s and user=%s;"
+    cursor.execute(query, (course, "badge", False, target))
+    badge_xp = cursor.fetchall()
+
+    # if query returns empty set
+    if len(badge_xp) > 0:
+        if badge_xp[0][0] != None:
+            user_badge_xp = int(badge_xp[0][0])
+        else:
+            user_badge_xp = 0
+
+    else:
+        user_badge_xp = 0
+
+    total_skill_xp = min(user_tree_xp, max_tree_reward)
+    total_streak_xp = min(user_streak_xp, max_streak_bonus_reward)
+    total_other_xp = user_other_xp
+    total_badge_extra_xp = min(user_badge_xp_extra, max_badge_bonus_reward)
+    total_badge_xp = user_badge_xp + total_badge_extra_xp
+
+    total_xp = total_badge_xp + total_skill_xp + total_other_xp + total_streak_xp
+
+
+    query = "SELECT id, max(goal) from level where goal <= %s and course = %s group by id order by number desc limit 1;"
+    cursor.execute(query, (total_xp, course))
+    level_table = cursor.fetchall()
+
+    current_level = int(level_table[0][0])
+
+    query = "UPDATE user_xp set xp= %s, level=%s where course=%s and user=%s;"
+    cursor.execute(query, (total_xp, current_level, course, target))
+
+
+    cnx.commit()
+    cnx.close()
 
 
 def autogame_init(course):
@@ -917,7 +938,7 @@ def award_tokens_type(target, type, tokens, element_name = None, contributions=N
 
         # nr awards da streak == nr award tokens for completed streak
 
-        name_awarded = 'Completed ' + element_name
+        name_awarded = element_name + " Completed"
         query = "SELECT moduleInstance FROM " + awards_table + " where user = %s AND course = %s AND description = %s AND type=%s;"
         cursor.execute(query, (target, course, name_awarded, typeof))
         table = cursor.fetchall()
@@ -932,12 +953,17 @@ def award_tokens_type(target, type, tokens, element_name = None, contributions=N
             cursor.execute(query, (target, course, name_awarded, typeof, reward))
             cnx.commit()
 
-            newTotal = table_wallet[0][0] + reward
+        name_awarded = element_name + " Completed"
+        query = "SELECT moduleInstance FROM " + awards_table + " where user = %s AND course = %s AND description = %s AND type=%s;"
+        cursor.execute(query, (target, course, name_awarded, typeof))
+        table_after = cursor.fetchall()
 
-            # simply award the tokens
-            query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
-            cursor.execute(query, (newTotal, course, target))
-            cnx.commit()
+        newTotal = table_wallet[0][0] + reward * (len(table_after) - len(table))
+
+        # simply award the tokens
+        query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
+        cursor.execute(query, (newTotal, course, target))
+        cnx.commit()
 
 
     cnx.close()
