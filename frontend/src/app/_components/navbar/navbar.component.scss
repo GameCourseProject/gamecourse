@@ -124,3 +124,22 @@
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
+.user_tokens {
+  display: flex;
+  align-items: center;
+  border-right: 2px solid #CFCFCF;
+  padding-right: 15px;
+  margin-right: 15px;
+
+  span {
+    font-weight: bold;
+    font-size: 15px;
+  }
+
+  img {
+    width: 20px;
+    height: 20px;
+    margin-left: 8px;
+  }
+}

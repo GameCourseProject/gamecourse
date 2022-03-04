@@ -3,6 +3,7 @@ import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
 import {DomSanitizer} from "@angular/platform-browser";
 
 import {ApiHttpService} from "../../_services/api/api-http.service";
+import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
 import {ErrorService} from "../../_services/error.service";
 import {UpdateService, UpdateType} from "../../_services/update.service";
 
@@ -10,6 +11,8 @@ import {User} from "../../_domain/users/user";
 import {Course} from "../../_domain/courses/course";
 import {ImageManager} from "../../_utils/images/image-manager";
 import {Page} from "../../_domain/pages & templates/page";
+
+import {of} from "rxjs";
 
 @Component({
   selector: 'app-navbar',
@@ -30,6 +33,11 @@ export class NavbarComponent implements OnInit {
 
   course: Course;
   activePages: Page[];
+
+  hasTokensEnabled: boolean;
+  isStudent: boolean;
+  tokens: number;
+  tokensImg: string = ApiEndpointsService.API_ENDPOINT + '/modules/' + ApiHttpService.VIRTUAL_CURRENCY + '/imgs/token.png'; // FIXME: should be configurable
 
   constructor(
     private api: ApiHttpService,
@@ -148,9 +156,16 @@ export class NavbarComponent implements OnInit {
   }
 
   async getCourseNavigation(): Promise<Navigation[]> {
-    if (!this.course || this.course.id !== this.getCourseIDFromURL() || !this.activePages) {
+    if (!this.course || this.course.id !== this.getCourseIDFromURL() || !this.activePages || (this.hasTokensEnabled && !this.tokens)) {
       const courseInfo = await this.getCourseInfo();
       const isAdminOrTeacher = this.user.isAdmin || await this.isCourseTeacher();
+
+      this.hasTokensEnabled = await this.isVirtualCurrencyEnabled();
+      if (this.hasTokensEnabled) {
+        this.tokens = await this.getUserTokens();
+        this.isStudent = await this.isCourseStudent();
+      }
+
       this.course = courseInfo.course;
       this.activePages = courseInfo.activePages;
       this.courseNavigation = buildCourseNavigation(isAdminOrTeacher, this.course.id, this.activePages);
@@ -235,6 +250,23 @@ export class NavbarComponent implements OnInit {
     const courseID = this.getCourseIDFromURL();
     if (courseID) return await this.api.isCourseTeacher(courseID).toPromise()
     return null;
+  }
+
+  async isCourseStudent(): Promise<boolean> {
+    const courseID = this.getCourseIDFromURL();
+    if (courseID) return await this.api.isCourseStudent(courseID).toPromise()
+    return null;
+  }
+
+  async isVirtualCurrencyEnabled(): Promise<boolean> {
+    const courseID = this.getCourseIDFromURL();
+    if (courseID) return await this.api.isVirtualCurrencyEnabled(courseID).toPromise();
+    return null;
+  }
+
+  async getUserTokens(): Promise<number> {
+    // TODO
+    return of(10).toPromise();
   }
 
   getCourseIDFromURL(): number {

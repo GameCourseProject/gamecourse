@@ -5,6 +5,10 @@
 
   <!-- User Info -->
   <div *ngIf="!isDocs && user" class="user_info">
+    <div *ngIf="course && hasTokensEnabled && isStudent" class="user_tokens">
+      <span>{{tokens}}</span>
+      <img src="{{tokensImg}}" alt="token image">
+    </div>
     <div class="user_id">{{user.username}}</div>
     <a class="icon" id="user_icon" [routerLink]="'/my-info'"><img [src]="photo.get()" alt=""></a>
     <a class="icon" id="user_exit" (click)="logout()"></a>

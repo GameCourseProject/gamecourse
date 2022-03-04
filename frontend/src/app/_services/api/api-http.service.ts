@@ -67,6 +67,7 @@ export class ApiHttpService {
   static readonly QR: string = 'qr';
   static readonly QUEST: string = 'quest';
   static readonly SKILLS: string = 'skills';
+  static readonly VIRTUAL_CURRENCY: string = 'virtualcurrency';
 
 
   constructor(
@@ -524,6 +525,32 @@ export class ApiHttpService {
       .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['courseUsers'])) );
   }
 
+  public isCourseTeacher(courseID: number): Observable<boolean> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'isCourseTeacher');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['isTeacher']) );
+  }
+
+  public isCourseStudent(courseID: number): Observable<boolean> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'isCourseStudent');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['isStudent']) );
+  }
+
 
   // Course Modules
   public getCourseModules(courseID: number): Observable<Module[]> {
@@ -537,6 +564,19 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
+  }
+
+  public isVirtualCurrencyEnabled(courseID: number): Observable<boolean> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'isVirtualCurrencyEnabled');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['isEnabled']) );
   }
 
 
@@ -1277,19 +1317,6 @@ export class ApiHttpService {
       .pipe( map(
         (res: any) => (res['data']['userActiveCourses']).map(obj => Course.fromDatabase(obj))
       ) );
-  }
-
-  public isCourseTeacher(courseID: number): Observable<boolean> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'isCourseTeacher');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['isTeacher']) );
   }
 
 

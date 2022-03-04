@@ -77,6 +77,7 @@ class VirtualCurrency extends Module
     public function setupResources()
     {
         parent::addResources('css/virtualcurrency.css');
+        parent::addResources('imgs/');
     }
 
     public function setupData(int $courseId)
