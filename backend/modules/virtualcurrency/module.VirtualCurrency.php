@@ -1,10 +1,12 @@
 <?php
 namespace VirtualCurrency;
 
+use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Views\Dictionary;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
+use GameCourse\Views\Expression\ValueNode;
 
 class VirtualCurrency extends Module
 {
@@ -25,6 +27,28 @@ class VirtualCurrency extends Module
         $this->initDictionary();
     }
 
+    public function initAPIEndpoints()
+    {
+        /**
+         * Get user tokens.
+         *
+         * @param int $courseId
+         * @param int $userId
+         */
+        API::registerFunction(self::ID, 'getUserTokens', function () {
+            API::requireCoursePermission();
+            API:: requireValues('courseId', 'userId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $userId = API::getValue('userId');
+            $user = API::verifyCourseUserExists($courseId, $userId);
+
+            API::response(['tokens' => $this->getUserTokens($userId)]);
+        });
+    }
+
     public function initDictionary(){
 
         Dictionary::registerLibrary(self::ID, self::ID, "This library provides information regarding Virtual Currency. It is provided by the Virtual Currency module.");
@@ -40,7 +64,8 @@ class VirtualCurrency extends Module
             'object',
             'virtualcurrency',
             'library',
-            null
+            null,
+            true
         );
 
         //virtualcurrency.skillCost
@@ -54,7 +79,8 @@ class VirtualCurrency extends Module
             'object',
             'virtualcurrency',
             'library',
-            null
+            null,
+            true
         );
 
         //virtualcurrency.wildcardCost
@@ -68,10 +94,26 @@ class VirtualCurrency extends Module
             'object',
             'virtualcurrency',
             'library',
-            null
+            null,
+            true
         );
 
-        // TODO: user_wallet
+        //%user.tokens
+        Dictionary::registerFunction(
+            'users',
+            'tokens',
+            function ($user) {
+                $userId = $this->getUserId($user);
+                $tokens = $this->getUserTokens($userId);
+                return new ValueNode($tokens);
+            },
+            'Returns a number corresponding to the user\'s tokens.',
+            'number',
+            null,
+            'object',
+            'user',
+            true
+        );
     }
 
     public function setupResources()
@@ -245,6 +287,11 @@ class VirtualCurrency extends Module
     public function saveAttemptRating($value, $courseId)
     {
         Core::$systemDB->update(self::TABLE_CONFIG, ["attemptRating" => $value], ["course" => $courseId]);
+    }
+
+    public function getUserTokens($userId): int
+    {
+        return intval(Core::$systemDB->select(self::TABLE_WALLET, ["course" => $this->getCourseId(), "user" => $userId], "tokens"));
     }
 
 }

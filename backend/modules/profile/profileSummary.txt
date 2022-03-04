@@ -294,10 +294,30 @@
                                     ],
                                     [
                                       {
-                                        "type": "text",
+                                        "type": "block",
                                         "role": "role.Student>role.Default",
+                                        "class": "profile-details-tokens",
                                         "visibilityType": "visible",
-                                        "value": "TODO"
+                                        "children": [
+                                          [
+                                            {
+                                              "type": "text",
+                                              "role": "role.Student>role.Default",
+                                              "style": "margin-right: 10px",
+                                              "visibilityType": "visible",
+                                              "value": "{%userData.tokens}"
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "type": "image",
+                                              "role": "role.Student>role.Default",
+                                              "class": "profile-details-tokens-img",
+                                              "visibilityType": "visible",
+                                              "src": "modules/virtualcurrency/imgs/token.png"
+                                            }
+                                          ]
+                                        ]
                                       }
                                     ]
                                   ]

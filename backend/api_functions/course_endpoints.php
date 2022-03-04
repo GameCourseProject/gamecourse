@@ -11,6 +11,7 @@ use GameCourse\RuleSystem;
 use GameCourse\User;
 use GameCourse\Views\ViewHandler;
 use GameCourse\Views\Views;
+use VirtualCurrency\VirtualCurrency;
 
 $MODULE = 'course';
 
@@ -611,6 +612,40 @@ API::registerFunction($MODULE, 'exportCourseUsers', function () {
     API::response(array('courseUsers' => $courseUsers, 'fileName' => $fileName));
 });
 
+/**
+ * Checks if logged user is a teacher of the course.
+ *
+ * @param int $courseId
+ */
+API::registerFunction($MODULE, 'isCourseTeacher', function() {
+    API::requireValues('courseId');
+
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
+    $user = Core::getLoggedUser();
+    $courseUser = $course->getUser($user->getId());
+
+    API::response(['isTeacher' => in_array("Teacher", $courseUser->getRolesNames())]);
+});
+
+/**
+ * Checks if logged user is a student of the course.
+ *
+ * @param int $courseId
+ */
+API::registerFunction($MODULE, 'isCourseStudent', function() {
+    API::requireValues('courseId');
+
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
+    $user = Core::getLoggedUser();
+    $courseUser = $course->getUser($user->getId());
+
+    API::response(['isStudent' => in_array("Student", $courseUser->getRolesNames())]);
+});
+
 
 
 /*** --------------------------------------------- ***/
@@ -673,6 +708,24 @@ API::registerFunction($MODULE, 'getCourseModules', function () {
         $modulesArr[] = $mod;
     }
     API::response($modulesArr);
+});
+
+/**
+ * Check if virtual currency is enabled in course.
+ *
+ * @param int $courseId
+ */
+API::registerFunction($MODULE, 'isVirtualCurrencyEnabled', function() {
+    API::requireCoursePermission();
+    API:: requireValues('courseId');
+
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
+    $enabledModules = $course->getEnabledModules();
+    $isEnabled = in_array(VirtualCurrency::ID, $enabledModules);
+
+    API::response(['isEnabled' => $isEnabled]);
 });
 
 

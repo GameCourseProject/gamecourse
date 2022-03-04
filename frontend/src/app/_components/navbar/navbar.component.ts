@@ -265,8 +265,9 @@ export class NavbarComponent implements OnInit {
   }
 
   async getUserTokens(): Promise<number> {
-    // TODO
-    return of(10).toPromise();
+    const courseID = this.getCourseIDFromURL();
+    if (courseID) return await this.api.getUserTokens(courseID, this.user.id).toPromise();
+    return null;
   }
 
   getCourseIDFromURL(): number {

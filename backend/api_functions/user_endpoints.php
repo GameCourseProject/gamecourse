@@ -45,23 +45,6 @@ API::registerFunction($MODULE, 'getLoggedUserActiveCourses', function() {
     API::response(array('userActiveCourses' => $courses));
 });
 
-/**
- * Checks if logged user is a teacher of the course.
- *
- * @param int $courseId
- */
-API::registerFunction($MODULE, 'isCourseTeacher', function() {
-    API::requireValues('courseId');
-
-    $courseId = API::getValue('courseId');
-    $course = API::verifyCourseExists($courseId);
-
-    $user = Core::getLoggedUser();
-    $courseUser = $course->getUser($user->getId());
-
-    API::response(['isTeacher' => in_array("Teacher", $courseUser->getRolesNames())]);
-});
-
 
 
 /*** --------------------------------------------- ***/

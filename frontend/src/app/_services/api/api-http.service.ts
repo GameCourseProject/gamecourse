@@ -1266,6 +1266,22 @@ export class ApiHttpService {
   }
 
 
+  // Virtual Currency
+  public getUserTokens(courseID: number, userID: number): Observable<number> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.VIRTUAL_CURRENCY);
+      qs.push('request', 'getUserTokens');
+      qs.push('courseId', courseID);
+      qs.push('userId', userID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['tokens']) );
+  }
+
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Themes ------------------- ***/

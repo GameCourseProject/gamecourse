@@ -49,6 +49,15 @@
   font-weight: bold;
 }
 
+.profile .profile-summary .profile-summary-blocks .profile-details .profile-details-tokens > * {
+  flex-direction: row !important;
+}
+
+.profile .profile-summary .profile-summary-blocks .profile-details .profile-details-tokens .profile-details-tokens-img {
+  width: 15px;
+  height: 15px;
+}
+
 .profile .profile-summary .profile-summary-blocks .profile-details table tr td {
   padding: 10px !important;
 }
