@@ -14,6 +14,7 @@ create table streak(
     periodicityTime varchar(25),
     count int,
     reward int,
+    tokens int,
     isRepeatable boolean not null default false,
     isCount boolean not null default false,
     isPeriodic boolean not null default false,
