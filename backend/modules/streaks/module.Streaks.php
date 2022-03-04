@@ -147,6 +147,21 @@ class Streaks extends Module
             'streak',
             true
         );
+        
+        //%streak.tokens
+        Dictionary::registerFunction(
+            self::ID,
+            'tokens',
+            function ($streak) {
+                return Dictionary::basicGetterFunction($streak, "reward");
+            },
+            "Returns a string with the tokens of completing a streak.",
+            'string',
+            null,
+            'object',
+            'streak',
+            true
+        );
 
         //%streak.periodicity
         Dictionary::registerFunction(
@@ -481,12 +496,13 @@ class Streaks extends Module
     public function get_listing_items(int $courseId): array
     {
 
-        $header = ['Name', 'Description', 'Count', 'Reward', 'Color', 'is Repeatable', 'is Periodic', 'is Count', 'is At Most', 'Periodicity', 'Periodicity Time', 'Active'];
+        $header = ['Name', 'Description', 'Count', 'Reward', 'Tokens', 'Color', 'is Repeatable', 'is Periodic', 'is Count', 'is At Most', 'Periodicity', 'Periodicity Time', 'Active'];
         $displayAtributes = [
             ['id' => 'name', 'type' => 'text'],
             ['id' => 'description', 'type' => 'text'],
             ['id' => 'count', 'type' => 'number'],
             ['id' => 'reward', 'type' => 'number'],
+            ['id' => 'tokens', 'type' => 'number'],
             ['id' => 'color', 'type' => 'text'],
             ['id' => 'isRepeatable', 'type' => 'on_off button'],
             ['id' => 'isPeriodic', 'type' => 'on_off button'],
@@ -506,6 +522,7 @@ class Streaks extends Module
             array('name' => "Description", 'id' => 'description', 'type' => "text", 'options' => ""),
             array('name' => "Accomplishments Count", 'id' => 'count', 'type' => "number", 'options' => ""),
             array('name' => "Reward", 'id' => 'reward', 'type' => "number", 'options' => ""),
+            array('name' => "Tokens", 'id' => 'tokens', 'type' => "number", 'options' => ""),
             array('name' => "Color", 'id' => 'color', 'type' => "color", 'options' => "", 'current_val' => ""),
             array('name' => "Is Repeatable", 'id' => 'isRepeatable', 'type' => "on_off button", 'options' => ""),
             array('name' => "Is Periodic", 'id' => 'isPeriodic', 'type' => "on_off button", 'options' => ""),
@@ -550,7 +567,7 @@ class Streaks extends Module
         $nrItemsImported = 0;
         $separator = ",";
         $headers = ["name", "description", "color", "isRepeatable", "isCount", "isPeriodic", "isAtMost", "isActive",
-            "periodicity", "periodicityTime", "count", "reward", "image"];
+            "periodicity", "periodicityTime", "count", "reward", 'tokens', "image"];
         $lines = array_filter(explode("\n", $fileData), function ($line) { return !empty($line); });
 
         if (count($lines) > 0) {
@@ -580,6 +597,7 @@ class Streaks extends Module
                     "periodicityTime" => $item[array_search("periodicityTime", $headers)],
                     "count" => intval($item[array_search("count", $headers)]),
                     "reward" => intval($item[array_search("reward", $headers)]),
+                    "tokens" => intval($item[array_search("tokens", $headers)]),
                     "image" => $item[array_search("image", $headers)]
                 ];
 
@@ -615,14 +633,14 @@ class Streaks extends Module
 
         // Append headers
         $headers = ["name", "description", "color", "isRepeatable", "isCount", "isPeriodic", "isAtMost", "isActive",
-            "periodicity", "periodicityTime", "count", "reward", "image"];
+            "periodicity", "periodicityTime", "count", "reward", "tokens", "image"];
         $file .= implode($separator, $headers) . "\n";
 
         // Go over each badge and append it to file
         foreach ($listOfStreaks as $index => $streak) {
             $params = [$streak["name"], $streak["description"], $streak["color"], $streak["isRepeatable"], $streak["isCount"],
                 $streak["isPeriodic"], $streak["isAtMost"], $streak["isActive"], $streak["periodicity"],  $streak["periodicityTime"],
-                $streak["count"], $streak["reward"], $streak["image"]];
+                $streak["count"], $streak["reward"], $streak["tokens"], $streak["image"]];
 
             $file .= implode($separator, $params);
             if ($index != $len - 1) $file .= "\n";
@@ -710,6 +728,7 @@ class Streaks extends Module
             "periodicityTime" => $achievement['periodicityTime'],
             "count" => $achievement['count'],
             "reward" => $achievement['reward'],
+            "tokens" => $achievement['tokens'],
             "isRepeatable" => ($achievement['isRepeatable']) ? 1 : 0,
             "isCount" => ($achievement['isCount']) ? 1 : 0,
             "isPeriodic" => ($achievement['isPeriodic']) ? 1 : 0,
@@ -734,6 +753,7 @@ class Streaks extends Module
                 "periodicityTime" => $achievement['periodicityTime'],
                 "count" => $achievement['count'],
                 "reward" => $achievement['reward'],
+                "tokens" => $achievement['tokens'],
                 "isRepeatable" => ($achievement['isRepeatable']) ? 1 : 0,
                 "isCount" => ($achievement['isCount']) ? 1 : 0,
                 "isPeriodic" => ($achievement['isPeriodic']) ? 1 : 0,
