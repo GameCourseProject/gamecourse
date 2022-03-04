@@ -117,7 +117,7 @@ foreach ($students as $student) {
         return $carry;
     });
 
-    $diff = -(($previousPeriodXP - $currentPeriodXP) * 100 / $previousPeriodXP);
+    $diff = $previousPeriodXP == 0 ? 0 : -(($previousPeriodXP - $currentPeriodXP) * 100 / $previousPeriodXP);
     if ($timeLeft > 0) {
         $weekAvg = $totalXP / $seqNr;
         $hasPresentation = !empty(Core::$systemDB->select(AwardList::TABLE, ["course" => $courseId, "user" => $studentId, "type" => "presentation"], "reward"));
@@ -235,7 +235,7 @@ foreach ($students as $student) {
                                                 </div>
                                                 <div style="display: flex; align-items: center; margin-top: 10px;">
                                                     <p style="margin-bottom: 0; font-size: 24px; font-weight: 700; margin-top: 0;">' . number_format($currentPeriodXP, 0, ',', ' ') . ' XP</p>';
-    if ($seqNr > 1) {
+    if ($diff != 0) {
         $reportBlock .= '                            <div style="display: flex; align-items: center; margin-left: 8px;">
                                                         <img src="' . $imgsPath . ($diff > 0 ? '/arrow-up.jpg' : '/arrow-down.jpg') . '" style="width: 15px; height: 15px;">
                                                         <span style="font-size: 15px; font-weight: 700; color: ' . ($diff > 0 ? '#00C853' : '#E53935') . '">' . $diff . '% *</span>
