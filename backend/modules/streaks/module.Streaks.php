@@ -11,7 +11,6 @@ use GameCourse\Course;
 
 class Streaks extends Module
 {
-
     const ID = 'streaks';
 
     const TABLE = 'streak';
@@ -19,6 +18,7 @@ class Streaks extends Module
     const TABLE_PROGRESSION = 'streak_progression';
 
     const STREAKS_TEMPLATE_NAME = 'Streaks block - by streaks';
+
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -743,8 +743,7 @@ ModuleLoader::registerModule(array(
     'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
-    'dependencies' => array(
-    ),
+    'dependencies' => array(),
     'factory' => function () {
         return new Streaks();
     }

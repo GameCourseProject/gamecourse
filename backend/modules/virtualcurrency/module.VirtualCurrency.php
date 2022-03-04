@@ -3,23 +3,15 @@ namespace VirtualCurrency;
 
 use GameCourse\Core;
 use GameCourse\Views\Dictionary;
-use GameCourse\Views\Views;
-use Modules\Views\Expression\ValueNode;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
-
-use GameCourse\API;
-use GameCourse\Course;
 
 class VirtualCurrency extends Module
 {
     const ID = 'virtualcurrency';
 
     const TABLE_WALLET = 'user_wallet';
-    const TABLE_CONFIG ='config_virtual_currency';
-
-    const CURRENCY_TEMPLATE_NAME = 'Currency block - by virtualcurrency';
-
+    const TABLE_CONFIG = 'virtual_currency_config';
 
 
     /*** ----------------------------------------------- ***/
@@ -31,21 +23,18 @@ class VirtualCurrency extends Module
 
         $this->setupData($this->getCourseId());
         $this->initDictionary();
-        $this->initTemplates();
-
     }
 
     public function initDictionary(){
 
-        Dictionary::registerLibrary("virtualcurrency", "virtualcurrency", "This library provides information regarding Virtual Currency. It is provided by the Virtual Currency module.");
-
+        Dictionary::registerLibrary(self::ID, self::ID, "This library provides information regarding Virtual Currency. It is provided by the Virtual Currency module.");
 
         //virtualcurrency.name
         Dictionary::registerFunction(
             self::ID,
             'name',
             function ($arg) {
-                return ictionary::basicGetterFunction($arg, "name");
+                return Dictionary::basicGetterFunction($arg, "name");
             },
             "Returns the Virtual Currency object with the specific name.",
             'object',
@@ -59,7 +48,7 @@ class VirtualCurrency extends Module
             self::ID,
             'skillCost',
             function ($arg) {
-                return ictionary::basicGetterFunction($arg, "skillCost");
+                return Dictionary::basicGetterFunction($arg, "skillCost");
             },
             "Returns a string with the retry cost of a skill.",
             'object',
@@ -73,7 +62,7 @@ class VirtualCurrency extends Module
             self::ID,
             'wildcardCost',
             function ($arg) {
-                return ictionary::basicGetterFunction($arg, "wildcardCost");
+                return Dictionary::basicGetterFunction($arg, "wildcardCost");
             },
             "Returns a string with the cost of a wildcard.",
             'object',
@@ -85,37 +74,25 @@ class VirtualCurrency extends Module
         // TODO: user_wallet
     }
 
-
-    public function initTemplates()
-    {
-        $courseId = $this->getCourseId();
-
-        if (!Views::templateExists($courseId, self::CURRENCY_TEMPLATE_NAME))
-            Views::createTemplateFromFile(self::CURRENCY_TEMPLATE_NAME, file_get_contents(__DIR__ . '/currency.txt'), $courseId, self::ID);
-    }
-
     public function setupResources()
     {
-        parent::addResources('js/');
-        parent::addResources('css/badges.css');
+        parent::addResources('css/virtualcurrency.css');
     }
 
     public function setupData(int $courseId)
     {
-        $this->addTables("virtualcurrency", "config_virtual_currency");
+        $this->addTables(self::ID, self::TABLE_CONFIG);
 
-        if ( empty(Core::$systemDB->select("config_virtual_currency", ["course" => $courseId]))) {
-            Core::$systemDB->insert("config_virtual_currency",
+        if (empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId]))) {
+            Core::$systemDB->insert(self::TABLE_CONFIG,
                 [
                     "name" => "",
                     "course" => $courseId,
                     "skillCost" => DEFAULT_COST,
                     "wildcardCost" => DEFAULT_COST,
-                    "attemptRating" => ""
-
+                    "attemptRating" => 0
                 ]);
         }
-
     }
 
     public function update_module($compatibleVersions)
@@ -143,8 +120,8 @@ class VirtualCurrency extends Module
 
         $currencyConfigArray = array();
 
-        if (Core::$systemDB->tableExists("config_virtual_currency")) {
-            $currencyConfigVarDB = Core::$systemDB->selectMultiple("config_virtual_currency", ["course" => $courseId], "*");
+        if (Core::$systemDB->tableExists(self::TABLE_CONFIG)) {
+            $currencyConfigVarDB = Core::$systemDB->selectMultiple(self::TABLE_CONFIG, ["course" => $courseId], "*");
             if ($currencyConfigVarDB) {
                 $currencyArray = array();
                 foreach ($currencyConfigVarDB as $currencyConfigVarDB) {
@@ -165,7 +142,7 @@ class VirtualCurrency extends Module
         $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
         foreach ($tables as $table) {
             foreach ($table as $entry) {
-                if ($tableName[$i] == "config_virtual_currency") {
+                if ($tableName[$i] == self::TABLE_CONFIG) {
                     if ($update && $existingCourse) {
                         Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
                     } else {
@@ -195,8 +172,7 @@ class VirtualCurrency extends Module
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => "", 'current_val' => $this->getCurrencyName($courseId)),
             array('name' => "Skill Cost", 'id' => 'skillcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getSkillCost($courseId))),
             array('name' => "Wildcard Cost", 'id' => 'wildcardcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getWildcardCost($courseId))),
-            array('name' => "Minimum Rating for Attempt", 'id' => 'attemptrating', 'type' => "number", 'options' => "", 'current_val' => intval($this->getAttemptRating($courseId)))
-
+            array('name' => "Min. Rating for Attempt", 'id' => 'attemptrating', 'type' => "number", 'options' => "", 'current_val' => intval($this->getAttemptRating($courseId)))
         ];
         return $input;
     }
@@ -215,12 +191,6 @@ class VirtualCurrency extends Module
         }
         $attemptRating = $generalInputs["attemptrating"];
         $this->saveAttemptRating($attemptRating, $courseId);
-
-    }
-
-    public function has_listing_items(): bool
-    {
-        return  false;
     }
 
 
@@ -228,10 +198,6 @@ class VirtualCurrency extends Module
     /*** ------------ Database Manipulation ------------ ***/
     /*** ----------------------------------------------- ***/
 
-    public function dropTables($moduleName)
-    {
-        parent::dropTables($moduleName);
-    }
     public function deleteDataRows($courseId)
     {
         Core::$systemDB->delete(self::TABLE_WALLET, ["course" => $courseId]);
@@ -243,58 +209,54 @@ class VirtualCurrency extends Module
 
     public function getCurrencyName($courseId)
     {
-        return Core::$systemDB->select("config_virtual_currency", ["course" => $courseId], "name");
+        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "name");
     }
     public function saveCurrencyName($currencyName ,$courseId)
     {
-        Core::$systemDB->update("config_virtual_currency", ["name" => $currencyName], ["course" => $courseId]);
+        Core::$systemDB->update(self::TABLE_CONFIG, ["name" => $currencyName], ["course" => $courseId]);
     }
 
-    public function getSkillCost( $courseId)
+    public function getSkillCost($courseId)
     {
-        return Core::$systemDB->select("config_virtual_currency", ["course" => $courseId], "skillCost");
+        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "skillCost");
 
     }
     public function saveSkillCost($value, $courseId)
     {
-        Core::$systemDB->update("config_virtual_currency", ["skillCost" => $value], ["course" => $courseId]);
+        Core::$systemDB->update(self::TABLE_CONFIG, ["skillCost" => $value], ["course" => $courseId]);
     }
 
-    public function getWildcardCost( $courseId)
+    public function getWildcardCost($courseId)
     {
-        return Core::$systemDB->select("config_virtual_currency", ["course" => $courseId], "wildcardCost");
+        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "wildcardCost");
 
     }
     public function saveWildcardCost($value, $courseId)
     {
-        Core::$systemDB->update("config_virtual_currency", ["wildcardCost" => $value], ["course" => $courseId]);
+        Core::$systemDB->update(self::TABLE_CONFIG, ["wildcardCost" => $value], ["course" => $courseId]);
     }
 
-    public function getAttemptRating( $courseId)
+    public function getAttemptRating($courseId)
     {
-        return Core::$systemDB->select("config_virtual_currency", ["course" => $courseId], "attemptRating");
+        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "attemptRating");
 
     }
     public function saveAttemptRating($value, $courseId)
     {
-        Core::$systemDB->update("config_virtual_currency", ["attemptRating" => $value], ["course" => $courseId]);
+        Core::$systemDB->update(self::TABLE_CONFIG, ["attemptRating" => $value], ["course" => $courseId]);
     }
 
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'virtualcurrency',
+    'id' => VirtualCurrency::ID,
     'name' => 'Virtual Currency',
-    'description' => 'Allows Virtual Currency to be automaticaly included on gamecourse.',
+    'description' => 'Allows Virtual Currency to be automaticaly included on GameCourse.',
     'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
-    'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard')
-    ),
+    'dependencies' => array(),
     'factory' => function() {
         return new VirtualCurrency();
     }
 ));
-
-?>

@@ -1,4 +1,4 @@
-create table config_virtual_currency(
+create table virtual_currency_config(
     name varchar(70) not null,
     course int unsigned not null,
     skillCost int not null,

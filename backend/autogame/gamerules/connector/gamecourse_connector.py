@@ -608,12 +608,12 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
         cursor.execute(query, (skill, course))
         table_skill = cursor.fetchall()
 
-        query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = %s) AND (TABLE_NAME = 'config_virtual_currency');"
+        query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = %s) AND (TABLE_NAME = 'virtual_currency_config');"
         cursor.execute(query, (database))
         table_exists = cursor.fetchall()
 
         if table_exists[0][0] > 0: # virtual currency is enabled
-            query = "SELECT skillCost from config_virtual_currency where course = %s;"
+            query = "SELECT skillCost from virtual_currency_config where course = %s;"
             cursor.execute(query, (course))
             table_currency = cursor.fetchall()
             cost = table_currency[0][0]
@@ -784,7 +784,7 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
     if tokens != None:
         reward = int(tokens)
     else:
-        query = "SELECT initialTokens from config_virtual_currency where course = %s;"
+        query = "SELECT initialTokens from virtual_currency_config where course = %s;"
         cursor.execute(query, (course))
         table_currency = cursor.fetchall()
         reward = table_currency[0][0]
@@ -964,7 +964,7 @@ def removes_tokens(target, tokens, contributions=None):
     else:
         awards_table = "award"
 
-    query = "SELECT skillCost, attemptRating from config_virtual_currency where course = %s;"
+    query = "SELECT skillCost, attemptRating from virtual_currency_config where course = %s;"
     cursor.execute(query, (course))
     table_currency = cursor.fetchall()
     cost = table_currency[0][0]
