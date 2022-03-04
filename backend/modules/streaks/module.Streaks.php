@@ -15,8 +15,8 @@ class Streaks extends Module
     const ID = 'streaks';
 
     const TABLE = 'streak';
-    const TABLE_CONFIG ='streaks_config';
-    const TABLE_PROGRESSION = self::ID . '_progression';
+    const TABLE_CONFIG = 'streaks_config';
+    const TABLE_PROGRESSION = 'streak_progression';
 
     const STREAKS_TEMPLATE_NAME = 'Streaks block - by streaks';
 
@@ -28,7 +28,7 @@ class Streaks extends Module
     {
         $this->setupData($this->getCourseId());
         $this->initDictionary();
-//        $this->initTemplates();
+        $this->initTemplates();
     }
 
     public function initDictionary(){
@@ -110,6 +110,21 @@ class Streaks extends Module
             },
             "Returns a string with the reference of the color in hexadecimal of the streak.",
             'string',
+            null,
+            'object',
+            'streak',
+            true
+        );
+
+        //%streak.count
+        Dictionary::registerFunction(
+            self::ID,
+            'count',
+            function ($streak) {
+                return Dictionary::basicGetterFunction($streak, "count");
+            },
+            "Returns a number with the count of the streak.",
+            'number',
             null,
             'object',
             'streak',
@@ -236,14 +251,69 @@ class Streaks extends Module
             true
         );
 
-        //streaks.streakProgression(streak,user)
+        //%streak.image
         Dictionary::registerFunction(
             self::ID,
-            'streakProgression',
+            'image',
+            function ($streak) {
+                return Dictionary::basicGetterFunction($streak, "image");
+            },
+            "Returns the streak image path.",
+            'string',
+            null,
+            'object',
+            'streak',
+            true
+        );
+
+        //%streak.counts returns collection of number ranging from 1 to the streak count
+        Dictionary::registerFunction(
+            self::ID,
+            'counts',
+            function ($streak) {
+                Dictionary::checkArray($streak, "object", 'counts');
+                $counts = [];
+                for ($i = 1; $i <= $streak["value"]["count"]; $i++) {
+                    $counts[] = ["number" => $i];
+                }
+                return Dictionary::createNode($counts, self::ID, "collection", $streak);
+            },
+            'Returns a collection of Level objects from that badge.',
+            'collection',
+            'level',
+            'object',
+            'badge',
+            true
+        );
+
+        //%count.number
+        Dictionary::registerFunction(
+            self::ID,
+            'number',
+            function ($count) {
+                return Dictionary::basicGetterFunction($count, "number");
+            },
+            'Returns a number that is the count.',
+            'number',
+            null,
+            'object',
+            'count',
+            true
+        );
+
+        //streak.progression(user)
+        Dictionary::registerFunction(
+            self::ID,
+            'progression',
 
             function ($streak, int $user) {
-                $streakParticipation = $this->getStreakProgression($streak, $user);
-                return Dictionary::createNode($streakParticipation, self::ID, 'collection');
+                Dictionary::checkArray($streak, "object", 'progression');
+                $progressionNum = $this->getStreakProgression($streak, $user);
+                $progression = ["number" => $progressionNum];
+                unset($streak["value"]["description"]);
+                $progression["libraryOfVariable"] = self::ID;
+                $progression = array_merge($streak["value"], $progression);
+                return Dictionary::createNode($progression, self::ID);
             },
             'Returns a collection object corresponding to the intermediate progress of a GameCourseUser identified by user for that streak.',
             'collection',
@@ -252,7 +322,6 @@ class Streaks extends Module
             null,
             true
         );
-
     }
 
     public function initTemplates()
@@ -266,6 +335,7 @@ class Streaks extends Module
     public function setupResources()
     {
         parent::addResources('css/streaks.css');
+        parent::addResources('imgs/');
     }
 
     public function setupData(int $courseId)
@@ -579,10 +649,12 @@ class Streaks extends Module
     // getStreakCount
     // getUsersWithStreak
 
-    public function getStreakProgression($badge, $user)
+    public function getStreakProgression($streak, $user): int
     {
-       
-
+        $streakCounts = intval(Core::$systemDB->select(self::TABLE_PROGRESSION, ["course" => $this->getCourseId(), "user" => $user, "streakId" => $streak["value"]["id"]], "count(*)"));
+        if ($streakCounts != 0 && $streakCounts % $streak["value"]["count"] == 0) $progression = $streak["value"]["count"];
+        else $progression = $streakCounts % $streak["value"]["count"];
+        return $progression;
     }
 
     public function saveMaxReward($max, $courseId)

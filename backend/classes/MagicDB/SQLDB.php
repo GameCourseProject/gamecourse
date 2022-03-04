@@ -2,6 +2,8 @@
 
 namespace MagicDB;
 
+use GameCourse\API;
+
 /**
  * This class is responsible for the interaction with the database.
  */

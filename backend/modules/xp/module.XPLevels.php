@@ -11,6 +11,7 @@ use GameCourse\Views\Expression\ValueNode;
 use Modules\AwardList\AwardList;
 use Modules\Badges\Badges;
 use Modules\Skills\Skills;
+use Streaks\Streaks;
 
 class XPLevels extends Module
 {
@@ -134,6 +135,26 @@ class XPLevels extends Module
             null,
             true
         );
+
+        //xp.getStreaksXP(user) returns value of streak xp for user
+        Dictionary::registerFunction(
+            self::ID,
+            'getStreaksXP',
+            function ($user) use ($courseId) {
+                $userId = $this->getUserId($user);
+                $streakXP = $this->calculateStreakXP($userId, $courseId);
+                return new ValueNode($streakXP);
+            },
+            'Returns the sum of XP that all Streaks provide as reward from a GameCourseUser identified by user.',
+            'integer',
+            null,
+            'library',
+            null,
+            true
+        );
+
+        // TODO: xp.getStreaksTokens(user)
+        // return the sum of all the tokens earned with streaks so far
 
         //xp.getXPByType(user, type) returns value xp of a type of award for user
         Dictionary::registerFunction(
@@ -467,6 +488,19 @@ class XPLevels extends Module
         $normalBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => false, "isActive" => true]), "sum(reward)");
         $badgeXP = $normalBadgeXP + $this->calculateBonusBadgeXP($userId, $courseId);
         return $badgeXP;
+    }
+
+    public function calculateStreakXP($userId, $courseId)
+    {
+        //streaks XP
+        $table = AwardList::TABLE . " a join " . Streaks::TABLE . " s on moduleInstance=s.id";
+        $where = ["a.course" => $courseId, "user" => $userId, "type" => "streak"];
+        $streaks = Core::$systemDB->selectMultiple($table, array_merge($where, ["isActive" => true]), "a.reward");
+        $streakXP = array_reduce($streaks, function ($carry, $streak) {
+            $carry += intval($streak["reward"]);
+            return $carry;
+        });
+        return $streakXP ?? 0;
     }
 
     public function calculateSkillXP($userId, $courseId, $isActive = true)

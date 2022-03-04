@@ -43,7 +43,7 @@
               "value": "{%item.currLevel(%user)}"
             },
             "badgeParticipations": {
-              "value": "{badges.badgeProgression(%item.id, %viewer)}"
+              "value": "{badges.badgeProgression(%item.id, %user)}"
             },
             "badge": {
               "value": "{%item}"

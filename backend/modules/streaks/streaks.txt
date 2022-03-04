@@ -1,0 +1,179 @@
+[
+  {
+    "type": "block",
+    "role": "role.Student>role.Default",
+    "class": "streaks-list",
+    "visibilityType": "visible",
+    "children": [
+      [
+        {
+          "type": "header",
+          "role": "role.Student>role.Default",
+          "visibilityType": "visible",
+          "image": [
+            {
+              "type": "image",
+              "role": "role.Student>role.Default",
+              "visibilityType": "visible",
+              "src": "modules/streaks/icon.svg"
+            }
+          ],
+          "title": [
+            {
+              "type": "text",
+              "role": "role.Student>role.Default",
+              "visibilityType": "visible",
+              "value": "Streaks ({xp.getStreaksXP(%user)} XP)"
+            }
+          ]
+        }
+      ],
+      [
+        {
+          "type": "block",
+          "role": "role.Student>role.Default",
+          "class": "streak",
+          "visibilityType": "visible",
+          "loopData": "{streaks.getAllStreaks().sort(\"ascending\",\"name\")}",
+          "variables": {
+            "streak": {
+              "value": "{%item}"
+            },
+            "streakIndex": {
+              "value": "{%index}"
+            },
+            "streakProgression": {
+              "value": "{%item.progression(%user)}"
+            }
+          },
+          "children": [
+            [
+              {
+                "type": "block",
+                "role": "role.Student>role.Default",
+                "class": "streak-top",
+                "visibilityType": "visible",
+                "children": [
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Student>role.Default",
+                      "class": "streak-top-left",
+                      "visibilityType": "visible",
+                      "children": [
+                        [
+                          {
+                            "type": "block",
+                            "role": "role.Student>role.Default",
+                            "class": "streak-info",
+                            "visibilityType": "visible",
+                            "children": [
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "style": "color: {%streak.color}",
+                                  "class": "streak-title",
+                                  "visibilityType": "visible",
+                                  "value": "{%streak.name}"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "class": "streak-description",
+                                  "visibilityType": "visible",
+                                  "value": "{%streak.description}"
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "type": "block",
+                            "role": "role.Student>role.Default",
+                            "class": "streak-imgs-all",
+                            "visibilityType": "visible",
+                            "children": [
+                              [
+                                {
+                                  "type": "block",
+                                  "role": "role.Student>role.Default",
+                                  "class": "streak-imgs",
+                                  "visibilityType": "visible",
+                                  "loopData": "{%streak.counts}",
+                                  "variables": {
+                                    "count": {
+                                      "value": "{%item}"
+                                    }
+                                  },
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "image",
+                                        "role": "role.Student>role.Default",
+                                        "class": "streak-img",
+                                        "visibilityType": "conditional",
+                                        "visibilityCondition": "{%count.number <= %streakProgression.number}",
+                                        "src": "{%streak.image}"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "image",
+                                        "role": "role.Student>role.Default",
+                                        "class": "streak-img",
+                                        "visibilityType": "conditional",
+                                        "visibilityCondition": "{%count.number > %streakProgression.number}",
+                                        "src": "modules/streaks/imgs/fire-empty.svg"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "style": "color: {system.if(%count.number > %streakProgression.number, \"#999999\", \"white\")}",
+                                        "class": " streak-number",
+                                        "visibilityType": "visible",
+                                        "value": "{%count.number}"
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Student>role.Default",
+                      "class": "streak-top-right",
+                      "visibilityType": "visible",
+                      "children": [
+                        [
+                          {
+                            "type": "text",
+                            "role": "role.Student>role.Default",
+                            "class": "streak-reward ",
+                            "visibilityType": "visible",
+                            "value": "{%streak.reward} XP"
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    ]
+  }
+]

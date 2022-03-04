@@ -1,174 +1,82 @@
-.badges-page {
+.streaks-list {
   border: 2px solid #d9d9d9;
+  border-radius: 5px;
+  padding: 20px 20px 0;
 }
 
-.badges-page .badge {
-  width: 100%;
-  margin-top: 0px !important;
+.streaks-list .streak {
   border-top: 2px solid #e6e6e6;
-  padding: 0px !important;
+  padding: 20px 40px 20px 10px;
 }
 
-.badges-page .badge>.content {
-  padding: 8px;
-  margin: 0px;
-  display: block !important;
-  transition: all 0.3s ease;
+/*** ------------- Top ------------- ***/
+
+.streaks-list .streak .streak-top > * {
+  flex-direction: row !important;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.badges-page .badge>.content:hover {
-  background-color: #d1d1d1 !important;
+/*** ---------- Top Left ---------- ***/
+
+.streaks-list .streak .streak-top .streak-top-left > * {
+  flex-direction: row !important;
 }
 
-.badges-page .badge>.content>* {
-  display: inline-block;
-  vertical-align: middle;
+.streaks-list .streak .streak-top .streak-top-left .streak-info {
+  width: 350px;
+  margin-right: 40px;
+  margin-top: 10px;
 }
 
-.badges-page .badge>.content>* .content {
-  margin: 0px;
-  padding: 0px !important;
-}
-
-
-.badges-page .badge>.content>* .content>* {
-  margin: 0px;
-  padding: 0px !important;
-}
-
-
-.badge .content .block {
-  padding: 10px;
-}
-
-.badges-page .badge .badge-images {
-  width: 162px;
-}
-
-@media all and (min-width: 700px) {
-  .badges-page .badge .badge-images {
-    width: 240px;
-  }
-}
-
-.badges-page .badge .badge-images>.content {
-  display: flex;
-}
-
-.badges-page .badge .badge-info>.content,
-.badges-page .badge .xp-container .content {
-  display: block;
-}
-
-.badges-page .badge .badge-info>.content>.value,
-.badges-page .badge .xp-container .content>.value {
-  display: block;
-}
-
-.badges-page .badge .badge-info .title {
+.streaks-list .streak .streak-top .streak-top-left .streak-info .streak-title {
   font-size: 16px;
   font-weight: bold;
 }
-.badges-page .badge .badge-info .description {
+
+.streaks-list .streak .streak-top .streak-top-left .streak-info .streak-description {
   font-size: 14px;
+  margin-top: 5px;
 }
 
-.badges-page .badge .badge-info .leveldesc {
-  font-size: 12px;
+.streaks-list .streak .streak-top .streak-top-left .streak-imgs-all {
+  margin-top: 7px;
 }
 
-.badges-page .badge .badge-info .leveldesc .progress {
-  margin-left: 5px;
+.streaks-list .streak .streak-top .streak-top-left .streak-imgs-all > * {
+  flex-direction: row !important;
+  align-items: center;
+}
+
+.streaks-list .streak .streak-top .streak-top-left .streak-imgs-all .streak-imgs > * {
+  position: relative;
+}
+
+.streaks-list .streak .streak-top .streak-top-left .streak-imgs-all .streak-imgs .streak-img {
+  width: 35px;
+  height: 35px;
+  padding: 5px;
+}
+
+.streaks-list .streak .streak-top .streak-top-left .streak-imgs-all .streak-imgs .streak-img img {
+  object-fit: contain;
+}
+
+.streaks-list .streak .streak-top .streak-top-left .streak-imgs-all .streak-imgs .streak-number {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-weight: bold;
 }
 
-.badges-page .badge .xp-container {
-  text-align: center;
-  display: flex !important;
+/*** ---------- Top Right ---------- ***/
+
+.streaks-list .streak .streak-top .streak-top-right > * {
   align-items: center;
-  justify-content: center;
 }
 
-@media all and (min-width: 700px) {
-  .badges-page .badge .xp-container {
-    float: right;
-    width: 120px;
-    height: 80px;
-  }
-}
-
-.badges-page .badge .xp {
+.streaks-list .streak .streak-top .streak-top-right .streak-reward {
   font-size: 22px;
   font-weight: bold;
-}
-
-.badges-page .badge .extra-credit {
-  color: #E00;
-  font-size: 10px;
-  font-weight: bold;
-}
-
-.badges-page .badge .bragging-rights {
-  color: #070;
-  font-size: 10px;
-  font-weight: bold;
-}
-
-.badges-page .badge img {
-  width: 50px;
-  height: 50px;
-  padding: 2px;
-}
-
-@media all and (min-width: 700px) {
-  .badges-page .badge img {
-    width: 70px;
-    height: 70px;
-    padding: 5px;
-  }
-}
-
-.badges-page .badge .badge-extra {
-  width: 100%;
-  border-top: 1px solid #e6e6e6;
-  padding-top: 6px;
-}
-
-.badges-page .badge .badge-extra.editable {
-  display: block;
-}
-
-.badges-page .badge .badge-extra>.content {
-  display: block;
-}
-
-.badges-page .badge .badge-extra>.content .indicator {
-  display: inline-block;
-  margin-right: 4px !important;
-}
-
-.badges-page .badge .badge-extra>.content .indicator+.indicator:before {
-  content: '| ';
-  display: inline-block;
-  margin-right: 3px;
-}
-
-.badges-page .badge .badge-extra>.content .level-info .content {
-  display: block;
-}
-
-.badges-page .badge .badge-extra>.content .level-info .content .leveldesc {
-  display: block;
-  font-weight: bold;
-  padding: 8px 0px !important;
-  font-size: 14px;
-}
-
-.badges-page .badge .badge-extra>.content .level-info .content .student-image img {
-  width: 30px;
-  height: 30px;
-  margin: 1px;
-  padding: 0px;
-  cursor: pointer;
-  border: 1px solid #bfbfbf;
 }
