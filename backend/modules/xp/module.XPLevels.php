@@ -165,7 +165,7 @@ class XPLevels extends Module
                 $xp = $this->calculateXPByType($userId, $courseId, $type);
                 if (is_null($xp))
                     $xp = 0;
-                return new ValueNode(["type" => 'integer', "value" => $xp]);
+                return new ValueNode($xp);
             },
             'Returns the sum of XP that a type of award provide as reward from a GameCourseUser identified by user.',
             'integer',

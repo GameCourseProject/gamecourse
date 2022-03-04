@@ -28,10 +28,25 @@
 
 /*** ------------- Details ------------- ***/
 
-.profile .profile-summary .profile-summary-blocks .profile-details .gc-header .gc-header_image {
+.profile .profile-summary .profile-summary-blocks .profile-details .profile-details-header > * {
+  flex-direction: row !important;
+  align-items: center;
+}
+
+.profile .profile-summary .profile-summary-blocks .profile-details .profile-details-header .profile-details-header-img {
   width: 100px;
   height: 100px;
   object-fit: cover;
+}
+
+.profile .profile-summary .profile-summary-blocks .profile-details .profile-details-header .profile-details-header-info {
+  margin-left: 20px;
+  font-size: 14px;
+}
+
+.profile .profile-summary .profile-summary-blocks .profile-details .profile-details-header .profile-details-header-info .profile-details-header-info-name {
+  font-size: 16px;
+  font-weight: bold;
 }
 
 .profile .profile-summary .profile-summary-blocks .profile-details table tr td {

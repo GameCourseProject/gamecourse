@@ -56,24 +56,55 @@
                       "children": [
                         [
                           {
-                            "type": "header",
+                            "type": "block",
                             "role": "role.Student>role.Default",
+                            "class": "profile-details-header",
                             "visibilityType": "visible",
-                            "image": [
-                              {
-                                "type": "image",
-                                "role": "role.Student>role.Default",
-                                "visibilityType": "visible",
-                                "src": "{%userData.picture}"
-                              }
-                            ],
-                            "title": [
-                              {
-                                "type": "text",
-                                "role": "role.Student>role.Default",
-                                "visibilityType": "visible",
-                                "value": "{%userData.name} - {%userData.studentNumber}"
-                              }
+                            "children": [
+                              [
+                                {
+                                  "type": "image",
+                                  "role": "role.Student>role.Default",
+                                  "class": "profile-details-header-img",
+                                  "visibilityType": "visible",
+                                  "src": "{%userData.picture}"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "block",
+                                  "role": "role.Student>role.Default",
+                                  "class": "profile-details-header-info",
+                                  "visibilityType": "visible",
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "class": " profile-details-header-info-name",
+                                        "visibilityType": "visible",
+                                        "value": "{%userData.name}"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "Student nr. {%userData.studentNumber}"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "Major {%userData.major}"
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ]
                             ]
                           }
                         ],
@@ -93,6 +124,7 @@
                                       {
                                         "type": "text",
                                         "role": "role.Student>role.Default",
+                                        "style": "font-weight: bold",
                                         "visibilityType": "visible",
                                         "value": "Level"
                                       }
@@ -123,8 +155,9 @@
                                       {
                                         "type": "text",
                                         "role": "role.Student>role.Default",
+                                        "style": "font-weight: bold",
                                         "visibilityType": "visible",
-                                        "value": "XP"
+                                        "value": "Total XP"
                                       }
                                     ],
                                     [
@@ -137,7 +170,16 @@
                                     ]
                                   ]
                                 }
-                              ],
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "type": "table",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "rows": [
                               [
                                 {
                                   "type": "row",
@@ -159,16 +201,7 @@
                                         "visibilityType": "visible",
                                         "value": "{xp.getBadgesXP(%user)}"
                                       }
-                                    ]
-                                  ]
-                                }
-                              ],
-                              [
-                                {
-                                  "type": "row",
-                                  "role": "role.Student>role.Default",
-                                  "visibilityType": "visible",
-                                  "children": [
+                                    ],
                                     [
                                       {
                                         "type": "text",
@@ -199,7 +232,7 @@
                                         "type": "text",
                                         "role": "role.Student>role.Default",
                                         "visibilityType": "visible",
-                                        "value": "Major"
+                                        "value": "Labs"
                                       }
                                     ],
                                     [
@@ -207,7 +240,64 @@
                                         "type": "text",
                                         "role": "role.Student>role.Default",
                                         "visibilityType": "visible",
-                                        "value": "{%userData.major}"
+                                        "value": "{xp.getXPByType(%user, \"labs\")}"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "Streaks"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "{xp.getStreaksXP(%user)}"
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "row",
+                                  "role": "role.Student>role.Default",
+                                  "visibilityType": "visible",
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "Quizzes"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "{xp.getXPByType(%user, \"quiz\")}"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "Tokens"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "TODO"
                                       }
                                     ]
                                   ]
@@ -353,12 +443,12 @@
                                 {
                                   "id": "badgeXP",
                                   "label": "Badges",
-                                  "max": "4000"
+                                  "max": "2500"
                                 },
                                 {
                                   "id": "skillXP",
                                   "label": "Skills",
-                                  "max": "5000"
+                                  "max": "6500"
                                 },
                                 {
                                   "id": "quizXP",
