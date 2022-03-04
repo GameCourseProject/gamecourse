@@ -8,6 +8,7 @@ use GameCourse\Views\Expression\ValueNode;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Course;
+use Modules\AwardList\AwardList;
 
 class Streaks extends Module
 {
@@ -131,12 +132,13 @@ class Streaks extends Module
             true
         );
 
-        //%streak.reward
+        //%streak.reward(type)
         Dictionary::registerFunction(
             self::ID,
             'reward',
-            function ($streak) {
-                return Dictionary::basicGetterFunction($streak, "reward");
+            function ($streak, $type) {
+                if ($type === "xp") return Dictionary::basicGetterFunction($streak, "reward");
+                else if ($type === "token") return new ValueNode("TODO"); // TODO: get actual value
             },
             "Returns a string with the reward of completing a streak.",
             'string',
@@ -318,6 +320,23 @@ class Streaks extends Module
             'Returns a collection object corresponding to the intermediate progress of a GameCourseUser identified by user for that streak.',
             'collection',
             'badge',
+            'library',
+            null,
+            true
+        );
+
+        //streaks.getStreaksTokens(user) returns value of streak tokens for user
+        Dictionary::registerFunction(
+            self::ID,
+            'getStreaksTokens',
+            function ($user) {
+                $userId = $this->getUserId($user);
+                $tokens = $this->calculateStreakTokens($userId);
+                return new ValueNode($tokens);
+            },
+            'Returns the sum of XP that all Streaks provide as reward from a GameCourseUser identified by user.',
+            'integer',
+            null,
             'library',
             null,
             true
@@ -644,6 +663,19 @@ class Streaks extends Module
         }
         return Dictionary::createNode($streakArray, self::ID, $type);
 
+    }
+
+    public function calculateStreakTokens($userId)
+    {
+        //streaks tokens
+        $table = AwardList::TABLE . " a join " . Streaks::TABLE . " s on moduleInstance=s.id";
+        $where = ["a.course" => $this->getCourseId(), "user" => $userId, "type" => "tokens"];
+        $streaks = Core::$systemDB->selectMultiple($table, array_merge($where, ["isActive" => true]), "a.reward");
+        $streakTokens = array_reduce($streaks, function ($carry, $streak) {
+            $carry += intval($streak["reward"]);
+            return $carry;
+        });
+        return $streakTokens ?? 0;
     }
 
     // getStreakCount

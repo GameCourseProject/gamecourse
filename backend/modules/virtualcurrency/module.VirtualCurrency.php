@@ -57,8 +57,8 @@ class VirtualCurrency extends Module
         Dictionary::registerFunction(
             self::ID,
             'name',
-            function ($arg) {
-                return Dictionary::basicGetterFunction($arg, "name");
+            function () {
+                return new ValueNode(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $this->getCourseId()], "name"));
             },
             "Returns the Virtual Currency object with the specific name.",
             'object',
@@ -72,8 +72,8 @@ class VirtualCurrency extends Module
         Dictionary::registerFunction(
             self::ID,
             'skillCost',
-            function ($arg) {
-                return Dictionary::basicGetterFunction($arg, "skillCost");
+            function () {
+                return new ValueNode(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $this->getCourseId()], "skillCost"));
             },
             "Returns a string with the retry cost of a skill.",
             'object',
@@ -87,8 +87,8 @@ class VirtualCurrency extends Module
         Dictionary::registerFunction(
             self::ID,
             'wildcardCost',
-            function ($arg) {
-                return Dictionary::basicGetterFunction($arg, "wildcardCost");
+            function () {
+                return new ValueNode(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $this->getCourseId()], "wildcardCost"));
             },
             "Returns a string with the cost of a wildcard.",
             'object',

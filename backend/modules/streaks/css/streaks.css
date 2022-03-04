@@ -72,11 +72,27 @@
 
 /*** ---------- Top Right ---------- ***/
 
-.streaks-list .streak .streak-top .streak-top-right > * {
+.streaks-list .streak .streak-top .streak-top-right > *,
+.streaks-list .streak .streak-top .streak-top-right .streak-reward-token > * {
+  flex-direction: row !important;
   align-items: center;
 }
 
-.streaks-list .streak .streak-top .streak-top-right .streak-reward {
-  font-size: 22px;
+.streaks-list .streak .streak-top .streak-top-right .streak-reward-xp,
+.streaks-list .streak .streak-top .streak-top-right .streak-reward-token span {
+  font-size: 22px !important;
   font-weight: bold;
+}
+
+.streaks-list .streak .streak-top .streak-top-right .streak-reward-token {
+  border-left: 2px solid #CFCFCF;
+  margin-left: 20px;
+  padding-left: 20px;
+}
+
+.streaks-list .streak .streak-top .streak-top-right .streak-reward-token .gc-image {
+  width: 20px;
+  height: 20px;
+  margin-top: 3px;
+  margin-left: 5px;
 }
