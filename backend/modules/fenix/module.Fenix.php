@@ -73,9 +73,9 @@ class Fenix extends Module
     private function importFenixStudents(Course $course, $file): int
     {
         $nrStudentsImported = 0;
-        $separator = ",";
-        $headers = ["Username", "Número", "Nome", "Email", "Agrupamento PCM Labs", "Turno Teórica", "Turno Laboratorial",
-                    "Total de Inscrições", "Tipo de Inscrição", "Estado Matrícula", "Curso"];
+        $separator = ";";
+        $headers = ["Username", "Número", "Nome", "Email", "Turno Teórica", "Turno Laboratorial",
+                    "Total de Inscrições", "Tipo de Inscrição", "Estado Matrícula", "Curso", "Estatutos"];
         $lines = array_filter(explode("\n", $file), function ($line) { return !empty($line); });
 
         if (count($lines) > 0) {
