@@ -9,6 +9,7 @@ use GameCourse\ModuleLoader;
 use GameCourse\Views\Expression\EvaluateVisitor;
 use GameCourse\Views\Expression\ValueNode;
 use Modules\AwardList\AwardList;
+use Modules\Skills\Skills;
 use ReflectionException;
 use ReflectionFunction;
 
@@ -836,7 +837,8 @@ class Dictionary
                             $imgName = str_replace(' ', '', $name . '-' . $level);
                             return new ValueNode('modules/badges/imgs/' . $imgName . '.png');
                         case 'skill':
-                            return new ValueNode('modules/skills/imgs/skills.svg');
+                            $skillColor = Core::$systemDB->select(Skills::TABLE, ["id" => $award["value"]["moduleInstance"]], "color");
+                            return new ValueNode($skillColor);
                         case 'bonus':
                             return new ValueNode('modules/' . AwardList::ID . '/imgs/awards.svg');
                         default:
