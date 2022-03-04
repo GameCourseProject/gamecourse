@@ -94,17 +94,17 @@ def filter_excellence(logs, tiers, classes):
 
 
 @rule_function
-def filter_graded_post(logs, desc):
+def filter_skills(logs):
     """
-    Filters the list of logs in a way that certain
-    graded posts are removed
+    Filters the list of logs to only keep
+    skill graded post
     """
-
+    desc = "Skill Tree"
     filtered_logs = []
 
     for line in logs:
         post = line.description
-        if not post.startswith(desc):
+        if post.startswith(desc):
             filtered_logs.append(line)
     return filtered_logs
 
@@ -131,7 +131,7 @@ def award_tokens_type(target, type, tokens, element_name = None, contributions=N
     """
     Awards tokens to students based on an award given.
     """
-    connector.award_tokens(target, type, tokens, element_name, contributions)
+    connector.award_tokens_type(target, type, tokens, element_name, contributions)
     return
 
 @rule_function
