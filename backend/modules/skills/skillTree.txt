@@ -87,34 +87,107 @@
                                 {
                                   "type": "block",
                                   "role": "role.Student>role.Default",
-                                  "style": "{%skill.getStyle(%user)}",
                                   "class": "skill",
                                   "visibilityType": "visible",
-                                  "variables": {
-                                    "post": {
-                                      "value": "{%skill.getPost(%user)}"
-                                    }
-                                  },
                                   "children": [
                                     [
                                       {
-                                        "type": "text",
+                                        "type": "block",
                                         "role": "role.Student>role.Default",
-                                        "class": "skill-name",
+                                        "style": "{%skill.getStyle(%user)}",
+                                        "class": "skill-left",
                                         "visibilityType": "visible",
-                                        "value": "{%skill.name}",
-                                        "link": "#/courses/{%course}/skills/{%item.id}"
+                                        "variables": {
+                                          "post": {
+                                            "value": "{%skill.getPost(%user)}"
+                                          }
+                                        },
+                                        "children": [
+                                          [
+                                            {
+                                              "type": "text",
+                                              "role": "role.Student>role.Default",
+                                              "class": "skill-name",
+                                              "visibilityType": "visible",
+                                              "value": "{%skill.name}",
+                                              "link": "#/courses/{%course}/skills/{%item.id}"
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "type": "text",
+                                              "role": "role.Student>role.Default",
+                                              "class": "skill-post",
+                                              "visibilityType": "conditional",
+                                              "visibilityCondition": "{%post}",
+                                              "value": "Post",
+                                              "link": "{%post}"
+                                            }
+                                          ]
+                                        ]
                                       }
                                     ],
                                     [
                                       {
-                                        "type": "text",
+                                        "type": "block",
                                         "role": "role.Student>role.Default",
-                                        "class": "skill-post",
-                                        "visibilityType": "conditional",
-                                        "visibilityCondition": "{%post}",
-                                        "value": "Post",
-                                        "link": "{%post}"
+                                        "class": "skill-right",
+                                        "visibilityType": "visible",
+                                        "children": [
+                                          [
+                                            {
+                                              "type": "text",
+                                              "role": "role.Student>role.Default",
+                                              "visibilityType": "visible",
+                                              "value": "Attempts done: {%skill.getAttemptsDone(%user)}"
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "type": "block",
+                                              "role": "role.Student>role.Default",
+                                              "class": "skill-right-cost",
+                                              "visibilityType": "visible",
+                                              "children": [
+                                                [
+                                                  {
+                                                    "type": "text",
+                                                    "role": "role.Student>role.Default",
+                                                    "visibilityType": "visible",
+                                                    "value": "Cost to retry:"
+                                                  }
+                                                ],
+                                                [
+                                                  {
+                                                    "type": "block",
+                                                    "role": "role.Student>role.Default",
+                                                    "class": "skill-right-cost-token",
+                                                    "visibilityType": "visible",
+                                                    "children": [
+                                                      [
+                                                        {
+                                                          "type": "text",
+                                                          "role": "role.Student>role.Default",
+                                                          "visibilityType": "visible",
+                                                          "value": "{%skill.getCostToRetry(%user)}"
+                                                        }
+                                                      ],
+                                                      [
+                                                        {
+                                                          "type": "image",
+                                                          "role": "role.Student>role.Default",
+                                                          "class": "skill-right-cost-token-img",
+                                                          "visibilityType": "visible",
+                                                          "src": "modules/virtualcurrency/imgs/token.png"
+                                                        }
+                                                      ]
+                                                    ]
+                                                  }
+                                                ]
+                                              ]
+                                            }
+                                          ]
+                                        ]
                                       }
                                     ]
                                   ]

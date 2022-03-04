@@ -530,6 +530,40 @@ class Skills extends Module
             true
         );
 
+        //%skill.getAttemptsDone(user)
+        Dictionary::registerFunction(
+            'skillTrees',
+            'getAttemptsDone',
+            function ($skill, $user) use ($courseId) {
+                Dictionary::checkArray($skill, "object", "getAttemptsDone()");
+                $userId = $this->getUserId($user);
+                return new ValueNode($this->getAttemptsDone($skill["value"], $userId));
+            },
+            'Returns a number corresponding to the attempts done at a given skill by a GameCourse user.',
+            'number',
+            null,
+            'object',
+            'skill',
+            true
+        );
+
+        //%skill.getCostToRetry(user)
+        Dictionary::registerFunction(
+            'skillTrees',
+            'getCostToRetry',
+            function ($skill, $user) use ($courseId) {
+                Dictionary::checkArray($skill, "object", "getCostToRetry()");
+                $userId = $this->getUserId($user);
+                return new ValueNode($this->getCostToRetry($skill["value"], $userId));
+            },
+            'Returns a number corresponding to the attempts done at a given skill by a GameCourse user.',
+            'number',
+            null,
+            'object',
+            'skill',
+            true
+        );
+
         //%dependency.simpleSkills, returns collection of the required/normal/simple skills of a dependency
         Dictionary::registerFunction(
             'skillTrees',
@@ -1719,6 +1753,30 @@ class Skills extends Module
     public function getMaxReward($courseId)
     {
         return Core::$systemDB->select(self::TABLE_TREES, ["course" => $courseId], "maxReward");
+    }
+
+
+    /*** ---------- Attempsts & Cost --------- ***/
+
+    public function getAttemptsDone($skill, $userId): int
+    {
+        return intval(Core::$systemDB->select("participation", [
+            "course" => $this->getCourseId(),
+            "user" => $userId,
+            "type" => "graded post",
+            "description" => "Skill Tree, Re: " . $skill["name"]
+        ], "count(*)"));
+    }
+
+    public function getCostToRetry($skill, $userId): int
+    {
+        $attemptsDone = $this->getAttemptsDone($skill, $userId);
+        // FIXME: this is hard-coded
+        if ($attemptsDone == 0) return 0;
+        if ($attemptsDone == 1) return 20;
+        if ($attemptsDone == 2) return 40;
+        if ($attemptsDone == 3) return 80;
+        return 0;
     }
 
 
