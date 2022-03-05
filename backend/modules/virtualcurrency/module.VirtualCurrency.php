@@ -53,6 +53,22 @@ class VirtualCurrency extends Module
 
         Dictionary::registerLibrary(self::ID, self::ID, "This library provides information regarding Virtual Currency. It is provided by the Virtual Currency module.");
 
+        //virtualcurrency.isEnabled
+        Dictionary::registerFunction(
+            self::ID,
+            'isEnabled',
+            function () {
+                $isEnabled = filter_var(Core::$systemDB->select("course_module", ["course" => $this->getCourseId(), "moduleId" => VirtualCurrency::ID], "isEnabled"), FILTER_VALIDATE_BOOLEAN);
+                return new ValueNode($isEnabled);
+            },
+            "Returns whether the Virtual Currency is enabled for the course.",
+            'boolean',
+            'virtualcurrency',
+            'library',
+            null,
+            true
+        );
+
         //virtualcurrency.name
         Dictionary::registerFunction(
             self::ID,

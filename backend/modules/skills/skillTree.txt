@@ -132,7 +132,8 @@
                                         "type": "block",
                                         "role": "role.Student>role.Default",
                                         "class": "skill-right",
-                                        "visibilityType": "visible",
+                                        "visibilityType": "conditional",
+                                        "visibilityCondition": "{virtualcurrency.isEnabled}",
                                         "children": [
                                           [
                                             {

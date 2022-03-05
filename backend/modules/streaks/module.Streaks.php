@@ -138,7 +138,7 @@ class Streaks extends Module
             'reward',
             function ($streak, $type) {
                 if ($type === "xp") return Dictionary::basicGetterFunction($streak, "reward");
-                else if ($type === "token") return new ValueNode("TODO"); // TODO: get actual value
+                else if ($type === "token") return Dictionary::basicGetterFunction($streak, "tokens");
             },
             "Returns a string with the reward of completing a streak.",
             'string',
