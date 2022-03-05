@@ -23,7 +23,7 @@ export class RolesComponent implements OnInit {
   rolesHierarchy: Role[];
   pages: Page[];
 
-  selectedPage: {[roleName: string]: string} = {};
+  selectedPage: {[roleName: string]: number} = {};
 
   isNewRoleModalOpen: boolean;
   newRole: {name: string, parent: Role} = {name: null, parent: null};
@@ -56,6 +56,7 @@ export class RolesComponent implements OnInit {
         this.roles = res.roles;
         this.roles.forEach(role => this.selectedPage[role.name] = role.landingPage);
         this.rolesHierarchy = res.rolesHierarchy;
+        this.pages = res.pages;
       },
         error => ErrorService.set(error),
         () => {
@@ -78,7 +79,7 @@ export class RolesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   addRole(): void {
-    const role = new Role(null, this.newRole.name, '', null);
+    const role = new Role(null, this.newRole.name, null, null);
 
     if (!this.newRole.parent) {
       this.rolesHierarchy.push(role);

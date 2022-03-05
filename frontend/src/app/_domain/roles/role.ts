@@ -1,10 +1,10 @@
 export class Role {
   private _id?: number; // FIXME: should use id to deal with roles; is using name
   private _name?: string;
-  private _landingPage?: string;
+  private _landingPage?: number;
   private _children?: Role[];
 
-  constructor(id?: number, name?: string, landingPage?: string, children?: Role[]) {
+  constructor(id?: number, name?: string, landingPage?: number, children?: Role[]) {
     this._id = id;
     this._name = name;
     this._landingPage = landingPage;
@@ -27,11 +27,11 @@ export class Role {
     this._name = value;
   }
 
-  get landingPage(): string {
+  get landingPage(): number {
     return this._landingPage;
   }
 
-  set landingPage(value: string) {
+  set landingPage(value: number) {
     this._landingPage = value;
   }
 
@@ -92,7 +92,7 @@ export class Role {
     return new Role(
       obj.id ? parseInt(obj.id) : null,
       obj.name.startsWith('role.') ? obj.name.substr(5) : obj.name,
-      obj.landingPage,
+      obj.landingPage ? parseInt(obj.landingPage) : null,
       obj.children ? obj.children.map(child => Role.fromDatabase(child)) : null
     );
   }

@@ -49,8 +49,8 @@
       <div class="dd-content">{{role.name}}</div>
 
       <select class="dd-content" [(ngModel)]="selectedPage[role.name]" (ngModelChange)="saveLandingPage(role)">
-        <option [ngValue]="''" [selected]="role.landingPage === ''">Default Course Page</option>
-        <option *ngFor="let page of pages" [ngValue]="page.name" [selected]="role.landingPage === page.name">{{page.name}}</option>
+        <option [ngValue]="null" [selected]="role.landingPage === null">Default Course Page</option>
+        <option *ngFor="let page of pages" [ngValue]="page.id" [selected]="role.landingPage === page.id">{{page.name}}</option>
       </select>
 
       <img class="dd-add icon" (click)="isNewRoleModalOpen = true; newRole.parent = role" src="assets/icons/add_icon_no_outline.svg" title="New">
