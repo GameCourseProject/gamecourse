@@ -629,7 +629,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
         cursor.execute(query, (skill, course))
         table_skill = cursor.fetchall()
 
-        query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'gamecourse_test') AND (TABLE_NAME = 'config_virtual_currency');"
+        query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'gamecourse') AND (TABLE_NAME = 'config_virtual_currency');"
         cursor.execute(query)
         table_exists = cursor.fetchall()
 
