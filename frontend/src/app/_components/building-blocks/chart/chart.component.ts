@@ -70,10 +70,6 @@ export class ChartComponent implements OnInit {
     }
   }
 
-  maxValue(values: number[]): number {
-    return Math.max(...values);
-  }
-
   parseRadarValues(user: {[key: string]: number|null}, world: {[key: string]: number|null}, params): {user: number[], world: number[]} {
     return {
       user: Object.values(user).map((val, i) => exists(val) ? val : 0),

@@ -113,9 +113,14 @@ class Charts extends Module
             $awards = Core::$systemDB->selectMultiple(AwardList::TABLE,["user"=>$userID,"course"=>$course->getId()],"*","date");
 
             date_default_timezone_set('Europe/Lisbon');
-            $currentDay = (new DateTime('2022-03-07')); // FIXME: hard-coded
+            if(array_key_exists(0, $awards)){
+                $currentDay = new DateTime(date('Y-m-d', strtotime($awards[0]['date'])));
+            }
+            else {
+                $currentDay = (new DateTime('2022-03-07')); // FIXME: hard-coded course start date
+            }
 
-            $xpDay = 1;
+            $xpDay = 0;
             $xpTotal = 0;
             $xpValue = array();
             foreach($awards as $award) {
@@ -155,7 +160,11 @@ class Charts extends Module
             $minDay = PHP_INT_MAX;
 
             date_default_timezone_set('Europe/Lisbon');
-            $baseLine = (new DateTime('2022-03-07'));
+            if (array_key_exists(0, $awards = Core::$systemDB->selectMultiple(AwardList::TABLE,['user'=> $students[0]['id'],'course'=>$params['course']],"*","date"))){
+                $baseLine = new DateTime(date('Y-m-d', strtotime($awards[0]['date'])));
+            } else {
+                $baseLine = (new DateTime('2022-03-07'));
+            }
             $calcDay = function($date) use ($baseLine) {
                 if (is_string($date))
                     $date = strtotime($date);
@@ -216,22 +225,6 @@ class Charts extends Module
                     $firstDayStudent[$student['id']] = PHP_INT_MAX;
             }
 
-            if ($firstDayStudent[$userID] == PHP_INT_MAX) {
-                $chart['info'] = array(
-                    'values' => array(),
-                    'domainX' => array(0, 15),
-                    'domainY' => array(1, sizeof($students)),
-                    'startAtOneY' => true,
-                    'invertY' => true,
-                    'spark' => (array_key_exists('spark', $chart['info']) ? true : false),
-                    'labelX' => 'Time (Days)',
-                    'labelY' => 'Position'
-                );
-                CacheSystem::store($cacheId, $chart['info']);
-                return;
-            }
-
-            $studentNames = array();
             foreach ($students as $student) {
                 $firstDay = $firstDayStudent[$student['id']];
                 $firstCountedDay = $firstDayStudent[$userID];
@@ -245,7 +238,7 @@ class Charts extends Module
                 }
             }
 
-            $cmpUser = function($v1, $v2) use ($studentNames) {
+            $cmpUser = function($v1, $v2) {
                 $c = $v2['xp'] - $v1['xp'];
                 if ($c == 0)//in cases of ties, they are ordered by id
                     $c = $v1['student'] - $v2['student'];
@@ -287,8 +280,8 @@ class Charts extends Module
 
             $chart['info'] = array(
                 'values' => $positions,
-                'domainX' => array(0, count($positions)),
-                'domainY' => array(0, sizeof($students)),
+                'domainX' => array(0, count($positions) - 1),
+                'domainY' => array(1, count($students)),
                 'startAtOneY' => true,
                 'invertY' => true,
                 'spark' => (array_key_exists('spark', $chart['info']) ? true : false),
@@ -344,7 +337,7 @@ class Charts extends Module
             $chart['info'] = array(
                 'values' => $data,
                 'domainX' => $domainX,
-                'domainY' => array(0, $maxCount),
+                'domainY' => array(0, count($students)),
                 'highlightValue' => $highlightValue,
                 'shiftBar' => true,
                 'labelX' => 'XP',

@@ -55,7 +55,7 @@
         [categories]="view.info['values'].x"
         [yAxisMin]="1"
         [yAxisMax]="view.info['domainY'][1]"
-        [yAxisTickAmount]="maxValue([view.info['domainY'][1] - 1, view.info['domainY'][1] / 5])"
+        [yAxisTickAmount]="10"
         [xAxisLabel]="view.info['labelX']"
         [yAxisLabel]="view.info['labelY']"
         [yAxisReversed]="true">
@@ -92,7 +92,7 @@
         [categories]="view.info['domainX']"
         [yAxisMin]="0"
         [yAxisMax]="view.info['domainY'][1]"
-        [yAxisTickAmount]="view.info['domainY'][1]"
+        [yAxisTickAmount]="10"
         [xAxisLabel]="view.info['labelX']"
         [yAxisLabel]="view.info['labelY']"
         [highlightedValue]="view.info['highlightValue']">
@@ -111,7 +111,7 @@
         [categories]="view.info['domainX']"
         [yAxisMin]="0"
         [yAxisMax]="view.info['domainY'][1]"
-        [yAxisTickAmount]="view.info['domainY'][1]"
+        [yAxisTickAmount]="10"
         [xAxisLabel]="view.info['labelX']"
         [yAxisLabel]="view.info['labelY']"
         [highlightedValue]="view.info['highlightValue']">
