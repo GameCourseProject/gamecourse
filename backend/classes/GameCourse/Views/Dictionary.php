@@ -1408,7 +1408,7 @@ class Dictionary
         if ($funcLib) {
             $libraryId = Core::$systemDB->select("dictionary_library", ["name" => $funcLib], "id");
             if (!$libraryId)
-                API::error('Library named ' . $funcName . ' not found.');
+                API::error('Library named ' . $funcLib . ' not found.');
         } else $libraryId = null;
 
         if ($processFunc) {

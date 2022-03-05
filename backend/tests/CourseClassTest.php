@@ -1217,8 +1217,8 @@ class CourseClassTest extends TestCase
 
         //Then
         $expectedRoles = array(
-            array("landingPage" => "", "id" => $professor, "course" => $courseId, "name" => "Professor"),
-            array("landingPage" => "", "id" => $student, "course" => $courseId, "name" => "Student")
+            array("landingPage" => null, "id" => $professor, "course" => $courseId, "name" => "Professor"),
+            array("landingPage" => null, "id" => $student, "course" => $courseId, "name" => "Student")
         );
         $this->assertEquals($expectedRoles, $roles);
     }
@@ -1257,8 +1257,8 @@ class CourseClassTest extends TestCase
 
         //Then
         $expectedRoles = array(
-            array("landingPage" => "", "id" => $professor, "course" => $courseId1, "name" => "Professor"),
-            array("landingPage" => "", "id" => $student1, "course" => $courseId1, "name" => "Student")
+            array("landingPage" => null, "id" => $professor, "course" => $courseId1, "name" => "Professor"),
+            array("landingPage" => null, "id" => $student1, "course" => $courseId1, "name" => "Student")
         );
         $this->assertEquals($expectedRoles, $roles);
     }
@@ -1321,8 +1321,8 @@ class CourseClassTest extends TestCase
 
         //Then
         $expectedRoles = array(
-            array("landingPage" => "", "id" => $professor, "course" => $courseId, "name" => "Professor"),
-            array("landingPage" => "", "id" => $student, "course" => $courseId, "name" => "Student")
+            array("landingPage" => null, "id" => $professor, "course" => $courseId, "name" => "Professor"),
+            array("landingPage" => null, "id" => $student, "course" => $courseId, "name" => "Student")
         );
         $this->assertEquals($expectedRoles, $roles);
     }
@@ -1367,8 +1367,8 @@ class CourseClassTest extends TestCase
 
         //Then
         $expectedRoles = array(
-            array("landingPage" => "", "id" => $professor, "course" => $courseId1, "name" => "Professor"),
-            array("landingPage" => "", "id" => $student1, "course" => $courseId1, "name" => "Student")
+            array("landingPage" => null, "id" => $professor, "course" => $courseId1, "name" => "Professor"),
+            array("landingPage" => null, "id" => $student1, "course" => $courseId1, "name" => "Student")
         );
         $this->assertEquals($expectedRoles, $roles);
     }
@@ -1433,7 +1433,7 @@ class CourseClassTest extends TestCase
         $roles = array(
             array("id" => null, "name" => "Teacher", "landingPage" => "Student List"),
             array("id" => null, "name" => "Student", "landingPage" => "Leaderboard"),
-            array("id" => null, "name" => "Observer", "landingPage" => "")
+            array("id" => null, "name" => "Observer", "landingPage" => null)
         );
 
         //When
@@ -1444,7 +1444,7 @@ class CourseClassTest extends TestCase
         $expectedRoles = array(
             array("id" => $newRoles[0]["id"], "course" => $courseId, "name" => "Teacher", "landingPage" => "Student List"),
             array("id" => $newRoles[1]["id"], "course" => $courseId, "name" => "Student", "landingPage" => "Leaderboard"),
-            array("id" => $newRoles[2]["id"], "course" => $courseId, "name" => "Observer", "landingPage" => "")
+            array("id" => $newRoles[2]["id"], "course" => $courseId, "name" => "Observer", "landingPage" => null)
         );
 
 
@@ -1464,7 +1464,7 @@ class CourseClassTest extends TestCase
         $roles = array(
             array("id" => $professor, "name" => "Teacher", "landingPage" => "Student List"),
             array("id" => null, "name" => "Student", "landingPage" => "Leaderboard"),
-            array("id" => null, "name" => "Observer", "landingPage" => "")
+            array("id" => null, "name" => "Observer", "landingPage" => null)
         );
 
         //When
@@ -1475,7 +1475,7 @@ class CourseClassTest extends TestCase
         $expectedRoles = array(
             array("id" => $professor, "course" => $courseId, "name" => "Professor", "landingPage" => "Student List"),
             array("id" => $newRoles[1]["id"], "course" => $courseId, "name" => "Student", "landingPage" => "Leaderboard"),
-            array("id" => $newRoles[2]["id"], "course" => $courseId, "name" => "Observer", "landingPage" => "")
+            array("id" => $newRoles[2]["id"], "course" => $courseId, "name" => "Observer", "landingPage" => null)
         );
 
         $this->assertEquals($expectedRoles, $newRoles);

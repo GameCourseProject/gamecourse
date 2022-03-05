@@ -34,6 +34,9 @@ if (array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_
     $sql = file_get_contents("setup.sql");
     $db->executeQuery($sql);
 
+    // NOTE: needs to come before GameRules.php is included in Course class
+    Dictionary::init(true);
+
     $courseId = 1;
     $db->insert("course", ["name" => $courseName, "id" => $courseId, "color" => $courseColor]);
     Utils::deleteDirectory(COURSE_DATA_FOLDER, array(COURSE_DATA_FOLDER . DIRECTORY_SEPARATOR . 'defaultData'), false);
@@ -75,7 +78,6 @@ if (array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_
     file_put_contents($metadataFile, "");
     file_put_contents($logsFile, "");
 
-    Dictionary::init(true);
     file_put_contents('setup.done', '');
 
     unset($_SESSION['user']); // if the user was logged and the config folder was destroyed..

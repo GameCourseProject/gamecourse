@@ -301,17 +301,17 @@ class CourseUser extends User
     function getLandingPage()
     {
         $userRoles = $this->getRolesNames(); //array w names
-        $landingPage = $this->course->getLandingPage();
-        $this->course->goThroughRoles(function ($role, $hasChildren, $continue) use (&$landingPage, $userRoles) {
+        $landingPageId = null;
+        $this->course->goThroughRoles(function ($role, $hasChildren, $continue) use (&$landingPageId, $userRoles) {
             if (in_array($role["name"], $userRoles)) {
                 $land = $this->course->getRoleByName($role["name"], "landingPage");
-                if ($land != '') {
-                    $landingPage = $land;
+                if ($land != null) {
+                    $landingPageId = intval($land);
                 }
             }
             $continue();
         });
-        return $landingPage;
+        return $landingPageId;
     }
 
     public static function exportCourseUsers($courseId)
