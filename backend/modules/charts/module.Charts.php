@@ -110,7 +110,8 @@ class Charts extends Module
                 return;
             }
 
-            $awards = Core::$systemDB->selectMultiple(AwardList::TABLE,["user"=>$userID,"course"=>$course->getId()],"*","date");
+            $awards = Core::$systemDB->selectMultiple(AwardList::TABLE, ["user" => $userID, "course" => $course->getId()], "*" , "date");
+            $awards = array_filter($awards, function ($award) { return $award["type"] != "tokens"; });
 
             date_default_timezone_set('Europe/Lisbon');
             if(array_key_exists(0, $awards)){
@@ -190,6 +191,7 @@ class Charts extends Module
             // calc xp for each student, each day
             foreach ($students as $student) {
                 $awards = Core::$systemDB->selectMultiple(AwardList::TABLE,['user'=>$student['id'],'course'=>$params['course']],"*","date");
+                $awards = array_filter($awards, function ($award) { return $award["type"] != "tokens"; });
 
                 if (count($awards) == 0) {
                     $firstDayStudent[$student['id']] = PHP_INT_MAX;
