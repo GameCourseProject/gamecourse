@@ -324,13 +324,15 @@ def calculate_xp(course, target):
     else:
         user_badge_xp = 0
 
+    extra = user_streak_xp + user_badge_xp_extra  # streaks are extra
     total_skill_xp = min(user_tree_xp, max_tree_reward)
-    total_streak_xp = min(user_streak_xp, max_streak_bonus_reward)
     total_other_xp = user_other_xp
-    total_badge_extra_xp = min(user_badge_xp_extra, max_badge_bonus_reward)
-    total_badge_xp = user_badge_xp + total_badge_extra_xp
+    #total_streak_xp = min(user_streak_xp, max_streak_bonus_reward)
+    #total_badge_extra_xp = min(user_badge_xp_extra, max_badge_bonus_reward)
+    total_extra_xp = min(extra, max_badge_bonus_reward)
+    total_badge_xp = user_badge_xp
 
-    total_xp = total_badge_xp + total_skill_xp + total_other_xp + total_streak_xp
+    total_xp = total_badge_xp + total_skill_xp + total_other_xp + total_extra_xp
 
 
     query = "SELECT id, max(goal) from level where goal <= %s and course = %s group by id order by number desc limit 1;"
@@ -629,7 +631,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
         cursor.execute(query, (skill, course))
         table_skill = cursor.fetchall()
 
-        query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'gamecourse') AND (TABLE_NAME = 'config_virtual_currency');"
+        query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'gamecourse_test') AND (TABLE_NAME = 'config_virtual_currency');"
         cursor.execute(query)
         table_exists = cursor.fetchall()
 
