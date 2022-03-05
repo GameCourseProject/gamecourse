@@ -5,10 +5,13 @@ ini_set('display_errors', '1');
 
 include 'classes/ClassLoader.class.php';
 
-
 use GameCourse\Core;
 use GameCourse\Course;
+use GameCourse\Views\Dictionary;
 use GameCourse\Views\ViewHandler;
+
+Core::init();
+Dictionary::init();
 
 class GameRules{
 
@@ -28,6 +31,7 @@ class GameRules{
 	public function __construct($courseId, $all, $targets, $testMode=False)
     {
         $this->courseId = $courseId;
+        Dictionary::$courseId = $courseId;
         $name = Core::$systemDB->select("course", ["id" => $courseId], "name");
         $this->rulePath = self::ROOT_FOLDER . Course::getCourseDataFolder($courseId, $name);
 		if ($all) {
