@@ -215,6 +215,7 @@ class GameRules{
 					$this->logGameRules($error);
 
 					Core::$systemDB->update("autogame", ["isRunning" => (int)0 ], ["course" => 0]);
+					Core::$systemDB->update("autogame", ["isRunning" => (int)0 ], ["course" => $this->courseId]);
 					fclose($conn);
 					return $error;
 				}
