@@ -280,7 +280,7 @@ def calculate_xp(course, target):
 
 
     query = "SELECT sum(reward) from award where course=%s and (type !=%s and type !=%s and type !=%s and type !=%s) and user=%s group by user;"
-    cursor.execute(query, (course, "badge", "skill", "streak", "tokens" target))
+    cursor.execute(query, (course, "badge", "skill", "streak", "tokens" ,target))
     other_xp = cursor.fetchall()
 
     # if query returns empty set
