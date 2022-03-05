@@ -25,7 +25,10 @@ export class FooterComponent implements OnInit {
     this.api.getRulesSystemLastRun(this.getCourseId())
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
-        date => this.lastRun = date,
+        date => {
+          this.lastRun = date;
+          console.log(this.lastRun)
+        },
         error => ErrorService.set(error)
       );
   }

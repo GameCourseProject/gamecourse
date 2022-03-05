@@ -28,5 +28,5 @@ export function copyObject(obj: any) {
 
 export function dateFromDatabase(date: string): Moment {
   const FORMAT = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/g;
-  return FORMAT.test(date) ? moment(date).subtract(1, 'hours') : null; // FIXME: check utc and local
+  return FORMAT.test(date) ? moment(date) : null; // FIXME: check utc and local
 }
