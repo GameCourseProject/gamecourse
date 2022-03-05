@@ -133,7 +133,7 @@
                                         "role": "role.Student>role.Default",
                                         "class": "skill-right",
                                         "visibilityType": "conditional",
-                                        "visibilityCondition": "{virtualcurrency.isEnabled}",
+                                        "visibilityCondition": "{virtualcurrency.isEnabled && %skill.isUnlocked(%user)}",
                                         "children": [
                                           [
                                             {
