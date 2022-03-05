@@ -158,11 +158,30 @@
                       "children": [
                         [
                           {
-                            "type": "text",
+                            "type": "block",
                             "role": "role.Student>role.Default",
-                            "class": "streak-reward-xp ",
+                            "class": "streak-reward-xp",
                             "visibilityType": "visible",
-                            "value": "{%streak.reward(\"xp\")} XP"
+                            "children": [
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "class": "streak-reward-xp-xp",
+                                  "visibilityType": "visible",
+                                  "value": "{%streak.reward(\"xp\")} XP"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "class": " streak-reward-xp-extra-credit",
+                                  "visibilityType": "visible",
+                                  "value": "extra credit"
+                                }
+                              ]
+                            ]
                           }
                         ],
                         [

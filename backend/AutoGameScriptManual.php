@@ -25,7 +25,7 @@ Core::init();
 
 if (sizeof($argv) > 1) {
     if (sizeof($argv) == 2) {
-        Course::newExternalData($argv[1]);
+        Course::newExternalData($argv[1], True);
     }
     else if (sizeof($argv) == 3) {
         if ($argv[2] == "test") { // run as test
