@@ -56,6 +56,14 @@
   margin-top: 40px;
 }
 
+.skill-tree .skill-tiers .skill-tier .skill-container > * {
+  align-items: center;
+}
+
+.skill-tree .skill-tiers .skill-tier .skill-container > * > bb-any {
+  width: fit-content;
+}
+
 .skill-tree .skill-tiers .skill-tier .skill-container .skill > * {
   flex-direction: row !important;
   align-items: center;
