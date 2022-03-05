@@ -679,12 +679,13 @@ function getAwardImg($type): string {
         case "bonus": return 'gift.jpg';
         case "badge": return 'badge.jpg';
         case "quiz": return 'clipboard.jpg';
-        case "labs": return 'beaker.jpg';
+        case "labs": return 'terminal.jpg';
         case "skill": return 'light-bulb.jpg';
         case "presentation": return 'presentation.jpg';
         case "streak": return 'fire.jpg';
         case "post": return 'annotation.jpg';
         case "assignment": return 'paper-clip.jpg';
+        case "tokens": return 'currency.jpg';
         default: return 'check.jpg';
     }
 }

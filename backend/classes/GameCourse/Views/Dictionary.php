@@ -9,9 +9,11 @@ use GameCourse\ModuleLoader;
 use GameCourse\Views\Expression\EvaluateVisitor;
 use GameCourse\Views\Expression\ValueNode;
 use Modules\AwardList\AwardList;
+use Modules\Badges\Badges;
 use Modules\Skills\Skills;
 use ReflectionException;
 use ReflectionFunction;
+use VirtualCurrency\VirtualCurrency;
 
 
 class Dictionary
@@ -827,22 +829,32 @@ class Dictionary
                     return new ValueNode("photos/" . $username . ".png");
                 } else if ($item == "type") {
                     switch ($award["value"]['type']) {
-                        case 'grade':
-                            return new ValueNode('modules/' . AwardList::ID . '/imgs/quiz.svg');
                         case 'badge':
                             $name = self::getModuleNameOfAward($award);
                             if ($name === null)
                                 throw new \Exception("In function renderPicture('type'): couldn't find badge.");
                             $level = substr($award["value"]["description"], -2, 1); //assuming that level are always single digit
                             $imgName = str_replace(' ', '', $name . '-' . $level);
-                            return new ValueNode('modules/badges/imgs/' . $imgName . '.png');
+                            return new ValueNode(MODULES_FOLDER . '/' . Badges::ID . '/imgs/' . $imgName . '.png');
+
                         case 'skill':
                             $skillColor = Core::$systemDB->select(Skills::TABLE, ["id" => $award["value"]["moduleInstance"]], "color");
                             return new ValueNode($skillColor);
+
+                        case 'tokens':
+                            return new ValueNode(MODULES_FOLDER . '/' . VirtualCurrency::ID . '/imgs/token.png');
+
                         case 'bonus':
-                            return new ValueNode('modules/' . AwardList::ID . '/imgs/awards.svg');
+                        case 'quiz':
+                        case 'labs':
+                        case 'presentation':
+                        case 'streak':
+                        case 'post':
+                        case 'assignment':
+                            return new ValueNode(MODULES_FOLDER . '/' . AwardList::ID . '/imgs/' . $award["value"]['type'] . '.svg');
+
                         default:
-                            return new ValueNode('modules/' . AwardList::ID . '/imgs/quiz.svg');
+                            return new ValueNode(MODULES_FOLDER . '/' . AwardList::ID . '/imgs/default.svg');
                     }
                 } else
                     throw new \Exception("In function renderPicture(item): item must be 'user' or 'type'");
