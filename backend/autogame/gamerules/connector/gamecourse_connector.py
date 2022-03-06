@@ -847,12 +847,13 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
         cursor.execute(query, (target, course, reward))
         cnx.commit()
     elif len(table) == 0:
-        # insert in award
-        query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
-        cursor.execute(query, (target, course, reward_name, typeof, reward))
-        cnx.commit()
 
         if contributions == None:
+            # insert in award
+            query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
+            cursor.execute(query, (target, course, reward_name, typeof, reward))
+            cnx.commit()
+
             newTotal = reward + table_wallet[0][0]
 
             # simply award the tokens
@@ -860,48 +861,31 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
             cursor.execute(query, (newTotal, course, target))
             cnx.commit()
         else:
-            query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
-            cursor.execute(query, (target, course, reward_name, typeof))
-            table_id = cursor.fetchall()
-            award_id = table_id[0][0]
-
-            query = "SELECT id FROM participation WHERE user = %s AND course = %s AND type = %s AND id NOT IN (SELECT participation FROM award_participation WHERE award = %s);"
-            cursor.execute(query, (target, course, contributions[0].log_type, award_id))
-            table_to_award = cursor.fetchall()
-
-            if len(table_to_award) > 0:
-
-                for i in range(len(table_to_award)):
-                    query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
-                    cursor.execute(query, (award_id, table_to_award[i][0]))
-                    cnx.commit()
-
-                newTotal = reward * len(table_to_award) + table_wallet[0][0] # awards all tokens for all participations
-
-                # simply award the tokens
-                query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
-                cursor.execute(query, (newTotal, course, target))
+            for i in range(len(contributions)):
+                query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
+                cursor.execute(query, (target, course, reward_name, typeof, reward))
                 cnx.commit()
 
+            newTotal = table_wallet[0][0] + reward * len(contributions)
+
+            # simply award the tokens
+            query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
+            cursor.execute(query, (newTotal, course, target))
+            cnx.commit()
+
     elif len(table) > 0 and contributions != None:
+
          query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
          cursor.execute(query, (target, course, reward_name, typeof))
          table_id = cursor.fetchall()
          award_id = table_id[0][0]
 
-         query = "SELECT id FROM participation WHERE user = %s AND course = %s AND type = %s AND id NOT IN (SELECT participation FROM award_participation WHERE award = %s);"
-         cursor.execute(query, (target, course, contributions[0].log_type, award_id))
-         table_to_award = cursor.fetchall()
+         for diff in range(len(table_id), len(contributions)):
+             query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
+             cursor.execute(query, (target, course, reward_name, typeof, reward))
+             cnx.commit()
 
-         if len(table_to_award) > 0:
-
-             for i in range(len(table_to_award)):
-                 query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
-                 cursor.execute(query, (award_id, table_to_award[i][0]))
-                 cnx.commit()
-
-             newTotal = reward * len(table_to_award) + table_wallet[0][0] # awards all tokens for all participations
-
+             newTotal = table_wallet[0][0] + reward
              # simply award the tokens
              query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
              cursor.execute(query, (newTotal, course, target))
