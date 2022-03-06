@@ -570,11 +570,14 @@ class Skills extends Module
             'simpleSkills',
             function ($dep) {
                 Dictionary::checkArray($dep, "object", "simpleSkills");
-                $depSkills = Core::$systemDB->selectMultiple(
+                $depSkills = array_map(function ($item) {
+                    if ($item["tier"] == "Wildcard") $item["name"] = "Wildcard";
+                    return $item;
+                }, Core::$systemDB->selectMultiple(
                     self::TABLE_DEPENDENCIES . " join " . self::TABLE . " s on s.id=normalSkillId",
                     ["dependencyId" => $dep["value"]["id"]],
                     "s.*"
-                );
+                ));
                 return Dictionary::createNode($depSkills, 'skillTrees', "collection", $dep);
             },
             'Returns a collection of skills that are required to unlock a super skill from a dependency.',

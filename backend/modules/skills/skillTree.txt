@@ -155,7 +155,7 @@
                                                     "type": "text",
                                                     "role": "role.Student>role.Default",
                                                     "visibilityType": "visible",
-                                                    "value": "Cost to retry:"
+                                                    "value": "Cost to {system.if(%skill.getAttemptsDone(%user) == 0, \"\", \"re\")}try:"
                                                   }
                                                 ],
                                                 [
