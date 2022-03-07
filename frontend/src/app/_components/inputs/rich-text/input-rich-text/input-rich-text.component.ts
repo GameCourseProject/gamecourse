@@ -6,7 +6,7 @@ import htmlEditButton from 'quill-html-edit-button';
 import imageResize from 'quill-image-resize';
 
 import {exists} from "../../../../_utils/misc/misc";
-import {ImageManager} from "../../../../_utils/images/image-manager";
+import {ResourceManager} from "../../../../_utils/resources/resource-manager";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ApiEndpointsService} from "../../../../_services/api/api-endpoints.service";
 
@@ -39,12 +39,12 @@ export class InputRichTextComponent implements OnInit {
   isPickingImage: boolean;
   isAddingImage: boolean;
 
-  imageManager: ImageManager;
+  resourceManager: ResourceManager;
 
   constructor(
     private sanitizer: DomSanitizer,
   ) {
-    this.imageManager = new ImageManager(sanitizer);
+    this.resourceManager = new ResourceManager(sanitizer);
   }
 
   ngOnInit(): void {
@@ -102,8 +102,8 @@ export class InputRichTextComponent implements OnInit {
   }
 
   addFile(file: {path: string, type: 'image' | 'video' | 'audio'}) {
-    this.imageManager.set(ApiEndpointsService.API_ENDPOINT + '/' + file.path);
-    const url = this.imageManager.get('URL');
+    this.resourceManager.set(ApiEndpointsService.API_ENDPOINT + '/' + file.path);
+    const url = this.resourceManager.get('URL');
     this.quill.insertEmbed(this.quill.getSelection(true).index, file.type, url); // FIXME: embed audio
   }
 

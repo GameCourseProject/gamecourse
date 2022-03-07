@@ -7,8 +7,8 @@ import {ErrorService} from "../../../_services/error.service";
 import {Course} from "../../../_domain/courses/course";
 import {User} from "../../../_domain/users/user";
 import {DownloadManager} from "../../../_utils/download/download-manager";
-import {Reduce} from "../../../_utils/display/reduce";
-import {Order, Sort} from "../../../_utils/display/order";
+import {Reduce} from "../../../_utils/lists/reduce";
+import {Order, Sort} from "../../../_utils/lists/order";
 
 import Pickr from "@simonwep/pickr";
 

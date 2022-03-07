@@ -2,6 +2,8 @@ import {ApiHttpService} from "../../_services/api/api-http.service";
 import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
 import {exists} from "../../_utils/misc/misc";
 import {ModuleType} from "./ModuleType";
+import {ResourceManager} from "../../_utils/resources/resource-manager";
+import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 
 export class Module {
   private _id: string;
@@ -117,20 +119,26 @@ export class Module {
    * Loads course's active modules' styles.
    *
    * @param courseId
+   * @param sanitizer
    */
-  static loadStyles(courseId: number): void {
+  static loadStyles(courseId: number, sanitizer: DomSanitizer): void {
     Module.stylesLoaded.set(courseId, {state: LoadingState.PENDING});
 
     ApiHttpService.getCourseResources(courseId)
       .subscribe(resources => {
-        const styles: {name: string, path: string}[] = [];
+        const styles: {name: string, path: SafeUrl}[] = [];
         for (const module of resources) {
           for (const resource of module.files) {
             if (resource.includes('.css')) {
               const split = resource.split('/');
+
+              // Prevent unwanted browser caching
+              const path = new ResourceManager(sanitizer);
+              path.set(ApiEndpointsService.API_ENDPOINT + '/' + resource);
+
               styles.push({
                 name: courseId + '-' + split[split.length - 1].replace('.css', ''),
-                path: ApiEndpointsService.API_ENDPOINT + '/' + resource
+                path: path.get('URL')
               });
             }
           }
@@ -156,14 +164,15 @@ export class Module {
    * Removes course's modules' styles and reloads them
    *
    * @param courseId
+   * @param sanitizer
    */
-  static reloadStyles(courseId: number): void {
+  static reloadStyles(courseId: number, sanitizer: DomSanitizer): void {
     this.stylesLoaded.get(courseId).stylesIds.forEach(id => {
       const style = document.getElementById(id);
       style.remove();
     });
 
-    this.loadStyles(courseId);
+    this.loadStyles(courseId, sanitizer);
   }
 
   static fromDatabase(obj: ModuleDatabase): Module {

@@ -2,6 +2,7 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {CoursesComponent} from "./courses/courses.component";
 import {LoadingState, Module} from "../../_domain/modules/module";
+import {DomSanitizer} from "@angular/platform-browser";
 
 const routes: Routes = [
   {
@@ -16,7 +17,7 @@ const routes: Routes = [
 
       // Load styles if not already loaded
       if (!Module.stylesLoaded.has(courseID) || Module.stylesLoaded.get(courseID).state === LoadingState.NOT_LOADED) {
-        Module.loadStyles(courseID);
+        Module.loadStyles(courseID, CoursesRoutingModule.sanitizer);
       }
 
       // Return null and so the router matches the next ':id' path
@@ -33,4 +34,10 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class CoursesRoutingModule { }
+export class CoursesRoutingModule {
+  static sanitizer: DomSanitizer;
+
+  constructor(private sanitizer: DomSanitizer) {
+    CoursesRoutingModule.sanitizer = sanitizer;
+  }
+}

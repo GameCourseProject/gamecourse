@@ -7,7 +7,7 @@ import {UpdateService, UpdateType} from "../../../_services/update.service";
 
 import {User} from "../../../_domain/users/user";
 
-import {ImageManager} from "../../../_utils/images/image-manager";
+import {ResourceManager} from "../../../_utils/resources/resource-manager";
 import {AuthType} from "../../../_domain/auth/auth-type";
 import {exists} from "../../../_utils/misc/misc";
 import {finalize} from "rxjs/operators";
@@ -30,7 +30,7 @@ export class MyInfoComponent implements OnInit {
 
   originalPhoto: string;  // Original photo
   photoToAdd: File;       // Any photo that comes through the input
-  photo: ImageManager;    // Photo to be displayed
+  photo: ResourceManager; // Photo to be displayed
 
   loading = true;
   isEditModalOpen: boolean;
@@ -41,7 +41,7 @@ export class MyInfoComponent implements OnInit {
     private sanitizer: DomSanitizer,
     private updateManager: UpdateService
   ) {
-    this.photo = new ImageManager(sanitizer);
+    this.photo = new ResourceManager(sanitizer);
   }
 
   ngOnInit(): void {
@@ -88,7 +88,7 @@ export class MyInfoComponent implements OnInit {
     this.saving = true;
 
     if (this.photoToAdd)
-      await ImageManager.getBase64(this.photoToAdd).then(data => this.editUser.image = data);
+      await ResourceManager.getBase64(this.photoToAdd).then(data => this.editUser.image = data);
 
     this.api.editSelfInfo(this.editUser)
       .pipe( finalize(() => {

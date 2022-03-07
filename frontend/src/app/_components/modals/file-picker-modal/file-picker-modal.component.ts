@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {ImageManager} from "../../../_utils/images/image-manager";
+import {ResourceManager} from "../../../_utils/resources/resource-manager";
 import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {ErrorService} from "../../../_services/error.service";
 import {exists} from "../../../_utils/misc/misc";
@@ -127,7 +127,7 @@ export class FilePickerModalComponent implements OnInit {
   async submit() {
     if (this.fileToUpload) {
       // Save file in server
-      await ImageManager.getBase64(this.fileToUpload).then(data => this.file = data);
+      await ResourceManager.getBase64(this.fileToUpload).then(data => this.file = data);
       const courseID = parseInt(this.courseFolder.split('/')[1].split('-')[0]);
       this.api.uploadFileToCourse(courseID, this.file, this.whereToStore, this.fileToUploadName)
         .subscribe(
