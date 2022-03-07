@@ -1805,12 +1805,12 @@ class Skills extends Module
         $attemptsDone = $this->getAttemptsDone($skill, $userId);
         // FIXME: this is hard-coded
         if ($attemptsDone == 0) {
-            if ($skill["tier"] == "Wildcard") return 50;
+            if ($skill["tier"] == "Wildcard") return 40;
             else return 0;
         }
-        if ($attemptsDone == 1) return 20;
-        if ($attemptsDone == 2) return 40;
-        if ($attemptsDone == 3) return 80;
+        if ($attemptsDone == 1) return 10;
+        if ($attemptsDone == 2) return 20;
+        if ($attemptsDone == 3) return 40;
         return 0;
     }
 
