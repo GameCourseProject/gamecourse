@@ -8,7 +8,6 @@ include 'classes/ClassLoader.class.php';
 
 use GameCourse\Core;
 use GameCourse\ModuleLoader;
-use GameCourse\Views\Dictionary;
 
 if (array_key_exists("logout", $_GET)) {
     Core::logout();
