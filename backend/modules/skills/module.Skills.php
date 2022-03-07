@@ -405,6 +405,21 @@ class Skills extends Module
             true
         );
 
+        //%skill.isCollab
+        Dictionary::registerFunction(
+            'skillTrees',
+            'isCollab',
+            function ($skill) {
+                return Dictionary::basicGetterFunction($skill, "isCollab");
+            },
+            'Returns true if the skill is collaborative, and false otherwise.',
+            'boolean',
+            null,
+            'object',
+            'skill',
+            true
+        );
+
         //%skill.isActive
         Dictionary::registerFunction(
             'skillTrees',
@@ -1286,12 +1301,13 @@ class Skills extends Module
         $skillsArray = array();
 
         foreach ($tiers as &$tier) {
-            $skillsInTier = Core::$systemDB->selectMultiple(self::TABLE, ["treeId" => $treeId, "tier" => $tier["tier"]], "id,name,page,color,tier,seqId,isActive", "seqId");;
+            $skillsInTier = Core::$systemDB->selectMultiple(self::TABLE, ["treeId" => $treeId, "tier" => $tier["tier"]], "id,name,page,color,tier,seqId,isCollab,isActive", "seqId");;
             foreach ($skillsInTier as &$skill) {
                 //information to match needing fields
                 $skill['xp'] = $tier["reward"];
                 $skill['dependencies'] = '';
                 $skill['allActive'] = true;
+                $skill['isCollab'] = boolval($skill["isCollab"]);
                 $skill['isActive'] = boolval($skill["isActive"]);
                 if (!empty(Core::$systemDB->selectMultiple(self::TABLE_SUPER_SKILLS, ["superSkillId" => $skill["id"]]))) {
                     $dependencyData = $this->getSkillDependencies($skill["id"]);

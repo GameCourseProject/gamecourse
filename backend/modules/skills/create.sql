@@ -21,6 +21,7 @@ create table skill(
 	page TEXT,
 	tier varchar(50) not null,
 	treeId int unsigned not null,
+	isCollab boolean not null default false,
 	isActive boolean not null default true,
 	foreign key(treeId,tier) references skill_tier(treeId, tier) on delete cascade
 );

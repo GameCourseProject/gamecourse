@@ -210,9 +210,9 @@ export class SkillsComponent implements OnInit {
       )
   }
 
-  toggleSkill(skillId: number) {
+  toggleSkill(skillId: number, param: string) {
     this.loading = true;
-    this.api.toggleItemParam(this.courseID, ApiHttpService.SKILLS, skillId, 'isActive')
+    this.api.toggleItemParam(this.courseID, ApiHttpService.SKILLS, skillId, param)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
         res => this.getSkills(),

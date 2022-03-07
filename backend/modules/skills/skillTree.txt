@@ -123,6 +123,14 @@
                                               "value": "Post",
                                               "link": "{%post}"
                                             }
+                                          ],
+                                          [
+                                            {
+                                              "type": "image",
+                                              "role": "role.Student>role.Default",
+                                              "class": "skill-collab",
+                                              "src": "modules/skills/imgs/collab.svg"
+                                            }
                                           ]
                                         ]
                                       }
@@ -140,7 +148,7 @@
                                               "type": "text",
                                               "role": "role.Student>role.Default",
                                               "visibilityType": "visible",
-                                              "value": "Attempts done: {%skill.getAttemptsDone(%user)}"
+                                              "value": "Attempts made: {%skill.getAttemptsDone(%user)}"
                                             }
                                           ],
                                           [
