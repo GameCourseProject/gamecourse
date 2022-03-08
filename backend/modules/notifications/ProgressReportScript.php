@@ -7,6 +7,10 @@ ini_set('display_errors', '1');
 chdir('/var/www/html/gamecourse/backend');
 include 'classes/ClassLoader.class.php';
 
+include 'lib/PHPMailer.php';
+include 'lib/SMTP.php';
+include 'lib/Exception.php';
+
 require_once 'config.php';
 
 use DateTime;
@@ -14,6 +18,9 @@ use GameCourse\Core;
 use GameCourse\Course;
 use Modules\AwardList\AwardList;
 use Modules\XP\XPLevels;
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\PHPMailer;
+use Utils;
 
 Core::init();
 
@@ -43,16 +50,11 @@ $endPreviousPeriodDate = $startPeriodDate;
 
 $timeLeft = datediff(date_create($currentDate), date_create($endDate), $isWeekly ? "weeks" : "days");
 
-$subject    = $courseName . " - " . $config["periodicityTime"] . " Report #" . $seqNr;
-$headers    = "MIME-Version: 1.0" . "\r\n";
-$headers   .= "Content-Type: text/html; charset=UTF-8" . "\r\n";
-$headers   .= "From: GameCourse <noreply@pcm.rnl.tecnico.ulisboa.pt>" . "\r\n";
-$headers   .= "Reply-To: noreply@pcm.rnl.tecnico.ulisboa.pt" . "\r\n";
-$headers   .= "X-Mailer: PHP/" . phpversion();
-$error      = false;
-
 $pieChartURL = "https://quickchart.io/chart/render/zm-f7746c74-abbb-4250-a0c2-11451cb8f7d6"; // editor: https://quickchart.io/chart-maker/edit/zm-7f2783e0-a82c-41b0-920b-9ce72210fd0a
 $areaChartURL = "https://quickchart.io/chart/render/zm-a1ad2eb1-9680-4fc1-9e83-008080e79c6b"; // editor: https://quickchart.io/chart-maker/edit/zm-72a28b6b-b495-4c9d-a4e8-ce3e5ce5b013
+
+$subject    = $courseName . " - " . $config["periodicityTime"] . " Report #" . $seqNr;
+$error      = false;
 
 // Send e-mail to each course student
 $students = $course->getUsersWithRole("Student");
@@ -60,7 +62,7 @@ foreach ($students as $student) {
     // No email set, continue
     if (!isset($student["email"]) || $student["email"] == null || $student["email"] == "") continue;
 
-    $to = $student["email"]; // FIXME: only works with tecnico emails
+    $to = $student["email"];
     $studentId = $student["id"];
     $studentName = explode(" ", isset($student["nickname"]) && $student["nickname"] != "" ? $student["nickname"] : $student["name"])[0];
 
@@ -104,8 +106,8 @@ foreach ($students as $student) {
     $areaChart = $areaChartURL . "?data1=" . implode(",", $awardsXPCurrentPeriodByDay) .
                                  "&data2=" . implode(",", $awardsXPPreviousPeriodByDay) .
                                  "&labels=" . implode(",", $weekdays);
-    $pieChart = $pieChartURL . "?data1=" . implode(",", array_values($awardsByType)) .
-                                "&labels=" . implode(",", array_map(function ($label) { return ucfirst($label); }, array_keys($awardsByType)));
+    $pieChart = $pieChartURL . "?data1=" . (count($awardsByType) > 0 ? implode(",", array_values($awardsByType)) : 0) .
+                               "&labels=" . (count($awardsByType) > 0 ? implode(",", array_map(function ($label) { return ucfirst($label); }, array_keys($awardsByType))) : "No data");
 
     $totalXP = intval(Core::$systemDB->select(XPLevels::TABLE_XP, ["course" => $courseId, "user" => $studentId], "xp"));
     $currentPeriodXP = array_reduce($awardsCurrentPeriod, function ($carry, $award) {
@@ -128,17 +130,17 @@ foreach ($students as $student) {
                       <div class="u-row" style="Margin: 0 auto;min-width: 320px;max-width: 670px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
                         <div style="border-collapse: collapse;display: table;width: 100%;background-color: transparent;">
                           <!--[if (mso)|(IE)]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding: 0px;background-color: transparent;" align="center"><table cellpadding="0" cellspacing="0" border="0" style="width:670px;"><tr style="background-color: transparent;"><![endif]-->
-        
+
                           <!--[if (mso)|(IE)]><td align="center" width="670" style="background-color: #ffffff;width: 670px;padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;" valign="top"><![endif]-->
                           <div class="u-col u-col-100" style="max-width: 320px;min-width: 670px;display: table-cell;vertical-align: top;">
                             <div style="background-color: #ffffff;width: 100% !important;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px; border-radius: 10px; box-shadow: 0px 3px 5px 2px rgb(224, 223, 223)">
                               <!--[if (!mso)&(!IE)]><!--><div style="padding: 30px 60px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;"><!--<![endif]-->
-        
+
                               <table style="font-family:\'Montserrat\',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
                                 <tbody>
                                 <tr>
                                   <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:\'Montserrat\',sans-serif;" align="left">
-        
+
                                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                                       <tr>
                                         <td style="padding-right: 0px;padding-left: 0px;" align="center">
@@ -148,74 +150,74 @@ foreach ($students as $student) {
                                         </td>
                                       </tr>
                                     </table>
-        
+
                                   </td>
                                 </tr>
                                 </tbody>
                               </table>
-        
+
                               <table style="font-family:\'Montserrat\',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
                                 <tbody>
                                   <tr>
                                     <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:\'Montserrat\',sans-serif;" align="left">
-        
+
                                       <h1 style="margin: 0px; color: #000000; line-height: 140%; text-align: center; word-wrap: break-word; font-weight: normal; font-family: \'Montserrat\',sans-serif; font-size: 32px;">
                                         <strong>' . $config["periodicityTime"] . ' Progress Report</strong>
                                       </h1>
-        
+
                                     </td>
                                   </tr>
                                 </tbody>
                               </table>
-        
+
                               <table style="font-family:\'Montserrat\',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
                                 <tbody>
                                   <tr>
                                     <td style="overflow-wrap:break-word;word-break:break-word;padding:10px; padding-top: 0; font-family:\'Montserrat\',sans-serif;" align="left">
-        
+
                                       <div style="line-height: 100%; text-align: center; word-wrap: break-word;">
                                         <p style="font-size: 14px; line-height: 140%; text-align: center;"><span style="font-size: 16px; line-height: 22.4px; color: #9e9d9d;">' .
                                             date_format(date_create($startPeriodDate), "l, F jS") . ' - ' . date_format(date_create($endPeriodDate), "l, F jS") . '</span></p>
                                       </div>
-        
+
                                     </td>
                                   </tr>
                                 </tbody>
                               </table>
-        
+
                               <table style="font-family:\'Montserrat\',sans-serif; margin-top: 10px;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
                                 <tbody>
                                   <tr>
                                     <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:\'Montserrat\',sans-serif;" align="left">
-        
+
                                       <div style="line-height: 140%; text-align: left; word-wrap: break-word;">
                                         <p style="font-size: 14px; font-weight: 500; line-height: 140%;"><span style="font-size: 28px; line-height: 39.2px;">Hey ' . $studentName . ',</span></p>
                                       </div>
-        
+
                                     </td>
                                   </tr>
                                 </tbody>
                               </table>
-        
+
                               <table style="font-family:\'Montserrat\',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
                                 <tbody>
                                   <tr>
                                     <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:\'Montserrat\',sans-serif;" align="left">
-        
+
                                       <div style="line-height: 170%; text-align: justify; word-wrap: break-word;">
                                         <p style="font-size: 16px; line-height: 25px;">Here is a summary of your progress in <strong>' . $courseName . ' ' . $courseYear . '</strong> ' . ($isWeekly ? 'last week' : 'yesterday') . '.</p>
                                       </div>
-        
+
                                     </td>
                                   </tr>
                                 </tbody>
                               </table>
-        
+
                               <table style="font-family:\'Montserrat\',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
                                 <tbody>
                                   <tr>
                                     <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:\'Montserrat\',sans-serif;" align="left">
-        
+
                                       <div>
                                         <div style="display: flex; justify-content: space-between; width: 100%; margin-top: 10px;">
                                             <div style="display: flex; flex-direction: column; justify-content: center; border-color: #dfdfdf; border-width: 2; margin-right: 20px;
@@ -226,7 +228,7 @@ foreach ($students as $student) {
                                                 </div>
                                                 <p style="margin-bottom: 0; font-size: 24px; font-weight: 700; margin-top: 10px;">' . number_format($totalXP, 0, ',', ' ') . ' XP</p>
                                             </div>
-        
+
                                             <div style="display: flex; flex-direction: column; justify-content: center; border-color: #dfdfdf; border-width: 2; margin-left: 20px;
                                                 border-style: solid; border-radius: 8px; padding-top: 12px; padding-left: 20px; padding-right: 20px; padding-bottom: 12px; width: 100%;">
                                                 <div style="display: flex; align-items: center;">
@@ -242,12 +244,12 @@ foreach ($students as $student) {
                                                      </div>';
     }
     $reportBlock .= '
-                                                    
+
                                                 </div>
                                             </div>
                                         </div>
                                       </div>
-        
+
                                     </td>
                                   </tr>
                                 </tbody>
@@ -257,11 +259,11 @@ foreach ($students as $student) {
                                 <tbody>
                                   <tr>
                                     <td style="overflow-wrap:break-word;word-break:break-word;padding:10px; padding-top: 0;font-family:\'Montserrat\',sans-serif;" align="left">
-        
+
                                       <div style="line-height: 140%; text-align: left; word-wrap: break-word;">
                                         <p style="font-size: 14px; line-height: 140%; text-align: right;"><span style="color: #9e9d9d; font-size: 14px; line-height: 19.6px;">*compared to previous week</span></p>
                                       </div>
-        
+
                                     </td>
                                   </tr>
                                 </tbody>
@@ -271,47 +273,47 @@ foreach ($students as $student) {
                                 <tbody>
                                   <tr>
                                     <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:\'Montserrat\',sans-serif;" align="left">
-        
+
                                       <table width="100%" cellpadding="0" cellspacing="0" border="0">
                                         <tr>
                                           <td style="padding-right: 0px;padding-left: 0px;" align="center">
-        
+
                                             <img align="center" border="0" src="' . $pieChart . '" alt="Proportions of types of awards earned" title="Proportions of types of awards earned" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 100%;max-width: 530px;" width="530"/>
-        
+
                                           </td>
                                         </tr>
                                       </table>
-        
+
                                     </td>
                                   </tr>
                                 </tbody>
                               </table>
-        
+
                               <table style="font-family:\'Montserrat\',sans-serif; margin-top: 40px;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
                                 <tbody>
                                   <tr>
                                     <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:\'Montserrat\',sans-serif;" align="left">
-        
+
                                       <table width="100%" cellpadding="0" cellspacing="0" border="0">
                                         <tr>
                                           <td style="padding-right: 0px;padding-left: 0px;" align="center">
-        
+
                                             <img align="center" border="0" src="' . $areaChart . '" alt="Comparison between XP earned this vs previous period" title="Comparison between XP earned this vs previous period" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 100%;max-width: 530px;" width="530"/>
-        
+
                                           </td>
                                         </tr>
                                       </table>
-        
+
                                     </td>
                                   </tr>
                                 </tbody>
                               </table>
-        
+
                               <table style="font-family:\'Montserrat\',sans-serif; margin-top: 20px;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
                                 <tbody>
                                   <tr>
                                     <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:\'Montserrat\',sans-serif;" align="left">
-        
+
                                       <div align="center">
                                         <!--[if mso]><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; border-collapse: collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;font-family:\'Montserrat\',sans-serif;"><tr><td style="font-family:\'Montserrat\',sans-serif;" align="center"><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="" style="height:39px; v-text-anchor:middle; width:224px;" arcsize="10.5%" stroke="f" fillcolor="#ffa73b"><w:anchorlock/><center style="color:#FFFFFF;font-family:\'Montserrat\',sans-serif;"><![endif]-->
                                           <a href="' . URL . '/#/courses/' . $courseId . '/pages/' . $profilePageId . '/user/' . $studentId . '" target="_blank" style="box-sizing: border-box;display: inline-block;font-family:\'Montserrat\',sans-serif;text-decoration: none;-webkit-text-size-adjust: none;text-align: center;color: #FFFFFF; background-color: #ffa73b; border-radius: 4px;-webkit-border-radius: 4px; -moz-border-radius: 4px; width:auto; max-width:100%; overflow-wrap: break-word; word-break: break-word; word-wrap:break-word; mso-border-alt: none;">
@@ -319,12 +321,12 @@ foreach ($students as $student) {
                                           </a>
                                         <!--[if mso]></center></v:roundrect></td></tr></table><![endif]-->
                                       </div>
-        
+
                                     </td>
                                   </tr>
                                 </tbody>
                               </table>
-        
+
                               <!--[if (!mso)&(!IE)]><!--></div><!--<![endif]-->
                             </div>
                           </div>
@@ -338,35 +340,35 @@ foreach ($students as $student) {
                           <div class="u-row" style="Margin: 0 auto;min-width: 320px;max-width: 670px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
                             <div style="border-collapse: collapse;display: table;width: 100%;background-color: transparent;">
                               <!--[if (mso)|(IE)]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding: 0px;background-color: transparent;" align="center"><table cellpadding="0" cellspacing="0" border="0" style="width:670px;"><tr style="background-color: transparent;"><![endif]-->
-            
+
                               <!--[if (mso)|(IE)]><td align="center" width="670" style="background-color: #ffffff;width: 670px;padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;" valign="top"><![endif]-->
                               <div class="u-col u-col-100" style="max-width: 320px;min-width: 670px;display: table-cell;vertical-align: top;">
                                 <div style="background-color: #ffffff;width: 100% !important;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px; border-radius: 10px; box-shadow: 0px 3px 5px 2px rgb(224, 223, 223)">
                                   <!--[if (!mso)&(!IE)]><!--><div style="padding: 30px 60px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;"><!--<![endif]-->
-            
+
                                     <table style="font-family:\'Montserrat\',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
                                       <tbody>
                                         <tr>
                                           <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:\'Montserrat\',sans-serif;" align="left">
-              
+
                                             <h2 style="margin: 0px; color: #000000; text-align: left; word-wrap: break-word; font-weight: normal; font-family: \'Montserrat\',sans-serif; font-size: 24px;">
                                               <strong>🔎 Foresight Remarks</strong>
                                             </h1>
-              
+
                                           </td>
                                         </tr>
                                       </tbody>
                                     </table>
-            
+
                                     <table style="font-family:\'Montserrat\',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
                                       <tbody>
                                         <tr>
                                           <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:\'Montserrat\',sans-serif;" align="left">
-              
+
                                             <div style="line-height: 170%; text-align: justify; word-wrap: break-word;">
                                               <p style="font-size: 16px; line-height: 25px;">There are <span style="font-weight: 700; font-size: 20px;">' . $timeLeft . '</span> ' . ($isWeekly ? 'weeks' : 'days') . ' left.';
     if ($timeLeft > 0) {
-        $foresightBlock .= ' If you continue with the current rhythm you will achieve 
+        $foresightBlock .= ' If you continue with the current rhythm you will achieve
                             <span style="font-weight: 800; font-size: 16px; color: ' . getGradeColor($prediction) . '">' . number_format($prediction, 0, ',', ' ') . ' XP</span>* by the end of the course.</p>
                             <p style="font-size: 16px; font-weight: 600; line-height: 25px; margin-top: 10px">';
 
@@ -378,12 +380,12 @@ foreach ($students as $student) {
 
     } else $foresightBlock .= '</p>';
     $foresightBlock .= '                    </div>
-      
+
                                           </td>
                                         </tr>
                                       </tbody>
                                     </table>
-            
+
                                   <!--[if (!mso)&(!IE)]><!--></div><!--<![endif]-->
                                 </div>
                               </div>
@@ -397,31 +399,31 @@ foreach ($students as $student) {
                       <div class="u-row" style="Margin: 0 auto;min-width: 320px;max-width: 670px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
                         <div style="border-collapse: collapse;display: table;width: 100%;background-color: transparent;">
                           <!--[if (mso)|(IE)]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding: 0px;background-color: transparent;" align="center"><table cellpadding="0" cellspacing="0" border="0" style="width:670px;"><tr style="background-color: transparent;"><![endif]-->
-        
+
                           <!--[if (mso)|(IE)]><td align="center" width="670" style="background-color: #ffffff;width: 670px;padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;" valign="top"><![endif]-->
                           <div class="u-col u-col-100" style="max-width: 320px;min-width: 670px;display: table-cell;vertical-align: top;">
                             <div style="background-color: #ffffff;width: 100% !important;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px; border-radius: 10px; box-shadow: 0px 3px 5px 2px rgb(224, 223, 223)">
                               <!--[if (!mso)&(!IE)]><!--><div style="padding: 30px 60px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px; margin-bottom: 30px;"><!--<![endif]-->
-        
+
                                 <table style="font-family:\'Montserrat\',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
                                   <tbody>
                                     <tr>
                                       <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:\'Montserrat\',sans-serif;" align="left">
-          
+
                                         <h2 style="margin: 0px; color: #000000; text-align: left; word-wrap: break-word; font-weight: normal; font-family: \'Montserrat\',sans-serif; font-size: 24px;">
                                           <strong>🏆 This Week\'s Awards</strong>
                                         </h1>
-        
+
                                       </td>
                                     </tr>
                                   </tbody>
                                 </table>
-        
+
                                 <table style="font-family:\'Montserrat\',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
                                   <tbody>
                                     <tr>
                                       <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:\'Montserrat\',sans-serif;" align="left">
-        
+
                                         <ul style="margin-top: 0; margin-bottom: 0; padding-left: 0; list-style: none;">';
     foreach ($awardsCurrentPeriod as $award) {
         $awardsBlock .= '                <li>
@@ -430,7 +432,7 @@ foreach ($students as $student) {
                                                 <tbody>
                                                 <tr>
                                                   <td style="overflow-wrap:break-word;word-break:break-word;padding:0; padding-top: 10px; font-family:\'Montserrat\',sans-serif;" align="left">
-                    
+
                                                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                                                       <tr>
                                                         <td style="padding: 0" align="center">
@@ -438,17 +440,17 @@ foreach ($students as $student) {
                                                         </td>
                                                       </tr>
                                                     </table>
-                    
+
                                                   </td>
                                                 </tr>
                                                 </tbody>
                                               </table>
-                    
+
                                               <table style="font-family:\'Montserrat\',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="300px" border="0">
                                                 <tbody>
                                                 <tr>
                                                   <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:\'Montserrat\',sans-serif;" align="left">
-                    
+
                                                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                                                       <tr>
                                                         <td style="padding-right: 0px;padding-left: 0px;" align="left">
@@ -457,17 +459,17 @@ foreach ($students as $student) {
                                                         </td>
                                                       </tr>
                                                     </table>
-                    
+
                                                   </td>
                                                 </tr>
                                                 </tbody>
                                               </table>
-                    
+
                                               <table style="font-family:\'Montserrat\',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="120px" border="0">
                                                 <tbody>
                                                 <tr>
                                                   <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;padding-right: 35px;font-family:\'Montserrat\',sans-serif;" align="left">
-                    
+
                                                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                                                       <tr>
                                                         <td style="padding-right: 0px;padding-left: 0px;" align="right">
@@ -475,17 +477,17 @@ foreach ($students as $student) {
                                                         </td>
                                                       </tr>
                                                     </table>
-                    
+
                                                   </td>
                                                 </tr>
                                                 </tbody>
                                               </table>
-                    
+
                                               <table style="font-family:\'Montserrat\',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="120px" border="0">
                                                 <tbody>
                                                 <tr>
                                                   <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:\'Montserrat\',sans-serif;" align="left">
-                    
+
                                                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                                                       <tr>
                                                         <td style="padding-right: 0px;padding-left: 0px;" align="left">
@@ -493,7 +495,7 @@ foreach ($students as $student) {
                                                         </td>
                                                       </tr>
                                                     </table>
-                    
+
                                                   </td>
                                                 </tr>
                                                 </tbody>
@@ -508,7 +510,7 @@ foreach ($students as $student) {
                                     </tr>
                                   </tbody>
                                 </table>
-        
+
                               <!--[if (!mso)&(!IE)]><!--></div><!--<![endif]-->
                             </div>
                           </div>
@@ -533,7 +535,7 @@ foreach ($students as $student) {
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <meta name="x-apple-disable-message-reformatting">
                     <!--[if !mso]><!--><meta http-equiv="X-UA-Compatible" content="IE=edge"><!--<![endif]-->
-                
+
                     <style type="text/css">
                     table, td { color: #484848; } a { color: #0000ee; text-decoration: underline; }
                     @media only screen and (min-width: 570px) {
@@ -543,13 +545,13 @@ foreach ($students as $student) {
                     .u-row .u-col {
                     vertical-align: top;
                     }
-                
+
                     .u-row .u-col-100 {
                     width: 670px !important;
                     }
-                
+
                     }
-                
+
                     @media (max-width: 570px) {
                     .u-row-container {
                     max-width: 100% !important;
@@ -575,37 +577,37 @@ foreach ($students as $student) {
                     margin: 0;
                     padding: 0;
                     }
-                
+
                     table,
                     tr,
                     td {
                     vertical-align: top;
                     border-collapse: collapse;
                     }
-                
+
                     p {
                     margin: 0;
                     }
-                
+
                     .ie-container table,
                     .mso-container table {
                     table-layout: fixed;
                     }
-                
+
                     * {
                     line-height: inherit;
                     }
-                
+
                     a[x-apple-data-detectors=\'true\'] {
                     color: inherit !important;
                     text-decoration: none !important;
                     }
-                
+
                     </style>
-                
+
                     <!--[if !mso]><!--><link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700&display=swap" rel="stylesheet" type="text/css"><!--<![endif]-->
                   </head>
-                
+
                   <body class="clean-body u_body" style="margin: 0;padding: 0;-webkit-text-size-adjust: 100%;background-color: #f4f4f4;color: #484848">
                     <!--[if IE]><div class="ie-container"><![endif]-->
                     <!--[if mso]><div class="mso-container"><![endif]-->
@@ -616,11 +618,11 @@ foreach ($students as $student) {
                           Weekly Progress Report
                           </td>
                         </tr>
-                
+
                         <tr style="vertical-align: top">
                           <td style="word-break: break-word;border-collapse: collapse !important;vertical-align: top; position:relative">
                             <!--[if (mso)|(IE)]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" style="background-color: #f4f4f4;"><![endif]-->
-                
+
                             <div style="background-color: #ffa73b; height: 300px; position: absolute; top: 0; left: 0; width: 100%; z-index: 1;"></div>';
 
     $message .= $reportBlock;
@@ -634,10 +636,10 @@ foreach ($students as $student) {
         <!--[if mso]></div><![endif]-->
         <!--[if IE]></div><![endif]-->
       </body>
-    
+
     </html>';
 
-    if (!mail($to, $subject, $message, $headers)) $error = true;
+    if (!sendEmail($to, $subject, $message)) $error = true;
 }
 
 
@@ -651,6 +653,52 @@ if (!$error) {
     }
 } else {
     logProgressReport($courseId, "Progress reports not sent.");
+}
+
+/**
+ * Sends an HTML e-mail to one recipient.
+ * It uses PHPMailer to be able to send e-mails to external recipients.
+ *
+ * @param string $to
+ * @param string $subject
+ * @param string $message
+ *
+ * @return bool
+ * @throws Exception
+ */
+function sendEmail(string $to, string $subject, string $message): bool
+{
+    $senderName = "GameCourse";
+
+    if (Utils::strEndsWith($to, "@tecnico.ulisboa.pt")) { // internal e-mails
+        $headers  = "MIME-Version: 1.0" . "\r\n";
+        $headers .= "Content-Type: text/html; charset=UTF-8" . "\r\n";
+        $headers .= "From: " . $senderName . " <noreply@pcm.rnl.tecnico.ulisboa.pt>" . "\r\n";
+        $headers .= "X-Mailer: PHP/" . phpversion();
+        return mail($to, $subject, $message, $headers);
+
+    } else { // external e-mails (use PHPMailer)
+        $mail = new PHPMailer();
+        $mail->isSMTP();
+        $mail->isHTML(true);
+        $mail->CharSet = "UTF-8";
+
+        $mail->Host = "smtp.gmail.com";
+        $mail->SMTPAuth = "true";
+        $mail->SMTPSecure = "tls";
+        $mail->Port = "587";
+
+        $mail->Username = GOOGLE_ACCOUNT_EMAIL;
+        $mail->Password = GOOGLE_ACCOUNT_PASSWORD;
+        $mail->From = GOOGLE_ACCOUNT_EMAIL;
+        $mail->FromName = $senderName;
+
+        $mail->Subject = $subject;
+        $mail->Body = $message;
+        $mail->addAddress($to);
+
+        return $mail->send();
+    }
 }
 
 function datediff(DateTime $date1, DateTime $date2, string $type): int

@@ -1,5 +1,4 @@
 <?php
-
 use GameCourse\Course;
 
 class Utils {
@@ -166,5 +165,11 @@ class Utils {
         elseif ($to === "relative" && strpos($url, API_URL) === 0) return str_replace($courseDataFolderPath, "", $url);
         return $url;
     }
+
+    public static function strEndsWith(string $haystack, string $needle): bool
+    {
+        $length = strlen($needle);
+        if (!$length) return true;
+        return substr($haystack, -$length) === $needle;
+    }
 }
-?>
