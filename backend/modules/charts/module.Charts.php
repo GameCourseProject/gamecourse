@@ -153,7 +153,8 @@ class Charts extends Module
         $this->registerChart('leaderboardEvolution', function(&$chart, EvaluateVisitor $visitor) {
             $params = $visitor->getParams();
             $userID = $params['user'];
-            $course = Course::getCourse($params['course'], false);
+            $courseId = $params['course'];
+            $course = Course::getCourse($courseId, false);
 
             $students = $course->getUsersWithRole('Student');
 
@@ -161,11 +162,12 @@ class Charts extends Module
             $minDay = PHP_INT_MAX;
 
             date_default_timezone_set('Europe/Lisbon');
-            if (array_key_exists(0, $awards = Core::$systemDB->selectMultiple(AwardList::TABLE,['user'=> $students[0]['id'],'course'=>$params['course']],"*","date"))){
+            if (array_key_exists(0, $awards = Core::$systemDB->selectMultiple(AwardList::TABLE,['user'=> $userID,'course'=>$params['course']],"*","date"))){
                 $baseLine = new DateTime(date('Y-m-d', strtotime($awards[0]['date'])));
             } else {
-                $baseLine = (new DateTime('2022-03-07'));
+                $baseLine = (new DateTime('2022-03-07')); // FIXME: course start date should be configurable
             }
+
             $calcDay = function($date) use ($baseLine) {
                 if (is_string($date))
                     $date = strtotime($date);
@@ -177,7 +179,7 @@ class Charts extends Module
             };
 
             //keeps cache of leaderboard chart of user since the last update
-            $updated = $calcDay(Core::$systemDB->select("autogame",["course"=>$params['course']],"finishedRunning"));
+            $updated = $calcDay(Core::$systemDB->select("autogame", ["course" => $courseId], "finishedRunning"));
             $cacheId = 'leaderboardEvolution' . $params['course'] . '-' . $userID . '-' . $updated;
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
             if ($hasCache) {
@@ -190,7 +192,7 @@ class Charts extends Module
             $firstDayStudent = array();
             // calc xp for each student, each day
             foreach ($students as $student) {
-                $awards = Core::$systemDB->selectMultiple(AwardList::TABLE,['user'=>$student['id'],'course'=>$params['course']],"*","date");
+                $awards = Core::$systemDB->selectMultiple(AwardList::TABLE, ['user'=> $student['id'], 'course' => $params['course']], "*", "date");
                 $awards = array_filter($awards, function ($award) { return $award["type"] != "tokens"; });
 
                 if (count($awards) == 0) {
@@ -205,7 +207,7 @@ class Charts extends Module
                 $xpValue = array();
                 $firstDay = true;
                 foreach ($awards as $award) {
-                    if ($award['reward']>0){
+                    if ($award['reward'] > 0){
                         $awardDay = $calcDay($award['date']);
                         $diff = $awardDay - $currentDay;
                         if ($diff > 0 ) {
