@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import socket
-import signal, os, sys
+import signal, os, sys, logging
 import json
 import mysql.connector
 import time
@@ -1794,7 +1794,7 @@ def award_streak(target, streak, contributions=None, info=None):
     typeof = "streak"
 
     nlogs = len(contributions)
-    if contributions != None:
+    if contributions != None and streak != "Grader Extraordinaire":
         participationType = contributions[0].log_type
 
     if config.test_mode:
@@ -1807,7 +1807,6 @@ def award_streak(target, streak, contributions=None, info=None):
     streak_name = streak + "%"
     cursor.execute(query, (target, course, streak_name, typeof))
     table = cursor.fetchall()
-
 
     # get streak info
     query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost from streak where course = %s and name = %s;"
@@ -1824,8 +1823,7 @@ def award_streak(target, streak, contributions=None, info=None):
                 # if isCount inserts all streak participations in the streak_progression.
                 if isCount and not isPeriodic:
 
-                    if participationType.startswith("attended") or participationType.endswith("grade"):
-
+                   if participationType.startswith("attended") or participationType.endswith("grade"):
                         maxlabs = 125
                         maxlab_impar = 150
                         maxlab_par = 400
@@ -1973,7 +1971,7 @@ def award_streak(target, streak, contributions=None, info=None):
                             cursor.execute(query, (course, target, streakid, participation_id))
                             cnx.commit()
 
-                    else:
+                   else:
                         for log in contributions:
                             query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
                             cursor.execute(query, (course, target, streakid, log.log_id))
@@ -2158,20 +2156,72 @@ def award_streak(target, streak, contributions=None, info=None):
                         cnx.commit()
 
                 elif isPeriodic and isAtMost and not isCount:
-                    query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND type = %s AND description LIKE 'Skill Tree%' AND rating > 2 ;"
+                    query = "SELECT id, date, post, description FROM participation WHERE user = %s AND course = %s AND type = %s AND description LIKE 'Skill Tree%' AND rating > 2 ;"
                     cursor.execute(query, (target, course, participationType))
                     table_participations = cursor.fetchall()
 
-                    size = len(table_participations)
+                    all = len(table_participations)
+
+                    skills = []
+
+                    filtered = []
+                    for i in range(all):
+                        name = table_participations[i][3]
+                        if name not in skills:
+                            skills.append(name)
+                            filtered.append(table_participations[i])
+
+
+                    size = len(filtered)
 
                     for i in range(size):
-                         j = i+1
-                         if j < size:
-                            firstParticipationId = table_participations[i][0]  # YYYY-MM-DD HH:MM:SS
-                            secondParticipationId = table_participations[j][0]
+                        j = i+1
+                        if j < size:
 
-                            firstParticipationObj = table_participations[i][1]  # YYYY-MM-DD HH:MM:SS
-                            secondParticipationObj = table_participations[j][1]
+                            # ************ FIRST SUBMISSION DATE ************** #
+                            firstgradedPost = (filtered[i][2]).decode("utf-8")   # e.g: mod/peerforum/discuss.php?d=38#p65
+
+                            indexpost = 0
+                            for m in range(len(firstgradedPost)):
+                                if firstgradedPost[m] == '#':
+                                    indexpost = m
+                                    break
+
+                            p_gradedPost = firstgradedPost[indexpost+2:]
+                            d_gradedPost = firstgradedPost[28:indexpost]
+                            firstGraded  = "mod/peerforum/discuss.php?d=" + str(d_gradedPost) + "&parent="  +  str(p_gradedPost)
+
+
+                            query = "SELECT id, date FROM participation WHERE user = %s and course = %s and type = 'forum add post' AND post = %s;"
+                            cursor.execute(query, (target, course, firstGraded))
+                            table_first_date = cursor.fetchall()
+
+                            #logging.exception(table_first_date)
+                            #sys.exit(table_first_date[0][0])
+
+                            # ************ SECOND SUBMISSION DATE ************** #
+
+                            secondgradedPost = (filtered[j][2].decode("utf-8") )
+                            indexpost2 = 0
+                            for n in range(len(secondgradedPost)):
+                                if secondgradedPost[n] == '#':
+                                    indexpost2 = n
+                                    break
+
+                            p_gradedPost2 = secondgradedPost[indexpost2+2:]
+                            d_gradedPost2 = secondgradedPost[28:indexpost2]
+                            secondGraded  = "mod/peerforum/discuss.php?d=" + str(d_gradedPost2) + "&parent="  +  str(p_gradedPost2)
+
+                            query = "SELECT date FROM participation WHERE user = %s AND course = %s AND type = 'forum add post' AND post = %s;"
+                            cursor.execute(query, (target, course, secondGraded))
+                            table_second_date = cursor.fetchall()
+
+                            # ************ LETS GO ************** #
+                            firstParticipationId = filtered[i][0]  # YYYY-MM-DD HH:MM:SS
+                            secondParticipationId = filtered[j][0]
+
+                            firstParticipationObj = table_first_date[0][1]  # YYYY-MM-DD HH:MM:SS
+                            secondParticipationObj = table_second_date[0][0]
 
                             if len(periodicityTime) == 7:  # minutes
                                 dif = secondParticipationObj - firstParticipationObj
@@ -2274,18 +2324,19 @@ def award_streak(target, streak, contributions=None, info=None):
                 cnx.commit()
                 cursor = cnx.cursor(prepared=True)
 
-                # gets award_id
-                query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
-                cursor.execute(query, (target, course, description, typeof))
-                table_id = cursor.fetchall()
-                award_id = table_id[0][0]
+                if not streak.startswith("Grader"):
+                    # gets award_id
+                    query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+                    cursor.execute(query, (target, course, description, typeof))
+                    table_id = cursor.fetchall()
+                    award_id = table_id[0][0]
 
-                if not config.test_mode:
-                    for el in table_progressions:
-                        participation_id = el[3]
-                        query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
-                        cursor.execute(query, (award_id, participation_id))
-                        cnx.commit()
+                    if not config.test_mode:
+                        for el in table_progressions:
+                            participation_id = el[3]
+                            query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                            cursor.execute(query, (award_id, participation_id))
+                            cnx.commit()
 
             else:
                 totalAwards = len(table_progressions) // streak_count
@@ -2307,7 +2358,7 @@ def award_streak(target, streak, contributions=None, info=None):
                             table_id = cursor.fetchall()
                             award_id = table_id[0][0]
 
-                            if not config.test_mode:
+                            if not config.test_mode and not streak.startswith("Grader"):
                                 for el in range(streak_count):
                                     participation_id = table_progressions[el][3]
                                     query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
@@ -2351,7 +2402,7 @@ def award_streak(target, streak, contributions=None, info=None):
                     table_id = cursor.fetchall()
                     award_id = table_id[0][0]
 
-                    if not config.test_mode:
+                    if not config.test_mode and not streak.startswith("Grader"):
                         for el in contributions:
                             participation_id = el.log_id
                             query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
@@ -2397,6 +2448,57 @@ def get_campus(target):
 		campus = None
 
 	return campus
+
+
+def get_username(target):
+	# -----------------------------------------------------------
+	# Returns the username of a target user
+	# -----------------------------------------------------------
+
+	(database, username, password) = get_credentials()
+	cnx = mysql.connector.connect(user=username, password=password,
+	host='localhost', database=database)
+	cursor = cnx.cursor(prepared=True)
+
+	course = config.course
+	query = "select username from auth right join course_user on auth.id=course_user.id where course = %s and auth.id = %s;"
+
+	cursor.execute(query, (course, target))
+	table = cursor.fetchall()
+	cnx.close()
+
+	if len(table) == 1:
+		username = table[0][0]
+
+	elif len(table) == 0:
+		print("ERROR: No student with given id found in auth database.")
+		username = None
+	else:
+		print("ERROR: More than one student with the same id in auth database.")
+		username = None
+
+	return username
+
+
+def consecutive_peergrading(target):
+    # -----------------------------------------------------------
+    # Returns the peergrading of a target user
+    # target = username (e.g, ist112345)
+    # -----------------------------------------------------------
+
+    cnx = mysql.connector.connect(user="pcm_moodle", password="Dkr1iRwEekJiPSHX9CeNznHlks",
+    host='db.rnl.tecnico.ulisboa.pt', database='pcm_moodle')
+    cursor = cnx.cursor(prepared=True)
+
+    course = config.course
+    query = "select id, timeassigned, expired from mdl_peerforum_time_assigned where component = %s and userid = (select id from mdl_user where username = %s);"
+    comp  = 'mod_peerforum'
+    cursor.execute(query, (comp, target.decode()))
+    table = cursor.fetchall()
+    cnx.close()
+
+    return table
+
 
 
 def call_gamecourse(course, library, function, args):

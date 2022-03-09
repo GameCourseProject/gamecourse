@@ -117,12 +117,27 @@ def get_campus(target):
 	result = connector.get_campus(target)
 	return result
 
+@rule_function
+def get_username(target):
+	"""
+	Returns the username of a given student
+	"""
+	result = connector.get_username(target)
+	return result
+
+@rule_function
+def consecutive_peergrading(target):
+   	"""
+   	Returns the username of a given student
+   	"""
+   	result = connector.consecutive_peergrading(target)
+   	return result
 
 @rule_function
 def filter_excellence(logs, tiers, classes):
 	"""
 	Filters the list of logs in a way that only
-	participations within excellence thresholds are 
+	participations within excellence thresholds are
 	returned.
 	"""
 
@@ -145,7 +160,7 @@ def filter_excellence(logs, tiers, classes):
 			if int(line.description) in tier_labs and int(line.rating) >= tier:
 				filtered.append(line)
 		labs = labs[nr_classes:]
-	
+
 	return filtered
 
 
@@ -167,15 +182,19 @@ def filter_quiz(logs, desc):
 def filter_skills(logs):
     """
     Filters the list of logs to only keep
-    skill graded post
+    unique skill graded post.
+    Avoids multiple posts for the same skill.
     """
     desc = "Skill Tree"
     filtered_logs = []
+    already_inserted_skill = []
 
     for line in logs:
         post = line.description
         if post.startswith(desc):
-            filtered_logs.append(line)
+            if post not in already_inserted_skill:
+                already_inserted_skill.append(post)
+                filtered_logs.append(line)
     return filtered_logs
 
 @rule_function
