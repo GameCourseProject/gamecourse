@@ -145,7 +145,7 @@ foreach ($students as $student) {
                                       <tr>
                                         <td style="padding-right: 0px;padding-left: 0px;" align="center">
                                           <a href="' . URL . '" target="_blank">
-                                            <img align="center" border="0" src="' . URL . '/assets/logo/logo_horz.svg" alt="GameCourse logo" title="GameCourse logo" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;;max-width: 249.1px;" width="249.1"/>
+                                            <img align="center" border="0" src="' . URL . '/assets/logo/logo_horz.jpg" alt="GameCourse logo" title="GameCourse logo" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;;max-width: 249.1px;" width="249.1"/>
                                           </a>
                                         </td>
                                       </tr>
