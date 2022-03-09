@@ -107,7 +107,7 @@
                 "type": "row",
                 "role": "role.Default",
                 "visibilityType": "visible",
-                "loopData": "{users.getAllUsers(\"student\", %course).sort(\"descending\", \"xp.getXP(%item); badges.getBadgesCount(%item)\").sort(\"ascending\", \"%item.studentNumber\")}",
+                "loopData": "{users.getAllUsers(\"student\", %course).sort(\"descending\", \"xp.getXP(%item); badges.getBadgesCount(%item)\")}",
                 "variables": {
                   "userXP": {
                     "value": "{xp.getXP(%item)}"
