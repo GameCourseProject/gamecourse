@@ -131,7 +131,7 @@ class Fenix extends Module
                     $user->editUser($name, $username, "fenix", $email, $studentNumber, "", $major, 0, 1);
                     $courseUser = new CourseUser($user->getId(), $course);
                     if (!CourseUser::userExists($course->getId(), $user->getId())) $courseUser->addCourseUserToDB($roleStudentId);
-                    else $courseUser->editCourseUser($user->getId(), $course->getId(), $major);
+                    else $courseUser->editCourseUser($user->getId(), $course->getId(), $roleStudentId);
                     Core::$systemDB->update(XPLevels::TABLE_XP, ["xp" => 0, "level" => 1], ["course" => $course->getId(), "user" => $user->getId()]);
                 }
             }
