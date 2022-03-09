@@ -34,7 +34,7 @@
           "role": "role.Student>role.Default",
           "class": "streak",
           "visibilityType": "visible",
-          "loopData": "{streaks.getAllStreaks().sort(\"ascending\",\"name\")}",
+          "loopData": "{streaks.getAllStreaks().sort(\"asc, name\")}",
           "variables": {
             "streak": {
               "value": "{%item}"

@@ -337,18 +337,29 @@ class Dictionary
             $collection["value"] = $newCollectionVals;
             return new ValueNode($collection);
         },  'Returns the collection only with objects that have an index between start and end, inclusively.', 'collection', null, 'collection', null, $setup);
-        //%collection.sort(order=(asc|des),keys) returns collection sorted by key
+        //%collection.sort(orderKeyPairs) returns collection sorted by key
+        // e.g. %collection.sort("desc, xp.getXP(%item); asc, %item.studentNumber")
         self::registerFunction(
             null,
             'sort',
-            function ($collection = null, string $order = null, string $keys = null) {
+            function ($collection = null, string $orderKeyPairs = null) {
                 if (empty($collection["value"]))
                     return new ValueNode($collection);
 
                 self::checkArray($collection, "collection", "sort()");
-                if ($order === null) throw new \Exception("On function .sort(order,keys), no order was given.");
-                if ($keys === null) throw new \Exception("On function .sort(order,keys), no keys were given.");
-                $keys = explode(";", $keys);
+                if ($orderKeyPairs === null) throw new \Exception("On function .sort(orderKeyPairs), no order/key pair was given.");
+
+                $orders = [];
+                $keys = [];
+
+                $orderKeyPairs = explode(";", $orderKeyPairs);
+                foreach ($orderKeyPairs as $pair) {
+                    $pair = trim($pair);
+                    $parts = explode(",", $pair);
+                    $orders[] = trim($parts[0]);
+                    $keys[] = trim($parts[1]);
+                }
+
                 $i = 0;
                 foreach ($keys as &$key) {
                     if (!array_key_exists($key, $collection["value"][0])) {
@@ -367,31 +378,45 @@ class Dictionary
                             $visitor = new EvaluateVisitor($viewParams);
                             $value = $key->accept($visitor)->getValue();
 
+                            if (ctype_digit($value)) $value = intval($value);
                             $object["sortVariable" . $i] = $value;
                         }
                         $key = "sortVariable" . $i;
                     }
                     $i++;
                 }
-                if ($order == "asc" || $order == "ascending") {
-                    usort($collection["value"], function ($a, $b) use ($keys) {
-                        foreach ($keys as $key) {
-                            if ($a[$key] > $b[$key]) return 1;
-                            else if ($a[$key] < $b[$key]) return -1;
+
+                usort($collection["value"], function ($a, $b) use ($keys, $orders) {
+                    foreach ($keys as $index => $key) {
+                        $order = $orders[$index];
+                        if ($order == "asc" || $order == "ascending") {
+                            if (is_string($a[$key]) && is_string($b[$key])) { // string
+                                if (strcmp($a[$key], $b[$key]) == 0) continue;
+                                return strcmp($a[$key], $b[$key]);
+
+                            } else { // int
+                                if ($a[$key] == $b[$key]) continue;
+                                return $a[$key] - $b[$key];
+                            }
+
+                        } else if ($order == "desc" || $order == "descending") {
+                            if (is_string($a[$key]) && is_string($b[$key])) { // string
+                                if (strcmp($a[$key], $b[$key]) == 0) continue;
+                                return -strcmp($a[$key], $b[$key]);
+
+                            } else { // int
+                                if ($a[$key] == $b[$key]) continue;
+                                return $b[$key] - $a[$key];
+                            }
+
+                        } else {
+                            throw new \Exception("On function .sort(orderKeyPairs), the order must be ascending or descending.");
                         }
-                        return 1;
-                    });
-                } else if ($order == "des" || $order == "descending") {
-                    usort($collection["value"], function ($a, $b)  use ($keys) {
-                        foreach ($keys as $key) {
-                            if ($a[$key] < $b[$key]) return 1;
-                            else if ($a[$key] > $b[$key]) return -1;
-                        }
-                        return 1;
-                    });
-                } else {
-                    throw new \Exception("On function .sort(order,keys), the order must be ascending or descending.");
-                }
+
+                    }
+                    return 0;
+                });
+
                 return new ValueNode($collection);
             },
             'Returns the collection with objects sorted in a specific order by variables keys, from left to right separated by a ;. Any key may be an expression.',

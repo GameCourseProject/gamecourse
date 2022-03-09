@@ -74,7 +74,7 @@
                 "type": "row",
                 "role": "role.Student>role.Default",
                 "visibilityType": "visible",
-                "loopData": "{awards.getAllAwards(%user).sort(\"descending\", \"date\")}",
+                "loopData": "{awards.getAllAwards(%user).sort(\"desc, date\")}",
                 "variables": {
                   "award": {
                     "value": "{%item}"

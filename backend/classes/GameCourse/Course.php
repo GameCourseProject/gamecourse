@@ -632,7 +632,7 @@ class Course
             "course_user cu join game_course_user u on cu.id=u.id join user_role ur on ur.id=u.id join role r on r.id=ur.role and r.course=cu.course join auth a on u.id=a.game_course_user_id",
             $where,
             "u.*,cu.lastActivity, cu.previousActivity,a.username,r.name as role",
-            "u.studentNumber"
+            "studentNumber"
         );
         return $result;
     }
