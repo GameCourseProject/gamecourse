@@ -97,11 +97,10 @@ class Charts extends Module
         $this->registerChart('xpEvolution', function(&$chart, EvaluateVisitor $visitor) {
             $params = $visitor->getParams();
             $userID = $params['user'];
-            $course = Course::getCourse($params['course'], false);
-            $xpModule = $course->getModule(XPLevels::ID);
-            $xp = $xpModule->getUserXP($userID,$params['course']);
+            $courseId = $params['course'];
 
-            $cacheId = 'xpEvolution' . $params['course'] . '-' . $userID .'-'.$xp;
+            // Get from cache if exists
+            $cacheId = 'xpEvolution-' . $params['course'] . '-' . $userID;
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
             if ($hasCache) {
                 $spark = (array_key_exists('spark', $chart['info']) ? true : false);
@@ -110,39 +109,37 @@ class Charts extends Module
                 return;
             }
 
-            $awards = Core::$systemDB->selectMultiple(AwardList::TABLE, ["user" => $userID, "course" => $course->getId()], "*" , "date");
+            date_default_timezone_set('Europe/Lisbon');
+            $baseLine = (new DateTime('2022-03-07')); // FIXME: course start date should be configurable
+            $daysPassed = $baseLine->diff(new DateTime())->days;
+
+            // Calculate XP per day
+            $awards = Core::$systemDB->selectMultiple(AwardList::TABLE, ["user" => $userID, "course" => $courseId], "*" , "date");
             $awards = array_filter($awards, function ($award) { return $award["type"] != "tokens"; });
 
-            date_default_timezone_set('Europe/Lisbon');
-            if(array_key_exists(0, $awards)){
-                $currentDay = new DateTime(date('Y-m-d', strtotime($awards[0]['date'])));
-            }
-            else {
-                $currentDay = (new DateTime('2022-03-07')); // FIXME: hard-coded course start date
-            }
-
-            $xpDay = 0;
             $xpTotal = 0;
-            $xpValue = array();
-            foreach($awards as $award) {
-                $awardDay = new DateTime(date('Y-m-d', strtotime($award['date'])));
-                $diff = $currentDay->diff($awardDay);
-                $diffDays = ($diff->days * ($diff->invert ? -1 : 1));
-                if ($diffDays > 0)
-                    $currentDay = $awardDay;
-                while ($diffDays > 0) {
-                    $xpValue[] = array('x' => $xpDay, 'y' => $xpTotal);
-                    $xpDay++;
-                    $diffDays--;
+            $xpByDay = [];
+
+            $day = 0;
+            while ($day <= $daysPassed) {
+                $awardsByDay = array_filter($awards, function ($award) use ($baseLine, $day) {
+                    return $baseLine->diff(new DateTime($award["date"]))->days == $day;
+                });
+
+                if (!empty($awardsByDay)) {
+                    foreach ($awardsByDay as $award) {
+                        $xpTotal += $award["reward"];
+                    }
                 }
-                $xpTotal += $award['reward'];
+
+                $xpByDay[] = array('x' => $day, 'y' => $xpTotal);
+                $day++;
             }
-            $xpValue[] = array('x' => $xpDay, 'y' => $xpTotal);
 
             $chart['info'] = array(
-                'values' => $xpValue,
-                'domainX' => array(0, ceil($xpDay/15) * 15),
-                'domainY' => array(0, ceil($xpTotal/500) * 500),
+                'values' => $xpByDay,
+                'domainX' => array(0, $daysPassed),
+                'domainY' => array(0, $xpTotal),
                 'spark' => (array_key_exists('spark', $chart['info']) ? true : false),
                 'labelX' => 'Time (Days)',
                 'labelY' => 'XP'
@@ -158,137 +155,77 @@ class Charts extends Module
 
             $students = $course->getUsersWithRole('Student');
 
-            $maxDay = 0;
-            $minDay = PHP_INT_MAX;
-
             date_default_timezone_set('Europe/Lisbon');
-            if (array_key_exists(0, $awards = Core::$systemDB->selectMultiple(AwardList::TABLE,['user'=> $userID,'course'=>$params['course']],"*","date"))){
-                $baseLine = new DateTime(date('Y-m-d', strtotime($awards[0]['date'])));
-            } else {
-                $baseLine = (new DateTime('2022-03-07')); // FIXME: course start date should be configurable
-            }
+            $baseLine = (new DateTime('2022-03-07')); // FIXME: course start date should be configurable
+            $daysPassed = $baseLine->diff(new DateTime())->days;
 
-            $calcDay = function($date) use ($baseLine) {
-                if (is_string($date))
-                    $date = strtotime($date);
-                $date = new DateTime(date('Y-m-d', $date));
-                $diff = $baseLine->diff($date);
-
-                $diffDays = ($diff->days * ($diff->invert ? -1 : 1));
-                return $diffDays;
-            };
-
-            //keeps cache of leaderboard chart of user since the last update
-            $updated = $calcDay(Core::$systemDB->select("autogame", ["course" => $courseId], "finishedRunning"));
-            $cacheId = 'leaderboardEvolution' . $params['course'] . '-' . $userID . '-' . $updated;
+            // Get from cache if exists
+            $cacheId = 'leaderboardEvolution-' . $courseId . '-' . $userID;
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
             if ($hasCache) {
                 $chart['info'] = $cacheValue;
                 return;
             }
 
-            $xpValues = array();
-            $lastXPValue = array();
-            $firstDayStudent = array();
-            // calc xp for each student, each day
+            // Calculate XP for each student per day
+            $studentXPPerDay = [];
             foreach ($students as $student) {
-                $awards = Core::$systemDB->selectMultiple(AwardList::TABLE, ['user'=> $student['id'], 'course' => $params['course']], "*", "date");
-                $awards = array_filter($awards, function ($award) { return $award["type"] != "tokens"; });
+                $studentID = $student['id'];
+                list($hasCache, $cacheValue) = CacheSystem::get('xpEvolution-' . $courseId . '-' . $studentID);
+                if ($hasCache) {
+                    $studentXPPerDay[$studentID] = $cacheValue["values"];
 
-                if (count($awards) == 0) {
-                    $firstDayStudent[$student['id']] = PHP_INT_MAX;
-                    continue;
-                }
-
-                $currentDay = $calcDay($awards[0]['date']);
-                $minDay = min($currentDay, $minDay);
-                $xpTotal = 0;
-
-                $xpValue = array();
-                $firstDay = true;
-                foreach ($awards as $award) {
-                    if ($award['reward'] > 0){
-                        $awardDay = $calcDay($award['date']);
-                        $diff = $awardDay - $currentDay;
-                        if ($diff > 0 ) {
-                            if ($firstDay) {
-                                $firstDay = false;
-                                $firstDayStudent[$student['id']] = $currentDay;
-                            }
-                            $xpValue[$currentDay] = $xpTotal;
-                            $currentDay = $awardDay;
-                        }
-                        $xpTotal += $award['reward'];
-                        $maxDay = max($maxDay, $awardDay);
-                    }
-                }
-                $xpValue[$maxDay] = $xpTotal;
-                $xpValues[$student['id']] = $xpValue;
-
-                if (!array_key_exists($student['id'], $firstDayStudent))
-                    $firstDayStudent[$student['id']] = PHP_INT_MAX;
-            }
-
-            foreach ($students as $student) {
-                $firstDay = $firstDayStudent[$student['id']];
-                $firstCountedDay = $firstDayStudent[$userID];
-
-                while($firstDay <= $firstCountedDay) {
-                    if (array_key_exists($firstCountedDay, $xpValues[$student['id']])) {
-                        $lastXPValue[$student['id']] = $xpValues[$student['id']][$firstCountedDay];
-                        break;
-                    }
-                    $firstCountedDay--;
-                }
-            }
-
-            $cmpUser = function($v1, $v2) {
-                $c = $v2['xp'] - $v1['xp'];
-                if ($c == 0)//in cases of ties, they are ordered by id
-                    $c = $v1['student'] - $v2['student'];
-                return $c;
-            };
-
-            $positions = array();
-            for ($d = $firstCountedDay, $actualDay = 0; $d <= $maxDay; $d++, $actualDay++) {
-                $position = 1;
-                // get xp from the student
-                if ($firstDayStudent[$userID] > $d)
-                    $studentXP = array('xp' => 0, 'student' => $userID);
-                else if (array_key_exists($d, $xpValues[$userID])) {
-                    $xp = $xpValues[$userID][$d];
-                    $lastXPValue[$userID] = $xp;
-                    $studentXP = array('xp' => $xp, 'student' => $userID);
                 } else {
-                    $studentXP = array('xp' => $lastXPValue[$userID], 'student' => $userID);
-                }
+                    $awards = Core::$systemDB->selectMultiple(AwardList::TABLE, ["user" => $studentID, "course" => $courseId], "*" , "date");
+                    $awards = array_filter($awards, function ($award) { return $award["type"] != "tokens"; });
 
-                foreach ($students as $student) {
-                    if ($student['id'] == $userID)
-                        continue;
-                    if ($firstDayStudent[$student['id']] > $d)
-                        $xp = 0;
-                    else if (array_key_exists($d, $xpValues[$student['id']])) {
-                        $xp = $xpValues[$student['id']][$d];
-                        $lastXPValue[$student['id']] = $xp;
-                    } else {
-                        $xp = $lastXPValue[$student['id']];
+                    $xpTotal = 0;
+                    $xpByDay = [];
+
+                    $day = 0;
+                    while ($day <= $daysPassed) {
+                        $awardsByDay = array_filter($awards, function ($award) use ($baseLine, $day) {
+                            return $baseLine->diff(new DateTime($award["date"]))->days == $day;
+                        });
+
+                        if (!empty($awardsByDay)) {
+                            foreach ($awardsByDay as $award) {
+                                $xpTotal += $award["reward"];
+                            }
+                        }
+
+                        $xpByDay[] = array('x' => $day, 'y' => $xpTotal);
+                        $day++;
                     }
+                    $studentXPPerDay[$studentID] = $xpByDay;
+                }
+            }
 
-                    if ($cmpUser(array('xp' => $xp, 'student'=> $student['id']), $studentXP) < 0)
-                        $position++;
+            // Calculate student position
+            $positionPerDay = [];
+            $day = 0;
+            while ($day <= $daysPassed) {
+                usort($students, function ($a, $b) use ($studentXPPerDay, $day) {
+                    $xpA = $studentXPPerDay[$a['id']][$day]["y"];
+                    $xpB = $studentXPPerDay[$b['id']][$day]["y"];
+                    return $xpB - $xpA;
+                });
+
+                $position = 1;
+                for ($i = 0; $i < count($students); $i++) {
+                    if ($students[$i]['id'] == $userID) $position = $i + 1;
                 }
 
-                $positions[] = array('x' => $actualDay, 'y' => $position);
+                $positionPerDay[$day] = array('x' => $day, 'y' => $position);
+                $day++;
             }
 
             $chart['info'] = array(
-                'values' => $positions,
-                'domainX' => array(0, count($positions) - 1),
+                'values' => $positionPerDay,
+                'domainX' => array(0, $daysPassed),
                 'domainY' => array(1, count($students)),
                 'startAtOneY' => true,
                 'invertY' => true,
-                'spark' => (array_key_exists('spark', $chart['info']) ? true : false),
                 'labelX' => 'Time (Days)',
                 'labelY' => 'Position'
             );
