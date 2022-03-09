@@ -172,4 +172,20 @@ class Utils {
         if (!$length) return true;
         return substr($haystack, -$length) === $needle;
     }
+
+    /**
+     * Detects the used separator for a .csv file.
+     *
+     * @param $csvFile
+     * @return string
+     */
+    public static function detectSeparator($csvFile): string
+    {
+        $separators = [";" => 0, "," => 0, "\t" => 0, "|" => 0];
+        $firstLine = array_filter(explode("\n", $csvFile), function ($line) { return !empty($line); })[0];
+        foreach ($separators as $separator => &$count) {
+            $count = count(str_getcsv($firstLine, $separator));
+        }
+        return array_search(max($separators), $separators);
+    }
 }

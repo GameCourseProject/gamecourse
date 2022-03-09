@@ -11,6 +11,7 @@ use GameCourse\Course;
 use GameCourse\CourseUser;
 use GameCourse\User;
 use Modules\XP\XPLevels;
+use Utils;
 
 class Fenix extends Module
 {
@@ -70,50 +71,66 @@ class Fenix extends Module
     /*** -------------------- Utils -------------------- ***/
     /*** ----------------------------------------------- ***/
 
+    /**
+     * Imports students into the course from a .csv file got from Fénix
+     * with all students enrolled.
+     *
+     * @param Course $course
+     * @param $file
+     *
+     * @return int
+     */
     private function importFenixStudents(Course $course, $file): int
     {
         $nrStudentsImported = 0;
-        $separator = ";";
-        $headers = ["Username", "Número", "Nome", "Email", "Turno Teórica", "Turno Laboratorial",
+        $separator = Utils::detectSeparator($file);
+
+        // NOTE: this order must match the order in the file
+        $headers = ["Username", "Número", "Nome", "Email", "Agrupamento Laboratórios", "Turno Teórica", "Turno Laboratorial",
                     "Total de Inscrições", "Tipo de Inscrição", "Estado Matrícula", "Curso", "Estatutos"];
+
+        $nameIndex = array_search("Nome", $headers);
+        $usernameIndex = array_search("Username", $headers);
+        $studentNumberIndex = array_search("Número", $headers);
+        $emailIndex = array_search("Email", $headers);
+        $cursoIndex = array_search("Curso", $headers);
+
+        // Filter empty lines
         $lines = array_filter(explode("\n", $file), function ($line) { return !empty($line); });
 
         if (count($lines) > 0) {
-            // Check if has header to ignore it
+            // Check whether 1st line holds headers and ignores them
             $firstLine = array_map('trim', explode($separator, trim($lines[0])));
-            $hasHeaders = true;
-            foreach ($headers as $header) {
-                if (!in_array($header, $firstLine)) $hasHeaders = false;
-            }
-            if ($hasHeaders) array_shift($lines);
+            if (in_array($headers[0], $firstLine)) array_shift($lines);
 
             // Import each student
             foreach ($lines as $line) {
                 $student = array_map('trim', explode($separator, trim($line)));
 
-                $name = $student[array_search("Nome", $headers)];
-                $username = $student[array_search("Username", $headers)];
-                $studentNumber = $student[array_search("Número", $headers)];
-                $email = $student[array_search("Email", $headers)];
+                $name = $student[$nameIndex];
+                $username = $student[$usernameIndex];
+                $studentNumber = $student[$studentNumberIndex];
+                $email = $student[$emailIndex];
 
-                // Find major
-                $parts = explode(" - ", $student[array_search("Curso", $headers)]);
+                // Parse major
+                // Format: 'Licenciatura Bolonha em Engenharia Informática e de Computadores - Taguspark - LEIC-T 2021'
+                $parts = explode(" - ", $student[$cursoIndex]);
                 $major = explode(" ", array_pop($parts))[0];
 
                 // Add student to system and course
-                $roleId = Core::$systemDB->select("role", ["name" => "Student", "course" => $course->getId()], "id");
+                $roleStudentId = Core::$systemDB->select("role", ["name" => "Student", "course" => $course->getId()], "id");
                 $user = User::getUserByStudentNumber($studentNumber) ?? User::getUserByUsername($username);
                 if (!$user) { // create user
                     $userId = User::addUserToDB($name, $username, "fenix", $email, $studentNumber, "", $major, 0, 1);
                     $courseUser = new CourseUser($userId, $course);
-                    $courseUser->addCourseUserToDB($roleId);
+                    $courseUser->addCourseUserToDB($roleStudentId);
                     Core::$systemDB->insert(XPLevels::TABLE_XP, ["course" => $course->getId(), "user" => $userId, "xp" => 0, "level" => 1]);
                     $nrStudentsImported++;
 
                 } else { // edit user
                     $user->editUser($name, $username, "fenix", $email, $studentNumber, "", $major, 0, 1);
                     $courseUser = new CourseUser($user->getId(), $course);
-                    if (!CourseUser::userExists($course->getId(), $user->getId())) $courseUser->addCourseUserToDB($roleId);
+                    if (!CourseUser::userExists($course->getId(), $user->getId())) $courseUser->addCourseUserToDB($roleStudentId);
                     else $courseUser->editCourseUser($user->getId(), $course->getId(), $major);
                     Core::$systemDB->update(XPLevels::TABLE_XP, ["xp" => 0, "level" => 1], ["course" => $course->getId(), "user" => $user->getId()]);
                 }
