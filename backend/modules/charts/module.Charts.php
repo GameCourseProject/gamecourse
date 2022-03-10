@@ -207,7 +207,7 @@ class Charts extends Module
             $positionPerDay = [];
             $day = 0;
             while ($day <= $daysPassed) {
-                // Order by XP, if equal order by badges count
+                // Order by XP, badges count and studentNumber
                 usort($students, function ($a, $b) use ($studentXPPerDay, $studentBadgesPerDay, $day, $courseId) {
                     $xpA = $studentXPPerDay[$a['id']][$day]["y"];
                     $xpB = $studentXPPerDay[$b['id']][$day]["y"];
@@ -215,7 +215,13 @@ class Charts extends Module
                     $badgesA = $studentBadgesPerDay[$a['id']][$day]['y'];
                     $badgesB = $studentBadgesPerDay[$b['id']][$day]['y'];
 
-                    if ($xpA == $xpB) return $badgesB - $badgesA;
+                    $studentNumberA = intval($a['studentNumber']);
+                    $studentNumberB = intval($b['studentNumber']);
+
+                    if ($xpA == $xpB) {
+                        if ($badgesA == $badgesB) return $studentNumberA - $studentNumberB;
+                        return $badgesB - $badgesA;
+                    }
                     return $xpB - $xpA;
                 });
 
