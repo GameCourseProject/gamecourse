@@ -289,7 +289,7 @@
                                         "type": "text",
                                         "role": "role.Student>role.Default",
                                         "visibilityType": "visible",
-                                        "value": "Tokens"
+                                        "value": "{virtualcurrency.name}"
                                       }
                                     ],
                                     [
@@ -370,7 +370,7 @@
                                   "type": "row",
                                   "role": "role.Student>role.Default",
                                   "visibilityType": "visible",
-                                  "loopData": "{awards.getAllAwards(%user).sort(\"descending\", \"date\").crop(0, 2)}",
+                                  "loopData": "{awards.getAllAwards(%user).sort(\"desc, date\").crop(0, 2)}",
                                   "variables": {
                                     "award": {
                                       "value": "{%item}"
@@ -430,7 +430,7 @@
                                         "type": "text",
                                         "role": "role.Student>role.Default",
                                         "visibilityType": "visible",
-                                        "value": "{%award.reward} XP"
+                                        "value": "{%award.reward} {system.if(%award.type == \"tokens\", \"\", \"XP\")}"
                                       }
                                     ]
                                   ]

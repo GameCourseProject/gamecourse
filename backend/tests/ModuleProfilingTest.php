@@ -862,10 +862,10 @@ class ModuleProfilingTest extends TestCase
         $newCluster2 = Core::$systemDB->select("role", ["name" => "Regular"]);
         $newCluster3 = Core::$systemDB->select("role", ["name" => "Halfhearted"]);
 
-        $expectedProfiling = array("landingPage" => "", "id" => $profiling, "course" => $courseId, "name" => "Profiling");
-        $expectedCluster1 = array("landingPage" => "", "id" => $cluster1, "course" => $courseId, "name" => "Achiever");
-        $expectedCluster2 = array("landingPage" => "", "id" => $cluster2, "course" => $courseId, "name" => "Regular");
-        $expectedCluster3 = array("landingPage" => "", "id" => $cluster3, "course" => $courseId, "name" => "Halfhearted");
+        $expectedProfiling = array("landingPage" => null, "id" => $profiling, "course" => $courseId, "name" => "Profiling");
+        $expectedCluster1 = array("landingPage" => null, "id" => $cluster1, "course" => $courseId, "name" => "Achiever");
+        $expectedCluster2 = array("landingPage" => null, "id" => $cluster2, "course" => $courseId, "name" => "Regular");
+        $expectedCluster3 = array("landingPage" => null, "id" => $cluster3, "course" => $courseId, "name" => "Halfhearted");
 
         $this->assertEquals($expectedProfiling, $newProfiling);
         $this->assertEquals($expectedCluster1, $newCluster1);
@@ -969,10 +969,10 @@ class ModuleProfilingTest extends TestCase
         $newCluster2 = Core::$systemDB->select("role", ["name" => "Regular"]);
         $newCluster3 = Core::$systemDB->select("role", ["name" => "Halfhearted"]);
 
-        $expectedProfiling = array("landingPage" => "", "id" => $profiling, "course" => $courseId, "name" => "Profiling");
-        $expectedCluster1 = array("landingPage" => "", "id" => $cluster1, "course" => $courseId, "name" => "Achiever");
-        $expectedCluster2 = array("landingPage" => "", "id" => $cluster2, "course" => $courseId, "name" => "Regular");
-        $expectedCluster3 = array("landingPage" => "", "id" => $cluster3, "course" => $courseId, "name" => "Halfhearted");
+        $expectedProfiling = array("landingPage" => null, "id" => $profiling, "course" => $courseId, "name" => "Profiling");
+        $expectedCluster1 = array("landingPage" => null, "id" => $cluster1, "course" => $courseId, "name" => "Achiever");
+        $expectedCluster2 = array("landingPage" => null, "id" => $cluster2, "course" => $courseId, "name" => "Regular");
+        $expectedCluster3 = array("landingPage" => null, "id" => $cluster3, "course" => $courseId, "name" => "Halfhearted");
 
         $this->assertEquals($expectedProfiling, $newProfiling);
         $this->assertEquals($expectedCluster1, $newCluster1);
@@ -1175,10 +1175,10 @@ class ModuleProfilingTest extends TestCase
         $newCluster3 = Core::$systemDB->select("role", ["name" => "Halfhearted"]);
         $newCluster4 = Core::$systemDB->select("role", ["name" => "Underachiever"]);
 
-        $expectedCluster1 = array("landingPage" => "", "id" => $newCluster1["id"], "course" => $courseId, "name" => "Achiever");
-        $expectedCluster2 = array("landingPage" => "", "id" => $newCluster2["id"], "course" => $courseId, "name" => "Regular");
-        $expectedCluster3 = array("landingPage" => "", "id" => $newCluster3["id"], "course" => $courseId, "name" => "Halfhearted");
-        $expectedCluster4 = array("landingPage" => "", "id" => $newCluster4["id"], "course" => $courseId, "name" => "Underachiever");
+        $expectedCluster1 = array("landingPage" => null, "id" => $newCluster1["id"], "course" => $courseId, "name" => "Achiever");
+        $expectedCluster2 = array("landingPage" => null, "id" => $newCluster2["id"], "course" => $courseId, "name" => "Regular");
+        $expectedCluster3 = array("landingPage" => null, "id" => $newCluster3["id"], "course" => $courseId, "name" => "Halfhearted");
+        $expectedCluster4 = array("landingPage" => null, "id" => $newCluster4["id"], "course" => $courseId, "name" => "Underachiever");
 
         $this->assertEquals($expectedCluster1, $newCluster1);
         $this->assertEquals($expectedCluster2, $newCluster2);
@@ -1320,10 +1320,10 @@ class ModuleProfilingTest extends TestCase
         $newCluster3 = Core::$systemDB->select("role", ["name" => "Halfhearted"]);
         $newCluster4 = Core::$systemDB->select("role", ["name" => "Underachiever"]);
 
-        $expectedCluster1 = array("landingPage" => "", "id" => $cluster1, "course" => $courseId, "name" => "Achiever");
-        $expectedCluster2 = array("landingPage" => "", "id" => $cluster2, "course" => $courseId, "name" => "Regular");
-        $expectedCluster3 = array("landingPage" => "", "id" => $cluster3, "course" => $courseId, "name" => "Halfhearted");
-        $expectedCluster4 = array("landingPage" => "", "id" => $cluster4, "course" => $courseId, "name" => "Underachiever");
+        $expectedCluster1 = array("landingPage" => null, "id" => $cluster1, "course" => $courseId, "name" => "Achiever");
+        $expectedCluster2 = array("landingPage" => null, "id" => $cluster2, "course" => $courseId, "name" => "Regular");
+        $expectedCluster3 = array("landingPage" => null, "id" => $cluster3, "course" => $courseId, "name" => "Halfhearted");
+        $expectedCluster4 = array("landingPage" => null, "id" => $cluster4, "course" => $courseId, "name" => "Underachiever");
 
         $this->assertEquals($expectedCluster1, $newCluster1);
         $this->assertEquals($expectedCluster2, $newCluster2);
@@ -1462,9 +1462,9 @@ class ModuleProfilingTest extends TestCase
         $newCluster2 = Core::$systemDB->select("role", ["name" => "Blue"]);
         $newCluster3 = Core::$systemDB->select("role", ["name" => "Green"]);
 
-        $expectedCluster1 = array("landingPage" => "", "id" => $cluster1, "course" => $courseId, "name" => "Red");
-        $expectedCluster2 = array("landingPage" => "", "id" => $cluster2, "course" => $courseId, "name" => "Blue");
-        $expectedCluster3 = array("landingPage" => "", "id" => $cluster3, "course" => $courseId, "name" => "Green");
+        $expectedCluster1 = array("landingPage" => null, "id" => $cluster1, "course" => $courseId, "name" => "Red");
+        $expectedCluster2 = array("landingPage" => null, "id" => $cluster2, "course" => $courseId, "name" => "Blue");
+        $expectedCluster3 = array("landingPage" => null, "id" => $cluster3, "course" => $courseId, "name" => "Green");
 
         $this->assertEquals($expectedCluster1, $newCluster1);
         $this->assertEquals($expectedCluster2, $newCluster2);

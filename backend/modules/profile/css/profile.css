@@ -36,6 +36,9 @@
 .profile .profile-summary .profile-summary-blocks .profile-details .profile-details-header .profile-details-header-img {
   width: 100px;
   height: 100px;
+}
+
+.profile .profile-summary .profile-summary-blocks .profile-details .profile-details-header .profile-details-header-img img {
   object-fit: cover;
 }
 

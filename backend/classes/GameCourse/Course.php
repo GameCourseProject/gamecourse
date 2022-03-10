@@ -7,9 +7,6 @@ use GameRules;
 use GameCourse\Views\Views;
 use GameCourse\Views\ViewHandler;
 use Modules\AwardList\AwardList;
-use Modules\ClassCheck\ClassCheckModule;
-use Modules\GoogleSheets\GoogleSheetsModule;
-use Modules\Moodle\MoodleModule;
 use Utils;
 
 class Course
@@ -1155,13 +1152,13 @@ class Course
     //returns number of awards
     public function getNumAwards()
     {
-        return Core::$systemDB->select(AwardList::TABLE, ["course" => $this->cid], "count(*)");
+        return intval(Core::$systemDB->select(AwardList::TABLE, ["course" => $this->cid], "count(*)"));
     }
 
     //returns number of awards
     public function getNumParticipations()
     {
-        return Core::$systemDB->select("participation", ["course" => $this->cid], "count(*)");
+        return intval(Core::$systemDB->select("participation", ["course" => $this->cid], "count(*)"));
     }
 
 

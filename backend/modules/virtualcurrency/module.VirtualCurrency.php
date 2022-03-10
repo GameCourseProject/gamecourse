@@ -53,12 +53,28 @@ class VirtualCurrency extends Module
 
         Dictionary::registerLibrary(self::ID, self::ID, "This library provides information regarding Virtual Currency. It is provided by the Virtual Currency module.");
 
+        //virtualcurrency.isEnabled
+        Dictionary::registerFunction(
+            self::ID,
+            'isEnabled',
+            function () {
+                $isEnabled = filter_var(Core::$systemDB->select("course_module", ["course" => $this->getCourseId(), "moduleId" => VirtualCurrency::ID], "isEnabled"), FILTER_VALIDATE_BOOLEAN);
+                return new ValueNode($isEnabled);
+            },
+            "Returns whether the Virtual Currency is enabled for the course.",
+            'boolean',
+            'virtualcurrency',
+            'library',
+            null,
+            true
+        );
+
         //virtualcurrency.name
         Dictionary::registerFunction(
             self::ID,
             'name',
-            function ($arg) {
-                return Dictionary::basicGetterFunction($arg, "name");
+            function () {
+                return new ValueNode(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $this->getCourseId()], "name"));
             },
             "Returns the Virtual Currency object with the specific name.",
             'object',
@@ -72,8 +88,8 @@ class VirtualCurrency extends Module
         Dictionary::registerFunction(
             self::ID,
             'skillCost',
-            function ($arg) {
-                return Dictionary::basicGetterFunction($arg, "skillCost");
+            function () {
+                return new ValueNode(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $this->getCourseId()], "skillCost"));
             },
             "Returns a string with the retry cost of a skill.",
             'object',
@@ -87,8 +103,8 @@ class VirtualCurrency extends Module
         Dictionary::registerFunction(
             self::ID,
             'wildcardCost',
-            function ($arg) {
-                return Dictionary::basicGetterFunction($arg, "wildcardCost");
+            function () {
+                return new ValueNode(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $this->getCourseId()], "wildcardCost"));
             },
             "Returns a string with the cost of a wildcard.",
             'object',

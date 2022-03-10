@@ -137,13 +137,26 @@ CREATE TABLE course_user(
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
+CREATE TABLE page(
+     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+     course                      int unsigned NOT NULL,
+     name                        varchar(50) NOT NULL,
+     theme                       varchar(50),
+     viewId                      int unsigned,
+     isEnabled                   boolean DEFAULT FALSE,
+     seqId                       int unsigned NOT NULL,
+
+     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+);
+
 CREATE TABLE role(
 	id 		                    int unsigned AUTO_INCREMENT PRIMARY KEY,
 	name                        varchar(50) NOT NULL,
-	landingPage                 varchar(100) DEFAULT '',
+	landingPage                 int unsigned DEFAULT NULL,
 	course                      int unsigned NOT NULL,
 
-	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+	FOREIGN key(landingPage) REFERENCES page(id) ON DELETE CASCADE
 );
 
 CREATE TABLE user_role(
@@ -331,18 +344,6 @@ CREATE TABLE view_parent(
     viewIndex                   int unsigned,
 
     FOREIGN key(parentId) REFERENCES view(id) ON DELETE CASCADE
-);
-
-CREATE TABLE page(
-	id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
-	course                      int unsigned NOT NULL,
-	name                        varchar(50) NOT NULL,
-	theme                       varchar(50),
-	viewId                      int unsigned,
-	isEnabled                   boolean DEFAULT FALSE,
-	seqId                       int unsigned NOT NULL,
-
-	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
 CREATE TABLE template(

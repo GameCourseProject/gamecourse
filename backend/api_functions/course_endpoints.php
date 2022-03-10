@@ -81,8 +81,8 @@ API::registerFunction($MODULE, 'getCourseWithInfo', function () {
     }
     $activePages = $filteredPages;
 
-    // FIXME: landing page not being set (I think)
-    $landingPage = $courseUser->getLandingPage();
+    // FIXME: landing page not being set (I think) -> set for each role
+    $landingPage = $course->getLandingPage();
     $landingPageInfo = Core::$systemDB->select("page", ["name" => $landingPage], "id, viewId");
     $landingPageID = $landingPageInfo["id"];
     $landingPageType = Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $landingPageInfo["viewId"], "course" => $courseId], "roleType");
@@ -757,7 +757,8 @@ API::registerFunction($MODULE, 'roles', function () {
 
     } else {
         $globalInfo = array(
-            'roles' => array_column($course->getRoles("name"), "name"),
+            'pages' => $course->getPages(true),
+            'roles' => $course->getRoles("name, landingPage"),
             'roles_obj' => $course->getRoles('id, name, landingPage'),
             'rolesHierarchy' => $course->getRolesHierarchy(),
         );

@@ -35,14 +35,16 @@ API::registerFunction($MODULE, 'getLoggedUserActiveCourses', function() {
     $coursesId = $user->getCourses();
 
     $courses = [];
+    $landingPages = [];
     foreach($coursesId as $cid){
         $course = Core::getCourse($cid);
         if ($course["isActive"]) {
+            $landingPages[$cid] = Course::getCourse($cid)->getUser($user->getId())->getLandingPage();
             $courses[] = $course;
         }
     }
 
-    API::response(array('userActiveCourses' => $courses));
+    API::response(array('userActiveCourses' => $courses, 'landingPages' => $landingPages));
 });
 
 
@@ -87,23 +89,35 @@ API::registerFunction($MODULE, 'getUserCourses', function() {
 
     if ($user->isAdmin()) {
         $courses = Core::getCourses(); // admins see all courses of the system
+        $landingPages = [];
 
         // Get number of students per course
         foreach($courses as &$course){
             $cOb = Course::getCourse($course['id'], false);
             $course['nrStudents'] = sizeof($cOb->getUsersWithRole("Student"));
+
+            $courseUser = $cOb->getUser($user->getId());
+            if ($courseUser) {
+                $landingPages[$course['id']] = $courseUser->getLandingPage();
+            } else {
+                $landingPages[$course['id']] = null;
+            }
         }
 
     } else {
         $coursesId = $user->getCourses();
 
         $courses = [];
+        $landingPages = [];
         foreach($coursesId as $cid){
             $course = Core::getCourse($cid);
-            if ($course["isVisible"]) $courses[] = $course;
+            if ($course["isVisible"]) {
+                $courses[] = $course;
+                $landingPages[$cid] = Course::getCourse($cid)->getUser($user->getId())->getLandingPage();
+            }
         }
     }
-    API::response(array('courses' => $courses));
+    API::response(array('courses' => $courses, 'landingPages' => $landingPages));
 });
 
 /**

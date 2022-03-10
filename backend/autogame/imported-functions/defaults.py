@@ -65,32 +65,28 @@ def get_rating (logs):
 @rule_function
 def filter_excellence(logs, tiers, classes):
 	"""
-	Filters the list of logs in a way that only
-	participations within excellence thresholds are 
-	returned.
-	"""
+    Filters the list of logs in a way that only
+    participations within excellence thresholds are
+    returned.
+    """
 
-	if len(tiers) != len(classes):
-		print("ERROR: number of tiers does not match number of classes")
+    if len(tiers) != len(classes):
+        print("ERROR: number of tiers does not match number of classes")
 
-	if len(logs) > 0:
-		user = logs[0].user
-		desc = logs[0].log_type
+    if len(logs) > 0:
+        user = logs[0].user
+        desc = logs[0].log_type
 
-	labs = list(range(1, sum(classes) + 1))
-	filtered = []
+    filtered = []
+    for i in range(0, len(classes)):
+        tier = tiers[i]
+        tier_labs = classes[i]
 
-	for i in range(0, len(tiers)):
-		tier = tiers[i]
-		nr_classes = classes[i]
-		tier_labs = labs[:nr_classes]
+        for line in logs:
+            if int(line.description) in tier_labs and int(line.rating) >= tier:
+                filtered.append(line)
 
-		for line in logs:
-			if int(line.description) in tier_labs and int(line.rating) >= tier:
-				filtered.append(line)
-		labs = labs[nr_classes:]
-	
-	return filtered
+    return filtered
 
 
 @rule_function

@@ -23,7 +23,7 @@
               "type": "text",
               "role": "role.Student>role.Default",
               "visibilityType": "visible",
-              "value": "Streaks ({xp.getStreaksXP(%user)} XP)"
+              "value": "Streaks ({xp.getStreaksXP(%user)} XP, {streaks.getStreaksTokens(%user)} {virtualcurrency.name})"
             }
           ]
         }
@@ -34,7 +34,7 @@
           "role": "role.Student>role.Default",
           "class": "streak",
           "visibilityType": "visible",
-          "loopData": "{streaks.getAllStreaks().sort(\"ascending\",\"name\")}",
+          "loopData": "{streaks.getAllStreaks().sort(\"asc, name\")}",
           "variables": {
             "streak": {
               "value": "{%item}"
@@ -158,11 +158,56 @@
                       "children": [
                         [
                           {
-                            "type": "text",
+                            "type": "block",
                             "role": "role.Student>role.Default",
-                            "class": "streak-reward ",
+                            "class": "streak-reward-xp",
                             "visibilityType": "visible",
-                            "value": "{%streak.reward} XP"
+                            "children": [
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "class": "streak-reward-xp-xp",
+                                  "visibilityType": "visible",
+                                  "value": "{%streak.reward(\"xp\")} XP"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "class": " streak-reward-xp-extra-credit",
+                                  "visibilityType": "visible",
+                                  "value": "extra credit"
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "type": "block",
+                            "role": "role.Student>role.Default",
+                            "class": "streak-reward-token",
+                            "visibilityType": "visible",
+                            "children": [
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "visibilityType": "visible",
+                                  "value": "{%streak.reward(\"token\")}"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "image",
+                                  "role": "role.Student>role.Default",
+                                  "visibilityType": "visible",
+                                  "src": "modules/virtualcurrency/imgs/token.png"
+                                }
+                              ]
+                            ]
                           }
                         ]
                       ]

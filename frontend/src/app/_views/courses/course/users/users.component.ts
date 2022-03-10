@@ -12,10 +12,10 @@ import {Role} from "../../../../_domain/roles/role";
 import {AuthType} from 'src/app/_domain/auth/auth-type';
 import {UserData} from "../../../my-info/my-info/my-info.component";
 
-import {ImageManager} from "../../../../_utils/images/image-manager";
-import {Order, Sort} from "../../../../_utils/display/order";
+import {ResourceManager} from "../../../../_utils/resources/resource-manager";
+import {Order, Sort} from "../../../../_utils/lists/order";
 import {DownloadManager} from "../../../../_utils/download/download-manager";
-import {Reduce} from "../../../../_utils/display/reduce";
+import {Reduce} from "../../../../_utils/lists/reduce";
 
 import _ from 'lodash';
 import {exists} from "../../../../_utils/misc/misc";
@@ -49,7 +49,7 @@ export class UsersComponent implements OnInit {
 
   originalPhoto: string;  // Original photo
   photoToAdd: File;       // Any photo that comes through the input
-  photo: ImageManager;    // Photo to be displayed
+  photo: ResourceManager; // Photo to be displayed
 
   importedFile: File;
 
@@ -87,7 +87,7 @@ export class UsersComponent implements OnInit {
     private sanitizer: DomSanitizer,
     private updateManager: UpdateService
   ) {
-    this.photo = new ImageManager(sanitizer);
+    this.photo = new ResourceManager(sanitizer);
   }
 
   ngOnInit(): void {
@@ -210,7 +210,7 @@ export class UsersComponent implements OnInit {
     this.loadingAction = true;
 
     if (this.photoToAdd)
-      await ImageManager.getBase64(this.photoToAdd).then(data => this.newUser.image = data);
+      await ResourceManager.getBase64(this.photoToAdd).then(data => this.newUser.image = data);
 
     this.newUser.roles = this.selectedUserRoles || [];
 
@@ -236,7 +236,7 @@ export class UsersComponent implements OnInit {
     this.newUser['id'] = this.userToEdit.id;
 
     if (this.photoToAdd)
-      await ImageManager.getBase64(this.photoToAdd).then(data => this.newUser.image = data);
+      await ResourceManager.getBase64(this.photoToAdd).then(data => this.newUser.image = data);
 
     this.newUser.roles = this.selectedUserRoles || [];
 

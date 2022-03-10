@@ -82,7 +82,7 @@
                 "type": "row",
                 "role": "role.Default",
                 "visibilityType": "visible",
-                "loopData": "{awards.getAllAwards().sort(\"descending\", \"date\")}",
+                "loopData": "{awards.getAllAwards().sort(\"desc, date\")}",
                 "variables": {
                   "award": {
                     "value": "{%item}"
@@ -94,7 +94,7 @@
                       "type": "text",
                       "role": "role.Default",
                       "visibilityType": "visible",
-                      "value": "{%award.reward} XP"
+                      "value": "{%award.reward} {system.if(%award.type == \"tokens\", \"\", \"XP\")}"
                     }
                   ],
                   [

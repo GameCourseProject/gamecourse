@@ -7,8 +7,9 @@ import {ApiEndpointsService} from "../../../../../../_services/api/api-endpoints
 import {ErrorService} from "../../../../../../_services/error.service";
 
 import {Module} from "../../../../../../_domain/modules/module";
-import {Reduce} from "../../../../../../_utils/display/reduce";
+import {Reduce} from "../../../../../../_utils/lists/reduce";
 import {ModuleType} from "../../../../../../_domain/modules/ModuleType";
+import {DomSanitizer} from "@angular/platform-browser";
 
 @Component({
   selector: 'app-modules',
@@ -37,7 +38,8 @@ export class ModulesComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private sanitizer: DomSanitizer
   ) { }
 
   get API_ENDPOINT(): string {
@@ -101,7 +103,7 @@ export class ModulesComponent implements OnInit {
         res => {
           module.enabled = !module.enabled;
           this.getModules(this.courseID);
-          Module.reloadStyles(this.courseID);
+          Module.reloadStyles(this.courseID, this.sanitizer);
         },
         error => ErrorService.set(error),
         () => {

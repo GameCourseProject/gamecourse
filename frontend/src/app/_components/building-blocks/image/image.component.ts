@@ -1,6 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ViewImage} from "../../../_domain/views/view-image";
-import {ImageManager} from "../../../_utils/images/image-manager";
+import {ResourceManager} from "../../../_utils/resources/resource-manager";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
 import {exists, requireValues} from "../../../_utils/misc/misc";
@@ -23,12 +23,12 @@ export class ImageComponent implements OnInit {
 
   isEmpty: boolean;
   isPlaceholder: boolean;
-  image: ImageManager;
+  image: ResourceManager;
 
   constructor(
     private sanitizer: DomSanitizer,
   ) {
-    this.image = new ImageManager(sanitizer);
+    this.image = new ResourceManager(sanitizer);
   }
 
   ngOnInit(): void {

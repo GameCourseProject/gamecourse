@@ -6,7 +6,7 @@ import {ErrorService} from "../../../_services/error.service";
 
 import {Module} from "../../../_domain/modules/module";
 import {DownloadManager} from "../../../_utils/download/download-manager";
-import {Reduce} from "../../../_utils/display/reduce";
+import {Reduce} from "../../../_utils/lists/reduce";
 import {finalize} from "rxjs/operators";
 
 @Component({
