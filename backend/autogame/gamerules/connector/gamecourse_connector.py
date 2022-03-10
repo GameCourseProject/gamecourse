@@ -631,7 +631,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
         cursor.execute(query, (skill, course))
         table_skill = cursor.fetchall()
 
-        query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'gamecourse_test') AND (TABLE_NAME = 'config_virtual_currency');"
+        query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'gamecourse') AND (TABLE_NAME = 'config_virtual_currency');"
         cursor.execute(query)
         table_exists = cursor.fetchall()
 
@@ -1794,7 +1794,8 @@ def award_streak(target, streak, contributions=None, info=None):
     typeof = "streak"
 
     nlogs = len(contributions)
-    if contributions != None:
+    participationType = ''
+    if contributions != None and streak != "Grader Extraordinaire":
         participationType = contributions[0].log_type
 
     if config.test_mode:
@@ -1970,6 +1971,49 @@ def award_streak(target, streak, contributions=None, info=None):
                             query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
                             cursor.execute(query, (course, target, streakid, participation_id))
                             cnx.commit()
+
+                   elif streak.startswith("Grader"):
+                        # contributions - id, timeassigned, expired
+                        size = len(contributions)
+
+                        for i in range(size):
+                            id = contributions[i][0]
+                            expired = contributions[i][2]
+                            if expired == 0:
+                                valid = 1
+                            else:
+                                valid = 0
+
+                            query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                            cursor.execute(query, (course, target, streakid, id, valid))
+                            cnx.commit()
+
+
+                        query = "SELECT participationId, isValid FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s;"
+                        cursor.execute(query, (target, course, streakid))
+                        table_all_participations = cursor.fetchall()
+
+                        total = len(table_all_participations)
+
+                        for p in range(total):
+                            participationValid = table_all_participations[p][1]
+
+                            if not participationValid:
+                                for i in range(p-1, 0, -1):
+                                    query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND participationId= %s;"
+                                    cursor.execute(query, (target, course, streakid))
+                                    cnx.commit()
+
+                        query = "SELECT participationId FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s AND isValid = '1';"
+                        cursor.execute(query, (target, course, streakid))
+                        table_valid = cursor.fetchall()
+
+                        for participation in table_valid:
+                            participation_id = participation[0]
+                            query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
+                            cursor.execute(query, (course, target, streakid, participation_id))
+                            cnx.commit()
+
 
                    else:
                         for log in contributions:
@@ -2192,7 +2236,7 @@ def award_streak(target, streak, contributions=None, info=None):
                             firstGraded  = "mod/peerforum/discuss.php?d=" + str(d_gradedPost) + "&parent="  +  str(p_gradedPost)
 
 
-                            query = "SELECT id, date FROM participation WHERE user = %s and course = %s and type = 'forum add post' AND post = %s;"
+                            query = "SELECT id, date FROM participation WHERE user = %s and course = %s and type = 'forum add post' AND post = %s; "
                             cursor.execute(query, (target, course, firstGraded))
                             table_first_date = cursor.fetchall()
 
@@ -2324,18 +2368,19 @@ def award_streak(target, streak, contributions=None, info=None):
                 cnx.commit()
                 cursor = cnx.cursor(prepared=True)
 
-                # gets award_id
-                query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
-                cursor.execute(query, (target, course, description, typeof))
-                table_id = cursor.fetchall()
-                award_id = table_id[0][0]
+                if not streak.startswith("Grader"):
+                    # gets award_id
+                    query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+                    cursor.execute(query, (target, course, description, typeof))
+                    table_id = cursor.fetchall()
+                    award_id = table_id[0][0]
 
-                if not config.test_mode:
-                    for el in table_progressions:
-                        participation_id = el[3]
-                        query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
-                        cursor.execute(query, (award_id, participation_id))
-                        cnx.commit()
+                    if not config.test_mode:
+                        for el in table_progressions:
+                            participation_id = el[3]
+                            query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                            cursor.execute(query, (award_id, participation_id))
+                            cnx.commit()
 
             else:
                 totalAwards = len(table_progressions) // streak_count
@@ -2357,7 +2402,7 @@ def award_streak(target, streak, contributions=None, info=None):
                             table_id = cursor.fetchall()
                             award_id = table_id[0][0]
 
-                            if not config.test_mode:
+                            if not config.test_mode and not streak.startswith("Grader"):
                                 for el in range(streak_count):
                                     participation_id = table_progressions[el][3]
                                     query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
@@ -2401,7 +2446,7 @@ def award_streak(target, streak, contributions=None, info=None):
                     table_id = cursor.fetchall()
                     award_id = table_id[0][0]
 
-                    if not config.test_mode:
+                    if not config.test_mode and not streak.startswith("Grader"):
                         for el in contributions:
                             participation_id = el.log_id
                             query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
