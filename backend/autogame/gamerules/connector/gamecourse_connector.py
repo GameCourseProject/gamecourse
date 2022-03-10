@@ -26,194 +26,194 @@ tree_awards = read_tree()
 
 
 def get_credentials():
-	# -----------------------------------------------------------
-	# Read db credentials from file
-	# -----------------------------------------------------------
-	with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),'credentials.txt'), 'r') as f:
-		data = f.readlines()
-		if len(data) == 3:
-			db = data[0].strip('\n')
-			un = data[1].strip('\n')
-			pw = data[2].strip('\n')
-			return (db, un, pw)
+    # -----------------------------------------------------------
+    # Read db credentials from file
+    # -----------------------------------------------------------
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),'credentials.txt'), 'r') as f:
+        data = f.readlines()
+        if len(data) == 3:
+            db = data[0].strip('\n')
+            un = data[1].strip('\n')
+            pw = data[2].strip('\n')
+            return (db, un, pw)
 
 
 def get_dictionary():
-	# -----------------------------------------------------------
-	# Pulls all GameCourse dictionary terms from the database.
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Pulls all GameCourse dictionary terms from the database.
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	# keyword must be queried first so it serves as key for a dictionary
-	query = "SELECT keyword, moduleId FROM dictionary WHERE course = %s;"
-	course = (config.course,)
+    # keyword must be queried first so it serves as key for a dictionary
+    query = "SELECT keyword, moduleId FROM dictionary WHERE course = %s;"
+    course = (config.course,)
 
-	cursor.execute(query, course)
-	table = cursor.fetchall()
+    cursor.execute(query, course)
+    table = cursor.fetchall()
 
-	cnx.close()
+    cnx.close()
 
-	# results to a query are a list of tuples
-	return table
+    # results to a query are a list of tuples
+    return table
 
 
 def get_student_numbers(course):
-	# -----------------------------------------------------------
-	# Returns the student numbers of all active targets
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Returns the student numbers of all active targets
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	query = "SELECT id, studentNumber FROM game_course_user;"
+    query = "SELECT id, studentNumber FROM game_course_user;"
 
-	cursor.execute(query)
-	table = cursor.fetchall()
-	cnx.close()
+    cursor.execute(query)
+    table = cursor.fetchall()
+    cnx.close()
 
-	student_numbers = {}
+    student_numbers = {}
 
-	for i in range(len(table)):
-		student_numbers[str(table[i][0])] = str(table[i][1])
+    for i in range(len(table)):
+        student_numbers[str(table[i][0])] = str(table[i][1])
 
-	return student_numbers
+    return student_numbers
 
 
 
 
 def course_exists(course):
-	# -----------------------------------------------------------
-	# Checks course exists and is active
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Checks course exists and is active
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	query = "SELECT isActive FROM course WHERE id = %s;"
-	args = (course,)
+    query = "SELECT isActive FROM course WHERE id = %s;"
+    args = (course,)
 
-	cursor.execute(query, args)
-	table = cursor.fetchall()
-	cnx.close()
+    cursor.execute(query, args)
+    table = cursor.fetchall()
+    cnx.close()
 
-	if len(table) == 1:
-		return table[0][0]
-	else:
-		return False
+    if len(table) == 1:
+        return table[0][0]
+    else:
+        return False
 
 
 def check_dictionary(library, function):
-	# -----------------------------------------------------------
-	# Checks if a function exists in the gamecourse dictionary
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Checks if a function exists in the gamecourse dictionary
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	query = "SELECT keyword, moduleId FROM dictionary WHERE course = %s and library=%s and keyword = %s;"
-	args = (config.course, library, function)
+    query = "SELECT keyword, moduleId FROM dictionary WHERE course = %s and library=%s and keyword = %s;"
+    args = (config.course, library, function)
 
-	cursor.execute(query, args)
-	table = cursor.fetchall()
-	cnx.close()
+    cursor.execute(query, args)
+    table = cursor.fetchall()
+    cnx.close()
 
-	# returns empty list if term not in dictionary
-	# TO DO : also will need to check number of arguments once the schema includes that information
+    # returns empty list if term not in dictionary
+    # TO DO : also will need to check number of arguments once the schema includes that information
 
-	return len(table) == 1
+    return len(table) == 1
 
 
 
 def get_targets(course, timestamp=None, all_targets=False):
-	"""
-	Returns targets for running rules (students)
-	"""
+    """
+    Returns targets for running rules (students)
+    """
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	# query that joins roles with participations
-	# select user, role.name from participation left join user_role on participation.user = user_role.id left join role on user_role.role = role.id where participation.course = 1 and role.name="Student";
+    # query that joins roles with participations
+    # select user, role.name from participation left join user_role on participation.user = user_role.id left join role on user_role.role = role.id where participation.course = 1 and role.name="Student";
 
-	if all_targets:
-		query = "SELECT user_role.id FROM user_role left join role on user_role.role=role.id WHERE user_role.course =%s AND role.name='Student';"
-		cursor.execute(query, (course))
-		table = cursor.fetchall()
-		cnx.close()
+    if all_targets:
+        query = "SELECT user_role.id FROM user_role left join role on user_role.role=role.id WHERE user_role.course =%s AND role.name='Student';"
+        cursor.execute(query, (course))
+        table = cursor.fetchall()
+        cnx.close()
 
-	else:
-		if timestamp == None:
-			query = "SELECT user FROM participation LEFT JOIN user_role ON participation.user = user_role.id LEFT JOIN role ON user_role.role = role.id WHERE participation.course =%s AND role.name='Student';"
-			cursor.execute(query, (course,))
+    else:
+        if timestamp == None:
+            query = "SELECT user FROM participation LEFT JOIN user_role ON participation.user = user_role.id LEFT JOIN role ON user_role.role = role.id WHERE participation.course =%s AND role.name='Student';"
+            cursor.execute(query, (course,))
 
-			table = cursor.fetchall()
-			cnx.close()
+            table = cursor.fetchall()
+            cnx.close()
 
-		elif timestamp != None:
-			query = "SELECT user FROM participation LEFT JOIN user_role ON participation.user = user_role.id LEFT JOIN role ON user_role.role = role.id WHERE participation.course =%s AND role.name='Student' AND date > %s;"
-			cursor.execute(query, (course, timestamp))
+        elif timestamp != None:
+            query = "SELECT user FROM participation LEFT JOIN user_role ON participation.user = user_role.id LEFT JOIN role ON user_role.role = role.id WHERE participation.course =%s AND role.name='Student' AND date > %s;"
+            cursor.execute(query, (course, timestamp))
 
-			table = cursor.fetchall()
-			cnx.close()
+            table = cursor.fetchall()
+            cnx.close()
 
-	targets = {}
-	for line in table:
-		(user,) = line
-		targets[user] = 1
+    targets = {}
+    for line in table:
+        (user,) = line
+        targets[user] = 1
 
-	return targets
+    return targets
 
 
 def delete_awards(course):
-	# -----------------------------------------------------------
-	# Deletes all awards of a given course
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Deletes all awards of a given course
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	query = "DELETE FROM award where course = %s;"
+    query = "DELETE FROM award where course = %s;"
 
-	cursor.execute(query, (course,))
-	cnx.commit()
-	cnx.close()
+    cursor.execute(query, (course,))
+    cnx.commit()
+    cnx.close()
 
-	return
+    return
 
 
 def count_awards(course):
-	# -----------------------------------------------------------
-	# Deletes all awards of a given course
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Deletes all awards of a given course
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	query = "SELECT count(*) FROM award where course = %s;"
+    query = "SELECT count(*) FROM award where course = %s;"
 
-	cursor.execute(query, (course,))
-	table = cursor.fetchall()
+    cursor.execute(query, (course,))
+    table = cursor.fetchall()
 
-	cnx.commit()
-	cnx.close()
+    cnx.commit()
+    cnx.close()
 
-	return table[0][0]
+    return table[0][0]
 
 
 def calculate_xp(course, target):
@@ -350,257 +350,257 @@ def calculate_xp(course, target):
 
 
 def autogame_init(course):
-	# -----------------------------------------------------------
-	# Pulls gamerules related info for a given course
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Pulls gamerules related info for a given course
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	query = "SELECT * FROM autogame where course = %s;"
+    query = "SELECT * FROM autogame where course = %s;"
 
-	cursor.execute(query, (course,))
-	table = cursor.fetchall()
+    cursor.execute(query, (course,))
+    table = cursor.fetchall()
 
-	last_activity = None
+    last_activity = None
 
-	if len(table) == 0:
-		# if course does not exist, add to table
-		query = "INSERT INTO autogame (course,startedRunning,finishedRunning,isRunning) VALUES(%s, %s, %s, %s);"
+    if len(table) == 0:
+        # if course does not exist, add to table
+        query = "INSERT INTO autogame (course,startedRunning,finishedRunning,isRunning) VALUES(%s, %s, %s, %s);"
 
-		timestamp = datetime.now()
-		time = timestamp.strftime("%Y/%m/%d %H:%M:%S")
-		# create line as running
-		cursor.execute(query, (course, time, time, True))
-	else:
-		if table[0][3] == True:
-			cnx.close()
-			is_running = True
-			return last_activity, is_running
+        timestamp = datetime.now()
+        time = timestamp.strftime("%Y/%m/%d %H:%M:%S")
+        # create line as running
+        cursor.execute(query, (course, time, time, True))
+    else:
+        if table[0][3] == True:
+            cnx.close()
+            is_running = True
+            return last_activity, is_running
 
-		last_activity = table[0][1]
-		query = "UPDATE autogame SET isRunning=%s WHERE course=%s;"
+        last_activity = table[0][1]
+        query = "UPDATE autogame SET isRunning=%s WHERE course=%s;"
 
-		cursor.execute(query, (True, course))
+        cursor.execute(query, (True, course))
 
-	cnx.commit()
-	cnx.close()
-	return last_activity, False
+    cnx.commit()
+    cnx.close()
+    return last_activity, False
 
 
 def autogame_terminate(course, start_date, finish_date):
-	# -----------------------------------------------------------
-	# Finishes execution of gamerules, sets isRunning to False
-	# and notifies server to close the socket
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Finishes execution of gamerules, sets isRunning to False
+    # and notifies server to close the socket
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	if not config.test_mode:
-		query = "UPDATE autogame SET startedRunning=%s, finishedRunning=%s, isRunning=%s WHERE course=%s;"
-		cursor.execute(query, (start_date, finish_date, False, course))
-		cnx.commit()
+    if not config.test_mode:
+        query = "UPDATE autogame SET startedRunning=%s, finishedRunning=%s, isRunning=%s WHERE course=%s;"
+        cursor.execute(query, (start_date, finish_date, False, course))
+        cnx.commit()
 
-	query = "SELECT * from autogame WHERE isRunning=%s AND course != %s;"
-	cursor.execute(query, (True, 0))
-	table = cursor.fetchall()
-	cnx.close()
+    query = "SELECT * from autogame WHERE isRunning=%s AND course != %s;"
+    cursor.execute(query, (True, 0))
+    table = cursor.fetchall()
+    cnx.close()
 
 
-	if len(table) == 0:
-		HOST = '127.0.0.1' # The server's hostname or IP address
-		PORT = 8004 # The port used by the server
+    if len(table) == 0:
+        HOST = '127.0.0.1' # The server's hostname or IP address
+        PORT = 8004 # The port used by the server
 
-		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-			try:
-				s.connect((HOST, PORT))
-				s.settimeout(600.0)
-				end_message = "end gamerules;"
-				s.send(end_message.encode())
-				s.send("\n".encode())
+            try:
+                s.connect((HOST, PORT))
+                s.settimeout(600.0)
+                end_message = "end gamerules;"
+                s.send(end_message.encode())
+                s.send("\n".encode())
 
-			except socket.timeout as e:
-				print("\nError: Socket timeout, operation took longer than 3 minutes.")
+            except socket.timeout as e:
+                print("\nError: Socket timeout, operation took longer than 3 minutes.")
 
-			except KeyboardInterrupt:
-				print("\nInterrupt: You pressed CTRL+C!")
-				exit()
-	return
+            except KeyboardInterrupt:
+                print("\nInterrupt: You pressed CTRL+C!")
+                exit()
+    return
 
 
 def clear_badge_progression(target):
-	# -----------------------------------------------------------
-	# Clear all badge progression for a given user before
-	# calculating new progression. Needs to be refresh everytime
-	# the rule system runs.
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Clear all badge progression for a given user before
+    # calculating new progression. Needs to be refresh everytime
+    # the rule system runs.
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	course = config.course
+    course = config.course
 
-	query = "DELETE from badge_progression where course=%s and user=%s;"
-	cursor.execute(query, (course, target))
-	cnx.commit()
-	cnx.close()
+    query = "DELETE from badge_progression where course=%s and user=%s;"
+    cursor.execute(query, (course, target))
+    cnx.commit()
+    cnx.close()
 
 
 def award_badge(target, badge, lvl, contributions=None, info=None):
-	# -----------------------------------------------------------
-	# Writes and updates 'award' table with badge levels won by
-	# the user. Will retract if rules/participations have been
-	# changed.
-	# Is also responsible for creating indicators.
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Writes and updates 'award' table with badge levels won by
+    # the user. Will retract if rules/participations have been
+    # changed.
+    # Is also responsible for creating indicators.
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	course = config.course
-	typeof = "badge"
+    course = config.course
+    typeof = "badge"
 
-	achievement = {}
+    achievement = {}
 
-	if config.test_mode:
-		awards_table = "award_test"
-	else:
-		awards_table = "award"
+    if config.test_mode:
+        awards_table = "award_test"
+    else:
+        awards_table = "award"
 
-	query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description like %s AND type=%s;"
+    query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description like %s AND type=%s;"
 
-	badge_name = badge + "%"
-	cursor.execute(query, (target, course, badge_name, typeof))
-	table = cursor.fetchall()
-
-
-	# get badge info
-	query = "SELECT number, badgeId, reward from badge_level left join badge on badge.id = badge_level.badgeId where badge.course = %s and badge.name = %s order by number;"
-	cursor.execute(query, (course, badge))
-	table_badge = cursor.fetchall()
-
-	if not config.test_mode:
-		# update the badge_progression table with the current status
-		if contributions != None:
-			if len(contributions) > 0:
-				badgeid = table_badge[0][1]
-
-				for log in contributions:
-					query = "INSERT into badge_progression (course, user, badgeId, participationId) values (%s,%s,%s,%s);"
-					cursor.execute(query, (course, target, badgeid, log.log_id))
-					cnx.commit()
+    badge_name = badge + "%"
+    cursor.execute(query, (target, course, badge_name, typeof))
+    table = cursor.fetchall()
 
 
-	# Case 0: lvl is zero and there are no lines to be erased
-	# Simply return right away
-	if lvl == 0 and len(table) == 0:
-		return
+    # get badge info
+    query = "SELECT number, badgeId, reward from badge_level left join badge on badge.id = badge_level.badgeId where badge.course = %s and badge.name = %s order by number;"
+    cursor.execute(query, (course, badge))
+    table_badge = cursor.fetchall()
 
-	# Case 1: no level of this badge has been attributed yet
-	# Simply write the badge level(s) to the 'award' table
-	elif len(table) == 0:
-		# if table is empty, just write
-		for level in range(1, lvl+1):
-			# if the user doesnt have the respective badge and level, adds it
-			lvl_info = " (level " + str(level) + ")"
-			description = badge + lvl_info
+    if not config.test_mode:
+        # update the badge_progression table with the current status
+        if contributions != None:
+            if len(contributions) > 0:
+                badgeid = table_badge[0][1]
 
-			badge_id = table_badge[level-1][1]
-			reward = table_badge[level-1][2]
+                for log in contributions:
+                    query = "INSERT into badge_progression (course, user, badgeId, participationId) values (%s,%s,%s,%s);"
+                    cursor.execute(query, (course, target, badgeid, log.log_id))
+                    cnx.commit()
 
 
-			query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-			cursor.execute(query, (target, course, description, typeof, badge_id, reward))
-			cnx.commit()
-			cursor = cnx.cursor(prepared=True)
+    # Case 0: lvl is zero and there are no lines to be erased
+    # Simply return right away
+    if lvl == 0 and len(table) == 0:
+        return
 
-			# insert in award_participation
-			if level == 1 and contributions != None:
-				query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
-				cursor.execute(query, (target, course, description, "badge"))
-				table_id = cursor.fetchall()
-				award_id = table_id[0][0]
+    # Case 1: no level of this badge has been attributed yet
+    # Simply write the badge level(s) to the 'award' table
+    elif len(table) == 0:
+        # if table is empty, just write
+        for level in range(1, lvl+1):
+            # if the user doesnt have the respective badge and level, adds it
+            lvl_info = " (level " + str(level) + ")"
+            description = badge + lvl_info
 
-				if not config.test_mode:
-					for el in contributions:
-						participation_id = el.log_id
-						query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
-						cursor.execute(query, (award_id, participation_id))
-						cnx.commit()
+            badge_id = table_badge[level-1][1]
+            reward = table_badge[level-1][2]
 
-			if not config.test_mode:
-				if contributions != None and contributions != None:
-					nr_contributions = str(len(contributions))
-				else:
-					nr_contributions = ''
 
-				config.award_list.append([str(target), str(badge), str(level), nr_contributions])
+            query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
+            cursor.execute(query, (target, course, description, typeof, badge_id, reward))
+            cnx.commit()
+            cursor = cnx.cursor(prepared=True)
 
-	# Case 2: the rule/data sources have been updated, the 'award' table
-	# has badge levels attributed which are no longer valid. All levels
-	# no longer valid must be deleted
-	elif len(table) > lvl:
-		for diff in range(lvl, len(table)):
+            # insert in award_participation
+            if level == 1 and contributions != None:
+                query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+                cursor.execute(query, (target, course, description, "badge"))
+                table_id = cursor.fetchall()
+                award_id = table_id[0][0]
 
-			lvl_info = " (level " + str(diff + 1) + ")"
-			description = badge + lvl_info
+                if not config.test_mode:
+                    for el in contributions:
+                        participation_id = el.log_id
+                        query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                        cursor.execute(query, (award_id, participation_id))
+                        cnx.commit()
 
-			badge_id = table_badge[diff][1]
+            if not config.test_mode:
+                if contributions != None and contributions != None:
+                    nr_contributions = str(len(contributions))
+                else:
+                    nr_contributions = ''
 
-			query = "DELETE FROM " + awards_table + " WHERE user = %s AND course = %s AND description = %s AND moduleInstance = %s AND type=%s;"
-			cursor.execute(query, (target, course, description, badge_id, typeof))
-			cnx.commit()
+                config.award_list.append([str(target), str(badge), str(level), nr_contributions])
 
-	# Case 3: there have been new participations, the new levels won
-	# by the user must be inserted into table 'award'
-	elif len(table) < lvl:
-		for diff in range(len(table), lvl):
+    # Case 2: the rule/data sources have been updated, the 'award' table
+    # has badge levels attributed which are no longer valid. All levels
+    # no longer valid must be deleted
+    elif len(table) > lvl:
+        for diff in range(lvl, len(table)):
 
-			lvl_info = " (level " + str(diff + 1) + ")"
-			description = badge + lvl_info
+            lvl_info = " (level " + str(diff + 1) + ")"
+            description = badge + lvl_info
 
-			badge_id = table_badge[diff][1]
-			reward = table_badge[diff][2]
+            badge_id = table_badge[diff][1]
 
-			query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
-			cursor.execute(query, (target, course, description, typeof, badge_id, reward))
-			cnx.commit()
+            query = "DELETE FROM " + awards_table + " WHERE user = %s AND course = %s AND description = %s AND moduleInstance = %s AND type=%s;"
+            cursor.execute(query, (target, course, description, badge_id, typeof))
+            cnx.commit()
 
-			level = diff + 1
-			# insert in award_participation
-			if level == 1 and contributions != None:
-				query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
-				cursor.execute(query, (target, course, description, "badge"))
-				table_id = cursor.fetchall()
-				award_id = table_id[0][0]
+    # Case 3: there have been new participations, the new levels won
+    # by the user must be inserted into table 'award'
+    elif len(table) < lvl:
+        for diff in range(len(table), lvl):
 
-				if not config.test_mode:
-					for el in contributions:
-						participation_id = el.log_id
-						query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
-						cursor.execute(query, (award_id, participation_id))
-						cnx.commit()
-	cnx.close()
+            lvl_info = " (level " + str(diff + 1) + ")"
+            description = badge + lvl_info
+
+            badge_id = table_badge[diff][1]
+            reward = table_badge[diff][2]
+
+            query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
+            cursor.execute(query, (target, course, description, typeof, badge_id, reward))
+            cnx.commit()
+
+            level = diff + 1
+            # insert in award_participation
+            if level == 1 and contributions != None:
+                query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+                cursor.execute(query, (target, course, description, "badge"))
+                table_id = cursor.fetchall()
+                award_id = table_id[0][0]
+
+                if not config.test_mode:
+                    for el in contributions:
+                        participation_id = el.log_id
+                        query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                        cursor.execute(query, (award_id, participation_id))
+                        cnx.commit()
+    cnx.close()
 
 
 
 def award_skill(target, skill, rating, contributions=None, use_wildcard=False, wildcard_tier=None):
-	# -----------------------------------------------------------
-	# Writes and updates 'award' table with skills completed by
-	# the user. Will retract if rules/participations have been
-	# changed.
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Writes and updates 'award' table with skills completed by
+    # the user. Will retract if rules/participations have been
+    # changed.
+    # -----------------------------------------------------------
 
     #(username, password) = get_credentials()
 
@@ -619,7 +619,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 
 
         if use_wildcard != False and wildcard_tier != None:
-			# get wildcard tier information
+            # get wildcard tier information
             query = "select t.id from skill_tier t left join skill_tree s on t.treeId=s.id where tier =%s and course = %s;"
             cursor.execute(query, (wildcard_tier, course))
             table_tier = cursor.fetchall()
@@ -720,11 +720,11 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
                     cursor.execute(query, (award_id, tier_id))
                     cnx.commit()
 
-		# If skill has already been awarded to used
-		# compare ratings given before and now
+        # If skill has already been awarded to used
+        # compare ratings given before and now
         elif len(table) == 1:
-			# If new rating is lesser than 3
-			# delete the awarded skill
+            # If new rating is lesser than 3
+            # delete the awarded skill
             if rating < 3:
                 query = "DELETE FROM award WHERE user = %s AND course = %s AND description = %s AND type=%s;"
                 cursor.execute(query, (target, course, skill, typeof))
@@ -763,42 +763,42 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 
 
 def award_prize(target, reward_name, xp, contributions=None):
-	# -----------------------------------------------------------
-	# Writes 'award' table with reward that is not a badge or a
-	# skill. Will not retract effects, but will not award twice
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Writes 'award' table with reward that is not a badge or a
+    # skill. Will not retract effects, but will not award twice
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	course = config.course
-	typeof = "bonus"
-	reward = int(xp)
+    course = config.course
+    typeof = "bonus"
+    reward = int(xp)
 
-	if config.test_mode:
-		awards_table = "award_test"
-	else:
-		awards_table = "award"
+    if config.test_mode:
+        awards_table = "award_test"
+    else:
+        awards_table = "award"
 
-	query = "SELECT moduleInstance FROM " + awards_table + " where user = %s AND course = %s AND description = %s AND type=%s;"
+    query = "SELECT moduleInstance FROM " + awards_table + " where user = %s AND course = %s AND description = %s AND type=%s;"
 
-	cursor.execute(query, (target, course, reward_name, typeof))
-	table = cursor.fetchall()
+    cursor.execute(query, (target, course, reward_name, typeof))
+    table = cursor.fetchall()
 
-	if len(table) == 0:
-		# simply award the prize
-		query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
-		cursor.execute(query, (target, course, reward_name, typeof, reward))
-		cnx.commit()
+    if len(table) == 0:
+        # simply award the prize
+        query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
+        cursor.execute(query, (target, course, reward_name, typeof, reward))
+        cnx.commit()
 
-		config.award_list.append([str(target), reward_name, str(reward), ""])
+        config.award_list.append([str(target), reward_name, str(reward), ""])
 
 
-	cnx.close()
+    cnx.close()
 
-	return
+    return
 
 
 def award_tokens(target, reward_name, tokens = None, contributions=None):
@@ -1021,310 +1021,310 @@ def removes_tokens(target, tokens, contributions=None):
     return
 
 def award_grade(target, item, contributions=None, extra=None):
-	# -----------------------------------------------------------
-	# Writes 'award' table with reward that is not a badge or a
-	# skill. Will not retract effects, but will not award twice
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Writes 'award' table with reward that is not a badge or a
+    # skill. Will not retract effects, but will not award twice
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	course = config.course
+    course = config.course
 
-	if config.test_mode:
-		awards_table = "award_test"
-	else:
-		awards_table = "award"
+    if config.test_mode:
+        awards_table = "award_test"
+    else:
+        awards_table = "award"
 
-	if item == "Lab":
-		description = "Lab Grade"
-		typeof = "labs"
-	elif item == "Quiz":
-		description = "Quiz Grade"
-		typeof = "quiz"
-	elif item == "Presentation":
-		description = "Presentation Grade"
-		typeof = "presentation"
+    if item == "Lab":
+        description = "Lab Grade"
+        typeof = "labs"
+    elif item == "Quiz":
+        description = "Quiz Grade"
+        typeof = "quiz"
+    elif item == "Presentation":
+        description = "Presentation Grade"
+        typeof = "presentation"
 
-	query = "SELECT moduleInstance, reward FROM " + awards_table + " where user = %s AND course = %s AND type=%s AND description = %s;"
-	cursor.execute(query, (target, course, typeof, description))
-	table = cursor.fetchall()
-
-
-	if item == "Presentation":
-		for line in contributions:
-			grade = int(line.rating)
-			if len(table) == 0:
-				query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
-				cursor.execute(query, (target, course, description, typeof, grade))
-				cnx.commit()
-				config.award_list.append([str(target), "Grade from " + item, str(grade), ""])
-
-			elif len(table) == 1:
-				query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s"
-				cursor.execute(query, (grade, course, target, typeof, description))
-				cnx.commit()
-
-	elif item == "Quiz" and extra:
-		# add last quiz
-		if len(contributions) == 1:
-			number = int(contributions[0].description.split()[1]) # get the number
-			grade = int(contributions[0].rating)
-			found = False
-			for row in table:
-				if row[0] == number:
-					found = True
-					line = row
-					break
-
-			if found:
-				# if the line already existed and the new rating is different, update the line
-				old_grade = int(line[1])
-				if old_grade != grade:
-					query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s AND moduleInstance = %s;"
-					cursor.execute(query, (grade, course, target, typeof, description, number))
-					cnx.commit()
-
-			else:
-				# if the line did not exist, add it
-				query = "INSERT INTO " + awards_table + " (user, course, description, type, reward, moduleInstance) VALUES(%s, %s , %s, %s, %s, %s);"
-				cursor.execute(query, (target, course, description, typeof, grade, number))
-				cnx.commit()
-				#config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
+    query = "SELECT moduleInstance, reward FROM " + awards_table + " where user = %s AND course = %s AND type=%s AND description = %s;"
+    cursor.execute(query, (target, course, typeof, description))
+    table = cursor.fetchall()
 
 
-	elif (item == "Quiz" and not extra) or item == "Lab":
-		for line in contributions:
-			if line.description == "Dry Run":
-				continue
+    if item == "Presentation":
+        for line in contributions:
+            grade = int(line.rating)
+            if len(table) == 0:
+                query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
+                cursor.execute(query, (target, course, description, typeof, grade))
+                cnx.commit()
+                config.award_list.append([str(target), "Grade from " + item, str(grade), ""])
 
-			grade = int(line.rating)
-			nums = [int(s) for s in line.description.split() if s.isdigit()]
-			number = nums[0]
+            elif len(table) == 1:
+                query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s"
+                cursor.execute(query, (grade, course, target, typeof, description))
+                cnx.commit()
 
-			found = False
-			for row in table:
-				if row[0] == number:
-					found = True
-					line = row
-					break
+    elif item == "Quiz" and extra:
+        # add last quiz
+        if len(contributions) == 1:
+            number = int(contributions[0].description.split()[1]) # get the number
+            grade = int(contributions[0].rating)
+            found = False
+            for row in table:
+                if row[0] == number:
+                    found = True
+                    line = row
+                    break
 
-			if found:
-				# if the line already existed and the new rating is different, update the line
-				old_grade = int(line[1])
-				if old_grade != grade:
-					query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s AND moduleInstance = %s;"
-					cursor.execute(query, (grade, course, target, typeof, description, number))
-					cnx.commit()
+            if found:
+                # if the line already existed and the new rating is different, update the line
+                old_grade = int(line[1])
+                if old_grade != grade:
+                    query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s AND moduleInstance = %s;"
+                    cursor.execute(query, (grade, course, target, typeof, description, number))
+                    cnx.commit()
 
-			else:
-				# if the line did not exist, add it
-				query = "INSERT INTO " + awards_table + " (user, course, description, type, reward, moduleInstance) VALUES(%s, %s , %s, %s, %s, %s);"
-				cursor.execute(query, (target, course, description, typeof, grade, number))
-				cnx.commit()
-				#config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
+            else:
+                # if the line did not exist, add it
+                query = "INSERT INTO " + awards_table + " (user, course, description, type, reward, moduleInstance) VALUES(%s, %s , %s, %s, %s, %s);"
+                cursor.execute(query, (target, course, description, typeof, grade, number))
+                cnx.commit()
+                #config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
 
-	cnx.close()
-	return
+
+    elif (item == "Quiz" and not extra) or item == "Lab":
+        for line in contributions:
+            if line.description == "Dry Run":
+                continue
+
+            grade = int(line.rating)
+            nums = [int(s) for s in line.description.split() if s.isdigit()]
+            number = nums[0]
+
+            found = False
+            for row in table:
+                if row[0] == number:
+                    found = True
+                    line = row
+                    break
+
+            if found:
+                # if the line already existed and the new rating is different, update the line
+                old_grade = int(line[1])
+                if old_grade != grade:
+                    query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s AND moduleInstance = %s;"
+                    cursor.execute(query, (grade, course, target, typeof, description, number))
+                    cnx.commit()
+
+            else:
+                # if the line did not exist, add it
+                query = "INSERT INTO " + awards_table + " (user, course, description, type, reward, moduleInstance) VALUES(%s, %s , %s, %s, %s, %s);"
+                cursor.execute(query, (target, course, description, typeof, grade, number))
+                cnx.commit()
+                #config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
+
+    cnx.close()
+    return
 
 def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ignore_case=None, extra=None):
-	# -----------------------------------------------------------
-	# Writes 'award' table with reward from a quiz.
-	# Will not retract effects, but will not award twice
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Writes 'award' table with reward from a quiz.
+    # Will not retract effects, but will not award twice
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	course = config.course
+    course = config.course
 
-	if config.test_mode:
-		awards_table = "award_test"
-	else:
-		awards_table = "award"
+    if config.test_mode:
+        awards_table = "award_test"
+    else:
+        awards_table = "award"
 
-	description = "Quiz Grade"
-	typeof = "quiz"
-
-
-	query = "SELECT moduleInstance, reward FROM " + awards_table + " where user = %s AND course = %s AND type=%s AND description = %s;"
-	cursor.execute(query, (target, course, typeof, description))
-	table = cursor.fetchall()
-
-	if extra:
-		# add last quiz
-		if len(contributions) == 1:
-			number = int(contributions[0].description.split()[1]) # get the number
-			grade = (int(contributions[0].rating)/ max_grade) * xp_per_quiz
-			found = False
-			for row in table:
-				if row[0] == number:
-					found = True
-					line = row
-					break
-
-			if found:
-				# if the line already existed and the new rating is different, update the line
-				old_grade = int(line[1])
-				if old_grade != grade:
-					query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s AND moduleInstance = %s;"
-					cursor.execute(query, (grade, course, target, typeof, description, number))
-					cnx.commit()
-
-			else:
-				# if the line did not exist, add it
-				query = "INSERT INTO " + awards_table + " (user, course, description, type, reward, moduleInstance) VALUES(%s, %s , %s, %s, %s, %s);"
-				cursor.execute(query, (target, course, description, typeof, grade, number))
-				cnx.commit()
-				#config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
+    description = "Quiz Grade"
+    typeof = "quiz"
 
 
-	else:
-		for line in contributions:
-			if ignore_case != None and ignore_case in line.description:
-				continue
+    query = "SELECT moduleInstance, reward FROM " + awards_table + " where user = %s AND course = %s AND type=%s AND description = %s;"
+    cursor.execute(query, (target, course, typeof, description))
+    table = cursor.fetchall()
 
-			grade = (int(line.rating) / max_grade) * xp_per_quiz
-			nums = [int(s) for s in line.description.split() if s.isdigit()]
-			number = nums[0]
+    if extra:
+        # add last quiz
+        if len(contributions) == 1:
+            number = int(contributions[0].description.split()[1]) # get the number
+            grade = (int(contributions[0].rating)/ max_grade) * xp_per_quiz
+            found = False
+            for row in table:
+                if row[0] == number:
+                    found = True
+                    line = row
+                    break
 
-			found = False
-			for row in table:
-				if row[0] == number:
-					found = True
-					line = row
-					break
+            if found:
+                # if the line already existed and the new rating is different, update the line
+                old_grade = int(line[1])
+                if old_grade != grade:
+                    query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s AND moduleInstance = %s;"
+                    cursor.execute(query, (grade, course, target, typeof, description, number))
+                    cnx.commit()
 
-			if found:
-				# if the line already existed and the new rating is different, update the line
-				old_grade = int(line[1])
-				if old_grade != grade:
-					query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s AND moduleInstance = %s;"
-					cursor.execute(query, (grade, course, target, typeof, description, number))
-					cnx.commit()
+            else:
+                # if the line did not exist, add it
+                query = "INSERT INTO " + awards_table + " (user, course, description, type, reward, moduleInstance) VALUES(%s, %s , %s, %s, %s, %s);"
+                cursor.execute(query, (target, course, description, typeof, grade, number))
+                cnx.commit()
+                #config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
 
-			else:
-				# if the line did not exist, add it
-				query = "INSERT INTO " + awards_table + " (user, course, description, type, reward, moduleInstance) VALUES(%s, %s , %s, %s, %s, %s);"
-				cursor.execute(query, (target, course, description, typeof, grade, number))
-				cnx.commit()
-				#config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
 
-	cnx.close()
-	return
+    else:
+        for line in contributions:
+            if ignore_case != None and ignore_case in line.description:
+                continue
+
+            grade = (int(line.rating) / max_grade) * xp_per_quiz
+            nums = [int(s) for s in line.description.split() if s.isdigit()]
+            number = nums[0]
+
+            found = False
+            for row in table:
+                if row[0] == number:
+                    found = True
+                    line = row
+                    break
+
+            if found:
+                # if the line already existed and the new rating is different, update the line
+                old_grade = int(line[1])
+                if old_grade != grade:
+                    query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s AND moduleInstance = %s;"
+                    cursor.execute(query, (grade, course, target, typeof, description, number))
+                    cnx.commit()
+
+            else:
+                # if the line did not exist, add it
+                query = "INSERT INTO " + awards_table + " (user, course, description, type, reward, moduleInstance) VALUES(%s, %s , %s, %s, %s, %s);"
+                cursor.execute(query, (target, course, description, typeof, grade, number))
+                cnx.commit()
+                #config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
+
+    cnx.close()
+    return
 
 def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, forum=None):
-	# -----------------------------------------------------------
-	# Writes 'award' table with reward that is a post
-	# grade. Will not retract effects, but will not award twice
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Writes 'award' table with reward that is a post
+    # grade. Will not retract effects, but will not award twice
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	course = config.course
-	typeof = "post"
-	if config.test_mode:
-		awards_table = "award_test"
-	else:
-		awards_table = "award"
+    course = config.course
+    typeof = "post"
+    if config.test_mode:
+        awards_table = "award_test"
+    else:
+        awards_table = "award"
 
-	if forum != None:
-		description = forum
-		query = "SELECT description, reward FROM " + awards_table + " where user = %s AND course = %s AND type = %s AND description = %s;"
-		cursor.execute(query, (target, course, typeof, description))
-		table = cursor.fetchall()
-	else:
-		query = "SELECT description, reward FROM " + awards_table + " where user = %s AND course = %s AND type = %s;"
-		cursor.execute(query, (target, course, typeof))
-		table = cursor.fetchall()
+    if forum != None:
+        description = forum
+        query = "SELECT description, reward FROM " + awards_table + " where user = %s AND course = %s AND type = %s AND description = %s;"
+        cursor.execute(query, (target, course, typeof, description))
+        table = cursor.fetchall()
+    else:
+        query = "SELECT description, reward FROM " + awards_table + " where user = %s AND course = %s AND type = %s;"
+        cursor.execute(query, (target, course, typeof))
+        table = cursor.fetchall()
 
-	for line in contributions:
-		grade = (int(line.rating) / max_grade) * xp_per_post
-		if forum == None:
-			description = line.description
+    for line in contributions:
+        grade = (int(line.rating) / max_grade) * xp_per_post
+        if forum == None:
+            description = line.description
 
-		found = False
-		for row in table:
-			if row[0].decode() == description:
-				found = True
-				line = row
-				break
+        found = False
+        for row in table:
+            if row[0].decode() == description:
+                found = True
+                line = row
+                break
 
-		if found:
-			# if the line already existed and the new rating is different, update the line
-			old_grade = int(line[1])
-			if old_grade != grade:
-				query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s;"
-				cursor.execute(query, (grade, course, target, typeof, description))
-				cnx.commit()
+        if found:
+            # if the line already existed and the new rating is different, update the line
+            old_grade = int(line[1])
+            if old_grade != grade:
+                query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s;"
+                cursor.execute(query, (grade, course, target, typeof, description))
+                cnx.commit()
 
-		else:
-			# if the line did not exist, add it
-			query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
-			cursor.execute(query, (target, course, description, typeof, grade))
-			cnx.commit()
+        else:
+            # if the line did not exist, add it
+            query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
+            cursor.execute(query, (target, course, description, typeof, grade))
+            cnx.commit()
 
-	cnx.close()
-	return
+    cnx.close()
+    return
 
 
 def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_grade=1):
-	# -----------------------------------------------------------
-	# Writes 'award' table with reward from assigment grades.
-	# Will not retract effects, but will not award twice
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Writes 'award' table with reward from assigment grades.
+    # Will not retract effects, but will not award twice
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	course = config.course
-	typeof = "assignment"
-	if config.test_mode:
-		awards_table = "award_test"
-	else:
-		awards_table = "award"
+    course = config.course
+    typeof = "assignment"
+    if config.test_mode:
+        awards_table = "award_test"
+    else:
+        awards_table = "award"
 
-	query = "SELECT description, reward FROM " + awards_table + " where user = %s AND course = %s AND type = %s;"
-	cursor.execute(query, (target, course, typeof))
-	table = cursor.fetchall()
+    query = "SELECT description, reward FROM " + awards_table + " where user = %s AND course = %s AND type = %s;"
+    cursor.execute(query, (target, course, typeof))
+    table = cursor.fetchall()
 
 
-	for line in contributions:
-		grade = (int(line.rating) / max_grade) * xp_per_assignemnt
-		description = line.description
+    for line in contributions:
+        grade = (int(line.rating) / max_grade) * xp_per_assignemnt
+        description = line.description
 
-		found = False
-		for row in table:
-			if row[0].decode() == description:
-				found = True
-				line = row
-				break
+        found = False
+        for row in table:
+            if row[0].decode() == description:
+                found = True
+                line = row
+                break
 
-		if found:
-			# if the line already existed and the new rating is different, update the line
-			old_grade = int(line[1])
-			if old_grade != grade:
-				query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s;"
-				cursor.execute(query, (grade, course, target, typeof, description))
-				cnx.commit()
+        if found:
+            # if the line already existed and the new rating is different, update the line
+            old_grade = int(line[1])
+            if old_grade != grade:
+                query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s;"
+                cursor.execute(query, (grade, course, target, typeof, description))
+                cnx.commit()
 
-		else:
-			# if the line did not exist, add it
-			query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
-			cursor.execute(query, (target, course, description, typeof, grade))
-			cnx.commit()
+        else:
+            # if the line did not exist, add it
+            query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
+            cursor.execute(query, (target, course, description, typeof, grade))
+            cnx.commit()
 
-	cnx.close()
-	return
+    cnx.close()
+    return
 
 def clear_streak_progression(target):
       # -----------------------------------------------------------
@@ -1571,12 +1571,12 @@ def check_is_consecutive(target, course, participationType, streakid):
 
 #  logs-> participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
 def award_rating_streak(target, streak, rating, contributions=None, info=None):
-	# -----------------------------------------------------------
-	# Writes and updates 'award' table with streaks won by the
-	# user. Will retract if rules/participations have been
-	# changed.
-	# Is also responsible for creating indicators.
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Writes and updates 'award' table with streaks won by the
+    # user. Will retract if rules/participations have been
+    # changed.
+    # Is also responsible for creating indicators.
+    # -----------------------------------------------------------
 
     (database, username, password) = get_credentials()
     cnx = mysql.connector.connect(user=username, password=password,
@@ -1608,7 +1608,7 @@ def award_rating_streak(target, streak, rating, contributions=None, info=None):
     table_streak = cursor.fetchall()
 
     if not config.test_mode:
-    	if contributions != None:
+        if contributions != None:
             # contributions = logs = nr of participations as per say like peergrading posts, skill tree posts, ...
             if len(contributions) > 0:
                 streakid, isCount, isPeriodic  = table_streak[0][0], table_streak[0][6], table_streak[0][7]
@@ -1778,12 +1778,12 @@ def award_rating_streak(target, streak, rating, contributions=None, info=None):
 
 #  logs-> participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
 def award_streak(target, streak, contributions=None, info=None):
-	# -----------------------------------------------------------
-	# Writes and updates 'award' table with streaks won by the
-	# user. Will retract if rules/participations have been
-	# changed.
-	# Is also responsible for creating indicators.
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Writes and updates 'award' table with streaks won by the
+    # user. Will retract if rules/participations have been
+    # changed.
+    # Is also responsible for creating indicators.
+    # -----------------------------------------------------------
 
     (database, username, password) = get_credentials()
     cnx = mysql.connector.connect(user=username, password=password,
@@ -1814,7 +1814,7 @@ def award_streak(target, streak, contributions=None, info=None):
     table_streak = cursor.fetchall()
 
     if not config.test_mode:
-    	if contributions != None:
+        if contributions != None:
             # contributions = logs = nr of participations as per say like peergrading posts, skill tree posts, ...
             if len(contributions) > 0:
                 streakid, isCount, isPeriodic, isAtMost  = table_streak[0][0], table_streak[0][6], table_streak[0][7], table_streak[0][8]
@@ -2414,69 +2414,69 @@ def award_streak(target, streak, contributions=None, info=None):
 
 
 def get_campus(target):
-	# -----------------------------------------------------------
-	# Returns the campus of a target user
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Returns the campus of a target user
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	course = config.course
-	query = "select major from course_user left join game_course_user on course_user.id=game_course_user.id where course = %s and course_user.id = %s;"
+    course = config.course
+    query = "select major from course_user left join game_course_user on course_user.id=game_course_user.id where course = %s and course_user.id = %s;"
 
-	cursor.execute(query, (course, target))
-	table = cursor.fetchall()
-	cnx.close()
+    cursor.execute(query, (course, target))
+    table = cursor.fetchall()
+    cnx.close()
 
-	if len(table) == 1:
-		major = table[0][0]
-		if major in config.majors_alameda:
-			campus = 'A'
-		elif major in config.majors_tagus:
-			campus = 'T'
-		else:
-			campus = 'A'
+    if len(table) == 1:
+        major = table[0][0]
+        if major in config.majors_alameda:
+            campus = 'A'
+        elif major in config.majors_tagus:
+            campus = 'T'
+        else:
+            campus = 'A'
 
-	elif len(table) == 0:
-		print("ERROR: No student with given id found in course_user database.")
-		campus = None
-	else:
-		print("ERROR: More than one student with the same id in course_user database.")
-		campus = None
+    elif len(table) == 0:
+        print("ERROR: No student with given id found in course_user database.")
+        campus = None
+    else:
+        print("ERROR: More than one student with the same id in course_user database.")
+        campus = None
 
-	return campus
+    return campus
 
 
 def get_username(target):
-	# -----------------------------------------------------------
-	# Returns the username of a target user
-	# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # Returns the username of a target user
+    # -----------------------------------------------------------
 
-	(database, username, password) = get_credentials()
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=database)
-	cursor = cnx.cursor(prepared=True)
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
 
-	course = config.course
-	query = "select username from auth right join course_user on auth.id=course_user.id where course = %s and auth.id = %s;"
+    course = config.course
+    query = "select username from auth right join course_user on auth.id=course_user.id where course = %s and auth.id = %s;"
 
-	cursor.execute(query, (course, target))
-	table = cursor.fetchall()
-	cnx.close()
+    cursor.execute(query, (course, target))
+    table = cursor.fetchall()
+    cnx.close()
 
-	if len(table) == 1:
-		username = table[0][0]
+    if len(table) == 1:
+        username = table[0][0]
 
-	elif len(table) == 0:
-		print("ERROR: No student with given id found in auth database.")
-		username = None
-	else:
-		print("ERROR: More than one student with the same id in auth database.")
-		username = None
+    elif len(table) == 0:
+        print("ERROR: No student with given id found in auth database.")
+        username = None
+    else:
+        print("ERROR: More than one student with the same id in auth database.")
+        username = None
 
-	return username
+    return username
 
 
 def consecutive_peergrading(target):
@@ -2501,98 +2501,98 @@ def consecutive_peergrading(target):
 
 
 def call_gamecourse(course, library, function, args):
-	# converts args to json
-	args_json = json.dumps(args)
+    # converts args to json
+    args_json = json.dumps(args)
 
 
-	HOST = '127.0.0.1' # The server's hostname or IP address
-	PORT = 8004 # The port used by the server
+    HOST = '127.0.0.1' # The server's hostname or IP address
+    PORT = 8004 # The port used by the server
 
-	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-		s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-		try:
-			while True:
-				s.connect((HOST, PORT))
-				s.settimeout(50.0)
+        try:
+            while True:
+                s.connect((HOST, PORT))
+                s.settimeout(50.0)
 
-				# send course number
-				s.send(course.encode())
-				s.send("\n".encode())
-				# send name of parent module
-				s.send(library.encode())
-				s.send("\n".encode())
-				# send name of function to execute
+                # send course number
+                s.send(course.encode())
+                s.send("\n".encode())
+                # send name of parent module
+                s.send(library.encode())
+                s.send("\n".encode())
+                # send name of function to execute
 
-				#sys.stderr.write("\n>>> " + function +"\n")
+                #sys.stderr.write("\n>>> " + function +"\n")
 
-				s.send(function.encode())
-				s.send("\n".encode())
-				# send args of function
+                s.send(function.encode())
+                s.send("\n".encode())
+                # send args of function
 
-				s.send(args_json.encode())
-				s.send("\n".encode())
+                s.send(args_json.encode())
+                s.send("\n".encode())
 
-				data = s.recv(1024)
-				datatype = data.decode()
-				# send an ok message for syncing up the socket
-				s.send("ok\n".encode())
+                data = s.recv(1024)
+                datatype = data.decode()
+                # send an ok message for syncing up the socket
+                s.send("ok\n".encode())
 
-				# if data received is a collection, it will be sent in chunks
-				# as not to break the socket
-				if datatype == "collection":
-					data = s.recv(1024)
-					datad = data.decode()
-					collection = datad
-					while data:
-						data = s.recv(1024)
-						datad = data.decode()
-						collection += datad
+                # if data received is a collection, it will be sent in chunks
+                # as not to break the socket
+                if datatype == "collection":
+                    data = s.recv(1024)
+                    datad = data.decode()
+                    collection = datad
+                    while data:
+                        data = s.recv(1024)
+                        datad = data.decode()
+                        collection += datad
 
-					if not data:
-						all_logs = collection.split("\n")[:-1]
+                    if not data:
+                        all_logs = collection.split("\n")[:-1]
 
-						# create loglines from each el in list
-						participations = []
-						for el in all_logs:
-							io = StringIO(el)
-							log = json.load(io)
+                        # create loglines from each el in list
+                        participations = []
+                        for el in all_logs:
+                            io = StringIO(el)
+                            log = json.load(io)
 
-							# TODO - might want to check for errors in this part
+                            # TODO - might want to check for errors in this part
 
-							ll_id = int(log["id"])
-							ll_user = int(log["user"])
-							ll_course = int(log["course"])
-							ll_desc = log["description"]
-							ll_type = log["type"]
-							ll_post = log["post"]
-							ll_date = log["date"]
-							ll_rating = None if log["rating"] is None else int(log["rating"])
-							ll_evaluator = None if log["evaluator"] is None else int(log["evaluator"])
+                            ll_id = int(log["id"])
+                            ll_user = int(log["user"])
+                            ll_course = int(log["course"])
+                            ll_desc = log["description"]
+                            ll_type = log["type"]
+                            ll_post = log["post"]
+                            ll_date = log["date"]
+                            ll_rating = None if log["rating"] is None else int(log["rating"])
+                            ll_evaluator = None if log["evaluator"] is None else int(log["evaluator"])
 
-							logline = LogLine(ll_id,ll_user,ll_course,ll_desc,ll_type,ll_post,ll_date,ll_rating,ll_evaluator)
-							participations.append(logline)
+                            logline = LogLine(ll_id,ll_user,ll_course,ll_desc,ll_type,ll_post,ll_date,ll_rating,ll_evaluator)
+                            participations.append(logline)
 
-						result = participations
-						break
+                        result = participations
+                        break
 
-				# if data received is a value (int, float, str, etc)
-				# then it will be json decoded into the correct type
-				elif datatype == "other":
-					data = s.recv(1024)
-					io = StringIO(data.decode())
-					result = json.load(io)
-					break
+                # if data received is a value (int, float, str, etc)
+                # then it will be json decoded into the correct type
+                elif datatype == "other":
+                    data = s.recv(1024)
+                    io = StringIO(data.decode())
+                    result = json.load(io)
+                    break
 
-				else:
-					print("\nError: Return type not valid.")
-					break
+                else:
+                    print("\nError: Return type not valid.")
+                    break
 
-		except socket.timeout as e:
-			print("\nError: Socket timeout, operation took longer than 3 minutes.")
+        except socket.timeout as e:
+            print("\nError: Socket timeout, operation took longer than 3 minutes.")
 
-		except KeyboardInterrupt:
-			print("\nInterrupt: You pressed CTRL+C!")
-			exit()
+        except KeyboardInterrupt:
+            print("\nInterrupt: You pressed CTRL+C!")
+            exit()
 
-	return result
+    return result
