@@ -25,10 +25,10 @@ $runAutoGame = false;
 // enabled in the 'participation' table
 
 // Run ClassCheck script
-if (in_array(ClassCheckModule::ID, $enabledModules)) {
-    $newData = require 'modules/classcheck/ClassCheckScript.php';
-    if ($newData) $runAutoGame = true;
-}
+//if (in_array(ClassCheckModule::ID, $enabledModules)) {
+//    $newData = require 'modules/classcheck/ClassCheckScript.php';
+//    if ($newData) $runAutoGame = true;
+//}
 
 // Run GoogleSheets script
 if (in_array(GoogleSheetsModule::ID, $enabledModules)) {

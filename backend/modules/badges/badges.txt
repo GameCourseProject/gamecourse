@@ -240,17 +240,29 @@
                 "children": [
                   [
                     {
-                      "type": "text",
+                      "type": "block",
                       "role": "role.Student>role.Default",
-                      "class": " badge-indicator",
-                      "visibilityType": "visible",
-                      "loopData": "{%badgeParticipations}",
-                      "variables": {
-                        "participation": {
-                          "value": "{%item}"
-                        }
-                      },
-                      "value": "{%participation.description}"
+                      "class": "badge-indicators",
+                      "visibilityType": "conditional",
+                      "visibilityCondition": "{%badgeParticipations.count > 0}",
+                      "children": [
+                        [
+                          {
+                            "type": "text",
+                            "role": "role.Student>role.Default",
+                            "class": " badge-indicator",
+                            "visibilityType": "visible",
+                            "loopData": "{%badgeParticipations}",
+                            "variables": {
+                              "participation": {
+                                "value": "{%item}"
+                              }
+                            },
+                            "value": "{%participation.description}",
+                            "link": "{%participation.post}"
+                          }
+                        ]
+                      ]
                     }
                   ],
                   [

@@ -99,14 +99,18 @@
   padding-top: 15px;
 }
 
-.badges-list .badge .badge-bottom .badge-levels {
-  margin-bottom: 10px;
+.badges-list .badge .badge-bottom .badge-indicators > * {
+  flex-direction: row !important;
+  align-items: center;
 }
 
-.badges-list .badge .badge-bottom .badge-levels .badge-indicator {
-  display: inline-block;
+.badges-list .badge .badge-bottom .badge-indicators .badge-indicator {
   margin-right: 4px;
   font-size: 12px !important;
+}
+
+.badges-list .badge .badge-bottom .badge-levels {
+  margin-bottom: 10px;
 }
 
 .badges-list .badge .badge-bottom .badge-levels .badge-level {
