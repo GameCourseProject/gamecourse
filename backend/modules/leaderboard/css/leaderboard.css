@@ -17,6 +17,9 @@
 .leaderboard .leaderboard-table .leaderboard-img {
     width: 48px;
     height: 48px;
+}
+
+.leaderboard .leaderboard-table .leaderboard-img img {
     object-fit: cover;
 }
 

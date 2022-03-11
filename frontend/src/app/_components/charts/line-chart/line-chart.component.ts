@@ -112,7 +112,7 @@ export class LineChartComponent implements OnInit {
     // FIXME: should be general
     if (exists(this.xAxisLabel) && this.xAxisLabel === 'Time (Days)') {
       this.chartOptions.tooltip.x = { formatter(val: number, opts?: any): string {
-        return 'Day ' + val;
+        return 'After ' + (val - 1) +  ' days';
         }
       }
     }

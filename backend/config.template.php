@@ -29,6 +29,10 @@
     const LINKEDIN_CLIENT_SECRET = '<LINKEDIN_CLIENT_SECRET>';
     const LINKEDIN_REDIRECT_URL = API_URL . '/auth?linkedin';
 
+    /** Google Account */
+    const GOOGLE_ACCOUNT_EMAIL = '<GOOGLE_ACCOUNT_EMAIL>';
+    const GOOGLE_ACCOUNT_PASSWORD = '<GOOGLE_ACCOUNT_PASSWORD>';
+
     /** Tiny URL */
     const TINY_API_TOKEN = '<TINY_API_TOKEN>';
     const TINY_API_URL = '<TINY_API_URL>';

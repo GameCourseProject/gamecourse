@@ -78,6 +78,7 @@
             <th>Dependencies</th>
             <th>Color</th>
             <th>XP</th>
+            <th class="check-column">Collab</th>
             <th class="check-column">Active</th>
             <th class="action-column"></th>
             <th class="action-column"></th>
@@ -104,7 +105,13 @@
             <td><span>{{skill.xp}}</span></td>
             <td class="check-column">
               <label class="switch">
-                <input type="checkbox" [checked]="skill.isActive" (change)="toggleSkill(skill.id)">
+                <input type="checkbox" [checked]="skill.isCollab" (change)="toggleSkill(skill.id, 'isCollab')">
+                <span class="slider round"></span>
+              </label>
+            </td>
+            <td class="check-column">
+              <label class="switch">
+                <input type="checkbox" [checked]="skill.isActive" (change)="toggleSkill(skill.id, 'isActive')">
                 <span class="slider round"></span>
               </label>
             </td>

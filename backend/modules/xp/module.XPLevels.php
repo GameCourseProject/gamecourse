@@ -531,6 +531,8 @@ class XPLevels extends Module
         $xp["badgeXP"] = $this->calculateBadgeXP($userId, $courseId);
         //skills XP
         $xp["skillXP"] = $this->calculateSkillXP($userId, $courseId);
+        //streaks XP
+        $xp["streakXP"] = $this->calculateStreakXP($userId, $courseId);
 
         $xp["labXP"] = intval(Core::$systemDB->select(
             AwardList::TABLE,

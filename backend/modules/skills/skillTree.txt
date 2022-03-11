@@ -123,6 +123,16 @@
                                               "value": "Post",
                                               "link": "{%post}"
                                             }
+                                          ],
+                                          [
+                                            {
+                                              "type": "image",
+                                              "role": "role.Student>role.Default",
+                                              "class": "skill-collab",
+                                              "visibilityType": "conditional",
+                                              "visibilityCondition": "{%skill.isCollab}",
+                                              "src": "modules/skills/imgs/collab.svg"
+                                            }
                                           ]
                                         ]
                                       }
@@ -132,14 +142,15 @@
                                         "type": "block",
                                         "role": "role.Student>role.Default",
                                         "class": "skill-right",
-                                        "visibilityType": "visible",
+                                        "visibilityType": "conditional",
+                                        "visibilityCondition": "{virtualcurrency.isEnabled && %skill.isUnlocked(%user)}",
                                         "children": [
                                           [
                                             {
                                               "type": "text",
                                               "role": "role.Student>role.Default",
                                               "visibilityType": "visible",
-                                              "value": "Attempts done: {%skill.getAttemptsDone(%user)}"
+                                              "value": "Attempts made: {%skill.getAttemptsDone(%user)}"
                                             }
                                           ],
                                           [
@@ -154,7 +165,7 @@
                                                     "type": "text",
                                                     "role": "role.Student>role.Default",
                                                     "visibilityType": "visible",
-                                                    "value": "Cost to retry:"
+                                                    "value": "Cost to {system.if(%skill.getAttemptsDone(%user) == 0, \"\", \"re\")}try:"
                                                   }
                                                 ],
                                                 [

@@ -405,6 +405,21 @@ class Skills extends Module
             true
         );
 
+        //%skill.isCollab
+        Dictionary::registerFunction(
+            'skillTrees',
+            'isCollab',
+            function ($skill) {
+                return Dictionary::basicGetterFunction($skill, "isCollab");
+            },
+            'Returns true if the skill is collaborative, and false otherwise.',
+            'boolean',
+            null,
+            'object',
+            'skill',
+            true
+        );
+
         //%skill.isActive
         Dictionary::registerFunction(
             'skillTrees',
@@ -575,6 +590,22 @@ class Skills extends Module
                     ["dependencyId" => $dep["value"]["id"]],
                     "s.*"
                 );
+
+                // Change name of wildcard and put in last
+                $index = null;
+                $wildcard = null;
+                for ($i = 0; $i < count($depSkills); $i++) {
+                    if ($depSkills[$i]["tier"] == "Wildcard") {
+                        $wildcard = $depSkills[$i];
+                        $index = $i;
+                    }
+                }
+                if ($wildcard) {
+                    $wildcard["name"] = "Wildcard";
+                    unset($depSkills[$index]);
+                    $depSkills[] = $wildcard;
+                }
+
                 return Dictionary::createNode($depSkills, 'skillTrees', "collection", $dep);
             },
             'Returns a collection of skills that are required to unlock a super skill from a dependency.',
@@ -1270,12 +1301,13 @@ class Skills extends Module
         $skillsArray = array();
 
         foreach ($tiers as &$tier) {
-            $skillsInTier = Core::$systemDB->selectMultiple(self::TABLE, ["treeId" => $treeId, "tier" => $tier["tier"]], "id,name,page,color,tier,seqId,isActive", "seqId");;
+            $skillsInTier = Core::$systemDB->selectMultiple(self::TABLE, ["treeId" => $treeId, "tier" => $tier["tier"]], "id,name,page,color,tier,seqId,isCollab,isActive", "seqId");;
             foreach ($skillsInTier as &$skill) {
                 //information to match needing fields
                 $skill['xp'] = $tier["reward"];
                 $skill['dependencies'] = '';
                 $skill['allActive'] = true;
+                $skill['isCollab'] = boolval($skill["isCollab"]);
                 $skill['isActive'] = boolval($skill["isActive"]);
                 if (!empty(Core::$systemDB->selectMultiple(self::TABLE_SUPER_SKILLS, ["superSkillId" => $skill["id"]]))) {
                     $dependencyData = $this->getSkillDependencies($skill["id"]);
@@ -1772,10 +1804,13 @@ class Skills extends Module
     {
         $attemptsDone = $this->getAttemptsDone($skill, $userId);
         // FIXME: this is hard-coded
-        if ($attemptsDone == 0) return 0;
-        if ($attemptsDone == 1) return 20;
-        if ($attemptsDone == 2) return 40;
-        if ($attemptsDone == 3) return 80;
+        if ($attemptsDone == 0) {
+            if ($skill["tier"] == "Wildcard") return 40;
+            else return 0;
+        }
+        if ($attemptsDone == 1) return 10;
+        if ($attemptsDone == 2) return 20;
+        if ($attemptsDone == 3) return 40;
         return 0;
     }
 

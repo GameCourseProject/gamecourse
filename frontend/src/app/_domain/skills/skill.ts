@@ -6,13 +6,14 @@ export class Skill {
   private _tier: string;
   private _seqId: number;
   private _xp: number;
+  private _isCollab: boolean;
   private _isActive: boolean;
   private _dependencies: string;
   private _allActive: boolean;
   private _dependenciesList: string[][];
 
   constructor(id: number, name: string, color: string, description: string, tier: string, seqId: number, xp: number,
-              isActive: boolean, dependencies: string, allActive: boolean, dependenciesList: string[][]) {
+              isCollab: boolean, isActive: boolean, dependencies: string, allActive: boolean, dependenciesList: string[][]) {
 
     this.id = id;
     this.name = name;
@@ -21,6 +22,7 @@ export class Skill {
     this.tier = tier;
     this.seqId = seqId;
     this.xp = xp;
+    this.isCollab = isCollab;
     this.isActive = isActive;
     this.dependencies = dependencies;
     this.allActive = allActive;
@@ -83,6 +85,14 @@ export class Skill {
     this._xp = value;
   }
 
+  get isCollab(): boolean {
+    return this._isCollab;
+  }
+
+  set isCollab(value: boolean) {
+    this._isCollab = value;
+  }
+
   get isActive(): boolean {
     return this._isActive;
   }
@@ -129,6 +139,7 @@ export class Skill {
       tier: this.tier,
       seqId: this.seqId,
       xp: this.xp,
+      isCollab: this.isCollab,
       isActive: this.isActive,
       dependencies: this.dependencies,
       allActive: this.allActive,
@@ -145,6 +156,7 @@ export class Skill {
       obj.tier,
       parseInt(obj.seqId),
       parseInt(obj.xp),
+      !!obj.isCollab,
       !!obj.isActive,
       obj.dependencies,
       !!obj.allActive,
@@ -161,6 +173,7 @@ interface SkillDatabase {
   tier: string,
   seqId: string,
   xp?: string,
+  isCollab: boolean,
   isActive: boolean,
   dependencies?: string,
   allActive?: boolean,

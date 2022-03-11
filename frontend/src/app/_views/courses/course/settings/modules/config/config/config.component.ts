@@ -5,7 +5,7 @@ import {ActivatedRoute} from "@angular/router";
 import {ErrorService} from "../../../../../../../_services/error.service";
 import {finalize} from "rxjs/operators";
 import {InputType} from "../../../../../../../_domain/inputs/input-type";
-import {ImageManager} from "../../../../../../../_utils/images/image-manager";
+import {ResourceManager} from "../../../../../../../_utils/resources/resource-manager";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {ApiEndpointsService} from "../../../../../../../_services/api/api-endpoints.service";
 import {copyObject, exists} from "../../../../../../../_utils/misc/misc";
@@ -77,14 +77,14 @@ export class ConfigComponent implements OnInit {
   itemToDelete: any;
   itemToExport: any;
 
-  image: ImageManager;
+  image: ResourceManager;
 
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer
   ) {
-    this.image = new ImageManager(sanitizer);
+    this.image = new ResourceManager(sanitizer);
   }
 
   ngOnInit(): void {

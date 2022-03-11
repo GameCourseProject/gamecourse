@@ -581,7 +581,7 @@ export class ApiHttpService {
 
 
   // Roles
-  public getRoles(courseID: number): Observable<{ roles: Role[], rolesHierarchy: Role[] }> {
+  public getRoles(courseID: number): Observable<{ roles: Role[], rolesHierarchy: Role[], pages: Page[] }> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
       qs.push('request', 'roles');
@@ -594,7 +594,8 @@ export class ApiHttpService {
       .pipe( map((res: any) => {
         const allRoles: Role[] = res['data']['roles_obj'].map(obj => Role.fromDatabase(obj));
         const roles = Role.parseHierarchy(res['data']['rolesHierarchy'], allRoles);
-        return {roles: allRoles, rolesHierarchy: roles}
+        const pages = res['data']['pages'].map(obj => Page.fromDatabase(obj));
+        return {roles: allRoles, rolesHierarchy: roles, pages}
       }) );
   }
 
@@ -1321,7 +1322,7 @@ export class ApiHttpService {
       ) );
   }
 
-  public getUserActiveCourses(): Observable<Course[]> {
+  public getUserActiveCourses(): Observable<{courses: Course[], landingPages: {[courseId: string]: number}}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.USER);
       qs.push('request', 'getLoggedUserActiveCourses');
@@ -1331,8 +1332,11 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map(
-        (res: any) => (res['data']['userActiveCourses']).map(obj => Course.fromDatabase(obj))
-      ) );
+        (res: any) => {
+          const courses = (res['data']['userActiveCourses']).map(obj => Course.fromDatabase(obj));
+          const landingPages = res['data']['landingPages'];
+          return {courses, landingPages};
+        }) );
   }
 
 
@@ -1349,7 +1353,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => (res['data']['users']).map(obj => User.fromDatabase(obj))) );
   }
 
-  public getUserCourses(): Observable<Course[]> {
+  public getUserCourses(): Observable<{courses: Course[], landingPages: {[courseID: string]: number}}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.USER);
       qs.push('request', 'getUserCourses');
@@ -1358,7 +1362,11 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => (res['data']['courses']).map(obj => Course.fromDatabase(obj))) );
+      .pipe( map((res: any) => {
+        const courses = (res['data']['courses']).map(obj => Course.fromDatabase(obj));
+        const landingPages = res['data']['landingPages'];
+        return {courses, landingPages};
+      }) );
   }
 
   public importUsers(importData: ImportUsersData): Observable<number> {

@@ -40,7 +40,7 @@
                 "type": "row",
                 "role": "role.Default",
                 "visibilityType": "visible",
-                "loopData": "{users.getAllUsers(\"student\", %course).sort(\"descending\", \"xp.getXP(%item); badges.getBadgesCount(%item)\").sort(\"ascending\", \"%item.studentNumber\").getKNeighbors(%viewer, 3)}",
+                "loopData": "{users.getAllUsers(\"student\", %course).sort(\"desc, xp.getXP(%item); desc, badges.getBadgesCount(%item); asc, %item.studentNumber\").getKNeighbors(%viewer, 3)}",
                 "variables": {
                   "userXP": {
                     "value": "{xp.getXP(%item)}"

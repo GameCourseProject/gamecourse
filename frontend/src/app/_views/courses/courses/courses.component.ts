@@ -7,8 +7,8 @@ import {ErrorService} from "../../../_services/error.service";
 import {Course} from "../../../_domain/courses/course";
 import {User} from "../../../_domain/users/user";
 import {DownloadManager} from "../../../_utils/download/download-manager";
-import {Reduce} from "../../../_utils/display/reduce";
-import {Order, Sort} from "../../../_utils/display/order";
+import {Reduce} from "../../../_utils/lists/reduce";
+import {Order, Sort} from "../../../_utils/lists/order";
 
 import Pickr from "@simonwep/pickr";
 
@@ -30,6 +30,7 @@ export class CoursesComponent implements OnInit {
   user: User;
 
   allCourses: Course[];
+  redirectPages: {[courseID: string]: number}; // courseID -> pageId
 
   reduce = new Reduce();
   order = new Order();
@@ -99,8 +100,9 @@ export class CoursesComponent implements OnInit {
   getCourses(): void {
     this.api.getUserCourses()
       .pipe( finalize(() => this.loading = false) )
-      .subscribe(courses => {
-        this.allCourses = courses;
+      .subscribe(res => {
+        this.allCourses = res.courses;
+        this.redirectPages = res.landingPages;
 
         this.allCourses.forEach(course => {
           this.exportOptions[course.id] = { users: true, awards: true, modules: true };
@@ -389,6 +391,13 @@ export class CoursesComponent implements OnInit {
 
   getNonAdminCourses(isActive: boolean): Course[] {
     return this.reduce.items.filter(course => course.isActive === isActive);
+  }
+
+  getRedirectLink(courseID: number): string {
+    const link = '/courses/' + courseID;
+    const pageID = this.redirectPages[courseID.toString()];
+    if (pageID) return link + '/pages/' + pageID;
+    else return link;
   }
 
   onFileSelected(files: FileList): void {

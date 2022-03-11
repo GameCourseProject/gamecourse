@@ -9,10 +9,8 @@ import {UpdateService, UpdateType} from "../../_services/update.service";
 
 import {User} from "../../_domain/users/user";
 import {Course} from "../../_domain/courses/course";
-import {ImageManager} from "../../_utils/images/image-manager";
+import {ResourceManager} from "../../_utils/resources/resource-manager";
 import {Page} from "../../_domain/pages & templates/page";
-
-import {of} from "rxjs";
 
 @Component({
   selector: 'app-navbar',
@@ -22,7 +20,7 @@ import {of} from "rxjs";
 export class NavbarComponent implements OnInit {
 
   user: User;
-  photo: ImageManager;
+  photo: ResourceManager;
 
   navigation: Navigation[];
   mainNavigation: Navigation[];
@@ -46,7 +44,7 @@ export class NavbarComponent implements OnInit {
     private sanitizer: DomSanitizer,
     private updateManager: UpdateService
   ) {
-    this.photo = new ImageManager(sanitizer);
+    this.photo = new ResourceManager(sanitizer);
   }
 
   ngOnInit(): void {

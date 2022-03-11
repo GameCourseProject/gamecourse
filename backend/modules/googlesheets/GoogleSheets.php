@@ -12,6 +12,13 @@ class GoogleSheets
     private $spreadsheetId;
     private $sheetName;
 
+    const COL_STUDENT_NUMBER = 0;
+    const COL_STUDENT_NAME = 1;
+    const COL_STUDENT_CAMPUS = 2;
+    const COL_ACTION = 3;
+    const COL_XP = 4;
+    const COL_INFO = 5;
+
     public function __construct($courseId)
     {
         $this->courseId = $courseId;
@@ -110,266 +117,164 @@ class GoogleSheets
         $token = $this->getTokenFromDB();
         $service = GoogleHandler::getGoogleSheets($credentials, $token, null, $this->courseId);
         $this->getDBConfigValues();
-        // $tableName = $service->spreadsheets->get($this->spreadsheetId)->properties->title;
-        $names = explode(";", $this->sheetName);
 
-        $insertedOrUpdated = false;
         $sql = "insert into participation (user, course, description, type, rating, evaluator) values ";
         $values = "";
-        foreach ($names as $name) {
-            /*$responseRows = $service->spreadsheets_values->get($this->spreadsheetId, $name);
-            $name = substr($name, 0, -1);
-            $newValues = $this->writeToDB($name, $responseRows->getValues());*/
-            $processedName = explode(",", $name);
-            $responseRows = $service->spreadsheets_values->get($this->spreadsheetId, $processedName[0]);
+        $insertedOrUpdated = false;
 
-            $newValues = $this->writeToDB($processedName[1], $responseRows->getValues());
+        $names = explode(";", $this->sheetName);
+        foreach ($names as $name) {
+            $processedName = explode(",", $name);
+            $sheetName = $processedName[0];
+            $profUsername = $processedName[1];
+            $responseRows = $service->spreadsheets_values->get($this->spreadsheetId, $sheetName);
+
+            list($newValues, $iOrU) = $this->writeToDB($profUsername, $responseRows->getValues());
             $values .= $newValues;
-            if($newValues){
-                $insertedOrUpdated = true;
-            }
+            $insertedOrUpdated = $iOrU;
         }
-        if (strlen($values) != 0) {
+
+        if ($values) {
             $values = rtrim($values, ",");
             $sql .= $values;
             Core::$systemDB->executeQuery($sql);
         }
+
         return $insertedOrUpdated;
     }
 
-    public function writeToDB($name, $valuesRows)
+    /**
+     * Gets values to be inserted into the database in the form
+     * of an SQL value string, or updates values that were already
+     * in the database.
+     *
+     * Returns values to be inserted and whether or not there's new
+     * data or data to be updated.
+     *
+     * @param $profUsername
+     * @param $valuesRows
+     *
+     * @return array
+     */
+    public function writeToDB($profUsername, $valuesRows): array
     {
-        $profId = User::getUserByUsername($name)->getId();
-        $courseUserProf = Core::$systemDB->select("course_user", ["id" => $profId, "course" => $this->courseId]);
+        $courseId = $this->courseId;
+        $profId = User::getUserByUsername($profUsername)->getId();
+        $courseUserProf = Core::$systemDB->select("course_user", ["id" => $profId, "course" => $courseId]);
         $values = "";
+        $insertedOrUpdated = false;
 
-        if($courseUserProf){
+        if ($courseUserProf) {
             for ($row = 1; $row < sizeof($valuesRows); $row++) {
-                $user = User::getUserByStudentNumber($valuesRows[$row][0]);
-                $action = $valuesRows[$row][3];
+                $user = User::getUserByStudentNumber($valuesRows[$row][self::COL_STUDENT_NUMBER]);
+                $action = $valuesRows[$row][self::COL_ACTION];
+
                 if ($user) {
-                    $courseUser = Core::$systemDB->select("course_user", ["id" => $user->getId(), "course" => $this->courseId]);
+                    $userId = $user->getId();
+                    $courseUser = Core::$systemDB->select("course_user", ["id" => $userId, "course" => $courseId]);
+
                     if ($courseUser) {
-                        if (Core::$systemDB->select("course_user", ["course" => $this->courseId, "id" => $user->getId()])) {
-                            if (
-                                $action == "attended lecture" || $action == "attended lecture (late)" || $action == "attended lab"
-                                || $action == "replied to questionnaires"
-                            ) {
-                                $info  = $valuesRows[$row][5];
-                                $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action, "description" => $info]);
+                        switch ($action) {
+                            case "initial bonus":
+                            case "presentation grade":
+                                $xp = $valuesRows[$row][self::COL_XP];
+                                $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action]);
                                 if (!$result) {
                                     $insertedOrUpdated = true;
-                                    $values .= "(" . $user->getId() . "," . $this->courseId . ",'" . $info . "','" . $action . "', '0','" . $profId . "'),";
-                                    // Core::$systemDB->insert(
-                                    //     "participation",
-                                    //     array(
-                                    //         "user" => $user->getId(),
-                                    //         "course" => $this->courseId,
-                                    //         "description" => $info,
-                                    //         "type" =>  $action,
-                                    //         "rating" =>  0,
-                                    //         "evaluator" => $profId
-                                    //     )
-                                    // );
-                                } else {
-                                    if ($result["description"] != $info) {
-                                        Core::$systemDB->update(
-                                            "participation",
-                                            array(
-                                                "user" => $user->getId(),
-                                                "course" => $this->courseId,
-                                                "description" => $info,
-                                                "type" =>  $action,
-                                                "rating" =>  0,
-                                                "evaluator" => $profId
-                                            ),
-                                            array(
-                                                "user" => $user->getId(),
-                                                "course" => $this->courseId,
-                                                "type" =>  $action
-                                            )
-                                        );
-                                    }
-                                }
-                            } else if ($action == "initial bonus" || $action == "presentation grade") {
-                                $xp = $valuesRows[$row][4];
-                                $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action]);
+                                    $values .= "(" . $userId . "," . $courseId . ",'','" . $action . "', '" . $xp . "','" . $profId . "'),";
 
-                                if (!$result) {
-                                    $values .= "(" . $user->getId() . "," . $this->courseId . ",'','" . $action . "', '" . $xp . "','" . $profId . "'),";
-                                    // Core::$systemDB->insert(
-                                    //     "participation",
-                                    //     array(
-                                    //         "user" => $user->getId(),
-                                    //         "course" => $this->courseId,
-                                    //         "description" => "",
-                                    //         "type" =>  $action,
-                                    //         "rating" =>  $xp,
-                                    //         "evaluator" => $profId
-                                    //     )
-                                    // );
-                                } else {
-                                    if ($result["rating"] != $xp) {
-                                        Core::$systemDB->update(
-                                            "participation",
-                                            array(
-                                                "user" => $user->getId(),
-                                                "course" => $this->courseId,
-                                                "description" => "",
-                                                "type" =>  $action,
-                                                "rating" =>  $xp,
-                                                "evaluator" => $profId
-                                            ),
-                                            array(
-                                                "user" => $user->getId(),
-                                                "course" => $this->courseId,
-                                                "type" =>  $action
-                                            )
-                                        );
-                                    }
+                                } else if ($result["rating"] != $xp) {
+                                    $insertedOrUpdated = true;
+                                    Core::$systemDB->update("participation",
+                                        array("description" => "", "rating" => $xp, "evaluator" => $profId),
+                                        array("user" => $userId, "course" => $courseId, "type" => $action)
+                                    );
                                 }
-                            } else if ($action == "suggested presentation subject" || $action == "participated in focus groups") {
-                                $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action]);
+                                break;
 
+                            case "attended lecture":
+                            case "attended lecture (late)":
+                            case "attended lab":
+                            case "replied to questionnaires":
+                                $info  = $valuesRows[$row][self::COL_INFO];
+                                $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action, "description" => $info]);
                                 if (!$result) {
-                                    $values .= "(" . $user->getId() . "," . $this->courseId . ",'','" . $action . "', '0','" . $profId . "'),";
-                                    // Core::$systemDB->insert(
-                                    //     "participation",
-                                    //     array(
-                                    //         "user" => $user->getId(),
-                                    //         "course" => $this->courseId,
-                                    //         "description" => "",
-                                    //         "type" =>  $action,
-                                    //         "rating" =>  0,
-                                    //         "evaluator" => $profId
-                                    //     )
-                                    // );
-                                }
-                            } else if ($action == "quiz grade" || $action == "lab grade") {
-                                $info  = $valuesRows[$row][5];
-                                $xp = $valuesRows[$row][4];
-                                $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action, "description"=> $info]);
-                                if (!$result) {
-                                    $values .= "(" . $user->getId() . "," . $this->courseId . ",'" . $info . "','" . $action . "', '" . $xp . "','" . $profId . "'),";
-                                    // Core::$systemDB->insert(
-                                    //     "participation",
-                                    //     array(
-                                    //         "user" => $user->getId(),
-                                    //         "course" => $this->courseId,
-                                    //         "description" => $info,
-                                    //         "type" =>  $action,
-                                    //         "rating" =>  $xp,
-                                    //         "evaluator" => $profId
-                                    //     )
-                                    // );
-                                } else {
-                                    if ($result["rating"] != $xp || $result["description"] != $info) {
-                                        Core::$systemDB->update(
-                                            "participation",
-                                            array(
-                                                "user" => $user->getId(),
-                                                "course" => $this->courseId,
-                                                "type" =>  $action,
-                                                "rating" =>  $xp,
-                                                "evaluator" => $profId
-                                            ),
-                                            array(
-                                                "description" => $info,
-                                                "user" => $user->getId(),
-                                                "course" => $this->courseId,
-                                                "type" =>  $action
-                                            )
-                                        );
-                                    }
-                                }
-                            } else if ($action == "popular choice award (presentation)" || $action == "golden star award") {
-                                $info  = $valuesRows[$row][5];
-                                $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action]);
-                                if (!$result) {
-                                    $values .= "(" . $user->getId() . "," . $this->courseId . ",'" . $info . "','" . $action . "', '0','" . $profId . "'),";
-                                    // Core::$systemDB->insert(
-                                    //     "participation",
-                                    //     array(
-                                    //         "user" => $user->getId(),
-                                    //         "course" => $this->courseId,
-                                    //         "description" => $info,
-                                    //         "type" =>  $action,
-                                    //         "evaluator" => $profId
-                                    //     )
-                                    // );
-                                } else {
-                                    if ($result["description"] != $info) {
-                                        Core::$systemDB->update(
-                                            "participation",
-                                            array(
-                                                "user" => $user->getId(),
-                                                "course" => $this->courseId,
-                                                "description" => $info,
-                                                "type" =>  $action,
-                                                "evaluator" => $profId
-                                            ),
-                                            array(
-                                                "user" => $user->getId(),
-                                                "course" => $this->courseId,
-                                                "type" =>  $action
-                                            )
-                                        );
-                                    }
-                                }
-                            } else if ($action == "presentation king" || $action == "lab king" || $action == "quiz king") {
-                                $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action]);
+                                    $insertedOrUpdated = true;
+                                    $values .= "(" . $userId . "," . $courseId . ",'" . $info . "','" . $action . "', '0','" . $profId . "'),";
 
-                                if (!$result) {
-                                    $values .= "(" . $user->getId() . "," . $this->courseId . ",'','" . $action . "', '0','" . $profId . "'),";;
-                                    // Core::$systemDB->insert(
-                                    //     "participation",
-                                    //     array(
-                                    //         "user" => $user->getId(),
-                                    //         "course" => $this->courseId,
-                                    //         "description" => "",
-                                    //         "type" =>  $action,
-                                    //         "evaluator" => $profId
-                                    //     )
-                                    // );
+                                } else if ($result["description"] != $info) {
+                                    $insertedOrUpdated = true;
+                                    Core::$systemDB->update("participation",
+                                        array("description" => $info, "rating" => 0, "evaluator" => $profId),
+                                        array("user" => $userId, "course" => $this->courseId, "type" => $action)
+                                    );
                                 }
-                            } else if ($action == "hall of fame") {
-                                $info  = $valuesRows[$row][5];
-                                $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action, "description"=> $info]);
+                                break;
+
+                            case "presentation king":
+                            case "lab king":
+                            case "quiz king":
+                            case "course emperor":
+                            case "suggested presentation subject":
+                            case "participated in focus groups":
+                                $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action]);
                                 if (!$result) {
-                                    $values .= "(" . $user->getId() . "," . $this->courseId . ",'" . $info . "','" . $action . "', '0','" . $profId . "'),";
-                                    // Core::$systemDB->insert(
-                                    //     "participation",
-                                    //     array(
-                                    //         "user" => $user->getId(),
-                                    //         "course" => $this->courseId,
-                                    //         "description" => "",
-                                    //         "post" => $info,
-                                    //         "type" =>  $action,
-                                    //         "evaluator" => $profId
-                                    //     )
-                                    // );
+                                    $insertedOrUpdated = true;
+                                    $values .= "(" . $userId . "," . $courseId . ",'','" . $action . "', '0','" . $profId . "'),";
                                 }
-                            } else if ($action == "course emperor") {
-                                $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type"=>$action]);
+                                break;
+
+                            case "quiz grade":
+                            case "lab grade":
+                                $info  = $valuesRows[$row][self::COL_INFO];
+                                $xp = $valuesRows[$row][self::COL_XP];
+                                $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action, "description"=> $info]);
                                 if (!$result) {
-                                    $values .= "(" . $user->getId() . "," . $this->courseId . ",'','" . $action . "', '0','" . $profId . "'),";
-                                    // Core::$systemDB->insert(
-                                    //     "participation",
-                                    //     array(
-                                    //         "user" => $user->getId(),
-                                    //         "course" => $this->courseId,
-                                    //         "description" => "",
-                                    //         "type" =>  $action,
-                                    //         "evaluator" => $profId
-                                    //     )
-                                    // );
+                                    $insertedOrUpdated = true;
+                                    $values .= "(" . $userId . "," . $courseId . ",'" . $info . "','" . $action . "', '" . $xp . "','" . $profId . "'),";
+
+                                } else if ($result["rating"] != $xp || $result["description"] != $info) {
+                                    $insertedOrUpdated = true;
+                                    Core::$systemDB->update("participation",
+                                        array("rating" =>  $xp, "evaluator" => $profId),
+                                        array("user" => $userId, "course" => $courseId, "description" => $info, "type" =>  $action)
+                                    ); // FIXME: if description has changed it won't update
                                 }
-                            }
+                                break;
+
+                            case "popular choice award (presentation)":
+                            case "golden star award":
+                                $info  = $valuesRows[$row][self::COL_INFO];
+                                $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action]);
+                                if (!$result) {
+                                    $insertedOrUpdated = true;
+                                    $values .= "(" . $userId . "," . $courseId . ",'" . $info . "','" . $action . "', '0','" . $profId . "'),";
+
+                                } else if ($result["description"] != $info) {
+                                    $insertedOrUpdated = true;
+                                    Core::$systemDB->update("participation",
+                                        array("description" => $info, "evaluator" => $profId),
+                                        array("user" => $userId, "course" => $courseId, "type" =>  $action)
+                                    );
+                                }
+                                break;
+
+                            case "hall of fame":
+                                $info  = $valuesRows[$row][self::COL_INFO];
+                                $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action, "description"=> $info]);
+                                if (!$result) {
+                                    $insertedOrUpdated = true;
+                                    $values .= "(" . $userId . "," . $courseId . ",'" . $info . "','" . $action . "', '0','" . $profId . "'),";
+                                }
+                                break;
+
+                            default:
                         }
                     }
                 }
             }
         }
-        return $values;
+
+        return array($values, $insertedOrUpdated);
     }
 }

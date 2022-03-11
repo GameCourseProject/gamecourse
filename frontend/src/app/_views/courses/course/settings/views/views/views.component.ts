@@ -9,7 +9,7 @@ import {UpdateService, UpdateType} from "../../../../../../_services/update.serv
 import {Page} from "../../../../../../_domain/pages & templates/page";
 import {Template} from "../../../../../../_domain/pages & templates/template";
 import {RoleType} from "../../../../../../_domain/roles/role-type";
-import {Reduce} from "../../../../../../_utils/display/reduce";
+import {Reduce} from "../../../../../../_utils/lists/reduce";
 import {exists} from "../../../../../../_utils/misc/misc";
 import {DownloadManager} from "../../../../../../_utils/download/download-manager";
 
