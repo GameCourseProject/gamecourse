@@ -288,9 +288,9 @@ class GoogleSheets
     private function rowIsValid(array $row, array $columns): bool
     {
         foreach ($columns as $column) {
-            $value = $row[$column];
-            if (!array_key_exists($column, $row) || $value == "") return false;
+            if (!array_key_exists($column, $row) || $row[$column] == "") return false;
 
+            $value = $row[$column];
             if ($column == self::COL_STUDENT_NUMBER && !ctype_digit($value)) return false;
             if ($column == self::COL_STUDENT_CAMPUS && ($value != "A" || $value != "T")) return false;
             if ($column == self::COL_XP && !ctype_digit($value)) return false;
