@@ -33,7 +33,6 @@ create table streak_progression(
     foreign key(course) references course(id) on delete cascade,
     foreign key(user) references game_course_user(id) on delete cascade,
     foreign key(streakId) references streak(id) on delete cascade,
-    foreign key(participationId) references participation(id) on delete cascade
 );
 
 create table streak_participations(
@@ -45,6 +44,5 @@ create table streak_participations(
     foreign key(course) references course(id) on delete cascade,
     foreign key(user) references game_course_user(id) on delete cascade,
     foreign key(streakId) references streak(id) on delete cascade,
-    foreign key(participationId) references participation(id) on delete cascade
 );
 
