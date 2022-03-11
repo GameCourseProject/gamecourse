@@ -166,6 +166,7 @@ class GoogleSheets
 
         if ($courseUserProf) {
             for ($row = 1; $row < sizeof($valuesRows); $row++) {
+                if (!$this->checkRow($valuesRows[$row], [self::COL_STUDENT_NUMBER, self::COL_ACTION])) continue;
                 $user = User::getUserByStudentNumber($valuesRows[$row][self::COL_STUDENT_NUMBER]);
                 $action = $valuesRows[$row][self::COL_ACTION];
 
@@ -177,6 +178,7 @@ class GoogleSheets
                         switch ($action) {
                             case "initial bonus":
                             case "presentation grade":
+                                if (!$this->checkRow($valuesRows[$row], [self::COL_XP])) break;
                                 $xp = $valuesRows[$row][self::COL_XP];
                                 $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action]);
                                 if (!$result) {
@@ -196,6 +198,7 @@ class GoogleSheets
                             case "attended lecture (late)":
                             case "attended lab":
                             case "replied to questionnaires":
+                                if (!$this->checkRow($valuesRows[$row], [self::COL_INFO])) break;
                                 $info  = $valuesRows[$row][self::COL_INFO];
                                 $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action, "description" => $info]);
                                 if (!$result) {
@@ -226,6 +229,7 @@ class GoogleSheets
 
                             case "quiz grade":
                             case "lab grade":
+                                if (!$this->checkRow($valuesRows[$row], [self::COL_XP, self::COL_INFO])) break;
                                 $info  = $valuesRows[$row][self::COL_INFO];
                                 $xp = $valuesRows[$row][self::COL_XP];
                                 $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action, "description"=> $info]);
@@ -244,6 +248,7 @@ class GoogleSheets
 
                             case "popular choice award (presentation)":
                             case "golden star award":
+                                if (!$this->checkRow($valuesRows[$row], [self::COL_INFO])) break;
                                 $info  = $valuesRows[$row][self::COL_INFO];
                                 $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action]);
                                 if (!$result) {
@@ -260,6 +265,7 @@ class GoogleSheets
                                 break;
 
                             case "hall of fame":
+                                if (!$this->checkRow($valuesRows[$row], [self::COL_INFO])) break;
                                 $info  = $valuesRows[$row][self::COL_INFO];
                                 $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action, "description"=> $info]);
                                 if (!$result) {
@@ -276,5 +282,13 @@ class GoogleSheets
         }
 
         return array($values, $insertedOrUpdated);
+    }
+
+    private function checkRow(array $row, array $columns): bool
+    {
+        foreach ($columns as $column) {
+            if (!array_key_exists($column, $row) || $row[$column] == "") return false;
+        }
+        return true;
     }
 }
