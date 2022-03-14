@@ -131,7 +131,7 @@ class GoogleSheets
 
             list($newValues, $iOrU) = $this->writeToDB($profUsername, $responseRows->getValues());
             $values .= $newValues;
-            $insertedOrUpdated = $iOrU;
+            if ($iOrU) $insertedOrUpdated = true;
         }
 
         if ($values) {
@@ -148,8 +148,8 @@ class GoogleSheets
      * of an SQL value string, or updates values that were already
      * in the database.
      *
-     * Returns values to be inserted and whether or not there's new
-     * data or data to be updated.
+     * Returns values to be inserted and whether there's new data
+     * or data to be updated.
      *
      * @param $profUsername
      * @param $valuesRows
@@ -183,7 +183,7 @@ class GoogleSheets
                                 $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action]);
                                 if (!$result) {
                                     $insertedOrUpdated = true;
-                                    $values .= "(" . $userId . "," . $courseId . ",'','" . $action . "', '" . $xp . "','" . $profId . "'),";
+                                    $this->appendValue($values, $userId, $courseId, $action, $profId, "", $xp);
 
                                 } else if ($result["rating"] != $xp) {
                                     $insertedOrUpdated = true;
@@ -203,7 +203,7 @@ class GoogleSheets
                                 $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action, "description" => $info]);
                                 if (!$result) {
                                     $insertedOrUpdated = true;
-                                    $values .= "(" . $userId . "," . $courseId . ",'" . $info . "','" . $action . "', '0','" . $profId . "'),";
+                                    $this->appendValue($values, $userId, $courseId, $action, $profId, $info);
 
                                 } else if ($result["description"] != $info) {
                                     $insertedOrUpdated = true;
@@ -223,7 +223,7 @@ class GoogleSheets
                                 $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action]);
                                 if (!$result) {
                                     $insertedOrUpdated = true;
-                                    $values .= "(" . $userId . "," . $courseId . ",'','" . $action . "', '0','" . $profId . "'),";
+                                    $this->appendValue($values, $userId, $courseId, $action, $profId);
                                 }
                                 break;
 
@@ -235,14 +235,14 @@ class GoogleSheets
                                 $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action, "description"=> $info]);
                                 if (!$result) {
                                     $insertedOrUpdated = true;
-                                    $values .= "(" . $userId . "," . $courseId . ",'" . $info . "','" . $action . "', '" . $xp . "','" . $profId . "'),";
+                                    $this->appendValue($values, $userId, $courseId, $action, $profId, $info, $xp);
 
-                                } else if ($result["rating"] != $xp || $result["description"] != $info) {
+                                } else if ($result["rating"] != $xp) {
                                     $insertedOrUpdated = true;
                                     Core::$systemDB->update("participation",
                                         array("rating" =>  $xp, "evaluator" => $profId),
                                         array("user" => $userId, "course" => $courseId, "description" => $info, "type" =>  $action)
-                                    ); // FIXME: if description has changed it won't update
+                                    );
                                 }
                                 break;
 
@@ -253,7 +253,7 @@ class GoogleSheets
                                 $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action]);
                                 if (!$result) {
                                     $insertedOrUpdated = true;
-                                    $values .= "(" . $userId . "," . $courseId . ",'" . $info . "','" . $action . "', '0','" . $profId . "'),";
+                                    $this->appendValue($values, $userId, $courseId, $action, $profId, $info);
 
                                 } else if ($result["description"] != $info) {
                                     $insertedOrUpdated = true;
@@ -270,7 +270,7 @@ class GoogleSheets
                                 $result = Core::$systemDB->select("participation", ["user" => $userId, "course" => $courseId, "type" => $action, "description"=> $info]);
                                 if (!$result) {
                                     $insertedOrUpdated = true;
-                                    $values .= "(" . $userId . "," . $courseId . ",'" . $info . "','" . $action . "', '0','" . $profId . "'),";
+                                    $this->appendValue($values, $userId, $courseId, $action, $profId, $info);
                                 }
                                 break;
 
@@ -283,6 +283,13 @@ class GoogleSheets
         }
 
         return array($values, $insertedOrUpdated);
+    }
+
+    private function appendValue(string &$values, int $userId, int $courseId, string $type, int $evaluatorId, string $description = "", int $rating = 0)
+    {
+        $type = "'" . $type . "'";
+        $description = "'" . $description . "'";
+        $values .= "(" . implode(",", [$userId, $courseId, $description, $type, $rating, $evaluatorId]) . "),";
     }
 
     private function rowIsValid(array $row, array $columns): bool

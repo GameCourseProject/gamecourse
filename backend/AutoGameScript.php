@@ -21,30 +21,30 @@ $enabledModules = $course->getEnabledModules();
 
 $runAutoGame = false;
 
-// Following are scripts that insert new data from data sources
-// enabled in the 'participation' table
+// Following are scripts that insert new data from data sources enabled
+// in the 'participation' table
 
 // Run ClassCheck script
 if (in_array(ClassCheckModule::ID, $enabledModules)) {
-    $newData = require 'modules/classcheck/ClassCheckScript.php';
+    $newData = require_once 'modules/classcheck/ClassCheckScript.php';
     if ($newData) $runAutoGame = true;
 }
 
 // Run GoogleSheets script
 if (in_array(GoogleSheetsModule::ID, $enabledModules)) {
-    $newData = require 'modules/googlesheets/GoogleSheetsScript.php';
+    $newData = require_once 'modules/googlesheets/GoogleSheetsScript.php';
     if ($newData) $runAutoGame = true;
 }
 
 // Run Moodle script
 if (in_array(MoodleModule::ID, $enabledModules)) {
-    $newData = require 'modules/moodle/MoodleScript.php';
+    $newData = require_once 'modules/moodle/MoodleScript.php';
     if ($newData) $runAutoGame = true;
 }
 
 // Run QR script
 if (in_array(QR::ID, $enabledModules)) {
-    $newData = require 'modules/qr/QRScript.php';
+    $newData = require_once 'modules/qr/QRScript.php';
     if ($newData) $runAutoGame = true;
 }
 
