@@ -119,8 +119,15 @@
   margin-bottom: 5px;
 }
 
+.badges-list .badge .badge-bottom .badge-levels .badge-level-student-imgs > * {
+  flex-direction: row !important;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .badges-list .badge .badge-bottom .badge-levels .badge-level-student-img {
   width: 30px;
   object-fit: cover;
   height: 30px;
+  margin-right: 5px;
 }

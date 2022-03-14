@@ -289,20 +289,31 @@
                         ],
                         [
                           {
-                            "type": "image",
+                            "type": "block",
                             "role": "role.Student>role.Default",
-                            "class": "badge-level-student-img",
-                            "visibilityType": "visible",
-                            "loopData": "{users.getUsersWithBadge(%badge, %level)}",
-                            "variables": {
-                              "badgeUser": {
-                                "value": "{%item}"
-                              }
-                            },
-                            "events": {
-                              "click": "{actions.goToPage(4, %badgeUser.id)}"
-                            },
-                            "src": "{%badgeUser.picture}"
+                            "class": "badge-level-student-imgs",
+                            "visibilityType": "conditional",
+                            "visibilityCondition": "{users.getUsersWithBadge(%badge, %level).count() > 0}",
+                            "children": [
+                              [
+                                {
+                                  "type": "image",
+                                  "role": "role.Student>role.Default",
+                                  "class": "badge-level-student-img",
+                                  "visibilityType": "visible",
+                                  "loopData": "{users.getUsersWithBadge(%badge, %level)}",
+                                  "variables": {
+                                    "badgeUser": {
+                                      "value": "{%item}"
+                                    }
+                                  },
+                                  "events": {
+                                    "click": "{actions.goToPage(2, %badgeUser.id)}"
+                                  },
+                                  "src": "{%badgeUser.picture}"
+                                }
+                              ]
+                            ]
                           }
                         ],
                         [
