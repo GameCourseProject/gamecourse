@@ -13,6 +13,7 @@ use GameCourse\Views\Views;
 use Modules\AwardList\AwardList;
 use Modules\XP\XPLevels;
 use Utils;
+use VirtualCurrency\VirtualCurrency;
 
 class Skills extends Module
 {
@@ -1792,12 +1793,22 @@ class Skills extends Module
 
     public function getAttemptsDone($skill, $userId): int
     {
-        return intval(Core::$systemDB->select("participation", [
+        $minAttemptRating = intval(Core::$systemDB->select(VirtualCurrency::TABLE_CONFIG,
+            ["course" => $this->getCourseId()],
+            "attemptRating")
+        );
+
+        $attempts = Core::$systemDB->selectMultiple("participation", [
             "course" => $this->getCourseId(),
             "user" => $userId,
             "type" => "graded post",
             "description" => "Skill Tree, Re: " . $skill["name"]
-        ], "count(*)"));
+        ]);
+        $attempts = array_filter($attempts, function ($attempt) use ($minAttemptRating) {
+           return intval($attempt["rating"]) >= $minAttemptRating;
+        });
+
+        return count($attempts);
     }
 
     public function getCostToRetry($skill, $userId): int
