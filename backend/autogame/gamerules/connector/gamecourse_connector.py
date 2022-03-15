@@ -2250,7 +2250,7 @@ def award_streak(target, streak, contributions=None, info=None):
                             firstGraded  = "mod/peerforum/discuss.php?d=" + str(d_gradedPost) + "&parent="  +  str(p_gradedPost)
 
 
-                            query = "SELECT id, date FROM participation WHERE user = %s and course = %s and type = 'forum add post' AND post = %s; "
+                            query = "SELECT id, date FROM participation WHERE user = %s and course = %s and type = 'peerforum add post' AND post = %s;"
                             cursor.execute(query, (target, course, firstGraded))
                             table_first_date = cursor.fetchall()
 
@@ -2270,7 +2270,7 @@ def award_streak(target, streak, contributions=None, info=None):
                             d_gradedPost2 = secondgradedPost[28:indexpost2]
                             secondGraded  = "mod/peerforum/discuss.php?d=" + str(d_gradedPost2) + "&parent="  +  str(p_gradedPost2)
 
-                            query = "SELECT date FROM participation WHERE user = %s AND course = %s AND type = 'forum add post' AND post = %s;"
+                            query = "SELECT date FROM participation WHERE user = %s AND course = %s AND type = 'peerforum add post' AND post = %s; "
                             cursor.execute(query, (target, course, secondGraded))
                             table_second_date = cursor.fetchall()
 
