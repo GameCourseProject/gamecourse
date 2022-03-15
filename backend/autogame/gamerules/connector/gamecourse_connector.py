@@ -1830,9 +1830,15 @@ def award_streak(target, streak, contributions=None, info=None):
                         maxlab_par = 400
                         max_quiz = 1000
 
-                        query = "SELECT id, description, rating FROM participation WHERE user = %s AND course = %s AND type = %s;"
-                        cursor.execute(query, (target, course, participationType))
-                        table_participations = cursor.fetchall()
+
+                        if participationType.startswith("quiz"):
+                            query = "SELECT id, description, rating FROM participation WHERE user = %s AND course = %s AND type = %s AND description like 'Quiz%';"
+                            cursor.execute(query, (target, course, participationType))
+                            table_participations = cursor.fetchall()
+                        else:
+                            query = "SELECT id, description, rating FROM participation WHERE user = %s AND course = %s AND type = %s;"
+                            cursor.execute(query, (target, course, participationType))
+                            table_participations = cursor.fetchall()
 
                         size = len(table_participations)
 
