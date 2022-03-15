@@ -2220,7 +2220,21 @@ def award_streak(target, streak, contributions=None, info=None):
 
                     for i in range(size):
                         j = i+1
+                        if size == 1:
+                            participation_id = filtered[i][0]
+                            query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
+                            cursor.execute(query, (course, target, streakid, participation_id))
+                            cnx.commit()
                         if j < size:
+                            query = "SELECT streakId FROM streak_progression WHERE user = %s and course = %s and streakId = %s;"
+                            cursor.execute(query, (target, course, streakid))
+                            table_progressions = cursor.fetchall()
+
+                            if len(table_progressions) == 1:
+                                query = "DELETE from streak_progression where course=%s and user=%s and streakId =%s;"
+                                cursor.execute(query, (course, target, streakid))
+                                cnx.commit()
+                                cnx.close()
 
                             # ************ FIRST SUBMISSION DATE ************** #
                             firstgradedPost = (filtered[i][2]).decode("utf-8")   # e.g: mod/peerforum/discuss.php?d=38#p65
