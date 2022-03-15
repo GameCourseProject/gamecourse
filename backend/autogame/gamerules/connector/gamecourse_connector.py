@@ -1828,7 +1828,7 @@ def award_streak(target, streak, contributions=None, info=None):
                         maxlabs = 125
                         maxlab_impar = 150
                         maxlab_par = 400
-                        max_quiz = 750
+                        max_quiz = 1000
 
                         query = "SELECT id, description, rating FROM participation WHERE user = %s AND course = %s AND type = %s;"
                         cursor.execute(query, (target, course, participationType))
