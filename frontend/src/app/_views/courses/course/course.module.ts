@@ -23,6 +23,7 @@ import { GooglesheetsComponent } from './settings/modules/config/googlesheets/go
 import { MoodleComponent } from './settings/modules/config/moodle/moodle.component';
 import { QrComponent } from './settings/modules/config/qr/qr.component';
 import { NotificationsComponent } from './settings/modules/config/notifications/notifications.component';
+import { ProfilingComponent } from './settings/modules/config/profiling/profiling.component';
 
 
 @NgModule({
@@ -45,7 +46,8 @@ import { NotificationsComponent } from './settings/modules/config/notifications/
     GooglesheetsComponent,
     MoodleComponent,
     QrComponent,
-    NotificationsComponent
+    NotificationsComponent,
+    ProfilingComponent
   ],
   imports: [
     CommonModule,

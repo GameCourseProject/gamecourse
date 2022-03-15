@@ -7,6 +7,7 @@ use GameCourse\Course;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use Modules\Badges\Badges;
+use Modules\Skills\Skills;
 use Modules\XP\XPLevels;
 
 class Profiling extends Module
@@ -37,28 +38,74 @@ class Profiling extends Module
 
     public function initAPIEndpoints()
     {
+        API::registerFunction(self::ID, 'getHistory', function () {
+            API::requireCourseAdminPermission();
+            API:: requireValues('courseId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $history = $this->getClusterHistory($courseId);
+            $evolution = $this->getClusterEvolution($courseId, $history[1], $history[0]);
+
+            API::response(array('days' => $history[0], 'history' => $history[1], 'nodes' => $evolution[0], 'data' => $evolution[1]));
+        });
+
         API::registerFunction(self::ID, 'getTime', function () {
             API::requireCourseAdminPermission();
-            $courseId = API::getValue('course');
+            API:: requireValues('courseId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
             $time = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "lastRun");
+
             API::response(array('time' => $time));
         });
+
+        API::registerFunction(self::ID, 'getSaved', function () {
+            API::requireCourseAdminPermission();
+            API:: requireValues('courseId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $saved = $this->getSavedClusters($courseId);
+            $names = $this->createNamesArray($this->getClusterNames($courseId));
+
+            API::response(array('saved' => $saved, 'names' => $names));
+        });
+
         API::registerFunction(self::ID, 'runPredictor', function () {
             API::requireCourseAdminPermission();
-            $courseId = API::getValue('course');
+            API:: requireValues('courseId', 'method');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
             $method = API::getValue('method');
-            $clusters = $this->runPredictor($courseId, $method);
+            $this->runPredictor($courseId, $method);
         });
+
         API::registerFunction(self::ID, 'runProfiler', function () {
             API::requireCourseAdminPermission();
-            $courseId = API::getValue('course');
-            $nClusters = API::getValue('nClusters');
+            API:: requireValues('courseId', 'nrClusters', 'minSize');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $nrClusters = API::getValue('nrClusters');
             $minSize = API::getValue('minSize');
-            $clusters = $this->runProfiler($courseId, $nClusters, $minSize);
+            $this->runProfiler($courseId, $nrClusters, $minSize);
         });
+
         API::registerFunction(self::ID, 'checkRunningStatus', function () {
             API::requireCourseAdminPermission();
-            $courseId = API::getValue('course');
+            API:: requireValues('courseId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
             if(file_exists($this->getLogPath($courseId))){
                 $clusters = $this->checkStatus($courseId);
 
@@ -79,6 +126,7 @@ class Profiling extends Module
                 API::response(array('running' => false));
             }
         });
+
         API::registerFunction(self::ID, 'checkPredictorStatus', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
@@ -101,9 +149,25 @@ class Profiling extends Module
                 API::response(array('predicting' => false));
             }
         });
+
+        API::registerFunction(self::ID, 'saveClusters', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('courseId', 'clusters');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $clusters = API::getValue('clusters');
+            $this->saveClusters($courseId, $clusters);
+        });
+
         API::registerFunction(self::ID, 'commitClusters', function () {
             API::requireCourseAdminPermission();
-            $courseId = API::getValue('course');
+            API::requireValues('courseId', 'clusters');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
             $clusters = API::getValue('clusters');
             if (file_exists($this->getLogPath($courseId))){
                 unlink($this->getLogPath($courseId));
@@ -111,40 +175,23 @@ class Profiling extends Module
             $this->processClusterRoles($courseId, $clusters);
             $this->deleteSaved($courseId);
         });
-        API::registerFunction(self::ID, 'saveClusters', function () {
-            API::requireCourseAdminPermission();
-            $courseId = API::getValue('course');
-            $clusters = API::getValue('clusters');
 
-            $this->saveClusters($courseId, $clusters);
-        });
         API::registerFunction(self::ID, 'deleteSaved', function () {
             API::requireCourseAdminPermission();
-            $courseId = API::getValue('course');
+            API::requireValues('courseId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
             if (file_exists($this->getLogPath($courseId))){
                 unlink($this->getLogPath($courseId));
             }
             $this->deleteSaved($courseId);
         });
-        API::registerFunction(self::ID, 'getHistory', function () {
-            API::requireCourseAdminPermission();
-            $courseId = API::getValue('course');
-            $history = $this->getClusterHistory($courseId);
-            $evolution = $this->getClusterEvolution($courseId, $history[1], $history[0]);
-            API::response(array('days' => $history[0],'history' => $history[1], 'nodes' => $evolution[0], 'data' => $evolution[1]));
-        });
-        API::registerFunction(self::ID, 'getSaved', function () {
-            API::requireCourseAdminPermission();
-            $courseId = API::getValue('course');
-            $saved = $this->getSavedClusters($courseId);
-            $names = $this->createNamesArray($this->getClusterNames($courseId));
-            API::response(array('saved' => $saved, 'names' => $names));
-        });
     }
 
     public function setupResources() {
         parent::addResources('css/');
-        parent::addResources('js/');
     }
 
     public function setupData($courseId){
@@ -202,7 +249,7 @@ class Profiling extends Module
 
     public function get_personalized_function(): string
     {
-        return "profilingPersonalizedConfig";
+        return self::ID;
     }
 
 
@@ -708,8 +755,8 @@ ModuleLoader::registerModule(array(
     'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => Badges::ID, 'mode' => 'hard'),
-        array('id' => XPLevels::ID, 'mode' => 'hard'),
-        array('id' => 'plugin', 'mode' => 'hard') // FIXME: which data source?
+        array('id' => Skills::ID, 'mode' => 'hard'),
+        array('id' => XPLevels::ID, 'mode' => 'hard')
     ),
     'factory' => function() {
         return new Profiling();

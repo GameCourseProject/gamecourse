@@ -6,6 +6,7 @@
 # IDEs and editors
 /.idea
 /autogame/.idea/
+/modules/profiling/.idea/
 .project
 .classpath
 .c9/

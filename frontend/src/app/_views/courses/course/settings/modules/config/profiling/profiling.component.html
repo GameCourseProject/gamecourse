@@ -1,0 +1,140 @@
+<!-- Overview -->
+<div class="section">
+  <div class="divider">
+    <div class="title"><span>Overview</span></div>
+  </div>
+
+  <div class="content">
+    <figure class="highcharts-figure">
+      <div id="overview"></div>
+    </figure>
+    <p *ngIf="data?.length == 0">Nothing to show yet</p>
+  </div>
+</div>
+
+<!-- Run the profiler -->
+<div class="section profiler">
+  <div class="divider">
+    <div class="title"><span>Run the Profiler</span></div>
+  </div>
+
+  <div *ngIf="!loading" class="content">
+
+    <!-- Cluster inputs -->
+    <div class="cluster_inputs">
+      <div class="row">
+        <div class="input-wrapper">
+          <span class="label">Number of clusters:</span>
+          <input type="number" [min]="3" [max]="10" id="'nr-clusters'" name="'nr-clusters'" class="input" [(ngModel)]="nrClusters">
+          <button *ngIf="!predictorIsRunning" style="margin-left: 10px" (click)="isPredictModalOpen = true">Predict</button>
+          <span *ngIf="predictorIsRunning" style="margin-left: 10px; color: green">running predictor</span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="input-wrapper">
+          <span class="label">Minimum cluster size:</span>
+          <input type="number" [min]="0" id="'min-cluster-size'" name="'min-cluster-size'" class="input" [(ngModel)]="minClusterSize">
+        </div>
+      </div>
+    </div>
+
+    <!-- Time -->
+    <div id="time">
+      <p><b>Last run: </b>{{lastRun}}</p>
+    </div>
+
+    <!-- Status -->
+    <div id="running-tag">
+      <p><b>Status: </b><span [ngStyle]="{'color': profilerIsRunning ? 'green' : 'red'}">{{profilerIsRunning ? 'Running' : 'Not Running'}}</span></p>
+    </div>
+
+    <!-- Results -->
+    <div id="results">
+      <p><b>Profiling Results:</b></p>
+      <div style="margin-top: 30px;">
+        <app-datatable
+          [id]="'cluster-table'"
+          [headers]="table.headers"
+          [data]="table.data"
+          [loading]="table.loading">
+        </app-datatable>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button *ngIf="!clusters" id="export_button" class="icon export_icon profiling_button other" (click)="exportItem()"></button>
+      <button *ngIf="!clusters" id="import_button" class="icon import_icon profiling_button other" (click)="isImportModalOpen = true"></button>
+      <button *ngIf="!clusters && !profilerIsRunning" id="run-button" class="button small" (click)="runProfiler()">Run</button>
+      <button *ngIf="!clusters && profilerIsRunning" id="refresh-button" class="button small" (click)="checkRunningStatus()">Refresh</button>
+      <button *ngIf="clusters" id="save-button" class="button small" (click)="saveClusters()">Save</button>
+      <button *ngIf="clusters" id="commit-button" class="button small" (click)="commitClusters()">Commit</button>
+      <button *ngIf="clusters" id="cancel-button" class="button small" style="background-color: tomato" (click)="deleteSaved()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Loader -->
+<div *ngIf="loading || loadingAction" id="page-loading">
+  <img src="assets/loader/loader.gif" alt="loader">
+</div>
+
+
+<!-- Predict Nr. Clusters Modal -->
+<ng-container *ngIf="isPredictModalOpen">
+  <app-modal
+    [isModalOpen]="isPredictModalOpen"
+    [id]="'predictor-modal'"
+    [templateRef]="predictModal"
+    (closeBtnClicked)="isPredictModalOpen = false"
+    [actionInProgress]="loading"
+    [innerClickEvents]="false"
+    [classList]="'verification'">
+  </app-modal>
+</ng-container>
+
+<ng-template #predictModal>
+  <div class="warning" style="margin-bottom: 20px">Please select a method to be used to predict the number of clusters:</div>
+
+  <label *ngFor="let method of methods; let first = first" [ngStyle]="{'margin-right': first ? '20px' : 0}">
+    {{method.name}}
+    <input type="radio" [checked]="first" name="radio" [id]="method.name" (click)="methodSelected = method.char">
+    <span class="checkmark"></span>
+  </label>
+
+  <div class="confirmation_btns" style="margin-top: 30px">
+    <button (click)="isPredictModalOpen = false; runPredictor()">Predict</button>
+    <button style="background-color: tomato" (click)="isPredictModalOpen = false">Cancel</button>
+  </div>
+</ng-template>
+
+
+<!-- Import Modal -->
+<ng-container *ngIf="isImportModalOpen">
+  <app-modal
+    [isModalOpen]="isImportModalOpen"
+    [id]="'import-item'"
+    [templateRef]="importModal"
+    (closeBtnClicked)="isImportModalOpen = false"
+    [actionInProgress]="loading"
+    [innerClickEvents]="false"
+    [classList]="'verification'">
+  </app-modal>
+</ng-container>
+
+<ng-template #importModal>
+
+  <div class="warning">Please select a .csv or .txt file to be imported</div>
+  <div class="target">The separator must be comma <br>The encoding must be UTF-8</div>
+  <app-input-file
+    [id]="'import_item'"
+    [accept]="'.csv, .txt'"
+    [classList]="'config_input'"
+    (valueChange)="onFileSelected($event)">
+  </app-input-file>
+
+  <div class="confirmation_btns">
+    <button (click)="importItems(false)">Import</button>
+  </div>
+
+</ng-template>

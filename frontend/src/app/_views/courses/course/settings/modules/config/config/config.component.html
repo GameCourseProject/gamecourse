@@ -73,6 +73,10 @@
       <ng-container *ngComponentOutlet="NotificationsConfig"></ng-container>
     </ng-container>
 
+    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.PROFILING">
+      <ng-container *ngComponentOutlet="ProfilingConfig"></ng-container>
+    </ng-container>
+
     <ng-container *ngIf="personalizedConfig === PersonalizedConfig.QR">
       <ng-container *ngComponentOutlet="QRConfig"></ng-container>
     </ng-container>

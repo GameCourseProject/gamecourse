@@ -40,6 +40,10 @@ import {ClassCheckVars} from "../../_views/courses/course/settings/modules/confi
 import {
   ProgressReportVars
 } from "../../_views/courses/course/settings/modules/config/notifications/notifications.component";
+import {
+  ProfilingHistory,
+  ProfilingNode
+} from "../../_views/courses/course/settings/modules/config/profiling/profiling.component";
 
 @Injectable({
   providedIn: 'root'
@@ -1089,6 +1093,127 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
+  }
+
+
+  // Profiling
+  public getHistory(courseID: number): Observable<{data: any[][], days: string[], history: ProfilingHistory[], nodes: ProfilingNode[]}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PROFILING);
+      qs.push('request', 'getHistory');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public getTime(courseID: number): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PROFILING);
+      qs.push('request', 'getTime');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['time']) );
+  }
+
+  public getSaved(courseID: number): Observable<{names: {name: string}[], saved: any[]}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PROFILING);
+      qs.push('request', 'getSaved');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public runProfiler(courseID: number, nrClusters: number, minClusterSize: number): Observable<void> {
+    const data = {
+      courseId: courseID,
+      nrClusters,
+      minSize: minClusterSize
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PROFILING);
+      qs.push('request', 'runProfiler');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public saveClusters(courseID: number, clusters: {[studentNr: string]: string}): Observable<void> {
+    const data = {
+      courseId: courseID,
+      clusters
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PROFILING);
+      qs.push('request', 'saveClusters');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public commitClusters(courseID: number, clusters: {[studentNr: string]: string}): Observable<void> {
+    const data = {
+      courseId: courseID,
+      clusters
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PROFILING);
+      qs.push('request', 'commitClusters');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteSaved(courseID: number): Observable<void> {
+    const data = {
+      courseId: courseID
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PROFILING);
+      qs.push('request', 'deleteSaved');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public checkRunningStatus(courseID: number): Observable<boolean | {clusters: {[studentNr: string]: {name: string, cluster: string}}, names: {name: string}[]}> {
+    const data = {
+      courseId: courseID
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PROFILING);
+      qs.push('request', 'checkRunningStatus');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].hasOwnProperty('running') ? res['data']['running'] : res['data']) );
   }
 
 
