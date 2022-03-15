@@ -71,7 +71,12 @@
               "node_modules/apexcharts/dist/apexcharts.min.js",
               "node_modules/quill/dist/quill.min.js",
               "node_modules/quill-image-resize/image-resize.min.js",
-              "node_modules/datatables.net/js/jquery.dataTables.min.js"
+              "node_modules/datatables.net/js/jquery.dataTables.min.js",
+              "node_modules/highcharts/highcharts.js",
+              "node_modules/highcharts/modules/sankey.js",
+              "node_modules/highcharts/modules/exporting.js",
+              "node_modules/highcharts/modules/export-data.js",
+              "node_modules/highcharts/modules/accessibility.js"
             ],
             "allowedCommonJsDependencies": [
               "codemirror"
