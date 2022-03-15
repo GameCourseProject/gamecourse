@@ -120,7 +120,7 @@ export class ProfilingComponent implements OnInit {
             console.log('select not empty'); // FIXME
           }
 
-          // FIXME: Check predictor status
+          this.checkPredictorStatus();
         },
         error => ErrorService.set(error)
       )
@@ -138,7 +138,14 @@ export class ProfilingComponent implements OnInit {
   }
 
   runPredictor() {
-    // FIXME: backend function runPredictor() doesn't seem to be working
+    this.loadingAction = true;
+    this.predictorIsRunning = true;
+    this.api.runPredictor(this.courseID, this.methodSelected)
+      .pipe(finalize(() => this.loadingAction = false))
+      .subscribe(
+        res => {},
+        error => ErrorService.set(error)
+      )
   }
 
   saveClusters() {
@@ -202,6 +209,24 @@ export class ProfilingComponent implements OnInit {
             this.clusters = res.clusters;
             this.clusterNames = res.names;
             this.profilerIsRunning = false;
+          }
+        },
+        error => ErrorService.set(error)
+      )
+  }
+
+  checkPredictorStatus() {
+    this.loadingAction = true;
+    this.api.checkPredictorStatus(this.courseID)
+      .pipe(finalize(() => this.loadingAction = false))
+      .subscribe(
+        res => {
+          if (typeof res == 'boolean') {
+            this.predictorIsRunning = res;
+
+          } else { // got nrClusters as result
+            this.nrClusters = res;
+            this.predictorIsRunning = false;
           }
         },
         error => ErrorService.set(error)

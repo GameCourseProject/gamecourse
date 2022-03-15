@@ -1153,6 +1153,22 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
+  public runPredictor(courseID: number, method: string): Observable<void> {
+    const data = {
+      courseId: courseID,
+      method
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PROFILING);
+      qs.push('request', 'runPredictor');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
   public saveClusters(courseID: number, clusters: {[studentNr: string]: string}): Observable<void> {
     const data = {
       courseId: courseID,
@@ -1214,6 +1230,22 @@ export class ApiHttpService {
 
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data'].hasOwnProperty('running') ? res['data']['running'] : res['data']) );
+  }
+
+  public checkPredictorStatus(courseID: number): Observable<boolean | number> {
+    const data = {
+      courseId: courseID
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PROFILING);
+      qs.push('request', 'checkPredictorStatus');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].hasOwnProperty('predicting') ? res['data']['predicting'] : parseInt(res['data']['nrClusters'])) );
   }
 
 

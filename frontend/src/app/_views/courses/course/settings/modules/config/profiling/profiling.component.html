@@ -27,7 +27,7 @@
           <span class="label">Number of clusters:</span>
           <input type="number" [min]="3" [max]="10" id="'nr-clusters'" name="'nr-clusters'" class="input" [(ngModel)]="nrClusters">
           <button *ngIf="!predictorIsRunning" style="margin-left: 10px" (click)="isPredictModalOpen = true">Predict</button>
-          <span *ngIf="predictorIsRunning" style="margin-left: 10px; color: green">running predictor</span>
+          <button *ngIf="predictorIsRunning" style="margin-left: 10px" (click)="checkPredictorStatus()">Refresh</button>
         </div>
       </div>
 

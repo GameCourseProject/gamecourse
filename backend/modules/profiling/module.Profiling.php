@@ -129,7 +129,11 @@ class Profiling extends Module
 
         API::registerFunction(self::ID, 'checkPredictorStatus', function () {
             API::requireCourseAdminPermission();
-            $courseId = API::getValue('course');
+            API:: requireValues('courseId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
             if(file_exists($this->getPredictorPath($courseId))){
                 $result = $this->checkPredictorStatus($courseId);
 
@@ -143,7 +147,7 @@ class Profiling extends Module
                     API::response(array('predicting' => true));
                 }
                 unlink($this->getPredictorPath($courseId));
-                API::response(array('nClusters' => $result["nClusters"]));
+                API::response(array('nrClusters' => $result["nrClusters"]));
             }
             else {
                 API::response(array('predicting' => false));
