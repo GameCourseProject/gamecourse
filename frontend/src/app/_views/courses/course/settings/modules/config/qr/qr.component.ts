@@ -183,7 +183,7 @@ export class QrComponent implements OnInit {
     if (!this.students || this.students.length == 0) {
       this.api.getCourseUsers(this.courseID, "Student")
         .subscribe(
-          students => this.students = students,
+          students => this.students = students.sort((a, b) => a.name.localeCompare(b.name)),
           error => ErrorService.set(error)
         )
     }
