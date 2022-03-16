@@ -20,7 +20,7 @@
         [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
         [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
         [mode]="view.mode">
-    <img class="img" [src]="image.get()" alt="" (error)="isPlaceholder = edit"> <!-- FIXME: should have alt (accessibility) -->
+    <img class="img" [src]="imageURL" alt="" (error)="isPlaceholder = edit"> <!-- FIXME: should have alt (accessibility) -->
   </div>
 </ng-template>
 
@@ -38,7 +38,7 @@
      [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
      [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
      [mode]="view.mode">
-    <img class="img" [src]="image.get()" alt="" (error)="isPlaceholder = edit"> <!-- FIXME: should have alt (accessibility) -->
+    <img class="img" [src]="imageURL" alt="" (error)="isPlaceholder = edit"> <!-- FIXME: should have alt (accessibility) -->
   </a>
 </ng-template>
 

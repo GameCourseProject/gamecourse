@@ -1,6 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ViewImage} from "../../../_domain/views/view-image";
-import {ResourceManager} from "../../../_utils/resources/resource-manager";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
 import {exists, requireValues} from "../../../_utils/misc/misc";
@@ -23,13 +22,9 @@ export class ImageComponent implements OnInit {
 
   isEmpty: boolean;
   isPlaceholder: boolean;
-  image: ResourceManager;
+  imageURL: string;
 
-  constructor(
-    private sanitizer: DomSanitizer,
-  ) {
-    this.image = new ResourceManager(sanitizer);
-  }
+  constructor() { }
 
   ngOnInit(): void {
     requireValues(this.view, [this.view.src]);
@@ -37,7 +32,7 @@ export class ImageComponent implements OnInit {
     this.edit = this.view.mode === ViewMode.EDIT;
 
     if (this.view.src.isEmpty()) this.isEmpty = true;
-    else this.image.set(ApiEndpointsService.API_ENDPOINT + '/' + this.view.src);
+    else this.imageURL = ApiEndpointsService.API_ENDPOINT + '/' + this.view.src;
 
     if (this.view.visibilityType === VisibilityType.INVISIBLE && !this.edit) {
       this.view.style = this.view.style || '';
