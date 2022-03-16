@@ -199,7 +199,7 @@
                                         "type": "text",
                                         "role": "role.Student>role.Default",
                                         "visibilityType": "visible",
-                                        "value": "{xp.getBadgesXP(%user)}"
+                                        "value": "{xp.getBadgesXP(%user)} XP"
                                       }
                                     ],
                                     [
@@ -215,7 +215,7 @@
                                         "type": "text",
                                         "role": "role.Student>role.Default",
                                         "visibilityType": "visible",
-                                        "value": "{xp.getSkillTreeXP(%user)}"
+                                        "value": "{xp.getSkillTreeXP(%user)} XP"
                                       }
                                     ]
                                   ]
@@ -240,7 +240,7 @@
                                         "type": "text",
                                         "role": "role.Student>role.Default",
                                         "visibilityType": "visible",
-                                        "value": "{xp.getXPByType(%user, \"labs\")}"
+                                        "value": "{xp.getXPByType(%user, \"labs\")} XP"
                                       }
                                     ],
                                     [
@@ -256,7 +256,7 @@
                                         "type": "text",
                                         "role": "role.Student>role.Default",
                                         "visibilityType": "visible",
-                                        "value": "{xp.getStreaksXP(%user)}"
+                                        "value": "{xp.getStreaksXP(%user)} XP"
                                       }
                                     ]
                                   ]
@@ -281,7 +281,7 @@
                                         "type": "text",
                                         "role": "role.Student>role.Default",
                                         "visibilityType": "visible",
-                                        "value": "{xp.getXPByType(%user, \"quiz\")}"
+                                        "value": "{xp.getXPByType(%user, \"quiz\")} XP"
                                       }
                                     ],
                                     [
