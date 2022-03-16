@@ -39,6 +39,11 @@
   margin-top: 5px;
 }
 
+.streaks-list .streak .streak-top .streak-top-left .streak-info .streak-done {
+  font-size: 12px;
+  font-weight: bold;
+}
+
 .streaks-list .streak .streak-top .streak-top-left .streak-imgs-all {
   margin-top: 7px;
 }

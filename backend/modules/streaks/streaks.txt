@@ -44,6 +44,9 @@
             },
             "streakProgression": {
               "value": "{%item.progression(%user)}"
+            },
+            "streaksDone": {
+              "value": "{%item.done(%user).number}"
             }
           },
           "children": [
@@ -85,6 +88,15 @@
                                   "class": "streak-description",
                                   "visibilityType": "visible",
                                   "value": "{%streak.description}"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "class": "streak-done",
+                                  "visibilityType": "visible",
+                                  "value": "[{%streaksDone} so far]"
                                 }
                               ]
                             ]

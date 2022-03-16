@@ -299,7 +299,7 @@ class Streaks extends Module
             'collection',
             'level',
             'object',
-            'badge',
+            'streak',
             true
         );
 
@@ -334,7 +334,29 @@ class Streaks extends Module
             },
             'Returns a collection object corresponding to the intermediate progress of a GameCourseUser identified by user for that streak.',
             'collection',
-            'badge',
+            'streak',
+            'library',
+            null,
+            true
+        );
+
+        //streak.done(user)
+        Dictionary::registerFunction(
+            self::ID,
+            'done',
+
+            function ($streak, int $user) {
+                Dictionary::checkArray($streak, "object", 'done');
+                $nrStreaksMade = $this->getStreaksDone($streak, $user);
+                $streaks = ["number" => $nrStreaksMade];
+                unset($streak["value"]["description"]);
+                $streaks["libraryOfVariable"] = self::ID;
+                $streaks = array_merge($streak["value"], $streaks);
+                return Dictionary::createNode($streaks, self::ID);
+            },
+            'Returns a collection object corresponding to the number of streaks a user has made in a streak.',
+            'collection',
+            'streak',
             'library',
             null,
             true
@@ -696,15 +718,16 @@ class Streaks extends Module
         return $streakTokens ?? 0;
     }
 
-    // getStreakCount
+    public function getStreaksDone($streak, $user): int {
+        $streakCounts = intval(Core::$systemDB->select(self::TABLE_PROGRESSION, ["course" => $this->getCourseId(), "user" => $user, "streakId" => $streak["value"]["id"]], "count(*)"));
+        return floor($streakCounts / $streak["value"]["count"]);
+    }
     // getUsersWithStreak
 
     public function getStreakProgression($streak, $user): int
     {
         $streakCounts = intval(Core::$systemDB->select(self::TABLE_PROGRESSION, ["course" => $this->getCourseId(), "user" => $user, "streakId" => $streak["value"]["id"]], "count(*)"));
-        if ($streakCounts != 0 && $streakCounts % $streak["value"]["count"] == 0) $progression = $streak["value"]["count"];
-        else $progression = $streakCounts % $streak["value"]["count"];
-        return $progression;
+        return $streakCounts % $streak["value"]["count"];
     }
 
     public function saveMaxReward($max, $courseId)
