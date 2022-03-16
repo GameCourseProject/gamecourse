@@ -1490,9 +1490,11 @@ def check_periodicity(target, course, participationType, periodicity, periodicit
         participationValid = table_all_participations[p][1]
 
         if not participationValid:
-            for i in range(p-1, 0, -1):
-                query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND participationId= %s;"
-                cursor.execute(query, (target, course, streakid))
+            for i in range(p-1, -1, -1):
+                participationId = table_all_participations[i][0]
+
+                query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND streakId = %s AND participationId= %s;"
+                cursor.execute(query, (target, course, streakid, participationId))
                 cnx.commit()
 
     query = "SELECT participationId FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s AND isValid = '1';"
@@ -1554,9 +1556,11 @@ def check_is_consecutive(target, course, participationType, streakid):
         participationValid = table_all_participations[p][1]
 
         if not participationValid:
-            for i in range(p-1, 0, -1):
-                query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND participationId= %s;"
-                cursor.execute(query, (target, course, streakid))
+            for i in range(p-1, -1, -1):
+                participationId = table_all_participations[i][0]
+
+                query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND streakId = %s AND participationId= %s;"
+                cursor.execute(query, (target, course, streakid, participationId))
                 cnx.commit()
 
     query = "SELECT participationId FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s AND isValid = '1';"
@@ -1648,9 +1652,11 @@ def award_rating_streak(target, streak, rating, contributions=None, info=None):
                         participationValid = table_all_participations[p][1]
 
                         if not participationValid:
-                            for i in range(p-1, 0, -1):
-                                query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND participationId= %s;"
-                                cursor.execute(query, (target, course, streakid))
+                            for i in range(p-1, -1, -1):
+                                participationId = table_all_participations[i][0]
+
+                                query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND streakId = %s AND participationId= %s;"
+                                cursor.execute(query, (target, course, streakid, participationId))
                                 cnx.commit()
 
                     query = "SELECT participationId FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s AND isValid = '1';"
@@ -1792,11 +1798,16 @@ def award_streak(target, streak, contributions=None, info=None):
 
     course = config.course
     typeof = "streak"
+    #logging.exception(streak)
+
 
     nlogs = len(contributions)
     participationType = ''
     if contributions != None and streak != "Grader Extraordinaire":
         participationType = contributions[0].log_type
+
+        
+    #logging.exception(participationType)
 
     if config.test_mode:
         awards_table = "award_test"
@@ -1825,6 +1836,8 @@ def award_streak(target, streak, contributions=None, info=None):
                 if isCount and not isPeriodic:
 
                    if participationType.startswith("attended") or participationType.endswith("grade"):
+                        #logging.exception("aqui")
+
                         maxlabs = 125
                         maxlab_impar = 150
                         maxlab_par = 400
@@ -1900,13 +1913,17 @@ def award_streak(target, streak, contributions=None, info=None):
                                                 cursor.execute(query, (course, target, streakid, firstParticipationId, '1'))
                                                 cnx.commit()
                                                 if j == size-1:
-                                                    if rating2 != maxlabs or rating2 != maxlab_impar:
+                                                    if rating2 == maxlabs and description2 == 2:
                                                         query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
-                                                        cursor.execute(query, (course, target, streakid, secondParticipationId, '0'))
+                                                        cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
+                                                        cnx.commit()
+                                                    elif rating2 == maxlab_impar and description2 == 3:
+                                                        query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                                                        cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
                                                         cnx.commit()
                                                     else:
                                                         query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
-                                                        cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
+                                                        cursor.execute(query, (course, target, streakid, secondParticipationId, '0'))
                                                         cnx.commit()
                                         elif (description1 % 2 != 0):
                                             if rating1 != maxlab_impar:
@@ -1963,9 +1980,11 @@ def award_streak(target, streak, contributions=None, info=None):
                             participationValid = table_all_participations[p][1]
 
                             if not participationValid:
-                                for i in range(p-1, 0, -1):
-                                    query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND participationId= %s;"
-                                    cursor.execute(query, (target, course, streakid))
+                                for i in range(p-1, -1, -1):
+                                    participationId = table_all_participations[i][0]
+
+                                    query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND streakId = %s AND participationId= %s;"
+                                    cursor.execute(query, (target, course, streakid, participationId))
                                     cnx.commit()
 
                         query = "SELECT participationId FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s AND isValid = '1';"
@@ -2005,9 +2024,10 @@ def award_streak(target, streak, contributions=None, info=None):
                             participationValid = table_all_participations[p][1]
 
                             if not participationValid:
-                                for i in range(p-1, 0, -1):
-                                    query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND participationId= %s;"
-                                    cursor.execute(query, (target, course, streakid))
+                                for i in range(p-1, -1, -1):
+                                    participationId = table_all_participations[i][0]
+                                    query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND streakId = %s AND participationId= %s;"
+                                    cursor.execute(query, (target, course, streakid, participationId))
                                     cnx.commit()
 
                         query = "SELECT participationId FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s AND isValid = '1';"
@@ -2190,9 +2210,11 @@ def award_streak(target, streak, contributions=None, info=None):
                         participationValid = table_all_participations[p][1]
 
                         if not participationValid:
-                            for i in range(p-1, 0, -1):
-                                query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND participationId= %s;"
-                                cursor.execute(query, (target, course, streakid))
+                            for i in range(p-1, -1, -1):
+                                participationId = table_all_participations[i][0]
+
+                                query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND streakId = %s AND participationId= %s;"
+                                cursor.execute(query, (target, course, streakid, participationId))
                                 cnx.commit()
 
                     query = "SELECT participationId FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s AND isValid = '1';"
