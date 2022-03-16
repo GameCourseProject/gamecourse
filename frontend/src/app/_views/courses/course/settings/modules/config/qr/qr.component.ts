@@ -4,6 +4,8 @@ import {ActivatedRoute} from "@angular/router";
 import {finalize} from "rxjs/operators";
 import {ErrorService} from "../../../../../../../_services/error.service";
 import {TypeOfClass} from "../../../../page/page.component";
+import {User} from "../../../../../../../_domain/users/user";
+import {pipe} from "rxjs";
 
 @Component({
   selector: 'app-qr',
@@ -41,6 +43,19 @@ export class QrComponent implements OnInit {
       data: null
     }
   }
+
+  isNewParticipationModalOpen: boolean;
+  newParticipation: {
+    studentId: number,
+    lectureNr: number,
+    typeOfClass: TypeOfClass
+  } = {
+    studentId: null,
+    lectureNr: null,
+    typeOfClass: null
+  };
+
+  students: User[] = [];
 
   constructor(
     private api: ApiHttpService,
@@ -144,6 +159,46 @@ export class QrComponent implements OnInit {
         },
         error => ErrorService.set(error)
       )
+  }
+
+  submitNewParticipation() {
+    this.loading = true;
+    this.api.submitQRParticipationForUser(this.courseID, this.newParticipation.studentId, this.newParticipation.lectureNr, this.newParticipation.typeOfClass)
+      .pipe(finalize(() => {
+        this.loading = false;
+        this.isNewParticipationModalOpen = false;
+        this.clearObject(this.newParticipation);
+      }))
+      .subscribe(
+        res => this.buildParticipationTable(),
+        error => ErrorService.set(error)
+      )
+  }
+
+  getTypesOfClasses(): string[] {
+    return Object.values(TypeOfClass);
+  }
+
+  getStudents(): void {
+    if (!this.students || this.students.length == 0) {
+      this.api.getCourseUsers(this.courseID, "Student")
+        .subscribe(
+          students => this.students = students,
+          error => ErrorService.set(error)
+        )
+    }
+  }
+
+  isReadyToSubmit(): boolean {
+    return this.newParticipation.studentId != null &&
+      this.newParticipation.lectureNr != null &&
+      this.newParticipation.typeOfClass != null;
+  }
+
+  clearObject(obj): void {
+    for (const key of Object.keys(obj)) {
+      obj[key] = null;
+    }
   }
 
 }

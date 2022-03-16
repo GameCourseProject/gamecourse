@@ -374,11 +374,12 @@ export class ApiHttpService {
 
 
   // Course Users
-  public getCourseUsers(courseID: number): Observable<User[]> {
+  public getCourseUsers(courseID: number, role?: string): Observable<User[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
       qs.push('request', 'getCourseUsers');
       qs.push('courseId', courseID);
+      if (role) qs.push('role', role);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
@@ -1278,6 +1279,24 @@ export class ApiHttpService {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.QR);
       qs.push('request', 'submitQRParticipation');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public submitQRParticipationForUser(courseID: number, userID: number, lectureNr: number, typeOfClass: TypeOfClass): Observable<void> {
+    const data = {
+      courseId: courseID,
+      userId: userID,
+      lectureNr,
+      typeOfClass
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.QR);
+      qs.push('request', 'submitQRParticipationForUser');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);

@@ -2,15 +2,19 @@
   width: calc(100% - 120px);
 }
 
+.section.participation .divider .title:after {
+  width: calc(100% - 40px);
+}
+
 .content {
   margin-top: 40px;
+}
 
-  .action-buttons {
-    width: fit-content;
-    position: absolute;
-    top: -5px;
-    right: 0;
-  }
+.action-buttons {
+  width: fit-content;
+  position: absolute;
+  top: -5px;
+  right: 0;
 }
 
 .input-wrapper {
@@ -76,5 +80,14 @@
 @media only screen and (min-width: 1500px) {
   .qr-codes {
     grid-template-columns: 20% 20% 20% 20% 20%;
+  }
+}
+
+.multiple_inputs {
+  column-count: 2;
+  margin-top: 40px;
+
+  .row {
+    break-inside: avoid-column;
   }
 }

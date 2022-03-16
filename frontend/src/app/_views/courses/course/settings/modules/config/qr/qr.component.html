@@ -16,7 +16,7 @@
     </div>
   </div>
 
-  <div class="section">
+  <div class="section participation">
     <div class="divider">
       <div class="title"><span>Participation List</span></div>
     </div>
@@ -28,6 +28,10 @@
         [data]="tables.participation.data"
         [loading]="tables.participation.loading">
       </app-datatable>
+    </div>
+
+    <div class="action-buttons">
+      <div class="icon add_icon" title="New" (click)="isNewParticipationModalOpen = true; getStudents()"></div>
     </div>
   </div>
 
@@ -65,3 +69,50 @@
 <div *ngIf="loading" id="page-loading">
   <img src="assets/loader/loader.gif" alt="loader">
 </div>
+
+
+<!-- New Participation Modal -->
+<ng-container *ngIf="isNewParticipationModalOpen">
+  <app-modal
+    [isModalOpen]="isNewParticipationModalOpen"
+    [id]="'new-qr-participation-modal'"
+    [templateRef]="newModal"
+    (closeBtnClicked)="isNewParticipationModalOpen = false; clearObject(newParticipation)"
+    [actionInProgress]="loading"
+    [innerClickEvents]="false">
+  </app-modal>
+</ng-container>
+
+<ng-template #newModal>
+  <!-- Title -->
+  <div class="title">New Participation:</div>
+
+  <div class="content multiple_inputs">
+    <div class="row">
+      <!-- Student -->
+      <select class="form__input" id="student-id" [(ngModel)]="newParticipation.studentId">
+        <option disabled [value]="null">Select a student</option>
+        <option *ngFor="let student of students" [label]="student.nickname || student.name" [value]="student.id">{{student.nickname || student.name}}</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <!-- Lecture Nr. -->
+      <div>
+        <input type="number" id="lecture-nr" name="lecture-nr" placeholder="Lecture number" class="form__input" [(ngModel)]="newParticipation.lectureNr">
+        <label [for]="'lecture-nr'" class="form__label">Lecture Nr.</label>
+      </div>
+
+      <!-- Class Type -->
+      <select class="form__input" id="type-of-class" [(ngModel)]="newParticipation.typeOfClass">
+        <option disabled [value]="null">Select a type of class</option>
+        <option *ngFor="let type of getTypesOfClasses()" [label]="type" [value]="type">{{type}}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="action_buttons" style="display: flex; justify-content: flex-end">
+    <button class="cancel" (click)="isNewParticipationModalOpen = false; clearObject(newParticipation)">Cancel</button>
+    <button class="save_btn" style="position: relative; margin-left: 15px" [disabled]="!isReadyToSubmit()" (click)="submitNewParticipation()">Save</button>
+  </div>
+</ng-template>
