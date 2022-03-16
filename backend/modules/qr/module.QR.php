@@ -3,6 +3,7 @@ namespace Modules\QR;
 
 include "lib/phpqrcode.php";
 
+use GameCourse\User;
 use PDOException;
 use QRcode;
 use GameCourse\API;
@@ -81,7 +82,7 @@ class QR extends Module
          */
         API::registerFunction(self::ID, 'submitQRParticipation', function () {
             API::requireCoursePermission();
-            API::requireValues('courseId', 'lectureNr', 'typeOfClass');
+            API::requireValues('courseId', 'key', 'lectureNr', 'typeOfClass');
 
             $courseId = API::getValue('courseId');
             $course = API::verifyCourseExists($courseId);
@@ -139,6 +140,47 @@ class QR extends Module
                 ]);
                 API::error("Sorry. An error occured. Contact your class professor with your QRCode and this message. Your student ID and IP number was registered.");
             }
+        });
+
+        /**
+         * Submists a lecture participation through a QR code, for a specific user.
+         *
+         * @param int $courseId
+         * @param int $userId
+         * @param int $lectureNr
+         * @param string $typeOfClass
+         */
+        API::registerFunction(self::ID, 'submitQRParticipationForUser', function () {
+            API::requireCoursePermission();
+            API::requireValues('courseId', 'userId', 'lectureNr', 'typeOfClass');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $userId = API::getValue('userId');
+            $lectureNr = API::getValue('lectureNr');
+            $typeOfClass = API::getValue('typeOfClass');
+
+            // Generate unique key
+            $datagen = date('YmdHis');
+            $uid = uniqid();
+            $separator = '-';
+            $key = $datagen . $separator . $uid;
+
+            // Insert in database
+            Core::$systemDB->insert(QR::TABLE, [
+                "qrkey" => $key,
+                "course" => $courseId,
+                "user" => $userId,
+                "classNumber" =>  $lectureNr,
+                "classType" => $typeOfClass
+            ]);
+
+            $type = "";
+            if ($typeOfClass == "Lecture") $type = "participated in lecture";
+            else if ($typeOfClass == "Invited Lecture") $type = "participated in lecture (invited)";
+
+            Core::$systemDB->insert("participation", ["user" => $userId, "course" => $courseId, "description" => $lectureNr, "type" => $type]);
         });
     }
 
