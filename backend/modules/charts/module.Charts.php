@@ -104,24 +104,23 @@ class Charts extends Module
             $baseLine = (new DateTime('2022-03-07')); // FIXME: course start date should be configurable
             $daysPassed = $baseLine->diff(new DateTime())->days;
 
-            // Get from cache if exists
-            $cacheId = 'xpEvolution-' . $params['course'] . '-' . $userID . '-' . $daysPassed;
-            list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
-            if ($hasCache) {
-                $spark = (array_key_exists('spark', $chart['info']) ? true : false);
-                $chart['info'] = $cacheValue;
-                $chart['info']['spark'] = $spark;
-                return;
-            }
-
-            // Calculate XP per day
             $awards = Core::$systemDB->selectMultiple(AwardList::TABLE, ["user" => $userID, "course" => $courseId], "*" , "date");
             $awards = array_filter($awards, function ($award) { return $award["type"] != "tokens"; });
 
             $xpTotal = 0;
             $xpByDay = [];
-
             $day = 0;
+
+            // Get previous days from cache if exists
+            $cacheId = 'xpEvolution-' . $params['course'] . '-' . $userID . '-' . $daysPassed;
+            list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
+            if ($hasCache) {
+                $xpByDay = $cacheValue['values'];
+                $xpTotal = intval(end($xpByDay)['y']);
+                $day = $daysPassed; // only need to calculate current day
+            }
+
+            // Calculate XP per day
             while ($day <= $daysPassed) {
                 $awardsByDay = array_filter($awards, function ($award) use ($baseLine, $day) {
                     return $baseLine->diff(new DateTime($award["date"]))->days == $day;
@@ -140,12 +139,16 @@ class Charts extends Module
             $chart['info'] = array(
                 'values' => $xpByDay,
                 'domainX' => array(0, $daysPassed),
-                'domainY' => array(0, $xpTotal),
+                'domainY' => array(0, 20000),
                 'spark' => (array_key_exists('spark', $chart['info']) ? true : false),
                 'labelX' => 'Time (Days)',
                 'labelY' => 'XP'
             );
-            CacheSystem::store($cacheId, $chart['info']);
+
+            // Store in cache
+            $cacheValue = $chart['info'];
+            array_pop($cacheValue['values']); // Remove current day as it might still be updated
+            CacheSystem::store($cacheId, $cacheValue);
         });
 
         $this->registerChart('leaderboardEvolution', function(&$chart, EvaluateVisitor $visitor) {
@@ -160,12 +163,15 @@ class Charts extends Module
             $baseLine = (new DateTime('2022-03-07')); // FIXME: course start date should be configurable
             $daysPassed = $baseLine->diff(new DateTime())->days;
 
-            // Get from cache if exists
+            $positionPerDay = [];
+            $day = 0;
+
+            // Get previous days from cache if exists
             $cacheId = 'leaderboardEvolution-' . $courseId . '-' . $userID . '-' . $daysPassed;
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
             if ($hasCache) {
-                $chart['info'] = $cacheValue;
-                return;
+                $positionPerDay = $cacheValue['values'];
+                $day = $daysPassed; // only need to calculate current day
             }
 
             // Calculate XP and badges count for each student per day
@@ -182,10 +188,10 @@ class Charts extends Module
                 $badgesTotal = 0;
                 $badgesByDay = [];
 
-                $day = 0;
-                while ($day <= $daysPassed) {
-                    $awardsByDay = array_filter($awards, function ($award) use ($baseLine, $day) {
-                        return $baseLine->diff(new DateTime($award["date"]))->days == $day;
+                $d = 0;
+                while ($d <= $daysPassed) {
+                    $awardsByDay = array_filter($awards, function ($award) use ($baseLine, $d) {
+                        return $baseLine->diff(new DateTime($award["date"]))->days == $d;
                     });
 
                     if (!empty($awardsByDay)) {
@@ -195,17 +201,15 @@ class Charts extends Module
                         }
                     }
 
-                    $xpByDay[] = array('x' => $day, 'y' => $xpTotal);
-                    $badgesByDay[] = array('x' => $day, 'y' => $badgesTotal);
-                    $day++;
+                    $xpByDay[] = array('x' => $d, 'y' => $xpTotal);
+                    $badgesByDay[] = array('x' => $d, 'y' => $badgesTotal);
+                    $d++;
                 }
                 $studentXPPerDay[$studentID] = $xpByDay;
                 $studentBadgesPerDay[$studentID] = $badgesByDay;
             }
 
             // Calculate student position
-            $positionPerDay = [];
-            $day = 0;
             while ($day <= $daysPassed) {
                 // Order by XP, badges count and studentNumber
                 usort($students, function ($a, $b) use ($studentXPPerDay, $studentBadgesPerDay, $day, $courseId) {
@@ -243,7 +247,11 @@ class Charts extends Module
                 'labelX' => 'Time (Days)',
                 'labelY' => 'Position'
             );
-            CacheSystem::store($cacheId, $chart['info']);
+
+            // Store in cache
+            $cacheValue = $chart['info'];
+            array_pop($cacheValue['values']); // Remove current day as it might still be updated
+            CacheSystem::store($cacheId, $cacheValue);
         });
 
         $this->registerChart('xpWorld', function(&$chart, EvaluateVisitor $visitor) {
