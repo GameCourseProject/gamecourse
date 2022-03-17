@@ -874,6 +874,7 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
             cnx.commit()
 
     elif len(table) > 0 and contributions != None:
+         query = "SELECT moduleInstance FROM " + awards_table + " where user = %s AND course = %s AND description = %s AND type=%s;"
 
          query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
          cursor.execute(query, (target, course, reward_name, typeof))
@@ -885,11 +886,12 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
              cursor.execute(query, (target, course, reward_name, typeof, reward))
              cnx.commit()
 
-             newTotal = table_wallet[0][0] + reward
-             # simply award the tokens
-             query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
-             cursor.execute(query, (newTotal, course, target))
-             cnx.commit()
+         dif = len(contributions) - len(table_id)
+         newTotal = table_wallet[0][0] + reward * dif
+         # simply award the tokens
+         query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
+         cursor.execute(query, (newTotal, course, target))
+         cnx.commit()
 
 
     cnx.close()
@@ -1998,14 +2000,18 @@ def award_streak(target, streak, contributions=None, info=None):
                             cnx.commit()
 
                    elif streak.startswith("Grader"):
-                        # contributions - id, timeassigned, expired
+                        # contributions - id, timeassigned, expired, ended
                         size = len(contributions)
 
                         for i in range(size):
                             id = contributions[i][0]
                             expired = contributions[i][2]
+                            ended = contributions[i][3]
                             if expired == 0:
-                                valid = 1
+                                if ended == 1:
+                                    valid = 1
+                                else:
+                                    valid = 0
                             else:
                                 valid = 0
 
@@ -2577,7 +2583,7 @@ def consecutive_peergrading(target):
     cursor = cnx.cursor(prepared=True)
 
     course = config.course
-    query = "select id, timeassigned, expired from mdl_peerforum_time_assigned where component = %s and userid = (select id from mdl_user where username = %s);"
+    query = "select id, timeassigned, expired, ended from mdl_peerforum_time_assigned where component = %s and userid = (select id from mdl_user where username = %s);"
     comp  = 'mod_peerforum'
     cursor.execute(query, (comp, target.decode()))
     table = cursor.fetchall()
