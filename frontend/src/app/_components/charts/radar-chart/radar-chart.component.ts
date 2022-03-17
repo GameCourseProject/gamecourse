@@ -88,9 +88,6 @@ export class RadarChartComponent implements OnInit {
       },
       yaxis: {
         show: false,
-        min: 0,
-        max: 100,
-        tickAmount: 5
       },
       tooltip: { }
     };
