@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ApiHttpService} from "../../../../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
 import {finalize} from "rxjs/operators";
 import {ErrorService} from "../../../../../../../_services/error.service";
 import {exists} from "../../../../../../../_utils/misc/misc";
 import * as moment from 'moment';
+import {TableAction} from "../../../../../../../_components/tables/datatable/datatable.component";
+import {User} from "../../../../../../../_domain/users/user";
 
 @Component({
   selector: 'app-notifications',
@@ -17,6 +19,7 @@ export class NotificationsComponent implements OnInit {
   hasUnsavedChanges: boolean;
 
   courseID: number;
+  students: User[];
 
   progressReport = {
     endDate: null,
@@ -32,17 +35,37 @@ export class NotificationsComponent implements OnInit {
 
   tables: {
     reports: {
+      showing: boolean,
       loading: boolean,
       headers: string[],
-      data: string[][]
+      data: string[][],
+      actions: TableAction[]
+    },
+    studentsReports: {
+      showing: boolean,
+      loading: boolean,
+      headers: string[],
+      data: string[][],
+      actions: TableAction[]
     }
   } = {
     reports: {
+      showing: true,
       loading: true,
       headers: null,
-      data: null
+      data: null,
+      actions: [TableAction.VIEW]
+    },
+    studentsReports: {
+      showing: false,
+      loading: true,
+      headers: null,
+      data: null,
+      actions: [TableAction.VIEW]
     }
   }
+
+  isStudentReportModalOpen: boolean;
 
   constructor(
     private api: ApiHttpService,
@@ -105,7 +128,7 @@ export class NotificationsComponent implements OnInit {
 
   buildReportsTable() {
     this.tables.reports.headers = [
-      'id', 'report nr', 'date'
+      'report nr', 'reports sent', 'start date', 'end date', 'finished sending',
     ];
 
     this.api.getTableData(this.courseID, 'notifications_progress_report')
@@ -113,11 +136,74 @@ export class NotificationsComponent implements OnInit {
       .subscribe(
         data => {
           this.tables.reports.data = data.entries.map(entry => [
-            entry.id, entry.seqNr, entry.dateSend
+            entry.seqNr, entry.reportsSent, entry.periodStart, entry.periodEnd, entry.dateSent
           ]);
         },
         error => ErrorService.set(error)
       )
+  }
+
+  buildStudentReportsTable(reportNr: number) {
+    this.tables.studentsReports.headers = [
+      'report nr', 'student', 'total XP', 'period XP', 'diff. previous period', 'prediction XP', 'e-mail', 'date',
+    ]
+
+    this.api.getTableData(this.courseID, 'notifications_progress_report_history')
+      .subscribe(
+        data => {
+          data.entries = data.entries.filter(entry => parseInt(entry.course) === this.courseID && parseInt(entry.seqNr) === reportNr);
+
+          this.api.getCourseUsers(this.courseID, "Student")
+            .pipe(finalize(() => this.tables.studentsReports.loading = false))
+            .subscribe(
+              students => {
+                this.students = students;
+                this.tables.studentsReports.data = data.entries.map(entry => {
+                  const student = students.find(student => student.id === parseInt(entry.user));
+                  return [
+                    entry.seqNr, student.name, parseInt(entry.totalXP).format(), parseInt(entry.periodXP).format(),
+                    parseInt(entry.diffXP).format('percent'), parseInt(entry.prediction).format(),
+                    entry.emailSend, entry.dateSent
+                  ];
+                });
+              },
+              error => ErrorService.set(error)
+            )
+        },
+        error => ErrorService.set(error)
+      )
+  }
+
+  doBtnAction(table: 'reports' | 'studentReports', action: TableAction, row: number) {
+    if (action === TableAction.VIEW) {
+      if (table === 'reports') {
+        this.tables.reports.showing = false;
+        this.tables.studentsReports.showing = true;
+
+        const reportNr = parseInt(this.tables.reports.data[row][0]);
+        this.buildStudentReportsTable(reportNr);
+
+      } else if (table === 'studentReports') {
+        const studentName = this.tables.studentsReports.data[row][1];
+        const studentId = this.students.find(student => student.name === studentName).id;
+        const seqNr = parseInt(this.tables.studentsReports.data[row][0]);
+        this.api.getStudentProgressReport(this.courseID, studentId, seqNr)
+          .subscribe(
+            report => {
+              this.isStudentReportModalOpen = true;
+              setTimeout(() => {
+                const element = (document.getElementById('student-report') as HTMLIFrameElement);
+                const iframe = element.contentDocument || element.contentWindow;
+                iframe.open();
+                // @ts-ignore
+                iframe.write(report);
+                iframe.close();
+              }, 0)
+            },
+            error => ErrorService.set(error)
+          )
+      }
+    }
   }
 
 }

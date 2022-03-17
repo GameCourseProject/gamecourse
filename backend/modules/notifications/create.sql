@@ -11,10 +11,31 @@ create table notifications_progress_report_config(
 );
 
 create table notifications_progress_report(
-    id                  int unsigned PRIMARY KEY AUTO_INCREMENT,
+    id 		            int unsigned PRIMARY KEY AUTO_INCREMENT,
     course              int unsigned NOT NULL,
-    seqNr               int,
-    dateSend            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    seqNr               int unsigned NOT NULL,
+    reportsSent         int unsigned DEFAULT 0,
+    periodStart         TIMESTAMP,
+    periodEnd           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    dateSent            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+);
+
+create table notifications_progress_report_history(
+    course              int unsigned NOT NULL,
+    user                int unsigned NOT NULL,
+    seqNr               int unsigned NOT NULL,
+    totalXP             int unsigned DEFAULT 0,
+    periodXP            int unsigned DEFAULT 0,
+    diffXP              int NOT NULL DEFAULT 0,
+    timeLeft            int unsigned,
+    prediction          int unsigned DEFAULT NULL,
+    pieChart            varchar(500),
+    areaChart           varchar(500),
+    emailSend           varchar(255),
+    dateSent            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN key(user) REFERENCES course_user(id) ON DELETE CASCADE
 );

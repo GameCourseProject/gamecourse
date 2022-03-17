@@ -6,6 +6,7 @@ import * as $ from "jquery";
 
 import '@extensions/string.extensions';
 import '@extensions/array.extensions';
+import '@extensions/number.extensions';
 
 @Component({
   selector: 'app-root',

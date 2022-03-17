@@ -14,24 +14,28 @@ export class DatatableComponent implements OnInit {
 
   @Input() headers: string[];
   @Input() footers?: string[];
+  @Input() actions?: TableAction[];
 
   @Input() data: string[][];
   @Input() options?: any;
 
   @Input() loading: boolean;
 
-  @Output() editBtnClicked: EventEmitter<number> = new EventEmitter<number>();
-  @Output() deleteBtnClicked: EventEmitter<number> = new EventEmitter<number>();
+  @Output() btnClicked: EventEmitter<{action: TableAction, row: number}> = new EventEmitter<{action: TableAction, row: number}>();
   @Output() valueChanged: EventEmitter<{value: any, row: number, col: number}> = new EventEmitter<{value: any, row: number, col: number}>();
 
   datatable: DataTables.Api;
   defaultOptions = {
     orderCellsTop: true,
     fixedHeader: true,
-    pagingType: "full_numbers"
+    pagingType: "full_numbers",
   };
 
   constructor() { }
+
+  get TableAction(): typeof TableAction {
+    return TableAction;
+  }
 
   ngOnInit(): void {
   }
@@ -44,7 +48,10 @@ export class DatatableComponent implements OnInit {
   buildDatatable(): void {
     if (this.datatable) this.datatable.destroy();
 
+    // Set options
     const opts = this.options ? Object.assign(this.options, this.defaultOptions) : this.defaultOptions;
+    if (this.actions?.length > 0) opts['columnDefs'] = [{orderable: false, targets: this.headers.length}];
+
     setTimeout(() => {
       this.datatable = $('#' + this.id).DataTable(opts);
 
@@ -61,6 +68,13 @@ export class DatatableComponent implements OnInit {
       $('#' + this.id + ' thead tr').clone(true).appendTo('#' + this.id + ' thead');
       $('#' + this.id + ' thead tr:eq(1) th').each( function (i) {
         var title = $(this).text();
+
+        // Don't add filter input for actions
+        if (title === 'actions') {
+          $(this).text('');
+          return;
+        }
+
         $(this).html( '<input type="text" class="database_search" placeholder="Search '+ title +'" />' );
 
         $( 'input', this ).on( 'keyup change', function () {
@@ -75,4 +89,10 @@ export class DatatableComponent implements OnInit {
     }, 0);
   }
 
+}
+
+export enum TableAction {
+  EDIT,
+  DELETE,
+  VIEW
 }

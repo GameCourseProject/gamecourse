@@ -1096,6 +1096,21 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
+  public getStudentProgressReport(courseID: number, userID: number, seqNr: number): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATIONS);
+      qs.push('request', 'getStudentProgressReport');
+      qs.push('courseId', courseID);
+      qs.push('userId', userID);
+      qs.push('seqNr', seqNr);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['report']) );
+  }
+
 
   // Profiling
   public getHistory(courseID: number): Observable<{data: any[][], days: string[], history: ProfilingHistory[], nodes: ProfilingNode[]}> {
