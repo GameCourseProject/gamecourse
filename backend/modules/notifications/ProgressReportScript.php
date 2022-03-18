@@ -33,6 +33,8 @@ $seqNr = Core::$systemDB->select(Notifications::TABLE_PROGRESS_REPORT, ["course"
 
 $subject = $info['courseName'] . " - " . $info['periodicity'] . " Report #" . $seqNr;
 $nrReportsSent = 0;
+
+$timeLeft = null;
 $error = false;
 
 // Send e-mail to each course student
@@ -44,7 +46,8 @@ foreach ($students as $student) {
     $to = $student["email"];
     $studentId = $student["id"];
 
-    list($report, $totalXP, $currentPeriodXP, $diff, $timeLeft, $prediction, $pieChart, $areaChart) = Notifications::getStudentProgressReport($courseId, $seqNr, $studentId, $student, $info);
+    list($report, $totalXP, $currentPeriodXP, $diff, $tLeft, $prediction, $pieChart, $areaChart) = Notifications::getStudentProgressReport($courseId, $seqNr, $studentId, $student, $info);
+    $timeLeft = $tLeft;
 
     if (!sendEmail($to, $subject, $report)) $error = true;
     else {
