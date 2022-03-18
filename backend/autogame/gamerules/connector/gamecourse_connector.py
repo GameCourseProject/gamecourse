@@ -654,7 +654,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
             cursor.execute(query, (target, course, 'Skill Tree, Re: ' + skill))
             table_counter_participations = cursor.fetchall()
 
-            if len(table_counter_participations) == 1:
+            if len(table_counter_participations) == 0 or len(table_counter_participations) == 1:
                 removed = 0
             elif len(table_counter_participations) > 1:
                 # 1st = 10, 2nd = 20, 3rd = 40, 4th = 80, ... , n = pow(2, validLogs - 2) * skillCost
@@ -749,21 +749,28 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
                 cursor.execute(query, (target, course, skill, typeof))
             else:
                 if table_exists[0][0] > 0 and newTotal >= 0:  # virtual currency is enabled and user has enough tokens
+
                     participation_ID = table_counter_participations[-1][0]
+
                     query = "SELECT participation from remove_tokens_participation where user = %s AND course = %s ;"
                     cursor.execute(query, (target, course))
                     table_removed = cursor.fetchall()
 
+                    exists = False
                     for i in range(len(table_removed)):
-                        if table_removed[i][0] != participation_ID:
-                            query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
-                            cursor.execute(query, (course, target, participation_ID, removed))
-                            cnx.commit()
+                        if table_removed[i][0] == participation_ID:
+                            exists = True
+                            break
 
-                            # simply remove the tokens
-                            query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
-                            cursor.execute(query, (newTotal, course, target))
-                            cnx.commit()
+                    if not exists:
+                        query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
+                        cursor.execute(query, (course, target, participation_ID, removed))
+                        cnx.commit()
+
+                        # simply remove the tokens
+                        query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
+                        cursor.execute(query, (newTotal, course, target))
+                        cnx.commit()
 
             # If new rating is greater or equal to 3
             # no changes to table award, so continue!
