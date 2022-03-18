@@ -654,16 +654,20 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
             cursor.execute(query, (target, course, 'Skill Tree, Re: ' + skill))
             table_counter_participations = cursor.fetchall()
 
+            if len(table_counter_participations) == 1:
+                removed = 0
+            elif len(table_counter_participations) > 1:
+                # 1st = 10, 2nd = 20, 3rd = 40, 4th = 80, ... , n = pow(2, validLogs - 2) * skillCost
+                removed = pow(2, len(table_counter_participations) - 2 ) * skillCost
+
             if len(tier) == 8:
                 if len(table) == 0:
                     removed  = wildcardCost
                     newTotal = currentTokens - wildcardCost
                 else:
-                    removed = (len(table_counter_participations) -1) * skillCost
-                    newTotal = currentTokens - (len(table_counter_participations) -1) * skillCost
+                    newTotal = currentTokens - removed
             else:
-                removed = (len(table_counter_participations) -1) * skillCost
-                newTotal = currentTokens - (len(table_counter_participations) -1) * skillCost
+                newTotal = currentTokens - removed
 
 
         # If rating is not enough to win the award, return
@@ -695,10 +699,10 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
                     cursor.execute(query, (award_id, participation_id))
                     cnx.commit()
 
+                    participation_ID = table_counter_participations[-1][0]
 
                     query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
-                    participation_id = contributions[0].log_id
-                    cursor.execute(query, (course, target, participation_id, removed))
+                    cursor.execute(query, (course, target, participation_ID, removed))
                     cnx.commit()
 
                     # simply remove the tokens
@@ -745,15 +749,21 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
                 cursor.execute(query, (target, course, skill, typeof))
             else:
                 if table_exists[0][0] > 0 and newTotal >= 0:  # virtual currency is enabled and user has enough tokens
-                    query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
-                    participation_id = contributions[0].log_id
-                    cursor.execute(query, (course, target, participation_id, removed))
-                    cnx.commit()
+                    participation_ID = table_counter_participations[-1][0]
+                    query = "SELECT participation from remove_tokens_participation where user = %s AND course = %s ;"
+                    cursor.execute(query, (target, course))
+                    table_removed = cursor.fetchall()
 
-                    # simply remove the tokens
-                    query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
-                    cursor.execute(query, (newTotal, course, target))
-                    cnx.commit()
+                    for i in range(len(table_removed)):
+                        if table_removed[i][0] != participation_ID:
+                            query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
+                            cursor.execute(query, (course, target, participation_ID, removed))
+                            cnx.commit()
+
+                            # simply remove the tokens
+                            query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
+                            cursor.execute(query, (newTotal, course, target))
+                            cnx.commit()
 
             # If new rating is greater or equal to 3
             # no changes to table award, so continue!
