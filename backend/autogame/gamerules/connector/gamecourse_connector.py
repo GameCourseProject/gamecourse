@@ -756,13 +756,13 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
                     cursor.execute(query, (target, course))
                     table_removed = cursor.fetchall()
 
-                    exists = False
+                    exists = 0
                     for i in range(len(table_removed)):
                         if table_removed[i][0] == participation_ID:
-                            exists = True
+                            exists = 1
                             break
 
-                    if not exists:
+                    if exists == 0:
                         query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
                         cursor.execute(query, (course, target, participation_ID, removed))
                         cnx.commit()
