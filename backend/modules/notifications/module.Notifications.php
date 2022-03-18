@@ -217,7 +217,7 @@ class Notifications extends Module
         $tokensName = $info['tokensName'];
 
         if ($student == null) $student = Core::$systemDB->select("game_course_user", ["id" => $studentId]);
-        $studentName = explode(" ", isset($student["nickname"]) && $student["nickname"] != "" ? $student["nickname"] : $student["name"])[0];
+        $studentName = explode(" ", isset($student["nickname"]) && !empty($student["nickname"]) ? $student["nickname"] : $student["name"])[0];
 
         $awards = Core::$systemDB->selectMultiple(AwardList::TABLE, ["course" => $courseId, "user" => $studentId]);
         $awardsCurrentPeriod = array_filter($awards, function ($award) use ($info)  { return $award["date"] >= $info['startPeriodDate'] && $award["date"] <= $info['endPeriodDate']; });
