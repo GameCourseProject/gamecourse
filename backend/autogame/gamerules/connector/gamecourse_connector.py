@@ -631,14 +631,14 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
         cursor.execute(query, (skill, course))
         table_skill = cursor.fetchall()
 
-        query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'gamecourse') AND (TABLE_NAME = 'config_virtual_currency');"
+        query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'gamecourse') AND (TABLE_NAME = 'virtual_currency_config');"
         cursor.execute(query)
         table_exists = cursor.fetchall()
 
         if table_exists[0][0] > 0: # virtual currency is enabled
             tier = table_skill[0][2]
 
-            query = "SELECT skillCost, wildcardCost from config_virtual_currency where course = %s;"
+            query = "SELECT skillCost, wildcardCost from virtual_currency_config where course = %s;"
             cursor.execute(query, (course))
             table_currency = cursor.fetchall()
             skillCost = table_currency[0][0]
@@ -656,10 +656,13 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 
             if len(tier) == 8:
                 if len(table) == 0:
+                    removed  = wildcardCost
                     newTotal = currentTokens - wildcardCost
                 else:
+                    removed = (len(table_counter_participations) -1) * skillCost
                     newTotal = currentTokens - (len(table_counter_participations) -1) * skillCost
             else:
+                removed = (len(table_counter_participations) -1) * skillCost
                 newTotal = currentTokens - (len(table_counter_participations) -1) * skillCost
 
 
@@ -691,6 +694,18 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
                     query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
                     cursor.execute(query, (award_id, participation_id))
                     cnx.commit()
+
+
+                    query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
+                    participation_id = contributions[0].log_id
+                    cursor.execute(query, (course, target, participation_id, removed))
+                    cnx.commit()
+
+                    # simply remove the tokens
+                    query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
+                    cursor.execute(query, (newTotal, course, target))
+                    cnx.commit()
+
 
                     if use_wildcard != False and wildcard_tier != None:
                         # insert into wildcard table
@@ -730,6 +745,11 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
                 cursor.execute(query, (target, course, skill, typeof))
             else:
                 if table_exists[0][0] > 0 and newTotal >= 0:  # virtual currency is enabled and user has enough tokens
+                    query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
+                    participation_id = contributions[0].log_id
+                    cursor.execute(query, (course, target, participation_id, removed))
+                    cnx.commit()
+
                     # simply remove the tokens
                     query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
                     cursor.execute(query, (newTotal, course, target))
@@ -818,7 +838,7 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
     if tokens != None:
         reward = int(tokens)
     else:
-        query = "SELECT initialTokens from config_virtual_currency where course = %s;"
+        query = "SELECT initialTokens from virtual_currency_config where course = %s;"
         cursor.execute(query, (course))
         table_currency = cursor.fetchall()
         reward = table_currency[0][0]
@@ -989,7 +1009,7 @@ def removes_tokens(target, tokens, contributions=None):
     else:
         awards_table = "award"
 
-    query = "SELECT skillCost from config_virtual_currency where course = %s;"
+    query = "SELECT skillCost from virtual_currency_config where course = %s;"
     cursor.execute(query, (course))
     table_currency = cursor.fetchall()
     cost = table_currency[0][0]
