@@ -279,7 +279,7 @@ class Notifications extends Module
             return $carry;
         }, 0);
 
-        $diff = $previousPeriodXP == 0 ? 0 : number_format(-(($previousPeriodXP - $currentPeriodXP) * 100 / $previousPeriodXP), 0);
+        $diff = $previousPeriodXP == 0 ? 0 : round(-(($previousPeriodXP - $currentPeriodXP) * 100 / $previousPeriodXP));
         if ($info['timeLeft'] > 0) {
             $weekAvg = $totalXP / $seqNr;
             $hasPresentation = !empty(Core::$systemDB->select(AwardList::TABLE, ["course" => $courseId, "user" => $studentId, "type" => "presentation"], "reward"));
