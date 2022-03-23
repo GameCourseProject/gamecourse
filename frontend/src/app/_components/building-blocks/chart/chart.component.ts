@@ -70,10 +70,10 @@ export class ChartComponent implements OnInit {
     }
   }
 
-  parseRadarValues(user: {[key: string]: number|null}, world: {[key: string]: number|null}, params): {user: number[], world: number[]} {
+  parseRadarValues(user: {[key: string]: number|null}, world: {[key: string]: number|null}|null, params): {user: number[], world: number[]} {
     return {
       user: Object.values(user).map((val, i) => exists(val) ? val : 0),
-      world: Object.values(world).map((val, i) => exists(val) ? val : 0)
+      world: world !== null ? Object.values(world).map((val, i) => exists(val) ? val : 0) : null
     }
   }
 

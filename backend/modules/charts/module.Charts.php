@@ -283,9 +283,21 @@ class Charts extends Module
         $this->registerChart('xpWorld', function(&$chart, EvaluateVisitor $visitor) {
             $params = $visitor->getParams();
             $userID = $params['user'];
-            $course = Course::getCourse($params['course'], false);
 
-            $students = $course->getUsersWithRole('Student', true);
+            $course = Course::getCourse($params['course'], false);
+            $courseUser = new CourseUser($userID, $course);
+            $userRoles = $courseUser->getRolesNames();
+
+            // Change chart depending on student profile
+            if (in_array("Halfhearted", $userRoles)) { // compare with other Halfhearted students
+                $students = $course->getUsersWithRole('Halfhearted', true);
+
+            } else if (in_array("Regular_halfheartedlike", $userRoles)) { // compare with other Regular students
+                $students = $course->getUsersWithRole('Regular', true);
+
+            } else { // compare with all students
+                $students = $course->getUsersWithRole('Student', true);
+            }
 
             $highlightValue = PHP_INT_MAX;
             $xpValues = array();
@@ -337,9 +349,22 @@ class Charts extends Module
         $this->registerChart('badgeWorld', function(&$chart, EvaluateVisitor $visitor) {
             $params = $visitor->getParams();
             $userID = $params['user'];
-            $course = Course::getCourse($params['course'], false);
 
-            $students = $course->getUsersWithRole('Student', true);
+            $course = Course::getCourse($params['course'], false);
+            $courseUser = new CourseUser($userID, $course);
+            $userRoles = $courseUser->getRolesNames();
+
+            // Change chart depending on student profile
+            if (in_array("Halfhearted", $userRoles)) { // compare with other Halfhearted students
+                $students = $course->getUsersWithRole('Halfhearted', true);
+
+            } else if (in_array("Regular_halfheartedlike", $userRoles)) { // compare with other Regular students
+                $students = $course->getUsersWithRole('Regular', true);
+
+            } else { // compare with all students
+                $students = $course->getUsersWithRole('Student', true);
+            }
+
             $badgesModule = $course->getModule("badges");
             $highlightValue = PHP_INT_MAX;
             $badgeCounts = array();

@@ -141,16 +141,16 @@
       [id]="'radar-chart'"
       [height]="250"
       [width]="250"
-      [series]="[
+      [series]="view.info['average'] !== null ? [
         {
-          name: 'User',
+          name: 'You',
           data: view.info['user']
         },
         {
           name: 'World',
           data: view.info['average']
         }
-      ]"
+      ] : [{name: '', data: view.info['user']}]"
       [axisMax]="parseAxisMax(view.info['params'])"
       [xAxisType]="'category'"
       [categories]="parseCategories(view.info['params'])"
