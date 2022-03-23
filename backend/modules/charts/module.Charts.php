@@ -65,34 +65,60 @@ class Charts extends Module
             $userID = $params['user'];
 
             $course = Course::getCourse($params['course'], false);
-            $userXPData = (new CourseUser($userID, $course))->getXP();
+            $courseUser = new CourseUser($userID, $course);
 
-            $students = $course->getUsersWithRole('Student', true);
-            $studentsData = [];
-            foreach($students as $s) {
-                $studentsData[] = (new CourseUser($s["id"], $course))->getXP();
+            $userXPData = $courseUser->getXP();
+            $userRoles = $courseUser->getRolesNames();
+
+            // Change chart depending on student profile
+            if (in_array("Underachiever", $userRoles)) { // don't compare with others
+                $starParams = $chart['info']['params'];
+                $starUser = [];
+                foreach ($starParams as $param) {
+                    $starUser[$param['id']] = $userXPData[$param['id']];
+                }
+                $chart['info'] = array(
+                    'params' => $starParams,
+                    'user' => $starUser,
+                    'average' => null
+                );
+
+            } else {
+                if (in_array("Halfhearted", $userRoles)) { // compare with other Halfhearted students
+                    $students = $course->getUsersWithRole('Halfhearted', true);
+
+                } else if (in_array("Regular_halfheartedlike", $userRoles)) { // compare with other Regular students
+                    $students = $course->getUsersWithRole('Regular', true);
+
+                } else { // compare with all students
+                    $students = $course->getUsersWithRole('Student', true);
+                }
+
+                $studentsData = [];
+                foreach($students as $s) {
+                    $studentsData[] = (new CourseUser($s["id"], $course))->getXP();
+                }
+                $numStudents = sizeof($students);
+
+                $starParams = $chart['info']['params'];
+                $starUser = array();
+                $starAverage = array();
+
+                foreach($starParams as &$param) {
+                    $val = $userXPData[$param['id']];
+                    $others = array_map(function($studentsData) use ($param) {return $studentsData[$param['id']];},$studentsData);
+
+                    $starUser[$param['id']] = $val;
+                    $average = $numStudents == 0 ? 0 : array_sum($others) / $numStudents;
+                    $starAverage[$param['id']] = $average;
+                }
+
+                $chart['info'] = array(
+                    'params' => $starParams,
+                    'user' => $starUser,
+                    'average' => $starAverage
+                );
             }
-            $numStudents = sizeof($students);
-
-            $starParams = $chart['info']['params'];
-            $starUser = array();
-            $starAverage = array();
-
-            foreach($starParams as &$param) {
-                $val = $userXPData[$param['id']];
-
-                $others = array_map(function($studentsData) use ($param) {return $studentsData[$param['id']];},$studentsData);
-
-                $starUser[$param['id']] = $val;
-                $average = $numStudents == 0 ? 0 : array_sum($others) / $numStudents;
-                $starAverage[$param['id']] = $average;
-            }
-
-            $chart['info'] = array(
-                'params' => $starParams,
-                'user' => $starUser,
-                'average' => $starAverage
-            );
         });
 
         $this->registerChart('xpEvolution', function(&$chart, EvaluateVisitor $visitor) {
