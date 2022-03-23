@@ -3,7 +3,6 @@ namespace Modules\Charts;
 
 use CacheSystem;
 use DateTime;
-use GameCourse\API;
 use GameCourse\Course;
 use GameCourse\CourseUser;
 use GameCourse\Module;

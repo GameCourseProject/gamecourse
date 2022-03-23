@@ -44,7 +44,13 @@
                 "variables": {
                   "userXP": {
                     "value": "{xp.getXP(%item)}"
+                  },
+                  "leaderboardUser": {
+                    "value": "{%item}"
                   }
+                },
+                "events": {
+                  "click": "{actions.goToPage(4, %leaderboardUser.id)}"
                 },
                 "children": [
                   [
