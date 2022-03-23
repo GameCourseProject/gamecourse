@@ -69,6 +69,11 @@ class API {
             Course::getCourse($courseId);
             Dictionary::$courseId = $courseId;
         }
+
+        if (API::hasKey('userId') && (is_int(API::getValue('userId')) || ctype_digit(API::getValue('userId')))) {
+            $userId = API::getValue('userId');
+            Dictionary::$userId = $userId;
+        }
     }
 
     public static function processRequest() {

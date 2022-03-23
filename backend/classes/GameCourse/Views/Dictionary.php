@@ -24,7 +24,8 @@ class Dictionary
     public static $viewTypes = array();
     public static $viewFunctions = array();
 
-    public static $courseId; // ID received on API request
+    public static $courseId; // course ID received on API request
+    public static $userId;   // user ID received on API request
 
 
 
@@ -375,6 +376,7 @@ class Dictionary
                                 'item' => self::createNode($object, $object["libraryOfVariable"])->getValue(),
                                 'index' => $i
                             );
+                            if (self::$userId) $viewParams['user'] = (string)self::$userId;
                             $visitor = new EvaluateVisitor($viewParams);
                             $value = $key->accept($visitor)->getValue();
 
