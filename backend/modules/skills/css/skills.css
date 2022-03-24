@@ -1,28 +1,24 @@
-.skill-tree {
+.skills-block .skill-tree {
   border: 2px solid #d9d9d9;
   border-radius: 5px;
   padding: 20px;
 }
 
-.profile .skill-tree {
-  margin-top: 20px;
-}
-
 /*** ------------ Tiers ------------ ***/
 
-.skill-tree .skill-tiers {
+.skills-block .skill-tree .skill-tiers {
   width: 100%;
 }
 
-.skill-tree .skill-tiers > * {
+.skills-block .skill-tree .skill-tiers > * {
   flex-direction: row !important;
 }
 
-.skill-tree .skill-tiers > * bb-any {
+.skills-block .skill-tree .skill-tiers > * bb-any {
   width: 100%;
 }
 
-.skill-tree .skill-tiers .skill-tier {
+.skills-block .skill-tree .skill-tiers .skill-tier {
   border-right: 2px dashed #bfbfbf;
   display: flex;
   justify-content: center;
@@ -31,11 +27,11 @@
   height: 100%;
 }
 
-.skill-tree .skill-tiers > * bb-any:last-child .skill-tier {
+.skills-block .skill-tree .skill-tiers > * bb-any:last-child .skill-tier {
   border-right: none;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-tier-reward {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-tier-reward {
   position: absolute;
   top: 0;
   left: 0;
@@ -45,31 +41,31 @@
   font-weight: bold;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-tier-used-wildcards {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-tier-used-wildcards {
   font-weight: bold;
   margin-top: 30px;
 }
 
 /*** ------------ Skills ------------ ***/
 
-.skill-tree .skill-tiers .skill-tier .skill-container {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container {
   margin-top: 40px;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container > * {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container > * {
   align-items: center;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container > * > bb-any {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container > * > bb-any {
   width: fit-content;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container .skill > * {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill > * {
   flex-direction: row !important;
   align-items: center;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-left {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-left {
   position: relative;
   border-radius: 5px;
   width: 72px;
@@ -81,11 +77,11 @@
   word-break: break-word;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-left .skill-name {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-left .skill-name {
   color: white;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-left .skill-post {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-left .skill-post {
   position: absolute;
   bottom: 1px;
   right: 1px;
@@ -94,7 +90,7 @@
   background: rgba(102, 102, 102, 0.7);
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-left .skill-collab {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-left .skill-collab {
   position: absolute;
   bottom: 5px;
   left: 5px;
@@ -102,46 +98,46 @@
   height: 20px;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-right {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-right {
   width: 140px;
   margin-left: 10px;
   white-space: nowrap;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-right .skill-right-cost > *,
-.skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-right .skill-right-cost .skill-right-cost-token > * {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-right .skill-right-cost > *,
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-right .skill-right-cost .skill-right-cost-token > * {
   flex-direction: row !important;
   align-items: center;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-right .skill-right-cost {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-right .skill-right-cost {
   margin-top: 10px;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-right .skill-right-cost .skill-right-cost-token {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-right .skill-right-cost .skill-right-cost-token {
   width: fit-content;
   margin-left: 5px;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-right .skill-right-cost .skill-right-cost-token .skill-right-cost-token-img {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-right .skill-right-cost .skill-right-cost-token .skill-right-cost-token-img {
   width: 15px;
   height: 15px;
   margin-left: 5px;
   margin-top: 4px;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container .skill-dependencies > * {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill-dependencies > * {
   align-items: center;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container .skill-dependencies > * bb-any {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill-dependencies > * bb-any {
   width: fit-content;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container .skill-dependencies .skill-dependency {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill-dependencies .skill-dependency {
   font-size: 11px !important;
 }
 
-.skill-tree .skill-tiers .skill-tier .skill-container .skill-dependencies .skill-dependency.first {
+.skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill-dependencies .skill-dependency.first {
   margin-top: 10px;
 }

@@ -712,8 +712,8 @@ class Skills extends Module
         if (!Views::templateExists($courseId, self::SKILL_TREE_TEMPLATE))
             Views::createTemplateFromFile(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'), $courseId, self::ID);
 
-//        if (!Views::templateExists($courseId, self::SKILLS_OVERVIEW_TEMPLATE)) // FIXME: needs refactor
-//            Views::createTemplateFromFile(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skillsOverview.txt'), $courseId, self::ID);
+        if (!Views::templateExists($courseId, self::SKILLS_OVERVIEW_TEMPLATE))
+            Views::createTemplateFromFile(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skillsOverview.txt'), $courseId, self::ID);
     }
 
     public function initAPIEndpoints()
@@ -874,6 +874,7 @@ class Skills extends Module
     public function setupResources()
     {
         parent::addResources('css/skills.css');
+        parent::addResources('css/skills-overview.css');
         parent::addResources('imgs');
     }
 
@@ -1675,7 +1676,7 @@ class Skills extends Module
         $students = Core::$systemDB->selectMultiple(
             AwardList::TABLE . " a left join game_course_user u on a.user = u.id left join course_user c on u.id = c.id",
             ["a.course" => $courseId, "type" => "skill", "moduleInstance" => $skill],
-            "u.id, a.course, lastActivity, previousActivity, name, email, major, nickname, studentNumber, isAdmin, isActive"
+            "u.id, a.course, lastActivity, previousActivity, name, email, major, nickname, studentNumber, isAdmin, u.isActive"
         );
         return $students;
     }

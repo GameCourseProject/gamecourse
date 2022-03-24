@@ -331,6 +331,7 @@ class Dictionary
             self::evaluateKey($key, $collection, self::$courseId);
             $newCollectionVals = [];
             foreach ($collection["value"] as $item) {
+                if ($value == "NULL") $value = null;
                 if (self::evalCondition($item[$key], $value, $operation)) {
                     $newCollectionVals[] = $item;
                 }
@@ -1661,6 +1662,7 @@ class Dictionary
                     'item' => Dictionary::createNode($object, $object["libraryOfVariable"])->getValue(),
                     'index' => $i
                 );
+                if (self::$userId) $viewParams['user'] = (string)self::$userId;
                 $visitor = new EvaluateVisitor($viewParams);
                 $value = $key->accept($visitor)->getValue();
 
