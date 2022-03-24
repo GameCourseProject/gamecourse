@@ -17,7 +17,7 @@
 }
 
 .skills-overview .skill-tree .tier .skill {
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 .skills-overview .skill-tree .tier .skill .skill-title > * {
@@ -34,7 +34,7 @@
 
 .skills-overview .skill-tree .tier .skill .skill-title .skill-title-text {
     font-weight: bold;
-    font-size: 14px;
+    font-size: 15px;
 }
 
 .skills-overview .skill-tree .tier .skill .skill-students {
