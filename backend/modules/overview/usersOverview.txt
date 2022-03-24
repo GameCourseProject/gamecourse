@@ -427,7 +427,8 @@
               {
                 "type": "table",
                 "role": "role.Teacher",
-                "visibilityType": "visible",
+                "visibilityType": "conditional",
+                "visibilityCondition": "{!virtualcurrency.isEnabled}",
                 "headerRows": [
                   [
                     {
