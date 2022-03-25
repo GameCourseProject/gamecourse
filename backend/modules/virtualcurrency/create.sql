@@ -4,8 +4,8 @@ create table virtual_currency_config(
     skillCost int not null,
     wildcardCost int not null,
     attemptRating int not null,
-    /* costFormula varchar(70) not null,
-     firstCounts boolean not null default false, */
+    costFormula varchar(70) not null,
+    firstCounts boolean not null default false, 
     foreign key(course) references course(id) on delete cascade
 );
 
