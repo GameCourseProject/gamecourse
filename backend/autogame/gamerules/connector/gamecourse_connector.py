@@ -1030,14 +1030,14 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     table_tokens = cursor.fetchall()
     currentTokens = table_tokens[0][0]
 
-    query = "SELECT skillCost, wildcardCost, attemptRating, costFormula, firstCounts FROM virtual_currency_config where user = %s AND course = %s;"
+    query = "SELECT skillCost, wildcardCost, attemptRating, costFormula, incrementCost FROM virtual_currency_config where user = %s AND course = %s;"
     cursor.execute(query, (target, course))
     table_tokens = cursor.fetchall()
     skillcost = table_tokens[0][0]
     wildcardcost = table_tokens[0][1]
     minRating = table_tokens[0][2]
     formula = table_tokens[0][3]
-    firstSubmissionCounts = table_tokens[0][4]
+    incrementCost = table_tokens[0][4]
 
     # If tokens are give, simply remove them for the user.
     if tokens != None:
@@ -1091,40 +1091,39 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
             cnx.close()
             return currentTokens
         else:
+        
+            # * * * * * * * * * * * * * FORMULA OPTIONS * * * * * * * * * * * * * #
+            #                                                                     #
+            #  Case 0 - NONE: removed = incrementCost                             #
+            #  Case 1 - SUM: removed = incrementCost * validAttempts              #
+            #           e.g.: 1st = 10, 2nd = 20, 3rd = 30, 4th = 40, ... ,       #
+            #  Case 2 - POW: removed = incrementCost * pow(2, validAttempts - n)  #
+            #           e.g.: 1st = 10, 2nd = 20, 3rd = 40, 4th = 80,             #
+            # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
-            if not firstSubmissionCounts:
-                if (validAttempts == 0 or validAttempts == 1):
-                    removed = 0
-            else:
-
-                # * * * * * * * * * * * * * FORMULA OPTIONS * * * * * * * * * * * * * #
-                #                                                                     #
-                #  Case 0 - NONE: removed = incrementCost                             #
-                #  Case 1 - SUM: removed = incrementCost * validAttempts              #
-                #           e.g.: 1st = 10, 2nd = 20, 3rd = 30, 4th = 40, ... ,       #
-                #  Case 2 - POW: removed = incrementCost * pow(2, validAttempts - n)  #
-                #           e.g.: 1st = 10, 2nd = 20, 3rd = 40, 4th = 80,             #
-                # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
-
-
-                if formula.startswith("Case 0"):
-                    removed = skillCost
-                elif formula.startswith("Case 1"):
-                    removed =  skillCost * validAttempts
-                elif formula.startswith("Case 2"):
-                    if firstSubmissionCounts:
-                        n = 1
-                    else:
-                        n = 2
-                    removed = pow(2, validAttempts - n ) * skillCost
+            if formula.startswith("Case 0"):
+                removed = skillCost
+            elif formula.startswith("Case 1"):
+                removed =  skillCost * validAttempts
+            elif formula.startswith("Case 2"):
+                if firstSubmissionCounts:
+                    n = 1
+                else:
+                    n = 2
+                removed = pow(2, validAttempts - n ) * skillCost
 
             if tier.decode() == 'Wildcard':
                 if validAttempts == 0:
                     removed  = wildcardCost
-                    newTotal = currentTokens - wildcardCost
+                    newTotal = currentTokens - removed
                 else:
                     newTotal = currentTokens - removed
             else:
+                if validAttempts == 0:
+                    removed  = skillCost
+                    newTotal = currentTokens - removed
+                else:
+                    newTotal = currentTokens - removed
                 newTotal = currentTokens - removed
 
             if newTotal >= 0:

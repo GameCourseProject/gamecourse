@@ -150,7 +150,8 @@ class VirtualCurrency extends Module
                     "skillCost" => DEFAULT_COST,
                     "wildcardCost" => DEFAULT_COST,
                     "attemptRating" => 0,
-                    /* "costFormula" => ""   */
+                    "costFormula" => "",
+                    "incrementCost" => DEFAULT_COST
                 ]);
         }
     }
@@ -230,11 +231,11 @@ class VirtualCurrency extends Module
     {
         $input = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => "", 'current_val' => $this->getCurrencyName($courseId)),
+            array('name' => "Skill Initial Cost", 'id' => 'skillcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getSkillCost($courseId))),
             array('name' => "Wildcard Initial Cost", 'id' => 'wildcardcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getWildcardCost($courseId))),
             array('name' => "Min. Rating for Attempt", 'id' => 'attemptrating', 'type' => "number", 'options' => "", 'current_val' => intval($this->getAttemptRating($courseId))),
-            array('name' => "First Submission Counts", 'id' => 'firstcounts', 'type' => "on_off button", 'options' => "" ),
-            array('name' => "Increment Cost", 'id' => 'skillcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getSkillCost($courseId))),
-            array('name' => "Cost Formula", 'id' => 'incrementalcost', 'type' => "text", 'options' => ["A", "b", "c"], 'current_val' => "isto vai ser um select com opções" )
+            array('name' => "Increment Cost", 'id' => 'incrementcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getIncrementCost($courseId))),
+            array('name' => "Increment Formula", 'id' => 'formulacost', 'type' => "text", 'options' => ["A", "b", "c"], 'current_val' => "isto vai ser um select com opções" )
         ];
         return $input;
     }
@@ -251,14 +252,15 @@ class VirtualCurrency extends Module
         if ($wildcardCost != "") {
             $this->saveWildcardCost( $wildcardCost, $courseId);
         }
+
         $attemptRating = $generalInputs["attemptrating"];
         $this->saveAttemptRating($attemptRating, $courseId);
-        
-        $costFormula = $generalInputs["incrementalcost"];
+
+        $costFormula = $generalInputs["formulacost"];
         $this->saveCostFormula($costFormula, $courseId);
 
-        $firstCounts = $generalInputs["firstcounts"];
-        $this->saveFirstCounts($firstCounts, $courseId);
+        $incrementCost = $generalInputs["incrementcost"];
+        $this->saveIncrementCost($incrementCost, $courseId);
 
     }
 
@@ -325,14 +327,14 @@ class VirtualCurrency extends Module
         Core::$systemDB->update(self::TABLE_CONFIG, ["costFormula" => $value], ["course" => $courseId]);
     }
 
-    public function getFirstCounts($courseId)
+    public function getIncrementCost($courseId)
     {
-        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "firstCounts");
+        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "incrementCost");
 
     }
-    public function saveFirstCounts($value, $courseId)
+    public function saveIncrementCost($value, $courseId)
     {
-        Core::$systemDB->update(self::TABLE_CONFIG, ["firstCounts" => $value], ["course" => $courseId]);
+        Core::$systemDB->update(self::TABLE_CONFIG, ["incrementCost" => $value], ["course" => $courseId]);
     }
 
     public function getUserTokens($userId): int
