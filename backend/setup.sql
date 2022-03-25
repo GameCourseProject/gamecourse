@@ -383,15 +383,15 @@ CREATE TABLE autogame(
 	startedRunning              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	finishedRunning             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	isRunning                   boolean DEFAULT FALSE,
-    periodicityNumber           int DEFAULT 10,
-    periodicityTime             varchar(25) DEFAULT 'Minutes',
+    periodicityNumber           int NULL DEFAULT 10,
+    periodicityTime             varchar(25) NULL DEFAULT 'Minutes',
 
 	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
 
 SET FOREIGN_KEY_CHECKS=0;
-INSERT INTO autogame (course, isRunning) values (0, FALSE);
+INSERT INTO autogame (course, periodicityNumber, periodicityTime) values (0, NULL, NULL);
 SET FOREIGN_KEY_CHECKS=1;
 
 
