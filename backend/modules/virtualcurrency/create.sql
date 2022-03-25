@@ -4,8 +4,8 @@ create table virtual_currency_config(
     skillCost int not null,
     wildcardCost int not null,
     attemptRating int not null,
-    costFormula varchar(70) not null,
-    firstCounts boolean not null default false,
+    /* costFormula varchar(70) not null,
+     firstCounts boolean not null default false, */
     foreign key(course) references course(id) on delete cascade
 );
 
@@ -30,15 +30,3 @@ create table remove_tokens_participation(
     foreign key(user) references game_course_user(id) on delete cascade,
     foreign key(participation) references participation(id) on delete cascade,
 );
-
-/*
-create table user_wallet(
-    id 		int unsigned auto_increment primary key,
-    course int unsigned not null,
-    name int unsigned not null,
-    type int unsigned not null,
-    tokens int not null,
-    primary key(user, course),
-    foreign key(course) references course(id) on delete cascade,
-);
-*/

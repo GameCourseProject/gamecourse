@@ -1030,13 +1030,13 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     table_tokens = cursor.fetchall()
     currentTokens = table_tokens[0][0]
 
-    query = "SELECT skillCost, wildcardCost, attemptRating, formula, firstCounts FROM virtual_currency_config where user = %s AND course = %s;"
+    query = "SELECT skillCost, wildcardCost, attemptRating, costFormula, firstCounts FROM virtual_currency_config where user = %s AND course = %s;"
     cursor.execute(query, (target, course))
     table_tokens = cursor.fetchall()
     skillcost = table_tokens[0][0]
     wildcardcost = table_tokens[0][1]
     minRating = table_tokens[0][2]
-    increment = table_tokens[0][3]
+    formula = table_tokens[0][3]
     firstSubmissionCounts = table_tokens[0][4]
 
     # If tokens are give, simply remove them for the user.
@@ -1068,7 +1068,6 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
         
     # Remove tokens for skill retry
     elif contributions != None and skillName != None:
-        # remove tokens for the contribution received based on cost.
 
         query = "SELECT s.id, s.tier FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = %s and course = %s;"
         cursor.execute(query, (skillName, course))
@@ -1092,16 +1091,32 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
             cnx.close()
             return currentTokens
         else:
-            if firstSubmissionCounts:
-                removed = pow(2, validAttempts - 2 ) * skillCost
-            else:
-                if validAttempts == 0 or validAttempts == 1:
-                    removed = 0
-                elif validAttempts > 1:
-                    # TODO : aqui aplicar a formula escolhida.
 
-                    # 1st = 10, 2nd = 20, 3rd = 40, 4th = 80, ... , n = pow(2, validLogs - 2) * skillCost
-                    removed = pow(2, validAttempts - 2 ) * skillCost
+            if not firstSubmissionCounts:
+                if (validAttempts == 0 or validAttempts == 1):
+                    removed = 0
+            else:
+
+                # * * * * * * * * * * * * * FORMULA OPTIONS * * * * * * * * * * * * * #
+                #                                                                     #
+                #  Case 0 - NONE: removed = incrementCost                             #
+                #  Case 1 - SUM: removed = incrementCost * validAttempts              #
+                #           e.g.: 1st = 10, 2nd = 20, 3rd = 30, 4th = 40, ... ,       #
+                #  Case 2 - POW: removed = incrementCost * pow(2, validAttempts - n)  #
+                #           e.g.: 1st = 10, 2nd = 20, 3rd = 40, 4th = 80,             #
+                # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+
+                if formula.startswith("Case 0"):
+                    removed = skillCost
+                elif formula.startswith("Case 1"):
+                    removed =  skillCost * validAttempts
+                elif formula.startswith("Case 2"):
+                    if firstSubmissionCounts:
+                        n = 1
+                    else:
+                        n = 2
+                    removed = pow(2, validAttempts - n ) * skillCost
 
             if tier.decode() == 'Wildcard':
                 if validAttempts == 0:
