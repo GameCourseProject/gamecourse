@@ -1106,11 +1106,11 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
             elif formula.startswith("Case 1"):
                 removed =  skillCost * validAttempts
             elif formula.startswith("Case 2"):
-                if firstSubmissionCounts:
-                    n = 1
-                else:
+                if skillCost == 0:
                     n = 2
-                removed = pow(2, validAttempts - n ) * skillCost
+                else:
+                    n = 1
+                removed = pow(2, validAttempts - n) * skillCost
 
             if tier.decode() == 'Wildcard':
                 if validAttempts == 0:
