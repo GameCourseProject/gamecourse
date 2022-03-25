@@ -1006,7 +1006,7 @@ def award_tokens_type(target, type, tokens, element_name = None, contributions=N
 
     return
 
-def removes_tokens(target, tokens, contributions=None):
+def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     # -----------------------------------------------------------
     # Updates 'user_wallet' table with the new total tokens for
     # a user.
@@ -1019,44 +1019,113 @@ def removes_tokens(target, tokens, contributions=None):
 
     course = config.course
     typeof = "tokens"
-    spent = int(tokens)
 
     if config.test_mode:
         awards_table = "award_test"
     else:
         awards_table = "award"
 
-    query = "SELECT skillCost from virtual_currency_config where course = %s;"
-    cursor.execute(query, (course))
-    table_currency = cursor.fetchall()
-    cost = table_currency[0][0]
-    #minRating = table_currency[0][1]
-
     query = "SELECT tokens FROM user_wallet where user = %s AND course = %s;"
     cursor.execute(query, (target, course))
     table_tokens = cursor.fetchall()
     currentTokens = table_tokens[0][0]
 
-    if contributions != None:
-        # gets all participations that haven't been counted yet.
-        query = "SELECT id FROM participation WHERE user = %s AND course = %s AND type = %s AND rating >= %s, id NOT IN (SELECT participation FROM remove_tokens_participation);"
-        cursor.execute(query, (target, course, contributions[0].log_type, minRating))
-        table_to_remove = cursor.fetchall()
+    query = "SELECT skillCost, wildcardCost, attemptRating, formula, firstCounts FROM virtual_currency_config where user = %s AND course = %s;"
+    cursor.execute(query, (target, course))
+    table_tokens = cursor.fetchall()
+    skillcost = table_tokens[0][0]
+    wildcardcost = table_tokens[0][1]
+    minRating = table_tokens[0][2]
+    increment = table_tokens[0][3]
+    firstSubmissionCounts = table_tokens[0][4]
 
-        for i in range(len(table_to_remove)):
-            query = "INSERT INTO remove_tokens_participation (award, participation) VALUES(%s, %s);"
-            cursor.execute(query, (award_id, table_to_award[i][0]))
-            cnx.commit()
+    # If tokens are give, simply remove them for the user.
+    if tokens != None:
+        query = "SELECT participation FROM remove_tokens_participation WHERE user = %s AND course = %s AND participation = %s ;"
+        cursor.execute(query, (target, course, contributions[0].log_id))
+        table_removed = cursor.fetchall()
 
-        newTotal = reward * len(table_to_award) + table_wallet[0][0] # awards all tokens for all participations
+        if len(table_removed) == 0:
+            toRemove = int(tokens)
+            newTotal = currentTokens - toRemove
 
-        # simply award the tokens
-        query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
-        cursor.execute(query, (newTotal, course, target))
-        cnx.commit()
+            if newTotal < 0:
+                cnx.close()
+                return newTotal
+            else:
+                query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
+                cursor.execute(query, (course, target, contributions[0].log_id, toRemove))
+                cnx.commit()
+
+                query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
+                cursor.execute(query, (toRemove, course, target))
+                cnx.commit()
+
+                cnx.close()
+                return newTotal
+
+        # else: Tokens have already been removed for that participation
+        
+    # Remove tokens for skill retry
+    elif contributions != None and skillName != None:
+        # remove tokens for the contribution received based on cost.
+
+        query = "SELECT s.id, s.tier FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = %s and course = %s;"
+        cursor.execute(query, (skillName, course))
+        table_skill = cursor.fetchall()
+        tier = table_skill[0][1]
+
+        # gets all submissions from participation
+        query = "SELECT * FROM participation where user = %s AND course = %s AND type='graded post' AND description = %s AND rating >= %s ;"
+        cursor.execute(query, (target, course, 'Skill Tree, Re: ' + skillName, minRating))
+        table_counter_participations = cursor.fetchall()
+        validAttempts = len(table_counter_participations)
+
+        query = "SELECT * FROM remove_tokens_participation where user = %s AND course = %s AND participation = %s ;"
+        cursor.execute(query, (target, course, contributions[0].log_id))
+        table_participation = cursor.fetchall()
+        # We need to check if the participation at cause has already been inserted in the table so that we do not
+        # remove tokens for the same participation
+        alreadySubmitted = len(table_participation)
+
+        if alreadySubmitted != 0:
+            cnx.close()
+            return currentTokens
+        else:
+            if firstSubmissionCounts:
+                removed = pow(2, validAttempts - 2 ) * skillCost
+            else:
+                if validAttempts == 0 or validAttempts == 1:
+                    removed = 0
+                elif validAttempts > 1:
+                    # TODO : aqui aplicar a formula escolhida.
+
+                    # 1st = 10, 2nd = 20, 3rd = 40, 4th = 80, ... , n = pow(2, validLogs - 2) * skillCost
+                    removed = pow(2, validAttempts - 2 ) * skillCost
+
+            if tier.decode() == 'Wildcard':
+                if validAttempts == 0:
+                    removed  = wildcardCost
+                    newTotal = currentTokens - wildcardCost
+                else:
+                    newTotal = currentTokens - removed
+            else:
+                newTotal = currentTokens - removed
+
+            if newTotal >= 0:
+                query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
+                cursor.execute(query, (course, target, contributions[0].log_id, removed))
+                cnx.commit()
+
+                # simply remove the tokens
+                query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
+                cursor.execute(query, (newTotal, course, target))
+                cnx.commit()
+
+            cnx.close()
+            return newTotal
 
     cnx.close()
-
     return
 
 def award_grade(target, item, contributions=None, extra=None):

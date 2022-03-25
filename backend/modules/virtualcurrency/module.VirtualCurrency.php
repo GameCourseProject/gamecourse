@@ -149,7 +149,8 @@ class VirtualCurrency extends Module
                     "course" => $courseId,
                     "skillCost" => DEFAULT_COST,
                     "wildcardCost" => DEFAULT_COST,
-                    "attemptRating" => 0
+                    "attemptRating" => 0,
+                    "costFormula" => "pow(2, total_participations - 2 ) * skillCost"
                 ]);
         }
     }
@@ -231,7 +232,9 @@ class VirtualCurrency extends Module
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => "", 'current_val' => $this->getCurrencyName($courseId)),
             array('name' => "Skill Cost", 'id' => 'skillcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getSkillCost($courseId))),
             array('name' => "Wildcard Cost", 'id' => 'wildcardcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getWildcardCost($courseId))),
-            array('name' => "Min. Rating for Attempt", 'id' => 'attemptrating', 'type' => "number", 'options' => "", 'current_val' => intval($this->getAttemptRating($courseId)))
+            array('name' => "Min. Rating for Attempt", 'id' => 'attemptrating', 'type' => "number", 'options' => "", 'current_val' => intval($this->getAttemptRating($courseId))),
+            array('name' => "Incrementation Formula", 'id' => 'incrementalcost', 'type' => "text", 'options' => ["A", "b", "c"], 'current_val' => $this->getCostFormula($courseId) )
+
         ];
         return $input;
     }
@@ -250,6 +253,10 @@ class VirtualCurrency extends Module
         }
         $attemptRating = $generalInputs["attemptrating"];
         $this->saveAttemptRating($attemptRating, $courseId);
+
+        $costFormula = $generalInputs["incrementalcost"];
+        $this->saveCostFormula($costFormula, $courseId);
+
     }
 
 
@@ -303,6 +310,16 @@ class VirtualCurrency extends Module
     public function saveAttemptRating($value, $courseId)
     {
         Core::$systemDB->update(self::TABLE_CONFIG, ["attemptRating" => $value], ["course" => $courseId]);
+    }
+
+    public function getCostFormula($courseId)
+    {
+        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "costFormula");
+
+    }
+    public function saveCostFormula($value, $courseId)
+    {
+        Core::$systemDB->update(self::TABLE_CONFIG, ["costFormula" => $value], ["course" => $courseId]);
     }
 
     public function getUserTokens($userId): int
