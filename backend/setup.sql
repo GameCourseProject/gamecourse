@@ -117,6 +117,8 @@ CREATE TABLE course(
 	short	                    varchar(20),
 	color	                    varchar(7),
 	year	                    varchar(10),
+	startDate                   TIMESTAMP DEFAULT NULL,
+	endDate                     TIMESTAMP DEFAULT NULL,
     defaultLandingPage          varchar(100) DEFAULT '',
 	lastUpdate                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	isActive                    boolean DEFAULT TRUE,

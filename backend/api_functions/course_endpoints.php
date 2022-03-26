@@ -176,18 +176,20 @@ API::registerFunction($MODULE, 'getCourseDataFolderContents', function () {
  * @param string $courseShort
  * @param string $courseYear
  * @param string $courseColor
+ * @param string $courseStartDate
+ * @param string $courseEndDate
  * @param int $courseIsVisible
  * @param int $courseIsActive
  * @param int $copyFrom (optional)
  */
 API::registerFunction($MODULE, 'createCourse', function() {
     API::requireAdminPermission();
-    API::requireValues('courseName', 'creationMode', 'courseShort', 'courseYear', 'courseColor', 'courseIsVisible', 'courseIsActive' );
+    API::requireValues('courseName', 'creationMode', 'courseShort', 'courseYear', 'courseColor', 'courseStartDate', 'courseEndDate', 'courseIsVisible', 'courseIsActive' );
 
     if (API::getValue('creationMode') == 'similar')
         API::requireValues('copyFrom');
 
-    $course = Course::newCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), API::getValue('courseIsVisible'), API::getValue('courseIsActive'),(API::getValue('creationMode') == 'similar') ? API::getValue('copyFrom') : null);
+    $course = Course::newCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), API::getValue('courseStartDate'), API::getValue('courseEndDate'), API::getValue('courseIsVisible'), API::getValue('courseIsActive'),(API::getValue('creationMode') == 'similar') ? API::getValue('copyFrom') : null);
     API::response(array('course' => $course->getData()));
 });
 
@@ -199,17 +201,19 @@ API::registerFunction($MODULE, 'createCourse', function() {
  * @param string $courseShort
  * @param string $courseYear
  * @param string $courseColor
+ * @param string $courseStartDate
+ * @param string $courseEndDate
  * @param int $courseIsVisible
  * @param int $courseIsActive
  */
 API::registerFunction($MODULE, 'editCourse', function() {
     API::requireAdminPermission();
-    API::requireValues('courseId','courseName', 'courseShort', 'courseYear', 'courseColor', 'courseIsVisible', 'courseIsActive' );
+    API::requireValues('courseId','courseName', 'courseShort', 'courseYear', 'courseColor', 'courseStartDate', 'courseEndDate', 'courseIsVisible', 'courseIsActive' );
 
     $courseId = API::getValue('courseId');
     $course = API::verifyCourseExists($courseId);
 
-    $course->editCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), API::getValue('courseIsVisible'), API::getValue('courseIsActive'));
+    $course->editCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), API::getValue('courseStartDate'), API::getValue('courseEndDate'), API::getValue('courseIsVisible'), API::getValue('courseIsActive'));
 });
 
 /**
