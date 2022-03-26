@@ -1094,36 +1094,31 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
         
             # * * * * * * * * * * * * * FORMULA OPTIONS * * * * * * * * * * * * * #
             #                                                                     #
-            #  Case 0 - NONE: removed = incrementCost                             #
-            #  Case 1 - SUM: removed = incrementCost * validAttempts              #
+            #  Case 0 - SUB: removed = incrementCost                             #
+            #  Case 1 - MUL: removed = incrementCost * validAttempts              #
             #           e.g.: 1st = 10, 2nd = 20, 3rd = 30, 4th = 40, ... ,       #
             #  Case 2 - POW: removed = incrementCost * pow(2, validAttempts - n)  #
             #           e.g.: 1st = 10, 2nd = 20, 3rd = 40, 4th = 80,             #
             # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
             if formula.startswith("Case 0"):
-                removed = skillCost
+                removed = incrementCost
             elif formula.startswith("Case 1"):
-                removed =  skillCost * validAttempts
+                removed =  incrementCost * validAttempts
             elif formula.startswith("Case 2"):
                 if skillCost == 0:
                     n = 2
                 else:
                     n = 1
-                removed = pow(2, validAttempts - n) * skillCost
+                removed = pow(2, validAttempts - n) * incrementCost
 
-            if tier.decode() == 'Wildcard':
-                if validAttempts == 0:
-                    removed  = wildcardCost
-                    newTotal = currentTokens - removed
+            if validAttempts == 0:
+                if tier.decode() =  'Wildcard':
+                   removed  = wildcardCost
                 else:
-                    newTotal = currentTokens - removed
-            else:
-                if validAttempts == 0:
                     removed  = skillCost
-                    newTotal = currentTokens - removed
-                else:
-                    newTotal = currentTokens - removed
+                newTotal = currentTokens - removed
+            else:
                 newTotal = currentTokens - removed
 
             if newTotal >= 0:
