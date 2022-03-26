@@ -251,6 +251,8 @@ export class ApiHttpService {
       courseShort: courseData.short,
       courseYear: courseData.year,
       courseColor: courseData.color,
+      courseStartDate: courseData.startDate,
+      courseEndDate: courseData.endDate,
       courseIsVisible: courseData.isVisible ? 1 : 0,
       courseIsActive: courseData.isActive ? 1 : 0,
     }
@@ -279,6 +281,8 @@ export class ApiHttpService {
       courseShort: courseData.short,
       courseYear: courseData.year,
       courseColor: courseData.color,
+      courseStartDate: courseData.startDate,
+      courseEndDate: courseData.endDate,
       courseIsVisible: courseData.isVisible ? 1 : 0,
       courseIsActive: courseData.isActive ? 1 : 0,
     }

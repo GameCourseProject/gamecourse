@@ -65,6 +65,8 @@ export class CoursesComponent implements OnInit {
     short: null,
     year: null,
     color: null,
+    startDate: null,
+    endDate: null,
     isActive: null,
     isVisible: null
   };
@@ -223,6 +225,8 @@ export class CoursesComponent implements OnInit {
       name: course.name,
       short: course.short,
       year: course.year,
+      startDate: course.startDate?.format('YYYY-MM-DD') || null,
+      endDate: course.endDate?.format('YYYY-MM-DD') || null,
       color: course.color,
       isActive: course.isActive,
       isVisible: course.isVisible
@@ -383,6 +387,8 @@ export class CoursesComponent implements OnInit {
       short: course.short,
       year: course.year,
       color: course.color,
+      startDate: course.startDate?.format('YYYY-MM-DD') || null,
+      endDate: course.endDate?.format('YYYY-MM-DD') || null,
       isActive: course.isActive,
       isVisible: course.isVisible
     };
@@ -423,6 +429,8 @@ export interface CourseData {
   short: string,
   year: string,
   color: string,
+  startDate: string,
+  endDate: string,
   isActive: boolean,
   isVisible: boolean
 }

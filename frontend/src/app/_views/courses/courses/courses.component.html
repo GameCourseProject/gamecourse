@@ -202,25 +202,45 @@
       </div>
 
       <div class="row_inputs">
-        <div class="short_name half">
-          <input type="text" class="form__input" id="short_name" placeholder="Short Name *" [(ngModel)]="newCourse.short" [required]="true">
-          <label for="short_name" class="form__label">Short Name</label>
+        <div class="row" style="justify-content: space-between">
+          <!-- Short -->
+          <div class="short_name half">
+            <input type="text" class="form__input" id="short_name" placeholder="Short Name *" [(ngModel)]="newCourse.short" [required]="true">
+            <label for="short_name" class="form__label">Short Name</label>
+          </div>
+
+          <!-- Year -->
+          <div class="year half">
+            <select class="form__input" id="year" placeholder="Year *" [(ngModel)]="newCourse.year" [required]="true">
+              <option disabled [value]="null">Select a year</option>
+              <option *ngFor="let year of yearsOptions" [label]="year" [value]="year">{{year}}</option>
+            </select>
+          </div>
         </div>
 
-        <div class="year half right">
-          <input list="years" class="form__input" id="year" placeholder="Year *" [(ngModel)]="newCourse.year" [required]="true">
-          <label for="year" class="form__label">Year</label>
-          <datalist id="years">
-            <option *ngFor="let year of yearsOptions" value="{{year}}"></option>
-          </datalist>
+        <div class="row">
+          <!-- Color -->
+          <div class="color_picker half">
+            <input type="text" class="form__input pickr" id="new_pickr" placeholder="Color *" [(ngModel)]="newCourse.color" role="button" aria-label="toggle color picker dialog">
+            <label for="new_pickr" class="form__label">Color</label>
+            <div id="color-sample">
+              <div class="box" [ngStyle]="{'backgroundColor': newCourse.color || 'white'}"></div>
+              <div class="frame" [ngStyle]="{'borderColor': isWhite(newCourse.color) ? 'lightgrey' : newCourse.color}"></div>
+            </div>
+          </div>
         </div>
 
-        <div class="color_picker half">
-          <input type="text" class="form__input pickr" id="new_pickr" placeholder="Color *" [(ngModel)]="newCourse.color" role="button" aria-label="toggle color picker dialog">
-          <label for="new_pickr" class="form__label">Color</label>
-          <div id="color-sample">
-            <div class="box" [ngStyle]="{'backgroundColor': newCourse.color || 'white'}"></div>
-            <div class="frame" [ngStyle]="{'borderColor': isWhite(newCourse.color) ? 'lightgrey' : newCourse.color}"></div>
+        <div class="row" style="justify-content: space-between">
+          <!-- Start Date -->
+          <div class="start half">
+            <input type="date" class="form__input" id="start_date" placeholder="Start Date *" [(ngModel)]="newCourse.startDate" [required]="true">
+            <label for="start_date" class="form__label">Start Date</label>
+          </div>
+
+          <!-- End Date -->
+          <div class="end half">
+            <input type="date" class="form__input" id="end_date" placeholder="End Date *" [(ngModel)]="newCourse.endDate" [required]="true">
+            <label for="end_date" class="form__label">End Date</label>
           </div>
         </div>
       </div>
