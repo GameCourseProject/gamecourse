@@ -869,6 +869,7 @@ class Notifications extends Module
         switch ($type) {
             case "bonus": return 'gift.jpg';
             case "badge": return 'badge.jpg';
+            case "exam": return 'book-open.jpg';
             case "quiz": return 'clipboard.jpg';
             case "labs": return 'terminal.jpg';
             case "skill": return 'light-bulb.jpg';

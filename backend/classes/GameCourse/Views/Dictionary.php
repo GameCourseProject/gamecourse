@@ -879,6 +879,7 @@ class Dictionary
                         case 'streak':
                         case 'post':
                         case 'assignment':
+                        case 'exam':
                             return new ValueNode(MODULES_FOLDER . '/' . AwardList::ID . '/imgs/' . $award["value"]['type'] . '.svg');
 
                         default:
