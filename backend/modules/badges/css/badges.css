@@ -102,6 +102,7 @@
 .badges-list .badge .badge-bottom .badge-indicators > * {
   flex-direction: row !important;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .badges-list .badge .badge-bottom .badge-indicators .badge-indicator {
