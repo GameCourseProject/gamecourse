@@ -46,6 +46,7 @@ export class LineChartComponent implements OnInit {
   @Input() yAxisMin?: number;                                               // Lowest value for Y-axis
   @Input() yAxisMax?: number;                                               // Highest value for Y-axis
   @Input() yAxisTickAmount?: number = 6;                                    // Number of ticks for Y-Axis
+  @Input() xAxisTickAmount?;                                                // Number of ticks for X-Axis
   @Input() xAxisLabel?: string;                                             // X-axis label
   @Input() yAxisLabel?: string;                                             // Y-axis label
   @Input() yAxisReversed?: boolean = false;                                 // Reverse Y-axis
@@ -106,6 +107,7 @@ export class LineChartComponent implements OnInit {
     if (exists(this.width)) this.chartOptions.chart.width = this.width;
     if (exists(this.yAxisMin)) this.chartOptions.yaxis.min = this.yAxisMin;
     if (exists(this.yAxisMax)) this.chartOptions.yaxis.max = this.yAxisMax;
+    if (exists(this.xAxisTickAmount)) this.chartOptions.xaxis.tickAmount = this.xAxisTickAmount;
     if (exists(this.xAxisLabel)) this.chartOptions.xaxis.title = { text: this.xAxisLabel };
     if (exists(this.yAxisLabel)) this.chartOptions.yaxis.title = { text: this.yAxisLabel };
 
