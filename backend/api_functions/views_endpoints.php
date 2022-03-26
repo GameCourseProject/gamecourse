@@ -64,10 +64,12 @@ API::registerFunction($MODULE, 'renderPage', function () {
     if (!$page["isEnabled"])
         API::error('Page \'' . $page["name"] . '\' (id = ' . $pageId . ') is not enabled.');
 
-    $userId = API::getValue('userId');
-    if (!is_null($userId)) API::verifyCourseUserExists($courseId, $userId);
+    if ($page["roleType"] === "ROLE_INTERACTION") {
+        $userId = API::getValue('userId');
+        if (!is_null($userId)) API::verifyCourseUserExists($courseId, $userId);
+    }
 
-    API::response(['view' => Views::renderPage($courseId, $pageId, $userId)]);
+    API::response(['view' => Views::renderPage($courseId, $pageId, $userId ?? null)]);
 });
 
 /**
