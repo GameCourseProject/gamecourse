@@ -30,3 +30,13 @@ create table remove_tokens_participation(
     foreign key(user) references game_course_user(id) on delete cascade,
     foreign key(participation) references participation(id) on delete cascade,
 );
+
+create table remove_action(
+    id 		int unsigned auto_increment primary key,
+    name varchar(70) not null,
+    course int unsigned not null,
+    description  varchar(200) not null,
+    type  varchar(200) not null,
+    tokens int not null,
+    foreign key(course) references course(id) on delete cascade
+);

@@ -14,7 +14,7 @@ class VirtualCurrency extends Module
 
     const TABLE_WALLET = 'user_wallet';
     const TABLE_CONFIG = 'virtual_currency_config';
-
+    const TABLE = 'remove_action';
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -264,6 +264,45 @@ class VirtualCurrency extends Module
 
     }
 
+    public function has_listing_items(): bool
+    {
+        return  true;
+    }
+    public function get_listing_items(int $courseId): array
+    {
+
+        $header = ['Name', 'Description', 'Type', 'Tokens to Remove', 'is Active'];
+        $displayAtributes = [
+            ['id' => 'name', 'type' => 'text'],
+            ['id' => 'description', 'type' => 'text'],
+            ['id' => 'type', 'type' => 'text'],
+            ['id' => 'tokens', 'type' => 'number'],
+            ['id' => 'isActive', 'type' => 'on_off button']
+        ];
+        $actions = ['duplicate', 'edit', 'delete', 'export'];
+
+        $items = $this->getAction($courseId);
+
+        // Arguments for adding/editing
+        $allAtributes = [
+            array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => ""),
+            array('name' => "Description", 'id' => 'description', 'type' => "text", 'options' => ""),
+            array('name' => "Type", 'id' => 'type', 'type' => "text", 'options' => ""),
+            array('name' => "TokensToRemove", 'id' => 'tokens', 'type' => "number", 'options' => ""),
+            array('name' => "Is Active", 'id' => 'isActive', 'type' => "on_off button", 'options' => "")
+        ];
+        return array('listName' => 'ActionsToRemove', 'itemName' => 'action', 'header' => $header, 'displayAttributes' => $displayAtributes, 'actions' => $actions, 'items' => $items, 'allAttributes' => $allAtributes);
+    }
+    public function save_listing_item(string $actiontype, array $listingItem, int $courseId)
+    {
+        if ($actiontype == 'new' || $actiontype == 'duplicate') {
+            $this->newAction($listingItem, $courseId);
+        } elseif ($actiontype == 'edit') {
+            $this->editAction($listingItem, $courseId);
+        } elseif ($actiontype == 'delete') {
+            $this->deleteAction($listingItem);
+        }
+    }
 
     /*** ----------------------------------------------- ***/
     /*** ------------ Database Manipulation ------------ ***/
@@ -277,6 +316,32 @@ class VirtualCurrency extends Module
     /*** ----------------------------------------------- ***/
     /*** -------------------- Utils -------------------- ***/
     /*** ----------------------------------------------- ***/
+
+    public function getActions($courseId){
+        $actions = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*", "name");
+        foreach ($actions as &$action) {
+            //information to match needing fields
+            $actions['isActive'] = boolval($action["isActive"]);
+        }
+        return $actions;
+    }
+
+    public function getAction($selectMultiple, $where): ValueNode
+    {
+        $where["course"] = $this->getCourseId();
+        if ($selectMultiple) {
+            $actionArray = Core::$systemDB->selectMultiple(self::TABLE, $where);
+            $type = "collection";
+        } else {
+            $actionArray = Core::$systemDB->select(self::TABLE, $where);
+            if (empty($actionArray))
+                throw new \Exception("In function actions.getAction(name): couldn't find action with name '" . $where["name"] . "'.");
+            $type = "object";
+        }
+        return Dictionary::createNode($actionArray, self::ID, $type);
+
+    }
+
 
     public function getCurrencyName($courseId)
     {
@@ -335,6 +400,43 @@ class VirtualCurrency extends Module
     public function saveIncrementCost($value, $courseId)
     {
         Core::$systemDB->update(self::TABLE_CONFIG, ["incrementCost" => $value], ["course" => $courseId]);
+    }
+
+    public static function newAction($achievement, $courseId)
+    {
+        $actionData = [
+            "name" => $achievement['name'],
+            "course" => $courseId,
+            "description" => $achievement['description'],
+            "type" => $achievement['type'],
+            "tokens" => $achievement['tokens'],
+            "isActive" => ($achievement['isActive']) ? 1 : 0,
+
+        ];
+
+        Core::$systemDB->insert(self::TABLE, $actionData);
+    }
+
+    public static function editAction($achievement, $courseId)
+    {
+        $originalAction = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'id' => $achievement['id']], "*");
+
+        if(!empty($originalAction)) {
+            $actionData = [
+                "name" => $achievement['name'],
+                "course" => $courseId,
+                "description" => $achievement['description'],
+                "type" => $achievement['type'],
+                "tokens" => $achievement['tokens'],
+            ];
+
+            Core::$systemDB->update(self::TABLE, $actionData, ["id" => $achievement["id"]]);
+        }
+    }
+
+    public function deleteAction($action)
+    {
+        Core::$systemDB->delete(self::TABLE, ["id" => $action['id']]);
     }
 
     public function getUserTokens($userId): int
