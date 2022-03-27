@@ -31,12 +31,13 @@ create table remove_tokens_participation(
     foreign key(participation) references participation(id) on delete cascade,
 );
 
-create table remove_action(
-    id 		int unsigned auto_increment primary key,
+create table tokens_to_award(
+    id int unsigned auto_increment primary key,
     name varchar(70) not null,
     course int unsigned not null,
     description  varchar(200) not null,
     type  varchar(200) not null,
     tokens int not null,
+    isActive boolean not null default true,
     foreign key(course) references course(id) on delete cascade
 );

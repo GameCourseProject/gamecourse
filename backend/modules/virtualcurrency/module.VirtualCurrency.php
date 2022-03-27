@@ -3,6 +3,7 @@ namespace VirtualCurrency;
 
 use GameCourse\API;
 use GameCourse\Core;
+use GameCourse\Course;
 use GameCourse\Views\Dictionary;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
@@ -14,7 +15,7 @@ class VirtualCurrency extends Module
 
     const TABLE_WALLET = 'user_wallet';
     const TABLE_CONFIG = 'virtual_currency_config';
-    const TABLE = 'remove_action';
+    const TABLE = 'tokens_to_award';
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -154,6 +155,10 @@ class VirtualCurrency extends Module
                     "incrementCost" => DEFAULT_COST
                 ]);
         }
+
+        $folder = Course::getCourseDataFolder($courseId, Course::getCourse($courseId, false)->getName());
+        if (!file_exists($folder . "/" . self::ID))
+            mkdir($folder . "/" . self::ID);
     }
 
     public function update_module($compatibleVersions)
@@ -180,6 +185,8 @@ class VirtualCurrency extends Module
     {
 
         $currencyConfigArray = array();
+        $currencyActionsArray = array();
+
 
         if (Core::$systemDB->tableExists(self::TABLE_CONFIG)) {
             $currencyConfigVarDB = Core::$systemDB->selectMultiple(self::TABLE_CONFIG, ["course" => $courseId], "*");
@@ -193,6 +200,20 @@ class VirtualCurrency extends Module
                 $currencyConfigArray["config_moodle"] = $currencyArray;
             }
         }
+        /*
+        if (Core::$systemDB->tableExists(self::TABLE)) {
+            $currencyActionsVarDB = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*");
+            if ($currencyActionsVarDB) {
+                unset($currencyConfigVarDB["course"]);
+                unset($currencyConfigVarDB["id"]);
+                foreach ($currencyActionsVarDB as $action) {
+                    array_push($currencyActionsArray, $action);
+
+                }
+            }
+        }
+        */
+        
         return $currencyConfigArray;
     }
 
@@ -271,7 +292,7 @@ class VirtualCurrency extends Module
     public function get_listing_items(int $courseId): array
     {
 
-        $header = ['Name', 'Description', 'Type', 'Tokens to Remove', 'is Active'];
+        $header = ['Name', 'Description', 'Type', 'Tokens', 'is Active'];
         $displayAtributes = [
             ['id' => 'name', 'type' => 'text'],
             ['id' => 'description', 'type' => 'text'],
@@ -281,17 +302,17 @@ class VirtualCurrency extends Module
         ];
         $actions = ['duplicate', 'edit', 'delete', 'export'];
 
-        $items = $this->getAction($courseId);
+        $items = $this->getActions($courseId);
 
         // Arguments for adding/editing
         $allAtributes = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => ""),
             array('name' => "Description", 'id' => 'description', 'type' => "text", 'options' => ""),
             array('name' => "Type", 'id' => 'type', 'type' => "text", 'options' => ""),
-            array('name' => "TokensToRemove", 'id' => 'tokens', 'type' => "number", 'options' => ""),
+            array('name' => "Tokens", 'id' => 'tokens', 'type' => "number", 'options' => ""),
             array('name' => "Is Active", 'id' => 'isActive', 'type' => "on_off button", 'options' => "")
         ];
-        return array('listName' => 'ActionsToRemove', 'itemName' => 'action', 'header' => $header, 'displayAttributes' => $displayAtributes, 'actions' => $actions, 'items' => $items, 'allAttributes' => $allAtributes);
+        return array('listName' => 'To Award', 'itemName' => 'action', 'header' => $header, 'displayAttributes' => $displayAtributes, 'actions' => $actions, 'items' => $items, 'allAttributes' => $allAtributes);
     }
     public function save_listing_item(string $actiontype, array $listingItem, int $courseId)
     {
@@ -302,7 +323,7 @@ class VirtualCurrency extends Module
         } elseif ($actiontype == 'delete') {
             $this->deleteAction($listingItem);
         }
-    }
+    }         
 
     /*** ----------------------------------------------- ***/
     /*** ------------ Database Manipulation ------------ ***/
