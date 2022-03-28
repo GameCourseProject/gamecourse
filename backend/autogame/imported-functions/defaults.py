@@ -222,3 +222,11 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     """
     result = connector.remove_tokens(target, tokens, skillName, contributions)
     return result
+
+@rule_function
+def rule_unlocked(name, target):
+    """
+    Checks if rule was already unlocked by user.
+    """
+    result = connector.rule_unlocked(name, target)
+    return result

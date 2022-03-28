@@ -1744,7 +1744,7 @@ def award_rating_streak(target, streak, rating, contributions=None, info=None):
                 # if isCount inserts all streak participations in the streak_progression.
                 if isCount and not isPeriodic:
 
-                    query = "SELECT id, rating FROM participation WHERE user = %s AND course = %s AND type = %s;"
+                    query = "SELECT id, rating FROM participation WHERE user = %s AND course = %s AND type = %s and description like 'Skill Tree%';"
                     cursor.execute(query, (target, course, participationType))
                     table_participations = cursor.fetchall()
 
@@ -2712,6 +2712,28 @@ def consecutive_peergrading(target):
 
     return table
 
+def rule_unlocked(name, target):
+    # -----------------------------------------------------------
+    #   Checks if rule was already unlocked by user.
+    #   Returns True is yes, False otherwise.
+    # -----------------------------------------------------------
+
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
+
+    course = config.course
+
+    query = "SELECT description FROM award WHERE user = %s AND course = %s AND description = %s AND type = 'skill'; "
+    cursor.execute(query, (target, course, name))
+    table = cursor.fetchall()
+    cnx.close()
+
+    if len(table) == 1:
+        return True
+
+    return False
 
 
 def call_gamecourse(course, library, function, args):
