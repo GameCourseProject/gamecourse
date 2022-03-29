@@ -105,8 +105,10 @@ class Course
 
     public static function newCourse($courseName, $courseShort, $courseYear, $courseColor, $courseStartDate, $courseEndDate, $courseIsVisible, $courseIsActive, $copyFrom = null)
     {
+        if ($courseStartDate != null) $courseStartDate = $courseStartDate . ' 00:00:00';
+        if ($courseEndDate != null) $courseEndDate = $courseEndDate . ' 00:00:00';
 
-        Core::$systemDB->insert("course", ["name" => $courseName, "short" => $courseShort, "year" => $courseYear, "color" => $courseColor, "startDate"=> ($courseStartDate . ' 00:00:00'), "endDate"=> ($courseEndDate . ' 00:00:00'), "isActive" => $courseIsActive, "isVisible" => $courseIsVisible]); //adicionar campos extra aqui
+        Core::$systemDB->insert("course", ["name" => $courseName, "short" => $courseShort, "year" => $courseYear, "color" => $courseColor, "startDate"=> $courseStartDate, "endDate"=> $courseEndDate, "isActive" => $courseIsActive, "isVisible" => $courseIsVisible]); //adicionar campos extra aqui
         $courseId = Core::$systemDB->getLastId();
         $course = new Course($courseId);
         static::$courses[$courseId] = $course;
@@ -273,7 +275,7 @@ class Course
 
         foreach ($fileData as $course) {
             if (!Core::$systemDB->select("course", ["name" => $course->name, "year" => $course->year])) {
-                $courseObj = Course::newCourse($course->name, $course->short, $course->year, $course->color, $course->isVisible, $course->isActive);
+                $courseObj = Course::newCourse($course->name, $course->short, $course->year, $course->color, null, null, $course->isVisible, $course->isActive);
                 $newCourse++;
 
                 //data folder
