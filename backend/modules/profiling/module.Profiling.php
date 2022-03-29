@@ -633,7 +633,7 @@ class Profiling extends Module
         else {
             $daysArray = [];
             foreach ($days as $day){
-                $records = Core::$systemDB->selectMultiple("(SELECT u.name as name, cu.id as id FROM course_user cu join game_course_user u on cu.id=u.id join user_role ur on ur.id=u.id join role r on ur.role = r.id where r.name = \"Student\" and cu.course =" . $courseId . " and cu.isActive=true) a left join (select p.user as user, r1.name as cluster from " . self::TABLE_USER_PROFILE . " p left join role r1 on p.cluster = r1.id where p.course = " . $courseId . " and r1.course = " . $courseId . " and date = \"" . $day["date"] . "\") b on a.id=b.user", [], "a.name, a.id, b.cluster");
+                $records = Core::$systemDB->selectMultiple("(SELECT u.name as name, cu.id as id FROM course_user cu join game_course_user u on cu.id=u.id join user_role ur on ur.id=u.id join role r on ur.role = r.id where r.name = \"Student\" and cu.course =" . $courseId . " and ur.course =" . $courseId . " and cu.isActive=true) a left join (select p.user as user, r1.name as cluster from " . self::TABLE_USER_PROFILE . " p left join role r1 on p.cluster = r1.id where p.course = " . $courseId . " and r1.course = " . $courseId . " and date = \"" . $day["date"] . "\") b on a.id=b.user", [], "a.name, a.id, b.cluster");
                 foreach ($records as $record){
                     $exploded =  explode(' ', $record["name"]);
                     $nickname = $exploded[0] . ' ' . end($exploded);
