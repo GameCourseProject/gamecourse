@@ -1674,9 +1674,10 @@ class Skills extends Module
     private function skillCompletedBy($skill, $courseId)
     {
         $students = Core::$systemDB->selectMultiple(
-            AwardList::TABLE . " a left join game_course_user u on a.user = u.id left join course_user c on u.id = c.id",
-            ["a.course" => $courseId, "type" => "skill", "moduleInstance" => $skill],
-            "u.id, a.course, lastActivity, previousActivity, name, email, major, nickname, studentNumber, isAdmin, u.isActive"
+            "course_user cu left join game_course_user u on cu.id=u.id left join " . AwardList::TABLE . " a on a.user=cu.id",
+            ["a.course" => $courseId, "cu.course" => $courseId, "type" => "skill", "moduleInstance" => $skill],
+            "u.id, a.course, lastActivity, previousActivity, name, email, major, nickname, studentNumber, isAdmin, cu.isActive",
+            "a.date"
         );
         return $students;
     }
