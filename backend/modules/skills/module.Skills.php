@@ -321,7 +321,7 @@ class Skills extends Module
             function ($arg) {
                 $tierName = $arg["value"]["tier"];
                 $course = $arg["value"]["parent"]["value"]["course"];
-                return new ValueNode($this->tierHasWildcards($tierName,  $course));
+                return new ValueNode($this->tierHasWildcards($tierName, $course));
             },
             'Returns a bool that indicates if a tier has wildcards (i.e. if other skills depend on this tier).',
             'boolean',
@@ -1277,8 +1277,8 @@ class Skills extends Module
     public function tierHasWildcards($tier, int $courseId): bool
     {
         $tierSkills = Core::$systemDB->selectMultiple(
-            self::TABLE_DEPENDENCIES . " d left join " . self::TABLE_TIERS . " t on d.normalSkillId = t.id left join " . self::TABLE_TREES . " s on t.treeId=s.id",
-            ["course" => $courseId, "t.tier" => $tier, "d.isTier" => true],
+            self::TABLE_DEPENDENCIES . " d left join " . self::TABLE . " s on d.normalSkillId=s.id left join " . self::TABLE_TREES . " t on s.treeId=t.id",
+            ["course" => $courseId, "s.tier" => $tier, "d.isTier" => true],
             "count(*) as numWild"
         );
 
