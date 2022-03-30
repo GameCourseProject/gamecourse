@@ -211,3 +211,22 @@ def award_streak(target, streak, contributions=None, info=None):
     """
     result = connector.award_streak(target, streak, contributions, info)
     return result
+
+    
+@rule_function
+def remove_tokens(target, tokens = None, skillName = None, contributions=None):
+    """
+    Removes tokens for a specific user.
+    If tokens are given, simply removes.
+    If skillName & contributions are given, removes tokens for skill retries.
+    """
+    result = connector.remove_tokens(target, tokens, skillName, contributions)
+    return result
+
+@rule_function
+def rule_unlocked(name, target):
+    """
+    Checks if rule was already unlocked by user.
+    """
+    result = connector.rule_unlocked(name, target)
+    return result
