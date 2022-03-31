@@ -88,6 +88,11 @@ class Charts extends Module
 
                 } else if (in_array("Regular_halfheartedlike", $userRoles)) { // compare with other Regular students
                     $students = $course->getUsersWithRole('Regular', true);
+                    if (empty($students))
+                        $students = array_merge(
+                            $course->getUsersWithRole("Regular_achieverlike"),
+                            $course->getUsersWithRole("Regular_halfheartedlike"),
+                        );
 
                 } else { // compare with all students
                     $students = $course->getUsersWithRole('Student', true);
@@ -293,6 +298,11 @@ class Charts extends Module
 
             } else if (in_array("Regular_halfheartedlike", $userRoles)) { // compare with other Regular students
                 $students = $course->getUsersWithRole('Regular', true);
+                if (empty($students))
+                    $students = array_merge(
+                        $course->getUsersWithRole("Regular_achieverlike"),
+                        $course->getUsersWithRole("Regular_halfheartedlike"),
+                    );
 
             } else { // compare with all students
                 $students = $course->getUsersWithRole('Student', true);
@@ -359,6 +369,11 @@ class Charts extends Module
 
             } else if (in_array("Regular_halfheartedlike", $userRoles)) { // compare with other Regular students
                 $students = $course->getUsersWithRole('Regular', true);
+                if (empty($students))
+                    $students = array_merge(
+                        $course->getUsersWithRole("Regular_achieverlike"),
+                        $course->getUsersWithRole("Regular_halfheartedlike"),
+                    );
 
             } else { // compare with all students
                 $students = $course->getUsersWithRole('Student', true);

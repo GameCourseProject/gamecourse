@@ -393,15 +393,14 @@ class Profiling extends Module
         $hierarchy = json_decode(Core::$systemDB->select("course", ["id" => $courseId], "roleHierarchy"));
         $studentIndex = 0;
         $profilingIndex = 0;
-        $children = null;
+        $children = [];
         if($hierarchy){
             // get roles from hierarchy
             foreach ($hierarchy as $obj){
                 if($obj->name == "Student"){
                     foreach ($hierarchy[$studentIndex]->children as $child){
                         if($child->name == "Profiling"){
-                            if (isset($hierarchy[$studentIndex]->children[$profilingIndex]->children))
-                                $children = $hierarchy[$studentIndex]->children[$profilingIndex]->children;
+                            $this->traverse($child->children, $children);
                             break;
                         }
                         $profilingIndex++;
@@ -746,6 +745,14 @@ class Profiling extends Module
         }
         else{
             return array();
+        }
+    }
+
+    private function traverse($hierarchy, &$children) {
+        foreach ($hierarchy as $obj){
+            $children[] = $obj;          // Add own
+            if (isset($obj->children))   // If has children, add them
+                $this->traverse($obj->children, $children);
         }
     }
 }
