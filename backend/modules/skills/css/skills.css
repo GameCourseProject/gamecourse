@@ -48,8 +48,12 @@
 
 /*** ------------ Skills ------------ ***/
 
+.skills-block .skill-tree .skill-tiers .skill-tier > * {
+  padding-top: 20px;
+}
+
 .skills-block .skill-tree .skill-tiers .skill-tier .skill-container {
-  margin-top: 40px;
+  margin-top: 30px;
 }
 
 .skills-block .skill-tree .skill-tiers .skill-tier .skill-container > * {
@@ -68,8 +72,8 @@
 .skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-left {
   position: relative;
   border-radius: 5px;
-  width: 72px;
-  height: 72px;
+  width: 62px;
+  height: 62px;
   color: white;
   font-size: 11px;
   padding: 5px;
@@ -79,6 +83,7 @@
 
 .skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-left .skill-name {
   color: white;
+  font-size: 12px;
 }
 
 .skills-block .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-left .skill-post {
