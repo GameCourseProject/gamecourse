@@ -1,5 +1,0 @@
-rule: R16
-	when:
-		satisfied_skill("Pixel Art",facts[target])
-	then:
-		award_treeskill("Pixel Art",target,facts[target])

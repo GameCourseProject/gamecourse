@@ -1,9 +1,0 @@
-rule: R8
->> test import functions
-	when:
-		x = add(mul(10,3),3)
-		x == 33
-	then:
-		y = div(mod(sub(x,1),11),10)
-		transform(y)
-		transform(factorial(4))

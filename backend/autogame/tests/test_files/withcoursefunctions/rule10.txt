@@ -1,3 +1,0 @@
-rule: R10
-then:
-	award_grade_aux("Random",target,facts[target])

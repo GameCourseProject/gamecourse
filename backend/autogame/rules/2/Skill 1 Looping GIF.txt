@@ -1,8 +1,0 @@
-rule: Looping GIF
-
-	when:
-		logs = GC.participations.getSkillParticipations(target, "Looping GIF")
-		rating = get_rating(logs)
-		rating >= 3
-	then:
-		award_skill(target, "Looping GIF", rating, logs)

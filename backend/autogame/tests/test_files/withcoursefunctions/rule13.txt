@@ -1,3 +1,0 @@
-rule: R13
-	then:
-		award_treeskill("Kinetic",target)

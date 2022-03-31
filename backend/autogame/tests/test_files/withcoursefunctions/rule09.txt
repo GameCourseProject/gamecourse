@@ -1,3 +1,0 @@
-rule: R9
-then:
-	award_grade_aux("Random",target,3,info="hello")

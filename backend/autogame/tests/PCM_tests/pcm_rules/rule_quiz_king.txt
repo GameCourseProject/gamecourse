@@ -1,7 +1,0 @@
-rule: Quiz King
-# Take the quizzes, be the best
-# lvl.1: Have the highest grade in the quizzes!
-	when:
-		check_existance(facts,target,"quiz king")
-	then:
-		award_achievement("Quiz King",1,target,None,False)

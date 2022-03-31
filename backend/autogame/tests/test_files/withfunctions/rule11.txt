@@ -1,6 +1,0 @@
-rule: R11
->> This rule is supposed to raise an ERROR
->> since it's trying to call functions that supposedly are not permited in the
->> rules
-	when:
-		determine_gender("what")

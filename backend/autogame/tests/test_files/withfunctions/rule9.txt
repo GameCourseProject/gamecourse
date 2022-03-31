@@ -1,7 +1,0 @@
-# This rules should return an error since it will be using functions that
-# are supposedly not defined
-
-rule: R9
-	WHEN:
-		rule_effect(lambda x: x)
-		eval(compile("print \"\\n\\nOh no\"","<string>","exec"))

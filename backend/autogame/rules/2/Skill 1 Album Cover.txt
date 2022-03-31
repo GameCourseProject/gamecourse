@@ -1,8 +1,0 @@
-rule: Album Cover
-
-	when:
-		logs = GC.participations.getSkillParticipations(target, "Album Cover")
-		rating = get_rating(logs)
-		rating >= 3
-	then:
-        award_skill(target, "Album Cover", rating, logs)

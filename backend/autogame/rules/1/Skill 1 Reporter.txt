@@ -1,8 +1,0 @@
-rule: Reporter
-
-	when:
-		logs = GC.participations.getSkillParticipations(target, "Reporter")
-		rating = get_rating(logs)
-		rating >= 3
-	then:
-        award_skill(target, "Reporter", rating, logs)

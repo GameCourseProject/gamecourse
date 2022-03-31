@@ -1,9 +1,0 @@
-rule: Quiz Grade
-# give grades from quizzes
-
-	when:
-		logs = GC.participations.getParticipations(target, "quiz grade")
-		flogs = filter_quiz(logs, "Quiz 9")
-		len(flogs) > 0
-	then:
-		award_grade(target, "Quiz", flogs)

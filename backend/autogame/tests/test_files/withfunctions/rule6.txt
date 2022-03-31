@@ -1,7 +1,0 @@
-rule: R6
->> tests.rule_system_tests.test_rule_system.TestFire.test_12
->> Test Decorator Functions
-	when:
-		student = this
-	then:
-		transform(student)

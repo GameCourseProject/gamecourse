@@ -1,8 +1,0 @@
-rule: reTrailer
-
-	when:
-		logs = GC.participations.getSkillParticipations(target, "reTrailer")
-		rating = get_rating(logs)
-		rating >= 3
-	then:
-		award_skill(target, "reTrailer", rating, logs)

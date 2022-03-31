@@ -1,4 +1,0 @@
-1;student 1;joaorego41@gmail.com;A
-2;student 2;joaorego41@gmail.com;A
-3;student 3;joaorego41@gmail.com;A
-4;student 4;joaorego41@gmail.com;A

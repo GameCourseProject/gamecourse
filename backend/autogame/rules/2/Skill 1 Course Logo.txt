@@ -1,8 +1,0 @@
-rule: Course Logo
-
-	when:
-		logs = GC.participations.getSkillParticipations(target, "Course Logo")
-		rating = get_rating(logs)
-		rating >= 3
-	then:
-        award_skill(target, "Course Logo", rating, logs)

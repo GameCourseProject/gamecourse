@@ -1,3 +1,0 @@
-rule: R12
-then:
-	award_grade_aux("Random",target,facts[target],info="hello")

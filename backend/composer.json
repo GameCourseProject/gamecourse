@@ -1,0 +1,15 @@
+{
+  "require": {
+    "php": "=7.3",
+    "ext-pdo": "*",
+    "ext-json": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Database\\": "models/Database",
+      "GameCourse\\": "models/GameCourse",
+      "Utils\\": "models/Utils",
+      "Api\\": "controllers"
+    }
+  }
+}

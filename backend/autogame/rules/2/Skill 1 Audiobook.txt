@@ -1,8 +1,0 @@
-rule: Audiobook
-
-	when:
-		logs = GC.participations.getSkillParticipations(target, "Audiobook")
-		rating = get_rating(logs)
-		rating >= 3
-	then:
-        award_skill(target, "Audiobook", rating, logs)

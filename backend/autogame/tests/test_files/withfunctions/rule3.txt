@@ -1,5 +1,0 @@
-rule: R3
->> test_rule_system.TestFire.test_08
->> test if functions have access to global variables
-	when:
-		isinstance(f(),str)

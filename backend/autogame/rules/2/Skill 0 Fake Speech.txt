@@ -1,8 +1,0 @@
-rule: Fake Speech
-
-	when:
-		logs = GC.participations.getSkillParticipations(target, "Fake Speech")
-		rating = get_rating(logs)
-		rating >= 3
-	then:
-		award_skill(target, "Fake Speech", rating, logs)

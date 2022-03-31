@@ -1,7 +1,0 @@
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Grade Components
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-rule: Grade from Quiz
-	then:
-		logs = filter_logs(facts,target,action="quiz grade")
-		award_grade("Grade from Quiz",target,logs)

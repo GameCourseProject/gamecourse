@@ -1,3 +1,0 @@
-rule: R8
-then:
-	award_grade_aux("Initial Bonus",target,1,500)

@@ -1,3 +1,0 @@
-rule: R2
-then:
-	award_achievement("Tree Climber",1,target,facts[target])

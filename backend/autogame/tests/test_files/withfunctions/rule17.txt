@@ -1,6 +1,0 @@
-rule: R17
-	when:
-		not effect_unlocked(2)
-	then:
-		transform(2) if effect_unlocked(1) else None
-		transform(1)

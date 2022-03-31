@@ -1,4 +1,0 @@
-rule: R5
->> rule with customized function from 'functions' module
-	when:
-		count(range(len(dir(locals))))
