@@ -3,6 +3,10 @@ namespace Api;
 
 use Error;
 
+/**
+ * Main API controller that holds functions to process an API request,
+ * set permissions for a given endpoint and make verifications.
+ */
 class API
 {
     private static $module;     // request module
