@@ -320,6 +320,10 @@ export class ProfilingComponent implements OnInit {
   onFileSelected(files: FileList): void {
     this.importedFile = files.item(0);
   }
+
+  getEditableResults(): {name: string, cluster: string}[] {
+    return Object.values(this.clusters).sort((a, b) => a.name.localeCompare(b.name));
+  }
 }
 
 export interface ProfilingHistory {
