@@ -1204,13 +1204,14 @@ class Dictionary
             'participations',
             'getForumParticipations',
 
-            function (int $user, string $forum, string $thread = null) {
+            function (int $user, string $forum, string $thread = null, int $rating = null) {
                 $table = "participation";
 
                 if ($thread == null) {
                     # if the name of the thread is not relevant
                     # aka, if users are rewarded for creating posts + comments
                     $where = ["user" => $user, "type" => "graded post", "course" => self::$courseId];
+                    if ($rating != null) $where["rating"] = $rating;
                     $like = $forum . ",%";
                     $likeParams = ["description" => $like];
 
@@ -1219,6 +1220,7 @@ class Dictionary
                     # Name of thread is important for the badge
                     $like = $forum . ", Re: " . $thread . "%";
                     $where = ["user" => $user, "type" => "graded post", "course" => self::$courseId];
+                    if ($rating != null) $where["rating"] = $rating;
                     $likeParams = ["description" => $like];
                     $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
                 }
