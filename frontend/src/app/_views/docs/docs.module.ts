@@ -17,6 +17,7 @@ import { InitComponent } from './modules/init/init.component';
 import { ModuleConfigComponent } from './modules/config/module-config.component';
 import { ResourcesComponent } from './modules/resources/resources.component';
 import { DataComponent } from './modules/data/data.component';
+import { ApiComponent } from './api/api.component';
 
 
 @NgModule({
@@ -35,7 +36,8 @@ import { DataComponent } from './modules/data/data.component';
     InitComponent,
     ModuleConfigComponent,
     ResourcesComponent,
-    DataComponent
+    DataComponent,
+    ApiComponent
   ],
   imports: [
     CommonModule,

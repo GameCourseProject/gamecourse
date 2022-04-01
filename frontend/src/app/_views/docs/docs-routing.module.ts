@@ -14,6 +14,7 @@ import {InitComponent} from "./modules/init/init.component";
 import {ModuleConfigComponent} from "./modules/config/module-config.component";
 import {ResourcesComponent} from "./modules/resources/resources.component";
 import {DataComponent} from "./modules/data/data.component";
+import {ApiComponent} from "./api/api.component";
 
 const routes: Routes = [
   {
@@ -52,6 +53,10 @@ const routes: Routes = [
       },
       { path: '', redirectTo: 'views', pathMatch: 'full' }
     ]
+  },
+  {
+    path: 'api',
+    component: ApiComponent
   }
 ];
 

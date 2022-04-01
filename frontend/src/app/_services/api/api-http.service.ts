@@ -57,6 +57,7 @@ export class ApiHttpService {
 
   static readonly CORE: string = 'core';
   static readonly COURSE: string = 'course';
+  static readonly DOCS: string = 'docs';
   static readonly MODULE: string = 'module';
   static readonly THEMES: string = 'themes';
   static readonly USER: string = 'user';

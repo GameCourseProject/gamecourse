@@ -57,6 +57,7 @@
               "node_modules/nestable2/dist/jquery.nestable.min.css",
               "node_modules/quill/dist/quill.snow.css",
               "node_modules/datatables.net-dt/css/jquery.dataTables.min.css",
+              "node_modules/swagger-ui/dist/swagger-ui.css",
               "src/styles/global.scss"
             ],
             "scripts": [
