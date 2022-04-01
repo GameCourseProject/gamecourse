@@ -14,5 +14,14 @@ require __DIR__ . "/inc/bootstrap.php";
 
 Core::denyCLI();
 
+if (!Core::requireLogin(false))
+    API::error("Not logged in!", 401);
+
+if (Core::requireSetup(false))
+    API::error("GameCourse is not yet setup.", 409);
+
+if (!Core::checkAccess(false))
+    API::error("Access denied.", 403);
+
 API::gatherRequestInfo();
 API::processRequest();

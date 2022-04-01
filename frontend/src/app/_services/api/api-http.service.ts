@@ -99,7 +99,7 @@ export class ApiHttpService {
   }
 
   public isSetupDone(): Observable<boolean> {
-    const url = this.apiEndpoint.createUrl('login.php');
+    const url = this.apiEndpoint.createUrl('auth/login.php');
 
     return this.post(url, new FormData(), ApiHttpService.httpOptions)
       .pipe(
@@ -123,7 +123,7 @@ export class ApiHttpService {
     const formData = new FormData();
     formData.append('loginType', type);
 
-    const url = this.apiEndpoint.createUrl('login.php');
+    const url = this.apiEndpoint.createUrl('auth/login.php');
 
     this.post(url, formData, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['redirectURL']) )
@@ -131,7 +131,7 @@ export class ApiHttpService {
   }
 
   public isLoggedIn(): Observable<boolean> {
-    const url = this.apiEndpoint.createUrl('login.php');
+    const url = this.apiEndpoint.createUrl('auth/login.php');
 
     return this.post(url, new FormData(), ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['isLoggedIn']) );
@@ -142,7 +142,7 @@ export class ApiHttpService {
       qs.push('logout', true);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('login.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('auth/login.php', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['isLoggedIn']) );
@@ -162,7 +162,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => Course.fromDatabase(res['data']['course'])) );
@@ -175,7 +175,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
@@ -193,7 +193,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
@@ -213,7 +213,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => (res['data']['courseRoles']).map(role => Role.fromDatabase(role))) );
@@ -237,7 +237,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['contents']) );
@@ -266,7 +266,7 @@ export class ApiHttpService {
       qs.push('request', 'createCourse');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => Course.fromDatabase(res['data']['course'])) );
   }
@@ -293,7 +293,7 @@ export class ApiHttpService {
       qs.push('request', 'editCourse');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -306,7 +306,7 @@ export class ApiHttpService {
       qs.push('request', 'deleteCourse');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -322,7 +322,7 @@ export class ApiHttpService {
       qs.push('request', 'setCourseVisibility');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -338,7 +338,7 @@ export class ApiHttpService {
       qs.push('request', 'setCourseActiveState');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -356,7 +356,7 @@ export class ApiHttpService {
       qs.push('request', 'importCourses');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => parseInt(res['data']['nrCourses'])) );
   }
@@ -372,7 +372,7 @@ export class ApiHttpService {
       qs.push('request', 'exportCourses');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['courses']) );
   }
@@ -387,7 +387,7 @@ export class ApiHttpService {
       if (role) qs.push('role', role);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => (res['data']['userList']).map(obj => User.fromDatabase(obj))) );
@@ -400,7 +400,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => (res['data']['notCourseUsers']).map(obj => User.fromDatabase(obj))) );
@@ -426,7 +426,7 @@ export class ApiHttpService {
       qs.push('request', 'createCourseUser');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -445,7 +445,7 @@ export class ApiHttpService {
       qs.push('request', 'addUsersToCourse');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -471,7 +471,7 @@ export class ApiHttpService {
       qs.push('request', 'editCourseUser');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -484,7 +484,7 @@ export class ApiHttpService {
       qs.push('request', 'removeCourseUser');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -501,7 +501,7 @@ export class ApiHttpService {
       qs.push('request', 'setCourseUserActiveState');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -518,7 +518,7 @@ export class ApiHttpService {
       qs.push('request', 'importCourseUsers');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => parseInt(res['data']['nrUsers'])) );
   }
@@ -530,7 +530,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, null, ApiHttpService.httpOptions)
       .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['courseUsers'])) );
   }
@@ -542,7 +542,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['isTeacher']) );
@@ -555,7 +555,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['isStudent']) );
@@ -570,7 +570,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
@@ -583,7 +583,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['isEnabled']) );
@@ -598,7 +598,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
@@ -624,7 +624,7 @@ export class ApiHttpService {
       qs.push('request', 'roles');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -638,7 +638,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => dateFromDatabase(res['data']['ruleSystemLastRun'])));
@@ -653,7 +653,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => { return {styleFile: res['data']['styleFile'] === false ? '' : res['data']['styleFile'], url: res['data']['url']} }) );
@@ -669,7 +669,7 @@ export class ApiHttpService {
       qs.push('request', 'createCourseStyleFile');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['url']) );
   }
@@ -685,7 +685,7 @@ export class ApiHttpService {
       qs.push('request', 'updateCourseStyleFile');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['url']) );
   }
@@ -705,7 +705,7 @@ export class ApiHttpService {
       qs.push('request', 'uploadFileToCourse');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['path']) );
   }
@@ -721,7 +721,7 @@ export class ApiHttpService {
       qs.push('request', 'deleteFileFromCourse');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -736,7 +736,7 @@ export class ApiHttpService {
       qs.push('table', table);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']) );
@@ -755,7 +755,7 @@ export class ApiHttpService {
       qs.push('request', 'getModules');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
@@ -775,7 +775,7 @@ export class ApiHttpService {
       qs.push('request', 'setModuleState');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -793,7 +793,7 @@ export class ApiHttpService {
       qs.push('request', 'importModule');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']) );
   }
@@ -804,7 +804,7 @@ export class ApiHttpService {
       qs.push('request', 'exportModule');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, null, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['file']) );
   }
@@ -822,7 +822,7 @@ export class ApiHttpService {
       qs.push('moduleId', moduleID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map(
@@ -855,7 +855,7 @@ export class ApiHttpService {
       qs.push('request', 'saveModuleConfigInfo');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
 
@@ -874,7 +874,7 @@ export class ApiHttpService {
       qs.push('request', 'toggleItemParam');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -894,7 +894,7 @@ export class ApiHttpService {
       qs.push('request', 'changeItemSequence');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -912,7 +912,7 @@ export class ApiHttpService {
       qs.push('request', 'importItems');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => parseInt(res['data']['nrItems'])) );
   }
@@ -929,7 +929,7 @@ export class ApiHttpService {
       qs.push('request', 'exportItems');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
         return {
@@ -948,7 +948,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['classCheckVars']) );
@@ -965,7 +965,7 @@ export class ApiHttpService {
       qs.push('request', 'setClassCheckVars');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -983,7 +983,7 @@ export class ApiHttpService {
       qs.push('request', 'importFenixStudents');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => parseInt(res['data']['nrStudents'])) );
   }
@@ -997,7 +997,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['googleSheetsVars']) );
@@ -1018,7 +1018,7 @@ export class ApiHttpService {
       qs.push('request', 'setGoogleSheetsVars');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1034,7 +1034,7 @@ export class ApiHttpService {
       qs.push('request', 'setGoogleSheetsCredentials');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['authUrl']) );
   }
@@ -1048,7 +1048,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['moodleVars']) );
@@ -1065,7 +1065,7 @@ export class ApiHttpService {
       qs.push('request', 'setMoodleVars');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1079,7 +1079,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['getProgressReportVars']) );
@@ -1096,7 +1096,7 @@ export class ApiHttpService {
       qs.push('request', 'setProgressReportVars');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1110,7 +1110,7 @@ export class ApiHttpService {
       qs.push('seqNr', seqNr);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['report']) );
@@ -1125,7 +1125,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']) );
@@ -1138,7 +1138,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['time']) );
@@ -1151,7 +1151,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']) );
@@ -1169,7 +1169,7 @@ export class ApiHttpService {
       qs.push('request', 'runProfiler');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1185,7 +1185,7 @@ export class ApiHttpService {
       qs.push('request', 'runPredictor');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1201,7 +1201,7 @@ export class ApiHttpService {
       qs.push('request', 'saveClusters');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1217,7 +1217,7 @@ export class ApiHttpService {
       qs.push('request', 'commitClusters');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1232,7 +1232,7 @@ export class ApiHttpService {
       qs.push('request', 'deleteSaved');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1247,7 +1247,7 @@ export class ApiHttpService {
       qs.push('request', 'checkRunningStatus');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data'].hasOwnProperty('running') ? res['data']['running'] : res['data']) );
@@ -1263,7 +1263,7 @@ export class ApiHttpService {
       qs.push('request', 'checkPredictorStatus');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data'].hasOwnProperty('predicting') ? res['data']['predicting'] : parseInt(res['data']['nrClusters'])) );
@@ -1282,7 +1282,7 @@ export class ApiHttpService {
       qs.push('request', 'generateQRCodes');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['QRCodes']) );
@@ -1301,7 +1301,7 @@ export class ApiHttpService {
       qs.push('request', 'submitQRParticipation');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1319,7 +1319,7 @@ export class ApiHttpService {
       qs.push('request', 'submitQRParticipationForUser');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1333,7 +1333,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => (res['data']['tiers']).map(obj => Tier.fromDatabase(obj))) );
@@ -1350,7 +1350,7 @@ export class ApiHttpService {
       qs.push('request', 'createTier');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => Tier.fromDatabase(res['data']['tier'])) );
   }
@@ -1366,7 +1366,7 @@ export class ApiHttpService {
       qs.push('request', 'editTier');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1382,7 +1382,7 @@ export class ApiHttpService {
       qs.push('request', 'deleteTier');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1394,7 +1394,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => (res['data']['skills']).map(obj => Skill.fromDatabase(obj))) );
@@ -1411,7 +1411,7 @@ export class ApiHttpService {
       qs.push('request', 'createSkill');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1427,7 +1427,7 @@ export class ApiHttpService {
       qs.push('request', 'editSkill');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1443,7 +1443,7 @@ export class ApiHttpService {
       qs.push('request', 'deleteSkill');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1456,7 +1456,7 @@ export class ApiHttpService {
       qs.push('skillId', skillID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => Skill.fromDatabase(res['data']['skill'])) );
@@ -1472,7 +1472,7 @@ export class ApiHttpService {
       qs.push('userId', userID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['tokens']) );
@@ -1491,7 +1491,7 @@ export class ApiHttpService {
       qs.push('request', 'getThemeSettings');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']) );
@@ -1510,7 +1510,7 @@ export class ApiHttpService {
       qs.push('request', 'getLoggedUserInfo');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map(
@@ -1524,7 +1524,7 @@ export class ApiHttpService {
       qs.push('request', 'getLoggedUserActiveCourses');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map(
@@ -1543,7 +1543,7 @@ export class ApiHttpService {
       qs.push('request', 'getUsers');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => (res['data']['users']).map(obj => User.fromDatabase(obj))) );
@@ -1555,7 +1555,7 @@ export class ApiHttpService {
       qs.push('request', 'getUserCourses');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
@@ -1576,7 +1576,7 @@ export class ApiHttpService {
       qs.push('request', 'importUsers');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => parseInt(res['data']['nrUsers'])) );
   }
@@ -1587,7 +1587,7 @@ export class ApiHttpService {
       qs.push('request', 'exportUsers');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, null, ApiHttpService.httpOptions)
       .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['users'])) );
   }
@@ -1614,7 +1614,7 @@ export class ApiHttpService {
       qs.push('request', 'createUser');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => User.fromDatabase(res['data']['user'])) );
   }
@@ -1640,7 +1640,7 @@ export class ApiHttpService {
       qs.push('request', 'editUser');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1662,7 +1662,7 @@ export class ApiHttpService {
       qs.push('request', 'editSelfInfo');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions).pipe();
   }
 
@@ -1674,7 +1674,7 @@ export class ApiHttpService {
       qs.push('request', 'deleteUser');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1690,7 +1690,7 @@ export class ApiHttpService {
       qs.push('request', 'setUserAdminPermission');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1706,7 +1706,7 @@ export class ApiHttpService {
       qs.push('request', 'setUserActiveState');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1725,7 +1725,7 @@ export class ApiHttpService {
       qs.push('courseId', courseID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
@@ -1749,7 +1749,7 @@ export class ApiHttpService {
       if (exists(userID)) qs.push('userId', userID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe(map((res: any) => buildView(res['data']['view'])));
@@ -1768,7 +1768,7 @@ export class ApiHttpService {
       qs.push('request', 'createPage');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1787,7 +1787,7 @@ export class ApiHttpService {
       qs.push('request', 'editPage');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1803,7 +1803,7 @@ export class ApiHttpService {
       qs.push('request', 'deletePage');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1821,7 +1821,7 @@ export class ApiHttpService {
       qs.push('request', 'getTemplate');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => Template.fromDatabase(res['data']['template'])) );
@@ -1839,7 +1839,7 @@ export class ApiHttpService {
       qs.push('request', 'createTemplate');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1857,7 +1857,7 @@ export class ApiHttpService {
       qs.push('request', 'editTemplateBasicInfo');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1873,7 +1873,7 @@ export class ApiHttpService {
       qs.push('request', 'deleteTemplate');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1890,7 +1890,7 @@ export class ApiHttpService {
       qs.push('request', 'setGlobalState');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1906,7 +1906,7 @@ export class ApiHttpService {
       qs.push('request', 'importTemplate');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1919,7 +1919,7 @@ export class ApiHttpService {
       qs.push('templateId', templateId);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => 'data:text;charset=utf-8,' + encodeURIComponent(res['data']['template'])) );
@@ -1938,7 +1938,7 @@ export class ApiHttpService {
       qs.push('templateId', templateID);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
@@ -1961,7 +1961,7 @@ export class ApiHttpService {
       if (userRole) qs.push('userRole', userRole);
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => buildView(res['data']['view'])) );
@@ -1980,7 +1980,7 @@ export class ApiHttpService {
       qs.push('request', 'saveTemplate');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
@@ -1999,7 +1999,7 @@ export class ApiHttpService {
       qs.push('request', 'saveViewAsTemplate');
     };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
