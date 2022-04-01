@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse;
+namespace GameCourse\Core;
 
 use Api\API;
 use Database\Database;
@@ -7,12 +7,18 @@ use Exception;
 use Facebook;
 use FenixEdu;
 use FenixEduException;
+use GameCourse\User\User;
 use GoogleHandler;
 use Linkedin;
 
 require_once ROOT_PATH . "lib/fenixedu/FenixEdu.php";
 require_once ROOT_PATH . "lib/google/Google.php";
 
+/**
+ * This is the Core class which holds core functionality like making
+ * the bridge between models and the database, handling setup and
+ * authentication, and has some utility functions on CLI.
+ */
 class Core
 {
     private static $loggedUser;

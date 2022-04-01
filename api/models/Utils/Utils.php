@@ -1,7 +1,7 @@
 <?php
 namespace Utils;
 
-use GameCourse\Course;
+use GameCourse\Course\Course;
 
 /**
  * Holds a set of utility functions that can be used

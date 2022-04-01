@@ -1,6 +1,8 @@
 <?php
-namespace GameCourse;
+namespace GameCourse\User;
 
+use GameCourse\Core\Core;
+use GameCourse\Course\Course;
 use Utils\Utils;
 
 /**
@@ -189,9 +191,11 @@ class User
     /*** ---------------------- General --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    public static function getUserById(int $id): User
+    public static function getUserById(int $id): ?User
     {
-        return new User($id);
+        $user = new User($id);
+        if ($user->exists()) return $user;
+        else return null;
     }
 
     public static function getUserByUsername(string $username): ?User
@@ -232,6 +236,22 @@ class User
             "u.*, a.username, a.authentication_service"
         );
     }
+
+    public function getCourses($active = null)
+    {
+        $where = ["cu.id" => $this->getId()];
+        if ($active != null) $where["c.isActive"] = $active;
+        return Core::database()->selectMultiple(
+            CourseUser::TABLE_COURSE_USER . " cu join " . Course::TABLE_COURSE . " c on cu.course = c.id",
+            $where,
+            "c.*"
+        );
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------- User Manipulation ----------------- ***/
+    /*** ---------------------------------------------------- ***/
 
     /**
      * Adds a user to the database.
@@ -292,8 +312,8 @@ class User
             "studentNumber" => $studentNumber,
             "nickname" => $nickname,
             "major" => $major,
-            "isAdmin" => $isAdmin,
-            "isActive" => $isActive
+            "isAdmin" => +$isAdmin,
+            "isActive" => +$isActive
         ], ["id" => $this->id]);
         Core::database()->update(self::TABLE_AUTH, [
             "username" => $username,
@@ -422,21 +442,5 @@ class User
             if ($i != $len - 1) $file .= "\n";
         }
         return $file;
-    }
-
-
-    /*** ---------------------------------------------------- ***/
-    /*** ----------------------- Misc ----------------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-    public function getCourses($active = null)
-    {
-        $where = ["cu.id" => $this->getId()];
-        if ($active != null) $where["c.isActive"] = $active;
-        return Core::database()->selectMultiple(
-            CourseUser::TABLE_COURSE_USER . " cu join " . Course::TABLE_COURSE . " c on cu.course = c.id",
-            $where,
-            "c.*"
-        );
     }
 }

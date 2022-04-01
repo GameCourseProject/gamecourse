@@ -1,8 +1,7 @@
 <?php
 namespace Api;
 
-use GameCourse\User;
-use OpenApi\Attributes as OA;
+use GameCourse\User\User;
 
 /**
  * This is the User controller, which holds API endpoints for

@@ -8,7 +8,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
 use Api\API;
-use GameCourse\Core;
+use GameCourse\Core\Core;
 
 require __DIR__ . "/inc/bootstrap.php";
 

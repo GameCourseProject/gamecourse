@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse;
+namespace GameCourse\User;
 
 /**
  * This is the CourseUser model, which implements the necessary methods
