@@ -7,6 +7,14 @@ use Error;
  * Main API controller that holds functions to process an API request,
  * set permissions for a given endpoint and make verifications.
  */
+
+/**
+ * @OA\Info(
+ *     title="GameCourse API",
+ *     description="<h2>Authentication</h2><p>This API is only available to authorized users. You must be logged in to GameCourse to make requests.</p>",
+ *     version="2.0.0"
+ * )
+ */
 class API
 {
     private static $module;     // request module

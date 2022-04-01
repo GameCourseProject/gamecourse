@@ -114,12 +114,12 @@ class Utils
      *  - from relative to absolute
      *
      * @example absolute -> relative
-     *  URL: http://localhost/gamecourse/backend/course_data/<courseFolder>/skills/<skillName>/<filename>
+     *  URL: http://localhost/gamecourse/api/course_data/<courseFolder>/skills/<skillName>/<filename>
      *  NEW URL: skills/<skillName>/<filename>
      *
      * @example relative -> absolute
      *  URL: skills/<skillName>/<filename>
-     *  NEW URL: http://localhost/gamecourse/backend/course_data/<courseFolder>/skills/<skillName>/<filename>
+     *  NEW URL: http://localhost/gamecourse/api/course_data/<courseFolder>/skills/<skillName>/<filename>
      *
      * @param string $url
      * @param string $to (absolute | relative)

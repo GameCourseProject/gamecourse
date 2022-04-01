@@ -1,8 +1,9 @@
 {
   "require": {
-    "php": "=7.3",
+    "php": "=7.3.9",
     "ext-pdo": "*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "zircote/swagger-php": "^4.2"
   },
   "autoload": {
     "psr-4": {
