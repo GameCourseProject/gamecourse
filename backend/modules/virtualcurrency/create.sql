@@ -6,6 +6,7 @@ create table virtual_currency_config(
     attemptRating int not null,
     costFormula varchar(70) not null,
     incrementCost int not null,
+    tokensToXPRatio int not null,
     foreign key(course) references course(id) on delete cascade
 );
 
@@ -31,7 +32,18 @@ create table remove_tokens_participation(
     foreign key(participation) references participation(id) on delete cascade,
 );
 
-create table tokens_to_award(
+create table virtual_currency_to_award(
+    id int unsigned auto_increment primary key,
+    name varchar(70) not null,
+    course int unsigned not null,
+    description  varchar(200) not null,
+    type  varchar(200) not null,
+    tokens int not null,
+    isActive boolean not null default true,
+    foreign key(course) references course(id) on delete cascade
+);
+
+create table virtual_currency_to_remove(
     id int unsigned auto_increment primary key,
     name varchar(70) not null,
     course int unsigned not null,

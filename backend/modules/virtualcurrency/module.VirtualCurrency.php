@@ -148,6 +148,7 @@ class VirtualCurrency extends Module
                 [
                     "name" => "",
                     "course" => $courseId,
+                    "tokensToXPRatio" => "",
                     "skillCost" => DEFAULT_COST,
                     "wildcardCost" => DEFAULT_COST,
                     "attemptRating" => 0,
@@ -252,6 +253,7 @@ class VirtualCurrency extends Module
     {
         $input = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => "", 'current_val' => $this->getCurrencyName($courseId)),
+            array('name' => "Tokens to XP Ratio", 'id' => 'tokenstoxp', 'type' => "number", 'options' => "", 'current_val' => intval($this->getTokensToXP($courseId))),
             array('name' => "Skill Initial Cost", 'id' => 'skillcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getSkillCost($courseId))),
             array('name' => "Wildcard Initial Cost", 'id' => 'wildcardcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getWildcardCost($courseId))),
             array('name' => "Min. Rating for Attempt", 'id' => 'attemptrating', 'type' => "number", 'options' => "", 'current_val' => intval($this->getAttemptRating($courseId))),
@@ -282,6 +284,9 @@ class VirtualCurrency extends Module
 
         $incrementCost = $generalInputs["incrementcost"];
         $this->saveIncrementCost($incrementCost, $courseId);
+
+        $tokensToXPRatio = $generalInputs["tokenstoxp"];
+        $this->saveTokensToXP($tokensToXPRatio, $courseId);
 
     }
 
@@ -422,6 +427,18 @@ class VirtualCurrency extends Module
     {
         Core::$systemDB->update(self::TABLE_CONFIG, ["incrementCost" => $value], ["course" => $courseId]);
     }
+
+    public function getTokensToXP($courseId)
+    {
+        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "tokensToXPRatio");
+
+    }
+    public function saveTokensToXP($value, $courseId)
+    {
+        Core::$systemDB->update(self::TABLE_CONFIG, ["tokensToXPRatio" => $value], ["course" => $courseId]);
+    }
+
+
 
     public static function newAction($achievement, $courseId)
     {

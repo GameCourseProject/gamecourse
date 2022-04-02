@@ -1137,6 +1137,7 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     cnx.close()
     return
 
+
 def award_grade(target, item, contributions=None, extra=None):
     # -----------------------------------------------------------
     # Writes 'award' table with reward that is not a badge or a
