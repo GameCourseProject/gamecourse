@@ -105,6 +105,17 @@ class Utils
 
 
     /*** ---------------------------------------------------- ***/
+    /*** -------------------- Validations ------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    public static function validateEmail($email): bool
+    {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
+        return true;
+    }
+
+
+    /*** ---------------------------------------------------- ***/
     /*** --------------- String Manipulation ---------------- ***/
     /*** ---------------------------------------------------- ***/
 
@@ -152,10 +163,11 @@ class Utils
      * Detects the used separator for a .csv file.
      *
      * @param string $csvFile
-     * @return string
+     * @return string|null
      */
-    public static function detectSeparator(string $csvFile): string
+    public static function detectSeparator(string $csvFile): ?string
     {
+        if (empty($csvFile)) return null;
         $separators = [";" => 0, "," => 0, "\t" => 0, "|" => 0];
         $firstLine = array_filter(explode("\n", $csvFile), function ($line) { return !empty($line); })[0];
         foreach ($separators as $separator => &$count) {

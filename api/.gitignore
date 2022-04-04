@@ -30,6 +30,7 @@ yarn-error.log
 logs/
 config.php
 config.production.php
+/.phpunit.result.cache
 
 # System Files
 .DS_Store

@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\User;
 
+use Error;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use Utils\Utils;
@@ -12,7 +13,6 @@ use Utils\Utils;
 class User
 {
     const TABLE_USER = "game_course_user";
-    const TABLE_AUTH = "auth";
 
     const HEADERS = [   // headers for import/export functionality
         "name", "email", "major", "nickname", "studentNumber", "username", "authentication_service",
@@ -71,11 +71,13 @@ class User
         return $this->getData("authentication_service");
     }
 
-    public function getImage(): string
+    public function getImage(): ?string
     {
         // FIXME: add image column on database and allow other image file extensions
         //        the way it is now, all user images must have a very specific name and be PNG
-        return API_URL . "/photos/" . $this->getUsername() . ".png";
+        return file_exists(ROOT_PATH . "photos/" . $this->getUsername() . ".png") ?
+            API_URL . "/photos/" . $this->getUsername() . ".png" : null;
+
     }
 
     public function isAdmin(): bool
@@ -99,11 +101,17 @@ class User
      */
     public function getData(string $field = "*")
     {
-        $table = self::TABLE_USER . " u left join " . self::TABLE_AUTH . " a on a.game_course_user_id=u.id";
+        $table = self::TABLE_USER . " u left join " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id";
         $where = ["u.id" => $this->id];
         if ($field == "*") $fields = "u.*, a.username, a.authentication_service";
-        else $fields = $field;
-        return Core::database()->select($table, $where, $fields);
+        else $fields = str_replace("id", "u.id", $field);
+        $res = Core::database()->select($table, $where, $fields);
+
+        if (isset($res["id"])) $res["id"] = intval($res["id"]);
+        if (isset($res["studentNumber"])) $res["studentNumber"] = intval($res["studentNumber"]);
+        if (isset($res["isAdmin"])) $res["isAdmin"] = boolval($res["isAdmin"]);
+        if (isset($res["isActive"])) $res["isActive"] = boolval($res["isActive"]);
+        return $res;
     }
 
 
@@ -113,11 +121,13 @@ class User
 
     public function setName(string $name)
     {
+        self::validateName($name);
         $this->setData(["name" => $name]);
     }
 
     public function setEmail(string $email)
     {
+        self::validateEmail($email);
         $this->setData(["email" => $email]);
     }
 
@@ -143,12 +153,13 @@ class User
 
     public function setAuthService(string $authService)
     {
+        self::validateAuthService($authService);
         $this->setData(["authentication_service" => $authService]);
     }
 
     public function setImage(string $base64, string $name, string $extension)
     {
-        $img = base64_decode($base64);
+        $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $base64));
         file_put_contents(ROOT_PATH . "photos/" . $name . "." . $extension, $img);
     }
 
@@ -173,16 +184,20 @@ class User
     public function setData(array $fieldValues)
     {
         $authValues = []; // values that need to go to 'auth' table
-        if (isset($fieldValues["username"])) {
+        if (key_exists("username", $fieldValues)) {
             $authValues["username"] = $fieldValues["username"];
             unset($fieldValues["username"]);
         }
-        if (isset($fieldValues["authentication_service"])) {
+        if (key_exists("authentication_service", $fieldValues)) {
+            self::validateAuthService($fieldValues["authentication_service"]);
             $authValues["authentication_service"] = $fieldValues["authentication_service"];
             unset($fieldValues["authentication_service"]);
         }
 
-        if (count($authValues) != 0) Core::database()->update(self::TABLE_AUTH, $authValues, ["game_course_user_id" => $this->id]);
+        if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
+        if (key_exists("email", $fieldValues)) self::validateEmail($fieldValues["email"]);
+
+        if (count($authValues) != 0) Core::database()->update(Auth::TABLE_AUTH, $authValues, ["game_course_user_id" => $this->id]);
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_USER, $fieldValues, ["id" => $this->id]);
     }
 
@@ -200,7 +215,7 @@ class User
 
     public static function getUserByUsername(string $username): ?User
     {
-        $userId = intval(Core::database()->select(self::TABLE_AUTH, ["username" => $username], "game_course_user_id"));
+        $userId = intval(Core::database()->select(Auth::TABLE_AUTH, ["username" => $username], "game_course_user_id"));
         if ($userId == null) return null;
         else return new User($userId);
     }
@@ -222,7 +237,7 @@ class User
     public static function getAllUsers(): array
     {
         return Core::database()->selectMultiple(
-            self::TABLE_USER . " u join " . self::TABLE_AUTH . " a on u.id = a.id",
+            self::TABLE_USER . " u join " . Auth::TABLE_AUTH . " a on u.id = a.id",
             [],
             "u.*, a.username, a.authentication_service"
         );
@@ -231,7 +246,7 @@ class User
     public static function getAdmins(): array
     {
         return Core::database()->selectMultiple(
-            self::TABLE_USER . " u join " . self::TABLE_AUTH . " a on u.id = a.id",
+            self::TABLE_USER . " u join " . Auth::TABLE_AUTH . " a on u.id = a.id",
             ["isAdmin" => true],
             "u.*, a.username, a.authentication_service"
         );
@@ -262,15 +277,16 @@ class User
      * @param string $authService
      * @param string $email
      * @param int $studentNumber
-     * @param string $nickname
+     * @param string|null $nickname
      * @param string $major
      * @param bool $isAdmin
      * @param bool $isActive
      * @return User
      */
     public static function addUser(string $name, string $username, string $authService, string $email, int $studentNumber,
-                                   string $nickname, string $major, bool $isAdmin, bool $isActive): User
+                                   ?string $nickname, string $major, bool $isAdmin, bool $isActive): User
     {
+        self::validateUser($name, $authService, $email, $isAdmin, $isActive);
         $id = Core::database()->insert(self::TABLE_USER, [
             "name" => $name,
             "email" => $email,
@@ -280,7 +296,7 @@ class User
             "isAdmin" => +$isAdmin,
             "isActive" => +$isActive
         ]);
-        Core::database()->insert(self::TABLE_AUTH, [
+        Core::database()->insert(Auth::TABLE_AUTH, [
             "game_course_user_id" => $id,
             "username" => $username,
             "authentication_service" => $authService
@@ -297,15 +313,16 @@ class User
      * @param string $authService
      * @param string $email
      * @param int $studentNumber
-     * @param string $nickname
+     * @param string|null $nickname
      * @param string $major
      * @param bool $isAdmin
      * @param bool $isActive
      * @return User
      */
     public function editUser(string $name, string $username, string $authService, string $email, int $studentNumber,
-                             string $nickname, string $major, bool $isAdmin, bool $isActive): User
+                             ?string $nickname, string $major, bool $isAdmin, bool $isActive): User
     {
+        self::validateUser($name, $authService, $email, $isAdmin, $isActive);
         Core::database()->update(self::TABLE_USER, [
             "name" => $name,
             "email" => $email,
@@ -315,7 +332,7 @@ class User
             "isAdmin" => +$isAdmin,
             "isActive" => +$isActive
         ], ["id" => $this->id]);
-        Core::database()->update(self::TABLE_AUTH, [
+        Core::database()->update(Auth::TABLE_AUTH, [
             "username" => $username,
             "authentication_service" => $authService
         ], ["game_course_user_id" => $this->id]);
@@ -330,7 +347,7 @@ class User
      */
     public static function deleteUser(int $userId) {
         Core::database()->delete(self::TABLE_USER, ["id" => $userId]);
-        Core::database()->delete(self::TABLE_AUTH, ["game_course_user_id" => $userId]);
+        Core::database()->delete(Auth::TABLE_AUTH, ["game_course_user_id" => $userId]);
     }
 
     /**
@@ -350,8 +367,6 @@ class User
 
     /**
      * Imports users into the system from a .csv file.
-     * Encodes file to UTF-8 for accented/special characters to work.
-     *
      * Returns the nr. of users imported.
      *
      * @param string $file
@@ -360,10 +375,8 @@ class User
      */
     public static function importUsers(string $file, bool $replace = true): int
     {
-        // UTF-8 encoding
-        $file = utf8_encode($file);
-
         $nrUsersImported = 0;
+        if (empty($file)) return $nrUsersImported;
         $separator = Utils::detectSeparator($file);
 
         // NOTE: this order must match the order in the file
@@ -383,7 +396,7 @@ class User
         $lines = array_filter(explode("\n", $file), function ($line) { return !empty($line); });
 
         if (count($lines) > 0) {
-            // Check whether 1st line holds headers and ignores them
+            // Check whether 1st line holds headers and ignore them
             $firstLine = array_map('trim', explode($separator, trim($lines[0])));
             if (in_array($headers[0], $firstLine)) array_shift($lines);
 
@@ -401,7 +414,7 @@ class User
                 $isAdmin = $user[$isAdminIndex];
                 $isActive = $user[$isActiveIndex];
 
-                $authId = intval(Core::database()->select(self::TABLE_AUTH, ["username"=> $username, "authentication_service"=> $authService], "id"));
+                $authId = intval(Core::database()->select(Auth::TABLE_AUTH, ["username"=> $username, "authentication_service"=> $authService], "id"));
                 $userId = intval(Core::database()->select(self::TABLE_USER, ["studentNumber"=> $studentNumber], "id"));
                 if ($userId || $authId) {  // user already exists
                     if ($replace) {  // replace
@@ -442,5 +455,44 @@ class User
             if ($i != $len - 1) $file .= "\n";
         }
         return $file;
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------- Validations -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Validates user parameters.
+     *
+     * @param $name
+     * @param $authService
+     * @param $email
+     * @param $isAdmin
+     * @param $isActive
+     * @return void
+     */
+    private static function validateUser($name, $authService, $email, $isAdmin, $isActive)
+    {
+        self::validateName($name);
+        self::validateAuthService($authService);
+        self::validateEmail($email);
+        if (!is_bool($isAdmin)) throw new Error("isAdmin must be either true or false.");
+        if (!is_bool($isActive)) throw new Error("$isActive must be either true or false.");
+    }
+
+    private static function validateName($name)
+    {
+        if (!is_string($name) || empty($name)) throw new Error("User name can't be null neither empty.");
+    }
+
+    private static function validateAuthService($authService)
+    {
+        if (!is_string($authService) || !Auth::exists($authService)) throw new Error("Authentication service '" . $authService . "' is not available.");
+    }
+
+    private static function validateEmail($email)
+    {
+        if (!is_string($email) || !Utils::validateEmail($email)) throw new Error("E-mail '" . $email . "' is invalid.");
     }
 }

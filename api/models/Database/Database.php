@@ -370,4 +370,15 @@ class Database
     {
         $this->executeQuery("SET FOREIGN_KEY_CHECKS=" . ($status ? 1 : 0) .";");
     }
+
+    /**
+     * Resets auto increment to 1.
+     *
+     * @param string $table
+     * @return void
+     */
+    public function resetAutoIncrement(string $table)
+    {
+        $this->executeQuery("ALTER TABLE " . $table . " AUTO_INCREMENT = 1");
+    }
 }
