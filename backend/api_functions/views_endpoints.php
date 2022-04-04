@@ -73,8 +73,10 @@ API::registerFunction($MODULE, 'renderPage', function () {
 
     // If module profiling is enabled, save user page history
     if (Core::$systemDB->select("course_module", ["course" => $courseId, "moduleId" => Profiling::ID], "isEnabled")) {
-        $viewer = API::getValue('viewerId');
-        Core::$systemDB->insert("user_page_history", ["user" => $viewer, "page" => $pageId]);
+        $viewerId = API::getValue('viewerId');
+        $userId = null;
+        if ($page["roleType"] === "ROLE_INTERACTION") $userId = API::getValue('userId');
+        Core::$systemDB->insert("user_page_history", ["course" => $courseId, "page" => $pageId, "viewer" => $viewerId, "user" => $userId]);
     }
 
     API::response(['view' => Views::renderPage($courseId, $pageId, $userId ?? null)]);

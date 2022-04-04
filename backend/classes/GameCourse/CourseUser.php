@@ -302,16 +302,19 @@ class CourseUser extends User
     {
         $userRoles = $this->getRolesNames(); //array w names
         $landingPageId = null;
-        $this->course->goThroughRoles(function ($role, $hasChildren, $continue) use (&$landingPageId, $userRoles) {
+        $landingPageRoleType = null;
+        $this->course->goThroughRoles(function ($role, $hasChildren, $continue) use (&$landingPageId, &$landingPageRoleType, $userRoles) {
             if (in_array($role["name"], $userRoles)) {
                 $land = $this->course->getRoleByName($role["name"], "landingPage");
                 if ($land != null) {
                     $landingPageId = intval($land);
+                    $landingPageRoleType = Core::$systemDB->select("page p join view_template vt on p.viewId=vt.viewId join template t on vt.templateId=t.id",
+                        ["p.id" => $land], "t.roleType");
                 }
             }
             $continue();
         });
-        return $landingPageId;
+        return ["id" => $landingPageId, "roleType" => $landingPageRoleType];
     }
 
     public static function exportCourseUsers($courseId)
