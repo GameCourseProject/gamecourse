@@ -21,7 +21,7 @@ import {Moment} from "moment/moment";
 import {Role} from "../../_domain/roles/role";
 import {Page} from "../../_domain/pages & templates/page";
 import {Template} from "../../_domain/pages & templates/template";
-import {RoleType} from "../../_domain/roles/role-type";
+import {RoleType, RoleTypeId} from "../../_domain/roles/role-type";
 import {View} from "../../_domain/views/view";
 import {buildView} from "../../_domain/views/build-view/build-view";
 import {dateFromDatabase, exists, objectMap} from "../../_utils/misc/misc";
@@ -1517,7 +1517,7 @@ export class ApiHttpService {
       ) );
   }
 
-  public getUserActiveCourses(): Observable<{courses: Course[], landingPages: {[courseId: string]: number}}> {
+  public getUserActiveCourses(): Observable<{courses: Course[], landingPages: {[courseId: string]: {id: number, roleType: RoleTypeId}}}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.USER);
       qs.push('request', 'getLoggedUserActiveCourses');
@@ -1548,7 +1548,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => (res['data']['users']).map(obj => User.fromDatabase(obj))) );
   }
 
-  public getUserCourses(): Observable<{courses: Course[], landingPages: {[courseID: string]: number}}> {
+  public getUserCourses(): Observable<{courses: Course[], landingPages: {[courseID: string]: {id: number, roleType: RoleTypeId}}}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.USER);
       qs.push('request', 'getUserCourses');

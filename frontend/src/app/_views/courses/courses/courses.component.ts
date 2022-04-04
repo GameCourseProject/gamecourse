@@ -15,6 +15,7 @@ import Pickr from "@simonwep/pickr";
 import _ from 'lodash';
 import {exists} from "../../../_utils/misc/misc";
 import {finalize} from "rxjs/operators";
+import {RoleTypeId} from "../../../_domain/roles/role-type";
 
 @Component({
   selector: 'app-main',
@@ -30,7 +31,7 @@ export class CoursesComponent implements OnInit {
   user: User;
 
   allCourses: Course[];
-  redirectPages: {[courseID: string]: number}; // courseID -> pageId
+  redirectPages: {[courseID: string]: {id: number, roleType: RoleTypeId}}; // courseID -> {pageId, roleType}
 
   reduce = new Reduce();
   order = new Order();
@@ -400,9 +401,14 @@ export class CoursesComponent implements OnInit {
   }
 
   getRedirectLink(courseID: number): string {
-    const link = '/courses/' + courseID;
-    const pageID = this.redirectPages[courseID.toString()];
-    if (pageID) return link + '/pages/' + pageID;
+    let link = '/courses/' + courseID;
+    const page = this.redirectPages[courseID.toString()];
+    if (page.id) {
+      link += '/pages/' + page.id;
+      if (page.roleType === RoleTypeId.ROLE_INTERACTION)
+        return link + '/user/' + this.user.id;
+      return link;
+    }
     else return link;
   }
 
