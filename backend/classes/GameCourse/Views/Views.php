@@ -27,7 +27,9 @@ class Views
      */
     public static function getPage(int $courseId, int $pageId)
     {
-        return Core::$systemDB->select("page", ["id" => $pageId, "course" => $courseId]);
+        $page = Core::$systemDB->select("page", ["id" => $pageId, "course" => $courseId]);
+        $page["roleType"] = Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $page["viewId"]])["roleType"];
+        return $page;
     }
 
     /**

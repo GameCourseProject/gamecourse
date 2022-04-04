@@ -7,6 +7,8 @@ export class Course {
   private _short: string;
   private _color: string;
   private _year: string;
+  private _startDate: Moment;
+  private _endDate: Moment;
   private _defaultLandingPage: string;
   private _lastUpdate: Moment;
   private _isActive: boolean;
@@ -16,15 +18,17 @@ export class Course {
   private _folder: string;
   private _nrStudents?: number;
 
-  constructor(id: number, name: string, short: string, color: string, year: string, defaultLandingPage: string,
-              lastUpdate: Moment, isActive: boolean, isVisible: boolean, roleHierarchy: string, theme: string,
-              folder: string, nrStudents?: number) {
+  constructor(id: number, name: string, short: string, color: string, year: string, startDate: Moment, endDate: Moment,
+              defaultLandingPage: string, lastUpdate: Moment, isActive: boolean, isVisible: boolean, roleHierarchy: string,
+              theme: string, folder: string, nrStudents?: number) {
 
     this._id = id;
     this._name = name;
     this._short = short;
     this._color = color;
     this._year = year;
+    this._startDate = startDate;
+    this._endDate = endDate;
     this._defaultLandingPage = defaultLandingPage;
     this._lastUpdate = lastUpdate;
     this._isActive = isActive;
@@ -73,6 +77,22 @@ export class Course {
 
   set year(value: string) {
     this._year = value;
+  }
+
+  get startDate(): Moment {
+    return this._startDate;
+  }
+
+  set startDate(value: Moment) {
+    this._startDate = value;
+  }
+
+  get endDate(): Moment {
+    return this._endDate;
+  }
+
+  set endDate(value: Moment) {
+    this._endDate = value;
   }
 
   get defaultLandingPage(): string {
@@ -146,6 +166,8 @@ export class Course {
       obj.short,
       obj.color,
       obj.year,
+      dateFromDatabase(obj.startDate),
+      dateFromDatabase(obj.endDate),
       obj.defaultLandingPage,
       dateFromDatabase(obj.lastUpdate),
       !!parseInt(obj.isActive),
@@ -164,6 +186,8 @@ export interface CourseDatabase {
   "short": string,
   "color": string,
   "year": string,
+  "startDate": string,
+  "endDate": string,
   "defaultLandingPage": string,
   "lastUpdate": string,
   "isActive": string,

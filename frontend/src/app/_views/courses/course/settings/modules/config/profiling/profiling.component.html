@@ -55,6 +55,8 @@
 
     <!-- Results -->
     <div id="results">
+
+      <!-- Committed results -->
       <p><b>Profiling Results:</b></p>
       <div style="margin-top: 30px;">
         <app-datatable
@@ -64,6 +66,30 @@
           [loading]="table.loading">
         </app-datatable>
       </div>
+
+      <!-- Editable results -->
+      <ng-container *ngIf="clusters">
+        <p><b>Newest Profiling:</b></p>
+        <div class="data-table">
+          <table>
+            <thead>
+            <th>Student</th>
+            <th>{{lastRun}}</th>
+            </thead>
+
+            <tbody>
+            <tr *ngFor="let result of getEditableResults()">
+              <td>{{result.name}}</td>
+              <td class="modal_content">
+                <select id="roles" class="form__input" [(ngModel)]="result.cluster">
+                  <option *ngFor="let cluster of clusterNames" [ngValue]="cluster.name">{{cluster.name}}</option>
+                </select>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
     </div>
 
     <div class="action-buttons">

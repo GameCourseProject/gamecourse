@@ -103,10 +103,12 @@ class Course
     /*** ------------ Course Manipulation ------------ ***/
     /*** --------------------------------------------- ***/
 
-    public static function newCourse($courseName, $courseShort, $courseYear, $courseColor, $courseIsVisible, $courseIsActive, $copyFrom = null)
+    public static function newCourse($courseName, $courseShort, $courseYear, $courseColor, $courseStartDate, $courseEndDate, $courseIsVisible, $courseIsActive, $copyFrom = null)
     {
+        if ($courseStartDate != null) $courseStartDate = $courseStartDate . ' 00:00:00';
+        if ($courseEndDate != null) $courseEndDate = $courseEndDate . ' 00:00:00';
 
-        Core::$systemDB->insert("course", ["name" => $courseName, "short" => $courseShort, "year" => $courseYear, "color" => $courseColor, "isActive" => $courseIsActive, "isVisible" => $courseIsVisible]); //adicionar campos extra aqui
+        Core::$systemDB->insert("course", ["name" => $courseName, "short" => $courseShort, "year" => $courseYear, "color" => $courseColor, "startDate"=> $courseStartDate, "endDate"=> $courseEndDate, "isActive" => $courseIsActive, "isVisible" => $courseIsVisible]); //adicionar campos extra aqui
         $courseId = Core::$systemDB->getLastId();
         $course = new Course($courseId);
         static::$courses[$courseId] = $course;
@@ -221,7 +223,7 @@ class Course
         return $course;
     }
 
-    public function editCourse($courseName, $courseShort, $courseYear, $courseColor, $courseIsVisible, $courseIsActive)
+    public function editCourse($courseName, $courseShort, $courseYear, $courseColor, $courseStartDate, $courseEndDate, $courseIsVisible, $courseIsActive)
     {
         $oldName = $this->getData("name");
         if (strcmp($oldName, $courseName) !== 0) {
@@ -232,6 +234,8 @@ class Course
         $this->setData("short", $courseShort);
         $this->setData("year", $courseYear);
         $this->setData("color", $courseColor);
+        $this->setData("startDate", ($courseStartDate . " 00:00:00"));
+        $this->setData("endDate", ($courseEndDate . " 00:00:00"));
         $this->setActiveState($courseIsActive);
         $this->setVisibleState($courseIsVisible);
     }
@@ -271,7 +275,7 @@ class Course
 
         foreach ($fileData as $course) {
             if (!Core::$systemDB->select("course", ["name" => $course->name, "year" => $course->year])) {
-                $courseObj = Course::newCourse($course->name, $course->short, $course->year, $course->color, $course->isVisible, $course->isActive);
+                $courseObj = Course::newCourse($course->name, $course->short, $course->year, $course->color, null, null, $course->isVisible, $course->isActive);
                 $newCourse++;
 
                 //data folder

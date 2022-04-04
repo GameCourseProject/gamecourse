@@ -1,0 +1,55 @@
+.skills-overview {
+    border: 2px solid #d9d9d9;
+    border-radius: 5px;
+    padding: 20px 20px 0;
+}
+
+.skills-overview .skill-tree .tier {
+    margin-bottom: 10px;
+    border-top: 2px solid #e6e6e6;
+    padding-top: 15px;
+}
+
+.skills-overview .skill-tree .tier .tier-title {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.skills-overview .skill-tree .tier .skill {
+    margin-bottom: 20px;
+}
+
+.skills-overview .skill-tree .tier .skill .skill-title > * {
+    flex-direction: row !important;
+    align-items: center;
+}
+
+.skills-overview .skill-tree .tier .skill .skill-title .skill-title-square {
+    width: 30px;
+    height: 30px;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.skills-overview .skill-tree .tier .skill .skill-title .skill-title-text {
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.skills-overview .skill-tree .tier .skill .skill-students {
+    margin-top: 10px;
+}
+
+.skills-overview .skill-tree .tier .skill .skill-students > * {
+    flex-direction: row !important;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.skills-overview .skill-tree .tier .skill .skill-students .skill-student {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    margin-right: 5px;
+}

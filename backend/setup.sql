@@ -26,7 +26,6 @@ DROP TABLE IF EXISTS badge_progression;
 DROP TABLE IF EXISTS classcheck_config;
 DROP TABLE IF EXISTS googlesheets_config;
 DROP TABLE IF EXISTS moodle_config;
-DROP TABLE IF EXISTS config_qr;
 
 DROP TABLE IF EXISTS course;
 DROP TABLE IF EXISTS course_module;
@@ -93,7 +92,7 @@ DROP TABLE IF EXISTS view_template;
 CREATE TABLE game_course_user(
 	id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
     name 	                    varchar(50) NOT NULL,
-    email 	                    varchar(255),
+    email 	                    varchar(255) UNIQUE,
 	major 	                    varchar(8),
 	nickname                    varchar(50),
 	studentNumber               int UNIQUE,
@@ -104,7 +103,7 @@ CREATE TABLE game_course_user(
 CREATE TABLE auth(
 	id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
 	game_course_user_id         int unsigned NOT NULL,
-	username                    varchar(50),
+	username                    varchar(50) UNIQUE,
 	authentication_service      ENUM ('fenix', 'google', 'facebook', 'linkedin'),
 
 	UNIQUE key(username, authentication_service),
@@ -117,6 +116,8 @@ CREATE TABLE course(
 	short	                    varchar(20),
 	color	                    varchar(7),
 	year	                    varchar(10),
+	startDate                   TIMESTAMP NULL DEFAULT NULL,
+	endDate                     TIMESTAMP NULL DEFAULT NULL,
     defaultLandingPage          varchar(100) DEFAULT '',
 	lastUpdate                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	isActive                    boolean DEFAULT TRUE,
@@ -383,15 +384,15 @@ CREATE TABLE autogame(
 	startedRunning              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	finishedRunning             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	isRunning                   boolean DEFAULT FALSE,
-    periodicityNumber           int DEFAULT 10,
-    periodicityTime             varchar(25) DEFAULT 'Minutes',
+    periodicityNumber           int NULL DEFAULT 10,
+    periodicityTime             varchar(25) NULL DEFAULT 'Minutes',
 
 	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
 
 SET FOREIGN_KEY_CHECKS=0;
-INSERT INTO autogame (course, isRunning) values (0, FALSE);
+INSERT INTO autogame (course, periodicityNumber, periodicityTime) values (0, NULL, NULL);
 SET FOREIGN_KEY_CHECKS=1;
 
 

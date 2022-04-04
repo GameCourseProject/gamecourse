@@ -20,6 +20,9 @@
         <div class="icon export_icon" title="Export all" (click)="exportUsers()"></div>
       </div>
 
+      <!-- List size -->
+      <span style="position: absolute; left: 70px; top: 40px">Size: <span>{{reduce.items.length}}</span> user{{reduce.items.length > 1 ? 's' : ''}}</span>
+
       <!-- Courses Table -->
       <div id="allUsers">
         <div class="data-table">

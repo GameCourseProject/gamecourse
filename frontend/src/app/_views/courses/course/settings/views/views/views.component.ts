@@ -305,7 +305,7 @@ export class ViewsComponent implements OnInit {
   }
 
   getEmptyPage(): Page {
-    return new Page(null, null, null, null, null, null, null);
+    return new Page(null, null, null, null, null, null, null, null);
   }
 
   getEmptyTemplate(): Template {

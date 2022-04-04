@@ -321,7 +321,7 @@ class Skills extends Module
             function ($arg) {
                 $tierName = $arg["value"]["tier"];
                 $course = $arg["value"]["parent"]["value"]["course"];
-                return new ValueNode($this->tierHasWildcards($tierName,  $course));
+                return new ValueNode($this->tierHasWildcards($tierName, $course));
             },
             'Returns a bool that indicates if a tier has wildcards (i.e. if other skills depend on this tier).',
             'boolean',
@@ -712,8 +712,8 @@ class Skills extends Module
         if (!Views::templateExists($courseId, self::SKILL_TREE_TEMPLATE))
             Views::createTemplateFromFile(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'), $courseId, self::ID);
 
-//        if (!Views::templateExists($courseId, self::SKILLS_OVERVIEW_TEMPLATE)) // FIXME: needs refactor
-//            Views::createTemplateFromFile(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skillsOverview.txt'), $courseId, self::ID);
+        if (!Views::templateExists($courseId, self::SKILLS_OVERVIEW_TEMPLATE))
+            Views::createTemplateFromFile(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skillsOverview.txt'), $courseId, self::ID);
     }
 
     public function initAPIEndpoints()
@@ -874,6 +874,7 @@ class Skills extends Module
     public function setupResources()
     {
         parent::addResources('css/skills.css');
+        parent::addResources('css/skills-overview.css');
         parent::addResources('imgs');
     }
 
@@ -1276,8 +1277,8 @@ class Skills extends Module
     public function tierHasWildcards($tier, int $courseId): bool
     {
         $tierSkills = Core::$systemDB->selectMultiple(
-            self::TABLE_DEPENDENCIES . " d left join " . self::TABLE_TIERS . " t on d.normalSkillId = t.id left join " . self::TABLE_TREES . " s on t.treeId=s.id",
-            ["course" => $courseId, "t.tier" => $tier, "d.isTier" => true],
+            self::TABLE_DEPENDENCIES . " d left join " . self::TABLE . " s on d.normalSkillId=s.id left join " . self::TABLE_TREES . " t on s.treeId=t.id",
+            ["course" => $courseId, "s.tier" => $tier, "d.isTier" => true],
             "count(*) as numWild"
         );
 
@@ -1673,9 +1674,10 @@ class Skills extends Module
     private function skillCompletedBy($skill, $courseId)
     {
         $students = Core::$systemDB->selectMultiple(
-            AwardList::TABLE . " a left join game_course_user u on a.user = u.id left join course_user c on u.id = c.id",
-            ["a.course" => $courseId, "type" => "skill", "moduleInstance" => $skill],
-            "u.id, a.course, lastActivity, previousActivity, name, email, major, nickname, studentNumber, isAdmin, isActive"
+            "course_user cu left join game_course_user u on cu.id=u.id left join " . AwardList::TABLE . " a on a.user=cu.id",
+            ["a.course" => $courseId, "cu.course" => $courseId, "type" => "skill", "moduleInstance" => $skill],
+            "u.id, a.course, lastActivity, previousActivity, name, email, major, nickname, studentNumber, isAdmin, cu.isActive",
+            "a.date"
         );
         return $students;
     }

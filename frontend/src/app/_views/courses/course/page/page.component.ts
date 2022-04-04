@@ -81,7 +81,7 @@ export class PageComponent implements OnInit {
     this.pageView = null; // NOTE: Important - Forces view to completely refresh
     this.api.getLoggedUser()
       .subscribe(user => {
-        this.api.renderPage(this.courseID, this.pageID, this.userID || user.id)
+        this.api.renderPage(this.courseID, this.pageID, user.id, this.userID)
           .pipe(finalize(() => this.loading = false))
           .subscribe(
             view => this.pageView = view,

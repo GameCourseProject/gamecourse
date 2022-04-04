@@ -88,6 +88,11 @@ class Charts extends Module
 
                 } else if (in_array("Regular_halfheartedlike", $userRoles)) { // compare with other Regular students
                     $students = $course->getUsersWithRole('Regular', true);
+                    if (empty($students))
+                        $students = array_merge(
+                            $course->getUsersWithRole("Regular_achieverlike"),
+                            $course->getUsersWithRole("Regular_halfheartedlike"),
+                        );
 
                 } else { // compare with all students
                     $students = $course->getUsersWithRole('Student', true);
@@ -126,8 +131,8 @@ class Charts extends Module
             $courseId = $params['course'];
 
             date_default_timezone_set('Europe/Lisbon');
-            $baseLine = (new DateTime('2022-03-07')); // FIXME: course start date should be configurable
-            $daysPassed = $baseLine->diff(new DateTime())->days;
+            $baseLine = (new DateTime(Core::$systemDB->select("course", ["id" => $courseId], "startDate")));
+            $daysPassed = $baseLine->diff(min(new DateTime(), new DateTime(Core::$systemDB->select("course", ["id" => $courseId], "endDate"))))->days;
 
             $awards = Core::$systemDB->selectMultiple(AwardList::TABLE, ["user" => $userID, "course" => $courseId], "*" , "date");
             $awards = array_filter($awards, function ($award) { return $award["type"] != "tokens"; });
@@ -185,8 +190,8 @@ class Charts extends Module
             $students = $course->getUsersWithRole('Student', true);
 
             date_default_timezone_set('Europe/Lisbon');
-            $baseLine = (new DateTime('2022-03-07')); // FIXME: course start date should be configurable
-            $daysPassed = $baseLine->diff(new DateTime())->days;
+            $baseLine = (new DateTime(Core::$systemDB->select("course", ["id" => $courseId], "startDate")));
+            $daysPassed = $baseLine->diff(min(new DateTime(), new DateTime(Core::$systemDB->select("course", ["id" => $courseId], "endDate"))))->days;
 
             $positionPerDay = [];
             $day = 0;
@@ -293,6 +298,11 @@ class Charts extends Module
 
             } else if (in_array("Regular_halfheartedlike", $userRoles)) { // compare with other Regular students
                 $students = $course->getUsersWithRole('Regular', true);
+                if (empty($students))
+                    $students = array_merge(
+                        $course->getUsersWithRole("Regular_achieverlike"),
+                        $course->getUsersWithRole("Regular_halfheartedlike"),
+                    );
 
             } else { // compare with all students
                 $students = $course->getUsersWithRole('Student', true);
@@ -359,6 +369,11 @@ class Charts extends Module
 
             } else if (in_array("Regular_halfheartedlike", $userRoles)) { // compare with other Regular students
                 $students = $course->getUsersWithRole('Regular', true);
+                if (empty($students))
+                    $students = array_merge(
+                        $course->getUsersWithRole("Regular_achieverlike"),
+                        $course->getUsersWithRole("Regular_halfheartedlike"),
+                    );
 
             } else { // compare with all students
                 $students = $course->getUsersWithRole('Student', true);

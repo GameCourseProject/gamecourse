@@ -251,6 +251,8 @@ export class ApiHttpService {
       courseShort: courseData.short,
       courseYear: courseData.year,
       courseColor: courseData.color,
+      courseStartDate: courseData.startDate,
+      courseEndDate: courseData.endDate,
       courseIsVisible: courseData.isVisible ? 1 : 0,
       courseIsActive: courseData.isActive ? 1 : 0,
     }
@@ -279,6 +281,8 @@ export class ApiHttpService {
       courseShort: courseData.short,
       courseYear: courseData.year,
       courseColor: courseData.color,
+      courseStartDate: courseData.startDate,
+      courseEndDate: courseData.endDate,
       courseIsVisible: courseData.isVisible ? 1 : 0,
       courseIsActive: courseData.isActive ? 1 : 0,
     }
@@ -1735,12 +1739,13 @@ export class ApiHttpService {
 
 
   // Pages
-  public renderPage(courseID: number, pageID: number,  userID: number = null): Observable<View> {
+  public renderPage(courseID: number, pageID: number,  viewerID: number, userID: number = null): Observable<View> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.VIEWS);
       qs.push('request', 'renderPage');
       qs.push('courseId', courseID);
       qs.push('pageId', pageID);
+      qs.push('viewerId', viewerID);
       if (exists(userID)) qs.push('userId', userID);
     };
 

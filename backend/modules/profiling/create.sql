@@ -1,23 +1,35 @@
 create table profiling_config(
-	lastRun timestamp NULL,
-	course int unsigned primary key,
-	foreign key(course) references course(id) on delete cascade
+	lastRun         TIMESTAMP NULL,
+	course          int unsigned PRIMARY KEY,
+
+	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
 create table user_profile(
-	user int unsigned not null,
-	course int unsigned not null,
-	date timestamp default CURRENT_TIMESTAMP,
-	cluster int unsigned not null,
-	primary key(user, date, cluster),
-	foreign key(cluster) references role(id) on delete cascade,
-	foreign key(user, course) references course_user(id, course) on delete cascade
+	user            int unsigned NOT NULL,
+	course          int unsigned NOT NULL,
+	date            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	cluster         int unsigned NOT NULL,
+
+    PRIMARY key(user, date, cluster),
+	FOREIGN key(cluster) REFERENCES role(id) ON DELETE CASCADE,
+	FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE
 );
 
 create table saved_user_profile(
-	user int unsigned not null,
-	course int unsigned not null,
-	cluster varchar(50) not null,
-	primary key(user, course),
-	foreign key(user, course) references course_user(id, course) on delete cascade
+	user            int unsigned NOT NULL,
+	course          int unsigned NOT NULL,
+	cluster         varchar(50) NOT NULL,
+	
+	PRIMARY key(user, course),
+	FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE
+);
+
+create table user_page_history(
+    user            int unsigned NOT NULL,
+    page            int unsigned NOT NULL,
+    timestamp       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN key(user) REFERENCES game_course_user(id) ON DELETE CASCADE,
+    FOREIGN key(page) REFERENCES page(id) ON DELETE CASCADE
 );

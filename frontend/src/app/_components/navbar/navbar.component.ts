@@ -160,8 +160,8 @@ export class NavbarComponent implements OnInit {
 
       this.hasTokensEnabled = await this.isVirtualCurrencyEnabled();
       if (this.hasTokensEnabled) {
-        this.tokens = await this.getUserTokens();
         this.isStudent = await this.isCourseStudent();
+        if (this.isStudent) this.tokens = await this.getUserTokens();
       }
 
       this.course = courseInfo.course;

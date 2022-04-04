@@ -1,17 +1,21 @@
+import {RoleTypeId} from "../roles/role-type";
+
 export class Page {
   private _id: number;
   private _name: string;
   private _courseId: number;
   private _viewId: number;
+  private _roleType: RoleTypeId;
   private _seqId: number;
   private _theme: string;
   private _isEnabled: boolean;
 
-  constructor(id: number, name: string, courseId: number, viewId: number, seqId: number, theme: string, isEnabled: boolean) {
+  constructor(id: number, name: string, courseId: number, viewId: number, roleType: RoleTypeId, seqId: number, theme: string, isEnabled: boolean) {
     this._id = id;
     this._name = name;
     this._courseId = courseId;
     this._viewId = viewId;
+    this._roleType = roleType;
     this._seqId = seqId;
     this._theme = theme;
     this._isEnabled = isEnabled;
@@ -49,6 +53,14 @@ export class Page {
     this._viewId = value;
   }
 
+  get roleType(): RoleTypeId {
+    return this._roleType;
+  }
+
+  set roleType(value: RoleTypeId) {
+    this._roleType = value;
+  }
+
   get seqId(): number {
     return this._seqId;
   }
@@ -79,6 +91,7 @@ export class Page {
       obj.name,
       parseInt(obj.course) || null,
       parseInt(obj.viewId) || null,
+      obj.roleType as RoleTypeId,
       parseInt(obj.seqId) || null,
       obj.theme,
       !!parseInt(obj.isEnabled)
@@ -91,6 +104,7 @@ interface PageDatabase {
   name: string;
   course?: string;
   viewId?: string;
+  roleType?: string;
   seqId?: string;
   theme?: string;
   isEnabled?: string;

@@ -116,8 +116,6 @@ class API {
 
     /**
      * Only allows access to admins and users of the course.
-     *
-     * @param int $courseId;
      */
     public static function requireCoursePermission() {
         API::requireValues('courseId');
@@ -130,8 +128,6 @@ class API {
 
     /**
      * Only allows access to admins and teachers of the course.
-     *
-     * @param int $courseId;
      */
     public static function requireCourseAdminPermission() {
         API::requireValues('courseId');

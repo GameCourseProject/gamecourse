@@ -393,15 +393,14 @@ class Profiling extends Module
         $hierarchy = json_decode(Core::$systemDB->select("course", ["id" => $courseId], "roleHierarchy"));
         $studentIndex = 0;
         $profilingIndex = 0;
-        $children = null;
+        $children = [];
         if($hierarchy){
             // get roles from hierarchy
             foreach ($hierarchy as $obj){
                 if($obj->name == "Student"){
                     foreach ($hierarchy[$studentIndex]->children as $child){
                         if($child->name == "Profiling"){
-                            if (isset($hierarchy[$studentIndex]->children[$profilingIndex]->children))
-                                $children = $hierarchy[$studentIndex]->children[$profilingIndex]->children;
+                            $this->traverse($child->children, $children);
                             break;
                         }
                         $profilingIndex++;
@@ -633,7 +632,7 @@ class Profiling extends Module
         else {
             $daysArray = [];
             foreach ($days as $day){
-                $records = Core::$systemDB->selectMultiple("(SELECT u.name as name, cu.id as id FROM course_user cu join game_course_user u on cu.id=u.id join user_role ur on ur.id=u.id join role r on ur.role = r.id where r.name = \"Student\" and cu.course =" . $courseId . " and cu.isActive=true) a left join (select p.user as user, r1.name as cluster from " . self::TABLE_USER_PROFILE . " p left join role r1 on p.cluster = r1.id where p.course = " . $courseId . " and r1.course = " . $courseId . " and date = \"" . $day["date"] . "\") b on a.id=b.user", [], "a.name, a.id, b.cluster");
+                $records = Core::$systemDB->selectMultiple("(SELECT u.name as name, cu.id as id FROM course_user cu join game_course_user u on cu.id=u.id join user_role ur on ur.id=u.id join role r on ur.role = r.id where r.name = \"Student\" and cu.course =" . $courseId . " and ur.course =" . $courseId . " and cu.isActive=true) a left join (select p.user as user, r1.name as cluster from " . self::TABLE_USER_PROFILE . " p left join role r1 on p.cluster = r1.id where p.course = " . $courseId . " and r1.course = " . $courseId . " and date = \"" . $day["date"] . "\") b on a.id=b.user", [], "a.name, a.id, b.cluster");
                 foreach ($records as $record){
                     $exploded =  explode(' ', $record["name"]);
                     $nickname = $exploded[0] . ' ' . end($exploded);
@@ -746,6 +745,14 @@ class Profiling extends Module
         }
         else{
             return array();
+        }
+    }
+
+    private function traverse($hierarchy, &$children) {
+        foreach ($hierarchy as $obj){
+            $children[] = $obj;          // Add own
+            if (isset($obj->children))   // If has children, add them
+                $this->traverse($obj->children, $children);
         }
     }
 }

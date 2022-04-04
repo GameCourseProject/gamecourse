@@ -29,7 +29,7 @@ class Overview extends Module
     }
 
     public function setupResources() {
-        parent::addResources('js/');
+        parent::addResources('css/overview.css');
     }
 
     public function update_module($compatibleVersions)

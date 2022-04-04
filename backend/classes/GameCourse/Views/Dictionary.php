@@ -331,6 +331,7 @@ class Dictionary
             self::evaluateKey($key, $collection, self::$courseId);
             $newCollectionVals = [];
             foreach ($collection["value"] as $item) {
+                if ($value == "NULL") $value = null;
                 if (self::evalCondition($item[$key], $value, $operation)) {
                     $newCollectionVals[] = $item;
                 }
@@ -878,6 +879,7 @@ class Dictionary
                         case 'streak':
                         case 'post':
                         case 'assignment':
+                        case 'exam':
                             return new ValueNode(MODULES_FOLDER . '/' . AwardList::ID . '/imgs/' . $award["value"]['type'] . '.svg');
 
                         default:
@@ -1202,13 +1204,14 @@ class Dictionary
             'participations',
             'getForumParticipations',
 
-            function (int $user, string $forum, string $thread = null) {
+            function (int $user, string $forum, string $thread = null, int $rating = null) {
                 $table = "participation";
 
                 if ($thread == null) {
                     # if the name of the thread is not relevant
                     # aka, if users are rewarded for creating posts + comments
                     $where = ["user" => $user, "type" => "graded post", "course" => self::$courseId];
+                    if ($rating != null) $where["rating"] = $rating;
                     $like = $forum . ",%";
                     $likeParams = ["description" => $like];
 
@@ -1217,6 +1220,7 @@ class Dictionary
                     # Name of thread is important for the badge
                     $like = $forum . ", Re: " . $thread . "%";
                     $where = ["user" => $user, "type" => "graded post", "course" => self::$courseId];
+                    if ($rating != null) $where["rating"] = $rating;
                     $likeParams = ["description" => $like];
                     $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
                 }
@@ -1661,6 +1665,7 @@ class Dictionary
                     'item' => Dictionary::createNode($object, $object["libraryOfVariable"])->getValue(),
                     'index' => $i
                 );
+                if (self::$userId) $viewParams['user'] = (string)self::$userId;
                 $visitor = new EvaluateVisitor($viewParams);
                 $value = $key->accept($visitor)->getValue();
 
