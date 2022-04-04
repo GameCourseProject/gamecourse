@@ -852,14 +852,14 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
 
     course = config.course
     typeof = "tokens"
+    
     if tokens != None:
         reward = int(tokens)
-    else:
-        query = "SELECT initialTokens from virtual_currency_config where course = %s;"
-        cursor.execute(query, (course))
+    else:                                      
+        query = "SELECT tokens FROM virtual_currency_to_award WHERE course = %s AND name = %s;"
+        cursor.execute(query, (course, reward_name))
         table_currency = cursor.fetchall()
         reward = table_currency[0][0]
-
 
     if config.test_mode:
         awards_table = "award_test"
@@ -936,7 +936,7 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
     return
 
 
-def award_tokens_type(target, type, tokens, element_name = None, contributions=None):
+def award_tokens_type(target, type, element_name, contributions):
     # -----------------------------------------------------------
     # To use after awarding users with a streak, skill, ...
     # Checks if type given was awarded and, if it was, updates
@@ -951,21 +951,25 @@ def award_tokens_type(target, type, tokens, element_name = None, contributions=N
 
     course = config.course
     typeof = "tokens"
-    reward = int(tokens)
+
+    if type == "streak"
+        query = "SELECT tokens FROM streak where course = %s AND name = %s;"
+        cursor.execute(query, (course, element_name))
+        table_reward = cursor.fetchall()
+        reward = int(table_reward[0][0])
+    else:
+        # Just for the time being.
+        # If skills, badges, ... are supposed to give tokens, add in here.
+        reward = 0
 
     if config.test_mode:
         awards_table = "award_test"
     else:
         awards_table = "award"
 
-    if element_name != None:
-        query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description LIKE %s AND type=%s;"
-        cursor.execute(query, (target, course, element_name + '%', type))
-        table_award = cursor.fetchall()
-    else:
-        query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND type=%s;"
-        cursor.execute(query, (target, course, type))
-        table_award = cursor.fetchall()
+    query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description LIKE %s AND type=%s;"
+    cursor.execute(query, (target, course, element_name + '%', type))
+    table_award = cursor.fetchall()
 
 
     if len(table_award) == 0: # No award was given

@@ -31,7 +31,7 @@ create table remove_tokens_participation(
     foreign key(user) references game_course_user(id) on delete cascade,
     foreign key(participation) references participation(id) on delete cascade,
 );
-
+                    /*
 create table virtual_currency_to_award(
     id int unsigned auto_increment primary key,
     name varchar(70) not null,
@@ -52,4 +52,4 @@ create table virtual_currency_to_remove(
     tokens int not null,
     isActive boolean not null default true,
     foreign key(course) references course(id) on delete cascade
-);
+);                        */

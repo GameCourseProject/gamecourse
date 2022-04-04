@@ -123,11 +123,11 @@ def award_tokens(target, reward_name, tokens=None, contributions=None):
 
 
 @rule_function
-def award_tokens_type(target, type, tokens, element_name=None, contributions=None):
+def award_tokens_type(target, type, element_name):
     """
     Awards tokens to students based on an award given.
     """
-    connector.award_tokens_type(target, type, tokens, element_name, contributions)
+    connector.award_tokens_type(target, type, element_name)
     return
 
 

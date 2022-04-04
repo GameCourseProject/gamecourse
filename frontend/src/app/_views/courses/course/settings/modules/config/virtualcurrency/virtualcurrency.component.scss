@@ -1,0 +1,67 @@
+.skills-section {
+  .divider .title:after {
+    width: calc(100% - 140px);
+  }
+}
+
+.inputs {
+  margin-bottom: 50px;
+}
+
+.action-buttons {
+  width: fit-content;
+  position: absolute;
+  top: -5px;
+  right: 0;
+}
+
+.skills-section .action-buttons {
+  width: 115px;
+}
+
+.row_inputs {
+  display: flex !important;
+  justify-content: space-between;
+}
+
+button.cancel {
+  position: absolute;
+  bottom: 0;
+  right: 80px;
+  background-color: tomato;
+}
+
+.color {
+  display: flex;
+
+  .color-sample {
+    margin-right: 8px;
+  }
+
+  .box {
+    border: none;
+    width: 20px;
+    height: 20px;
+    opacity: 1;
+  }
+}
+
+.notAllActive {
+  background-color: rgba(235, 57, 57, 0.562);
+
+  &:hover {
+    background-color: rgba(187, 49, 49, 0.562);
+  }
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 20px;
+}
+
+.block.skill {
+  margin-top: 10px;
+  padding: 5px;
+  word-break: break-word;
+}

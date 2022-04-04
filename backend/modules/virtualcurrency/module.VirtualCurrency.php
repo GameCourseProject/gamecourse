@@ -100,14 +100,93 @@ class VirtualCurrency extends Module
             true
         );
 
-        //virtualcurrency.wildcardCost
+        //virtualcurrency.attemptRating
         Dictionary::registerFunction(
             self::ID,
-            'wildcardCost',
+            'attemptRating',
             function () {
-                return new ValueNode(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $this->getCourseId()], "wildcardCost"));
+                return new ValueNode(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $this->getCourseId()], "attemptRating"));
             },
-            "Returns a string with the cost of a wildcard.",
+            "Returns a string with the minimum rating for a skill attempt to count.",
+            'object',
+            'virtualcurrency',
+            'library',
+            null,
+            true
+        );
+
+        //virtualcurrency.incrementCost
+        Dictionary::registerFunction(
+            self::ID,
+            'incrementCost',
+            function () {
+                return new ValueNode(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $this->getCourseId()], "incrementCost"));
+            },
+            "Returns a string with increment cost for skill retries.",
+            'object',
+            'virtualcurrency',
+            'library',
+            null,
+            true
+        );
+
+        //virtualcurrency.costFormula
+        Dictionary::registerFunction(
+            self::ID,
+            'costFormula',
+            function () {
+                return new ValueNode(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $this->getCourseId()], "costFormula"));
+            },
+            "Returns a string with increment formula.",
+            'object',
+            'virtualcurrency',
+            'library',
+            null,
+            true
+        );
+
+        //virtualcurrency.tokensToXPRatio
+        Dictionary::registerFunction(
+            self::ID,
+            'tokensToXPRatio',
+            function () {
+                return new ValueNode(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $this->getCourseId()], "tokensToXPRatio"));
+            },
+            "Returns a string with the ratio for exchanging tokens for xp.",
+            'object',
+            'virtualcurrency',
+            'library',
+            null,
+            true
+        );
+
+        //virtualcurrency.changeTokensForXP(user)
+        Dictionary::registerFunction(
+            self::ID,
+            'changeTokensForXP',
+            function ($user) {
+                $userId = $this->getUserId($user);
+                $currentTokens = $this->getUserTokens($userId);
+                $ratio = $this->getTokensToXP($this->getCourseId());
+                $converted = $currentTokens * $ratio;
+                return new ValueNode($converted);
+            },
+            "Returns the xp converted from the existing tokens.",
+            'integer',
+            'virtualcurrency',
+            'library',
+            null,
+            true
+        );
+
+        //virtualcurrency.skillCost
+        Dictionary::registerFunction(
+            self::ID,
+            'skillCost',
+            function () {
+                return new ValueNode(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $this->getCourseId()], "skillCost"));
+            },
+            "Returns a string with the retry cost of a skill.",
             'object',
             'virtualcurrency',
             'library',
@@ -328,7 +407,17 @@ class VirtualCurrency extends Module
         } elseif ($actiontype == 'delete') {
             $this->deleteAction($listingItem);
         }
-    }         
+    }
+
+    public function has_personalized_config(): bool
+    {
+        return true;
+    }
+
+    public function get_personalized_function(): string
+    {
+        return self::ID;
+    }
 
     /*** ----------------------------------------------- ***/
     /*** ------------ Database Manipulation ------------ ***/
@@ -437,8 +526,6 @@ class VirtualCurrency extends Module
     {
         Core::$systemDB->update(self::TABLE_CONFIG, ["tokensToXPRatio" => $value], ["course" => $courseId]);
     }
-
-
 
     public static function newAction($achievement, $courseId)
     {
