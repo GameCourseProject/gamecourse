@@ -7,6 +7,7 @@ use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\Views\Views;
 use GameCourse\Views\Expression\EvaluateVisitor;
+use Modules\Profiling\Profiling;
 
 $MODULE = 'views';
 
@@ -50,11 +51,12 @@ API::registerFunction($MODULE, 'listViews', function () {
  *
  * @param int $courseId
  * @param int $pageId
+ * @param int $viewerId
  * @param int $userId (optional)
  */
 API::registerFunction($MODULE, 'renderPage', function () {
     API::requireCoursePermission();
-    API::requireValues('courseId', 'pageId');
+    API::requireValues('courseId', 'pageId', 'viewerId');
 
     $courseId = API::getValue('courseId');
     $course = API::verifyCourseExists($courseId);
@@ -67,6 +69,12 @@ API::registerFunction($MODULE, 'renderPage', function () {
     if ($page["roleType"] === "ROLE_INTERACTION") {
         $userId = API::getValue('userId');
         if (!is_null($userId)) API::verifyCourseUserExists($courseId, $userId);
+    }
+
+    // If module profiling is enabled, save user page history
+    if (Core::$systemDB->select("course_module", ["course" => $courseId, "moduleId" => Profiling::ID], "isEnabled")) {
+        $viewer = API::getValue('viewerId');
+        Core::$systemDB->insert("user_page_history", ["user" => $viewer, "page" => $pageId]);
     }
 
     API::response(['view' => Views::renderPage($courseId, $pageId, $userId ?? null)]);
