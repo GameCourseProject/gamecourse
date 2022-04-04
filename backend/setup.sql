@@ -92,7 +92,7 @@ DROP TABLE IF EXISTS view_template;
 CREATE TABLE game_course_user(
 	id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
     name 	                    varchar(50) NOT NULL,
-    email 	                    varchar(255),
+    email 	                    varchar(255) UNIQUE,
 	major 	                    varchar(8),
 	nickname                    varchar(50),
 	studentNumber               int UNIQUE,
@@ -103,7 +103,7 @@ CREATE TABLE game_course_user(
 CREATE TABLE auth(
 	id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
 	game_course_user_id         int unsigned NOT NULL,
-	username                    varchar(50),
+	username                    varchar(50) UNIQUE,
 	authentication_service      ENUM ('fenix', 'google', 'facebook', 'linkedin'),
 
 	UNIQUE key(username, authentication_service),
