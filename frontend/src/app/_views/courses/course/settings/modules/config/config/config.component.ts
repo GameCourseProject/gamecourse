@@ -18,6 +18,7 @@ import {MoodleComponent} from "../moodle/moodle.component";
 import {QrComponent} from "../qr/qr.component";
 import {NotificationsComponent} from "../notifications/notifications.component";
 import {ProfilingComponent} from "../profiling/profiling.component";
+import {VirtualcurrencyComponent} from "../virtualcurrency/virtualcurrency.component";
 
 export interface GeneralInput {
   id: string,
@@ -45,8 +46,10 @@ export enum PersonalizedConfig {
   NOTIFICATIONS = 'notifications',
   PROFILING = 'profiling',
   QR = 'qr',
-  SKILLS = 'skills'
+  SKILLS = 'skills',
+  VIRTUAL_CURRENCY = 'virtualcurrency'
 }
+
 
 @Component({
   selector: 'app-config',
@@ -138,6 +141,10 @@ export class ConfigComponent implements OnInit {
 
   get SkillsConfig(): typeof SkillsComponent {
     return SkillsComponent;
+  }
+
+  get CurrencyConfig(): typeof VirtualcurrencyComponent {
+    return VirtualcurrencyComponent;
   }
 
 

@@ -6,19 +6,13 @@
   <div class="content">
 
     <div class="inputs" style="margin-top: 40px">
+
       <!-- Row #1 -->
       <div class="row">
         <div class="half">
           <div class="input-wrapper">
-            <span class="label">DB Server</span>
-            <input type="text" id="db-server" name="db-server" class="input">
-          </div>
-        </div>
-
-        <div class="half">
-          <div class="input-wrapper">
-            <span class="label">Tables Prefix</span>
-            <input type="text" id="prefix" name="prefix" class="input">
+            <span class="label">Min. Rating for Attempt</span>
+            <input type="number" id="attempt-min-rating" name="attempt-min-rating" class="input">
           </div>
         </div>
       </div>
@@ -27,15 +21,15 @@
       <div class="row">
         <div class="half">
           <div class="input-wrapper">
-            <span class="label">DB Port</span>
-            <input type="text" id="db-port" name="db-port" class="input">
+            <span class="label">Skill Initial Coost</span>
+            <input type="number" id="skill-initial-cost" name="skill-initial-cost" class="input">
           </div>
         </div>
 
         <div class="half">
           <div class="input-wrapper">
-            <span class="label">Moodle Course</span>
-            <input type="text" id="moodle-course" name="moodle-course" class="input">
+            <span class="label">Wildcard Initial Cost</span>
+            <input type="number" id="wildcard-initial-cost" name="wildcard-initial-cost" class="input">
           </div>
         </div>
       </div>
@@ -44,8 +38,21 @@
       <div class="row">
         <div class="half">
           <div class="input-wrapper">
-            <span class="label">DB Name</span>
-            <input type="text" id="db-name" name="db-name" class="input" >
+            <span class="label">Increment Cost</span>
+            <input type="number" id="increment-cost" name="increment-cost" class="input" >
+          </div>
+        </div>
+
+        <div class="half">
+          <div class="input-wrapper">
+            <span class="label">Increment Formula</span>
+            <select id="increment-formula" name="increment-formula" >
+              <option value="Default">Choose a Formula</option>
+              <option value="Case 0"> Case 0 - SUB: incrementCost </option>
+              <option value="Case 1"> Case 1 - MUL: incrementCost * validAttempts </option>
+              <option value="Case 2"> Case 2 - POW: incrementCost * pow(2, validAttempts - n)</option>
+            </select>
+
           </div>
         </div>
       </div>
@@ -62,8 +69,8 @@
   </div>
 </div>
 
-<!-- Loader -->
+<!-- Loader
 <div *ngIf="loading" id="page-loading">
   <img src="assets/loader/loader.gif" alt="loader">
 </div>
-
+-->

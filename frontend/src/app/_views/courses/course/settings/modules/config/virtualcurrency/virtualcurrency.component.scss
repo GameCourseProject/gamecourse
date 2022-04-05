@@ -1,67 +1,59 @@
-.skills-section {
-  .divider .title:after {
-    width: calc(100% - 140px);
+.divider .title:after {
+  width: calc(100% - 80px);
+}
+
+.content {
+  margin-top: 40px;
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .half {
+    width: calc(47%);
+    position: relative;
+  }
+
+  .inputs .row {
+    margin-bottom: 15px;
+  }
+
+  .action-buttons {
+    width: fit-content;
+    position: absolute;
+    top: -5px;
+    right: 0;
   }
 }
 
-.inputs {
-  margin-bottom: 50px;
-}
-
-.action-buttons {
-  width: fit-content;
-  position: absolute;
-  top: -5px;
-  right: 0;
-}
-
-.skills-section .action-buttons {
-  width: 115px;
-}
-
-.row_inputs {
-  display: flex !important;
-  justify-content: space-between;
-}
-
-button.cancel {
-  position: absolute;
-  bottom: 0;
-  right: 80px;
-  background-color: tomato;
-}
-
-.color {
+.input-wrapper {
   display: flex;
+  align-items: center;
+  font-size: 14px;
+  width: 100%;
 
-  .color-sample {
-    margin-right: 8px;
+  .label {
+    margin-right: 20px;
+    white-space: nowrap;
+    min-width: 100px;
   }
 
-  .box {
-    border: none;
-    width: 20px;
-    height: 20px;
-    opacity: 1;
+  .input {
+    width: 60%;
+    padding: 7px;
+    color: #333;
+    background-color: white;
+    border-radius: 5px;
+    border: 2px solid lightgray;
   }
-}
 
-.notAllActive {
-  background-color: rgba(235, 57, 57, 0.562);
-
-  &:hover {
-    background-color: rgba(187, 49, 49, 0.562);
+  .select {
+    width: 60%;
+    padding: 7px;
+    color: #333;
+    background-color: white;
+    border-radius: 5px;
+    border: 2px solid lightgray;
   }
-}
-
-.row {
-  display: flex;
-  align-items: baseline;
-  margin-bottom: 20px;
-}
-
-.block.skill {
-  margin-top: 10px;
-  padding: 5px;
-  word-break: break-word;
 }

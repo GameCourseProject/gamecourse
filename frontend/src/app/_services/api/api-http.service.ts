@@ -44,6 +44,9 @@ import {
   ProfilingHistory,
   ProfilingNode
 } from "../../_views/courses/course/settings/modules/config/profiling/profiling.component";
+import {
+  CurrencySkillsVars
+} from "../../_views/courses/course/settings/modules/config/virtualcurrency/virtualcurrency.component";
 
 @Injectable({
   providedIn: 'root'
@@ -1459,7 +1462,7 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => Skill.fromDatabase(res['data']['skill'])) );
-  }
+  }x
 
 
   // Virtual Currency
@@ -1476,6 +1479,37 @@ export class ApiHttpService {
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['tokens']) );
   }
+
+  public getCurrencySkillVars(courseID: number): Observable<CurrencySkillsVars> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.VIRTUAL_CURRENCY);
+      qs.push('request', 'getCurrencySkillVars');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['getCurrencySkillVars']) );
+  }
+
+
+  public setCurrencySkillVars(courseID: number, currSkillVars: CurrencySkillsVars): Observable<void> {
+    const data = {
+      courseId: courseID,
+      currencySkills: currSkillVars
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.VIRTUAL_CURRENCY);
+      qs.push('request', 'setCurrencySkillVars');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
 
 
 
