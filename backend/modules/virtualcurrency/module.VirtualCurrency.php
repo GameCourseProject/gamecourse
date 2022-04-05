@@ -144,7 +144,7 @@ class VirtualCurrency extends Module
             null,
             true
         );
-         
+         /*
         //virtualcurrency.tokensToXPRatio
         Dictionary::registerFunction(
             self::ID,
@@ -159,7 +159,7 @@ class VirtualCurrency extends Module
             null,
             true
         );
-
+                 */
         //virtualcurrency.changeTokensForXP(user)
         Dictionary::registerFunction(
             self::ID,
@@ -227,7 +227,7 @@ class VirtualCurrency extends Module
                 [
                     "name" => "",
                     "course" => $courseId,
-                    "tokensToXPRatio" => 0,
+                    "tokensToXPRatio" => "",
                     "skillCost" => DEFAULT_COST,
                     "wildcardCost" => DEFAULT_COST,
                     "attemptRating" => 0,
@@ -333,13 +333,13 @@ class VirtualCurrency extends Module
         $input = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => "", 'current_val' => $this->getCurrencyName($courseId)),
             array('name' => "Tokens to XP Ratio", 'id' => 'tokenstoxp', 'type' => "number", 'options' => "", 'current_val' => intval($this->getTokensToXP($courseId))),
-            /*array('name' => "Skill Initial Cost", 'id' => 'skillcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getSkillCost($courseId))),
+           /* array('name' => "Skill Initial Cost", 'id' => 'skillcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getSkillCost($courseId))),
             array('name' => "Wildcard Initial Cost", 'id' => 'wildcardcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getWildcardCost($courseId))),
             array('name' => "Min. Rating for Attempt", 'id' => 'attemptrating', 'type' => "number", 'options' => "", 'current_val' => intval($this->getAttemptRating($courseId))),
             array('name' => "Increment Cost", 'id' => 'incrementcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getIncrementCost($courseId))),
             array('name' => "Increment Formula", 'id' => 'formulacost', 'type' => "text", 'options' => ["A", "b", "c"], 'current_val' => "isto vai ser um select com opções" )
-            */
-            ];
+           */
+           ];
         return $input;
     }
     public function save_general_inputs(array $generalInputs, int $courseId)
@@ -387,7 +387,7 @@ class VirtualCurrency extends Module
         ];
         $actions = ['duplicate', 'edit', 'delete', 'export'];
 
-        $items = $this->getActions($courseId);
+        $items = $this->getActionsToAward($courseId);
 
         // Arguments for adding/editing
         $allAtributes = [
@@ -397,7 +397,7 @@ class VirtualCurrency extends Module
             array('name' => "Tokens", 'id' => 'tokens', 'type' => "number", 'options' => ""),
             array('name' => "Is Active", 'id' => 'isActive', 'type' => "on_off button", 'options' => "")
         ];
-        return array('listName' => 'To Award', 'itemName' => 'action', 'header' => $header, 'displayAttributes' => $displayAtributes, 'actions' => $actions, 'items' => $items, 'allAttributes' => $allAtributes);
+        return array('listName' => 'Actions to Award', 'itemName' => 'actionToAward', 'header' => $header, 'displayAttributes' => $displayAtributes, 'actions' => $actions, 'items' => $items, 'allAttributes' => $allAtributes);
     }
     public function save_listing_item(string $actiontype, array $listingItem, int $courseId)
     {
@@ -433,28 +433,28 @@ class VirtualCurrency extends Module
     /*** -------------------- Utils -------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    public function getActions($courseId){
-        $coisas = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*", "name");
-        foreach ($coisas as &$coisa) {
+    public function getActionsToAward($courseId){
+        $actionstoaward = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*", "name");
+        foreach ($actionstoaward as &$toaward) {
             //information to match needing fields
-            $coisas['isActive'] = boolval($coisa["isActive"]);
+            $actionstoaward['isActive'] = boolval($toaward["isActive"]);
         }
-        return $coisas;
+        return $actionstoaward;
     }
 
-    public function getAction($selectMultiple, $where): ValueNode
+    public function getActionToAward($selectMultiple, $where): ValueNode
     {
         $where["course"] = $this->getCourseId();
         if ($selectMultiple) {
-            $actionArray = Core::$systemDB->selectMultiple(self::TABLE, $where);
+            $actiontoAwardArray = Core::$systemDB->selectMultiple(self::TABLE, $where);
             $type = "collection";
         } else {
-            $actionArray = Core::$systemDB->select(self::TABLE, $where);
-            if (empty($actionArray))
-                throw new \Exception("In function actions.getAction(name): couldn't find action with name '" . $where["name"] . "'.");
+            $actiontoAwardArray = Core::$systemDB->select(self::TABLE, $where);
+            if (empty($actiontoAwardArray))
+                throw new \Exception("In function actions.getActionToAward(name): couldn't find action with name '" . $where["name"] . "'.");
             $type = "object";
         }
-        return Dictionary::createNode($actionArray, self::ID, $type);
+        return Dictionary::createNode($actiontoAwardArray, self::ID, $type);
 
     }
 

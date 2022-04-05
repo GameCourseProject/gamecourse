@@ -18,7 +18,7 @@ class Streaks extends Module
     const TABLE_CONFIG = 'streaks_config';
     const TABLE_PROGRESSION = 'streak_progression';
 
-    const STREAKS_TEMPLATE_NAME = 'Streaks block - by streaks';
+    //const STREAKS_TEMPLATE_NAME = 'Streaks block - by streaks';
 
 
     /*** ----------------------------------------------- ***/
@@ -384,8 +384,8 @@ class Streaks extends Module
     {
         $courseId = $this->getCourseId();
 
-        if (!Views::templateExists($courseId, self::STREAKS_TEMPLATE_NAME))
-            Views::createTemplateFromFile(self::STREAKS_TEMPLATE_NAME, file_get_contents(__DIR__ . '/streaks.txt'), $courseId, self::ID);
+        //if (!Views::templateExists($courseId, self::STREAKS_TEMPLATE_NAME))
+        //    Views::createTemplateFromFile(self::STREAKS_TEMPLATE_NAME, file_get_contents(__DIR__ . '/streaks.txt'), $courseId, self::ID);
     }
 
     public function setupResources()
