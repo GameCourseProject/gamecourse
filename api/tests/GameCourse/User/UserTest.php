@@ -1180,7 +1180,6 @@ class UserTest extends TestCase
     {
         $file = "";
         $nrUsersImported = User::importUsers($file);
-        var_dump($nrUsersImported);
         $users = User::getAllUsers();
         $this->assertCount(0, $users);
         $this->assertEquals(0, $nrUsersImported);

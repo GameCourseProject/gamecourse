@@ -532,6 +532,37 @@ class Course
         rmdir($target);
     }
 
+    /**
+     * Transforms a given URL path inside a course's folder:
+     *  - from absolute to relative
+     *  - from relative to absolute
+     *
+     * Useful so that only relative paths are saved on database,
+     * but absolute paths can be retrieved when needed.
+     *
+     * @example absolute -> relative
+     *  URL: http://localhost/gamecourse/api/course_data/<courseFolder>/skills/<skillName>/<filename>
+     *  NEW URL: skills/<skillName>/<filename>
+     *
+     * @example relative -> absolute
+     *  URL: skills/<skillName>/<filename>
+     *  NEW URL: http://localhost/gamecourse/api/course_data/<courseFolder>/skills/<skillName>/<filename>
+     *
+     * @param string $url
+     * @param string $to (absolute | relative)
+     * @param int $courseId
+     * @return string
+     */
+    public static function transformURL(string $url, string $to, int $courseId): string
+    {
+        $courseDataFolder = Course::getCourseDataFolder($courseId);
+        $courseDataFolderPath = API_URL . "/" . $courseDataFolder . "/";
+
+        if ($to === "absolute" && strpos($url, 'http') !== 0) return $courseDataFolderPath . $url;
+        elseif ($to === "relative" && strpos($url, API_URL) === 0) return str_replace($courseDataFolderPath, "", $url);
+        return $url;
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Dictionary -------------------- ***/
