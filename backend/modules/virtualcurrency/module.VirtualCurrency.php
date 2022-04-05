@@ -15,7 +15,7 @@ class VirtualCurrency extends Module
 
     const TABLE_WALLET = 'user_wallet';
     const TABLE_CONFIG = 'virtual_currency_config';
-    const TABLE = 'tokens_to_award';
+    const TABLE = 'virtual_currency_to_award';
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -144,7 +144,7 @@ class VirtualCurrency extends Module
             null,
             true
         );
-
+         
         //virtualcurrency.tokensToXPRatio
         Dictionary::registerFunction(
             self::ID,
@@ -227,7 +227,7 @@ class VirtualCurrency extends Module
                 [
                     "name" => "",
                     "course" => $courseId,
-                    "tokensToXPRatio" => "",
+                    "tokensToXPRatio" => 0,
                     "skillCost" => DEFAULT_COST,
                     "wildcardCost" => DEFAULT_COST,
                     "attemptRating" => 0,
@@ -333,12 +333,13 @@ class VirtualCurrency extends Module
         $input = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => "", 'current_val' => $this->getCurrencyName($courseId)),
             array('name' => "Tokens to XP Ratio", 'id' => 'tokenstoxp', 'type' => "number", 'options' => "", 'current_val' => intval($this->getTokensToXP($courseId))),
-            array('name' => "Skill Initial Cost", 'id' => 'skillcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getSkillCost($courseId))),
+            /*array('name' => "Skill Initial Cost", 'id' => 'skillcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getSkillCost($courseId))),
             array('name' => "Wildcard Initial Cost", 'id' => 'wildcardcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getWildcardCost($courseId))),
             array('name' => "Min. Rating for Attempt", 'id' => 'attemptrating', 'type' => "number", 'options' => "", 'current_val' => intval($this->getAttemptRating($courseId))),
             array('name' => "Increment Cost", 'id' => 'incrementcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getIncrementCost($courseId))),
             array('name' => "Increment Formula", 'id' => 'formulacost', 'type' => "text", 'options' => ["A", "b", "c"], 'current_val' => "isto vai ser um select com opções" )
-        ];
+            */
+            ];
         return $input;
     }
     public function save_general_inputs(array $generalInputs, int $courseId)
@@ -433,12 +434,12 @@ class VirtualCurrency extends Module
     /*** ----------------------------------------------- ***/
 
     public function getActions($courseId){
-        $actions = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*", "name");
-        foreach ($actions as &$action) {
+        $coisas = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*", "name");
+        foreach ($coisas as &$coisa) {
             //information to match needing fields
-            $actions['isActive'] = boolval($action["isActive"]);
+            $coisas['isActive'] = boolval($coisa["isActive"]);
         }
-        return $actions;
+        return $coisas;
     }
 
     public function getAction($selectMultiple, $where): ValueNode
