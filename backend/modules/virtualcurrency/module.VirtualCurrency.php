@@ -16,6 +16,7 @@ class VirtualCurrency extends Module
     const TABLE_WALLET = 'user_wallet';
     const TABLE_CONFIG = 'virtual_currency_config';
     const TABLE = 'virtual_currency_to_award';
+    const TABLE_XP = 'user_xp';
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -144,7 +145,7 @@ class VirtualCurrency extends Module
             null,
             true
         );
-         /*
+
         //virtualcurrency.tokensToXPRatio
         Dictionary::registerFunction(
             self::ID,
@@ -159,7 +160,7 @@ class VirtualCurrency extends Module
             null,
             true
         );
-                 */
+
         //virtualcurrency.changeTokensForXP(user)
         Dictionary::registerFunction(
             self::ID,
@@ -169,6 +170,7 @@ class VirtualCurrency extends Module
                 $currentTokens = $this->getUserTokens($userId);
                 $ratio = $this->getTokensToXP($this->getCourseId());
                 $converted = $currentTokens * $ratio;
+                $this->updateUserXP($converted);
                 return new ValueNode($converted);
             },
             "Returns the xp converted from the existing tokens.",
@@ -568,6 +570,18 @@ class VirtualCurrency extends Module
     public function getUserTokens($userId): int
     {
         return intval(Core::$systemDB->select(self::TABLE_WALLET, ["course" => $this->getCourseId(), "user" => $userId], "tokens"));
+    }
+    
+    public function getUserXP($userId)
+    {
+        return Core::$systemDB->select(self::TABLE_XP, ["course" => $this->getCourseId(), "user" => $userId], "xp");
+    }
+    // updateUserXP
+    public function updateUserXP($userId, $converted)
+    {
+        $currXP = $this->getUserXP($userId);
+        $newXP =  $currXP + $converted;
+        Core::$systemDB->update(self::TABLE_CONFIG, ["xp" => $newXP], ["course" => $this->getCourseId()]);
     }
 
 }
