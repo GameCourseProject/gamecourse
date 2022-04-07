@@ -576,13 +576,16 @@ class VirtualCurrency extends Module
     {
         return Core::$systemDB->select(self::TABLE_XP, ["course" => $this->getCourseId(), "user" => $userId], "xp");
     }
-    // updateUserXP
+
     public function updateUserXP($userId, $converted)
     {
         $currXP = $this->getUserXP($userId);
         $newXP =  $currXP + $converted;
         Core::$systemDB->update(self::TABLE_CONFIG, ["xp" => $newXP], ["course" => $this->getCourseId()]);
     }
+
+    
+
 
 }
 

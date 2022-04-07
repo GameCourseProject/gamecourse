@@ -2,6 +2,7 @@
 namespace Modules\Badges;
 
 use GameCourse\Core;
+use GameCourse\RuleSystem;
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Expression\ValueNode;
 use GameCourse\Views\Views;
@@ -20,6 +21,8 @@ class Badges extends Module
     const TABLE_PROGRESSION = self::TABLE . '_progression';
 
     const BADGES_PROFILE_TEMPLATE = 'Badges Profile - by badges';
+    const BADGES_RULE_TEMPLATE = 'rule_badge_template.txt';
+
 
 
     /*** ----------------------------------------------- ***/
@@ -1098,6 +1101,38 @@ class Badges extends Module
         $state = Core::$systemDB->select(self::TABLE, ["id" => $itemId], $param);
         Core::$systemDB->update(self::TABLE, [$param => $state ? 0 : 1], ["id" => $itemId]);
     }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Rules -------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function generateBadgeTemplateRule(Course $course, string $badgeName)
+    {
+        $template = file_get_contents(MODULES_FOLDER . "/" . self::ID . "/rules/" . self::BADGES_RULE_TEMPLATE);
+
+        $newRule = str_replace("<badge-name>", $badgeName, $template);
+
+        // Add generated rule
+        $ruletxt = explode("<skill-dependencies>", $newRule);
+        $txt = implode("", $ruletxt);
+
+
+        $rs = new RuleSystem($course);
+        $rule = array();
+        $rule["module"] = self::ID;
+        $filename = $rs->getFilename(self::ID);
+        if ($filename == null) {
+            $filename = $rs->createNewRuleFile(self::ID, 1);
+            $rs->fixPrecedences();
+            $filename = $rs->getFilename(self::ID);
+        }
+        $rule["rulefile"] = $filename;
+        $rs->addRule($txt, null, $rule); // add to end
+
+    }
+
+    
 }
 
 ModuleLoader::registerModule(array(
