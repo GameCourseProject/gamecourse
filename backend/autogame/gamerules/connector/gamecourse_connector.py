@@ -502,6 +502,19 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
                     cnx.commit()
 
 
+    # get max reward value for skill
+    #query = "SELECT maxBonusReward from badges_config where course = %s;"
+    #cursor.execute(query, (course,))
+    #badge_reward_table = cursor.fetchall()
+    #max_badge_reward = badge_reward_table[0][0]
+
+    # gets current user skill xp
+    #query = "SELECT SUM(reward) FROM award WHERE user = %s AND course = %s AND type = %s; "
+    #cursor.execute(query, (target, course, typeof)
+    #table_badge_xp = cursor.fetchall()
+    #curr_badge_xp = table_badge_xp[0][0]
+
+
     # Case 0: lvl is zero and there are no lines to be erased
     # Simply return right away
     if lvl == 0 and len(table) == 0:
@@ -510,6 +523,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
     # Case 1: no level of this badge has been attributed yet
     # Simply write the badge level(s) to the 'award' table
     elif len(table) == 0:
+
         # if table is empty, just write
         for level in range(1, lvl+1):
             # if the user doesnt have the respective badge and level, adds it
@@ -519,9 +533,16 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
             badge_id = table_badge[level-1][1]
             reward = table_badge[level-1][2]
 
+            calculated_reward = reward
+            #if curr_badge_xp >= max_badge_reward:
+            #    calculated_reward = 0
+            #elif reward + curr_skill_xp > max_badge_reward:
+            #    calculated_reward = max_badge_reward - curr_badge_xp
+            #else:
+            #    calculated_reward = reward
 
             query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-            cursor.execute(query, (target, course, description, typeof, badge_id, reward))
+            cursor.execute(query, (target, course, description, typeof, badge_id, calculated_reward))
             cnx.commit()
             cursor = cnx.cursor(prepared=True)
 
@@ -573,8 +594,17 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
             badge_id = table_badge[diff][1]
             reward = table_badge[diff][2]
 
+            calculated_reward = reward
+
+            #if curr_badge_xp >= max_badge_reward:
+            #    calculated_reward = 0
+            #elif reward + curr_skill_xp > max_badge_reward:
+            #    calculated_reward = max_badge_reward - curr_badge_xp
+            #else:
+            #    calculated_reward = reward
+
             query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
-            cursor.execute(query, (target, course, description, typeof, badge_id, reward))
+            cursor.execute(query, (target, course, description, typeof, badge_id, calculated_reward))
             cnx.commit()
 
             level = diff + 1
@@ -679,14 +709,34 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 
         # first skill awarded cost 0 tokens
         elif len(table) == 0:
-
             skill_id, skill_reward = table_skill[0][0], table_skill[0][1]
+
+            # get max reward value for skill
+            query = "SELECT maxReward from skill_tree where course = %s;"
+            cursor.execute(query, (course,))
+            tree_reward_table = cursor.fetchall()
+            max_skill_reward = tree_reward_table[0][0]
+
+            # gets current user skill xp
+            query = "SELECT SUM(reward) FROM award WHERE user = %s AND course = %s AND type = %s; "
+            cursor.execute(query, (target, course, typeof)
+            table_skill_xp = cursor.fetchall()
+            curr_skill_xp = table_skill_xp[0][0]
+
+            if curr_skill_xp >= max_skill_reward:
+                calculated_reward = 0
+            elif skill_reward + curr_skill_xp > max_skill_reward:
+                calculated_reward = max_skill_reward - curr_skill_xp
+            else:
+                calculated_reward = skill_reward
+
             if table_exists[0][0] > 0: # virtual currency is enabled
                 if newTotal >= 0:
-                    query = "INSERT INTO award (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
-                    cursor.execute(query, (target, course, skill, typeof, skill_id, skill_reward))
 
-                    config.award_list.append([str(target), "Skill Tree", str(skill_reward), skill])
+                    query = "INSERT INTO award (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
+                    cursor.execute(query, (target, course, skill, typeof, skill_id, calculated_reward))
+
+                    config.award_list.append([str(target), "Skill Tree", str(calculated_reward), skill])
 
                     query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
                     cursor.execute(query, (target, course, skill, typeof))
@@ -718,9 +768,9 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
                         cnx.commit()
             else:
                 query = "INSERT INTO award (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
-                cursor.execute(query, (target, course, skill, typeof, skill_id, skill_reward))
+                cursor.execute(query, (target, course, skill, typeof, skill_id, calculated_reward))
 
-                config.award_list.append([str(target), "Skill Tree", str(skill_reward), skill])
+                config.award_list.append([str(target), "Skill Tree", str(calculated_reward), skill])
 
                 query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
                 cursor.execute(query, (target, course, skill, typeof))
