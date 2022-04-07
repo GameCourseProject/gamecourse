@@ -3,6 +3,7 @@ namespace Database;
 
 use PDO;
 use PDOException;
+use PDOStatement;
 
 /**
  * The database access layer which will be used to interact with
@@ -35,70 +36,184 @@ class Database
     /*** ----------------- Query Execution ------------------ ***/
     /*** ---------------------------------------------------- ***/
 
-    public function executeQuery($sql)
+    /**
+     * Executes any given SQL query.
+     *
+     * @example executeQuery("SHOW TABLES;")
+     * @example executeQuery("SELECT * FROM auth WHERE game_course_user_id=123;")
+     *
+     * @param string $sql
+     * @return false|PDOStatement
+     */
+    public function executeQuery(string $sql)
     {
-        try {
-            $result = $this->db->query($sql);
-
-        } catch (PDOException $e) {
-            throw new PDOException();
-        }
-        return $result;
+        return $this->db->query($sql);
     }
 
-    public function executeQueryWithParams($sql, $data)
+    /**
+     * Executes a given SQL query with parameters.
+     * @param string $sql
+     * @param array|null $data
+     * @return false|PDOStatement
+     */
+    private function executeQueryWithParams(string $sql, ?array $data)
     {
-        try {
-            $stmt = $this->db->prepare($sql);
-            $result = $stmt->execute($data);
-
-        } catch (PDOException $e) {
-            //echo "<br>" . $sql . "<br>" . $e->getMessage() . "<br>";
-            //print_r(array_values($data));
-            throw new PDOException($e);
-        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($data);
         return $stmt;
     }
 
     /**
      * Takes an array and creates a string with $key=$value(,&)....
-     * then adds to sql query str
+     * then adds it to the SQL query string.
      *
-     * @param $sql
-     * @param $data
-     * @param $separator
+     * @param string $sql
+     * @param array $data
+     * @param string $separator
      * @param array $whereNot
      * @param array $whereCompare
-     * @param false $add
+     * @param array $likeParams
      */
-    private function dataToQuery(&$sql, &$data, $separator, array $whereNot = [], array $whereCompare = [], bool $add = false)
+    private function dataToQuery(string &$sql, array &$data, string $separator, array $whereNot = [], array $whereCompare = [], array $likeParams = [])
     {
-        foreach ($data as $key => $value) {
-            if ($add)
-                $sql .= $key . '= ' . $key . ' + ' . $value . $separator;
-            elseif ($value === null && ($separator == "&&" || $separator == "||"))
+        // Processing where conditions
+        foreach ($data as $key => $value) { // [key => value]
+            if (is_null($value) && ($separator == "&&" || $separator == "||"))
                 $sql .= $key . " is ? " . $separator;
             else
                 $sql .= $key . '= ? ' . $separator;
-            //$sql.=$key.'= :'.$key.' '.$separator;
         }
         $data = array_values($data);
-        foreach ($whereNot as $not) { // [key , value]
-            if ($not[1] === null && ($separator == "&&" || $separator == "||"))
+
+        // Processing where not conditions
+        foreach ($whereNot as $not) { // [[key , value], ...]
+            if (is_null($not[1]) && ($separator == "&&" || $separator == "||"))
                 $sql .= $not[0] . " is not ? " . $separator;
             else
                 $sql .= $not[0] . "!= ? " . $separator;
-            array_push($data, $not[1]);
+            $data[] = $not[1];
         }
 
-        foreach ($whereCompare as $keyCompVal) {
-            //ex: ["key","<",5]]
+        // Processing comparison conditions
+        foreach ($whereCompare as $keyCompVal) { // [["key","<",5], ...]
             $sql .= $keyCompVal[0] . $keyCompVal[1] . " ? " . $separator;
-            array_push($data, $keyCompVal[2]);
+            $data[] = $keyCompVal[2];
         }
+
+        // Processing like parameters
+        foreach ($likeParams as $key => $value) {
+            $sql .= $key . " LIKE ? " . $separator;
+            $data[] = $value;
+        }
+
         $sql = substr($sql, 0, - (strlen($separator)));
     }
 
+
+    /*** ---------------------------------------------------- ***/
+    /*** -------------------- Selecting --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Selects the first entry from database table(s).
+     * Options for filtering, selecting certain columns and ordering.
+     *
+     * @example select 1st entry from 'auth' table --> select("auth")
+     * @example select 1st entry from 'auth' table where conditions apply --> select("auth", ["id" => 123, "username" => "ist123456"])
+     * @example select 1st entry from 'auth' table and only show columns 'id' and 'username' --> select("auth", [], "id, username")
+     * @example select 1st entry from 'auth' table when ordered by 'id' column --> select("auth", [], "*", "id")
+     * @example select 1st entry from 'auth' table when ordered by 'id' (asc) and 'name' (desc) column --> select("auth", [], "*", "id ASC, name DESC")
+     * @example select 1st entry from 'auth' table where conditions don't apply --> select("auth", [], "*", null, [["authentication_service", "fenix"]])
+     * @example select 1st entry from 'auth' table where comparisons apply --> select("auth", [], "*", null, [], [["id", "<", 5]])
+     *
+     * @param string $table
+     * @param array|null $where
+     * @param string $field
+     * @param string|null $orderBy
+     * @param array|null $whereNot
+     * @param array|null $whereCompare
+     * @param array|null $likeParams
+     * @return mixed|void
+     */
+    public function select(string $table, array $where = [], string $field = '*', string $orderBy = null, array $whereNot = [], array $whereCompare = [], array $likeParams = [])
+    {
+        $sql = "SELECT " . $field . " FROM " . $table;
+
+        // Process conditions
+        if (!empty($where) || !empty($whereNot) || !empty($whereCompare) || !empty($likeParams)) {
+            $sql .= " WHERE ";
+            $this->dataToQuery($sql, $where, '&&', $whereNot, $whereCompare, $likeParams);
+        }
+
+        // Process order by
+        if (!empty($orderBy)) $sql .= " ORDER BY " . $orderBy;
+
+        $sql .= ';';
+
+        // Execute Query
+        var_dump($sql);
+        $result = $this->executeQueryWithParams($sql, $where)->fetch(PDO::FETCH_ASSOC);
+
+        if ($field == '*' or strpos($field, ','))
+            return $result;
+
+        if (($pos = strpos($field, ".")) !== false)
+            return $result[substr($field, $pos + 1)];
+
+        if (is_array($result)) {
+            if (array_key_exists($field, $result))
+                return $result[$field];
+        } else {
+            return $result;
+        }
+    }
+
+    /**
+     * Selects entries from database table(s).
+     * Options for filtering, selecting certain columns, ordering and grouping.
+     *
+     * @example select all entry from 'auth' table --> select("auth")
+     * @example select all entries from 'auth' table where conditions apply --> select("auth", ["id" => 123, "username" => "ist123456"])
+     * @example select all entries from 'auth' table and only show columns 'id' and 'username' --> select("auth", [], "id, username")
+     * @example select all entries from 'auth' table and order by 'id' column --> select("auth", [], "*", "id")
+     * @example select all entries from 'auth' table where conditions don't apply --> select("auth", [], "*", null, [["authentication_service", "fenix"]])
+     * @example select all entries from 'auth' table where comparisons apply --> select("auth", [], "*", null, [], [["id", "<", 5]])
+     *
+     * @param $table
+     * @param $where
+     * @param $field
+     * @param $orderBy
+     * @param $whereNot
+     * @param $whereCompare
+     * @param $group
+     * @param $likeParams
+     * @return array|false
+     */
+    public function selectMultiple($table, $where = null, $field = '*', $orderBy = null, $whereNot = [], $whereCompare = [], $group = null, $likeParams = null)
+    {
+        //example: select * from course where isActive=true;
+        $sql = "select " . $field . " from " . $table;
+        if ($where) {
+            $sql .= " where ";
+            $this->dataToQuery($sql, $where, '&&', $whereNot, $whereCompare);
+        }
+        if ($likeParams != null) {
+            foreach ($likeParams as $key => $value) {
+                $sql .= " && " . $key . " like ? ";
+            }
+            $where = array_merge($where, array_values($likeParams));
+        }
+        if ($group) {
+            $sql .= " group by " . $group;
+        }
+        if ($orderBy) {
+            $sql .= " order by " . $orderBy;
+        }
+
+        $sql .= ';';
+        $result = $this->executeQueryWithParams($sql, $where);
+        return $result->fetchAll(\PDO::FETCH_ASSOC);
+    }
 
 
     /*** ---------------------------------------------------- ***/
@@ -106,8 +221,12 @@ class Database
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Inserts data into database table.
-     * @example "insert into user set name="Example",id=80000,username=ist1800000";
+     * Inserts data into a database table.
+     * If no data is given, it will insert the default values for each column.
+     * Returns last inserted ID.
+     *
+     * @example insert default values in 'auth' table --> insert("auth")
+     * @example insert some values in 'auth' table --> insert("auth", ["game_course_user_id" => 123, "username" => "ist123456", "authentication_service" => "fenix"])
      *
      * @param string $table
      * @param array $data
@@ -115,18 +234,17 @@ class Database
      */
     public function insert(string $table, array $data = []): int
     {
-        $sql = "insert into " . $table;
-        if ($data == []) {
-            $sql .= " values(default)";
+        $sql = "INSERT INTO " . $table;
+        if (empty($data)) {
+            $sql .= " VALUES (default)";
         } else {
-            $sql .= " set ";
+            $sql .= " SET ";
             $this->dataToQuery($sql, $data, ',');
         }
         $sql .= ";";
         $this->executeQueryWithParams($sql, $data);
         return $this->getLastId();
     }
-
 
 
     /*** ---------------------------------------------------- ***/
@@ -168,7 +286,6 @@ class Database
     }
 
 
-
     /*** ---------------------------------------------------- ***/
     /*** --------------------- Deleting --------------------- ***/
     /*** ---------------------------------------------------- ***/
@@ -206,120 +323,6 @@ class Database
         $sql = "delete from " . $table . ";";
         $this->executeQuery($sql);
     }
-
-
-
-    /*** ---------------------------------------------------- ***/
-    /*** -------------------- Selecting --------------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-    /**
-     * Selects data from database table.
-     * @example select id from user where username='ist181205';
-     *
-     * @param string $table
-     * @param array|null $where
-     * @param string $field
-     * @param string|null $orderBy
-     * @param array $whereNot
-     * @param array $whereCompare
-     * @return mixed|void
-     */
-    public function select(string $table, array $where = null, string $field = '*', string $orderBy = null, array $whereNot = [], array $whereCompare = [])
-    {
-        //ToDo: devia juntar as 2 funçoes select, devia aceitar array de fields,
-        $sql = "select " . $field . " from " . $table;
-        if ($where) {
-            $sql .= " where ";
-            $this->dataToQuery($sql, $where, '&&', $whereNot, $whereCompare);
-        }
-        if ($orderBy) {
-            $sql .= " order by " . $orderBy;
-        }
-
-        $sql .= ';';
-        $result = $this->executeQueryWithParams($sql, $where);
-        $returnVal = $result->fetch(\PDO::FETCH_ASSOC);
-        if ($field == '*' or strpos($field, ',')) {
-            return $returnVal;
-        }
-        if ($pos = strpos($field, ".") !== false)
-            return $returnVal[substr($field, $pos + 1)];
-
-        if (is_array($returnVal)) {
-            if (array_key_exists($field, $returnVal)) {
-                return $returnVal[$field];
-            }
-        } else {
-            return $returnVal;
-        }
-    }
-
-    public function selectMultiple($table, $where = null, $field = '*', $orderBy = null, $whereNot = [], $whereCompare = [], $group = null, $likeParams = null)
-    {
-        //example: select * from course where isActive=true;
-        $sql = "select " . $field . " from " . $table;
-        if ($where) {
-            $sql .= " where ";
-            $this->dataToQuery($sql, $where, '&&', $whereNot, $whereCompare);
-        }
-        if ($likeParams != null) {
-            foreach ($likeParams as $key => $value) {
-                $sql .= " && " . $key . " like ? ";
-            }
-            $where = array_merge($where, array_values($likeParams));
-        }
-        if ($group) {
-            $sql .= " group by " . $group;
-        }
-        if ($orderBy) {
-            $sql .= " order by " . $orderBy;
-        }
-
-        $sql .= ';';
-        $result = $this->executeQueryWithParams($sql, $where);
-        return $result->fetchAll(\PDO::FETCH_ASSOC);
-    }
-
-    public function selectHierarchy($table, $tableUnion = null, $where = null, $field = '*')
-    {
-        $sql = "WITH RECURSIVE aspects AS (SELECT " . $field . " FROM " . $table;
-        if ($where) {
-            $sql .= " where ";
-            $this->dataToQuery($sql, $where, '||');
-        }
-
-        // if ($group) {
-        //     $sql .= " group by " . $group;
-        // }
-
-        $sql .= " UNION SELECT " . $field . " FROM " . $tableUnion . " JOIN aspects ON aspects.id=vp.parentId)";
-        $sql .= " \nSELECT * from aspects";
-        //array_push($where, $where[0]);
-
-        $sql .= ';';
-        $result = $this->executeQueryWithParams($sql, $where);
-        return $result->fetchAll(\PDO::FETCH_ASSOC);
-    }
-
-    public function selectMultipleSegmented($table, $where, $field = "*", $orderBy = null, $group = null)
-    {
-        $sql = "select " . $field . " from " . $table;
-        if ($where) {
-            $sql .= " where " . $where;
-        }
-        if ($group) {
-            $sql .= " group by " . $group;
-        }
-        if ($orderBy) {
-            $sql .= " order by " . $orderBy;
-        }
-
-        $sql .= ';';
-        $result = $this->executeQuery($sql);
-        return $result->fetchAll(\PDO::FETCH_ASSOC);
-    }
-
 
 
     /*** ---------------------------------------------------- ***/
