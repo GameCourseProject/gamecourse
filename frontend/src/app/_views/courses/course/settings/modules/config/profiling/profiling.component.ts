@@ -5,6 +5,7 @@ import {finalize} from "rxjs/operators";
 import {ErrorService} from "../../../../../../../_services/error.service"
 
 import * as Highcharts from 'highcharts';
+import * as moment from "moment";
 declare var require: any;
 let Sankey = require('highcharts/modules/sankey');
 let Export = require('highcharts/modules/exporting');
@@ -29,6 +30,7 @@ export class ProfilingComponent implements OnInit {
 
   nrClusters: number = 4;
   minClusterSize: number = 4;
+  endDate: string;
   clusterNames: {name: string}[];
   clusters: {[studentNr: string]: {name: string, cluster: string}};
 
@@ -84,6 +86,7 @@ export class ProfilingComponent implements OnInit {
           this.nodes = res.nodes;
           this.data = res.data;
           this.days = res.days.length > 0 ? res.days : ["Current"];
+          this.endDate = moment().format('YYYY-MM-DDTHH:mm:ss');
           if (this.data.length > 0) this.buildChart();
           this.getTime();
         },
@@ -129,7 +132,9 @@ export class ProfilingComponent implements OnInit {
   runProfiler() {
     this.loadingAction = true;
     this.profilerIsRunning = true;
-    this.api.runProfiler(this.courseID, this.nrClusters, this.minClusterSize)
+
+    const end = moment(this.endDate).format("YYYY-MM-DD HH:mm:ss");
+    this.api.runProfiler(this.courseID, this.nrClusters, this.minClusterSize, end)
       .pipe(finalize(() => this.loadingAction = false))
       .subscribe(
         res => {},

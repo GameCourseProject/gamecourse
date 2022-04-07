@@ -37,8 +37,15 @@
 
       <div class="row">
         <div class="input-wrapper">
+          <span class="label">End Date:</span>
+          <input type="datetime-local" id="end-date" name="end-date" class="input" [(ngModel)]="endDate">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="input-wrapper">
           <span class="label">Minimum cluster size:</span>
-          <input type="number" [min]="0" id="'min-cluster-size'" name="'min-cluster-size'" class="input" [(ngModel)]="minClusterSize">
+          <input type="number" [min]="0" id="min-cluster-size" name="min-cluster-size" class="input" [(ngModel)]="minClusterSize">
         </div>
       </div>
     </div>

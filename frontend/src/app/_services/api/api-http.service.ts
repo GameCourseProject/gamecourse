@@ -1156,11 +1156,12 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  public runProfiler(courseID: number, nrClusters: number, minClusterSize: number): Observable<void> {
+  public runProfiler(courseID: number, nrClusters: number, minClusterSize: number, endDate: string): Observable<void> {
     const data = {
       courseId: courseID,
       nrClusters,
-      minSize: minClusterSize
+      minSize: minClusterSize,
+      end: endDate
     }
 
     const params = (qs: QueryStringParameters) => {
