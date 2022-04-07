@@ -1,3 +1,58 @@
+<div class="section tiers-section">
+  <div class="divider">
+    <div class="title"><span>Actions To Punish >:D</span></div>
+  </div>
+
+  <div class="tiers content">
+    <!-- Tiers List -->
+    <div id="tiers-list">
+      <div class="data-table">
+
+        <table *ngIf="actionsToRemove?.length > 0" id="listing-table">
+          <!-- Header -->
+          <thead>
+          <tr>
+            <th>Tier</th>
+            <th>XP</th>
+            <th class="action-column"></th>
+            <th class="action-column"></th>
+            <th class="action-column"></th>
+            <th class="action-column"></th>
+          </tr>
+          </thead>
+
+          <!-- Body -->
+          <tbody>
+          <tr *ngFor="let toRemove of actionsToRemove">
+            <td><span>Hello</span></td>
+            <td><span>World</span></td>
+            <td class="action-column">
+              <div class="icon edit_icon" title="Edit" ></div>
+            </td>
+            <td class="action-column">
+              <div class="icon delete_icon" title="Remove" ></div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="actionsToRemove.length === 0" class='error_box'>
+          <div id='empty_table_tiers' class='error_msg'>No tiers found</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <div class="icon add_icon" title="New"></div>
+      <div class="icon import_icon" title="Import" ></div>
+      <div class="icon export_icon" title="Export" ></div>
+
+    </div>
+  </div>
+</div>
+
 <div class="section">
   <div class="divider">
     <div class="title"><span>Skill Related Variables</span></div>
@@ -12,6 +67,7 @@
         <div class="half">
           <div class="input-wrapper">
             <span class="label">Min. Rating for Attempt</span>
+            <!-- [(ngModel)]="skillsVars.attemptRating" (ngModelChange)="hasUnsavedChanges = true"-->
             <input type="number" id="attempt-min-rating" name="attempt-min-rating" class="input">
           </div>
         </div>
@@ -22,6 +78,8 @@
         <div class="half">
           <div class="input-wrapper">
             <span class="label">Skill Initial Coost</span>
+            <!-- [(ngModel)]="skillsVars.skillCost" (ngModelChange)="hasUnsavedChanges = true"-->
+
             <input type="number" id="skill-initial-cost" name="skill-initial-cost" class="input">
           </div>
         </div>
@@ -29,6 +87,7 @@
         <div class="half">
           <div class="input-wrapper">
             <span class="label">Wildcard Initial Cost</span>
+            <!-- [(ngModel)]="skillsVars.wildcardCost" (ngModelChange)="hasUnsavedChanges = true"-->
             <input type="number" id="wildcard-initial-cost" name="wildcard-initial-cost" class="input">
           </div>
         </div>
@@ -39,6 +98,7 @@
         <div class="half">
           <div class="input-wrapper">
             <span class="label">Increment Cost</span>
+            <!-- [(ngModel)]="skillsVars.incrementCost" (ngModelChange)="hasUnsavedChanges = true"-->
             <input type="number" id="increment-cost" name="increment-cost" class="input" >
           </div>
         </div>
@@ -46,6 +106,7 @@
         <div class="half">
           <div class="input-wrapper">
             <span class="label">Increment Formula</span>
+            <!-- [(ngModel)]="skillsVars.costFormula" (ngModelChange)="hasUnsavedChanges = true"-->
             <select id="increment-formula" name="increment-formula" >
               <option value="Default">Choose a Formula</option>
               <option value="Case 0"> Case 0 - SUB: incrementCost </option>
@@ -59,8 +120,7 @@
     </div>
 
     <div class="action-buttons">
-      <!--- [disabled]="!hasUnsavedChanges || !isReadyToSubmit()" (click)="saveMoodle()" --->
-      <button id="save-button" class="button" >Save</button>
+      <button id="save-button" class="button" [disabled]="!hasUnsavedChanges || !isReadyToSubmit()" (click)="saveCurrencySkillVars()">Save</button>
     </div>
   </div>
 

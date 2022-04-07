@@ -3,6 +3,8 @@ import {ApiHttpService} from "../../../../../../../_services/api/api-http.servic
 import {ActivatedRoute} from "@angular/router";
 import {finalize} from "rxjs/operators";
 import {ErrorService} from "../../../../../../../_services/error.service";
+import {Skill} from "../../../../../../../_domain/skills/skill";
+import {exists} from "../../../../../../../_utils/misc/misc";
 
 @Component({
   selector: 'app-virtualcurrency',
@@ -16,6 +18,9 @@ export class VirtualcurrencyComponent implements OnInit {
 
 
   courseID: number;
+
+  actionsToRemove: [];
+
 
   skillsVars = {
     skillCost: null,
@@ -55,7 +60,7 @@ export class VirtualcurrencyComponent implements OnInit {
       )*/
   }
 
-  /*
+
 
   saveCurrencySkillVars() {
     this.loading = true;
@@ -75,8 +80,15 @@ export class VirtualcurrencyComponent implements OnInit {
         res => this.getCurrencySkillVars(),
         error => ErrorService.set(error)
       )
-  }*/
+  }
 
+  isReadyToSubmit(): boolean {
+    return exists(this.skillsVars.skillCost) && !this.skillsVars.skillCost.isEmpty() &&
+      exists(this.skillsVars.wildcardCost) && !this.skillsVars.wildcardCost.isEmpty() &&
+      exists(this.skillsVars.attemptRating) && !this.skillsVars.attemptRating.isEmpty() &&
+      exists(this.skillsVars.costFormula) && !this.skillsVars.costFormula.isEmpty() &&
+      exists(this.skillsVars.incrementCost) && !this.skillsVars.incrementCost.isEmpty();
+  }
 
 }
 
