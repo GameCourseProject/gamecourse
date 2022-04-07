@@ -88,7 +88,7 @@ def get_badges(course):
     return badge_dict
 
 
-def get_awards(course):
+def get_awards(course, end_date):
     """
     Get awards given in the course.
 	"""
@@ -97,8 +97,8 @@ def get_awards(course):
                                   host='localhost', database=database)
 
     cursor = cnx.cursor(prepared=True)
-    query = "SELECT * FROM award WHERE course = %s ORDER BY date;"
-    args = (course,)
+    query = "SELECT * FROM award WHERE course = %s AND date <= %s ORDER BY date;"
+    args = (course,end_date,)
 
     cursor.execute(query, args)
     table = cursor.fetchall()
@@ -106,7 +106,7 @@ def get_awards(course):
     return table
 
 
-def get_participations(course):
+def get_participations(course, end_date):
     """
     Get awards given in the course.
 	"""
@@ -115,8 +115,8 @@ def get_participations(course):
                                   host='localhost', database=database)
 
     cursor = cnx.cursor(prepared=True)
-    query = "SELECT user, type, date FROM participation WHERE course = %s and type != 'lab grade' and type not like 'attended %' and type != 'initial bonus' and type != 'quiz grade' and type != 'graded post' and type != 'suggested presentation subject' and type != 'participated in lecture' order by date;"
-    args = (course,)
+    query = "SELECT user, type, date FROM participation WHERE course = %s AND date <= %s AND type != 'lab grade' AND type not like 'attended %' AND type != 'initial bonus' AND type != 'quiz grade' AND type != 'graded post' AND type != 'suggested presentation subject' AND type != 'participated in lecture' ORDER BY date;"
+    args = (course,end_date,)
 
     cursor.execute(query, args)
     table = cursor.fetchall()
@@ -444,7 +444,7 @@ def clustering(total_xp, maindata, headers, num_clusters, min_cluster_size):
 if __name__ == "__main__":
     # np.set_printoptions(threshold=sys.maxsize)
     # warnings.filterwarnings("ignore", category=DeprecationWarning)
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 5:
         error_msg = "ERROR: Profiler didn't receive all the information."
         # print(error_msg)
         f = open(RESULTS_PATH + "results.txt", "w")
@@ -458,9 +458,10 @@ if __name__ == "__main__":
     if course_exists(course):
         num_clusters = int(sys.argv[2])
         min_cluster_size = int(sys.argv[3])
+        end_date = sys.argv[4]
         try:
-            awards = get_awards(course)
-            participations = get_participations(course)
+            awards = get_awards(course, end_date)
+            participations = get_participations(course, end_date)
 
             if not awards:
                 error_msg = "ERROR: No awards to analyze."
