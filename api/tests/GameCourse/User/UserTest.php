@@ -486,7 +486,7 @@ class UserTest extends TestCase
             $user = User::addUser("Ana Gonçalves", "ist100000", "fenix", "ana.goncalves@gmail.com",
                 10000, "Ana G", "MEIC-A", false, false);
             $user->setData($fieldValues);
-            $this->fail("Error shoud have been thrown on 'setDataFailure'");
+            $this->fail("Error should have been thrown on 'setDataFailure'");
 
         } catch (Error $e) {
             $user = new User(1);
@@ -507,7 +507,7 @@ class UserTest extends TestCase
             $user = User::addUser("Rita Alves", "ist200000", "fenix", "rita.alves@gmail.com",
                 20000, "Rita A.", "MEIC-A", false, false);
             $user->setData(["studentNumber" => 10000]);
-            $this->fail("Error shoud have been thrown on 'setDataDuplicateStudentNumberFailure'");
+            $this->fail("Error should have been thrown on 'setDataDuplicateStudentNumberFailure'");
 
         } catch (PDOException $e) {
             $user = new User(2);
@@ -520,7 +520,7 @@ class UserTest extends TestCase
     /**
      * @test
      */
-    public function setDataDuplicateUsernameFailure()
+    public function setDataDuplicateUsernameAndAuthenticationServiceFailure()
     {
         try {
             User::addUser("Ana Gonçalves", "ist100000", "fenix", "ana.goncalves@gmail.com",
@@ -528,7 +528,7 @@ class UserTest extends TestCase
             $user = User::addUser("Rita Alves", "ist200000", "fenix", "rita.alves@gmail.com",
                 20000, "Rita A.", "MEIC-A", false, false);
             $user->setData(["username" => "ist100000"]);
-            $this->fail("Error shoud have been thrown on 'setDataDuplicateUsernameFailure'");
+            $this->fail("Error should have been thrown on 'setDataDuplicateUsernameAndAuthenticationServiceFailure'");
 
         } catch (PDOException $e) {
             $user = new User(2);
@@ -549,7 +549,7 @@ class UserTest extends TestCase
             $user = User::addUser("Rita Alves", "ist200000", "fenix", "rita.alves@gmail.com",
                 20000, "Rita A.", "MEIC-A", false, false);
             $user->setData(["email" => "ana.goncalves@gmail.com"]);
-            $this->fail("Error shoud have been thrown on 'setDataDuplicateEmailFailure'");
+            $this->fail("Error should have been thrown on 'setDataDuplicateEmailFailure'");
 
         } catch (PDOException $e) {
             $user = new User(2);
@@ -721,7 +721,7 @@ class UserTest extends TestCase
     {
         try {
             User::addUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
-            $this->fail("Error shoud have been thrown on 'addUserFailure'");
+            $this->fail("Error should have been thrown on 'addUserFailure'");
 
         } catch (Error $e) {
             $user = Core::database()->select(User::TABLE_USER, ["studentNumber" => $studentNumber]);
@@ -745,7 +745,7 @@ class UserTest extends TestCase
     /**
      * @test
      */
-    public function addUserDuplicateUsernameFailure()
+    public function addUserDuplicateUsernameAndAuthenticationServiceFailure()
     {
         User::addUser("João Carlos Sousa", "ist123456", "fenix", "joao@gmail.com",
             123456, "João Sousa", "MEIC-A", false, true);
@@ -797,7 +797,7 @@ class UserTest extends TestCase
             $user = User::addUser("João Carlos Sousa", "ist654321", "fenix", "joao@gmail.com",
                 654321, "João Sousa", "MEIC-A", false, false);
             $user->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
-            $this->fail("Error shoud have been thrown on 'editUserFailure'");
+            $this->fail("Error should have been thrown on 'editUserFailure'");
 
         } catch (Error $e) {
             $user = Core::database()->select(User::TABLE_USER, ["studentNumber" => 654321]);
@@ -826,7 +826,7 @@ class UserTest extends TestCase
     /**
      * @test
      */
-    public function editUserDuplicateUsernameFailure()
+    public function editUserDuplicateUsernameAndAuthenticationServiceFailure()
     {
         User::addUser("João Carlos Sousa", "ist123456", "fenix", "joao@gmail.com",
             123456, "João Sousa", "MEIC-A", false, true);
