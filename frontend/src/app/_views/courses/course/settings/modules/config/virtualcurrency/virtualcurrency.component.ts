@@ -4,6 +4,8 @@ import {ActivatedRoute} from "@angular/router";
 import {finalize} from "rxjs/operators";
 import {ErrorService} from "../../../../../../../_services/error.service";
 import {Skill} from "../../../../../../../_domain/skills/skill";
+import {ActionsToRemove} from "../../../../../../../_domain/virtualcurrency/actionstoremove";
+
 import {exists} from "../../../../../../../_utils/misc/misc";
 
 @Component({
@@ -19,7 +21,7 @@ export class VirtualcurrencyComponent implements OnInit {
 
   courseID: number;
 
-  actionsToRemove: [];
+  actionsToRemove: ActionsToRemove[] = [];
 
 
   skillsVars = {
@@ -39,9 +41,23 @@ export class VirtualcurrencyComponent implements OnInit {
     this.loading = true;
     this.route.parent.params.subscribe(params => {
       this.courseID = parseInt(params.id);
+      this.getActionsToRemove()
       this.getCurrencySkillVars();
     });
   }
+
+
+  getActionsToRemove() {
+    this.loading = true;
+    /*this.api.getActionsToRemove(this.courseID)
+      .pipe( finalize(() => this.loading = false) )
+      .subscribe(
+        actionsToRemove => this.actionsToRemove = actionsToRemove,
+        error => ErrorService.set(error)
+      );*/
+  }
+
+
 
 
   getCurrencySkillVars() {

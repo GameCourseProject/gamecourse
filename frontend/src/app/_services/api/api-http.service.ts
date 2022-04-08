@@ -47,6 +47,7 @@ import {
 import {
   CurrencySkillsVars
 } from "../../_views/courses/course/settings/modules/config/virtualcurrency/virtualcurrency.component";
+import {ActionsToRemove} from "../../_domain/virtualcurrency/actionstoremove";
 
 @Injectable({
   providedIn: 'root'
@@ -1508,6 +1509,19 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
+  }
+
+  public getActionsToRemove(courseID: number): Observable<ActionsToRemove[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.VIRTUAL_CURRENCY);
+      qs.push('request', 'getActionsToRemove');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (res['data']['actionstoremove']).map(obj => ActionsToRemove.fromDatabase(obj))) );
   }
 
 

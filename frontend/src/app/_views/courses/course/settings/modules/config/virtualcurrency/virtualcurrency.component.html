@@ -4,16 +4,21 @@
   </div>
 
   <div class="tiers content">
-    <!-- Tiers List -->
-    <div id="tiers-list">
+    <!-- to Remove List -->
+    <div id="remove-list">
       <div class="data-table">
 
-        <table *ngIf="actionsToRemove?.length > 0" id="listing-table">
+        <!-- <table *ngIf="actionsToRemove?.length > 0" id="listing-table">  -->
+
+        <table id="listing-table">
           <!-- Header -->
           <thead>
           <tr>
-            <th>Tier</th>
-            <th>XP</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Tokens</th>
+            <th>is Active</th>
             <th class="action-column"></th>
             <th class="action-column"></th>
             <th class="action-column"></th>
@@ -23,9 +28,14 @@
 
           <!-- Body -->
           <tbody>
-          <tr *ngFor="let toRemove of actionsToRemove">
-            <td><span>Hello</span></td>
-            <td><span>World</span></td>
+
+          <!-- *ngFor="let toRemove of actionsToRemove"-->
+          <tr >
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
             <td class="action-column">
               <div class="icon edit_icon" title="Edit" ></div>
             </td>
@@ -36,6 +46,7 @@
           </tbody>
         </table>
 
+        <!--- <div *ngIf="actionsToRemove.length === 0" class='error_box'> -->
         <div *ngIf="actionsToRemove.length === 0" class='error_box'>
           <div id='empty_table_tiers' class='error_msg'>No tiers found</div>
         </div>
@@ -77,7 +88,7 @@
       <div class="row">
         <div class="half">
           <div class="input-wrapper">
-            <span class="label">Skill Initial Coost</span>
+            <span class="label">Skill Initial Cost</span>
             <!-- [(ngModel)]="skillsVars.skillCost" (ngModelChange)="hasUnsavedChanges = true"-->
 
             <input type="number" id="skill-initial-cost" name="skill-initial-cost" class="input">
