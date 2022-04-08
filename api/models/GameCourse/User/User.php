@@ -237,7 +237,7 @@ class User
     public static function getAllUsers(): array
     {
         return Core::database()->selectMultiple(
-            self::TABLE_USER . " u join " . Auth::TABLE_AUTH . " a on u.id = a.id",
+            self::TABLE_USER . " u join " . Auth::TABLE_AUTH . " a on u.id = a.game_course_user_id",
             [],
             "u.*, a.username, a.authentication_service"
         );

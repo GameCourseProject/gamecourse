@@ -7,6 +7,7 @@ use GameCourse\User\User;
 use PDO;
 use PDOException;
 use PHPUnit\Framework\TestCase;
+use Utils\Utils;
 
 class DatabaseTest extends TestCase
 {
@@ -158,20 +159,6 @@ class DatabaseTest extends TestCase
     /**
      * @test
      */
-    public function selectFirstWhereConditionWithWildcard()
-    {
-        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
-        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
-        $first = Core::database()->select(User::TABLE_USER, [], "*", null, [], [], ["name" => "John%"]);
-        $this->assertIsArray($first);
-        $this->assertCount(8, $first);
-        $this->assertArrayHasKey("name", $first);
-        $this->assertEquals("John Doe", $first["name"]);
-    }
-
-    /**
-     * @test
-     */
     public function selectFirstFilterColumn()
     {
         Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
@@ -207,7 +194,7 @@ class DatabaseTest extends TestCase
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
         Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id]);
 
-        $first = Core::database()->select(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a", ["u.name" => "John Doe"], "name, a.username");
+        $first = Core::database()->select(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id", ["u.name" => "John Doe"], "name, a.username");
         $this->assertIsArray($first);
         $this->assertCount(2, $first);
         $this->assertArrayHasKey("name", $first);
@@ -330,7 +317,316 @@ class DatabaseTest extends TestCase
         $this->assertEquals("b", $first["email"]);
     }
 
-    // TODO: select multiple
+    /**
+     * @test
+     */
+    public function selectFirstWithLikeParams()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        $first = Core::database()->select(User::TABLE_USER, [], "*", null, [], [], ["name" => "John%"]);
+        $this->assertIsArray($first);
+        $this->assertCount(8, $first);
+        $this->assertArrayHasKey("name", $first);
+        $this->assertEquals("John Doe", $first["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultiple()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER);
+        $this->assertIsArray($users);
+        $this->assertCount(2, $users);
+        $this->assertCount(8, $users[0]);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+        $this->assertCount(8, $users[1]);
+        $this->assertArrayHasKey("name", $users[1]);
+        $this->assertEquals("Anna Doe", $users[1]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleJoinedTables()
+    {
+        $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id]);
+        $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id]);
+
+        $users = Core::database()->selectMultiple(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id");
+        $this->assertIsArray($users);
+        $this->assertCount(2, $users);
+        $this->assertCount(11, $users[0]);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertArrayHasKey("username", $users[0]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+        $this->assertCount(11, $users[1]);
+        $this->assertArrayHasKey("name", $users[1]);
+        $this->assertArrayHasKey("username", $users[1]);
+        $this->assertEquals("Anna Doe", $users[1]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleWhereCondition()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER, ["name" => "John Doe"]);
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleWhereMultipleConditions()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER, ["id" => 1, "name" => "John Doe"]);
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleFilterColumn()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER, ["name" => "John Doe"], "name");
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+        $this->assertCount(1, $users[0]);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleFilterMultipleColumns()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER, ["name" => "John Doe"], "id, name");
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+        $this->assertCount(2, $users[0]);
+        $this->assertArrayHasKey("id", $users[0]);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("1", $users[0]["id"]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleJoinedTablesFilterMultipleColumns()
+    {
+        $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id]);
+        $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id]);
+
+        $users = Core::database()->selectMultiple(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id", ["u.name" => "John Doe"], "name, a.username");
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+        $this->assertCount(2, $users[0]);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertArrayHasKey("username", $users[0]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+        $this->assertNull($users[0]["username"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleWhenOrdering()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER, [], "*", "name");
+        $this->assertIsArray($users);
+        $this->assertCount(2, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("Anna Doe", $users[0]["name"]);
+        $this->assertArrayHasKey("name", $users[1]);
+        $this->assertEquals("John Doe", $users[1]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleWhenOrderingMultiple()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe", "email" => "c"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "b"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "a"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER, [], "*", "name, email");
+        $this->assertIsArray($users);
+        $this->assertCount(3, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertArrayHasKey("email", $users[0]);
+        $this->assertEquals("Anna Doe", $users[0]["name"]);
+        $this->assertEquals("a", $users[0]["email"]);
+        $this->assertArrayHasKey("name", $users[1]);
+        $this->assertArrayHasKey("email", $users[1]);
+        $this->assertEquals("Anna Doe", $users[1]["name"]);
+        $this->assertEquals("b", $users[1]["email"]);
+        $this->assertArrayHasKey("name", $users[2]);
+        $this->assertArrayHasKey("email", $users[2]);
+        $this->assertEquals("John Doe", $users[2]["name"]);
+        $this->assertEquals("c", $users[2]["email"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleWhenOrderingMultipleDifferentOrders()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe", "email" => "c"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "a"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "b"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER, [], "*", "name ASC, email DESC");
+        $this->assertIsArray($users);
+        $this->assertCount(3, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertArrayHasKey("email", $users[0]);
+        $this->assertEquals("Anna Doe", $users[0]["name"]);
+        $this->assertEquals("b", $users[0]["email"]);
+        $this->assertArrayHasKey("name", $users[1]);
+        $this->assertArrayHasKey("email", $users[1]);
+        $this->assertEquals("Anna Doe", $users[1]["name"]);
+        $this->assertEquals("a", $users[1]["email"]);
+        $this->assertArrayHasKey("name", $users[2]);
+        $this->assertArrayHasKey("email", $users[2]);
+        $this->assertEquals("John Doe", $users[2]["name"]);
+        $this->assertEquals("c", $users[2]["email"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleWhereNot()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "a"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "b"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe", "email" => "c"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER, [], "*", null, [["name", "Anna Doe"]]);
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleWhereNotMultiple()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe", "email" => "c"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "b"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "a"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER, [], "*", null, [["name", "John Doe"], ["email", "b"]]);
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertArrayHasKey("email", $users[0]);
+        $this->assertEquals("Anna Doe", $users[0]["name"]);
+        $this->assertEquals("a", $users[0]["email"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleWhereCompare()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe", "email" => "c"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "a"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "b"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER, [], "*", null, [], [["id", ">", 1]]);
+        $this->assertIsArray($users);
+        $this->assertCount(2, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertArrayHasKey("email", $users[0]);
+        $this->assertEquals("Anna Doe", $users[0]["name"]);
+        $this->assertEquals("a", $users[0]["email"]);
+        $this->assertArrayHasKey("name", $users[1]);
+        $this->assertArrayHasKey("email", $users[1]);
+        $this->assertEquals("Anna Doe", $users[1]["name"]);
+        $this->assertEquals("b", $users[1]["email"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleWhereCompareMultiple()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe", "email" => "c"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "a"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "b"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER, [], "*", null, [], [["id", ">", 1], ["email", "!=", "a"]]);
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertArrayHasKey("email", $users[0]);
+        $this->assertEquals("Anna Doe", $users[0]["name"]);
+        $this->assertEquals("b", $users[0]["email"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleWhenGrouping()
+    {
+        $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "authentication_service" => "fenix"]);
+        $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "authentication_service" => "google"]);
+        $id = Core::database()->insert(User::TABLE_USER, ["name" => "Julia Doe"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "authentication_service" => "google"]);
+
+        $authServices = Core::database()->selectMultiple(Auth::TABLE_AUTH, [], "count(id), authentication_service", null, [], [], "authentication_service");
+        $this->assertIsArray($authServices);
+        $this->assertCount(2, $authServices);
+        $this->assertArrayHasKey("authentication_service", $authServices[0]);
+        $this->assertEquals("fenix", $authServices[0]["authentication_service"]);
+        $this->assertEquals(1, intval($authServices[0]["count(id)"]));
+        $this->assertArrayHasKey("authentication_service", $authServices[1]);
+        $this->assertEquals("google", $authServices[1]["authentication_service"]);
+        $this->assertEquals(2, intval($authServices[1]["count(id)"]));
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleWithLikeParams()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe", "email" => "c"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "a"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "b"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER, [], "*", null, [], [], null, ["name" => "Anna%"]);
+        $this->assertIsArray($users);
+        $this->assertCount(2, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("Anna Doe", $users[0]["name"]);
+        $this->assertArrayHasKey("name", $users[1]);
+        $this->assertEquals("Anna Doe", $users[1]["name"]);
+    }
 
     /**
      * @test
@@ -367,9 +663,304 @@ class DatabaseTest extends TestCase
         Core::database()->insert("table_doesnt_exist", ["name" => "John Doe"]);
     }
 
-    // TODO: update
+    /**
+     * @test
+     */
+    public function updateAll()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->update(User::TABLE_USER, ["name" => "Julia Doe"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER);
+        $this->assertIsArray($users);
+        $this->assertCount(2, $users);
+        foreach ($users as $user) {
+            $this->assertArrayHasKey("name", $user);
+            $this->assertEquals("Julia Doe", $user["name"]);
+        }
+    }
 
-    // TODO: delete
+    /**
+     * @test
+     */
+    public function updateWhereCondition()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->update(User::TABLE_USER, ["name" => "Julia Doe"], ["name" => "Anna Doe"]);
+        $name = Core::database()->select(User::TABLE_USER, ["id" => $id], "name");
+        $this->assertIsString($name);
+        $this->assertEquals("Julia Doe", $name);
+    }
 
-    // TODO: utils
+    /**
+     * @test
+     */
+    public function updateWhereMultipleConditions()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->update(User::TABLE_USER, ["name" => "Julia Doe"], ["id" => $id, "name" => "Anna Doe"]);
+        $name = Core::database()->select(User::TABLE_USER, ["id" => $id], "name");
+        $this->assertIsString($name);
+        $this->assertEquals("Julia Doe", $name);
+    }
+
+    /**
+     * @test
+     */
+    public function updateWhereNotCondition()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->update(User::TABLE_USER, ["name" => "Julia Doe"], [], [["name", "John Doe"]]);
+        $name = Core::database()->select(User::TABLE_USER, ["id" => $id], "name");
+        $this->assertIsString($name);
+        $this->assertEquals("Julia Doe", $name);
+    }
+
+    /**
+     * @test
+     */
+    public function updateWhereNotMultipleConditions()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->update(User::TABLE_USER, ["name" => "Julia Doe"], [], [["id", 1], ["name", "John Doe"]]);
+        $name = Core::database()->select(User::TABLE_USER, ["id" => $id], "name");
+        $this->assertIsString($name);
+        $this->assertEquals("Julia Doe", $name);
+    }
+
+    /**
+     * @test
+     */
+    public function updateWhereCompareCondition()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->update(User::TABLE_USER, ["name" => "Julia Doe"], [], [], [["name", "=", "Anna Doe"]]);
+        $name = Core::database()->select(User::TABLE_USER, ["id" => $id], "name");
+        $this->assertIsString($name);
+        $this->assertEquals("Julia Doe", $name);
+    }
+
+    /**
+     * @test
+     */
+    public function updateWhereCompareMultipleConditions()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->update(User::TABLE_USER, ["name" => "Julia Doe"], [], [], [["id", ">", 1], ["name", "=", "Anna Doe"]]);
+        $name = Core::database()->select(User::TABLE_USER, ["id" => $id], "name");
+        $this->assertIsString($name);
+        $this->assertEquals("Julia Doe", $name);
+    }
+
+    /**
+     * @test
+     */
+    public function updateWithLikeParams()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe", "email" => "c"]);
+        $id1 = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "a"]);
+        $id2 = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "b"]);
+        Core::database()->update(User::TABLE_USER, ["name" => "Julia Doe"], [], [], [], ["name" => "Anna%"]);
+        $name1 = Core::database()->select(User::TABLE_USER, ["id" => $id1], "name");
+        $this->assertIsString($name1);
+        $this->assertEquals("Julia Doe", $name1);
+        $name2 = Core::database()->select(User::TABLE_USER, ["id" => $id2], "name");
+        $this->assertIsString($name2);
+        $this->assertEquals("Julia Doe", $name2);
+    }
+
+    /**
+     * @test
+     */
+    public function deleteAllEntries()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->delete(User::TABLE_USER);
+        $users = Core::database()->selectMultiple(User::TABLE_USER);
+        $this->assertIsArray($users);
+        $this->assertCount(0, $users);
+    }
+
+    /**
+     * @test
+     */
+    public function deleteWhereCondition()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->delete(User::TABLE_USER, ["name" => "Anna Doe"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER);
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function deleteWhereMultipleConditions()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->delete(User::TABLE_USER, ["id" => 2, "name" => "Anna Doe"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER);
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function deleteWhereNotCondition()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->delete(User::TABLE_USER, [], [["name", "John Doe"]]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER);
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function deleteWhereNotMultipleConditions()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->delete(User::TABLE_USER, [], [["id", 1], ["name", "John Doe"]]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER);
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function deleteWhereCompareCondition()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->delete(User::TABLE_USER, [], [], [["name", "=", "Anna Doe"]]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER);
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function deleteWhereCompareMultipleConditions()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->delete(User::TABLE_USER, [], [], [["id", ">", 1], ["name", "=", "Anna Doe"]]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER);
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function deleteWithLikeParams()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe", "email" => "c"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "a"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "b"]);
+        Core::database()->delete(User::TABLE_USER, [], [], [], ["name" => "Anna%"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER);
+        $this->assertCount(1, $users);
+        $this->assertArrayHasKey("name", $users[0]);
+        $this->assertEquals("John Doe", $users[0]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function deleteAll()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        Core::database()->deleteAll(User::TABLE_USER);
+        $users = Core::database()->selectMultiple(User::TABLE_USER);
+        $this->assertIsArray($users);
+        $this->assertCount(0, $users);
+    }
+
+    /**
+     * @test
+     */
+    public function getLastId()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        $this->assertEquals(2, Core::database()->getLastId());
+    }
+
+    /**
+     * @test
+     */
+    public function tableExists()
+    {
+        $this->assertTrue(Core::database()->tableExists(User::TABLE_USER));
+    }
+
+    /**
+     * @test
+     */
+    public function tableDoesntExist()
+    {
+        $this->assertFalse(Core::database()->tableExists("table_doesnt_exist"));
+    }
+
+    /**
+     * @test
+     */
+    public function columnExists()
+    {
+        $this->assertTrue(Core::database()->columnExists(User::TABLE_USER, "name"));
+    }
+
+    /**
+     * @test
+     */
+    public function columnDoesntExist()
+    {
+        $this->assertFalse(Core::database()->columnExists(User::TABLE_USER, "column_doesnt_exist"));
+    }
+
+    /**
+     * @test
+     */
+    public function resetAutoIncrement()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        $lastID = Core::database()->getLastId();
+        $this->assertEquals(2, $lastID);
+        Core::database()->deleteAll(User::TABLE_USER);
+        Core::database()->resetAutoIncrement(User::TABLE_USER);
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        $lastID = Core::database()->getLastId();
+        $this->assertEquals(1, $lastID);
+    }
 }
