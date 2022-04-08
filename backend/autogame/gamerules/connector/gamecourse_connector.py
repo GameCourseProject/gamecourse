@@ -2635,7 +2635,7 @@ def award_streak(target, streak, contributions=None, info=None):
             total_extra_xp = int(curr_badge_extra_xp) + int(curr_streak_xp)
             if total_extra_xp >= max_extra_reward:
                 calculated_reward = 0
-            elif reward + total_extra_xp > max_extra_reward:
+            elif streak_reward + total_extra_xp > max_extra_reward:
                 calculated_reward = max_extra_reward - curr_badge_extra_xp
             else:
                 calculated_reward = streak_reward
@@ -2710,7 +2710,7 @@ def award_streak(target, streak, contributions=None, info=None):
             total_extra_xp = int(curr_badge_extra_xp) + int(curr_streak_xp)
             if total_extra_xp >= max_extra_reward:
                 calculated_reward = 0
-            elif reward + total_extra_xp > max_extra_reward:
+            elif streak_reward + total_extra_xp > max_extra_reward:
                 calculated_reward = max_extra_reward - curr_badge_extra_xp
             else:
                 calculated_reward = streak_reward
