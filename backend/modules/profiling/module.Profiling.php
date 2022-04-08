@@ -548,8 +548,9 @@ class Profiling extends Module
         $nodes = [];
         $data = [];
         $transitions = [];
-        $nameOrder = ["None"];
+        $nameOrder = [];
 
+        // Set order
         for($i = 0; $i < count($clusterNames); $i++){
             $color = $colors[$i];
             $name = $clusterNames[$i];
@@ -559,17 +560,29 @@ class Profiling extends Module
                     "name" => $name,
                     "color" => $color
                 );
-                array_push($nameOrder, $name . $j);
+                $nameOrder[] = $name . $j;
             }
         }
-        
-        for ($j = 0; $j <= $nDays; $j++){
+        for ($j = 0; $j < $nDays; $j++){
             $nodes[] = array(
                 "id" => "None" . $j,
                 "name" => "None",
                 "color" => $this->colorNone
             );
-            array_push($nameOrder, "None" . $j);
+            $nameOrder[] = "None" . $j;
+        }
+
+        // Set all transitions possible (this forces the order defined previously)
+        foreach ($nameOrder as $from) {
+            $fromOrder = intval(substr($from, -1));
+            if ($fromOrder < $nDays) {
+                foreach ($nameOrder as $to) {
+                    $toOrder = intval(substr($to, -1));
+                    if ($from != $to && $toOrder == $fromOrder + 1) {
+                        $transitions[$from][$to] = 0;
+                    }
+                }
+            }
         }
 
         foreach($history as $entry){
