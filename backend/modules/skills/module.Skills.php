@@ -2006,6 +2006,51 @@ class Skills extends Module
         $state = Core::$systemDB->select(self::TABLE, ["id" => $itemId], $param);
         Core::$systemDB->update(self::TABLE, [$param => $state ? 0 : 1], ["id" => $itemId]);
     }
+
+    public static function checkGrade(int $courseId, array $student, array &$studentsWithIncorrectGrade): int {
+        $skillTreeMax = intval(Core::$systemDB->select(self::TABLE_TREES, ["course" => $courseId], "maxReward"));
+
+        // Get all skills
+        $allSkills = Core::$systemDB->selectMultiple(self::TABLE_TREES . " tr JOIN " . self::TABLE . " s on s.treeId=tr.id JOIN " . self::TABLE_TIERS . " ti on s.tier=ti.tier AND ti.treeId=tr.id", ["tr.course" => $courseId], "s.id, s.name, ti.reward");
+        $skills = [];
+        foreach ($allSkills as $skill) {
+            $skills[$skill["id"]] = $skill;
+        }
+
+        $studentId = $student["id"];
+        $skillAwards = Core::$systemDB->selectMultiple(AwardList::TABLE, ["course" => $courseId, "user" => $studentId, "type" => "skill"], "*", "date");
+
+        $skillTotal = 0;
+        foreach ($skillAwards as $award) {
+            $skill = $skills[$award["moduleInstance"]];
+            $total = $skillTotal + $skill["reward"];
+            $diff = $skillTreeMax - $skillTotal;
+            $error = null;
+
+            if ($total <= $skillTreeMax && $award["reward"] != $skill["reward"]) { // award full skill XP
+                $error["message"] = "Incorrect grade on skill '" . $skill["name"] . "'. Grade awarded was " . $award["reward"] . " XP and should have been " . $skill["reward"] . " XP.";
+                $error["id"] = $award["id"];
+                $error["reward"] = $skill["reward"];
+
+            } else if ($total > $skillTreeMax && $skillTotal < $skillTreeMax && $award["reward"] != $diff) { // award partial skill XP (reaching limit)
+                $error["message"] = "Incorrect grade on skill '" . $skill["name"] . "'. Grade awarded was " . $award["reward"] . " XP and should have been " . $diff . " XP.";
+                $error["id"] = $award["id"];
+                $error["reward"] = $diff;
+
+            } else if ($total > $skillTreeMax && $skillTotal >= $skillTreeMax && $award["reward"] != 0) { // award 0 XP (limit reached)
+                $error["message"] = "Incorrect grade on skill '" . $skill["name"] . "'. Grade awarded was " . $award["reward"] . " XP and should have been 0 XP.";
+                $error["id"] = $award["id"];
+                $error["reward"] = 0;
+            }
+
+            if (!empty($error)) {
+                if (isset($studentsWithIncorrectGrade[$studentId])) $studentsWithIncorrectGrade[$studentId][] = ["skill" => $error];
+                else $studentsWithIncorrectGrade[$studentId] = [["skill" => $error]];
+            }
+            $skillTotal += $award["reward"];
+        }
+        return $skillTotal;
+    }
 }
 
 ModuleLoader::registerModule(array(

@@ -2,6 +2,7 @@
 namespace Modules\XP;
 
 use Exception;
+use GameCourse\API;
 use GameCourse\Module;
 use GameCourse\Core;
 use GameCourse\ModuleLoader;
@@ -12,6 +13,7 @@ use Modules\AwardList\AwardList;
 use Modules\Badges\Badges;
 use Modules\Skills\Skills;
 use Streaks\Streaks;
+use VirtualCurrency\VirtualCurrency;
 
 class XPLevels extends Module
 {
@@ -252,6 +254,158 @@ class XPLevels extends Module
             'level',
             true
         );
+    }
+
+    public function initAPIEndpoints()
+    {
+        /**
+         * Checks if students XP is correct according to awards
+         * received, skill tree maximum and extra credit maximum.
+         *
+         * @param int $courseId
+         * @param int $userId (optional)
+         */
+        API::registerFunction(self::ID, 'verifyXP', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('courseId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+            $enabledModules = $course->getEnabledModules();
+
+            $studentsWithIncorrectGrade = [];
+            $students = API::hasKey('userId') ? [["id" => API::getValue('userId')]] : $course->getUsersWithRole("Student");
+
+            foreach ($students as $student) {
+                // Check skill tree grade
+                if (in_array(Skills::ID, $enabledModules))
+                    $skillTotal = Skills::checkGrade($courseId, $student, $studentsWithIncorrectGrade);
+
+                // Check extra credit
+                if (in_array(Badges::ID, $enabledModules) || in_array(Streaks::ID, $enabledModules))
+                    $extraCreditTotal = self::checkExtraCreditGrade($courseId, $enabledModules, $student, $studentsWithIncorrectGrade);
+
+                // Check grades for badges
+                if (in_array(Badges::ID, $enabledModules))
+                    $badgeTotal = Badges::checkGrade($courseId, $student, $studentsWithIncorrectGrade);
+
+                // Check grades for streaks
+                // FIXME: streaks should have isExtra parameter
+
+                // Check grades for: assignments, labs, bonus, presentation, quizzes
+                $otherTotal = self::checkGeneralGrade($courseId, $student, $studentsWithIncorrectGrade);
+
+                // Check total grade
+                $studentId = $student["id"];
+                $actualTotalXP = intval(Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $studentId], "xp"));
+                $levelGoal = intval(Core::$systemDB->select("user_xp ux JOIN level l on ux.level=l.id", ["ux.course" => $courseId, "l.course" => $courseId, "user" => $studentId], "l.goal"));
+                $awardsTotalXP = intval(Core::$systemDB->select(AwardList::TABLE, ["course" => $courseId, "user" => $studentId], "sum(reward)", null, [["type", "tokens"]]));
+                $error = null;
+
+                $totalXP = $otherTotal;
+                if (in_array(Skills::ID, $enabledModules)) $totalXP += $skillTotal;
+                if (in_array(Badges::ID, $enabledModules) || in_array(Streaks::ID, $enabledModules)) $totalXP += $extraCreditTotal;
+                if (in_array(Badges::ID, $enabledModules)) $totalXP += $badgeTotal;
+
+                if ($totalXP != $actualTotalXP)
+                    $error["message"] = "Incorrect total grade. Total grade awarded was " . $actualTotalXP . " XP and should have been " . $totalXP . " XP.";
+
+                if ($awardsTotalXP != $actualTotalXP)
+                    $error["message"] = "Incorrect total grade. Total grade awarded was " . $actualTotalXP . " XP and should have been " . $awardsTotalXP . " XP.";
+
+                if ($levelGoal != (floor($actualTotalXP/1000)*1000))
+                    $error["message"] = "Incorrect level. Level awarded was " . $levelGoal . " and should have been " . (floor($actualTotalXP/1000)*1000) . ".";
+
+                if (!empty($error)) {
+                    if (isset($studentsWithIncorrectGrade[$studentId])) $studentsWithIncorrectGrade[$studentId][] = ["total" => $error];
+                    else $studentsWithIncorrectGrade[$studentId] = [["total" => $error]];
+                }
+
+                // Check tokens
+//            if (in_array(VirtualCurrency::ID, $enabledModules)) TODO
+//                $tokensPerStudent = VirtualCurrency::checkTokens($courseId, $students, $studentsWithIncorrectGrade);
+
+                // Check total tokens
+                // TODO
+            }
+
+            API::response(["students" => $students, "incorrect" => $studentsWithIncorrectGrade]);
+        });
+
+        /**
+         * Fixes 1st error on students XP.
+         *
+         * @param int $courseId
+         * @param int $userId (optional)
+         */
+        API::registerFunction(self::ID, 'fixXP', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('courseId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+            $enabledModules = $course->getEnabledModules();
+
+            $studentsWithIncorrectGrade = [];
+            $students = API::hasKey('userId') ? [["id" => API::getValue('userId')]] : $course->getUsersWithRole("Student");
+
+            $nrErrorsFixed = 0;
+            foreach ($students as $student) {
+                // Check skill tree grade
+                if (in_array(Skills::ID, $enabledModules))
+                    $skillTotal = Skills::checkGrade($courseId, $student, $studentsWithIncorrectGrade);
+
+                // Check extra credit
+                if (in_array(Badges::ID, $enabledModules) || in_array(Streaks::ID, $enabledModules))
+                    $extraCreditTotal = self::checkExtraCreditGrade($courseId, $enabledModules, $student, $studentsWithIncorrectGrade);
+
+                // Check grades for badges
+                if (in_array(Badges::ID, $enabledModules))
+                    $badgeTotal = Badges::checkGrade($courseId, $student, $studentsWithIncorrectGrade);
+
+                // Check grades for streaks
+                // FIXME: streaks should have isExtra parameter
+
+                // Check grades for: assignments, labs, bonus, presentation, quizzes
+                $otherTotal = self::checkGeneralGrade($courseId, $student, $studentsWithIncorrectGrade);
+
+                // Check total grade
+                $studentId = $student["id"];
+                $actualTotalXP = intval(Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $studentId], "xp"));
+                $levelGoal = intval(Core::$systemDB->select("user_xp ux JOIN level l on ux.level=l.id", ["ux.course" => $courseId, "l.course" => $courseId, "user" => $studentId], "l.goal"));
+                $awardsTotalXP = intval(Core::$systemDB->select(AwardList::TABLE, ["course" => $courseId, "user" => $studentId], "sum(reward)", null, [["type", "tokens"]]));
+                $error = null;
+
+                $totalXP = $otherTotal;
+                if (in_array(Skills::ID, $enabledModules)) $totalXP += $skillTotal;
+                if (in_array(Badges::ID, $enabledModules) || in_array(Streaks::ID, $enabledModules)) $totalXP += $extraCreditTotal;
+                if (in_array(Badges::ID, $enabledModules)) $totalXP += $badgeTotal;
+
+                if ($totalXP != $actualTotalXP)
+                    $error["message"] = "Incorrect total grade. Total grade awarded was " . $actualTotalXP . " XP and should have been " . $totalXP . " XP.";
+
+                if ($awardsTotalXP != $actualTotalXP)
+                    $error["message"] = "Incorrect total grade. Total grade awarded was " . $actualTotalXP . " XP and should have been " . $awardsTotalXP . " XP.";
+
+                if ($levelGoal != (floor($actualTotalXP/1000)*1000))
+                    $error["message"] = "Incorrect level. Level awarded was " . $levelGoal . " and should have been " . (floor($actualTotalXP/1000)*1000) . ".";
+
+                if (!empty($error)) {
+                    if (isset($studentsWithIncorrectGrade[$studentId])) $studentsWithIncorrectGrade[$studentId][] = ["total" => $error];
+                    else $studentsWithIncorrectGrade[$studentId] = [["total" => $error]];
+                }
+
+                if (isset($studentsWithIncorrectGrade[$studentId])) {
+                    $type = array_key_first($studentsWithIncorrectGrade[$studentId][0]);
+                    if ($type != "total") {
+                        $this->fixStudentGrade($courseId, $studentId, $studentsWithIncorrectGrade[$studentId][0][$type]);
+                        $nrErrorsFixed++;
+                    }
+                }
+            }
+
+            API::response(["nrErrorsFixed" => $nrErrorsFixed]);
+        });
     }
 
     public function setupResources() {
@@ -649,6 +803,90 @@ class XPLevels extends Module
 
     public function deleteLevel($level, $courseId){
         Core::$systemDB->delete(self::TABLE_LEVELS, ["id"=>$level['id']]);
+    }
+
+
+    /*** ----------- Misc ----------- ***/
+
+    public function checkExtraCreditGrade(int $courseId, array $enabledModules, array $student, array &$studentsWithIncorrectGrade): int {
+        $extraCreditMax = intval(Core::$systemDB->select(Badges::TABLE_CONFIG, ["course" => $courseId], "maxBonusReward")); // FIXME: general extra credit on XP_Levels
+
+        $badges = [];
+        if (in_array(Badges::ID, $enabledModules)) { // badges enabled
+            $allBadges = Core::$systemDB->selectMultiple(Badges::TABLE . " b JOIN " . Badges::TABLE_LEVEL . " l on b.id=l.badgeId", ["b.course" => $courseId], "b.id, b.name, b.isExtra, l.number, l.reward");
+            foreach ($allBadges as $badge) {
+                if (isset($badges[$badge["id"]])) $badges[$badge["id"]][$badge["number"]] = $badge;
+                else $badges[$badge["id"]] = [$badge["number"] => $badge];
+            }
+        }
+
+        $streaks = [];
+        if (in_array(Streaks::ID, $enabledModules)) { // streaks enabled
+            $allStreaks = Core::$systemDB->selectMultiple(Streaks::TABLE, ["course" => $courseId], "id, name, reward");
+            foreach ($allStreaks as $streak) {
+                $streaks[$streak["id"]] = $streak;
+            }
+        }
+
+        $studentId = $student["id"];
+        $awards = Core::$systemDB->executeQuery("SELECT * FROM " . AwardList::TABLE . " WHERE course=" . $courseId . " AND user=" . $studentId . " AND (type='badge' OR type='streak') ORDER BY date;")->fetchAll(\PDO::FETCH_ASSOC);
+        $extraCreditAwards = array_filter($awards, function ($award) use ($badges) {
+            if ($award["type"] == "badge") {
+                preg_match('/\(level (\d)\)/', $award["description"], $matches);
+                return boolval($badges[$award["moduleInstance"]][$matches[1]]["isExtra"]);
+            }
+            if ($award["type"] == "streak") return true;
+            return false;
+        });
+
+        $extraCreditTotal = 0;
+        foreach ($extraCreditAwards as $award) {
+            preg_match('/\(level (\d)\)/', $award["description"], $matches);
+            $typedAward = $award["type"] == "badge" ? $badges[$award["moduleInstance"]][$matches[1]] : $streaks[$award["moduleInstance"]];
+            $total = $extraCreditTotal + $typedAward["reward"];
+            $diff = $extraCreditMax - $extraCreditTotal;
+            $error = null;
+
+            if ($total <= $extraCreditMax && $award["reward"] != $typedAward["reward"]) { // award full XP
+                $error["message"] = "Incorrect grade on " . $award["type"] . " '" . $award["description"] . "'. Grade awarded was " . $award["reward"] . " XP and should have been " . $typedAward["reward"] . " XP.";
+                $error["id"] = $award["id"];
+                $error["reward"] = $typedAward["reward"];
+
+            } else if ($total > $extraCreditMax && $extraCreditTotal < $extraCreditMax && $award["reward"] != $diff) { // award partial XP (reaching limit)
+                $error["message"] = "Incorrect grade on " . $award["type"] . " '" . $award["description"] . "'. Grade awarded was " . $award["reward"] . " XP and should have been " . $diff . " XP.";
+                $error["id"] = $award["id"];
+                $error["reward"] = $diff;
+
+            } else if ($total > $extraCreditMax && $extraCreditTotal >= $extraCreditMax && $award["reward"] != 0) { // award 0 XP (limit reached)
+                $error["message"] = "Incorrect grade on " . $award["type"] . " '" . $award["description"] . "'. Grade awarded was " . $award["reward"] . " XP and should have been 0 XP.";
+                $error["id"] = $award["id"];
+                $error["reward"] = 0;
+            }
+
+            if (!empty($error)) {
+                if (isset($studentsWithIncorrectGrade[$studentId])) $studentsWithIncorrectGrade[$studentId][] = [$award["type"] => $error];
+                else $studentsWithIncorrectGrade[$studentId] = [[$award["type"] => $error]];
+            }
+            $extraCreditTotal += $award["reward"];
+        }
+        return $extraCreditTotal;
+    }
+
+    public function checkGeneralGrade(int $courseId, array $student, array &$studentsWithIncorrectGrade): int {
+        $studentId = $student["id"];
+        $generalAwards = Core::$systemDB->selectMultiple(AwardList::TABLE, ["course" => $courseId, "user" => $studentId], "*", null, [["type", "badge"], ["type", "streak"], ["type", "skill"], ["type", "tokens"]]);
+
+        $generalTotal = 0;
+        foreach ($generalAwards as $award) {
+            // TODO: check if matches participation table
+            $generalTotal += $award["reward"];
+        }
+        return $generalTotal;
+    }
+
+    public function fixStudentGrade(int $courseId, int $studentId, array $fix)
+    {
+        Core::$systemDB->update(AwardList::TABLE, ["reward" => $fix["reward"]], ["course" => $courseId, "user" => $studentId, "id" => $fix["id"]]);
     }
 }
 

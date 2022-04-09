@@ -1098,6 +1098,43 @@ class Badges extends Module
         $state = Core::$systemDB->select(self::TABLE, ["id" => $itemId], $param);
         Core::$systemDB->update(self::TABLE, [$param => $state ? 0 : 1], ["id" => $itemId]);
     }
+
+    public static function checkGrade(int $courseId, array $student, array &$studentsWithIncorrectGrade): int {
+        // Get all badges
+        $allBadges = Core::$systemDB->selectMultiple(Badges::TABLE . " b JOIN " . Badges::TABLE_LEVEL . " l on b.id=l.badgeId", ["b.course" => $courseId], "b.id, b.name, b.isExtra, l.number, l.reward");
+        $badges = [];
+        foreach ($allBadges as $badge) {
+            if (isset($badges[$badge["id"]])) $badges[$badge["id"]][$badge["number"]] = $badge;
+            else $badges[$badge["id"]] = [$badge["number"] => $badge];
+        }
+
+        $studentId = $student["id"];
+        $badgeAwards = Core::$systemDB->selectMultiple(AwardList::TABLE, ["course" => $courseId, "user" => $studentId, "type" => "badge"], "*", "date");
+        $badgeAwards = array_filter($badgeAwards, function ($award) use ($badges) {
+            preg_match('/\(level (\d)\)/', $award["description"], $matches);
+            return !boolval($badges[$award["moduleInstance"]][$matches[1]]["isExtra"]);
+        });
+
+        $badgeTotal = 0;
+        foreach ($badgeAwards as $award) {
+            preg_match('/\(level (\d)\)/', $award["description"], $matches);
+            $badge = $badges[$award["moduleInstance"]][$matches[1]];
+            $error = null;
+
+            if ($award["reward"] != $badge["reward"]) { // award full badge XP
+                $error["message"] = "Incorrect grade on badge '" . $award["description"] . "'. Grade awarded was " . $award["reward"] . " XP and should have been " . $badge["reward"] . " XP.";
+                $error["id"] = $award["id"];
+                $error["reward"] = $badge["reward"];
+            }
+
+            if (!empty($error)) {
+                if (isset($studentsWithIncorrectGrade[$studentId])) $studentsWithIncorrectGrade[$studentId][] = ["skill" => $error];
+                else $studentsWithIncorrectGrade[$studentId] = [["skill" => $error]];
+            }
+            $badgeTotal += $award["reward"];
+        }
+        return $badgeTotal;
+    }
 }
 
 ModuleLoader::registerModule(array(

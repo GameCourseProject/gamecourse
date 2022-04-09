@@ -340,6 +340,11 @@ class VirtualCurrency extends Module
         return intval(Core::$systemDB->select(self::TABLE_WALLET, ["course" => $this->getCourseId(), "user" => $userId], "tokens"));
     }
 
+    public static function checkTokens(int $courseId, array $students, array &$studentsWithIncorrectGrade): array {
+        // TODO
+        return [];
+    }
+
 }
 
 ModuleLoader::registerModule(array(
