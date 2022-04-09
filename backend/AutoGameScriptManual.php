@@ -21,13 +21,13 @@ Core::init();
 // Replace "1" in the above command with the appropriate course ID
 
 // To run for specific targets
-// sudo -u www-data php AutoGameScript.php 1 [138, 140]
+// sudo -u www-data php /var/www/html/gamecourse/backend/AutoGameScriptManual.php 1 [138, 140]
 
 // For testing run
-// sudo -u www-data php AutoGameScriptManual.php 1 test
+// sudo -u www-data php /var/www/html/gamecourse/backend/AutoGameScriptManual.php 1 test
 
 if (sizeof($argv) > 1) {
-    if (sizeof($argv) == 2) {
+    if (sizeof($argv) == 2) { // run for all
         Course::newExternalData($argv[1], True);
     }
     else if (sizeof($argv) == 3) {
