@@ -210,6 +210,22 @@ class XPLevels extends Module
             true
         );
 
+        //xp.getExtraGradeLimit() returns value of xp for user
+        Dictionary::registerFunction(
+            self::ID,
+            'getExtraGradeLimit',
+            function () use ($courseId) {
+                //return new ValueNode($this->calculateXP($user, $courseId));
+                return new ValueNode(1000); // FIXME: hard-coded
+            },
+            'Returns the sum of XP that all Modules provide as reward from a GameCourseUser identified by user.',
+            'integer',
+            null,
+            'library',
+            null,
+            true
+        );
+
         //%level.description
         Dictionary::registerFunction(
             self::ID,
@@ -628,19 +644,15 @@ class XPLevels extends Module
     {
         $table = AwardList::TABLE . " a join " . Badges::TABLE . " b on moduleInstance=b.id";
         $where = ["a.course" => $courseId, "user" => $userId, "type" => "badge"];
-        $maxBonusXP = Core::$systemDB->select(Badges::TABLE_CONFIG, ["course" => $courseId], "maxBonusReward");
-        $bonusBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => true, "isActive" => true]), "sum(reward)");
-        $value = min($bonusBadgeXP, $maxBonusXP);
+        $value = Core::$systemDB->select($table, array_merge($where, ["isExtra" => true, "isActive" => true]), "sum(reward)");
         return (is_null($value))? 0 : $value;
     }
 
     public function calculateBadgeXP($userId, $courseId)
     {
-        //badges XP (bonus badges have a maximum value of XP)
         $table = AwardList::TABLE . " a join " . Badges::TABLE . " b on moduleInstance=b.id";
         $where = ["a.course" => $courseId, "user" => $userId, "type" => "badge"];
-        $normalBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => false, "isActive" => true]), "sum(reward)");
-        $badgeXP = $normalBadgeXP + $this->calculateBonusBadgeXP($userId, $courseId);
+        $badgeXP = Core::$systemDB->select($table, array_merge($where, ["isActive" => true]), "sum(reward)");
         return $badgeXP;
     }
 

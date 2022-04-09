@@ -26,6 +26,10 @@
   background-color: unset !important;
 }
 
+.profile .profile-summary .profile-summary-blocks .profile-summary-progress {
+  justify-content: start !important;
+}
+
 /*** ------------- Details ------------- ***/
 
 .profile .profile-summary .profile-summary-blocks .profile-details .profile-details-header > * {

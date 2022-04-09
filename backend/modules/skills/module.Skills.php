@@ -203,6 +203,21 @@ class Skills extends Module
             true
         );
 
+        //%tree.maxReward, returns max reward
+        Dictionary::registerFunction(
+            'skillTrees',
+            'maxReward',
+            function ($tree) {
+                return Dictionary::basicGetterFunction($tree, "maxReward");
+            },
+            'Returns a string with name of the tier.',
+            'collection',
+            'tier',
+            'object',
+            'tree',
+            true
+        );
+
         //%tier.skills(isActive), returns collection w all skills of the tier
         Dictionary::registerFunction(
             'skillTrees',
