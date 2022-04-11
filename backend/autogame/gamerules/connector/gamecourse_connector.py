@@ -738,9 +738,12 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
             query = "SELECT SUM(reward) FROM award WHERE user = %s AND course = %s AND type = %s; "
             cursor.execute(query, (target, course, typeof))
             table_skill_xp = cursor.fetchall()
-            curr_skill_xp = int(table_skill_xp[0][0])
+            curr_skill_xp = table_skill_xp[0][0]
             if curr_skill_xp is None:
                 curr_skill_xp = 0
+            else:
+                curr_skill_xp = int(table_skill_xp[0][0])
+
 
             if curr_skill_xp >= max_skill_reward:
                 calculated_reward = 0
