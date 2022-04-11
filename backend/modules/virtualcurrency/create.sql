@@ -25,8 +25,8 @@ create table remove_tokens_participation(
    /* description     varchar(500) NOT NULL,
     type            varchar(50) NOT NULL, */
     tokensRemoved   int not null,
-    primary key(user, course),
+    /*primary key(user, course),*/
     foreign key(course) references course(id) on delete cascade,
     foreign key(user) references game_course_user(id) on delete cascade,
-    foreign key(participation) references participation(id) on delete cascade,
+    foreign key(participation) references participation(id) on delete cascade
 );

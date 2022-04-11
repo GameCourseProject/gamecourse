@@ -486,9 +486,10 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
 
     # get badge info
-    query = "SELECT number, badgeId, reward from badge_level left join badge on badge.id = badge_level.badgeId where badge.course = %s and badge.name = %s order by number;"
+    query = "SELECT number, badgeId, reward, isExtra from badge_level left join badge on badge.id = badge_level.badgeId where badge.course = %s and badge.name = %s order by number;"
     cursor.execute(query, (course, badge))
     table_badge = cursor.fetchall()
+    extra_badge = table_badge[0][3]
 
     if not config.test_mode:
         # update the badge_progression table with the current status
@@ -502,6 +503,30 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
                     cnx.commit()
 
 
+    if extra_badge:
+        # get max reward value for badge
+        query = "SELECT maxBonusReward from badges_config where course = %s;"
+        cursor.execute(query, (course,))
+        badge_reward_table = cursor.fetchall()
+        max_badge_reward = badge_reward_table[0][0]
+
+        # gets current user extra badge xp
+        query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and isExtra =%s and user=%s;"
+        cursor.execute(query, (course, "badge", True, target))
+        table_badge_extra_xp = cursor.fetchall()
+        curr_badge_extra_xp = table_badge_extra_xp[0][0]
+        if curr_badge_extra_xp is None:
+            curr_badge_extra_xp = 0
+
+        # gets current user streak xp
+        query = "SELECT SUM(reward) FROM award WHERE user = %s AND course = %s AND type = %s; "
+        cursor.execute(query, (target, course, "streak") )
+        table_streak_xp = cursor.fetchall()
+        curr_streak_xp = table_streak_xp[0][0]
+        if curr_streak_xp is None:
+            curr_streak_xp = 0
+
+
     # Case 0: lvl is zero and there are no lines to be erased
     # Simply return right away
     if lvl == 0 and len(table) == 0:
@@ -510,6 +535,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
     # Case 1: no level of this badge has been attributed yet
     # Simply write the badge level(s) to the 'award' table
     elif len(table) == 0:
+
         # if table is empty, just write
         for level in range(1, lvl+1):
             # if the user doesnt have the respective badge and level, adds it
@@ -518,10 +544,22 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
             badge_id = table_badge[level-1][1]
             reward = table_badge[level-1][2]
+            
+            #calculated_reward = reward
+            if not extra_badge:
+                calculated_reward = reward
+            else:
+                total_extra_xp = int(curr_badge_extra_xp) + int(curr_streak_xp)
+                if total_extra_xp >= int(max_badge_reward) or int(curr_badge_extra_xp) >= int(max_badge_reward) or int(curr_streak_xp) >= int(max_badge_reward):
+                    calculated_reward = 0
+                elif reward + total_extra_xp > int(max_badge_reward):
+                    calculated_reward = int(max_badge_reward) - int(curr_badge_extra_xp)
+                else:
+                    calculated_reward = reward
 
 
             query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-            cursor.execute(query, (target, course, description, typeof, badge_id, reward))
+            cursor.execute(query, (target, course, description, typeof, badge_id, calculated_reward))
             cnx.commit()
             cursor = cnx.cursor(prepared=True)
 
@@ -573,8 +611,19 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
             badge_id = table_badge[diff][1]
             reward = table_badge[diff][2]
 
+            if not extra_badge:
+                calculated_reward = reward
+            else:
+                total_extra_xp = int(curr_badge_extra_xp) + int(curr_streak_xp)
+                if total_extra_xp >= max_badge_reward or curr_badge_extra_xp >= max_badge_reward or curr_streak_xp >= max_badge_reward:
+                    calculated_reward = 0
+                elif reward + total_extra_xp > max_badge_reward:
+                    calculated_reward = int(max_badge_reward) - int(curr_badge_extra_xp)
+                else:
+                    calculated_reward = reward
+            #calculated_reward = reward
             query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
-            cursor.execute(query, (target, course, description, typeof, badge_id, reward))
+            cursor.execute(query, (target, course, description, typeof, badge_id, calculated_reward))
             cnx.commit()
 
             level = diff + 1
@@ -617,7 +666,6 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
         cursor.execute(query, (target, course, skill, typeof))
         table = cursor.fetchall()
 
-
         if use_wildcard != False and wildcard_tier != None:
             # get wildcard tier information
             query = "select t.id from skill_tier t left join skill_tree s on t.treeId=s.id where tier =%s and course = %s;"
@@ -625,7 +673,6 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
             table_tier = cursor.fetchall()
             if len(table_tier) == 1:
                 tier_id = table_tier[0][0]
-
 
         query = "SELECT s.id, reward, s.tier FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = %s and course = %s;"
         cursor.execute(query, (skill, course))
@@ -679,14 +726,36 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 
         # first skill awarded cost 0 tokens
         elif len(table) == 0:
+            skill_id, skill_reward = table_skill[0][0], int(table_skill[0][1])
 
-            skill_id, skill_reward = table_skill[0][0], table_skill[0][1]
+            # get max reward value for skill
+            query = "SELECT maxReward from skill_tree where course = %s;"
+            cursor.execute(query, (course,))
+            tree_reward_table = cursor.fetchall()
+            max_skill_reward = int(tree_reward_table[0][0])
+
+            # gets current user skill xp
+            query = "SELECT SUM(reward) FROM award WHERE user = %s AND course = %s AND type = %s; "
+            cursor.execute(query, (target, course, typeof))
+            table_skill_xp = cursor.fetchall()
+            curr_skill_xp = int(table_skill_xp[0][0])
+            if curr_skill_xp is None:
+                curr_skill_xp = 0
+
+            if curr_skill_xp >= max_skill_reward:
+                calculated_reward = 0
+            elif skill_reward + curr_skill_xp > max_skill_reward:
+                calculated_reward = max_skill_reward - curr_skill_xp
+            else:
+                calculated_reward = skill_reward
+
             if table_exists[0][0] > 0: # virtual currency is enabled
                 if newTotal >= 0:
-                    query = "INSERT INTO award (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
-                    cursor.execute(query, (target, course, skill, typeof, skill_id, skill_reward))
 
-                    config.award_list.append([str(target), "Skill Tree", str(skill_reward), skill])
+                    query = "INSERT INTO award (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
+                    cursor.execute(query, (target, course, skill, typeof, skill_id, calculated_reward))
+
+                    config.award_list.append([str(target), "Skill Tree", str(calculated_reward), skill])
 
                     query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
                     cursor.execute(query, (target, course, skill, typeof))
@@ -718,9 +787,9 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
                         cnx.commit()
             else:
                 query = "INSERT INTO award (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
-                cursor.execute(query, (target, course, skill, typeof, skill_id, skill_reward))
+                cursor.execute(query, (target, course, skill, typeof, skill_id, calculated_reward))
 
-                config.award_list.append([str(target), "Skill Tree", str(skill_reward), skill])
+                config.award_list.append([str(target), "Skill Tree", str(calculated_reward), skill])
 
                 query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
                 cursor.execute(query, (target, course, skill, typeof))
@@ -2528,6 +2597,30 @@ def award_streak(target, streak, contributions=None, info=None):
     cursor.execute(query, (target, course, streakid))
     table_progressions = cursor.fetchall()
 
+
+    # get max reward value for extra credit
+    query = "SELECT maxBonusReward from badges_config where course = %s;"
+    cursor.execute(query, (course,))
+    extra_reward_table = cursor.fetchall()
+    max_extra_reward = extra_reward_table[0][0]
+
+    # gets current user extra badge xp
+    query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and isExtra =%s and user=%s;"
+    cursor.execute(query, (course, "badge", True, target))
+    table_badge_extra_xp = cursor.fetchall()
+    curr_badge_extra_xp = table_badge_extra_xp[0][0]
+    if curr_badge_extra_xp is None:
+        curr_badge_extra_xp = 0
+
+    # gets current user streak xp
+    query = "SELECT SUM(reward) FROM award WHERE user = %s AND course = %s AND type = %s; "
+    cursor.execute(query, (target, course, "streak") )
+    table_streak_xp = cursor.fetchall()
+    curr_streak_xp = table_streak_xp[0][0]
+    if curr_streak_xp is None:
+        curr_streak_xp = 0
+
+
     # no valid progressions
     if len(table_progressions) == 0:
         return
@@ -2540,12 +2633,19 @@ def award_streak(target, streak, contributions=None, info=None):
 
         # if streak is finished, award it
         if len(table_progressions) >= streak_count:
-
+            total_extra_xp = int(curr_badge_extra_xp) + int(curr_streak_xp)
+            if total_extra_xp >= int(max_extra_reward) or int(curr_badge_extra_xp) >= int(max_extra_reward) or int(curr_streak_xp) >= int(max_extra_reward):
+                calculated_reward = 0
+            elif streak_reward + total_extra_xp > int(max_extra_reward):
+                calculated_reward = int(max_extra_reward) - int(curr_streak_xp)
+            else:
+                calculated_reward = streak_reward
+            #calculated_reward = reward
             if not isRepeatable:
                 description = streak
 
                 query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-                cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
+                cursor.execute(query, (target, course, description, typeof, streakid, calculated_reward))
                 cnx.commit()
                 cursor = cnx.cursor(prepared=True)
 
@@ -2572,7 +2672,7 @@ def award_streak(target, streak, contributions=None, info=None):
                     description = streak + repeated_info
 
                     query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-                    cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
+                    cursor.execute(query, (target, course, description, typeof, streakid, calculated_reward))
                     cnx.commit()
                     cursor = cnx.cursor(prepared=True)
 
@@ -2607,6 +2707,15 @@ def award_streak(target, streak, contributions=None, info=None):
         streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
 
         if isRepeatable and len(table_progressions) > streak_count:
+        
+            total_extra_xp = int(curr_badge_extra_xp) + int(curr_streak_xp)
+            if total_extra_xp >= int(max_extra_reward) or int(curr_badge_extra_xp) >= int(max_extra_reward) or int(curr_streak_xp) >= int(max_extra_reward):
+                calculated_reward = 0
+            elif streak_reward + total_extra_xp > int(max_extra_reward):
+                calculated_reward = int(max_extra_reward) - int(curr_streak_xp)
+            else:
+                calculated_reward = streak_reward
+            #calculated_reward = reward
 
             totalAwards = len(table_progressions) // streak_count
 
@@ -2616,7 +2725,7 @@ def award_streak(target, streak, contributions=None, info=None):
                 description = streak + repeated_info
 
                 query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-                cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
+                cursor.execute(query, (target, course, description, typeof, streakid, calculated_reward))
                 cnx.commit()
                 cursor = cnx.cursor(prepared=True)
 
