@@ -504,6 +504,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
 
     if extra_badge:
+
         # get max reward value for badge
         query = "SELECT maxBonusReward from badges_config where course = %s;"
         cursor.execute(query, (course,))
@@ -511,8 +512,8 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
         max_badge_reward = badge_reward_table[0][0]
 
         # gets current user extra badge xp
-        query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and isExtra =%s and user=%s;"
-        cursor.execute(query, (course, "badge", True, target))
+        query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and (isExtra = '1' or isExtra = 'True') and user=%s;"
+        cursor.execute(query, (course, "badge", target))
         table_badge_extra_xp = cursor.fetchall()
         curr_badge_extra_xp = table_badge_extra_xp[0][0]
         if curr_badge_extra_xp is None:
@@ -2608,8 +2609,8 @@ def award_streak(target, streak, contributions=None, info=None):
     max_extra_reward = extra_reward_table[0][0]
 
     # gets current user extra badge xp
-    query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and isExtra =%s and user=%s;"
-    cursor.execute(query, (course, "badge", True, target))
+    query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and (isExtra = '1' or isExtra = 'True') and user=%s;"
+    cursor.execute(query, (course, "badge", target))
     table_badge_extra_xp = cursor.fetchall()
     curr_badge_extra_xp = table_badge_extra_xp[0][0]
     if curr_badge_extra_xp is None:
