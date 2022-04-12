@@ -486,11 +486,17 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
 
     # get badge info
-    query = "SELECT number, badgeId, reward from badge_level left join badge on badge.id = badge_level.badgeId where badge.course = %s and badge.name = %s order by number;"
+    query = "SELECT badge_level.number, badge_level.badgeId, badge_level.reward, badge.isActive from badge_level left join badge on badge.id = badge_level.badgeId where badge.course = %s and badge.name = %s order by number;"
     cursor.execute(query, (course, badge))
     table_badge = cursor.fetchall()
+    isBadgeActive = table_badge[0][3]
 
+    # if badge is not active, do not run the function.
+    if not isBadgeActive:
+        return
+        
     if not config.test_mode:
+
         # update the badge_progression table with the current status
         if contributions != None:
             if len(contributions) > 0:
@@ -627,9 +633,13 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
                 tier_id = table_tier[0][0]
 
 
-        query = "SELECT s.id, reward, s.tier FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = %s and course = %s;"
+        query = "SELECT s.id, reward, s.tier, s.isActive FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = %s and course = %s;"
         cursor.execute(query, (skill, course))
         table_skill = cursor.fetchall()
+        isSkillActive = table_skill[0][3]
+
+        if not isSkillActive:
+            return
 
         query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'gamecourse') AND (TABLE_NAME = 'virtual_currency_config');"
         cursor.execute(query)
@@ -1943,9 +1953,13 @@ def award_streak(target, streak, contributions=None, info=None):
     table = cursor.fetchall()
 
     # get streak info
-    query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost from streak where course = %s and name = %s;"
+    query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost, isActive from streak where course = %s and name = %s;"
     cursor.execute(query, (course, streak))
     table_streak = cursor.fetchall()
+    isStreakActive = table_streak[0][9]
+
+    if not isStreakActive:
+        return
 
     if not config.test_mode:
         if contributions != None:
