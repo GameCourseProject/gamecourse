@@ -322,6 +322,57 @@
                                     ]
                                   ]
                                 }
+                              ],
+                              [
+                                {
+                                  "type": "row",
+                                  "role": "role.Student>role.Default",
+                                  "visibilityType": "visible",
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "Extra Grade Limit"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "chart",
+                                        "role": "role.Student>role.Default",
+                                        "class": "profile-summary-progress",
+                                        "visibilityType": "visible",
+                                        "chartType": "progress",
+                                        "info": {
+                                          "max": "{xp.getExtraGradeLimit}",
+                                          "value": "{xp.getBonusBadgesXP(%user).int + xp.getStreaksXP(%user).int}"
+                                        }
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "Skill Tree Limit"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "chart",
+                                        "role": "role.Student>role.Default",
+                                        "class": "profile-summary-progress",
+                                        "visibilityType": "visible",
+                                        "chartType": "progress",
+                                        "info": {
+                                          "max": "{skillTrees.getTree(1).maxReward}",
+                                          "value": "{xp.getSkillTreeXP(%user)}"
+                                        }
+                                      }
+                                    ]
+                                  ]
+                                }
                               ]
                             ]
                           }
