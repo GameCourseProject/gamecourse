@@ -2,6 +2,7 @@
 namespace Streaks;
 
 use GameCourse\Core;
+use GameCourse\RuleSystem;
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Views;
 use GameCourse\Views\Expression\ValueNode;
@@ -19,6 +20,8 @@ class Streaks extends Module
     const TABLE_PROGRESSION = 'streak_progression';
 
     //const STREAKS_TEMPLATE_NAME = 'Streaks block - by streaks';
+    const STREAKS_RULE_TEMPLATE = 'rule_streak_template.txt';
+
 
 
     /*** ----------------------------------------------- ***/
@@ -563,7 +566,7 @@ class Streaks extends Module
         } elseif ($actiontype == 'edit') {
             $this->editStreak($listingItem, $courseId);
         } elseif ($actiontype == 'delete') {
-            $this->deleteStreak($listingItem);
+            $this->deleteStreak($listingItem, $courseId);
         }
     }
 
@@ -761,6 +764,9 @@ class Streaks extends Module
         ];
 
         Core::$systemDB->insert(self::TABLE, $streakData);
+
+        Streaks::generateStreakRule( $courseId, $achievement[name]);
+
     }
 
     public static function editStreak($achievement, $courseId)
@@ -787,9 +793,12 @@ class Streaks extends Module
         }
     }
 
-    public function deleteStreak($streak)
+    public function deleteStreak($streak, $courseId)
     {
         Core::$systemDB->delete(self::TABLE, ["id" => $streak['id']]);
+
+        $course = Course::getCourse($courseId, false);
+        Streaks::deleteGeneratedRule($course, Core::$systemDB->select(self::TABLE, ["id" => $streak['id']], "name")) ;
     }
 
     public function toggleItemParam(int $itemId, string $param)
@@ -804,8 +813,41 @@ class Streaks extends Module
     /*** -------------------- Rules -------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    // generateStreakRule
-    // deleteGeneratedRule
+    public function generateStreakRule(Course $course, string $streakName)
+    {
+        $template = file_get_contents(MODULES_FOLDER . "/" . self::ID . "/rules/" . self::STREAKS_RULE_TEMPLATE);
+
+        $newRule = str_replace("<streak-name>", $streakName, $template);
+
+        $txt = implode("", $newRule);
+
+        $rs = new RuleSystem($course);
+
+        $rule = array();
+        $rule["module"] = self::ID;
+        $filename = $rs->getFilename(self::ID);
+        if ($filename == null) {
+            $filename = $rs->createNewRuleFile(self::ID, 1);
+            $rs->fixPrecedences();
+            $filename = $rs->getFilename(self::ID);
+        }
+        $rule["rulefile"] = $filename;
+        $rs->addRule($txt, null, $rule); // add to end
+
+    }
+
+    public function deleteGeneratedRule(Course $course, string $streakName)
+    {
+        $rs = new RuleSystem($course);
+        $rule = array();
+
+        $rule["name"] = $streakName;
+        $rule["rulefile"] = $rs->getFilename(self::ID);
+        $position = $rs->getRulePosition($rule);
+
+        if ($position !== false)
+            $rs->removeRule($rule, $position);
+    }
 
 
 }

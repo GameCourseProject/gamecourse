@@ -1,0 +1,11 @@
+rule: <streak-name>
+
+	when:
+		logs = GC.participations.getAllParticipations(target, "<participation-type>")
+		nlogs = len(logs)
+
+	then:
+		award_streak(target, "<streak-name>", logs)
+		# Virtual currency enabled?
+		# award_tokens_type(target, "streak", "<streak-name>", logs)
+

@@ -1029,6 +1029,24 @@ class Badges extends Module
                 "reward" => abs($achievement['xp' . $level])
             ]);
         }
+
+        $course = Course::getCourse($courseId, false);
+        // generateBadgeRule(Course $course, string $badgeName, array $levelsCount)
+        $badgeId = Core::$systemDB->select(self::TABLE, ["course" => $courseId, "name" => $achievement[array_search("name")]], "id");
+        $levelsArray = array();
+        $levelCount1 = Core::$systemDB->select(self::TABLE_LEVEL, ["course" => $courseId, "badgeId" => $badgeId, "number" => 1], "goal");
+        $levelCount2 = Core::$systemDB->select(self::TABLE_LEVEL, ["course" => $courseId, "badgeId" => $badgeId, "number" => 2], "goal");
+        $levelCount3 = Core::$systemDB->select(self::TABLE_LEVEL, ["course" => $courseId, "badgeId" => $badgeId, "number" => 3], "goal");
+        if ( !empty($levelCount2) ){
+            $levelsArray.push($levelCount1);
+            $levelsArray.push($levelCount2);
+            $levelsArray.push($levelCount3);
+        }else{
+            $levelsArray.push($levelCount1);
+        }
+
+        Badges::generateBadgeRule($course, $achievement['name'], $levelsArray );
+
     }
 
     public static function editBadge($achievement, $courseId)
@@ -1107,18 +1125,17 @@ class Badges extends Module
     /*** -------------------- Rules -------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    public function generateBadgeTemplateRule(Course $course, string $badgeName)
+    public function generateBadgeRule(Course $course, string $badgeName, array $levelsCount)
     {
         $template = file_get_contents(MODULES_FOLDER . "/" . self::ID . "/rules/" . self::BADGES_RULE_TEMPLATE);
 
         $newRule = str_replace("<badge-name>", $badgeName, $template);
+        $newRule = str_replace("<lvs-count>", $levelsCount, $newRule);
 
-        // Add generated rule
-        $ruletxt = explode("<skill-dependencies>", $newRule);
-        $txt = implode("", $ruletxt);
-
+        $txt = implode("", $newRule);
 
         $rs = new RuleSystem($course);
+        
         $rule = array();
         $rule["module"] = self::ID;
         $filename = $rs->getFilename(self::ID);
