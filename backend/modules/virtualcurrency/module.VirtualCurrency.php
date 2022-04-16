@@ -399,9 +399,9 @@ class VirtualCurrency extends Module
             array('name' => "Tokens", 'id' => 'tokens', 'type' => "number", 'options' => ""),
             array('name' => "Is Active", 'id' => 'isActive', 'type' => "on_off button", 'options' => "")
         ];
-        return array('listName' => 'Actions to Award', 'itemName' => 'actionToAward', 'header' => $header, 'displayAttributes' => $displayAtributes, 'actions' => $actions, 'items' => $items, 'allAttributes' => $allAtributes);
+        return array('listName' => 'Actions to Award', 'itemName' => 'action', 'header' => $header, 'displayAttributes' => $displayAtributes, 'actions' => $actions, 'items' => $items, 'allAttributes' => $allAtributes);
     }
-    public function save_listing_item(string $actiontype, array $listingItem, int $courseId)
+    public function z(string $actiontype, array $listingItem, int $courseId)
     {
         if ($actiontype == 'new' || $actiontype == 'duplicate') {
             $this->newAction($listingItem, $courseId);
@@ -437,10 +437,6 @@ class VirtualCurrency extends Module
 
     public function getActionsToAward($courseId){
         $actionstoaward = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*", "name");
-        foreach ($actionstoaward as &$toaward) {
-            //information to match needing fields
-            $actionstoaward['isActive'] = boolval($toaward["isActive"]);
-        }
         return $actionstoaward;
     }
 
@@ -543,6 +539,8 @@ class VirtualCurrency extends Module
         ];
 
         Core::$systemDB->insert(self::TABLE, $actionData);
+
+        // generateActiontoAwardRule
     }
 
     public static function editAction($achievement, $courseId)

@@ -765,7 +765,7 @@ class Streaks extends Module
 
         Core::$systemDB->insert(self::TABLE, $streakData);
 
-        Streaks::generateStreakRule( $courseId, $achievement[name]);
+        // Streaks::generateStreakRule( $courseId, $achievement[name]);
 
     }
 
@@ -812,7 +812,7 @@ class Streaks extends Module
     /*** ----------------------------------------------- ***/
     /*** -------------------- Rules -------------------- ***/
     /*** ----------------------------------------------- ***/
-
+    /*
     public function generateStreakRule(Course $course, string $streakName)
     {
         $template = file_get_contents(MODULES_FOLDER . "/" . self::ID . "/rules/" . self::STREAKS_RULE_TEMPLATE);
@@ -848,7 +848,7 @@ class Streaks extends Module
         if ($position !== false)
             $rs->removeRule($rule, $position);
     }
-
+    */
 
 }
 
