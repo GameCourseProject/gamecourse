@@ -380,7 +380,8 @@ class Database
      */
     public function setForeignKeyChecks(bool $status)
     {
-        $this->executeQuery("SET FOREIGN_KEY_CHECKS=" . ($status ? 1 : 0) .";");
+        $sql = "SET FOREIGN_KEY_CHECKS=" . ($status ? 1 : 0) .";";
+        $this->executeQuery($sql);
     }
 
     /**
@@ -391,6 +392,7 @@ class Database
      */
     public function resetAutoIncrement(string $table)
     {
-        $this->executeQuery("ALTER TABLE " . $table . " AUTO_INCREMENT = 1");
+        $sql = "ALTER TABLE " . $table . " AUTO_INCREMENT = 1";
+        $this->executeQuery($sql);
     }
 }

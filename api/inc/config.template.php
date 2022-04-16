@@ -1,4 +1,9 @@
 <?php
+/**
+ * This is the configuration file template. Make a copy of it in the same
+ * directory, rename it to config.php and fill-in the necessary information.
+ */
+
     const URL = '<WEBSITE_URL>';
     const API_URL = '<API_URL>';
 
@@ -36,7 +41,7 @@
     const TINY_API_TOKEN = '<TINY_API_TOKEN>';
     const TINY_API_URL = '<TINY_API_URL>';
 
-    /** Folders */
+    /** File Structure */
     const MODULES_FOLDER = 'modules';
     const COURSE_DATA_FOLDER = 'course_data';
 

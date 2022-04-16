@@ -7,8 +7,11 @@ use GameCourse\User\User;
 use PDO;
 use PDOException;
 use PHPUnit\Framework\TestCase;
-use Utils\Utils;
 
+/**
+ * NOTE: only run tests outside the production environment
+ *       as it will change the database directly
+ */
 class DatabaseTest extends TestCase
 {
     /*** ---------------------------------------------------- ***/
@@ -95,6 +98,7 @@ class DatabaseTest extends TestCase
         $this->expectException(PDOException::class);
         Core::database()->executeQuery($query);
     }
+
 
     /**
      * @test
@@ -330,6 +334,7 @@ class DatabaseTest extends TestCase
         $this->assertArrayHasKey("name", $first);
         $this->assertEquals("John Doe", $first["name"]);
     }
+
 
     /**
      * @test
@@ -628,6 +633,7 @@ class DatabaseTest extends TestCase
         $this->assertEquals("Anna Doe", $users[1]["name"]);
     }
 
+
     /**
      * @test
      */
@@ -662,6 +668,7 @@ class DatabaseTest extends TestCase
         $this->expectException(PDOException::class);
         Core::database()->insert("table_doesnt_exist", ["name" => "John Doe"]);
     }
+
 
     /**
      * @test
@@ -774,6 +781,7 @@ class DatabaseTest extends TestCase
         $this->assertIsString($name2);
         $this->assertEquals("Julia Doe", $name2);
     }
+
 
     /**
      * @test
@@ -906,6 +914,7 @@ class DatabaseTest extends TestCase
         $this->assertCount(0, $users);
     }
 
+
     /**
      * @test
      */
@@ -915,6 +924,7 @@ class DatabaseTest extends TestCase
         Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
         $this->assertEquals(2, Core::database()->getLastId());
     }
+
 
     /**
      * @test
@@ -932,6 +942,7 @@ class DatabaseTest extends TestCase
         $this->assertFalse(Core::database()->tableExists("table_doesnt_exist"));
     }
 
+
     /**
      * @test
      */
@@ -947,6 +958,7 @@ class DatabaseTest extends TestCase
     {
         $this->assertFalse(Core::database()->columnExists(User::TABLE_USER, "column_doesnt_exist"));
     }
+
 
     /**
      * @test

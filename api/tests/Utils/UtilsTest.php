@@ -3,6 +3,10 @@ namespace Utils;
 
 use PHPUnit\Framework\TestCase;
 
+/**
+ * NOTE: only run tests outside the production environment
+ *       as it will change the database directly
+ */
 class UtilsTest extends TestCase
 {
     /*** ---------------------------------------------------- ***/
@@ -44,10 +48,6 @@ class UtilsTest extends TestCase
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Tests ---------------------- ***/
     /*** ---------------------------------------------------- ***/
-
-    public function discoverFiles()
-    {
-    } // FIXME: check if function is needed
 
     /**
      * @test
@@ -174,6 +174,83 @@ class UtilsTest extends TestCase
 
     /**
      * @test
+     */
+    public function deleteDirectoryEmpty()
+    {
+        // Given
+        mkdir(ROOT_PATH . "tests/Utils/dir1", 0777, true);
+
+        // When
+        Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir1");
+
+        // Then
+        $this->assertFalse(file_exists(ROOT_PATH . "tests/Utils/dir1"));
+    }
+
+
+    /**
+     * @test
+     */
+    public function copyDirectory()
+    {
+        // Given
+        mkdir(ROOT_PATH . "tests/Utils/dir1/dir11", 0777, true);
+        mkdir(ROOT_PATH . "tests/Utils/dir1/dir12", 0777, true);
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/dir11/file1.txt", "");
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/dir11/file2.txt", "");
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/dir12/file3.txt", "");
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/file4.txt", "");
+
+        // When
+        Utils::copyDirectory(ROOT_PATH . "tests/Utils/dir1/", ROOT_PATH . "tests/Utils/dir2/");
+
+        // Then
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir1"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir1/dir11"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir1/dir12"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir1/dir11/file1.txt"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir1/dir11/file2.txt"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir1/dir12/file3.txt"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir1/file4.txt"));
+
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir11"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir12"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir11/file1.txt"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir11/file2.txt"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir12/file3.txt"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/file4.txt"));
+
+        // Clean up
+        Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir1");
+        Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir2");
+    }
+
+    /**
+     * @test
+     */
+    public function copyDirectoryEmpty()
+    {
+        // Given
+        mkdir(ROOT_PATH . "tests/Utils/dir1", 0777, true);
+
+        // When
+        Utils::copyDirectory(ROOT_PATH . "tests/Utils/dir1/", ROOT_PATH . "tests/Utils/dir2/");
+
+        // Then
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir1"));
+        $this->assertCount(0, glob(ROOT_PATH . "tests/Utils/dir1/*"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2"));
+        $this->assertCount(0, glob(ROOT_PATH . "tests/Utils/dir2/*"));
+
+        // Clean up
+        Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir1");
+        Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir2");
+    }
+
+
+    /**
+     * @test
      * @dataProvider validEmailProvider
      */
     public function validateEmailValidEmail(string $email)
@@ -189,6 +266,7 @@ class UtilsTest extends TestCase
     {
         $this->assertFalse(Utils::validateEmail($email));
     }
+
 
     /**
      * @test
@@ -206,6 +284,7 @@ class UtilsTest extends TestCase
         $this->assertFalse(Utils::strEndsWith("abc", "b"));
         $this->assertFalse(Utils::strEndsWith("abc", "d"));
     }
+
 
     /**
      * @test

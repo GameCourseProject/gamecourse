@@ -38,7 +38,7 @@ class Utils
             else $discoveredFiles[] = $file;
         }
         return $discoveredFiles;
-    } // FIXME: check if function is needed
+    } // FIXME: check if function is needed; if so create tests
 
     private static function discoverSubFiles($dirPath, &$discoveredFiles) {
         $dh = dir($dirPath);
@@ -103,7 +103,10 @@ class Utils
     }
 
     /**
-     * Copies directory's contents to a new location.
+     * Copies directory's contents to a new location, keeping the
+     * same file structure as the original directory.
+     *
+     * @example copyDirectory("<path>/dir1/", "<path>/dir2/") --> copies contents of dir1 to dir2
      *
      * @param string $dir
      * @param string $copyTo
@@ -111,7 +114,15 @@ class Utils
      */
     public static function copyDirectory(string $dir, string $copyTo)
     {
-        shell_exec("cp -R " . $dir . " " . $copyTo);
+        if (in_array(PHP_OS, ["WIN32", "WINNT", "Windows"])) {
+            // Change directory separator
+            $dir = str_replace("/", "\\", $dir);
+            $copyTo = str_replace("/", "\\", $copyTo);
+            shell_exec("xcopy " . $dir . " " . $copyTo . " /E");
+
+        } elseif (in_array(PHP_OS, ["Linux", "Unix"]))
+            shell_exec("cp -R " . $dir . " " . $copyTo);
+        else throw new Error("Can't copy directory: OS is neither Windows nor Linux based.");
     }
 
 
