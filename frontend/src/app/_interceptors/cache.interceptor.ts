@@ -50,6 +50,7 @@ export class CacheInterceptor implements HttpInterceptor {
       ApiHttpService.QR,
       ApiHttpService.QUEST,
       ApiHttpService.SKILLS,
+      ApiHttpService.VIRTUAL_CURRENCY,
     ]);
   }
 

@@ -592,6 +592,18 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']['isEnabled']) );
   }
 
+  public isSkillsEnabled(courseID: number): Observable<boolean> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'isSkillsEnabled');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['isEnabled']) );
+  }
 
   // Roles
   public getRoles(courseID: number): Observable<{ roles: Role[], rolesHierarchy: Role[], pages: Page[] }> {
@@ -1487,13 +1499,12 @@ export class ApiHttpService {
       qs.push('request', 'getCurrencySkillVars');
       qs.push('courseId', courseID);
     };
-
+    console.log("gello");
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['getCurrencySkillVars']) );
+      .pipe( map((res: any) => res['data']['currSkillsVars']) );
   }
-
 
   public setCurrencySkillVars(courseID: number, currSkillVars: CurrencySkillsVars): Observable<void> {
     const data = {

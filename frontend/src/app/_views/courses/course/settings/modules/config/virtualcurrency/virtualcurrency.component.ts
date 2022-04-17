@@ -3,10 +3,9 @@ import {ApiHttpService} from "../../../../../../../_services/api/api-http.servic
 import {ActivatedRoute} from "@angular/router";
 import {finalize} from "rxjs/operators";
 import {ErrorService} from "../../../../../../../_services/error.service";
-import {Skill} from "../../../../../../../_domain/skills/skill";
 import {ActionsToRemove} from "../../../../../../../_domain/virtualcurrency/actionstoremove";
-
 import {exists} from "../../../../../../../_utils/misc/misc";
+import {Course} from "../../../../../../../_domain/courses/course";
 
 @Component({
   selector: 'app-virtualcurrency',
@@ -17,12 +16,12 @@ export class VirtualcurrencyComponent implements OnInit {
 
   loading: boolean;
   hasUnsavedChanges: boolean;
-
+  isSkillModuleEnabled: boolean;
 
   courseID: number;
 
+  course: Course;
   actionsToRemove: ActionsToRemove[] = [];
-
 
   skillsVars = {
     skillCost: null,
@@ -43,9 +42,9 @@ export class VirtualcurrencyComponent implements OnInit {
       this.courseID = parseInt(params.id);
       this.getActionsToRemove()
       this.getCurrencySkillVars();
+      this.isSkillEnabled();
     });
   }
-
 
   getActionsToRemove() {
     this.loading = true;
@@ -57,12 +56,9 @@ export class VirtualcurrencyComponent implements OnInit {
       );*/
   }
 
-
-
-
   getCurrencySkillVars() {
     this.loading = true;
-    /*this.api.getCurrencySkillVars(this.courseID)
+    this.api.getCurrencySkillVars(this.courseID)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
         vars => {
@@ -73,10 +69,8 @@ export class VirtualcurrencyComponent implements OnInit {
           this.skillsVars.incrementCost = vars.incrementCost;
         },
         error => ErrorService.set(error)
-      )*/
+      )
   }
-
-
 
   saveCurrencySkillVars() {
     this.loading = true;
@@ -104,6 +98,10 @@ export class VirtualcurrencyComponent implements OnInit {
       exists(this.skillsVars.attemptRating) && !this.skillsVars.attemptRating.isEmpty() &&
       exists(this.skillsVars.costFormula) && !this.skillsVars.costFormula.isEmpty() &&
       exists(this.skillsVars.incrementCost) && !this.skillsVars.incrementCost.isEmpty();
+  }
+
+  isSkillEnabled(): Promise<boolean> {
+    return this.api.isSkillsEnabled(this.courseID).toPromise();
   }
 
 }

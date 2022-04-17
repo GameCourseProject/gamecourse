@@ -10,7 +10,7 @@
 
         <!-- <table *ngIf="actionsToRemove?.length > 0" id="listing-table">  -->
 
-        <table id="listing-table">
+        <table *ngIf="actionsToRemove.length != 0"  id="listing-table">
           <!-- Header -->
           <thead>
           <tr>
@@ -64,9 +64,10 @@
   </div>
 </div>
 
-<div class="section">
+<div  *ngIf="isSkillEnabled()" class="section">
   <div class="divider">
     <div class="title"><span>Skill Related Variables</span></div>
+
   </div>
 
   <div class="content">
@@ -78,8 +79,7 @@
         <div class="half">
           <div class="input-wrapper">
             <span class="label">Min. Rating for Attempt</span>
-            <!-- [(ngModel)]="skillsVars.attemptRating" (ngModelChange)="hasUnsavedChanges = true"-->
-            <input type="number" id="attempt-min-rating" name="attempt-min-rating" class="input">
+            <input type="number" id="attempt-min-rating" name="attempt-min-rating" class="input" [(ngModel)]="skillsVars.attemptRating" (ngModelChange)="hasUnsavedChanges = true">
           </div>
         </div>
       </div>
@@ -89,17 +89,14 @@
         <div class="half">
           <div class="input-wrapper">
             <span class="label">Skill Initial Cost</span>
-            <!-- [(ngModel)]="skillsVars.skillCost" (ngModelChange)="hasUnsavedChanges = true"-->
-
-            <input type="number" id="skill-initial-cost" name="skill-initial-cost" class="input">
+            <input type="number" id="skill-initial-cost" name="skill-initial-cost" class="input" [(ngModel)]="skillsVars.skillCost" (ngModelChange)="hasUnsavedChanges = true">
           </div>
         </div>
 
         <div class="half">
           <div class="input-wrapper">
             <span class="label">Wildcard Initial Cost</span>
-            <!-- [(ngModel)]="skillsVars.wildcardCost" (ngModelChange)="hasUnsavedChanges = true"-->
-            <input type="number" id="wildcard-initial-cost" name="wildcard-initial-cost" class="input">
+            <input type="number" id="wildcard-initial-cost" name="wildcard-initial-cost" class="input" [(ngModel)]="skillsVars.wildcardCost" (ngModelChange)="hasUnsavedChanges = true">
           </div>
         </div>
       </div>
@@ -109,15 +106,13 @@
         <div class="half">
           <div class="input-wrapper">
             <span class="label">Increment Cost</span>
-            <!-- [(ngModel)]="skillsVars.incrementCost" (ngModelChange)="hasUnsavedChanges = true"-->
-            <input type="number" id="increment-cost" name="increment-cost" class="input" >
+            <input type="number" id="increment-cost" name="increment-cost" class="input" [(ngModel)]="skillsVars.incrementCost" (ngModelChange)="hasUnsavedChanges = true">
           </div>
         </div>
 
         <div class="half">
           <div class="input-wrapper">
             <span class="label">Increment Formula</span>
-            <!-- [(ngModel)]="skillsVars.costFormula" (ngModelChange)="hasUnsavedChanges = true"-->
             <select id="increment-formula" name="increment-formula" >
               <option value="Default">Choose a Formula</option>
               <option value="Case 0"> Case 0 - SUB: incrementCost </option>

@@ -24,6 +24,7 @@ import { MoodleComponent } from './settings/modules/config/moodle/moodle.compone
 import { QrComponent } from './settings/modules/config/qr/qr.component';
 import { NotificationsComponent } from './settings/modules/config/notifications/notifications.component';
 import { ProfilingComponent } from './settings/modules/config/profiling/profiling.component';
+import {VirtualcurrencyComponent} from "./settings/modules/config/virtualcurrency/virtualcurrency.component";
 
 
 @NgModule({
@@ -45,6 +46,7 @@ import { ProfilingComponent } from './settings/modules/config/profiling/profilin
     SkillsComponent,
     GooglesheetsComponent,
     MoodleComponent,
+    VirtualcurrencyComponent,
     QrComponent,
     NotificationsComponent,
     ProfilingComponent
