@@ -11,6 +11,7 @@ use GameCourse\RuleSystem;
 use GameCourse\User;
 use GameCourse\Views\ViewHandler;
 use GameCourse\Views\Views;
+use Modules\Skills\Skills;
 use VirtualCurrency\VirtualCurrency;
 
 $MODULE = 'course';
@@ -728,6 +729,25 @@ API::registerFunction($MODULE, 'isVirtualCurrencyEnabled', function() {
 
     $enabledModules = $course->getEnabledModules();
     $isEnabled = in_array(VirtualCurrency::ID, $enabledModules);
+
+    API::response(['isEnabled' => $isEnabled]);
+});
+
+
+/**
+ * Check if virtual currency is enabled in course.
+ *
+ * @param int $courseId
+ */
+API::registerFunction($MODULE, 'isSkillsEnabled', function() {
+    API::requireCourseAdminPermission();
+    API:: requireValues('courseId');
+
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
+    $enabledModules = $course->getEnabledModules();
+    $isEnabled = in_array(Skills::ID, $enabledModules);
 
     API::response(['isEnabled' => $isEnabled]);
 });

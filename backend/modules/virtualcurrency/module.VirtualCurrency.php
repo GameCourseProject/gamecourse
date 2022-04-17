@@ -49,6 +49,21 @@ class VirtualCurrency extends Module
 
             API::response(['tokens' => $this->getUserTokens($userId)]);
         });
+
+        /**
+         * Gets currency skill-related variables.
+         *
+         * @param int $courseId
+         */
+        API::registerFunction(self::ID, 'getCurrencySkillVars', function () {
+            API::requireCourseAdminPermission();
+            API:: requireValues('courseId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            API::response(array('currSkillsVars' => $this->getCurrencySkillVars($courseId)));
+        });
     }
 
     public function initDictionary(){
@@ -401,7 +416,7 @@ class VirtualCurrency extends Module
         ];
         return array('listName' => 'Actions to Award', 'itemName' => 'action', 'header' => $header, 'displayAttributes' => $displayAtributes, 'actions' => $actions, 'items' => $items, 'allAttributes' => $allAtributes);
     }
-    public function z(string $actiontype, array $listingItem, int $courseId)
+    public function save_listing_item(string $actiontype, array $listingItem, int $courseId)
     {
         if ($actiontype == 'new' || $actiontype == 'duplicate') {
             $this->newAction($listingItem, $courseId);
@@ -582,6 +597,19 @@ class VirtualCurrency extends Module
         Core::$systemDB->update(self::TABLE_CONFIG, ["xp" => $newXP], ["course" => $this->getCourseId()]);
     }
 
+    private function getCurrencySkillVars($courseId): array
+    {
+        $skillRelatedVars = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
+        $isEmpty = empty($skillRelatedVars);
+
+        return [
+            "skillCost" => $isEmpty ? "" : $skillRelatedVars["skillCost"],
+            "wildcardCost" => $isEmpty ? "" : $skillRelatedVars["wildcardCost"],
+            "attemptRating" => $isEmpty ? "" : $skillRelatedVars["attemptRating"],
+            "costFormula" => $isEmpty ? "" : $skillRelatedVars["costFormula"],
+            "incrementCost" => $isEmpty ? "" : $skillRelatedVars["incrementCost"],
+        ];
+    }
     
 
 
