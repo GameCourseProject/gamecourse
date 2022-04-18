@@ -490,9 +490,10 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
     cursor.execute(query, (course, badge))
     table_badge = cursor.fetchall()
     isBadgeActive = table_badge[0][3]
-
+    console.log(isBadgeActive)
     # if badge is not active, do not run the function.
     if not isBadgeActive:
+        console.log("return")
         return
         
     if not config.test_mode:
@@ -641,7 +642,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
         if not isSkillActive:
             return
 
-        query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'gamecourse') AND (TABLE_NAME = 'virtual_currency_config');"
+        query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'gamecourse_test_v2') AND (TABLE_NAME = 'virtual_currency_config');"
         cursor.execute(query)
         table_exists = cursor.fetchall()
 
@@ -962,7 +963,7 @@ def award_tokens_type(target, type, element_name, contributions):
     course = config.course
     typeof = "tokens"
 
-    if type == "streak"
+    if type == "streak":
         query = "SELECT tokens FROM streak where course = %s AND name = %s;"
         cursor.execute(query, (course, element_name))
         table_reward = cursor.fetchall()
@@ -1127,7 +1128,7 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
                 removed = pow(2, validAttempts - n) * incrementCost
 
             if validAttempts == 0:
-                if tier.decode() =  'Wildcard':
+                if tier.decode() == 'Wildcard':
                    removed  = wildcardCost
                 else:
                     removed  = skillCost
