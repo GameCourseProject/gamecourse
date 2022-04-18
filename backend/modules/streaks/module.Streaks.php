@@ -832,7 +832,7 @@ class Streaks extends Module
             $filename = $rs->getFilename(self::ID);
         }
         $rule["rulefile"] = $filename;
-        $rs->addRule($txt, null, $rule); // add to end
+        $rs->addRule($newRule, null, $rule); // add to end
 
     }
 
