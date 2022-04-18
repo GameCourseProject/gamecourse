@@ -64,7 +64,7 @@
   </div>
 </div>
 
-<div  *ngIf="isSkillEnabled()" class="section">
+<div  *ngIf="isSkillModuleEnabled" class="section">
   <div class="divider">
     <div class="title"><span>Skill Related Variables</span></div>
 
@@ -78,7 +78,7 @@
       <div class="row">
         <div class="half">
           <div class="input-wrapper">
-            <span class="label">Min. Rating for Attempt</span>
+            <span class="label" style="margin-right: 25px">Min. Rating <br/>for Attempt</span>
             <input type="number" id="attempt-min-rating" name="attempt-min-rating" class="input" [(ngModel)]="skillsVars.attemptRating" (ngModelChange)="hasUnsavedChanges = true">
           </div>
         </div>
@@ -113,17 +113,17 @@
         <div class="half">
           <div class="input-wrapper">
             <span class="label">Increment Formula</span>
-            <select id="increment-formula" name="increment-formula" >
-              <option value="Default">Choose a Formula</option>
-              <option value="Case 0"> Case 0 - SUB: incrementCost </option>
-              <option value="Case 1"> Case 1 - MUL: incrementCost * validAttempts </option>
-              <option value="Case 2"> Case 2 - POW: incrementCost * pow(2, validAttempts - n)</option>
+
+            <select id="increment-formula" class="input" style="margin-right: 30px" [(ngModel)]="skillsVars.costFormula" (ngModelChange)="hasUnsavedChanges = true">
+              <option [ngValue]="0"> Case 0 - SUB: incrementCost </option>
+              <option [ngValue]="1"> Case 1 - MUL: incrementCost * validAttempts </option>
+              <option [ngValue]="2"> Case 2 - POW: incrementCost * pow(2, validAttempts - n)</option>
             </select>
 
           </div>
         </div>
       </div>
-    </div>
+
 
     <div class="action-buttons">
       <button id="save-button" class="button" [disabled]="!hasUnsavedChanges || !isReadyToSubmit()" (click)="saveCurrencySkillVars()">Save</button>

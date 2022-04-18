@@ -93,15 +93,16 @@ export class VirtualcurrencyComponent implements OnInit {
   }
 
   isReadyToSubmit(): boolean {
-    return exists(this.skillsVars.skillCost) && !this.skillsVars.skillCost.isEmpty() &&
-      exists(this.skillsVars.wildcardCost) && !this.skillsVars.wildcardCost.isEmpty() &&
-      exists(this.skillsVars.attemptRating) && !this.skillsVars.attemptRating.isEmpty() &&
-      exists(this.skillsVars.costFormula) && !this.skillsVars.costFormula.isEmpty() &&
-      exists(this.skillsVars.incrementCost) && !this.skillsVars.incrementCost.isEmpty();
+    return exists(this.skillsVars.skillCost) && /*!this.skillsVars.skillCost.isEmpty() &&*/
+      exists(this.skillsVars.wildcardCost) && /*!this.skillsVars.wildcardCost.isEmpty() &&*/
+      exists(this.skillsVars.attemptRating) && /*!this.skillsVars.attemptRating.isEmpty() &&*/
+      exists(this.skillsVars.costFormula) && /*!this.skillsVars.costFormula.isEmpty() &&*/
+      exists(this.skillsVars.incrementCost) /*&& !this.skillsVars.incrementCost.isEmpty()*/;
   }
 
-  isSkillEnabled(): Promise<boolean> {
-    return this.api.isSkillsEnabled(this.courseID).toPromise();
+  isSkillEnabled(): void {
+    this.api.isSkillsEnabled(this.courseID).subscribe(myBool =>
+      this.isSkillModuleEnabled = myBool);
   }
 
 }
@@ -110,7 +111,7 @@ export interface CurrencySkillsVars {
   skillCost: number,
   wildcardCost: number,
   attemptRating: number,
-  costFormula: number,
+  costFormula: "0" | "1" | "2",
   incrementCost: string,
 }
 
