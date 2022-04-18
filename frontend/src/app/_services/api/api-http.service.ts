@@ -1499,7 +1499,7 @@ export class ApiHttpService {
       qs.push('request', 'getCurrencySkillVars');
       qs.push('courseId', courseID);
     };
-    console.log("gello");
+
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
     return this.get(url, ApiHttpService.httpOptions)
