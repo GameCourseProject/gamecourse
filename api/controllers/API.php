@@ -90,7 +90,7 @@ class API
     }
 
     public static function response($data, $status = null) {
-        if ($status != null) http_response_code($status);
+        if ($status !== null) http_response_code($status);
         echo json_encode(array('data' => $data));
         exit;
     }

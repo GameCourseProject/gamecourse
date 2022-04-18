@@ -6,6 +6,10 @@ use GameCourse\Core\Core;
 use PDOException;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * NOTE: only run tests outside the production environment
+ *       as it will change the database directly
+ */
 class UserTest extends TestCase
 {
     /*** ---------------------------------------------------- ***/
@@ -21,9 +25,7 @@ class UserTest extends TestCase
 
     protected function tearDown(): void
     {
-        Core::database()->deleteAll(User::TABLE_USER);
-        Core::database()->resetAutoIncrement(User::TABLE_USER);
-        Core::database()->resetAutoIncrement(Auth::TABLE_AUTH);
+        self::setUpBeforeClass();
     }
 
 
@@ -186,6 +188,16 @@ class UserTest extends TestCase
     /**
      * @test
      */
+    public function userConstructor()
+    {
+        $user = new User(123);
+        $this->assertEquals(123, $user->getId());
+    }
+
+
+    /**
+     * @test
+     */
     public function getId()
     {
         $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
@@ -293,12 +305,33 @@ class UserTest extends TestCase
     /**
      * @test
      */
+    public function isNotAdmin()
+    {
+        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, false);
+        $this->assertFalse($user->isAdmin());
+    }
+
+    /**
+     * @test
+     */
     public function isActive()
     {
         $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $this->assertTrue($user->isActive());
     }
+
+    /**
+     * @test
+     */
+    public function isInactive()
+    {
+        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, false);
+        $this->assertFalse($user->isActive());
+    }
+
 
     /**
      * @test
@@ -312,6 +345,51 @@ class UserTest extends TestCase
             "studentNumber" => 123456, "nickname" => "John Doe", "major" => "MEIC-A", "isAdmin" => false, "isActive" => true],
             $user->getData());
     }
+
+    /**
+     * @test
+     */
+    public function getDataOnlyAuthFields()
+    {
+        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, true);
+        $this->assertEquals(["id" => intval(Core::database()->select(User::TABLE_USER, ["studentNumber" => 123456], "id")),
+            "username" => "ist123456", "authentication_service" => "fenix"], $user->getData("id, username, authentication_service"));
+    }
+
+    /**
+     * @test
+     */
+    public function getDataNonAuthFields()
+    {
+        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, true);
+        $this->assertEquals(["id" => intval(Core::database()->select(User::TABLE_USER, ["studentNumber" => 123456], "id")),
+            "name" => "John Smith Doe", "email" => "johndoe@email.com", "studentNumber" => 123456, "nickname" => "John Doe",
+            "major" => "MEIC-A", "isAdmin" => false, "isActive" => true], $user->getData("id, name, email, studentNumber, nickname, major, isAdmin, isActive"));
+    }
+
+    /**
+     * @test
+     */
+    public function getDataMixedFields()
+    {
+        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, true);
+        $this->assertEquals(["name" => "John Smith Doe", "username" => "ist123456"], $user->getData("name, username"));
+    }
+
+    /**
+     * @test
+     */
+    public function getDataUserDoesntExist()
+    {
+        $user = new User(1);
+        $this->assertFalse($user->getData());
+        $this->assertNull($user->getData("id"));
+        $this->assertFalse($user->getData("name"));
+    }
+
 
     /**
      * @test
@@ -490,7 +568,7 @@ class UserTest extends TestCase
 
         } catch (Error $e) {
             $user = new User(1);
-            $this->assertEquals(["id" => "1", "name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => "fenix",
+            $this->assertEquals(["id" => 1, "name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => "fenix",
                 "email" => "ana.goncalves@gmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false], $user->getData());
         }
@@ -558,6 +636,7 @@ class UserTest extends TestCase
                 "isAdmin" => false, "isActive" => false], $user->getData());
         }
     }
+
 
     /**
      * @test
@@ -631,6 +710,7 @@ class UserTest extends TestCase
         $this->assertNull(User::getUserByStudentNumber(123));
     }
 
+
     /**
      * @test
      */
@@ -641,7 +721,7 @@ class UserTest extends TestCase
         $user2 = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, false);
 
-        $users = User::getAllUsers();
+        $users = User::getUsers();
         $this->assertIsArray($users);
         $this->assertCount(2, $users);
 
@@ -650,6 +730,52 @@ class UserTest extends TestCase
             foreach ($users as $i => $user) {
                 $this->assertArrayHasKey($key, $user);
                 $this->assertEquals($user[$key], ${"user".($i+1)}->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function getActiveUsers()
+    {
+        $user1 = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, false);
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+
+        $users = User::getUsers(true);
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+
+        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
+        foreach ($keys as $key) {
+            foreach ($users as $user) {
+                $this->assertArrayHasKey($key, $user);
+                $this->assertEquals($user[$key], $user2->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function getInactiveUsers()
+    {
+        $user1 = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, false);
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+
+        $users = User::getUsers(false);
+        $this->assertIsArray($users);
+        $this->assertCount(1, $users);
+
+        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
+        foreach ($keys as $key) {
+            foreach ($users as $user) {
+                $this->assertArrayHasKey($key, $user);
+                $this->assertEquals($user[$key], $user1->getData($key));
             }
         }
     }
@@ -675,6 +801,7 @@ class UserTest extends TestCase
         }
     }
 
+
     /**
      * TODO
      */
@@ -696,6 +823,7 @@ class UserTest extends TestCase
     {
     }
 
+
     /**
      * @test
      * @dataProvider addUserSuccessProvider
@@ -709,8 +837,8 @@ class UserTest extends TestCase
         $auth = Core::database()->select(Auth::TABLE_AUTH, ["game_course_user_id" => $id]);
         $userData = array("id" => strval($id), "name" => $name, "email" => $email, "studentNumber" => strval($studentNumber), "nickname" => $nickname, "major" =>  $major, "isAdmin" => +$isAdmin, "isActive" => +$isActive);
         $authData = array("id" => $auth["id"], "game_course_user_id" => strval($id), "username" => $username, "authentication_service" => $authService);
-        $this->assertEquals($user, $userData);
-        $this->assertEquals($auth, $authData);
+        $this->assertEquals($userData, $user);
+        $this->assertEquals($authData, $auth);
     }
 
     /**
@@ -767,6 +895,7 @@ class UserTest extends TestCase
         User::addUser("Marcus Notø", "ist123456", "fenix", "joao@gmail.com",
             123456, "Marcus Notø", "MEEC", false, true);
     }
+
 
     /**
      * @test
@@ -853,6 +982,7 @@ class UserTest extends TestCase
             101036, "Marcus Notø", "MEEC", false, true);
     }
 
+
     /**
      * @test
      */
@@ -863,7 +993,7 @@ class UserTest extends TestCase
         $id = User::addUser("João Carlos Sousa", "ist123456", "fenix", "joao@gmail.com",
             123456, "João Sousa", "MEIC-A", false, true)-> getId();
         User::deleteUser($id);
-        $users = User::getAllUsers();
+        $users = User::getUsers();
         $this->assertCount(1, $users);
         $this->assertEquals("Marcus Notø", $users[0]["name"]);
     }
@@ -876,10 +1006,11 @@ class UserTest extends TestCase
         User::addUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
         User::deleteUser(2);
-        $users = User::getAllUsers();
+        $users = User::getUsers();
         $this->assertCount(1, $users);
         $this->assertEquals("Marcus Notø", $users[0]["name"]);
     }
+
 
     /**
      * @test
@@ -900,6 +1031,7 @@ class UserTest extends TestCase
         $this->assertFalse($user->exists());
     }
 
+
     /**
      * @test
      */
@@ -916,7 +1048,7 @@ class UserTest extends TestCase
         $nrUsersImported = User::importUsers($file, false);
 
         // Then
-        $users = User::getAllUsers();
+        $users = User::getUsers();
         $this->assertCount(4, $users);
         $this->assertEquals(4, $nrUsersImported);
 
@@ -963,7 +1095,7 @@ class UserTest extends TestCase
         $nrUsersImported = User::importUsers($file, false);
 
         // Then
-        $users = User::getAllUsers();
+        $users = User::getUsers();
         $this->assertCount(4, $users);
         $this->assertEquals(3, $nrUsersImported);
 
@@ -1010,7 +1142,7 @@ class UserTest extends TestCase
         $nrUsersImported = User::importUsers($file);
 
         // Then
-        $users = User::getAllUsers();
+        $users = User::getUsers();
         $this->assertCount(4, $users);
         $this->assertEquals(3, $nrUsersImported);
 
@@ -1053,7 +1185,7 @@ class UserTest extends TestCase
         $nrUsersImported = User::importUsers($file);
 
         // Then
-        $users = User::getAllUsers();
+        $users = User::getUsers();
         $this->assertCount(4, $users);
         $this->assertEquals(4, $nrUsersImported);
 
@@ -1099,7 +1231,7 @@ class UserTest extends TestCase
         $nrUsersImported = User::importUsers($file);
 
         // Then
-        $users = User::getAllUsers();
+        $users = User::getUsers();
         $this->assertCount(4, $users);
         $this->assertEquals(3, $nrUsersImported);
 
@@ -1145,7 +1277,7 @@ class UserTest extends TestCase
         $nrUsersImported = User::importUsers($file, false);
 
         // Then
-        $users = User::getAllUsers();
+        $users = User::getUsers();
         $this->assertCount(4, $users);
         $this->assertEquals(3, $nrUsersImported);
 
@@ -1180,7 +1312,7 @@ class UserTest extends TestCase
     {
         $file = "";
         $nrUsersImported = User::importUsers($file);
-        $users = User::getAllUsers();
+        $users = User::getUsers();
         $this->assertCount(0, $users);
         $this->assertEquals(0, $nrUsersImported);
     }
@@ -1199,7 +1331,7 @@ class UserTest extends TestCase
 
         $file = "";
         $nrUsersImported = User::importUsers($file);
-        $users = User::getAllUsers();
+        $users = User::getUsers();
         $this->assertCount(3, $users);
         $this->assertEquals(0, $nrUsersImported);
     }
@@ -1218,10 +1350,11 @@ class UserTest extends TestCase
 
         $file = "name,email,major,nickname,studentNumber,username,authentication_service,isAdmin,isActive\n";
         $nrUsersImported = User::importUsers($file);
-        $users = User::getAllUsers();
+        $users = User::getUsers();
         $this->assertCount(3, $users);
         $this->assertEquals(0, $nrUsersImported);
     }
+
 
     /**
      * @test

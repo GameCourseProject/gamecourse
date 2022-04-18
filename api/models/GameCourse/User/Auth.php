@@ -5,7 +5,7 @@ class Auth
 {
     const TABLE_AUTH = "auth";
 
-    const TYPES = ["fenix", "google", "facebook", "linkedin"];
+    const SERVICES = ["fenix", "google", "facebook", "linkedin"];
 
     /**
      * Checks if a given authentication service is available in the system.
@@ -15,6 +15,6 @@ class Auth
      */
     public static function exists(string $authService): bool
     {
-        return in_array($authService, self::TYPES);
+        return in_array($authService, self::SERVICES);
     }
 }

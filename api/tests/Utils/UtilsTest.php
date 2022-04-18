@@ -44,6 +44,25 @@ class UtilsTest extends TestCase
         ];
     }
 
+    public function validDateProvider(): array
+    {
+        return [
+            "yyyy-mm-dd HH:mm:ss" => [date("Y-m-d H:i:s", time()), "Y-m-d H:i:s"],
+            "yyyy-mm-dd" => [date("Y-m-d", time()), "Y-m-d"],
+            "HH:mm:ss" => [date("H:i:s", time()), "H:i:s"],
+        ];
+    }
+
+    public function invalidDateProvider(): array
+    {
+        return [
+            "null" => [null, "Y-m-d H:i:s"],
+            "yyyy-mm-dd HH:mm:ss" => [date("Y-m-d", time()), "Y-m-d H:i:s"],
+            "yyyy-mm-dd" => [date("Y-m-d H:i:s", time()), "Y-m-d"],
+            "HH:mm:ss" => [date("Y-m-d", time()), "H:i:s"],
+        ];
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Tests ---------------------- ***/
@@ -265,6 +284,24 @@ class UtilsTest extends TestCase
     public function validateEmailInvalidEmail($email)
     {
         $this->assertFalse(Utils::validateEmail($email));
+    }
+
+    /**
+     * @test
+     * @dataProvider validDateProvider
+     */
+    public function validateDateValidDate(string $date, string $format)
+    {
+        $this->assertTrue(Utils::validateDate($date, $format));
+    }
+
+    /**
+     * @test
+     * @dataProvider invalidDateProvider
+     */
+    public function validateDateInvalidDate(?string $date, string $format)
+    {
+        $this->assertFalse(Utils::validateDate($date, $format));
     }
 
 

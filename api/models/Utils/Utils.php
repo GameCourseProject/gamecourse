@@ -1,6 +1,7 @@
 <?php
 namespace Utils;
 
+use DateTime;
 use Error;
 
 /**
@@ -144,6 +145,18 @@ class Utils
         if (Utils::strEndsWith($prefix, "-") || str_contains($prefix, "#")) return false;
         foreach (explode(".", $domain) as $part) if (strlen($part) < 2) return false;
         return true;
+    }
+
+    /**
+     * Checks if date is in a given format.
+     *
+     * @param string|null $date
+     * @param string $format
+     * @return bool
+     */
+    public static function validateDate(?string $date, string $format): bool
+    {
+        return !!DateTime::createFromFormat($format, $date);
     }
 
 

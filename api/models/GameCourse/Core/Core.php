@@ -17,7 +17,7 @@ require_once ROOT_PATH . "lib/google/Google.php";
 /**
  * This is the Core class which holds core functionality like making
  * the bridge between models and the database, handling setup and
- * authentication, and has some utility functions on CLI.
+ * authentication, and has some utility functions regarding CLI.
  */
 class Core
 {
@@ -174,9 +174,14 @@ class Core
         return false;
     }
 
-    public static function getLoggedUser(): User
+    public static function getLoggedUser(): ?User
     {
         return static::$loggedUser;
+    }
+
+    public static function setLoggedUser(User $user)
+    {
+        self::$loggedUser = $user;
     }
 
     public static function logout()

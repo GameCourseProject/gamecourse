@@ -15,8 +15,7 @@ class User
     const TABLE_USER = "game_course_user";
 
     const HEADERS = [   // headers for import/export functionality
-        "name", "email", "major", "nickname", "studentNumber", "username", "authentication_service",
-        "isAdmin", "isActive"
+        "name", "email", "major", "nickname", "studentNumber", "username", "authentication_service", "isAdmin", "isActive"
     ];
 
     protected $id;
@@ -92,6 +91,7 @@ class User
 
     /**
      * Gets user data from the database.
+     *
      * @example getData() --> gets all user data
      * @example getData("name") --> gets user name
      * @example getData("name, username") --> gets user name & username
@@ -101,12 +101,14 @@ class User
      */
     public function getData(string $field = "*")
     {
-        $table = self::TABLE_USER . " u left join " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id";
+        // Get data
+        $table = self::TABLE_USER . " u LEFT JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id";
         $where = ["u.id" => $this->id];
         if ($field == "*") $fields = "u.*, a.username, a.authentication_service";
         else $fields = str_replace("id", "u.id", $field);
         $res = Core::database()->select($table, $where, $fields);
 
+        // Parse to appropriate types
         if (isset($res["id"])) $res["id"] = intval($res["id"]);
         if (isset($res["studentNumber"])) $res["studentNumber"] = intval($res["studentNumber"]);
         if (isset($res["isAdmin"])) $res["isAdmin"] = boolval($res["isAdmin"]);
@@ -234,11 +236,13 @@ class User
         else return new User($userId);
     }
 
-    public static function getAllUsers(): array
+    public static function getUsers(?bool $active = null): array
     {
+        $where = [];
+        if ($active !== null) $where["u.isActive"] = $active;
         return Core::database()->selectMultiple(
-            self::TABLE_USER . " u join " . Auth::TABLE_AUTH . " a on u.id = a.game_course_user_id",
-            [],
+            self::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on u.id = a.game_course_user_id",
+            $where,
             "u.*, a.username, a.authentication_service"
         );
     }
@@ -246,18 +250,18 @@ class User
     public static function getAdmins(): array
     {
         return Core::database()->selectMultiple(
-            self::TABLE_USER . " u join " . Auth::TABLE_AUTH . " a on u.id = a.id",
+            self::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on u.id = a.id",
             ["isAdmin" => true],
             "u.*, a.username, a.authentication_service"
         );
     }
 
-    public function getCourses($active = null)
+    public function getCourses(?bool $active = null): array
     {
-        $where = ["cu.id" => $this->getId()];
-        if ($active != null) $where["c.isActive"] = $active;
+        $where = ["cu.id" => $this->id];
+        if ($active !== null) $where["c.isActive"] = $active;
         return Core::database()->selectMultiple(
-            CourseUser::TABLE_COURSE_USER . " cu join " . Course::TABLE_COURSE . " c on cu.course = c.id",
+            CourseUser::TABLE_COURSE_USER . " cu JOIN " . Course::TABLE_COURSE . " c on cu.course=c.id",
             $where,
             "c.*"
         );
@@ -323,19 +327,17 @@ class User
                              ?string $nickname, string $major, bool $isAdmin, bool $isActive): User
     {
         self::validateUser($name, $authService, $email, $isAdmin, $isActive);
-        Core::database()->update(self::TABLE_USER, [
+        $this->setData([
             "name" => $name,
+            "username" => $username,
+            "authentication_service" => $authService,
             "email" => $email,
             "studentNumber" => $studentNumber,
             "nickname" => $nickname,
             "major" => $major,
             "isAdmin" => +$isAdmin,
             "isActive" => +$isActive
-        ], ["id" => $this->id]);
-        Core::database()->update(Auth::TABLE_AUTH, [
-            "username" => $username,
-            "authentication_service" => $authService
-        ], ["game_course_user_id" => $this->id]);
+        ]);
         return $this;
     }
 
@@ -357,7 +359,7 @@ class User
      */
     public function exists(): bool
     {
-        return (!empty($this->getData("id")));
+        return !empty($this->getData("id"));
     }
 
 
@@ -414,13 +416,10 @@ class User
                 $isAdmin = $user[$isAdminIndex];
                 $isActive = $user[$isActiveIndex];
 
-                $authId = intval(Core::database()->select(Auth::TABLE_AUTH, ["username"=> $username, "authentication_service"=> $authService], "id"));
-                $userId = intval(Core::database()->select(self::TABLE_USER, ["studentNumber"=> $studentNumber], "id"));
-                if ($userId || $authId) {  // user already exists
-                    if ($replace) {  // replace
-                        $userToUpdate = User::getUserByUsername($username);
-                        $userToUpdate->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
-                    }
+                $user = self::getUserByUsername($username) ?? self::getUserByStudentNumber($studentNumber);
+                if ($user) {  // user already exists
+                    if ($replace)  // replace
+                        $user->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
 
                 } else {  // user doesn't exist
                     User::addUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
@@ -439,7 +438,7 @@ class User
      */
     public static function exportUsers(): string
     {
-        $users = User::getAllUsers();
+        $users = User::getUsers();
         $len = count($users);
         $separator = ",";
 
@@ -477,22 +476,25 @@ class User
         self::validateName($name);
         self::validateAuthService($authService);
         self::validateEmail($email);
-        if (!is_bool($isAdmin)) throw new Error("isAdmin must be either true or false.");
-        if (!is_bool($isActive)) throw new Error("$isActive must be either true or false.");
+        if (!is_bool($isAdmin)) throw new Error("'isAdmin' must be either true or false.");
+        if (!is_bool($isActive)) throw new Error("'isActive' must be either true or false.");
     }
 
     private static function validateName($name)
     {
-        if (!is_string($name) || empty($name)) throw new Error("User name can't be null neither empty.");
+        if (!is_string($name) || empty($name))
+            throw new Error("User name can't be null neither empty.");
     }
 
     private static function validateAuthService($authService)
     {
-        if (!is_string($authService) || !Auth::exists($authService)) throw new Error("Authentication service '" . $authService . "' is not available.");
+        if (!is_string($authService) || !Auth::exists($authService))
+            throw new Error("Authentication service '" . $authService . "' is not available.");
     }
 
     private static function validateEmail($email)
     {
-        if (!is_string($email) || !Utils::validateEmail($email)) throw new Error("E-mail '" . $email . "' is invalid.");
+        if (!is_string($email) || !Utils::validateEmail($email))
+            throw new Error("E-mail '" . $email . "' is invalid.");
     }
 }
