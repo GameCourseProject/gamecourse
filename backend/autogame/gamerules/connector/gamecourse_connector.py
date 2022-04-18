@@ -551,10 +551,11 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
                 calculated_reward = reward
             else:
                 total_extra_xp = int(curr_badge_extra_xp) + int(curr_streak_xp)
+
                 if total_extra_xp >= int(max_badge_reward):
                     calculated_reward = 0
                 elif int(reward) + total_extra_xp > int(max_badge_reward):
-                    calculated_reward = int(max_badge_reward) - int(curr_badge_extra_xp)
+                    calculated_reward = int(max_badge_reward) - total_extra_xp
                 else:
                     calculated_reward = reward
 
@@ -616,10 +617,10 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
                 calculated_reward = reward
             else:
                 total_extra_xp = int(curr_badge_extra_xp) + int(curr_streak_xp)
-                if total_extra_xp >= int(max_badge_reward) or int(curr_badge_extra_xp) >= int(max_badge_reward) or int(curr_streak_xp) >= int(max_badge_reward):
+                if total_extra_xp >= int(max_badge_reward) :
                     calculated_reward = 0
                 elif int(reward) + total_extra_xp > int(max_badge_reward):
-                    calculated_reward = int(max_badge_reward) - int(curr_badge_extra_xp)
+                    calculated_reward = int(max_badge_reward) - total_extra_xp
                 else:
                     calculated_reward = reward
             #calculated_reward = reward
@@ -2675,7 +2676,7 @@ def award_streak(target, streak, contributions=None, info=None):
             if total_extra_xp >= max_extra_reward:
                 calculated_reward = 0
             elif int(streak_reward) + total_extra_xp > int(max_extra_reward):
-                calculated_reward = int(max_extra_reward) - int(curr_streak_xp)
+                calculated_reward = int(max_extra_reward) - total_extra_xp
             else:
                 calculated_reward = streak_reward
 
@@ -2749,7 +2750,7 @@ def award_streak(target, streak, contributions=None, info=None):
             if total_extra_xp >= int(max_extra_reward):
                 calculated_reward = 0
             elif int(streak_reward) + total_extra_xp > int(max_extra_reward):
-                calculated_reward = int(max_extra_reward) - int(curr_streak_xp)
+                calculated_reward = int(max_extra_reward) - total_extra_xp
             else:
                 calculated_reward = streak_reward
             #calculated_reward = reward
