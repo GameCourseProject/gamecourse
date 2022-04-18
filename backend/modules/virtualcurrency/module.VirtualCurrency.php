@@ -426,6 +426,7 @@ class VirtualCurrency extends Module
             ['id' => 'isActive', 'type' => 'on_off button']
         ];
         $actions = ['duplicate', 'edit', 'delete', 'export'];
+        $actions = ['duplicate', 'edit', 'delete', 'export'];
 
         $items = $this->getActionsToAward($courseId);
 

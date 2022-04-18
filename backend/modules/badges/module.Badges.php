@@ -674,7 +674,7 @@ class Badges extends Module
     {
         if ($actiontype == 'new' || $actiontype == 'duplicate') $this->newBadge($listingItem, $courseId);
         elseif ($actiontype == 'edit') $this->editBadge($listingItem, $courseId);
-        elseif ($actiontype == 'delete') $this->deleteBadge($listingItem);
+        elseif ($actiontype == 'delete') $this->deleteBadge($listingItem, $courseId);
     }
 
 
@@ -1031,21 +1031,19 @@ class Badges extends Module
         }
 
         $course = Course::getCourse($courseId, false);
-        // generateBadgeRule(Course $course, string $badgeName, array $levelsCount)
-        $badgeId = Core::$systemDB->select(self::TABLE, ["course" => $courseId, "name" => $achievement[array_search("name")]], "id");
+        $badgeId = Core::$systemDB->select(self::TABLE, ["course" => $courseId, "name" => $achievement["name"]], "id");
         $levelsArray = array();
-        $levelCount1 = Core::$systemDB->select(self::TABLE_LEVEL, ["course" => $courseId, "badgeId" => $badgeId, "number" => 1], "goal");
-        $levelCount2 = Core::$systemDB->select(self::TABLE_LEVEL, ["course" => $courseId, "badgeId" => $badgeId, "number" => 2], "goal");
-        $levelCount3 = Core::$systemDB->select(self::TABLE_LEVEL, ["course" => $courseId, "badgeId" => $badgeId, "number" => 3], "goal");
+        $levelCount1 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $badgeId, "number" => 1], "goal");
+        $levelCount2 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $badgeId, "number" => 2], "goal");
+        $levelCount3 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $badgeId, "number" => 3], "goal");
         if ( !empty($levelCount2) ){
-            $levelsArray.push($levelCount1);
-            $levelsArray.push($levelCount2);
-            $levelsArray.push($levelCount3);
+            array_push($levelsArray, $levelCount1, $levelCount2, $levelCount3);
         }else{
-            $levelsArray.push($levelCount1);
+            array_push($levelsArray, $levelCount1);
         }
-
-        Badges::generateBadgeRule($course, $achievement['name'], $levelsArray );
+        
+        $badge = new Badges();
+        $badge->generateBadgeRule($course, $achievement['name'], $levelsArray );
 
     }
 
@@ -1108,10 +1106,13 @@ class Badges extends Module
         }
     }
 
-    public function deleteBadge($badge)
+    public function deleteBadge($badge, $courseId)
     {
         Core::$systemDB->delete(self::TABLE, ["id" => $badge['id']]);
         Core::$systemDB->delete(self::TABLE_LEVEL, ["badgeId" => $badge['id']]);
+
+        $course = Course::getCourse($courseId);
+        $this->deleteGeneratedRule($course, $badge['name']);
     }
 
     public function toggleItemParam(int $itemId, string $param)
@@ -1128,11 +1129,15 @@ class Badges extends Module
     public function generateBadgeRule(Course $course, string $badgeName, array $levelsCount)
     {
         $template = file_get_contents(MODULES_FOLDER . "/" . self::ID . "/rules/" . self::BADGES_RULE_TEMPLATE);
+        if (sizeof($levelsCount) == 3) {
+            $levelsString =  "$levelsCount[0]" . ", " .  "$levelsCount[1]" . ", " . "$levelsCount[2]";
+        }
+        else {
+            $levelsString =  ".$levelsCount[0]." ;
 
+        }
         $newRule = str_replace("<badge-name>", $badgeName, $template);
-        $newRule = str_replace("<lvs-count>", $levelsCount, $newRule);
-
-        $txt = implode("", $newRule);
+        $newRule = str_replace("<lvs-count>", $levelsString, $newRule);
 
         $rs = new RuleSystem($course);
         
@@ -1145,11 +1150,23 @@ class Badges extends Module
             $filename = $rs->getFilename(self::ID);
         }
         $rule["rulefile"] = $filename;
-        $rs->addRule($txt, null, $rule); // add to end
+        $rs->addRule($newRule, null, $rule); // add to end
 
     }
 
-    
+    public function deleteGeneratedRule(Course $course, string $badgeName)
+    {
+        $rs = new RuleSystem($course);
+        $rule = array();
+
+        $rule["name"] = $badgeName;
+        $rule["rulefile"] = $rs->getFilename(self::ID);
+        $position = $rs->getRulePosition($rule);
+
+        if ($position !== false)
+            $rs->removeRule($rule, $position);
+    }
+
 }
 
 ModuleLoader::registerModule(array(

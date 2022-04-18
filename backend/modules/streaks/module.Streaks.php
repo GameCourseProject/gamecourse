@@ -764,9 +764,11 @@ class Streaks extends Module
         ];
 
         Core::$systemDB->insert(self::TABLE, $streakData);
-
-        // Streaks::generateStreakRule( $courseId, $achievement[name]);
-
+        
+        $course = Course::getCourse($courseId, false);
+        $streak = new Streaks();
+        $streak->generateStreakRule( $course, $achievement['name']);
+        
     }
 
     public static function editStreak($achievement, $courseId)
@@ -798,7 +800,7 @@ class Streaks extends Module
         Core::$systemDB->delete(self::TABLE, ["id" => $streak['id']]);
 
         $course = Course::getCourse($courseId, false);
-        Streaks::deleteGeneratedRule($course, Core::$systemDB->select(self::TABLE, ["id" => $streak['id']], "name")) ;
+        $this->deleteGeneratedRule($course, Core::$systemDB->select(self::TABLE, ["id" => $streak['id']], "name")) ;
     }
 
     public function toggleItemParam(int $itemId, string $param)
@@ -812,14 +814,12 @@ class Streaks extends Module
     /*** ----------------------------------------------- ***/
     /*** -------------------- Rules -------------------- ***/
     /*** ----------------------------------------------- ***/
-    /*
+
     public function generateStreakRule(Course $course, string $streakName)
     {
         $template = file_get_contents(MODULES_FOLDER . "/" . self::ID . "/rules/" . self::STREAKS_RULE_TEMPLATE);
 
         $newRule = str_replace("<streak-name>", $streakName, $template);
-
-        $txt = implode("", $newRule);
 
         $rs = new RuleSystem($course);
 
@@ -848,7 +848,7 @@ class Streaks extends Module
         if ($position !== false)
             $rs->removeRule($rule, $position);
     }
-    */
+
 
 }
 
