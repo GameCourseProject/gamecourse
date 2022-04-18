@@ -7,6 +7,7 @@ create table virtual_currency_config(
     costFormula varchar(70) not null,
     incrementCost int not null,
     tokensToXPRatio int not null,
+    /*isRemoveActive boolean not null default false, */
     foreign key(course) references course(id) on delete cascade
 );
 

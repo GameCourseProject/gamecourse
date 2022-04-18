@@ -1115,11 +1115,11 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
             #           e.g.: 1st = 10, 2nd = 20, 3rd = 40, 4th = 80,             #
             # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
-            if formula.startswith("Case 0"):
+            if formula == '0':
                 removed = incrementCost
-            elif formula.startswith("Case 1"):
+            elif formula == '1':
                 removed =  incrementCost * validAttempts
-            elif formula.startswith("Case 2"):
+            elif formula == '2':
                 if skillCost == 0:
                     n = 2
                 else:

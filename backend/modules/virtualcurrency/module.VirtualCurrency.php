@@ -8,6 +8,7 @@ use GameCourse\Views\Dictionary;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Views\Expression\ValueNode;
+use Modules\Moodle\Moodle;
 
 class VirtualCurrency extends Module
 {
@@ -17,6 +18,9 @@ class VirtualCurrency extends Module
     const TABLE_CONFIG = 'virtual_currency_config';
     const TABLE = 'virtual_currency_to_award';
     const TABLE_XP = 'user_xp';
+
+    static $virtualcurrency;
+
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -63,6 +67,23 @@ class VirtualCurrency extends Module
             $course = API::verifyCourseExists($courseId);
 
             API::response(array('currSkillsVars' => $this->getCurrencySkillVars($courseId)));
+        });
+
+        /**
+         * Sets currency skill-related variables.
+         *
+         * @param int $courseId
+         * @param $virtualcurrency
+         */
+        API::registerFunction(self::ID, 'setCurrencySkillVars', function () {
+            API::requireCourseAdminPermission();
+            API:: requireValues('courseId', 'currencySkills');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $virtualcurrency = API::getValue('currencySkills');
+            $this->setCurrencySkillVars($courseId, $virtualcurrency);
         });
     }
 
@@ -245,10 +266,11 @@ class VirtualCurrency extends Module
                     "name" => "",
                     "course" => $courseId,
                     "tokensToXPRatio" => "",
+                    /* "isRemoveActive" => 0,  */
                     "skillCost" => DEFAULT_COST,
                     "wildcardCost" => DEFAULT_COST,
                     "attemptRating" => 0,
-                    "costFormula" => "",
+                    "costFormula" => "Case 0 - SUB: incrementCost",
                     "incrementCost" => DEFAULT_COST
                 ]);
         }
@@ -350,7 +372,8 @@ class VirtualCurrency extends Module
         $input = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => "", 'current_val' => $this->getCurrencyName($courseId)),
             array('name' => "Tokens to XP Ratio", 'id' => 'tokenstoxp', 'type' => "number", 'options' => "", 'current_val' => intval($this->getTokensToXP($courseId))),
-           /* array('name' => "Skill Initial Cost", 'id' => 'skillcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getSkillCost($courseId))),
+            /* array('name' => "Enable Actions To Remove?", 'id' => 'enabletoremove', 'type' => 'on_off button', 'options' => "", 'current_val' => ($this->getIsRemoveActive($courseId))),
+             array('name' => "Skill Initial Cost", 'id' => 'skillcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getSkillCost($courseId))),
             array('name' => "Wildcard Initial Cost", 'id' => 'wildcardcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getWildcardCost($courseId))),
             array('name' => "Min. Rating for Attempt", 'id' => 'attemptrating', 'type' => "number", 'options' => "", 'current_val' => intval($this->getAttemptRating($courseId))),
             array('name' => "Increment Cost", 'id' => 'incrementcost', 'type' => "number", 'options' => "", 'current_val' => intval($this->getIncrementCost($courseId))),
@@ -606,11 +629,29 @@ class VirtualCurrency extends Module
             "skillCost" => $isEmpty ? "" : $skillRelatedVars["skillCost"],
             "wildcardCost" => $isEmpty ? "" : $skillRelatedVars["wildcardCost"],
             "attemptRating" => $isEmpty ? "" : $skillRelatedVars["attemptRating"],
-            "costFormula" => $isEmpty ? "" : $skillRelatedVars["costFormula"],
+            "costFormula" => $isEmpty ? "Case 0 - SUB: incrementCost" : $skillRelatedVars["costFormula"],
             "incrementCost" => $isEmpty ? "" : $skillRelatedVars["incrementCost"],
         ];
     }
-    
+
+
+    private function setCurrencySkillVars($courseId, $skillRelatedVars)
+    {
+        $arrayToDb = [
+            "course" => $courseId,
+            "skillCost" => $skillRelatedVars['skillCost'],
+            "wildcardCost" => $skillRelatedVars['wildcardCost'],
+            "attemptRating" => $skillRelatedVars['attemptRating'],
+            "costFormula" => $skillRelatedVars['costFormula'],
+            "incrementCost" => $skillRelatedVars["incrementCost"],
+        ];
+
+        if (empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*"))) {
+            Core::$systemDB->insert(self::TABLE_CONFIG, $arrayToDb);
+        } else {
+            Core::$systemDB->update(self::TABLE_CONFIG, $arrayToDb, ["course" => $courseId]);
+        }
+    }
 
 
 }
