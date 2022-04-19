@@ -18,14 +18,19 @@ class UserTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
+        Core::database()->cleanDatabase();
+    }
+
+    protected function tearDown(): void
+    {
         Core::database()->deleteAll(User::TABLE_USER);
         Core::database()->resetAutoIncrement(User::TABLE_USER);
         Core::database()->resetAutoIncrement(Auth::TABLE_AUTH);
     }
 
-    protected function tearDown(): void
+    public static function tearDownAfterClass(): void
     {
-        self::setUpBeforeClass();
+        Core::database()->cleanDatabase();
     }
 
 
@@ -56,6 +61,7 @@ class UserTest extends TestCase
             "Gmail e-mail" => ["johndoe@gmail.com"],
             "Hotmail e-mail" => ["johndoe@hotmail.com"],
             "Yahoo e-mail" => ["johndoe@yahoo.com"],
+            "null" => [null],
         ];
     }
 
@@ -63,7 +69,6 @@ class UserTest extends TestCase
     {
         return [
             "invalid e-mail" => ["johndoe@example.123"],
-            "null" => [null],
             "empty" => [""],
             "not a string" => [123],
         ];
@@ -160,8 +165,9 @@ class UserTest extends TestCase
             "Google auth service" => ["John Smith Doe", "johndoe@google.com", "google", "johndoe@google.com", 123456, "John Doe", "MEIC-A", false, false],
             "Facebook auth service" => ["John Smith Doe", "ist123456", "facebook", "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, false],
             "Linkedin auth service" => ["John Smith Doe", "ist123456", "linkedin", "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, false],
+            "null email" => ["John Smith Doe", "ist123456", "fenix", null, 123456, "John Doe", "MEIC-A", false, false],
             "null nickname" => ["John Smith Doe", "ist123456", "fenix", "johndoe@email.com", 123456, null, "MEIC-A", false, false],
-            "empty nickname" => ["John Smith Doe", "ist123456", "fenix", "johndoe@email.com", 123456, "", "MEIC-A", false, false],
+            "null major" => ["John Smith Doe", "ist123456", "fenix", "johndoe@email.com", 123456, "John Doe", null, false, false],
             "not admin, active" => ["John Smith Doe", "ist123456", "fenix", "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, true],
             "admin, not active" => ["John Smith Doe", "ist123456", "fenix", "johndoe@email.com", 123456, "John Doe", "MEIC-A", true, false],
             "admin, active" => ["John Smith Doe", "ist123456", "fenix", "johndoe@email.com", 123456, "John Doe", "MEIC-A", true, true]
@@ -419,7 +425,7 @@ class UserTest extends TestCase
      * @test
      * @dataProvider setEmailSuccessProvider
      */
-    public function setEmailSuccess(string $email)
+    public function setEmailSuccess(?string $email)
     {
         $user = User::addUser("John Smith Doe", "ist123456", "fenix", "example@email.com",
             123456, "John Doe", "MEIC-A", false, true);
@@ -504,7 +510,7 @@ class UserTest extends TestCase
         $user = User::addUser("John Smith Doe", "ist123456", "fenix", "example@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $this->expectException(Error::class);
-        $user->setEmail($authService);
+        $user->setAuthService($authService);
     }
 
     /**
@@ -828,8 +834,8 @@ class UserTest extends TestCase
      * @test
      * @dataProvider addUserSuccessProvider
      */
-    public function addUserSuccess(string $name, string $username, string $authService, string $email, int $studentNumber,
-                                   ?string $nickname, string $major, bool $isAdmin, bool $isActive)
+    public function addUserSuccess(string $name, string $username, string $authService, ?string $email, int $studentNumber,
+                                   ?string $nickname, ?string $major, bool $isAdmin, bool $isActive)
     {
         $id = User::addUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive)->getId();
 
@@ -901,8 +907,8 @@ class UserTest extends TestCase
      * @test
      * @dataProvider addUserSuccessProvider
      */
-    public function editUser(string $name, string $username, string $authService, string $email, int $studentNumber,
-                             ?string $nickname, string $major, bool $isAdmin, bool $isActive)
+    public function editUser(string $name, string $username, string $authService, ?string $email, int $studentNumber,
+                             ?string $nickname, ?string $major, bool $isAdmin, bool $isActive)
     {
         $user = User::addUser("João Carlos Sousa", "ist654321", "fenix", "joao@gmail.com",
             654321, "João Sousa", "MEIC-A", false, false);

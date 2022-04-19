@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiEndpoint: 'http://localhost/gamecourse-v2/api'
+  apiEndpoint: 'http://localhost/gamecourse-v2-new/api'
 };
 
 /*

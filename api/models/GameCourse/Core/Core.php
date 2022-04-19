@@ -10,6 +10,7 @@ use FenixEduException;
 use GameCourse\User\User;
 use GoogleHandler;
 use Linkedin;
+use Utils\Utils;
 
 require_once ROOT_PATH . "lib/fenixedu/FenixEdu.php";
 require_once ROOT_PATH . "lib/google/Google.php";
@@ -44,6 +45,15 @@ class Core
         if ($needsSetup && $performSetup)
             API::error('GameCourse is not yet setup.', 409);
         return $needsSetup;
+    }
+
+    public static function resetGameCourse()
+    {
+        Core::database()->cleanDatabase(true);
+        if (file_exists(ROOT_PATH . "logs")) Utils::deleteDirectory(ROOT_PATH . "logs");
+        Utils::deleteDirectory(ROOT_PATH . "course_data", false, ["defaultData"]);
+        Utils::deleteDirectory(ROOT_PATH . "autogame/imported-functions", false, ["defaults.py"]);
+        Utils::deleteDirectory(ROOT_PATH . "autogame/config", false, ["samples"]);
     }
 
 

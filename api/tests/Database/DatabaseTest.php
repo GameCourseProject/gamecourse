@@ -20,9 +20,7 @@ class DatabaseTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        Core::database()->deleteAll(User::TABLE_USER);
-        Core::database()->resetAutoIncrement(User::TABLE_USER);
-        Core::database()->resetAutoIncrement(Auth::TABLE_AUTH);
+        Core::database()->cleanDatabase();
     }
 
     protected function tearDown(): void
@@ -30,6 +28,11 @@ class DatabaseTest extends TestCase
         Core::database()->deleteAll(User::TABLE_USER);
         Core::database()->resetAutoIncrement(User::TABLE_USER);
         Core::database()->resetAutoIncrement(Auth::TABLE_AUTH);
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        Core::database()->cleanDatabase();
     }
 
 

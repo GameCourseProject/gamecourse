@@ -1,7 +1,7 @@
 <?php
 namespace GameCourse\AutoGame;
 
-class GameRules
+class AutoGame
 {
     const TABLE_AUTOGAME = "autogame";
 }

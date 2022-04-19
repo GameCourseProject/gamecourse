@@ -40,17 +40,17 @@ class User
         return $this->getData("name");
     }
 
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->getData("email");
     }
 
-    public function getMajor(): string
+    public function getMajor(): ?string
     {
         return $this->getData("major");
     }
 
-    public function getNickname(): string
+    public function getNickname(): ?string
     {
         return $this->getData("nickname");
     }
@@ -127,18 +127,18 @@ class User
         $this->setData(["name" => $name]);
     }
 
-    public function setEmail(string $email)
+    public function setEmail(?string $email)
     {
         self::validateEmail($email);
         $this->setData(["email" => $email]);
     }
 
-    public function setMajor(string $major)
+    public function setMajor(?string $major)
     {
         $this->setData(["major" => $major]);
     }
 
-    public function setNickname(string $nickname)
+    public function setNickname(?string $nickname)
     {
         $this->setData(["nickname" => $nickname]);
     }
@@ -287,8 +287,8 @@ class User
      * @param bool $isActive
      * @return User
      */
-    public static function addUser(string $name, string $username, string $authService, string $email, int $studentNumber,
-                                   ?string $nickname, string $major, bool $isAdmin, bool $isActive): User
+    public static function addUser(string $name, string $username, string $authService, ?string $email, int $studentNumber,
+                                   ?string $nickname, ?string $major, bool $isAdmin, bool $isActive): User
     {
         self::validateUser($name, $authService, $email, $isAdmin, $isActive);
         $id = Core::database()->insert(self::TABLE_USER, [
@@ -323,8 +323,8 @@ class User
      * @param bool $isActive
      * @return User
      */
-    public function editUser(string $name, string $username, string $authService, string $email, int $studentNumber,
-                             ?string $nickname, string $major, bool $isAdmin, bool $isActive): User
+    public function editUser(string $name, string $username, string $authService, ?string $email, int $studentNumber,
+                             ?string $nickname, ?string $major, bool $isAdmin, bool $isActive): User
     {
         self::validateUser($name, $authService, $email, $isAdmin, $isActive);
         $this->setData([
@@ -475,7 +475,7 @@ class User
     {
         self::validateName($name);
         self::validateAuthService($authService);
-        self::validateEmail($email);
+        if (!is_null($email)) self::validateEmail($email);
         if (!is_bool($isAdmin)) throw new Error("'isAdmin' must be either true or false.");
         if (!is_bool($isActive)) throw new Error("'isActive' must be either true or false.");
     }
@@ -494,6 +494,7 @@ class User
 
     private static function validateEmail($email)
     {
+        if (is_null($email)) return;
         if (!is_string($email) || !Utils::validateEmail($email))
             throw new Error("E-mail '" . $email . "' is invalid.");
     }

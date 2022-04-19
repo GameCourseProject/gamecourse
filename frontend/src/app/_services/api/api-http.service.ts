@@ -92,7 +92,7 @@ export class ApiHttpService {
     formData.append('teacher-id', data.teacherId.toString());
     formData.append('teacher-username', data.teacherUsername);
 
-    const url = this.apiEndpoint.createUrl('setup.php');
+    const url = this.apiEndpoint.createUrl('setup/setup.php');
 
     return this.post(url, formData, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['setup']) );

@@ -31,6 +31,12 @@ class Database
         return self::$instance;
     }
 
+    public function getName(): string
+    {
+        preg_match("/dbname=(.+)/", CONNECTION_STRING, $matches);
+        return $matches[1];
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------- Query Execution ------------------ ***/
@@ -394,5 +400,34 @@ class Database
     {
         $sql = "ALTER TABLE " . $table . " AUTO_INCREMENT = 1";
         $this->executeQuery($sql);
+    }
+
+    /**
+     * Deletes all entries from all tables in the database and resets
+     * auto increment. Option to delete tables as well.
+     *
+     * @param bool $deleteTables
+     *
+     * NOTE: THIS IS A DANGEROUS ACTION!
+     *       Only use this for testing purposes and never in the production
+     *       environment as it will delete all data.
+     */
+    public function cleanDatabase(bool $deleteTables = false)
+    {
+        $tables = array_column(
+            $this->executeQuery("SHOW TABLES;")->fetchAll(PDO::FETCH_ASSOC),
+            "Tables_in_" . $this->getName()
+        );
+        foreach ($tables as $table) {
+            if ($deleteTables) {
+                $this->setForeignKeyChecks(false);
+                $this->executeQuery("DROP TABLE IF EXISTS " . $table . ";");
+                $this->setForeignKeyChecks(true);
+
+            } else {
+                $this->deleteAll($table);
+                $this->resetAutoIncrement($table);
+            }
+        }
     }
 }
