@@ -57,9 +57,8 @@ modules/skills/resources/
 modules/quest/resources/
 
 cache/
+temp/
 /nbproject/private/
 /setup/setup.done
 /crontab.txt
-courses.zip
-badges.zip
 /qr-code.png

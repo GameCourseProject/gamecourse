@@ -197,9 +197,9 @@ class DatabaseTest extends TestCase
     public function selectFirstJoinedTablesFilterMultipleColumns()
     {
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "johndoe"]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "annadoe"]);
 
         $first = Core::database()->select(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id", ["u.name" => "John Doe"], "name, a.username");
         $this->assertIsArray($first);
@@ -207,7 +207,7 @@ class DatabaseTest extends TestCase
         $this->assertArrayHasKey("name", $first);
         $this->assertArrayHasKey("username", $first);
         $this->assertEquals("John Doe", $first["name"]);
-        $this->assertNull($first["username"]);
+        $this->assertEquals("johndoe", $first["username"]);
     }
 
     /**
@@ -446,9 +446,9 @@ class DatabaseTest extends TestCase
     public function selectMultipleJoinedTablesFilterMultipleColumns()
     {
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "johndoe"]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "annadoe"]);
 
         $users = Core::database()->selectMultiple(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id", ["u.name" => "John Doe"], "name, a.username");
         $this->assertIsArray($users);
@@ -457,7 +457,7 @@ class DatabaseTest extends TestCase
         $this->assertArrayHasKey("name", $users[0]);
         $this->assertArrayHasKey("username", $users[0]);
         $this->assertEquals("John Doe", $users[0]["name"]);
-        $this->assertNull($users[0]["username"]);
+        $this->assertEquals("johndoe", $users[0]["username"]);
     }
 
     /**
@@ -602,11 +602,11 @@ class DatabaseTest extends TestCase
     public function selectMultipleWhenGrouping()
     {
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "authentication_service" => "fenix"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "johndoe", "authentication_service" => "fenix"]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "authentication_service" => "google"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "annadoe", "authentication_service" => "google"]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Julia Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "authentication_service" => "google"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "juliadoe", "authentication_service" => "google"]);
 
         $authServices = Core::database()->selectMultiple(Auth::TABLE_AUTH, [], "count(id), authentication_service", null, [], [], "authentication_service");
         $this->assertIsArray($authServices);

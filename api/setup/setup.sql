@@ -16,7 +16,7 @@ CREATE TABLE game_course_user(
 CREATE TABLE auth(
 	id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
 	game_course_user_id         int unsigned NOT NULL,
-	username                    varchar(50),
+	username                    varchar(50) NOT NULL,
 	authentication_service      ENUM ('fenix', 'google', 'facebook', 'linkedin'),
 
 	UNIQUE key(username, authentication_service),

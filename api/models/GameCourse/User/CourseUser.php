@@ -51,7 +51,7 @@ class CourseUser extends User
 
     public function isActive(): bool
     {
-        return boolval($this->getData("isActive"));
+        return $this->getData("isActive");
     }
 
     /**
@@ -65,7 +65,7 @@ class CourseUser extends User
      *       when "*" passed, isActive of 'course_user' table will become isActiveInCourse
      *
      * @param string $field
-     * @return mixed|void
+     * @return array|bool|int|null
      */
     public function getData(string $field = "*")
     {
@@ -105,10 +105,7 @@ class CourseUser extends User
                 is_array($res2) ? $res2 : [$courseUserFields => $res2]);
         }
 
-        // Parse to appropriate types
-        if (isset($res["course"])) $res["course"] = intval($res["course"]);
-        if (isset($res["isActiveInCourse"])) $res["isActiveInCourse"] = boolval($res["isActiveInCourse"]);
-        return $res;
+        return is_array($res) ? self::parse($res) : self::parse(null, $res, $field);
     }
 
 
@@ -135,6 +132,7 @@ class CourseUser extends User
 
     /**
      * Sets course user data on the database.
+     *
      * @example setData(["course" => 1])
      * @example setData(["course" => 1, "isActive" => true])
      *
@@ -244,8 +242,10 @@ class CourseUser extends User
 
     /**
      * Gets course user's roles. Option to retrieve only roles' names and/or to
-     * sort them hierarchly, i.e. with the more specific roles first, followed
-     * by the less specific ones.
+     * sort them hierarchly. Sorting works like this:
+     *  - if only names --> with the more specific roles first, followed
+     *                      by the less specific ones
+     *  - else --> retrieve roles' hierarchy
      *
      * @example User Roles: Student, StudentA, StudentA1, StudentB
      *          getRoles() --> ["Student", "StudentA", "StudentA1", "StudentB"] (no fixed order)
@@ -415,7 +415,7 @@ class CourseUser extends User
                     }
 
                 } else { // user not yet added to course
-                    $courseUser = CourseUser::addCourseUser($user->getId(), $courseId);
+                    $courseUser = $course->addUserToCourse($user->getId());
                     $courseUser->setActive($isActiveInCourse);
                     if ($roles) // set user roles in course
                         $courseUser->setRoles(array_map("trim", preg_split("/\s+/", $roles)));
@@ -439,7 +439,7 @@ class CourseUser extends User
         if (!$course->exists())
             throw new Error("Course with ID = " . $courseId . " doesn't exist.");
 
-        $users = Course::getUsers($courseId);
+        $users = $course->getCourseUsers();
         $len = count($users);
         $separator = ",";
 
@@ -450,8 +450,8 @@ class CourseUser extends User
         foreach ($users as $i => $user) {
             // NOTE: this order must match the headers order
             $userInfo = [$user["name"], $user["email"], $user["major"], $user["nickname"], $user["studentNumber"],
-                $user["username"], $user["authentication_service"], $user["isAdmin"], $user["isActive"],
-                $user["isActiveInCourse"], implode(" ", (new CourseUser($user["id"], $course))->getRoles())];
+                $user["username"], $user["authentication_service"], +$user["isAdmin"], +$user["isActive"],
+                +$user["isActiveInCourse"], implode(" ", (new CourseUser($user["id"], $course))->getRoles())];
             $file .= join($separator, $userInfo);
             if ($i != $len - 1) $file .= "\n";
         }
@@ -468,5 +468,36 @@ class CourseUser extends User
         if (is_null($dateTime)) return;
         if (!is_string($dateTime) || !Utils::validateDate($dateTime, "Y-m-d H:i:s"))
             throw new Error("Datetime '" . $dateTime . "' should be in format 'yyyy-mm-dd HH:mm:ss'");
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ----------------------- Utils ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Parses a course user coming from the database to appropriate types.
+     * Option to pass a specific field to parse instead.
+     *
+     * @param array|null $user
+     * @param $field
+     * @param string|null $fieldName
+     * @return array|bool|int|null
+     */
+    public static function parse(array $user = null, $field = null, string $fieldName = null)
+    {
+        if ($user) {
+            $user = parent::parse($user);
+            if (isset($user["course"])) $user["course"] = intval($user["course"]);
+            if (isset($user["isActive"])) $user["isActive"] = boolval($user["isActive"]);
+            if (isset($user["isActiveInCourse"])) $user["isActiveInCourse"] = boolval($user["isActiveInCourse"]);
+            return $user;
+
+        } else {
+            if ($fieldName == "course") return intval($field);
+            if ($fieldName == "isActive") return boolval($field);
+            if ($fieldName == "isActiveInCourse") return boolval($field);
+            return $field;
+        }
     }
 }

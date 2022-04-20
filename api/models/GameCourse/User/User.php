@@ -57,7 +57,7 @@ class User
 
     public function getStudentNumber(): int
     {
-        return intval($this->getData("studentNumber"));
+        return $this->getData("studentNumber");
     }
 
     public function getUsername(): string
@@ -81,12 +81,12 @@ class User
 
     public function isAdmin(): bool
     {
-        return boolval($this->getData("isAdmin"));
+        return $this->getData("isAdmin");
     }
 
     public function isActive(): bool
     {
-        return boolval($this->getData("isActive"));
+        return $this->getData("isActive");
     }
 
     /**
@@ -97,7 +97,7 @@ class User
      * @example getData("name, username") --> gets user name & username
      *
      * @param string $field
-     * @return mixed|void
+     * @return array|bool|int|null
      */
     public function getData(string $field = "*")
     {
@@ -107,13 +107,7 @@ class User
         if ($field == "*") $fields = "u.*, a.username, a.authentication_service";
         else $fields = str_replace("id", "u.id", $field);
         $res = Core::database()->select($table, $where, $fields);
-
-        // Parse to appropriate types
-        if (isset($res["id"])) $res["id"] = intval($res["id"]);
-        if (isset($res["studentNumber"])) $res["studentNumber"] = intval($res["studentNumber"]);
-        if (isset($res["isAdmin"])) $res["isAdmin"] = boolval($res["isAdmin"]);
-        if (isset($res["isActive"])) $res["isActive"] = boolval($res["isActive"]);
-        return $res;
+        return is_array($res) ? self::parse($res) : self::parse(null, $res, $field);
     }
 
 
@@ -161,8 +155,7 @@ class User
 
     public function setImage(string $base64, string $name, string $extension)
     {
-        $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $base64));
-        file_put_contents(ROOT_PATH . "photos/" . $name . "." . $extension, $img);
+        Utils::uploadFile(ROOT_PATH . "photos", $base64, $name . "." . $extension);
     }
 
     public function setAdmin(bool $isAdmin)
@@ -218,21 +211,21 @@ class User
     public static function getUserByUsername(string $username): ?User
     {
         $userId = intval(Core::database()->select(Auth::TABLE_AUTH, ["username" => $username], "game_course_user_id"));
-        if ($userId == null) return null;
+        if (!$userId) return null;
         else return new User($userId);
     }
 
     public static function getUserByEmail(string $email): ?User
     {
         $userId = intval(Core::database()->select(self::TABLE_USER, ["email" => $email], "id"));
-        if ($userId == null) return null;
+        if (!$userId) return null;
         else return new User($userId);
     }
 
     public static function getUserByStudentNumber(int $studentNumber): ?User
     {
         $userId = intval(Core::database()->select(self::TABLE_USER, ["studentNumber" => $studentNumber], "id"));
-        if ($userId == null) return null;
+        if (!$userId) return null;
         else return new User($userId);
     }
 
@@ -240,31 +233,37 @@ class User
     {
         $where = [];
         if ($active !== null) $where["u.isActive"] = $active;
-        return Core::database()->selectMultiple(
+        $users = Core::database()->selectMultiple(
             self::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on u.id = a.game_course_user_id",
             $where,
             "u.*, a.username, a.authentication_service"
         );
+        foreach ($users as &$user) { $user = self::parse($user); }
+        return $users;
     }
 
     public static function getAdmins(): array
     {
-        return Core::database()->selectMultiple(
+        $admins = Core::database()->selectMultiple(
             self::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on u.id = a.id",
             ["isAdmin" => true],
             "u.*, a.username, a.authentication_service"
         );
+        foreach ($admins as &$admin) { $admin = self::parse($admin); }
+        return $admins;
     }
 
     public function getCourses(?bool $active = null): array
     {
         $where = ["cu.id" => $this->id];
         if ($active !== null) $where["c.isActive"] = $active;
-        return Core::database()->selectMultiple(
+        $courses = Core::database()->selectMultiple(
             CourseUser::TABLE_COURSE_USER . " cu JOIN " . Course::TABLE_COURSE . " c on cu.course=c.id",
             $where,
             "c.*"
         );
+        foreach ($courses as &$course) { $course = Course::parse($course); }
+        return $courses;
     }
 
 
@@ -279,10 +278,10 @@ class User
      * @param string $name
      * @param string $username
      * @param string $authService
-     * @param string $email
+     * @param string|null $email
      * @param int $studentNumber
      * @param string|null $nickname
-     * @param string $major
+     * @param string|null $major
      * @param bool $isAdmin
      * @param bool $isActive
      * @return User
@@ -315,10 +314,10 @@ class User
      * @param string $name
      * @param string $username
      * @param string $authService
-     * @param string $email
+     * @param string|null $email
      * @param int $studentNumber
      * @param string|null $nickname
-     * @param string $major
+     * @param string|null $major
      * @param bool $isAdmin
      * @param bool $isActive
      * @return User
@@ -438,7 +437,7 @@ class User
      */
     public static function exportUsers(): string
     {
-        $users = User::getUsers();
+        $users = self::getUsers();
         $len = count($users);
         $separator = ",";
 
@@ -449,7 +448,7 @@ class User
         foreach ($users as $i => $user) {
             // NOTE: this order must match the headers order
             $userInfo = [$user["name"], $user["email"], $user["major"], $user["nickname"], $user["studentNumber"], $user["username"],
-                $user["authentication_service"], $user["isAdmin"], $user["isActive"]];
+                $user["authentication_service"], +$user["isAdmin"], +$user["isActive"]];
             $file .= join($separator, $userInfo);
             if ($i != $len - 1) $file .= "\n";
         }
@@ -497,5 +496,35 @@ class User
         if (is_null($email)) return;
         if (!is_string($email) || !Utils::validateEmail($email))
             throw new Error("E-mail '" . $email . "' is invalid.");
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ----------------------- Utils ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Parses a user coming from the database to appropriate types.
+     * Option to pass a specific field to parse instead.
+     *
+     * @param array|null $user
+     * @param $field
+     * @param string|null $fieldName
+     * @return array|bool|int|null
+     */
+    public static function parse(array $user = null, $field = null, string $fieldName = null)
+    {
+        if ($user) {
+            if (isset($user["id"])) $user["id"] = intval($user["id"]);
+            if (isset($user["studentNumber"])) $user["studentNumber"] = intval($user["studentNumber"]);
+            if (isset($user["isAdmin"])) $user["isAdmin"] = boolval($user["isAdmin"]);
+            if (isset($user["isActive"])) $user["isActive"] = boolval($user["isActive"]);
+            return $user;
+
+        } else {
+            if ($fieldName == "id" || $fieldName == "studentNumber") return intval($field);
+            if ($fieldName == "isAdmin" || $fieldName == "isActive") return boolval($field);
+            return $field;
+        }
     }
 }

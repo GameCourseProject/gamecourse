@@ -58,7 +58,7 @@ class CourseUserTest extends TestCase
         Core::database()->resetAutoIncrement(Role::TABLE_ROLE);
 
         if (file_exists(ROOT_PATH . "logs")) Utils::deleteDirectory(ROOT_PATH . "logs");
-        Utils::deleteDirectory(ROOT_PATH . "course_data", false, ["defaultData"]);
+        Utils::deleteDirectory(ROOT_PATH . "course_data", false);
         Utils::deleteDirectory(ROOT_PATH . "autogame/imported-functions", false, ["defaults.py"]);
         Utils::deleteDirectory(ROOT_PATH . "autogame/config", false, ["samples"]);
     }
@@ -118,11 +118,11 @@ class CourseUserTest extends TestCase
     public function setDataSuccessProvider(): array
     {
         return [
-            "same data" => [["lastActivity" => null, "previousActivity" => null, "isActive" => "1"]],
+            "same data" => [["lastActivity" => null, "previousActivity" => null, "isActive" => true]],
             "different lastActivity" => [["lastActivity" => date("Y-m-d H:i:s", time())]],
             "different previousActivity" => [["previousActivity" => date("Y-m-d H:i:s", time())]],
-            "different isActive" => [["isActive" => "0"]],
-            "all different" => [["lastActivity" => date("Y-m-d H:i:s", time()), "previousActivity" => date("Y-m-d H:i:s", time()), "isActive" => "0"]]
+            "different isActive" => [["isActive" => false]],
+            "all different" => [["lastActivity" => date("Y-m-d H:i:s", time()), "previousActivity" => date("Y-m-d H:i:s", time()), "isActive" => false]]
         ];
     }
 
@@ -272,17 +272,6 @@ class CourseUserTest extends TestCase
             $courseUser->getData("name, lastActivity, isActive"));
     }
 
-    /**
-     * @test
-     */
-    public function getDataCourseUserDoesntExist()
-    {
-        $courseUser = new CourseUser(10, $this->course);
-        $this->assertFalse($courseUser->getData());
-        $this->assertNull($courseUser->getData("id"));
-        $this->assertFalse($courseUser->getData("lastActivity"));
-    }
-
 
     /**
      * @test
@@ -428,7 +417,7 @@ class CourseUserTest extends TestCase
     public function addCourseUserSuccess(int $userId, int $courseId, ?string $roleName, ?int $roleId)
     {
         CourseUser::addCourseUser($userId, $courseId, $roleName, $roleId);
-        $this->assertCount(2, Course::getUsers($courseId));
+        $this->assertCount(2, (new Course($courseId))->getCourseUsers());
 
         $courseUser = new CourseUser($userId, new Course($courseId));
         $this->assertEquals($userId, $courseUser->getId());
@@ -447,7 +436,7 @@ class CourseUserTest extends TestCase
     {
         $this->expectException(PDOException::class);
         CourseUser::addCourseUser($userId, $courseId, $roleName, $roleId);
-        $this->assertCount(1, (new Course($courseId))->getUsers());
+        $this->assertCount(1, $this->course->getCourseUsers());
         $this->assertFalse((new CourseUser($userId, new Course($courseId)))->exists());
     }
 
@@ -457,12 +446,12 @@ class CourseUserTest extends TestCase
     public function addCourseUserAlreadyInCourse()
     {
         CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
-        $this->assertCount(2, Course::getUsers($this->course->getId()));
+        $this->assertCount(2, $this->course->getCourseUsers());
         $this->assertTrue((new CourseUser($this->user->getId(), $this->course))->exists());
 
         $this->expectException(PDOException::class);
         CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
-        $this->assertCount(2, (new Course($this->course->getId()))->getUsers());
+        $this->assertCount(2, $this->course->getCourseUsers());
         $this->assertTrue((new CourseUser($this->user->getId(), $this->course))->exists());
     }
 
@@ -473,11 +462,11 @@ class CourseUserTest extends TestCase
     public function deleteCourseUser()
     {
         CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
-        $this->assertCount(2, Course::getUsers($this->course->getId()));
+        $this->assertCount(2, $this->course->getCourseUsers());
         $this->assertTrue((new CourseUser($this->user->getId(), $this->course))->exists());
 
         CourseUser::deleteCourseUser($this->user->getId(), $this->course->getId());
-        $this->assertCount(1, Course::getUsers($this->course->getId()));
+        $this->assertCount(1, $this->course->getCourseUsers());
         $this->assertFalse((new CourseUser($this->user->getId(), $this->course))->exists());
     }
 
@@ -487,7 +476,7 @@ class CourseUserTest extends TestCase
     public function deleteCourseUserInexistentCourseUser()
     {
         CourseUser::deleteCourseUser($this->user->getId(), $this->course->getId());
-        $this->assertCount(1, Course::getUsers($this->course->getId()));
+        $this->assertCount(1, $this->course->getCourseUsers());
         $this->assertFalse((new CourseUser($this->user->getId(), $this->course))->exists());
     }
 
@@ -1075,7 +1064,7 @@ class CourseUserTest extends TestCase
         $users = User::getUsers();
         $this->assertCount(6, $users);
 
-        $courseUsers = Course::getUsers($this->course->getId());
+        $courseUsers = $this->course->getCourseUsers();
         $this->assertCount(5, $courseUsers);
         $this->assertEquals(4, $nrUsersImported);
 
@@ -1151,7 +1140,7 @@ class CourseUserTest extends TestCase
         $users = User::getUsers();
         $this->assertCount(6, $users);
 
-        $courseUsers = Course::getUsers($this->course->getId());
+        $courseUsers = $this->course->getCourseUsers();
         $this->assertCount(5, $courseUsers);
         $this->assertEquals(3, $nrUsersImported);
 
@@ -1227,7 +1216,7 @@ class CourseUserTest extends TestCase
         $users = User::getUsers();
         $this->assertCount(6, $users);
 
-        $courseUsers = Course::getUsers($this->course->getId());
+        $courseUsers = $this->course->getCourseUsers();
         $this->assertCount(5, $courseUsers);
         $this->assertEquals(3, $nrUsersImported);
 
@@ -1298,7 +1287,7 @@ class CourseUserTest extends TestCase
         $users = User::getUsers();
         $this->assertCount(6, $users);
 
-        $courseUsers = Course::getUsers($this->course->getId());
+        $courseUsers = $this->course->getCourseUsers();
         $this->assertCount(5, $courseUsers);
         $this->assertEquals(4, $nrUsersImported);
 
@@ -1373,7 +1362,7 @@ class CourseUserTest extends TestCase
         $users = User::getUsers();
         $this->assertCount(6, $users);
 
-        $courseUsers = Course::getUsers($this->course->getId());
+        $courseUsers = $this->course->getCourseUsers();
         $this->assertCount(5, $courseUsers);
         $this->assertEquals(3, $nrUsersImported);
 
@@ -1448,7 +1437,7 @@ class CourseUserTest extends TestCase
         $users = User::getUsers();
         $this->assertCount(6, $users);
 
-        $courseUsers = Course::getUsers($this->course->getId());
+        $courseUsers = $this->course->getCourseUsers();
         $this->assertCount(5, $courseUsers);
         $this->assertEquals(3, $nrUsersImported);
 
@@ -1519,7 +1508,7 @@ class CourseUserTest extends TestCase
         $users = User::getUsers();
         $this->assertCount(3, $users);
 
-        $courseUsers = Course::getUsers($this->course->getId());
+        $courseUsers = $this->course->getCourseUsers();
         $this->assertCount(2, $courseUsers);
         $this->assertEquals(1, $nrUsersImported);
 
@@ -1554,7 +1543,7 @@ class CourseUserTest extends TestCase
         $users = User::getUsers();
         $this->assertCount(3, $users);
 
-        $courseUsers = Course::getUsers($this->course->getId());
+        $courseUsers = $this->course->getCourseUsers();
         $this->assertCount(2, $courseUsers);
         $this->assertEquals(1, $nrUsersImported);
 
@@ -1582,7 +1571,7 @@ class CourseUserTest extends TestCase
         $users = User::getUsers();
         $this->assertCount(2, $users);
 
-        $courseUsers = Course::getUsers($this->course->getId());
+        $courseUsers = $this->course->getCourseUsers();
         $this->assertCount(1, $courseUsers);
         $this->assertEquals(0, $nrUsersImported);
     }
@@ -1609,7 +1598,7 @@ class CourseUserTest extends TestCase
         $users = User::getUsers();
         $this->assertCount(5, $users);
 
-        $courseUsers = Course::getUsers($this->course->getId());
+        $courseUsers = $this->course->getCourseUsers();
         $this->assertCount(4, $courseUsers);
         $this->assertEquals(0, $nrUsersImported);
     }
@@ -1636,7 +1625,7 @@ class CourseUserTest extends TestCase
         $users = User::getUsers();
         $this->assertCount(5, $users);
 
-        $courseUsers = Course::getUsers($this->course->getId());
+        $courseUsers = $this->course->getCourseUsers();
         $this->assertCount(4, $courseUsers);
         $this->assertEquals(0, $nrUsersImported);
     }
