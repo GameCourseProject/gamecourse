@@ -22,6 +22,11 @@ class UserTest extends TestCase
     public static function setUpBeforeClass(): void
     {
         Core::database()->cleanDatabase();
+
+        if (file_exists(LOGS_FOLDER)) Utils::deleteDirectory(LOGS_FOLDER);
+        if (file_exists(COURSE_DATA_FOLDER)) Utils::deleteDirectory(COURSE_DATA_FOLDER);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions", false, ["defaults.py"]);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/config", false, ["samples"]);
     }
 
     protected function tearDown(): void
@@ -33,15 +38,20 @@ class UserTest extends TestCase
         Core::database()->resetAutoIncrement(Auth::TABLE_AUTH);
         Core::database()->resetAutoIncrement(Role::TABLE_ROLE);
 
-        if (file_exists(ROOT_PATH . "logs")) Utils::deleteDirectory(ROOT_PATH . "logs");
-        Utils::deleteDirectory(ROOT_PATH . "course_data", false);
-        Utils::deleteDirectory(ROOT_PATH . "autogame/imported-functions", false, ["defaults.py"]);
-        Utils::deleteDirectory(ROOT_PATH . "autogame/config", false, ["samples"]);
+        if (file_exists(LOGS_FOLDER)) Utils::deleteDirectory(LOGS_FOLDER);
+        if (file_exists(COURSE_DATA_FOLDER)) Utils::deleteDirectory(COURSE_DATA_FOLDER);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions", false, ["defaults.py"]);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/config", false, ["samples"]);
     }
 
     public static function tearDownAfterClass(): void
     {
         Core::database()->cleanDatabase();
+
+        if (file_exists(LOGS_FOLDER)) Utils::deleteDirectory(LOGS_FOLDER);
+        if (file_exists(COURSE_DATA_FOLDER)) Utils::deleteDirectory(COURSE_DATA_FOLDER);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions", false, ["defaults.py"]);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/config", false, ["samples"]);
     }
 
 
@@ -1086,7 +1096,7 @@ class UserTest extends TestCase
         User::addUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
         $id = User::addUser("João Carlos Sousa", "ist123456", "fenix", "joao@gmail.com",
-            123456, "João Sousa", "MEIC-A", false, true)-> getId();
+            123456, "João Sousa", "MEIC-A", false, true)->getId();
         User::deleteUser($id);
         $users = User::getUsers();
         $this->assertCount(1, $users);
@@ -1110,7 +1120,7 @@ class UserTest extends TestCase
     /**
      * @test
      */
-    public function usersExists()
+    public function userExists()
     {
         $user = User::addUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
@@ -1120,7 +1130,7 @@ class UserTest extends TestCase
     /**
      * @test
      */
-    public function usersDoesntExist()
+    public function userDoesntExist()
     {
         $user = new User(1);
         $this->assertFalse($user->exists());

@@ -27,6 +27,11 @@ class CourseUserTest extends TestCase
     public static function setUpBeforeClass(): void
     {
         Core::database()->cleanDatabase();
+
+        if (file_exists(LOGS_FOLDER)) Utils::deleteDirectory(LOGS_FOLDER);
+        if (file_exists(COURSE_DATA_FOLDER)) Utils::deleteDirectory(COURSE_DATA_FOLDER);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions", false, ["defaults.py"]);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/config", false, ["samples"]);
     }
 
     protected function setUp(): void
@@ -57,15 +62,20 @@ class CourseUserTest extends TestCase
         Core::database()->resetAutoIncrement(Auth::TABLE_AUTH);
         Core::database()->resetAutoIncrement(Role::TABLE_ROLE);
 
-        if (file_exists(ROOT_PATH . "logs")) Utils::deleteDirectory(ROOT_PATH . "logs");
-        Utils::deleteDirectory(ROOT_PATH . "course_data", false);
-        Utils::deleteDirectory(ROOT_PATH . "autogame/imported-functions", false, ["defaults.py"]);
-        Utils::deleteDirectory(ROOT_PATH . "autogame/config", false, ["samples"]);
+        if (file_exists(LOGS_FOLDER)) Utils::deleteDirectory(LOGS_FOLDER);
+        if (file_exists(COURSE_DATA_FOLDER)) Utils::deleteDirectory(COURSE_DATA_FOLDER);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions", false, ["defaults.py"]);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/config", false, ["samples"]);
     }
 
     public static function tearDownAfterClass(): void
     {
         Core::database()->cleanDatabase();
+
+        if (file_exists(LOGS_FOLDER)) Utils::deleteDirectory(LOGS_FOLDER);
+        if (file_exists(COURSE_DATA_FOLDER)) Utils::deleteDirectory(COURSE_DATA_FOLDER);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions", false, ["defaults.py"]);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/config", false, ["samples"]);
     }
 
 

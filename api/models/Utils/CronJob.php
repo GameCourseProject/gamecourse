@@ -13,7 +13,7 @@ class CronJob
 {
     const CRONFILE = ROOT_PATH . "crontab.txt";
 
-    public function __construct(string $script, int $courseId, int $number, string $time, int $day)
+    public function __construct(string $script, int $courseId, int $number, string $time, ?int $day)
     {
         self::updateCronTab($script, $courseId, $number, $time, $day);
     }
@@ -23,7 +23,7 @@ class CronJob
         self::updateCronTab($script, $courseId, null, null, null, true);
     }
 
-    private static function updateCronTab(string $script, int $courseId, int $number, string $time, int $day, bool $remove = false)
+    private static function updateCronTab(string $script, int $courseId, ?int $number, ?string $time, ?int $day, bool $remove = false)
     {
         $path = self::getScriptPath($script);
         $output = shell_exec('crontab -l');
@@ -40,6 +40,7 @@ class CronJob
             }
 
             if (!$remove) {
+                // TODO: replace with getExpression()
                 $periodStr = "";
                 if ($time == "Minutes") {
                     $periodStr = "*/" . $number . " * * * *";
@@ -66,9 +67,21 @@ class CronJob
             case "AutoGame":
                 return ROOT_PATH . "AutoGameScript.php";
             case "ProgressReport":
-                return ROOT_PATH . MODULES_FOLDER . "/" . Notifications::ID . "/ProgressReportScript.php";
+                return MODULES_FOLDER . "/" . Notifications::ID . "/ProgressReportScript.php";
             default:
                 return null;
         }
+    }
+
+    /**
+     * TODO: add more flexibility and replace section in updateCrontab function
+     * Gets a cron schedule expression based on specifications given.
+     * Extensive editor on: https://crontab.guru
+     *
+     * @return string
+     */
+    private static function getExpression(): string
+    {
+        return "";
     }
 }

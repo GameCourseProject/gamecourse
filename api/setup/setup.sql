@@ -23,21 +23,26 @@ CREATE TABLE auth(
 	FOREIGN key(game_course_user_id) REFERENCES game_course_user(id) ON DELETE CASCADE
 );
 
+SET FOREIGN_KEY_CHECKS=0;
 CREATE TABLE course(
 	id 		                    int unsigned PRIMARY KEY AUTO_INCREMENT,
-	name 	                    varchar(100),
+	name 	                    varchar(100) NOT NULL,
 	short	                    varchar(20),
 	color	                    varchar(7),
 	year	                    varchar(10),
 	startDate                   TIMESTAMP NULL DEFAULT NULL,
 	endDate                     TIMESTAMP NULL DEFAULT NULL,
-    defaultLandingPage          varchar(100) DEFAULT '',
+    landingPage                 int unsigned DEFAULT NULL,
 	lastUpdate                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	isActive                    boolean DEFAULT TRUE,
-	isVisible                   boolean DEFAULT TRUE, #?
+	isVisible                   boolean DEFAULT TRUE,
 	roleHierarchy               text,
-	theme                       varchar(50)
+	theme                       varchar(50),
+
+    UNIQUE key(name, year),
+    FOREIGN key(landingPage) REFERENCES page(id) ON DELETE CASCADE
 );
+SET FOREIGN_KEY_CHECKS=1;
 
 CREATE TABLE course_user(
     id                          int unsigned,
@@ -84,7 +89,7 @@ CREATE TABLE user_role(
 );
 
 CREATE TABLE module(
-	moduleId                    varchar(50) NOT NULL PRIMARY KEY,
+	id                          varchar(50) NOT NULL PRIMARY KEY,
 	name                        varchar(50),
 	description                 varchar(100),
 	version                     varchar(10),
@@ -92,12 +97,12 @@ CREATE TABLE module(
 );
 
 CREATE TABLE course_module(
-	moduleId                    varchar(50) NOT NULL,
+	module                      varchar(50) NOT NULL,
 	course                      int unsigned NOT NULL,
 	isEnabled                   boolean DEFAULT FALSE,
 
-	PRIMARY key(moduleId, course),
-	FOREIGN key(moduleId) REFERENCES module(moduleId) ON DELETE CASCADE,
+	PRIMARY key(module, course),
+	FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE,
 	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
@@ -109,7 +114,7 @@ CREATE TABLE dictionary_view_type(
 
 CREATE TABLE dictionary_library(
 	id	                        int unsigned AUTO_INCREMENT PRIMARY KEY,
-	moduleId                    varchar(50),
+	module                      varchar(50),
 	name                        varchar(50) UNIQUE NOT NULL,
 	description                 varchar(255)
 );
@@ -286,10 +291,10 @@ CREATE TABLE template_role(
 
 CREATE TABLE template_module(
     templateId                  int unsigned NOT NULL,
-    moduleId                    varchar(50),
+    module                      varchar(50),
 
     FOREIGN key(templateId) REFERENCES template(id) ON DELETE CASCADE,
-    FOREIGN key(moduleId) REFERENCES module(moduleId) ON DELETE CASCADE
+    FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
 );
 
 CREATE TABLE autogame(

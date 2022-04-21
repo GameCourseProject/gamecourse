@@ -41,7 +41,7 @@ class Core
 
     public static function requireSetup(bool $performSetup = true): bool
     {
-        $needsSetup = !file_exists(ROOT_PATH . 'setup.done');
+        $needsSetup = !file_exists(ROOT_PATH . 'setup/setup.done');
         if ($needsSetup && $performSetup)
             API::error('GameCourse is not yet setup.', 409);
         return $needsSetup;
@@ -50,10 +50,10 @@ class Core
     public static function resetGameCourse()
     {
         Core::database()->cleanDatabase(true);
-        if (file_exists(ROOT_PATH . "logs")) Utils::deleteDirectory(ROOT_PATH . "logs");
-        Utils::deleteDirectory(ROOT_PATH . "course_data", false, ["defaultData"]);
-        Utils::deleteDirectory(ROOT_PATH . "autogame/imported-functions", false, ["defaults.py"]);
-        Utils::deleteDirectory(ROOT_PATH . "autogame/config", false, ["samples"]);
+        if (file_exists(LOGS_FOLDER)) Utils::deleteDirectory(LOGS_FOLDER);
+        if (file_exists(COURSE_DATA_FOLDER)) Utils::deleteDirectory(ROOT_PATH . COURSE_DATA_FOLDER);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions", false, ["defaults.py"]);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/config", false, ["samples"]);
     }
 
 
@@ -216,6 +216,6 @@ class Core
 
     public static function denyCLI()
     {
-        if (static::isCLI()) die('CLI access to this script is not allowed.');
+        if (self::isCLI()) die('CLI access to this script is not allowed.');
     }
 }

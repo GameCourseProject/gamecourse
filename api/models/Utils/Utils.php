@@ -16,44 +16,40 @@ class Utils
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Gets all files in a directory, even if they're organized
-     * in subdirectories.
-     * Ignores files that start with '.' or '..'.
+     * Gets contents of a directory.
+     * Ignores items that start with '.' or '..'.
      *
-     * @param string $baseDir
-     * @param ...$files
+     * @param string $dir
      * @return array
      */
-    public static function discoverFiles(string $baseDir, ...$files): array
+    public static function getDirectoryContents(string $dir): array
     {
-        $discoveredFiles = [];
-        foreach ($files as $filePart) {
-            if (strpos($filePart, '//') === 0 || strpos($filePart, 'http') === 0) {
-                $discoveredFiles[] = $filePart;
-                continue;
-            }
-            else if (strpos($filePart, '/') === 0) $file = $filePart;
-            else $file = $baseDir . (strrpos($baseDir, '/') == strlen($baseDir) - 1 ? '' : '/') . $filePart;
+        $contents = [];
+        $objects = array_diff(scandir($dir), ["..", "."]);
 
-            if (is_dir($file)) self::discoverSubFiles($file, $discoveredFiles);
-            else $discoveredFiles[] = $file;
-        }
-        return $discoveredFiles;
-    } // FIXME: check if function is needed; if so create tests
+        foreach ($objects as $object) {
+            if ($object[0] == "." || $object[0] == "..") continue;
 
-    private static function discoverSubFiles($dirPath, &$discoveredFiles) {
-        $dh = dir($dirPath);
-        while (($fileName = $dh->read()) !== false) {
-            $file = $dirPath . $fileName;
-            if ($fileName == '.' || $fileName == '..')
-                continue;
-            if (is_dir($file))
-                static::discoverSubFiles($file . '/', $discoveredFiles);
-            else if (!in_array($file, $discoveredFiles)) {
-                $discoveredFiles[] = $file;
+            $objectPath = $dir . DIRECTORY_SEPARATOR . $object;
+            if (is_dir($objectPath) && !is_link($objectPath)) { // directory
+                $contents[] = [
+                  "name" => $object,
+                  "type" => "folder",
+                  "contents" => self::getDirectoryContents($objectPath)
+                ];
+
+            } else { // file
+                $temp = explode(".", $object);
+                $extension = "." . end($temp);
+                $contents[] = [
+                    "name" => $object,
+                    "type" => "file",
+                    "extension" => $extension
+                ];
             }
         }
-    } // FIXME: check if function is needed
+        return $contents;
+    }
 
     /**
      * Deletes a given directory and its contents.
@@ -106,14 +102,16 @@ class Utils
     /**
      * Copies directory's contents to a new location, keeping the
      * same file structure as the original directory.
+     * Option for exceptions that should not be copied.
      *
      * @example copyDirectory("<path>/dir1/", "<path>/dir2/") --> copies contents of dir1 to dir2
      *
      * @param string $dir
      * @param string $copyTo
+     * @param array $exceptions
      * @return void
      */
-    public static function copyDirectory(string $dir, string $copyTo)
+    public static function copyDirectory(string $dir, string $copyTo, array $exceptions = [])
     {
         if (in_array(PHP_OS, ["WIN32", "WINNT", "Windows"])) {
             // Change directory separator
@@ -124,6 +122,63 @@ class Utils
         } elseif (in_array(PHP_OS, ["Linux", "Unix"]))
             shell_exec("cp -R " . $dir . " " . $copyTo);
         else throw new Error("Can't copy directory: OS is neither Windows nor Linux based.");
+
+        if (count($exceptions) != 0) {
+            foreach ($exceptions as $exception) {
+                $exception = $copyTo . "/" . $exception;
+                if (is_dir($exception)) self::deleteDirectory($exception);
+                else unlink($exception);
+            }
+        }
+    }
+
+    /**
+     * Uploads a given file to a given directory. It will create directory
+     * if it doesn't yet exist.
+     *
+     * @param string $to
+     * @param string $base64
+     * @param string $filename
+     * @return string
+     */
+    public static function uploadFile(string $to, string $base64, string $filename): string
+    {
+        if (!file_exists($to)) mkdir($to, 077, true);
+        if (!is_dir($to))
+            throw new Error("Can't upload file to '" . $to . "' since it isn't a directory.");
+
+        preg_match('/\w/', substr($to, -1), $matches);
+        if (count($matches) != 0) $to .= "/";
+        $path = $to . $filename;
+
+        $file = base64_decode(preg_replace('#^data:\w+/\w+;base64,#i', '', $base64));
+        file_put_contents($path, $file);
+        return $path;
+    }
+
+    /**
+     * Deletes a given file from a given directory.
+     * Option to delete given directory if it becomes empty.
+     *
+     * @param string $from
+     * @param string $filename
+     * @param bool $deleteIfEmpty
+     * @return void
+     */
+    public static function deleteFile(string $from, string $filename, bool $deleteIfEmpty = true)
+    {
+        if (!is_dir($from))
+            throw new Error("Can't delete file from '" . $from . "' since it isn't a directory.");
+
+        preg_match('/\w/', substr($from, -1), $matches);
+        if (count($matches) != 0) $from .= "/";
+        $path = $from . $filename;
+
+        if (file_exists($path))
+            unlink($path);
+
+        // Delete directory if empty
+        if (count(glob($from . "/*")) === 0 && $deleteIfEmpty) Utils::deleteDirectory($from);
     }
 
 
@@ -176,6 +231,43 @@ class Utils
         $length = strlen($needle);
         if (!$length) return true;
         return substr($haystack, -$length) === $needle;
+    }
+
+    /**
+     * Replaces non-English characters by their English counterparts.
+     *
+     * @param string $str
+     * @return string
+     */
+    public static function swapNonENChars(string $str): string
+    {
+        $str = preg_replace("/[ãáâàåä]/u", "a", $str);
+        $str = preg_replace("/[ÃÁÂÀÅÄ]/u", "A", $str);
+
+        $str = preg_replace("/[óôõòøö]/u", "o", $str);
+        $str = preg_replace("/[ÓÔÕÒØÖ]/u", "O", $str);
+
+        $str = preg_replace("/ç/u", "c", $str);
+        $str = preg_replace("/Ç/u", "C", $str);
+
+        $str = preg_replace("/[éêè]/u", "e", $str);
+        $str = preg_replace("/[ÉÊÈ]/u", "E", $str);
+
+        $str = preg_replace("/[íì]/u", "i", $str);
+        $str = preg_replace("/[ÍÌ]/u", "I", $str);
+
+        $str = preg_replace("/[úùüû]/u", "u", $str);
+        $str = preg_replace("/[ÚÙÜÛ]/u", "U", $str);
+
+        $str = preg_replace("/ñ/u", "n", $str);
+        $str = preg_replace("/Ñ/u", "N", $str);
+
+        $str = preg_replace("/ß/u", "b", $str);
+
+        $str = preg_replace("/æ/u", "ae", $str);
+        $str = preg_replace("/Æ/u", "AE", $str);
+
+        return preg_replace("/[^a-zA-Z\d_ ]/", "", $str);
     }
 
 

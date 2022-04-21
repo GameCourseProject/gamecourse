@@ -1,17 +1,17 @@
 <?php
 namespace GameCourse\Course;
 
-use Api\API;
-use FilesystemIterator;
-use GameCourse\AutoGame\GameRules;
+use Error;
+use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
 use GameCourse\Role\Role;
+use GameCourse\User\Auth;
 use GameCourse\User\CourseUser;
-use GameCourse\Views\Template;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use Utils\CronJob;
+use GameCourse\User\User;
+use Google\Service\GroupsMigration\Resource\Archive;
+use Utils\Utils;
+use ZipArchive;
 
 /**
  * This is the Course model, which implements the necessary methods
@@ -22,8 +22,8 @@ class Course
     const TABLE_COURSE = "course";
 
     const HEADERS = [   // headers for import/export functionality
-        "name", "short", "color", "year", "startDate", "endDate", "defaultLandingPage",
-        "lastUpdate", "isActive", "isVisible", "roleHierarchy", "theme"
+        "name", "short", "color", "year", "startDate", "endDate", "landingPage", "isActive", "isVisible",
+        "roleHierarchy", "theme"
     ];
 
     protected $id;
@@ -48,17 +48,17 @@ class Course
         return $this->getData("name");
     }
 
-    public function getShort(): string
+    public function getShort(): ?string
     {
         return $this->getData("short");
     }
 
-    public function getColor(): string
+    public function getColor(): ?string
     {
         return $this->getData("color");
     }
 
-    public function getYear(): string
+    public function getYear(): ?string
     {
         return $this->getData("year");
     }
@@ -73,14 +73,19 @@ class Course
         return $this->getData("endDate");
     }
 
-    public function getLandingPage(): string
+    public function getLandingPage(): ?int
     {
-        return $this->getData("defaultLandingPage");
+        return $this->getData("landingPage");
     }
 
     public function getLastUpdate(): string
     {
         return $this->getData("lastUpdate");
+    } // FIXME: not really being used for anything
+
+    public function getRolesHierarchy(): array
+    {
+        return $this->getData("roleHierarchy");
     }
 
     public function getTheme(): ?string
@@ -90,30 +95,36 @@ class Course
 
     public function isActive(): bool
     {
-        return boolval($this->getData("isActive"));
+        return $this->getData("isActive");
     }
 
     public function isVisible(): bool
     {
-        return boolval($this->getData("isVisible"));
+        return $this->getData("isVisible");
     }
 
     /**
      * Gets course data from the database.
+     *
      * @example getData() --> gets all course data
      * @example getData("name") --> gets course name
      * @example getData("name, short") --> gets course name & short
      *
+     * NOTE: folder can only be retrieve with either '*' or
+     *       alone as a field
+     *
      * @param string $field
-     * @return mixed|void
+     * @return array|bool|int|null
      */
     public function getData(string $field = "*")
     {
         if ($field != "folder")
             $data = Core::database()->select(self::TABLE_COURSE, ["id" => $this->id], $field);
-        if ($field == "*" || $field == "folder")
-            $data["folder"] = Course::getCourseDataFolder($this->id);
-        return $data;
+        if ($field == "*")
+            $data["folder"] = $this->getDataFolder(false);
+        if ($field == "folder")
+            $data = $this->getDataFolder(false);
+        return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
     }
 
 
@@ -123,45 +134,56 @@ class Course
 
     public function setName(string $name)
     {
+        self::validateName($name);
         $this->setData(["name" => $name]);
     }
 
-    public function setShort(string $short)
+    public function setShort(?string $short)
     {
         $this->setData(["short" => $short]);
     }
 
-    public function setColor(string $color)
+    public function setColor(?string $color)
     {
+        self::validateColor($color);
         $this->setData(["color" => $color]);
     }
 
-    public function setYear(string $year)
+    public function setYear(?string $year)
     {
+        self::validateYear($year);
         $this->setData(["year" => $year]);
     }
 
-    public function setStartDate(string $start)
+    public function setStartDate(?string $start)
     {
+        self::validateDateTime($start);
         $this->setData(["startDate" => $start]);
     }
 
-    public function setEndDate(string $end)
+    public function setEndDate(?string $end)
     {
+        self::validateDateTime($end);
         $this->setData(["endDate" => $end]);
     }
 
-    public function setLandingPage(string $page)
+    public function setLandingPage(?int $pageId)
     {
-        $this->setData(["defaultLandingPage" => $page]);
+        $this->setData(["landingPage" => $pageId]);
     }
 
     public function setLastUpdate(string $lastUpdate)
     {
+        self::validateDateTime($lastUpdate);
         $this->setData(["lastUpdate" => $lastUpdate]);
     }
 
-    public function setTheme(string $theme)
+    public function setRolesHierarchy(array $hierarchy)
+    {
+        $this->setData(["roleHierarchy" => json_encode($hierarchy)]);
+    }
+
+    public function setTheme(?string $theme)
     {
         $this->setData(["theme" => $theme]);
     }
@@ -169,7 +191,7 @@ class Course
     public function setActive(bool $isActive)
     {
         $this->setData(["isActive" => +$isActive]);
-        $this->setAutoGame($isActive);
+        AutoGame::setAutoGame($this->id, $isActive);
     }
 
     public function setVisible(bool $isVisible)
@@ -179,6 +201,7 @@ class Course
 
     /**
      * Sets course data on the database.
+     *
      * @example setData(["name" => "New name"])
      * @example setData(["name" => "New name", "short" => "New short"])
      *
@@ -187,7 +210,22 @@ class Course
      */
     public function setData(array $fieldValues)
     {
-        if (count($fieldValues) != 0) Core::database()->update(self::TABLE_COURSE, $fieldValues, ["id" => $this->id]);
+        if (key_exists("name", $fieldValues)) {
+            self::validateName($fieldValues["name"]);
+
+            // Update course data folder if name has changed
+            $oldName = $this->getName();
+            if (strcmp($oldName, $fieldValues["name"]) !== 0)
+                rename($this->getDataFolder(true, $oldName), $this->getDataFolder(true, $fieldValues["name"]));
+        }
+        if (key_exists("color", $fieldValues)) self::validateColor($fieldValues["color"]);
+        if (key_exists("year", $fieldValues)) self::validateYear($fieldValues["year"]);
+        if (key_exists("startDate", $fieldValues)) self::validateDateTime($fieldValues["startDate"]);
+        if (key_exists("endDate", $fieldValues)) self::validateDateTime($fieldValues["endDate"]);
+        if (key_exists("lastUpdate", $fieldValues)) self::validateDateTime($fieldValues["lastUpdate"]);
+
+        if (count($fieldValues) != 0)
+            Core::database()->update(self::TABLE_COURSE, $fieldValues, ["id" => $this->id]);
     }
 
 
@@ -205,8 +243,17 @@ class Course
     public static function getCourseByNameAndYear(string $name, string $year): ?Course
     {
         $courseId = intval(Core::database()->select(self::TABLE_COURSE, ["name" => $name, "year" => $year], "id"));
-        if ($courseId == null) return null;
+        if (!$courseId) return null;
         else return new Course($courseId);
+    }
+
+    public static function getCourses(?bool $active = null): array
+    {
+        $where = [];
+        if ($active !== null) $where["isActive"] = $active;
+        $courses = Core::database()->selectMultiple(self::TABLE_COURSE, $where);
+        foreach ($courses as &$course) { $course = self::parse($course); }
+        return $courses;
     }
 
 
@@ -219,145 +266,89 @@ class Course
      * Returns the newly created course.
      *
      * @param string $name
-     * @param string $short
-     * @param string $year
-     * @param string $color
-     * @param string $startDate
-     * @param string $endDate
+     * @param string|null $short
+     * @param string|null $year
+     * @param string|null $color
+     * @param string|null $startDate
+     * @param string|null $endDate
      * @param bool $isActive
      * @param bool $isVisible
-     * @param int|null $copyFrom
      * @return Course
      */
-    public static function addCourse(string $name, string $short, string $year, string $color, string $startDate,
-                                     string $endDate, bool $isActive, bool $isVisible, int $copyFrom = null): Course
+    public static function addCourse(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
+                                     ?string $endDate, bool $isActive, bool $isVisible): Course
     {
-        // Check if there's a user logged in first
+        // Check if user logged in is an admin
         $loggedUser = Core::getLoggedUser();
-        if (!$loggedUser) API::error("No user currently logged in. Can't create new course.");
-
-        // Add time to date strings
-        if ($startDate) $startDate .= " 00:00:00";
-        if ($endDate) $endDate .= " 00:00:00";
+        if (!$loggedUser) throw new Error("No user currently logged in. Can't create new course.");
+        if (!$loggedUser->isAdmin()) throw new Error("Only admins can create new courses.");
 
         // Insert in database & create data folder
+        self::validateCourse($name, $color, $year, $startDate, $endDate, $isActive, $isVisible);
         $id = Core::database()->insert(self::TABLE_COURSE, [
             "name" => $name,
             "short" => $short,
-            "year" => $year,
             "color" => $color,
+            "year" => $year,
             "startDate"=> $startDate,
             "endDate"=> $endDate,
             "isActive" => +$isActive,
             "isVisible" => +$isVisible
         ]);
-        $dataFolder = Course::createCourseDataFolder($id, $name);
+        $dataFolder = Course::createDataFolder($id, $name);
 
-        // Add current user to the course
-        Core::database()->insert(CourseUser::TABLE_COURSE_USER, ["id" => $loggedUser->getId(), "course" => $id]);
+        // Add default roles
+        $teacherRoleId = Role::addDefaultRolesToCourse($id);
 
-        if ($copyFrom !== null) {   // Make a copy of a course
-            $copyFromCourse = Course::getCourseById($copyFrom);
-            $copyDataFolder = Course::getCourseDataFolder($copyFrom);
+        // Add current user as a teacher of the course
+        $course = new Course($id);
+        $course->addUserToCourse($loggedUser->getId(), "Teacher", $teacherRoleId);
 
-            // Copy data folder contents
-            Course::copyCourseDataFolder($copyDataFolder, $dataFolder);
+        // Init modules
+        // FIXME: use Module model
+//        $modules = Core::database()->selectMultiple(Module::TABLE_MODULE);
+//        foreach ($modules as $mod) {
+//            Core::database()->insert(Module::TABLE_COURSE_MODULE, ["course" => $id, "moduleId" => $mod["moduleId"]]);
+//        }
 
-            // Update course in database
-            $keys = ["defaultLandingPage", "roleHierarchy", "theme"];
-            $fromCourseData = $copyFromCourse->getData();
-            $newData = [];
-            foreach ($keys as $key)
-                $newData[$key] = $fromCourseData[$key];
-            Core::database()->update(self::TABLE_COURSE, $newData, ["id" => $id]);
+        // Prepare AutoGame
+        AutoGame::initAutoGame($id, $name, $dataFolder);
 
-            // Copy roles info
-            $oldRoles = Course::copyCourseContent(Role::TABLE_ROLE, $copyFrom, $id, true);
-            $oldRolesByName = array_combine(array_column($oldRoles, "name"), $oldRoles);
-            $newRoles = Core::database()->selectMultiple(Role::TABLE_ROLE, ["course" => $id]);
-            $newRolesByName = array_combine(array_column($newRoles, "name"), $newRoles);
-            Core::database()->insert(Role::TABLE_USER_ROLE, ["id" => $loggedUser->getId(), "course" => $id, "role" => $newRolesByName["Teacher"]["id"]]);
+        return $course;
+    }
 
-            // Copy modules info
-            Course::copyCourseContent(Module::TABLE_COURSE_MODULE, $copyFrom, $id);
-            $enabledModules = $copyFromCourse->getModules(true);
-//            foreach ($enabledModules as $moduleName) { FIXME: refactoring architecture
-//                $module = ModuleLoader::getModule($moduleName);
-//                $handler = $module["factory"]();
-//                if ($handler->is_configurable() && $moduleName != "awardList") {
-//                    $moduleArray = $handler->moduleConfigJson($copyFrom);
-//                    $result = $handler->readConfigJson($courseId, $moduleArray, false);
-//                }
-//            }
+    /**
+     * Adds a course to the database by copying from another
+     * existing course.
+     *
+     * @param int $copyFrom
+     * @return void
+     */
+    public static function copyCourse(int $copyFrom)
+    {
+        $courseToCopy = Course::getCourseById($copyFrom);
+        if (!$courseToCopy) throw new Error("Course to copy from with ID = " . $copyFrom . " doesn't exist.");
+        $courseInfo = $courseToCopy->getData();
 
-            // Copy pages & templates
-            $templates = Core::database()->selectMultiple(
-                Template::TABLE_VIEW_TEMPLATE . " vt join " . Template::TABLE_TEMPLATE . " t on vt.templateId=id",
-                ["course" => $copyFrom, "isGlobal" => 0]
-            );
-//            foreach ($templates as $t) { FIXME: refactoring architecture
-//                $view = Core::database()->selectMultiple(
-//                    Template::TABLE_VIEW_TEMPLATE . " vt join " . View::TABLE_VIEW . " v on vt.viewId=v.viewId",
-//                    ["templateId" => $t["id"]],
-//                    "v.*"
-//                );
-//                ViewHandler::buildView($view, true);
-//                [$templateId, $viewId] = Views::createTemplate($view, $courseId, $t["name"], $t["roleType"]);
-//
-//                $pagesOfTemplate = Core::$systemDB->selectMultiple("page", ["viewId" => $t["viewId"]]);
-//                foreach ($pagesOfTemplate as $page) {
-//                    Views::createPage($courseId, $page["name"], (int)$viewId, 0);
-//                }
-//            }
+        // Create a copy
+        $name = $courseInfo["name"] . " (Copy)";
+        $course = self::addCourse($name, $courseInfo["short"], $courseInfo["year"], $courseInfo["color"],
+            null, null, $courseInfo["isActive"], $courseInfo["isVisible"]);
+        $course->setTheme($courseInfo["theme"]);
 
-            // Copy autogame info
-            $functionsFolder = ROOT_PATH . "autogame/imported-functions/" . $id . "/";
-            $functionsFolderPrev = ROOT_PATH . "autogame/imported-functions/" . $copyFrom . "/";
-            mkdir($functionsFolder);
-            if (is_dir($functionsFolderPrev)) {
-                $funcDirListing = scandir($functionsFolderPrev, SCANDIR_SORT_ASCENDING);
-                $ruleFileList = preg_grep('~\.(py)$~i', $funcDirListing);
-                foreach ($ruleFileList as $file) {
-                    $txt = file_get_contents($functionsFolderPrev . $file);
-                    file_put_contents($functionsFolder . $file, $txt);
-                }
-            }
-            $metadataFilePrev = ROOT_PATH . "autogame/config/config_" . $copyFrom . ".txt";
-            $metadataFile = ROOT_PATH . "autogame/config/config_" . $id . ".txt";
-            if (file_exists($metadataFilePrev)) {
-                $txt = file_get_contents($metadataFilePrev);
-                file_put_contents($metadataFile, $txt);
-            }
+        // Copy course data
+        Utils::copyDirectory(ROOT_PATH . $courseInfo["folder"] . "/",  $course->getDataFolder(true, $name) . "/", ["rules/data"]);
 
-        } else {    // Create a new course
-            // Add current user as a Teacher of the course
-            $teacherRoleId = Role::addDefaultRolesToCourse($id);
-            Core::database()->insert(Role::TABLE_USER_ROLE, ["id" => $loggedUser->getId(), "course" => $id, "role" => $teacherRoleId]);
+        // Copy roles
+        $course->setRolesHierarchy($courseToCopy->getRolesHierarchy());
+        $course->setRoles($courseToCopy->getRoles());
 
-            // Add modules to course
-            $modules = Core::database()->selectMultiple(Module::TABLE_MODULE);
-            foreach ($modules as $mod) {
-                Core::database()->insert(Module::TABLE_COURSE_MODULE, ["course" => $id, "moduleId" => $mod["moduleId"]]);
-            }
+        // TODO: copy modules enabled and data
 
-            // autogame configs
-            $rulesfolder = join("/", array($dataFolder, "rules"));
-            $functionsFolder = ROOT_PATH . "autogame/imported-functions/" . $id;
-            $functionsFileDefault = ROOT_PATH . "autogame/imported-functions/defaults.py";
-            $defaultFunctionsFile = "/defaults.py";
-            $metadataFile = ROOT_PATH . "autogame/config/config_" . $id . ".txt";
-            mkdir($rulesfolder);
-            mkdir($functionsFolder);
-            $defaults = file_get_contents($functionsFileDefault);
-            file_put_contents($functionsFolder . $defaultFunctionsFile, $defaults);
-            file_put_contents($metadataFile, "");
-        }
+        // TODO: default landing page, roles landingPages (copy pages and views first)
 
-        // Insert line in autogame table
-        Core::database()->insert(GameRules::TABLE_AUTOGAME, ["course" => $id]);
-        $logsFile = ROOT_PATH . "logs/log_course_" . $id . ".txt";
-        file_put_contents($logsFile, "");
-        return new Course($id);
+        // Copy AutoGame info
+        AutoGame::copyAutoGameInfo($course->getId(), $courseToCopy->getId());
     }
 
     /**
@@ -365,39 +356,34 @@ class Course
      * Returns the edited course.
      *
      * @param string $name
-     * @param string $short
-     * @param string $year
-     * @param string $color
-     * @param string $startDate
-     * @param string $endDate
+     * @param string|null $short
+     * @param string|null $year
+     * @param string|null $color
+     * @param string|null $startDate
+     * @param string|null $endDate
      * @param bool $isActive
      * @param bool $isVisible
      * @return Course
      */
-    public function editCourse(string $name, string $short, string $year, string $color, string $startDate,
-                               string $endDate, bool $isActive, bool $isVisible): Course
+    public function editCourse(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
+                               ?string $endDate, bool $isActive, bool $isVisible): Course
     {
-        // Update course data folder if name has changed
-        $oldName = $this->getData("name");
-        if (strcmp($oldName, $name) !== 0)
-            rename(Course::getCourseDataFolder($this->getId(), $oldName), Course::getCourseDataFolder($this->getId(), $name));
-
-        Core::database()->update(self::TABLE_COURSE, [
+        self::validateCourse($name, $color, $year, $startDate, $endDate, $isActive, $isVisible);
+        $this->setData([
             "name" => $name,
             "short" => $short,
             "year" => $year,
             "color" => $color,
-            "startDate" => $startDate . " 00:00:00",
-            "endDate" => $endDate . " 00:00:00",
+            "startDate" => $startDate,
+            "endDate" => $endDate,
             "isActive" => +$isActive,
             "isVisible" => +$isVisible
-        ], ["id" => $this->id]);
+        ]);
         return $this;
     }
 
     /**
-     * Deletes a course from the database and removes
-     * its data folder.
+     * Deletes a course from the database and removes all its data.
      *
      * @param int $courseId
      * @return void
@@ -405,20 +391,14 @@ class Course
     public static function deleteCourse(int $courseId)
     {
         // Remove data folder
-        Course::removeCourseDataFolder(Course::getCourseDataFolder($courseId));
+        Course::removeDataFolder($courseId);
 
-        // Disable autogame
-        CronJob::removeCronJob("AutoGame", $courseId);
+        // Disable autogame & remove info
+        AutoGame::setAutoGame($courseId, false);
+        AutoGame::deleteAutoGameInfo($courseId);
 
         // Delete from database
         Core::database()->delete(self::TABLE_COURSE, ["id" => $courseId]);
-
-        // Remove autogame related folders
-        Course::removeCourseDataFolder("autogame/imported-functions/" . $courseId);
-        if (file_exists(ROOT_PATH . "autogame/config/config_" . $courseId . ".txt"))
-            unlink(ROOT_PATH . "autogame/config/config_" . $courseId . ".txt");
-        if (file_exists(ROOT_PATH . "logs/log_course_" . $courseId . ".txt"))
-            unlink(ROOT_PATH . "logs/log_course_" . $courseId . ".txt");
     }
 
     /**
@@ -428,108 +408,235 @@ class Course
      */
     public function exists(): bool
     {
-        return (!empty($this->getData("id")));
+        return !empty($this->getData("id"));
     }
-
-
-    /*** ---------------------------------------------------- ***/
-    /*** ------------------ Import/Export ------------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-    // TODO
 
 
     /*** ---------------------------------------------------- ***/
     /*** ------------------- Course Users ------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    // TODO
-
-
-    /*** ---------------------------------------------------- ***/
-    /*** ------------------ Course Modules ------------------ ***/
-    /*** ---------------------------------------------------- ***/
-
-    public function getModules(bool $enabled = null): array
+    public function getCourseUserById(int $userId): ?CourseUser
     {
-        $where = ["course" => $this->getId()];
-        if ($enabled != null) $where["isEnabled"] = $enabled;
-        return array_column(Core::database()->selectMultiple(
-            Module::TABLE_COURSE_MODULE, $where, "moduleId", "moduleId"), "moduleId");
+        $courseUser = new CourseUser($userId, $this);
+        if ($courseUser->exists()) return $courseUser;
+        else return null;
     }
 
-    // TODO
+    public function getCourseUserByUsername(string $username): ?CourseUser
+    {
+        $userId = intval(Core::database()->select(Auth::TABLE_AUTH, ["username" => $username], "game_course_user_id"));
+        if (!$userId) return null;
+        else return new CourseUser($userId, $this);
+    }
+
+    public function getCourseUserByEmail(string $email): ?CourseUser
+    {
+        $userId = intval(Core::database()->select(User::TABLE_USER, ["email" => $email], "id"));
+        if (!$userId) return null;
+        else return new CourseUser($userId, $this);
+    }
+
+    public function getCourseUserByStudentNumber(int $studentNumber): ?CourseUser
+    {
+        $userId = intval(Core::database()->select(User::TABLE_USER, ["studentNumber" => $studentNumber], "id"));
+        if (!$userId) return null;
+        else return new CourseUser($userId, $this);
+    }
+
+    public function getCourseUsers(?bool $active = null): array
+    {
+        $where = ["cu.course" => $this->id];
+        if ($active !== null) $where["isActiveInCourse"] = $active;
+        $courseUsers =  Core::database()->selectMultiple(
+            User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id JOIN " . CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id",
+            $where,
+            "u.*, a.username, a.authentication_service, cu.lastActivity, cu.previousActivity, cu.isActive as isActiveInCourse"
+        );
+        foreach ($courseUsers as &$courseUser) { $courseUser = CourseUser::parse($courseUser); }
+        return $courseUsers;
+    }
+
+    public function getCourseUsersWithRole(?bool $active = null, string $roleName = null, int $roleId = null): array
+    {
+        $where = ["cu.course" => $this->id, "r.course" => $this->id];
+        if ($active !== null) $where["isActiveInCourse"] = $active;
+        if ($roleName !== null) $where["r.name"] = $roleName;
+        if ($roleId !== null) $where["r.id"] = $roleId;
+
+        $courseUsers = Core::database()->selectMultiple(
+            User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id JOIN " .
+            CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id JOIN " . Role::TABLE_USER_ROLE . " ur on ur.id=u.id JOIN " .
+            Role::TABLE_ROLE . " r on r.id=ur.role and r.course=cu.course",
+            $where,
+            "u.*, a.username, a.authentication_service, cu.lastActivity, cu.previousActivity, cu.isActive as isActiveInCourse"
+        );
+        foreach ($courseUsers as &$courseUser) { $courseUser = CourseUser::parse($courseUser); }
+        return $courseUsers;
+    }
+
+    public function addUserToCourse(int $userId, string $roleName = null, int $roleId = null): CourseUser
+    {
+        return CourseUser::addCourseUser($userId, $this->id, $roleName, $roleId);
+    }
+
+    public function removeUserFromCourse(int $userId)
+    {
+        CourseUser::deleteCourseUser($userId, $this->id);
+    }
 
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Roles ---------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * Gets course's roles. Option to retrieve only roles' names and/or to
+     * sort them hierarchly. Sorting works like this:
+     *  - if only names --> with the more specific roles first, followed
+     *                      by the less specific ones
+     *  - else --> retrieve roles' hierarchy
+     *
+     * @example Course Roles: Teacher, Student, StudentA, StudentB, Watcher
+     *          getRoles() --> ["Watcher", "Student", "StudentB", "StudentA", "Teacher"] (no fixed order)
+     *
+     * @example Course Roles: Teacher, Student, StudentA, StudentB, Watcher
+     *          getRoles(false) --> [
+     *                                  ["name" => "Watcher", "id" => 3, "landingPage" => null],
+     *                                  ["name" => "Student", "id" => 2, "landingPage" => null],
+     *                                      ["name" => "StudentB", "id" => 5, "landingPage" => null],
+     *                                          ["name" => "StudentA", "id" => 4, "landingPage" => null],
+     *                                  ["name" => "Teacher", "id" => 1, "landingPage" => null]
+     *                              ] (no fixed order)
+     *
+     * @example Course Roles: Teacher, Student, StudentA, StudentB, Watcher
+     *          getRoles(true, true) --> ["StudentA", "StudentB", "Teacher", "Student", "Watcher"]
+     *
+     * @example Course Roles: Teacher, Student, StudentA, StudentB, Watcher
+     *          getRoles(false, true) --> [
+     *                                      ["name" => "Teacher", "id" => 1, "landingPage" => null],
+     *                                          ["name" => "Student", "id" => 2, "landingPage" => null, "children" => [
+     *                                              ["name" => "StudentA", "id" => 4, "landingPage" => null],
+     *                                              ["name" => "StudentB", "id" => 5, "landingPage" => null]
+     *                                          ]],
+     *                                      ["name" => "Watcher", "id" => 3, "landingPage" => null]
+     *                                    ]
+     *
+     * @param bool $onlyNames
+     * @param bool $sortByHierarchy
+     * @return array
+     */
+    public function getRoles(bool $onlyNames = true, bool $sortByHierarchy = false): array
+    {
+        return Role::getCourseRoles($this->id, $onlyNames, $sortByHierarchy);
+    }
+
+    /**
+     * Replaces course's roles in the database.
+     *
+     * @param array|null $rolesNames
+     * @param array|null $hierarchy
+     * @return void
+     */
+    public function setRoles(array $rolesNames = null, array $hierarchy = null)
+    {
+        Role::setCourseRoles($this->id, $rolesNames, $hierarchy);
+    }
+
+    /**
+     * Adds a new role to course if it isn't already added.
+     * Option to pass either landing page name or ID.
+     *
+     * @param string|null $roleName
+     * @param string|null $landingPageName
+     * @param int|null $landingPageId
+     * @return void
+     */
+    public function addRole(string $roleName, string $landingPageName = null, int $landingPageId = null)
+    {
+        Role::addRoleToCourse($this->id, $roleName, $landingPageName, $landingPageId);
+    }
+
+    /**
+     * Removes a given role from course.
+     * Option to pass either role name or role ID.
+     *
+     * @param string|null $roleName
+     * @param int|null $roleId
+     * @return void
+     */
+    public function removeRole(string $roleName = null, int $roleId = null)
+    {
+        Role::removeRoleFromCourse($this->id, $roleName, $roleId);
+    }
+
+    /**
+     * Checks whether course has a given role.
+     * Option to pass either role name or role ID.
+     *
+     * @param string|null $roleName
+     * @param int|null $roleId
+     * @return bool
+     */
+    public function hasRole(string $roleName = null, int $roleId = null): bool
+    {
+        return Role::courseHasRole($this->id, $roleName, $roleId);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------------- Modules --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    public function getModuleById(string $moduleId): ?Module
+    {
+        $module = new Module($moduleId);
+        if ($module->exists()) return $module;
+        else return null;
+    }
+
     // TODO
 
 
     /*** ---------------------------------------------------- ***/
-    /*** ---------------------- Styles ---------------------- ***/
+    /*** ------------------- Course Data -------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    // TODO
+    /**
+     * Gets a readable copy of all course's records of users, like
+     * awards given to students, their grade, etc, so teachers can
+     * keep hard copies for themselves.
+     */
+    // TODO: getDataRecords
 
-
-    /*** ---------------------------------------------------- ***/
-    /*** --------------------- Resources -------------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-    public static function getCourseDataFolder(int $courseId, string $courseName = null): string
+    public function getDataFolder(bool $fullPath = true, string $courseName = null): string
     {
-        if (!$courseName) $courseName = Core::database()->select(self::TABLE_COURSE, ["id" => $courseId], "name");
-        $courseName = preg_replace("/[^a-zA-Z0-9_ ]/", "", $courseName);
-        return COURSE_DATA_FOLDER . '/' . $courseId . '-' . $courseName;
-    }
+        if (!$courseName) $courseName = $this->getName();
+        $courseFolderName = $this->id . '-' . Utils::swapNonENChars($courseName);
 
-    public static function createCourseDataFolder(int $courseId, string $courseName): string
-    {
-        $folder = ROOT_PATH . Course::getCourseDataFolder($courseId, $courseName);
-        if (!file_exists($folder))
-            mkdir($folder);
-        return $folder;
-    }
-
-    public static function copyCourseDataFolder(string $source, string $destination)
-    {
-        $source = ROOT_PATH . $source;
-        $destination = ROOT_PATH . $destination;
-
-        $dir = opendir($source);
-        if (!file_exists($destination))
-            mkdir($destination);
-
-        while ($file = readdir($dir)) {
-            if (($file != '.') && ($file != '..')) {
-                if (is_dir($source . '/' . $file)) {
-                    // Recursively calling custom copy function for subdirectory
-                    Course::copyCourseDataFolder($source . '/' . $file, $destination . '/' . $file);
-                } else {
-                    copy($source . '/' . $file, $destination . '/' . $file);
-                }
-            }
+        if ($fullPath) return COURSE_DATA_FOLDER . "/" . $courseFolderName;
+        else {
+            $parts = explode("/", COURSE_DATA_FOLDER);
+            return end($parts) . "/" . $courseFolderName;
         }
-
-        closedir($dir);
     }
 
-    public static function removeCourseDataFolder(string $target)
+    public function getDataFolderContents(): array
     {
-        $target = ROOT_PATH . $target;
-        $directory = new RecursiveDirectoryIterator($target,  FilesystemIterator::SKIP_DOTS);
-        $files = new RecursiveIteratorIterator($directory, RecursiveIteratorIterator::CHILD_FIRST);
-        foreach ($files as $file) {
-            if (is_dir($file)) {
-                rmdir($file);
-            } else {
-                unlink($file);
-            }
-        }
-        rmdir($target);
+        return Utils::getDirectoryContents($this->getDataFolder());
+    }
+
+    public static function createDataFolder(int $courseId, string $courseName = null): string
+    {
+        $dataFolder = (new Course($courseId))->getDataFolder(true, $courseName);
+        if (!file_exists($dataFolder)) mkdir($dataFolder, 0777, true);
+        return $dataFolder;
+    }
+
+    public static function removeDataFolder(int $courseId, string $courseName = null)
+    {
+        $dataFolder = (new Course($courseId))->getDataFolder(true, $courseName);
+        Utils::deleteDirectory($dataFolder);
     }
 
     /**
@@ -555,52 +662,337 @@ class Course
      */
     public static function transformURL(string $url, string $to, int $courseId): string
     {
-        $courseDataFolder = Course::getCourseDataFolder($courseId);
-        $courseDataFolderPath = API_URL . "/" . $courseDataFolder . "/";
+        $dataFolder = (new Course($courseId))->getDataFolder(false);
+        $dataFolderPath = API_URL . "/" . $dataFolder . "/";
 
-        if ($to === "absolute" && strpos($url, 'http') !== 0) return $courseDataFolderPath . $url;
-        elseif ($to === "relative" && strpos($url, API_URL) === 0) return str_replace($courseDataFolderPath, "", $url);
+        if ($to === "absolute" && strpos($url, 'http') !== 0) return $dataFolderPath . $url;
+        elseif ($to === "relative" && strpos($url, API_URL) === 0) return str_replace($dataFolderPath, "", $url);
         return $url;
     }
 
-
-    /*** ---------------------------------------------------- ***/
-    /*** -------------------- Dictionary -------------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-    // TODO
-
-
-    /*** ---------------------------------------------------- ***/
-    /*** ----------------------- Pages ---------------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-    // TODO
-
-
-    /*** ---------------------------------------------------- ***/
-    /*** -------------- Awards & Participation -------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-    // TODO
-
-
-    /*** ---------------------------------------------------- ***/
-    /*** --------------------- AutoGame --------------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-    public function setAutoGame(bool $enabled)
+    /**
+     * Uploads a given file to a directory inside course's
+     * data folder.
+     *
+     * @example uploadFile("skills", <base64>, "name", "txt") --> uploads file with name "name" to skills folder inside course data
+     * @example uploadFile("skills/skill1", <base64>, "name", "txt") --> uploads file with name "name" to skill1 folder inside skills folder in course_data
+     *
+     * @param string $to
+     * @param string $base64
+     * @param string $name
+     * @param string $extension
+     * @return string
+     */
+    public function uploadFile(string $to, string $base64, string $name, string $extension): string
     {
-        if ($enabled && $this->isActive()) { // enable autogame
-            $periodicity = Core::database()->select(GameRules::TABLE_AUTOGAME, ["course" => $this->getId()], "periodicityNumber, periodicityTime");
-            new CronJob("AutoGame", $this->id, intval($periodicity["periodicityNumber"]),  $periodicity["periodicityTime"], null);
-
-        } else { // disable autogame
-            CronJob::removeCronJob("AutoGame", $this->id);
-        }
+        $path = $this->getDataFolder() . "/" . $to;
+        return Utils::uploadFile($path, $base64, $name . "." . $extension);
     }
 
-    // TODO
+    /**
+     * Deletes a given file from a directory inside course's
+     * date folder.
+     *
+     * @example deleteFile("skills", "file1.txt") --> deletes file "file1.txt" from skills folder inside course data
+     * @example deleteFile("skills/skill1", "file1.txt") --> deletes file "file1.txt" from skill1 folder inside skills folder in course_data
+     *
+     * @param string $from
+     * @param string $filename
+     * @return void
+     */
+    public function deleteFile(string $from, string $filename)
+    {
+        $path = $this->getDataFolder() . "/" . $from;
+        Utils::deleteFile($path, $filename);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------------- Styling ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    public function getStyleFile(): ?array
+    {
+        $path = $this->getDataFolder(false) . "/css/styling.css";
+        if (file_exists(ROOT_PATH . $path)) return ["path" => API_URL . "/" . $path, "contents" => file_get_contents($path)];
+        return null;
+    }
+
+    public function createStyleFile(): string
+    {
+        return $this->updateStyleFile("");
+    }
+
+    public function updateStyleFile(string $contents): string
+    {
+        $cssFolder = $this->getDataFolder(false) . "/css";
+        if (!file_exists(ROOT_PATH . $cssFolder))
+            mkdir($cssFolder, 0777, true);
+
+        $path = $cssFolder . "/styling.css";
+        if (file_put_contents(ROOT_PATH . $path, $contents) !== false) return API_URL . "/" . $path;
+        else throw new Error("An error ocurred when creating style file for course with ID = " . $this->id . ".");
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------ Import/Export ------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Imports courses into the system from a .zip file containing
+     * a .csv file with all courses information and individual folders
+     * for each course with additional data such as course data and
+     * autogame configurations.
+     *
+     * Returns the nr. of courses imported.
+     *
+     * NOTE: Can't have two courses with same pair name/year as they
+     *       will be rewritten
+     *
+     * @param string $contents
+     * @param bool $replace
+     * @return int
+     */
+    public static function importCourses(string $contents, bool $replace = true): int
+    {
+        $nrCoursesImported = 0;
+        if (empty($contents)) return $nrCoursesImported;
+
+        // Create a temporary folder to work with
+        $tempFolder = ROOT_PATH . "temp/" . time();
+        mkdir($tempFolder, 0777, true);
+
+        // Extract contents
+        $zipPath = $tempFolder . "/courses.zip";
+        file_put_contents($zipPath, $contents);
+        $zip = new ZipArchive();
+        if (!$zip->open($zipPath)) throw new Error("Failed to create zip archive.");
+        $zip->extractTo($tempFolder);
+        $zip->close();
+        unlink($zipPath);
+
+        $file = $tempFolder . "/courses.csv";
+        if (empty($file)) return $nrCoursesImported;
+        $separator = Utils::detectSeparator($file);
+
+        // NOTE: this order must match the order in the file
+        $headers = self::HEADERS;
+
+        $nameIndex = array_search("name", $headers);
+        $shortIndex = array_search("short", $headers);
+        $colorIndex = array_search("color", $headers);
+        $yearIndex = array_search("year", $headers);
+        $startDateIndex = array_search("startDate", $headers);
+        $endDateIndex = array_search("endDate", $headers);
+        $landingPageIndex = array_search("landingPage", $headers);
+        $isActiveIndex = array_search("isActive", $headers);
+        $isVisibleIndex = array_search("isVisible", $headers);
+        $roleHierarchyIndex = array_search("roleHierarchy", $headers);
+        $themeIndex = array_search("theme", $headers);
+
+        // Filter empty lines
+        $lines = array_filter(explode("\n", $file), function ($line) { return !empty($line); });
+
+        if (count($lines) > 0) {
+            // Check whether 1st line holds headers and ignore them
+            $firstLine = array_map('trim', explode($separator, trim($lines[0])));
+            if (in_array($headers[0], $firstLine)) array_shift($lines);
+
+            // Import each course
+            foreach ($lines as $line) {
+                $course = array_map('trim', explode($separator, trim($line)));
+
+                $name = $course[$nameIndex];
+                $short = $course[$shortIndex];
+                $color = $course[$colorIndex];
+                $year = $course[$yearIndex];
+                $startDate = $course[$startDateIndex];
+                $endDate = $course[$endDateIndex];
+                $landingPage = $course[$landingPageIndex];
+                $isActive = $course[$isActiveIndex];
+                $isVisible = $course[$isVisibleIndex];
+                $roleHierarchy = $course[$roleHierarchyIndex];
+                $theme = $course[$themeIndex];
+
+                $mode = null;
+                $course = self::getCourseByNameAndYear($name, $year);
+                if ($course) {  // course already exists
+                    if ($replace) { // replace
+                        $mode = "update";
+                        $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
+                        $course->setTheme($theme);
+                    }
+
+                } else {  // course doesn't exist
+                    $mode = "create";
+                    $course = self::addCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
+                    $course->setTheme($theme);
+                    $nrCoursesImported++;
+                }
+
+                // Create or update course information
+                if ($mode) {
+                    // Import course data
+                    $zipCourseFolder = $tempFolder . "/" . Utils::swapNonENChars($name) . " (" . $year . ")";
+                    $dataFolder = $course->getDataFolder(true, $name);
+                    if ($mode == "update") self::removeDataFolder($course->getId(), $name);
+                    Utils::copyDirectory($zipCourseFolder . "/", $dataFolder . "/", ["rules/data", "autogame"]);
+
+                    // Import roles
+                    $course->setRolesHierarchy(json_decode($roleHierarchy, true));
+                    $course->setRoles(null, $roleHierarchy);
+
+                    // Import modules
+                    // TODO: copy modules enabled and data
+
+                    // Import views
+                    // TODO: default landing page, roles landingPages (copy pages and views first)
+
+                    // Import AutoGame info
+                    if ($mode == "update") AutoGame::deleteAutoGameInfo($course->getId());
+                    Utils::copyDirectory($zipCourseFolder . "/autogame/imported-functions/", ROOT_PATH . "autogame/imported-functions/" . $course->getId() . "/");
+                    file_put_contents(AUTOGAME_FOLDER . "/config/config_" . $course->getId() . ".txt", file_get_contents($zipCourseFolder . "/autogame/config.txt"));
+                }
+            }
+        }
+
+        // Remove temporary folder
+        Utils::deleteDirectory($tempFolder);
+        if (count(glob(ROOT_PATH . "temp/*")) == 0)
+            Utils::deleteDirectory(ROOT_PATH . "temp");
+
+        return $nrCoursesImported;
+    }
+
+    /**
+     * Exports courses information and individual folders for each
+     * course, with additional data such as course data and autogame
+     * configuration, to a .zip file.
+     *
+     * @return string
+     */
+    public static function exportCourses(): string
+    {
+        $courses = self::getCourses();
+        $len = count($courses);
+        $separator = ",";
+
+        // Create a temporary folder to work with
+        $tempFolder = ROOT_PATH . "temp/" . time();
+        mkdir($tempFolder, 0777, true);
+
+        // Create zip archive to store courses' info
+        // NOTE: This zip will be automatically deleted after download is complete
+        $zipPath = $tempFolder . "/courses.zip";
+        $zip = new ZipArchive();
+        if (!$zip->open($zipPath, ZipArchive::CREATE))
+            throw new Error("Failed to create zip archive.");
+
+        // Add headers
+        $file = join($separator, self::HEADERS) . "\n";
+
+        // Add each course
+        foreach ($courses as $i => $course) {
+            // Add .csv file
+            // NOTE: this order must match the headers order
+            $courseInfo = [$course["name"], $course["short"], $course["color"], $course["year"], $course["startDate"],
+                $course["endDate"], $course["landingPage"], +$course["isActive"], +$course["isVisible"], $course["roleHierarchy"],
+                $course["theme"]];
+            $file .= join($separator, $courseInfo);
+            if ($i != $len - 1) $file .= "\n";
+            $zip->addFromString("courses.csv", $file);
+
+            // Add course folder
+            $courseFolder = Utils::swapNonENChars($course["name"]) . " (" . $course["year"] . ")";
+            $zip->addEmptyDir($courseFolder);
+            $dataFolder = (new Course($course["id"]))->getDataFolder(true, $course["name"]) . "/";
+            $dir = opendir($dataFolder);
+            while ($f = readdir($dir)) {
+                if (is_file($dataFolder . $f))
+                    $zip->addFile($dataFolder . $f, $courseFolder . $f);
+            }
+
+            // Import modules
+            // TODO: add modules enabled and data
+
+            // Import views
+            // TODO: default landing page, roles landingPages (copy pages and views first)
+
+            // Add AutoGame configurations
+            $courseFunctions = AUTOGAME_FOLDER . "/imported-functions/" . $course["id"] . "/";
+            $dir = opendir($courseFunctions);
+            while ($f = readdir($dir)) {
+                if (is_file($courseFunctions . $f))
+                    $zip->addFile($courseFunctions . $f, $courseFolder . "/autogame/imported-functions");
+            }
+            $zip->addFile(AUTOGAME_FOLDER . "/config/config_" . $course["id"] . ".txt", $courseFolder . "/autogame/config.txt");
+        }
+
+        $zip->close();
+        return $zipPath;
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------- Validations -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Validates course parameters.
+     *
+     * @param $name
+     * @param $color
+     * @param $year
+     * @param $startDate
+     * @param $endDate
+     * @param $isActive
+     * @param $isVisible
+     * @return void
+     */
+    private static function validateCourse($name, $color, $year, $startDate, $endDate, $isActive, $isVisible)
+    {
+        self::validateName($name);
+        self::validateColor($color);
+        self::validateYear($year);
+        self::validateDateTime($startDate);
+        self::validateDateTime($endDate);
+        if (!is_bool($isActive)) throw new Error("'isActive' must be either true or false.");
+        if (!is_bool($isVisible)) throw new Error("'isVisible' must be either true or false.");
+    }
+
+    private static function validateName($name)
+    {
+        if (!is_string($name) || empty($name))
+            throw new Error("Course name can't be null neither empty.");
+
+        preg_match("/[^\w()\s-]/u", $name, $matches);
+        if (count($matches) != 0)
+            throw new Error("Course name '" . $name . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-'");
+    }
+
+    private static function validateColor($color)
+    {
+        if (is_null($color)) return;
+        preg_match("/^#[\w\d]{6}$/", $color, $matches);
+        if (!is_string($color) || empty($color) || count($matches) == 0)
+            throw new Error("Course color needs to be in HEX format.");
+    }
+
+    private static function validateYear($year)
+    {
+        if (is_null($year)) return;
+        preg_match("/^\d{4}-\d{4}$/", $year, $matches);
+        if (!is_string($year) || empty($year) || count($matches) == 0)
+            throw new Error("Course year needs to be 'yyyy-yyyy' format.");
+    }
+
+    private static function validateDateTime($dateTime)
+    {
+        if (is_null($dateTime)) return;
+        if (!is_string($dateTime) || !Utils::validateDate($dateTime, "Y-m-d H:i:s"))
+            throw new Error("Datetime '" . $dateTime . "' should be in format 'yyyy-mm-dd HH:mm:ss'");
+    }
 
 
     /*** ---------------------------------------------------- ***/
@@ -608,23 +1000,29 @@ class Course
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Copies content of a specified table in DB to
-     * new rows for the new course.
+     * Parses a course coming from the database to appropriate types.
+     * Option to pass a specific field to parse instead.
      *
-     * @param string $content
-     * @param int $fromCourseId
-     * @param int $newCourseId
-     * @param bool $ignoreID
-     * @return mixed
+     * @param array|null $course
+     * @param $field
+     * @param string|null $fieldName
+     * @return array|bool|int|null
      */
-    private static function copyCourseContent(string $content, int $fromCourseId, int $newCourseId, bool $ignoreID = false)
+    public static function parse(array $course = null, $field = null, string $fieldName = null)
     {
-        $fromData = Core::database()->selectMultiple($content, ["course" => $fromCourseId]);
-        foreach ($fromData as $data) {
-            $data['course'] = $newCourseId;
-            if ($ignoreID) unset($data['id']);
-            Core::database()->insert($content, $data);
+        if ($course) {
+            if (isset($course["id"])) $course["id"] = intval($course["id"]);
+            if (isset($course["landingPage"])) $course["landingPage"] = intval($course["landingPage"]);
+            if (isset($course["isActive"])) $course["isActive"] = boolval($course["isActive"]);
+            if (isset($course["isVisible"])) $course["isVisible"] = boolval($course["isVisible"]);
+            if (isset($course["roleHierarchy"])) $course["roleHierarchy"] = json_decode($course["roleHierarchy"], true);
+            return $course;
+
+        } else {
+            if ($fieldName == "id" || ($fieldName == "landingPage" && $field)) return intval($field);
+            if ($fieldName == "isActive" || $fieldName == "isVisible") return boolval($field);
+            if ($fieldName == "roleHierarchy") return json_decode($field, true);
+            return $field;
         }
-        return $fromData;
     }
 }

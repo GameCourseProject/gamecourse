@@ -15,6 +15,7 @@
 .settings/
 *.sublime-workspace
 /nbproject
+/nbproject/private/
 
 # IDE - VSCode
 .vscode/*
@@ -27,38 +28,33 @@
 # misc
 npm-debug.log
 yarn-error.log
-logs/
+/logs/
+/cache/
+/.phpunit.result.cache
+/temp/
 config.php
 config.production.php
-/.phpunit.result.cache
+setup.done
+/crontab.txt
 
 # System Files
 .DS_Store
 Thumbs.db
 
-# GameCourse
-!/course_data/
-/course_data/**
-!/course_data/defaultData/
-!/course_data/defaultData/**
+# Course data
+/course_data/
 
+# AutoGame
 autogame/imported-functions/*/
-
 !/autogame/config/
 /autogame/config/**
 !/autogame/config/samples
 !/autogame/config/samples/**
 
+# Resources
 photos/**
 !/photos/no-photo.png
 !/photos/no-image.png
-
+/qr-code.png
 modules/skills/resources/
 modules/quest/resources/
-
-cache/
-temp/
-/nbproject/private/
-/setup/setup.done
-/crontab.txt
-/qr-code.png
