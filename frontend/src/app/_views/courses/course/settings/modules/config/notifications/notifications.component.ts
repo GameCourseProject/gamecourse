@@ -162,7 +162,7 @@ export class NotificationsComponent implements OnInit {
                   const student = students.find(student => student.id === parseInt(entry.user));
                   return [
                     entry.seqNr, student.name, parseInt(entry.totalXP).format(), parseInt(entry.periodXP).format(),
-                    parseInt(entry.diffXP).format('percent'), parseInt(entry.prediction).format(),
+                    parseInt(entry.diffXP).format('percent'), entry.prediction !== null ? parseInt(entry.prediction).format() : '-',
                     entry.emailSend, entry.dateSent
                   ];
                 });
