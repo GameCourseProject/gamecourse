@@ -195,7 +195,6 @@ class Notifications extends Module
 
     public static function removeCronJob($courseId)
     {
-        Core::$systemDB->delete(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $courseId]);
         new CronJob("ProgressReport", $courseId, null, null, null, true);
     }
 
