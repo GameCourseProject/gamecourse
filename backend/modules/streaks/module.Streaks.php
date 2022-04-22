@@ -1,6 +1,7 @@
 <?php
 namespace Streaks;
 
+use CacheSystem;
 use GameCourse\Core;
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Views;
@@ -719,8 +720,19 @@ class Streaks extends Module
     }
 
     public function getStreaksDone($streak, $user): int {
-        $streakCounts = intval(Core::$systemDB->select(self::TABLE_PROGRESSION, ["course" => $this->getCourseId(), "user" => $user, "streakId" => $streak["value"]["id"]], "count(*)"));
-        return floor($streakCounts / $streak["value"]["count"]);
+        $cacheId = 'streaksDone-' . $streak["value"]["id"] . '-' . $user;
+        list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
+        $autogameIsRunning = Core::$systemDB->select("autogame", ["course" => $this->getCourseId()], "isRunning");
+
+        if ($autogameIsRunning && $hasCache) { // get from cache due to progression table being cleaned
+            return intval($cacheValue);
+
+        } else { // calculate
+            $streakCounts = intval(Core::$systemDB->select(self::TABLE_PROGRESSION, ["course" => $this->getCourseId(), "user" => $user, "streakId" => $streak["value"]["id"]], "count(*)"));
+            $streaksDone = floor($streakCounts / $streak["value"]["count"]);
+            CacheSystem::store($cacheId, $streaksDone);
+            return $streaksDone;
+        }
     }
     // getUsersWithStreak
 
