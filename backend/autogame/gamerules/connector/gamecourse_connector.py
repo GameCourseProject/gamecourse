@@ -2076,11 +2076,11 @@ def award_streak(target, streak, contributions=None, info=None):
 
 
                         if participationType.startswith("quiz"):
-                            query = "SELECT id, description, rating FROM participation WHERE user = %s AND course = %s AND type = %s AND description like 'Quiz%' ORDER BY description ASC;"
+                            query = "SELECT id, description, rating FROM participation WHERE user = %s AND course = %s AND type = %s AND description like 'Quiz%' ORDER BY CAST(description AS INT) ASC;"
                             cursor.execute(query, (target, course, participationType))
                             table_participations = cursor.fetchall()
                         else:
-                            query = "SELECT id, description, rating FROM participation WHERE user = %s AND course = %s AND type = %s ORDER BY description ASC;"
+                            query = "SELECT id, description, rating FROM participation WHERE user = %s AND course = %s AND type = %s ORDER BY CAST(description as INT) ASC;"
                             cursor.execute(query, (target, course, participationType))
                             table_participations = cursor.fetchall()
 
