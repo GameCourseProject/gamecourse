@@ -22,6 +22,7 @@ class Badges extends Module
 
     const BADGES_PROFILE_TEMPLATE = 'Badges Profile - by badges';
     const BADGES_RULE_TEMPLATE = 'rule_badge_template.txt';
+    const BADGES_IS_POST_RULE_TEMPLATE  = 'rule_badge_isPost_template.txt';
 
 
 
@@ -1043,7 +1044,7 @@ class Badges extends Module
         }
         
         $badge = new Badges();
-        $badge->generateBadgeRule($course, $achievement['name'], $levelsArray );
+        $badge->generateBadgeRule($course, $achievement['name'],  $achievement['isCount'], $levelsArray );
 
     }
 
@@ -1126,16 +1127,21 @@ class Badges extends Module
     /*** -------------------- Rules -------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    public function generateBadgeRule(Course $course, string $badgeName, array $levelsCount)
+    public function generateBadgeRule(Course $course, string $badgeName, int $badgeisPost, array $levelsCount)
     {
-        $template = file_get_contents(MODULES_FOLDER . "/" . self::ID . "/rules/" . self::BADGES_RULE_TEMPLATE);
+        if ($badgeisPost == 0) {
+            $template = file_get_contents(MODULES_FOLDER . "/" . self::ID . "/rules/" . self::BADGES_RULE_TEMPLATE);
+        } else {
+            $template = file_get_contents(MODULES_FOLDER . "/" . self::ID . "/rules/" . self::BADGES_IS_POST_RULE_TEMPLATE);
+        }
+
         if (sizeof($levelsCount) == 3) {
             $levelsString =  "$levelsCount[0]" . ", " .  "$levelsCount[1]" . ", " . "$levelsCount[2]";
         }
         else {
             $levelsString =  ".$levelsCount[0]." ;
-
         }
+
         $newRule = str_replace("<badge-name>", $badgeName, $template);
         $newRule = str_replace("<lvs-count>", $levelsString, $newRule);
 
