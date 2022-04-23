@@ -487,6 +487,27 @@ class RuleSystem
         }
     }
 
+    public function changeRuleLvlsInFile($ruleFile, $newLvls)
+    {
+        if ($this->ruleFileExists($ruleFile)) {
+            $txt = file_get_contents($this->rulesdir . $ruleFile);
+
+            // Get lvl = compute_lvl , copy that line to a string
+            // replace that line with:
+            //       '#CHANGES MADE: ' + the copied string + new string with new lvls
+            
+
+
+            // $newTxt = str_replace($oldName, $newName, $txt);
+            // file_put_contents($this->rulesdir . $ruleFile, $newTxt);
+
+
+
+
+
+        }
+    }
+
     public function changeRuleStatus($rule, $active) {
         $rows = explode("\n", $rule);
         if ((substr($rows[1], 0, 8) === "INACTIVE")) {

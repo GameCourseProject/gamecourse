@@ -1051,6 +1051,11 @@ class Badges extends Module
     public static function editBadge($achievement, $courseId)
     {
         $originalBadge = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'id' => $achievement['id']], "*");
+        $originalName = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'id' => $achievement['id']], "name");
+        $originalCount1 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $achievement['id'], "number" => 1], "goal");
+        $originalCount2 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $achievement['id'], "number" => 2], "goal");
+        $originalCount3 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $achievement['id'], "number" => 3], "goal");
+
 
         if(!empty($originalBadge)){
             $maxLevel = empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
@@ -1105,6 +1110,27 @@ class Badges extends Module
                 }
             }
         }
+        $course = Course::getCourse($courseId, false);
+
+        $badge = new Badges();
+
+        // Update Rule Name
+        if ($originalName != $achievement["name"])
+            $badge->editBadgeRuleName($course, $originalName, $achievement['name']);
+
+        
+        // Update Rule lvls
+        $newCount1 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $achievement['id'], "number" => 1], "goal");
+        $newCount2 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $achievement['id'], "number" => 2], "goal");
+        $newCount3 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $achievement['id'], "number" => 3], "goal");
+
+        if ($originalCount1 != $newCount1 or  $originalCount2 != $newCount2 or $originalCount3 != $newCount3)
+            $badge->editBadgeRuleLvls($course, $achievement['name']);
+
+        // Update Rule function
+
+
+
     }
 
     public function deleteBadge($badge, $courseId)
@@ -1171,6 +1197,20 @@ class Badges extends Module
 
         if ($position !== false)
             $rs->removeRule($rule, $position);
+    }
+
+    public function editBadgeRuleName(Course $course, string $oldName, string $newName)
+    {
+        $rs = new RuleSystem($course);
+        $filename = $rs->getFilename(self::ID);
+        $rs->changeRuleNameInFile($filename, $oldName, $newName);
+    }
+
+    public function editBadgeRuleLvls(Course $course, string $badgeName)
+    {
+        $rs = new RuleSystem($course);
+        $filename = $rs->getFilename(self::ID);
+
     }
 
 }

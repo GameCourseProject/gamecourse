@@ -774,6 +774,7 @@ class Streaks extends Module
     public static function editStreak($achievement, $courseId)
     {
         $originalStreak = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'id' => $achievement['id']], "*");
+        $originalName = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'id' => $achievement['id']], "name");
 
         if(!empty($originalStreak)) {
             $streakData = [
@@ -793,6 +794,14 @@ class Streaks extends Module
 
             Core::$systemDB->update(self::TABLE, $streakData, ["id" => $achievement["id"]]);
         }
+        
+        $course = Course::getCourse($courseId, false);
+        $streak = new Streaks();
+        // Update Rule Name
+        if ($originalName != $achievement["name"])
+            $streak->editStreakRuleName($course, $originalName, $achievement['name']);
+
+
     }
 
     public function deleteStreak($streak, $courseId)
@@ -847,6 +856,13 @@ class Streaks extends Module
 
         if ($position !== false)
             $rs->removeRule($rule, $position);
+    }
+
+    public function editStreakRuleName(Course $course, string $oldName, string $newName)
+    {
+        $rs = new RuleSystem($course);
+        $filename = $rs->getFilename(self::ID);
+        $rs->changeRuleNameInFile($filename, $oldName, $newName);
     }
 
 
