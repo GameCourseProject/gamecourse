@@ -4,6 +4,7 @@ import {ApiHttpService} from "./api-http.service";
 import {ApiEndpointsService} from "./api-endpoints.service";
 import {dateFromDatabase} from "../../_utils/misc/misc";
 import {Course} from "../../_domain/courses/course";
+import {Role} from "../../_domain/roles/role";
 
 describe('API Service', () => {
   let service: ApiHttpService;
@@ -56,11 +57,11 @@ describe('API Service', () => {
         expect(res.short).toBe("PCM");
         expect(res.color).toBe("#2167D0");
         expect(res.year).toBe("2021-2022");
-        expect(res.defaultLandingPage).toBe('');
+        expect(res.landingPage).toBe(null);
         expect(res.lastUpdate).toEqual(dateFromDatabase("2021-10-22 17:50:16"));
         expect(res.isActive).toBeTrue();
         expect(res.isVisible).toBeTrue();
-        expect(res.roleHierarchy).toBe("[{\"name\":\"Teacher\"},{\"name\":\"Student\"},{\"name\":\"Watcher\"}]");
+        expect(res.roleHierarchy).toBe([new Role(null, "Teacher"), new Role(null, "Student"), new Role(null, "Watcher")]);
         expect(res.theme).toBe(null);
         expect(res.nrStudents).toBe(undefined);
       })

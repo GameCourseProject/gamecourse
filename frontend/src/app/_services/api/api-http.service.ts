@@ -1518,7 +1518,7 @@ export class ApiHttpService {
       ) );
   }
 
-  public getUserActiveCourses(): Observable<{courses: Course[], landingPages: {[courseId: string]: number}}> {
+  public getUserActiveCourses(): Observable<Course[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.USER);
       qs.push('request', 'getLoggedUserActiveCourses');
@@ -1529,9 +1529,7 @@ export class ApiHttpService {
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map(
         (res: any) => {
-          const courses = (res['data']['userActiveCourses']).map(obj => Course.fromDatabase(obj));
-          const landingPages = res['data']['landingPages'];
-          return {courses, landingPages};
+          return (res['data']['userActiveCourses']).map(obj => Course.fromDatabase(obj));
         }) );
   }
 

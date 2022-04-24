@@ -16,7 +16,6 @@ export class MainComponent implements OnInit {
   loading = true;
 
   activeCourses: Course[] = [];
-  redirectPages: {[courseID: string]: number}; // courseID -> pageId
 
   constructor(
     private api: ApiHttpService
@@ -31,16 +30,15 @@ export class MainComponent implements OnInit {
     this.api.getUserActiveCourses()
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
-        res => {
-          this.activeCourses = res.courses;
-          this.redirectPages = res.landingPages;
+        courses => {
+          this.activeCourses = courses;
         },
         error => ErrorService.set(error));
   }
 
-  getRedirectLink(courseID: number): string {
-    const link = '/courses/' + courseID;
-    const pageID = this.redirectPages[courseID.toString()];
+  getRedirectLink(course: Course): string {
+    const link = '/courses/' + course.id;
+    const pageID = course.landingPage;
     if (pageID) return link + '/pages/' + pageID;
     else return link;
   }

@@ -94,9 +94,8 @@ export class UsersComponent implements OnInit {
   getUsers(): void {
     this.api.getUsers()
       .pipe( finalize(() => this.loading = false) )
-      .subscribe(data => {
-          this.allUsers = data;
-
+      .subscribe(users => {
+          this.allUsers = users;
           this.order.active = { orderBy: this.orderBy[0], sort: Sort.ASCENDING };
           this.reduceList(undefined, _.cloneDeep(this.filters));
         },

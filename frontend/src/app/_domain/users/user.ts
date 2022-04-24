@@ -155,37 +155,37 @@ export class User {
 
   static fromDatabase(obj: UserDatabase): User {
     return new User(
-      parseInt(obj.id),
+      obj.id,
       obj.name,
       obj.email,
       obj.major,
       obj.nickname,
-      parseInt(obj.studentNumber),
-      !!parseInt(obj.isAdmin),
-      !!parseInt(obj.isActive),
+      obj.studentNumber,
+      obj.isAdmin,
+      obj.isActive,
       obj.username,
-      obj.authenticationService as AuthType,
-      obj.hasImage ? ApiEndpointsService.API_ENDPOINT + '/photos/' + obj.username + '.png' : null,
+      obj.authentication_service as AuthType,
+      obj.image,
       obj.roles ? obj.roles.map(role => Role.fromDatabase({name: role})) : null,
-      obj.courses != undefined ? obj.courses.map(courseObj => Course.fromDatabase(courseObj)) : undefined,
+      obj.courses ? obj.courses.map(courseObj => Course.fromDatabase(courseObj)) : null,
       dateFromDatabase(obj.lastLogin)
     );
   }
 }
 
 interface UserDatabase {
-  "id": string,
+  "id": number,
   "name": string,
   "email": string,
   "major": string,
   "nickname": string,
-  "studentNumber": string,
-  "isAdmin": string,
-  "isActive": string,
+  "studentNumber": number,
+  "isAdmin": boolean,
+  "isActive": boolean,
   "username": string,
-  "authenticationService": string,
-  "hasImage": boolean,
-  "roles": string[],
-  "courses": CourseDatabase[],
-  "lastLogin": string
+  "authentication_service": string,
+  "image": string,
+  "roles"?: string[],
+  "courses"?: CourseDatabase[],
+  "lastLogin"?: string
 }

@@ -1,5 +1,5 @@
 export class Role {
-  private _id?: number; // FIXME: should use id to deal with roles; is using name
+  private _id?: number;
   private _name?: string;
   private _landingPage?: number;
   private _children?: Role[];
@@ -82,7 +82,7 @@ export class Role {
    */
   static parseHierarchy(hierarchy: RoleDatabase[], allRoles: Role[]): Role[] {
     return hierarchy.map(obj => {
-      const role = allRoles.find(el => el.id === parseInt(obj.id));
+      const role = allRoles.find(el => el.id === obj.id);
       if (obj.children) role.children = Role.parseHierarchy(obj.children, allRoles);
       return role;
     })
@@ -90,17 +90,17 @@ export class Role {
 
   static fromDatabase(obj: RoleDatabase): Role {
     return new Role(
-      obj.id ? parseInt(obj.id) : null,
+      obj.id ?? null,
       obj.name.startsWith('role.') ? obj.name.substr(5) : obj.name,
-      obj.landingPage ? parseInt(obj.landingPage) : null,
+      obj.landingPage ?? null,
       obj.children ? obj.children.map(child => Role.fromDatabase(child)) : null
     );
   }
 }
 
 export interface RoleDatabase {
-  id?: string,
+  id?: number,
   name: string,
-  landingPage?: string
+  landingPage?: number
   children?: RoleDatabase[]
 }

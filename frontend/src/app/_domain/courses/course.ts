@@ -1,5 +1,6 @@
 import {Moment} from "moment";
 import {dateFromDatabase} from "../../_utils/misc/misc";
+import {Role} from "../roles/role";
 
 export class Course {
   private _id: number;
@@ -9,17 +10,17 @@ export class Course {
   private _year: string;
   private _startDate: Moment;
   private _endDate: Moment;
-  private _defaultLandingPage: string;
+  private _landingPage: number;
   private _lastUpdate: Moment;
   private _isActive: boolean;
   private _isVisible: boolean;
-  private _roleHierarchy: string; // FIXME: create class
+  private _roleHierarchy: Role[];
   private _theme: string;
   private _folder: string;
   private _nrStudents?: number;
 
   constructor(id: number, name: string, short: string, color: string, year: string, startDate: Moment, endDate: Moment,
-              defaultLandingPage: string, lastUpdate: Moment, isActive: boolean, isVisible: boolean, roleHierarchy: string,
+              landingPage: number, lastUpdate: Moment, isActive: boolean, isVisible: boolean, roleHierarchy: Role[],
               theme: string, folder: string, nrStudents?: number) {
 
     this._id = id;
@@ -29,7 +30,7 @@ export class Course {
     this._year = year;
     this._startDate = startDate;
     this._endDate = endDate;
-    this._defaultLandingPage = defaultLandingPage;
+    this._landingPage = landingPage;
     this._lastUpdate = lastUpdate;
     this._isActive = isActive;
     this._isVisible = isVisible;
@@ -95,12 +96,12 @@ export class Course {
     this._endDate = value;
   }
 
-  get defaultLandingPage(): string {
-    return this._defaultLandingPage;
+  get landingPage(): number {
+    return this._landingPage;
   }
 
-  set defaultLandingPage(value: string) {
-    this._defaultLandingPage = value;
+  set landingPage(value: number) {
+    this._landingPage = value;
   }
 
   get lastUpdate(): Moment {
@@ -127,11 +128,11 @@ export class Course {
     this._isVisible = value;
   }
 
-  get roleHierarchy(): string {
+  get roleHierarchy(): Role[] {
     return this._roleHierarchy;
   }
 
-  set roleHierarchy(value: string) {
+  set roleHierarchy(value: Role[]) {
     this._roleHierarchy = value;
   }
 
@@ -161,39 +162,39 @@ export class Course {
 
   static fromDatabase(obj: CourseDatabase): Course {
     return new Course(
-      parseInt(obj.id),
+      obj.id,
       obj.name,
       obj.short,
       obj.color,
       obj.year,
       dateFromDatabase(obj.startDate),
       dateFromDatabase(obj.endDate),
-      obj.defaultLandingPage,
+      obj.landingPage,
       dateFromDatabase(obj.lastUpdate),
-      !!parseInt(obj.isActive),
-      !!parseInt(obj.isVisible),
-      obj.roleHierarchy,
+      obj.isActive,
+      obj.isVisible,
+      obj.roleHierarchy.map(role => Role.fromDatabase(role)),
       obj.theme,
       obj.folder,
-      obj.nrStudents != undefined ? parseInt(obj.nrStudents) : undefined
+      obj.nrStudents
     );
   }
 }
 
 export interface CourseDatabase {
-  "id": string,
+  "id": number,
   "name": string,
   "short": string,
   "color": string,
   "year": string,
   "startDate": string,
   "endDate": string,
-  "defaultLandingPage": string,
+  "landingPage": number,
   "lastUpdate": string,
-  "isActive": string,
-  "isVisible": string,
-  "roleHierarchy": string,
+  "isActive": boolean,
+  "isVisible": boolean,
+  "roleHierarchy": {name: string}[],
   "theme": string,
-  "folder": string,
-  "nrStudents"?: string,
+  "folder"?: string,
+  "nrStudents"?: number,
 }
