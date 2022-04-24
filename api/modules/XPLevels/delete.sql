@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS user_xp;
+DROP TABLE IF EXISTS level;

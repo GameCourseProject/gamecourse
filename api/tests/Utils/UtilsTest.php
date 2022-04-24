@@ -74,6 +74,34 @@ class UtilsTest extends TestCase
         ];
     }
 
+    public function compareVersionsBiggerThanProvider(): array
+    {
+        return [
+            "zero" => ["2.2.0", "0.0.0"],
+            "close" => ["2.2.10", "2.2.9"],
+            "two digits" => ["10.0.0", "2.2.0"],
+            "middle" => ["2.2.4", "2.1.4"]
+        ];
+    }
+
+    public function compareVersionsSmallerThanProvider(): array
+    {
+        return [
+            "zero" => ["0.0.0", "2.2.0"],
+            "close" => ["2.2.9", "2.2.10"],
+            "two digits" => ["2.2.0", "10.0.0"],
+            "middle" => ["2.1.4", "2.2.4"]
+        ];
+    }
+
+    public function compareVersionsEqualToProvider(): array
+    {
+        return [
+            "zero" => ["0.0.0", "0.0.0"],
+            "default" => ["2.2.0", "2.2.0"]
+        ];
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Tests ---------------------- ***/
@@ -639,5 +667,43 @@ class UtilsTest extends TestCase
     {
         $file = "";
         $this->assertNull(Utils::detectSeparator($file));
+    }
+
+
+    /**
+     * @test
+     * @dataProvider compareVersionsBiggerThanProvider
+     */
+    public function compareVersionsBiggerThan(string $v1, string $v2)
+    {
+        $this->assertEquals(1, Utils::compareVersions($v1, $v2));
+    }
+
+    /**
+     * @test
+     * @dataProvider compareVersionsSmallerThanProvider
+     */
+    public function compareVersionsSmallerThan(string $v1, string $v2)
+    {
+        $this->assertEquals(-1, Utils::compareVersions($v1, $v2));
+    }
+
+    /**
+     * @test
+     * @dataProvider compareVersionsEqualToProvider
+     */
+    public function compareVersionsEqualTo(string $v1, string $v2)
+    {
+        $this->assertEquals(0, Utils::compareVersions($v1, $v2));
+    }
+
+    /**
+     * @test
+     */
+    public function compareVersionsDifferentNrOfParts()
+    {
+        $this->assertEquals(-1, Utils::compareVersions("2.1.0", "2.2"));
+        $this->assertEquals(1, Utils::compareVersions("2.2", "2.1.0"));
+        $this->assertEquals(0, Utils::compareVersions("2.2", "2.2.0"));
     }
 }

@@ -291,4 +291,44 @@ class Utils
         }
         return array_search(max($separators), $separators);
     }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** -------------------- Versioning -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Compares two versions. Returns:
+     *  - -1 if v1 < v2
+     *  - +1 if v1 > v2
+     *  - 0 if v1 == v2
+     *
+     * @param string|null $version1
+     * @param string|null $version2
+     * @return int
+     */
+    public static function compareVersions(string $version1, string $version2): int
+    {
+        $v1Parts = self::getVersionParts($version1);
+        $v2Parts = self::getVersionParts($version2);
+
+        foreach ($v1Parts as $i => $v1Part) {
+            if ($v1Part < $v2Parts[$i]) return -1;
+            if ($v1Part > $v2Parts[$i]) return 1;
+        }
+        return 0;
+    }
+
+    /**
+     * Parses version to format x.x.x and returns its parts.
+     *
+     * @param string $version
+     * @return array
+     */
+    private static function getVersionParts(string $version): array
+    {
+        $parts = array_map('intval', explode(".", $version));
+        while (count($parts) != 3) { $parts[] = 0; }
+        return $parts;
+    }
 }

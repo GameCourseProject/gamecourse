@@ -5,11 +5,11 @@ use Error;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
+use GameCourse\Module\XPLevels;
 use GameCourse\Role\Role;
 use GameCourse\User\Auth;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
-use Google\Service\GroupsMigration\Resource\Archive;
 use Utils\Utils;
 use ZipArchive;
 
@@ -305,11 +305,15 @@ class Course
         $course->addUserToCourse($loggedUser->getId(), "Teacher", $teacherRoleId);
 
         // Init modules
-        // FIXME: use Module model
-//        $modules = Core::database()->selectMultiple(Module::TABLE_MODULE);
-//        foreach ($modules as $mod) {
-//            Core::database()->insert(Module::TABLE_COURSE_MODULE, ["course" => $id, "moduleId" => $mod["moduleId"]]);
-//        }
+        $modules = Module::getModules();
+        foreach ($modules as $module) {
+            Core::database()->insert(Module::TABLE_COURSE_MODULE, [
+                "module" => $module["id"],
+                "course" => $id,
+                "minModuleVersion" => $module["version"],
+                "maxModuleVersion" => null
+            ]);
+        }
 
         // Prepare AutoGame
         AutoGame::initAutoGame($id, $name, $dataFolder);
@@ -475,6 +479,16 @@ class Course
         return $courseUsers;
     }
 
+    public function getStudents(?bool $active = null): array
+    {
+        return $this->getCourseUsersWithRole($active, "Student");
+    }
+
+    public function getTeachers(?bool $active = null): array
+    {
+        return $this->getCourseUsersWithRole($active, "Teacher");
+    }
+
     public function addUserToCourse(int $userId, string $roleName = null, int $roleId = null): CourseUser
     {
         return CourseUser::addCourseUser($userId, $this->id, $roleName, $roleId);
@@ -590,12 +604,40 @@ class Course
 
     public function getModuleById(string $moduleId): ?Module
     {
-        $module = new Module($moduleId);
-        if ($module->exists()) return $module;
-        else return null;
+        return Module::getModuleById($moduleId, $this);
     }
 
-    // TODO
+    public function getModules(?bool $enabled = null): array
+    {
+        $table = Module::TABLE_MODULE . " m JOIN " . Module::TABLE_COURSE_MODULE . " cm on cm.module=m.id";
+        $where = [];
+        if ($enabled !== null) $where["cm.isEnabled"] = $enabled;
+        $modules = Core::database()->selectMultiple($table, $where, "m.*, cm.isEnabled, cm.minModuleVersion, cm.maxModuleVersion");
+        foreach ($modules as &$module) { $module = Module::parse($module); }
+        return $modules;
+    }
+
+    public function setModuleEnabled(string $moduleId, bool $isEnabled)
+    {
+        $module = $this->getModuleById($moduleId);
+        $module->setEnabled($isEnabled);
+    }
+
+    public function isModuleEnabled(string $moduleId): bool
+    {
+        $module = $this->getModuleById($moduleId);
+        return $module->isEnabled();
+    }
+
+    public function getCompatibleModuleVersions(string $moduleId): array
+    {
+        $compatibility = Core::database()->select(Module::TABLE_COURSE_MODULE,
+            ["course" => $this->id, "module" => $moduleId], "minModuleVersion, maxModuleVersion");
+        return [
+            "min" => $compatibility["minModuleVersion"],
+            "max" => $compatibility["maxModuleVersion"]
+        ];
+    }
 
 
     /*** ---------------------------------------------------- ***/

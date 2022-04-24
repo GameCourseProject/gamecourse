@@ -6,6 +6,7 @@ ini_set('display_errors', '1');
 use Api\API;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Module;
 use GameCourse\User\User;
 
 require __DIR__ . "/../inc/bootstrap.php";
@@ -32,6 +33,9 @@ if (array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_
     $user = User::addUser("Teacher", $teacherUsername, "fenix", null, $teacherId, null,
         null, true, true);
     Core::setLoggedUser($user);
+
+    // Register modules available
+    Module::setupModules();
 
     // Create course
     // NOTE: user is automatically added as a teacher of the course

@@ -7,6 +7,10 @@
     const URL = '<WEBSITE_URL>';
     const API_URL = '<API_URL>';
 
+    /** Versioning */
+    const PROJECT_VERSION = '<PROJECT_VERSION>';
+    const API_VERSION = '<API_VERSION>';
+
     /** Database Connection */
     const CONNECTION_STRING = 'mysql:host=<DB_HOST>;dbname=<DB_NAME>';
     const CONNECTION_USERNAME = '<DB_USER>';

@@ -4,12 +4,12 @@ namespace GameCourse\Course;
 use Error;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
+use GameCourse\Module\Module;
 use GameCourse\Role\Role;
 use GameCourse\User\Auth;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
 use Monolog\Test\TestCase;
-use OpenApi\Util;
 use PDOException;
 use Utils\Utils;
 
@@ -26,6 +26,7 @@ class CourseTest extends TestCase
     public static function setUpBeforeClass(): void
     {
         Core::database()->cleanDatabase();
+        Module::setupModules();
 
         if (file_exists(LOGS_FOLDER)) Utils::deleteDirectory(LOGS_FOLDER);
         if (file_exists(COURSE_DATA_FOLDER)) Utils::deleteDirectory(COURSE_DATA_FOLDER);
@@ -826,8 +827,15 @@ class CourseTest extends TestCase
         $this->assertCount(1, $courseUsers);
         $this->assertTrue((new CourseUser($courseUsers[0]["id"], $course))->isTeacher());
 
-        // Check modules added to course
-        // TODO
+        // Check modules were initialized in course
+        $modules = Module::getModules();
+        $courseModules = $course->getModules();
+        $this->assertSameSize($modules, $courseModules);
+        foreach ($courseModules as $i => $courseModule) {
+            $this->assertFalse($courseModule["isEnabled"]);
+            $this->assertEquals($modules[$i]["version"], $courseModule["minModuleVersion"]);
+            $this->assertNull($courseModule["maxModuleVersion"]);
+        }
 
         // Check autogame
         $this->assertNotNull(Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $course->getId()]));
@@ -858,6 +866,9 @@ class CourseTest extends TestCase
 
             $roles = Core::database()->selectMultiple(Role::TABLE_ROLE);
             $this->assertEmpty($roles);
+
+            $courseModules = Core::database()->selectMultiple(Module::TABLE_COURSE_MODULE);
+            $this->assertEmpty($courseModules);
         }
     }
 

@@ -90,16 +90,34 @@ CREATE TABLE user_role(
 
 CREATE TABLE module(
 	id                          varchar(50) NOT NULL PRIMARY KEY,
-	name                        varchar(50),
-	description                 varchar(100),
-	version                     varchar(10),
-	compatibleVersions          varchar(100)
+	name                        varchar(50) NOT NULL,
+	description                 varchar(100) NOT NULL,
+	type                        ENUM ('GameElement', 'DataSource') NOT NULL,
+	version                     varchar(10) NOT NULL,
+    minProjectVersion           varchar(10) NOT NULL,
+    maxProjectVersion           varchar(10),
+    minAPIVersion               varchar(10) NOT NULL,
+    maxAPIVersion               varchar(10)
+);
+
+CREATE TABLE module_dependency(
+    module                      varchar(50) NOT NULL,
+    dependency                  varchar(50) NOT NULL,
+    minDependencyVersion        varchar(10) NOT NULL,
+    maxDependencyVersion        varchar(10),
+    mode                        ENUM ('hard', 'soft') NOT NULL,  -- Hard: mandatory to work; Soft: some features might not work
+
+    PRIMARY key(module, dependency),
+    FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE,
+    FOREIGN key(dependency) REFERENCES module(id) ON DELETE CASCADE
 );
 
 CREATE TABLE course_module(
+    course                      int unsigned NOT NULL,
 	module                      varchar(50) NOT NULL,
-	course                      int unsigned NOT NULL,
 	isEnabled                   boolean DEFAULT FALSE,
+	minModuleVersion            varchar(10) NOT NULL,
+	maxModuleVersion            varchar(10),
 
 	PRIMARY key(module, course),
 	FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE,
