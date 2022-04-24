@@ -597,6 +597,23 @@ class UtilsTest extends TestCase
     /**
      * @test
      */
+    public function strStartsWith()
+    {
+        // True
+        $this->assertTrue(Utils::strStartsWith("abc", ""));
+        $this->assertTrue(Utils::strStartsWith("abc", "a"));
+        $this->assertTrue(Utils::strStartsWith("abc", "ab"));
+        $this->assertTrue(Utils::strStartsWith("abc", "abc"));
+        $this->assertTrue(Utils::strStartsWith("aabc", "aa"));
+
+        // False
+        $this->assertFalse(Utils::strStartsWith("abc", "b"));
+        $this->assertFalse(Utils::strStartsWith("abc", "d"));
+    }
+
+    /**
+     * @test
+     */
     public function strEndsWith()
     {
         // True

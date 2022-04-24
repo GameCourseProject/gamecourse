@@ -18,6 +18,8 @@ export class DownloadManager {
 
     const zip = path + filename;
     location.replace(zip);
+
+    // FIXME: should delete temporary zip file in server
   }
 
   private static downloadHelper(filename: string, contents: string, type: DownloadTypes) {
@@ -28,6 +30,8 @@ export class DownloadManager {
     document.body.appendChild(el);
     el.click();
     document.body.removeChild(el);
+
+    // FIXME: should delete temporary zip file in server
   }
 }
 

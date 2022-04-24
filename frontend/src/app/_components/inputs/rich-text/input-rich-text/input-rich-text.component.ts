@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {Observable} from "rxjs";
 
 import * as Quill from 'quill';
-import htmlEditButton from 'quill-html-edit-button';
+// import htmlEditButton from 'quill-html-edit-button';
 import imageResize from 'quill-image-resize';
 
 import {exists} from "../../../../_utils/misc/misc";
@@ -87,7 +87,7 @@ export class InputRichTextComponent implements OnInit {
 
     Quill.register({
       'modules/imageResize': imageResize,
-      'modules/htmlEditButton': htmlEditButton
+      // 'modules/htmlEditButton': htmlEditButton
     });
 
     const container = $('#' + this.id)[0] as HTMLElement;

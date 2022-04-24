@@ -15,7 +15,8 @@
       "Database\\": "models/Database",
       "GameCourse\\": ["models/GameCourse", "modules"],
       "Utils\\": "models/Utils",
-      "Api\\": "controllers"
+      "Api\\": "controllers",
+      "Event\\": "events"
     }
   }
 }

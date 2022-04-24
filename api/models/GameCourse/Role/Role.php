@@ -40,6 +40,16 @@ class Role
     /**
      * Gets roles names in a given hierarchy.
      *
+     * @example Hierarchy: [
+     *                          ["name" => "Teacher"],
+     *                          ["name" => "Student" "children" => [
+     *                              ["name" => "StudentA"],
+     *                              ["name" => "StudentB"]
+     *                          ]],
+     *                          ["name" => "Watcher"]
+     *                     ]
+     *          getRolesNamesByHierarchy($hierarchy) --> ["Teacher", "Student", "StudentA", "StudentB", "Watcher"] (no fixed order)
+     *
      * @param array $hierarchy
      * @return array
      */

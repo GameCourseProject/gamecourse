@@ -4,7 +4,6 @@ namespace GameCourse\User;
 use Error;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\XPLevels;
 use Utils\Utils;
 
 /**

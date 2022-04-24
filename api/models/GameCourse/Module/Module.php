@@ -2,6 +2,7 @@
 namespace GameCourse\Module;
 
 use Error;
+use Event\Event;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use Utils\Utils;
@@ -429,6 +430,16 @@ abstract class Module
     {}
 
     /**
+     * Sets events to listen to right from the start and their
+     * callback functions.
+     *
+     * @return void
+     */
+    protected function initEvents()
+    {
+    }
+
+    /**
      * Actions to be performed when disabling the module.
      */
     abstract function disable();
@@ -460,6 +471,16 @@ abstract class Module
 
     protected function cleanTemplates()
     {
+    }
+
+    /**
+     * Stops listening to any events of module.
+     *
+     * @return void
+     */
+    protected function removeEvents()
+    {
+        Event::stopAll($this->getId());
     }
 
 

@@ -220,6 +220,20 @@ class Utils
     /*** ---------------------------------------------------- ***/
 
     /**
+     * Checks if a string starts with a given substring.
+     *
+     * @param string $haystack
+     * @param string $needle
+     * @return bool
+     */
+    public static function strStartsWith(string $haystack, string $needle): bool
+    {
+        $length = strlen($needle);
+        if (!$length) return true;
+        return substr($haystack, 0, $length) === $needle;
+    }
+
+    /**
      * Checks if a string ends with a given substring.
      *
      * @param string $haystack

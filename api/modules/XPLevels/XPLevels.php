@@ -1,6 +1,8 @@
 <?php
 namespace GameCourse\XPLevels;
 
+use Event\Event;
+use Event\EventType;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
@@ -61,18 +63,32 @@ class XPLevels extends Module
         // Init XP for all students
         $students = $this->course->getStudents(true);
         foreach ($students as $student) {
-            Core::database()->insert(self::TABLE_XP, [
-                "course" => $this->course->getId(),
-                "user" => $student["id"],
-                "xp" => 0,
-                "level" => $level0Id
-            ]);
+            $this->initXPForStudent($student["id"], $level0Id);
         }
+
+        $this->initEvents();
+    }
+
+    public function initEvents()
+    {
+        Event::listen(EventType::STUDENT_ADDED_TO_COURSE, function (int $courseId, int $studentId) {
+            if ($courseId == $this->course->getId())
+                $this->initXPForStudent($studentId);
+        }, self::ID);
+
+        Event::listen(EventType::STUDENT_REMOVED_FROM_COURSE, function (int $courseId, int $studentId) {
+            // NOTE: this event targets cases where the course user only changed roles and
+            //       is no longer a student; there's no need for an event when a user is
+            //       completely removed from course, as SQL 'ON DELETE CASCADE' will do
+            if ($courseId == $this->course->getId())
+                Core::database()->delete(self::TABLE_XP, ["course" => $courseId, "user" => $studentId]);
+        }, self::ID);
     }
 
     public function disable()
     {
         $this->cleanDatabase();
+        $this->removeEvents();
     }
 
     protected function deleteEntries()
@@ -87,4 +103,73 @@ class XPLevels extends Module
     /*** ----------------------------------------------- ***/
 
     // TODO
+
+
+    /*** ----------------------------------------------- ***/
+    /*** --------------- Module Specific --------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    /*** ------------ XP ------------ ***/
+
+    /**
+     * Sets 0 XP for a given student.
+     * If student already has XP it will reset them.
+     *
+     * @param int $studentId
+     * @param int|null $level0Id
+     * @return void
+     */
+    public function initXPForStudent(int $studentId, int $level0Id = null)
+    {
+        $courseId = $this->course->getId();
+        if ($level0Id === null) $level0Id = $this->getLevelZeroId();
+
+        if ($this->studentHasXP($studentId)) // already has XP
+            Core::database()->delete(self::TABLE_XP, ["course" => $courseId, "user" => $studentId]);
+
+        Core::database()->insert(self::TABLE_XP, [
+            "course" => $courseId,
+            "user" => $studentId,
+            "xp" => 0,
+            "level" => $level0Id
+        ]);
+    }
+
+    /**
+     * Checks whether a given student has XP initialized.
+     *
+     * @param int $studentId
+     * @return bool
+     */
+    public function studentHasXP(int $studentId): bool
+    {
+        return !empty(Core::database()->select(self::TABLE_XP, ["course" => $courseId, "user" => $studentId]));
+    }
+
+    /**
+     * Gets total XP for a given student.
+     *
+     * @param int $studentId
+     * @return int|null
+     */
+    public function getStudentXP(int $studentId): int
+    {
+        return intval(Core::database()->select(self::TABLE_XP,
+            ["course" => $this->course->getId(), "user" => $studentId],
+            "xp"
+        ));
+    }
+
+
+    /*** ---------- Levels ---------- ***/
+
+    /**
+     * Gets ID of first level.
+     *
+     * @return int
+     */
+    public function getLevelZeroId(): int
+    {
+        return intval(Core::database()->select(self::TABLE_LEVEL, ["course" => $this->course->getId(), "number" => 0], "id"));
+    }
 }
