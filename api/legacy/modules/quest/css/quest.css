@@ -1,0 +1,103 @@
+.quest-body {
+  background-color: black;
+}
+.quest-formatter {
+  color: #ffffff;
+}
+.quest-formatter p {
+  margin: 1em auto;
+  font-size: 14pt;
+}
+@media all and (min-width: 1300px) {
+  .quest-formatter p {
+    width: 800px;
+  }
+}
+#quest-container {
+  margin: 1em;
+  color: #ffffff;
+}
+#quest-container p {
+  margin: 1em auto;
+  font-size: 14pt;
+}
+@media all and (min-width: 1300px) {
+  #quest-container p {
+    width: 800px;
+  }
+}
+@media all and (min-width: 1000px) {
+  #quest-info-container #quest-level-selector {
+    width: 300px;
+    display: inline-block;
+    vertical-align: top;
+  }
+}
+#quest-info-container #quest-level-selector .dd-item:hover {
+  background: #EEE;
+}
+#quest-info-container #quest-level-editor {
+  margin-top: 20px;
+}
+@media all and (min-width: 1300px) {
+  #quest-info-container #quest-level-editor {
+    margin-left: 20px;
+    margin-top: 0;
+    width: 600px;
+    display: inline-block;
+    vertical-align: top;
+  }
+}
+#quest-info-container #quest-level-preview {
+  padding: 1em;
+  background-color: black;
+  color: #ffffff;
+}
+#quest-info-container #quest-level-preview p {
+  margin: 1em auto;
+  font-size: 14pt;
+}
+@media all and (min-width: 1300px) {
+  #quest-info-container #quest-level-preview p {
+    width: 800px;
+  }
+}
+.request-solution {
+  background-color: #EEE;
+  color: #000000;
+  margin: 0 auto;
+  width: 800px;
+  padding: 0.1px 10px 10px 10px;
+}
+.request-solution button {
+  margin-left: 10px;
+}
+.quest-control > div {
+  margin-bottom: 2px;
+}
+.quest-control label {
+  min-width: 105px;
+  display: inline-block;
+  text-align: right;
+}
+#quest-level-editor > div {
+  margin-bottom: 2px;
+}
+#quest-level-editor label {
+  min-width: 65px;
+  display: inline-block;
+  text-align: right;
+}
+#quest-level-editor .validation-type-container > div {
+  margin-bottom: 2px;
+}
+#quest-level-editor .validation-type-container label {
+  min-width: 115px;
+}
+#quest-quests-list {
+  margin: 2px 0px;
+}
+#quest-quests-list img {
+  vertical-align: -2px;
+  width: 18px;
+}

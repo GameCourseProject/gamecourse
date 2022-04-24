@@ -1,0 +1,102 @@
+@import "../../../../css/src/device-sizes";
+@import "../../../../css/src/base-settings";
+
+#side-view {
+  display: none;
+}
+
+#wrapper.sv-visible #side-view {
+  display: block;
+}
+
+@media all and (min-width: @device-sm) {
+  #side-view {
+    position: absolute;
+
+    &.stick {
+      position: fixed;
+      top: 16px;
+    }
+  }
+
+  #wrapper.sv-visible #content-wrapper {
+    margin-left: 300px;
+  }
+}
+
+#side-view {
+  > .view {
+    width: 100%;
+    @media all and (min-width: @device-sm) {
+      width: 310px;
+    }
+
+    > .content > .block > .content > .block > .content {
+      display: block;
+      text-align: center;
+    }
+  }
+
+  .image.student-photo img {
+    vertical-align: top;
+    border: 1px solid @color-primary-4;
+  }
+
+  .table.tidy table {
+    margin: 0 auto;
+    td {
+      padding: 2px 2px 0px;
+      text-align: center;
+    }
+  }
+
+  /*.side-info {
+    display: inline-block;
+    padding-left: 8px;
+    text-align: left;
+    tr td:first-child {
+      @media (min-width: @device-sm) {
+        padding-right: 30px;
+      }
+      padding-right: 16px;
+      font-weight: bold;
+    }
+  }*/
+}
+
+.side-links {
+  .content {
+    display: block;
+  }
+
+  .content > a {
+    margin-top: 1px !important;
+    display: block;
+    font-weight: bold;
+    padding: 8px;
+    color: @link-blocky-color;
+    background-color: @link-blocky-background;
+    transition: all .3s ease;
+
+    &:hover {
+      text-decoration: none;
+      color: @link-blocky-color-hover;
+      background-color: @link-blocky-background-hover;
+    }
+
+    &:active {
+      background-color: @link-blocky-background-active;
+      color: @link-blocky-color-active;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    > img {
+      width: 32px;
+      height: 32px;
+      margin-right: 4px;
+    }
+  }
+}
