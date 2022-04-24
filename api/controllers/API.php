@@ -2,6 +2,10 @@
 namespace Api;
 
 use Error;
+use GameCourse\Core\Core;
+use GameCourse\Course\Course;
+use GameCourse\User\CourseUser;
+use GameCourse\User\User;
 
 /**
  * Main API controller that holds functions to process an API request,
@@ -100,67 +104,63 @@ class API
     /*** ----------------- Permissions ----------------- ***/
     /*** ----------------------------------------------- ***/
 
-//    /**
-//     * Only allows access to admins and users of the course.
-//     */
-//    public static function requireCoursePermission() {
-//        API::requireValues('courseId');
-//        $courseUser = Course::getCourse(API::getValue('courseId'), false)->getLoggedUser();
-//        $isCourseUser = (!is_a($courseUser, "GameCourse\NullCourseUser"));
-//        if (!Core::getLoggedUser()->isAdmin() && !$isCourseUser) {
-//            API::error('You don\'t have permission to access this course.', 403);
-//        }
-//    }
-//
-//    /**
-//     * Only allows access to admins and teachers of the course.
-//     */
-//    public static function requireCourseAdminPermission() {
-//        API::requireValues('courseId');
-//        $courseAdmin = Course::getCourse(API::getValue('courseId'), false)->getLoggedUser()->hasRole('Teacher');
-//        if (!Core::getLoggedUser()->isAdmin() && !$courseAdmin) {
-//            API::error('You don\'t have permission to request this - only course admins can.', 403);
-//        }
-//    }
-//
-//    /**
-//     * Only allows access to admins.
-//     */
-//    public static function requireAdminPermission() {
-//        if (!Core::getLoggedUser()->isAdmin())
-//            API::error('You don\'t have permission to request this - only admins can.', 403);
-//    }
+    /**
+     * Only allows access to admins and users of the course.
+     */
+    public static function requireCoursePermission(Course $course) {
+        $courseUser = $course->getCourseUserById(Core::getLoggedUser()->getId());
+        if (!Core::getLoggedUser()->isAdmin() && !$courseUser->exists()) {
+            API::error('You don\'t have permission to access this course.', 403);
+        }
+    } // TODO: test
+
+    /**
+     * Only allows access to admins and teachers of the course.
+     */
+    public static function requireCourseAdminPermission(Course $course) {
+        $courseAdmin = (new CourseUser(Core::getLoggedUser()->getId(), $course))->isTeacher();
+        if (!Core::getLoggedUser()->isAdmin() && !$courseAdmin) {
+            API::error('You don\'t have permission to request this - only course admins can.', 403);
+        }
+    } // TODO: test
+
+    /**
+     * Only allows access to admins.
+     */
+    public static function requireAdminPermission() {
+        if (!Core::getLoggedUser()->isAdmin())
+            API::error('You don\'t have permission to request this - only admins can.', 403);
+    } // TODO: test
 
 
     /*** ----------------------------------------------- ***/
     /*** ---------------- Verifications ---------------- ***/
     /*** ----------------------------------------------- ***/
 
-//    public static function verifyUserExists(int $userId): User
-//    {
-//        $user = new User($userId);
-//        if (!$user->exists())
-//            API::error('There is no user with id = ' . $userId);
-//        return $user;
-//    }
-//
-//    public static function verifyCourseExists(int $courseId): Course
-//    {
-//        $course = Course::getCourse($courseId, false);
-//        if (!$course->exists())
-//            API::error('There is no course with id = ' . $courseId);
-//        return $course;
-//    }
-//
-//    public static function verifyCourseUserExists(int $courseId, int $userId): CourseUser
-//    {
-//        $course = self::verifyCourseExists($courseId);
-//        $courseUser = new CourseUser($userId, $course);
-//        if (!$courseUser->exists())
-//            API::error('There is no user with id = ' . $userId . ' in course \'' . $course->getName() . '\'');
-//        return $courseUser;
-//    }
-//
+    public static function verifyUserExists(int $userId): User
+    {
+        $user = new User($userId);
+        if (!$user->exists())
+            API::error('There is no user with ID = ' . $userId . '.');
+        return $user;
+    }
+
+    public static function verifyCourseExists(int $courseId): Course
+    {
+        $course = new Course($courseId);
+        if (!$course->exists())
+            API::error('There is no course with ID = ' . $courseId . '.');
+        return $course;
+    }
+
+    public static function verifyCourseUserExists(Course $course, int $userId): CourseUser
+    {
+        $courseUser = new CourseUser($userId, $course);
+        if (!$courseUser->exists())
+            API::error("There is no user with ID = " . $userId . " in course with ID = " . $course->getId() . ".");
+        return $courseUser;
+    }
+
 //    public static function verifyModuleExists(string $moduleId, int $courseId = null)
 //    {
 //        if (!is_null($courseId)) {
@@ -195,11 +195,5 @@ class API
 //        $course = self::verifyCourseExists($courseId);
 //        if (empty(Core::$systemDB->select(Skills::TABLE, ["id" => $skillId])))
 //            API::error('There is no skill with id = ' . $skillId . ' in course \'' . $course->getName() . '\'');
-//    }
-//
-//    public static function verifyCourseIsActive(int $courseId) {
-//        self::verifyCourseExists($courseId);
-//        if (empty(Core::$systemDB->select("course", ["id" => $courseId, "isActive" => true])))
-//            API::error('Course with id = ' . $courseId . ' is not active.');
 //    }
 }

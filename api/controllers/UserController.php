@@ -1,6 +1,7 @@
 <?php
 namespace Api;
 
+use GameCourse\Core\Core;
 use GameCourse\User\User;
 
 /**
@@ -12,17 +13,44 @@ use GameCourse\User\User;
  */
 class UserController
 {
+    /*** --------------------------------------------- ***/
+    /*** ---------------- Logged User ---------------- ***/
+    /*** --------------------------------------------- ***/
+
     /**
-     * @OA\Get(
-     *     path="/api/?module=docs&request=getAPIDocs",
-     *     tags={"Documentation"},
-     *     @OA\Response(response="200", description="GameCourse API documentation")
-     * )
+     * Get logged user information.
      */
-    public function getAPIDocs()
+    public function getLoggedUserInfo()
     {
-        $openapi = \OpenApi\Generator::scan([ROOT_PATH . "controllers"]);
-        API::response(json_decode($openapi->toJSON()));
+        $user = Core::getLoggedUser();
+        $userInfo = $user->getData();
+        $userInfo["image"] = $user->getImage();
+        API::response(["userInfo" => $userInfo]);
+    }
+
+    /**
+     * Get list of active courses for logged user.
+     */
+    public function getLoggedUserActiveCourses()
+    {
+        $user = Core::getLoggedUser();
+        $userCourses = $user->getCourses(true);
+        API::response(["userActiveCourses" => $userCourses]);
+    }
+
+
+    /*** --------------------------------------------- ***/
+    /*** ------------------ General ------------------ ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * Get all users on the system.
+     */
+    public function getUsers()
+    {
+        API::requireAdminPermission();
+        $users = User::getUsers();
+        API::response(["users" => $users]);
     }
 }
 

@@ -311,11 +311,27 @@ class UserTest extends TestCase
         // Image not set
         $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $this->assertEquals(null, $user->getImage());
+        $this->assertNull($user->getImage());
 
         // Image set
         file_put_contents(ROOT_PATH . "photos/ist123456.png", "");
         $this->assertEquals(API_URL . "/photos/ist123456.png", $user->getImage());
+        unlink(ROOT_PATH . "photos/ist123456.png");
+    }
+
+    /**
+     * @test
+     */
+    public function hasImage()
+    {
+        // Image not set
+        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, false);
+        $this->assertFalse($user->hasImage());
+
+        // Image set
+        file_put_contents(ROOT_PATH . "photos/ist123456.png", "");
+        $this->assertTrue($user->hasImage());
         unlink(ROOT_PATH . "photos/ist123456.png");
     }
 
@@ -741,11 +757,15 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(2, $users);
 
-        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
+        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image", "courses"];
+        $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
+                $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertEquals($user[$key], ${"user".($i+1)}->getData($key));
+                if ($key != "image" && $key != "courses") $this->assertEquals($user[$key], ${"user".($i+1)}->getData($key));
+                else if ($key == "image") $this->assertEquals($user[$key], ${"user".($i+1)}->getImage());
+                else $this->assertSameSize($user["courses"], ${"user".($i+1)}->getCourses());
             }
         }
     }
@@ -764,11 +784,15 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(1, $users);
 
-        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
+        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image", "courses"];
+        $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $user) {
+                $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertEquals($user[$key], $user2->getData($key));
+                if ($key != "image" && $key != "courses") $this->assertEquals($user[$key], $user2->getData($key));
+                else if ($key == "image") $this->assertEquals($user[$key], $user2->getImage());
+                else $this->assertSameSize($user["courses"], $user2->getCourses());
             }
         }
     }
@@ -787,11 +811,15 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(1, $users);
 
-        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
+        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image", "courses"];
+        $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $user) {
+                $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertEquals($user[$key], $user1->getData($key));
+                if ($key != "image" && $key != "courses") $this->assertEquals($user[$key], $user1->getData($key));
+                else if ($key == "image") $this->assertEquals($user[$key], $user1->getImage());
+                else $this->assertSameSize($user["courses"], $user1->getCourses());
             }
         }
     }

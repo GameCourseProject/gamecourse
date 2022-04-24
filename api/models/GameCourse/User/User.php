@@ -4,6 +4,7 @@ namespace GameCourse\User;
 use Error;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\XPLevels;
 use Utils\Utils;
 
 /**
@@ -77,6 +78,12 @@ class User
         return file_exists(ROOT_PATH . "photos/" . $this->getUsername() . ".png") ?
             API_URL . "/photos/" . $this->getUsername() . ".png" : null;
 
+    }
+
+    public function hasImage(): bool
+    {
+        if (!$this->getImage()) return false;
+        return true;
     }
 
     public function isAdmin(): bool
@@ -238,7 +245,11 @@ class User
             $where,
             "u.*, a.username, a.authentication_service"
         );
-        foreach ($users as &$user) { $user = self::parse($user); }
+        foreach ($users as &$user) {
+            $user["image"] = (new User($user["id"]))->getImage();
+            $user["courses"] = (new User($user["id"]))->getCourses();
+            $user = self::parse($user);
+        }
         return $users;
     }
 
