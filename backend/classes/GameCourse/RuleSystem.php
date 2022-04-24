@@ -487,7 +487,7 @@ class RuleSystem
         }
     }
 
-    public function changeRuleLvlsInFile($ruleFile, $newLvls)
+    public function changeRuleLvlsInFile($ruleFile, $ruleName, $newLvls)
     {
         if ($this->ruleFileExists($ruleFile)) {
             $txt = file_get_contents($this->rulesdir . $ruleFile);
@@ -496,7 +496,6 @@ class RuleSystem
             // replace that line with:
             //       '#CHANGES MADE: ' + the copied string + new string with new lvls
             
-
 
             // $newTxt = str_replace($oldName, $newName, $txt);
             // file_put_contents($this->rulesdir . $ruleFile, $newTxt);
