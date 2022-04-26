@@ -2072,6 +2072,7 @@ def award_streak(target, streak, contributions=None, info=None):
                         maxlabs = 125
                         maxlab_impar = 150
                         maxlab_par = 400
+
                         max_quiz = 1000
 
 
@@ -2702,7 +2703,16 @@ def award_streak(target, streak, contributions=None, info=None):
                             cnx.commit()
 
             else:
+
+                # gets all awards for this user order by descending date (most recent on top)
+                query = "SELECT t1.participationId FROM streak_progression t1 LEFT JOIN award_participation t2 ON t2.participation = t1.participationId WHERE t2.participation IS NULL and user = %s and t1.streakId = %s and t1.course  = %s"
+                cursor.execute(query, (target, streakid,  course))
+                table_checker = cursor.fetchall()
                 totalAwards = len(table_progressions) // streak_count
+
+                check = len(table_checker) // streak_count
+                if check == len(table):
+                   totalAwards = totalAwards + 1
 
                 # inserts in award table the new streaks that have not been awarded
                 for diff in range(len(table), totalAwards):
@@ -2744,6 +2754,11 @@ def award_streak(target, streak, contributions=None, info=None):
         isRepeatable = table_streak[0][5]
         streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
 
+        # gets all awards for this user order by descending date (most recent on top)
+        query = "SELECT t1.participationId FROM streak_progression t1 LEFT JOIN award_participation t2 ON t2.participation = t1.participationId WHERE t2.participation IS NULL and user = %s and t1.streakId = %s and t1.course  = %s"
+        cursor.execute(query, (target, streakid,  course))
+        table_checker = cursor.fetchall()
+
         if isRepeatable and len(table_progressions) > streak_count:
         
             total_extra_xp = int(curr_badge_extra_xp) + int(curr_streak_xp)
@@ -2756,6 +2771,11 @@ def award_streak(target, streak, contributions=None, info=None):
             #calculated_reward = reward
 
             totalAwards = len(table_progressions) // streak_count
+
+            check = len(table_checker) // streak_count
+            if check == len(table):
+                totalAwards = totalAwards + 1
+
 
             # inserts in award table the new streaks that have not been awarded
             for diff in range(len(table), totalAwards):
