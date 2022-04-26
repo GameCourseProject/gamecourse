@@ -487,7 +487,7 @@ class RuleSystem
         }
     }
 
-    public function changeRuleLvlsInFile($ruleFile, $ruleName, $newLvls)
+    public function changeRuleLvlsInFile($ruleFile, $ruleName, $oldLvls, $newLvls)
     {
         if ($this->ruleFileExists($ruleFile)) {
             $txt = file_get_contents($this->rulesdir . $ruleFile);
@@ -495,17 +495,65 @@ class RuleSystem
             // Get lvl = compute_lvl , copy that line to a string
             // replace that line with:
             //       '#CHANGES MADE: ' + the copied string + new string with new lvls
-            
 
-            // $newTxt = str_replace($oldName, $newName, $txt);
-            // file_put_contents($this->rulesdir . $ruleFile, $newTxt);
+            $position =  $this->findRulePosition($ruleFile, $ruleName) ;
+            $newName = $ruleName . " --- " . $position;
+            $newTxt = str_replace($ruleName, $newName, $txt);
+            file_put_contents($this->rulesdir . $ruleFile, $newTxt);
 
+            /*
+            $sectionRules = $this->splitRules($txt);
+            $ruletxt = $sectionRules[intval($position)];
 
+            $editedRule = $this->editRuleLvls($ruletxt, $oldLvls, $newLvls);
+            array_splice($sectionRules, $position + 1, 0, $editedRule);
 
-
+            $content = $this->joinRules($sectionRules);         */
 
         }
     }
+
+    public function editRuleLvls($rule, $oldLvls, $newLvls){
+        
+        $before = "lvl  = compute_lvl(nlogs, " . "$oldLvls[0]" . ", " .  "$oldLvls[1]" . ", " . "$oldLvls[2]" . ")";
+        $after = "lvl  = compute_lvl(nlogs, " . "$newLvls[0]" . ", " .  "$newLvls[1]" . ", " . "$newLvls[2]" . ")";
+        $changes = "#CHANGED: \n" . "#" . $before . "\n" . $after;
+
+        $edited = str_replace($before, $changes, $rule);
+
+        return $edited;
+    }
+
+    public function findRuleLine($ruleFile, $ruleName){
+
+        $rows = explode("\n", $ruleFile);
+
+        for ($i = 0; $i < sizeof($rows); ++$i)
+        {
+            return strpos($rows, "$ruleName");
+        }
+        return -1;
+    }
+
+    public function findRulePosition($ruleFile, $ruleName){
+
+        if ($this->ruleFileExists($ruleFile)) {
+            $txt = file_get_contents($this->rulesdir . $ruleFile);
+            $text = "rule: " . $ruleName;
+            $position = false; // default case
+
+            $sectionRules = $this->splitRules($txt);
+            foreach ($sectionRules as $key => $value) {
+                $pos = strpos($value, $ruleName);
+                if ($pos !== false) {
+                    $position = intval($key);
+                    break;
+                }
+            }
+            return $position;
+        }
+    }
+
 
     public function changeRuleStatus($rule, $active) {
         $rows = explode("\n", $rule);

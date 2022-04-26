@@ -1050,12 +1050,24 @@ class Badges extends Module
 
     public static function editBadge($achievement, $courseId)
     {
+        $course = Course::getCourse($courseId, false);
+        $badge = new Badges();
+
         $originalBadge = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'id' => $achievement['id']], "*");
         $originalName = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'id' => $achievement['id']], "name");
 
         $originalCount1 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $achievement['id'], "number" => 1], "goal");
         $originalCount2 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $achievement['id'], "number" => 2], "goal");
         $originalCount3 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $achievement['id'], "number" => 3], "goal");
+
+        $originalLvls =  array();
+        if ( !empty($originalCount2) ){
+            array_push($originalLvls, $originalCount1, $originalCount2, $originalCount3);
+        }
+        else{
+            array_push($originalLvls, $originalCount1);
+        }
+
 
         if(!empty($originalBadge)){
             $maxLevel = empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
@@ -1110,9 +1122,6 @@ class Badges extends Module
                 }
             }
         }
-        $course = Course::getCourse($courseId, false);
-
-        $badge = new Badges();
 
         // Update Rule Name
         if ($originalName != $achievement["name"])
@@ -1127,12 +1136,12 @@ class Badges extends Module
         if ( !empty($levelCount2) ){
             if ($originalCount1 != $newCount1 )  {
                 array_push($newlvls, $newCount1, $newCount2, $newCount3);
-                $badge->editBadgeRuleLvls($course, $achievement['name'], $newlvls);
+                $badge->editBadgeRuleLvls($course, $achievement['name'],$originalLvls, $newlvls);
             }
         }else{
             if ($originalCount1 != $newCount1 or  $originalCount2 != $newCount2 or $originalCount3 != $newCount3) {
                 array_push($newlvls, $newCount1);
-                $badge->editBadgeRuleLvls($course, $achievement['name'], $newlvls);
+                $badge->editBadgeRuleLvls($course, $achievement['name'],$originalLvls ,$newlvls);
             }
         }
 
@@ -1215,11 +1224,11 @@ class Badges extends Module
         $rs->changeRuleNameInFile($filename, $oldName, $newName);
     }
 
-    public function editBadgeRuleLvls(Course $course, string $badgeName, array $newlvls)
+    public function editBadgeRuleLvls(Course $course, string $badgeName,  array $oldLvls, array $newlvls)
     {
         $rs = new RuleSystem($course);
         $filename = $rs->getFilename(self::ID);
-        $rs->changeRuleLvlsInFile($filename, $badgeName, $newlvls);
+        $rs->changeRuleLvlsInFile($filename, $badgeName, $oldLvls, $newlvls);
 
 
     }
