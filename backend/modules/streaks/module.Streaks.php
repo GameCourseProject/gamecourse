@@ -720,7 +720,13 @@ class Streaks extends Module
     }
 
     public function getStreaksDone($streak, $user): int {
-        $cacheId = 'streaksDone-' . $streak["value"]["id"] . '-' . $user;
+        return intval(Core::$systemDB->select(AwardList::TABLE, ["course" => $this->getCourseId(), "user" => $user, "type" => "streak", "moduleInstance" => $streak["value"]["id"]], "count(*)"));
+    }
+    // getUsersWithStreak
+
+    public function getStreakProgression($streak, $user): int
+    {
+        $cacheId = 'streaksProgression-' . $streak["value"]["id"] . '-' . $user;
         list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
         $autogameIsRunning = Core::$systemDB->select("autogame", ["course" => $this->getCourseId()], "isRunning");
 
@@ -729,17 +735,10 @@ class Streaks extends Module
 
         } else { // calculate
             $streakCounts = intval(Core::$systemDB->select(self::TABLE_PROGRESSION, ["course" => $this->getCourseId(), "user" => $user, "streakId" => $streak["value"]["id"]], "count(*)"));
-            $streaksDone = floor($streakCounts / $streak["value"]["count"]);
-            CacheSystem::store($cacheId, $streaksDone);
-            return $streaksDone;
+            $streakProgression = $streakCounts % $streak["value"]["count"];
+            CacheSystem::store($cacheId, $streakProgression);
+            return $streakProgression;
         }
-    }
-    // getUsersWithStreak
-
-    public function getStreakProgression($streak, $user): int
-    {
-        $streakCounts = intval(Core::$systemDB->select(self::TABLE_PROGRESSION, ["course" => $this->getCourseId(), "user" => $user, "streakId" => $streak["value"]["id"]], "count(*)"));
-        return $streakCounts % $streak["value"]["count"];
     }
 
     public function saveMaxReward($max, $courseId)
