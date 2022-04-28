@@ -7,10 +7,11 @@ use GameCourse\User\User;
 use PDO;
 use PDOException;
 use PHPUnit\Framework\TestCase;
+use TestingUtils;
 
 /**
- * NOTE: only run tests outside the production environment
- *       as it will change the database directly
+ * NOTE: only run tests outside the production environment as
+ *       it might change the database and/or important data
  */
 class DatabaseTest extends TestCase
 {
@@ -20,19 +21,21 @@ class DatabaseTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        Core::database()->cleanDatabase();
+        TestingUtils::setUpBeforeClass();
     }
 
     protected function tearDown(): void
     {
-        Core::database()->deleteAll(User::TABLE_USER);
-        Core::database()->resetAutoIncrement(User::TABLE_USER);
-        Core::database()->resetAutoIncrement(Auth::TABLE_AUTH);
+        // NOTE: try to only clean tables used during tests to improve efficiency;
+        //       don't forget tables with foreign keys will be automatically deleted on cascade
+
+        TestingUtils::cleanTables([User::TABLE_USER]);
+        TestingUtils::resetAutoIncrement([User::TABLE_USER, Auth::TABLE_AUTH]);
     }
 
     public static function tearDownAfterClass(): void
     {
-        Core::database()->cleanDatabase();
+        TestingUtils::tearDownAfterClass();
     }
 
 

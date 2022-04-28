@@ -102,22 +102,24 @@ class Utils
     /**
      * Copies directory's contents to a new location, keeping the
      * same file structure as the original directory.
-     * Option for exceptions that should not be copied.
+     * Option for exceptions that should not be copied and whether
+     * to delete original directory.
      *
      * @example copyDirectory("<path>/dir1/", "<path>/dir2/") --> copies contents of dir1 to dir2
      *
      * @param string $dir
      * @param string $copyTo
      * @param array $exceptions
+     * @param bool $deleteOriginal
      * @return void
      */
-    public static function copyDirectory(string $dir, string $copyTo, array $exceptions = [])
+    public static function copyDirectory(string $dir, string $copyTo, array $exceptions = [], bool $deleteOriginal = false)
     {
         if (in_array(PHP_OS, ["WIN32", "WINNT", "Windows"])) {
             // Change directory separator
             $dir = str_replace("/", "\\", $dir);
             $copyTo = str_replace("/", "\\", $copyTo);
-            shell_exec("xcopy " . $dir . " " . $copyTo . " /E");
+            shell_exec("xcopy " . $dir . " " . $copyTo . " /E /Y");
 
         } elseif (in_array(PHP_OS, ["Linux", "Unix"]))
             shell_exec("cp -R " . $dir . " " . $copyTo);
@@ -130,6 +132,8 @@ class Utils
                 else unlink($exception);
             }
         }
+
+        if ($deleteOriginal) self::deleteDirectory($dir);
     }
 
     /**

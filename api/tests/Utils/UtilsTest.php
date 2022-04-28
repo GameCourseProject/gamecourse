@@ -5,8 +5,8 @@ use Error;
 use PHPUnit\Framework\TestCase;
 
 /**
- * NOTE: only run tests outside the production environment
- *       as it will change the database directly
+ * NOTE: only run tests outside the production environment as
+ *       it might change the database and/or important data
  */
 class UtilsTest extends TestCase
 {
@@ -406,6 +406,72 @@ class UtilsTest extends TestCase
 
         // Clean up
         Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir1");
+        Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir2");
+    }
+
+    /**
+     * @test
+     */
+    public function copyDirectoryDeleteOriginal()
+    {
+        // Given
+        mkdir(ROOT_PATH . "tests/Utils/dir1/dir11", 0777, true);
+        mkdir(ROOT_PATH . "tests/Utils/dir1/dir12", 0777, true);
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/dir11/file1.txt", "");
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/dir11/file2.txt", "");
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/dir12/file3.txt", "");
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/file4.txt", "");
+
+        // When
+        Utils::copyDirectory(ROOT_PATH . "tests/Utils/dir1/", ROOT_PATH . "tests/Utils/dir2/", [], true);
+
+        // Then
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir11"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir12"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir11/file1.txt"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir11/file2.txt"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir12/file3.txt"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/file4.txt"));
+
+        $this->assertFalse(file_exists(ROOT_PATH . "tests/Utils/dir1"));
+
+        // Clean up
+        Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir2");
+    }
+
+    /**
+     * @test
+     */
+    public function copyDirectoryToExistingDirectory()
+    {
+        // Given
+        mkdir(ROOT_PATH . "tests/Utils/dir1/dir11", 0777, true);
+        mkdir(ROOT_PATH . "tests/Utils/dir1/dir12", 0777, true);
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/dir11/file1.txt", "");
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/dir11/file2.txt", "");
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/dir12/file3.txt", "");
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/file4.txt", "");
+        mkdir(ROOT_PATH . "tests/Utils/dir2/dir11", 0777, true);
+        file_put_contents(ROOT_PATH . "tests/Utils/dir2/dir11/file1.txt", "");
+        file_put_contents(ROOT_PATH . "tests/Utils/dir2/dir11/file6.txt", "");
+        file_put_contents(ROOT_PATH . "tests/Utils/dir2/file5.txt", "");
+
+        // When
+        Utils::copyDirectory(ROOT_PATH . "tests/Utils/dir1/", ROOT_PATH . "tests/Utils/dir2/", [], true);
+
+        // Then
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir11"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir12"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir11/file1.txt"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir11/file2.txt"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir11/file6.txt"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/dir12/file3.txt"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/file4.txt"));
+        $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2/file5.txt"));
+
+        // Clean up
         Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir2");
     }
 

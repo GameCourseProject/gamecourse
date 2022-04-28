@@ -13,16 +13,11 @@ class Database
 {
     private static $instance; // singleton
     private $db;
+    private static $dbName;
 
     private function __construct()
     {
-        try {
-            $this->db = new PDO(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD);
-            $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        } catch (PDOException $e) {
-            echo ("Could not connect to database '" . CONNECTION_STRING . "'.\n");
-        }
+        $this->connectToDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD);
     }
 
     public static function get(): Database
@@ -33,8 +28,35 @@ class Database
 
     public function getName(): string
     {
-        preg_match("/dbname=(.+)/", CONNECTION_STRING, $matches);
-        return $matches[1];
+        return self::$dbName;
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------- Testing Environment ---------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Creates a new database (if not already created) for testing
+     * purposes, and initializes it.
+     * This ensures the original database stays untouched while
+     * running tests.
+     *
+     * @return void
+     */
+    public function initForTesting()
+    {
+        // Create database
+        $dbName = $this->getDBNameFromConnection(CONNECTION_STRING_TEST);
+        $this->executeQuery("CREATE DATABASE IF NOT EXISTS " . $dbName . " COLLATE utf8mb4_general_ci;");
+
+        // Connect to database
+        $this->connectToDB(CONNECTION_STRING_TEST, CONNECTION_USERNAME, CONNECTION_PASSWORD);
+
+        // Init database
+        $this->cleanDatabase(true);
+        $sql = file_get_contents(ROOT_PATH . "setup/setup.sql");
+        $this->executeQuery($sql);
     }
 
 
@@ -428,6 +450,30 @@ class Database
                 $this->deleteAll($table);
                 $this->resetAutoIncrement($table);
             }
+        }
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------------- Helpers --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    private function getDBNameFromConnection(string $connection): string
+    {
+        preg_match("/dbname=(.+)/", $connection, $matches);
+        return $matches[1];
+    }
+
+    private function connectToDB(string $dsn, string $username, string $password)
+    {
+        $dbName = $this->getDBNameFromConnection($dsn);
+        try {
+            $this->db = new PDO($dsn, $username, $password);
+            $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            self::$dbName = $dbName;
+
+        } catch (PDOException $e) {
+            echo ("Could not connect to database '" . $dbName . "'.\n");
         }
     }
 }

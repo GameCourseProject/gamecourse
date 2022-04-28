@@ -13,6 +13,7 @@
 
     /** Database Connection */
     const CONNECTION_STRING = 'mysql:host=<DB_HOST>;dbname=<DB_NAME>';
+    const CONNECTION_STRING_TEST = 'mysql:host=localhost;dbname=gamecourse_testing';
     const CONNECTION_USERNAME = '<DB_USER>';
     const CONNECTION_PASSWORD = '<DB_PASSWORD>';
 

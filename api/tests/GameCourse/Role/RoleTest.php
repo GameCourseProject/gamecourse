@@ -8,11 +8,12 @@ use GameCourse\User\Auth;
 use GameCourse\User\User;
 use PDOException;
 use PHPUnit\Framework\TestCase;
+use TestingUtils;
 use Utils\Utils;
 
 /**
- * NOTE: only run tests outside the production environment
- *       as it will change the database directly
+ * NOTE: only run tests outside the production environment as
+ *       it might change the database and/or important data
  */
 class RoleTest extends TestCase
 {
@@ -25,12 +26,7 @@ class RoleTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        Core::database()->cleanDatabase();
-
-        if (file_exists(LOGS_FOLDER)) Utils::deleteDirectory(LOGS_FOLDER);
-        if (file_exists(COURSE_DATA_FOLDER)) Utils::deleteDirectory(COURSE_DATA_FOLDER);
-        Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions", false, ["defaults.py"]);
-        Utils::deleteDirectory(AUTOGAME_FOLDER . "/config", false, ["samples"]);
+        TestingUtils::setUpBeforeClass();
     }
 
     protected function setUp(): void
@@ -65,27 +61,17 @@ class RoleTest extends TestCase
 
     protected function tearDown(): void
     {
-        Core::database()->deleteAll(Course::TABLE_COURSE);
-        Core::database()->deleteAll(User::TABLE_USER);
-        Core::database()->resetAutoIncrement(Course::TABLE_COURSE);
-        Core::database()->resetAutoIncrement(User::TABLE_USER);
-        Core::database()->resetAutoIncrement(Auth::TABLE_AUTH);
-        Core::database()->resetAutoIncrement(Role::TABLE_ROLE);
+        // NOTE: try to only clean tables used during tests to improve efficiency;
+        //       don't forget tables with foreign keys will be automatically deleted on cascade
 
-        if (file_exists(LOGS_FOLDER)) Utils::deleteDirectory(LOGS_FOLDER);
-        if (file_exists(COURSE_DATA_FOLDER)) Utils::deleteDirectory(COURSE_DATA_FOLDER);
-        Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions", false, ["defaults.py"]);
-        Utils::deleteDirectory(AUTOGAME_FOLDER . "/config", false, ["samples"]);
+        TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER]);
+        TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Auth::TABLE_AUTH, Role::TABLE_ROLE]);
+        TestingUtils::cleanFileStructure();
     }
 
     public static function tearDownAfterClass(): void
     {
-        Core::database()->cleanDatabase();
-
-        if (file_exists(LOGS_FOLDER)) Utils::deleteDirectory(LOGS_FOLDER);
-        if (file_exists(COURSE_DATA_FOLDER)) Utils::deleteDirectory(COURSE_DATA_FOLDER);
-        Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions", false, ["defaults.py"]);
-        Utils::deleteDirectory(AUTOGAME_FOLDER . "/config", false, ["samples"]);
+        TestingUtils::tearDownAfterClass();
     }
 
 
