@@ -376,7 +376,11 @@ class VirtualCurrency extends Module
     {
         return intval(Core::$systemDB->select(self::TABLE_WALLET, ["course" => $this->getCourseId(), "user" => $userId], "tokens"));
     }
+    public function getTokensToXP($courseId)
+    {
+        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "tokensToXPRatio");
 
+    }
     public function getUserXP($userId): int
     {
         return intval(Core::$systemDB->select(self::TABLE_XP, ["course" => $this->getCourseId(), "user" => $userId], "xp"));
