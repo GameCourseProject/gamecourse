@@ -828,7 +828,7 @@ class CourseTest extends TestCase
         $this->assertTrue(file_exists(AUTOGAME_FOLDER . "/config/config_" . $course->getId() . ".txt"));
 
         // Check logging
-        $this->assertTrue(file_exists(LOGS_FOLDER . "/log_course_" . $course->getId() . ".txt"));
+        $this->assertTrue(file_exists(LOGS_FOLDER . "/autogame_" . $course->getId() . ".txt"));
     }
 
     /**

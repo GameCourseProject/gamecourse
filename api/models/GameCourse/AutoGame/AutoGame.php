@@ -51,7 +51,7 @@ class AutoGame
 
         // Setup logging
         if (!file_exists(LOGS_FOLDER)) mkdir(LOGS_FOLDER, 0777, true);
-        $logsFile = LOGS_FOLDER . "/log_course_" . $courseId . ".txt";
+        $logsFile = LOGS_FOLDER . "/autogame_" . $courseId . ".txt";
         file_put_contents($logsFile, "");
     }
 
@@ -83,7 +83,7 @@ class AutoGame
         unlink(AUTOGAME_FOLDER . "/config/config_" . $courseId . ".txt");
 
         // Remove logging info
-        unlink(LOGS_FOLDER . "/log_course_" . $courseId . ".txt");
+        unlink(LOGS_FOLDER . "/autogame_" . $courseId . ".txt");
     }
 
     /**
