@@ -38,22 +38,35 @@ class Role
     }
 
     /**
+     * Gets a role name by role ID.
+     *
+     * @param int $roleId
+     * @return string
+     */
+    public static function getRoleName(int $roleId): string
+    {
+        $roleName = Core::database()->select(self::TABLE_ROLE, ["id" => $roleId], "name");
+        if (!$roleName) throw new PDOException("Role with ID = " . $roleId . "' doesn't exist.");
+        return $roleName;
+    }
+
+    /**
      * Gets roles names in a given hierarchy.
      *
      * @example Hierarchy: [
      *                          ["name" => "Teacher"],
-     *                          ["name" => "Student" "children" => [
+     *                          ["name" => "Student", "children" => [
      *                              ["name" => "StudentA"],
      *                              ["name" => "StudentB"]
      *                          ]],
      *                          ["name" => "Watcher"]
      *                     ]
-     *          getRolesNamesByHierarchy($hierarchy) --> ["Teacher", "Student", "StudentA", "StudentB", "Watcher"] (no fixed order)
+     *          getRolesNamesByHierarchy($hierarchy) --> ["Teacher", "StudentA", "StudentB", "Student", "Watcher"]
      *
      * @param array $hierarchy
      * @return array
      */
-    public static function getRolesNamesByHierarchy(array $hierarchy): array
+    public static function getRolesNamesInHierarchy(array $hierarchy): array
     {
         $rolesNames = [];
         self::traverseRoles($hierarchy, function ($role, $parent, $key, $hasChildren, $continue, &...$data) {
@@ -116,7 +129,7 @@ class Role
      *                                                ] (no fixed order)
      *
      * @example Course Roles: Teacher, Student, StudentA, StudentB, Watcher
-     *          getCourseRoles(<courseID>, true, true) --> ["StudentA", "StudentB", "Teacher", "Student", "Watcher"]
+     *          getCourseRoles(<courseID>, true, true) --> ["Teacher", "StudentA", "StudentB", "Student", "Watcher"]
      *
      * @example Course Roles: Teacher, Student, StudentA, StudentB, Watcher
      *          getCourseRoles(<courseID>, false, true) --> [
@@ -166,6 +179,7 @@ class Role
 
     /**
      * Replaces course's roles in the database.
+     * NOTE: it doesn't update roles hierarchy
      *
      * @param int $courseId
      * @param array|null $rolesNames
@@ -181,7 +195,7 @@ class Role
         Core::database()->delete(self::TABLE_ROLE, ["course" => $courseId]);
 
         // Add new roles
-        if ($rolesNames === null) $rolesNames = self::getRolesNamesByHierarchy($hierarchy);
+        if ($rolesNames === null) $rolesNames = self::getRolesNamesInHierarchy($hierarchy);
         foreach ($rolesNames as $roleName) {
             self::addRoleToCourse($courseId, $roleName);
         }
@@ -190,6 +204,7 @@ class Role
     /**
      * Adds a new role to a given course if it isn't already added.
      * Option to pass either landing page name or ID.
+     * NOTE: it doesn't update roles hierarchy
      *
      * @param int $courseId
      * @param string|null $roleName
@@ -209,8 +224,9 @@ class Role
     }
 
     /**
-     * Removes a given role from a course.
+     * Removes a given role from a course, including its children.
      * Option to pass either role name or role ID.
+     * NOTE: it doesn't update roles hierarchy
      *
      * @param int $courseId
      * @param string|null $roleName
@@ -222,10 +238,11 @@ class Role
         if ($roleName === null && $roleId === null)
             throw new Error("Need either role name or ID to add new role to a user.");
 
-        $where = ["course" => $courseId];
-        if ($roleName !== null) $where["name"] = $roleName;
-        if ($roleId !== null) $where["id"] = $roleId;
-        Core::database()->delete(self::TABLE_ROLE, $where);
+        if ($roleName === null) $roleName = self::getRoleName($roleId);
+        $remove = array_merge([$roleName], self::getChildrenNamesOfRole((new Course($courseId))->getRolesHierarchy(), $roleName));
+        foreach ($remove as $roleName) {
+            Core::database()->delete(self::TABLE_ROLE, ["course" => $courseId, "name" => $roleName]);
+        }
     }
 
     /**
@@ -344,6 +361,12 @@ class Role
      */
     public static function setUserRoles(int $userId, int $courseId, array $rolesNames)
     {
+        // Check if roles exist in course
+        foreach ($rolesNames as $roleName) {
+            if (!self::courseHasRole($courseId, $roleName))
+                throw new PDOException("Role with name '" . $roleName . "' doesn't exist in course with ID = " . $courseId . ".");
+        }
+
         // Remove all user roles
         Core::database()->delete(self::TABLE_USER_ROLE, ["id" => $userId, "course" => $courseId]);
 
@@ -367,6 +390,9 @@ class Role
     {
         if ($roleName === null && $roleId === null)
             throw new Error("Need either role name or ID to add new role to a user.");
+
+        if (!self::courseHasRole($courseId, $roleName, $roleId))
+            throw new PDOException("Role with " . ($roleName ? "name '" . $roleName . "'" : "ID = " . $roleId) . " doesn't exist in course with ID = " . $courseId . ".");
 
         if (!self::userHasRole($userId, $courseId, $roleName, $roleId)) {
             if (!$roleId) $roleId = self::getRoleId($roleName, $courseId);
@@ -393,8 +419,13 @@ class Role
         if ($roleName === null && $roleId === null)
             throw new Error("Need either role name or ID to add new role to a user.");
 
-        if (!$roleId) $roleId = self::getRoleId($roleName, $courseId);
-        Core::database()->delete(self::TABLE_USER_ROLE, ["id" => $userId, "course" => $courseId, "role" => $roleId]);
+        if (!$roleName) $roleName = self::getRoleName($roleId);
+        $remove = array_merge([$roleName], self::getChildrenNamesOfRole((new Course($courseId))->getRolesHierarchy(), $roleName));
+
+        foreach ($remove as $roleName) {
+            $roleId = self::getRoleId($roleName, $courseId);
+            Core::database()->delete(self::TABLE_USER_ROLE, ["id" => $userId, "course" => $courseId, "role" => $roleId]);
+        }
     }
 
     /**
@@ -415,6 +446,17 @@ class Role
         if (!$roleId) $roleId = self::getRoleId($roleName, $courseId);
         $where = ["id" => $userId, "course" => $courseId, "role" => $roleId];
         return !empty(Core::database()->select(self::TABLE_USER_ROLE, $where));
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** -------------------- Validations ------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    private static function validateRoleName($roleName)
+    {
+        if (!is_string($roleName) || strpos($roleName, " ") !== false)
+            throw new Error("Role name '" . $roleName . "' is invalid. Role names can't be empty or have white spaces.");
     }
 
 
@@ -465,21 +507,35 @@ class Role
         return $res;
     }
 
-
-    /*** ---------------------------------------------------- ***/
-    /*** -------------------- Validations ------------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-    private static function validateRoleName($roleName)
+    /**
+     * Gets children names of a given role.
+     * Option to pass either role name or role ID.
+     *
+     * @param int $courseId
+     * @param array $hierarchy
+     * @param string|null $roleName
+     * @param int|null $roleId
+     * @return array
+     */
+    public static function getChildrenNamesOfRole(array $hierarchy, string $roleName = null, int $roleId = null): array
     {
-        if (!is_string($roleName) || strpos($roleName, " ") !== false)
-            throw new Error("Role name '" . $roleName . "' is invalid. Role names can't be empty or have white spaces.");
+        if ($roleName === null && $roleId === null)
+            throw new Error("Need either role name or ID to get children of a role.");
+
+        $children = [];
+        if ($roleName === null) $roleName = self::getRoleName($roleId);
+        self::traverseRoles($hierarchy, function ($role, $parent, $key, $hasChildren, $continue, &...$data) use ($roleName) {
+            if ($hasChildren) {
+                if ($role["name"] == $roleName || (in_array($role["name"], $data[0]) && array_key_exists("children", $role))) {
+                    foreach ($role["children"] as $child) {
+                        $data[0][] = $child["name"];
+                    }
+                }
+                $continue(...$data);
+            }
+        }, $children);
+        return $children;
     }
-
-
-    /*** ---------------------------------------------------- ***/
-    /*** ----------------------- Utils ---------------------- ***/
-    /*** ---------------------------------------------------- ***/
 
     /**
      * Parses a role coming from the database to appropriate types.

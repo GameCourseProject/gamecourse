@@ -79,7 +79,7 @@ class XPLevels extends Module
         Event::listen(EventType::STUDENT_REMOVED_FROM_COURSE, function (int $courseId, int $studentId) {
             // NOTE: this event targets cases where the course user only changed roles and
             //       is no longer a student; there's no need for an event when a user is
-            //       completely removed from course, as SQL 'ON DELETE CASCADE' will do
+            //       completely removed from course, as SQL 'ON DELETE CASCADE' will do it
             if ($courseId == $this->course->getId())
                 Core::database()->delete(self::TABLE_XP, ["course" => $courseId, "user" => $studentId]);
         }, self::ID);
