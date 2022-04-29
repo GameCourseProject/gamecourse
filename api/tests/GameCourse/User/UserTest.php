@@ -846,7 +846,7 @@ class UserTest extends TestCase
         $course1 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
             null, null, true, true);
         $course2 = Course::addCourse("Producao de Conteudos Multimedia", "PCM", "2021-2022", "#ffffff",
-            null, null, false, true);
+            null, null, false, false);
 
         // Set a user
         $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
@@ -868,7 +868,7 @@ class UserTest extends TestCase
         $this->assertCount(13, $courses[1]);
         $this->assertEquals(["id" => $course2->getId(), "name" => "Producao de Conteudos Multimedia", "short" => "PCM",
             "year" => "2021-2022", "color" => "#ffffff", "startDate" => null, "endDate" => null, "isActive" => false,
-            "isVisible" => true, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
+            "isVisible" => false, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
             "theme" => null, "landingPage" => null, "lastUpdate" => $courses[1]["lastUpdate"]], $courses[1]);
     }
 
@@ -886,7 +886,7 @@ class UserTest extends TestCase
         $course1 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
             null, null, true, true);
         $course2 = Course::addCourse("Producao de Conteudos Multimedia", "PCM", "2021-2022", "#ffffff",
-            null, null, false, true);
+            null, null, false, false);
 
         // Set a user
         $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
@@ -921,7 +921,7 @@ class UserTest extends TestCase
         $course1 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
             null, null, true, true);
         $course2 = Course::addCourse("Producao de Conteudos Multimedia", "PCM", "2021-2022", "#ffffff",
-            null, null, false, true);
+            null, null, false, false);
 
         // Set a user
         $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
@@ -938,6 +938,111 @@ class UserTest extends TestCase
         $this->assertCount(13, $courses[0]);
         $this->assertEquals(["id" => $course2->getId(), "name" => "Producao de Conteudos Multimedia", "short" => "PCM",
             "year" => "2021-2022", "color" => "#ffffff", "startDate" => null, "endDate" => null, "isActive" => false,
+            "isVisible" => false, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
+            "theme" => null, "landingPage" => null, "lastUpdate" => $courses[0]["lastUpdate"]], $courses[0]);
+    }
+
+    /**
+     * @test
+     */
+    public function getUserVisibleCourses()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set courses
+        $course1 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $course2 = Course::addCourse("Producao de Conteudos Multimedia", "PCM", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        // Set a user
+        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+
+        // Given
+        $course1->addUserToCourse($user->getId(), "Teacher");
+        $course2->addUserToCourse($user->getId(), "Student");
+
+        // When
+        $courses = $user->getCourses(null, true);
+        $this->assertIsArray($courses);
+        $this->assertCount(1, $courses);
+        $this->assertCount(13, $courses[0]);
+        $this->assertEquals(["id" => $course1->getId(), "name" => "Multimedia Content Production", "short" => "MCP",
+            "year" => "2021-2022", "color" => "#ffffff", "startDate" => null, "endDate" => null, "isActive" => true,
+            "isVisible" => true, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
+            "theme" => null, "landingPage" => null, "lastUpdate" => $courses[0]["lastUpdate"]], $courses[0]);
+    }
+
+    /**
+     * @test
+     */
+    public function getUserInvisibleCourses()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set courses
+        $course1 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $course2 = Course::addCourse("Producao de Conteudos Multimedia", "PCM", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        // Set a user
+        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+
+        // Given
+        $course1->addUserToCourse($user->getId(), "Teacher");
+        $course2->addUserToCourse($user->getId(), "Student");
+
+        // When
+        $courses = $user->getCourses(null, false);
+        $this->assertIsArray($courses);
+        $this->assertCount(1, $courses);
+        $this->assertCount(13, $courses[0]);
+        $this->assertEquals(["id" => $course2->getId(), "name" => "Producao de Conteudos Multimedia", "short" => "PCM",
+            "year" => "2021-2022", "color" => "#ffffff", "startDate" => null, "endDate" => null, "isActive" => false,
+            "isVisible" => false, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
+            "theme" => null, "landingPage" => null, "lastUpdate" => $courses[0]["lastUpdate"]], $courses[0]);
+    }
+
+    /**
+     * @test
+     */
+    public function getUserActiveAndVisibleCourses()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set courses
+        $course1 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $course2 = Course::addCourse("Producao de Conteudos Multimedia", "PCM", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        // Set a user
+        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+
+        // Given
+        $course1->addUserToCourse($user->getId(), "Teacher");
+        $course2->addUserToCourse($user->getId(), "Student");
+
+        // When
+        $courses = $user->getCourses(true, true);
+        $this->assertIsArray($courses);
+        $this->assertCount(1, $courses);
+        $this->assertCount(13, $courses[0]);
+        $this->assertEquals(["id" => $course1->getId(), "name" => "Multimedia Content Production", "short" => "MCP",
+            "year" => "2021-2022", "color" => "#ffffff", "startDate" => null, "endDate" => null, "isActive" => true,
             "isVisible" => true, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
             "theme" => null, "landingPage" => null, "lastUpdate" => $courses[0]["lastUpdate"]], $courses[0]);
     }

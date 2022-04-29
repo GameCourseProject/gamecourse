@@ -29,12 +29,13 @@ class UserController
     }
 
     /**
-     * Get list of active courses for logged user.
+     * Get list of active courses for logged user. If logged user
+     * is not an admin, only show visible courses as well.
      */
     public function getLoggedUserActiveCourses()
     {
         $user = Core::getLoggedUser();
-        $userCourses = $user->getCourses(true);
+        $userCourses = $user->getCourses(true, $user->isAdmin() ? null : true);
         API::response(["userActiveCourses" => $userCourses]);
     }
 

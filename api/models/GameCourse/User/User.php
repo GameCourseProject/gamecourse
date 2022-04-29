@@ -263,10 +263,11 @@ class User
         return $admins;
     }
 
-    public function getCourses(?bool $active = null): array
+    public function getCourses(?bool $active = null, ?bool $visible = null): array
     {
         $where = ["cu.id" => $this->id];
         if ($active !== null) $where["c.isActive"] = $active;
+        if ($visible !== null) $where["c.isVisible"] = $visible;
         $courses = Core::database()->selectMultiple(
             CourseUser::TABLE_COURSE_USER . " cu JOIN " . Course::TABLE_COURSE . " c on cu.course=c.id",
             $where,
