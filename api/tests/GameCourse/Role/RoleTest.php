@@ -9,7 +9,6 @@ use GameCourse\User\User;
 use PDOException;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
-use Utils\Utils;
 
 /**
  * NOTE: only run tests outside the production environment as
@@ -26,7 +25,7 @@ class RoleTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        TestingUtils::setUpBeforeClass();
+        TestingUtils::setUpBeforeClass(false, ["CronJob"]);
     }
 
     protected function setUp(): void

@@ -9,8 +9,8 @@ use GameCourse\Role\Role;
 use GameCourse\User\Auth;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
-use Monolog\Test\TestCase;
 use PDOException;
+use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Utils\Utils;
 
@@ -26,7 +26,7 @@ class CourseTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        TestingUtils::setUpBeforeClass(true);
+        TestingUtils::setUpBeforeClass(true, ["CronJob"]);
     }
 
     protected function setUp(): void
@@ -598,7 +598,7 @@ class CourseTest extends TestCase
     public function setActive()
     {
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
-            null, null, true, false);
+            null, null, false, false);
         $course->setActive(true);
         $this->assertTrue($course->isActive());
     }

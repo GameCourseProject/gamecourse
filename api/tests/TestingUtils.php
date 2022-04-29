@@ -1,7 +1,6 @@
 <?php
 
 use GameCourse\Core\Core;
-use GameCourse\Course\Course;
 use GameCourse\Module\Module;
 use Utils\Utils;
 
@@ -11,7 +10,11 @@ use Utils\Utils;
  */
 class TestingUtils
 {
-    public static function setUpBeforeClass(bool $setupModules = false)
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------- Setup & Tear Down ----------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    public static function setUpBeforeClass(bool $setupModules = false, array $mocks = [])
     {
         // Clean all tables in the database
         Core::database()->cleanDatabase();
@@ -27,6 +30,12 @@ class TestingUtils
 
         // Clean file structure
         self::cleanFileStructure();
+
+        // Setup Mocks
+        foreach ($mocks as $mock) {
+            $method = "mock" . $mock;
+            self::{$method}();
+        }
     }
 
     public static function tearDownAfterClass()
@@ -42,6 +51,9 @@ class TestingUtils
         if (file_exists(COURSE_DATA_FOLDER . "_copy")) Utils::copyDirectory(COURSE_DATA_FOLDER . "_copy/", COURSE_DATA_FOLDER . "/", [], true);
         Utils::copyDirectory(AUTOGAME_FOLDER . "/imported-functions_copy/", AUTOGAME_FOLDER . "/imported-functions/", [], true);
         Utils::copyDirectory(AUTOGAME_FOLDER . "/config_copy/", AUTOGAME_FOLDER . "/config/", [], true);
+
+        // Remove Mocks
+        Mockery::close();
     }
 
     public static function cleanFileStructure()
@@ -64,5 +76,23 @@ class TestingUtils
         foreach ($tables as $table) {
             Core::database()->resetAutoIncrement($table);
         }
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ----------------------- Mocks ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Mock cron jobs so that they don't get created/removed.
+     *
+     * @return void
+     */
+    private static function mockCronJob()
+    {
+        Mockery::mock("overload:Utils\CronJob", [
+            "__construct" => null,
+            "removeCronJob" => null,
+        ]);
     }
 }
