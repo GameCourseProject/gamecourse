@@ -5,6 +5,7 @@ use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use Monolog\Test\TestCase;
 use TestingUtils;
+use Throwable;
 
 /**
  * NOTE: only run tests outside the production environment as
@@ -40,6 +41,12 @@ class AutoGameTest extends TestCase
         TestingUtils::cleanTables([AutoGame::TABLE_AUTOGAME]);
         TestingUtils::resetAutoIncrement([AutoGame::TABLE_AUTOGAME]);
         TestingUtils::cleanFileStructure();
+    }
+
+    protected function onNotSuccessfulTest(Throwable $t): void
+    {
+        $this->tearDown();
+        parent::onNotSuccessfulTest($t);
     }
 
     public static function tearDownAfterClass(): void

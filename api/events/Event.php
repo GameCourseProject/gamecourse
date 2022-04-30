@@ -39,8 +39,10 @@ class Event
      */
     public static function trigger(int $type, ...$args)
     {
-        foreach (self::$events[$type] as $id => $callback) {
-            $callback($args);
+        if (isset(self::$events[$type])) {
+            foreach (self::$events[$type] as $id => $callback) {
+                $callback($args);
+            }
         }
     }
 

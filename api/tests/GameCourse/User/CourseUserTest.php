@@ -9,6 +9,7 @@ use GameCourse\Role\Role;
 use PDOException;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
+use Throwable;
 
 /**
  * NOTE: only run tests outside the production environment as
@@ -56,6 +57,12 @@ class CourseUserTest extends TestCase
         TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER]);
         TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Auth::TABLE_AUTH, Role::TABLE_ROLE]);
         TestingUtils::cleanFileStructure();
+    }
+
+    protected function onNotSuccessfulTest(Throwable $t): void
+    {
+        $this->tearDown();
+        parent::onNotSuccessfulTest($t);
     }
 
     public static function tearDownAfterClass(): void

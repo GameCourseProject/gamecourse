@@ -2,6 +2,8 @@
 namespace GameCourse\Role;
 
 use Error;
+use Event\Event;
+use Event\EventType;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Views\Page;
@@ -401,6 +403,11 @@ class Role
                 "course" => $courseId,
                 "role" => $roleId
             ]);
+
+            // Trigger student added event
+            if (!$roleName) $roleName = Role::getRoleName($roleId);
+            if ($roleName == "Student")
+                Event::trigger(EventType::STUDENT_ADDED_TO_COURSE, $courseId, $userId);
         }
     }
 
@@ -426,6 +433,10 @@ class Role
             $roleId = self::getRoleId($roleName, $courseId);
             Core::database()->delete(self::TABLE_USER_ROLE, ["id" => $userId, "course" => $courseId, "role" => $roleId]);
         }
+
+        // Trigger student removed event
+        if ($roleName == "Student")
+            Event::trigger(EventType::STUDENT_REMOVED_FROM_COURSE, $courseId, $userId);
     }
 
     /**

@@ -6,6 +6,7 @@ use Event\EventType;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
+use GameCourse\Module\ModuleType;
 
 /**
  * This is the XP & Levels module, which serves as a compartimentalized
@@ -31,7 +32,7 @@ class XPLevels extends Module
     const ID = "XPLevels";  // NOTE: must match the name of the class
     const NAME = "XP & Levels";
     const DESCRIPTION = "Enables user vocabulary to use the terms xp and points to use around the course.";
-    const TYPE = "GameElement";
+    const TYPE = ModuleType::GAME_ELEMENT;
 
     const VERSION = "2.2.0";                                     // Current module version
     const PROJECT_VERSION = ["min" => "2.2", "max" => null];     // Min/max versions of project for module to work

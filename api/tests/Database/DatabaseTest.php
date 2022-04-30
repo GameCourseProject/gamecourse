@@ -8,6 +8,7 @@ use PDO;
 use PDOException;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
+use Throwable;
 
 /**
  * NOTE: only run tests outside the production environment as
@@ -31,6 +32,12 @@ class DatabaseTest extends TestCase
 
         TestingUtils::cleanTables([User::TABLE_USER]);
         TestingUtils::resetAutoIncrement([User::TABLE_USER, Auth::TABLE_AUTH]);
+    }
+
+    protected function onNotSuccessfulTest(Throwable $t): void
+    {
+        $this->tearDown();
+        parent::onNotSuccessfulTest($t);
     }
 
     public static function tearDownAfterClass(): void
