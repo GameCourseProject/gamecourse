@@ -5,7 +5,6 @@ use Error;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
-use GameCourse\Module\XPLevels;
 use GameCourse\Role\Role;
 use GameCourse\User\Auth;
 use GameCourse\User\CourseUser;
@@ -317,6 +316,7 @@ class Course
 
         // Prepare AutoGame
         AutoGame::initAutoGame($id, $name, $dataFolder);
+        if ($isActive) AutoGame::setAutoGame($id, true);
 
         return $course;
     }
@@ -790,7 +790,7 @@ class Course
      * Returns the nr. of courses imported.
      *
      * NOTE: Can't have two courses with same pair name/year as they
-     *       will be rewritten
+     *       will be overwritten
      *
      * @param string $contents
      * @param bool $replace
