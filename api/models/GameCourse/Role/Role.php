@@ -522,7 +522,6 @@ class Role
      * Gets children names of a given role.
      * Option to pass either role name or role ID.
      *
-     * @param int $courseId
      * @param array $hierarchy
      * @param string|null $roleName
      * @param int|null $roleId

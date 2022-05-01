@@ -205,7 +205,7 @@ abstract class Module
         // Check dependencies
         if ($isEnabled) {
             // Check dependencies of module are enabled
-            $hardDependencies = $this->getDependencies("hard");
+            $hardDependencies = $this->getDependencies(DependencyMode::HARD);
             foreach ($hardDependencies as $dependency) {
                 $depModule = self::getModuleById($dependency["id"]);
                 if (!$depModule->isEnabled())
@@ -214,7 +214,7 @@ abstract class Module
 
         } else {
             // Check there's no modules depending on it
-            $dependants = $this->getDependants("hard");
+            $dependants = $this->getDependants(DependencyMode::HARD);
             if (count($dependants) > 0)
                 throw new Error("Can't disable module '" . $this->id . "' as module '" . $dependants[0]["id"] . "' depends on it.");
         }
@@ -322,8 +322,9 @@ abstract class Module
             "minAPIVersion" => $APICompatibility["min"],
             "maxAPIVersion" => $APICompatibility["max"]
         ]);
-        self::setDependencies($id, $dependencies);
-        return Module::getModuleById($id);
+        $module = Module::getModuleById($id);
+        $module->setDependencies($dependencies);
+        return $module;
     }
 
     /**
@@ -368,22 +369,22 @@ abstract class Module
         return Core::database()->selectMultiple(self::TABLE_MODULE_DEPENDENCY, $where, $field, "id");
     }
 
-    public static function setDependencies(string $moduleId, array $dependencies)
+    public function setDependencies(array $dependencies)
     {
         // Remove all module dependencies
-        Core::database()->delete(self::TABLE_MODULE_DEPENDENCY, ["module" => $moduleId]);
+        Core::database()->delete(self::TABLE_MODULE_DEPENDENCY, ["module" => $this->getId()]);
 
         // Add new dependencies
         foreach ($dependencies as $dependency) {
-            self::addDependency($moduleId, $dependency);
+            $this->addDependency($dependency);
         }
     }
 
-    public static function addDependency(string $moduleId, array $dependency)
+    public function addDependency(array $dependency)
     {
-        if (!self::hasDependency($moduleId, $dependency["id"])) {
+        if (!$this->hasDependency($dependency["id"])) {
             Core::database()->insert(self::TABLE_MODULE_DEPENDENCY, [
-                "module" => $moduleId,
+                "module" => $this->getId(),
                 "dependency" => $dependency["id"],
                 "minDependencyVersion" => $dependency["minVersion"],
                 "maxDependencyVersion" => $dependency["maxVersion"],
@@ -392,14 +393,21 @@ abstract class Module
         }
     }
 
-    public static function removeDependency(string $moduleId, string $dependencyId)
+    public function removeDependency(string $dependencyId)
     {
-        Core::database()->delete(self::TABLE_MODULE_DEPENDENCY, ["module" => $moduleId, "dependency" => $dependencyId]);
+        Core::database()->delete(self::TABLE_MODULE_DEPENDENCY, ["module" => $this->getId(), "dependency" => $dependencyId]);
     }
 
-    public static function hasDependency(string $moduleId, string $dependencyId): bool
+    public function hasDependency(string $dependencyId): bool
     {
-        return !empty(Core::database()->select(self::TABLE_MODULE_DEPENDENCY, ["module" => $moduleId, "dependency" => $dependencyId]));
+        return !empty(Core::database()->select(self::TABLE_MODULE_DEPENDENCY, ["module" => $this->getId(), "dependency" => $dependencyId]));
+    }
+
+    public function checkDependency(string $dependencyId)
+    {
+        $module = Module::getModuleById($dependencyId, $this->course);
+        if (!$module) throw new Error("Module '" . $dependencyId . "' doesn't exist in the system.");
+        if (!$module->isEnabled()) throw new Error("Module '" . $dependencyId . "' is not enabled.");
     }
 
 
@@ -481,6 +489,115 @@ abstract class Module
     protected function removeEvents()
     {
         Event::stopAll($this->getId());
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------ Configuration ------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Whether the module has a configuration page.
+     *
+     * @return bool
+     */
+    protected function isConfigurable(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Whether the module has inputs to configure general attributes
+     * in its configuration page.
+     *
+     * @return bool
+     */
+    protected function hasGeneralInputs(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Gets general inputs to show on configuration page where each
+     * input has:
+     *  - id: unique ID
+     *  - label: label to show
+     *  - type: type of input (check Config/InputType.php for more info)
+     *  - options?: list of options (check Config/InputType.php for more info)
+     *  - value: current value
+     * @return array
+     */
+    protected function getGeneralInputs(): array
+    {
+        return [];
+    }
+
+    /**
+     * Updates general inputs.
+     *
+     * @param array $inputs
+     * @return mixed
+     */
+    protected function saveGeneralInputs(array $inputs)
+    {
+    }
+
+    /**
+     * Whether the module has a list of items in its configuration page.
+     *
+     * @return bool
+     */
+    protected function hasListingItems(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Gets listing info to show on configuration page where info has:
+     *  - listName: name of the list
+     *  - itemName: name for an item of the list
+     *  - listInfo: information for every collumn
+     *  - actions?: actions available for items (check Config/Action.php for more info)
+     *  - items: items of the list
+     *  - edit?: information for editing items
+     * @return array
+     */
+    protected function getListingItems(): array
+    {
+        return [];
+    }
+
+    /**
+     * Updates listing item.
+     *
+     * @param string $action
+     * @param array $item
+     * @return mixed
+     */
+    protected function saveListingItem(string $action, array $item)
+    {
+    }
+
+    /**
+     * Whether the module has a personalized section in its configuration page.
+     *
+     * @return bool
+     */
+    protected function hasPersonalizedConfig(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Gets module personalized configuration info like:
+     *  - HTML to render
+     *  - Styles it might have (css format)
+     *  - Scripts it might have
+     * @return array
+     */
+    protected function getPersonalizedConfig(): array
+    {
+        return [];
     }
 
 

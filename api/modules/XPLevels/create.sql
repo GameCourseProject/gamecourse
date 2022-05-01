@@ -1,11 +1,12 @@
 CREATE TABLE IF NOT EXISTS level(
     id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
-    number                      int NOT NULL,
     course                      int unsigned NOT NULL,
+    number                      int NOT NULL,
     goal                        int NOT NULL,
-    description                 varchar(200),
+    title                       varchar(200),
 
     UNIQUE key(number, course),
+    UNIQUE key(goal, course),
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 

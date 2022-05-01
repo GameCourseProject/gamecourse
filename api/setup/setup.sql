@@ -105,7 +105,7 @@ CREATE TABLE module_dependency(
     dependency                  varchar(50) NOT NULL,
     minDependencyVersion        varchar(10) NOT NULL,
     maxDependencyVersion        varchar(10),
-    mode                        ENUM ('hard', 'soft') NOT NULL,  -- Hard: mandatory to work; Soft: some features might not work
+    mode                        ENUM ('hard', 'soft') NOT NULL,
 
     PRIMARY key(module, dependency),
     FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE,
