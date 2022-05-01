@@ -798,9 +798,6 @@ class Course
      */
     public static function importCourses(string $contents, bool $replace = true): int
     {
-        $nrCoursesImported = 0;
-        if (empty($contents)) return $nrCoursesImported;
-
         // Create a temporary folder to work with
         $tempFolder = ROOT_PATH . "temp/" . time();
         mkdir($tempFolder, 0777, true);
@@ -814,90 +811,64 @@ class Course
         $zip->close();
         unlink($zipPath);
 
-        $file = $tempFolder . "/courses.csv";
-        if (empty($file)) return $nrCoursesImported;
-        $separator = Utils::detectSeparator($file);
+        // Import courses
+        $file = file_get_contents($tempFolder . "/courses.csv");
+        $nrCoursesImported = Utils::importFromCSV(self::HEADERS, function ($course, $indexes) use ($tempFolder, $replace) {
+            $nrCoursesImported = 0;
 
-        // NOTE: this order must match the order in the file
-        $headers = self::HEADERS;
+            $name = $course[$indexes["name"]];
+            $short = $course[$indexes["short"]];
+            $color = $course[$indexes["color"]];
+            $year = $course[$indexes["year"]];
+            $startDate = $course[$indexes["startDate"]];
+            $endDate = $course[$indexes["endDate"]];
+            $landingPage = $course[$indexes["landingPage"]];
+            $isActive = $course[$indexes["isActive"]];
+            $isVisible = $course[$indexes["isVisible"]];
+            $roleHierarchy = $course[$indexes["roleHierarchy"]];
+            $theme = $course[$indexes["theme"]];
 
-        $nameIndex = array_search("name", $headers);
-        $shortIndex = array_search("short", $headers);
-        $colorIndex = array_search("color", $headers);
-        $yearIndex = array_search("year", $headers);
-        $startDateIndex = array_search("startDate", $headers);
-        $endDateIndex = array_search("endDate", $headers);
-        $landingPageIndex = array_search("landingPage", $headers);
-        $isActiveIndex = array_search("isActive", $headers);
-        $isVisibleIndex = array_search("isVisible", $headers);
-        $roleHierarchyIndex = array_search("roleHierarchy", $headers);
-        $themeIndex = array_search("theme", $headers);
-
-        // Filter empty lines
-        $lines = array_filter(explode("\n", $file), function ($line) { return !empty($line); });
-
-        if (count($lines) > 0) {
-            // Check whether 1st line holds headers and ignore them
-            $firstLine = array_map('trim', explode($separator, trim($lines[0])));
-            if (in_array($headers[0], $firstLine)) array_shift($lines);
-
-            // Import each course
-            foreach ($lines as $line) {
-                $course = array_map('trim', explode($separator, trim($line)));
-
-                $name = $course[$nameIndex];
-                $short = $course[$shortIndex];
-                $color = $course[$colorIndex];
-                $year = $course[$yearIndex];
-                $startDate = $course[$startDateIndex];
-                $endDate = $course[$endDateIndex];
-                $landingPage = $course[$landingPageIndex];
-                $isActive = $course[$isActiveIndex];
-                $isVisible = $course[$isVisibleIndex];
-                $roleHierarchy = $course[$roleHierarchyIndex];
-                $theme = $course[$themeIndex];
-
-                $mode = null;
-                $course = self::getCourseByNameAndYear($name, $year);
-                if ($course) {  // course already exists
-                    if ($replace) { // replace
-                        $mode = "update";
-                        $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
-                        $course->setTheme($theme);
-                    }
-
-                } else {  // course doesn't exist
-                    $mode = "create";
-                    $course = self::addCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
+            $mode = null;
+            $course = self::getCourseByNameAndYear($name, $year);
+            if ($course) {  // course already exists
+                if ($replace) { // replace
+                    $mode = "update";
+                    $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
                     $course->setTheme($theme);
-                    $nrCoursesImported++;
                 }
 
-                // Create or update course information
-                if ($mode) {
-                    // Import course data
-                    $zipCourseFolder = $tempFolder . "/" . Utils::swapNonENChars($name) . " (" . $year . ")";
-                    $dataFolder = $course->getDataFolder(true, $name);
-                    if ($mode == "update") self::removeDataFolder($course->getId(), $name);
-                    Utils::copyDirectory($zipCourseFolder . "/", $dataFolder . "/", ["rules/data", "autogame"]);
-
-                    // Import roles
-                    $course->setRolesHierarchy(json_decode($roleHierarchy, true));
-                    $course->setRoles(null, $roleHierarchy);
-
-                    // Import modules
-                    // TODO: copy modules enabled and data
-
-                    // Import views
-                    // TODO: default landing page, roles landingPages (copy pages and views first)
-
-                    // Import AutoGame info
-                    if ($mode == "update") AutoGame::deleteAutoGameInfo($course->getId());
-                    Utils::copyDirectory($zipCourseFolder . "/autogame/imported-functions/", ROOT_PATH . "autogame/imported-functions/" . $course->getId() . "/");
-                    file_put_contents(AUTOGAME_FOLDER . "/config/config_" . $course->getId() . ".txt", file_get_contents($zipCourseFolder . "/autogame/config.txt"));
-                }
+            } else {  // course doesn't exist
+                $mode = "create";
+                $course = self::addCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
+                $course->setTheme($theme);
+                $nrCoursesImported++;
             }
-        }
+
+            // Create or update course information
+            if ($mode) {
+                // Import course data
+                $zipCourseFolder = $tempFolder . "/" . Utils::swapNonENChars($name) . " (" . $year . ")";
+                $dataFolder = $course->getDataFolder(true, $name);
+                if ($mode == "update") self::removeDataFolder($course->getId(), $name);
+                Utils::copyDirectory($zipCourseFolder . "/", $dataFolder . "/", ["rules/data", "autogame"]);
+
+                // Import roles
+                $course->setRolesHierarchy(json_decode($roleHierarchy, true));
+                $course->setRoles(null, $roleHierarchy);
+
+                // Import modules
+                // TODO: copy modules enabled and data
+
+                // Import views
+                // TODO: default landing page, roles landingPages (copy pages and views first)
+
+                // Import AutoGame info
+                if ($mode == "update") AutoGame::deleteAutoGameInfo($course->getId());
+                Utils::copyDirectory($zipCourseFolder . "/autogame/imported-functions/", ROOT_PATH . "autogame/imported-functions/" . $course->getId() . "/");
+                file_put_contents(AUTOGAME_FOLDER . "/config/config_" . $course->getId() . ".txt", file_get_contents($zipCourseFolder . "/autogame/config.txt"));
+            }
+            return $nrCoursesImported;
+        }, $file);
 
         // Remove temporary folder
         Utils::deleteDirectory($tempFolder);
@@ -917,8 +888,6 @@ class Course
     public static function exportCourses(): string
     {
         $courses = self::getCourses();
-        $len = count($courses);
-        $separator = ",";
 
         // Create a temporary folder to work with
         $tempFolder = ROOT_PATH . "temp/" . time();
@@ -931,20 +900,15 @@ class Course
         if (!$zip->open($zipPath, ZipArchive::CREATE))
             throw new Error("Failed to create zip archive.");
 
-        // Add headers
-        $file = join($separator, self::HEADERS) . "\n";
-
-        // Add each course
-        foreach ($courses as $i => $course) {
-            // Add .csv file
-            // NOTE: this order must match the headers order
-            $courseInfo = [$course["name"], $course["short"], $course["color"], $course["year"], $course["startDate"],
+        // Add .csv file
+        $zip->addFromString("courses.csv", Utils::exportToCSV($courses, function ($course) {
+            return [$course["name"], $course["short"], $course["color"], $course["year"], $course["startDate"],
                 $course["endDate"], $course["landingPage"], +$course["isActive"], +$course["isVisible"], $course["roleHierarchy"],
                 $course["theme"]];
-            $file .= join($separator, $courseInfo);
-            if ($i != $len - 1) $file .= "\n";
-            $zip->addFromString("courses.csv", $file);
+        }, self::HEADERS));
 
+        // Add each course
+        foreach ($courses as $course) {
             // Add course folder
             $courseFolder = Utils::swapNonENChars($course["name"]) . " (" . $course["year"] . ")";
             $zip->addEmptyDir($courseFolder);

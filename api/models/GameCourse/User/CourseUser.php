@@ -350,81 +350,49 @@ class CourseUser extends User
         if (!$course->exists())
             throw new Error("Course with ID = " . $courseId . " doesn't exist.");
 
-        $nrUsersImported = 0;
-        if (empty($file)) return $nrUsersImported;
-        $separator = Utils::detectSeparator($file);
+        return Utils::importFromCSV(array_merge(parent::HEADERS, self::HEADERS), function ($user, $indexes) use ($course, $replace) {
+            $name = $user[$indexes["name"]];
+            $email = $user[$indexes["email"]];
+            $major = $user[$indexes["major"]];
+            $nickname = $user[$indexes["nickname"]];
+            $studentNumber = $user[$indexes["studentNumber"]];
+            $username = $user[$indexes["username"]];
+            $authService = $user[$indexes["authentication_service"]];
+            $isAdmin = $user[$indexes["isAdmin"]];
+            $isActive = $user[$indexes["isActive"]];
+            $isActiveInCourse = $user[$indexes["isActiveInCourse"]];
+            $roles = $user[$indexes["roles"]];
 
-        // NOTE: this order must match the order in the file
-        $headers = array_merge(parent::HEADERS, self::HEADERS);
+            // Add/update user in the system
+            $user = self::getUserByUsername($username) ?? self::getUserByStudentNumber($studentNumber);
+            if ($user) {  // user already exists
+                if ($replace)  // replace
+                    $user = $user->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
 
-        $nameIndex = array_search("name", $headers);
-        $emailIndex = array_search("email", $headers);
-        $majorIndex = array_search("major", $headers);
-        $nicknameIndex = array_search("nickname", $headers);
-        $studentNumberIndex = array_search("studentNumber", $headers);
-        $usernameIndex = array_search("username", $headers);
-        $authServiceIndex = array_search("authentication_service", $headers);
-        $isAdminIndex = array_search("isAdmin", $headers);
-        $isActiveIndex = array_search("isActive", $headers);
-        $isActiveInCourseIndex = array_search("isActiveInCourse", $headers);
-        $rolesIndex = array_search("roles", $headers);
+            } else {  // user doesn't exist
+                $user = User::addUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
+            }
 
-        // Filter empty lines
-        $lines = array_filter(explode("\n", $file), function ($line) { return !empty($line); });
-
-        if (count($lines) > 0) {
-            // Check whether 1st line holds headers and ignore them
-            $firstLine = array_map('trim', explode($separator, trim($lines[0])));
-            if (in_array($headers[0], $firstLine)) array_shift($lines);
-
-            // Import each user
-            foreach ($lines as $line) {
-                $user = array_map('trim', explode($separator, trim($line)));
-
-                $name = $user[$nameIndex];
-                $email = $user[$emailIndex];
-                $major = $user[$majorIndex];
-                $nickname = $user[$nicknameIndex];
-                $studentNumber = $user[$studentNumberIndex];
-                $username = $user[$usernameIndex];
-                $authService = $user[$authServiceIndex];
-                $isAdmin = $user[$isAdminIndex];
-                $isActive = $user[$isActiveIndex];
-                $isActiveInCourse = $user[$isActiveInCourseIndex];
-                $roles = $user[$rolesIndex];
-
-                // Add/update user in the system
-                $user = self::getUserByUsername($username) ?? self::getUserByStudentNumber($studentNumber);
-                if ($user) {  // user already exists
-                    if ($replace)  // replace
-                        $user = $user->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
-
-                } else {  // user doesn't exist
-                    $user = User::addUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
-                }
-
-                // Add/update user in the course
-                $courseUser = new CourseUser($user->getId(), $course);
-                if ($courseUser->exists()) { // user already added to course
-                    if ($replace) { // replace
-                        $courseUser->setLastActivity(null);
-                        $courseUser->setPreviousActivity(null);
-                        $courseUser->setActive($isActiveInCourse);
-                        if ($roles) // set user roles in course
-                            $courseUser->setRoles(array_map("trim", preg_split("/\s+/", $roles)));
-                    }
-
-                } else { // user not yet added to course
-                    $courseUser = $course->addUserToCourse($user->getId());
+            // Add/update user in the course
+            $courseUser = new CourseUser($user->getId(), $course);
+            if ($courseUser->exists()) { // user already added to course
+                if ($replace) { // replace
+                    $courseUser->setLastActivity(null);
+                    $courseUser->setPreviousActivity(null);
                     $courseUser->setActive($isActiveInCourse);
                     if ($roles) // set user roles in course
                         $courseUser->setRoles(array_map("trim", preg_split("/\s+/", $roles)));
-                    $nrUsersImported++;
                 }
-            }
-        }
 
-        return $nrUsersImported;
+            } else { // user not yet added to course
+                $courseUser = $course->addUserToCourse($user->getId());
+                $courseUser->setActive($isActiveInCourse);
+                if ($roles) // set user roles in course
+                    $courseUser->setRoles(array_map("trim", preg_split("/\s+/", $roles)));
+                return 1;
+            }
+            return 0;
+        }, $file);
     }
 
     /**
@@ -439,23 +407,11 @@ class CourseUser extends User
         if (!$course->exists())
             throw new Error("Course with ID = " . $courseId . " doesn't exist.");
 
-        $users = $course->getCourseUsers();
-        $len = count($users);
-        $separator = ",";
-
-        // Add headers
-        $file = join($separator, array_merge(parent::HEADERS, self::HEADERS)) . "\n";
-
-        // Add each student
-        foreach ($users as $i => $user) {
-            // NOTE: this order must match the headers order
-            $userInfo = [$user["name"], $user["email"], $user["major"], $user["nickname"], $user["studentNumber"],
+        return Utils::exportToCSV($course->getCourseUsers(), function ($user) use ($course) {
+            return [$user["name"], $user["email"], $user["major"], $user["nickname"], $user["studentNumber"],
                 $user["username"], $user["authentication_service"], +$user["isAdmin"], +$user["isActive"],
                 +$user["isActiveInCourse"], implode(" ", (new CourseUser($user["id"], $course))->getRoles())];
-            $file .= join($separator, $userInfo);
-            if ($i != $len - 1) $file .= "\n";
-        }
-        return $file;
+        }, array_merge(parent::HEADERS, self::HEADERS));
     }
 
 

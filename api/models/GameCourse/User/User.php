@@ -387,58 +387,28 @@ class User
      */
     public static function importUsers(string $file, bool $replace = true): int
     {
-        $nrUsersImported = 0;
-        if (empty($file)) return $nrUsersImported;
-        $separator = Utils::detectSeparator($file);
+        return Utils::importFromCSV(self::HEADERS, function ($user, $indexes) use ($replace) {
+            $name = $user[$indexes["name"]];
+            $email = $user[$indexes["email"]];
+            $major = $user[$indexes["major"]];
+            $nickname = $user[$indexes["nickname"]];
+            $studentNumber = $user[$indexes["studentNumber"]];
+            $username = $user[$indexes["username"]];
+            $authService = $user[$indexes["authentication_service"]];
+            $isAdmin = $user[$indexes["isAdmin"]];
+            $isActive = $user[$indexes["isActive"]];
 
-        // NOTE: this order must match the order in the file
-        $headers = self::HEADERS;
+            $user = self::getUserByUsername($username) ?? self::getUserByStudentNumber($studentNumber);
+            if ($user) {  // user already exists
+                if ($replace)  // replace
+                    $user->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
 
-        $nameIndex = array_search("name", $headers);
-        $emailIndex = array_search("email", $headers);
-        $majorIndex = array_search("major", $headers);
-        $nicknameIndex = array_search("nickname", $headers);
-        $studentNumberIndex = array_search("studentNumber", $headers);
-        $usernameIndex = array_search("username", $headers);
-        $authServiceIndex = array_search("authentication_service", $headers);
-        $isAdminIndex = array_search("isAdmin", $headers);
-        $isActiveIndex = array_search("isActive", $headers);
-
-        // Filter empty lines
-        $lines = array_filter(explode("\n", $file), function ($line) { return !empty($line); });
-
-        if (count($lines) > 0) {
-            // Check whether 1st line holds headers and ignore them
-            $firstLine = array_map('trim', explode($separator, trim($lines[0])));
-            if (in_array($headers[0], $firstLine)) array_shift($lines);
-
-            // Import each user
-            foreach ($lines as $line) {
-                $user = array_map('trim', explode($separator, trim($line)));
-
-                $name = $user[$nameIndex];
-                $email = $user[$emailIndex];
-                $major = $user[$majorIndex];
-                $nickname = $user[$nicknameIndex];
-                $studentNumber = $user[$studentNumberIndex];
-                $username = $user[$usernameIndex];
-                $authService = $user[$authServiceIndex];
-                $isAdmin = $user[$isAdminIndex];
-                $isActive = $user[$isActiveIndex];
-
-                $user = self::getUserByUsername($username) ?? self::getUserByStudentNumber($studentNumber);
-                if ($user) {  // user already exists
-                    if ($replace)  // replace
-                        $user->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
-
-                } else {  // user doesn't exist
-                    User::addUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
-                    $nrUsersImported++;
-                }
+            } else {  // user doesn't exist
+                User::addUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
+                return 1;
             }
-        }
-
-        return $nrUsersImported;
+            return 0;
+        }, $file);
     }
 
     /**
@@ -448,22 +418,13 @@ class User
      */
     public static function exportUsers(): string
     {
-        $users = self::getUsers();
-        $len = count($users);
-        $separator = ",";
-
-        // Add headers
-        $file = join($separator, self::HEADERS) . "\n";
-
-        // Add each student
-        foreach ($users as $i => $user) {
-            // NOTE: this order must match the headers order
-            $userInfo = [$user["name"], $user["email"], $user["major"], $user["nickname"], $user["studentNumber"], $user["username"],
-                $user["authentication_service"], +$user["isAdmin"], +$user["isActive"]];
-            $file .= join($separator, $userInfo);
-            if ($i != $len - 1) $file .= "\n";
-        }
-        return $file;
+        return Utils::exportToCSV(
+            self::getUsers(),
+            function ($user) {
+                return [$user["name"], $user["email"], $user["major"], $user["nickname"], $user["studentNumber"], $user["username"],
+                    $user["authentication_service"], +$user["isAdmin"], +$user["isActive"]];
+            },
+            self::HEADERS);
     }
 
 

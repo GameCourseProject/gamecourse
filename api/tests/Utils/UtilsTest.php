@@ -713,6 +713,97 @@ class UtilsTest extends TestCase
     /**
      * @test
      */
+    public function importFromCSVWithHeader()
+    {
+        // Given
+        $headers = ["Header #1", "Header #2", "Header #3"];
+        $file = implode(", ", $headers) . "\n";
+        $file .= "Item 11, Item12, Item13\n";
+        $file .= "Item 21, Item22, Item23\n";
+        $file .= "Item 31, Item32, Item33";
+
+        // Then
+        $nrItemsImported = Utils::importFromCSV($headers, function ($item, $indexes) use ($headers) {
+            $this->assertIsArray($indexes);
+            $this->assertSameSize($headers, $indexes);
+            $this->assertEquals(0, $indexes[$headers[0]]);
+            $this->assertEquals(1, $indexes[$headers[1]]);
+            $this->assertEquals(2, $indexes[$headers[2]]);
+            return 1;
+        }, $file);
+        $this->assertEquals(3, $nrItemsImported);
+    }
+
+    /**
+     * @test
+     */
+    public function importFromCSVWithoutHeader()
+    {
+        // Given
+        $headers = ["Header #1", "Header #2", "Header #3"];
+        $file  = "Item 11, Item12, Item13\n";
+        $file .= "Item 21, Item22, Item23\n";
+        $file .= "Item 31, Item32, Item33";
+
+        // Then
+        $nrItemsImported = Utils::importFromCSV($headers, function ($item, $indexes) use ($headers) {
+            $this->assertIsArray($indexes);
+            $this->assertSameSize($headers, $indexes);
+            $this->assertEquals(0, $indexes[$headers[0]]);
+            $this->assertEquals(1, $indexes[$headers[1]]);
+            $this->assertEquals(2, $indexes[$headers[2]]);
+            return 1;
+        }, $file);
+        $this->assertEquals(3, $nrItemsImported);
+    }
+
+    /**
+     * @test
+     */
+    public function importFromCSVEmpty()
+    {
+        // Given
+        $headers = ["Header #1", "Header #2", "Header #3"];
+        $file = "";
+
+        // Then
+        $nrItemsImported = Utils::importFromCSV($headers, function ($item, $indexes) use ($headers) {
+            $this->assertIsArray($indexes);
+            $this->assertSameSize($headers, $indexes);
+            $this->assertEquals(0, $indexes[$headers[0]]);
+            $this->assertEquals(1, $indexes[$headers[1]]);
+            $this->assertEquals(2, $indexes[$headers[2]]);
+            return 1;
+        }, $file);
+        $this->assertEquals(0, $nrItemsImported);
+    }
+
+
+    /**
+     * @test
+     */
+    public function exportToCSVWithHeader()
+    {
+        // Given
+        $headers = ["Header #1", "Header #2", "Header #3"];
+
+        // When
+        $file = Utils::exportToCSV([
+            ["Header #1" => "Item 11", "Header #2" => "Item 12", "Header #3" => "Item 13"],
+            ["Header #1" => "Item 21", "Header #2" => "Item 22", "Header #3" => "Item 23"],
+            ["Header #1" => "Item 31", "Header #2" => "Item 32", "Header #3" => "Item 33"],
+            ],
+            function ($item) { return [$item["Header #1"], $item["Header #2"], $item["Header #3"]]; },
+            $headers);
+
+        // Then
+        $this->assertEquals("Header #1,Header #2,Header #3\nItem 11,Item 12,Item 13\nItem 21,Item 22,Item 23\nItem 31,Item 32,Item 33", $file);
+    }
+
+
+    /**
+     * @test
+     */
     public function detectSeparatorComma()
     {
         $file = "name,email,major,nickname,studentNumber,username,authentication_service,isAdmin,isActive\n";

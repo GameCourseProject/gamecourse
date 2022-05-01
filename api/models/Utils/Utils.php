@@ -294,6 +294,70 @@ class Utils
     /*** ---------------------------------------------------- ***/
 
     /**
+     * Imports items from a .csv file.
+     * Returns the nr. of items imported.
+     * NOTE: headers order must match the order in the file
+     *
+     * @param array|null $headers
+     * @param $import
+     * @param string $file
+     * @return int
+     */
+    public static function importFromCSV(array $headers, $import, string $file): int
+    {
+        $nrItemsImported = 0;
+        if (empty($file)) return $nrItemsImported;
+        $separator = self::detectSeparator($file);
+
+        $indexes = [];
+        foreach ($headers as $i => $header) { $indexes[$header] = $i; }
+
+        // Filter empty lines
+        $lines = array_filter(explode("\n", $file), function ($line) { return !empty($line); });
+
+        if (count($lines) > 0) {
+            // Check whether 1st line holds headers and ignore them
+            $firstLine = array_map('trim', explode($separator, trim($lines[0])));
+            if (in_array($headers[0], $firstLine)) array_shift($lines);
+
+            // Import each item
+            foreach ($lines as $line) {
+                $item = array_map('trim', explode($separator, trim($line)));
+                $nrItemsImported += $import($item, $indexes);
+            }
+        }
+
+        return $nrItemsImported;
+    }
+
+    /**
+     * Exports items into a .csv file.
+     * NOTE: info order must match the headers order
+     *
+     * @param array $items
+     * @param $getInfo
+     * @param array|null $headers
+     * @return string
+     */
+    public static function exportToCSV(array $items, $getInfo, array $headers = null): string
+    {
+        $len = count($items);
+        $separator = ",";
+        $file = "";
+
+        // Add headers
+        if (!empty($headers)) $file .= join($separator, $headers) . "\n";
+
+        // Add each item
+        foreach ($items as $i => $item) {
+            $itemInfo = $getInfo($item);
+            $file .= join($separator, $itemInfo);
+            if ($i != $len - 1) $file .= "\n";
+        }
+        return $file;
+    }
+
+    /**
      * Detects the used separator for a .csv file.
      *
      * @param string $csvFile
