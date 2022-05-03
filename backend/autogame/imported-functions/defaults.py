@@ -211,7 +211,15 @@ def award_streak(target, streak, contributions=None, info=None):
     """
     result = connector.award_streak(target, streak, contributions, info)
     return result
-
+    
+@rule_function
+def award_grader_streak(target, streak, contributions=None, info=None):
+    """
+    Awards a Streak type award called "streak" to "target". The "contributions" parameter should
+    receive the participations that justify the attribution of the streak for a given target.
+    """
+    result = connector.award_grader_streak(target, streak, contributions, info)
+    return result
     
 @rule_function
 def remove_tokens(target, tokens = None, skillName = None, contributions=None):

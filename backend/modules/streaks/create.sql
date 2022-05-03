@@ -5,11 +5,11 @@ create table streaks_config(
 );
 
 create table streak(
-    id 		int unsigned auto_increment primary key,
+    id int unsigned auto_increment primary key,
     name varchar(70) not null,
     course int unsigned not null,
     description  varchar(200) not null,
-    color char(9), /* include the # for the color code */
+    color char(9),
     periodicity int,
     periodicityTime varchar(25),
     count int,
@@ -32,7 +32,7 @@ create table streak_progression(
     participationId 	int unsigned,
     foreign key(course) references course(id) on delete cascade,
     foreign key(user) references game_course_user(id) on delete cascade,
-    foreign key(streakId) references streak(id) on delete cascade,
+    foreign key(streakId) references streak(id) on delete cascade
 );
 
 create table streak_participations(
@@ -43,6 +43,5 @@ create table streak_participations(
     isValid boolean not null default false,
     foreign key(course) references course(id) on delete cascade,
     foreign key(user) references game_course_user(id) on delete cascade,
-    foreign key(streakId) references streak(id) on delete cascade,
+    foreign key(streakId) references streak(id) on delete cascade
 );
-

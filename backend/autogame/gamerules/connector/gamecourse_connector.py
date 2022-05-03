@@ -2032,6 +2032,161 @@ def award_rating_streak(target, streak, rating, contributions=None, info=None):
     cnx.commit()
     cnx.close()
 
+#  logs-> participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
+def award_grader_streak(target, streak, contributions=None, info=None):
+    # -----------------------------------------------------------
+    # Writes and updates 'award' table with streaks won by the
+    # user. Will retract if rules/participations have been
+    # changed.
+    # Is also responsible for creating indicators.
+    # -----------------------------------------------------------
+
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
+
+    course = config.course
+    typeof = "streak"
+
+    nlogs = len(contributions)
+
+    if config.test_mode:
+        awards_table = "award_test"
+    else:
+        awards_table = "award"
+
+    # gets all awards for this user order by descending date (most recent on top)
+    query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description like %s AND type=%s;"
+    streak_name = streak + "%"
+    cursor.execute(query, (target, course, streak_name, typeof))
+    table = cursor.fetchall()
+
+
+    # get streak info
+    query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic from streak where course = %s and name = %s;"
+    cursor.execute(query, (course, streak))
+    table_streak = cursor.fetchall()
+
+    if not config.test_mode:
+        if contributions != None:
+            # contributions = logs = nr of participations as per say like peergrading posts, skill tree posts, ...
+            if len(contributions) > 0:
+                streakid, isCount, isPeriodic  = table_streak[0][0], table_streak[0][6], table_streak[0][7]
+                periodicity, periodicityTime = table_streak[0][1], table_streak[0][2]
+
+                # if isCount inserts all streak participations in the streak_progression.
+                if isCount and not isPeriodic:
+                    if streak.startswith("Grader"):
+                        # contributions - id, timeassigned, expired, ended
+                        size = len(contributions)
+
+                        for i in range(size):
+                            id = contributions[i][0]
+                            expired = contributions[i][2]
+                            ended = contributions[i][3]
+                            if expired == 0:
+                                if ended == 1:
+                                    valid = 1
+                                else:
+                                    valid = 0
+                            else:
+                                valid = 0
+
+                            query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                            cursor.execute(query, (course, target, streakid, id, valid))
+                            cnx.commit()
+
+                        # gets all streak progressions
+                        query = "SELECT * FROM streak_participations where user = %s AND course = %s AND streakId = %s ;"
+                        cursor.execute(query, (target, course, streakid))
+                        table_progressions = cursor.fetchall()
+
+                        isRepeatable = table_streak[0][5]
+                        streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
+
+                        allParticipations = len(table_progressions)
+
+                        countParticipations  = 0
+                        awards = 0
+                        for p in range(allParticipations):
+                            if countParticipations // streak_count  == 1:
+                                awards = awards +1
+                                countParticipations = 0
+
+                            isValid = table_progressions[p][4]
+                            if isValid:
+                                countParticipations = countParticipations + 1
+                            else:
+                                countParticipations = 0
+
+
+                        if awards == len(table):
+                            return
+
+                        toAward = awards - len(table)
+                        # get max reward value for extra credit
+                        query = "SELECT maxBonusReward from badges_config where course = %s;"
+                        cursor.execute(query, (course,))
+                        extra_reward_table = cursor.fetchall()
+                        max_extra_reward = extra_reward_table[0][0]
+
+                        # gets current user extra badge xp
+                        query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and (isExtra = '1') and user=%s;"
+                        cursor.execute(query, (course, "badge", target))
+                        table_badge_extra_xp = cursor.fetchall()
+                        curr_badge_extra_xp = table_badge_extra_xp[0][0]
+                        if curr_badge_extra_xp is None:
+                            curr_badge_extra_xp = 0
+
+                        # gets current user streak xp
+                        query = "SELECT SUM(reward) FROM award WHERE user = %s AND course = %s AND type = %s; "
+                        cursor.execute(query, (target, course, "streak") )
+                        table_streak_xp = cursor.fetchall()
+                        curr_streak_xp = table_streak_xp[0][0]
+                        if curr_streak_xp is None:
+                            curr_streak_xp = 0
+
+                        total_extra_xp = int(curr_badge_extra_xp) + int(curr_streak_xp)
+                        if total_extra_xp >= max_extra_reward:
+                            calculated_reward = 0
+                        elif int(streak_reward) + total_extra_xp > int(max_extra_reward):
+                            calculated_reward = int(max_extra_reward) - int(curr_streak_xp)
+                        else:
+                            calculated_reward = streak_reward
+
+                        if not isRepeatable:
+                            description = streak
+
+                            query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
+                            cursor.execute(query, (target, course, description, typeof, streakid, calculated_reward))
+                            cnx.commit()
+                            cursor = cnx.cursor(prepared=True)
+
+                        else:
+
+                            # inserts in award table the new streaks that have not been awarded
+                            for diff in range(toAward):
+                                repeated_info = " (Repeated for the " + str(len(table) + diff + 1) + ")"
+                                description = streak + repeated_info
+
+                                query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
+                                cursor.execute(query, (target, course, description, typeof, streakid, calculated_reward))
+                                cnx.commit()
+                                cursor = cnx.cursor(prepared=True)
+
+                        if not config.test_mode:
+                            if contributions != None and contributions != None:
+                                nr_contributions = str(len(contributions))
+                            else:
+                                nr_contributions = ''
+
+                            config.award_list.append([str(target), str(streak), str(streak_reward), nr_contributions])
+
+
+    cnx.commit()
+    cnx.close()
+
 
 #  logs-> participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
 def award_streak(target, streak, contributions=None, info=None):
@@ -2902,6 +3057,7 @@ def consecutive_peergrading(target):
     comp  = 'mod_peerforum'
     cursor.execute(query, (comp, target.decode()))
     table = cursor.fetchall()
+
     cnx.close()
 
     return table
