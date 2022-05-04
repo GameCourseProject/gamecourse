@@ -210,6 +210,18 @@ def exclude_worst(logs, last):
 
     return fix
 
+@rule_function
+def compare_exam(total_quiz_grade, exam):
+	"""
+	Will calculate the adjustment for after the exam.
+	Decides between sum of quizzes or exam grade, and calculates adjustment.
+	"""
+	exam_grade = 0
+	if len(exam) == 1:
+		exam_grade = max(int(exam[0].rating) - total_quiz_grade, 0)
+
+	return exam_grade
+
 @rule_effect
 def print_info(text):
         """
