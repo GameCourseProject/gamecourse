@@ -213,6 +213,9 @@ class XPLevels extends Module
      */
     public function getUserXPByType(int $userId, string $type): int
     {
+        if ($type === AwardType::BADGE) return $this->getUserBadgesXP($userId);
+        elseif ($type === AwardType::SKILL) return $this->getUserSkillsXP($userId);
+        elseif ($type === AwardType::STREAK) return $this->getUserStreaksXP($userId);
         return intval(Core::database()->select(Awards::TABLE_AWARD, [
             "course" => $this->course->getId(),
             "user" => $userId,
