@@ -16,6 +16,8 @@ class RuleSystem
     private $tags = array();
 
     private $ruleSeparator = "\n\n#########\n\n";
+    private $changesSeparator = "\n\t\t#CHANGED\n";
+
     const ROOT_FOLDER = SERVER_PATH . "/";
 
 
@@ -218,6 +220,26 @@ class RuleSystem
         }
     }
 
+    // gets complete rule from file
+    public function getRuleContent($ruleFile, $ruleName) {
+
+        if ($this->ruleFileExists($ruleFile)) {
+            $txt = file_get_contents($this->rulesdir . $ruleFile);
+            $text = "rule: " . $ruleName;
+            $ruleContent = false; // default case
+
+            $sectionRules = $this->splitRules($txt);
+            foreach ($sectionRules as $key => $value) {
+                $pos = strpos($value, $ruleName);
+                if ($pos !== false) {
+                    $ruleContent = $value;
+                    break;
+                }
+            }
+            return $ruleContent;
+        }
+    }
+
     public function getTags() {
         $this->tags = array();
         $tags = array();
@@ -310,6 +332,11 @@ class RuleSystem
     public function joinRules($rules) {
         return implode($this->ruleSeparator, $rules);
     }
+
+    public function splitEditedRule($rule) {
+        return explode($this->changesSeparator, $rule);
+    }
+
 
     public function fixPrecedences() {
         // fixes all precedences, eg when a rule is deleted
@@ -492,32 +519,38 @@ class RuleSystem
         if ($this->ruleFileExists($ruleFile)) {
             $txt = file_get_contents($this->rulesdir . $ruleFile);
 
-            // Get lvl = compute_lvl , copy that line to a string
-            // replace that line with:
-            //       '#CHANGES MADE: ' + the copied string + new string with new lvls
-
             $position =  $this->findRulePosition($ruleFile, $ruleName) ;
-            $newName = $ruleName . " --- " . $position;
-            $newTxt = str_replace($ruleName, $newName, $txt);
-            file_put_contents($this->rulesdir . $ruleFile, $newTxt);
+            $rule = $this->getRuleContent($ruleFile, $ruleName);
 
-            /*
             $sectionRules = $this->splitRules($txt);
-            $ruletxt = $sectionRules[intval($position)];
 
-            $editedRule = $this->editRuleLvls($ruletxt, $oldLvls, $newLvls);
-            array_splice($sectionRules, $position + 1, 0, $editedRule);
+            $editedRule = $this->editRuleLvls($rule, $oldLvls, $newLvls);
 
-            $content = $this->joinRules($sectionRules);         */
+            $sectionRules[intval($position)] = $editedRule;
+
+            $content = $this->joinRules($sectionRules);
+            $file = file_put_contents($this->rulesdir . $ruleFile, $content);
 
         }
     }
 
     public function editRuleLvls($rule, $oldLvls, $newLvls){
-        
-        $before = "lvl  = compute_lvl(nlogs, " . "$oldLvls[0]" . ", " .  "$oldLvls[1]" . ", " . "$oldLvls[2]" . ")";
-        $after = "lvl  = compute_lvl(nlogs, " . "$newLvls[0]" . ", " .  "$newLvls[1]" . ", " . "$newLvls[2]" . ")";
-        $changes = "#CHANGED: \n" . "#" . $before . "\n" . $after;
+
+        if (sizeof($oldLvls) == 1) $before = "lvl = compute_lvl(nlogs, " . "$oldLvls[0]" . ")";
+        else if (sizeof($oldLvls) == 3) $before = "lvl = compute_lvl(nlogs, " . "$oldLvls[0]" . ", " . "$oldLvls[1]" . ", " . "$oldLvls[2]" . ")";
+
+        if (sizeof($newLvls) == 1) $after = "lvl = compute_lvl(nlogs, " . "$newLvls[0]" .  ")";
+        else if (sizeof($newLvls) == 3) $after = "lvl = compute_lvl(nlogs, " . "$newLvls[0]" . ", " .  "$newLvls[1]" . ", " . "$newLvls[2]" . ")";
+
+        if (strpos($rule, "#CHANGED") !== false){
+            //  find changesSeparator and remove
+            $sectionRule = $this->splitEditedRule($rule);
+            $sectionRule[1] = "";
+            $rule =  implode($sectionRule);
+            $rule = str_replace($this->changesSeparator,"" ,$rule);
+        }
+
+        $changes = $this->changesSeparator . "\t\t#" . $before . $this->changesSeparator . "\t\t" .$after;
 
         $edited = str_replace($before, $changes, $rule);
 

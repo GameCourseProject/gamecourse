@@ -1060,15 +1060,6 @@ class Badges extends Module
         $originalCount2 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $achievement['id'], "number" => 2], "goal");
         $originalCount3 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $achievement['id'], "number" => 3], "goal");
 
-        $originalLvls =  array();
-        if ( !empty($originalCount2) ){
-            array_push($originalLvls, $originalCount1, $originalCount2, $originalCount3);
-        }
-        else{
-            array_push($originalLvls, $originalCount1);
-        }
-
-
         if(!empty($originalBadge)){
             $maxLevel = empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
             $badgeData = [
@@ -1132,22 +1123,28 @@ class Badges extends Module
         $newCount2 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $achievement['id'], "number" => 2], "goal");
         $newCount3 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $achievement['id'], "number" => 3], "goal");
         $newlvls = array();
+        $originalLvls =  array();
 
-        if ( !empty($levelCount2) ){
-            if ($originalCount1 != $newCount1 )  {
-                array_push($newlvls, $newCount1, $newCount2, $newCount3);
-                $badge->editBadgeRuleLvls($course, $achievement['name'],$originalLvls, $newlvls);
-            }
-        }else{
+        if (!empty($originalCount2)) array_push($originalLvls, $originalCount1, $originalCount2, $originalCount3);
+        else{
+            array_push($originalLvls, $originalCount1);
+        }
+        
+        // assumes badges of either 1 or 3 levels
+        if (!empty($newCount2)){
+            array_push($newlvls, $newCount1, $newCount2, $newCount3);
             if ($originalCount1 != $newCount1 or  $originalCount2 != $newCount2 or $originalCount3 != $newCount3) {
-                array_push($newlvls, $newCount1);
+                $badge->editBadgeRuleLvls($course, $achievement['name'],$originalLvls ,$newlvls);
+            }
+        }
+        else{
+            array_push($newlvls, $newCount1);
+            if ($originalCount1 != $newCount1 ) {
                 $badge->editBadgeRuleLvls($course, $achievement['name'],$originalLvls ,$newlvls);
             }
         }
 
         // Update Rule function
-
-
 
     }
 
