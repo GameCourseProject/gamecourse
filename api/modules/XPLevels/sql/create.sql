@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS user_xp(
     level                       int unsigned NOT NULL,
 
     PRIMARY key (course, user),
-    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
-    FOREIGN key(user) REFERENCES course_user(id) ON DELETE CASCADE,
+    FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
     FOREIGN key(level) REFERENCES level(id)
 );

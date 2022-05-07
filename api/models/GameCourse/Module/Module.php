@@ -434,7 +434,7 @@ abstract class Module
      */
     protected function initDatabase()
     {
-        $sql = file_get_contents(MODULES_FOLDER . "/" . $this->id . "/create.sql");
+        $sql = file_get_contents(MODULES_FOLDER . "/" . $this->id . "/sql/create.sql");
         Core::database()->executeQuery($sql);
     }
 
@@ -468,7 +468,7 @@ abstract class Module
     {
         if (empty(Core::database()->select(self::TABLE_COURSE_MODULE, ["module" => $this->id, "isEnabled" => true]))) {
             // Drop module tables if is not enabled in any course
-            $sql = file_get_contents(MODULES_FOLDER . "/" . $this->id . "/delete.sql");
+            $sql = file_get_contents(MODULES_FOLDER . "/" . $this->id . "/sql/delete.sql");
             Core::database()->executeQuery($sql);
 
         } else {
@@ -530,8 +530,8 @@ abstract class Module
      *  - id: unique ID
      *  - label: label to show
      *  - type: type of input (check Config/InputType.php for more info)
-     *  - options?: list of options (check Config/InputType.php for more info)
      *  - value: current value
+     *  - options?: list of options (check Config/InputType.php for more info)
      * @return array
      */
     protected function getGeneralInputs(): array
@@ -564,8 +564,8 @@ abstract class Module
      *  - listName: name of the list
      *  - itemName: name for an item of the list
      *  - listInfo: information for every collumn
-     *  - actions?: actions available for items (check Config/Action.php for more info)
      *  - items: items of the list
+     *  - actions?: actions available for items (check Config/Action.php for more info)
      *  - edit?: information for editing items
      * @return array
      */

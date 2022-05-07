@@ -129,8 +129,8 @@ class XPLevels extends Module
                 ["id" => "description", "label" => "Title", "type" => InputType::TEXT],
                 ["id" => "goal", "label" => "Minimum XP", "type" => InputType::NUMBER]
             ],
-            "actions" => [Action::EDIT, Action::DELETE],
             "items" => Level::getLevels($this->course->getId()),
+            "actions" => [Action::EDIT, Action::DELETE],
             "edit" => [
                 ["id" => "description", "label" => "Title", "type" => InputType::TEXT],
                 ["id" => "goal", "label" => "Minimum XP", "type" => InputType::NUMBER]
