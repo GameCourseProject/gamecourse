@@ -5,8 +5,6 @@ use Error;
 use Event\Event;
 use Event\EventType;
 use GameCourse\Awards\Awards;
-use GameCourse\Awards\AwardType;
-use GameCourse\Badges\Badges;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Config\Action;
@@ -14,8 +12,6 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
-use GameCourse\Skills\Skills;
-use GameCourse\Streaks\Streaks;
 
 /**
  * This is the XP & Levels module, which serves as a compartimentalized
@@ -39,7 +35,7 @@ class XPLevels extends Module
 
     const ID = "XPLevels";  // NOTE: must match the name of the class
     const NAME = "XP & Levels";
-    const DESCRIPTION = "Enables user vocabulary to use the terms xp and points to use around the course.";
+    const DESCRIPTION = "Enables Experience Points (XP) to be given to students, and their division between different levels.";
     const TYPE = ModuleType::GAME_ELEMENT;
 
     const VERSION = "2.2.0";                                     // Current module version
@@ -48,10 +44,7 @@ class XPLevels extends Module
     // NOTE: versions should be updated on code changes
 
     const DEPENDENCIES = [
-        ["id" => Awards::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD],
-        ["id" => Badges::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT],
-        ["id" => Skills::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT],
-        ["id" => Streaks::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
+        ["id" => Awards::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD]
     ];
     // NOTE: dependencies should be updated on code changes
 
@@ -213,15 +206,8 @@ class XPLevels extends Module
      */
     public function getUserXPByType(int $userId, string $type): int
     {
-        if ($type === AwardType::BADGE) return $this->getUserBadgesXP($userId);
-        elseif ($type === AwardType::SKILL) return $this->getUserSkillsXP($userId);
-        elseif ($type === AwardType::STREAK) return $this->getUserStreaksXP($userId);
-        return intval(Core::database()->select(Awards::TABLE_AWARD, [
-            "course" => $this->course->getId(),
-            "user" => $userId,
-            "type" => $type],
-            "sum(reward)")
-        );
+        $awardsModule = new Awards($this->course);
+        return $awardsModule->getUserTotalRewardByType($userId, $type);
     }
 
     /**
@@ -237,11 +223,8 @@ class XPLevels extends Module
      */
     public function getUserBadgesXP(int $userId, bool $extra = null): int
     {
-        $this->checkDependency(Badges::ID);
-        $table = Awards::TABLE_AWARD . " a LEFT JOIN " . Badges::TABLE_BADGE . " b on a.moduleInstance=b.id";
-        $where = ["a.course" => $this->course->getId(), "user" => $userId, "type" => AwardType::BADGE, "isActive" => true];
-        if ($extra !== null) $where["isExtra"] = $extra;
-        return intval(Core::database()->select($table, $where, "sum(reward)"));
+        $awardsModule = new Awards($this->course);
+        return $awardsModule->getUserBadgesTotalReward($userId, $extra);
     }
 
     /**
@@ -257,11 +240,8 @@ class XPLevels extends Module
      */
     public function getUserSkillsXP(int $userId, bool $collab = null): int
     {
-        $this->checkDependency(Skills::ID);
-        $table = Awards::TABLE_AWARD . " a LEFT JOIN " . Skills::TABLE_SKILL . " s on a.moduleInstance=s.id";
-        $where = ["a.course" => $this->course->getId(), "user" => $userId, "type" => AwardType::SKILL, "isActive" => true];
-        if ($collab !== null) $where["isCollab"] = $collab;
-        return intval(Core::database()->select($table, $where, "sum(reward)"));
+        $awardsModule = new Awards($this->course);
+        return $awardsModule->getUserSkillsTotalReward($userId, $collab);
     }
 
     /**
@@ -277,11 +257,8 @@ class XPLevels extends Module
      */
     public function getUserStreaksXP(int $userId, bool $extra = null): int
     {
-        $this->checkDependency(Streaks::ID);
-        $table = Awards::TABLE_AWARD . " a LEFT JOIN " . Streaks::TABLE_STREAK . " s on a.moduleInstance=s.id";
-        $where = ["a.course" => $this->course->getId(), "user" => $userId, "type" => AwardType::STREAK, "isActive" => true];
-        if ($extra !== null) $where["isExtra"] = $extra;
-        return intval(Core::database()->select($table, $where, "sum(reward)"));
+        $awardsModule = new Awards($this->course);
+        return $awardsModule->getUserStreaksTotalReward($userId, $extra);
     }
 
     /**
@@ -333,5 +310,5 @@ class XPLevels extends Module
 
     /*** ---- Grade Verifications ---- ***/
 
-    // TODO
+    // TODO: refactor and improve
 }

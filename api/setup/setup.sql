@@ -124,69 +124,6 @@ CREATE TABLE course_module(
 	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
-CREATE TABLE dictionary_view_type(
-   id	                        int unsigned AUTO_INCREMENT PRIMARY KEY,
-   name                         varchar(50) UNIQUE NOT NULL,
-   description                  varchar(255)
-);
-
-CREATE TABLE dictionary_library(
-	id	                        int unsigned AUTO_INCREMENT PRIMARY KEY,
-	module                      varchar(50),
-	name                        varchar(50) UNIQUE NOT NULL,
-	description                 varchar(255)
-);
-
-CREATE TABLE dictionary_function(
-	id	                        int unsigned AUTO_INCREMENT PRIMARY KEY,
-	libraryId                   int unsigned NULL,
-	returnType                  varchar(50),
-	returnName                  varchar(50),
-	refersToType                varchar(50) NOT NULL,
-	refersToName                varchar(50),
-	keyword                     varchar(50),
-	args                        varchar(1000),
-	description                 varchar(1000),
-
-	FOREIGN key(libraryId) REFERENCES dictionary_library(id) ON DELETE CASCADE
-);
-
-CREATE TABLE dictionary_variable(
-	id	                        int unsigned AUTO_INCREMENT PRIMARY KEY,
-	libraryId                   int unsigned NULL,
-	name                        varchar(50) UNIQUE,
-	returnType                  varchar(50) NOT NULL,
-	description                 varchar(1000),
-
-	FOREIGN key(libraryId) REFERENCES dictionary_library(id) ON DELETE CASCADE
-);
-
-CREATE TABLE award(
-	id 		                    int unsigned AUTO_INCREMENT PRIMARY KEY,
-	user 	                    int unsigned NOT NULL,
-	course 	                    int unsigned NOT NULL,
-	description                 varchar(100) NOT NULL,
-	type                        varchar(50) NOT NULL, #(ex:grade,skills, labs,quiz,presentation,bonus)
-	moduleInstance              int unsigned ,#id of badge/skill (will be null for other types)
-	reward                      int unsigned DEFAULT 0,
-	date                        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE
-);
-
-CREATE TABLE award_test(
-	id 		                    int unsigned AUTO_INCREMENT PRIMARY KEY,
-	user 	                    int unsigned NOT NULL,
-	course 	                    int unsigned NOT NULL,
-    description                 varchar(100) NOT NULL,
-	type                        varchar(50) NOT NULL, #(ex:grade,skills, labs,quiz,presentation,bonus)
-	moduleInstance              int unsigned , #id of badge/skill (will be null for other types)
-	reward                      int unsigned DEFAULT 0,
-	date                        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE
-);
-
 CREATE TABLE participation(
 	id 		                    int unsigned AUTO_INCREMENT PRIMARY KEY,
 	user 	                    int unsigned NOT NULL,
@@ -200,15 +137,6 @@ CREATE TABLE participation(
 
 	FOREIGN key(evaluator,course) REFERENCES course_user(id,course) ON DELETE CASCADE, #needs trigger to set eval to null
     FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE
-);
-
-CREATE TABLE award_participation(
-	award                       int unsigned,
-	participation               int unsigned,
-
-	PRIMARY key(award,participation),
-    FOREIGN key(award) REFERENCES award(id) ON DELETE CASCADE,
-    FOREIGN key(participation) REFERENCES participation(id) ON DELETE CASCADE
 );
 
 CREATE TABLE view(

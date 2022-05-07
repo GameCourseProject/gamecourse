@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS level(
-    id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
     course                      int unsigned NOT NULL,
     number                      int NOT NULL,
     goal                        int NOT NULL,

@@ -1,0 +1,182 @@
+[
+  {
+    "type": "block",
+    "role": "role.Default",
+    "class": "awards-list",
+    "visibilityType": "visible",
+    "children": [
+      [
+        {
+          "type": "header",
+          "role": "role.Default",
+          "visibilityType": "visible",
+          "image": [
+            {
+              "type": "image",
+              "role": "role.Default",
+              "visibilityType": "visible",
+              "src": "modules/awardlist/imgs/awards.svg"
+            }
+          ],
+          "title": [
+            {
+              "type": "text",
+              "role": "role.Default",
+              "visibilityType": "visible",
+              "value": "Awards"
+            }
+          ]
+        }
+      ],
+      [
+        {
+          "type": "table",
+          "role": "role.Default",
+          "visibilityType": "visible",
+          "headerRows": [
+            [
+              {
+                "type": "row",
+                "role": "role.Default",
+                "visibilityType": "visible",
+                "children": [
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default",
+                      "visibilityType": "visible",
+                      "value": "Experience"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default",
+                      "visibilityType": "visible",
+                      "value": "Date"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default",
+                      "visibilityType": "visible",
+                      "value": "Description"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default",
+                      "visibilityType": "visible",
+                      "value": "Who"
+                    }
+                  ]
+                ]
+              }
+            ]
+          ],
+          "rows": [
+            [
+              {
+                "type": "row",
+                "role": "role.Default",
+                "visibilityType": "visible",
+                "loopData": "{awards.getAllAwards().sort(\"desc, date\")}",
+                "variables": {
+                  "award": {
+                    "value": "{%item}"
+                  }
+                },
+                "children": [
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default",
+                      "visibilityType": "visible",
+                      "value": "{%award.reward} {system.if(%award.type == \"tokens\", \"\", \"XP\")}"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default",
+                      "visibilityType": "visible",
+                      "value": "{%award.date}"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Default",
+                      "class": "award-description",
+                      "visibilityType": "visible",
+                      "children": [
+                        [
+                          {
+                            "type": "text",
+                            "role": "role.Default",
+                            "visibilityType": "visible",
+                            "value": "{%award.description}"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "block",
+                            "role": "role.Student>role.Default",
+                            "class": "award-description-imgs",
+                            "visibilityType": "visible",
+                            "children": [
+                              [
+                                {
+                                  "type": "image",
+                                  "role": "role.Student>role.Default",
+                                  "class": "award-description-img",
+                                  "visibilityType": "conditional",
+                                  "visibilityCondition": "{!(%award.type == \"skill\")}",
+                                  "src": "{%award.renderPicture(\"type\")}"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "block",
+                                  "role": "role.Student>role.Default",
+                                  "class": "award-description-img",
+                                  "visibilityType": "conditional",
+                                  "visibilityCondition": "{%award.type == \"skill\"}",
+                                  "style": "background-color: {%award.renderPicture(\"type\")}",
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "invisible",
+                                        "value": "{%award.description}"
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default",
+                      "visibilityType": "visible",
+                      "value": "{users.getUser(%award.user).name}"
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    ]
+  }
+]

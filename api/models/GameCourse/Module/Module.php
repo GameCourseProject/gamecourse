@@ -207,7 +207,7 @@ abstract class Module
             // Check dependencies of module are enabled
             $hardDependencies = $this->getDependencies(DependencyMode::HARD);
             foreach ($hardDependencies as $dependency) {
-                $depModule = self::getModuleById($dependency["id"]);
+                $depModule = $this->course->getModuleById($dependency["id"]);
                 if (!$depModule->isEnabled())
                     throw new Error("Can't enable module '" . $this->id . "' as its hard dependency '" . $dependency["id"] . "' is disabled.");
             }
@@ -273,7 +273,7 @@ abstract class Module
     /*** ---------------------- General --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    public static function getModuleById(string $id, ?Course $course = null): ?Module
+    public static function getModuleById(string $id, ?Course $course): ?Module
     {
         $moduleClass = "\\GameCourse\\" . $id . "\\" . $id;
         $module = new $moduleClass($course);
@@ -322,7 +322,7 @@ abstract class Module
             "minAPIVersion" => $APICompatibility["min"],
             "maxAPIVersion" => $APICompatibility["max"]
         ]);
-        $module = Module::getModuleById($id);
+        $module = self::getModuleById($id, null);
         $module->setDependencies($dependencies);
         return $module;
     }
@@ -403,9 +403,16 @@ abstract class Module
         return !empty(Core::database()->select(self::TABLE_MODULE_DEPENDENCY, ["module" => $this->getId(), "dependency" => $dependencyId]));
     }
 
+    /**
+     * Checks if a given dependecy exists and is enabled in the course.
+     * This is most useful to check soft dependencies.
+     *
+     * @param string $dependencyId
+     * @return void
+     */
     public function checkDependency(string $dependencyId)
     {
-        $module = Module::getModuleById($dependencyId, $this->course);
+        $module = $this->course->getModuleById($dependencyId);
         if (!$module) throw new Error("Module '" . $dependencyId . "' doesn't exist in the system.");
         if (!$module->isEnabled()) throw new Error("Module '" . $dependencyId . "' is not enabled.");
     }
