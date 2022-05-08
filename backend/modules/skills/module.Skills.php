@@ -1947,9 +1947,13 @@ class Skills extends Module
         $rs->changeRuleNameInFile($filename, $oldName, $newName);
     }
 
-    public function editSkillRuleDependencies(int $courseId, array $dependencies, bool $hasWildcard)
+    public function editSkillRuleDependencies(int $courseId, string $skillName, array $dependencies, bool $hasWildcard)
     {
         // TODO: edit rule based on changes; only change the necessary
+        $rs = new RuleSystem(Course::getCourse($courseId));
+        $filename = $rs->getFilename(self::ID);
+        $rs->changeSkillDependencies($filename, $skillName, $dependencies, $hasWildcard);
+
     }
 
     public function deleteGeneratedRule(Course $course, string $skillName)

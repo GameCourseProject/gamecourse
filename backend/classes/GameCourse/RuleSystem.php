@@ -557,6 +557,44 @@ class RuleSystem
         return $edited;
     }
 
+    public function changeSkillDependencies($ruleFile, $ruleName, $dependencies, $hasWildcard){
+        if ($this->ruleFileExists($ruleFile)) {
+            $txt = file_get_contents($this->rulesdir . $ruleFile);
+
+            $position =  $this->findRulePosition($ruleFile, $ruleName) ;
+            $rule = $this->getRuleContent($ruleFile, $ruleName);
+
+            $sectionRules = $this->splitRules($txt);
+
+            $editedRule = $this->editRuleDependencies($rule, $dependencies);
+
+            $sectionRules[intval($position)] = $editedRule;
+
+            $content = $this->joinRules($sectionRules);
+            $file = file_put_contents($this->rulesdir . $ruleFile, $content);
+        }
+    }
+
+    public function editRuleDependencies($rule, $dependencies){
+
+        /* Need: #dependencies ( = #combo in rule)    -- count from dependency table
+         * get dependcies id to fectch id of skills in skill_dependency -> fetch name from skill via id retrieved from
+         * skill_dependency
+         * creat combo 1 = rule_unlocked(<NAME_SKILL>, target)
+         * find combo1 = rule_unlocked
+         * str_replace(combo1, newcombo1, $rule)
+         *
+         */
+
+
+
+
+
+        return $rule;
+    }
+
+
+
     public function findRuleLine($ruleFile, $ruleName){
 
         $rows = explode("\n", $ruleFile);
@@ -588,7 +626,7 @@ class RuleSystem
     }
 
 
-    public function changeRuleStatus($rule, $active) {
+    public function changeDuplicateRuleStatus($rule, $active) {
         $rows = explode("\n", $rule);
         if ((substr($rows[1], 0, 8) === "INACTIVE")) {
             if (!$active) {
@@ -610,6 +648,34 @@ class RuleSystem
                 return $newRule;
             }
         } 
+    }
+
+
+    public function changeRuleStatus($ruleFile, $ruleName, $active) {
+        $rule = $this->getRuleContent($ruleFile, $ruleName);
+
+        $rows = explode("\n", $rule);
+        if ((substr($rows[1], 0, 8) === "INACTIVE")) {
+            if (!$active) {
+                return $rule;
+            }
+            else {
+                array_splice($rows, 1, 1);
+                //str_replace("INACTIVE", "");
+                $newRule = implode("\n", $rows);
+                return $newRule;
+            }
+        }
+        else {
+            if ($active) {
+                return $rule;
+            }
+            else {
+                array_splice($rows, 1, 0, "INACTIVE");
+                $newRule = implode("\n", $rows);
+                return $newRule;
+            }
+        }
     }
 
     public function updateTags($tags) {
@@ -750,7 +816,7 @@ class RuleSystem
             $sectionRules = $this->splitRules($txt);
             
             $newRule = $this->changeRuleName($sectionRules[intval($position)], $rule["name"]);
-            $duplicateRule = $this->changeRuleStatus($newRule, false);
+            $duplicateRule = $this->changeDuplicateRuleStatus($newRule, false);
             array_splice($sectionRules, $position + 1, 0, $duplicateRule);
             
             $content = $this->joinRules($sectionRules);

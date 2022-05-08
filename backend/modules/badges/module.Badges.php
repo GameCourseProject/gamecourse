@@ -1113,10 +1113,15 @@ class Badges extends Module
                 }
             }
         }
+        
+        //$badgeStatus = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'id' => $achievement['id']], "isActive");
+        //$badge->changeBadgeRuleStatus($course, $originalName, $badgeStatus);
 
         // Update Rule Name
         if ($originalName != $achievement["name"])
             $badge->editBadgeRuleName($course, $originalName, $achievement['name']);
+
+
 
         // Update Rule Levels
         $newCount1 = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $achievement['id'], "number" => 1], "goal");
@@ -1226,8 +1231,13 @@ class Badges extends Module
         $rs = new RuleSystem($course);
         $filename = $rs->getFilename(self::ID);
         $rs->changeRuleLvlsInFile($filename, $badgeName, $oldLvls, $newlvls);
+    }
 
-
+    public function changeBadgeRuleStatus(Course $course, string $badgeName, int $active)
+    {
+        $rs = new RuleSystem($course);
+        $filename = $rs->getFilename(self::ID);
+        $rs->changeRuleStatus($filename, $badgeName, $active);
     }
 
 }
