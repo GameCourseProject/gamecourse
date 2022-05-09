@@ -2,33 +2,41 @@
 # -*- coding: utf-8 -*-
 
 from .block import Block
+import time
+import logging
 
 class Preconditions(Block):
 
-	def fire (self, scope=None):
-		"""
-		Executes all statements in the block.
-		If at least one statement in the block returns False
-		the returned result is False. Otherwise returns True.
-		A scope corresponding to a dictionary with name definitions
-		can be passed as argument and will be used at execution time.
-		This scope is updated with each execution.
-		"""
-		if scope is None:
-			scope = {}
-		return_val = True # the default value
-		# execute all statements defined in the block
-		for s in self.stmts():
-			result = s.fire(scope)
-			# if at least one statement returns 'False'
-			# the result should ALWAYS return 'False'
-			if result is False and return_val is True:
-				return_val = False
-		
-		return return_val
+    def fire (self, scope=None):
+        """
+        Executes all statements in the block.
+        If at least one statement in the block returns False
+        the returned result is False. Otherwise returns True.
+        A scope corresponding to a dictionary with name definitions
+        can be passed as argument and will be used at execution time.
+        This scope is updated with each execution.
+        """
+        if scope is None:
+            scope = {}
+        return_val = True # the default value
+        # execute all statements defined in the block
+        for s in self.stmts():
+            #start = time.time()
+            result = s.fire(scope)
+            # if at least one statement returns 'False'
+            # the result should ALWAYS return 'False'
+            if result is False and return_val is True:
+                return_val = False
 
-	def to_pickle(self):
-		return PickablePreconditions(self)
+            #end = time.time()
+            #logging.exception(s)
+            #logging.exception(end-start)
+
+
+        return return_val
+
+    def to_pickle(self):
+        return PickablePreconditions(self)
 
 class PickablePreconditions:
 

@@ -7,6 +7,9 @@ from . import namespace
 from .rules import RuleLog, Output
 from .functions import utils
 
+import os, sys, logging
+
+
 class RuleSystem:
 	def __init__(self, path=None, autosave=True):
 		from .data import DataManager
