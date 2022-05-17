@@ -80,7 +80,18 @@
               "node_modules/highcharts/modules/accessibility.js"
             ],
             "allowedCommonJsDependencies": [
-              "codemirror"
+              "codemirror",
+              "core-js-pure",
+              "hoist-non-react-statics",
+              "lodash",
+              "prop-types",
+              "randexp",
+              "react-copy-to-clipboard",
+              "react-debounce-input",
+              "react-immutable-proptypes",
+              "redux-immutable",
+              "url-parse",
+              "xml-but-prettier"
             ]
           },
           "configurations": {

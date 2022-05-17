@@ -2,7 +2,6 @@ import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {Router} from "@angular/router";
-import {ErrorService} from "../../../_services/error.service";
 import {finalize} from "rxjs/operators";
 
 @Component({
@@ -19,8 +18,7 @@ export class SetupComponent implements OnInit {
     private api: ApiHttpService,
     private fb: FormBuilder,
     private router: Router
-  ) {
-  }
+  ) { }
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -34,15 +32,11 @@ export class SetupComponent implements OnInit {
   onSubmit(): void {
     if (this.form.valid) {
       this.loading = true;
-
       this.api.doSetup(this.form.getRawValue())
         .pipe( finalize(() => this.loading = false) )
-        .subscribe(
-          setup => {
-            if (setup) this.router.navigate(['']);
-            },
-            error => ErrorService.set(error)
-      );
+        .subscribe(setupDone => {
+            if (setupDone) this.router.navigate(['']);
+        });
     }
   }
 }

@@ -65,7 +65,7 @@ export class CacheInterceptor implements HttpInterceptor {
       // Has request cached
       return of(cachedResponse.clone());
 
-    } else if (this.lastGetRequest === request.url){
+    } else if (this.lastGetRequest === request.url) {
       // Same request in a row, answer w/ 1st response
       return this.lastGetRequestSubject[request.url].pipe( take(1) )
 

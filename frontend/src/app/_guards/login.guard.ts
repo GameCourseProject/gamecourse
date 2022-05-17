@@ -32,11 +32,8 @@ export class LoginGuard implements CanLoad {
     return this.api.isLoggedIn().pipe(
       map(
         isLoggedIn => {
-          if (isLoggedIn) {
-            return true;
-          } else {
-            return this.router.parseUrl('/login');
-          }
+          if (isLoggedIn) return true;
+          return this.router.parseUrl('/login');
         },
         error => {
           ErrorService.set(error)
@@ -44,15 +41,13 @@ export class LoginGuard implements CanLoad {
         }
       ),
       catchError(error => {
-        if (error.status === 401) {
+        if (error.status === 401)
           return of(this.router.parseUrl('/no-access'));
-        }
 
-        if (error.status === 409) {
+        if (error.status === 409)
           return of(this.router.parseUrl('/setup'));
-        }
 
-        return throwError(error)
+        return throwError(error);
       })
     );
   }

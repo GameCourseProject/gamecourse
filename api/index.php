@@ -13,6 +13,7 @@ use GameCourse\Core\Core;
 require __DIR__ . "/inc/bootstrap.php";
 
 Core::denyCLI();
+Core::requireSetup();
 
 if (!Core::requireLogin(false))
     API::error("Not logged in!", 401);

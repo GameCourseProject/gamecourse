@@ -1,0 +1,131 @@
+#roles-config {
+  width: 100%;
+  max-width: 850px;
+  margin-right: auto;
+  margin-left: auto;
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 70px;
+    margin-left: 30px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+
+    .role_sections, .page_sections {
+      width: 100%;
+      text-align: center;
+    }
+  }
+}
+
+#add_role_button_box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 70px;
+  margin-left: 30px;
+
+  .add_button {
+    width: calc(850px - 101px);
+    background-image: url('../../../../../../../assets/icons/add_icon_no_outline.svg');
+    height: 35px;
+    background-color: white;
+    background-size: 25px;
+    background-position: center;
+    border: 2px solid lightgray;
+  }
+}
+
+#roles_page .action-buttons {
+  width: 210px;
+}
+
+.action-buttons .undo_icon.disabled,
+.action-buttons .redo_icon.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+//#roles_page .error_box {
+//  top: 35px;
+//
+//  .error_msg {
+//    padding-top: 0;
+//  }
+//}
+
+
+
+/*nestable*/
+
+.dd-item {
+  background: white;
+  margin: 15px 0;
+}
+
+.dd-handle, .handle {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 5px 10px 5px 0;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background-image: url('../../../../../../../assets/icons/drag_icon.svg');
+  opacity: 0.8;
+}
+
+.handle.dd-handle {
+  width: 30px;
+  height: 30px;
+}
+
+.dd-handle:hover {
+  opacity: 1;
+}
+
+.dd-nodrag > .handle {
+  cursor: not-allowed;
+  opacity: .1;
+}
+
+.dd-content {
+  display: inline-block;
+  color: #333;
+  margin-right: 10px;
+  width: calc(50% - 67px);
+  border: 2px solid lightgray;
+  border-radius: 5px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.dd-add, .dd-remove {
+  position: absolute;
+  float: right;
+  opacity: 0.8;
+  z-index: 2;
+}
+
+.dd-add {
+  right: 32px;
+  top: 6px;
+  height: 21px;
+  width: 21px;
+}
+
+.dd-remove {
+  right: 0;
+  top: 5px;
+  height: 23px;
+  width: 23px;
+}
+
+.dd-nodrag > .dd-remove {
+  cursor: not-allowed;
+  opacity: .1;
+}
+
+

@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpXhrBackend} from "@angular/common/http";
-import {Observable, of} from "rxjs";
+import {Observable, throwError} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
 import {ApiEndpointsService} from "./api-endpoints.service";
@@ -12,11 +12,11 @@ import {Course} from "../../_domain/courses/course";
 import {User} from "../../_domain/users/user";
 import {CreationMode} from "../../_domain/courses/creation-mode";
 import {SetupData} from "../../_views/setup/setup/setup.component";
-import {UserData} from "../../_views/my-info/my-info/my-info.component";
-import {CourseData, ImportCoursesData} from "../../_views/courses/courses/courses.component";
-import {ImportUsersData} from "../../_views/users/users/users.component";
+import {UserData} from "../../_views/restricted/my-info/my-info/my-info.component";
+import {CourseData, ImportCoursesData} from "../../_views/restricted/courses/courses/courses.component";
+import {ImportUsersData} from "../../_views/restricted/users/users/users.component";
 import {Module} from "../../_domain/modules/module";
-import {ImportModulesData} from "../../_views/settings/modules/modules.component";
+import {ImportModulesData} from "../../_views/restricted/settings/modules/modules.component";
 import {Moment} from "moment/moment";
 import {Role} from "../../_domain/roles/role";
 import {Page} from "../../_domain/pages & templates/page";
@@ -25,25 +25,26 @@ import {RoleType} from "../../_domain/roles/role-type";
 import {View} from "../../_domain/views/view";
 import {buildView} from "../../_domain/views/build-view/build-view";
 import {dateFromDatabase, exists, objectMap} from "../../_utils/misc/misc";
-import {GeneralInput, ListingItems} from "../../_views/courses/course/settings/modules/config/config/config.component";
+import {GeneralInput, ListingItems} from "../../_views/restricted/courses/course/settings/modules/config/config/config.component";
 import {Tier} from "../../_domain/skills/tier";
-import {SkillData, TierData} from "../../_views/courses/course/settings/modules/config/skills/skills.component";
+import {SkillData, TierData} from "../../_views/restricted/courses/course/settings/modules/config/skills/skills.component";
 import {Skill} from "../../_domain/skills/skill";
 import {ContentItem} from "../../_components/modals/file-picker-modal/file-picker-modal.component";
 import {
   Credentials,
   GoogleSheetsVars
-} from "../../_views/courses/course/settings/modules/config/googlesheets/googlesheets.component";
-import {MoodleVars} from "../../_views/courses/course/settings/modules/config/moodle/moodle.component";
-import {TypeOfClass} from "../../_views/courses/course/page/page.component";
-import {ClassCheckVars} from "../../_views/courses/course/settings/modules/config/classcheck/classcheck.component";
+} from "../../_views/restricted/courses/course/settings/modules/config/googlesheets/googlesheets.component";
+import {MoodleVars} from "../../_views/restricted/courses/course/settings/modules/config/moodle/moodle.component";
+import {TypeOfClass} from "../../_views/restricted/courses/course/page/page.component";
+import {ClassCheckVars} from "../../_views/restricted/courses/course/settings/modules/config/classcheck/classcheck.component";
 import {
   ProgressReportVars
-} from "../../_views/courses/course/settings/modules/config/notifications/notifications.component";
+} from "../../_views/restricted/courses/course/settings/modules/config/notifications/notifications.component";
 import {
   ProfilingHistory,
   ProfilingNode
-} from "../../_views/courses/course/settings/modules/config/profiling/profiling.component";
+} from "../../_views/restricted/courses/course/settings/modules/config/profiling/profiling.component";
+import {ErrorService} from "../error.service";
 
 @Injectable({
   providedIn: 'root'
@@ -99,18 +100,10 @@ export class ApiHttpService {
   }
 
   public isSetupDone(): Observable<boolean> {
-    const url = this.apiEndpoint.createUrl('auth/login.php');
+    const url = this.apiEndpoint.createUrl('setup/setup.php');
 
-    return this.post(url, new FormData(), ApiHttpService.httpOptions)
-      .pipe(
-        map(res => true),
-        catchError(error => {
-          console.warn(error.error.error);
-          if (error.status === 409)
-            return of(false)
-          return of(true);
-        })
-      );
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['isSetupDone']) );
   }
 
 
@@ -133,7 +126,7 @@ export class ApiHttpService {
   public isLoggedIn(): Observable<boolean> {
     const url = this.apiEndpoint.createUrl('auth/login.php');
 
-    return this.post(url, new FormData(), ApiHttpService.httpOptions)
+    return this.post(url, new FormData(), ApiHttpService.httpOptions, true)
       .pipe( map((res: any) => res['isLoggedIn']) );
   }
 
@@ -146,6 +139,201 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['isLoggedIn']) );
+  }
+
+
+
+  /*** --------------------------------------------- ***/
+  /*** -------------------- User ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  // Logged User
+  public getLoggedUser(): Observable<User> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'getLoggedUser');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => User.fromDatabase(res['data'])) );
+  }
+
+
+  // General
+  public getUsers(): Observable<User[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'getUsers');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (res['data']).map(obj => User.fromDatabase(obj))) );
+  }
+
+  public getUserCourses(userID: number, isActive?: boolean, isVisible?: boolean): Observable<Course[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'getUserCourses');
+      qs.push('userId', userID);
+      if (isActive !== undefined && isActive !== null) qs.push('isActive', isActive);
+      if (isVisible !== undefined && isVisible !== null) qs.push('isVisible', isVisible);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => Course.fromDatabase(obj))) );
+  }
+
+
+  // User Manipulation
+  public createUser(userData: UserData): Observable<void> {
+    const data = {
+      name: userData.name,
+      studentNumber: userData.studentNumber,
+      nickname: userData.nickname,
+      username: userData.username,
+      email: userData.email,
+      major: userData.major,
+      isActive: userData.isActive ? 1 : 0,
+      isAdmin: userData.isAdmin ? 1 : 0,
+      authService: userData.auth,
+      image: userData.image,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'createUser');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public editUser(userData: UserData): Observable<void> {
+    const data = {
+      userId: userData.id,
+      userName: userData.name,
+      userStudentNumber: userData.studentNumber,
+      userNickname: userData.nickname,
+      userUsername: userData.username,
+      userEmail: userData.email,
+      userMajor: userData.major,
+      userIsActive: userData.isActive ? 1 : 0,
+      userIsAdmin: userData.isAdmin ? 1 : 0,
+      userAuthService: userData.auth,
+      userHasImage: !!userData.image,
+      userImage: userData.image,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'editUser');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public editSelfInfo(userData: UserData): Observable<any> {
+    const data = {
+      userName: userData.name,
+      userNickname: userData.nickname,
+      userStudentNumber: userData.studentNumber,
+      userEmail: userData.email,
+      userAuthService: userData.auth,
+      userUsername: userData.username,
+      userHasImage: !!userData.image,
+      userImage: userData.image
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'editSelfInfo');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions).pipe();
+  }
+
+  public deleteUser(userID: number): Observable<void> {
+    const data = { userId: userID };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'deleteUser');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public setUserAdmin(userID: number, isAdmin: boolean): Observable<void> {
+    const data = {
+      "userId": userID,
+      "isAdmin": isAdmin ? 1 : 0
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'setUserAdminPermission');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public setUserActive(userID: number, isActive: boolean): Observable<void> {
+    const data = {
+      "userId": userID,
+      "isActive": isActive ? 1 : 0
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'setUserActiveState');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+
+  // Import/Export
+  public importUsers(importData: ImportUsersData): Observable<number> {
+    const data = {
+      file: importData.file,
+      replace: importData.replace
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'importUsers');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => parseInt(res['data']['nrUsers'])) );
+  }
+
+  public exportUsers(): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'exportUsers');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, null, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['users'])) );
   }
 
 
@@ -1500,218 +1688,6 @@ export class ApiHttpService {
 
 
   /*** --------------------------------------------- ***/
-  /*** -------------------- User ------------------- ***/
-  /*** --------------------------------------------- ***/
-
-  // Logged User
-  public getLoggedUser(): Observable<User> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'getLoggedUserInfo');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map(
-        (res: any) => User.fromDatabase(res['data']['userInfo'])
-      ) );
-  }
-
-  public getUserActiveCourses(): Observable<Course[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'getLoggedUserActiveCourses');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map(
-        (res: any) => {
-          return (res['data']['userActiveCourses']).map(obj => Course.fromDatabase(obj));
-        }) );
-  }
-
-
-  // General
-  public getUsers(): Observable<User[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'getUsers');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => (res['data']['users']).map(obj => User.fromDatabase(obj))) );
-  }
-
-  public getUserCourses(): Observable<{courses: Course[], landingPages: {[courseID: string]: number}}> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'getUserCourses');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => {
-        const courses = (res['data']['courses']).map(obj => Course.fromDatabase(obj));
-        const landingPages = res['data']['landingPages'];
-        return {courses, landingPages};
-      }) );
-  }
-
-  public importUsers(importData: ImportUsersData): Observable<number> {
-    const data = {
-      file: importData.file,
-      replace: importData.replace
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'importUsers');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => parseInt(res['data']['nrUsers'])) );
-  }
-
-  public exportUsers(): Observable<string> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'exportUsers');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, null, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['users'])) );
-  }
-
-
-  // User Manipulation
-  public createUser(userData: UserData): Observable<User> {
-    const data = {
-      userName: userData.name,
-      userStudentNumber: userData.studentNumber,
-      userNickname: userData.nickname,
-      userUsername: userData.username,
-      userEmail: userData.email,
-      userMajor: userData.major,
-      userIsActive: userData.isActive ? 1 : 0,
-      userIsAdmin: userData.isAdmin ? 1 : 0,
-      userAuthService: userData.auth,
-      userHasImage: !!userData.image,
-      userImage: userData.image,
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'createUser');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => User.fromDatabase(res['data']['user'])) );
-  }
-
-  public editUser(userData: UserData): Observable<void> {
-    const data = {
-      userId: userData.id,
-      userName: userData.name,
-      userStudentNumber: userData.studentNumber,
-      userNickname: userData.nickname,
-      userUsername: userData.username,
-      userEmail: userData.email,
-      userMajor: userData.major,
-      userIsActive: userData.isActive ? 1 : 0,
-      userIsAdmin: userData.isAdmin ? 1 : 0,
-      userAuthService: userData.auth,
-      userHasImage: !!userData.image,
-      userImage: userData.image,
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'editUser');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public editSelfInfo(userData: UserData): Observable<any> {
-    const data = {
-      userName: userData.name,
-      userNickname: userData.nickname,
-      userStudentNumber: userData.studentNumber,
-      userEmail: userData.email,
-      userAuthService: userData.auth,
-      userUsername: userData.username,
-      userHasImage: !!userData.image,
-      userImage: userData.image
-    };
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'editSelfInfo');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions).pipe();
-  }
-
-  public deleteUser(userID: number): Observable<void> {
-    const data = { userId: userID };
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'deleteUser');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public setUserAdmin(userID: number, isAdmin: boolean): Observable<void> {
-    const data = {
-      "userId": userID,
-      "isAdmin": isAdmin ? 1 : 0
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'setUserAdminPermission');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public setUserActive(userID: number, isActive: boolean): Observable<void> {
-    const data = {
-      "userId": userID,
-      "isActive": isActive ? 1 : 0
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'setUserActiveState');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-
-
-  /*** --------------------------------------------- ***/
   /*** ------------------- Views ------------------- ***/
   /*** --------------------------------------------- ***/
 
@@ -2040,20 +2016,43 @@ export class ApiHttpService {
   /*** -------------- Helper Functions ------------- ***/
   /*** --------------------------------------------- ***/
 
-  public get(url: string, options?: any) {
-    return this.http.get(url, options);
+  public get(url: string, options?: any, skipErrors?: boolean) {
+    return this.http.get(url, options)
+      .pipe(
+        catchError(error => {
+          if (!skipErrors) ErrorService.set(error);
+          return throwError(error);
+        })
+      );
   }
 
-  public post(url: string, data: any, options?: any) {
-    return this.http.post(url, data, options);
+  public post(url: string, data: any, options?: any, skipErrors?: boolean) {
+    return this.http.post(url, data, options)
+      .pipe(
+        catchError(error => {
+          if (!skipErrors) ErrorService.set(error);
+          return throwError(error);
+        })
+      );
   }
 
-  public put(url: string, data: any, options?: any) {
-    return this.http.put(url, data, options);
+  public put(url: string, data: any, options?: any, skipErrors?: boolean) {
+    return this.http.put(url, data, options).pipe(
+      catchError(error => {
+        if (!skipErrors) ErrorService.set(error);
+        return throwError(error);
+      })
+    );
   }
 
-  public delete(url: string, options?: any) {
-    return this.http.delete(url, options);
+  public delete(url: string, options?: any, skipErrors?: boolean) {
+    return this.http.delete(url, options)
+      .pipe(
+        catchError(error => {
+          if (!skipErrors) ErrorService.set(error);
+          return throwError(error);
+        })
+      );
   }
 
 }

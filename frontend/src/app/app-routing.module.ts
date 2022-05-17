@@ -5,49 +5,23 @@ import {LoginGuard} from "./_guards/login.guard";
 import {RedirectIfLoggedInGuard} from "./_guards/redirect-if-logged-in.guard";
 import {NoAccessComponent} from "./_components/no-access/no-access.component";
 import {RedirectIfSetupDoneGuard} from "./_guards/redirect-if-setup-done.guard";
-import {AdminGuard} from "./_guards/admin.guard";
 
 const routes: Routes = [
-  {
-    path: 'login',
-    loadChildren: () => import('./_views/login/login.module').then(mod => mod.LoginModule),
-    canLoad: [RedirectIfLoggedInGuard]
-  },
   {
     path: 'setup',
     loadChildren: () => import('./_views/setup/setup.module').then(mod => mod.SetupModule),
     canLoad: [RedirectIfSetupDoneGuard]
   },
   {
-    path: 'main',
-    loadChildren: () => import('./_views/main/main.module').then(mod => mod.MainModule),
+    path: 'login',
+    loadChildren: () => import('./_views/login/login.module').then(mod => mod.LoginModule),
+    canLoad: [RedirectIfLoggedInGuard]
+  },
+  {
+    path: '',
+    loadChildren: () => import('./_views/restricted/restricted.module').then(mod => mod.RestrictedModule),
     canLoad: [LoginGuard]
   },
-  {
-    path: 'my-info',
-    loadChildren: () => import('./_views/my-info/my-info.module').then(mod => mod.MyInfoModule),
-    canLoad: [LoginGuard]
-  },
-  {
-    path: 'courses',
-    loadChildren: () => import('./_views/courses/courses.module').then(mod => mod.CoursesModule),
-    canLoad: [LoginGuard]
-  },
-  {
-    path: 'users',
-    loadChildren: () => import('./_views/users/users.module').then(mod => mod.UsersModule),
-    canLoad: [LoginGuard, AdminGuard]
-  },
-  {
-    path: 'settings',
-    loadChildren: () => import('./_views/settings/settings.module').then(mod => mod.SettingsModule),
-    canLoad: [LoginGuard, AdminGuard]
-  },
-  {
-    path: 'docs',
-    loadChildren: () => import('./_views/docs/docs.module').then(mod => mod.DocsModule)
-  },
-  { path: '', redirectTo: 'main', pathMatch: 'full' },
   { path: '404', component: PageNotFoundComponent},
   { path: 'no-access', component: NoAccessComponent},
   { path: '**', redirectTo: '404', pathMatch: 'full' }

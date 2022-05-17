@@ -26,16 +26,6 @@ export class AppComponent {
     });
   }
 
-  hasNavbar(): boolean {
-    const noNavbar = ['/login', '/setup'];
-    return !noNavbar.includes(this.router.url);
-  }
-
-  hasFooter(): boolean {
-    const urlParts = this.router.url.substr(1).split('/');
-    return urlParts.includes('courses') && urlParts.length >= 3;
-  }
-
   hasError(): boolean {
     return !!ErrorService.error;
   }

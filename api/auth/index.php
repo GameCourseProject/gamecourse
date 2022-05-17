@@ -3,15 +3,12 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
-use Api\API;
 use GameCourse\Core\Core;
 
 require __DIR__ . "/../inc/bootstrap.php";
 
 Core::denyCLI();
-
-if (Core::requireSetup(false))
-    API::error("GameCourse is not yet setup.", 409);
+Core::requireSetup();
 
 if (array_key_exists("googleSheetsAuth", $_GET) && array_key_exists("state", $_GET)) {
     $receivedCourse = $_GET["state"];

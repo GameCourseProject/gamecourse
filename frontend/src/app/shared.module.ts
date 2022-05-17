@@ -93,11 +93,11 @@ import {DatatableComponent} from "./_components/tables/datatable/datatable.compo
     SanitizeHTMLPipe,
     DatatableComponent
   ],
-    imports: [
-        CommonModule,
-        RouterModule,
-        FormsModule,
-        NgApexchartsModule
-    ]
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    NgApexchartsModule
+  ]
 })
 export class SharedModule { }

@@ -5,7 +5,7 @@
 CREATE TABLE game_course_user(
 	id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
     name 	                    varchar(50) NOT NULL,
-    email 	                    varchar(255) UNIQUE,
+    email 	                    varchar(50) UNIQUE,
 	major 	                    varchar(8),
 	nickname                    varchar(50),
 	studentNumber               int UNIQUE,
