@@ -30,7 +30,7 @@
 
   .add_button {
     width: calc(850px - 101px);
-    background-image: url('../../../../../../../assets/icons/add_icon_no_outline.svg');
+    background-image: url('~src/assets/icons/add_icon_no_outline.svg');
     height: 35px;
     background-color: white;
     background-size: 25px;
@@ -73,7 +73,7 @@
   width: 20px;
   height: 20px;
   border: none;
-  background-image: url('../../../../../../../assets/icons/drag_icon.svg');
+  background-image: url('~src/assets/icons/drag_icon.svg');
   opacity: 0.8;
 }
 
