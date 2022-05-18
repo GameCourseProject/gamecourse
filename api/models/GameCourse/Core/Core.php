@@ -160,7 +160,7 @@ class Core
                 $_SESSION['user'] = static::$loggedUser->getId();
 
                 // User doesn't have a photo yet
-                if (!file_exists(ROOT_PATH . 'photos/' . $username . '.png')) {
+                if (!static::$loggedUser->hasImage()) {
                     if (array_key_exists('type', $_SESSION) && array_key_exists('pictureUrl', $_SESSION)) {
                         if ($_SESSION['type'] == "fenix") {
                             $client = FenixEdu::getSingleton();
@@ -171,7 +171,7 @@ class Core
                         } else if ($_SESSION['type'] == "linkedin") {
                             $client = Linkedin::getSingleton();
                         }
-                        $client->downloadPhoto($_SESSION['pictureUrl'], $username);
+                        $client->downloadPhoto($_SESSION['pictureUrl'], static::$loggedUser->getId());
                     }
                 }
                 return true;

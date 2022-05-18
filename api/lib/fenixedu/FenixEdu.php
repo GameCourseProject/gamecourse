@@ -142,11 +142,11 @@ class FenixEdu
 		}
 	}
 
-	public function downloadPhoto($pictureUrl, $userId)
+	public function downloadPhoto(string $pictureUrl, int $userId)
 	{
-		$pic = base64_decode($pictureUrl);
-		$path = ROOT_PATH . 'photos/' . $userId . '.png';
-		file_put_contents($path, $pic);
+		$img = base64_decode($pictureUrl);
+		$path = USER_DATA_FOLDER . '/' . $userId . '/profile.png';
+		file_put_contents($path, $img);
 	}
 
     /**

@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\User;
 
+use API\API;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -72,17 +73,12 @@ class User
 
     public function getImage(): ?string
     {
-        // FIXME: add image column on database and allow other image file extensions
-        //        the way it is now, all user images must have a very specific name and be PNG
-        return file_exists(ROOT_PATH . "photos/" . $this->getUsername() . ".png") ?
-            API_URL . "/photos/" . $this->getUsername() . ".png" : null;
-
+        return $this->hasImage() ? API_URL . "/" . $this->getDataFolder(false) . "/profile.png" : null;
     }
 
     public function hasImage(): bool
     {
-        if (!$this->getImage()) return false;
-        return true;
+        return file_exists($this->getDataFolder() . "/profile.png");
     }
 
     public function getLastLogin(): ?string
@@ -187,9 +183,9 @@ class User
     /**
      * @throws Exception
      */
-    public function setImage(string $base64, string $name, string $extension)
+    public function setImage(string $base64)
     {
-        Utils::uploadFile(ROOT_PATH . "photos", $base64, $name . "." . $extension);
+        Utils::uploadFile($this->getDataFolder(), $base64, "profile.png");
     }
 
     /**
@@ -350,6 +346,7 @@ class User
             "username" => $username,
             "authentication_service" => $authService
         ]);
+        self::createDataFolder($id);
         return new User($id);
     }
 
@@ -392,10 +389,12 @@ class User
      *
      * @param int $userId
      * @return void
+     * @throws Exception
      */
     public static function deleteUser(int $userId) {
         Core::database()->delete(self::TABLE_USER, ["id" => $userId]);
         Core::database()->delete(Auth::TABLE_AUTH, ["game_course_user_id" => $userId]);
+        self::removeDataFolder($userId);
     }
 
     /**
@@ -406,6 +405,54 @@ class User
     public function exists(): bool
     {
         return !empty($this->getData("id"));
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------------- User Data -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    public function getDataFolder(bool $fullPath = true): string
+    {
+        if ($fullPath) return USER_DATA_FOLDER . "/" . $this->getId();
+        else {
+            $parts = explode("/", USER_DATA_FOLDER);
+            return end($parts) . "/" . $this->getId();
+        }
+    }
+
+    public function getDataFolderContents(): array
+    {
+        return Utils::getDirectoryContents($this->getDataFolder());
+    }
+
+    /**
+     * Creates a data folder for a given user. If folder exists, it
+     * will delete its contents.
+     *
+     * @param int $userId
+     * @return string
+     * @throws Exception
+     */
+    public static function createDataFolder(int $userId): string
+    {
+        $dataFolder = (new User($userId))->getDataFolder();
+        if (file_exists($dataFolder)) self::removeDataFolder($userId);
+        mkdir($dataFolder, 0777, true);
+        return $dataFolder;
+    }
+
+    /**
+     * Deletes a given user's data folder.
+     *
+     * @param int $userId
+     * @return void
+     * @throws Exception
+     */
+    public static function removeDataFolder(int $userId)
+    {
+        $dataFolder = (new User($userId))->getDataFolder();
+        if (file_exists($dataFolder)) Utils::deleteDirectory($dataFolder);
     }
 
 

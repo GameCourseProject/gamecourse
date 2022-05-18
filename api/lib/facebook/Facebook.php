@@ -77,10 +77,10 @@ class Facebook
         return (object) array("username" => $infoPerson->email, "name" => $infoPerson->name, "email" => $infoPerson->email, "pictureUrl" => $pic);
     }
 
-    public function downloadPhoto($pic, $userId)
+    public function downloadPhoto(string $img, int $userId)
     {
-        $path = ROOT_PATH . 'photos/' . $userId . '.png';
-        file_put_contents($path, $pic);
+        $path = ROOT_PATH . '/' . $userId . '/profile.png';
+        file_put_contents($path, $img);
     }
 
     public static function curlRequests($url, $headers = null)

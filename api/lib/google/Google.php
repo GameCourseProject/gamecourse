@@ -85,12 +85,12 @@ class GoogleHandler
         return (object) array("username" => $google_account_info->email, "name" => $google_account_info->name, "email" => $google_account_info->email, "pictureUrl" => $google_account_info->picture);
     }
 
-    public function downloadPhoto($pictureUrl, $userId)
+    public function downloadPhoto(string $pictureUrl, int $userId)
     {
         $pictureUrl = str_replace("\\", "", $pictureUrl);
-        $pic = file_get_contents($pictureUrl);
-        $path = ROOT_PATH . 'photos/' . $userId . '.png';
-        file_put_contents($path, $pic);
+        $img = file_get_contents($pictureUrl);
+        $path = USER_DATA_FOLDER . '/' . $userId . '/profile.png';
+        file_put_contents($path, $img);
     }
 
     public static function setCredentials($credentials, $course = 0): Google_Client

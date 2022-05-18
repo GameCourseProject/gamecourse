@@ -77,7 +77,7 @@ class Linkedin
         return (object) array("username" => $email, "name" => $name, "email" => $email, "pictureUrl" => $url);
     }
 
-    public function downloadPhoto($pictureUrl, $userId)
+    public function downloadPhoto(string $pictureUrl, int $userId)
     {
         $headers = [
             'Authorization: Bearer ' . $this->accessToken,
@@ -87,7 +87,7 @@ class Linkedin
         $infoPicture = json_decode($response);
         $photoUrl = $infoPicture->profilePicture->displayImage_->elements[0]->identifiers[0]->identifier;
         $pic = file_get_contents($photoUrl);
-        $path = ROOT_PATH . 'photos/' . $userId . '.png';
+        $path = USER_DATA_FOLDER . '/' . $userId . '/profile.png';
         file_put_contents($path, $pic);
     }
 

@@ -199,8 +199,8 @@ export class ApiHttpService {
       username: userData.username,
       email: userData.email,
       major: userData.major,
-      isActive: userData.isActive ? 1 : 0,
-      isAdmin: userData.isAdmin ? 1 : 0,
+      isActive: userData.isActive,
+      isAdmin: userData.isAdmin,
       authService: userData.auth,
       image: userData.image,
     }

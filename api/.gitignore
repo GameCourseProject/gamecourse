@@ -41,8 +41,9 @@ setup.done
 .DS_Store
 Thumbs.db
 
-# Course data
+# Course & User data
 /course_data/
+/user_data/
 
 # AutoGame
 autogame/imported-functions/*/
@@ -52,9 +53,6 @@ autogame/imported-functions/*/
 !/autogame/config/samples/**
 
 # Resources
-photos/**
-!/photos/no-photo.png
-!/photos/no-image.png
 /qr-code.png
 modules/skills/resources/
 modules/quest/resources/

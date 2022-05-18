@@ -47,10 +47,11 @@
     const TINY_API_URL = '<TINY_API_URL>';
 
     /** File Structure */
-    const MODULES_FOLDER = ROOT_PATH . 'modules';
-    const COURSE_DATA_FOLDER = ROOT_PATH . 'course_data';
     const AUTOGAME_FOLDER = ROOT_PATH . 'autogame';
+    const COURSE_DATA_FOLDER = ROOT_PATH . 'course_data';
     const LOGS_FOLDER = ROOT_PATH . 'logs';
+    const MODULES_FOLDER = ROOT_PATH . 'modules';
+    const USER_DATA_FOLDER = ROOT_PATH . 'user_data';
 
     /** Themes */
     $GLOBALS['theme'] = "default"; // FIXME: remove when removing themes

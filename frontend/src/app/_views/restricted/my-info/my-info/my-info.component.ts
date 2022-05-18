@@ -43,29 +43,61 @@ export class MyInfoComponent implements OnInit {
     this.photo = new ResourceManager(sanitizer);
   }
 
-  ngOnInit(): void {
-    this.getUserInfo();
+  async ngOnInit(): Promise<void> {
+    await this.getLoggedUser();
+    this.loading = false;
   }
 
-  getUserInfo(): void {
-    this.api.getLoggedUser()
-      .pipe( finalize(() => this.loading = false) )
-      .subscribe(user => {
-        this.user = user;
 
-        this.editUser = {
-          name: user.name,
-          nickname: user.nickname,
-          studentNumber: user.studentNumber,
-          email: user.email,
-          major: user.major,
-          auth: user.authMethod,
-          username: user.username
-        };
-        this.originalPhoto = user.photoUrl;
-        this.photo.set(user.photoUrl);
+  /*** --------------------------------------------- ***/
+  /*** -------------------- Init ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  async getLoggedUser(): Promise<void> {
+    this.user = await this.api.getLoggedUser().toPromise();
+
+    this.editUser = {
+      name: this.user.name,
+      nickname: this.user.nickname,
+      studentNumber: this.user.studentNumber,
+      email: this.user.email,
+      major: this.user.major,
+      auth: this.user.authMethod,
+      username: this.user.username
+    };
+
+    this.originalPhoto = this.user.photoUrl ?? 'assets/imgs/profile-default.png';
+    this.photo.set(this.user.photoUrl ?? 'assets/imgs/profile-default.png');
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Actions ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  async submitEditUser(): Promise<void> {
+    this.saving = true;
+
+    if (this.photoToAdd)
+      await ResourceManager.getBase64(this.photoToAdd).then(data => this.editUser.image = data);
+
+    this.api.editSelfInfo(this.editUser)
+      .pipe( finalize(() => {
+        this.saving = false;
+        this.isEditModalOpen = false;
+        this.photoToAdd = null;
+      }) )
+      .subscribe(res => {
+        this.getLoggedUser();
+        if (this.editUser.image)
+          this.updateManager.triggerUpdate(UpdateType.AVATAR) // Trigger change on navbar
       })
   }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
 
   isReadyToEdit() {
     let isValid = function (text) {
@@ -81,26 +113,6 @@ export class MyInfoComponent implements OnInit {
     this.photoToAdd = files.item(0);
     this.photo.set(this.photoToAdd);
   }
-
-  async submitEditUser(): Promise<void> {
-    this.saving = true;
-
-    if (this.photoToAdd)
-      await ResourceManager.getBase64(this.photoToAdd).then(data => this.editUser.image = data);
-
-    this.api.editSelfInfo(this.editUser)
-      .pipe( finalize(() => {
-        this.saving = false;
-        this.isEditModalOpen = false;
-        this.photoToAdd = null;
-      }) )
-      .subscribe(res => {
-          this.getUserInfo();
-          if (this.editUser.image)
-            this.updateManager.triggerUpdate(UpdateType.AVATAR) // Trigger change on navbar
-        })
-  }
-
 }
 
 export interface UserData {

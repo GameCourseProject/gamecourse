@@ -106,7 +106,7 @@ class UserController
      *                              "isActive"=true,
      *                              "username"="ist12345",
      *                              "authentication_service"="fenix",
-     *                              "image"="{API_URL}/photos/ist12345.png"
+     *                              "image"="{API_URL}/user_data/1/profile.png"
      *                         }
      *                     }
      *                 )
@@ -196,7 +196,7 @@ class UserController
 
         // Add new user
         $user = User::addUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
-        if ($image) $user->setImage($image, $username, "png");
+        if ($image) $user->setImage($image);
     }
 
 
