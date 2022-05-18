@@ -111,7 +111,7 @@ export class UsersComponent implements OnInit {
         break;
 
       case "# Courses":
-        this.reduce.items.sort((a, b) => Order.byNumber(a.courses.length, b.courses.length, this.order.active.sort))
+        this.reduce.items.sort((a, b) => Order.byNumber(a.nrCourses, b.nrCourses, this.order.active.sort))
         break;
 
       case "Last Login":
@@ -124,28 +124,6 @@ export class UsersComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
-
-  toggleAdmin(userID: number) {
-    this.loadingAction = true;
-
-    const user = this.users.find(user => user.id === userID);
-    user.isAdmin = !user.isAdmin;
-
-    this.api.setUserAdmin(user.id, user.isAdmin)
-      .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(res => {});
-  }
-
-  toggleActive(userID: number) {
-    this.loadingAction = true;
-
-    const user = this.users.find(user => user.id === userID);
-    user.isActive = !user.isActive;
-
-    this.api.setUserActive(user.id, user.isActive)
-      .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(res => {});
-  }
 
   async createUser(): Promise<void> {
     this.loadingAction = true;
@@ -185,15 +163,20 @@ export class UsersComponent implements OnInit {
         this.loadingAction = false;
       }) )
       .subscribe(
-        async res => {
-          await this.api.getUsers();
+        async userEdited => {
+          const index = this.users.findIndex(user => user.id === userEdited.id);
+          this.users.removeAtIndex(index);
+
+          this.users.push(userEdited);
+          this.reduceList();
+
           const loggedUser = await this.api.getLoggedUser().toPromise();
           if (loggedUser.id === this.newUser.id && this.newUser.image)
             this.updateManager.triggerUpdate(UpdateType.AVATAR); // Trigger change on navbar
 
           const successBox = $('#action_completed');
           successBox.empty();
-          successBox.append("User: '" + this.userToEdit.name + "' edited");
+          successBox.append("User: '" + userEdited.name + "' edited");
           successBox.show().delay(3000).fadeOut();
         })
   }
@@ -206,16 +189,38 @@ export class UsersComponent implements OnInit {
         this.loadingAction = false
       }) )
       .subscribe(
-        res => {
+        () => {
           const index = this.users.findIndex(el => el.id === user.id);
-          this.users.splice(index, 1);
+          this.users.removeAtIndex(index);
           this.reduceList();
 
           const successBox = $('#action_completed');
           successBox.empty();
-          successBox.append("User: " + user.name  + ' - ' + user.studentNumber + " deleted");
+          successBox.append("User '" + user.name  + ' - ' + user.studentNumber + "' deleted");
           successBox.show().delay(3000).fadeOut();
         })
+  }
+
+  toggleAdmin(userID: number) {
+    this.loadingAction = true;
+
+    const user = this.users.find(user => user.id === userID);
+    user.isAdmin = !user.isAdmin;
+
+    this.api.setUserAdmin(user.id, user.isAdmin)
+      .pipe( finalize(() => this.loadingAction = false) )
+      .subscribe(res => {});
+  }
+
+  toggleActive(userID: number) {
+    this.loadingAction = true;
+
+    const user = this.users.find(user => user.id === userID);
+    user.isActive = !user.isActive;
+
+    this.api.setUserActive(user.id, user.isActive)
+      .pipe( finalize(() => this.loadingAction = false) )
+      .subscribe(res => {});
   }
 
   importUsers(replace: boolean): void {
@@ -274,6 +279,7 @@ export class UsersComponent implements OnInit {
       isActive: user.isActive,
       auth: user.authMethod,
       username: user.username,
+      image: null
     };
     this.userToEdit = user;
     this.photo.set(user.photoUrl);

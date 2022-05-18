@@ -36,7 +36,7 @@ class API
     public static function gatherRequestInfo() {
         $values = null;
 
-        if ($_SERVER['REQUEST_METHOD'] == 'POST')
+        if ($_SERVER['REQUEST_METHOD'] != 'GET')
             $values = json_decode(file_get_contents('php://input'), true);
 
         if (!array_key_exists('module', $_GET))

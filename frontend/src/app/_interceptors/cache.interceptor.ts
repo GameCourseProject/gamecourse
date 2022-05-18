@@ -61,11 +61,13 @@ export class CacheInterceptor implements HttpInterceptor {
     }
 
     const cachedResponse: HttpResponse<any> = this.cache.get(request.url);
+    const hasModule = !!this.getUrlModule(request.url);
+
     if (cachedResponse) {
       // Has request cached
       return of(cachedResponse.clone());
 
-    } else if (this.lastGetRequest === request.url) {
+    } else if (hasModule && this.lastGetRequest === request.url) {
       // Same request in a row, answer w/ 1st response
       return this.lastGetRequestSubject[request.url].pipe( take(1) )
 
@@ -77,7 +79,7 @@ export class CacheInterceptor implements HttpInterceptor {
       return next.handle(request).pipe(
         tap(stateEvent => {
           if (stateEvent instanceof HttpResponse) {
-            this.cache.set(request.url, stateEvent.clone());
+            if (hasModule) this.cache.set(request.url, stateEvent.clone());
             this.lastGetRequestSubject[request.url].next(stateEvent.clone());
           }
         }),
@@ -92,7 +94,7 @@ export class CacheInterceptor implements HttpInterceptor {
    * @param request
    */
   resetCache(request: HttpRequest<any>) {
-    const module = getUrlModule(request.url);
+    const module = this.getUrlModule(request.url);
     if (!module) return;
 
     if (module === ApiHttpService.CORE) {
@@ -104,14 +106,14 @@ export class CacheInterceptor implements HttpInterceptor {
 
     const dependencies = this.dependencies[module] || [module].concat(this.dependencies[ApiHttpService.MODULE]);
     this.cache.forEach((value, key, map) => {
-      if (dependencies.includes(getUrlModule(key)))
+      if (dependencies.includes(this.getUrlModule(key)))
         map.delete(key);
     });
+  }
 
-    function getUrlModule(url: string): string {
-      const matches = url.match(/\bmodule=(.+?(?=&))/g);
-      if (!matches) return null;
-      return matches[0].split("=")[1];
-    }
+  private getUrlModule(url: string): string {
+    const matches = url.match(/\bmodule=(.+?(?=&))/g);
+    if (!matches) return null;
+    return matches[0].split("=")[1];
   }
 }

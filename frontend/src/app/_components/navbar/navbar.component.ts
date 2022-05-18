@@ -229,7 +229,7 @@ export class NavbarComponent implements OnInit {
   logout(): void {
     this.api.logout().subscribe(
       isLoggedIn => {
-        if (!isLoggedIn) this.router.navigate(['/login'])
+        if (!isLoggedIn) this.router.navigate(['/login']);
       })
   }
 

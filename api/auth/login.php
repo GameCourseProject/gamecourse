@@ -10,7 +10,7 @@ require __DIR__ . "/../inc/bootstrap.php";
 Core::denyCLI();
 Core::requireSetup();
 
-if (array_key_exists("logout", $_GET))
+if (array_key_exists("logout", $_POST))
     Core::logout();
 
 $isLoggedIn = Core::requireLogin();

@@ -45,6 +45,7 @@ import {
   ProfilingNode
 } from "../../_views/restricted/courses/course/settings/modules/config/profiling/profiling.component";
 import {ErrorService} from "../error.service";
+import {Router} from "@angular/router";
 
 @Injectable({
   providedIn: 'root'
@@ -79,6 +80,7 @@ export class ApiHttpService {
   constructor(
     private http: HttpClient,
     private apiEndpoint: ApiEndpointsService,
+    private router: Router
   ) { }
 
 
@@ -126,18 +128,17 @@ export class ApiHttpService {
   public isLoggedIn(): Observable<boolean> {
     const url = this.apiEndpoint.createUrl('auth/login.php');
 
-    return this.post(url, new FormData(), ApiHttpService.httpOptions, true)
+    return this.get(url, ApiHttpService.httpOptions, true)
       .pipe( map((res: any) => res['isLoggedIn']) );
   }
 
   public logout(): Observable<boolean> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('logout', true);
-    };
+    const formData = new FormData();
+    formData.append('logout', '');
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('auth/login.php', params);
+    const url = this.apiEndpoint.createUrl('auth/login.php');
 
-    return this.get(url, ApiHttpService.httpOptions)
+    return this.post(url, formData, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['isLoggedIn']) );
   }
 
@@ -202,7 +203,7 @@ export class ApiHttpService {
       isActive: userData.isActive,
       isAdmin: userData.isAdmin,
       authService: userData.auth,
-      image: userData.image,
+      image: userData.image
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -215,20 +216,19 @@ export class ApiHttpService {
       .pipe( map((res: any) => User.fromDatabase(res['data'])) );
   }
 
-  public editUser(userData: UserData): Observable<void> {
+  public editUser(userData: UserData): Observable<User> {
     const data = {
       userId: userData.id,
-      userName: userData.name,
-      userStudentNumber: userData.studentNumber,
-      userNickname: userData.nickname,
-      userUsername: userData.username,
-      userEmail: userData.email,
-      userMajor: userData.major,
-      userIsActive: userData.isActive ? 1 : 0,
-      userIsAdmin: userData.isAdmin ? 1 : 0,
-      userAuthService: userData.auth,
-      userHasImage: !!userData.image,
-      userImage: userData.image,
+      name: userData.name,
+      studentNumber: userData.studentNumber,
+      nickname: userData.nickname,
+      username: userData.username,
+      email: userData.email,
+      major: userData.major,
+      isActive: userData.isActive,
+      isAdmin: userData.isAdmin,
+      authService: userData.auth,
+      image: userData.image
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -237,8 +237,8 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+    return this.put(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => User.fromDatabase(res['data'])) );
   }
 
   public editSelfInfo(userData: UserData): Observable<any> {
@@ -263,47 +263,46 @@ export class ApiHttpService {
   }
 
   public deleteUser(userID: number): Observable<void> {
-    const data = { userId: userID };
-
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.USER);
       qs.push('request', 'deleteUser');
+      qs.push('userId', userID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
+    return this.delete(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
   public setUserAdmin(userID: number, isAdmin: boolean): Observable<void> {
     const data = {
       "userId": userID,
-      "isAdmin": isAdmin ? 1 : 0
+      "isAdmin": isAdmin
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'setUserAdminPermission');
+      qs.push('request', 'setAdmin');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
+    return this.put(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
   public setUserActive(userID: number, isActive: boolean): Observable<void> {
     const data = {
       "userId": userID,
-      "isActive": isActive ? 1 : 0
+      "isActive": isActive
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.USER);
-      qs.push('request', 'setUserActiveState');
+      qs.push('request', 'setActive');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
+    return this.put(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -2020,6 +2019,15 @@ export class ApiHttpService {
     return this.http.get(url, options)
       .pipe(
         catchError(error => {
+          if (error.status === 401)
+            return this.router.navigate(['/login']);
+
+          if (error.status === 403)
+            return this.router.navigate(['/no-access']);
+
+          if (error.status === 409)
+            return this.router.navigate(['/setup']);
+
           if (!skipErrors) ErrorService.set(error);
           return throwError(error);
         })
@@ -2030,6 +2038,15 @@ export class ApiHttpService {
     return this.http.post(url, data, options)
       .pipe(
         catchError(error => {
+          if (error.status === 401)
+            return this.router.navigate(['/login']);
+
+          if (error.status === 403)
+            return this.router.navigate(['/no-access']);
+
+          if (error.status === 409)
+            return this.router.navigate(['/setup']);
+
           if (!skipErrors) ErrorService.set(error);
           return throwError(error);
         })
@@ -2039,6 +2056,15 @@ export class ApiHttpService {
   public put(url: string, data: any, options?: any, skipErrors?: boolean) {
     return this.http.put(url, data, options).pipe(
       catchError(error => {
+        if (error.status === 401)
+          return this.router.navigate(['/login']);
+
+        if (error.status === 403)
+          return this.router.navigate(['/no-access']);
+
+        if (error.status === 409)
+          return this.router.navigate(['/setup']);
+
         if (!skipErrors) ErrorService.set(error);
         return throwError(error);
       })
@@ -2049,10 +2075,18 @@ export class ApiHttpService {
     return this.http.delete(url, options)
       .pipe(
         catchError(error => {
+          if (error.status === 401)
+            return this.router.navigate(['/login']);
+
+          if (error.status === 403)
+            return this.router.navigate(['/no-access']);
+
+          if (error.status === 409)
+            return this.router.navigate(['/setup']);
+
           if (!skipErrors) ErrorService.set(error);
           return throwError(error);
         })
       );
   }
-
 }

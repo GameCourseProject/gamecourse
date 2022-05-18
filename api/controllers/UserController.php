@@ -197,6 +197,90 @@ class UserController
         // Add new user
         $user = User::addUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
         if ($image) $user->setImage($image);
+
+        $userInfo = $user->getData();
+        $userInfo["image"] = $user->getImage();
+        $userInfo["nrCourses"] = count($user->getCourses());
+        $userInfo["lastLogin"] = $user->getLastLogin();
+        API::response($userInfo);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function editUser()
+    {
+        API::requireAdminPermission();
+        API::requireValues('userId', 'name', 'authService', 'studentNumber', 'email', 'nickname', 'username', 'major', 'isActive', 'isAdmin', 'image');
+
+        $userId = API::getValue("userId", "int");
+        $user = API::verifyUserExists($userId);
+
+        // Get values
+        $name = API::getValue("name");
+        $username = API::getValue("username");
+        $authService = API::getValue("authService");
+        $email = API::getValue("email");
+        $studentNumber = API::getValue("studentNumber", "int");
+        $nickname = API::getValue("nickname");
+        $major = API::getValue("major");
+        $isAdmin = API::getValue("isAdmin", "bool");
+        $isActive = API::getValue("isActive", "bool");
+        $image = API::getValue("image");
+
+        // Edit user
+        $user->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
+        if ($image) $user->setImage($image);
+
+        $userInfo = $user->getData();
+        $userInfo["image"] = $user->getImage();
+        $userInfo["nrCourses"] = count($user->getCourses());
+        $userInfo["lastLogin"] = $user->getLastLogin();
+        API::response($userInfo);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function deleteUser()
+    {
+        API::requireAdminPermission();
+        API::requireValues('userId');
+
+        $userId = API::getValue("userId", "int");
+        API::verifyUserExists($userId);
+
+        User::deleteUser($userId);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setAdmin()
+    {
+        API::requireAdminPermission();
+        API::requireValues('userId', 'isAdmin');
+
+        $userId = API::getValue("userId", "int");
+        $user = API::verifyUserExists($userId);
+
+        $isAdmin = API::getValue("isAdmin", "bool");
+        $user->setAdmin($isAdmin);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setActive()
+    {
+        API::requireAdminPermission();
+        API::requireValues('userId', 'isActive');
+
+        $userId = API::getValue("userId", "int");
+        $user = API::verifyUserExists($userId);
+
+        $isActive = API::getValue("isActive", "bool");
+        $user->setActive($isActive);
     }
 
 
