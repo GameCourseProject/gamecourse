@@ -1,5 +1,5 @@
 <?php
-namespace Api;
+namespace API;
 
 use OpenApi\Generator;
 

@@ -2,6 +2,7 @@
 namespace GameCourse\User;
 
 use Error;
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Role\Role;
@@ -343,12 +344,13 @@ class CourseUser extends User
      * @param string $file
      * @param bool $replace
      * @return int
+     * @throws Exception
      */
     public static function importCourseUsers(int $courseId, string $file, bool $replace = true): int
     {
         $course = new Course($courseId);
         if (!$course->exists())
-            throw new Error("Course with ID = " . $courseId . " doesn't exist.");
+            throw new Exception("Course with ID = " . $courseId . " doesn't exist.");
 
         return Utils::importFromCSV(array_merge(parent::HEADERS, self::HEADERS), function ($user, $indexes) use ($course, $replace) {
             $name = $user[$indexes["name"]];
@@ -400,12 +402,13 @@ class CourseUser extends User
      *
      * @param int $courseId
      * @return string
+     * @throws Exception
      */
     public static function exportCourseUsers(int $courseId): string
     {
         $course = new Course($courseId);
         if (!$course->exists())
-            throw new Error("Course with ID = " . $courseId . " doesn't exist.");
+            throw new Exception("Course with ID = " . $courseId . " doesn't exist.");
 
         return Utils::exportToCSV($course->getCourseUsers(), function ($user) use ($course) {
             return [$user["name"], $user["email"], $user["major"], $user["nickname"], $user["studentNumber"],
@@ -419,11 +422,16 @@ class CourseUser extends User
     /*** ------------------- Validations -------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @param $dateTime
+     * @return void
+     * @throws Exception
+     */
     private static function validateDateTime($dateTime)
     {
         if (is_null($dateTime)) return;
-        if (!is_string($dateTime) || !Utils::validateDate($dateTime, "Y-m-d H:i:s"))
-            throw new Error("Datetime '" . $dateTime . "' should be in format 'yyyy-mm-dd HH:mm:ss'");
+        if (!is_string($dateTime) || !Utils::isValidDate($dateTime, "Y-m-d H:i:s"))
+            throw new Exception("Datetime '" . $dateTime . "' should be in format 'yyyy-mm-dd HH:mm:ss'");
     }
 
 

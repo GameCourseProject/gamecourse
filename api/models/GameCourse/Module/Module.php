@@ -3,6 +3,7 @@ namespace GameCourse\Module;
 
 use Error;
 use Event\Event;
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use Utils\Utils;
@@ -105,10 +106,13 @@ abstract class Module
         return $this->course;
     }
 
+    /**
+     * @throws Exception
+     */
     public function isEnabled(): bool
     {
         if (!$this->course)
-            throw new Error("Can't check whether module '" . $this->id . "' is enabled: no course given.");
+            throw new Exception("Can't check whether module '" . $this->id . "' is enabled: no course given.");
 
         return boolval(Core::database()->select(
             self::TABLE_COURSE_MODULE,
@@ -176,30 +180,33 @@ abstract class Module
         $this->course = $course;
     }
 
+    /**
+     * @throws Exception
+     */
     public function setEnabled(bool $isEnabled)
     {
         if (!$this->course)
-            throw new Error("Can't enable/disable module '" . $this->id . "': no course given.");
+            throw new Exception("Can't enable/disable module '" . $this->id . "': no course given.");
 
         // Check course/module compatibility
         $compatibleModuleVersions = $this->course->getCompatibleModuleVersions($this->id);
         $moduleVersion = $this->getVersion();
         if (!(Utils::compareVersions($moduleVersion, $compatibleModuleVersions["min"]) >= 0 &&
             (is_null($compatibleModuleVersions["max"]) || Utils::compareVersions($moduleVersion, $compatibleModuleVersions["max"]) <= 0)))
-            throw new Error("Course with ID = " . $this->course->getId() . " is not compatible with module '" . $this->id . "' v" . $moduleVersion . ".
+            throw new Exception("Course with ID = " . $this->course->getId() . " is not compatible with module '" . $this->id . "' v" . $moduleVersion . ".
                             Needs module version >= " . $compatibleModuleVersions["min"] . (!is_null($compatibleModuleVersions["max"]) ? " & <= " . $compatibleModuleVersions["max"] : "") . ".");
 
         // Check project compatibility
         $compatibleVersions = $this->getCompatibleVersions();
         if (!(Utils::compareVersions(PROJECT_VERSION, $compatibleVersions["project"]["min"]) >= 0 &&
             (is_null($compatibleVersions["project"]["max"]) || Utils::compareVersions(PROJECT_VERSION, $compatibleVersions["project"]["max"]) <= 0)))
-            throw new Error("Module '" . $this->id . "' v" . $this->getVersion() . " is not compatible with project v" . PROJECT_VERSION . ".
+            throw new Exception("Module '" . $this->id . "' v" . $this->getVersion() . " is not compatible with project v" . PROJECT_VERSION . ".
                             Needs project version >= " . $compatibleVersions["project"]["min"] . (!is_null($compatibleVersions["project"]["max"]) ? " & <= " . $compatibleVersions["project"]["max"] : "") . ".");
 
         // Check API compatibility
         if (!(Utils::compareVersions(API_VERSION, $compatibleVersions["api"]["min"]) >= 0 &&
             (is_null($compatibleVersions["api"]["max"]) || Utils::compareVersions(API_VERSION, $compatibleVersions["api"]["max"]) <= 0)))
-            throw new Error("Module '" . $this->id . "' v" . $this->getVersion() . " is not compatible with API v" . API_VERSION . ".
+            throw new Exception("Module '" . $this->id . "' v" . $this->getVersion() . " is not compatible with API v" . API_VERSION . ".
                             Needs API version >= " . $compatibleVersions["api"]["min"] . (!is_null($compatibleVersions["api"]["max"]) ? " & <= " . $compatibleVersions["api"]["max"] : "") . ".");
 
         // Check dependencies
@@ -209,14 +216,14 @@ abstract class Module
             foreach ($hardDependencies as $dependency) {
                 $depModule = $this->course->getModuleById($dependency["id"]);
                 if (!$depModule->isEnabled())
-                    throw new Error("Can't enable module '" . $this->id . "' as its hard dependency '" . $dependency["id"] . "' is disabled.");
+                    throw new Exception("Can't enable module '" . $this->id . "' as its hard dependency '" . $dependency["id"] . "' is disabled.");
             }
 
         } else {
             // Check there's no modules depending on it
             $dependants = $this->getDependants(DependencyMode::HARD);
             if (count($dependants) > 0)
-                throw new Error("Can't disable module '" . $this->id . "' as module '" . $dependants[0]["id"] . "' depends on it.");
+                throw new Exception("Can't disable module '" . $this->id . "' as module '" . $dependants[0]["id"] . "' depends on it.");
         }
 
         Core::database()->update(self::TABLE_COURSE_MODULE, ["isEnabled" => +$isEnabled],
@@ -249,16 +256,18 @@ abstract class Module
      * This is only performed once during system setup.
      *
      * @return void
+     * @throws Exception
      */
     public static function setupModules()
     {
+        Core::database()->setForeignKeyChecks(false);
         $modulesFolders = Utils::getDirectoryContents(MODULES_FOLDER);
         foreach ($modulesFolders as $folder) {
             $moduleId = $folder["name"];
             $mainFile = MODULES_FOLDER . "/" . $moduleId . "/" . $moduleId. ".php";
 
             if (!file_exists($mainFile))
-                throw new Error("Can't find main file for module '" . $moduleId . "'.");
+                throw new Exception("Can't find main file for module '" . $moduleId . "'.");
 
             $moduleClass = "\\GameCourse\\" . $moduleId . "\\" . $moduleId;
             $module = new $moduleClass(null);
@@ -266,6 +275,7 @@ abstract class Module
             self::addModule($moduleId, $module::NAME, $module::DESCRIPTION, $module::TYPE, $module::VERSION,
                 $module::PROJECT_VERSION, $module::API_VERSION, $module::DEPENDENCIES);
         }
+        Core::database()->setForeignKeyChecks(true);
     }
 
 
@@ -409,12 +419,13 @@ abstract class Module
      *
      * @param string $dependencyId
      * @return void
+     * @throws Exception
      */
     public function checkDependency(string $dependencyId)
     {
         $module = $this->course->getModuleById($dependencyId);
-        if (!$module) throw new Error("Module '" . $dependencyId . "' doesn't exist in the system.");
-        if (!$module->isEnabled()) throw new Error("Module '" . $dependencyId . "' is not enabled.");
+        if (!$module) throw new Exception("Module '" . $dependencyId . "' doesn't exist in the system.");
+        if (!$module->isEnabled()) throw new Exception("Module '" . $dependencyId . "' is not enabled.");
     }
 
 

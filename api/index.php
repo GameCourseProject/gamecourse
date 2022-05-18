@@ -7,7 +7,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
-use Api\API;
+use API\API;
 use GameCourse\Core\Core;
 
 require __DIR__ . "/inc/bootstrap.php";
@@ -17,9 +17,6 @@ Core::requireSetup();
 
 if (!Core::requireLogin(false))
     API::error("Not logged in!", 401);
-
-if (Core::requireSetup(false))
-    API::error("GameCourse is not yet setup.", 409);
 
 if (!Core::checkAccess(false))
     API::error("Access denied.", 403);

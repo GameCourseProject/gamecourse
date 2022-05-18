@@ -3,6 +3,7 @@ namespace GameCourse\User;
 
 use DateTime;
 use Error;
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Role\Role;
@@ -293,7 +294,7 @@ class CourseUserTest extends TestCase
     public function setLastActivityFailure(string $lastActivity)
     {
         $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         $courseUser->setLastActivity($lastActivity);
     }
 
@@ -315,7 +316,7 @@ class CourseUserTest extends TestCase
     public function setPreviousActivityFailure(string $previousActivity)
     {
         $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         $courseUser->setPreviousActivity($previousActivity);
     }
 
@@ -354,7 +355,7 @@ class CourseUserTest extends TestCase
             $courseUser->setData($fieldValues);
             $this->fail("Error should have been thrown on 'setDataFailure'");
 
-        } catch (Error $e) {
+        } catch (Exception $e) {
             $courseUser = new CourseUser($this->user->getId(), $this->course);
             $this->assertEquals(["id" => $this->user->getId(), "course" => $this->course->getId(), "lastActivity" => null,
                 "previousActivity" => null, "isActive" => true], $courseUser->getData("id, course, lastActivity, previousActivity, isActive"));
@@ -932,7 +933,7 @@ class CourseUserTest extends TestCase
     public function addRoleNoRoleGiven()
     {
         $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         $courseUser->addRole();
     }
 
@@ -999,7 +1000,7 @@ class CourseUserTest extends TestCase
         $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
         $courseUser->setRoles(["Teacher", "Student"]);
 
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         $courseUser->removeRole();
     }
 
@@ -1032,7 +1033,7 @@ class CourseUserTest extends TestCase
         $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
         $courseUser->setRoles(["Teacher", "Student"]);
 
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         $courseUser->hasRole();
     }
 
@@ -1637,7 +1638,7 @@ class CourseUserTest extends TestCase
      */
     public function importCourseUsersCourseDoesntExist()
     {
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         CourseUser::importCourseUsers(10, "");
     }
 
@@ -1683,7 +1684,7 @@ class CourseUserTest extends TestCase
      */
     public function exportCourseUsersCourseDoesntExist()
     {
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         CourseUser::exportCourseUsers(10);
     }
 }

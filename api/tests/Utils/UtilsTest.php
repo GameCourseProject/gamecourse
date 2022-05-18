@@ -2,6 +2,7 @@
 namespace Utils;
 
 use Error;
+use Exception;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -548,6 +549,7 @@ class UtilsTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function uploadFileIsNotDirectory()
     {
@@ -558,20 +560,21 @@ class UtilsTest extends TestCase
         file_put_contents(ROOT_PATH . "tests/Utils/dir1/file4.txt", "");
 
         // When
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         try {
             Utils::uploadFile(ROOT_PATH . "tests/Utils/dir1/dir11/file1.txt", "", "");
-        } catch (Error $error) {
+        } catch (Exception $error) {
             // Clean up
             Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir1");
 
-            throw new Error($error->getMessage());
+            throw new Exception($error->getMessage());
         }
     }
 
 
     /**
      * @test
+     * @throws Exception
      */
     public function deleteFile()
     {
@@ -595,6 +598,7 @@ class UtilsTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function deleteFileFileDoesntExist()
     {
@@ -627,36 +631,36 @@ class UtilsTest extends TestCase
      * @test
      * @dataProvider validEmailProvider
      */
-    public function validateEmailValidEmail(string $email)
+    public function isValidEmailValidEmail(string $email)
     {
-        $this->assertTrue(Utils::validateEmail($email));
+        $this->assertTrue(Utils::isValidEmail($email));
     }
 
     /**
      * @test
      * @dataProvider invalidEmailProvider
      */
-    public function validateEmailInvalidEmail($email)
+    public function isValidEmailInvalidEmail($email)
     {
-        $this->assertFalse(Utils::validateEmail($email));
+        $this->assertFalse(Utils::isValidEmail($email));
     }
 
     /**
      * @test
      * @dataProvider validDateProvider
      */
-    public function validateDateValidDate(string $date, string $format)
+    public function isValidDateValidDate(string $date, string $format)
     {
-        $this->assertTrue(Utils::validateDate($date, $format));
+        $this->assertTrue(Utils::isValidDate($date, $format));
     }
 
     /**
      * @test
      * @dataProvider invalidDateProvider
      */
-    public function validateDateInvalidDate(?string $date, string $format)
+    public function isValidDateInvalidDate(?string $date, string $format)
     {
-        $this->assertFalse(Utils::validateDate($date, $format));
+        $this->assertFalse(Utils::isValidDate($date, $format));
     }
 
 

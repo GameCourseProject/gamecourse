@@ -1,7 +1,7 @@
 <?php
 namespace GameCourse\User;
 
-use Error;
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Role\Role;
@@ -9,6 +9,7 @@ use PDOException;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
+use TypeError;
 
 /**
  * NOTE: only run tests outside the production environment as
@@ -55,15 +56,20 @@ class UserTest extends TestCase
     {
         return [
             "ASCII characters" => ["John Smith Doe"],
-            "non-ASCII characters" => ["John Smith Döe"]
+            "non-ASCII characters" => ["John Smith Döe"],
+            "hyphen" => ["John Smith-Doe"],
+            "apostrophe" => ["John Smith'Doe"],
+            "dot" => ["John S. Doe"]
         ];
     }
 
     public function setUserNameFailureProvider(): array
     {
         return [
-            "null name" => [null],
-            "empty" => [""]
+            "null" => [null],
+            "empty" => [""],
+            "not a string" => [123],
+            "too long" => ["John Smith Doe John Smith Doe John Smith Doe John S"]
         ];
     }
 
@@ -84,6 +90,7 @@ class UserTest extends TestCase
             "invalid e-mail" => ["johndoe@example.123"],
             "empty" => [""],
             "not a string" => [123],
+            "too long" => ["somerandomsuperduperlongemail@somerandomcompany.com"]
         ];
     }
 
@@ -100,10 +107,10 @@ class UserTest extends TestCase
     public function setAuthFailureProvider(): array
     {
         return [
-            "unavailable auth service" => ["auth_service"],
             "null" => [null],
             "empty" => [""],
             "not a string" => [123],
+            "unavailable auth service" => ["auth_service"],
         ];
     }
 
@@ -216,6 +223,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getId()
     {
@@ -227,6 +235,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserName()
     {
@@ -237,6 +246,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getEmail()
     {
@@ -247,6 +257,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getMajor()
     {
@@ -257,6 +268,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getNickname()
     {
@@ -267,6 +279,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getStudentNumber()
     {
@@ -277,6 +290,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserUsername()
     {
@@ -287,6 +301,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getAuthService()
     {
@@ -297,6 +312,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getImage()
     {
@@ -313,6 +329,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function hasImage()
     {
@@ -329,6 +346,67 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
+     */
+    public function getLastLogin()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set courses
+        $course1 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $course2 = Course::addCourse("Producao de Conteudos Multimedia", "PCM", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        // Set a user
+        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+
+        // Given
+        $course1->addUserToCourse($user->getId(), "Teacher");
+        $course2->addUserToCourse($user->getId(), "Student");
+        $course1->getCourseUserById($user->getId())->setLastActivity("2022-03-21 12:00:00");
+        $course2->getCourseUserById($user->getId())->setLastActivity("2021-03-21 12:00:00");
+
+        // Then
+        $this->assertEquals("2022-03-21 12:00:00", $user->getLastLogin());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getLastLoginNoLogin()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set courses
+        $course1 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $course2 = Course::addCourse("Producao de Conteudos Multimedia", "PCM", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        // Set a user
+        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+
+        // Given
+        $course1->addUserToCourse($user->getId(), "Teacher");
+        $course2->addUserToCourse($user->getId(), "Student");
+
+        // Then
+        $this->assertNull($user->getLastLogin());
+    }
+
+    /**
+     * @test
+     * @throws Exception
      */
     public function isAdmin()
     {
@@ -339,6 +417,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function isNotAdmin()
     {
@@ -349,6 +428,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function isActive()
     {
@@ -359,6 +439,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function isInactive()
     {
@@ -370,6 +451,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getData()
     {
@@ -383,6 +465,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getDataOnlyAuthFields()
     {
@@ -394,6 +477,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getDataNonAuthFields()
     {
@@ -406,6 +490,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getDataMixedFields()
     {
@@ -418,6 +503,7 @@ class UserTest extends TestCase
     /**
      * @test
      * @dataProvider setUserNameSuccessProvider
+     * @throws Exception
      */
     public function setUserNameSuccess(string $name)
     {
@@ -430,18 +516,25 @@ class UserTest extends TestCase
     /**
      * @test
      * @dataProvider setUserNameFailureProvider
+     * @throws Exception
      */
     public function setUserNameFailure($name)
     {
         $user = User::addUser("NAME", "ist123456", "fenix", "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
-        $this->expectException(Error::class);
-        $user->setName($name);
+        try {
+            $user->setName($name);
+            $this->fail("Exception should have been thrown on 'setUserNameFailure'");
+
+        } catch (Exception|TypeError $error) {
+            $this->assertEquals("NAME", $user->getName());
+        }
     }
 
     /**
      * @test
      * @dataProvider setEmailSuccessProvider
+     * @throws Exception
      */
     public function setEmailSuccess(?string $email)
     {
@@ -454,17 +547,19 @@ class UserTest extends TestCase
     /**
      * @test
      * @dataProvider setEmailFailureProvider
+     * @throws Exception
      */
     public function setEmailFailure($email)
     {
         $user = User::addUser("John Smith Doe", "ist123456", "fenix", "example@email.com",
             123456, "John Doe", "MEIC-A", false, true);
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         $user->setEmail($email);
     }
 
     /**
      * @test
+     * @throws Exception
      */
     public function setMajor()
     {
@@ -476,6 +571,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setNickname()
     {
@@ -487,6 +583,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setStudentNumber()
     {
@@ -498,6 +595,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setUserUsername()
     {
@@ -510,6 +608,7 @@ class UserTest extends TestCase
     /**
      * @test
      * @dataProvider setAuthSuccessProvider
+     * @throws Exception
      */
     public function setAuthServiceSuccess(string $authService)
     {
@@ -522,18 +621,25 @@ class UserTest extends TestCase
     /**
      * @test
      * @dataProvider setAuthFailureProvider
+     * @throws Exception
      */
     public function setAuthServiceFailure($authService)
     {
         $user = User::addUser("John Smith Doe", "ist123456", "fenix", "example@email.com",
             123456, "John Doe", "MEIC-A", false, true);
-        $this->expectException(Error::class);
-        $user->setAuthService($authService);
+        try {
+            $user->setAuthService($authService);
+            $this->fail("Exception should have been thrown on 'setAuthServiceFailure'.");
+
+        } catch (Exception|TypeError $error) {
+            $this->assertEquals("fenix", $user->getAuthService());
+        }
     }
 
     /**
      * @test
      * @dataProvider setImageProvider
+     * @throws Exception
      */
     public function setImage(string $base64, string $name, string $extension)
     {
@@ -546,6 +652,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setAdmin()
     {
@@ -557,6 +664,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setActive()
     {
@@ -569,6 +677,7 @@ class UserTest extends TestCase
     /**
      * @test
      * @dataProvider setDataSuccessProvider
+     * @throws Exception
      */
     public function setDataSuccess(array $fieldValues)
     {
@@ -590,7 +699,7 @@ class UserTest extends TestCase
             $user->setData($fieldValues);
             $this->fail("Error should have been thrown on 'setDataFailure'");
 
-        } catch (Error $e) {
+        } catch (Exception $e) {
             $user = new User(1);
             $this->assertEquals(["id" => 1, "name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => "fenix",
                 "email" => "ana.goncalves@gmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
@@ -600,6 +709,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setDataDuplicateStudentNumberFailure()
     {
@@ -621,6 +731,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setDataDuplicateUsernameAndAuthenticationServiceFailure()
     {
@@ -642,6 +753,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setDataDuplicateEmailFailure()
     {
@@ -664,6 +776,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserById()
     {
@@ -682,6 +795,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserByUsername()
     {
@@ -700,6 +814,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserByEmail()
     {
@@ -718,6 +833,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserByStudentNumber()
     {
@@ -737,6 +853,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getAllUsers()
     {
@@ -749,21 +866,21 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(2, $users);
 
-        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image", "courses"];
+        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                if ($key != "image" && $key != "courses") $this->assertEquals($user[$key], ${"user".($i+1)}->getData($key));
-                else if ($key == "image") $this->assertEquals($user[$key], ${"user".($i+1)}->getImage());
-                else $this->assertSameSize($user["courses"], ${"user".($i+1)}->getCourses());
+                if ($key != "image") $this->assertEquals($user[$key], ${"user".($i+1)}->getData($key));
+                else $this->assertEquals($user[$key], ${"user".($i+1)}->getImage());
             }
         }
     }
 
     /**
      * @test
+     * @throws Exception
      */
     public function getActiveUsers()
     {
@@ -776,21 +893,21 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(1, $users);
 
-        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image", "courses"];
+        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                if ($key != "image" && $key != "courses") $this->assertEquals($user[$key], $user2->getData($key));
-                else if ($key == "image") $this->assertEquals($user[$key], $user2->getImage());
-                else $this->assertSameSize($user["courses"], $user2->getCourses());
+                if ($key != "image") $this->assertEquals($user[$key], $user2->getData($key));
+                else $this->assertEquals($user[$key], $user2->getImage());
             }
         }
     }
 
     /**
      * @test
+     * @throws Exception
      */
     public function getInactiveUsers()
     {
@@ -803,21 +920,21 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(1, $users);
 
-        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image", "courses"];
+        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                if ($key != "image" && $key != "courses") $this->assertEquals($user[$key], $user1->getData($key));
-                else if ($key == "image") $this->assertEquals($user[$key], $user1->getImage());
-                else $this->assertSameSize($user["courses"], $user1->getCourses());
+                if ($key != "image") $this->assertEquals($user[$key], $user1->getData($key));
+                else $this->assertEquals($user[$key], $user1->getImage());
             }
         }
     }
 
     /**
      * @test
+     * @throws Exception
      */
     public function getAdmins()
     {
@@ -840,6 +957,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserCourses()
     {
@@ -880,6 +998,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserActiveCourses()
     {
@@ -915,6 +1034,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserInactiveCourses()
     {
@@ -950,6 +1070,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserVisibleCourses()
     {
@@ -985,6 +1106,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserInvisibleCourses()
     {
@@ -1020,6 +1142,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserActiveAndVisibleCourses()
     {
@@ -1057,6 +1180,7 @@ class UserTest extends TestCase
     /**
      * @test
      * @dataProvider addUserSuccessProvider
+     * @throws Exception
      */
     public function addUserSuccess(string $name, string $username, string $authService, ?string $email, int $studentNumber,
                                    ?string $nickname, ?string $major, bool $isAdmin, bool $isActive)
@@ -1079,9 +1203,9 @@ class UserTest extends TestCase
     {
         try {
             User::addUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
-            $this->fail("Error should have been thrown on 'addUserFailure'");
+            $this->fail("Exception should have been thrown on 'addUserFailure'");
 
-        } catch (Error $e) {
+        } catch (Exception|TypeError $e) {
             $user = Core::database()->select(User::TABLE_USER, ["studentNumber" => $studentNumber]);
             $this->assertEmpty($user);
         }
@@ -1089,6 +1213,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addUserDuplicateStudentNumberFailure()
     {
@@ -1102,6 +1227,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addUserDuplicateUsernameAndAuthenticationServiceFailure()
     {
@@ -1115,6 +1241,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addUserDuplicateEmailFailure()
     {
@@ -1130,6 +1257,7 @@ class UserTest extends TestCase
     /**
      * @test
      * @dataProvider addUserSuccessProvider
+     * @throws Exception
      */
     public function editUser(string $name, string $username, string $authService, ?string $email, int $studentNumber,
                              ?string $nickname, ?string $major, bool $isAdmin, bool $isActive)
@@ -1156,9 +1284,9 @@ class UserTest extends TestCase
             $user = User::addUser("João Carlos Sousa", "ist654321", "fenix", "joao@gmail.com",
                 654321, "João Sousa", "MEIC-A", false, false);
             $user->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
-            $this->fail("Error should have been thrown on 'editUserFailure'");
+            $this->fail("Exception should have been thrown on 'editUserFailure'");
 
-        } catch (Error $e) {
+        } catch (Exception|TypeError $e) {
             $user = Core::database()->select(User::TABLE_USER, ["studentNumber" => 654321]);
             $auth = Core::database()->select(Auth::TABLE_AUTH, ["username" => "ist654321"]);
             $this->assertEquals(["id" => "1", "name" => "João Carlos Sousa", "email" => "joao@gmail.com", "studentNumber" => 654321,
@@ -1169,6 +1297,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function editUserDuplicateStudentNumberFailure()
     {
@@ -1184,6 +1313,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function editUserDuplicateUsernameAndAuthenticationServiceFailure()
     {
@@ -1199,6 +1329,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function editUserDuplicateEmailFailure()
     {
@@ -1215,6 +1346,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function deleteUser()
     {
@@ -1230,6 +1362,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function deleteUserInexistentUser()
     {
@@ -1244,6 +1377,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function userExists()
     {
@@ -1264,6 +1398,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importUsersWithHeaderUniqueUsersNoReplace()
     {
@@ -1308,6 +1443,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importUsersWithHeaderNonUniqueUsersNoReplace()
     {
@@ -1355,6 +1491,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importUsersWithHeaderNonUniqueUsersReplace()
     {
@@ -1402,6 +1539,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importUsersWithNoHeaderUniqueUsersReplace()
     {
@@ -1445,6 +1583,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importUsersWithNoHeaderNonUniqueUsersReplace()
     {
@@ -1491,6 +1630,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importUsersWithNoHeaderNonUniqueUsersNoReplace()
     {
@@ -1537,6 +1677,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importUsersEmptyFileNoHeaderNoUsers()
     {
@@ -1549,6 +1690,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importUsersEmptyFileNoHeaderWithUsers()
     {
@@ -1568,6 +1710,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importUsersEmptyFileWithHeaderWithUsers()
     {
@@ -1588,6 +1731,7 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function exportUsers()
     {

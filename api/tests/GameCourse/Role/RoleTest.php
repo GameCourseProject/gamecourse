@@ -1,7 +1,7 @@
 <?php
 namespace GameCourse\Role;
 
-use Error;
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\User\Auth;
@@ -142,6 +142,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addDefaultRolesToCourse()
     {
@@ -176,7 +177,7 @@ class RoleTest extends TestCase
      */
     public function addDefaultRolesToCourseRolesAlreadyExist()
     {
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         Role::addDefaultRolesToCourse($this->course->getId());
     }
 
@@ -343,6 +344,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setCourseRolesByNames()
     {
@@ -356,6 +358,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setCourseRolesByHierarchy()
     {
@@ -375,7 +378,7 @@ class RoleTest extends TestCase
      */
     public function setCourseRolesFailure()
     {
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         Role::setCourseRoles($this->course->getId());
     }
 
@@ -412,7 +415,7 @@ class RoleTest extends TestCase
             Role::addRoleToCourse($this->course->getId(), "New Role");
             $this->fail("Error should have been thrown in 'addRoleToCourseRoleInvalidRoleName'");
 
-        } catch (Error $e) {
+        } catch (Exception $e) {
             $roles = Role::getCourseRoles($this->course->getId());
             $this->assertCount(5, $roles);
             $this->assertNotContains("NewRole", $roles);
@@ -432,6 +435,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function removeRoleFromCourseByRoleName()
     {
@@ -445,6 +449,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function removeRoleFromCourseByRoleId()
     {
@@ -461,13 +466,14 @@ class RoleTest extends TestCase
      */
     public function removeRoleFromCourseFailure()
     {
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         Role::removeRoleFromCourse($this->course->getId());
     }
 
 
     /**
      * @test
+     * @throws Exception
      */
     public function courseHasRoleByName()
     {
@@ -478,6 +484,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function courseHasRoleById()
     {
@@ -491,7 +498,7 @@ class RoleTest extends TestCase
      */
     public function courseHasRoleFailure()
     {
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         Role::courseHasRole($this->course->getId());
     }
 
@@ -661,6 +668,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addRoleToUserByName()
     {
@@ -672,6 +680,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addRoleToUserById()
     {
@@ -683,6 +692,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addRoleToUserRoleAlreadyExists()
     {
@@ -695,6 +705,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addRoleToUserRoleNotInCourse()
     {
@@ -707,13 +718,14 @@ class RoleTest extends TestCase
      */
     public function addRoleToUserFailure()
     {
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         Role::addRoleToUser($this->courseUser->getId(), $this->course->getId());
     }
 
 
     /**
      * @test
+     * @throws Exception
      */
     public function removeRoleFromUserByRoleName()
     {
@@ -725,6 +737,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function removeRoleFromUserByRoleId()
     {
@@ -739,13 +752,14 @@ class RoleTest extends TestCase
      */
     public function removeRoleFromUserFailure()
     {
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         Role::removeRoleFromUser($this->courseUser->getId(), $this->course->getId());
     }
 
 
     /**
      * @test
+     * @throws Exception
      */
     public function userHasRoleByName()
     {
@@ -756,6 +770,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function userHasRoleById()
     {
@@ -770,7 +785,7 @@ class RoleTest extends TestCase
      */
     public function userHasRoleFailure()
     {
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         Role::userHasRole($this->courseUser->getId(), $this->course->getId());
     }
 
@@ -796,6 +811,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getChildrenNamesOfRole()
     {
@@ -808,6 +824,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getChildrenNamesOfRoleNoChildren()
     {

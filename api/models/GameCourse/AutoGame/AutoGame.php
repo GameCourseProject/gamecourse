@@ -1,7 +1,7 @@
 <?php
 namespace GameCourse\AutoGame;
 
-use Error;
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use Utils\CronJob;
@@ -92,12 +92,13 @@ class AutoGame
      * @param int $courseId
      * @param bool $enable
      * @return void
+     * @throws Exception
      */
     public static function setAutoGame(int $courseId, bool $enable)
     {
         if ($enable) { // enable autogame
             if (!(new Course($courseId))->isActive())
-                throw new Error("Course with ID = " . $courseId . " is not enabled: can't turn on AutoGame.");
+                throw new Exception("Course with ID = " . $courseId . " is not enabled: can't turn on AutoGame.");
 
             $periodicity = Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "periodicityNumber, periodicityTime");
             new CronJob("AutoGame", $courseId, intval($periodicity["periodicityNumber"]),  $periodicity["periodicityTime"], null);

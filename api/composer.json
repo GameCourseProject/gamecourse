@@ -4,6 +4,7 @@
     "ext-pdo": "*",
     "ext-json": "*",
     "ext-zip": "*",
+    "ext-iconv": "*",
     "zircote/swagger-php": "^4.2",
     "google/apiclient": "2.12.1"
   },
@@ -16,7 +17,7 @@
       "Database\\": "models/Database",
       "GameCourse\\": ["models/GameCourse", "modules"],
       "Utils\\": "models/Utils",
-      "Api\\": "controllers",
+      "API\\": "controllers",
       "Event\\": "events"
     }
   }

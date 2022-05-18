@@ -1,22 +1,25 @@
 <?php
-namespace Api;
+namespace API;
 
 use Error;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Module;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
 
 /**
  * Main API controller that holds functions to process an API request,
  * set permissions for a given endpoint and make verifications.
- */
-
-/**
+ *
  * @OA\Info(
  *     title="GameCourse API",
  *     description="<h2>Authentication</h2><p>This API is only available to authorized users. You must be logged in to GameCourse to make requests.</p>",
  *     version=API_VERSION
+ * )
+ * @OA\Server(
+ *     url=API_URL,
+ *     description="Primary"
  * )
  */
 class API
@@ -27,7 +30,7 @@ class API
 
 
     /*** ---------------------------------------------------- ***/
-    /*** ----------------- Process Request ------------------ ***/
+    /*** ---------------- Request Processing ---------------- ***/
     /*** ---------------------------------------------------- ***/
 
     public static function gatherRequestInfo() {
@@ -52,7 +55,7 @@ class API
 
     public static function processRequest() {
         try {
-            $controllerClass = "\\Api\\". ucfirst(self::$module) . "Controller";
+            $controllerClass = "\\API\\". ucfirst(self::$module) . "Controller";
             $controller = new $controllerClass();
             $controller->{self::$endpoint}();
 
@@ -78,8 +81,14 @@ class API
         return array_key_exists($key, static::$values);
     }
 
-    public static function getValue($key) {
-        return array_key_exists($key, static::$values) ? static::$values[$key] : null;
+    public static function getValue($key, $type = null) {
+        if (array_key_exists($key, static::$values)) {
+            $value = static::$values[$key];
+            if ($type == "bool") return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+            elseif ($type == "int") return intval($value);
+            return $value;
+
+        } else return null;
     }
 
     public static function getValues(): array

@@ -3,6 +3,7 @@ namespace Utils;
 
 use DateTime;
 use Error;
+use Exception;
 
 /**
  * Holds a set of utility functions that can be used
@@ -65,6 +66,7 @@ class Utils
      * @param bool $deleteSelf
      * @param array $exceptions
      * @return void
+     * @throws Exception
      */
     public static function deleteDirectory(string $dir, bool $deleteSelf = true, array $exceptions = [])
     {
@@ -76,14 +78,19 @@ class Utils
         self::deleteDirectoryHelper($dir, $deleteSelf, $exceptions);
     }
 
+    /**
+     * @throws Exception
+     */
     private static function deleteDirectoryHelper(string $dir, bool $deleteSelf = true, array $exceptions = [])
     {
         if (!is_dir($dir))
-            throw new Error("'" . $dir . "' is not a directory.");
+            throw new Exception("'" . $dir . "' is not a directory.");
 
         foreach ($exceptions as $exception) {
-            if (str_contains($exception, $dir))
+            if (str_contains($exception, $dir)) {
                 $deleteSelf = false;
+                break;
+            }
         }
 
         if (!in_array($dir, $exceptions)) { // not in exceptions
@@ -105,13 +112,15 @@ class Utils
      * Option for exceptions that should not be copied and whether
      * to delete original directory.
      *
-     * @example copyDirectory("<path>/dir1/", "<path>/dir2/") --> copies contents of dir1 to dir2
-     *
      * @param string $dir
      * @param string $copyTo
      * @param array $exceptions
      * @param bool $deleteOriginal
      * @return void
+     * @throws Exception
+     *
+     * @example copyDirectory("<path>/dir1/", "<path>/dir2/") --> copies contents of dir1 to dir2
+     *
      */
     public static function copyDirectory(string $dir, string $copyTo, array $exceptions = [], bool $deleteOriginal = false)
     {
@@ -123,7 +132,7 @@ class Utils
 
         } elseif (in_array(PHP_OS, ["Linux", "Unix"]))
             shell_exec("cp -R " . $dir . " " . $copyTo);
-        else throw new Error("Can't copy directory: OS is neither Windows nor Linux based.");
+        else throw new Exception("Can't copy directory: OS is neither Windows nor Linux based.");
 
         if (count($exceptions) != 0) {
             foreach ($exceptions as $exception) {
@@ -138,18 +147,19 @@ class Utils
 
     /**
      * Uploads a given file to a given directory. It will create directory
-     * if it doesn't yet exist.
+     * if it doesn't exist already.
      *
      * @param string $to
      * @param string $base64
      * @param string $filename
      * @return string
+     * @throws Exception
      */
     public static function uploadFile(string $to, string $base64, string $filename): string
     {
         if (!file_exists($to)) mkdir($to, 077, true);
         if (!is_dir($to))
-            throw new Error("Can't upload file to '" . $to . "' since it isn't a directory.");
+            throw new Exception("Can't upload file to '" . $to . "' since it isn't a directory.");
 
         preg_match('/\w/', substr($to, -1), $matches);
         if (count($matches) != 0) $to .= "/";
@@ -168,11 +178,12 @@ class Utils
      * @param string $filename
      * @param bool $deleteIfEmpty
      * @return void
+     * @throws Exception
      */
     public static function deleteFile(string $from, string $filename, bool $deleteIfEmpty = true)
     {
         if (!is_dir($from))
-            throw new Error("Can't delete file from '" . $from . "' since it isn't a directory.");
+            throw new Exception("Can't delete file from '" . $from . "' since it isn't a directory.");
 
         preg_match('/\w/', substr($from, -1), $matches);
         if (count($matches) != 0) $from .= "/";
@@ -191,12 +202,12 @@ class Utils
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Checks if e-mail is in a valid format.
+     * Checks whether a given e-mail is in a valid format.
      *
      * @param string|null $email
      * @return bool
      */
-    public static function validateEmail(?string $email): bool
+    public static function isValidEmail(?string $email): bool
     {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
         $prefix = explode("@", $email)[0];
@@ -207,13 +218,13 @@ class Utils
     }
 
     /**
-     * Checks if date is in a given format.
+     * Checks whether a date is in a given format.
      *
      * @param string|null $date
      * @param string $format
      * @return bool
      */
-    public static function validateDate(?string $date, string $format): bool
+    public static function isValidDate(?string $date, string $format): bool
     {
         return !!DateTime::createFromFormat($format, $date);
     }

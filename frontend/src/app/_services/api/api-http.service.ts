@@ -191,7 +191,7 @@ export class ApiHttpService {
 
 
   // User Manipulation
-  public createUser(userData: UserData): Observable<void> {
+  public createUser(userData: UserData): Observable<User> {
     const data = {
       name: userData.name,
       studentNumber: userData.studentNumber,
@@ -212,7 +212,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+      .pipe( map((res: any) => User.fromDatabase(res['data'])) );
   }
 
   public editUser(userData: UserData): Observable<void> {
@@ -322,7 +322,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => parseInt(res['data']['nrUsers'])) );
+      .pipe( map((res: any) => parseInt(res['data'])) );
   }
 
   public exportUsers(): Observable<string> {
@@ -332,8 +332,8 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, null, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['users'])) );
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data'])) );
   }
 
 

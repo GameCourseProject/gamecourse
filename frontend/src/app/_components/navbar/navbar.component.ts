@@ -4,7 +4,6 @@ import {DomSanitizer} from "@angular/platform-browser";
 
 import {ApiHttpService} from "../../_services/api/api-http.service";
 import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
-import {ErrorService} from "../../_services/error.service";
 import {UpdateService, UpdateType} from "../../_services/update.service";
 
 import {User} from "../../_domain/users/user";
@@ -32,6 +31,7 @@ export class NavbarComponent implements OnInit {
   course: Course;
   activePages: Page[];
 
+  // FIXME: navbar space should be configurable in modules
   hasTokensEnabled: boolean;
   isStudent: boolean;
   tokens: number;
@@ -47,11 +47,24 @@ export class NavbarComponent implements OnInit {
     this.photo = new ResourceManager(sanitizer);
   }
 
-  ngOnInit(): void {
-    this.getUserInfo();
+  async ngOnInit(): Promise<void> {
+    // Get logged user information
+    await this.getLoggedUser();
+
+    // Init navigations
+    await this.initNavigations();
+
+    // Whenever URL changes
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.initNavigations();
+      }
+    });
+
+    // Whenever updates are received
     this.updateManager.update.subscribe(type => {
       if (type === UpdateType.AVATAR) {
-        this.getUserInfo();
+        this.getLoggedUser();
 
       } else if (type === UpdateType.ACTIVE_PAGES) {
         this.activePages = null;
@@ -62,23 +75,12 @@ export class NavbarComponent implements OnInit {
 
 
   /*** --------------------------------------------- ***/
-  /*** -------------------- Init ------------------- ***/
+  /*** -------------------- User ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  getUserInfo(): void {
-    this.api.getLoggedUser()
-      .subscribe(user => {
-        this.user = user;
-        this.photo.set(user.photoUrl);
-        this.initNavigations();
-
-        // Whenever URL changes
-        this.router.events.subscribe(event => {
-          if (event instanceof NavigationEnd) {
-            this.initNavigations();
-          }
-        });
-      })
+  async getLoggedUser(): Promise<void> {
+    this.user = await this.api.getLoggedUser().toPromise();
+    this.photo.set(this.user.photoUrl);
   }
 
 
@@ -96,6 +98,30 @@ export class NavbarComponent implements OnInit {
     else this.navigation = [];
 
     if (!isInCourse) this.course = null;
+  }
+
+  getDocsNavigation(): Navigation[] {
+    const pages: {[key: string]: Navigation} = {
+      viewsPage: {
+        link: '/docs/views',
+        name: 'Views',
+      },
+      functionsPage: {
+        link: '/docs/functions',
+        name: 'Functions',
+      },
+      modulesPage: {
+        link: '/docs/modules',
+        name: 'Modules',
+      }
+    };
+
+    this.docsNavigation = [
+      pages.viewsPage,
+      pages.functionsPage,
+      pages.modulesPage
+    ];
+    return this.docsNavigation;
   }
 
   getMainNavigation(): Navigation[] {
@@ -195,30 +221,6 @@ export class NavbarComponent implements OnInit {
     }
   }
 
-  getDocsNavigation(): Navigation[] {
-    const pages: {[key: string]: Navigation} = {
-      viewsPage: {
-        link: '/docs/views',
-        name: 'Views',
-      },
-      functionsPage: {
-        link: '/docs/functions',
-        name: 'Functions',
-      },
-      modulesPage: {
-        link: '/docs/modules',
-        name: 'Modules',
-      }
-    };
-
-    this.docsNavigation = [
-      pages.viewsPage,
-      pages.functionsPage,
-      pages.modulesPage
-    ];
-    return this.docsNavigation;
-  }
-
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Logout ------------------- ***/
@@ -228,9 +230,7 @@ export class NavbarComponent implements OnInit {
     this.api.logout().subscribe(
       isLoggedIn => {
         if (!isLoggedIn) this.router.navigate(['/login'])
-      },
-      error => ErrorService.set(error)
-    )
+      })
   }
 
 

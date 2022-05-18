@@ -30,8 +30,6 @@ export class DownloadManager {
     document.body.appendChild(el);
     el.click();
     document.body.removeChild(el);
-
-    // FIXME: should delete temporary zip file in server
   }
 }
 

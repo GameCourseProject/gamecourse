@@ -1,7 +1,7 @@
 <?php
 namespace GameCourse\Core;
 
-use Api\API;
+use API\API;
 use Database\Database;
 use Exception;
 use Facebook;

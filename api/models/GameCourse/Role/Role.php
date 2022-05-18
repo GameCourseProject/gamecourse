@@ -1,9 +1,9 @@
 <?php
 namespace GameCourse\Role;
 
-use Error;
 use Event\Event;
 use Event\EventType;
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Views\Page;
@@ -89,6 +89,7 @@ class Role
      *
      * @param int $courseId
      * @return int|null
+     * @throws Exception
      */
     public static function addDefaultRolesToCourse(int $courseId): ?int
     {
@@ -96,7 +97,7 @@ class Role
         $rolesNames = array_column(Core::database()->selectMultiple(self::TABLE_ROLE, ["course" => $courseId], "name"), "name");
         foreach ($rolesNames as $roleName) {
             if (in_array($roleName, self::DEFAULT_ROLES))
-                throw new Error("Default role '" . $roleName . "' already exists in course with ID = " . $courseId);
+                throw new Exception("Default role '" . $roleName . "' already exists in course with ID = " . $courseId);
         }
 
         $teacherId = null;
@@ -187,11 +188,12 @@ class Role
      * @param array|null $rolesNames
      * @param array|null $hierarchy
      * @return void
+     * @throws Exception
      */
     public static function setCourseRoles(int $courseId, array $rolesNames = null, array $hierarchy = null)
     {
         if ($rolesNames === null && $hierarchy === null)
-            throw new Error("Need either roles names or hierarchy to set roles in a course.");
+            throw new Exception("Need either roles names or hierarchy to set roles in a course.");
 
         // Remove all course roles
         Core::database()->delete(self::TABLE_ROLE, ["course" => $courseId]);
@@ -234,11 +236,12 @@ class Role
      * @param string|null $roleName
      * @param int|null $roleId
      * @return void
+     * @throws Exception
      */
     public static function removeRoleFromCourse(int $courseId, string $roleName = null, int $roleId = null)
     {
         if ($roleName === null && $roleId === null)
-            throw new Error("Need either role name or ID to add new role to a user.");
+            throw new Exception("Need either role name or ID to add new role to a user.");
 
         if ($roleName === null) $roleName = self::getRoleName($roleId);
         $remove = array_merge([$roleName], self::getChildrenNamesOfRole((new Course($courseId))->getRolesHierarchy(), $roleName));
@@ -255,11 +258,12 @@ class Role
      * @param string|null $roleName
      * @param int|null $roleId
      * @return bool
+     * @throws Exception
      */
     public static function courseHasRole(int $courseId, string $roleName = null, int $roleId = null): bool
     {
         if ($roleName === null && $roleId === null)
-            throw new Error("Need either role name or ID to check whether a course has a given role.");
+            throw new Exception("Need either role name or ID to check whether a course has a given role.");
 
         $where = ["course" => $courseId];
         if ($roleName) $where["name"] = $roleName;
@@ -387,11 +391,12 @@ class Role
      * @param string|null $roleName
      * @param int|null $roleId
      * @return void
+     * @throws Exception
      */
     public static function addRoleToUser(int $userId, int $courseId, string $roleName = null, int $roleId = null)
     {
         if ($roleName === null && $roleId === null)
-            throw new Error("Need either role name or ID to add new role to a user.");
+            throw new Exception("Need either role name or ID to add new role to a user.");
 
         if (!self::courseHasRole($courseId, $roleName, $roleId))
             throw new PDOException("Role with " . ($roleName ? "name '" . $roleName . "'" : "ID = " . $roleId) . " doesn't exist in course with ID = " . $courseId . ".");
@@ -420,11 +425,12 @@ class Role
      * @param string|null $roleName
      * @param int|null $roleId
      * @return void
+     * @throws Exception
      */
     public static function removeRoleFromUser(int $userId, int $courseId, string $roleName = null, int $roleId = null)
     {
         if ($roleName === null && $roleId === null)
-            throw new Error("Need either role name or ID to add new role to a user.");
+            throw new Exception("Need either role name or ID to add new role to a user.");
 
         if (!$roleName) $roleName = self::getRoleName($roleId);
         $remove = array_merge([$roleName], self::getChildrenNamesOfRole((new Course($courseId))->getRolesHierarchy(), $roleName));
@@ -448,11 +454,12 @@ class Role
      * @param string|null $roleName
      * @param int|null $roleId
      * @return bool
+     * @throws Exception
      */
     public static function userHasRole(int $userId, int $courseId, string $roleName = null, int $roleId = null): bool
     {
         if ($roleName === null && $roleId === null)
-            throw new Error("Need either role name or ID to check whether a user has a given role.");
+            throw new Exception("Need either role name or ID to check whether a user has a given role.");
 
         if (!$roleId) $roleId = self::getRoleId($roleName, $courseId);
         $where = ["id" => $userId, "course" => $courseId, "role" => $roleId];
@@ -464,10 +471,17 @@ class Role
     /*** -------------------- Validations ------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * Validates role name.
+     *
+     * @param $roleName
+     * @return void
+     * @throws Exception
+     */
     private static function validateRoleName($roleName)
     {
         if (!is_string($roleName) || strpos($roleName, " ") !== false)
-            throw new Error("Role name '" . $roleName . "' is invalid. Role names can't be empty or have white spaces.");
+            throw new Exception("Role name '" . $roleName . "' is invalid. Role names can't be empty or have white spaces.");
     }
 
 
@@ -526,11 +540,12 @@ class Role
      * @param string|null $roleName
      * @param int|null $roleId
      * @return array
+     * @throws Exception
      */
     public static function getChildrenNamesOfRole(array $hierarchy, string $roleName = null, int $roleId = null): array
     {
         if ($roleName === null && $roleId === null)
-            throw new Error("Need either role name or ID to get children of a role.");
+            throw new Exception("Need either role name or ID to get children of a role.");
 
         $children = [];
         if ($roleName === null) $roleName = self::getRoleName($roleId);

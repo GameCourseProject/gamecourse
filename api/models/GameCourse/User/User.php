@@ -1,7 +1,7 @@
 <?php
 namespace GameCourse\User;
 
-use Error;
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use Utils\Utils;
@@ -85,6 +85,11 @@ class User
         return true;
     }
 
+    public function getLastLogin(): ?string
+    {
+        return Core::database()->select(CourseUser::TABLE_COURSE_USER, ["id" => $this->getId()], "max(lastActivity)");
+    }
+
     public function isAdmin(): bool
     {
         return $this->getData("isAdmin");
@@ -107,7 +112,6 @@ class User
      */
     public function getData(string $field = "*")
     {
-        // Get data
         $table = self::TABLE_USER . " u LEFT JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id";
         $where = ["u.id" => $this->id];
         if ($field == "*") $fields = "u.*, a.username, a.authentication_service";
@@ -121,54 +125,84 @@ class User
     /*** ---------------------- Setters --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function setName(string $name)
     {
         self::validateName($name);
         $this->setData(["name" => $name]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setEmail(?string $email)
     {
         self::validateEmail($email);
         $this->setData(["email" => $email]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setMajor(?string $major)
     {
         $this->setData(["major" => $major]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setNickname(?string $nickname)
     {
         $this->setData(["nickname" => $nickname]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setStudentNumber(int $studentNumber)
     {
         $this->setData(["studentNumber" => $studentNumber]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setUsername(string $username)
     {
         $this->setData(["username" => $username]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setAuthService(string $authService)
     {
         self::validateAuthService($authService);
         $this->setData(["authentication_service" => $authService]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setImage(string $base64, string $name, string $extension)
     {
         Utils::uploadFile(ROOT_PATH . "photos", $base64, $name . "." . $extension);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setAdmin(bool $isAdmin)
     {
         $this->setData(["isAdmin" => +$isAdmin]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setActive(bool $isActive)
     {
         $this->setData(["isActive" => +$isActive]);
@@ -181,6 +215,7 @@ class User
      *
      * @param array $fieldValues
      * @return void
+     * @throws Exception
      */
     public function setData(array $fieldValues)
     {
@@ -246,7 +281,6 @@ class User
         );
         foreach ($users as &$user) {
             $user["image"] = (new User($user["id"]))->getImage();
-            $user["courses"] = (new User($user["id"]))->getCourses();
             $user = self::parse($user);
         }
         return $users;
@@ -296,11 +330,12 @@ class User
      * @param bool $isAdmin
      * @param bool $isActive
      * @return User
+     * @throws Exception
      */
     public static function addUser(string $name, string $username, string $authService, ?string $email, int $studentNumber,
                                    ?string $nickname, ?string $major, bool $isAdmin, bool $isActive): User
     {
-        self::validateUser($name, $authService, $email, $isAdmin, $isActive);
+        self::validateUser($name, $email, $authService, $isAdmin, $isActive);
         $id = Core::database()->insert(self::TABLE_USER, [
             "name" => $name,
             "email" => $email,
@@ -332,11 +367,12 @@ class User
      * @param bool $isAdmin
      * @param bool $isActive
      * @return User
+     * @throws Exception
      */
     public function editUser(string $name, string $username, string $authService, ?string $email, int $studentNumber,
                              ?string $nickname, ?string $major, bool $isAdmin, bool $isActive): User
     {
-        self::validateUser($name, $authService, $email, $isAdmin, $isActive);
+        self::validateUser($name, $email, $authService, $isAdmin, $isActive);
         $this->setData([
             "name" => $name,
             "username" => $username,
@@ -384,6 +420,7 @@ class User
      * @param string $file
      * @param bool $replace
      * @return int
+     * @throws Exception
      */
     public static function importUsers(string $file, bool $replace = true): int
     {
@@ -392,11 +429,11 @@ class User
             $email = $user[$indexes["email"]];
             $major = $user[$indexes["major"]];
             $nickname = $user[$indexes["nickname"]];
-            $studentNumber = $user[$indexes["studentNumber"]];
+            $studentNumber = self::parse(null, $user[$indexes["studentNumber"]], "studentNumber");
             $username = $user[$indexes["username"]];
             $authService = $user[$indexes["authentication_service"]];
-            $isAdmin = $user[$indexes["isAdmin"]];
-            $isActive = $user[$indexes["isActive"]];
+            $isAdmin = self::parse(null, $user[$indexes["isAdmin"]], "isAdmin");
+            $isActive = self::parse(null, $user[$indexes["isActive"]], "isActive");
 
             $user = self::getUserByUsername($username) ?? self::getUserByStudentNumber($studentNumber);
             if ($user) {  // user already exists
@@ -436,38 +473,72 @@ class User
      * Validates user parameters.
      *
      * @param $name
-     * @param $authService
      * @param $email
+     * @param $authService
      * @param $isAdmin
      * @param $isActive
      * @return void
+     * @throws Exception
      */
-    private static function validateUser($name, $authService, $email, $isAdmin, $isActive)
+    private static function validateUser($name, $email, $authService, $isAdmin, $isActive)
     {
         self::validateName($name);
+        self::validateEmail($email);
         self::validateAuthService($authService);
-        if (!is_null($email)) self::validateEmail($email);
-        if (!is_bool($isAdmin)) throw new Error("'isAdmin' must be either true or false.");
-        if (!is_bool($isActive)) throw new Error("'isActive' must be either true or false.");
+        if (!is_bool($isAdmin)) throw new Exception("'isAdmin' must be either true or false.");
+        if (!is_bool($isActive)) throw new Exception("'isActive' must be either true or false.");
     }
 
+    /**
+     * Validates user name.
+     *
+     * @param $name
+     * @return void
+     * @throws Exception
+     */
     private static function validateName($name)
     {
         if (!is_string($name) || empty($name))
-            throw new Error("User name can't be null neither empty.");
+            throw new Exception("User name can't be null neither empty.");
+
+        if (is_numeric($name))
+            throw new Exception("User name can't be composed of only numbers.");
+
+        if (iconv_strlen($name) > 50)
+            throw new Exception("User name is too long: maximum of 50 characters.");
     }
 
+    /** Validates user authentication service.
+     *
+     * @param $authService
+     * @return void
+     * @throws Exception
+     */
     private static function validateAuthService($authService)
     {
-        if (!is_string($authService) || !Auth::exists($authService))
-            throw new Error("Authentication service '" . $authService . "' is not available.");
+        if (!is_string($authService) || empty($authService))
+            throw new Exception("Authentication service can't be null neither empty.");
+
+        if (!Auth::exists($authService))
+            throw new Exception("Authentication service '" . $authService . "' is not available.");
     }
 
+    /**
+     * Validates user e-mail.
+     *
+     * @param $email
+     * @return void
+     * @throws Exception
+     */
     private static function validateEmail($email)
     {
         if (is_null($email)) return;
-        if (!is_string($email) || !Utils::validateEmail($email))
-            throw new Error("E-mail '" . $email . "' is invalid.");
+
+        if (!is_string($email) || !Utils::isValidEmail($email))
+            throw new Exception("E-mail '" . $email . "' is invalid.");
+
+        if (iconv_strlen($email) > 50)
+            throw new Exception("E-mail is too long: maximum of 50 characters.");
     }
 
 

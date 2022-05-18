@@ -1,7 +1,7 @@
 <?php
 namespace GameCourse\Course;
 
-use Error;
+use Exception;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
@@ -11,8 +11,10 @@ use GameCourse\User\CourseUser;
 use GameCourse\User\User;
 use PDOException;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Util\Type;
 use TestingUtils;
 use Throwable;
+use TypeError;
 use Utils\Utils;
 
 /**
@@ -243,6 +245,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getId()
     {
@@ -254,6 +257,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getCourseName()
     {
@@ -264,6 +268,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getShort()
     {
@@ -274,6 +279,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getColor()
     {
@@ -284,6 +290,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getYear()
     {
@@ -294,6 +301,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getStartDate()
     {
@@ -304,6 +312,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getEndDate()
     {
@@ -314,6 +323,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getLandingPage()
     {
@@ -324,6 +334,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getLastUpdate()
     {
@@ -334,6 +345,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getRolesHierarchy()
     {
@@ -344,6 +356,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getTheme()
     {
@@ -354,6 +367,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function isActive()
     {
@@ -364,6 +378,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function isInactive()
     {
@@ -374,6 +389,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function isVisible()
     {
@@ -384,6 +400,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function isInvisible()
     {
@@ -395,6 +412,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getData()
     {
@@ -409,6 +427,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getDataOnlyFolder()
     {
@@ -421,6 +440,7 @@ class CourseTest extends TestCase
     /**
      * @test
      * @dataProvider setCourseNameSuccessProvider
+     * @throws Exception
      */
     public function setCourseNameSuccess(string $name)
     {
@@ -434,17 +454,24 @@ class CourseTest extends TestCase
     /**
      * @test
      * @dataProvider setCourseNameFailureProvider
+     * @throws Exception
      */
     public function setCourseNameFailure($name)
     {
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
-        $this->expectException(Error::class);
-        $course->setName($name);
+        try {
+            $course->setName($name);
+            $this->fail("Exception should have been thrown on 'setCourseNameFailure'");
+
+        } catch (Exception|TypeError $error) {
+            $this->assertEquals("Produção de Conteúdos Multimédia", $course->getName());
+        }
     }
 
     /**
      * @test
+     * @throws Exception
      */
     public function setShort()
     {
@@ -457,6 +484,7 @@ class CourseTest extends TestCase
     /**
      * @test
      * @dataProvider setColorSuccessProvider
+     * @throws Exception
      */
     public function setColorSuccess(?string $color)
     {
@@ -469,18 +497,20 @@ class CourseTest extends TestCase
     /**
      * @test
      * @dataProvider setColorFailureProvider
+     * @throws Exception
      */
     public function setColorFailure($color)
     {
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         $course->setColor($color);
     }
 
     /**
      * @test
      * @dataProvider setYearSuccessProvider
+     * @throws Exception
      */
     public function setYearSuccess(?string $year)
     {
@@ -493,18 +523,20 @@ class CourseTest extends TestCase
     /**
      * @test
      * @dataProvider setYearFailureProvider
+     * @throws Exception
      */
     public function setYearFailure($year)
     {
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         $course->setYear($year);
     }
 
     /**
      * @test
      * @dataProvider dateTimeSuccessProvider
+     * @throws Exception
      */
     public function setStartDateSuccess(?string $startDate)
     {
@@ -517,18 +549,20 @@ class CourseTest extends TestCase
     /**
      * @test
      * @dataProvider dateTimeFailureProvider
+     * @throws Exception
      */
     public function setStartDateFailure($startDate)
     {
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         $course->setStartDate($startDate);
     }
 
     /**
      * @test
      * @dataProvider dateTimeSuccessProvider
+     * @throws Exception
      */
     public function setEndDateSuccess(?string $endDate)
     {
@@ -541,18 +575,20 @@ class CourseTest extends TestCase
     /**
      * @test
      * @dataProvider dateTimeFailureProvider
+     * @throws Exception
      */
     public function setEndDateFailure($endDate)
     {
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         $course->setEndDate($endDate);
     }
 
     /**
      * @test
      * @dataProvider dateTimeSuccessProvider
+     * @throws Exception
      */
     public function setLastUpdateSuccess(?string $lastUpdate)
     {
@@ -565,17 +601,19 @@ class CourseTest extends TestCase
     /**
      * @test
      * @dataProvider dateTimeFailureProvider
+     * @throws Exception
      */
     public function setLastUpdateFailure($lastUpdate)
     {
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
-        $this->expectException(Error::class);
+        $this->expectException(Exception::class);
         $course->setLastUpdate($lastUpdate);
     }
 
     /**
      * @test
+     * @throws Exception
      */
     public function setRolesHierarchy()
     {
@@ -590,6 +628,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setTheme()
     {
@@ -601,6 +640,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setActive()
     {
@@ -612,6 +652,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setVisible()
     {
@@ -624,6 +665,7 @@ class CourseTest extends TestCase
     /**
      * @test
      * @dataProvider setDataSuccessProvider
+     * @throws Exception
      */
     public function setDataSuccess(array $fieldValues)
     {
@@ -647,9 +689,9 @@ class CourseTest extends TestCase
             $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
                 null, null, true, false);
             $course->setData($fieldValues);
-            $this->fail("Error should have been thrown on 'setDataFailure'");
+            $this->fail("Exception should have been thrown on 'setDataFailure'");
 
-        } catch (Error $e) {
+        } catch (Exception $e) {
             $course = new Course(1);
             $this->assertEquals(["id" => 1, "name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
                 "color" => "#ffffff", "startDate" => null, "endDate" => null, "landingPage" => null, "isActive" => true,
@@ -660,6 +702,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setDataName()
     {
@@ -672,6 +715,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setDataDuplicateNameAndYear()
     {
@@ -686,6 +730,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getCourseById()
     {
@@ -704,6 +749,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getCourseByNameAndYear()
     {
@@ -723,6 +769,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getAllCourses()
     {
@@ -746,6 +793,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getActiveCourses()
     {
@@ -769,6 +817,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getInactiveCourses()
     {
@@ -794,6 +843,7 @@ class CourseTest extends TestCase
     /**
      * @test
      * @dataProvider addCourseSuccessProvider
+     * @throws Exception
      */
     public function addCourseSuccess(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
                                      ?string $endDate, bool $isActive, bool $isVisible)
@@ -846,9 +896,9 @@ class CourseTest extends TestCase
     {
         try {
             Course::addCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
-            $this->fail("Error should have been thrown on 'addCourseFailure'");
+            $this->fail("Exception should have been thrown on 'addCourseFailure'");
 
-        } catch (Error $e) {
+        } catch (Exception|TypeError $e) {
             $course = Core::database()->select(Course::TABLE_COURSE, ["name" => $name, "year" => $year]);
             $this->assertEmpty($course);
             $this->assertFalse(file_exists(COURSE_DATA_FOLDER));
@@ -866,6 +916,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addCourseDuplicateNameAndYear()
     {
@@ -880,6 +931,7 @@ class CourseTest extends TestCase
     /**
      * @test
      * @dataProvider addCourseSuccessProvider
+     * @throws Exception
      */
     public function editCourse(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
                                ?string $endDate, bool $isActive, bool $isVisible)
@@ -912,9 +964,9 @@ class CourseTest extends TestCase
             $course = Course::addCourse("Computação Móvel e Ubíqua", "CMU", "2020-2021", "#000000",
                 null, null, true, false);
             $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
-            $this->fail("Error should have been thrown on 'editCourseFailure'");
+            $this->fail("Exception should have been thrown on 'editCourseFailure'");
 
-        } catch (Error $e) {
+        } catch (Exception|TypeError $e) {
             // Check course didn't change on database
             $courseDB = Core::database()->select(Course::TABLE_COURSE, ["id" => $course->getId()]);
             $courseData = array("id" => strval($course->getId()), "name" => "Computação Móvel e Ubíqua", "short" => "CMU",
@@ -932,6 +984,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function editCourseDuplicateNameAndYear()
     {
@@ -947,6 +1000,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function deleteCourse()
     {
@@ -964,6 +1018,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function deleteCourseInexistentCourse()
     {
@@ -971,9 +1026,9 @@ class CourseTest extends TestCase
             null, null, true, false);
         try {
             Course::deleteCourse(2);
-            $this->fail("Error should have been thrown on 'deleteCourseInexistentCourse'");
+            $this->fail("Exception should have been thrown on 'deleteCourseInexistentCourse'");
 
-        } catch (Error $e) {
+        } catch (Exception $e) {
             $courses = Course::getCourses();
             $this->assertIsArray($courses);
             $this->assertCount(1, $courses);
@@ -984,6 +1039,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function courseExists()
     {

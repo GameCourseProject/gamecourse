@@ -27,7 +27,6 @@ export class UsersComponent implements OnInit {
   loading = true;
   loadingAction = false;
 
-  loggedUser: User;
   users: User[];
 
   reduce = new Reduce();
@@ -72,13 +71,19 @@ export class UsersComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    this.loggedUser = await this.api.getLoggedUser().toPromise();
-    this.users = await this.api.getUsers().toPromise();
-
-    this.order.active = { orderBy: this.orderBy[0], sort: Sort.ASCENDING };
-    this.reduceList(undefined, [...this.filters]);
-
+    await this.getUsers();
     this.loading = false;
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** -------------------- Init ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  async getUsers(): Promise<void> {
+    this.users = await this.api.getUsers().toPromise();
+    this.order.active = {orderBy: this.orderBy[0], sort: Sort.ASCENDING};
+    this.reduceList(undefined, [...this.filters]);
   }
 
 
@@ -155,8 +160,8 @@ export class UsersComponent implements OnInit {
         this.loadingAction = false;
       }) )
       .subscribe(
-        async res => {
-          this.users = await this.api.getUsers().toPromise();
+        newUser => {
+          this.users.push(newUser);
           this.reduceList();
 
           const successBox = $('#action_completed');
@@ -182,12 +187,13 @@ export class UsersComponent implements OnInit {
       .subscribe(
         async res => {
           await this.api.getUsers();
-          if (this.loggedUser.id === this.newUser.id && this.newUser.image)
+          const loggedUser = await this.api.getLoggedUser().toPromise();
+          if (loggedUser.id === this.newUser.id && this.newUser.image)
             this.updateManager.triggerUpdate(UpdateType.AVATAR); // Trigger change on navbar
 
           const successBox = $('#action_completed');
           successBox.empty();
-          successBox.append("User: " + this.userToEdit.name + " edited");
+          successBox.append("User: '" + this.userToEdit.name + "' edited");
           successBox.show().delay(3000).fadeOut();
         })
   }
@@ -217,32 +223,29 @@ export class UsersComponent implements OnInit {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const importedUsers = reader.result;
-      this.api.importUsers({file: importedUsers, replace})
+      const file = reader.result;
+      this.api.importUsers({file, replace})
         .pipe( finalize(() => {
           this.isImportModalOpen = false;
           this.loadingAction = false;
         }) )
         .subscribe(
-          async nUsers => {
-            await this.api.getUsers();
+          async nrUsers => {
+            await this.getUsers();
             const successBox = $('#action_completed');
             successBox.empty();
-            successBox.append(nUsers + " Users" + (nUsers > 1 ? 's' : '') + " Imported");
+            successBox.append(nrUsers + " User" + (nrUsers != 1 ? 's' : '') + " Imported");
             successBox.show().delay(3000).fadeOut();
           })
     }
-    reader.readAsDataURL(this.importedFile);
+    reader.readAsText(this.importedFile);
   }
 
   exportUsers(): void {
     this.saving = true;
-
     this.api.exportUsers()
       .pipe( finalize(() => this.saving = false) )
-      .subscribe(
-        contents => DownloadManager.downloadAsCSV('users', contents),
-      )
+      .subscribe(contents => DownloadManager.downloadAsCSV('users', contents))
   }
 
 

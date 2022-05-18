@@ -1,7 +1,7 @@
 <?php
 namespace GameCourse\Course;
 
-use Error;
+use Exception;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
@@ -131,68 +131,104 @@ class Course
     /*** ---------------------- Setters --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function setName(string $name)
     {
         self::validateName($name);
         $this->setData(["name" => $name]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setShort(?string $short)
     {
         $this->setData(["short" => $short]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setColor(?string $color)
     {
         self::validateColor($color);
         $this->setData(["color" => $color]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setYear(?string $year)
     {
         self::validateYear($year);
         $this->setData(["year" => $year]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setStartDate(?string $start)
     {
         self::validateDateTime($start);
         $this->setData(["startDate" => $start]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setEndDate(?string $end)
     {
         self::validateDateTime($end);
         $this->setData(["endDate" => $end]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setLandingPage(?int $pageId)
     {
         $this->setData(["landingPage" => $pageId]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setLastUpdate(string $lastUpdate)
     {
         self::validateDateTime($lastUpdate);
         $this->setData(["lastUpdate" => $lastUpdate]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setRolesHierarchy(array $hierarchy)
     {
         $this->setData(["roleHierarchy" => json_encode($hierarchy)]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setTheme(?string $theme)
     {
         $this->setData(["theme" => $theme]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setActive(bool $isActive)
     {
         $this->setData(["isActive" => +$isActive]);
         AutoGame::setAutoGame($this->id, $isActive);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setVisible(bool $isVisible)
     {
         $this->setData(["isVisible" => +$isVisible]);
@@ -206,6 +242,7 @@ class Course
      *
      * @param array $fieldValues
      * @return void
+     * @throws Exception
      */
     public function setData(array $fieldValues)
     {
@@ -273,14 +310,15 @@ class Course
      * @param bool $isActive
      * @param bool $isVisible
      * @return Course
+     * @throws Exception
      */
     public static function addCourse(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
                                      ?string $endDate, bool $isActive, bool $isVisible): Course
     {
         // Check if user logged in is an admin
         $loggedUser = Core::getLoggedUser();
-        if (!$loggedUser) throw new Error("No user currently logged in. Can't create new course.");
-        if (!$loggedUser->isAdmin()) throw new Error("Only admins can create new courses.");
+        if (!$loggedUser) throw new Exception("No user currently logged in. Can't create new course.");
+        if (!$loggedUser->isAdmin()) throw new Exception("Only admins can create new courses.");
 
         // Insert in database & create data folder
         self::validateCourse($name, $color, $year, $startDate, $endDate, $isActive, $isVisible);
@@ -327,11 +365,12 @@ class Course
      *
      * @param int $copyFrom
      * @return void
+     * @throws Exception
      */
     public static function copyCourse(int $copyFrom)
     {
         $courseToCopy = Course::getCourseById($copyFrom);
-        if (!$courseToCopy) throw new Error("Course to copy from with ID = " . $copyFrom . " doesn't exist.");
+        if (!$courseToCopy) throw new Exception("Course to copy from with ID = " . $copyFrom . " doesn't exist.");
         $courseInfo = $courseToCopy->getData();
 
         // Create a copy
@@ -368,6 +407,7 @@ class Course
      * @param bool $isActive
      * @param bool $isVisible
      * @return Course
+     * @throws Exception
      */
     public function editCourse(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
                                ?string $endDate, bool $isActive, bool $isVisible): Course
@@ -391,6 +431,7 @@ class Course
      *
      * @param int $courseId
      * @return void
+     * @throws Exception
      */
     public static function deleteCourse(int $courseId)
     {
@@ -551,6 +592,7 @@ class Course
      * @param array|null $rolesNames
      * @param array|null $hierarchy
      * @return void
+     * @throws Exception
      */
     public function setRoles(array $rolesNames = null, array $hierarchy = null)
     {
@@ -578,6 +620,7 @@ class Course
      * @param string|null $roleName
      * @param int|null $roleId
      * @return void
+     * @throws Exception
      */
     public function removeRole(string $roleName = null, int $roleId = null)
     {
@@ -591,6 +634,7 @@ class Course
      * @param string|null $roleName
      * @param int|null $roleId
      * @return bool
+     * @throws Exception
      */
     public function hasRole(string $roleName = null, int $roleId = null): bool
     {
@@ -760,11 +804,17 @@ class Course
         return null;
     }
 
+    /**
+     * @throws Exception
+     */
     public function createStyleFile(): string
     {
         return $this->updateStyleFile("");
     }
 
+    /**
+     * @throws Exception
+     */
     public function updateStyleFile(string $contents): string
     {
         $cssFolder = $this->getDataFolder(false) . "/css";
@@ -773,7 +823,7 @@ class Course
 
         $path = $cssFolder . "/styling.css";
         if (file_put_contents(ROOT_PATH . $path, $contents) !== false) return API_URL . "/" . $path;
-        else throw new Error("An error ocurred when creating style file for course with ID = " . $this->id . ".");
+        else throw new Exception("An error ocurred when creating style file for course with ID = " . $this->id . ".");
     }
 
 
@@ -795,6 +845,7 @@ class Course
      * @param string $contents
      * @param bool $replace
      * @return int
+     * @throws Exception
      */
     public static function importCourses(string $contents, bool $replace = true): int
     {
@@ -806,7 +857,7 @@ class Course
         $zipPath = $tempFolder . "/courses.zip";
         file_put_contents($zipPath, $contents);
         $zip = new ZipArchive();
-        if (!$zip->open($zipPath)) throw new Error("Failed to create zip archive.");
+        if (!$zip->open($zipPath)) throw new Exception("Failed to create zip archive.");
         $zip->extractTo($tempFolder);
         $zip->close();
         unlink($zipPath);
@@ -884,6 +935,7 @@ class Course
      * configuration, to a .zip file.
      *
      * @return string
+     * @throws Exception
      */
     public static function exportCourses(): string
     {
@@ -898,7 +950,7 @@ class Course
         $zipPath = $tempFolder . "/courses.zip";
         $zip = new ZipArchive();
         if (!$zip->open($zipPath, ZipArchive::CREATE))
-            throw new Error("Failed to create zip archive.");
+            throw new Exception("Failed to create zip archive.");
 
         // Add .csv file
         $zip->addFromString("courses.csv", Utils::exportToCSV($courses, function ($course) {
@@ -955,6 +1007,7 @@ class Course
      * @param $isActive
      * @param $isVisible
      * @return void
+     * @throws Exception
      */
     private static function validateCourse($name, $color, $year, $startDate, $endDate, $isActive, $isVisible)
     {
@@ -963,41 +1016,53 @@ class Course
         self::validateYear($year);
         self::validateDateTime($startDate);
         self::validateDateTime($endDate);
-        if (!is_bool($isActive)) throw new Error("'isActive' must be either true or false.");
-        if (!is_bool($isVisible)) throw new Error("'isVisible' must be either true or false.");
+        if (!is_bool($isActive)) throw new Exception("'isActive' must be either true or false.");
+        if (!is_bool($isVisible)) throw new Exception("'isVisible' must be either true or false.");
     }
 
+    /**
+     * @throws Exception
+     */
     private static function validateName($name)
     {
         if (!is_string($name) || empty($name))
-            throw new Error("Course name can't be null neither empty.");
+            throw new Exception("Course name can't be null neither empty.");
 
         preg_match("/[^\w()\s-]/u", $name, $matches);
         if (count($matches) != 0)
-            throw new Error("Course name '" . $name . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-'");
+            throw new Exception("Course name '" . $name . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-'");
     }
 
+    /**
+     * @throws Exception
+     */
     private static function validateColor($color)
     {
         if (is_null($color)) return;
         preg_match("/^#[\w\d]{6}$/", $color, $matches);
         if (!is_string($color) || empty($color) || count($matches) == 0)
-            throw new Error("Course color needs to be in HEX format.");
+            throw new Exception("Course color needs to be in HEX format.");
     }
 
+    /**
+     * @throws Exception
+     */
     private static function validateYear($year)
     {
         if (is_null($year)) return;
         preg_match("/^\d{4}-\d{4}$/", $year, $matches);
         if (!is_string($year) || empty($year) || count($matches) == 0)
-            throw new Error("Course year needs to be 'yyyy-yyyy' format.");
+            throw new Exception("Course year needs to be 'yyyy-yyyy' format.");
     }
 
+    /**
+     * @throws Exception
+     */
     private static function validateDateTime($dateTime)
     {
         if (is_null($dateTime)) return;
-        if (!is_string($dateTime) || !Utils::validateDate($dateTime, "Y-m-d H:i:s"))
-            throw new Error("Datetime '" . $dateTime . "' should be in format 'yyyy-mm-dd HH:mm:ss'");
+        if (!is_string($dateTime) || !Utils::isValidDate($dateTime, "Y-m-d H:i:s"))
+            throw new Exception("Datetime '" . $dateTime . "' should be in format 'yyyy-mm-dd HH:mm:ss'");
     }
 
 

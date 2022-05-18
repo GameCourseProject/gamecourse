@@ -1,6 +1,4 @@
-import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
 import {AuthType} from "../auth/auth-type";
-import {Course, CourseDatabase} from "../courses/course";
 import {Moment} from "moment";
 import {Role} from "../roles/role";
 import {dateFromDatabase} from "../../_utils/misc/misc";
@@ -18,12 +16,12 @@ export class User {
   private _authMethod: AuthType;
   private _photoUrl: string;
   private _roles?: Role[];
-  private _courses?: Course[];
+  private _nrCourses?: number;
   private _lastLogin?: Moment;
 
   constructor(id: number, name: string, email: string, major: string, nickname: string, studentNumber: number,
               isAdmin: boolean, isActive: boolean, username: string, authMethod: AuthType, photoUrl: string,
-              roles?: Role[], courses?: Course[], lastLogin?: Moment) {
+              roles?: Role[], nrCourses?: number, lastLogin?: Moment) {
 
     this._id = id;
     this._name = name;
@@ -37,7 +35,7 @@ export class User {
     this._authMethod = authMethod;
     this._photoUrl = photoUrl;
     this._roles = roles;
-    if (courses != undefined) this._courses = courses;
+    if (nrCourses != undefined) this._nrCourses = nrCourses;
     this._lastLogin = lastLogin;
   }
 
@@ -137,12 +135,12 @@ export class User {
     this._roles = value;
   }
 
-  get courses(): Course[] {
-    return this._courses;
+  get nrCourses(): number {
+    return this._nrCourses;
   }
 
-  set courses(value: Course[]) {
-    this._courses = value;
+  set nrCourses(value: number) {
+    this._nrCourses = value;
   }
 
   get lastLogin(): Moment {
@@ -167,7 +165,7 @@ export class User {
       obj.authentication_service as AuthType,
       obj.image,
       obj.roles ? obj.roles.map(role => Role.fromDatabase({name: role})) : null,
-      obj.courses ? obj.courses.map(courseObj => Course.fromDatabase(courseObj)) : null,
+      obj.nrCourses ?? null,
       dateFromDatabase(obj.lastLogin)
     );
   }
@@ -186,6 +184,6 @@ interface UserDatabase {
   "authentication_service": string,
   "image": string,
   "roles"?: string[],
-  "courses"?: CourseDatabase[],
+  "nrCourses"?: number,
   "lastLogin"?: string
 }

@@ -72,10 +72,7 @@ export class FilePickerModalComponent implements OnInit {
     const courseID = parseInt(this.courseFolder.split('/')[1].split('-')[0]);
     this.api.getCourseDataFolderContents(courseID)
       .pipe(finalize(() => this.loading = false))
-      .subscribe(
-        contents => this.contents = contents,
-        error => ErrorService.set(error)
-      );
+      .subscribe(contents => this.contents = contents);
   }
 
   getFolderContents(folder: any, path: string): ContentItem[] {
@@ -135,9 +132,7 @@ export class FilePickerModalComponent implements OnInit {
             this.positiveBtnClicked.emit({path, type: this.fileToUpload.type.split('/')[0] as 'image' | 'video' | 'audio'});
             this.closeBtnClicked.emit();
             this.reset();
-          },
-          error => ErrorService.set(error)
-        )
+          })
 
     } else {
       this.positiveBtnClicked.emit({path: this.file as string, type: this.fileType});
