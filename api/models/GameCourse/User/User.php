@@ -551,8 +551,8 @@ class User
         if (is_numeric($name))
             throw new Exception("User name can't be composed of only numbers.");
 
-        if (iconv_strlen($name) > 50)
-            throw new Exception("User name is too long: maximum of 50 characters.");
+        if (iconv_strlen($name) > 60)
+            throw new Exception("User name is too long: maximum of 60 characters.");
     }
 
     /** Validates user authentication service.
@@ -584,8 +584,8 @@ class User
         if (!is_string($email) || !Utils::isValidEmail($email))
             throw new Exception("E-mail '" . $email . "' is invalid.");
 
-        if (iconv_strlen($email) > 50)
-            throw new Exception("E-mail is too long: maximum of 50 characters.");
+        if (iconv_strlen($email) > 60)
+            throw new Exception("E-mail is too long: maximum of 60 characters.");
     }
 
 
