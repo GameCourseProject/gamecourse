@@ -4,7 +4,8 @@
 
 export const environment = {
   production: false,
-  apiEndpoint: 'http://localhost/gamecourse-v2-new/api'
+  apiEndpoint: 'http://localhost/gamecourse-v2-new/api',
+  defaultProfilePicture : 'assets/imgs/profile-default.png'
 };
 
 /*

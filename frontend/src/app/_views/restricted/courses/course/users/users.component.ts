@@ -70,7 +70,8 @@ export class UsersComponent implements OnInit {
     isActive: null,
     auth: null,
     username: null,
-    roles: null
+    roles: null,
+    image: null
   };
   userToEdit: User;
   userToDelete: User;
@@ -354,6 +355,7 @@ export class UsersComponent implements OnInit {
       isActive: user.isActive,
       auth: user.authMethod,
       username: user.username,
+      image: null
     };
     this.userToEdit = user;
     this.photo.set(user.photoUrl);

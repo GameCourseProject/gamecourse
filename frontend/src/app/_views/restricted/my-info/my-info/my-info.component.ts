@@ -3,6 +3,7 @@ import {DomSanitizer} from "@angular/platform-browser";
 
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
 import {UpdateService, UpdateType} from "../../../../_services/update.service";
+import {environment} from "../../../../../environments/environment";
 
 import {User} from "../../../../_domain/users/user";
 
@@ -57,17 +58,21 @@ export class MyInfoComponent implements OnInit {
     this.user = await this.api.getLoggedUser().toPromise();
 
     this.editUser = {
+      id: this.user.id,
       name: this.user.name,
       nickname: this.user.nickname,
       studentNumber: this.user.studentNumber,
       email: this.user.email,
       major: this.user.major,
+      isAdmin: this.user.isAdmin,
+      isActive: this.user.isActive,
       auth: this.user.authMethod,
-      username: this.user.username
+      username: this.user.username,
+      image: null
     };
 
-    this.originalPhoto = this.user.photoUrl ?? 'assets/imgs/profile-default.png';
-    this.photo.set(this.user.photoUrl ?? 'assets/imgs/profile-default.png');
+    this.originalPhoto = this.user.photoUrl ?? environment.defaultProfilePicture;
+    this.photo.set(this.user.photoUrl ?? environment.defaultProfilePicture);
   }
 
 
@@ -81,15 +86,15 @@ export class MyInfoComponent implements OnInit {
     if (this.photoToAdd)
       await ResourceManager.getBase64(this.photoToAdd).then(data => this.editUser.image = data);
 
-    this.api.editSelfInfo(this.editUser)
+    this.api.editUser(this.editUser)
       .pipe( finalize(() => {
         this.saving = false;
         this.isEditModalOpen = false;
         this.photoToAdd = null;
       }) )
       .subscribe(res => {
-        this.getLoggedUser();
-        if (this.editUser.image)
+        this.user = res;
+        if (this.photoToAdd)
           this.updateManager.triggerUpdate(UpdateType.AVATAR) // Trigger change on navbar
       })
   }
@@ -105,8 +110,8 @@ export class MyInfoComponent implements OnInit {
     };
 
     // Validate inputs
-    return isValid(this.editUser.username) && isValid(this.editUser.email) && isValid(this.editUser.studentNumber)
-      && isValid(this.editUser.username) && isValid(this.editUser.auth);
+    return isValid(this.editUser.name) && isValid(this.editUser.studentNumber) && isValid(this.editUser.email) &&
+      isValid(this.editUser.auth) && isValid(this.editUser.username);
   };
 
   onFileSelected(files: FileList): void {
@@ -124,8 +129,8 @@ export interface UserData {
   email: string,
   auth: AuthType,
   username: string,
-  roles?: string[],
-  isAdmin?: boolean,
-  isActive?: boolean,
-  image?: string | ArrayBuffer
+  isAdmin: boolean,
+  isActive: boolean,
+  image: string | ArrayBuffer,
+  roles?: string[]
 }

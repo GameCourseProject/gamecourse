@@ -72,7 +72,7 @@
         <!-- Details -->
         <div class="details bigger right">
           <div class="container">
-            <input type="text" class="form__input" id="name" placeholder="Name" [(ngModel)]="editUser.name" [disabled]="true">
+            <input type="text" class="form__input" id="name" placeholder="Name" [(ngModel)]="editUser.name" [disabled]="!user.isAdmin">
             <label for="name" class="form__label">Name</label>
           </div>
 
@@ -83,7 +83,7 @@
 
           <div class="container">
             <div class="container">
-              <input type="text" class="form__input" id="studentNumber" placeholder="Student Number" [(ngModel)]="editUser.studentNumber" [disabled]="true">
+              <input type="text" class="form__input" id="studentNumber" placeholder="Student Number" [(ngModel)]="editUser.studentNumber" [disabled]="!user.isAdmin">
               <label for="studentNumber" class="form__label">Number</label>
             </div>
           </div>
@@ -103,7 +103,7 @@
 
             <div class="details half right">
               <div class="container">
-                <input type="text" class="form__input" id="username" placeholder="Username" [(ngModel)]="editUser.username" disabled="disabled">
+                <input type="text" class="form__input" id="username" placeholder="Username" [(ngModel)]="editUser.username" [disabled]="true">
                 <label for="username" class="form__label">Username</label>
               </div>
             </div>
