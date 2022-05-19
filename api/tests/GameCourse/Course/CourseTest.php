@@ -3,15 +3,15 @@ namespace GameCourse\Course;
 
 use Exception;
 use GameCourse\AutoGame\AutoGame;
+use GameCourse\Core\Auth;
+use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
 use GameCourse\Role\Role;
-use GameCourse\User\Auth;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
 use PDOException;
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Util\Type;
 use TestingUtils;
 use Throwable;
 use TypeError;
@@ -34,7 +34,7 @@ class CourseTest extends TestCase
 
     protected function setUp(): void
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, true);
         Core::setLoggedUser($user);
     }

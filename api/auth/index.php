@@ -3,6 +3,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
+use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 
 require __DIR__ . "/../inc/bootstrap.php";
@@ -20,14 +21,9 @@ if (array_key_exists("googleSheetsAuth", $_GET) && array_key_exists("state", $_G
     echo "<script>window.close();window.opener.location.reload(false);</script>"; // FIXME: prob can remove
 
 } else {
-    if (array_key_exists("google", $_GET)) {
-        Core::performLogin("google");
-    } else if (array_key_exists("facebook", $_GET)) {
-        Core::performLogin("facebook");
-    } else if (array_key_exists("linkedin", $_GET)) {
-        Core::performLogin("linkedin");
-    } else {
-        Core::performLogin("fenix");
-    }
+    if (array_key_exists(AuthService::GOOGLE, $_GET)) Core::performLogin(AuthService::GOOGLE);
+    else if (array_key_exists(AuthService::FACEBOOK, $_GET)) Core::performLogin(AuthService::FACEBOOK);
+    else if (array_key_exists(AuthService::LINKEDIN, $_GET)) Core::performLogin(AuthService::LINKEDIN);
+    else Core::performLogin(AuthService::FENIX);
     header('Location: ' . URL);
 }

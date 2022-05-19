@@ -1,8 +1,9 @@
 <?php
 namespace Database;
 
+use GameCourse\Core\Auth;
+use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
-use GameCourse\User\Auth;
 use GameCourse\User\User;
 use PDO;
 use PDOException;
@@ -612,20 +613,20 @@ class DatabaseTest extends TestCase
     public function selectMultipleWhenGrouping()
     {
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "johndoe", "authentication_service" => "fenix"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "johndoe", "authentication_service" => AuthService::FENIX]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "annadoe", "authentication_service" => "google"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "annadoe", "authentication_service" => AuthService::GOOGLE]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Julia Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "juliadoe", "authentication_service" => "google"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "juliadoe", "authentication_service" => AuthService::GOOGLE]);
 
         $authServices = Core::database()->selectMultiple(Auth::TABLE_AUTH, [], "count(id), authentication_service", null, [], [], "authentication_service");
         $this->assertIsArray($authServices);
         $this->assertCount(2, $authServices);
         $this->assertArrayHasKey("authentication_service", $authServices[0]);
-        $this->assertEquals("fenix", $authServices[0]["authentication_service"]);
+        $this->assertEquals(AuthService::FENIX, $authServices[0]["authentication_service"]);
         $this->assertEquals(1, intval($authServices[0]["count(id)"]));
         $this->assertArrayHasKey("authentication_service", $authServices[1]);
-        $this->assertEquals("google", $authServices[1]["authentication_service"]);
+        $this->assertEquals(AuthService::GOOGLE, $authServices[1]["authentication_service"]);
         $this->assertEquals(2, intval($authServices[1]["count(id)"]));
     }
 

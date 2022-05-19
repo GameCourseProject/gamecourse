@@ -9,6 +9,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
 use API\API;
+use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
@@ -42,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == "GET") {  // check setup
         Core::database()->executeQuery($sql);
 
         // Create user in the system
-        $user = User::addUser("Teacher", $teacherUsername, "fenix", null, $teacherId, null,
+        $user = User::addUser("Teacher", $teacherUsername, AuthService::FENIX, null, $teacherId, null,
             null, true, true);
         Core::setLoggedUser($user);
 

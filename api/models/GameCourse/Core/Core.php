@@ -61,6 +61,7 @@ class Core
     /*** --------------- Authentication ---------------- ***/
     /*** ----------------------------------------------- ***/
 
+    // FIXME: logic should move to Auth.php but keep function here
     public static function requireLogin(bool $performLogin = true)
     {
         // Sigma does not allow writing sessions very well...
@@ -82,13 +83,13 @@ class Core
             $loginType = htmlspecialchars($_POST['loginType']);
             $_SESSION['type'] = $loginType;
 
-            if ($loginType == "google") {
+            if ($loginType == AuthService::GOOGLE) {
                 $client = GoogleHandler::getSingleton();
-            } else if ($loginType == "fenix") {
+            } else if ($loginType == AuthService::FENIX) {
                 $client = FenixEdu::getSingleton();
-            } else if ($loginType == "facebook") {
+            } else if ($loginType == AuthService::FACEBOOK) {
                 $client = Facebook::getSingleton();
-            } else if ($loginType == "linkedin") {
+            } else if ($loginType == AuthService::LINKEDIN) {
                 $client = Linkedin::getSingleton();
             }
 
@@ -104,18 +105,19 @@ class Core
     }
 
     /**
+     * FIXME: logic should move to Auth.php but keep function here
      * @throws FenixEduException
      * @throws Exception
      */
     public static function performLogin(string $loginType)
     {
-        if ($loginType == "fenix") {
+        if ($loginType == AuthService::FENIX) {
             $client = FenixEdu::getSingleton();
-        } else if ($loginType == "google") {
+        } else if ($loginType == AuthService::GOOGLE) {
             $client = GoogleHandler::getSingleton();
-        } else if ($loginType == "facebook") {
+        } else if ($loginType == AuthService::FACEBOOK) {
             $client = Facebook::getSingleton();
-        } else if ($loginType == "linkedin") {
+        } else if ($loginType == AuthService::LINKEDIN) {
             $client = Linkedin::getSingleton();
         }
 
@@ -134,7 +136,7 @@ class Core
                 $_SESSION['username'] =  $person->username;
                 $_SESSION['email'] =  $person->email;
                 $_SESSION['name'] =  $person->name;
-                $_SESSION['pictureUrl'] = $loginType == "fenix" ? $person->photo->data : $person->pictureUrl;
+                $_SESSION['pictureUrl'] = $loginType == AuthService::FENIX ? $person->photo->data : $person->pictureUrl;
                 $_SESSION['loginDone'] = $loginType;
             }
         }
@@ -162,13 +164,13 @@ class Core
                 // User doesn't have a photo yet
                 if (!static::$loggedUser->hasImage()) {
                     if (array_key_exists('type', $_SESSION) && array_key_exists('pictureUrl', $_SESSION)) {
-                        if ($_SESSION['type'] == "fenix") {
+                        if ($_SESSION['type'] == AuthService::FENIX) {
                             $client = FenixEdu::getSingleton();
-                        } elseif ($_SESSION['type'] == "google") {
+                        } elseif ($_SESSION['type'] == AuthService::GOOGLE) {
                             $client = GoogleHandler::getSingleton();
-                        } else if ($_SESSION['type'] == "facebook") {
+                        } else if ($_SESSION['type'] == AuthService::FACEBOOK) {
                             $client = Facebook::getSingleton();
-                        } else if ($_SESSION['type'] == "linkedin") {
+                        } else if ($_SESSION['type'] == AuthService::LINKEDIN) {
                             $client = Linkedin::getSingleton();
                         }
                         $client->downloadPhoto($_SESSION['pictureUrl'], static::$loggedUser->getId());

@@ -3,10 +3,10 @@ namespace GameCourse\Course;
 
 use Exception;
 use GameCourse\AutoGame\AutoGame;
+use GameCourse\Core\Auth;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
 use GameCourse\Role\Role;
-use GameCourse\User\Auth;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
 use Utils\Utils;

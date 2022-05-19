@@ -2,6 +2,7 @@
 namespace GameCourse\User;
 
 use Exception;
+use GameCourse\Core\Auth;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use Utils\Utils;

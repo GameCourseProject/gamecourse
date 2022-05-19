@@ -2,9 +2,10 @@
 namespace GameCourse\Role;
 
 use Exception;
+use GameCourse\Core\Auth;
+use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\User\Auth;
 use GameCourse\User\User;
 use PDOException;
 use PHPUnit\Framework\TestCase;
@@ -32,7 +33,7 @@ class RoleTest extends TestCase
     protected function setUp(): void
     {
         // Set logged user
-        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, true);
         Core::setLoggedUser($loggedUser);
 
@@ -52,7 +53,7 @@ class RoleTest extends TestCase
         $this->course = $course;
 
         // Set a course user
-        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
         $courseUser = $course->addUserToCourse($user->getId(), "Student");
         $courseUser->addRole("StudentA");

@@ -2,6 +2,8 @@
 namespace GameCourse\User;
 
 use Exception;
+use GameCourse\Core\Auth;
+use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Role\Role;
@@ -100,10 +102,10 @@ class UserTest extends TestCase
     public function setAuthSuccessProvider(): array
     {
         return [
-            "Fénix" => ["fenix"],
-            "Google" => ["google"],
-            "Facebook" => ["facebook"],
-            "Linkedin" => ["linkedin"],
+            "Fénix" => [AuthService::FENIX],
+            "Google" => [AuthService::GOOGLE],
+            "Facebook" => [AuthService::FACEBOOK],
+            "Linkedin" => [AuthService::LINKEDIN],
         ];
     }
 
@@ -129,37 +131,37 @@ class UserTest extends TestCase
     public function setDataSuccessProvider(): array
     {
         return [
-            ["same data" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => "fenix",
+            ["same data" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false]],
-            ["different name" => ["name" => "Rita Alves", "username" => "ist100000", "authentication_service" => "fenix",
+            ["different name" => ["name" => "Rita Alves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false]],
-            ["different email" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => "fenix",
+            ["different email" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
                 "email" => "ana.r.g@gmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false]],
-            ["different student number" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => "fenix",
+            ["different student number" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 81829, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false]],
-            ["different nickname" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => "fenix",
+            ["different nickname" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Rita Gonçalves", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false]],
-            ["null nickname" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => "fenix",
+            ["null nickname" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => null, "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false]],
-            ["empty nickname" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => "fenix",
+            ["empty nickname" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false]],
-            ["different major" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => "fenix",
+            ["different major" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEEC",
                 "isAdmin" => false, "isActive" => false]],
-            ["different isAdmin" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => "fenix",
+            ["different isAdmin" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => true, "isActive" => false]],
-            ["different isActive" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => "fenix",
+            ["different isActive" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => true]],
-            ["all different" => ["name" => "Rita Alves", "username" => "ist181829", "authentication_service" => "google",
+            ["all different" => ["name" => "Rita Alves", "username" => "ist181829", "authentication_service" => AuthService::GOOGLE,
                 "email" => "ana.r.g@gmail.com", "studentNumber" => 81829, "nickname" => "Rita A", "major" => "MEEC",
                 "isAdmin" => true, "isActive" => true]]
         ];
@@ -168,10 +170,10 @@ class UserTest extends TestCase
     public function setDataFailProvider(): array
     {
         return [
-            ["null name" => ["name" => null, "username" => "ist100000", "authentication_service" => "fenix",
+            ["null name" => ["name" => null, "username" => "ist100000", "authentication_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false]],
-            ["empty name" => ["name" => "", "username" => "ist100000", "authentication_service" => "fenix",
+            ["empty name" => ["name" => "", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false]]
         ];
@@ -180,29 +182,29 @@ class UserTest extends TestCase
     public function addUserSuccessProvider(): array
     {
         return [
-            "default" => ["John Smith Doe", "ist123456", "fenix", "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, false],
-            "non-ASCII chars in name & nickname" => ["John Smith Döe", "ist123456", "fenix", "johndoe@email.com", 123456, "John Döe", "MEIC-A", false, false],
-            "Google auth service" => ["John Smith Doe", "johndoe@google.com", "google", "johndoe@google.com", 123456, "John Doe", "MEIC-A", false, false],
-            "Facebook auth service" => ["John Smith Doe", "ist123456", "facebook", "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, false],
-            "Linkedin auth service" => ["John Smith Doe", "ist123456", "linkedin", "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, false],
-            "null email" => ["John Smith Doe", "ist123456", "fenix", null, 123456, "John Doe", "MEIC-A", false, false],
-            "null nickname" => ["John Smith Doe", "ist123456", "fenix", "johndoe@email.com", 123456, null, "MEIC-A", false, false],
-            "null major" => ["John Smith Doe", "ist123456", "fenix", "johndoe@email.com", 123456, "John Doe", null, false, false],
-            "not admin, active" => ["John Smith Doe", "ist123456", "fenix", "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, true],
-            "admin, not active" => ["John Smith Doe", "ist123456", "fenix", "johndoe@email.com", 123456, "John Doe", "MEIC-A", true, false],
-            "admin, active" => ["John Smith Doe", "ist123456", "fenix", "johndoe@email.com", 123456, "John Doe", "MEIC-A", true, true]
+            "default" => ["John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, false],
+            "non-ASCII chars in name & nickname" => ["John Smith Döe", "ist123456", AuthService::FENIX, "johndoe@email.com", 123456, "John Döe", "MEIC-A", false, false],
+            "Google auth service" => ["John Smith Doe", "johndoe@google.com", AuthService::GOOGLE, "johndoe@google.com", 123456, "John Doe", "MEIC-A", false, false],
+            "Facebook auth service" => ["John Smith Doe", "ist123456", AuthService::FACEBOOK, "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, false],
+            "Linkedin auth service" => ["John Smith Doe", "ist123456", AuthService::LINKEDIN, "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, false],
+            "null email" => ["John Smith Doe", "ist123456", AuthService::FENIX, null, 123456, "John Doe", "MEIC-A", false, false],
+            "null nickname" => ["John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com", 123456, null, "MEIC-A", false, false],
+            "null major" => ["John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com", 123456, "John Doe", null, false, false],
+            "not admin, active" => ["John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, true],
+            "admin, not active" => ["John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com", 123456, "John Doe", "MEIC-A", true, false],
+            "admin, active" => ["John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com", 123456, "John Doe", "MEIC-A", true, true]
         ];
     }
 
     public function addUserFailureProvider(): array
     {
         return [
-            "null name" => [null, "ist123456", "fenix", "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, false],
-            "empty name" => ["", "ist123456", "fenix", "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, false],
+            "null name" => [null, "ist123456", AuthService::FENIX, "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, false],
+            "empty name" => ["", "ist123456", AuthService::FENIX, "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, false],
             "wrong auth service" => ["John Smith Doe", "ist123456", "auth", "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, false],
             "invalid e-mail" => ["John Smith Doe", "ist123456", "invalid_auth", "johndoe@email.123", 123456, "John Doe", "MEIC-A", false, false],
-            "null admin" => ["John Smith Doe", "ist123456", "fenix", "johndoe@email.com", 123456, "John Doe", "MEIC-A", null, false],
-            "null active" => ["John Smith Doe", "ist123456", "fenix", "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, null]
+            "null admin" => ["John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com", 123456, "John Doe", "MEIC-A", null, false],
+            "null active" => ["John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com", 123456, "John Doe", "MEIC-A", false, null]
         ];
     }
 
@@ -227,7 +229,7 @@ class UserTest extends TestCase
      */
     public function getId()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $id = intval(Core::database()->select(User::TABLE_USER, ["studentNumber" => 123456], "id"));
         $this->assertEquals($id, $user->getId());
@@ -239,7 +241,7 @@ class UserTest extends TestCase
      */
     public function getUserName()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $this->assertEquals("John Smith Doe", $user->getName());
     }
@@ -250,7 +252,7 @@ class UserTest extends TestCase
      */
     public function getEmail()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $this->assertEquals("johndoe@email.com", $user->getEmail());
     }
@@ -261,7 +263,7 @@ class UserTest extends TestCase
      */
     public function getMajor()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $this->assertEquals("MEIC-A", $user->getMajor());
     }
@@ -272,7 +274,7 @@ class UserTest extends TestCase
      */
     public function getNickname()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $this->assertEquals("John Doe", $user->getNickname());
     }
@@ -283,7 +285,7 @@ class UserTest extends TestCase
      */
     public function getStudentNumber()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $this->assertEquals(123456, $user->getStudentNumber());
     }
@@ -294,7 +296,7 @@ class UserTest extends TestCase
      */
     public function getUserUsername()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $this->assertEquals("ist123456", $user->getUsername());
     }
@@ -305,9 +307,9 @@ class UserTest extends TestCase
      */
     public function getAuthService()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $this->assertEquals("fenix", $user->getAuthService());
+        $this->assertEquals(AuthService::FENIX, $user->getAuthService());
     }
 
     /**
@@ -317,7 +319,7 @@ class UserTest extends TestCase
     public function getImage()
     {
         // Image not set
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $this->assertNull($user->getImage());
 
@@ -333,7 +335,7 @@ class UserTest extends TestCase
     public function hasImage()
     {
         // Image not set
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $this->assertFalse($user->hasImage());
 
@@ -349,7 +351,7 @@ class UserTest extends TestCase
     public function getLastLogin()
     {
         // Set logged user
-        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, true);
         Core::setLoggedUser($loggedUser);
 
@@ -360,7 +362,7 @@ class UserTest extends TestCase
             null, null, false, false);
 
         // Set a user
-        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
 
         // Given
@@ -380,7 +382,7 @@ class UserTest extends TestCase
     public function getLastLoginNoLogin()
     {
         // Set logged user
-        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, true);
         Core::setLoggedUser($loggedUser);
 
@@ -391,7 +393,7 @@ class UserTest extends TestCase
             null, null, false, false);
 
         // Set a user
-        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
 
         // Given
@@ -408,7 +410,7 @@ class UserTest extends TestCase
      */
     public function isAdmin()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, false);
         $this->assertTrue($user->isAdmin());
     }
@@ -419,7 +421,7 @@ class UserTest extends TestCase
      */
     public function isNotAdmin()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $this->assertFalse($user->isAdmin());
     }
@@ -430,7 +432,7 @@ class UserTest extends TestCase
      */
     public function isActive()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $this->assertTrue($user->isActive());
     }
@@ -441,7 +443,7 @@ class UserTest extends TestCase
      */
     public function isInactive()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $this->assertFalse($user->isActive());
     }
@@ -453,10 +455,10 @@ class UserTest extends TestCase
      */
     public function getData()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $this->assertEquals(["id" => intval(Core::database()->select(User::TABLE_USER, ["studentNumber" => 123456], "id")),
-            "name" => "John Smith Doe", "username" => "ist123456", "authentication_service" => "fenix", "email" => "johndoe@email.com",
+            "name" => "John Smith Doe", "username" => "ist123456", "authentication_service" => AuthService::FENIX, "email" => "johndoe@email.com",
             "studentNumber" => 123456, "nickname" => "John Doe", "major" => "MEIC-A", "isAdmin" => false, "isActive" => true],
             $user->getData());
     }
@@ -467,10 +469,10 @@ class UserTest extends TestCase
      */
     public function getDataOnlyAuthFields()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $this->assertEquals(["id" => intval(Core::database()->select(User::TABLE_USER, ["studentNumber" => 123456], "id")),
-            "username" => "ist123456", "authentication_service" => "fenix"], $user->getData("id, username, authentication_service"));
+            "username" => "ist123456", "authentication_service" => AuthService::FENIX], $user->getData("id, username, authentication_service"));
     }
 
     /**
@@ -479,7 +481,7 @@ class UserTest extends TestCase
      */
     public function getDataNonAuthFields()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $this->assertEquals(["id" => intval(Core::database()->select(User::TABLE_USER, ["studentNumber" => 123456], "id")),
             "name" => "John Smith Doe", "email" => "johndoe@email.com", "studentNumber" => 123456, "nickname" => "John Doe",
@@ -492,7 +494,7 @@ class UserTest extends TestCase
      */
     public function getDataMixedFields()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $this->assertEquals(["name" => "John Smith Doe", "username" => "ist123456"], $user->getData("name, username"));
     }
@@ -505,7 +507,7 @@ class UserTest extends TestCase
      */
     public function setUserNameSuccess(string $name)
     {
-        $user = User::addUser("NAME", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("NAME", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $user->setName($name);
         $this->assertEquals($name, $user->getName());
@@ -518,7 +520,7 @@ class UserTest extends TestCase
      */
     public function setUserNameFailure($name)
     {
-        $user = User::addUser("NAME", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("NAME", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         try {
             $user->setName($name);
@@ -536,7 +538,7 @@ class UserTest extends TestCase
      */
     public function setEmailSuccess(?string $email)
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "example@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "example@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $user->setEmail($email);
         $this->assertEquals($email, $user->getEmail());
@@ -549,7 +551,7 @@ class UserTest extends TestCase
      */
     public function setEmailFailure($email)
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "example@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "example@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $this->expectException(Exception::class);
         $user->setEmail($email);
@@ -561,7 +563,7 @@ class UserTest extends TestCase
      */
     public function setMajor()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MAJOR", false, true);
         $user->setMajor("MEIC-A");
         $this->assertEquals("MEIC-A", $user->getMajor());
@@ -573,7 +575,7 @@ class UserTest extends TestCase
      */
     public function setNickname()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "", "MEIC-A", false, true);
         $user->setNickname("John Doe");
         $this->assertEquals("John Doe", $user->getNickname());
@@ -585,7 +587,7 @@ class UserTest extends TestCase
      */
     public function setStudentNumber()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $user->setStudentNumber(654321);
         $this->assertEquals(654321, $user->getStudentNumber());
@@ -597,7 +599,7 @@ class UserTest extends TestCase
      */
     public function setUserUsername()
     {
-        $user = User::addUser("John Smith Doe", "USERNAME", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "USERNAME", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $user->setUsername("ist123456");
         $this->assertEquals("ist123456", $user->getUsername());
@@ -610,7 +612,7 @@ class UserTest extends TestCase
      */
     public function setAuthServiceSuccess(string $authService)
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $user->setAuthService($authService);
         $this->assertEquals($authService, $user->getAuthService());
@@ -623,14 +625,14 @@ class UserTest extends TestCase
      */
     public function setAuthServiceFailure($authService)
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "example@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "example@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         try {
             $user->setAuthService($authService);
             $this->fail("Exception should have been thrown on 'setAuthServiceFailure'.");
 
         } catch (Exception|TypeError $error) {
-            $this->assertEquals("fenix", $user->getAuthService());
+            $this->assertEquals(AuthService::FENIX, $user->getAuthService());
         }
     }
 
@@ -641,7 +643,7 @@ class UserTest extends TestCase
      */
     public function setImage(string $base64)
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $user->setImage($base64);
         $this->assertTrue(file_exists(USER_DATA_FOLDER . "/" . $user->getId() . "/profile.png"));
@@ -653,7 +655,7 @@ class UserTest extends TestCase
      */
     public function setAdmin()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $user->setAdmin(true);
         $this->assertTrue($user->isAdmin());
@@ -665,7 +667,7 @@ class UserTest extends TestCase
      */
     public function setActive()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $user->setActive(true);
         $this->assertTrue($user->isActive());
@@ -678,7 +680,7 @@ class UserTest extends TestCase
      */
     public function setDataSuccess(array $fieldValues)
     {
-        $user = User::addUser("Ana Gonçalves", "ist100000", "fenix", "ana.goncalves@gmail.com",
+        $user = User::addUser("Ana Gonçalves", "ist100000", AuthService::FENIX, "ana.goncalves@gmail.com",
             10000, "Ana G", "MEIC-A", 0, 0);
         $user->setData($fieldValues);
         $this->assertEquals($user->getData(), array_merge($fieldValues, ["id" => strval($user->getId())]));
@@ -691,14 +693,14 @@ class UserTest extends TestCase
     public function setDataFailure(array $fieldValues)
     {
         try {
-            $user = User::addUser("Ana Gonçalves", "ist100000", "fenix", "ana.goncalves@gmail.com",
+            $user = User::addUser("Ana Gonçalves", "ist100000", AuthService::FENIX, "ana.goncalves@gmail.com",
                 10000, "Ana G", "MEIC-A", false, false);
             $user->setData($fieldValues);
             $this->fail("Error should have been thrown on 'setDataFailure'");
 
         } catch (Exception $e) {
             $user = new User(1);
-            $this->assertEquals(["id" => 1, "name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => "fenix",
+            $this->assertEquals(["id" => 1, "name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@gmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false], $user->getData());
         }
@@ -711,16 +713,16 @@ class UserTest extends TestCase
     public function setDataDuplicateStudentNumberFailure()
     {
         try {
-            User::addUser("Ana Gonçalves", "ist100000", "fenix", "ana.goncalves@gmail.com",
+            User::addUser("Ana Gonçalves", "ist100000", AuthService::FENIX, "ana.goncalves@gmail.com",
                 10000, "Ana G", "MEIC-A", false, false);
-            $user = User::addUser("Rita Alves", "ist200000", "fenix", "rita.alves@gmail.com",
+            $user = User::addUser("Rita Alves", "ist200000", AuthService::FENIX, "rita.alves@gmail.com",
                 20000, "Rita A.", "MEIC-A", false, false);
             $user->setData(["studentNumber" => 10000]);
             $this->fail("Error should have been thrown on 'setDataDuplicateStudentNumberFailure'");
 
         } catch (PDOException $e) {
             $user = new User(2);
-            $this->assertEquals(["id" => "2", "name" => "Rita Alves", "username" => "ist200000", "authentication_service" => "fenix",
+            $this->assertEquals(["id" => "2", "name" => "Rita Alves", "username" => "ist200000", "authentication_service" => AuthService::FENIX,
                 "email" => "rita.alves@gmail.com", "studentNumber" => 20000, "nickname" => "Rita A.", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false], $user->getData());
         }
@@ -733,16 +735,16 @@ class UserTest extends TestCase
     public function setDataDuplicateUsernameAndAuthenticationServiceFailure()
     {
         try {
-            User::addUser("Ana Gonçalves", "ist100000", "fenix", "ana.goncalves@gmail.com",
+            User::addUser("Ana Gonçalves", "ist100000", AuthService::FENIX, "ana.goncalves@gmail.com",
                 10000, "Ana G", "MEIC-A", false, false);
-            $user = User::addUser("Rita Alves", "ist200000", "fenix", "rita.alves@gmail.com",
+            $user = User::addUser("Rita Alves", "ist200000", AuthService::FENIX, "rita.alves@gmail.com",
                 20000, "Rita A.", "MEIC-A", false, false);
             $user->setData(["username" => "ist100000"]);
             $this->fail("Error should have been thrown on 'setDataDuplicateUsernameAndAuthenticationServiceFailure'");
 
         } catch (PDOException $e) {
             $user = new User(2);
-            $this->assertEquals(["id" => "2", "name" => "Rita Alves", "username" => "ist200000", "authentication_service" => "fenix",
+            $this->assertEquals(["id" => "2", "name" => "Rita Alves", "username" => "ist200000", "authentication_service" => AuthService::FENIX,
                 "email" => "rita.alves@gmail.com", "studentNumber" => 20000, "nickname" => "Rita A.", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false], $user->getData());
         }
@@ -755,16 +757,16 @@ class UserTest extends TestCase
     public function setDataDuplicateEmailFailure()
     {
         try {
-            User::addUser("Ana Gonçalves", "ist100000", "fenix", "ana.goncalves@gmail.com",
+            User::addUser("Ana Gonçalves", "ist100000", AuthService::FENIX, "ana.goncalves@gmail.com",
                 10000, "Ana G", "MEIC-A", false, false);
-            $user = User::addUser("Rita Alves", "ist200000", "fenix", "rita.alves@gmail.com",
+            $user = User::addUser("Rita Alves", "ist200000", AuthService::FENIX, "rita.alves@gmail.com",
                 20000, "Rita A.", "MEIC-A", false, false);
             $user->setData(["email" => "ana.goncalves@gmail.com"]);
             $this->fail("Error should have been thrown on 'setDataDuplicateEmailFailure'");
 
         } catch (PDOException $e) {
             $user = new User(2);
-            $this->assertEquals(["id" => "2", "name" => "Rita Alves", "username" => "ist200000", "authentication_service" => "fenix",
+            $this->assertEquals(["id" => "2", "name" => "Rita Alves", "username" => "ist200000", "authentication_service" => AuthService::FENIX,
                 "email" => "rita.alves@gmail.com", "studentNumber" => 20000, "nickname" => "Rita A.", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false], $user->getData());
         }
@@ -777,7 +779,7 @@ class UserTest extends TestCase
      */
     public function getUserById()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $this->assertEquals($user, User::getUserById($user->getId()));
     }
@@ -796,9 +798,9 @@ class UserTest extends TestCase
      */
     public function getUserByUsername()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $this->assertEquals($user, User::getUserByUsername("ist123456", "fenix"));
+        $this->assertEquals($user, User::getUserByUsername("ist123456", AuthService::FENIX));
     }
 
     /**
@@ -807,7 +809,7 @@ class UserTest extends TestCase
      */
     public function getUserByUsernameAuthServiceDoesntExist()
     {
-        User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $this->expectException(Exception::class);
         User::getUserByUsername("ist123456", "auth_service");
@@ -820,7 +822,7 @@ class UserTest extends TestCase
     public function getUserByUsernameUserDoesntExist()
     {
         $this->assertNull(User::getUserByUsername("username"));
-        $this->assertNull(User::getUserByUsername("username", "fenix"));
+        $this->assertNull(User::getUserByUsername("username", AuthService::FENIX));
     }
 
     /**
@@ -829,11 +831,11 @@ class UserTest extends TestCase
      */
     public function getUserByUsernameMultipleUsersWithAuthService()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        User::addUser("Johanna Smith Doe", "ist123456", "google", "johannadoe@email.com",
+        User::addUser("Johanna Smith Doe", "ist123456", AuthService::GOOGLE, "johannadoe@email.com",
             1234567, "Johanna Doe", "MEIC-A", false, false);
-        $this->assertEquals($user, User::getUserByUsername("ist123456", "fenix"));
+        $this->assertEquals($user, User::getUserByUsername("ist123456", AuthService::FENIX));
     }
 
     /**
@@ -842,9 +844,9 @@ class UserTest extends TestCase
      */
     public function getUserByUsernameMultipleUsersWithoutAuthService()
     {
-        User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        User::addUser("Johanna Smith Doe", "ist123456", "google", "johannadoe@email.com",
+        User::addUser("Johanna Smith Doe", "ist123456", AuthService::GOOGLE, "johannadoe@email.com",
             1234567, "Johanna Doe", "MEIC-A", false, false);
         $this->expectException(Exception::class);
         User::getUserByUsername("ist123456");
@@ -856,7 +858,7 @@ class UserTest extends TestCase
      */
     public function getUserByEmail()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $this->assertEquals($user, User::getUserByEmail("johndoe@email.com"));
     }
@@ -875,7 +877,7 @@ class UserTest extends TestCase
      */
     public function getUserByStudentNumber()
     {
-        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $this->assertEquals($user, User::getUserByStudentNumber(123456));
     }
@@ -895,9 +897,9 @@ class UserTest extends TestCase
      */
     public function getAllUsers()
     {
-        $user1 = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user1 = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $user2 = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, false);
 
         $users = User::getUsers();
@@ -922,9 +924,9 @@ class UserTest extends TestCase
      */
     public function getActiveUsers()
     {
-        $user1 = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user1 = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $user2 = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
 
         $users = User::getUsers(true);
@@ -949,9 +951,9 @@ class UserTest extends TestCase
      */
     public function getInactiveUsers()
     {
-        $user1 = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user1 = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $user2 = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
 
         $users = User::getUsers(false);
@@ -976,9 +978,9 @@ class UserTest extends TestCase
      */
     public function getAdmins()
     {
-        $admin = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $admin = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, false);
-        User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, false);
 
         $admins = User::getUsers(null, true);
@@ -999,11 +1001,11 @@ class UserTest extends TestCase
      */
     public function getNonAdmins()
     {
-        $user1 = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user1 = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $user2 = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
-        $admin = User::addUser("Johnny Smith Doe", "ist1234567", "fenix", "johndoe2@email.com",
+        $admin = User::addUser("Johnny Smith Doe", "ist1234567", AuthService::FENIX, "johndoe2@email.com",
             1234567, "Johnny Doe", "MEIC-A", true, false);
 
         $users = User::getUsers(null, false);
@@ -1028,11 +1030,11 @@ class UserTest extends TestCase
      */
     public function getInactiveAdmins()
     {
-        $user1 = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $user1 = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $user2 = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
-        $admin = User::addUser("Johnny Smith Doe", "ist1234567", "fenix", "johndoe2@email.com",
+        $admin = User::addUser("Johnny Smith Doe", "ist1234567", AuthService::FENIX, "johndoe2@email.com",
             1234567, "Johnny Doe", "MEIC-A", true, false);
 
         $admins = User::getUsers(false, true);
@@ -1055,7 +1057,7 @@ class UserTest extends TestCase
     public function getUserCourses()
     {
         // Set logged user
-        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, true);
         Core::setLoggedUser($loggedUser);
 
@@ -1066,7 +1068,7 @@ class UserTest extends TestCase
             null, null, false, false);
 
         // Set a user
-        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
 
         // Given
@@ -1096,7 +1098,7 @@ class UserTest extends TestCase
     public function getUserActiveCourses()
     {
         // Set logged user
-        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, true);
         Core::setLoggedUser($loggedUser);
 
@@ -1107,7 +1109,7 @@ class UserTest extends TestCase
             null, null, false, false);
 
         // Set a user
-        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
 
         // Given
@@ -1132,7 +1134,7 @@ class UserTest extends TestCase
     public function getUserInactiveCourses()
     {
         // Set logged user
-        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, true);
         Core::setLoggedUser($loggedUser);
 
@@ -1143,7 +1145,7 @@ class UserTest extends TestCase
             null, null, false, false);
 
         // Set a user
-        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
 
         // Given
@@ -1168,7 +1170,7 @@ class UserTest extends TestCase
     public function getUserVisibleCourses()
     {
         // Set logged user
-        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, true);
         Core::setLoggedUser($loggedUser);
 
@@ -1179,7 +1181,7 @@ class UserTest extends TestCase
             null, null, false, false);
 
         // Set a user
-        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
 
         // Given
@@ -1204,7 +1206,7 @@ class UserTest extends TestCase
     public function getUserInvisibleCourses()
     {
         // Set logged user
-        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, true);
         Core::setLoggedUser($loggedUser);
 
@@ -1215,7 +1217,7 @@ class UserTest extends TestCase
             null, null, false, false);
 
         // Set a user
-        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
 
         // Given
@@ -1240,7 +1242,7 @@ class UserTest extends TestCase
     public function getUserActiveAndVisibleCourses()
     {
         // Set logged user
-        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, true);
         Core::setLoggedUser($loggedUser);
 
@@ -1251,7 +1253,7 @@ class UserTest extends TestCase
             null, null, false, false);
 
         // Set a user
-        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
 
         // Given
@@ -1312,11 +1314,11 @@ class UserTest extends TestCase
      */
     public function addUserDuplicateStudentNumberFailure()
     {
-        User::addUser("João Carlos Sousa", "ist123456", "fenix", "joao@gmail.com",
+        User::addUser("João Carlos Sousa", "ist123456", AuthService::FENIX, "joao@gmail.com",
             123456, "João Sousa", "MEIC-A", false, true);
 
         $this->expectException(PDOException::class);
-        User::addUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
+        User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             123456, "Marcus Notø", "MEEC", false, true);
     }
 
@@ -1326,11 +1328,11 @@ class UserTest extends TestCase
      */
     public function addUserDuplicateUsernameAndAuthenticationServiceFailure()
     {
-        User::addUser("João Carlos Sousa", "ist123456", "fenix", "joao@gmail.com",
+        User::addUser("João Carlos Sousa", "ist123456", AuthService::FENIX, "joao@gmail.com",
             123456, "João Sousa", "MEIC-A", false, true);
 
         $this->expectException(PDOException::class);
-        User::addUser("Marcus Notø", "ist123456", "fenix", "marcus.n.hansen@gmail.com",
+        User::addUser("Marcus Notø", "ist123456", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             123456, "Marcus Notø", "MEEC", false, true);
     }
 
@@ -1340,11 +1342,11 @@ class UserTest extends TestCase
      */
     public function addUserDuplicateEmailFailure()
     {
-        User::addUser("João Carlos Sousa", "ist123456", "fenix", "joao@gmail.com",
+        User::addUser("João Carlos Sousa", "ist123456", AuthService::FENIX, "joao@gmail.com",
             123456, "João Sousa", "MEIC-A", false, true);
 
         $this->expectException(PDOException::class);
-        User::addUser("Marcus Notø", "ist123456", "fenix", "joao@gmail.com",
+        User::addUser("Marcus Notø", "ist123456", AuthService::FENIX, "joao@gmail.com",
             123456, "Marcus Notø", "MEEC", false, true);
     }
 
@@ -1357,7 +1359,7 @@ class UserTest extends TestCase
     public function editUser(string $name, string $username, string $authService, ?string $email, int $studentNumber,
                              ?string $nickname, ?string $major, bool $isAdmin, bool $isActive)
     {
-        $user = User::addUser("João Carlos Sousa", "ist654321", "fenix", "joao@gmail.com",
+        $user = User::addUser("João Carlos Sousa", "ist654321", AuthService::FENIX, "joao@gmail.com",
             654321, "João Sousa", "MEIC-A", false, false);
         $user->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
 
@@ -1376,7 +1378,7 @@ class UserTest extends TestCase
     public function editUserFailure($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive)
     {
         try {
-            $user = User::addUser("João Carlos Sousa", "ist654321", "fenix", "joao@gmail.com",
+            $user = User::addUser("João Carlos Sousa", "ist654321", AuthService::FENIX, "joao@gmail.com",
                 654321, "João Sousa", "MEIC-A", false, false);
             $user->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
             $this->fail("Exception should have been thrown on 'editUserFailure'");
@@ -1386,7 +1388,7 @@ class UserTest extends TestCase
             $auth = Core::database()->select(Auth::TABLE_AUTH, ["username" => "ist654321"]);
             $this->assertEquals(["id" => "1", "name" => "João Carlos Sousa", "email" => "joao@gmail.com", "studentNumber" => 654321,
                 "nickname" => "João Sousa", "major" => "MEIC-A", "isAdmin" => "0", "isActive" => "0"], $user);
-            $this->assertEquals(["id" => $auth["id"], "game_course_user_id" => "1", "username" => "ist654321", "authentication_service" => "fenix"], $auth);
+            $this->assertEquals(["id" => $auth["id"], "game_course_user_id" => "1", "username" => "ist654321", "authentication_service" => AuthService::FENIX], $auth);
         }
     }
 
@@ -1396,13 +1398,13 @@ class UserTest extends TestCase
      */
     public function editUserDuplicateStudentNumberFailure()
     {
-        User::addUser("João Carlos Sousa", "ist123456", "fenix", "joao@gmail.com",
+        User::addUser("João Carlos Sousa", "ist123456", AuthService::FENIX, "joao@gmail.com",
             123456, "João Sousa", "MEIC-A", false, true);
-        $user = User::addUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
+        $user = User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
 
         $this->expectException(PDOException::class);
-        $user->editUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
+        $user->editUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             123456, "Marcus Notø", "MEEC", false, true);
     }
 
@@ -1412,13 +1414,13 @@ class UserTest extends TestCase
      */
     public function editUserDuplicateUsernameAndAuthenticationServiceFailure()
     {
-        User::addUser("João Carlos Sousa", "ist123456", "fenix", "joao@gmail.com",
+        User::addUser("João Carlos Sousa", "ist123456", AuthService::FENIX, "joao@gmail.com",
             123456, "João Sousa", "MEIC-A", false, true);
-        $user = User::addUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
+        $user = User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
 
         $this->expectException(PDOException::class);
-        $user->editUser("Marcus Notø", "ist123456", "fenix", "marcus.n.hansen@gmail.com",
+        $user->editUser("Marcus Notø", "ist123456", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
     }
 
@@ -1428,13 +1430,13 @@ class UserTest extends TestCase
      */
     public function editUserDuplicateEmailFailure()
     {
-        User::addUser("João Carlos Sousa", "ist123456", "fenix", "joao@gmail.com",
+        User::addUser("João Carlos Sousa", "ist123456", AuthService::FENIX, "joao@gmail.com",
             123456, "João Sousa", "MEIC-A", false, true);
-        $user = User::addUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
+        $user = User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
 
         $this->expectException(PDOException::class);
-        $user->editUser("Marcus Notø", "ist1101036", "fenix", "joao@gmail.com",
+        $user->editUser("Marcus Notø", "ist1101036", AuthService::FENIX, "joao@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
     }
 
@@ -1445,9 +1447,9 @@ class UserTest extends TestCase
      */
     public function deleteUser()
     {
-        User::addUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
+        User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
-        $id = User::addUser("João Carlos Sousa", "ist123456", "fenix", "joao@gmail.com",
+        $id = User::addUser("João Carlos Sousa", "ist123456", AuthService::FENIX, "joao@gmail.com",
             123456, "João Sousa", "MEIC-A", false, true)->getId();
         User::deleteUser($id);
         $users = User::getUsers();
@@ -1462,7 +1464,7 @@ class UserTest extends TestCase
      */
     public function deleteUserInexistentUser()
     {
-        User::addUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
+        User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
         User::deleteUser(2);
         $users = User::getUsers();
@@ -1478,7 +1480,7 @@ class UserTest extends TestCase
      */
     public function userExists()
     {
-        $user = User::addUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
+        $user = User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
         $this->assertTrue($user->exists());
     }
@@ -1499,7 +1501,7 @@ class UserTest extends TestCase
      */
     public function getDataFolder()
     {
-        $user = User::addUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
+        $user = User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
         $this->assertEquals("user_data/1", $user->getDataFolder(false));
     }
@@ -1510,7 +1512,7 @@ class UserTest extends TestCase
      */
     public function getDataFolderFullPath()
     {
-        $user = User::addUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
+        $user = User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
         $this->assertEquals(USER_DATA_FOLDER . "/1", $user->getDataFolder());
     }
@@ -1647,16 +1649,16 @@ class UserTest extends TestCase
 
         $expectedUser1 = ["id" => 1, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => true];
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true];
         $expectedUser2 = ["id" => 2, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
-            "authentication_service" => "linkedin", "isAdmin" => false, "isActive" => true];
+            "authentication_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true];
         $expectedUser3 = ["id" => 3, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
             "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => "google", "isAdmin" => false, "isActive" => true];
+            "authentication_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true];
         $expectedUser4 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
-            "authentication_service" => "facebook", "isAdmin" => false, "isActive" => false];
+            "authentication_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false];
 
         $this->assertEquals($expectedUser1, $user1);
         $this->assertEquals($expectedUser2, $user2);
@@ -1671,7 +1673,7 @@ class UserTest extends TestCase
     public function importUsersWithHeaderNonUniqueUsersNoReplace()
     {
         // Given
-        User::addUser("Ana Rita Gonçalves", "ist426015", "fenix", "ana.goncalves@hotmail.com",
+        User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
             84715, "Ana G", "MEIC-A", true, false);
 
         $file = "name,email,major,nickname,studentNumber,username,authentication_service,isAdmin,isActive\n";
@@ -1695,16 +1697,16 @@ class UserTest extends TestCase
 
         $expectedUser0 = ["id" => 1, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => false];
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false];
         $expectedUser1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => true];
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true];
         $expectedUser2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
-            "authentication_service" => "linkedin", "isAdmin" => false, "isActive" => true];
+            "authentication_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true];
         $expectedUser3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
-            "authentication_service" => "facebook", "isAdmin" => false, "isActive" => false];
+            "authentication_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false];
 
         $this->assertEquals($expectedUser0, $user0);
         $this->assertEquals($expectedUser1, $user1);
@@ -1719,7 +1721,7 @@ class UserTest extends TestCase
     public function importUsersWithHeaderNonUniqueUsersReplace()
     {
         // Given
-        User::addUser("Ana Rita Gonçalves", "ist426015", "fenix", "ana.goncalves@hotmail.com",
+        User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
             84715, "Ana G", "MEIC-A", true, false);
 
         $file = "name,email,major,nickname,studentNumber,username,authentication_service,isAdmin,isActive\n";
@@ -1743,16 +1745,16 @@ class UserTest extends TestCase
 
         $expectedUser0 = ["id" => 1, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
             "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => "google", "isAdmin" => false, "isActive" => true];
+            "authentication_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true];
         $expectedUser1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => true];
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true];
         $expectedUser2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
-            "authentication_service" => "linkedin", "isAdmin" => false, "isActive" => true];
+            "authentication_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true];
         $expectedUser3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
-            "authentication_service" => "facebook", "isAdmin" => false, "isActive" => false];
+            "authentication_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false];
 
         $this->assertEquals($expectedUser0, $user0);
         $this->assertEquals($expectedUser1, $user1);
@@ -1787,16 +1789,16 @@ class UserTest extends TestCase
 
         $expectedUser1 = ["id" => 1, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => true];
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true];
         $expectedUser2 = ["id" => 2, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
-            "authentication_service" => "linkedin", "isAdmin" => false, "isActive" => true];
+            "authentication_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true];
         $expectedUser3 = ["id" => 3, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
             "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => "google", "isAdmin" => false, "isActive" => true];
+            "authentication_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true];
         $expectedUser4 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
-            "authentication_service" => "facebook", "isAdmin" => false, "isActive" => false];
+            "authentication_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false];
 
         $this->assertEquals($expectedUser1, $user1);
         $this->assertEquals($expectedUser2, $user2);
@@ -1811,7 +1813,7 @@ class UserTest extends TestCase
     public function importUsersWithNoHeaderNonUniqueUsersReplace()
     {
         // Given
-        User::addUser("Ana Rita Gonçalves", "ist426015", "fenix", "ana.goncalves@hotmail.com",
+        User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
             84715, "Ana G", "MEIC-A", true, false);
 
         $file = "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1\n";
@@ -1834,16 +1836,16 @@ class UserTest extends TestCase
 
         $expectedUser0 = ["id" => 1, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
             "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => "google", "isAdmin" => false, "isActive" => true];
+            "authentication_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true];
         $expectedUser1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => true];
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true];
         $expectedUser2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
-            "authentication_service" => "linkedin", "isAdmin" => false, "isActive" => true];
+            "authentication_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true];
         $expectedUser3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
-            "authentication_service" => "facebook", "isAdmin" => false, "isActive" => false];
+            "authentication_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false];
 
         $this->assertEquals($expectedUser0, $user0);
         $this->assertEquals($expectedUser1, $user1);
@@ -1858,7 +1860,7 @@ class UserTest extends TestCase
     public function importUsersWithNoHeaderNonUniqueUsersNoReplace()
     {
         // Given
-        User::addUser("Ana Rita Gonçalves", "ist426015", "fenix", "ana.goncalves@hotmail.com",
+        User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
             84715, "Ana G", "MEIC-A", true, false);
 
         $file = "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1\n";
@@ -1881,16 +1883,16 @@ class UserTest extends TestCase
 
         $expectedUser0 = ["id" => 1, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => false];
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false];
         $expectedUser1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => true];
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true];
         $expectedUser2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
-            "authentication_service" => "linkedin", "isAdmin" => false, "isActive" => true];
+            "authentication_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true];
         $expectedUser3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
-            "authentication_service" => "facebook", "isAdmin" => false, "isActive" => false];
+            "authentication_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false];
 
         $this->assertEquals($expectedUser0, $user0);
         $this->assertEquals($expectedUser1, $user1);
@@ -1917,11 +1919,11 @@ class UserTest extends TestCase
      */
     public function importUsersEmptyFileNoHeaderWithUsers()
     {
-        User::addUser("Ana Gonçalves", "ist100000", "fenix", "ana.goncalves@gmail.com",
+        User::addUser("Ana Gonçalves", "ist100000", AuthService::FENIX, "ana.goncalves@gmail.com",
             10000, "Ana G", "MEIC-A", true, false);
-        User::addUser("João Carlos Sousa", "ist123456", "fenix", "joao@gmail.com",
+        User::addUser("João Carlos Sousa", "ist123456", AuthService::FENIX, "joao@gmail.com",
             123456, "João Sousa", "MEIC-A", false, true);
-        User::addUser("Sabri M'Barki", "ist1100956", "fenix", "sabri.m.barki@efrei.net",
+        User::addUser("Sabri M'Barki", "ist1100956", AuthService::FENIX, "sabri.m.barki@efrei.net",
             100956, "Sabri M'Barki", "MEIC-T", true, true);
 
         $file = "";
@@ -1937,11 +1939,11 @@ class UserTest extends TestCase
      */
     public function importUsersEmptyFileWithHeaderWithUsers()
     {
-        User::addUser("Ana Gonçalves", "ist100000", "fenix", "ana.goncalves@gmail.com",
+        User::addUser("Ana Gonçalves", "ist100000", AuthService::FENIX, "ana.goncalves@gmail.com",
             10000, "Ana G", "MEIC-A", true, false);
-        User::addUser("João Carlos Sousa", "ist123456", "fenix", "joao@gmail.com",
+        User::addUser("João Carlos Sousa", "ist123456", AuthService::FENIX, "joao@gmail.com",
             123456, "João Sousa", "MEIC-A", false, true);
-        User::addUser("Sabri M'Barki", "ist1100956", "fenix", "sabri.m.barki@efrei.net",
+        User::addUser("Sabri M'Barki", "ist1100956", AuthService::FENIX, "sabri.m.barki@efrei.net",
             100956, "Sabri M'Barki", "MEIC-T", true, true);
 
         $file = "name,email,major,nickname,studentNumber,username,authentication_service,isAdmin,isActive\n";
@@ -1958,15 +1960,15 @@ class UserTest extends TestCase
      */
     public function exportUsers()
     {
-        User::addUser("Sabri M'Barki", "ist1100956", "fenix", "sabri.m.barki@efrei.net",
+        User::addUser("Sabri M'Barki", "ist1100956", AuthService::FENIX, "sabri.m.barki@efrei.net",
             100956, "Sabri M'Barki", "MEIC-T", true, true);
-        User::addUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
+        User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             1101036, "Marcus Notø", "MEEC", true, false);
-        User::addUser("Inês Albano", "ist187664", "fenix", "ines.albano@tecnico.ulisboa.pt",
+        User::addUser("Inês Albano", "ist187664", AuthService::FENIX, "ines.albano@tecnico.ulisboa.pt",
             87664, null, "MEIC-A", false, true);
-        User::addUser("Filipe José Zillo Colaço", "ist426015", "fenix", "fijozico@hotmail.com",
+        User::addUser("Filipe José Zillo Colaço", "ist426015", AuthService::FENIX, "fijozico@hotmail.com",
             84715, null, "LEIC-T", false, true);
-        User::addUser("Mariana Wong Brandão", "ist186893", "fenix", "marianawbrandao@icloud.com",
+        User::addUser("Mariana Wong Brandão", "ist186893", AuthService::FENIX, "marianawbrandao@icloud.com",
             86893, "Mariana Brandão", "MEMec", false, false);
 
         $expectedFile = "name,email,major,nickname,studentNumber,username,authentication_service,isAdmin,isActive\n";

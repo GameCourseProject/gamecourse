@@ -2,8 +2,9 @@
 namespace GameCourse\User;
 
 use DateTime;
-use Error;
 use Exception;
+use GameCourse\Core\Auth;
+use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Role\Role;
@@ -34,7 +35,7 @@ class CourseUserTest extends TestCase
     protected function setUp(): void
     {
         // Set logged user
-        $loggedUser = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, true);
         Core::setLoggedUser($loggedUser);
         $this->loggedUser = $loggedUser;
@@ -45,7 +46,7 @@ class CourseUserTest extends TestCase
         $this->course = $course;
 
         // Set a user
-        $user = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
         $this->user = $user;
     }
@@ -237,7 +238,7 @@ class CourseUserTest extends TestCase
     public function getData()
     {
         $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
-        $this->assertEquals(["id" => 2, "name" => "Johanna Smith Doe", "username" => "ist654321", "authentication_service" => "fenix",
+        $this->assertEquals(["id" => 2, "name" => "Johanna Smith Doe", "username" => "ist654321", "authentication_service" => AuthService::FENIX,
             "email" => "johannadoe@email.com", "studentNumber" => 654321, "nickname" => "Johanna Doe", "major" => "MEIC-A",
             "isAdmin" => false, "isActive" => true, "course" => 1, "lastActivity" => null, "previousActivity" => null,
             "isActiveInCourse" => true], $courseUser->getData());
@@ -249,7 +250,7 @@ class CourseUserTest extends TestCase
     public function getDataOnlyUserFields()
     {
         $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
-        $this->assertEquals(["id" => 2, "name" => "Johanna Smith Doe", "username" => "ist654321", "authentication_service" => "fenix",
+        $this->assertEquals(["id" => 2, "name" => "Johanna Smith Doe", "username" => "ist654321", "authentication_service" => AuthService::FENIX,
             "email" => "johannadoe@email.com", "studentNumber" => 654321, "nickname" => "Johanna Doe", "major" => "MEIC-A",
             "isAdmin" => false],
             $courseUser->getData("id, name, username, authentication_service, email, studentNumber, nickname, major, isAdmin"));
@@ -1078,19 +1079,19 @@ class CourseUserTest extends TestCase
 
         $expectedUser1 = ["id" => 3, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $expectedUser2 = ["id" => 4, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
-            "authentication_service" => "linkedin", "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $expectedUser3 = ["id" => 5, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
             "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => "google", "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => false];
         $expectedUser4 = ["id" => 6, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
-            "authentication_service" => "facebook", "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => false];
 
         $this->assertEquals($expectedUser1, $user1->getData());
@@ -1126,7 +1127,7 @@ class CourseUserTest extends TestCase
     public function importCourseUsersWithHeaderNonUniqueCourseUsersNoReplace()
     {
         // Given
-        $user = User::addUser("Ana Rita Gonçalves", "ist426015", "fenix", "ana.goncalves@hotmail.com",
+        $user = User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
             84715, "Ana G", "MEIC-A", true, false);
         CourseUser::addCourseUser($user->getId(), $this->course->getId(), "Teacher");
 
@@ -1154,19 +1155,19 @@ class CourseUserTest extends TestCase
 
         $expectedUser0 = ["id" => 3, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => false, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $expectedUser1 = ["id" => 4, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $expectedUser2 = ["id" => 5, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
-            "authentication_service" => "linkedin", "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $expectedUser3 = ["id" => 6, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
-            "authentication_service" => "facebook", "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => false];
 
         $this->assertEquals($expectedUser0, $user0->getData());
@@ -1202,7 +1203,7 @@ class CourseUserTest extends TestCase
     public function importCourseUsersWithHeaderNonUniqueCourseUsersReplace()
     {
         // Given
-        $user = User::addUser("Ana Rita Gonçalves", "ist426015", "fenix", "ana.goncalves@hotmail.com",
+        $user = User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
             84715, "Ana G", "MEIC-A", true, false);
         CourseUser::addCourseUser($user->getId(), $this->course->getId(), "Teacher");
 
@@ -1230,19 +1231,19 @@ class CourseUserTest extends TestCase
 
         $expectedUser0 = ["id" => 3, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
             "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => "google", "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => false];
         $expectedUser1 = ["id" => 4, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $expectedUser2 = ["id" => 5, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
-            "authentication_service" => "linkedin", "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $expectedUser3 = ["id" => 6, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
-            "authentication_service" => "facebook", "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => false];
 
         $this->assertEquals($expectedUser0, $user0->getData());
@@ -1301,19 +1302,19 @@ class CourseUserTest extends TestCase
 
         $expectedUser1 = ["id" => 3, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $expectedUser2 = ["id" => 4, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
-            "authentication_service" => "linkedin", "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $expectedUser3 = ["id" => 5, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
             "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => "google", "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => false];
         $expectedUser4 = ["id" => 6, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
-            "authentication_service" => "facebook", "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => false];
 
         $this->assertEquals($expectedUser1, $user1->getData());
@@ -1349,7 +1350,7 @@ class CourseUserTest extends TestCase
     public function importCourseUsersWithNoHeaderNonUniqueCourseUsersReplace()
     {
         // Given
-        $user = User::addUser("Ana Rita Gonçalves", "ist426015", "fenix", "ana.goncalves@hotmail.com",
+        $user = User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
             84715, "Ana G", "MEIC-A", true, false);
         CourseUser::addCourseUser($user->getId(), $this->course->getId(), "Teacher");
 
@@ -1376,19 +1377,19 @@ class CourseUserTest extends TestCase
 
         $expectedUser0 = ["id" => 3, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
             "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => "google", "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => false];
         $expectedUser1 = ["id" => 4, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $expectedUser2 = ["id" => 5, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
-            "authentication_service" => "linkedin", "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $expectedUser3 = ["id" => 6, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
-            "authentication_service" => "facebook", "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => false];
 
         $this->assertEquals($expectedUser0, $user0->getData());
@@ -1424,7 +1425,7 @@ class CourseUserTest extends TestCase
     public function importCourseUsersWithNoHeaderNonUniqueCourseUsersNoReplace()
     {
         // Given
-        $user = User::addUser("Ana Rita Gonçalves", "ist426015", "fenix", "ana.goncalves@hotmail.com",
+        $user = User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
             84715, "Ana G", "MEIC-A", true, false);
         CourseUser::addCourseUser($user->getId(), $this->course->getId(), "Teacher");
 
@@ -1451,19 +1452,19 @@ class CourseUserTest extends TestCase
 
         $expectedUser0 = ["id" => 3, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => false, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $expectedUser1 = ["id" => 4, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $expectedUser2 = ["id" => 5, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
-            "authentication_service" => "linkedin", "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $expectedUser3 = ["id" => 6, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
-            "authentication_service" => "facebook", "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => false];
 
         $this->assertEquals($expectedUser0, $user0->getData());
@@ -1499,7 +1500,7 @@ class CourseUserTest extends TestCase
     public function importCourseUsersIsAlreadyUserOfSystemNoReplace()
     {
         // Given
-        $user = User::addUser("Ana Rita Gonçalves", "ist426015", "fenix", "ana.goncalves@hotmail.com",
+        $user = User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
             84715, "Ana G", "MEIC-A", true, false);
 
         $file = "Ana Rita Gonçalves,ana.goncalves@hotmail.com,MEIC-A,Ana G,84715,ist426015,fenix,1,1,1,Student";
@@ -1518,7 +1519,7 @@ class CourseUserTest extends TestCase
         $user1 = new CourseUser(User::getUserByStudentNumber(84715)->getId(), $this->course);
         $expectedUser1 = ["id" => 3, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => false, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $this->assertEquals($expectedUser1, $user1->getData());
 
@@ -1534,7 +1535,7 @@ class CourseUserTest extends TestCase
     public function importCourseUsersIsAlreadyUserOfSystemReplace()
     {
         // Given
-        $user = User::addUser("Ana Rita Gonçalves", "ist426015", "fenix", "ana.goncalves@hotmail.com",
+        $user = User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
             84715, "Ana G", "MEIC-A", true, false);
 
         $file = "Ana Rita Gonçalves,ana.goncalves@hotmail.com,MEIC-A,Ana G,84715,ist426015,fenix,1,1,1,Student";
@@ -1553,7 +1554,7 @@ class CourseUserTest extends TestCase
         $user1 = new CourseUser(User::getUserByStudentNumber(84715)->getId(), $this->course);
         $expectedUser1 = ["id" => 3, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => "fenix", "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
+            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "previousActivity" => null, "isActiveInCourse" => true];
         $this->assertEquals($expectedUser1, $user1->getData());
 
@@ -1584,11 +1585,11 @@ class CourseUserTest extends TestCase
      */
     public function importCourseUsersEmptyFileNoHeaderWithCourseUsers()
     {
-        $user1 = User::addUser("Ana Gonçalves", "ist100000", "fenix", "ana.goncalves@gmail.com",
+        $user1 = User::addUser("Ana Gonçalves", "ist100000", AuthService::FENIX, "ana.goncalves@gmail.com",
             10000, "Ana G", "MEIC-A", true, false);
-        $user2 = User::addUser("João Carlos Sousa", "ist1234567", "fenix", "joao@gmail.com",
+        $user2 = User::addUser("João Carlos Sousa", "ist1234567", AuthService::FENIX, "joao@gmail.com",
             1234567, "João Sousa", "MEIC-A", false, true);
-        $user3 = User::addUser("Sabri M'Barki", "ist1100956", "fenix", "sabri.m.barki@efrei.net",
+        $user3 = User::addUser("Sabri M'Barki", "ist1100956", AuthService::FENIX, "sabri.m.barki@efrei.net",
             100956, "Sabri M'Barki", "MEIC-T", true, true);
 
         CourseUser::addCourseUser($user1->getId(), $this->course->getId(), "Teacher");
@@ -1611,11 +1612,11 @@ class CourseUserTest extends TestCase
      */
     public function importCourseUsersEmptyFileWithHeaderWithCourseUsers()
     {
-        $user1 = User::addUser("Ana Gonçalves", "ist100000", "fenix", "ana.goncalves@gmail.com",
+        $user1 = User::addUser("Ana Gonçalves", "ist100000", AuthService::FENIX, "ana.goncalves@gmail.com",
             10000, "Ana G", "MEIC-A", true, false);
-        $user2 = User::addUser("João Carlos Sousa", "ist1234567", "fenix", "joao@gmail.com",
+        $user2 = User::addUser("João Carlos Sousa", "ist1234567", AuthService::FENIX, "joao@gmail.com",
             1234567, "João Sousa", "MEIC-A", false, true);
-        $user3 = User::addUser("Sabri M'Barki", "ist1100956", "fenix", "sabri.m.barki@efrei.net",
+        $user3 = User::addUser("Sabri M'Barki", "ist1100956", AuthService::FENIX, "sabri.m.barki@efrei.net",
             100956, "Sabri M'Barki", "MEIC-T", true, true);
 
         CourseUser::addCourseUser($user1->getId(), $this->course->getId(), "Teacher");
@@ -1648,15 +1649,15 @@ class CourseUserTest extends TestCase
      */
     public function exportCourseUsers()
     {
-        $user1 = User::addUser("Sabri M'Barki", "ist1100956", "fenix", "sabri.m.barki@efrei.net",
+        $user1 = User::addUser("Sabri M'Barki", "ist1100956", AuthService::FENIX, "sabri.m.barki@efrei.net",
             100956, "Sabri M'Barki", "MEIC-T", true, true);
-        $user2 = User::addUser("Marcus Notø", "ist1101036", "fenix", "marcus.n.hansen@gmail.com",
+        $user2 = User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             1101036, "Marcus Notø", "MEEC", true, false);
-        $user3 = User::addUser("Inês Albano", "ist187664", "fenix", "ines.albano@tecnico.ulisboa.pt",
+        $user3 = User::addUser("Inês Albano", "ist187664", AuthService::FENIX, "ines.albano@tecnico.ulisboa.pt",
             87664, null, "MEIC-A", false, true);
-        $user4 = User::addUser("Filipe José Zillo Colaço", "ist426015", "fenix", "fijozico@hotmail.com",
+        $user4 = User::addUser("Filipe José Zillo Colaço", "ist426015", AuthService::FENIX, "fijozico@hotmail.com",
             84715, null, "LEIC-T", false, true);
-        $user5 = User::addUser("Mariana Wong Brandão", "ist186893", "fenix", "marianawbrandao@icloud.com",
+        $user5 = User::addUser("Mariana Wong Brandão", "ist186893", AuthService::FENIX, "marianawbrandao@icloud.com",
             86893, "Mariana Brandão", "MEMec", false, false);
 
         CourseUser::addCourseUser($user1->getId(), $this->course->getId(), "Student");
