@@ -13,7 +13,7 @@ class CronJob
 {
     const CRONFILE = ROOT_PATH . "crontab.txt";
 
-    public function __construct(string $script, int $courseId, int $number, string $time, ?int $day)
+    public function __construct(string $script, int $courseId, ?int $number, ?string $time, int $day = null)
     {
         self::updateCronTab($script, $courseId, $number, $time, $day);
     }
@@ -23,7 +23,7 @@ class CronJob
         self::updateCronTab($script, $courseId, null, null, null, true);
     }
 
-    private static function updateCronTab(string $script, int $courseId, ?int $number, ?string $time, ?int $day, bool $remove = false)
+    private static function updateCronTab(string $script, int $courseId, ?int $number, ?string $time, int $day = null, bool $remove = false)
     {
         $path = self::getScriptPath($script);
         $output = shell_exec('crontab -l');
@@ -65,8 +65,8 @@ class CronJob
     {
         switch ($script) {
             case "AutoGame":
-                return ROOT_PATH . "AutoGameScript.php";
-            case "ProgressReport":
+                return AUTOGAME_FOLDER . "/AutoGameScript.php";
+            case "ProgressReport": // FIXME: should be compartimentalized inside module
                 return MODULES_FOLDER . "/" . Notifications::ID . "/ProgressReportScript.php";
             default:
                 return null;

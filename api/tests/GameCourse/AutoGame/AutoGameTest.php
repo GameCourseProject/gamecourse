@@ -1,8 +1,13 @@
 <?php
 namespace GameCourse\AutoGame;
 
+use Exception;
+use GameCourse\Core\Auth;
+use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Role\Role;
+use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
@@ -38,8 +43,8 @@ class AutoGameTest extends TestCase
         // NOTE: try to only clean tables used during tests to improve efficiency;
         //       don't forget tables with foreign keys will be automatically deleted on cascade
 
-        TestingUtils::cleanTables([AutoGame::TABLE_AUTOGAME]);
-        TestingUtils::resetAutoIncrement([AutoGame::TABLE_AUTOGAME]);
+        TestingUtils::cleanTables([AutoGame::TABLE_AUTOGAME, Course::TABLE_COURSE, User::TABLE_USER]);
+        TestingUtils::resetAutoIncrement([AutoGame::TABLE_AUTOGAME, Course::TABLE_COURSE, User::TABLE_USER, Auth::TABLE_AUTH, Role::TABLE_ROLE]);
         TestingUtils::cleanFileStructure();
     }
 
@@ -144,5 +149,24 @@ class AutoGameTest extends TestCase
         $this->assertFalse(file_exists(AUTOGAME_FOLDER . "/imported-functions/" . $courseId));
         $this->assertFalse(file_exists(AUTOGAME_FOLDER . "/config/config_" . $courseId . ".txt"));
         $this->assertFalse(file_exists(LOGS_FOLDER . "/autogame_" . $courseId . ".txt"));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function enableAutoGameInactiveCourse()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set a course
+        $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, false, true);
+
+        $this->expectException(Exception::class);
+        AutoGame::setAutoGame($course->getId(), true);
     }
 }

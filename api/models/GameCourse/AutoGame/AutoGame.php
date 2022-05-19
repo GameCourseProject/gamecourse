@@ -62,11 +62,12 @@ class AutoGame
      * @param int $courseId
      * @param int $copyFrom
      * @return void
+     * @throws Exception
      */
     public static function copyAutoGameInfo(int $courseId, int $copyFrom)
     {
-       Utils::copyDirectory(AUTOGAME_FOLDER . "/imported-functions/" . $copyFrom . "/", ROOT_PATH . "autogame/imported-functions/" . $courseId . "/");
-       file_put_contents(AUTOGAME_FOLDER . "/config/config_" . $courseId . ".txt", file_get_contents(ROOT_PATH . "autogame/config/config_" . $copyFrom . ".txt"));
+       Utils::copyDirectory(AUTOGAME_FOLDER . "/imported-functions/" . $copyFrom . "/", AUTOGAME_FOLDER . "/imported-functions/" . $courseId . "/");
+       file_put_contents(AUTOGAME_FOLDER . "/config/config_" . $courseId . ".txt", file_get_contents(AUTOGAME_FOLDER . "/config/config_" . $copyFrom . ".txt"));
     }
 
     /**
@@ -75,6 +76,7 @@ class AutoGame
      *
      * @param int $courseId
      * @return void
+     * @throws Exception
      */
     public static function deleteAutoGameInfo(int $courseId)
     {
@@ -98,10 +100,10 @@ class AutoGame
     {
         if ($enable) { // enable autogame
             if (!(new Course($courseId))->isActive())
-                throw new Exception("Course with ID = " . $courseId . " is not enabled: can't turn on AutoGame.");
+                throw new Exception("Course with ID = " . $courseId . " is not enabled: can't enable AutoGame.");
 
             $periodicity = Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "periodicityNumber, periodicityTime");
-            new CronJob("AutoGame", $courseId, intval($periodicity["periodicityNumber"]),  $periodicity["periodicityTime"], null);
+            new CronJob("AutoGame", $courseId, intval($periodicity["periodicityNumber"]),  $periodicity["periodicityTime"]);
 
         } else { // disable autogame
             CronJob::removeCronJob("AutoGame", $courseId);
