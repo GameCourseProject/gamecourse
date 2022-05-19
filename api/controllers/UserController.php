@@ -133,13 +133,15 @@ class UserController
      * Option for 'active'.
      *
      * @param bool $isActive (optional)
+     * @param bool $isAdmin (optional)
      */
     public function getUsers()
     {
         API::requireAdminPermission();
         $isActive = API::getValue("isActive", "bool");
+        $isAdmin = API::getValue("isAdmin", "bool");
 
-        $users = User::getUsers($isActive);
+        $users = User::getUsers($isActive, $isAdmin);
         foreach ($users as &$userInfo) {
             $user = User::getUserById($userInfo["id"]);
             $userInfo["nrCourses"] = count($user->getCourses());

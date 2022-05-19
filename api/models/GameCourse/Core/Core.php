@@ -140,6 +140,9 @@ class Core
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public static function checkAccess(bool $redirect = true): bool
     {
         if (array_key_exists('user', $_SESSION)) {
@@ -150,11 +153,8 @@ class Core
 
         if (array_key_exists("loginDone", $_SESSION)) {
             $username = $_SESSION['username'];
-            $user = User::getUserByUsername($username);
-
-            // Verify login type
-            if ($user->getAuthService() == $_SESSION['type'])
-                static::$loggedUser = $user;
+            $user = User::getUserByUsername($username, $_SESSION['type']);
+            if ($user) static::$loggedUser = $user;
 
             if (static::$loggedUser != null) {
                 $_SESSION['user'] = static::$loggedUser->getId();

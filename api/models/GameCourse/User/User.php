@@ -1,7 +1,6 @@
 <?php
 namespace GameCourse\User;
 
-use API\API;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -238,6 +237,13 @@ class User
     /*** ---------------------- General --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * Gets a user by its ID.
+     * Returns null if user doesn't exist.
+     *
+     * @param int $id
+     * @return User|null
+     */
     public static function getUserById(int $id): ?User
     {
         $user = new User($id);
@@ -245,13 +251,42 @@ class User
         else return null;
     }
 
-    public static function getUserByUsername(string $username): ?User
+    /**
+     * Gets a user by its username.
+     * Returns null if user doesn't exist.
+     *
+     * @param string $username
+     * @param string|null $authService
+     * @return User|null
+     * @throws Exception
+     */
+    public static function getUserByUsername(string $username, string $authService = null): ?User
     {
-        $userId = intval(Core::database()->select(Auth::TABLE_AUTH, ["username" => $username], "game_course_user_id"));
+        if (!$authService) {
+            $userIds = Core::database()->selectMultiple(Auth::TABLE_AUTH, ["username" => $username], "game_course_user_id");
+            $nrUsersWithUsername = count($userIds);
+
+            if ($nrUsersWithUsername > 1)
+                throw new Exception("Cannot get user by username: there's multiple users with username '" . $username . "'.");
+
+            $userId = $nrUsersWithUsername < 1 ? null : intval($userIds[0]);
+
+        } else {
+            self::validateAuthService($authService);
+            $userId = intval(Core::database()->select(Auth::TABLE_AUTH, ["username" => $username, "authentication_service" => $authService], "game_course_user_id"));
+        }
+
         if (!$userId) return null;
         else return new User($userId);
     }
 
+    /**
+     * Gets a user by its e-mail.
+     * Returns null if user doesn't exist.
+     *
+     * @param string $email
+     * @return User|null
+     */
     public static function getUserByEmail(string $email): ?User
     {
         $userId = intval(Core::database()->select(self::TABLE_USER, ["email" => $email], "id"));
@@ -259,6 +294,13 @@ class User
         else return new User($userId);
     }
 
+    /**
+     * Gets a user by its student number.
+     * Returns null if user doesn't exist.
+     *
+     * @param int $studentNumber
+     * @return User|null
+     */
     public static function getUserByStudentNumber(int $studentNumber): ?User
     {
         $userId = intval(Core::database()->select(self::TABLE_USER, ["studentNumber" => $studentNumber], "id"));
@@ -266,10 +308,19 @@ class User
         else return new User($userId);
     }
 
-    public static function getUsers(?bool $active = null): array
+    /**
+     * Gets users in the system.
+     * Option for 'active' and/or 'admin'.
+     *
+     * @param bool|null $active
+     * @param bool|null $admin
+     * @return array
+     */
+    public static function getUsers(?bool $active = null, ?bool $admin = null): array
     {
         $where = [];
         if ($active !== null) $where["u.isActive"] = $active;
+        if ($admin !== null) $where["u.isAdmin"] = $admin;
         $users = Core::database()->selectMultiple(
             self::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on u.id = a.game_course_user_id",
             $where,
@@ -282,17 +333,14 @@ class User
         return $users;
     }
 
-    public static function getAdmins(): array
-    {
-        $admins = Core::database()->selectMultiple(
-            self::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on u.id = a.id",
-            ["isAdmin" => true],
-            "u.*, a.username, a.authentication_service"
-        );
-        foreach ($admins as &$admin) { $admin = self::parse($admin); }
-        return $admins;
-    }
-
+    /**
+     * Gets user courses.
+     * Option for 'active' and/or 'visible'.
+     *
+     * @param bool|null $active
+     * @param bool|null $visible
+     * @return array
+     */
     public function getCourses(?bool $active = null, ?bool $visible = null): array
     {
         $where = ["cu.id" => $this->id];
@@ -412,6 +460,14 @@ class User
     /*** --------------------- User Data -------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * Gets user data folder path.
+     * Option to retrieve full server path or the short version
+     * ('user_data/<user_ID>').
+     *
+     * @param bool $fullPath
+     * @return string
+     */
     public function getDataFolder(bool $fullPath = true): string
     {
         if ($fullPath) return USER_DATA_FOLDER . "/" . $this->getId();
@@ -421,6 +477,11 @@ class User
         }
     }
 
+    /**
+     * Gets user data folder contents.
+     *
+     * @return array
+     */
     public function getDataFolderContents(): array
     {
         return Utils::getDirectoryContents($this->getDataFolder());
@@ -482,7 +543,7 @@ class User
             $isAdmin = self::parse(null, $user[$indexes["isAdmin"]], "isAdmin");
             $isActive = self::parse(null, $user[$indexes["isActive"]], "isActive");
 
-            $user = self::getUserByUsername($username) ?? self::getUserByStudentNumber($studentNumber);
+            $user = self::getUserByUsername($username, $authService) ?? self::getUserByStudentNumber($studentNumber);
             if ($user) {  // user already exists
                 if ($replace)  // replace
                     $user->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
@@ -555,7 +616,8 @@ class User
             throw new Exception("User name is too long: maximum of 60 characters.");
     }
 
-    /** Validates user authentication service.
+    /**
+     * Validates user authentication service.
      *
      * @param $authService
      * @return void

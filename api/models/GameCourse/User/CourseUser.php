@@ -366,7 +366,7 @@ class CourseUser extends User
             $roles = $user[$indexes["roles"]];
 
             // Add/update user in the system
-            $user = self::getUserByUsername($username) ?? self::getUserByStudentNumber($studentNumber);
+            $user = self::getUserByUsername($username, $authService) ?? self::getUserByStudentNumber($studentNumber);
             if ($user) {  // user already exists
                 if ($replace)  // replace
                     $user = $user->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);

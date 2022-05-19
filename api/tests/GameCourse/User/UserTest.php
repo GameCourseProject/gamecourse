@@ -60,7 +60,8 @@ class UserTest extends TestCase
             "non-ASCII characters" => ["John Smith Döe"],
             "hyphen" => ["John Smith-Doe"],
             "apostrophe" => ["John Smith'Doe"],
-            "dot" => ["John S. Doe"]
+            "dot" => ["John S. Doe"],
+            "length limit" => ["John Smith Doe John Smith Doe John Smith Doe John Smith Doe "]
         ];
     }
 
@@ -70,7 +71,7 @@ class UserTest extends TestCase
             "null" => [null],
             "empty" => [""],
             "not a string" => [123],
-            "too long" => ["John Smith Doe John Smith Doe John Smith Doe John S"]
+            "too long" => ["John Smith Doe John Smith Doe John Smith Doe John Smith Doe J"]
         ];
     }
 
@@ -82,6 +83,7 @@ class UserTest extends TestCase
             "Hotmail e-mail" => ["johndoe@hotmail.com"],
             "Yahoo e-mail" => ["johndoe@yahoo.com"],
             "null" => [null],
+            "lenght limit" => ["somerandomsuperduperlongthelongestmail@somerandomcompany.com"]
         ];
     }
 
@@ -91,7 +93,7 @@ class UserTest extends TestCase
             "invalid e-mail" => ["johndoe@example.123"],
             "empty" => [""],
             "not a string" => [123],
-            "too long" => ["somerandomsuperduperlongemail@somerandomcompany.com"]
+            "too long" => ["somerandomsuperduperlongthelongestemail@somerandomcompany.com"]
         ];
     }
 
@@ -796,15 +798,56 @@ class UserTest extends TestCase
     {
         $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $this->assertEquals($user, User::getUserByUsername("ist123456"));
+        $this->assertEquals($user, User::getUserByUsername("ist123456", "fenix"));
     }
 
     /**
      * @test
+     * @throws Exception
+     */
+    public function getUserByUsernameAuthServiceDoesntExist()
+    {
+        User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, false);
+        $this->expectException(Exception::class);
+        User::getUserByUsername("ist123456", "auth_service");
+    }
+
+    /**
+     * @test
+     * @throws Exception
      */
     public function getUserByUsernameUserDoesntExist()
     {
         $this->assertNull(User::getUserByUsername("username"));
+        $this->assertNull(User::getUserByUsername("username", "fenix"));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getUserByUsernameMultipleUsersWithAuthService()
+    {
+        $user = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, false);
+        User::addUser("Johanna Smith Doe", "ist123456", "google", "johannadoe@email.com",
+            1234567, "Johanna Doe", "MEIC-A", false, false);
+        $this->assertEquals($user, User::getUserByUsername("ist123456", "fenix"));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getUserByUsernameMultipleUsersWithoutAuthService()
+    {
+        User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, false);
+        User::addUser("Johanna Smith Doe", "ist123456", "google", "johannadoe@email.com",
+            1234567, "Johanna Doe", "MEIC-A", false, false);
+        $this->expectException(Exception::class);
+        User::getUserByUsername("ist123456");
     }
 
     /**
@@ -938,14 +981,69 @@ class UserTest extends TestCase
         User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, false);
 
-        $admins = User::getAdmins();
+        $admins = User::getUsers(null, true);
         $this->assertIsArray($admins);
         $this->assertCount(1, $admins);
 
-        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
+        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image"];
         foreach ($keys as $key) {
             $this->assertArrayHasKey($key, $admins[0]);
-            $this->assertEquals($admins[0][$key], $admin->getData($key));
+            if ($key != "image") $this->assertEquals($admins[0][$key], $admin->getData($key));
+            else $this->assertEquals($admins[0][$key], $admin->getImage());
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getNonAdmins()
+    {
+        $user1 = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, false);
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $admin = User::addUser("Johnny Smith Doe", "ist1234567", "fenix", "johndoe2@email.com",
+            1234567, "Johnny Doe", "MEIC-A", true, false);
+
+        $users = User::getUsers(null, false);
+        $this->assertIsArray($users);
+        $this->assertCount(2, $users);
+
+        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($users as $i => $user) {
+                $this->assertCount($nrKeys, array_keys($user));
+                $this->assertArrayHasKey($key, $user);
+                if ($key != "image") $this->assertEquals($user[$key], ${"user".($i+1)}->getData($key));
+                else $this->assertEquals($user[$key], ${"user".($i+1)}->getImage());
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getInactiveAdmins()
+    {
+        $user1 = User::addUser("John Smith Doe", "ist123456", "fenix", "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, false);
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", "fenix", "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $admin = User::addUser("Johnny Smith Doe", "ist1234567", "fenix", "johndoe2@email.com",
+            1234567, "Johnny Doe", "MEIC-A", true, false);
+
+        $admins = User::getUsers(false, true);
+        $this->assertIsArray($admins);
+        $this->assertCount(1, $admins);
+
+        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image"];
+        foreach ($keys as $key) {
+            $this->assertArrayHasKey($key, $admins[0]);
+            if ($key != "image") $this->assertEquals($admins[0][$key], $admin->getData($key));
+            else $this->assertEquals($admins[0][$key], $admin->getImage());
         }
     }
 
@@ -1418,42 +1516,106 @@ class UserTest extends TestCase
     }
 
 
-    // TODO
+    /**
+     * @test
+     * @throws Exception
+     */
     public function getDataFolderContents()
     {
+        // Given
+        $user = new User(1);
+        User::createDataFolder($user->getId());
+        $dataFolder = $user->getDataFolder();
+        file_put_contents($dataFolder . "/file.txt", "");
 
+        // When
+        $contents = $user->getDataFolderContents();
+
+        // Then
+        $this->assertIsArray($contents);
+        $this->assertCount(1, $contents);
+
+        $file = $contents[0];
+        $this->assertIsArray($file);
+        $this->assertCount(3, array_keys($file));
+        $this->assertArrayHasKey("name", $file);
+        $this->assertArrayHasKey("type", $file);
+        $this->assertArrayHasKey("extension", $file);
+        $this->assertEquals("file.txt", $file["name"]);
+        $this->assertEquals("file", $file["type"]);
+        $this->assertEquals(".txt", $file["extension"]);
     }
 
-    // TODO
+    /**
+     * @test
+     * @throws Exception
+     */
     public function getDataFolderContentsEmpty()
     {
+        // Given
+        $user = new User(1);
+        User::createDataFolder($user->getId());
+        $user->getDataFolder();
 
+        // When
+        $contents = $user->getDataFolderContents();
+
+        // Then
+        $this->assertEmpty($contents);
     }
 
 
-    // TODO
+    /**
+     * @test
+     * @throws Exception
+     */
     public function createDataFolder()
     {
-
+        User::createDataFolder(1);
+        $dataFolder = (new User(1))->getDataFolder();
+        $this->assertTrue(file_exists($dataFolder));
     }
 
-    // TODO
+    /**
+     * @test
+     * @throws Exception
+     */
     public function createDataFolderFolderAlreadyExists()
     {
+        // Given
+        User::createDataFolder(1);
+        $dataFolder = (new User(1))->getDataFolder();
+        file_put_contents($dataFolder . "/file.txt", "");
 
+        // When
+        User::createDataFolder(1);
+
+        // Then
+        $this->assertTrue(file_exists($dataFolder));
+        $this->assertEmpty(Utils::getDirectoryContents($dataFolder));
     }
 
 
-    // TODO
+    /**
+     * @test
+     * @throws Exception
+     */
     public function removeDataFolder()
     {
-
+        User::createDataFolder(1);
+        User::removeDataFolder(1);
+        $dataFolder = (new User(1))->getDataFolder();
+        $this->assertFalse(file_exists($dataFolder));
     }
 
-    // TODO
+    /**
+     * @test
+     * @throws Exception
+     */
     public function removeDataFolderFolderDoesntExist()
     {
-
+        $dataFolder = (new User(1))->getDataFolder();
+        $this->assertFalse(file_exists($dataFolder));
     }
 
 
