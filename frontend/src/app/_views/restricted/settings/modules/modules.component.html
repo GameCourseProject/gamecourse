@@ -14,7 +14,7 @@
   <!-- Modules -->
   <div id="modules">
     <div *ngFor="let module of reduce.items" class="module_card">
-      <div class="icon" [style.backgroundImage]="'url('+ API_ENDPOINT + '/' + module.directory + 'icon.svg)'"></div>
+      <div class="icon" [style.backgroundImage]="'url(' + module.icon + ')'"></div>
       <div class="header">{{module.name}}</div>
       <div class="text no-status">{{module.description}}</div>
     </div>

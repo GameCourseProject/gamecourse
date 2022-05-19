@@ -294,7 +294,12 @@ abstract class Module
     {
         $field = $IDsOnly ? "id" : "*";
         $modules = Core::database()->selectMultiple(self::TABLE_MODULE, [], $field, "id");
-        foreach ($modules as &$module) { $module = self::parse($module); }
+        foreach ($modules as &$module) {
+            $parts = explode("/", MODULES_FOLDER);
+            $moduleFolder = end($parts);
+            $module["icon"] = API_URL . "/" . $moduleFolder . "/" . $module["id"] . "/icon.svg";
+            $module = self::parse($module);
+        }
         return $modules;
     }
 

@@ -122,7 +122,7 @@ export class Reduce {
       (item instanceof Course && Search.onCourse(item, this.query)) ||
       (item instanceof User && Search.onUser(item, this.query)) ||
       (item instanceof Module && Search.onModule(item, this.query)) ||
-      ((item instanceof  Page || item instanceof Template) && Search.onPageOrTemplate(item, this.query));
+      ((item instanceof Page || item instanceof Template) && Search.onPageOrTemplate(item, this.query));
   }
 
   private isQueryTrueFilter(item: any): boolean {
@@ -184,8 +184,9 @@ export class Search {
    * @param query
    */
   public static onModule(module: Module, query: string): boolean {
-    return (module.name && this.search(module.name, query)) ||
-      (module.id && this.search(module.id, query));
+    return (module.id && this.search(module.id, query)) ||
+      (module.name && this.search(module.name, query)) ||
+      (module.description && this.search(module.description, query));
   }
 
   /**

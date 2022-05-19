@@ -13,7 +13,7 @@
 
     <div *ngIf="reduce.items.length > 0" class="modules">
       <div *ngFor="let module of filterList(reduce.items, type | as : $any(ModuleType))" class="module_card" (click)="moduleOpen = module; isEnabled = module.enabled; isModuleDetailsModalOpen = true;">
-        <div class="icon" [style.backgroundImage]="'url('+ API_ENDPOINT + '/' + module.directory + 'icon.svg)'"></div>
+        <div class="icon" [style.backgroundImage]="'url(' + module.icon +  ')'"></div>
         <div class="header">{{module.name}}</div>
         <div class="text">{{module.description}}</div>
         <div class="status" [ngClass]="{'enable': module.enabled, 'disable': !module.enabled}">
@@ -49,7 +49,7 @@
 <ng-template #moduleDetailsModal>
 
   <div class="header">
-    <div class="icon" [style.backgroundImage]="'url('+ API_ENDPOINT + '/' + moduleOpen.directory + 'icon.svg)'"></div>
+    <div class="icon" [style.backgroundImage]="'url(' + moduleOpen.icon + ')'"></div>
     <div class="title">{{moduleOpen.name}}</div>
     <div class="on_off">
       <label class="switch" [ngClass]="{'disabled': !moduleOpen.canBeEnabled}">
@@ -73,9 +73,6 @@
       </div>
       <div class="row">
         <div><span class="label">Version: </span><span class="details ng-binding">{{moduleOpen.version}}</span></div>
-      </div>
-      <div class="row">
-        <div><span class="label">Path: </span><span class="details ng-binding">{{moduleOpen.directory}}</span></div>
       </div>
     </div>
     <button class="save_btn" [disabled]="isEnabled === moduleOpen.enabled" (click)="toggleEnabled(moduleOpen)">Save</button>

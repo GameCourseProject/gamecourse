@@ -15,12 +15,11 @@ import {finalize} from "rxjs/operators";
 })
 export class ModulesComponent implements OnInit {
 
-  loading: boolean;
-
-  allModules: Module[];
+  loading = true;
+  modules: Module[];
 
   reduce = new Reduce();
-  searchQuery: string; // FIXME: create search component and remove this
+  searchQuery: string;
 
   importedFile: File;
 
@@ -31,25 +30,15 @@ export class ModulesComponent implements OnInit {
     private api: ApiHttpService
   ) { }
 
-  get API_ENDPOINT(): string {
-    return ApiEndpointsService.API_ENDPOINT;
+  async ngOnInit(): Promise<void> {
+    await this.getModules();
+    this.loading = false;
   }
 
-  ngOnInit(): void {
-    this.getModules();
+  async getModules(): Promise<void> {
+    this.modules = await this.api.getModulesAvailable().toPromise();
+    this.reduceList();
   }
-
-  getModules(): void {
-    this.loading = true;
-    this.api.getModulesAvailable()
-      .pipe( finalize(() => this.loading = false) )
-      .subscribe(
-        modules => {
-          this.allModules = modules;
-          this.reduceList();
-          }
-  )
-}
 
 
   /*** --------------------------------------------- ***/
@@ -57,7 +46,7 @@ export class ModulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   reduceList(query?: string): void {
-    this.reduce.search(this.allModules, query);
+    this.reduce.search(this.modules, query);
   }
 
 
