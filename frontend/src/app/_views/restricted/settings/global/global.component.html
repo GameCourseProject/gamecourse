@@ -5,9 +5,9 @@
       <div class="title"><span>Themes</span></div>
     </div>
     <div class="content" id="themes">
-      <div *ngFor="let theme of themes" class="theme pointer" [ngClass]="{'current': theme.name === default}">
-        <div>{{theme.name}}</div>
-        <img *ngIf="theme.preview" class="preview" [src]="API_ENDPOINT + '/themes/' + theme.name + '/preview.png'" alt="">
+      <div *ngFor="let theme of themes" class="theme pointer" [ngClass]="{'current': theme === default}">
+        <div>{{theme}}</div>
+        <img class="preview" [src]="'assets/imgs/theme-preview.png'" alt="">
       </div>
     </div>
   </div>

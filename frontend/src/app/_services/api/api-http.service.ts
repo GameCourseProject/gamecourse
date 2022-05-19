@@ -61,7 +61,7 @@ export class ApiHttpService {
   static readonly COURSE: string = 'course';
   static readonly DOCS: string = 'docs';
   static readonly MODULE: string = 'module';
-  static readonly THEMES: string = 'themes';
+  static readonly THEME: string = 'theme';
   static readonly USER: string = 'user';
   static readonly VIEWS: string = 'views';
 
@@ -1674,10 +1674,10 @@ export class ApiHttpService {
   /*** --------------------------------------------- ***/
 
   // General
-  public getThemeSettings(): Observable<{theme: string, themes: {name: string, preview: boolean}[]}> {
+  public getThemes(): Observable<{themes: string[], current: string}> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.THEMES);
-      qs.push('request', 'getThemeSettings');
+      qs.push('module', ApiHttpService.THEME);
+      qs.push('request', 'getThemes');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

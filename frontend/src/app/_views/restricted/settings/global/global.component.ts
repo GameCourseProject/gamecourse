@@ -10,10 +10,10 @@ import {finalize} from "rxjs/operators";
 })
 export class GlobalComponent implements OnInit {
 
-  loading: boolean;
+  loading: boolean = true;
 
   default: string;
-  themes: {name: string, preview: boolean}[];
+  themes: string[];
 
   constructor(
     private api: ApiHttpService
@@ -24,12 +24,11 @@ export class GlobalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loading = true;
-    this.api.getThemeSettings()
+    this.api.getThemes()
       .pipe( finalize(() => this.loading = false) )
-      .subscribe(settings => {
-        this.default = settings.theme;
-        this.themes = settings.themes;
+      .subscribe(res => {
+        this.default = res.current;
+        this.themes = res.themes;
       });
   }
 
