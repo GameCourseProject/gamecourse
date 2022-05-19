@@ -163,10 +163,12 @@ export class ApiHttpService {
 
 
   // General
-  public getUsers(): Observable<User[]> {
+  public getUsers(isActive?: boolean, isAdmin?: boolean): Observable<User[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.USER);
       qs.push('request', 'getUsers');
+      if (isActive !== undefined) qs.push('isActive', isActive);
+      if (isAdmin !== undefined) qs.push('isAdmin', isAdmin);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
