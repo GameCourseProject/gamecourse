@@ -1,7 +1,6 @@
 <?php
 namespace GameCourse\Module;
 
-use Error;
 use Event\Event;
 use Exception;
 use GameCourse\Core\Core;

@@ -41,7 +41,7 @@ class Event
     {
         if (isset(self::$events[$type])) {
             foreach (self::$events[$type] as $id => $callback) {
-                $callback($args);
+                $callback(...$args);
             }
         }
     }

@@ -3,7 +3,7 @@ namespace GameCourse\AutoGame;
 
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use Monolog\Test\TestCase;
+use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
 
@@ -33,7 +33,7 @@ class AutoGameTest extends TestCase
         Core::database()->setForeignKeyChecks(true);
     }
 
-    protected function tearDown(): void
+    public function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
         //       don't forget tables with foreign keys will be automatically deleted on cascade
