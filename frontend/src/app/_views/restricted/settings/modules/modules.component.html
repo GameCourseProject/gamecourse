@@ -16,7 +16,14 @@
     <div *ngFor="let module of reduce.items" class="module_card">
       <div class="icon" [style.backgroundImage]="'url(' + module.icon + ')'"></div>
       <div class="header">{{module.name}}</div>
-      <div class="text no-status">{{module.description}}</div>
+      <div class="text">
+        {{module.description}}
+        <span class="version">v{{module.version}}</span>
+      </div>
+      <div class="status" [ngClass]="{'compatible': isCompatible(module), 'incompatible': !isCompatible(module)}">
+        {{isCompatible(module) ? 'Compatible' : 'Incompatible ' + getIncompatibleString(module)}}
+        <div class="background"></div>
+      </div>
     </div>
 
     <div *ngIf="reduce.items.length === 0" class="error_box">

@@ -12,8 +12,7 @@ export class Module {
   private _icon: string;
   private _type: ModuleType;
   private _version: string;
-  private _projectVersion: {min: string, max: string};
-  private _APIVersion: {min: string, max: string};
+  private _compatibility: {project: boolean, api: boolean};
   private _dependencies?: {id: string, mode?: string, enabled?: boolean}[];
   private _enabled?: boolean;
   private _canBeEnabled?: boolean;
@@ -22,9 +21,8 @@ export class Module {
   static stylesLoaded: Map<number, {state: LoadingState, stylesIds?: string[]}> = new Map<number, {state: LoadingState, stylesIds?: string[]}>();
 
   constructor(id: string, name: string, description: string, icon: string, type: ModuleType, version: string,
-              projectVersion: {min: string, max: string}, APIVersion: {min: string, max: string},
-              dependencies?: {id: string, mode?: string, enabled?: boolean}[], enabled?: boolean, canBeEnabled?: boolean,
-              hasConfiguration?: boolean) {
+              compatibility: {project: boolean, api: boolean}, dependencies?: {id: string, mode?: string, enabled?: boolean}[],
+              enabled?: boolean, canBeEnabled?: boolean, hasConfiguration?: boolean) {
 
     this._id = id;
     this._name = name;
@@ -32,8 +30,7 @@ export class Module {
     this._icon = icon;
     this._type = type;
     this._version = version;
-    this._projectVersion = projectVersion;
-    this._APIVersion = APIVersion;
+    this._compatibility = compatibility;
     if (exists(dependencies)) this._dependencies = dependencies;
     if (exists(enabled)) this._enabled = enabled;
     if (exists(canBeEnabled)) this._canBeEnabled = canBeEnabled;
@@ -88,20 +85,12 @@ export class Module {
     this._version = value;
   }
 
-  get projectVersion(): { min: string; max: string } {
-    return this._projectVersion;
+  get compatibility(): { project: boolean; api: boolean } {
+    return this._compatibility;
   }
 
-  set projectVersion(value: { min: string; max: string }) {
-    this._projectVersion = value;
-  }
-
-  get APIVersion(): { min: string; max: string } {
-    return this._APIVersion;
-  }
-
-  set APIVersion(value: { min: string; max: string }) {
-    this._APIVersion = value;
+  set compatibility(value: { project: boolean; api: boolean }) {
+    this._compatibility = value;
   }
 
   get dependencies(): { id: string; mode?: string, enabled?: boolean }[] {
@@ -204,8 +193,7 @@ export class Module {
       obj.icon,
       obj.type as ModuleType,
       obj.version,
-      {min: obj.minProjectVersion, max: obj.maxProjectVersion},
-      {min: obj.minAPIVersion, max: obj.maxAPIVersion},
+      obj.compatibility,
       obj.dependencies || null,
       exists(obj.enabled) ? !!obj.enabled : null,
       exists(obj.canBeEnabled) ? !!obj.canBeEnabled : null,
@@ -221,10 +209,7 @@ interface ModuleDatabase {
   icon: string;
   type: string;
   version: string,
-  minProjectVersion: string;
-  maxProjectVersion: string;
-  minAPIVersion: string;
-  maxAPIVersion: string;
+  compatibility: {project: boolean, api: boolean},
   dependencies?: {id: string, mode?: string, enabled?: boolean}[],
   enabled?: boolean;
   canBeEnabled?: boolean;

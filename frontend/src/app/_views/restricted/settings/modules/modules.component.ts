@@ -17,6 +17,7 @@ export class ModulesComponent implements OnInit {
 
   loading = true;
   modules: Module[];
+  versions: {project: string, api: string};
 
   reduce = new Reduce();
   searchQuery: string;
@@ -34,6 +35,11 @@ export class ModulesComponent implements OnInit {
     await this.getModules();
     this.loading = false;
   }
+
+
+  /*** --------------------------------------------- ***/
+  /*** -------------------- Init ------------------- ***/
+  /*** --------------------------------------------- ***/
 
   async getModules(): Promise<void> {
     this.modules = await this.api.getModulesAvailable().toPromise();
@@ -84,6 +90,18 @@ export class ModulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  isCompatible(module: Module): boolean {
+    return module.compatibility.project && module.compatibility.api;
+  }
+
+  getIncompatibleString(module: Module): string {
+    if (!module.compatibility.project && !module.compatibility.api)
+      return "Project & API";
+    if (!module.compatibility.project)
+      return "Project";
+    else return "API";
+  }
 
   onFileSelected(files: FileList): void {
     this.importedFile = files.item(0);

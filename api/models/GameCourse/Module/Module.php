@@ -298,6 +298,12 @@ abstract class Module
             $parts = explode("/", MODULES_FOLDER);
             $moduleFolder = end($parts);
             $module["icon"] = API_URL . "/" . $moduleFolder . "/" . $module["id"] . "/icon.svg";
+            $module["compatibility"] = [
+                "project" => Utils::compareVersions(PROJECT_VERSION, $module["minProjectVersion"]) >= 0 &&
+                    (is_null($module["maxProjectVersion"]) || Utils::compareVersions(PROJECT_VERSION, $module["maxProjectVersion"]) <= 0),
+                "api" => Utils::compareVersions(API_VERSION, $module["minAPIVersion"]) >= 0 &&
+                    (is_null($module["maxAPIVersion"]) || Utils::compareVersions(PROJECT_VERSION, $module["maxAPIVersion"]) <= 0)
+            ];
             $module = self::parse($module);
         }
         return $modules;
