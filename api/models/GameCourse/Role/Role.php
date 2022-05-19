@@ -215,6 +215,7 @@ class Role
      * @param string|null $landingPageName
      * @param int|null $landingPageId
      * @return void
+     * @throws Exception
      */
     public static function addRoleToCourse(int $courseId, string $roleName, string $landingPageName = null, int $landingPageId = null)
     {
@@ -364,6 +365,7 @@ class Role
      * @param int $courseId
      * @param array $rolesNames
      * @return void
+     * @throws Exception
      */
     public static function setUserRoles(int $userId, int $courseId, array $rolesNames)
     {
@@ -435,8 +437,8 @@ class Role
         if (!$roleName) $roleName = self::getRoleName($roleId);
         $remove = array_merge([$roleName], self::getChildrenNamesOfRole((new Course($courseId))->getRolesHierarchy(), $roleName));
 
-        foreach ($remove as $roleName) {
-            $roleId = self::getRoleId($roleName, $courseId);
+        foreach ($remove as $rmRoleName) {
+            $roleId = self::getRoleId($rmRoleName, $courseId);
             Core::database()->delete(self::TABLE_USER_ROLE, ["id" => $userId, "course" => $courseId, "role" => $roleId]);
         }
 
