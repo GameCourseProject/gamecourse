@@ -54,7 +54,7 @@
               <td class="ng-binding">{{user.nickname}}</td>
               <td class="ng-binding">{{user.major}}</td>
               <td class="ng-binding">{{user.studentNumber}}</td>
-              <td class="ng-binding">{{user.lastLogin ? user.lastLogin.fromNow() : ''}}</td>
+              <td class="ng-binding">{{user.lastLogin ? user.lastLogin.fromNow() : 'Never'}}</td>
               <td class="check-column">
                 <label class="switch">
                   <input type="checkbox" [checked]="user.isActive" (change)="toggleActive(user.id)">
