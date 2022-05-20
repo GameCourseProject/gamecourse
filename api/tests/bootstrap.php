@@ -16,7 +16,10 @@ require_once ROOT_PATH . "/inc/config.php";
 require_once ROOT_PATH . "/vendor/autoload.php";
 
 // testing utilities
-include ROOT_PATH . "/tests/TestingUtils.php";
+require_once ROOT_PATH . "/tests/TestingUtils.php";
+
+// set default timezone
+date_default_timezone_set('Europe/Lisbon');
 
 // init testing environment
 Core::database()->initForTesting();

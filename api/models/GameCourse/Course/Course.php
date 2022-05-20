@@ -287,7 +287,7 @@ class Course
     {
         $where = [];
         if ($active !== null) $where["isActive"] = $active;
-        $courses = Core::database()->selectMultiple(self::TABLE_COURSE, $where);
+        $courses = Core::database()->selectMultiple(self::TABLE_COURSE, $where, "*", "id");
         foreach ($courses as &$course) { $course = self::parse($course); }
         return $courses;
     }
@@ -470,7 +470,7 @@ class Course
 
     public function getCourseUserByUsername(string $username): ?CourseUser
     {
-        $userId = intval(Core::database()->select(Auth::TABLE_AUTH, ["username" => $username], "game_course_user_id"));
+        $userId = intval(Core::database()->select(Auth::TABLE_AUTH, ["username" => $username], "user"));
         if (!$userId) return null;
         else return new CourseUser($userId, $this);
     }
@@ -494,9 +494,10 @@ class Course
         $where = ["cu.course" => $this->id];
         if ($active !== null) $where["isActiveInCourse"] = $active;
         $courseUsers =  Core::database()->selectMultiple(
-            User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id JOIN " . CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id",
+            User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id JOIN " . CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id",
             $where,
-            "u.*, a.username, a.authentication_service, cu.lastActivity, cu.previousActivity, cu.isActive as isActiveInCourse"
+            "u.*, a.username, a.authentication_service, cu.lastActivity, cu.isActive as isActiveInCourse",
+            "u.id"
         );
         foreach ($courseUsers as &$courseUser) { $courseUser = CourseUser::parse($courseUser); }
         return $courseUsers;
@@ -510,11 +511,12 @@ class Course
         if ($roleId !== null) $where["r.id"] = $roleId;
 
         $courseUsers = Core::database()->selectMultiple(
-            User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id JOIN " .
+            User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id JOIN " .
             CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id JOIN " . Role::TABLE_USER_ROLE . " ur on ur.id=u.id JOIN " .
             Role::TABLE_ROLE . " r on r.id=ur.role and r.course=cu.course",
             $where,
-            "u.*, a.username, a.authentication_service, cu.lastActivity, cu.previousActivity, cu.isActive as isActiveInCourse"
+            "u.*, a.username, a.authentication_service, cu.lastActivity, cu.isActive as isActiveInCourse",
+            "u.id"
         );
         foreach ($courseUsers as &$courseUser) { $courseUser = CourseUser::parse($courseUser); }
         return $courseUsers;
@@ -607,6 +609,7 @@ class Course
      * @param string|null $landingPageName
      * @param int|null $landingPageId
      * @return void
+     * @throws Exception
      */
     public function addRole(string $roleName, string $landingPageName = null, int $landingPageId = null)
     {
@@ -656,7 +659,7 @@ class Course
         $table = Module::TABLE_MODULE . " m JOIN " . Module::TABLE_COURSE_MODULE . " cm on cm.module=m.id";
         $where = [];
         if ($enabled !== null) $where["cm.isEnabled"] = $enabled;
-        $modules = Core::database()->selectMultiple($table, $where, "m.*, cm.isEnabled, cm.minModuleVersion, cm.maxModuleVersion");
+        $modules = Core::database()->selectMultiple($table, $where, "m.*, cm.isEnabled, cm.minModuleVersion, cm.maxModuleVersion", "m.id");
         foreach ($modules as &$module) { $module = Module::parse($module); }
         return $modules;
     }

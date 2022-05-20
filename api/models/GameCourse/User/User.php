@@ -13,7 +13,7 @@ use Utils\Utils;
  */
 class User
 {
-    const TABLE_USER = "game_course_user";
+    const TABLE_USER = "user";
 
     const HEADERS = [   // headers for import/export functionality
         "name", "email", "major", "nickname", "studentNumber", "username", "authentication_service", "isAdmin", "isActive"
@@ -71,6 +71,11 @@ class User
         return $this->getData("authentication_service");
     }
 
+    public function getLastLogin(): ?string
+    {
+        return $this->getData("lastLogin");
+    }
+
     public function getImage(): ?string
     {
         return $this->hasImage() ? API_URL . "/" . $this->getDataFolder(false) . "/profile.png" : null;
@@ -79,11 +84,6 @@ class User
     public function hasImage(): bool
     {
         return file_exists($this->getDataFolder() . "/profile.png");
-    }
-
-    public function getLastLogin(): ?string
-    {
-        return Core::database()->select(CourseUser::TABLE_COURSE_USER, ["id" => $this->getId()], "max(lastActivity)");
     }
 
     public function isAdmin(): bool
@@ -108,9 +108,9 @@ class User
      */
     public function getData(string $field = "*")
     {
-        $table = self::TABLE_USER . " u LEFT JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id";
+        $table = self::TABLE_USER . " u LEFT JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id";
         $where = ["u.id" => $this->id];
-        if ($field == "*") $fields = "u.*, a.username, a.authentication_service";
+        if ($field == "*") $fields = "u.*, a.username, a.authentication_service, a.lastLogin";
         else $fields = str_replace("id", "u.id", $field);
         $res = Core::database()->select($table, $where, $fields);
         return is_array($res) ? self::parse($res) : self::parse(null, $res, $field);
@@ -183,6 +183,15 @@ class User
     /**
      * @throws Exception
      */
+    public function setLastLogin(?string $lastLogin)
+    {
+        self::validateDateTime($lastLogin);
+        $this->setData(["lastLogin" => $lastLogin]);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function setImage(string $base64)
     {
         Utils::uploadFile($this->getDataFolder(), $base64, "profile.png");
@@ -225,11 +234,16 @@ class User
             $authValues["authentication_service"] = $fieldValues["authentication_service"];
             unset($fieldValues["authentication_service"]);
         }
+        if (key_exists("lastLogin", $fieldValues)) {
+            self::validateDateTime($fieldValues["lastLogin"]);
+            $authValues["lastLogin"] = $fieldValues["lastLogin"];
+            unset($fieldValues["lastLogin"]);
+        }
 
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
         if (key_exists("email", $fieldValues)) self::validateEmail($fieldValues["email"]);
 
-        if (count($authValues) != 0) Core::database()->update(Auth::TABLE_AUTH, $authValues, ["game_course_user_id" => $this->id]);
+        if (count($authValues) != 0) Core::database()->update(Auth::TABLE_AUTH, $authValues, ["user" => $this->id]);
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_USER, $fieldValues, ["id" => $this->id]);
     }
 
@@ -264,7 +278,7 @@ class User
     public static function getUserByUsername(string $username, string $authService = null): ?User
     {
         if (!$authService) {
-            $userIds = Core::database()->selectMultiple(Auth::TABLE_AUTH, ["username" => $username], "game_course_user_id");
+            $userIds = Core::database()->selectMultiple(Auth::TABLE_AUTH, ["username" => $username], "user");
             $nrUsersWithUsername = count($userIds);
 
             if ($nrUsersWithUsername > 1)
@@ -274,7 +288,7 @@ class User
 
         } else {
             self::validateAuthService($authService);
-            $userId = intval(Core::database()->select(Auth::TABLE_AUTH, ["username" => $username, "authentication_service" => $authService], "game_course_user_id"));
+            $userId = intval(Core::database()->select(Auth::TABLE_AUTH, ["username" => $username, "authentication_service" => $authService], "user"));
         }
 
         if (!$userId) return null;
@@ -323,9 +337,10 @@ class User
         if ($active !== null) $where["u.isActive"] = $active;
         if ($admin !== null) $where["u.isAdmin"] = $admin;
         $users = Core::database()->selectMultiple(
-            self::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on u.id = a.game_course_user_id",
+            self::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on u.id = a.user",
             $where,
-            "u.*, a.username, a.authentication_service"
+            "u.*, a.username, a.authentication_service, a.lastLogin",
+            "id"
         );
         foreach ($users as &$user) {
             $user["image"] = (new User($user["id"]))->getImage();
@@ -350,10 +365,22 @@ class User
         $courses = Core::database()->selectMultiple(
             CourseUser::TABLE_COURSE_USER . " cu JOIN " . Course::TABLE_COURSE . " c on cu.course=c.id",
             $where,
-            "c.*"
+            "c.*",
+            "c.id"
         );
         foreach ($courses as &$course) { $course = Course::parse($course); }
         return $courses;
+    }
+
+    /**
+     * Updates user's lastLogin to current time.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function refreshLastLogin()
+    {
+        $this->setLastLogin(date("Y-m-d H:i:s", time()));
     }
 
 
@@ -391,7 +418,7 @@ class User
             "isActive" => +$isActive
         ]);
         Core::database()->insert(Auth::TABLE_AUTH, [
-            "game_course_user_id" => $id,
+            "user" => $id,
             "username" => $username,
             "authentication_service" => $authService
         ]);
@@ -442,7 +469,7 @@ class User
      */
     public static function deleteUser(int $userId) {
         Core::database()->delete(self::TABLE_USER, ["id" => $userId]);
-        Core::database()->delete(Auth::TABLE_AUTH, ["game_course_user_id" => $userId]);
+        Core::database()->delete(Auth::TABLE_AUTH, ["user" => $userId]);
         self::removeDataFolder($userId);
     }
 
@@ -649,6 +676,18 @@ class User
 
         if (iconv_strlen($email) > 60)
             throw new Exception("E-mail is too long: maximum of 60 characters.");
+    }
+
+    /**
+     * @param $dateTime
+     * @return void
+     * @throws Exception
+     */
+    private static function validateDateTime($dateTime)
+    {
+        if (is_null($dateTime)) return;
+        if (!is_string($dateTime) || !Utils::isValidDate($dateTime, "Y-m-d H:i:s"))
+            throw new Exception("Datetime '" . $dateTime . "' should be in format 'yyyy-mm-dd HH:mm:ss'");
     }
 
 

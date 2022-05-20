@@ -59,18 +59,21 @@ class Event
     }
 
     /**
-     * Stop listening to all events that have a given prefix
-     * on their IDs.
+     * Stop listening to either all events or events that have
+     * a given prefix on their IDs.
      *
-     * @param string $prefix
+     * @param string|null $prefix
      * @return void
      */
-    public static function stopAll(string $prefix)
+    public static function stopAll(string $prefix = null)
     {
-        foreach (self::$events as $type => $event) {
-            foreach (self::$events[$type] as $id => $callback) {
-                if (Utils::strStartsWith($id, $prefix))
-                    unset(self::$events[$type][$id]);
+        if (is_null($prefix)) self::$events = [];
+        else {
+            foreach (self::$events as $type => $event) {
+                foreach (self::$events[$type] as $id => $callback) {
+                    if (Utils::strStartsWith($id, $prefix))
+                        unset(self::$events[$type][$id]);
+                }
             }
         }
     }

@@ -1,7 +1,6 @@
 <?php
 namespace GameCourse\User;
 
-use Error;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -41,10 +40,6 @@ class CourseUser extends User
         return $this->getData("lastActivity");
     }
 
-    public function getPreviousActivity(): ?string {
-        return $this->getData("previousActivity");
-    } // FIXME: not really being used for anything
-
     public function getLandingPage(): array
     {
         // TODO
@@ -75,13 +70,13 @@ class CourseUser extends User
         $courseUserFields = "";
         if ($field == "*") {
             $userFields = "*";
-            $courseUserFields = "course, lastActivity, previousActivity, isActive as isActiveInCourse";
+            $courseUserFields = "course, lastActivity, isActive as isActiveInCourse";
 
         } else {
             $fields = explode(",", $field);
             foreach ($fields as $f) {
                 $f = trim($f);
-                if (in_array($f, ["course", "lastActivity", "previousActivity", "isActive"])) {
+                if (in_array($f, ["course", "lastActivity", "isActive"])) {
                     if ($courseUserFields != "") $courseUserFields .= ",";
                     $courseUserFields .= $f;
 
@@ -120,12 +115,6 @@ class CourseUser extends User
         $this->setData(["lastActivity" => $lastActivity]);
     }
 
-    public function setPreviousActivity(?string $previousActivity)
-    {
-        self::validateDateTime($previousActivity);
-        $this->setData(["previousActivity" => $previousActivity]);
-    }
-
     public function setActive(bool $isActive)
     {
         $this->setData(["isActive" => +$isActive]);
@@ -139,11 +128,11 @@ class CourseUser extends User
      *
      * @param array $fieldValues
      * @return void
+     * @throws Exception
      */
     public function setData(array $fieldValues)
     {
         if (key_exists("lastActivity", $fieldValues)) self::validateDateTime($fieldValues["lastActivity"]);
-        if (key_exists("previousActivity", $fieldValues)) self::validateDateTime($fieldValues["previousActivity"]);
 
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_COURSE_USER, $fieldValues, ["id" => $this->id, "course" => $this->course->getId()]);
@@ -155,15 +144,12 @@ class CourseUser extends User
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Updates course user's lastActivity to current time and
-     * previousActivity to previous value of lastActivity.
+     * Updates course user's lastActivity to current time.
      *
      * @return void
      */
     public function refreshActivity()
     {
-        $lastActivity = $this->getLastActivity();
-        $this->setPreviousActivity($lastActivity);
         $this->setLastActivity(date("Y-m-d H:i:s", time()));
     }
 
@@ -380,7 +366,6 @@ class CourseUser extends User
             if ($courseUser->exists()) { // user already added to course
                 if ($replace) { // replace
                     $courseUser->setLastActivity(null);
-                    $courseUser->setPreviousActivity(null);
                     $courseUser->setActive($isActiveInCourse);
                     if ($roles) // set user roles in course
                         $courseUser->setRoles(array_map("trim", preg_split("/\s+/", $roles)));

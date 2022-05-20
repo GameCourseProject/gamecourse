@@ -32,7 +32,7 @@ class DatabaseTest extends TestCase
         //       don't forget tables with foreign keys will be automatically deleted on cascade
 
         TestingUtils::cleanTables([User::TABLE_USER]);
-        TestingUtils::resetAutoIncrement([User::TABLE_USER, Auth::TABLE_AUTH]);
+        TestingUtils::resetAutoIncrement([User::TABLE_USER]);
     }
 
     protected function onNotSuccessfulTest(Throwable $t): void
@@ -134,16 +134,17 @@ class DatabaseTest extends TestCase
     public function selectFirstJoinedTables()
     {
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "johndoe", "authentication_service" => AuthService::FENIX]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "annadoe", "authentication_service" => AuthService::FENIX]);
 
-        $first = Core::database()->select(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id");
+        $first = Core::database()->select(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id", [], "*", "id");
         $this->assertIsArray($first);
-        $this->assertCount(11, $first);
+        $this->assertCount(12, $first);
         $this->assertArrayHasKey("name", $first);
         $this->assertArrayHasKey("username", $first);
         $this->assertEquals("John Doe", $first["name"]);
+        $this->assertEquals("johndoe", $first["username"]);
     }
 
     /**
@@ -208,11 +209,11 @@ class DatabaseTest extends TestCase
     public function selectFirstJoinedTablesFilterMultipleColumns()
     {
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "johndoe"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "johndoe"]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "annadoe"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "annadoe"]);
 
-        $first = Core::database()->select(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id", ["u.name" => "John Doe"], "name, a.username");
+        $first = Core::database()->select(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id", ["u.name" => "John Doe"], "name, a.username");
         $this->assertIsArray($first);
         $this->assertCount(2, $first);
         $this->assertArrayHasKey("name", $first);
@@ -374,21 +375,23 @@ class DatabaseTest extends TestCase
     public function selectMultipleJoinedTables()
     {
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "johndoe", "authentication_service" => AuthService::FENIX]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "annadoe", "authentication_service" => AuthService::FENIX]);
 
-        $users = Core::database()->selectMultiple(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id");
+        $users = Core::database()->selectMultiple(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id", [], "*", "id");
         $this->assertIsArray($users);
         $this->assertCount(2, $users);
-        $this->assertCount(11, $users[0]);
+        $this->assertCount(12, $users[0]);
         $this->assertArrayHasKey("name", $users[0]);
         $this->assertArrayHasKey("username", $users[0]);
         $this->assertEquals("John Doe", $users[0]["name"]);
-        $this->assertCount(11, $users[1]);
+        $this->assertEquals("johndoe", $users[0]["username"]);
+        $this->assertCount(12, $users[1]);
         $this->assertArrayHasKey("name", $users[1]);
         $this->assertArrayHasKey("username", $users[1]);
         $this->assertEquals("Anna Doe", $users[1]["name"]);
+        $this->assertEquals("annadoe", $users[1]["username"]);
     }
 
     /**
@@ -457,11 +460,11 @@ class DatabaseTest extends TestCase
     public function selectMultipleJoinedTablesFilterMultipleColumns()
     {
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "johndoe"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "johndoe"]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "annadoe"]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "annadoe"]);
 
-        $users = Core::database()->selectMultiple(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.game_course_user_id=u.id", ["u.name" => "John Doe"], "name, a.username");
+        $users = Core::database()->selectMultiple(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id", ["u.name" => "John Doe"], "name, a.username");
         $this->assertIsArray($users);
         $this->assertCount(1, $users);
         $this->assertCount(2, $users[0]);
@@ -613,21 +616,25 @@ class DatabaseTest extends TestCase
     public function selectMultipleWhenGrouping()
     {
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "johndoe", "authentication_service" => AuthService::FENIX]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "johndoe", "authentication_service" => AuthService::FENIX]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "annadoe", "authentication_service" => AuthService::GOOGLE]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "annadoe", "authentication_service" => AuthService::GOOGLE]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Julia Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["game_course_user_id" => $id, "username" => "juliadoe", "authentication_service" => AuthService::GOOGLE]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "juliadoe", "authentication_service" => AuthService::GOOGLE]);
 
-        $authServices = Core::database()->selectMultiple(Auth::TABLE_AUTH, [], "count(id), authentication_service", null, [], [], "authentication_service");
+        $authServices = Core::database()->selectMultiple(Auth::TABLE_AUTH, [], "count(user), authentication_service", null, [], [], "authentication_service");
         $this->assertIsArray($authServices);
         $this->assertCount(2, $authServices);
+
         $this->assertArrayHasKey("authentication_service", $authServices[0]);
+        $this->assertArrayHasKey("count(user)", $authServices[0]);
         $this->assertEquals(AuthService::FENIX, $authServices[0]["authentication_service"]);
-        $this->assertEquals(1, intval($authServices[0]["count(id)"]));
+        $this->assertEquals(1, intval($authServices[0]["count(user)"]));
+
         $this->assertArrayHasKey("authentication_service", $authServices[1]);
+        $this->assertArrayHasKey("count(user)", $authServices[1]);
         $this->assertEquals(AuthService::GOOGLE, $authServices[1]["authentication_service"]);
-        $this->assertEquals(2, intval($authServices[1]["count(id)"]));
+        $this->assertEquals(2, intval($authServices[1]["count(user)"]));
     }
 
     /**

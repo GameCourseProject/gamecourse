@@ -145,7 +145,6 @@ class UserController
         foreach ($users as &$userInfo) {
             $user = User::getUserById($userInfo["id"]);
             $userInfo["nrCourses"] = count($user->getCourses());
-            $userInfo["lastLogin"] = $user->getLastLogin();
         }
 
         API::response($users);
@@ -201,9 +200,7 @@ class UserController
         if ($image) $user->setImage($image);
 
         $userInfo = $user->getData();
-        $userInfo["image"] = $user->getImage();
         $userInfo["nrCourses"] = count($user->getCourses());
-        $userInfo["lastLogin"] = $user->getLastLogin();
         API::response($userInfo);
     }
 
@@ -235,9 +232,7 @@ class UserController
         if ($image) $user->setImage($image);
 
         $userInfo = $user->getData();
-        $userInfo["image"] = $user->getImage();
         $userInfo["nrCourses"] = count($user->getCourses());
-        $userInfo["lastLogin"] = $user->getLastLogin();
         API::response($userInfo);
     }
 

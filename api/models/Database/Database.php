@@ -68,7 +68,7 @@ class Database
      * Executes any given SQL query.
      *
      * @example executeQuery("SHOW TABLES;")
-     * @example executeQuery("SELECT * FROM auth WHERE game_course_user_id=123;")
+     * @example executeQuery("SELECT * FROM auth WHERE user=123;")
      *
      * @param string $sql
      * @return false|PDOStatement
@@ -253,7 +253,7 @@ class Database
      * Returns last inserted ID.
      *
      * @example insert default values in 'auth' table --> insert("auth")
-     * @example insert some values in 'auth' table --> insert("auth", ["game_course_user_id" => 123, "username" => "ist123456", "authentication_service" => "fenix"])
+     * @example insert some values in 'auth' table --> insert("auth", ["user" => 123, "username" => "ist123456", "authentication_service" => "fenix"])
      *
      * @param string $table
      * @param array $data

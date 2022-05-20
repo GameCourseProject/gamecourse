@@ -138,6 +138,9 @@ class Core
                 $_SESSION['name'] =  $person->name;
                 $_SESSION['pictureUrl'] = $loginType == AuthService::FENIX ? $person->photo->data : $person->pictureUrl;
                 $_SESSION['loginDone'] = $loginType;
+
+                $user = User::getUserByUsername($_SESSION['username'], $loginType);
+                $user->refreshLastLogin();
             }
         }
     }

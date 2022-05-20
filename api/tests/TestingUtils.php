@@ -1,5 +1,6 @@
 <?php
 
+use Event\Event;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
 use Utils\Utils;
@@ -81,6 +82,11 @@ class TestingUtils
         foreach ($tables as $table) {
             Core::database()->deleteAll($table);
         }
+    }
+
+    public static function cleanEvents()
+    {
+        Event::stopAll();
     }
 
     public static function resetAutoIncrement(array $tables)

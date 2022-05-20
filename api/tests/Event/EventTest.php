@@ -55,8 +55,9 @@ class EventTest extends TestCase
         //       don't forget tables with foreign keys will be automatically deleted on cascade
 
         TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER]);
-        TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Auth::TABLE_AUTH, Role::TABLE_ROLE]);
+        TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE]);
         TestingUtils::cleanFileStructure();
+        TestingUtils::cleanEvents();
     }
 
     protected function onNotSuccessfulTest(Throwable $t): void
@@ -135,6 +136,30 @@ class EventTest extends TestCase
 
         // Then
         $this->assertTrue($triggeredWithoutPrefix);
+        $this->assertFalse($triggeredWithPrefix);
+    }
+
+    /**
+     * @test
+     */
+    public function stopListeningToAllEvents()
+    {
+        // Given
+        $triggeredWithoutPrefix = false;
+        $triggeredWithPrefix = false;
+        Event::listen(EventType::STUDENT_ADDED_TO_COURSE, function (int $courseId, int $studentId) use (&$triggeredWithoutPrefix) {
+            $triggeredWithoutPrefix = true;
+        });
+        Event::listen(EventType::STUDENT_ADDED_TO_COURSE, function (int $courseId, int $studentId) use (&$triggeredWithPrefix) {
+            $triggeredWithPrefix = true;
+        }, "test");
+
+        // When
+        Event::stopAll();
+        $this->course->addUserToCourse($this->user->getId(), "Student");
+
+        // Then
+        $this->assertFalse($triggeredWithoutPrefix);
         $this->assertFalse($triggeredWithPrefix);
     }
 }

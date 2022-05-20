@@ -2,7 +2,7 @@
   * -- Create Tables
   * ----------------------------------- */
 
-CREATE TABLE game_course_user(
+CREATE TABLE user(
 	id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
     name 	                    varchar(60) NOT NULL,
     email 	                    varchar(60) UNIQUE,
@@ -14,13 +14,13 @@ CREATE TABLE game_course_user(
 );
 
 CREATE TABLE auth(
-	id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
-	game_course_user_id         int unsigned NOT NULL,
+	user                        int unsigned NOT NULL,
 	username                    varchar(50) NOT NULL,
 	authentication_service      ENUM ('fenix', 'google', 'facebook', 'linkedin'),
+    lastLogin                   TIMESTAMP NULL,
 
-	UNIQUE key(username, authentication_service),
-	FOREIGN key(game_course_user_id) REFERENCES game_course_user(id) ON DELETE CASCADE
+    PRIMARY key(username, authentication_service),
+	FOREIGN key(user) REFERENCES user(id) ON DELETE CASCADE
 );
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -48,11 +48,10 @@ CREATE TABLE course_user(
     id                          int unsigned,
    	course                      int unsigned,
     lastActivity                TIMESTAMP NULL,
-    previousActivity            TIMESTAMP NULL,
 	isActive                    boolean NOT NULL DEFAULT TRUE,
 
     PRIMARY key(id, course),
-    FOREIGN key(id) REFERENCES game_course_user(id) ON DELETE CASCADE,
+    FOREIGN key(id) REFERENCES user(id) ON DELETE CASCADE,
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 

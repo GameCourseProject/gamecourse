@@ -14,3 +14,6 @@ require_once ROOT_PATH . "/inc/cors.php";
 
 // autoload classes
 require_once ROOT_PATH . "/vendor/autoload.php";
+
+// set default timezone
+date_default_timezone_set('Europe/Lisbon');
