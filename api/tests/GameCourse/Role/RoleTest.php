@@ -2,7 +2,6 @@
 namespace GameCourse\Role;
 
 use Exception;
-use GameCourse\Core\Auth;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
