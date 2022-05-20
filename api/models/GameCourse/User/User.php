@@ -3,6 +3,7 @@ namespace GameCourse\User;
 
 use Exception;
 use GameCourse\Core\Auth;
+use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use Utils\Utils;
@@ -215,6 +216,7 @@ class User
 
     /**
      * Sets user data on the database.
+     *
      * @example setData(["name" => "New name"])
      * @example setData(["name" => "New name", "username" => "New username"])
      *
@@ -656,7 +658,7 @@ class User
         if (!is_string($authService) || empty($authService))
             throw new Exception("Authentication service can't be null neither empty.");
 
-        if (!Auth::exists($authService))
+        if (!AuthService::exists($authService))
             throw new Exception("Authentication service '" . $authService . "' is not available.");
     }
 

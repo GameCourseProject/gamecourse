@@ -109,6 +109,9 @@ class CourseUser extends User
     /*** ---------------------- Setters --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function setLastActivity(?string $lastActivity)
     {
         self::validateDateTime($lastActivity);
@@ -147,6 +150,7 @@ class CourseUser extends User
      * Updates course user's lastActivity to current time.
      *
      * @return void
+     * @throws Exception
      */
     public function refreshActivity()
     {
@@ -177,8 +181,8 @@ class CourseUser extends User
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Adds a course user to the database. Option to pass a role
-     * name or ID to be added as well.
+     * Adds a course user to the database.
+     * Option to pass a role name or ID to be added as well.
      * Returns the newly created course user.
      *
      * @param int $userId
@@ -186,6 +190,7 @@ class CourseUser extends User
      * @param string|null $roleName
      * @param int|null $roleId
      * @return CourseUser
+     * @throws Exception
      */
     public static function addCourseUser(int $userId, int $courseId, string $roleName = null, int $roleId = null): CourseUser
     {
@@ -272,6 +277,7 @@ class CourseUser extends User
      *
      * @param array $rolesNames
      * @return void
+     * @throws Exception
      */
     public function setRoles(array $rolesNames)
     {
@@ -285,6 +291,7 @@ class CourseUser extends User
      * @param string|null $roleName
      * @param int|null $roleId
      * @return void
+     * @throws Exception
      */
     public function addRole(string $roleName = null, int $roleId = null)
     {
@@ -298,6 +305,7 @@ class CourseUser extends User
      * @param string|null $roleName
      * @param int|null $roleId
      * @return void
+     * @throws Exception
      */
     public function removeRole(string $roleName = null, int $roleId = null)
     {
@@ -310,6 +318,7 @@ class CourseUser extends User
      * @param string|null $roleName
      * @param int|null $roleId
      * @return bool
+     * @throws Exception
      */
     public function hasRole(string $roleName = null, int $roleId = null): bool
     {

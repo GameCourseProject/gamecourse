@@ -229,6 +229,21 @@ class Utils
         return !!DateTime::createFromFormat($format, $date);
     }
 
+    /**
+     * Checks whether a given version is in a valid format.
+     *
+     * @param string|null $version
+     * @return bool
+     */
+    public static function isValidVersion(?string $version): bool
+    {
+        if (is_null($version)) return true;
+        preg_match("/^(\d+\.)?(\d+\.)?(\*|\d+)$/", $version, $matches);
+        if (!is_string($version) || empty($version) || count($matches) == 0)
+            return false;
+        return true;
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** --------------- String Manipulation ---------------- ***/

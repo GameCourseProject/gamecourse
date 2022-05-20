@@ -74,7 +74,8 @@ class CourseTest extends TestCase
             "numbers" => ["PCM22"],
             "parenthesis" => ["PCM (Copy)"],
             "hyphen" => ["PCM-21"],
-            "underscore" => ["PCM_21"]
+            "underscore" => ["PCM_21"],
+            "length limit" => ["Multimedia Content Production Multimedia Content Production Multimedia Content Production Multimedia"]
         ];
     }
 
@@ -83,7 +84,28 @@ class CourseTest extends TestCase
         return [
             "null name" => [null],
             "empty" => [""],
-            "special characthers" => ["-*./\\!"]
+            "special characthers" => ["-*./\\!"],
+            "too long" => ["Multimedia Content Production Multimedia Content Production Multimedia Content Production Multimedia "]
+        ];
+    }
+
+    public function setShortSuccessProvider(): array
+    {
+        return [
+            "null short" => [null],
+            "MEIC" => ["MEIC"],
+            "MEIC-A" => ["MEIC-A"],
+            "length limit" => ["MEIC-A MEIC-A MEIC-A"]
+        ];
+    }
+
+    public function setShortFailureProvider(): array
+    {
+        return [
+            "only numbers" => ["123"],
+            "not a string" => [123],
+            "empty" => [""],
+            "too long" => ["MEIC-A MEIC-A MEIC-A "]
         ];
     }
 
@@ -322,11 +344,17 @@ class CourseTest extends TestCase
         $this->assertNull($course->getEndDate());
     }
 
+    // TODO
+    public function getLandingPage()
+    {
+
+    }
+
     /**
      * @test
      * @throws Exception
      */
-    public function getLandingPage()
+    public function getLandingPageNoPageDefined()
     {
         $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
             null, null, true, true);
@@ -472,14 +500,28 @@ class CourseTest extends TestCase
 
     /**
      * @test
+     * @dataProvider setShortSuccessProvider
      * @throws Exception
      */
-    public function setShort()
+    public function setShortSucess(?string $short)
     {
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
-        $course->setShort("MCP");
-        $this->assertEquals("MCP", $course->getShort());
+        $course->setShort($short);
+        $this->assertEquals($short, $course->getShort());
+    }
+
+    /**
+     * @test
+     * @dataProvider setShortFailureProvider
+     * @throws Exception
+     */
+    public function setShortFailure($short)
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
+            null, null, true, false);
+        $this->expectException(Exception::class);
+        $course->setShort($short);
     }
 
     /**
@@ -881,12 +923,20 @@ class CourseTest extends TestCase
         }
 
         // Check autogame
-        $this->assertNotNull(Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $course->getId()]));
+        $autogame = Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $course->getId()]);
+        $this->assertFalse(boolval($autogame["isRunning"]));
+        $this->assertEquals(10, $autogame["periodicityNumber"]);
+        $this->assertEquals("Minutes", $autogame["periodicityTime"]);
+
+        $this->assertTrue(file_exists($dataFolder . "/rules"));
         $this->assertTrue(file_exists(AUTOGAME_FOLDER . "/imported-functions/" . $course->getId()));
+        $this->assertEquals(file_get_contents(AUTOGAME_FOLDER . "/imported-functions/defaults.py"), file_get_contents(AUTOGAME_FOLDER . "/imported-functions/" . $course->getId() . "/defaults.py"));
         $this->assertTrue(file_exists(AUTOGAME_FOLDER . "/config/config_" . $course->getId() . ".txt"));
+        $this->assertEquals("", file_get_contents(AUTOGAME_FOLDER . "/config/config_" . $course->getId() . ".txt"));
 
         // Check logging
         $this->assertTrue(file_exists(LOGS_FOLDER . "/autogame_" . $course->getId() . ".txt"));
+        $this->assertEquals("", file_get_contents(LOGS_FOLDER . "/autogame_" . $course->getId() . ".txt"));
     }
 
     /**
@@ -1015,6 +1065,11 @@ class CourseTest extends TestCase
         $this->assertIsArray($courses);
         $this->assertCount(1, $courses);
         $this->assertEquals("Produção de Conteúdos Multimédia", $courses[0]["name"]);
+
+        $this->assertFalse(file_exists(COURSE_DATA_FOLDER . "/" . $id));
+        $this->assertFalse(file_exists(AUTOGAME_FOLDER . "/imported-functions/" . $id));
+        $this->assertFalse(file_exists(AUTOGAME_FOLDER . "/config/config_" . $id . ".txt"));
+        $this->assertFalse(file_exists(LOGS_FOLDER . "/autogame_" . $id . ".txt"));
     }
 
     /**

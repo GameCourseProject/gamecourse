@@ -484,6 +484,9 @@ class Role
     {
         if (!is_string($roleName) || strpos($roleName, " ") !== false)
             throw new Exception("Role name '" . $roleName . "' is invalid. Role names can't be empty or have white spaces.");
+
+        if (iconv_strlen($roleName) > 50)
+            throw new Exception("Role name is too long: maximum of 50 characters.");
     }
 
 

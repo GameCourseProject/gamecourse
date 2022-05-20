@@ -145,6 +145,7 @@ class Course
      */
     public function setShort(?string $short)
     {
+        self::validateShort($short);
         $this->setData(["short" => $short]);
     }
 
@@ -254,6 +255,7 @@ class Course
             if (strcmp($oldName, $fieldValues["name"]) !== 0)
                 rename($this->getDataFolder(true, $oldName), $this->getDataFolder(true, $fieldValues["name"]));
         }
+        if (key_exists("short", $fieldValues)) self::validateShort($fieldValues["short"]);
         if (key_exists("color", $fieldValues)) self::validateColor($fieldValues["color"]);
         if (key_exists("year", $fieldValues)) self::validateYear($fieldValues["year"]);
         if (key_exists("startDate", $fieldValues)) self::validateDateTime($fieldValues["startDate"]);
@@ -321,7 +323,7 @@ class Course
         if (!$loggedUser->isAdmin()) throw new Exception("Only admins can create new courses.");
 
         // Insert in database & create data folder
-        self::validateCourse($name, $color, $year, $startDate, $endDate, $isActive, $isVisible);
+        self::validateCourse($name, $short, $color, $year, $startDate, $endDate, $isActive, $isVisible);
         $id = Core::database()->insert(self::TABLE_COURSE, [
             "name" => $name,
             "short" => $short,
@@ -412,7 +414,7 @@ class Course
     public function editCourse(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
                                ?string $endDate, bool $isActive, bool $isVisible): Course
     {
-        self::validateCourse($name, $color, $year, $startDate, $endDate, $isActive, $isVisible);
+        self::validateCourse($name, $short, $color, $year, $startDate, $endDate, $isActive, $isVisible);
         $this->setData([
             "name" => $name,
             "short" => $short,
@@ -1003,6 +1005,7 @@ class Course
      * Validates course parameters.
      *
      * @param $name
+     * @param $short
      * @param $color
      * @param $year
      * @param $startDate
@@ -1012,9 +1015,10 @@ class Course
      * @return void
      * @throws Exception
      */
-    private static function validateCourse($name, $color, $year, $startDate, $endDate, $isActive, $isVisible)
+    private static function validateCourse($name, $short, $color, $year, $startDate, $endDate, $isActive, $isVisible)
     {
         self::validateName($name);
+        self::validateShort($short);
         self::validateColor($color);
         self::validateYear($year);
         self::validateDateTime($startDate);
@@ -1034,6 +1038,26 @@ class Course
         preg_match("/[^\w()\s-]/u", $name, $matches);
         if (count($matches) != 0)
             throw new Exception("Course name '" . $name . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-'");
+
+        if (iconv_strlen($name) > 100)
+            throw new Exception("Course name is too long: maximum of 100 characters.");
+    }
+
+    /**
+     * @throws Exception
+     */
+    private static function validateShort($short)
+    {
+        if (is_null($short)) return;
+
+        if (empty($short))
+            throw new Exception("Course short can't be empty.");
+
+        if (is_numeric($short))
+            throw new Exception("Course short can't be composed of only numbers.");
+
+        if (iconv_strlen($short) > 20)
+            throw new Exception("Course short is too long: maximum of 20 characters.");
     }
 
     /**

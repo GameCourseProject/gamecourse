@@ -142,34 +142,60 @@ abstract class Module
     /*** ---------------------- Setters --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function setName(string $name)
     {
+        self::validateName($name);
         $this->setData(["name" => $name]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setDescription(string $description)
     {
+        self::validateDescription($description);
         $this->setData(["description" => $description]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setType(string $type)
     {
+        self::validateType($type);
         $this->setData(["type" => $type]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setVersion(string $version)
     {
+        self::validateVersion($version);
         $this->setData(["version" => $version]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setProjectCompatibility(string $min, ?string $max)
     {
+        self::validateVersion($min);
+        self::validateVersion($max);
         $this->setData(["minProjectVersion" => $min]);
         $this->setData(["maxProjectVersion" => $max]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setAPICompatibility(string $min, ?string $max)
     {
+        self::validateVersion($min);
+        self::validateVersion($max);
         $this->setData(["minAPIVersion" => $min]);
         $this->setData(["maxAPIVersion" => $max]);
     }
@@ -234,14 +260,25 @@ abstract class Module
 
     /**
      * Sets module data on the database.
-     * @example setData(["name" => "New name"])
-     * @example setData(["name" => "New name", "description" => "New description"])
-     *
      * @param array $fieldValues
      * @return void
+     * @throws Exception
+     * @example setData(["name" => "New name", "description" => "New description"])
+     *
+     * @example setData(["name" => "New name"])
      */
     public function setData(array $fieldValues)
     {
+        if (key_exists("id", $fieldValues)) self::validateName($fieldValues["id"]);
+        if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
+        if (key_exists("description", $fieldValues)) self::validateDescription($fieldValues["description"]);
+        if (key_exists("type", $fieldValues)) self::validateType($fieldValues["type"]);
+        if (key_exists("version", $fieldValues)) self::validateVersion($fieldValues["version"]);
+        if (key_exists("minProjectVersion", $fieldValues)) self::validateVersion($fieldValues["minProjectVersion"]);
+        if (key_exists("maxProjectVersion", $fieldValues)) self::validateVersion($fieldValues["maxProjectVersion"]);
+        if (key_exists("minAPIVersion", $fieldValues)) self::validateVersion($fieldValues["minAPIVersion"]);
+        if (key_exists("maxAPIVersion", $fieldValues)) self::validateVersion($fieldValues["maxAPIVersion"]);
+
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_MODULE, $fieldValues, ["id" => $this->id]);
     }
 
@@ -327,10 +364,12 @@ abstract class Module
      * @param array $APICompatibility
      * @param array $dependencies
      * @return Module
+     * @throws Exception
      */
     public static function addModule(string $id, string $name, string $description, string $type, string $version,
                                     array $projectCompatibility, array $APICompatibility, array $dependencies): Module
     {
+        self::validateModule($id, $name, $description, $type, $version, $projectCompatibility, $APICompatibility);
         Core::database()->insert(self::TABLE_MODULE, [
             "id" => $id,
             "name" => $name,
@@ -656,6 +695,107 @@ abstract class Module
     public static function uninstallModule()
     {
         // TODO: remove module files (ver function deleteModule() on Module.php
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------- Validations -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Validates module parameters.
+     *
+     * @param $id
+     * @param $name
+     * @param $description
+     * @param $type
+     * @param $version
+     * @param $projectCompatibility
+     * @param $APICompatibility
+     * @return void
+     * @throws Exception
+     */
+    private static function validateModule($id, $name, $description, $type, $version, array $projectCompatibility, array $APICompatibility)
+    {
+        self::validateName($id);
+        self::validateName($name);
+        self::validateDescription($description);
+        self::validateType($type);
+        self::validateVersion($version);
+        self::validateVersion($projectCompatibility["min"]);
+        self::validateVersion($projectCompatibility["max"]);
+        self::validateVersion($APICompatibility["min"]);
+        self::validateVersion($APICompatibility["max"]);
+    }
+
+    /**
+     * Validates module ID or name.
+     *
+     * @param $name
+     * @return void
+     * @throws Exception
+     */
+    private static function validateName($name)
+    {
+        if (!is_string($name) || empty($name))
+            throw new Exception("Module name can't be null neither empty.");
+
+        if (is_numeric($name))
+            throw new Exception("Module name can't be composed of only numbers.");
+
+        if (iconv_strlen($name) > 50)
+            throw new Exception("Module name is too long: maximum of 50 characters.");
+    }
+
+    /**
+     * Validates module description.
+     *
+     * @param $description
+     * @return void
+     * @throws Exception
+     */
+    private static function validateDescription($description)
+    {
+        if (!is_string($description) || empty($description))
+            throw new Exception("Module description can't be null neither empty.");
+
+        if (is_numeric($description))
+            throw new Exception("Module description can't be composed of only numbers.");
+
+        if (iconv_strlen($description) > 100)
+            throw new Exception("Module description is too long: maximum of 100 characters.");
+    }
+
+    /**
+     * Validates module type.
+     *
+     * @param $type
+     * @return void
+     * @throws Exception
+     */
+    private static function validateType($type)
+    {
+        if (!is_string($type) || empty($type))
+            throw new Exception("Module type can't be null neither empty.");
+
+        if (!ModuleType::exists($type))
+            throw new Exception("Module type '" . $type . "' is not available.");
+    }
+
+    /**
+     * Validates module's versions.
+     *
+     * @param $version
+     * @return void
+     * @throws Exception
+     */
+    private static function validateVersion($version)
+    {
+        if (!Utils::isValidVersion($version))
+            throw new Exception("Version '" . $version . "' is not in a valid format.");
+
+        if (iconv_strlen($version) > 10)
+            throw new Exception("Version is too long: maximum of 10 characters.");
     }
 
 

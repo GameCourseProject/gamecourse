@@ -65,6 +65,32 @@ class UtilsTest extends TestCase
         ];
     }
 
+    public function validVersionProvider(): array
+    {
+        return [
+            "x.x.x" => ["2.2.2"],
+            "xx.x.x" => ["22.2.2"],
+            "x.xx.x" => ["2.22.2"],
+            "x.x.xx" => ["2.22.22"],
+            "xx.xx.xx" => ["22.22.22"],
+            "x.x" => ["2.2"],
+            "xx.x" => ["22.2"],
+            "x.xx" => ["2.22"],
+            "xx.xx" => ["22.22"],
+            "x" => ["1"],
+            "xx" => ["12"],
+            "null" => [null]
+        ];
+    }
+
+    public function invalidVersionProvider(): array
+    {
+        return [
+            "empty" => [""],
+            "parts with letters" => ["a.2.b"]
+        ];
+    }
+
     public function uploadFileProvider(): array
     {
         return [
@@ -661,6 +687,25 @@ class UtilsTest extends TestCase
     public function isValidDateInvalidDate(?string $date, string $format)
     {
         $this->assertFalse(Utils::isValidDate($date, $format));
+    }
+
+    /**
+     * @test
+     * @dataProvider validVersionProvider
+     */
+    public function isValidVersionValidVersion(?string $version)
+    {
+        $this->assertTrue(Utils::isValidVersion($version));
+    }
+
+    /**
+     * @test
+     * @dataProvider invalidVersionProvider
+     */
+    public function isValidVersionInvalidVersion($version)
+    {
+        $res = Utils::isValidVersion($version);
+        $this->assertFalse($res);
     }
 
 
