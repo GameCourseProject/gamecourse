@@ -11,17 +11,16 @@ export class Course {
   private _startDate: Moment;
   private _endDate: Moment;
   private _landingPage: number;
-  private _lastUpdate: Moment;
   private _isActive: boolean;
   private _isVisible: boolean;
   private _roleHierarchy: Role[];
   private _theme: string;
-  private _folder: string;
+  private _folder?: string;
   private _nrStudents?: number;
 
   constructor(id: number, name: string, short: string, color: string, year: string, startDate: Moment, endDate: Moment,
-              landingPage: number, lastUpdate: Moment, isActive: boolean, isVisible: boolean, roleHierarchy: Role[],
-              theme: string, folder: string, nrStudents?: number) {
+              landingPage: number, isActive: boolean, isVisible: boolean, roleHierarchy: Role[], theme: string, folder?: string,
+              nrStudents?: number) {
 
     this._id = id;
     this._name = name;
@@ -31,12 +30,11 @@ export class Course {
     this._startDate = startDate;
     this._endDate = endDate;
     this._landingPage = landingPage;
-    this._lastUpdate = lastUpdate;
     this._isActive = isActive;
     this._isVisible = isVisible;
     this._roleHierarchy = roleHierarchy;
     this._theme = theme;
-    this._folder = folder;
+    if (folder != undefined) this._folder = folder;
     if (nrStudents != undefined) this._nrStudents = nrStudents;
   }
 
@@ -104,14 +102,6 @@ export class Course {
     this._landingPage = value;
   }
 
-  get lastUpdate(): Moment {
-    return this._lastUpdate;
-  }
-
-  set lastUpdate(value: Moment) {
-    this._lastUpdate = value;
-  }
-
   get isActive(): boolean {
     return !!this._isActive;
   }
@@ -170,13 +160,12 @@ export class Course {
       dateFromDatabase(obj.startDate),
       dateFromDatabase(obj.endDate),
       obj.landingPage,
-      dateFromDatabase(obj.lastUpdate),
       obj.isActive,
       obj.isVisible,
       obj.roleHierarchy.map(role => Role.fromDatabase(role)),
       obj.theme,
-      obj.folder,
-      obj.nrStudents
+      obj.folder ?? null,
+      obj.nrStudents ?? null
     );
   }
 }
@@ -190,7 +179,6 @@ export interface CourseDatabase {
   "startDate": string,
   "endDate": string,
   "landingPage": number,
-  "lastUpdate": string,
   "isActive": boolean,
   "isVisible": boolean,
   "roleHierarchy": {name: string}[],

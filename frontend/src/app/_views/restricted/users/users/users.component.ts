@@ -171,7 +171,7 @@ export class UsersComponent implements OnInit {
           this.reduceList();
 
           const loggedUser = await this.api.getLoggedUser().toPromise();
-          if (loggedUser.id === this.newUser.id && this.newUser.image)
+          if (loggedUser.id === userEdited.id && this.photoToAdd)
             this.updateManager.triggerUpdate(UpdateType.AVATAR); // Trigger change on navbar
 
           const successBox = $('#action_completed');

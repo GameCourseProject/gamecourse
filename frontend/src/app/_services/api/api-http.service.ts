@@ -344,6 +344,20 @@ export class ApiHttpService {
   /*** --------------------------------------------- ***/
 
   // General
+  public getCourses(isActive?: boolean, isVisible?: boolean): Observable<Course[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getCourses');
+      if (isActive !== undefined) qs.push('isActive', isActive);
+      if (isVisible !== undefined) qs.push('isVisible', isVisible);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (res['data']).map(obj => Course.fromDatabase(obj))) );
+  }
+
   public getCourse(courseID: number): Observable<Course> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
@@ -434,21 +448,17 @@ export class ApiHttpService {
 
 
   // Course Manipulation
-  public createCourse(courseData: CourseData, creationMode: CreationMode = CreationMode.BLANK): Observable<Course> {
+  public createCourse(courseData: CourseData): Observable<Course> {
     const data = {
-      courseName: courseData.name + (creationMode === CreationMode.SIMILAR ? ' - Copy' : ''),
-      creationMode: creationMode,
-      courseShort: courseData.short,
-      courseYear: courseData.year,
-      courseColor: courseData.color,
-      courseStartDate: courseData.startDate,
-      courseEndDate: courseData.endDate,
-      courseIsVisible: courseData.isVisible ? 1 : 0,
-      courseIsActive: courseData.isActive ? 1 : 0,
+      name: courseData.name,
+      short: courseData.short,
+      year: courseData.year,
+      color: courseData.color,
+      startDate: courseData.startDate,
+      endDate: courseData.endDate,
+      isActive: courseData.isActive,
+      isVisible: courseData.isVisible
     }
-
-    if (creationMode === CreationMode.SIMILAR)
-      data['copyFrom'] = courseData.id;
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
@@ -457,24 +467,34 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => Course.fromDatabase(res['data']['course'])) );
+      .pipe( map((res: any) => Course.fromDatabase(res['data'])) );
   }
 
-  public duplicateCourse(courseData: CourseData): Observable<Course> {
-    return this.createCourse(courseData, CreationMode.SIMILAR);
+  // Course Manipulation
+  public duplicateCourse(courseID: number): Observable<Course> {
+    const data = { courseId: courseID }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'duplicateCourse');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Course.fromDatabase(res['data'])) );
   }
 
-  public editCourse(courseData: CourseData): Observable<void> {
+  public editCourse(courseData: CourseData): Observable<Course> {
     const data = {
       courseId: courseData.id,
-      courseName: courseData.name,
-      courseShort: courseData.short,
-      courseYear: courseData.year,
-      courseColor: courseData.color,
-      courseStartDate: courseData.startDate,
-      courseEndDate: courseData.endDate,
-      courseIsVisible: courseData.isVisible ? 1 : 0,
-      courseIsActive: courseData.isActive ? 1 : 0,
+      name: courseData.name,
+      short: courseData.short,
+      year: courseData.year,
+      color: courseData.color,
+      startDate: courseData.startDate,
+      endDate: courseData.endDate,
+      isActive: courseData.isActive,
+      isVisible: courseData.isVisible
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -483,32 +503,31 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+    return this.put(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Course.fromDatabase(res['data'])) );
   }
 
   public deleteCourse(courseID: number): Observable<void> {
-    const data = { courseId: courseID };
-
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
       qs.push('request', 'deleteCourse');
+      qs.push('courseId', courseID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
+    return this.delete(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
   public setCourseVisible(courseID: number, isVisible: boolean): Observable<void> {
     const data = {
       courseId: courseID,
-      isVisible: isVisible ? 1 : 0
+      isVisible
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'setCourseVisibility');
+      qs.push('request', 'setVisible');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
@@ -519,12 +538,12 @@ export class ApiHttpService {
   public setCourseActive(courseID: number, isActive: boolean): Observable<void> {
     const data = {
       courseId: courseID,
-      isActive: isActive ? 1 : 0
+      isActive
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'setCourseActiveState');
+      qs.push('request', 'setActive');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
@@ -547,7 +566,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => parseInt(res['data']['nrCourses'])) );
+      .pipe( map((res: any) => parseInt(res['data'])) );
   }
 
   public exportCourses(courseID: number = null, options = null): Observable<string> {

@@ -35,9 +35,9 @@
 
   <!-- Action buttons -->
   <div class="action-buttons ">
-    <div class="icon add_icon" title="New" (click)="mode = 'add'; isCourseModalOpen = true; initColorPicker()"></div>
+    <div class="icon add_icon" title="New" (click)="mode = 'add'; isCourseModalOpen = true; initColorPicker(); initYearOptions()"></div>
     <div class="icon import_icon" title="Import" (click)="isImportModalOpen = true"></div>
-    <div class="icon export_icon" title="Export all" (click)="exportAllCourses()"></div>
+    <div class="icon export_icon" title="Export all" (click)="exportCourses()"></div>
   </div>
 
   <!-- List size -->
@@ -54,7 +54,7 @@
           <th class="first-column"></th>
           <th class="name-column">Name</th>
           <th >Short</th>
-          <th ># Students</th>
+          <th ># Students Enrolled</th>
           <th >Year</th>
           <th class="check-column">Active</th>
           <th class="check-column">Visible</th>
@@ -91,16 +91,16 @@
             </label>
           </td>
           <td class="action-column">
-            <div class="icon duplicate_icon" title="Duplicate" (click)="duplicateCourse(course)"></div>
+            <div class="icon duplicate_icon" title="Duplicate" (click)="duplicateCourse(course.id)"></div>
           </td>
           <td class="action-column">
-            <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditCourse(course); isCourseModalOpen = true; initColorPicker()"></div>
+            <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditCourse(course); isCourseModalOpen = true; initColorPicker(); initYearOptions()"></div>
           </td>
           <td class="action-column">
             <div class="icon delete_icon" title="Remove" (click)="courseToDelete = course; isDeleteVerificationModalOpen = true"></div>
           </td>
           <td class="action-column">
-            <div class="icon export_icon_no_outline" title="Export" (click)="courseToExport = course; isIndividualExportModalOpen = true"></div>
+            <div class="icon export_icon_no_outline" title="Export all" (click)="exportCourse(course)"></div>
           </td>
         </tr>
         </tbody>
@@ -208,14 +208,14 @@
         <div class="row" style="justify-content: space-between">
           <!-- Short -->
           <div class="short_name half">
-            <input type="text" class="form__input" id="short_name" placeholder="Short Name *" [(ngModel)]="newCourse.short" [required]="true">
+            <input type="text" class="form__input" id="short_name" placeholder="Short Name" [(ngModel)]="newCourse.short">
             <label for="short_name" class="form__label">Short Name</label>
           </div>
 
           <!-- Year -->
           <div class="year half">
             <select class="form__input" id="year" placeholder="Year *" [(ngModel)]="newCourse.year" [required]="true">
-              <option disabled [value]="null">Select a year</option>
+              <option disabled [value]="null">Select a year *</option>
               <option *ngFor="let year of yearsOptions" [label]="year" [value]="year">{{year}}</option>
             </select>
           </div>
@@ -274,60 +274,6 @@
     [actionInProgress]="saving">
   </app-verification-modal>
 </ng-container>
-
-
-<!-- Individual Export Modal -->
-<ng-container *ngIf="isIndividualExportModalOpen">
-  <app-modal
-    [isModalOpen]="isIndividualExportModalOpen"
-    [id]="'export-verification-' + courseToExport.id"
-    [templateRef]="individualExportModal"
-    (closeBtnClicked)="isIndividualExportModalOpen = false"
-    [actionInProgress]="saving"
-    [innerClickEvents]="false"
-    [classList]="'export'">
-  </app-modal>
-</ng-container>
-
-<ng-template #individualExportModal>
-
-  <!-- Title -->
-  <div class="title">Export Test Course</div>
-
-  <div class="warning">Select what to export:</div>
-
-  <div class="content">
-    <div id="new_box_tier" class="inputs">
-
-      <div class="row_inputs">
-        <div class="details full config_item">
-
-          <!-- Users -->
-          <div><label class="container">
-            <input type="checkbox" [(ngModel)]="exportOptions[courseToExport.id].users" [disabled]="exportOptions[courseToExport.id].awards" [checked]="exportOptions[courseToExport.id].awards" title="Users have to be exported if &quot;Awards and Participations&quot; is selected.">
-            <span class="checkmark">Users</span>
-          </label></div>
-
-          <!-- Awards & Participations -->
-          <div><label class="container">
-            <input type="checkbox" [(ngModel)]="exportOptions[courseToExport.id].awards">
-            <span class="checkmark">Awards and Participations</span>
-          </label></div>
-
-          <!-- Modules -->
-          <div><label class="container">
-            <input type="checkbox" [(ngModel)]="exportOptions[courseToExport.id].modules">
-            <span class="checkmark">Modules</span>
-          </label></div>
-        </div>
-      </div>
-    </div>
-
-    <button class="cancel" (click)="isIndividualExportModalOpen = false">Cancel</button>
-    <button class="save_btn" (click)="exportCourse(courseToExport)">Export</button>
-  </div>
-
-</ng-template>
 
 
 <!-- Import Modal -->
