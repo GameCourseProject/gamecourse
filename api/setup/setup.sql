@@ -33,7 +33,6 @@ CREATE TABLE course(
 	startDate                   TIMESTAMP NULL DEFAULT NULL,
 	endDate                     TIMESTAMP NULL DEFAULT NULL,
     landingPage                 int unsigned DEFAULT NULL,
-	lastUpdate                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	isActive                    boolean DEFAULT TRUE,
 	isVisible                   boolean DEFAULT TRUE,
 	roleHierarchy               text,

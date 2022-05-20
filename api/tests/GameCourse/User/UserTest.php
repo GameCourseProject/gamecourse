@@ -1093,16 +1093,16 @@ class UserTest extends TestCase
         $courses = $user->getCourses();
         $this->assertIsArray($courses);
         $this->assertCount(2, $courses);
-        $this->assertCount(13, $courses[0]);
+        $this->assertCount(12, $courses[0]);
         $this->assertEquals(["id" => $course1->getId(), "name" => "Multimedia Content Production", "short" => "MCP",
             "year" => "2021-2022", "color" => "#ffffff", "startDate" => null, "endDate" => null, "isActive" => true,
             "isVisible" => true, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
-            "theme" => null, "landingPage" => null, "lastUpdate" => $courses[0]["lastUpdate"]], $courses[0]);
-        $this->assertCount(13, $courses[1]);
+            "theme" => null, "landingPage" => null], $courses[0]);
+        $this->assertCount(12, $courses[1]);
         $this->assertEquals(["id" => $course2->getId(), "name" => "Producao de Conteudos Multimedia", "short" => "PCM",
             "year" => "2021-2022", "color" => "#ffffff", "startDate" => null, "endDate" => null, "isActive" => false,
             "isVisible" => false, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
-            "theme" => null, "landingPage" => null, "lastUpdate" => $courses[1]["lastUpdate"]], $courses[1]);
+            "theme" => null, "landingPage" => null], $courses[1]);
     }
 
     /**
@@ -1134,11 +1134,11 @@ class UserTest extends TestCase
         $courses = $user->getCourses(true);
         $this->assertIsArray($courses);
         $this->assertCount(1, $courses);
-        $this->assertCount(13, $courses[0]);
+        $this->assertCount(12, $courses[0]);
         $this->assertEquals(["id" => $course1->getId(), "name" => "Multimedia Content Production", "short" => "MCP",
             "year" => "2021-2022", "color" => "#ffffff", "startDate" => null, "endDate" => null, "isActive" => true,
             "isVisible" => true, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
-            "theme" => null, "landingPage" => null, "lastUpdate" => $courses[0]["lastUpdate"]], $courses[0]);
+            "theme" => null, "landingPage" => null], $courses[0]);
     }
 
     /**
@@ -1170,11 +1170,11 @@ class UserTest extends TestCase
         $courses = $user->getCourses(false);
         $this->assertIsArray($courses);
         $this->assertCount(1, $courses);
-        $this->assertCount(13, $courses[0]);
+        $this->assertCount(12, $courses[0]);
         $this->assertEquals(["id" => $course2->getId(), "name" => "Producao de Conteudos Multimedia", "short" => "PCM",
             "year" => "2021-2022", "color" => "#ffffff", "startDate" => null, "endDate" => null, "isActive" => false,
             "isVisible" => false, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
-            "theme" => null, "landingPage" => null, "lastUpdate" => $courses[0]["lastUpdate"]], $courses[0]);
+            "theme" => null, "landingPage" => null], $courses[0]);
     }
 
     /**
@@ -1206,11 +1206,11 @@ class UserTest extends TestCase
         $courses = $user->getCourses(null, true);
         $this->assertIsArray($courses);
         $this->assertCount(1, $courses);
-        $this->assertCount(13, $courses[0]);
+        $this->assertCount(12, $courses[0]);
         $this->assertEquals(["id" => $course1->getId(), "name" => "Multimedia Content Production", "short" => "MCP",
             "year" => "2021-2022", "color" => "#ffffff", "startDate" => null, "endDate" => null, "isActive" => true,
             "isVisible" => true, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
-            "theme" => null, "landingPage" => null, "lastUpdate" => $courses[0]["lastUpdate"]], $courses[0]);
+            "theme" => null, "landingPage" => null], $courses[0]);
     }
 
     /**
@@ -1242,11 +1242,11 @@ class UserTest extends TestCase
         $courses = $user->getCourses(null, false);
         $this->assertIsArray($courses);
         $this->assertCount(1, $courses);
-        $this->assertCount(13, $courses[0]);
+        $this->assertCount(12, $courses[0]);
         $this->assertEquals(["id" => $course2->getId(), "name" => "Producao de Conteudos Multimedia", "short" => "PCM",
             "year" => "2021-2022", "color" => "#ffffff", "startDate" => null, "endDate" => null, "isActive" => false,
             "isVisible" => false, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
-            "theme" => null, "landingPage" => null, "lastUpdate" => $courses[0]["lastUpdate"]], $courses[0]);
+            "theme" => null, "landingPage" => null], $courses[0]);
     }
 
     /**
@@ -1278,11 +1278,11 @@ class UserTest extends TestCase
         $courses = $user->getCourses(true, true);
         $this->assertIsArray($courses);
         $this->assertCount(1, $courses);
-        $this->assertCount(13, $courses[0]);
+        $this->assertCount(12, $courses[0]);
         $this->assertEquals(["id" => $course1->getId(), "name" => "Multimedia Content Production", "short" => "MCP",
             "year" => "2021-2022", "color" => "#ffffff", "startDate" => null, "endDate" => null, "isActive" => true,
             "isVisible" => true, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
-            "theme" => null, "landingPage" => null, "lastUpdate" => $courses[0]["lastUpdate"]], $courses[0]);
+            "theme" => null, "landingPage" => null], $courses[0]);
     }
 
 

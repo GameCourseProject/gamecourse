@@ -77,11 +77,6 @@ class Course
         return $this->getData("landingPage");
     }
 
-    public function getLastUpdate(): string
-    {
-        return $this->getData("lastUpdate");
-    } // FIXME: not really being used for anything
-
     public function getRolesHierarchy(): array
     {
         return $this->getData("roleHierarchy");
@@ -196,15 +191,6 @@ class Course
     /**
      * @throws Exception
      */
-    public function setLastUpdate(string $lastUpdate)
-    {
-        self::validateDateTime($lastUpdate);
-        $this->setData(["lastUpdate" => $lastUpdate]);
-    }
-
-    /**
-     * @throws Exception
-     */
     public function setRolesHierarchy(array $hierarchy)
     {
         $this->setData(["roleHierarchy" => json_encode($hierarchy)]);
@@ -260,7 +246,6 @@ class Course
         if (key_exists("year", $fieldValues)) self::validateYear($fieldValues["year"]);
         if (key_exists("startDate", $fieldValues)) self::validateDateTime($fieldValues["startDate"]);
         if (key_exists("endDate", $fieldValues)) self::validateDateTime($fieldValues["endDate"]);
-        if (key_exists("lastUpdate", $fieldValues)) self::validateDateTime($fieldValues["lastUpdate"]);
 
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_COURSE, $fieldValues, ["id" => $this->id]);

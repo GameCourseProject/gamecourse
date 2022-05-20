@@ -195,8 +195,7 @@ class CourseTest extends TestCase
             ["invalid color" => ["color" => "white"]],
             ["invalid year" => ["color" => "20-21"]],
             ["invalid start date" => ["startDate" => "2022-04-20"]],
-            ["invalid end date" => ["endDate" => "2022-04-20"]],
-            ["invalid lastUpdate" => ["lastUpdate" => "2022-04-20"]],
+            ["invalid end date" => ["endDate" => "2022-04-20"]]
         ];
     }
 
@@ -365,17 +364,6 @@ class CourseTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function getLastUpdate()
-    {
-        $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
-            null, null, true, true);
-        $this->assertNotNull($course->getLastUpdate());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
     public function getRolesHierarchy()
     {
         $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
@@ -449,7 +437,7 @@ class CourseTest extends TestCase
             null, null, true, false);
         $this->assertEquals(["id" => 1, "name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
             "color" => "#ffffff", "startDate" => null, "endDate" => null, "isActive" => true, "isVisible" => false,
-            "landingPage" => null, "lastUpdate" => $course->getLastUpdate(), "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
+            "landingPage" => null, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
             "theme" => null, "folder" => "course_data/1-Producao de Conteudos Multimedia"],
             $course->getData());
     }
@@ -630,32 +618,6 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider dateTimeSuccessProvider
-     * @throws Exception
-     */
-    public function setLastUpdateSuccess(?string $lastUpdate)
-    {
-        $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
-            null, null, true, false);
-        $course->setLastUpdate($lastUpdate);
-        $this->assertEquals($lastUpdate, $course->getLastUpdate());
-    }
-
-    /**
-     * @test
-     * @dataProvider dateTimeFailureProvider
-     * @throws Exception
-     */
-    public function setLastUpdateFailure($lastUpdate)
-    {
-        $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
-            null, null, true, false);
-        $this->expectException(Exception::class);
-        $course->setLastUpdate($lastUpdate);
-    }
-
-    /**
-     * @test
      * @throws Exception
      */
     public function setRolesHierarchy()
@@ -717,7 +679,6 @@ class CourseTest extends TestCase
         $course->setData($fieldValues);
         $fieldValues["id"] = $course->getId();
         $fieldValues["roleHierarchy"] = $course->getRolesHierarchy();
-        $fieldValues["lastUpdate"] = $course->getLastUpdate();
         $fieldValues["folder"] = $course->getDataFolder(false);
         $this->assertEquals($course->getData(), array_merge($fieldValues, ["id" => $course->getId()]));
     }
@@ -739,7 +700,7 @@ class CourseTest extends TestCase
             $this->assertEquals(["id" => 1, "name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
                 "color" => "#ffffff", "startDate" => null, "endDate" => null, "landingPage" => null, "isActive" => true,
                 "isVisible" => false, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
-                "theme" => null, "lastUpdate" => $course->getLastUpdate(), "folder" => $course->getDataFolder(false)], $course->getData());
+                "theme" => null, "folder" => $course->getDataFolder(false)], $course->getData());
         }
     }
 
@@ -825,7 +786,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($courses);
         $this->assertCount(2, $courses);
 
-        $keys = ["id", "name", "short", "color", "year", "startDate", "endDate", "landingPage", "lastUpdate", "theme", "roleHierarchy", "isActive", "isVisible"];
+        $keys = ["id", "name", "short", "color", "year", "startDate", "endDate", "landingPage", "theme", "roleHierarchy", "isActive", "isVisible"];
         foreach ($keys as $key) {
             foreach ($courses as $i => $course) {
                 $this->assertArrayHasKey($key, $course);
@@ -849,7 +810,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($courses);
         $this->assertCount(1, $courses);
 
-        $keys = ["id", "name", "short", "color", "year", "startDate", "endDate", "landingPage", "lastUpdate", "theme", "roleHierarchy", "isActive", "isVisible"];
+        $keys = ["id", "name", "short", "color", "year", "startDate", "endDate", "landingPage", "theme", "roleHierarchy", "isActive", "isVisible"];
         foreach ($keys as $key) {
             foreach ($courses as $i => $course) {
                 $this->assertArrayHasKey($key, $course);
@@ -873,7 +834,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($courses);
         $this->assertCount(1, $courses);
 
-        $keys = ["id", "name", "short", "color", "year", "startDate", "endDate", "landingPage", "lastUpdate", "theme", "roleHierarchy", "isActive", "isVisible"];
+        $keys = ["id", "name", "short", "color", "year", "startDate", "endDate", "landingPage", "theme", "roleHierarchy", "isActive", "isVisible"];
         foreach ($keys as $key) {
             foreach ($courses as $i => $course) {
                 $this->assertArrayHasKey($key, $course);
@@ -896,7 +857,7 @@ class CourseTest extends TestCase
         // Check is added on database
         $courseDB = Core::database()->select(Course::TABLE_COURSE, ["id" => $course->getId()]);
         $courseData = array("id" => strval($course->getId()), "name" => $name, "short" => $short, "year" => $year, "color" => $color,
-            "startDate" => $startDate, "endDate" => $endDate, "landingPage" => null, "lastUpdate" => $course->getLastUpdate(),
+            "startDate" => $startDate, "endDate" => $endDate, "landingPage" => null,
             "isActive" => strval(+$isActive), "isVisible" => strval(+$isVisible), "roleHierarchy" => '[{"name":"Teacher"},{"name":"Student"},{"name":"Watcher"}]',
             "theme" => null);
         $this->assertEquals($courseData, $courseDB);
@@ -994,7 +955,7 @@ class CourseTest extends TestCase
         // Check is updated on database
         $courseDB = Core::database()->select(Course::TABLE_COURSE, ["id" => $course->getId()]);
         $courseData = array("id" => strval($course->getId()), "name" => $name, "short" => $short, "year" => $year, "color" => $color,
-            "startDate" => $startDate, "endDate" => $endDate, "landingPage" => null, "lastUpdate" => $course->getLastUpdate(),
+            "startDate" => $startDate, "endDate" => $endDate, "landingPage" => null,
             "isActive" => strval(+$isActive), "isVisible" => strval(+$isVisible), "roleHierarchy" => '[{"name":"Teacher"},{"name":"Student"},{"name":"Watcher"}]',
             "theme" => null);
         $this->assertEquals($courseData, $courseDB);
@@ -1022,7 +983,7 @@ class CourseTest extends TestCase
             $courseDB = Core::database()->select(Course::TABLE_COURSE, ["id" => $course->getId()]);
             $courseData = array("id" => strval($course->getId()), "name" => "Computação Móvel e Ubíqua", "short" => "CMU",
                 "year" => "2020-2021", "color" => "#000000", "startDate" => null, "endDate" => null, "landingPage" => null,
-                "lastUpdate" => $course->getLastUpdate(), "isActive" => "1", "isVisible" => "0", "roleHierarchy" => '[{"name":"Teacher"},{"name":"Student"},{"name":"Watcher"}]',
+                "isActive" => "1", "isVisible" => "0", "roleHierarchy" => '[{"name":"Teacher"},{"name":"Student"},{"name":"Watcher"}]',
                 "theme" => null);
             $this->assertEquals($courseData, $courseDB);
 
