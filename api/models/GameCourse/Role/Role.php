@@ -152,7 +152,7 @@ class Role
     public static function getCourseRoles(int $courseId, bool $onlyNames = true, bool $sortByHierarchy = false): array
     {
         if ($onlyNames) {
-            $rolesNames = array_column(Core::database()->selectMultiple(self::TABLE_ROLE, ["course" => $courseId], "name"), "name");
+            $rolesNames = array_column(Core::database()->selectMultiple(self::TABLE_ROLE, ["course" => $courseId], "name", "id"), "name");
             if ($sortByHierarchy) {
                 $hierarchy = (new Course($courseId))->getRolesHierarchy();
                 return self::sortRolesNamesByMostSpecific($hierarchy, $rolesNames);
@@ -161,7 +161,7 @@ class Role
 
         } else {
             if ($sortByHierarchy) {
-                $roles = Core::database()->selectMultiple(self::TABLE_ROLE, ["course" => $courseId]);
+                $roles = Core::database()->selectMultiple(self::TABLE_ROLE, ["course" => $courseId], "*", "id");
                 foreach ($roles as &$role) { $role = self::parse($role); }
                 $rolesByName = array_combine(array_column($roles, "name"), $roles);
                 $hierarchy = (new Course($courseId))->getRolesHierarchy();
@@ -173,7 +173,7 @@ class Role
                 return $hierarchy;
 
             } else {
-                $roles = Core::database()->selectMultiple(self::TABLE_ROLE, ["course" => $courseId], "id, name, landingPage");
+                $roles = Core::database()->selectMultiple(self::TABLE_ROLE, ["course" => $courseId], "id, name, landingPage", "id");
                 foreach ($roles as &$role) { $role = self::parse($role); }
                 return $roles;
             }

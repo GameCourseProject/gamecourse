@@ -238,7 +238,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.put(url, data, ApiHttpService.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => User.fromDatabase(res['data'])) );
   }
 
@@ -264,14 +264,17 @@ export class ApiHttpService {
   }
 
   public deleteUser(userID: number): Observable<void> {
+    const data = {
+      userId: userID
+    };
+
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.USER);
       qs.push('request', 'deleteUser');
-      qs.push('userId', userID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.delete(url, ApiHttpService.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -287,7 +290,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.put(url, data, ApiHttpService.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -303,7 +306,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.put(url, data, ApiHttpService.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -502,19 +505,22 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.put(url, data, ApiHttpService.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => Course.fromDatabase(res['data'])) );
   }
 
   public deleteCourse(courseID: number): Observable<void> {
+    const data = {
+      courseId: courseID
+    }
+
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
       qs.push('request', 'deleteCourse');
-      qs.push('courseId', courseID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.delete(url, ApiHttpService.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -2056,43 +2062,6 @@ export class ApiHttpService {
 
   public post(url: string, data: any, options?: any, skipErrors?: boolean) {
     return this.http.post(url, data, options)
-      .pipe(
-        catchError(error => {
-          if (error.status === 401)
-            return this.router.navigate(['/login']);
-
-          if (error.status === 403)
-            return this.router.navigate(['/no-access']);
-
-          if (error.status === 409)
-            return this.router.navigate(['/setup']);
-
-          if (!skipErrors) ErrorService.set(error);
-          return throwError(error);
-        })
-      );
-  }
-
-  public put(url: string, data: any, options?: any, skipErrors?: boolean) {
-    return this.http.put(url, data, options).pipe(
-      catchError(error => {
-        if (error.status === 401)
-          return this.router.navigate(['/login']);
-
-        if (error.status === 403)
-          return this.router.navigate(['/no-access']);
-
-        if (error.status === 409)
-          return this.router.navigate(['/setup']);
-
-        if (!skipErrors) ErrorService.set(error);
-        return throwError(error);
-      })
-    );
-  }
-
-  public delete(url: string, options?: any, skipErrors?: boolean) {
-    return this.http.delete(url, options)
       .pipe(
         catchError(error => {
           if (error.status === 401)
