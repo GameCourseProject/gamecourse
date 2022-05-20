@@ -137,8 +137,10 @@ class Utils
         if (count($exceptions) != 0) {
             foreach ($exceptions as $exception) {
                 $exception = $copyTo . "/" . $exception;
-                if (is_dir($exception)) self::deleteDirectory($exception);
-                else unlink($exception);
+                if (file_exists($exception)) {
+                    if (is_dir($exception)) self::deleteDirectory($exception);
+                    else unlink($exception);
+                }
             }
         }
 

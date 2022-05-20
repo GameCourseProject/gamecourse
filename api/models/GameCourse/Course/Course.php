@@ -168,6 +168,8 @@ class Course
     public function setStartDate(?string $start)
     {
         self::validateDateTime($start);
+        $endDate = $this->getEndDate();
+        if ($endDate) self::validateStartAndEndDates($start, $endDate);
         $this->setData(["startDate" => $start]);
     }
 
@@ -177,6 +179,8 @@ class Course
     public function setEndDate(?string $end)
     {
         self::validateDateTime($end);
+        $startDate = $this->getStartDate();
+        if ($startDate) self::validateStartAndEndDates($startDate, $end);
         $this->setData(["endDate" => $end]);
     }
 
@@ -246,6 +250,8 @@ class Course
         if (key_exists("year", $fieldValues)) self::validateYear($fieldValues["year"]);
         if (key_exists("startDate", $fieldValues)) self::validateDateTime($fieldValues["startDate"]);
         if (key_exists("endDate", $fieldValues)) self::validateDateTime($fieldValues["endDate"]);
+        if (key_exists("startDate", $fieldValues) && key_exists("endDate", $fieldValues))
+            self::validateStartAndEndDates($fieldValues["startDate"], $fieldValues["endDate"]);
 
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_COURSE, $fieldValues, ["id" => $this->id]);
@@ -270,10 +276,11 @@ class Course
         else return new Course($courseId);
     }
 
-    public static function getCourses(?bool $active = null): array
+    public static function getCourses(?bool $active = null, ?bool $visible = null): array
     {
         $where = [];
         if ($active !== null) $where["isActive"] = $active;
+        if ($visible !== null) $where["isVisible"] = $visible;
         $courses = Core::database()->selectMultiple(self::TABLE_COURSE, $where, "*", "id");
         foreach ($courses as &$course) { $course = self::parse($course); }
         return $courses;
@@ -354,7 +361,7 @@ class Course
      * @return void
      * @throws Exception
      */
-    public static function copyCourse(int $copyFrom)
+    public static function copyCourse(int $copyFrom): Course
     {
         $courseToCopy = Course::getCourseById($copyFrom);
         if (!$courseToCopy) throw new Exception("Course to copy from with ID = " . $copyFrom . " doesn't exist.");
@@ -367,7 +374,8 @@ class Course
         $course->setTheme($courseInfo["theme"]);
 
         // Copy course data
-        Utils::copyDirectory(ROOT_PATH . $courseInfo["folder"] . "/",  $course->getDataFolder(true, $name) . "/", ["rules/data"]);
+        Utils::copyDirectory($courseToCopy->getDataFolder(true, $courseInfo["name"]) . "/",
+            $course->getDataFolder(true, $name) . "/", ["rules/data"]);
 
         // Copy roles
         $course->setRolesHierarchy($courseToCopy->getRolesHierarchy());
@@ -379,6 +387,8 @@ class Course
 
         // Copy AutoGame info
         AutoGame::copyAutoGameInfo($course->getId(), $courseToCopy->getId());
+
+        return $course;
     }
 
     /**
@@ -839,6 +849,8 @@ class Course
      */
     public static function importCourses(string $contents, bool $replace = true): int
     {
+        // FIXME: import autogame imported functions and config
+
         // Create a temporary folder to work with
         $tempFolder = ROOT_PATH . "temp/" . time();
         mkdir($tempFolder, 0777, true);
@@ -929,6 +941,7 @@ class Course
      */
     public static function exportCourses(): string
     {
+        // FIXME: export autogame imported functions and config
         $courses = self::getCourses();
 
         // Create a temporary folder to work with
@@ -1008,6 +1021,8 @@ class Course
         self::validateYear($year);
         self::validateDateTime($startDate);
         self::validateDateTime($endDate);
+        self::validateStartAndEndDates($startDate, $endDate);
+
         if (!is_bool($isActive)) throw new Exception("'isActive' must be either true or false.");
         if (!is_bool($isVisible)) throw new Exception("'isVisible' must be either true or false.");
     }
@@ -1061,10 +1076,18 @@ class Course
      */
     private static function validateYear($year)
     {
-        if (is_null($year)) return;
         preg_match("/^\d{4}-\d{4}$/", $year, $matches);
         if (!is_string($year) || empty($year) || count($matches) == 0)
             throw new Exception("Course year needs to be 'yyyy-yyyy' format.");
+    }
+
+    /**
+     * @throws Exception
+     */
+    private static function validateStartAndEndDates($startDateTime, $endDateTime)
+    {
+        if ($startDateTime && $endDateTime && strtotime($startDateTime) >= strtotime($endDateTime))
+            throw new Exception("Course start date must be later than end date.");
     }
 
     /**

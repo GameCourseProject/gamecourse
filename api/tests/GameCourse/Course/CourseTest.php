@@ -129,14 +129,14 @@ class CourseTest extends TestCase
     public function setYearSuccessProvider(): array
     {
         return [
-            "valid format" => ["2021-2022"],
-            "null" => [null]
+            "valid format" => ["2021-2022"]
         ];
     }
 
     public function setYearFailureProvider(): array
     {
         return [
+            "null" => [null],
             "empty" => [""],
             "invalid format" => ["21-21"]
         ];
@@ -169,6 +169,10 @@ class CourseTest extends TestCase
                 "color" => "#ffffff", "startDate" => null, "endDate" => "2022-04-20 12:00:00", "landingPage" => null, "isActive" => true,
                 "isVisible" => false, "roleHierarchy" => json_encode([["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]]),
                 "theme" => null]],
+            ["both start and end date" => ["name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
+                "color" => "#ffffff", "startDate" => "2022-04-19 12:00:00", "endDate" => "2022-04-20 12:00:00", "landingPage" => null, "isActive" => true,
+                "isVisible" => false, "roleHierarchy" => json_encode([["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]]),
+                "theme" => null]],
             ["different theme" => ["name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
                 "color" => "#ffffff", "startDate" => null, "endDate" => null, "landingPage" => null, "isActive" => true,
                 "isVisible" => false, "roleHierarchy" => json_encode([["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]]),
@@ -195,7 +199,8 @@ class CourseTest extends TestCase
             ["invalid color" => ["color" => "white"]],
             ["invalid year" => ["color" => "20-21"]],
             ["invalid start date" => ["startDate" => "2022-04-20"]],
-            ["invalid end date" => ["endDate" => "2022-04-20"]]
+            ["invalid end date" => ["endDate" => "2022-04-20"]],
+            ["invalid start and end date" => ["startDate" => "2022-04-21", "endDate" => "2022-04-20"]]
         ];
     }
 
@@ -220,10 +225,10 @@ class CourseTest extends TestCase
             "default" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, false],
             "non-ASCII chars in name" => ["Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, false],
             "null short" => ["Multimedia Content Production", null, "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, false],
-            "null year" => ["Multimedia Content Production", "MCP", null, "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, false],
             "null color" => ["Multimedia Content Production", "MCP", "2021-2022", null, "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, false],
             "null start date" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", null, "2022-05-01 00:00:00", false, false],
             "null end date" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", null, false, false],
+            "valid start and end date" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-04-01 00:00:00", false, false],
             "not active, visible" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, true],
             "active, not visible" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", true, false],
             "active, visible" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", true, true]
@@ -236,6 +241,7 @@ class CourseTest extends TestCase
             "special chars in name" => ["Multimedia Content Production!", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, false],
             "null name" => [null, "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, false],
             "empty name" => ["", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, false],
+            "null year" => ["Multimedia Content Production", "MCP", null, "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, false],
             "invalid year format" => ["Multimedia Content Production", "MCP", "21-22", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, false],
             "empty year" => ["Multimedia Content Production", "MCP", "", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, false],
             "RGB color" => ["Multimedia Content Production", "MCP", "2021-2022", "rgb(255, 255, 255)", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, false],
@@ -245,6 +251,7 @@ class CourseTest extends TestCase
             "empty start date" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "", "2022-05-01 00:00:00", false, false],
             "invalid end date format" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01", false, false],
             "empty end date" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "", false, false],
+            "invalid start and end date" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-04-01 00:00:00", "2022-03-01 00:00:00", false, false],
             "null isActive" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", null, false],
             "null is Visible" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, null],
         ];

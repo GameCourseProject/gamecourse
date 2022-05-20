@@ -920,14 +920,13 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(2, $users);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image"];
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                if ($key != "image") $this->assertEquals($user[$key], ${"user".($i+1)}->getData($key));
-                else $this->assertEquals($user[$key], ${"user".($i+1)}->getImage());
+                $this->assertEquals($user[$key], ${"user".($i+1)}->getData($key));
             }
         }
     }
@@ -947,14 +946,13 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(1, $users);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image"];
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                if ($key != "image") $this->assertEquals($user[$key], $user2->getData($key));
-                else $this->assertEquals($user[$key], $user2->getImage());
+                $this->assertEquals($user[$key], $user2->getData($key));
             }
         }
     }
@@ -974,14 +972,13 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(1, $users);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image"];
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                if ($key != "image") $this->assertEquals($user[$key], $user1->getData($key));
-                else $this->assertEquals($user[$key], $user1->getImage());
+                $this->assertEquals($user[$key], $user1->getData($key));
             }
         }
     }
@@ -1001,11 +998,10 @@ class UserTest extends TestCase
         $this->assertIsArray($admins);
         $this->assertCount(1, $admins);
 
-        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image"];
+        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
         foreach ($keys as $key) {
             $this->assertArrayHasKey($key, $admins[0]);
-            if ($key != "image") $this->assertEquals($admins[0][$key], $admin->getData($key));
-            else $this->assertEquals($admins[0][$key], $admin->getImage());
+            $this->assertEquals($admins[0][$key], $admin->getData($key));
         }
     }
 
@@ -1026,14 +1022,13 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(2, $users);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image"];
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                if ($key != "image") $this->assertEquals($user[$key], ${"user".($i+1)}->getData($key));
-                else $this->assertEquals($user[$key], ${"user".($i+1)}->getImage());
+                $this->assertEquals($user[$key], ${"user".($i+1)}->getData($key));
             }
         }
     }
@@ -1055,11 +1050,10 @@ class UserTest extends TestCase
         $this->assertIsArray($admins);
         $this->assertCount(1, $admins);
 
-        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "image"];
+        $keys = ["id", "name", "username", "authentication_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
         foreach ($keys as $key) {
             $this->assertArrayHasKey($key, $admins[0]);
-            if ($key != "image") $this->assertEquals($admins[0][$key], $admin->getData($key));
-            else $this->assertEquals($admins[0][$key], $admin->getImage());
+            $this->assertEquals($admins[0][$key], $admin->getData($key));
         }
     }
 

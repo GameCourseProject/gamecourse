@@ -29,7 +29,7 @@ CREATE TABLE course(
 	name 	                    varchar(100) NOT NULL,
 	short	                    varchar(20),
 	color	                    varchar(7),
-	year	                    varchar(10),
+	year	                    varchar(10) NOT NULL,
 	startDate                   TIMESTAMP NULL DEFAULT NULL,
 	endDate                     TIMESTAMP NULL DEFAULT NULL,
     landingPage                 int unsigned DEFAULT NULL,

@@ -144,6 +144,7 @@ class UserController
         $users = User::getUsers($isActive, $isAdmin);
         foreach ($users as &$userInfo) {
             $user = User::getUserById($userInfo["id"]);
+            $userInfo["image"] = $user->getImage();
             $userInfo["nrCourses"] = count($user->getCourses());
         }
 
@@ -166,6 +167,7 @@ class UserController
 
         $isActive = API::getValue("isActive", "bool");
         $isVisible = API::getValue("isVisible", "bool");
+
         $userCourses = $user->getCourses($isActive, $isVisible);
         API::response($userCourses);
     }
@@ -200,6 +202,7 @@ class UserController
         if ($image) $user->setImage($image);
 
         $userInfo = $user->getData();
+        $userInfo["image"] = $user->getImage();
         $userInfo["nrCourses"] = count($user->getCourses());
         API::response($userInfo);
     }
@@ -232,6 +235,7 @@ class UserController
         if ($image) $user->setImage($image);
 
         $userInfo = $user->getData();
+        $userInfo["image"] = $user->getImage();
         $userInfo["nrCourses"] = count($user->getCourses());
         API::response($userInfo);
     }

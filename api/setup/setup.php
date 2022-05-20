@@ -52,8 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] == "GET") {  // check setup
 
         // Create course
         // NOTE: user is automatically added as a teacher of the course
-        $course = Course::addCourse($courseName, null, null, $courseColor, null, null,
-            true, true);
+        $course = Course::addCourse($courseName, null, date("Y", time()) . "-" . date("Y", strtotime("+1 year")),
+            $courseColor, null, null, true, true);
 
         file_put_contents(ROOT_PATH . "setup/setup.done", "");
         echo json_encode(['setup' => true]);

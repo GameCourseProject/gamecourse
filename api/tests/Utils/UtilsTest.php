@@ -412,7 +412,7 @@ class UtilsTest extends TestCase
         file_put_contents(ROOT_PATH . "tests/Utils/dir1/file4.txt", "");
 
         // When
-        Utils::copyDirectory(ROOT_PATH . "tests/Utils/dir1/", ROOT_PATH . "tests/Utils/dir2/", ["file4.txt", "dir11/file2.txt", "dir12"]);
+        Utils::copyDirectory(ROOT_PATH . "tests/Utils/dir1/", ROOT_PATH . "tests/Utils/dir2/", ["file4.txt", "dir11/file2.txt", "dir12", "not_found.txt"]);
 
         // Then
         $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir1"));

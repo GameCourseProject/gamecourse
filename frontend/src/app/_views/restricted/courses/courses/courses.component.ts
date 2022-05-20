@@ -1,13 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
-import {ApiEndpointsService} from "../../../../_services/api/api-endpoints.service";
 
 import {Course} from "../../../../_domain/courses/course";
 import {User} from "../../../../_domain/users/user";
-import {DownloadManager} from "../../../../_utils/download/download-manager";
 import {Reduce} from "../../../../_utils/lists/reduce";
-import {Order} from "../../../../_utils/lists/order";
+import {Order, Sort} from "../../../../_utils/lists/order";
 
 import Pickr from "@simonwep/pickr";
 
@@ -26,9 +24,7 @@ export class CoursesComponent implements OnInit {
   yearsOptions: string[] = [];
 
   user: User;
-
-  allCourses: Course[];
-  redirectPages: {[courseID: string]: number}; // courseID -> pageId
+  courses: Course[];
 
   reduce = new Reduce();
   order = new Order();
@@ -43,17 +39,10 @@ export class CoursesComponent implements OnInit {
     nonAdmin: ['Name', 'Year']
   };
 
-  exports = [
-    { module: 'awards', name: 'Awards and Participations' },
-    { module: 'modules', name: 'Modules' },
-  ];
-  exportOptions: { [id: number]: { users: boolean, awards: boolean, modules: boolean } } = {};
-
   importedFile: File;
 
   isCourseModalOpen: boolean;
   isDeleteVerificationModalOpen: boolean;
-  isIndividualExportModalOpen: boolean;
   isImportModalOpen: boolean;
   saving: boolean;
 
@@ -70,7 +59,6 @@ export class CoursesComponent implements OnInit {
   };
   courseToEdit: Course;
   courseToDelete: Course;
-  courseToExport: Course;
 
   pickr: Pickr;
 
@@ -79,8 +67,9 @@ export class CoursesComponent implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.getUserAndCourses();
-    this.getYearsOptions();
+    await this.getLoggedUser();
+    await this.getCourses();
+    this.loading = false;
   }
 
 
@@ -88,42 +77,16 @@ export class CoursesComponent implements OnInit {
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  getUserAndCourses(): void {
-    this.api.getLoggedUser()
-      .subscribe(user => {
-        this.user = user;
-        this.getCourses();
-      });
+  async getLoggedUser(): Promise<void> {
+    this.user = await this.api.getLoggedUser().toPromise();
   }
 
-  getCourses(): void {
-    // this.api.getUserCourses()
-    //   .pipe( finalize(() => this.loading = false) )
-    //   .subscribe(res => {
-    //     this.allCourses = res.courses;
-    //     this.redirectPages = res.landingPages;
-    //
-    //     this.allCourses.forEach(course => {
-    //       this.exportOptions[course.id] = { users: true, awards: true, modules: true };
-    //     });
-    //
-    //     this.order.active = this.user.isAdmin ? { orderBy: this.orderBy.admin[0], sort: Sort.ASCENDING } : { orderBy: this.orderBy.nonAdmin[0], sort: Sort.ASCENDING };
-    //     this.reduceList(undefined, this.user.isAdmin ? _.cloneDeep(this.filters.admin) : _.cloneDeep(this.filters.nonAdmin));
-    //   });
-  }
+  async getCourses(): Promise<void> {
+    if (this.user.isAdmin) this.courses = await this.api.getCourses().toPromise();
+    else this.courses = await this.api.getUserCourses(this.user.id, null, true).toPromise();
 
-  getYearsOptions(): void {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-
-    const YEARS_BEFORE = 1;
-    const YEARS_AFTER = 5;
-
-    let i = -YEARS_BEFORE;
-    while (currentYear + i < currentYear + YEARS_AFTER) {
-      this.yearsOptions.push((currentYear + i) + '-' + (currentYear + i + 1));
-      i++;
-    }
+    this.order.active = this.user.isAdmin ? { orderBy: this.orderBy.admin[0], sort: Sort.ASCENDING } : { orderBy: this.orderBy.nonAdmin[0], sort: Sort.ASCENDING };
+    this.reduceList(undefined, this.user.isAdmin ? [...this.filters.admin] : [...this.filters.nonAdmin]);
   }
 
 
@@ -132,7 +95,7 @@ export class CoursesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   reduceList(query?: string, filters?: string[]): void {
-    this.reduce.searchAndFilter(this.allCourses, query, filters);
+    this.reduce.searchAndFilter(this.courses, query, filters);
     this.orderList();
   }
 
@@ -161,30 +124,12 @@ export class CoursesComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  toggleActive(courseID: number) {
-    this.loadingAction = true;
-
-    const course = this.allCourses.find(course => course.id === courseID);
-    course.isActive = !course.isActive;
-
-    this.api.setCourseActive(course.id, course.isActive)
-      .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(res => {});
-  }
-
-  toggleVisible(courseID: number) {
-    this.loadingAction = true;
-
-    const course = this.allCourses.find(course => course.id === courseID);
-    course.isVisible = !course.isVisible;
-
-    this.api.setCourseVisible(course.id, course.isVisible)
-      .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(res => {});
-  }
-
   createCourse(): void {
     this.loadingAction = true;
+
+    if (this.newCourse.startDate) this.newCourse.startDate += ' 00:00:00';
+    if (this.newCourse.endDate) this.newCourse.endDate += ' 00:00:00';
+    if (this.newCourse.short?.isEmpty()) this.newCourse.short = null;
 
     this.api.createCourse(this.newCourse)
       .pipe( finalize(() => {
@@ -193,9 +138,8 @@ export class CoursesComponent implements OnInit {
         this.loadingAction = false;
       }) )
       .subscribe(
-        res => {
-          this.allCourses.push(res);
-          this.exportOptions[res.id] = { users: true, awards: true, modules: true };
+        newCourse => {
+          this.courses.push(newCourse);
           this.reduceList();
 
           const successBox = $('#action_completed');
@@ -205,36 +149,19 @@ export class CoursesComponent implements OnInit {
         })
   }
 
-  duplicateCourse(course: Course) {
+  duplicateCourse(courseID: number) {
     this.loadingAction = true;
 
-    this.newCourse = {
-      id: course.id,
-      name: course.name,
-      short: course.short,
-      year: course.year,
-      startDate: course.startDate?.format('YYYY-MM-DD') || null,
-      endDate: course.endDate?.format('YYYY-MM-DD') || null,
-      color: course.color,
-      isActive: course.isActive,
-      isVisible: course.isVisible
-    }
-
-    this.api.duplicateCourse(this.newCourse)
-      .pipe( finalize(() => {
-        this.isCourseModalOpen = false;
-        this.clearObject(this.newCourse);
-        this.loadingAction = false;
-      }) )
+    this.api.duplicateCourse(courseID)
+      .pipe( finalize(() => this.loadingAction = false) )
       .subscribe(
-        res => {
-          this.allCourses.push(res);
-          this.exportOptions[res.id] = { users: true, awards: true, modules: true };
+        newCourse => {
+          this.courses.push(newCourse);
           this.reduceList();
 
           const successBox = $('#action_completed');
           successBox.empty();
-          successBox.append("New course created from " + course.name);
+          successBox.append("New course created");
           successBox.show().delay(3000).fadeOut();
         })
   }
@@ -243,6 +170,10 @@ export class CoursesComponent implements OnInit {
     this.loadingAction = true;
     this.newCourse['id'] = this.courseToEdit.id;
 
+    if (this.newCourse.startDate) this.newCourse.startDate += ' 00:00:00';
+    if (this.newCourse.endDate) this.newCourse.endDate += ' 00:00:00';
+    if (this.newCourse.short?.isEmpty()) this.newCourse.short = null;
+
     this.api.editCourse(this.newCourse)
       .pipe( finalize(() => {
         this.isCourseModalOpen = false;
@@ -250,11 +181,16 @@ export class CoursesComponent implements OnInit {
         this.loadingAction = false;
       }) )
       .subscribe(
-        res => {
-          this.getCourses();
+        courseEdited => {
+          const index = this.courses.findIndex(course => course.id === courseEdited.id);
+          this.courses.removeAtIndex(index);
+
+          this.courses.push(courseEdited);
+          this.reduceList();
+
           const successBox = $('#action_completed');
           successBox.empty();
-          successBox.append("Course: "+ this.courseToEdit.name + " edited");
+          successBox.append("Course: '"+ this.courseToEdit.name + "' edited");
           successBox.show().delay(3000).fadeOut();
         })
   }
@@ -267,17 +203,38 @@ export class CoursesComponent implements OnInit {
         this.loadingAction = false
       }) )
       .subscribe(
-        res => {
-          const index = this.allCourses.findIndex(el => el.id === course.id);
-          this.allCourses.splice(index, 1);
-          this.exportOptions[course.id] = null;
+        () => {
+          const index = this.courses.findIndex(el => el.id === course.id);
+          this.courses.removeAtIndex(index);
           this.reduceList();
 
           const successBox = $('#action_completed');
           successBox.empty();
-          successBox.append("Course: " + course.name + " deleted");
+          successBox.append("Course '" + course.name + "' deleted");
           successBox.show().delay(3000).fadeOut();
         })
+  }
+
+  toggleActive(courseID: number) {
+    this.loadingAction = true;
+
+    const course = this.courses.find(course => course.id === courseID);
+    course.isActive = !course.isActive;
+
+    this.api.setCourseActive(course.id, course.isActive)
+      .pipe( finalize(() => this.loadingAction = false) )
+      .subscribe(res => {});
+  }
+
+  toggleVisible(courseID: number) {
+    this.loadingAction = true;
+
+    const course = this.courses.find(course => course.id === courseID);
+    course.isVisible = !course.isVisible;
+
+    this.api.setCourseVisible(course.id, course.isVisible)
+      .pipe( finalize(() => this.loadingAction = false) )
+      .subscribe(res => {});
   }
 
   importCourses(replace: boolean): void {
@@ -285,39 +242,40 @@ export class CoursesComponent implements OnInit {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const importedCourses = reader.result;
-      this.api.importCourses({file: importedCourses, replace})
+      const file = reader.result;
+      this.api.importCourses({file, replace})
         .pipe( finalize(() => {
           this.isImportModalOpen = false;
           this.loadingAction = false;
         }) )
         .subscribe(
-          nCourses => {
-            this.getCourses();
+          async nrCourses => {
+            await this.getCourses();
             const successBox = $('#action_completed');
             successBox.empty();
-            successBox.append(nCourses + " Course" + (nCourses > 1 ? 's' : '') + " Imported");
+            successBox.append(nrCourses + " Course" + (nrCourses != 1 ? 's' : '') + " Imported");
             successBox.show().delay(3000).fadeOut();
           })
     }
-    reader.readAsDataURL(this.importedFile);
+    reader.readAsText(this.importedFile);
   }
 
-  exportCourse(course: Course): void {
-    this.saving = true;
-
-    this.api.exportCourses(course?.id || null, this.exportOptions[course?.id] || null)
-      .pipe( finalize(() => {
-        this.isIndividualExportModalOpen = false;
-        this.saving = false
-      }) )
-      .subscribe(
-        zip => DownloadManager.downloadAsZip(zip, ApiEndpointsService.API_ENDPOINT),
-      )
+  exportCourses(): void {
+    // this.saving = true;
+    //
+    // this.api.exportCourses(course?.id || null, this.exportOptions[course?.id] || null)
+    //   .pipe( finalize(() => {
+    //     this.isExportModalOpen = false;
+    //     this.saving = false
+    //   }) )
+    //   .subscribe(
+    //     zip => DownloadManager.downloadAsZip(zip, ApiEndpointsService.API_ENDPOINT),
+    //   )
   }
 
-  exportAllCourses(): void {
-    this.exportCourse(null);
+  exportCourse(course: Course): void
+  {
+     // TODO
   }
 
 
@@ -331,7 +289,7 @@ export class CoursesComponent implements OnInit {
     }
 
     // Validate inputs
-    return isValid(this.newCourse.name) && isValid(this.newCourse.short) && isValid(this.newCourse.year);
+    return isValid(this.newCourse.name) && isValid(this.newCourse.year);
   }
 
   initColorPicker(): void {
@@ -360,6 +318,22 @@ export class CoursesComponent implements OnInit {
     }, 0);
   }
 
+  initYearOptions(): void {
+    if (this.yearsOptions.length != 0) return;
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+
+    const YEARS_BEFORE = 1;
+    const YEARS_AFTER = 5;
+
+    let i = -YEARS_BEFORE;
+    while (currentYear + i < currentYear + YEARS_AFTER) {
+      this.yearsOptions.push((currentYear + i) + '-' + (currentYear + i + 1));
+      i++;
+    }
+  }
+
   initEditCourse(course: Course): void {
     this.newCourse = {
       name: course.name,
@@ -379,10 +353,11 @@ export class CoursesComponent implements OnInit {
   }
 
   getRedirectLink(courseID: number): string {
-    const link = '/courses/' + courseID;
-    const pageID = this.redirectPages[courseID.toString()];
-    if (pageID) return link + '/pages/' + pageID;
-    else return link;
+    return ''; // FIXME
+    // const link = '/courses/' + courseID;
+    // const pageID = this.redirectPages[courseID.toString()];
+    // if (pageID) return link + '/pages/' + pageID;
+    // else return link;
   }
 
   onFileSelected(files: FileList): void {

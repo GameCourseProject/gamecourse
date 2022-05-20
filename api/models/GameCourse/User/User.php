@@ -344,10 +344,7 @@ class User
             "u.*, a.username, a.authentication_service, a.lastLogin",
             "id"
         );
-        foreach ($users as &$user) {
-            $user["image"] = (new User($user["id"]))->getImage();
-            $user = self::parse($user);
-        }
+        foreach ($users as &$user) { $user = self::parse($user); }
         return $users;
     }
 
