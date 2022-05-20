@@ -1,7 +1,6 @@
 <?php
 namespace Event;
 
-use GameCourse\Core\Auth;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -10,6 +9,7 @@ use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
+use Utils\Cache;
 
 /**
  * NOTE: only run tests outside the production environment as
@@ -17,7 +17,6 @@ use Throwable;
  */
 class EventTest extends TestCase
 {
-    private $loggedUser;
     private $user;
     private $course;
 
@@ -36,7 +35,6 @@ class EventTest extends TestCase
         $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, true);
         Core::setLoggedUser($loggedUser);
-        $this->loggedUser = $loggedUser;
 
         // Set a course
         $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
@@ -87,6 +85,7 @@ class EventTest extends TestCase
             $triggered = true;
             $this->assertEquals($this->course->getId(), $courseId);
             $this->assertEquals($this->user->getId(), $studentId);
+            return true;
         });
 
         // When
@@ -94,6 +93,44 @@ class EventTest extends TestCase
 
         // Then
         $this->assertTrue($triggered);
+
+        $cache = Cache::get("events");
+        $this->assertIsArray($cache);
+        $this->assertCount(1, $cache);
+        $this->assertEquals(EventType::STUDENT_ADDED_TO_COURSE, array_keys($cache)[0]);
+        $this->assertIsArray($cache[EventType::STUDENT_ADDED_TO_COURSE]);
+        $this->assertCount(1, $cache[EventType::STUDENT_ADDED_TO_COURSE]);
+
+        $func = $cache[0][array_keys($cache[0])[0]];
+        $this->assertIsObject($func);
+        $this->assertTrue($func($this->course->getId(), $this->user->getId()));
+    }
+
+    /**
+     * @test
+     */
+    public function stopListeningToAllEvents()
+    {
+        // Given
+        $triggeredWithoutPrefix = false;
+        $triggeredWithPrefix = false;
+        Event::listen(EventType::STUDENT_ADDED_TO_COURSE, function (int $courseId, int $studentId) use (&$triggeredWithoutPrefix) {
+            $triggeredWithoutPrefix = true;
+            return true;
+        });
+        Event::listen(EventType::STUDENT_ADDED_TO_COURSE, function (int $courseId, int $studentId) use (&$triggeredWithPrefix) {
+            $triggeredWithPrefix = true;
+            return true;
+        }, "test");
+
+        // When
+        Event::stopAll();
+        $this->course->addUserToCourse($this->user->getId(), "Student");
+
+        // Then
+        $this->assertFalse($triggeredWithoutPrefix);
+        $this->assertFalse($triggeredWithPrefix);
+        $this->assertEmpty(Cache::get("events"));
     }
 
     /**
@@ -102,9 +139,15 @@ class EventTest extends TestCase
     public function stopListeningToASpecificEvent()
     {
         // Given
-        $triggered = false;
-        $eventId = Event::listen(EventType::STUDENT_ADDED_TO_COURSE, function (int $courseId, int $studentId) use (&$triggered) {
-            $triggered = true;
+        $triggered1stEvent = false;
+        $triggered2ndEvent = false;
+        $eventId = Event::listen(EventType::STUDENT_ADDED_TO_COURSE, function (int $courseId, int $studentId) use (&$triggered1stEvent) {
+            $triggered1stEvent = true;
+            return true;
+        });
+        Event::listen(EventType::STUDENT_ADDED_TO_COURSE, function (int $courseId, int $studentId) use (&$triggered2ndEvent) {
+            $triggered2ndEvent = true;
+            return true;
         });
 
         // When
@@ -112,7 +155,13 @@ class EventTest extends TestCase
         $this->course->addUserToCourse($this->user->getId(), "Student");
 
         // Then
-        $this->assertFalse($triggered);
+        $this->assertFalse($triggered1stEvent);
+        $this->assertTrue($triggered2ndEvent);
+
+        $cache = Cache::get("events");
+        $this->assertNotEmpty($cache);
+        $this->assertCount(1, $cache);
+        $this->assertCount(1, $cache[EventType::STUDENT_ADDED_TO_COURSE]);
     }
 
     /**
@@ -137,29 +186,10 @@ class EventTest extends TestCase
         // Then
         $this->assertTrue($triggeredWithoutPrefix);
         $this->assertFalse($triggeredWithPrefix);
-    }
 
-    /**
-     * @test
-     */
-    public function stopListeningToAllEvents()
-    {
-        // Given
-        $triggeredWithoutPrefix = false;
-        $triggeredWithPrefix = false;
-        Event::listen(EventType::STUDENT_ADDED_TO_COURSE, function (int $courseId, int $studentId) use (&$triggeredWithoutPrefix) {
-            $triggeredWithoutPrefix = true;
-        });
-        Event::listen(EventType::STUDENT_ADDED_TO_COURSE, function (int $courseId, int $studentId) use (&$triggeredWithPrefix) {
-            $triggeredWithPrefix = true;
-        }, "test");
-
-        // When
-        Event::stopAll();
-        $this->course->addUserToCourse($this->user->getId(), "Student");
-
-        // Then
-        $this->assertFalse($triggeredWithoutPrefix);
-        $this->assertFalse($triggeredWithPrefix);
+        $cache = Cache::get("events");
+        $this->assertNotEmpty($cache);
+        $this->assertCount(1, $cache);
+        $this->assertCount(1, $cache[EventType::STUDENT_ADDED_TO_COURSE]);
     }
 }

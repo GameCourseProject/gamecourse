@@ -1,6 +1,7 @@
 <?php
 namespace Event;
 
+use Utils\Cache;
 use Utils\Utils;
 
 /**
@@ -11,6 +12,11 @@ use Utils\Utils;
 class Event
 {
     private static $events = [];
+
+
+    /*** --------------------------------------------- ***/
+    /*** ------------------ General ------------------ ***/
+    /*** --------------------------------------------- ***/
 
     /**
      * Start listening to an event of a given type and perform
@@ -26,6 +32,7 @@ class Event
     {
         $id = uniqid($prefix !== null ? $prefix : "");
         self::$events[$type][$id] = $callback;
+        Cache::store("events", self::$events);
         return $id;
     }
 
@@ -56,6 +63,7 @@ class Event
     public static function stop(int $type, string $id)
     {
         unset(self::$events[$type][$id]);
+        Cache::store("events", self::$events);
     }
 
     /**
@@ -74,7 +82,25 @@ class Event
                     if (Utils::strStartsWith($id, $prefix))
                         unset(self::$events[$type][$id]);
                 }
+                if (count(self::$events[$type]) == 0) unset(self::$events[$type]);
             }
         }
+        Cache::store("events", self::$events);
+    }
+
+
+    /*** --------------------------------------------- ***/
+    /*** -------------- Initialization --------------- ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * Initializes events on each request so that they can
+     * be triggered.
+     *
+     * @return void
+     */
+    public static function initEvents()
+    {
+        self::$events = Cache::get("events");
     }
 }

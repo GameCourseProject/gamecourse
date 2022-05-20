@@ -1,8 +1,9 @@
 <?php
 /**
  * This file is used to bootstrap the application in test mode
- * by including the necessary files and initializing a separate
- * testing database.
+ * by including the necessary files and making the necessary
+ * initializations, including initializing a separate testing
+ * database.
  */
 
 use GameCourse\Core\Core;

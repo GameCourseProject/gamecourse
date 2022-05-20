@@ -48,6 +48,7 @@
 
     /** File Structure */
     const AUTOGAME_FOLDER = ROOT_PATH . 'autogame';
+    const CACHE_FOLDER = ROOT_PATH . 'cache';
     const COURSE_DATA_FOLDER = ROOT_PATH . 'course_data';
     const LOGS_FOLDER = ROOT_PATH . 'logs';
     const MODULES_FOLDER = ROOT_PATH . 'modules';

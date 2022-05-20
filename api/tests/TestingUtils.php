@@ -3,6 +3,7 @@
 use Event\Event;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
+use Utils\Cache;
 use Utils\Utils;
 
 /**
@@ -30,6 +31,7 @@ class TestingUtils
         if (file_exists(LOGS_FOLDER)) Utils::copyDirectory(LOGS_FOLDER . "/", LOGS_FOLDER . "_copy/");
         if (file_exists(COURSE_DATA_FOLDER)) Utils::copyDirectory(COURSE_DATA_FOLDER . "/", COURSE_DATA_FOLDER . "_copy/");
         if (file_exists(USER_DATA_FOLDER)) Utils::copyDirectory(USER_DATA_FOLDER . "/", USER_DATA_FOLDER . "_copy/");
+        if (file_exists(CACHE_FOLDER)) Utils::copyDirectory(CACHE_FOLDER . "/", CACHE_FOLDER . "_copy/");
         Utils::copyDirectory(AUTOGAME_FOLDER . "/imported-functions/", AUTOGAME_FOLDER . "/imported-functions_copy/", ["defaults.py"]);
         Utils::copyDirectory(AUTOGAME_FOLDER . "/config/", AUTOGAME_FOLDER . "/config_copy/", ["samples"]);
 
@@ -58,6 +60,7 @@ class TestingUtils
         if (file_exists(LOGS_FOLDER . "_copy")) Utils::copyDirectory(LOGS_FOLDER . "_copy/", LOGS_FOLDER . "/", [], true);
         if (file_exists(COURSE_DATA_FOLDER . "_copy")) Utils::copyDirectory(COURSE_DATA_FOLDER . "_copy/", COURSE_DATA_FOLDER . "/", [], true);
         if (file_exists(USER_DATA_FOLDER . "_copy")) Utils::copyDirectory(USER_DATA_FOLDER . "_copy/", USER_DATA_FOLDER . "/", [], true);
+        if (file_exists(CACHE_FOLDER . "_copy")) Utils::copyDirectory(CACHE_FOLDER . "_copy/", CACHE_FOLDER . "/", [], true);
         Utils::copyDirectory(AUTOGAME_FOLDER . "/imported-functions_copy/", AUTOGAME_FOLDER . "/imported-functions/", [], true);
         Utils::copyDirectory(AUTOGAME_FOLDER . "/config_copy/", AUTOGAME_FOLDER . "/config/", [], true);
 
@@ -73,6 +76,7 @@ class TestingUtils
         if (file_exists(LOGS_FOLDER)) Utils::deleteDirectory(LOGS_FOLDER);
         if (file_exists(COURSE_DATA_FOLDER)) Utils::deleteDirectory(COURSE_DATA_FOLDER);
         if (file_exists(USER_DATA_FOLDER)) Utils::deleteDirectory(USER_DATA_FOLDER);
+        if (file_exists(CACHE_FOLDER)) Cache::clean();
         Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions", false, ["defaults.py"]);
         Utils::deleteDirectory(AUTOGAME_FOLDER . "/config", false, ["samples"]);
     }
