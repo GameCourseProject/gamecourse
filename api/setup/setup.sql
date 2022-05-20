@@ -72,6 +72,7 @@ CREATE TABLE role(
 	landingPage                 int unsigned DEFAULT NULL,
 	course                      int unsigned NOT NULL,
 
+    UNIQUE key(course, name),
 	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
 	FOREIGN key(landingPage) REFERENCES page(id) ON DELETE CASCADE
 );
