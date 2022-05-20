@@ -3,6 +3,9 @@
 
 from .block import Block
 
+import time
+import logging
+
 class Preconditions(Block):
 
 	def fire (self, scope=None):
@@ -19,11 +22,15 @@ class Preconditions(Block):
 		return_val = True # the default value
 		# execute all statements defined in the block
 		for s in self.stmts():
+		    start = time.time()
 			result = s.fire(scope)
 			# if at least one statement returns 'False'
 			# the result should ALWAYS return 'False'
 			if result is False and return_val is True:
 				return_val = False
+			end  =  time.time()
+			logging.exception(s)
+			logging.exception(end-start)
 		
 		return return_val
 

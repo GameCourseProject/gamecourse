@@ -4,6 +4,9 @@
 from .block import Block
 from .effect import Effect
 
+import time
+import logging
+
 class Actions(Block):
 
 	def fire(self, scope=None):
@@ -20,6 +23,7 @@ class Actions(Block):
 		# execute all statements defined in the block
 		i = 0
 		for s in self.stmts():
+		    start = time.time()
 			result = s.fire(scope)
 			
 			i +=1
@@ -28,6 +32,10 @@ class Actions(Block):
 					effects = result
 				else:
 					effects.append(result)
+
+			end = time.time()
+			logging.exception(s)
+			logging.exception(end-start)
 		
 		return effects
 

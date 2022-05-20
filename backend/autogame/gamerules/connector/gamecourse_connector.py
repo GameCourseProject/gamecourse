@@ -15,15 +15,19 @@ import config
 from course.award import Award
 from course.prize import Prize
 
-
 from course.coursedata import read_achievements, read_tree
 achievements = read_achievements()
 tree_awards = read_tree()
 
+#import gamerules.connector.db_connector as db
+#connect = db.connect_to_db()
+
+from gamerules.connector.db_connection import Database
+db = Database()
+
 #   TODO:
 #   - check if dictionary only contains terms that are active for a given course id
 #
-
 
 def get_credentials():
     # -----------------------------------------------------------
@@ -43,10 +47,13 @@ def get_dictionary():
     # Pulls all GameCourse dictionary terms from the database.
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    #(database, username, password) = get_credentials()
+    #cnx = mysql.connector.connect(user=username, password=password,
+    #host='localhost', database=database)
+    #cursor = cnx.cursor(prepared=True)
+
+    cursor = db.cursor
+    connect = db.connection
 
     # keyword must be queried first so it serves as key for a dictionary
     query = "SELECT keyword, moduleId FROM dictionary WHERE course = %s;"
@@ -55,7 +62,7 @@ def get_dictionary():
     cursor.execute(query, course)
     table = cursor.fetchall()
 
-    cnx.close()
+    #cnx.close()
 
     # results to a query are a list of tuples
     return table
@@ -66,16 +73,14 @@ def get_student_numbers(course):
     # Returns the student numbers of all active targets
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    cursor = db.cursor
+    connection = db.connection
 
     query = "SELECT id, studentNumber FROM game_course_user;"
 
     cursor.execute(query)
     table = cursor.fetchall()
-    cnx.close()
+    #cnx.close()
 
     student_numbers = {}
 
@@ -92,17 +97,15 @@ def course_exists(course):
     # Checks course exists and is active
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    cursor = db.cursor
+    connect = db.connection
 
     query = "SELECT isActive FROM course WHERE id = %s;"
     args = (course,)
 
     cursor.execute(query, args)
     table = cursor.fetchall()
-    cnx.close()
+    #cnx.close()
 
     if len(table) == 1:
         return table[0][0]
@@ -115,17 +118,15 @@ def check_dictionary(library, function):
     # Checks if a function exists in the gamecourse dictionary
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    cursor = db.cursor
+    connect = db.connection
 
     query = "SELECT keyword, moduleId FROM dictionary WHERE course = %s and library=%s and keyword = %s;"
     args = (config.course, library, function)
 
     cursor.execute(query, args)
     table = cursor.fetchall()
-    cnx.close()
+    #cnx.close()
 
     # returns empty list if term not in dictionary
     # TO DO : also will need to check number of arguments once the schema includes that information
@@ -139,10 +140,8 @@ def get_targets(course, timestamp=None, all_targets=False):
     Returns targets for running rules (students)
     """
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    cursor = db.cursor
+    connect = db.connection
 
     # query that joins roles with participations
     # select user, role.name from participation left join user_role on participation.user = user_role.id left join role on user_role.role = role.id where participation.course = 1 and role.name="Student";
@@ -151,7 +150,7 @@ def get_targets(course, timestamp=None, all_targets=False):
         query = "SELECT user_role.id FROM user_role left join role on user_role.role=role.id WHERE user_role.course =%s AND role.name='Student';"
         cursor.execute(query, (course))
         table = cursor.fetchall()
-        cnx.close()
+        #cnx.close()
 
     else:
         if timestamp == None:
@@ -159,14 +158,14 @@ def get_targets(course, timestamp=None, all_targets=False):
             cursor.execute(query, (course,))
 
             table = cursor.fetchall()
-            cnx.close()
+            #cnx.close()
 
         elif timestamp != None:
             query = "SELECT user FROM participation LEFT JOIN user_role ON participation.user = user_role.id LEFT JOIN role ON user_role.role = role.id WHERE participation.course =%s AND role.name='Student' AND date > %s;"
             cursor.execute(query, (course, timestamp))
 
             table = cursor.fetchall()
-            cnx.close()
+            #cnx.close()
 
     targets = {}
     for line in table:
@@ -181,16 +180,14 @@ def delete_awards(course):
     # Deletes all awards of a given course
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    cursor = db.cursor
+    connect = db.connection
 
     query = "DELETE FROM award where course = %s;"
 
     cursor.execute(query, (course,))
-    cnx.commit()
-    cnx.close()
+    connect.commit()
+    #cnx.close()
 
     return
 
@@ -200,18 +197,16 @@ def count_awards(course):
     # Deletes all awards of a given course
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    cursor = db.cursor
+    connect = db.connection
 
     query = "SELECT count(*) FROM award where course = %s;"
 
     cursor.execute(query, (course,))
     table = cursor.fetchall()
 
-    cnx.commit()
-    cnx.close()
+    connect.commit()
+    #cnx.close()
 
     return table[0][0]
 
@@ -221,23 +216,40 @@ def calculate_xp(course, target):
     # Insert current XP values into user_xp table
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    cursor = db.cursor
+    connect = db.connection
 
     # get max values for each type of award
-    query = "SELECT maxReward from skill_tree where course = %s;"
-    cursor.execute(query, (course,))
-    tree_table = cursor.fetchall()
+    query = "SELECT maxReward from skill_tree where course = \"" + course + "\";"
+    result = db.data_broker(query)
+    if not result:
+        cursor.execute(query)
+        tree_table = cursor.fetchall()
+        queries.append(query)
+        results.append(tree_table)
+    else:
+        tree_table = result
 
-    query = "SELECT maxBonusReward from badges_config where course = %s;"
-    cursor.execute(query, (course,))
-    badge_table = cursor.fetchall()
+    query = "SELECT maxBonusReward from badges_config where course = \"" + course + "\";"
+    result = db.data_broker(query)
+    if not result:
+        cursor.execute(query)
+        badge_table = cursor.fetchall()
+        queries.append(query)
+        results.append(badge_table)
+    else:
+        badge_table = result
 
-    query = "SELECT maxBonusReward from streaks_config where course = %s;"
-    cursor.execute(query, (course))
-    streak_table = cursor.fetchall()
+    query = "SELECT maxBonusReward from streaks_config where course = \"" + course + "\";"
+    result = db.data_broker(query)
+    if not result:
+        cursor.execute(query)
+        streak_table = cursor.fetchall()
+        queries.append(query)
+        results.append(streak_table)
+    else:
+        streak_table = result
+
 
     if len(tree_table) == 1:
         max_tree_reward = int(tree_table[0][0])
@@ -335,9 +347,15 @@ def calculate_xp(course, target):
     total_xp = total_badge_xp + total_skill_xp + total_other_xp + total_extra_xp
 
 
-    query = "SELECT id, max(goal) from level where goal <= %s and course = %s group by id order by number desc limit 1;"
-    cursor.execute(query, (total_xp, course))
-    level_table = cursor.fetchall()
+    query = "SELECT id, max(goal) from level where goal <= \"" + total_xp + "\" and course = \"" + course + "\" group by id order by number desc limit 1;"
+    result = db.data_broker(query)
+    if not result:
+        cursor.execute(query)
+        level_table = cursor.fetchall()
+        queries.append(query)
+        results.append(level_table)
+    else:
+        level_table = result
 
     current_level = int(level_table[0][0])
 
@@ -345,8 +363,8 @@ def calculate_xp(course, target):
     cursor.execute(query, (total_xp, current_level, course, target))
 
 
-    cnx.commit()
-    cnx.close()
+    connect.commit()
+    #cnx.close()
 
 
 def autogame_init(course):
@@ -354,10 +372,8 @@ def autogame_init(course):
     # Pulls gamerules related info for a given course
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    cursor = db.cursor
+    connect = db.connection
 
     query = "SELECT * FROM autogame where course = %s;"
 
@@ -385,8 +401,8 @@ def autogame_init(course):
 
         cursor.execute(query, (True, course))
 
-    cnx.commit()
-    cnx.close()
+    connect.commit()
+    #cnx.close()
     return last_activity, False
 
 
@@ -396,20 +412,17 @@ def autogame_terminate(course, start_date, finish_date):
     # and notifies server to close the socket
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    cursor = db.cursor
+    connect = db.connection
 
     if not config.test_mode:
         query = "UPDATE autogame SET startedRunning=%s, finishedRunning=%s, isRunning=%s WHERE course=%s;"
         cursor.execute(query, (start_date, finish_date, False, course))
-        cnx.commit()
+        connect.commit()
 
     query = "SELECT * from autogame WHERE isRunning=%s AND course != %s;"
     cursor.execute(query, (True, 0))
     table = cursor.fetchall()
-    cnx.close()
 
 
     if len(table) == 0:
@@ -442,17 +455,15 @@ def clear_badge_progression(target):
     # the rule system runs.
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    cursor = db.cursor
+    connect = db.connection
 
     course = config.course
 
     query = "DELETE from badge_progression where course=%s and user=%s;"
     cursor.execute(query, (course, target))
-    cnx.commit()
-    cnx.close()
+    connect.commit()
+    #cnx.close()
 
 
 def award_badge(target, badge, lvl, contributions=None, info=None):
@@ -463,10 +474,11 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
     # Is also responsible for creating indicators.
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    cursor = db.cursor
+    connect = db.connection
+
+    queries = db.queries
+    results = db.results
 
     course = config.course
     typeof = "badge"
@@ -479,21 +491,25 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
         awards_table = "award"
 
     query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description like %s AND type=%s;"
-
     badge_name = badge + "%"
     cursor.execute(query, (target, course, badge_name, typeof))
     table = cursor.fetchall()
 
-
     # get badge info
-    query = "SELECT badge_level.number, badge_level.badgeId, badge_level.reward, badge.isActive from badge_level left join badge on badge.id = badge_level.badgeId where badge.course = %s and badge.name = %s order by number;"
-    cursor.execute(query, (course, badge))
-    table_badge = cursor.fetchall()
+    query = "SELECT badge_level.number, badge_level.badgeId, badge_level.reward, badge.isActive from badge_level left join badge on badge.id = badge_level.badgeId where badge.course = \"" + course + "\" and badge.name = \"" + badge + "\" order by number;"
+    result = db.data_broker(query)
+    if not result:
+        cursor.execute(query)
+        table_badge = cursor.fetchall()
+        queries.append(query)
+        results.append(table_badge)
+    else:
+        table_badge = result
+
+    #ELIMINATE ON REFACTOR
     isBadgeActive = table_badge[0][3]
-    console.log(isBadgeActive)
     # if badge is not active, do not run the function.
     if not isBadgeActive:
-        console.log("return")
         return
         
     if not config.test_mode:
@@ -506,7 +522,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
                 for log in contributions:
                     query = "INSERT into badge_progression (course, user, badgeId, participationId) values (%s,%s,%s,%s);"
                     cursor.execute(query, (course, target, badgeid, log.log_id))
-                    cnx.commit()
+                    connect.commit()
 
 
     # Case 0: lvl is zero and there are no lines to be erased
@@ -526,10 +542,9 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
             badge_id = table_badge[level-1][1]
             reward = table_badge[level-1][2]
 
-
             query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
             cursor.execute(query, (target, course, description, typeof, badge_id, reward))
-            cnx.commit()
+            connect.commit()
             cursor = cnx.cursor(prepared=True)
 
             # insert in award_participation
@@ -544,7 +559,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
                         participation_id = el.log_id
                         query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
                         cursor.execute(query, (award_id, participation_id))
-                        cnx.commit()
+                        connect.commit()
 
             if not config.test_mode:
                 if contributions != None and contributions != None:
@@ -567,7 +582,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
             query = "DELETE FROM " + awards_table + " WHERE user = %s AND course = %s AND description = %s AND moduleInstance = %s AND type=%s;"
             cursor.execute(query, (target, course, description, badge_id, typeof))
-            cnx.commit()
+            connect.commit()
 
     # Case 3: there have been new participations, the new levels won
     # by the user must be inserted into table 'award'
@@ -582,7 +597,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
             query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
             cursor.execute(query, (target, course, description, typeof, badge_id, reward))
-            cnx.commit()
+            connect.commit()
 
             level = diff + 1
             # insert in award_participation
@@ -597,8 +612,8 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
                         participation_id = el.log_id
                         query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
                         cursor.execute(query, (award_id, participation_id))
-                        cnx.commit()
-    cnx.close()
+                        connect.commit()
+    #cnx.close()
 
 
 
@@ -608,40 +623,56 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
     # the user. Will retract if rules/participations have been
     # changed.
     # -----------------------------------------------------------
+    cursor = db.cursor
+    connect = db.connection
 
-    #(username, password) = get_credentials()
-
+    queries = db.queries
+    results = db.results
+    
     course = config.course
     typeof = "skill"
 
     if not config.test_mode:
-        (database, username, password) = get_credentials()
-        cnx = mysql.connector.connect(user=username, password=password,
-        host='localhost', database=database)
-        cursor = cnx.cursor(prepared=True)
 
         query = "SELECT * FROM award where user = %s AND course = %s AND description=%s AND type=%s;"
         cursor.execute(query, (target, course, skill, typeof))
         table = cursor.fetchall()
 
-
         if use_wildcard != False and wildcard_tier != None:
             # get wildcard tier information
-            query = "select t.id from skill_tier t left join skill_tree s on t.treeId=s.id where tier =%s and course = %s;"
-            cursor.execute(query, (wildcard_tier, course))
-            table_tier = cursor.fetchall()
+            query = "select t.id from skill_tier t left join skill_tree s on t.treeId=s.id where tier = \"" + wildcard_tier + "\" and course = \"" + course + "\";"
+            result = db.data_broker(query)
+            if not result:
+                cursor.execute(query)
+                table_tier = cursor.fetchall()
+                queries.append(query)
+                results.append(table_tier)
+            else:
+                table_tier = result
+
+
             if len(table_tier) == 1:
                 tier_id = table_tier[0][0]
 
 
-        query = "SELECT s.id, reward, s.tier, s.isActive FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = %s and course = %s;"
-        cursor.execute(query, (skill, course))
-        table_skill = cursor.fetchall()
+        query = "SELECT s.id, reward, s.tier, s.isActive FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = \""+ skill +"\" and course = \""+ course +"\";"
+        result = db.data_broker(query)
+        if not result:
+            cursor.execute(query)
+            table_skill = cursor.fetchall()
+            queries.append(query)
+            results.append(table_skill)
+        else:
+            table_skill = result
+
         isSkillActive = table_skill[0][3]
 
+        #ELIMINATE ON REFACTOR
         if not isSkillActive:
             return
 
+
+        #ELIMINATE ON REFACTOR
         query = "SELECT COUNT(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'gamecourse_test_v2') AND (TABLE_NAME = 'virtual_currency_config');"
         cursor.execute(query)
         table_exists = cursor.fetchall()
@@ -649,9 +680,16 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
         if table_exists[0][0] > 0: # virtual currency is enabled
             tier = table_skill[0][2]
 
-            query = "SELECT skillCost, wildcardCost from virtual_currency_config where course = %s;"
-            cursor.execute(query, (course))
-            table_currency = cursor.fetchall()
+            query = "SELECT skillCost, wildcardCost from virtual_currency_config where course = \""+ course +"\";"
+            result = db.data_broker(query)
+            if not result:
+                cursor.execute(query)
+                table_currency = cursor.fetchall()
+                queries.append(query)
+                results.append(table_currency)
+            else:
+                table_currency = result
+
             skillCost = table_currency[0][0]
             wildcardCost = table_currency[0][1]
 
@@ -708,25 +746,25 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 
                     query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
                     cursor.execute(query, (award_id, participation_id))
-                    cnx.commit()
+                    connect.commit()
 
                     participation_ID = table_counter_participations[-1][0]
 
                     query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
                     cursor.execute(query, (course, target, participation_ID, removed))
-                    cnx.commit()
+                    connect.commit()
 
                     # simply remove the tokens
                     query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
                     cursor.execute(query, (newTotal, course, target))
-                    cnx.commit()
+                    connect.commit()
 
 
                     if use_wildcard != False and wildcard_tier != None:
                         # insert into wildcard table
                         query = "INSERT INTO award_wildcard (awardId, tierId) VALUES (%s,%s);"
                         cursor.execute(query, (award_id, tier_id))
-                        cnx.commit()
+                        connect.commit()
             else:
                 query = "INSERT INTO award (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s, %s);"
                 cursor.execute(query, (target, course, skill, typeof, skill_id, skill_reward))
@@ -742,13 +780,13 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 
                 query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
                 cursor.execute(query, (award_id, participation_id))
-                cnx.commit()
+                connect.commit()
 
                 if use_wildcard != False and wildcard_tier != None:
                     # insert into wildcard table
                     query = "INSERT INTO award_wildcard (awardId, tierId) VALUES (%s,%s);"
                     cursor.execute(query, (award_id, tier_id))
-                    cnx.commit()
+                    connect.commit()
 
         # If skill has already been awarded to used
         # compare ratings given before and now
@@ -776,12 +814,12 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
                     if exists == 0:
                         query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
                         cursor.execute(query, (course, target, participation_ID, removed))
-                        cnx.commit()
+                        connect.commit()
 
                         # simply remove the tokens
                         query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
                         cursor.execute(query, (newTotal, course, target))
-                        cnx.commit()
+                        connect.commit()
 
             # If new rating is greater or equal to 3
             # no changes to table award, so continue!
@@ -805,8 +843,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
         else:
             print("ERROR: More than one line for a skill found on the database.")
 
-        cnx.commit()
-        cnx.close()
+        connect.commit()
 
 
 
@@ -816,10 +853,16 @@ def award_prize(target, reward_name, xp, contributions=None):
     # skill. Will not retract effects, but will not award twice
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    #(database, username, password) = get_credentials()
+    #cnx = mysql.connector.connect(user=username, password=password,
+    #host='localhost', database=database)
+    #cursor = cnx.cursor(prepared=True)
+
+    cursor = db.cursor
+    connect = db.connection
+
+    queries = db.queries
+    results = db.results
 
     course = config.course
     typeof = "bonus"
@@ -839,12 +882,12 @@ def award_prize(target, reward_name, xp, contributions=None):
         # simply award the prize
         query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
         cursor.execute(query, (target, course, reward_name, typeof, reward))
-        cnx.commit()
+        connect.commit()
 
         config.award_list.append([str(target), reward_name, str(reward), ""])
 
 
-    cnx.close()
+    #cnx.close()
 
     return
 
@@ -856,10 +899,14 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
     # a user and registers the award in the 'award' table.
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    #(database, username, password) = get_credentials()
+    #cnx = mysql.connector.connect(user=username, password=password,
+    #host='localhost', database=database)
+    #cursor = cnx.cursor(prepared=True)
+
+    cursor = db.cursor
+    connect = db.connection
+
 
     course = config.course
     typeof = "tokens"
@@ -889,37 +936,37 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
         # insert in award
         query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
         cursor.execute(query, (target, course, reward_name, typeof, reward))
-        cnx.commit()
+        connect.commit()
         # insert and give the award
         query = "INSERT INTO user_wallet (user, course, tokens) VALUES(%s, %s , %s);"
         cursor.execute(query, (target, course, reward))
-        cnx.commit()
+        connect.commit()
     elif len(table) == 0:
 
         if contributions == None:
             # insert in award
             query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
             cursor.execute(query, (target, course, reward_name, typeof, reward))
-            cnx.commit()
+            connect.commit()
 
             newTotal = reward + table_wallet[0][0]
 
             # simply award the tokens
             query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
             cursor.execute(query, (newTotal, course, target))
-            cnx.commit()
+            connect.commit()
         else:
             for i in range(len(contributions)):
                 query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
                 cursor.execute(query, (target, course, reward_name, typeof, reward))
-                cnx.commit()
+                connect.commit()
 
             newTotal = table_wallet[0][0] + reward * len(contributions)
 
             # simply award the tokens
             query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
             cursor.execute(query, (newTotal, course, target))
-            cnx.commit()
+            connect.commit()
 
     elif len(table) > 0 and contributions != None:
          query = "SELECT moduleInstance FROM " + awards_table + " where user = %s AND course = %s AND description = %s AND type=%s;"
@@ -932,17 +979,17 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
          for diff in range(len(table_id), len(contributions)):
              query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
              cursor.execute(query, (target, course, reward_name, typeof, reward))
-             cnx.commit()
+             connect.commit()
 
          dif = len(contributions) - len(table_id)
          newTotal = table_wallet[0][0] + reward * dif
          # simply award the tokens
          query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
          cursor.execute(query, (newTotal, course, target))
-         cnx.commit()
+         connect.commit()
 
 
-    cnx.close()
+    #cnx.close()
 
     return
 
@@ -955,18 +1002,30 @@ def award_tokens_type(target, type, element_name, contributions):
     # and registers the award in the 'award' table.
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    #(database, username, password) = get_credentials()
+    #cnx = mysql.connector.connect(user=username, password=password,
+    #host='localhost', database=database)
+    #cursor = cnx.cursor(prepared=True)
+
+    cursor = db.cursor
+    connect = db.connection
+
+    queries = db.queries
+    results = db.results
 
     course = config.course
     typeof = "tokens"
 
     if type == "streak":
-        query = "SELECT tokens FROM streak where course = %s AND name = %s;"
-        cursor.execute(query, (course, element_name))
-        table_reward = cursor.fetchall()
+        query = "SELECT tokens FROM streak where course = \"" + course + "\" AND name = \"" + element_name + "\";"
+        result = db.data_broker(query)
+        if not result:
+            cursor.execute(query)
+            table_reward = cursor.fetchall()
+            queries.append(query)
+            results.append(table_reward)
+        else:
+            table_reward = result
         reward = int(table_reward[0][0])
     else:
         # Just for the time being.
@@ -1002,7 +1061,7 @@ def award_tokens_type(target, type, element_name, contributions):
         for diff in range(len(table), awards):
             query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
             cursor.execute(query, (target, course, name_awarded, typeof, reward))
-            cnx.commit()
+            connect.commit()
 
         name_awarded = element_name + " Completed"
         query = "SELECT moduleInstance FROM " + awards_table + " where user = %s AND course = %s AND description = %s AND type=%s;"
@@ -1014,10 +1073,10 @@ def award_tokens_type(target, type, element_name, contributions):
         # simply award the tokens
         query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
         cursor.execute(query, (newTotal, course, target))
-        cnx.commit()
+        connect.commit()
 
 
-    cnx.close()
+    #cnx.close()
 
     return
 
@@ -1027,11 +1086,17 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     # a user.
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    #(database, username, password) = get_credentials()
+    #cnx = mysql.connector.connect(user=username, password=password,
+    #host='localhost', database=database)
+    #cursor = cnx.cursor(prepared=True)
 
+    cursor = db.cursor
+    connect = db.connection
+
+    queries = db.queries
+    results = db.results
+    
     course = config.course
     typeof = "tokens"
 
@@ -1045,9 +1110,16 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     table_tokens = cursor.fetchall()
     currentTokens = table_tokens[0][0]
 
-    query = "SELECT skillCost, wildcardCost, attemptRating, costFormula, incrementCost FROM virtual_currency_config where user = %s AND course = %s;"
-    cursor.execute(query, (target, course))
-    table_tokens = cursor.fetchall()
+    query = "SELECT skillCost, wildcardCost, attemptRating, costFormula, incrementCost FROM virtual_currency_config where course = \"" + course + "\";"
+    result = db.data_broker(query)
+    if not result:
+        cursor.execute(query)
+        table_tokens = cursor.fetchall()
+        queries.append(query)
+        results.append(table_tokens)
+    else:
+        table_tokens = result
+
     skillcost = table_tokens[0][0]
     wildcardcost = table_tokens[0][1]
     minRating = table_tokens[0][2]
@@ -1070,13 +1142,13 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
             else:
                 query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
                 cursor.execute(query, (course, target, contributions[0].log_id, toRemove))
-                cnx.commit()
+                connect.commit()
 
                 query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
                 cursor.execute(query, (toRemove, course, target))
-                cnx.commit()
+                connect.commit()
 
-                cnx.close()
+                #cnx.close()
                 return newTotal
 
         # else: Tokens have already been removed for that participation
@@ -1084,9 +1156,16 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     # Remove tokens for skill retry
     elif contributions != None and skillName != None:
 
-        query = "SELECT s.id, s.tier FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = %s and course = %s;"
-        cursor.execute(query, (skillName, course))
-        table_skill = cursor.fetchall()
+        query = "SELECT s.id, s.tier FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = \""+ skillName +"\" and course = \""+ course +"\";"
+        result = db.data_broker(query)
+        if not result:
+            cursor.execute(query)
+            table_skill = cursor.fetchall()
+            queries.append(query)
+            results.append(table_skill)
+        else:
+            table_skill = result
+
         tier = table_skill[0][1]
 
         # gets all submissions from participation
@@ -1103,7 +1182,7 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
         alreadySubmitted = len(table_participation)
 
         if alreadySubmitted != 0:
-            cnx.close()
+            #cnx.close()
             return currentTokens
         else:
         
@@ -1139,17 +1218,17 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
             if newTotal >= 0:
                 query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
                 cursor.execute(query, (course, target, contributions[0].log_id, removed))
-                cnx.commit()
+                connect.commit()
 
                 # simply remove the tokens
                 query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
                 cursor.execute(query, (newTotal, course, target))
-                cnx.commit()
+                connect.commit()
 
-            cnx.close()
+            #cnx.close()
             return newTotal
 
-    cnx.close()
+    #cnx.close()
     return
 
 
@@ -1159,10 +1238,13 @@ def award_grade(target, item, contributions=None, extra=None):
     # skill. Will not retract effects, but will not award twice
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    #(database, username, password) = get_credentials()
+    #cnx = mysql.connector.connect(user=username, password=password,
+    #host='localhost', database=database)
+    #cursor = cnx.cursor(prepared=True)
+
+    cursor = db.cursor
+    connect = db.connection
 
     course = config.course
 
@@ -1192,13 +1274,13 @@ def award_grade(target, item, contributions=None, extra=None):
             if len(table) == 0:
                 query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
                 cursor.execute(query, (target, course, description, typeof, grade))
-                cnx.commit()
+                connect.commit()
                 config.award_list.append([str(target), "Grade from " + item, str(grade), ""])
 
             elif len(table) == 1:
                 query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s"
                 cursor.execute(query, (grade, course, target, typeof, description))
-                cnx.commit()
+                connect.commit()
 
     elif item == "Quiz" and extra:
         # add last quiz
@@ -1218,13 +1300,13 @@ def award_grade(target, item, contributions=None, extra=None):
                 if old_grade != grade:
                     query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s AND moduleInstance = %s;"
                     cursor.execute(query, (grade, course, target, typeof, description, number))
-                    cnx.commit()
+                    connect.commit()
 
             else:
                 # if the line did not exist, add it
                 query = "INSERT INTO " + awards_table + " (user, course, description, type, reward, moduleInstance) VALUES(%s, %s , %s, %s, %s, %s);"
                 cursor.execute(query, (target, course, description, typeof, grade, number))
-                cnx.commit()
+                connect.commit()
                 #config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
 
 
@@ -1250,16 +1332,16 @@ def award_grade(target, item, contributions=None, extra=None):
                 if old_grade != grade:
                     query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s AND moduleInstance = %s;"
                     cursor.execute(query, (grade, course, target, typeof, description, number))
-                    cnx.commit()
+                    connect.commit()
 
             else:
                 # if the line did not exist, add it
                 query = "INSERT INTO " + awards_table + " (user, course, description, type, reward, moduleInstance) VALUES(%s, %s , %s, %s, %s, %s);"
                 cursor.execute(query, (target, course, description, typeof, grade, number))
-                cnx.commit()
+                connect.commit()
                 #config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
 
-    cnx.close()
+    #cnx.close()
     return
 
 def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ignore_case=None, extra=None):
@@ -1268,10 +1350,13 @@ def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ign
     # Will not retract effects, but will not award twice
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    #(database, username, password) = get_credentials()
+    #cnx = mysql.connector.connect(user=username, password=password,
+    #host='localhost', database=database)
+    #cursor = cnx.cursor(prepared=True)
+
+    cursor = db.cursor
+    connect = db.connection
 
     course = config.course
 
@@ -1306,13 +1391,13 @@ def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ign
                 if old_grade != grade:
                     query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s AND moduleInstance = %s;"
                     cursor.execute(query, (grade, course, target, typeof, description, number))
-                    cnx.commit()
+                    connect.commit()
 
             else:
                 # if the line did not exist, add it
                 query = "INSERT INTO " + awards_table + " (user, course, description, type, reward, moduleInstance) VALUES(%s, %s , %s, %s, %s, %s);"
                 cursor.execute(query, (target, course, description, typeof, grade, number))
-                cnx.commit()
+                connect.commit()
                 #config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
 
 
@@ -1338,16 +1423,16 @@ def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ign
                 if old_grade != grade:
                     query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s AND moduleInstance = %s;"
                     cursor.execute(query, (grade, course, target, typeof, description, number))
-                    cnx.commit()
+                    connect.commit()
 
             else:
                 # if the line did not exist, add it
                 query = "INSERT INTO " + awards_table + " (user, course, description, type, reward, moduleInstance) VALUES(%s, %s , %s, %s, %s, %s);"
                 cursor.execute(query, (target, course, description, typeof, grade, number))
-                cnx.commit()
+                connect.commit()
                 #config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
 
-    cnx.close()
+    #cnx.close()
     return
 
 def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, forum=None):
@@ -1356,10 +1441,13 @@ def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, for
     # grade. Will not retract effects, but will not award twice
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    #(database, username, password) = get_credentials()
+    #cnx = mysql.connector.connect(user=username, password=password,
+    #host='localhost', database=database)
+    #cursor = cnx.cursor(prepared=True)
+
+    cursor = db.cursor
+    connect = db.connection
 
     course = config.course
     typeof = "post"
@@ -1396,15 +1484,15 @@ def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, for
             if old_grade != grade:
                 query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s;"
                 cursor.execute(query, (grade, course, target, typeof, description))
-                cnx.commit()
+                connect.commit()
 
         else:
             # if the line did not exist, add it
             query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
             cursor.execute(query, (target, course, description, typeof, grade))
-            cnx.commit()
+            connect.commit()
 
-    cnx.close()
+    #cnx.close()
     return
 
 
@@ -1414,10 +1502,13 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
     # Will not retract effects, but will not award twice
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    #(database, username, password) = get_credentials()
+    #cnx = mysql.connector.connect(user=username, password=password,
+    #host='localhost', database=database)
+    #cursor = cnx.cursor(prepared=True)
+
+    cursor = db.cursor
+    connect = db.connection
 
     course = config.course
     typeof = "assignment"
@@ -1448,15 +1539,15 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
             if old_grade != grade:
                 query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s;"
                 cursor.execute(query, (grade, course, target, typeof, description))
-                cnx.commit()
+                connect.commit()
 
         else:
             # if the line did not exist, add it
             query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
             cursor.execute(query, (target, course, description, typeof, grade))
-            cnx.commit()
+            connect.commit()
 
-    cnx.close()
+    #cnx.close()
     return
 
 def clear_streak_progression(target):
@@ -1466,17 +1557,20 @@ def clear_streak_progression(target):
       # the rule system runs.
       # -----------------------------------------------------------
 
-      (database, username, password) = get_credentials()
-      cnx = mysql.connector.connect(user=username, password=password,
-      host='localhost', database=database)
-      cursor = cnx.cursor(prepared=True)
+      #(database, username, password) = get_credentials()
+      #cnx = mysql.connector.connect(user=username, password=password,
+      #host='localhost', database=database)
+      #cursor = cnx.cursor(prepared=True)
+
+      cursor = db.cursor
+      connect = db.connection
 
       course = config.course
 
       query = "DELETE from streak_progression where course=%s and user=%s;"
       cursor.execute(query, (course, target))
-      cnx.commit()
-      cnx.close()
+      connect.commit()
+      #cnx.close()
 
 def clear_streak_participations(target):
       # -----------------------------------------------------------
@@ -1485,18 +1579,21 @@ def clear_streak_participations(target):
       # the rule system runs.
       # -----------------------------------------------------------
 
-      (database, username, password) = get_credentials()
-      cnx = mysql.connector.connect(user=username, password=password,
-      host='localhost', database=database)
-      cursor = cnx.cursor(prepared=True)
+      #(database, username, password) = get_credentials()
+      #cnx = mysql.connector.connect(user=username, password=password,
+      #host='localhost', database=database)
+      #cursor = cnx.cursor(prepared=True)
+
+      cursor = db.cursor
+      connect = db.connection
 
       course = config.course
 
       query = "DELETE from streak_participations where course=%s and user=%s;"
       cursor.execute(query, (course, target))
-      cnx.commit()
-      cnx.close()
-
+      connect.commit()
+      #cnx.close()
+            
 def check_periodicity(target, course, participationType, periodicity, periodicityTime, streakid ):
     (database, username, password) = get_credentials()
     cnx = mysql.connector.connect(user=username, password=password,
@@ -2658,17 +2755,29 @@ def get_campus(target):
     # Returns the campus of a target user
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    #(database, username, password) = get_credentials()
+    #cnx = mysql.connector.connect(user=username, password=password,
+    #host='localhost', database=database)
+    #cursor = cnx.cursor(prepared=True)
+
+    cursor = db.cursor
+    connect = db.connection
+
+    queries =  db.queries
+    results = db.results
 
     course = config.course
-    query = "select major from course_user left join game_course_user on course_user.id=game_course_user.id where course = %s and course_user.id = %s;"
+    query = "select major from course_user left join game_course_user on course_user.id=game_course_user.id where course = \"" + course + "\" and course_user.id = \"" + str(target) + "\";"
+    result = db.data_broker(query)
+    if not result:
+        cursor.execute(query)
+        table = cursor.fetchall()
+        queries.append(query)
+        results.append(table)
+    else:
+        table = result
 
-    cursor.execute(query, (course, target))
-    table = cursor.fetchall()
-    cnx.close()
+    #cnx.close()
 
     if len(table) == 1:
         major = table[0][0]
@@ -2693,18 +2802,16 @@ def get_username(target):
     # -----------------------------------------------------------
     # Returns the username of a target user
     # -----------------------------------------------------------
-
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    
+    cursor = db.cursor
+    #connect = db.connection
 
     course = config.course
     query = "select username from auth right join course_user on auth.id=course_user.id where course = %s and auth.id = %s;"
 
     cursor.execute(query, (course, target))
     table = cursor.fetchall()
-    cnx.close()
+    #cnx.close()
 
     if len(table) == 1:
         username = table[0][0]
@@ -2744,17 +2851,26 @@ def rule_unlocked(name, target):
     #   Returns True is yes, False otherwise.
     # -----------------------------------------------------------
 
-    (database, username, password) = get_credentials()
-    cnx = mysql.connector.connect(user=username, password=password,
-    host='localhost', database=database)
-    cursor = cnx.cursor(prepared=True)
+    cursor = db.cursor
+    connect = db.connection
+
+    queries =  db.queries
+    results = db.results
 
     course = config.course
 
-    query = "SELECT description FROM award WHERE user = %s AND course = %s AND description = %s AND type = 'skill'; "
-    cursor.execute(query, (target, course, name))
-    table = cursor.fetchall()
-    cnx.close()
+    #query = "SELECT description FROM award WHERE user = %s AND course = %s AND description = %s AND type = 'skill'; "
+    query = "SELECT description FROM award WHERE user = \"" + str(target) + "\" AND course = \"" + str(course) + "\" AND description = \"" + name + "\" AND type = 'skill'; "
+    result = db.data_broker(query)
+    if not result:
+        cursor.execute(query)
+        table = cursor.fetchall()
+        queries.append(query)
+        results.append(table)
+    else:
+        table = result
+
+    #cnx.close()
 
     if len(table) == 1:
         return True
