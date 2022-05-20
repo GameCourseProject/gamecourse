@@ -60,6 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] == "GET") {  // check setup
         exit;
     }
 
-    API::error('Some information is missing. Please fill-in all the fields.');
+    API::error('Some information is missing. Please fill-in all the fields.', 400);
 }
 

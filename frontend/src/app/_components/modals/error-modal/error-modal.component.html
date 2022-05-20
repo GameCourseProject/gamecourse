@@ -9,7 +9,8 @@
 </app-modal>
 
 <ng-template #errorModal>
-  <div class="message_warning warning" [innerHTML]="text"></div>
+  <div class="message_warning warning bold" style="font-size: 15px; color: tomato">{{error.message}}</div>
+  <div class="message_warning warning stack" [innerHTML]="error.stack"></div>
   <div class="confirmation_btns">
     <button (click)="isModalOpen = false; closeBtnClicked.emit()">{{negativeBtnText}}</button>
   </div>

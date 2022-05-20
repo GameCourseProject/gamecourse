@@ -27,10 +27,10 @@ export class AppComponent {
   }
 
   hasError(): boolean {
-    return !!ErrorService.error;
+    return !!ErrorService.error.full;
   }
 
-  getError(): string {
+  getError(): {message: string, stack: string, full: string} {
     return ErrorService.error;
   }
 

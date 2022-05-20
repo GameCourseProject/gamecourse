@@ -10,7 +10,6 @@ import {QueryStringParameters} from "../../_utils/api/query-string-parameters";
 import {AuthType} from "../../_domain/auth/auth-type";
 import {Course} from "../../_domain/courses/course";
 import {User} from "../../_domain/users/user";
-import {CreationMode} from "../../_domain/courses/creation-mode";
 import {SetupData} from "../../_views/setup/setup/setup.component";
 import {UserData} from "../../_views/restricted/my-info/my-info/my-info.component";
 import {CourseData, ImportCoursesData} from "../../_views/restricted/courses/courses/courses.component";

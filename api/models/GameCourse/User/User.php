@@ -467,6 +467,9 @@ class User
      * @throws Exception
      */
     public static function deleteUser(int $userId) {
+        if (Core::getLoggedUser()->getId() == $userId)
+            throw new Exception("You attempted to remove yourself from the system. This was flagged as an error and had no effect.");
+
         Core::database()->delete(self::TABLE_USER, ["id" => $userId]);
         Core::database()->delete(Auth::TABLE_AUTH, ["user" => $userId]);
         self::removeDataFolder($userId);
