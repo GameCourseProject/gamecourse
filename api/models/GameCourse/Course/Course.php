@@ -57,7 +57,7 @@ class Course
         return $this->getData("color");
     }
 
-    public function getYear(): ?string
+    public function getYear(): string
     {
         return $this->getData("year");
     }
@@ -104,20 +104,12 @@ class Course
      * @example getData("name") --> gets course name
      * @example getData("name, short") --> gets course name & short
      *
-     * NOTE: folder can only be retrieve with either '*' or
-     *       alone as a field
-     *
      * @param string $field
      * @return array|bool|int|null
      */
     public function getData(string $field = "*")
     {
-        if ($field != "folder")
-            $data = Core::database()->select(self::TABLE_COURSE, ["id" => $this->id], $field);
-        if ($field == "*")
-            $data["folder"] = $this->getDataFolder(false);
-        if ($field == "folder")
-            $data = $this->getDataFolder(false);
+        $data = Core::database()->select(self::TABLE_COURSE, ["id" => $this->id], $field);
         return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
     }
 
@@ -131,7 +123,6 @@ class Course
      */
     public function setName(string $name)
     {
-        self::validateName($name);
         $this->setData(["name" => $name]);
     }
 
@@ -140,7 +131,6 @@ class Course
      */
     public function setShort(?string $short)
     {
-        self::validateShort($short);
         $this->setData(["short" => $short]);
     }
 
@@ -149,7 +139,6 @@ class Course
      */
     public function setColor(?string $color)
     {
-        self::validateColor($color);
         $this->setData(["color" => $color]);
     }
 
@@ -158,7 +147,6 @@ class Course
      */
     public function setYear(?string $year)
     {
-        self::validateYear($year);
         $this->setData(["year" => $year]);
     }
 
@@ -167,9 +155,6 @@ class Course
      */
     public function setStartDate(?string $start)
     {
-        self::validateDateTime($start);
-        $endDate = $this->getEndDate();
-        if ($endDate) self::validateStartAndEndDates($start, $endDate);
         $this->setData(["startDate" => $start]);
     }
 
@@ -178,9 +163,6 @@ class Course
      */
     public function setEndDate(?string $end)
     {
-        self::validateDateTime($end);
-        $startDate = $this->getStartDate();
-        if ($startDate) self::validateStartAndEndDates($startDate, $end);
         $this->setData(["endDate" => $end]);
     }
 
@@ -238,20 +220,27 @@ class Course
     public function setData(array $fieldValues)
     {
         if (key_exists("name", $fieldValues)) {
-            self::validateName($fieldValues["name"]);
+            $newName = $fieldValues["name"];
+            self::validateName($newName);
 
             // Update course data folder if name has changed
             $oldName = $this->getName();
-            if (strcmp($oldName, $fieldValues["name"]) !== 0)
-                rename($this->getDataFolder(true, $oldName), $this->getDataFolder(true, $fieldValues["name"]));
+            if (strcmp($oldName, $newName) !== 0)
+                rename($this->getDataFolder(true, $oldName), $this->getDataFolder(true, $newName));
         }
         if (key_exists("short", $fieldValues)) self::validateShort($fieldValues["short"]);
         if (key_exists("color", $fieldValues)) self::validateColor($fieldValues["color"]);
         if (key_exists("year", $fieldValues)) self::validateYear($fieldValues["year"]);
-        if (key_exists("startDate", $fieldValues)) self::validateDateTime($fieldValues["startDate"]);
-        if (key_exists("endDate", $fieldValues)) self::validateDateTime($fieldValues["endDate"]);
-        if (key_exists("startDate", $fieldValues) && key_exists("endDate", $fieldValues))
-            self::validateStartAndEndDates($fieldValues["startDate"], $fieldValues["endDate"]);
+        if (key_exists("startDate", $fieldValues)) {
+            self::validateDateTime($fieldValues["startDate"]);
+            $endDate = key_exists("endDate", $fieldValues) ? $fieldValues["endDate"] : $this->getEndDate();
+            if ($endDate) self::validateStartAndEndDates($fieldValues["startDate"], $endDate);
+        }
+        if (key_exists("endDate", $fieldValues)) {
+            self::validateDateTime($fieldValues["endDate"]);
+            $startDate = key_exists("startDate", $fieldValues) ? $fieldValues["startDate"] : $this->getStartDate();
+            if ($startDate) self::validateStartAndEndDates($startDate, $fieldValues["endDate"]);
+        }
 
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_COURSE, $fieldValues, ["id" => $this->id]);
@@ -262,6 +251,13 @@ class Course
     /*** ---------------------- General --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * Gets a course by its ID.
+     * Returns null if course doesn't exist.
+     *
+     * @param int $id
+     * @return Course|null
+     */
     public static function getCourseById(int $id): ?Course
     {
         $course = new Course($id);
@@ -269,6 +265,14 @@ class Course
         else return null;
     }
 
+    /**
+     * Gets course by its name and year.
+     * Returns null if course doesn't exist.
+     *
+     * @param string $name
+     * @param string $year
+     * @return Course|null
+     */
     public static function getCourseByNameAndYear(string $name, string $year): ?Course
     {
         $courseId = intval(Core::database()->select(self::TABLE_COURSE, ["name" => $name, "year" => $year], "id"));
@@ -276,6 +280,14 @@ class Course
         else return new Course($courseId);
     }
 
+    /**
+     * Gets courses in the system.
+     * Option for 'active' and/or 'visible'.
+     *
+     * @param bool|null $active
+     * @param bool|null $visible
+     * @return array
+     */
     public static function getCourses(?bool $active = null, ?bool $visible = null): array
     {
         $where = [];
@@ -458,42 +470,64 @@ class Course
     /*** ------------------- Course Users ------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * Gets a course user by its ID.
+     * Returns null if course user doesn't exist.
+     *
+     * @param int $userId
+     * @return CourseUser|null
+     */
     public function getCourseUserById(int $userId): ?CourseUser
     {
-        $courseUser = new CourseUser($userId, $this);
-        if ($courseUser->exists()) return $courseUser;
-        else return null;
+        return CourseUser::getCourseUserById($userId, $this);
     }
 
-    public function getCourseUserByUsername(string $username): ?CourseUser
+    /**
+     * Gets a course user by its username.
+     * Returns null if course user doesn't exist.
+     *
+     * @param string $username
+     * @param string|null $authService
+     * @return CourseUser|null
+     * @throws Exception
+     */
+    public function getCourseUserByUsername(string $username, string $authService = null): ?CourseUser
     {
-        $userId = intval(Core::database()->select(Auth::TABLE_AUTH, ["username" => $username], "user"));
-        if (!$userId) return null;
-        else return new CourseUser($userId, $this);
+        return CourseUser::getCourseUserByUsername($username, $this, $authService);
     }
 
+    /**
+     * Gets a course user by its e-mail.
+     * Returns null if course user doesn't exist.
+     *
+     * @param string $email
+     * @return CourseUser|null
+     */
     public function getCourseUserByEmail(string $email): ?CourseUser
     {
-        $userId = intval(Core::database()->select(User::TABLE_USER, ["email" => $email], "id"));
-        if (!$userId) return null;
-        else return new CourseUser($userId, $this);
+        return CourseUser::getCourseUserByEmail($email, $this);
     }
 
+    /**
+     * Gets a course user by its student number.
+     * Returns null if course user doesn't exist.
+     *
+     * @param int $studentNumber
+     * @return CourseUser|null
+     */
     public function getCourseUserByStudentNumber(int $studentNumber): ?CourseUser
     {
-        $userId = intval(Core::database()->select(User::TABLE_USER, ["studentNumber" => $studentNumber], "id"));
-        if (!$userId) return null;
-        else return new CourseUser($userId, $this);
+        return CourseUser::getCourseUserByStudentNumber($studentNumber, $this);
     }
 
     public function getCourseUsers(?bool $active = null): array
     {
         $where = ["cu.course" => $this->id];
-        if ($active !== null) $where["isActiveInCourse"] = $active;
+        if ($active !== null) $where["cu.isActive"] = $active;
         $courseUsers =  Core::database()->selectMultiple(
             User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id JOIN " . CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id",
             $where,
-            "u.*, a.username, a.authentication_service, cu.lastActivity, cu.isActive as isActiveInCourse",
+            "u.*, a.username, a.authentication_service, a.lastLogin, cu.lastActivity, cu.isActive as isActiveInCourse",
             "u.id"
         );
         foreach ($courseUsers as &$courseUser) { $courseUser = CourseUser::parse($courseUser); }
@@ -503,7 +537,7 @@ class Course
     public function getCourseUsersWithRole(?bool $active = null, string $roleName = null, int $roleId = null): array
     {
         $where = ["cu.course" => $this->id, "r.course" => $this->id];
-        if ($active !== null) $where["isActiveInCourse"] = $active;
+        if ($active !== null) $where["cu.isActive"] = $active;
         if ($roleName !== null) $where["r.name"] = $roleName;
         if ($roleId !== null) $where["r.id"] = $roleId;
 
@@ -512,7 +546,7 @@ class Course
             CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id JOIN " . Role::TABLE_USER_ROLE . " ur on ur.id=u.id JOIN " .
             Role::TABLE_ROLE . " r on r.id=ur.role and r.course=cu.course",
             $where,
-            "u.*, a.username, a.authentication_service, cu.lastActivity, cu.isActive as isActiveInCourse",
+            "u.*, a.username, a.authentication_service, a.lastLogin, cu.lastActivity, cu.isActive as isActiveInCourse",
             "u.id"
         );
         foreach ($courseUsers as &$courseUser) { $courseUser = CourseUser::parse($courseUser); }
@@ -529,9 +563,17 @@ class Course
         return $this->getCourseUsersWithRole($active, "Teacher");
     }
 
-    public function addUserToCourse(int $userId, string $roleName = null, int $roleId = null): CourseUser
+    /**
+     * @param int $userId
+     * @param string|null $roleName
+     * @param int|null $roleId
+     * @param bool $isActive
+     * @return CourseUser
+     * @throws Exception
+     */
+    public function addUserToCourse(int $userId, string $roleName = null, int $roleId = null, bool $isActive = true): CourseUser
     {
-        return CourseUser::addCourseUser($userId, $this->id, $roleName, $roleId);
+        return CourseUser::addCourseUser($userId, $this->id, $roleName, $roleId, $isActive);
     }
 
     public function removeUserFromCourse(int $userId)
@@ -661,12 +703,23 @@ class Course
         return $modules;
     }
 
+    /**
+     * @param string $moduleId
+     * @param bool $isEnabled
+     * @return void
+     * @throws Exception
+     */
     public function setModuleEnabled(string $moduleId, bool $isEnabled)
     {
         $module = $this->getModuleById($moduleId);
         $module->setEnabled($isEnabled);
     }
 
+    /**
+     * @param string $moduleId
+     * @return bool
+     * @throws Exception
+     */
     public function isModuleEnabled(string $moduleId): bool
     {
         $module = $this->getModuleById($moduleId);
@@ -719,6 +772,12 @@ class Course
         return $dataFolder;
     }
 
+    /**
+     * @param int $courseId
+     * @param string|null $courseName
+     * @return void
+     * @throws Exception
+     */
     public static function removeDataFolder(int $courseId, string $courseName = null)
     {
         $dataFolder = (new Course($courseId))->getDataFolder(true, $courseName);
@@ -768,6 +827,7 @@ class Course
      * @param string $name
      * @param string $extension
      * @return string
+     * @throws Exception
      */
     public function uploadFile(string $to, string $base64, string $name, string $extension): string
     {
@@ -785,6 +845,7 @@ class Course
      * @param string $from
      * @param string $filename
      * @return void
+     * @throws Exception
      */
     public function deleteFile(string $from, string $filename)
     {
@@ -1028,6 +1089,8 @@ class Course
     }
 
     /**
+     * Validates course name.
+     *
      * @throws Exception
      */
     private static function validateName($name)
@@ -1044,6 +1107,8 @@ class Course
     }
 
     /**
+     * Validates course short.
+     *
      * @throws Exception
      */
     private static function validateShort($short)
@@ -1061,36 +1126,45 @@ class Course
     }
 
     /**
+     * Validates course color.
+     *
      * @throws Exception
      */
     private static function validateColor($color)
     {
         if (is_null($color)) return;
+
         preg_match("/^#[\w\d]{6}$/", $color, $matches);
         if (!is_string($color) || empty($color) || count($matches) == 0)
             throw new Exception("Course color needs to be in HEX format.");
     }
 
     /**
+     * Validates course year.
+     *
      * @throws Exception
      */
     private static function validateYear($year)
     {
         preg_match("/^\d{4}-\d{4}$/", $year, $matches);
         if (!is_string($year) || empty($year) || count($matches) == 0)
-            throw new Exception("Course year needs to be 'yyyy-yyyy' format.");
+            throw new Exception("Course year needs to be in 'yyyy-yyyy' format.");
     }
 
     /**
+     * Validates course start and end dates.
+     *
      * @throws Exception
      */
     private static function validateStartAndEndDates($startDateTime, $endDateTime)
     {
         if ($startDateTime && $endDateTime && strtotime($startDateTime) >= strtotime($endDateTime))
-            throw new Exception("Course start date must be later than end date.");
+            throw new Exception("Course end date must come later than start date.");
     }
 
     /**
+     * Validates datetime.
+     *
      * @throws Exception
      */
     private static function validateDateTime($dateTime)

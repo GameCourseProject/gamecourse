@@ -147,7 +147,6 @@ abstract class Module
      */
     public function setName(string $name)
     {
-        self::validateName($name);
         $this->setData(["name" => $name]);
     }
 
@@ -156,7 +155,6 @@ abstract class Module
      */
     public function setDescription(string $description)
     {
-        self::validateDescription($description);
         $this->setData(["description" => $description]);
     }
 
@@ -165,7 +163,6 @@ abstract class Module
      */
     public function setType(string $type)
     {
-        self::validateType($type);
         $this->setData(["type" => $type]);
     }
 
@@ -174,7 +171,6 @@ abstract class Module
      */
     public function setVersion(string $version)
     {
-        self::validateVersion($version);
         $this->setData(["version" => $version]);
     }
 
@@ -183,8 +179,6 @@ abstract class Module
      */
     public function setProjectCompatibility(string $min, ?string $max)
     {
-        self::validateVersion($min);
-        self::validateVersion($max);
         $this->setData(["minProjectVersion" => $min]);
         $this->setData(["maxProjectVersion" => $max]);
     }
@@ -194,8 +188,6 @@ abstract class Module
      */
     public function setAPICompatibility(string $min, ?string $max)
     {
-        self::validateVersion($min);
-        self::validateVersion($max);
         $this->setData(["minAPIVersion" => $min]);
         $this->setData(["maxAPIVersion" => $max]);
     }

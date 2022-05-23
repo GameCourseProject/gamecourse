@@ -1,7 +1,6 @@
 <?php
 namespace Utils;
 
-use Error;
 use Exception;
 use PHPUnit\Framework\TestCase;
 
@@ -136,6 +135,7 @@ class UtilsTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getDirectoryContents()
     {
@@ -223,6 +223,7 @@ class UtilsTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function deleteDirectory()
     {
@@ -249,6 +250,7 @@ class UtilsTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function deleteDirectoryOnlyContents()
     {
@@ -278,6 +280,7 @@ class UtilsTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function deleteDirectoryWithExceptions()
     {
@@ -312,6 +315,7 @@ class UtilsTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function deleteDirectoryWithExceptionsTryToDeleteSelf()
     {
@@ -346,6 +350,7 @@ class UtilsTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function deleteDirectoryEmpty()
     {
@@ -362,6 +367,7 @@ class UtilsTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function copyDirectory()
     {
@@ -400,6 +406,7 @@ class UtilsTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function copyDirectoryWithExceptions()
     {
@@ -438,6 +445,7 @@ class UtilsTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function copyDirectoryDeleteOriginal()
     {
@@ -469,6 +477,7 @@ class UtilsTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function copyDirectoryToExistingDirectory()
     {
@@ -504,6 +513,7 @@ class UtilsTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function copyDirectoryEmpty()
     {
@@ -528,6 +538,7 @@ class UtilsTest extends TestCase
     /**
      * @test
      * @dataProvider uploadFileProvider
+     * @throws Exception
      */
     public function uploadFile(string $base64, string $filename)
     {
@@ -554,6 +565,7 @@ class UtilsTest extends TestCase
     /**
      * @test
      * @dataProvider uploadFileProvider
+     * @throws Exception
      */
     public function uploadFileDirectoryDoesntExist(string $base64, string $filename)
     {

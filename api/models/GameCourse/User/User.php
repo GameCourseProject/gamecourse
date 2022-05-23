@@ -113,8 +113,8 @@ class User
         $where = ["u.id" => $this->id];
         if ($field == "*") $fields = "u.*, a.username, a.authentication_service, a.lastLogin";
         else $fields = str_replace("id", "u.id", $field);
-        $res = Core::database()->select($table, $where, $fields);
-        return is_array($res) ? self::parse($res) : self::parse(null, $res, $field);
+        $data = Core::database()->select($table, $where, $fields);
+        return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
     }
 
 
@@ -127,7 +127,6 @@ class User
      */
     public function setName(string $name)
     {
-        self::validateName($name);
         $this->setData(["name" => $name]);
     }
 
@@ -136,7 +135,6 @@ class User
      */
     public function setEmail(?string $email)
     {
-        self::validateEmail($email);
         $this->setData(["email" => $email]);
     }
 
@@ -177,7 +175,6 @@ class User
      */
     public function setAuthService(string $authService)
     {
-        self::validateAuthService($authService);
         $this->setData(["authentication_service" => $authService]);
     }
 
@@ -186,7 +183,6 @@ class User
      */
     public function setLastLogin(?string $lastLogin)
     {
-        self::validateDateTime($lastLogin);
         $this->setData(["lastLogin" => $lastLogin]);
     }
 
@@ -244,6 +240,14 @@ class User
 
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
         if (key_exists("email", $fieldValues)) self::validateEmail($fieldValues["email"]);
+        if (key_exists("isActive", $fieldValues) && !$fieldValues["isActive"]) {
+            $userCourses = $this->getCourses();
+            foreach ($userCourses as $userCourse) {
+                $course = Course::getCourseById($userCourse["id"]);
+                $userCourse = $course->getCourseUserById($this->id);
+                $userCourse->setActive(false);
+            }
+        }
 
         if (count($authValues) != 0) Core::database()->update(Auth::TABLE_AUTH, $authValues, ["user" => $this->id]);
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_USER, $fieldValues, ["id" => $this->id]);
@@ -653,7 +657,7 @@ class User
      * @return void
      * @throws Exception
      */
-    private static function validateAuthService($authService)
+    protected static function validateAuthService($authService)
     {
         if (!is_string($authService) || empty($authService))
             throw new Exception("Authentication service can't be null neither empty.");

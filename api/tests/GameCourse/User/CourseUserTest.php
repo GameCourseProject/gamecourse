@@ -3,7 +3,6 @@ namespace GameCourse\User;
 
 use DateTime;
 use Exception;
-use GameCourse\Core\Auth;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -83,12 +82,14 @@ class CourseUserTest extends TestCase
         $userId = 2;
         $courseId = 1;
         return [
-            "no role" => [$userId, $courseId, null, null],
-            "with teacher role name" => [$userId, $courseId, "Teacher", null],
-            "with student role name" => [$userId, $courseId, "Student", null],
-            "with teacher role ID" => [$userId, $courseId, null, 1],
-            "with student role ID" => [$userId, $courseId, null, 2],
-            "with role name and role ID" => [$userId, $courseId, "Student", 2]
+            "no role" => [$userId, $courseId, null, null, true],
+            "with teacher role name" => [$userId, $courseId, "Teacher", null, true],
+            "with student role name" => [$userId, $courseId, "Student", null, true],
+            "with teacher role ID" => [$userId, $courseId, null, 1, true],
+            "with student role ID" => [$userId, $courseId, null, 2, true],
+            "with role name and role ID" => [$userId, $courseId, "Student", 2, true],
+            "active" => [$userId, $courseId, null, null, true],
+            "inactive" => [$userId, $courseId, null, null, false]
         ];
     }
 
@@ -97,10 +98,10 @@ class CourseUserTest extends TestCase
         $userId = 2;
         $courseId = 1;
         return [
-            "course doesn't exist" => [$userId, 10, null, null],
-            "user doesn't exist" => [10, $courseId, null, null],
-            "role name doesn't exist" => [$userId, $courseId, "role_doesnt_exist", null],
-            "role ID doesn't exist" => [$userId, $courseId, null, 10],
+            "course doesn't exist" => [$userId, 10, null, null, true],
+            "user doesn't exist" => [10, $courseId, null, null, true],
+            "role name doesn't exist" => [$userId, $courseId, "role_doesnt_exist", null, true],
+            "role ID doesn't exist" => [$userId, $courseId, null, 10, true]
         ];
     }
 
@@ -156,6 +157,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getId()
     {
@@ -165,6 +167,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getCourse()
     {
@@ -174,6 +177,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getLastActivity()
     {
@@ -185,6 +189,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getLastActivityNull()
     {
@@ -194,6 +199,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function isActive()
     {
@@ -203,6 +209,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function isInactive()
     {
@@ -214,6 +221,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getData()
     {
@@ -226,6 +234,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getDataOnlyUserFields()
     {
@@ -238,6 +247,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getDataOnlyCourseUserFields()
     {
@@ -248,6 +258,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getDataMixedFields()
     {
@@ -260,6 +271,7 @@ class CourseUserTest extends TestCase
     /**
      * @test
      * @dataProvider setActivitySuccessProvider
+     * @throws Exception
      */
     public function setLastActivitySuccess(?string $lastActivity)
     {
@@ -271,6 +283,7 @@ class CourseUserTest extends TestCase
     /**
      * @test
      * @dataProvider setActivityFailureProvider
+     * @throws Exception
      */
     public function setLastActivityFailure(string $lastActivity)
     {
@@ -281,6 +294,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setActive()
     {
@@ -291,7 +305,20 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
+     */
+    public function setActiveFailure()
+    {
+        $this->user->setActive(false);
+        $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId(), null, null, false);
+        $this->expectException(Exception::class);
+        $courseUser->setActive(true);
+    }
+
+    /**
+     * @test
      * @dataProvider setDataSuccessProvider
+     * @throws Exception
      */
     public function setDataSuccess(array $fieldValues)
     {
@@ -324,6 +351,120 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
+     */
+    public function getCourseUserById()
+    {
+        $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
+        $this->assertEquals($courseUser, CourseUser::getCourseUserById($courseUser->getId(), $courseUser->getCourse()));
+    }
+
+    /**
+     * @test
+     */
+    public function getCourseUserByIdUserDoesntExist()
+    {
+        $this->assertNull(CourseUser::getCourseUserById(100, $this->course));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByUsername()
+    {
+        $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
+        $this->assertEquals($courseUser, CourseUser::getCourseUserByUsername($courseUser->getUsername(), $courseUser->getCourse(), AuthService::FENIX));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByUsernameAuthServiceDoesntExist()
+    {
+        $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
+        $this->expectException(Exception::class);
+        CourseUser::getCourseUserByUsername($courseUser->getUsername(), $courseUser->getCourse(), "auth_service");
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByUsernameUserDoesntExist()
+    {
+        $this->assertNull(CourseUser::getCourseUserByUsername("username", $this->course));
+        $this->assertNull(CourseUser::getCourseUserByUsername("username", $this->course, AuthService::FENIX));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByUsernameMultipleUsersWithAuthService()
+    {
+        $courseUser1 = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
+        $user2 = User::addUser("Julia Smith Doe", $courseUser1->getUsername(), AuthService::GOOGLE, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+        CourseUser::addCourseUser($user2->getId(), $this->course->getId());
+        $this->assertEquals($courseUser1, CourseUser::getCourseUserByUsername($courseUser1->getUsername(), $this->course, AuthService::FENIX));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByUsernameMultipleUsersWithoutAuthService()
+    {
+        $courseUser1 = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
+        $user2 = User::addUser("Julia Smith Doe", $courseUser1->getUsername(), AuthService::GOOGLE, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+        CourseUser::addCourseUser($user2->getId(), $this->course->getId());
+        $this->expectException(Exception::class);
+        CourseUser::getCourseUserByUsername($courseUser1->getUsername(), $this->course);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByEmail()
+    {
+        $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
+        $this->assertEquals($courseUser, CourseUser::getCourseUserByEmail($courseUser->getEmail(), $courseUser->getCourse()));
+    }
+
+    /**
+     * @test
+     */
+    public function getCourseUserByEmailUserDoesntExist()
+    {
+        $this->assertNull(CourseUser::getCourseUserByEmail("email", $this->course));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByStudentNumber()
+    {
+        $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
+        $this->assertEquals($courseUser, CourseUser::getCourseUserByStudentNumber($courseUser->getStudentNumber(), $courseUser->getCourse()));
+    }
+
+    /**
+     * @test
+     */
+    public function getCourseUserByStudentNumberUserDoesntExist()
+    {
+        $this->assertNull(CourseUser::getCourseUserByStudentNumber(123, $this->course));
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
      */
     public function refreshActivity()
     {
@@ -336,6 +477,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function isTeacher()
     {
@@ -345,6 +487,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function isNotTeacher()
     {
@@ -354,6 +497,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function isStudent()
     {
@@ -363,6 +507,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function isNotStudent()
     {
@@ -374,10 +519,11 @@ class CourseUserTest extends TestCase
     /**
      * @test
      * @dataProvider addCourseUserSuccessProvider
+     * @throws Exception
      */
-    public function addCourseUserSuccess(int $userId, int $courseId, ?string $roleName, ?int $roleId)
+    public function addCourseUserSuccess(int $userId, int $courseId, ?string $roleName, ?int $roleId, ?bool $isActive)
     {
-        CourseUser::addCourseUser($userId, $courseId, $roleName, $roleId);
+        CourseUser::addCourseUser($userId, $courseId, $roleName, $roleId, $isActive);
         $this->assertCount(2, (new Course($courseId))->getCourseUsers());
 
         $courseUser = new CourseUser($userId, new Course($courseId));
@@ -392,17 +538,19 @@ class CourseUserTest extends TestCase
     /**
      * @test
      * @dataProvider addCourseUserFailureProvider
+     * @throws Exception
      */
-    public function addCourseUserFailure(int $userId, int $courseId, ?string $roleName, ?int $roleId)
+    public function addCourseUserFailure(int $userId, int $courseId, ?string $roleName, ?int $roleId, ?bool $isActive)
     {
         $this->expectException(PDOException::class);
-        CourseUser::addCourseUser($userId, $courseId, $roleName, $roleId);
+        CourseUser::addCourseUser($userId, $courseId, $roleName, $roleId, $isActive);
         $this->assertCount(1, $this->course->getCourseUsers());
         $this->assertFalse((new CourseUser($userId, new Course($courseId)))->exists());
     }
 
     /**
      * @test
+     * @throws Exception
      */
     public function addCourseUserAlreadyInCourse()
     {
@@ -416,9 +564,38 @@ class CourseUserTest extends TestCase
         $this->assertTrue((new CourseUser($this->user->getId(), $this->course))->exists());
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function addCourseUserInactiveUserActiveInCourse()
+    {
+        $this->user->setActive(false);
+        $this->expectException(Exception::class);
+        CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
+    }
 
     /**
      * @test
+     * @throws Exception
+     */
+    public function addCourseUserInactiveUserInactiveInCourse()
+    {
+        $this->user->setActive(false);
+        CourseUser::addCourseUser($this->user->getId(), $this->course->getId(), null, null, false);
+
+        $this->assertCount(2, (new Course($this->course->getId()))->getCourseUsers());
+
+        $courseUser = new CourseUser($this->user->getId(), new Course($this->course->getId()));
+        $this->assertEquals($this->user->getId(), $courseUser->getId());
+        $this->assertEquals($this->course->getId(), $courseUser->getCourse()->getId());
+        $this->assertTrue($courseUser->exists());
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
      */
     public function deleteCourseUser()
     {
@@ -444,6 +621,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function courseUserExists()
     {
@@ -463,6 +641,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getRolesNames()
     {
@@ -504,6 +683,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getRolesNamesNoRoles()
     {
@@ -540,6 +720,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getRolesInfo()
     {
@@ -590,6 +771,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getRolesInfoNoRoles()
     {
@@ -626,6 +808,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getRolesNamesSortedByMostSpecific()
     {
@@ -671,6 +854,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getRolesNamesSortedByMostSpecificNoRoles()
     {
@@ -707,6 +891,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getRolesHierarchy()
     {
@@ -778,6 +963,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getRolesHierarchyNoRoles()
     {
@@ -815,6 +1001,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setRoles()
     {
@@ -830,6 +1017,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setRolesNoPreviousRoles()
     {
@@ -845,6 +1033,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setRolesEmpty()
     {
@@ -859,6 +1048,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addRoleByName()
     {
@@ -873,6 +1063,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addRoleById()
     {
@@ -887,6 +1078,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addRoleNoRoleGiven()
     {
@@ -897,6 +1089,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addRoleRolesDoesntExist()
     {
@@ -907,6 +1100,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addRoleDuplicateRole()
     {
@@ -922,6 +1116,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function removeRoleByName()
     {
@@ -937,6 +1132,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function removeRoleById()
     {
@@ -952,6 +1148,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function removeRoleNoRoleGiven()
     {
@@ -965,6 +1162,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function hasRoleByName()
     {
@@ -975,6 +1173,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function hasRoleById()
     {
@@ -985,6 +1184,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function hasRoleNoRoleGiven()
     {
@@ -997,6 +1197,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function doesntHaveRole()
     {
@@ -1008,6 +1209,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importCourseUsersWithHeaderUniqueCourseUsersNoReplace()
     {
@@ -1080,13 +1282,14 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importCourseUsersWithHeaderNonUniqueCourseUsersNoReplace()
     {
         // Given
         $user = User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
-            84715, "Ana G", "MEIC-A", true, false);
-        CourseUser::addCourseUser($user->getId(), $this->course->getId(), "Teacher");
+            84715, "Ana G", "MEIC-A", false, true);
+        CourseUser::addCourseUser($user->getId(), $this->course->getId(), "Teacher", null, false);
 
         $file = "name,email,major,nickname,studentNumber,username,authentication_service,isAdmin,isActive,isActiveInCourse,roles\n";
         $file .= "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1,1,Student\n";
@@ -1112,8 +1315,8 @@ class CourseUserTest extends TestCase
 
         $expectedUser0 = ["id" => 3, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "authentication_service" => AuthService::FENIX, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
         $expectedUser1 = ["id" => 4, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
             "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
@@ -1156,13 +1359,14 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importCourseUsersWithHeaderNonUniqueCourseUsersReplace()
     {
         // Given
         $user = User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
             84715, "Ana G", "MEIC-A", true, false);
-        CourseUser::addCourseUser($user->getId(), $this->course->getId(), "Teacher");
+        CourseUser::addCourseUser($user->getId(), $this->course->getId(), "Teacher", null, false);
 
         $file = "name,email,major,nickname,studentNumber,username,authentication_service,isAdmin,isActive,isActiveInCourse,roles\n";
         $file .= "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1,1,Student\n";
@@ -1232,6 +1436,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importCourseUsersWithNoHeaderUniqueCourseUsersReplace()
     {
@@ -1303,13 +1508,14 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importCourseUsersWithNoHeaderNonUniqueCourseUsersReplace()
     {
         // Given
         $user = User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
             84715, "Ana G", "MEIC-A", true, false);
-        CourseUser::addCourseUser($user->getId(), $this->course->getId(), "Teacher");
+        CourseUser::addCourseUser($user->getId(), $this->course->getId(), "Teacher", null, false);
 
         $file = "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1,1,Student\n";
         $file .= "Inês Albano,ines.albano@tecnico.ulisboa.pt,MEIC-A,,87664,ist187664,linkedin,0,1,1,Student\n";
@@ -1378,13 +1584,14 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importCourseUsersWithNoHeaderNonUniqueCourseUsersNoReplace()
     {
         // Given
         $user = User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
-            84715, "Ana G", "MEIC-A", true, false);
-        CourseUser::addCourseUser($user->getId(), $this->course->getId(), "Teacher");
+            84715, "Ana G", "MEIC-A", false, true);
+        CourseUser::addCourseUser($user->getId(), $this->course->getId(), "Teacher", null, false);
 
         $file = "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1,1,Student\n";
         $file .= "Inês Albano,ines.albano@tecnico.ulisboa.pt,MEIC-A,,87664,ist187664,linkedin,0,1,1,Student\n";
@@ -1409,8 +1616,8 @@ class CourseUserTest extends TestCase
 
         $expectedUser0 = ["id" => 3, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "authentication_service" => AuthService::FENIX, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
         $expectedUser1 = ["id" => 4, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
             "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
@@ -1453,14 +1660,15 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importCourseUsersIsAlreadyUserOfSystemNoReplace()
     {
         // Given
-        $user = User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
-            84715, "Ana G", "MEIC-A", true, false);
+        User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
+            84715, "Ana G", "MEIC-A", false, true);
 
-        $file = "Ana Rita Gonçalves,ana.goncalves@hotmail.com,MEIC-A,Ana G,84715,ist426015,fenix,1,1,1,Student";
+        $file = "Ana Rita Gonçalves,ana.goncalves@hotmail.com,MEIC-A,Ana G,84715,ist426015,fenix,1,1,0,Student";
 
         // When
         $nrUsersImported = CourseUser::importCourseUsers($this->course->getId(), $file, false);
@@ -1476,8 +1684,8 @@ class CourseUserTest extends TestCase
         $user1 = new CourseUser(User::getUserByStudentNumber(84715)->getId(), $this->course);
         $expectedUser1 = ["id" => 3, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "authentication_service" => AuthService::FENIX, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
         $this->assertEquals($expectedUser1, $user1->getData());
 
         $user1Roles = $user1->getRoles();
@@ -1488,11 +1696,12 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importCourseUsersIsAlreadyUserOfSystemReplace()
     {
         // Given
-        $user = User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
+        User::addUser("Ana Rita Gonçalves", "ist426015", AuthService::FENIX, "ana.goncalves@hotmail.com",
             84715, "Ana G", "MEIC-A", true, false);
 
         $file = "Ana Rita Gonçalves,ana.goncalves@hotmail.com,MEIC-A,Ana G,84715,ist426015,fenix,1,1,1,Student";
@@ -1523,6 +1732,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importCourseUsersEmptyFileNoHeaderNoCourseUsers()
     {
@@ -1539,6 +1749,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importCourseUsersEmptyFileNoHeaderWithCourseUsers()
     {
@@ -1549,7 +1760,7 @@ class CourseUserTest extends TestCase
         $user3 = User::addUser("Sabri M'Barki", "ist1100956", AuthService::FENIX, "sabri.m.barki@efrei.net",
             100956, "Sabri M'Barki", "MEIC-T", true, true);
 
-        CourseUser::addCourseUser($user1->getId(), $this->course->getId(), "Teacher");
+        CourseUser::addCourseUser($user1->getId(), $this->course->getId(), "Teacher", null, false);
         CourseUser::addCourseUser($user2->getId(), $this->course->getId(), "Student");
         CourseUser::addCourseUser($user3->getId(), $this->course->getId(), "Student");
 
@@ -1566,6 +1777,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function importCourseUsersEmptyFileWithHeaderWithCourseUsers()
     {
@@ -1576,7 +1788,7 @@ class CourseUserTest extends TestCase
         $user3 = User::addUser("Sabri M'Barki", "ist1100956", AuthService::FENIX, "sabri.m.barki@efrei.net",
             100956, "Sabri M'Barki", "MEIC-T", true, true);
 
-        CourseUser::addCourseUser($user1->getId(), $this->course->getId(), "Teacher");
+        CourseUser::addCourseUser($user1->getId(), $this->course->getId(), "Teacher", null, false);
         CourseUser::addCourseUser($user2->getId(), $this->course->getId(), "Student");
         CourseUser::addCourseUser($user3->getId(), $this->course->getId(), "Student");
 
@@ -1603,6 +1815,7 @@ class CourseUserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function exportCourseUsers()
     {
@@ -1618,17 +1831,17 @@ class CourseUserTest extends TestCase
             86893, "Mariana Brandão", "MEMec", false, false);
 
         CourseUser::addCourseUser($user1->getId(), $this->course->getId(), "Student");
-        CourseUser::addCourseUser($user2->getId(), $this->course->getId(), "Student");
+        CourseUser::addCourseUser($user2->getId(), $this->course->getId(), "Student", null, false);
         CourseUser::addCourseUser($user3->getId(), $this->course->getId(), "Student");
         CourseUser::addCourseUser($user4->getId(), $this->course->getId(), "Teacher");
-        $courseUser = CourseUser::addCourseUser($user5->getId(), $this->course->getId());
+        $courseUser = CourseUser::addCourseUser($user5->getId(), $this->course->getId(), null, null, false);
         $courseUser->setRoles(["Teacher", "Student"]);
         $courseUser->setActive(false);
 
         $expectedFile = "name,email,major,nickname,studentNumber,username,authentication_service,isAdmin,isActive,isActiveInCourse,roles\n";
         $expectedFile .= "John Smith Doe,johndoe@email.com,MEIC-A,John Doe,123456,ist123456,fenix,1,1,1,Teacher\n";
         $expectedFile .= "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1,1,Student\n";
-        $expectedFile .= "Marcus Notø,marcus.n.hansen@gmail.com,MEEC,Marcus Notø,1101036,ist1101036,fenix,1,0,1,Student\n";
+        $expectedFile .= "Marcus Notø,marcus.n.hansen@gmail.com,MEEC,Marcus Notø,1101036,ist1101036,fenix,1,0,0,Student\n";
         $expectedFile .= "Inês Albano,ines.albano@tecnico.ulisboa.pt,MEIC-A,,87664,ist187664,fenix,0,1,1,Student\n";
         $expectedFile .= "Filipe José Zillo Colaço,fijozico@hotmail.com,LEIC-T,,84715,ist426015,fenix,0,1,1,Teacher\n";
         $expectedFile .= "Mariana Wong Brandão,marianawbrandao@icloud.com,MEMec,Mariana Brandão,86893,ist186893,fenix,0,0,0,Teacher Student";

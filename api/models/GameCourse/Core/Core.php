@@ -29,6 +29,11 @@ class Core
     /*** ------------------ Database ------------------- ***/
     /*** ----------------------------------------------- ***/
 
+    /**
+     * Get an instance of the database.
+     *
+     * @return Database
+     */
     public static function database(): Database
     {
         return Database::get();
@@ -39,6 +44,14 @@ class Core
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/
 
+    /**
+     * Checks whether the system stills needs to be set up.
+     * If $performSetup is true, throws an error if setup is
+     * not yet done.
+     *
+     * @param bool $performSetup
+     * @return bool
+     */
     public static function requireSetup(bool $performSetup = true): bool
     {
         $needsSetup = !file_exists(ROOT_PATH . 'setup/setup.done');
@@ -47,6 +60,12 @@ class Core
         return $needsSetup;
     }
 
+    /**
+     * Resets the system to a clean state.
+     *
+     * @return void
+     * @throws Exception
+     */
     public static function resetGameCourse()
     {
         Core::database()->cleanDatabase(true);

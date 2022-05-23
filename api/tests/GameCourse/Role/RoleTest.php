@@ -198,6 +198,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getCourseRolesNamesNoRoles()
     {
@@ -232,6 +233,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getCourseRolesInfoNoRoles()
     {
@@ -259,6 +261,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getCourseRolesNamesSortedByMostSpecificNoRoles()
     {
@@ -327,6 +330,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getCourseRolesHierarchyNoRoles()
     {
@@ -386,6 +390,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addRoleToCourse()
     {
@@ -397,6 +402,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addRoleToCourseRoleAlreadyExists()
     {
@@ -518,6 +524,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserRolesNamesNoRoles()
     {
@@ -551,6 +558,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserRolesInfoNoRoles()
     {
@@ -577,6 +585,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserRolesNamesSortedByMostSpecificNoRoles()
     {
@@ -620,6 +629,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getUserRolesHierarchyNoRoles()
     {
@@ -637,6 +647,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setUserRolesByNames()
     {
@@ -650,6 +661,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setUserRolesByNamesRolesNotInCourse()
     {

@@ -689,6 +689,55 @@ class UserTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
+     */
+    public function setInactiveUserNotInAnyCourse()
+    {
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, true);
+        $user->setActive(false);
+        $this->assertFalse($user->isActive());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setInactiveUserNotActiveInAnyCourse()
+    {
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($user);
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $courseUser = $course->getCourseUserById($user->getId());
+        $courseUser->setActive(false);
+
+        $user->setActive(false);
+        $this->assertFalse($user->isActive());
+        $this->assertFalse($courseUser->isActive());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setInactiveUserActiveInCourse()
+    {
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($user);
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $courseUser = $course->getCourseUserById($user->getId());
+
+        $user->setActive(false);
+        $this->assertFalse($user->isActive());
+        $this->assertFalse($courseUser->isActive());
+    }
+
+    /**
+     * @test
      * @dataProvider setDataSuccessProvider
      * @throws Exception
      */
@@ -912,7 +961,7 @@ class UserTest extends TestCase
     public function getAllUsers()
     {
         $user1 = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
-            123456, "John Doe", "MEIC-A", false, false);
+            123456, "John Doe", "MEIC-A", true, true);
         $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, false);
 

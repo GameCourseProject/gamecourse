@@ -36,7 +36,7 @@ CREATE TABLE course(
 	isActive                    boolean DEFAULT TRUE,
 	isVisible                   boolean DEFAULT TRUE,
 	roleHierarchy               text,
-	theme                       varchar(50),
+	theme                       varchar(50) DEFAULT NULL,
 
     UNIQUE key(name, year),
     FOREIGN key(landingPage) REFERENCES page(id) ON DELETE CASCADE
@@ -44,8 +44,8 @@ CREATE TABLE course(
 SET FOREIGN_KEY_CHECKS=1;
 
 CREATE TABLE course_user(
-    id                          int unsigned,
-   	course                      int unsigned,
+    id                          int unsigned NOT NULL,
+   	course                      int unsigned NOT NULL,
     lastActivity                TIMESTAMP NULL,
 	isActive                    boolean NOT NULL DEFAULT TRUE,
 

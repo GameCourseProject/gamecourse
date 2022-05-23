@@ -2,6 +2,7 @@
 namespace GameCourse\User;
 
 use Exception;
+use GameCourse\Core\Auth;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Role\Role;
@@ -114,7 +115,6 @@ class CourseUser extends User
      */
     public function setLastActivity(?string $lastActivity)
     {
-        self::validateDateTime($lastActivity);
         $this->setData(["lastActivity" => $lastActivity]);
     }
 
@@ -136,6 +136,7 @@ class CourseUser extends User
     public function setData(array $fieldValues)
     {
         if (key_exists("lastActivity", $fieldValues)) self::validateDateTime($fieldValues["lastActivity"]);
+        if (key_exists("isActive", $fieldValues)) self::validateState($this->id, $fieldValues["isActive"]);
 
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_COURSE_USER, $fieldValues, ["id" => $this->id, "course" => $this->course->getId()]);
@@ -145,6 +146,84 @@ class CourseUser extends User
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- General --------------------- ***/
     /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets a course user by its ID.
+     * Returns null if course user doesn't exist.
+     *
+     * @param int $userId
+     * @param Course $course
+     * @return CourseUser|null
+     */
+    public static function getCourseUserById(int $userId, Course $course): ?CourseUser
+    {
+        $courseUser = new CourseUser($userId, $course);
+        if ($courseUser->exists()) return $courseUser;
+        else return null;
+    }
+
+    /**
+     * Gets a course user by its username.
+     * Returns null if course user doesn't exist.
+     *
+     * @param string $username
+     * @param Course $course
+     * @param string|null $authService
+     * @return CourseUser|null
+     * @throws Exception
+     */
+    public static function getCourseUserByUsername(string $username, Course $course, string $authService = null): ?CourseUser
+    {
+        $table = self::TABLE_COURSE_USER . " cu LEFT JOIN " . Auth::TABLE_AUTH . " a on cu.id=a.user";
+        if (!$authService) {
+            $userIds = Core::database()->selectMultiple($table, ["username" => $username], "a.user");
+            $nrCourseUsersWithUsername = count($userIds);
+
+            if ($nrCourseUsersWithUsername > 1)
+                throw new Exception("Cannot get course user by username: there's multiple users with username '" . $username . "' in course with ID = " . $course->getId() . ".");
+
+            $userId = $nrCourseUsersWithUsername < 1 ? null : intval($userIds[0]);
+
+        } else {
+            self::validateAuthService($authService);
+            $userId = intval(Core::database()->select($table, ["username" => $username, "authentication_service" => $authService], "user"));
+        }
+
+        if (!$userId) return null;
+        else return new CourseUser($userId, $course);
+    }
+
+    /**
+     * Gets a course user by its e-mail.
+     * Returns null if course user doesn't exist.
+     *
+     * @param string $email
+     * @param Course $course
+     * @return CourseUser|null
+     */
+    public static function getCourseUserByEmail(string $email, Course $course): ?CourseUser
+    {
+        $table = self::TABLE_COURSE_USER . " cu LEFT JOIN " . self::TABLE_USER . " u on cu.id=u.id";
+        $userId = intval(Core::database()->select($table, ["email" => $email], "u.id"));
+        if (!$userId) return null;
+        else return new CourseUser($userId, $course);
+    }
+
+    /**
+     * Gets a course user by its student number.
+     * Returns null if course user doesn't exist.
+     *
+     * @param int $studentNumber
+     * @param Course $course
+     * @return CourseUser|null
+     */
+    public static function getCourseUserByStudentNumber(int $studentNumber, Course $course): ?CourseUser
+    {
+        $table = self::TABLE_COURSE_USER . " cu LEFT JOIN " . self::TABLE_USER . " u on cu.id=u.id";
+        $userId = intval(Core::database()->select($table, ["studentNumber" => $studentNumber], "u.id"));
+        if (!$userId) return null;
+        else return new CourseUser($userId, $course);
+    }
 
     /**
      * Updates course user's lastActivity to current time.
@@ -160,6 +239,7 @@ class CourseUser extends User
     /**
      * Checks whether course user is a teacher of the course.
      * @return bool
+     * @throws Exception
      */
     public function isTeacher(): bool
     {
@@ -169,6 +249,7 @@ class CourseUser extends User
     /**
      * Checks whether course user is a student of the course.
      * @return bool
+     * @throws Exception
      */
     public function isStudent(): bool
     {
@@ -189,13 +270,19 @@ class CourseUser extends User
      * @param int $courseId
      * @param string|null $roleName
      * @param int|null $roleId
+     * @param bool $isActive
      * @return CourseUser
      * @throws Exception
      */
-    public static function addCourseUser(int $userId, int $courseId, string $roleName = null, int $roleId = null): CourseUser
+    public static function addCourseUser(int $userId, int $courseId, string $roleName = null, int $roleId = null, bool $isActive = true): CourseUser
     {
         // Create new course user
-        Core::database()->insert(self::TABLE_COURSE_USER, ["id" => $userId, "course" => $courseId]);
+        self::validateState($userId, $isActive);
+        Core::database()->insert(self::TABLE_COURSE_USER, [
+            "id" => $userId,
+            "course" => $courseId,
+            "isActive" => +$isActive
+        ]);
         $courseUser = new CourseUser($userId, new Course($courseId));
 
         // Add role
@@ -381,8 +468,7 @@ class CourseUser extends User
                 }
 
             } else { // user not yet added to course
-                $courseUser = $course->addUserToCourse($user->getId());
-                $courseUser->setActive($isActiveInCourse);
+                $courseUser = $course->addUserToCourse($user->getId(), null, null, $isActiveInCourse);
                 if ($roles) // set user roles in course
                     $courseUser->setRoles(array_map("trim", preg_split("/\s+/", $roles)));
                 return 1;
@@ -417,6 +503,8 @@ class CourseUser extends User
     /*** ---------------------------------------------------- ***/
 
     /**
+     * Validate datetime.
+     *
      * @param $dateTime
      * @return void
      * @throws Exception
@@ -426,6 +514,25 @@ class CourseUser extends User
         if (is_null($dateTime)) return;
         if (!is_string($dateTime) || !Utils::isValidDate($dateTime, "Y-m-d H:i:s"))
             throw new Exception("Datetime '" . $dateTime . "' should be in format 'yyyy-mm-dd HH:mm:ss'");
+    }
+
+    /**
+     * Validate user is active in the system when trying to
+     * set course user as active.
+     *
+     * @param int $userId
+     * @param bool $isActive
+     * @return void
+     * @throws Exception
+     */
+    private static function validateState(int $userId, bool $isActive)
+    {
+        // If active, check that user is active in the systemd
+        if ($isActive) {
+            $user = User::getUserById($userId);
+            if ($user && !$user->isActive())
+                throw new Exception("User with ID = " . $userId . " must be active in the system.");
+        }
     }
 
 

@@ -2,7 +2,6 @@
 namespace GameCourse\AutoGame;
 
 use Exception;
-use GameCourse\Core\Auth;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -105,6 +104,7 @@ class AutoGameTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function copyAutoGameInfo()
     {
@@ -136,6 +136,7 @@ class AutoGameTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function deleteAutoGameInfo()
     {

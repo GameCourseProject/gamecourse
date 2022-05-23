@@ -3,7 +3,6 @@ namespace GameCourse\Course;
 
 use Exception;
 use GameCourse\AutoGame\AutoGame;
-use GameCourse\Core\Auth;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
@@ -122,6 +121,8 @@ class CourseTest extends TestCase
         return [
             "RGB" => ["rgb(255,255,255)"],
             "words" => ["white"],
+            "only numbers" => ["123"],
+            "not a string" => [123],
             "empty" => [""]
         ];
     }
@@ -138,7 +139,8 @@ class CourseTest extends TestCase
         return [
             "null" => [null],
             "empty" => [""],
-            "invalid format" => ["21-21"]
+            "invalid format" => ["21-22"],
+            "only one year" => ["2021"]
         ];
     }
 
@@ -196,6 +198,7 @@ class CourseTest extends TestCase
     {
         return [
             ["invalid name" => ["name" => "*!"]],
+            ["invalid short" => ["short" => ""]],
             ["invalid color" => ["color" => "white"]],
             ["invalid year" => ["color" => "20-21"]],
             ["invalid start date" => ["startDate" => "2022-04-20"]],
@@ -207,6 +210,7 @@ class CourseTest extends TestCase
     public function dateTimeSuccessProvider(): array
     {
         return [
+            "null" => [null],
             "valid format" => ["2022-04-20 20:43:00"]
         ];
     }
@@ -215,7 +219,8 @@ class CourseTest extends TestCase
     {
         return [
             "only date" => ["2022-04-20"],
-            "only time" => ["20:43:00"]
+            "only time" => ["20:43:00"],
+            "empty" => [""]
         ];
     }
 
@@ -445,19 +450,8 @@ class CourseTest extends TestCase
         $this->assertEquals(["id" => 1, "name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
             "color" => "#ffffff", "startDate" => null, "endDate" => null, "isActive" => true, "isVisible" => false,
             "landingPage" => null, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
-            "theme" => null, "folder" => "course_data/1-Producao de Conteudos Multimedia"],
+            "theme" => null],
             $course->getData());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function getDataOnlyFolder()
-    {
-        $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
-            null, null, true, false);
-        $this->assertEquals("course_data/1-Producao de Conteudos Multimedia", $course->getData("folder"));
     }
 
 
@@ -686,7 +680,6 @@ class CourseTest extends TestCase
         $course->setData($fieldValues);
         $fieldValues["id"] = $course->getId();
         $fieldValues["roleHierarchy"] = $course->getRolesHierarchy();
-        $fieldValues["folder"] = $course->getDataFolder(false);
         $this->assertEquals($course->getData(), array_merge($fieldValues, ["id" => $course->getId()]));
     }
 
@@ -707,21 +700,40 @@ class CourseTest extends TestCase
             $this->assertEquals(["id" => 1, "name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
                 "color" => "#ffffff", "startDate" => null, "endDate" => null, "landingPage" => null, "isActive" => true,
                 "isVisible" => false, "roleHierarchy" => [["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]],
-                "theme" => null, "folder" => $course->getDataFolder(false)], $course->getData());
+                "theme" => null], $course->getData());
         }
     }
 
     /**
      * @test
+     * @dataProvider setCourseNameSuccessProvider
      * @throws Exception
      */
-    public function setDataName()
+    public function setDataNameSuccess(string $name)
     {
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
-        $course->setData(["name" => "Multimedia Content Production"]);
-        $this->assertEquals("Multimedia Content Production", $course->getName());
-        $this->assertTrue(file_exists(COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::swapNonENChars("Multimedia Content Production")));
+        $course->setName($name);
+        $this->assertEquals($name, $course->getName());
+        $this->assertTrue(file_exists(COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::swapNonENChars($name)));
+    }
+
+    /**
+     * @test
+     * @dataProvider setCourseNameFailureProvider
+     * @throws Exception
+     */
+    public function setDataNameFailure($name)
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
+            null, null, true, false);
+        try {
+            $course->setName($name);
+            $this->fail("Exception should have been thrown on 'setCourseNameFailure'");
+
+        } catch (Exception|TypeError $error) {
+            $this->assertEquals("Produção de Conteúdos Multimédia", $course->getName());
+        }
     }
 
     /**
@@ -794,8 +806,10 @@ class CourseTest extends TestCase
         $this->assertCount(2, $courses);
 
         $keys = ["id", "name", "short", "color", "year", "startDate", "endDate", "landingPage", "theme", "roleHierarchy", "isActive", "isVisible"];
+        $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($courses as $i => $course) {
+                $this->assertCount($nrKeys, array_keys($course));
                 $this->assertArrayHasKey($key, $course);
                 $this->assertEquals($course[$key], ${"course".($i+1)}->getData($key));
             }
@@ -810,7 +824,7 @@ class CourseTest extends TestCase
     {
         $course1 = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, true);
-        $course2 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#000000",
+        Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#000000",
             null, null, false, false);
 
         $courses = Course::getCourses(true);
@@ -818,8 +832,10 @@ class CourseTest extends TestCase
         $this->assertCount(1, $courses);
 
         $keys = ["id", "name", "short", "color", "year", "startDate", "endDate", "landingPage", "theme", "roleHierarchy", "isActive", "isVisible"];
+        $nrKeys = count($keys);
         foreach ($keys as $key) {
-            foreach ($courses as $i => $course) {
+            foreach ($courses as $course) {
+                $this->assertCount($nrKeys, array_keys($course));
                 $this->assertArrayHasKey($key, $course);
                 $this->assertEquals($course[$key], $course1->getData($key));
             }
@@ -832,7 +848,7 @@ class CourseTest extends TestCase
      */
     public function getInactiveCourses()
     {
-        $course1 = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
+        Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, true);
         $course2 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#000000",
             null, null, false, false);
@@ -842,8 +858,88 @@ class CourseTest extends TestCase
         $this->assertCount(1, $courses);
 
         $keys = ["id", "name", "short", "color", "year", "startDate", "endDate", "landingPage", "theme", "roleHierarchy", "isActive", "isVisible"];
+        $nrKeys = count($keys);
         foreach ($keys as $key) {
-            foreach ($courses as $i => $course) {
+            foreach ($courses as $course) {
+                $this->assertCount($nrKeys, array_keys($course));
+                $this->assertArrayHasKey($key, $course);
+                $this->assertEquals($course[$key], $course2->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getVisibleCourses()
+    {
+        $course1 = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
+            null, null, true, true);
+        Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#000000",
+            null, null, false, false);
+
+        $courses = Course::getCourses(null, true);
+        $this->assertIsArray($courses);
+        $this->assertCount(1, $courses);
+
+        $keys = ["id", "name", "short", "color", "year", "startDate", "endDate", "landingPage", "theme", "roleHierarchy", "isActive", "isVisible"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($courses as $course) {
+                $this->assertCount($nrKeys, array_keys($course));
+                $this->assertArrayHasKey($key, $course);
+                $this->assertEquals($course[$key], $course1->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getInvisibleCourses()
+    {
+        Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $course2 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#000000",
+            null, null, false, false);
+
+        $courses = Course::getCourses(null, false);
+        $this->assertIsArray($courses);
+        $this->assertCount(1, $courses);
+
+        $keys = ["id", "name", "short", "color", "year", "startDate", "endDate", "landingPage", "theme", "roleHierarchy", "isActive", "isVisible"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($courses as $course) {
+                $this->assertCount($nrKeys, array_keys($course));
+                $this->assertArrayHasKey($key, $course);
+                $this->assertEquals($course[$key], $course2->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getInactiveAndVisibleCourses()
+    {
+        Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $course2 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#000000",
+            null, null, false, true);
+
+        $courses = Course::getCourses(false, true);
+        $this->assertIsArray($courses);
+        $this->assertCount(1, $courses);
+
+        $keys = ["id", "name", "short", "color", "year", "startDate", "endDate", "landingPage", "theme", "roleHierarchy", "isActive", "isVisible"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($courses as $course) {
+                $this->assertCount($nrKeys, array_keys($course));
                 $this->assertArrayHasKey($key, $course);
                 $this->assertEquals($course[$key], $course2->getData($key));
             }
@@ -861,11 +957,11 @@ class CourseTest extends TestCase
     {
         $course = Course::addCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
 
-        // Check is added on database
+        // Check is added to database
         $courseDB = Core::database()->select(Course::TABLE_COURSE, ["id" => $course->getId()]);
-        $courseData = array("id" => strval($course->getId()), "name" => $name, "short" => $short, "year" => $year, "color" => $color,
-            "startDate" => $startDate, "endDate" => $endDate, "landingPage" => null,
-            "isActive" => strval(+$isActive), "isVisible" => strval(+$isVisible), "roleHierarchy" => '[{"name":"Teacher"},{"name":"Student"},{"name":"Watcher"}]',
+        $courseData = array("id" => strval($course->getId()), "name" => $name, "short" => $short, "year" => $year,
+            "color" => $color, "startDate" => $startDate, "endDate" => $endDate, "landingPage" => null, "isActive" => strval(+$isActive),
+            "isVisible" => strval(+$isVisible), "roleHierarchy" => '[{"name":"Teacher"},{"name":"Student"},{"name":"Watcher"}]',
             "theme" => null);
         $this->assertEquals($courseData, $courseDB);
 
@@ -886,6 +982,7 @@ class CourseTest extends TestCase
         $this->assertSameSize($modules, $courseModules);
         foreach ($courseModules as $i => $courseModule) {
             $this->assertFalse($courseModule["isEnabled"]);
+            $this->assertEquals($modules[$i]["id"], $courseModule["id"]);
             $this->assertEquals($modules[$i]["version"], $courseModule["minModuleVersion"]);
             $this->assertNull($courseModule["maxModuleVersion"]);
         }
@@ -979,9 +1076,9 @@ class CourseTest extends TestCase
      */
     public function editCourseFailure($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible)
     {
+        $course = Course::addCourse("Computação Móvel e Ubíqua", "CMU", "2020-2021", "#000000",
+            null, null, true, false);
         try {
-            $course = Course::addCourse("Computação Móvel e Ubíqua", "CMU", "2020-2021", "#000000",
-                null, null, true, false);
             $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
             $this->fail("Exception should have been thrown on 'editCourseFailure'");
 
@@ -1079,5 +1176,734 @@ class CourseTest extends TestCase
     {
         $course = new Course(1);
         $this->assertFalse($course->exists());
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserById()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $user = Core::getLoggedUser();
+        $this->assertEquals(new CourseUser($user->getId(), $course), $course->getCourseUserById($user->getId()));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByIdUserNotInCourse()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $this->assertNull($course->getCourseUserById($user->getId()));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByUsername()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $user = Core::getLoggedUser();
+        $this->assertEquals(new CourseUser($user->getId(), $course), $course->getCourseUserByUsername($user->getUsername()));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByUsernameAuthServiceDoesntExist()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $user = Core::getLoggedUser();
+        $this->expectException(Exception::class);
+        $course->getCourseUserByUsername($user->getUsername(), "auth_service");
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByUsernameUserNotInCourse()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $this->assertNull($course->getCourseUserByUsername("username"));
+        $this->assertNull($course->getCourseUserByUsername("username", AuthService::FENIX));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByUsernameMultipleUsersWithAuthService()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist123456", AuthService::GOOGLE, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $course->addUserToCourse($user2->getId());
+        $this->assertEquals(new CourseUser($user1->getId(), $course), $course->getCourseUserByUsername($user1->getUsername(), AuthService::FENIX));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByUsernameMultipleUsersWithoutAuthService()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist123456", AuthService::GOOGLE, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $course->addUserToCourse($user2->getId());
+        $this->expectException(Exception::class);
+        $course->getCourseUserByUsername($user1->getUsername());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByEmail()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $user = Core::getLoggedUser();
+        $this->assertEquals(new CourseUser($user->getId(), $course), $course->getCourseUserByEmail($user->getEmail()));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByEmailUserNotInCourse()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $this->assertNull($course->getCourseUserByEmail($user->getEmail()));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByStudentNumber()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $user = Core::getLoggedUser();
+        $this->assertEquals(new CourseUser($user->getId(), $course), $course->getCourseUserByStudentNumber($user->getStudentNumber()));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUserByStudentNumberUserNotInCourse()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $this->assertNull($course->getCourseUserByStudentNumber($user->getStudentNumber()));
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getAllCourseUsers()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $courseUser1 = $course->getCourseUserById($user1->getId());
+        $courseUser2 = $course->addUserToCourse($user2->getId());
+        $courseUser3 = $course->addUserToCourse($user3->getId());
+        $courseUser3->setActive(false);
+
+        $courseUsers = $course->getCourseUsers();
+        $this->assertIsArray($courseUsers);
+        $this->assertCount(3, $courseUsers);
+
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($courseUsers as $i => $courseUser) {
+                $this->assertCount($nrKeys, array_keys($courseUser));
+                $this->assertArrayHasKey($key, $courseUser);
+                if ($key === "isActive") $this->assertEquals($courseUser[$key], ${"user".($i+1)}->getData($key));
+                else if ($key === "isActiveInCourse") $this->assertEquals($courseUser[$key], ${"courseUser".($i+1)}->getData("isActive"));
+                else $this->assertEquals($courseUser[$key], ${"courseUser".($i+1)}->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getActiveCourseUsers()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $courseUser1 = $course->getCourseUserById($user1->getId());
+        $courseUser2 = $course->addUserToCourse($user2->getId());
+        $courseUser3 = $course->addUserToCourse($user3->getId());
+        $courseUser3->setActive(false);
+
+        $courseUsers = $course->getCourseUsers(true);
+        $this->assertIsArray($courseUsers);
+        $this->assertCount(2, $courseUsers);
+
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($courseUsers as $i => $courseUser) {
+                $this->assertCount($nrKeys, array_keys($courseUser));
+                $this->assertArrayHasKey($key, $courseUser);
+                if ($key === "isActive") $this->assertEquals($courseUser[$key], ${"user".($i+1)}->getData($key));
+                else if ($key === "isActiveInCourse") $this->assertEquals($courseUser[$key], ${"courseUser".($i+1)}->getData("isActive"));
+                else $this->assertEquals($courseUser[$key], ${"courseUser".($i+1)}->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getInactiveCourseUsers()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $course->getCourseUserById($user1->getId());
+        $course->addUserToCourse($user2->getId());
+        $courseUser3 = $course->addUserToCourse($user3->getId());
+        $courseUser3->setActive(false);
+
+        $courseUsers = $course->getCourseUsers(false);
+        $this->assertIsArray($courseUsers);
+        $this->assertCount(1, $courseUsers);
+
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($courseUsers as $courseUser) {
+                $this->assertCount($nrKeys, array_keys($courseUser));
+                $this->assertArrayHasKey($key, $courseUser);
+                if ($key === "isActive") $this->assertEquals($courseUser[$key], $user3->getData($key));
+                else if ($key === "isActiveInCourse") $this->assertEquals($courseUser[$key], $courseUser3->getData("isActive"));
+                else $this->assertEquals($courseUser[$key], $courseUser3->getData($key));
+            }
+        }
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUsersWithRoleName()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $course->getCourseUserById($user1->getId());
+        $courseUser2 = $course->addUserToCourse($user2->getId(), "Student");
+        $courseUser3 = $course->addUserToCourse($user3->getId(), "Watcher");
+        $courseUser3->setActive(false);
+
+        $courseUsers = $course->getCourseUsersWithRole(null, "Student");
+        $this->assertIsArray($courseUsers);
+        $this->assertCount(1, $courseUsers);
+
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($courseUsers as $courseUser) {
+                $this->assertCount($nrKeys, array_keys($courseUser));
+                $this->assertArrayHasKey($key, $courseUser);
+                if ($key === "isActive") $this->assertEquals($courseUser[$key], $user2->getData($key));
+                else if ($key === "isActiveInCourse") $this->assertEquals($courseUser[$key], $courseUser2->getData("isActive"));
+                else $this->assertEquals($courseUser[$key], $courseUser2->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUsersWithRoleID()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $course->getCourseUserById($user1->getId());
+        $course->addUserToCourse($user2->getId(), "Student");
+        $courseUser3 = $course->addUserToCourse($user3->getId(), "Watcher");
+        $courseUser3->setActive(false);
+
+        $courseUsers = $course->getCourseUsersWithRole(null, null, Role::getRoleId("Watcher", $course->getId()));
+        $this->assertIsArray($courseUsers);
+        $this->assertCount(1, $courseUsers);
+
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($courseUsers as $courseUser) {
+                $this->assertCount($nrKeys, array_keys($courseUser));
+                $this->assertArrayHasKey($key, $courseUser);
+                if ($key === "isActive") $this->assertEquals($courseUser[$key], $user3->getData($key));
+                else if ($key === "isActiveInCourse") $this->assertEquals($courseUser[$key], $courseUser3->getData("isActive"));
+                else $this->assertEquals($courseUser[$key], $courseUser3->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUsersWithRoleNameRoleDoesntExist()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $course->getCourseUserById($user1->getId());
+        $course->addUserToCourse($user2->getId(), "Student");
+        $courseUser3 = $course->addUserToCourse($user3->getId(), "Watcher");
+        $courseUser3->setActive(false);
+
+        $courseUsers = $course->getCourseUsersWithRole(null, "role_name");
+        $this->assertIsArray($courseUsers);
+        $this->assertEmpty($courseUsers);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCourseUsersWithRoleIDRoleDoesntExist()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $course->getCourseUserById($user1->getId());
+        $course->addUserToCourse($user2->getId(), "Student");
+        $courseUser3 = $course->addUserToCourse($user3->getId(), "Watcher");
+        $courseUser3->setActive(false);
+
+        $courseUsers = $course->getCourseUsersWithRole(null, null, 100);
+        $this->assertIsArray($courseUsers);
+        $this->assertEmpty($courseUsers);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getActiveCourseUsersWithRoleName()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $course->getCourseUserById($user1->getId());
+        $courseUser2 = $course->addUserToCourse($user2->getId(), "Student");
+        $courseUser3 = $course->addUserToCourse($user3->getId(), "Watcher");
+        $courseUser3->setActive(false);
+
+        $courseUsers = $course->getCourseUsersWithRole(true, "Student");
+        $this->assertIsArray($courseUsers);
+        $this->assertCount(1, $courseUsers);
+
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($courseUsers as $courseUser) {
+                $this->assertCount($nrKeys, array_keys($courseUser));
+                $this->assertArrayHasKey($key, $courseUser);
+                if ($key === "isActive") $this->assertEquals($courseUser[$key], $user2->getData($key));
+                else if ($key === "isActiveInCourse") $this->assertEquals($courseUser[$key], $courseUser2->getData("isActive"));
+                else $this->assertEquals($courseUser[$key], $courseUser2->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getActiveCourseUsersWithRoleID()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $course->getCourseUserById($user1->getId());
+        $courseUser2 = $course->addUserToCourse($user2->getId(), "Student");
+        $courseUser3 = $course->addUserToCourse($user3->getId(), "Watcher");
+        $courseUser3->setActive(false);
+
+        $courseUsers = $course->getCourseUsersWithRole(true, null, Role::getRoleId("Student", $course->getId()));
+        $this->assertIsArray($courseUsers);
+        $this->assertCount(1, $courseUsers);
+
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($courseUsers as $courseUser) {
+                $this->assertCount($nrKeys, array_keys($courseUser));
+                $this->assertArrayHasKey($key, $courseUser);
+                if ($key === "isActive") $this->assertEquals($courseUser[$key], $user2->getData($key));
+                else if ($key === "isActiveInCourse") $this->assertEquals($courseUser[$key], $courseUser2->getData("isActive"));
+                else $this->assertEquals($courseUser[$key], $courseUser2->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getInactiveCourseUsersWithRoleName()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $course->getCourseUserById($user1->getId());
+        $course->addUserToCourse($user2->getId(), "Student");
+        $courseUser3 = $course->addUserToCourse($user3->getId(), "Watcher");
+        $courseUser3->setActive(false);
+
+        $courseUsers = $course->getCourseUsersWithRole(false, "Watcher");
+        $this->assertIsArray($courseUsers);
+        $this->assertCount(1, $courseUsers);
+
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($courseUsers as $courseUser) {
+                $this->assertCount($nrKeys, array_keys($courseUser));
+                $this->assertArrayHasKey($key, $courseUser);
+                if ($key === "isActive") $this->assertEquals($courseUser[$key], $user3->getData($key));
+                else if ($key === "isActiveInCourse") $this->assertEquals($courseUser[$key], $courseUser3->getData("isActive"));
+                else $this->assertEquals($courseUser[$key], $courseUser3->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getInactiveCourseUsersWithRoleID()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $course->getCourseUserById($user1->getId());
+        $course->addUserToCourse($user2->getId(), "Student");
+        $courseUser3 = $course->addUserToCourse($user3->getId(), "Watcher");
+        $courseUser3->setActive(false);
+
+        $courseUsers = $course->getCourseUsersWithRole(false, null, Role::getRoleId("Watcher", $course->getId()));
+        $this->assertIsArray($courseUsers);
+        $this->assertCount(1, $courseUsers);
+
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($courseUsers as $courseUser) {
+                $this->assertCount($nrKeys, array_keys($courseUser));
+                $this->assertArrayHasKey($key, $courseUser);
+                if ($key === "isActive") $this->assertEquals($courseUser[$key], $user3->getData($key));
+                else if ($key === "isActiveInCourse") $this->assertEquals($courseUser[$key], $courseUser3->getData("isActive"));
+                else $this->assertEquals($courseUser[$key], $courseUser3->getData($key));
+            }
+        }
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getAllStudents()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $course->getCourseUserById($user1->getId());
+        $courseUser2 = $course->addUserToCourse($user2->getId(), "Student");
+        $courseUser3 = $course->addUserToCourse($user3->getId(), "Watcher");
+        $courseUser3->setActive(false);
+
+        $students = $course->getStudents();
+        $this->assertIsArray($students);
+        $this->assertCount(1, $students);
+
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($students as $student) {
+                $this->assertCount($nrKeys, array_keys($student));
+                $this->assertArrayHasKey($key, $student);
+                if ($key === "isActive") $this->assertEquals($student[$key], $user2->getData($key));
+                else if ($key === "isActiveInCourse") $this->assertEquals($student[$key], $courseUser2->getData("isActive"));
+                else $this->assertEquals($student[$key], $courseUser2->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getActiveStudents()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $course->getCourseUserById($user1->getId());
+        $courseUser2 = $course->addUserToCourse($user2->getId(), "Student");
+        $courseUser3 = $course->addUserToCourse($user3->getId(), "Watcher");
+        $courseUser3->setActive(false);
+
+        $students = $course->getStudents(true);
+        $this->assertIsArray($students);
+        $this->assertCount(1, $students);
+
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($students as $student) {
+                $this->assertCount($nrKeys, array_keys($student));
+                $this->assertArrayHasKey($key, $student);
+                if ($key === "isActive") $this->assertEquals($student[$key], $user2->getData($key));
+                else if ($key === "isActiveInCourse") $this->assertEquals($student[$key], $courseUser2->getData("isActive"));
+                else $this->assertEquals($student[$key], $courseUser2->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getInactiveStudents()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $course->getCourseUserById($user1->getId());
+        $course->addUserToCourse($user2->getId(), "Student");
+        $courseUser3 = $course->addUserToCourse($user3->getId(), "Watcher");
+        $courseUser3->setActive(false);
+
+        $students = $course->getStudents(false);
+        $this->assertIsArray($students);
+        $this->assertEmpty($students);
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getAllTeachers()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $courseUser1 = $course->getCourseUserById($user1->getId());
+        $course->addUserToCourse($user2->getId(), "Student");
+        $courseUser3 = $course->addUserToCourse($user3->getId(), "Watcher");
+        $courseUser3->setActive(false);
+
+        $teachers = $course->getTeachers();
+        $this->assertIsArray($teachers);
+        $this->assertCount(1, $teachers);
+
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($teachers as $teacher) {
+                $this->assertCount($nrKeys, array_keys($teacher));
+                $this->assertArrayHasKey($key, $teacher);
+                if ($key === "isActive") $this->assertEquals($teacher[$key], $user1->getData($key));
+                else if ($key === "isActiveInCourse") $this->assertEquals($teacher[$key], $courseUser1->getData("isActive"));
+                else $this->assertEquals($teacher[$key], $courseUser1->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getActiveTeachers()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $courseUser1 = $course->getCourseUserById($user1->getId());
+        $course->addUserToCourse($user2->getId(), "Student");
+        $courseUser3 = $course->addUserToCourse($user3->getId(), "Watcher");
+        $courseUser3->setActive(false);
+
+        $teachers = $course->getTeachers(true);
+        $this->assertIsArray($teachers);
+        $this->assertCount(1, $teachers);
+
+        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($teachers as $teacher) {
+                $this->assertCount($nrKeys, array_keys($teacher));
+                $this->assertArrayHasKey($key, $teacher);
+                if ($key === "isActive") $this->assertEquals($teacher[$key], $user1->getData($key));
+                else if ($key === "isActiveInCourse") $this->assertEquals($teacher[$key], $courseUser1->getData("isActive"));
+                else $this->assertEquals($teacher[$key], $courseUser1->getData($key));
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getInactiveTeachers()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $user1 = Core::getLoggedUser();
+        $user2 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user3 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+
+        $course->getCourseUserById($user1->getId());
+        $course->addUserToCourse($user2->getId(), "Student");
+        $courseUser3 = $course->addUserToCourse($user3->getId(), "Watcher");
+        $courseUser3->setActive(false);
+
+        $teachers = $course->getTeachers(false);
+        $this->assertIsArray($teachers);
+        $this->assertEmpty($teachers);
     }
 }
