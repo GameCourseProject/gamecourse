@@ -9,6 +9,7 @@ use GameCourse\Module\Module;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
+use Utils\CronJob;
 use Utils\Utils;
 use ZipArchive;
 
@@ -240,6 +241,7 @@ class Course
             self::validateDateTime($fieldValues["endDate"]);
             $startDate = key_exists("startDate", $fieldValues) ? $fieldValues["startDate"] : $this->getStartDate();
             if ($startDate) self::validateStartAndEndDates($startDate, $fieldValues["endDate"]);
+            self::setAutoDisabling($this->id, $fieldValues["endDate"]);
         }
 
         if (count($fieldValues) != 0)
@@ -340,6 +342,9 @@ class Course
         ]);
         $dataFolder = Course::createDataFolder($id, $name);
 
+        // Set auto disabling
+        self::setAutoDisabling($id, $endDate);
+
         // Add default roles
         $teacherRoleId = Role::addDefaultRolesToCourse($id);
 
@@ -432,6 +437,7 @@ class Course
             "isActive" => +$isActive,
             "isVisible" => +$isVisible
         ]);
+        self::setAutoDisabling($this->id, $endDate);
         return $this;
     }
 
@@ -450,6 +456,9 @@ class Course
         // Disable autogame & remove info
         AutoGame::setAutoGame($courseId, false);
         AutoGame::deleteAutoGameInfo($courseId);
+
+        // Remove auto disabling
+        self::setAutoDisabling($courseId, null);
 
         // Delete from database
         Core::database()->delete(self::TABLE_COURSE, ["id" => $courseId]);
@@ -1178,6 +1187,20 @@ class Course
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Utils ---------------------- ***/
     /*** ---------------------------------------------------- ***/
+
+    /**
+     * Enables auto disabling for a given course on a specific date.
+     * If date is null, it will disable it.
+     *
+     * @param int $courseId
+     * @param string|null $endDate
+     * @return void
+     */
+    private static function setAutoDisabling(int $courseId, ?string $endDate)
+    {
+        if ($endDate) new CronJob("AutoDisabling", $courseId, null, null, null, $endDate);
+        else CronJob::removeCronJob("AutoDisabling", $courseId);
+    }
 
     /**
      * Parses a course coming from the database to appropriate types.

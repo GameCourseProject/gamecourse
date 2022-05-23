@@ -13,17 +13,17 @@ class CronJob
 {
     const CRONFILE = ROOT_PATH . "crontab.txt";
 
-    public function __construct(string $script, int $courseId, ?int $number, ?string $time, int $day = null)
+    public function __construct(string $script, int $courseId, ?int $number, ?string $time, int $day = null, string $datetime = null)
     {
-        self::updateCronTab($script, $courseId, $number, $time, $day);
+        self::updateCronTab($script, $courseId, $number, $time, $day, $datetime);
     }
 
     public static function removeCronJob(string $script, int $courseId)
     {
-        self::updateCronTab($script, $courseId, null, null, null, true);
+        self::updateCronTab($script, $courseId, null, null, null, null, true);
     }
 
-    private static function updateCronTab(string $script, int $courseId, ?int $number, ?string $time, int $day = null, bool $remove = false)
+    private static function updateCronTab(string $script, int $courseId, ?int $number, ?string $time, int $day = null, string $datetime = null, bool $remove = false)
     {
         $path = self::getScriptPath($script);
         $output = shell_exec('crontab -l');
@@ -42,7 +42,15 @@ class CronJob
             if (!$remove) {
                 // TODO: replace with getExpression()
                 $periodStr = "";
-                if ($time == "Minutes") {
+                if (!is_null($datetime)) {
+                    // NOTE: max. working datetime = datetime + 1 year
+                    $day = intval(substr($datetime, 8, 2));
+                    $month = intval(substr($datetime, 5, 2));
+                    $hour = intval(substr($datetime, 11, 2));
+                    $minute = intval(substr($datetime, 14, 2));
+                    $periodStr = $minute . " " . $hour . " " . $day . " " . $month . " *";
+
+                } else if ($time == "Minutes") {
                     $periodStr = "*/" . $number . " * * * *";
                 } else if ($time == "Hours") {
                     $periodStr = "0 */" . $number . " * * *";
@@ -64,6 +72,8 @@ class CronJob
     private static function getScriptPath(string $script): ?string
     {
         switch ($script) {
+            case "AutoDisabling":
+                return ROOT_PATH . "models/GameCourse/Course/AutoDisablingScript.php";
             case "AutoGame":
                 return AUTOGAME_FOLDER . "/AutoGameScript.php";
             case "ProgressReport": // FIXME: should be compartimentalized inside module

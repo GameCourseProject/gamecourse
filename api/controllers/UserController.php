@@ -162,11 +162,16 @@ class UserController
         $userId = API::getValue("userId", "int");
         $user = API::verifyUserExists($userId);
 
+        // Only admins can access other users' courses
         if (Core::getLoggedUser()->getId() != $userId)
             API::requireAdminPermission();
 
         $isActive = API::getValue("isActive", "bool");
         $isVisible = API::getValue("isVisible", "bool");
+
+        // Only admins can access invisible courses
+        if (!is_null($isVisible) && !$isVisible)
+            API::requireAdminPermission();
 
         $userCourses = $user->getCourses($isActive, $isVisible);
         API::response($userCourses);

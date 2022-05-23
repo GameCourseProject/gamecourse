@@ -21,6 +21,7 @@ class DocsController
      */
     public function getAPIDocs()
     {
+        API::requireAdminPermission();
         $openAPI = Generator::scan([ROOT_PATH . "controllers"]);
         API::response(json_decode($openAPI->toJSON()));
     }
