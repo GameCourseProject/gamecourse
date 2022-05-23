@@ -41,7 +41,7 @@ export class RedirectIfLoggedInGuard implements CanLoad {
         }
       ),
       catchError(error => {
-        if (error.status === 401)
+        if (error.status === 403)
           return of(this.router.parseUrl('/no-access'));
 
         if (error.status === 409)
