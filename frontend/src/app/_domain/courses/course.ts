@@ -1,6 +1,6 @@
 import {Moment} from "moment";
 import {dateFromDatabase} from "../../_utils/misc/misc";
-import {Role} from "../roles/role";
+import {Role, RoleDatabase} from "../roles/role";
 
 export class Course {
   private _id: number;
@@ -181,7 +181,7 @@ export interface CourseDatabase {
   "landingPage": number,
   "isActive": boolean,
   "isVisible": boolean,
-  "roleHierarchy": {name: string}[],
+  "roleHierarchy": RoleDatabase[],
   "theme": string,
   "folder"?: string,
   "nrStudents"?: number,

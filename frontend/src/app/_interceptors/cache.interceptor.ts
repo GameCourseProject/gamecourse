@@ -32,6 +32,7 @@ export class CacheInterceptor implements HttpInterceptor {
   private readonly dependencies: {[key: string]: string[]} = {};
 
   constructor() {
+    this.dependencies[ApiHttpService.AUTOGAME] = [ApiHttpService.AUTOGAME, ApiHttpService.COURSE];
     this.dependencies[ApiHttpService.COURSE] = [ApiHttpService.COURSE, ApiHttpService.USER];
     this.dependencies[ApiHttpService.MODULE] = [ApiHttpService.MODULE, ApiHttpService.COURSE, ApiHttpService.VIEWS];
     this.dependencies[ApiHttpService.THEME] = [ApiHttpService.THEME];

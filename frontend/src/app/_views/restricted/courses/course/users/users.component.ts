@@ -6,19 +6,19 @@ import {ApiHttpService} from "../../../../../_services/api/api-http.service";
 import {UpdateService, UpdateType} from "../../../../../_services/update.service";
 
 import {User} from "../../../../../_domain/users/user";
+import {CourseUser} from "../../../../../_domain/users/course-user";
 import {Course} from "../../../../../_domain/courses/course";
 import {Role} from "../../../../../_domain/roles/role";
 import {AuthType} from 'src/app/_domain/auth/auth-type';
-import {UserData} from "../../../my-info/my-info/my-info.component";
 
 import {ResourceManager} from "../../../../../_utils/resources/resource-manager";
 import {Order, Sort} from "../../../../../_utils/lists/order";
 import {DownloadManager} from "../../../../../_utils/download/download-manager";
 import {Reduce} from "../../../../../_utils/lists/reduce";
 
-import _ from 'lodash';
 import {exists} from "../../../../../_utils/misc/misc";
 import {finalize} from "rxjs/operators";
+import {environment} from "../../../../../../environments/environment";
 
 @Component({
   selector: 'app-users',
@@ -30,21 +30,19 @@ export class UsersComponent implements OnInit {
   loading = true;
   loadingAction = false;
 
-  user: User;
   course: Course;
-  roles: Role[];
-  rolesHierarchy: Role[];
+  rolesNames: string[];
 
-  allUsers: User[];
-  allNonUsers: User[];
+  courseUsers: CourseUser[];
+  nonCourseUsers: User[];
 
   reduce = new Reduce();
+  reduceNonUsers = new Reduce();
   order = new Order();
 
-  reduceNonUsers = new Reduce();
-
   filters: string[];
-  orderBy = ['Name', 'Nickname', 'Student Number', 'Last Login'];
+  orderBy = ['Name', 'Nickname', 'Student Number', 'Last Activity' +
+  ''];
 
   originalPhoto: string;  // Original photo
   photoToAdd: File;       // Any photo that comes through the input
@@ -60,24 +58,21 @@ export class UsersComponent implements OnInit {
   saving: boolean;
 
   mode: 'add' | 'edit';
-  newUser: UserData = {
+  newCourseUser: CourseUserData = {
     name: null,
     nickname: null,
     studentNumber: null,
     email: null,
     major: null,
-    isAdmin: null,
-    isActive: null,
     auth: null,
     username: null,
-    roles: null,
     image: null
   };
-  userToEdit: User;
-  userToDelete: User;
+  userToEdit: CourseUser;
+  userToDelete: CourseUser;
 
   selectUserQuery: string;
-  selectedUserRole: string = null;
+  selectedUserRole: string;
   selectedUserRoles: string[];
   selectedUsers: User[] = [];
 
@@ -91,9 +86,12 @@ export class UsersComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.getLoggedUser();
-    this.route.params.subscribe(params => {
-      this.getCourse(parseInt(params.id));
+    this.route.params.subscribe(async params => {
+      const courseID = parseInt(params.id);
+      await this.getCourse(courseID);
+      await this.getCourseRolesNames(courseID);
+      await this.getCourseUsers(courseID);
+      this.loading = false;
     });
   }
 
@@ -102,49 +100,19 @@ export class UsersComponent implements OnInit {
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  getLoggedUser(): void {
-    this.api.getLoggedUser()
-      .subscribe(user => this.user = user);
+  async getCourse(courseID: number): Promise<void> {
+    this.course = await this.api.getCourseById(courseID).toPromise();
   }
 
-  getCourse(courseId: number): void {
-    this.api.getCourseById(courseId)
-      .subscribe(course => {
-        this.course = course;
-        this.getCourseRoles(courseId);
-      });
+  async getCourseRolesNames(courseID: number): Promise<void> {
+    this.rolesNames = await this.api.getRoles(courseID).toPromise() as string[];
+    this.filters = this.rolesNames;
   }
 
-  getCourseRoles(courseId: number): void {
-    this.api.getRoles(courseId)
-      .subscribe(
-        data => {
-          this.roles = data.roles;
-          this.rolesHierarchy = data.rolesHierarchy
-          this.filters = this.roles.map(role => role.name);
-          this.getCourseUsers(courseId);
-        });
-  }
-
-  getCourseUsers(courseId: number): void {
-    this.api.getCourseUsers(courseId)
-      .subscribe(users => {
-        this.allUsers = users;
-
-        this.order.active = { orderBy: this.orderBy[0], sort: Sort.ASCENDING };
-        this.reduceList(undefined, _.cloneDeep(this.filters));
-
-        this.getNonCourseUsers(courseId);
-      })
-  }
-
-  getNonCourseUsers(courseId: number): void {
-    this.api.getNotCourseUsers(courseId)
-      .pipe( finalize(() => this.loading = false) )
-      .subscribe(users => {
-        this.allNonUsers = users;
-        this.reduceListNonUsers();
-      });
+  async getCourseUsers(courseID: number): Promise<void> {
+    this.courseUsers = await this.api.getCourseUsers(courseID).toPromise();
+    this.order.active = { orderBy: this.orderBy[0], sort: Sort.ASCENDING };
+    this.reduceList('course-users', undefined, [...this.filters]);
   }
 
 
@@ -152,16 +120,19 @@ export class UsersComponent implements OnInit {
   /*** ---------- Search, Filter & Order ----------- ***/
   /*** --------------------------------------------- ***/
 
-  reduceList(query?: string, filters?: string[]): void {
-    this.reduce.searchAndFilter(this.allUsers, query, filters);
-    this.orderList();
+  reduceList(list: 'course-users' | 'non-course-users', query?: string, filters?: string[]): void {
+    if (list === 'course-users') this.reduce.searchAndFilter(this.courseUsers, query, filters);
+    else this.reduceNonUsers.search(this.nonCourseUsers, query);
+
+    this.orderList(list);
   }
 
-  reduceListNonUsers(query?: string): void {
-    this.reduceNonUsers.search(this.allNonUsers, query);
-  }
+  orderList(list: 'course-users' | 'non-course-users'): void {
+    if (list === 'non-course-users') {
+      this.reduceNonUsers.items.sort((a, b) => Order.byString(a.name, b.name, Sort.ASCENDING));
+      return;
+    }
 
-  orderList(): void {
     switch (this.order.active.orderBy) {
       case "Name":
         this.reduce.items.sort((a, b) => Order.byString(a.name, b.name, this.order.active.sort))
@@ -175,7 +146,7 @@ export class UsersComponent implements OnInit {
         this.reduce.items.sort((a, b) => Order.byNumber(a.studentNumber, b.studentNumber, this.order.active.sort))
         break;
 
-      case "Last Login":
+      case "Last Activity":
         this.reduce.items.sort((a, b) => Order.byDate(a.lastLogin, b.lastLogin, this.order.active.sort))
         break;
     }
@@ -186,35 +157,26 @@ export class UsersComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  toggleActive(userID: number) {
-    this.loadingAction = true;
-
-    const user = this.allUsers.find(user => user.id === userID);
-    user.isActive = !user.isActive;
-
-    this.api.setCourseUserActive(this.course.id, user.id, user.isActive)
-      .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(res => {});
-  }
-
   async createUser(): Promise<void> {
     this.loadingAction = true;
 
     if (this.photoToAdd)
-      await ResourceManager.getBase64(this.photoToAdd).then(data => this.newUser.image = data);
+      await ResourceManager.getBase64(this.photoToAdd).then(data => this.newCourseUser.image = data);
 
-    this.newUser.roles = this.selectedUserRoles || [];
+    this.newCourseUser.roles = this.selectedUserRoles;
 
-    this.api.createCourseUser(this.course.id, this.newUser)
+    this.api.createCourseUser(this.course.id, this.newCourseUser)
       .pipe( finalize(() => {
         this.isNewUserMethodModal = false;
         this.isUserModalOpen = false;
-        this.clearObject(this.newUser);
+        this.clearObject(this.newCourseUser);
         this.loadingAction = false;
       }) )
       .subscribe(
-        () => {
-          this.getCourseUsers(this.course.id);
+        newCourseUser => {
+          this.courseUsers.push(newCourseUser);
+          this.reduceList('course-users');
+
           const successBox = $('#action_completed');
           successBox.empty();
           successBox.append("New user created");
@@ -222,55 +184,64 @@ export class UsersComponent implements OnInit {
         });
   }
 
-  async editUser(): Promise<void> {
+  addUsersToCourse(): void {
     this.loadingAction = true;
-    this.newUser['id'] = this.userToEdit.id;
 
-    if (this.photoToAdd)
-      await ResourceManager.getBase64(this.photoToAdd).then(data => this.newUser.image = data);
-
-    this.newUser.roles = this.selectedUserRoles || [];
-
-    this.api.editCourseUser(this.course.id, this.newUser)
-      .pipe( finalize(() => {
-        this.isNewUserMethodModal = false;
-        this.isUserModalOpen = false;
-        this.clearObject(this.newUser);
-        this.loadingAction = false;
-      }) )
-      .subscribe(
-        () => {
-          this.getCourseUsers(this.course.id);
-
-          if (this.user.id === this.newUser.id) {
-            if (this.newUser.image)
-              this.updateManager.triggerUpdate(UpdateType.AVATAR); // Trigger change on navbar
-
-            if (!this.userToEdit.roles.map(role => role.name).isEqual(this.newUser.roles))
-              this.updateManager.triggerUpdate(UpdateType.ACTIVE_PAGES); // Trigger change on pages
-          }
-
-          const successBox = $('#action_completed');
-          successBox.empty();
-          successBox.append("User: " + this.userToEdit.name + " edited");
-          successBox.show().delay(3000).fadeOut();
-        });
-  }
-
-  submitUsers(): void {
     this.api.addUsersToCourse(this.course.id, this.selectedUsers, this.selectedUserRole)
       .pipe( finalize(() => {
         this.isNewUserMethodModal = false;
         this.isSelectUserModalOpen = false;
         this.selectedUserRole = null;
-        this.selectedUsers = null;
+        this.selectedUsers = [];
         this.loadingAction = false;
       }) )
-      .subscribe(() => {
-        this.getCourseUsers(this.course.id);
+      .subscribe(newCourseUsers => {
+        this.courseUsers = this.courseUsers.concat(newCourseUsers);
+        this.reduceList('course-users');
+
+        const successBox = $('#action_completed');
+        successBox.empty();
+        successBox.append("New user" + (newCourseUsers.length != 1 ? "s" : "") + " added");
+        successBox.show().delay(3000).fadeOut();
+      });
+  }
+
+  async editUser(): Promise<void> {
+    this.loadingAction = true;
+    this.newCourseUser['id'] = this.userToEdit.id;
+
+    if (this.photoToAdd)
+      await ResourceManager.getBase64(this.photoToAdd).then(data => this.newCourseUser.image = data);
+
+    this.newCourseUser.roles = this.selectedUserRoles;
+
+    this.api.editCourseUser(this.course.id, this.newCourseUser)
+      .pipe( finalize(() => {
+        this.isNewUserMethodModal = false;
+        this.isUserModalOpen = false;
+        this.clearObject(this.newCourseUser);
+        this.loadingAction = false;
+      }) )
+      .subscribe(
+        async courseUserEdited => {
+          const index = this.courseUsers.findIndex(courseUser => courseUser.id === courseUserEdited.id);
+          this.courseUsers.removeAtIndex(index);
+
+          this.courseUsers.push(courseUserEdited);
+          this.reduceList('course-users');
+
+          const loggedUser = await this.api.getLoggedUser().toPromise();
+          if (loggedUser.id === courseUserEdited.id) {
+            if (this.photoToAdd)
+              this.updateManager.triggerUpdate(UpdateType.AVATAR); // Trigger change on navbar
+
+            if (!this.userToEdit.roles.isEqual(courseUserEdited.roles))
+              this.updateManager.triggerUpdate(UpdateType.ACTIVE_PAGES); // Trigger change on pages
+          }
+
           const successBox = $('#action_completed');
           successBox.empty();
-          successBox.append("New User(s) added");
+          successBox.append("User: '" + courseUserEdited.name + "' edited");
           successBox.show().delay(3000).fadeOut();
         });
   }
@@ -284,16 +255,26 @@ export class UsersComponent implements OnInit {
       }) )
       .subscribe(
         () => {
-          const index = this.allUsers.findIndex(el => el.id === user.id);
-          this.allUsers.splice(index, 1);
-          this.reduceList();
-          this.getNonCourseUsers(this.course.id);
+          const index = this.courseUsers.findIndex(el => el.id === user.id);
+          this.courseUsers.removeAtIndex(index);
+          this.reduceList('course-users');
 
           const successBox = $('#action_completed');
           successBox.empty();
-          successBox.append("User: " + user.name  + ' - ' + user.studentNumber + " removed from this course");
+          successBox.append("User '" + user.name  + ' - ' + user.studentNumber + "' removed from this course");
           successBox.show().delay(3000).fadeOut();
         });
+  }
+
+  toggleActive(userID: number) {
+    this.loadingAction = true;
+
+    const courseUser = this.courseUsers.find(user => user.id === userID);
+    courseUser.isActiveInCourse = !courseUser.isActiveInCourse;
+
+    this.api.setCourseUserActive(this.course.id, courseUser.id, courseUser.isActiveInCourse)
+      .pipe( finalize(() => this.loadingAction = false) )
+      .subscribe(res => {});
   }
 
   importUsers(replace: boolean): void {
@@ -331,82 +312,20 @@ export class UsersComponent implements OnInit {
 
 
   /*** --------------------------------------------- ***/
-  /*** ------------------ Helpers ------------------ ***/
+  /*** ------------------- Roles ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  isReadyToSubmit() {
-    let isValid = function (text) {
-      return exists(text) && !text.toString().isEmpty();
-    }
-
-    // Validate inputs
-    return isValid(this.newUser.name) && isValid(this.newUser.studentNumber) && isValid(this.newUser.email) &&
-      isValid(this.newUser.major) && isValid(this.newUser.auth) && isValid(this.newUser.username) && this.selectedUserRoles?.length > 0;
-  }
-
-  initEditUser(user: User): void {
-    this.newUser = {
-      name: user.name,
-      nickname: user.nickname,
-      studentNumber: user.studentNumber,
-      email: user.email,
-      major: user.major,
-      isAdmin: user.isAdmin,
-      isActive: user.isActive,
-      auth: user.authMethod,
-      username: user.username,
-      image: null
-    };
-    this.userToEdit = user;
-    this.photo.set(user.photoUrl);
-    this.selectedUserRoles = this.userToEdit.roles.map(role => role.name);
-  }
-
-  onFileSelected(files: FileList, type: 'image' | 'file'): void {
-    if (type === 'image') {
-      this.photoToAdd = files.item(0);
-      this.photo.set(this.photoToAdd);
-
-    } else {
-      this.importedFile = files.item(0);
-    }
-  }
-
-  clearObject(obj): void {
-    for (const key of Object.keys(obj)) {
-      obj[key] = null;
-    }
-  }
-
-  addUser(user: User): void {
-    if (!this.selectedUsers) this.selectedUsers = [];
-
-    if (!this.selectedUsers.find(el => el.id === user.id)) {
-      this.selectedUsers.push(user);
-      const index = this.allNonUsers.findIndex(el => el.id === user.id);
-      this.allNonUsers.splice(index, 1);
-      this.reduceListNonUsers();
-    }
-  }
-
-  removeUser(userID: number): void {
-    const index = this.selectedUsers.findIndex(el => el.id === userID);
-    this.allNonUsers.push(this.selectedUsers[index]);
-    this.selectedUsers.splice(index, 1);
-    this.reduceListNonUsers();
-  }
-
-  addRole(role: string): void {
+  addRole(roleName: string): void {
     if (!this.selectedUserRoles) this.selectedUserRoles = [];
-    this.traverseRoles(this.rolesHierarchy, role, 'add');
+    this.traverseRoles(this.course.roleHierarchy, roleName, 'add');
   }
 
-  removeRole(role: string): void {
-    this.traverseRoles(this.rolesHierarchy, role, 'remove');
+  removeRole(roleName: string): void {
+    this.traverseRoles(this.course.roleHierarchy, roleName, 'remove');
   }
 
-  traverseRoles(roles: Role[], roleName: string, action: 'add' | 'remove'): boolean {
-    for (const role of roles) {
+  traverseRoles(rolesHierarchy: Role[], roleName: string, action: 'add' | 'remove'): boolean {
+    for (const role of rolesHierarchy) {
 
       // Reached role
       if (role.name === roleName) {
@@ -443,13 +362,100 @@ export class UsersComponent implements OnInit {
     }
   }
 
-  filterRoles(): Role[] {
-    if (!this.selectedUserRoles) return this.roles;
-    return this.roles.filter(el => !this.selectedUserRoles.includes(el.name));
+  filterRoles(): string[] {
+    if (!this.selectedUserRoles) return this.rolesNames;
+    return this.rolesNames.filter(roleName => !this.selectedUserRoles.includes(roleName));
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  isReadyToSubmit() {
+    let isValid = function (text) {
+      return exists(text) && !text.toString().isEmpty();
+    }
+
+    // Validate inputs
+    return isValid(this.newCourseUser.name) && isValid(this.newCourseUser.studentNumber) && isValid(this.newCourseUser.email) &&
+      isValid(this.newCourseUser.major) && isValid(this.newCourseUser.auth) && isValid(this.newCourseUser.username) &&
+      this.selectedUserRoles?.length > 0;
+  }
+
+  initEditUser(user: CourseUser): void {
+    this.newCourseUser = {
+      name: user.name,
+      nickname: user.nickname,
+      studentNumber: user.studentNumber,
+      email: user.email,
+      major: user.major,
+      auth: user.authMethod,
+      username: user.username,
+      image: null
+    };
+    this.userToEdit = user;
+
+    this.originalPhoto = user.photoUrl ?? environment.defaultProfilePicture;
+    this.photo.set(user.photoUrl ?? environment.defaultProfilePicture);
+
+    this.selectedUserRoles = this.userToEdit.roles.map(role => role.name);
+  }
+
+  onFileSelected(files: FileList, type: 'image' | 'file'): void {
+    if (type === 'image') {
+      this.photoToAdd = files.item(0);
+      this.photo.set(this.photoToAdd);
+
+    } else {
+      this.importedFile = files.item(0);
+    }
+  }
+
+  clearObject(obj): void {
+    for (const key of Object.keys(obj)) {
+      obj[key] = null;
+    }
+  }
+
+  async getUsersNotInCourse(): Promise<void> {
+    this.nonCourseUsers = await this.api.getUsersNotInCourse(this.course.id, true).toPromise();
+    this.reduceList('non-course-users');
+  }
+
+  addUser(user: User): void {
+    if (!this.selectedUsers) this.selectedUsers = [];
+
+    if (!this.selectedUsers.find(el => el.id === user.id)) {
+      this.selectedUsers.push(user);
+      const index = this.nonCourseUsers.findIndex(el => el.id === user.id);
+      this.nonCourseUsers.splice(index, 1);
+      this.reduceList('non-course-users');
+    }
+  }
+
+  removeUser(userID: number): void {
+    const index = this.selectedUsers.findIndex(el => el.id === userID);
+    this.nonCourseUsers.push(this.selectedUsers[index]);
+    this.selectedUsers.splice(index, 1);
+    this.reduceList('non-course-users');
   }
 
   get AuthType(): typeof AuthType {
     return AuthType;
   }
 
+}
+
+export interface CourseUserData {
+  id?: number,
+  name: string,
+  nickname: string,
+  studentNumber: number,
+  major: string,
+  email: string,
+  auth: AuthType,
+  username: string,
+  image: string | ArrayBuffer,
+  roles?: string[]
 }

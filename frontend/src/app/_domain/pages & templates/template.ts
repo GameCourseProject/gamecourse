@@ -90,19 +90,19 @@ export class Template {
 
   static parseRoles(roles: string[], roleType: string): {viewerRole: Role, userRole?: Role}[] {
     const parsedRoles: {viewerRole: Role, userRole?: Role}[] = [];
-    roles.forEach(role => {
-      let roleObj: {viewerRole: Role, userRole?: Role };
-      if (roleType === RoleTypeId.ROLE_SINGLE) {
-        roleObj = { viewerRole: Role.fromDatabase({name: role}) };
-
-      } else if (roleType === RoleTypeId.ROLE_INTERACTION) {
-        roleObj = {
-          viewerRole: Role.fromDatabase({name: role.split('>')[1]}),
-          userRole: Role.fromDatabase({name: role.split('>')[0]})
-        };
-      }
-      parsedRoles.push(roleObj);
-    });
+    // roles.forEach(role => {
+    //   let roleObj: {viewerRole: Role, userRole?: Role };
+    //   if (roleType === RoleTypeId.ROLE_SINGLE) {
+    //     roleObj = { viewerRole: Role.fromDatabase({name: role}) };
+    //
+    //   } else if (roleType === RoleTypeId.ROLE_INTERACTION) {
+    //     roleObj = {
+    //       viewerRole: Role.fromDatabase({name: role.split('>')[1]}),
+    //       userRole: Role.fromDatabase({name: role.split('>')[0]})
+    //     };
+    //   }
+    //   parsedRoles.push(roleObj);
+    // }); FIXME
     return parsedRoles;
   }
 }

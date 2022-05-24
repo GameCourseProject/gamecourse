@@ -531,10 +531,10 @@ class Course
 
     public function getCourseUsers(?bool $active = null): array
     {
+        $table = User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id JOIN " . CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id";
         $where = ["cu.course" => $this->id];
         if ($active !== null) $where["cu.isActive"] = $active;
-        $courseUsers =  Core::database()->selectMultiple(
-            User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id JOIN " . CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id",
+        $courseUsers =  Core::database()->selectMultiple($table,
             $where,
             "u.*, a.username, a.authentication_service, a.lastLogin, cu.lastActivity, cu.isActive as isActiveInCourse",
             "u.id"
@@ -570,6 +570,20 @@ class Course
     public function getTeachers(?bool $active = null): array
     {
         return $this->getCourseUsersWithRole($active, "Teacher");
+    }
+
+    public function getUsersNotInCourse(?bool $active = null): array
+    {
+        $table = User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id LEFT JOIN " . CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id AND cu.course=" . $this->id;
+        $where = ["cu.id" => null];
+        if ($active !== null) $where["u.isActive"] = $active;
+        $users =  Core::database()->selectMultiple($table,
+            $where,
+            "u.*, a.username, a.authentication_service, a.lastLogin",
+            "u.id"
+        );
+        foreach ($users as &$user) { $user = User::parse($user); }
+        return $users;
     }
 
     /**

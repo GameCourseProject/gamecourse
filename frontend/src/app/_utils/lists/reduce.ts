@@ -4,6 +4,7 @@ import {Module} from "../../_domain/modules/module";
 import {Page} from "../../_domain/pages & templates/page";
 import {Template} from "../../_domain/pages & templates/template";
 import {exists} from "../misc/misc";
+import {CourseUser} from "../../_domain/users/course-user";
 
 /**
  * This class is responsible for reducing a list of items,
@@ -120,7 +121,7 @@ export class Reduce {
   private isQueryTrueSearch(item: any): boolean {
     return !this.query ||
       (item instanceof Course && Search.onCourse(item, this.query)) ||
-      (item instanceof User && Search.onUser(item, this.query)) ||
+      ((item instanceof User || item instanceof CourseUser) && Search.onUser(item, this.query)) ||
       (item instanceof Module && Search.onModule(item, this.query)) ||
       ((item instanceof Page || item instanceof Template) && Search.onPageOrTemplate(item, this.query));
   }
@@ -130,6 +131,7 @@ export class Reduce {
 
     for (const filter of this.filters) {
       if ( (item instanceof Course && Filter.onCourse(item, filter)) ||
+        (item instanceof CourseUser && Filter.onCourseUser(item, filter)) ||
         (item instanceof User && Filter.onUser(item, filter)) )
         return true;
     }
@@ -263,8 +265,19 @@ export class Filter {
     return (filter.match(/^admin$/gi) && user.isAdmin) ||
       (filter.match(/^nonadmin$/gi) && !user.isAdmin) ||
       (filter.match(/^active$/gi) && user.isActive) ||
-      (filter.match(/^inactive$/gi) && !user.isActive) ||
-      (user.roles && !!user.roles.find(role => filter.match(new RegExp('^' + role.name + '$', 'gi'))));
+      (filter.match(/^inactive$/gi) && !user.isActive);
+  }
+
+  /**
+   * Filter through a CourseUser.
+   * @class CourseUser
+   *
+   * @param courseUser
+   * @param filter
+   */
+  public static onCourseUser(courseUser: CourseUser, filter: string): boolean {
+    return this.onUser(courseUser, filter) ||
+      (!!courseUser.roles.find(role => filter.match(new RegExp('^' + role.name + '$', 'gi'))));
   }
 
 }

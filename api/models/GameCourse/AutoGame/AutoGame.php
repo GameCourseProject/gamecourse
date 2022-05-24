@@ -109,4 +109,20 @@ class AutoGame
             CronJob::removeCronJob("AutoGame", $courseId);
         }
     }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------- Information -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets last time AutoGame ran for a given course.
+     *
+     * @param int $courseId
+     * @return string
+     */
+    public static function getLastRun(int $courseId): string
+    {
+        return Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "finishedRunning");
+    }
 }

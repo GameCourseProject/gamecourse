@@ -20,8 +20,8 @@ export class MainComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe(async params => {
-      const courseId = parseInt(params.id);
-      await this.getCourse(courseId);
+      const courseID = parseInt(params.id);
+      await this.getCourse(courseID);
       this.loading = false;
     });
   }

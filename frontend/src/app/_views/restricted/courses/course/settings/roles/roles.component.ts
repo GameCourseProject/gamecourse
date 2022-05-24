@@ -53,10 +53,10 @@ export class RolesComponent implements OnInit {
     this.api.getRoles(courseId)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(res => {
-        this.roles = res.roles;
-        this.roles.forEach(role => this.selectedPage[role.name] = role.landingPage);
-        this.rolesHierarchy = res.rolesHierarchy;
-        this.pages = res.pages;
+        // this.roles = res.roles;
+        // this.roles.forEach(role => this.selectedPage[role.name] = role.landingPage);
+        // this.rolesHierarchy = res.rolesHierarchy;
+        // this.pages = res.pages;
       },
         error => {},
         () => {

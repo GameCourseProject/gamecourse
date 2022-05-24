@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import {ApiHttpService} from "../../_services/api/api-http.service";
 import {Moment} from "moment";
 import {Router} from "@angular/router";
-import {ErrorService} from "../../_services/error.service";
-import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-footer',
@@ -12,7 +10,7 @@ import {finalize} from "rxjs/operators";
 })
 export class FooterComponent implements OnInit {
 
-  loading: boolean;
+  loading: boolean = true;
   lastRun: Moment;
 
   constructor(
@@ -20,19 +18,20 @@ export class FooterComponent implements OnInit {
     private router: Router
   ) { }
 
-  ngOnInit(): void {
-    this.loading = true;
-    this.api.getRulesSystemLastRun(this.getCourseId())
-      .pipe( finalize(() => this.loading = false) )
-      .subscribe(date => this.lastRun = date);
+  async ngOnInit(): Promise<void> {
+    this.lastRun = await this.api.getAutoGameLastRun(this.getCourseIDFromURL()).toPromise();
+    this.loading = false;
   }
 
-  getCourseId(): number {
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  getCourseIDFromURL(): number {
     const urlParts = this.router.url.substr(1).split('/');
-    if (urlParts[0] === 'courses')
-      return parseInt(urlParts[1]);
-    ErrorService.set('Error: Couldn\'t get course ID. (footer.component.ts::getCourseId())');
-    return null;
+    if (urlParts.includes('courses') && urlParts.length >= 2) return parseInt(urlParts[1]);
+    else return null;
   }
 
 }

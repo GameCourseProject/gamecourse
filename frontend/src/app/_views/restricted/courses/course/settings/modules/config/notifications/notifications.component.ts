@@ -145,20 +145,20 @@ export class NotificationsComponent implements OnInit {
         data => {
           data.entries = data.entries.filter(entry => parseInt(entry.course) === this.courseID && parseInt(entry.seqNr) === reportNr);
 
-          this.api.getCourseUsers(this.courseID, "Student")
-            .pipe(finalize(() => this.tables.studentsReports.loading = false))
-            .subscribe(
-              students => {
-                this.students = students;
-                this.tables.studentsReports.data = data.entries.map(entry => {
-                  const student = students.find(student => student.id === parseInt(entry.user));
-                  return [
-                    entry.seqNr, student.name, parseInt(entry.totalXP).format(), parseInt(entry.periodXP).format(),
-                    parseInt(entry.diffXP).format('percent'), parseInt(entry.prediction).format(),
-                    entry.emailSend, entry.dateSent
-                  ];
-                });
-              })
+          // this.api.getCourseUsers(this.courseID, "Student")
+          //   .pipe(finalize(() => this.tables.studentsReports.loading = false))
+          //   .subscribe(
+          //     students => {
+          //       this.students = students;
+          //       this.tables.studentsReports.data = data.entries.map(entry => {
+          //         const student = students.find(student => student.id === parseInt(entry.user));
+          //         return [
+          //           entry.seqNr, student.name, parseInt(entry.totalXP).format(), parseInt(entry.periodXP).format(),
+          //           parseInt(entry.diffXP).format('percent'), parseInt(entry.prediction).format(),
+          //           entry.emailSend, entry.dateSent
+          //         ];
+          //       });
+          //     })
         })
   }
 

@@ -86,16 +86,19 @@ abstract class Module
         $resources = [];
         foreach ($this::RESOURCES as $resource) {
             $path = MODULES_FOLDER . "/" . $this->id . "/" . $resource;
-            $realPath = API_URL . "/modules/" . $this->id . "/" . $resource;
+
+            $parts = explode("/", MODULES_FOLDER);
+            $moduleFolder = end($parts);
+            $realPath = API_URL . "/" . $moduleFolder . "/" . $this->id . "/" . $resource;
 
             if (is_dir($path)) {
                 $contents = Utils::getDirectoryContents($path);
                 foreach ($contents as $file) {
                     $filePath = $realPath . $file["name"];
-                    $resources[] = $filePath;
+                    $resources[basename($path)][] = $filePath;
                 }
 
-            } else $resources[] = $realPath;
+            } else $resources["single_files"][] = $realPath;
         }
         return $resources;
     }

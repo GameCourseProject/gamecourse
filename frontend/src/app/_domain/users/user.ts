@@ -1,6 +1,6 @@
 import {AuthType} from "../auth/auth-type";
 import {Moment} from "moment";
-import {Role} from "../roles/role";
+import {RoleDatabase} from "../roles/role";
 import {dateFromDatabase} from "../../_utils/misc/misc";
 
 export class User {
@@ -15,13 +15,12 @@ export class User {
   private _username: string;
   private _authMethod: AuthType;
   private _photoUrl: string;
-  private _roles?: Role[];
+  private _lastLogin: Moment;
   private _nrCourses?: number;
-  private _lastLogin?: Moment;
 
   constructor(id: number, name: string, email: string, major: string, nickname: string, studentNumber: number,
               isAdmin: boolean, isActive: boolean, username: string, authMethod: AuthType, photoUrl: string,
-              roles?: Role[], nrCourses?: number, lastLogin?: Moment) {
+              lastLogin: Moment, nrCourses?: number) {
 
     this._id = id;
     this._name = name;
@@ -34,9 +33,8 @@ export class User {
     this._username = username;
     this._authMethod = authMethod;
     this._photoUrl = photoUrl;
-    this._roles = roles;
-    if (nrCourses != undefined) this._nrCourses = nrCourses;
     this._lastLogin = lastLogin;
+    if (nrCourses !== undefined) this._nrCourses = nrCourses;
   }
 
   get id(): number {
@@ -127,12 +125,12 @@ export class User {
     this._photoUrl = value;
   }
 
-  get roles(): Role[] {
-    return this._roles;
+  get lastLogin(): Moment {
+    return this._lastLogin;
   }
 
-  set roles(value: Role[]) {
-    this._roles = value;
+  set lastLogin(value: Moment) {
+    this._lastLogin = value;
   }
 
   get nrCourses(): number {
@@ -141,14 +139,6 @@ export class User {
 
   set nrCourses(value: number) {
     this._nrCourses = value;
-  }
-
-  get lastLogin(): Moment {
-    return this._lastLogin;
-  }
-
-  set lastLogin(value: Moment) {
-    this._lastLogin = value;
   }
 
   static fromDatabase(obj: UserDatabase): User {
@@ -164,9 +154,8 @@ export class User {
       obj.username,
       obj.authentication_service as AuthType,
       obj.image,
-      obj.roles ? obj.roles.map(role => Role.fromDatabase({name: role})) : null,
-      obj.nrCourses ?? null,
-      dateFromDatabase(obj.lastLogin)
+      dateFromDatabase(obj.lastLogin),
+      obj.nrCourses ?? null
     );
   }
 }
@@ -183,7 +172,7 @@ interface UserDatabase {
   "username": string,
   "authentication_service": string,
   "image": string,
-  "roles"?: string[],
+  "lastLogin": string
+  "roles"?: RoleDatabase[],
   "nrCourses"?: number,
-  "lastLogin"?: string
 }

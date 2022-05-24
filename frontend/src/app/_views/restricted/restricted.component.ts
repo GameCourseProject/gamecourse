@@ -11,6 +11,6 @@ export class RestrictedComponent {
 
   hasFooter(): boolean {
     const urlParts = this.router.url.substr(1).split('/');
-    return urlParts.includes('courses') && urlParts.length >= 3;
+    return urlParts.includes('courses') && urlParts.length >= 2;
   }
 }

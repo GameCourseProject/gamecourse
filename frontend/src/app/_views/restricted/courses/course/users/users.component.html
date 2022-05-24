@@ -6,9 +6,9 @@
     <app-sidebar
       [filters]="filters"
       [orderBy]="orderBy"
-      (onSearch)="reduceList($event)"
-      (onFilterChange)="reduce.updateFilter($event.filter, $event.state); reduceList()"
-      (onOrderChange)="order.active = $event; orderList()">
+      (onSearch)="reduceList('course-users', $event)"
+      (onFilterChange)="reduce.updateFilter($event.filter, $event.state); reduceList('course-users')"
+      (onOrderChange)="order.active = $event; orderList('course-users')">
     </app-sidebar>
 
     <!-- Main Content -->
@@ -21,9 +21,9 @@
       </div>
 
       <!-- List size -->
-      <span style="position: absolute; left: 70px; top: 40px">Size: <span>{{reduce.items.length}}</span> user{{reduce.items.length > 1 ? 's' : ''}}</span>
+      <span style="position: absolute; left: 70px; top: 40px">Size: <span>{{reduce.items.length}}</span> user{{reduce.items.length != 1 ? 's' : ''}}</span>
 
-      <!-- Courses Table -->
+      <!-- Users Table -->
       <div id="allUsers">
         <div class="data-table">
 
@@ -35,7 +35,7 @@
               <th >Nickname</th>
               <th >Major</th>
               <th >Student nº</th>
-              <th >Last Login</th>
+              <th >Last Activity</th>
               <th class="check-column">Active</th>
               <th class="action-column"></th>
               <th class="action-column"></th>
@@ -54,10 +54,10 @@
               <td class="ng-binding">{{user.nickname}}</td>
               <td class="ng-binding">{{user.major}}</td>
               <td class="ng-binding">{{user.studentNumber}}</td>
-              <td class="ng-binding">{{user.lastLogin ? user.lastLogin.fromNow() : 'Never'}}</td>
+              <td class="ng-binding">{{user.lastActivity ? user.lastActivity.fromNow() : 'Never'}}</td>
               <td class="check-column">
                 <label class="switch">
-                  <input type="checkbox" [checked]="user.isActive" (change)="toggleActive(user.id)">
+                  <input type="checkbox" [checked]="user.isActiveInCourse" (change)="toggleActive(user.id)">
                   <span class="slider round"></span>
                 </label>
               </td>
@@ -110,7 +110,7 @@
       <div class="icon" id="choose_create_new_user" style="opacity: .8"></div>
       <div class="description">Create a new user</div>
     </div>
-    <div class="option" (click)="isSelectUserModalOpen = true">
+    <div class="option" (click)="isSelectUserModalOpen = true; getUsersNotInCourse();">
       <div class="icon" id="choose_select_user" style="opacity: .8"></div>
       <div class="description">Select existing user</div>
     </div>
@@ -141,7 +141,7 @@
         (click)="removeUser(user.id)">
           {{user.name}}
         </div>
-        <input id="select_system_user" type="text" placeholder="Search.." [(ngModel)]="selectUserQuery" (ngModelChange)="reduceListNonUsers($event)">
+        <input id="select_system_user" type="text" placeholder="Search.." [(ngModel)]="selectUserQuery" (ngModelChange)="reduceList('non-course-users', this.selectUserQuery)">
       </div>
 
       <!-- Users -->
@@ -157,12 +157,12 @@
         <span style="margin-right: 10px;">Role: </span>
         <select id="roles" class="form__input" name="roles" [(ngModel)]="selectedUserRole">
           <option [ngValue]="null" disabled selected>Select a role</option>
-          <option *ngFor="let role of roles" [ngValue]="role.name">{{role.name}}</option>
+          <option *ngFor="let roleName of rolesNames" [ngValue]="roleName">{{roleName}}</option>
         </select>
       </div>
     </div>
 
-    <button class="save_btn" (click)="submitUsers()" [disabled]="selectedUsers?.length === 0 || !selectedUserRole">Save</button>
+    <button class="save_btn" (click)="addUsersToCourse()" [disabled]="selectedUsers?.length === 0 || !selectedUserRole">Save</button>
   </div>
 </ng-template>
 
@@ -172,7 +172,7 @@
     [isModalOpen]="isUserModalOpen"
     [id]="mode === 'add' ? 'add-user' : 'edit-user'"
     [templateRef]="userModal"
-    (closeBtnClicked)="isUserModalOpen = false; clearObject(newUser); photo.set(originalPhoto); selectedUserRoles = null"
+    (closeBtnClicked)="isUserModalOpen = false; clearObject(newCourseUser); photo.set(originalPhoto);"
     [actionInProgress]="saving"
     [innerClickEvents]="false">
   </app-modal>
@@ -207,19 +207,19 @@
 
           <!-- Name -->
           <div class="container">
-            <input type="text" class="form__input" id="name" placeholder="Name *" [(ngModel)]="newUser.name" [required]="true">
+            <input type="text" class="form__input" id="name" placeholder="Name *" [(ngModel)]="newCourseUser.name" [required]="true">
             <label for="name" class="form__label">Name</label>
           </div>
 
           <!-- Nickname -->
           <div class="container">
-            <input type="text" class="form__input" id="nickname" placeholder="Nickname" [(ngModel)]="newUser.nickname" [required]="true">
+            <input type="text" class="form__input" id="nickname" placeholder="Nickname" [(ngModel)]="newCourseUser.nickname" [required]="true">
             <label for="nickname" class="form__label">Nickname</label>
           </div>
 
           <!-- Email -->
           <div class="container">
-            <input type="email" class="form__input" id="email" placeholder="Email *" [(ngModel)]="newUser.email" [required]="true">
+            <input type="email" class="form__input" id="email" placeholder="Email *" [(ngModel)]="newCourseUser.email" [required]="true">
             <label for="email" class="form__label">Email</label>
           </div>
 
@@ -228,7 +228,7 @@
             <!-- Student number -->
             <div class="details half">
               <div class="container">
-                <input type="number" class="form__input" id="studentNumber" placeholder="Student Number *" [(ngModel)]="newUser.studentNumber" [required]="true">
+                <input type="number" class="form__input" id="studentNumber" placeholder="Student Number *" [(ngModel)]="newCourseUser.studentNumber" [required]="true">
                 <label for="studentNumber" class="form__label">Number</label>
               </div>
             </div>
@@ -236,7 +236,7 @@
             <!-- Major -->
             <div class="details half right">
               <div class="container">
-                <input type="text" class="form__input" id="major" placeholder="Major *" [(ngModel)]="newUser.major" [required]="true">
+                <input type="text" class="form__input" id="major" placeholder="Major *" [(ngModel)]="newCourseUser.major" [required]="true">
                 <label for="major" class="form__label">Major</label>
               </div>
             </div>
@@ -248,7 +248,7 @@
 
         <!-- Auth Method -->
         <div class="smaller">
-          <select id="authService" class="form__input" name="authService" [(ngModel)]="newUser.auth" [required]="true">
+          <select id="authService" class="form__input" name="authService" [(ngModel)]="newCourseUser.auth" [required]="true">
             <option [ngValue]="null" disabled selected [ngStyle]="{'color': 'rbg(106,106,106)'}">Auth Service</option>
             <option [ngValue]="AuthType.FENIX" value="fenix" [ngStyle]="{'color': '#333'}">Fénix</option>
             <option [ngValue]="AuthType.GOOGLE" [ngStyle]="{'color': '#333'}">Google</option>
@@ -260,7 +260,7 @@
         <!-- Username -->
         <div class="details bigger right">
           <div class="container">
-            <input type="text" class="form__input" id="username" placeholder="Username *" [(ngModel)]="newUser.username">
+            <input type="text" class="form__input" id="username" placeholder="Username *" [(ngModel)]="newCourseUser.username">
             <label for="username" class="form__label">Username</label>
           </div>
         </div>
@@ -271,7 +271,7 @@
         <span style="margin-right: 10px;">Add Role: </span>
         <select [id]="'roles'" class="form__input" name="roles" [(ngModel)]="selectedUserRole">
           <option [ngValue]="null" disabled selected>Select a role *</option>
-          <option *ngFor="let role of filterRoles()" [ngValue]="role.name">{{role.name}}</option>
+          <option *ngFor="let roleName of filterRoles()" [ngValue]="roleName">{{roleName}}</option>
         </select>
         <button (click)="addRole(selectedUserRole)">Add</button>
       </div>

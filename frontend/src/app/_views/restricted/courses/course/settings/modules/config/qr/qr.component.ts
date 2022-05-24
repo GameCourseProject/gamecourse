@@ -170,8 +170,8 @@ export class QrComponent implements OnInit {
 
   getStudents(): void {
     if (!this.students || this.students.length == 0) {
-      this.api.getCourseUsers(this.courseID, "Student")
-        .subscribe(students => this.students = students.sort((a, b) => a.name.localeCompare(b.name)))
+      // this.api.getCourseUsers(this.courseID, "Student")
+      //   .subscribe(students => this.students = students.sort((a, b) => a.name.localeCompare(b.name)))
     }
   }
 

@@ -1,14 +1,14 @@
 export class Role {
-  private _id?: number;
-  private _name?: string;
-  private _landingPage?: number;
+  private _id: number;
+  private _name: string;
+  private _landingPage: number;
   private _children?: Role[];
 
-  constructor(id?: number, name?: string, landingPage?: number, children?: Role[]) {
+  constructor(id: number, name: string, landingPage: number, children?: Role[]) {
     this._id = id;
     this._name = name;
     this._landingPage = landingPage;
-    this._children = children;
+    if (children !== undefined) this._children = children;
   }
 
   get id(): number {
@@ -99,8 +99,8 @@ export class Role {
 }
 
 export interface RoleDatabase {
-  id?: number,
+  id: number,
   name: string,
-  landingPage?: number
+  landingPage: number
   children?: RoleDatabase[]
 }
