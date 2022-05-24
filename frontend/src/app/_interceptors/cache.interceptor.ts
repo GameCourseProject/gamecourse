@@ -25,11 +25,9 @@ import {ApiHttpService} from "../_services/api/api-http.service";
 export class CacheInterceptor implements HttpInterceptor {
 
   private cache: Map<HttpRequest<any>['url'], HttpResponse<any>> = new Map<HttpRequest<any>['url'], HttpResponse<any>>();
+  private queue: Map<HttpRequest<any>['url'], Subject<HttpResponse<any>>> = new Map<HttpRequest<any>["url"], Subject<HttpResponse<any>>>();
 
-  private lastGetRequest: HttpRequest<any>['url'];    // last GET request actually made
-  private lastGetRequestSubject: {[url: string]: Subject<HttpResponse<any>> } = {};
-
-  private readonly dependencies: {[key: string]: string[]} = {};
+  private readonly dependencies: { [key: string]: string[] } = {};
 
   constructor() {
     this.dependencies[ApiHttpService.AUTOGAME] = [ApiHttpService.AUTOGAME, ApiHttpService.COURSE];
@@ -56,7 +54,6 @@ export class CacheInterceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     if (request.method !== 'GET') {
-      this.lastGetRequest = null;
       this.resetCache(request);
       return next.handle(request);
     }
@@ -68,20 +65,26 @@ export class CacheInterceptor implements HttpInterceptor {
       // Has request cached
       return of(cachedResponse.clone());
 
-    } else if (hasModule && this.lastGetRequest === request.url) {
-      // Same request in a row, answer w/ 1st response
-      return this.lastGetRequestSubject[request.url].pipe( take(1) )
+    } else if (hasModule && this.queue.has(request.url)) {
+      // Request is already being processed, answer w/ 1st response received
+      return this.queue.get(request.url).pipe(take(1));
 
     } else {
-      // Actually make the request
-      this.lastGetRequest = request.url;
-      this.lastGetRequestSubject[request.url] = new Subject<HttpResponse<any>>();
+      // Add request to queue
+      if (!this.queue.has(request.url))
+        this.queue.set(request.url, new Subject<HttpResponse<any>>());
 
+      // Actually make the request
       return next.handle(request).pipe(
         tap(stateEvent => {
           if (stateEvent instanceof HttpResponse) {
             if (hasModule) this.cache.set(request.url, stateEvent.clone());
-            this.lastGetRequestSubject[request.url].next(stateEvent.clone());
+
+            // Trigger simultaneous requests waiting for the response
+            this.queue.get(request.url).next(stateEvent.clone());
+
+            // Remove request from queue
+            this.queue.delete(request.url);
           }
         }),
         share()

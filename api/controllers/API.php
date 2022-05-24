@@ -133,7 +133,7 @@ class API
     public static function requireCoursePermission(Course $course) {
         $loggedUser = Core::getLoggedUser();
         $courseUser = $course->getCourseUserById($loggedUser->getId());
-        if (!$loggedUser->isAdmin() && !$courseUser->exists())
+        if (!$loggedUser->isAdmin() && !$courseUser)
             API::error("You don't have permission to access this course.", 403);
     }
 
@@ -143,7 +143,8 @@ class API
      */
     public static function requireCourseAdminPermission(Course $course) {
         $loggedUser = Core::getLoggedUser();
-        $courseAdmin = $course->getCourseUserById($loggedUser->getId())->isTeacher();
+        $courseUser = $course->getCourseUserById($loggedUser->getId());
+        $courseAdmin = $courseUser && $courseUser->isTeacher();
         if (!$loggedUser->isAdmin() && !$courseAdmin)
             API::error("You don't have permission to request this - only course admins can.", 403);
     }

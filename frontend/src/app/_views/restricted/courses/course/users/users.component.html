@@ -279,7 +279,7 @@
       <!-- Roles list -->
       <div id="roles_list">
         <span style="margin-right: 10px;">Roles: </span>
-        <div *ngFor="let role of selectedUserRoles" (click)="removeRole(role)" class="role_tag">{{role}}</div>
+        <div *ngFor="let role of selectedUserRoles" (click)="removeRole(role)" class="role_tag" [ngStyle]="{backgroundColor: course.color, color: 'white'}">{{role}}</div>
       </div>
     </div>
 
