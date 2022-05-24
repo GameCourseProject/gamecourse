@@ -2046,13 +2046,13 @@ export class ApiHttpService {
       .pipe(
         catchError(error => {
           if (error.status === 401)
-            return this.router.navigate(['/login']);
+            this.router.navigate(['/login']);
 
           if (error.status === 403)
-            return this.router.navigate(['/no-access']);
+            this.router.navigate(['/no-access']);
 
           if (error.status === 409)
-            return this.router.navigate(['/setup']);
+            this.router.navigate(['/setup']);
 
           if (!skipErrors) ErrorService.set(error);
           return throwError(error);
@@ -2065,13 +2065,13 @@ export class ApiHttpService {
       .pipe(
         catchError(error => {
           if (error.status === 401)
-            return this.router.navigate(['/login']);
+            this.router.navigate(['/login']);
 
           if (error.status === 403)
-            return this.router.navigate(['/no-access']);
+            this.router.navigate(['/no-access']);
 
           if (error.status === 409)
-            return this.router.navigate(['/setup']);
+            this.router.navigate(['/setup']);
 
           if (!skipErrors) ErrorService.set(error);
           return throwError(error);

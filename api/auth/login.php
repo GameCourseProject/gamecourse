@@ -14,6 +14,6 @@ if (array_key_exists("logout", $_POST))
     Core::logout();
 
 $isLoggedIn = Core::requireLogin();
-$hasAccess = Core::checkAccess();
+Core::checkAccess();
 
 echo json_encode(['isLoggedIn' => $isLoggedIn]);

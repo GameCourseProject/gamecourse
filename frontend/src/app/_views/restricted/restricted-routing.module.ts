@@ -23,12 +23,12 @@ const routes: Routes = [
       {
         path: 'users',
         loadChildren: () => import('./users/users.module').then(mod => mod.UsersModule),
-        canLoad: [AdminGuard]
+        canActivate: [AdminGuard]
       },
       {
         path: 'settings',
         loadChildren: () => import('./settings/settings.module').then(mod => mod.SettingsModule),
-        canLoad: [AdminGuard]
+        canActivate: [AdminGuard]
       },
       {
         path: 'docs',

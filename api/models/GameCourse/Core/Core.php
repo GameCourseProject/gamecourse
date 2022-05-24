@@ -159,7 +159,7 @@ class Core
                 $_SESSION['loginDone'] = $loginType;
 
                 $user = User::getUserByUsername($_SESSION['username'], $loginType);
-                $user->refreshLastLogin();
+                if ($user) $user->refreshLastLogin();
             }
         }
     }
@@ -172,6 +172,7 @@ class Core
         if (array_key_exists('user', $_SESSION)) {
             static::$loggedUser = User::getUserByUsername($_SESSION['username']);
             $_SESSION['user'] = static::$loggedUser->getId();
+            if (static::$loggedUser && !static::$loggedUser->isActive()) self::denyAccess();
             return true;
         }
 
@@ -179,33 +180,38 @@ class Core
             $username = $_SESSION['username'];
             $user = User::getUserByUsername($username, $_SESSION['type']);
             if ($user) static::$loggedUser = $user;
+            if (!static::$loggedUser->isActive()) self::denyAccess();
 
-            if (static::$loggedUser != null) {
+            if (static::$loggedUser) {
                 $_SESSION['user'] = static::$loggedUser->getId();
 
                 // User doesn't have a photo yet
                 if (!static::$loggedUser->hasImage()) {
                     if (array_key_exists('type', $_SESSION) && array_key_exists('pictureUrl', $_SESSION)) {
-                        if ($_SESSION['type'] == AuthService::FENIX) {
-                            $client = FenixEdu::getSingleton();
-                        } elseif ($_SESSION['type'] == AuthService::GOOGLE) {
+                        if ($_SESSION['type'] == AuthService::GOOGLE) {
                             $client = GoogleHandler::getSingleton();
                         } else if ($_SESSION['type'] == AuthService::FACEBOOK) {
                             $client = Facebook::getSingleton();
                         } else if ($_SESSION['type'] == AuthService::LINKEDIN) {
                             $client = Linkedin::getSingleton();
+                        } else {
+                            $client = FenixEdu::getSingleton();
                         }
                         $client->downloadPhoto($_SESSION['pictureUrl'], static::$loggedUser->getId());
                     }
                 }
                 return true;
 
-            } else if ($redirect) {
-                $_SESSION = [];
-                API::error('Access denied.', 403);
-            }
+            } else if ($redirect) self::denyAccess();
         }
+
         return false;
+    }
+
+    private static function denyAccess()
+    {
+        $_SESSION = [];
+        API::error("Access denied.", 403);
     }
 
     public static function getLoggedUser(): ?User

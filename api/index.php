@@ -18,8 +18,7 @@ Core::requireSetup();
 if (!Core::requireLogin(false))
     API::error("Not logged in!", 401);
 
-if (!Core::checkAccess(false))
-    API::error("Access denied.", 403);
+Core::checkAccess();
 
 API::gatherRequestInfo();
 API::processRequest();

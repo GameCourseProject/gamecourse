@@ -16,6 +16,7 @@ export class NoAccessComponent implements OnInit {
   }
 
   goBack() {
+    // FIXME: should go to previous route
     this.router.navigate(['']);
   }
 

@@ -10,17 +10,17 @@ const routes: Routes = [
   {
     path: 'setup',
     loadChildren: () => import('./_views/setup/setup.module').then(mod => mod.SetupModule),
-    canLoad: [RedirectIfSetupDoneGuard]
+    canActivate: [RedirectIfSetupDoneGuard]
   },
   {
     path: 'login',
     loadChildren: () => import('./_views/login/login.module').then(mod => mod.LoginModule),
-    canLoad: [RedirectIfLoggedInGuard]
+    canActivate: [RedirectIfLoggedInGuard]
   },
   {
     path: '',
     loadChildren: () => import('./_views/restricted/restricted.module').then(mod => mod.RestrictedModule),
-    canLoad: [LoginGuard]
+    canActivate: [LoginGuard]
   },
   { path: '404', component: PageNotFoundComponent},
   { path: 'no-access', component: NoAccessComponent},

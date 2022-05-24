@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import {
-  CanLoad,
-  Route,
-  Router,
-  UrlSegment,
+  ActivatedRouteSnapshot,
+  CanActivate,
+  Router, RouterStateSnapshot,
   UrlTree
 } from '@angular/router';
 import {Observable, of, throwError} from 'rxjs';
@@ -14,16 +13,16 @@ import {ErrorService} from "../_services/error.service";
 @Injectable({
   providedIn: 'root'
 })
-export class LoginGuard implements CanLoad {
+export class LoginGuard implements CanActivate {
 
   constructor(
     private api: ApiHttpService,
     private router: Router
   ) { }
 
-  canLoad(
-    route: Route,
-    segments: UrlSegment[]): Observable<boolean | UrlTree> |  Promise<boolean | UrlTree> |boolean | UrlTree {
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
 
     return this.check();
   }
