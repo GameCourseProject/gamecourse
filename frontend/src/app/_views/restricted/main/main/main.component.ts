@@ -32,7 +32,7 @@ export class MainComponent implements OnInit {
 
   getRedirectLink(course: Course): string {
     const link = '/courses/' + course.id;
-    const pageID = course.landingPage;
+    const pageID = course.landingPage; // FIXME: landing page per user role
     if (pageID) return link + '/pages/' + pageID;
     else return link;
   }

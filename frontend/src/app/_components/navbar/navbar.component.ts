@@ -10,6 +10,8 @@ import {User} from "../../_domain/users/user";
 import {Course} from "../../_domain/courses/course";
 import {ResourceManager} from "../../_utils/resources/resource-manager";
 import {Page} from "../../_domain/pages & templates/page";
+import {environment} from "../../../environments/environment";
+import {of} from "rxjs";
 
 @Component({
   selector: 'app-navbar',
@@ -80,7 +82,7 @@ export class NavbarComponent implements OnInit {
 
   async getLoggedUser(): Promise<void> {
     this.user = await this.api.getLoggedUser().toPromise();
-    this.photo.set(this.user.photoUrl ?? 'assets/imgs/profile-default.png');
+    this.photo.set(this.user.photoUrl ?? environment.defaultProfilePicture);
   }
 
 
@@ -93,11 +95,15 @@ export class NavbarComponent implements OnInit {
     const isInCourse = this.router.url.includes('courses/');
 
     if (this.isDocs) this.navigation = this.getDocsNavigation();
-    else if (!isInCourse) this.navigation = this.getMainNavigation();
-    else if (isInCourse) this.navigation = await this.getCourseNavigation();
-    else this.navigation = [];
+    else if (!isInCourse) {
+      this.navigation = this.getMainNavigation();
+      this.course = null;
 
-    if (!isInCourse) this.course = null;
+    } else if (isInCourse) {
+      this.navigation = await this.getCourseNavigation();
+      await this.getConfigurableArea();
+
+    } else this.navigation = [];
   }
 
   getDocsNavigation(): Navigation[] {
@@ -180,24 +186,19 @@ export class NavbarComponent implements OnInit {
   }
 
   async getCourseNavigation(): Promise<Navigation[]> {
-    if (!this.course || this.course.id !== this.getCourseIDFromURL() || !this.activePages || (this.hasTokensEnabled && !this.tokens)) {
-      const courseInfo = await this.getCourseInfo();
-      const isAdminOrTeacher = this.user.isAdmin || await this.isCourseTeacher();
+    if (!this.course || this.course.id !== this.getCourseIDFromURL() || !this.activePages) {
+      const courseID = this.getCourseIDFromURL();
 
-      this.hasTokensEnabled = await this.isVirtualCurrencyEnabled();
-      if (this.hasTokensEnabled) {
-        this.isStudent = await this.isCourseStudent();
-        if (this.isStudent) this.tokens = await this.getUserTokens();
-      }
+      this.course = await this.api.getCourseById(courseID).toPromise();
+      this.activePages = []; // FIXME
+      const isAdminOrTeacher = this.user.isAdmin || await this.api.isTeacher(courseID, this.user.id).toPromise();
 
-      this.course = courseInfo.course;
-      this.activePages = courseInfo.activePages;
-      this.courseNavigation = buildCourseNavigation(isAdminOrTeacher, this.course.id, this.activePages);
+      this.courseNavigation = buildCourseNavigation(this.course, this.activePages, isAdminOrTeacher);
     }
     return this.courseNavigation;
 
-    function buildCourseNavigation(isAdminOrTeacher: boolean, courseID: number, activePages: Page[]): Navigation[] {
-      const path = '/courses/' + courseID + '/';
+    function buildCourseNavigation(course: Course, activePages: Page[], isAdminOrTeacher: boolean): Navigation[] {
+      const path = '/courses/' + course.id + '/';
 
       const pages = activePages.map(page => {
         return {link: path + 'pages/' + page.id, name: page.name};
@@ -223,6 +224,20 @@ export class NavbarComponent implements OnInit {
 
 
   /*** --------------------------------------------- ***/
+  /*** ------------- Configurable Area ------------- ***/
+  /*** --------------------------------------------- ***/
+
+  async getConfigurableArea(): Promise<void> {
+    // FIXME: should be made general
+    this.hasTokensEnabled = await this.isVirtualCurrencyEnabled();
+    if (this.hasTokensEnabled) {
+      this.isStudent = await this.api.isStudent(this.course.id, this.user.id).toPromise();
+      if (this.isStudent) this.tokens = await this.getUserTokens();
+    }
+  }
+
+
+  /*** --------------------------------------------- ***/
   /*** ------------------ Logout ------------------- ***/
   /*** --------------------------------------------- ***/
 
@@ -238,41 +253,24 @@ export class NavbarComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  async getCourseInfo(): Promise<{course: Course, activePages: Page[]}> {
-    const courseID = this.getCourseIDFromURL();
-    if (courseID) return await this.api.getCourseWithInfo(courseID).toPromise();
-    return null;
-  }
-
-  async isCourseTeacher(): Promise<boolean> {
-    const courseID = this.getCourseIDFromURL();
-    if (courseID) return await this.api.isCourseTeacher(courseID).toPromise()
-    return null;
-  }
-
-  async isCourseStudent(): Promise<boolean> {
-    const courseID = this.getCourseIDFromURL();
-    if (courseID) return await this.api.isCourseStudent(courseID).toPromise()
-    return null;
+  getCourseIDFromURL(): number {
+    const urlParts = this.router.url.substr(1).split('/');
+    if (urlParts.includes('courses') && urlParts.length >= 2) return parseInt(urlParts[1]);
+    else return null;
   }
 
   async isVirtualCurrencyEnabled(): Promise<boolean> {
-    const courseID = this.getCourseIDFromURL();
-    if (courseID) return await this.api.isVirtualCurrencyEnabled(courseID).toPromise();
-    return null;
+    return of(false).toPromise(); // FIXME
+    // const courseID = this.getCourseIDFromURL();
+    // if (courseID) return await this.api.isVirtualCurrencyEnabled(courseID).toPromise();
+    // return null;
   }
 
   async getUserTokens(): Promise<number> {
-    const courseID = this.getCourseIDFromURL();
-    if (courseID) return await this.api.getUserTokens(courseID, this.user.id).toPromise();
-    return null;
-  }
-
-  getCourseIDFromURL(): number {
-    const urlParts = this.router.url.substr(1).split('/');
-    if (urlParts.includes('courses') && urlParts.length >= 2) {
-      return parseInt(urlParts[1]);
-    } else return null;
+    return of(100).toPromise(); // FIXME
+    // const courseID = this.getCourseIDFromURL();
+    // if (courseID) return await this.api.getUserTokens(courseID, this.user.id).toPromise();
+    // return null;
   }
 
 

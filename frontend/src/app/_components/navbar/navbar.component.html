@@ -4,17 +4,22 @@
   <a class="logo" [routerLink]="'/'"></a>
 
   <!-- User Info -->
-  <div *ngIf="!isDocs && user" class="user_info">
+  <div *ngIf="!isDocs" class="user_info">
+
+    <!-- Configurable Area FIXME: make configurable in modules -->
     <div *ngIf="course && hasTokensEnabled && isStudent" class="user_tokens">
       <span>{{tokens}}</span>
       <img src="{{tokensImg}}" alt="token image">
     </div>
-    <div class="user_id">{{user.username}}</div>
-    <a class="icon" id="user_icon" [routerLink]="'/my-info'"><img [src]="photo.get()" alt=""></a>
-    <a class="icon" id="user_exit" (click)="logout()"></a>
+
+    <ng-container *ngIf="user">
+      <div class="user_id">{{user.username}}</div>
+      <a class="icon" id="user_icon" [routerLink]="'/my-info'"><img [src]="photo.get()" alt=""></a>
+      <a class="icon" id="user_exit" (click)="logout()"></a>
+    </ng-container>
   </div>
 
-  <!-- Menu -->
+  <!-- Navigation -->
   <ul class="menu" [ngClass]="{'documentation': isDocs}">
     <li *ngFor="let nav of navigation" [ngClass]="{'dropdown': nav.children?.length > 0}">
       <a *ngIf="nav.link" [routerLink]="nav.link" [routerLinkActive]="'active focused'">{{nav.name}}</a>
@@ -27,4 +32,5 @@
 
 </div>
 
+<!-- Course Banner -->
 <div *ngIf="course" id="course_name" [ngStyle]="{'background-color': course.color}">{{course.name}}</div>

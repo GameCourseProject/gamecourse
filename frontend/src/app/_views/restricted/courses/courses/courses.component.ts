@@ -128,7 +128,11 @@ export class CoursesComponent implements OnInit {
     this.loadingAction = true;
 
     if (this.newCourse.startDate) this.newCourse.startDate += ' 00:00:00';
-    if (this.newCourse.endDate) this.newCourse.endDate += ' 00:00:00';
+    else this.newCourse.startDate = null;
+
+    if (this.newCourse.endDate) this.newCourse.endDate += ' 23:59:59';
+    else this.newCourse.endDate = null;
+
     if (this.newCourse.short?.isEmpty()) this.newCourse.short = null;
 
     this.api.createCourse(this.newCourse)
@@ -171,7 +175,11 @@ export class CoursesComponent implements OnInit {
     this.newCourse['id'] = this.courseToEdit.id;
 
     if (this.newCourse.startDate) this.newCourse.startDate += ' 00:00:00';
-    if (this.newCourse.endDate) this.newCourse.endDate += ' 00:00:00';
+    else this.newCourse.startDate = null;
+
+    if (this.newCourse.endDate) this.newCourse.endDate += ' 23:59:59';
+    else this.newCourse.endDate = null;
+
     if (this.newCourse.short?.isEmpty()) this.newCourse.short = null;
 
     this.api.editCourse(this.newCourse)
@@ -352,12 +360,11 @@ export class CoursesComponent implements OnInit {
     return this.reduce.items.filter(course => course.isActive === isActive);
   }
 
-  getRedirectLink(courseID: number): string {
-    return ''; // FIXME
-    // const link = '/courses/' + courseID;
-    // const pageID = this.redirectPages[courseID.toString()];
-    // if (pageID) return link + '/pages/' + pageID;
-    // else return link;
+  getRedirectLink(course: Course): string {
+    const link = '/courses/' + course.id;
+    const pageID = course.landingPage; // FIXME: landing page per user role
+    if (pageID) return link + '/pages/' + pageID;
+    else return link;
   }
 
   onFileSelected(files: FileList): void {

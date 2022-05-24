@@ -745,6 +745,19 @@ class Course
         ];
     }
 
+    public function getModulesResources(bool $enabled = null): array
+    {
+        $resources = [];
+
+        $modules = $this->getModules($enabled);
+        foreach ($modules as $moduleObj) {
+            $module = $this->getModuleById($moduleObj["id"]);
+            $resources[$module->getId()] = $module->getResources();
+        }
+
+        return $resources;
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ------------------- Course Data -------------------- ***/

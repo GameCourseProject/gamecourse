@@ -52,11 +52,11 @@ export class GlobalComponent implements OnInit {
         info => {
           this.info = Object.assign({id: courseID}, info);
 
-          this.api.getCourseWithInfo(courseID)
-            .subscribe(courseInfo => {
-              this.activePages = courseInfo.activePages;
-                this.getStyleFile(courseID);
-              })
+          // this.api.getCourseWithInfo(courseID)
+          //   .subscribe(courseInfo => {
+          //     this.activePages = courseInfo.activePages;
+          //       this.getStyleFile(courseID);
+          //     })
         })
   }
 

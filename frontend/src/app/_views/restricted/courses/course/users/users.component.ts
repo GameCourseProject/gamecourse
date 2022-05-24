@@ -108,7 +108,7 @@ export class UsersComponent implements OnInit {
   }
 
   getCourse(courseId: number): void {
-    this.api.getCourse(courseId)
+    this.api.getCourseById(courseId)
       .subscribe(course => {
         this.course = course;
         this.getCourseRoles(courseId);

@@ -42,7 +42,7 @@ export class ModulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async getModules(): Promise<void> {
-    this.modules = await this.api.getModulesAvailable().toPromise();
+    this.modules = await this.api.getModules().toPromise();
     this.reduceList();
   }
 

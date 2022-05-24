@@ -74,7 +74,7 @@
               <div class="frame" [ngStyle]="{'borderColor': isWhite(course.color) ? 'lightgrey' : course.color}" style="border: 1px solid"></div>
             </div>
           </td>
-          <td class="name-column" [routerLink]="getRedirectLink(course.id)" style="cursor: pointer"><span>{{course.name}}</span></td>
+          <td class="name-column" [routerLink]="getRedirectLink(course)" style="cursor: pointer"><span>{{course.name}}</span></td>
           <td class="ng-binding">{{course.short}}</td>
           <td class="ng-binding">{{course.nrStudents}}</td>
           <td class="ng-binding">{{course.year}}</td>
@@ -127,7 +127,7 @@
       </div>
 
       <div class="content" id="active_courses">
-        <div class="card" *ngFor="let course of getNonAdminCourses(true)" [routerLink]="getRedirectLink(course.id)">
+        <div class="card" *ngFor="let course of getNonAdminCourses(true)" [routerLink]="getRedirectLink(course)">
           <div class="color_box">
             <div class="box" [ngStyle]="{'background-color': course.color}"></div>
             <div class="frame frame-course" [ngStyle]="{'border': '1px solid ' + course.color}">
@@ -155,7 +155,7 @@
       </div>
 
       <div class="content" id="not_active_courses">
-        <div class="card" *ngFor="let course of getNonAdminCourses(false)" [routerLink]="getRedirectLink(course.id)">
+        <div class="card" *ngFor="let course of getNonAdminCourses(false)" [routerLink]="getRedirectLink(course)">
           <div class="color_box">
             <div class="box" [ngStyle]="{'background-color': course.color}"></div>
             <div class="frame frame-course" [ngStyle]="{'border': '1px solid ' + course.color}">

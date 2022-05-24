@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import {Course} from "../../../../../_domain/courses/course";
 import {ActivatedRoute} from "@angular/router";
 import {ApiHttpService} from "../../../../../_services/api/api-http.service";
-import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-main',
@@ -20,14 +19,19 @@ export class MainComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      this.getCourse(parseInt(params.id));
+    this.route.params.subscribe(async params => {
+      const courseId = parseInt(params.id);
+      await this.getCourse(courseId);
+      this.loading = false;
     });
   }
 
-  getCourse(courseID: number): void {
-    this.api.getCourse(courseID)
-      .pipe( finalize(() => this.loading = false) )
-      .subscribe(course => this.course = course);
+
+  /*** --------------------------------------------- ***/
+  /*** -------------------- Init ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  async getCourse(courseID: number): Promise<void> {
+    this.course = await this.api.getCourseById(courseID).toPromise();
   }
 }

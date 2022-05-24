@@ -94,7 +94,7 @@ export class SkillsComponent implements OnInit {
 
   getCourseDataFolder() {
     this.loading = true;
-    this.api.getCourse(this.courseID)
+    this.api.getCourseById(this.courseID)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(course => this.courseFolder = course.folder);
   }

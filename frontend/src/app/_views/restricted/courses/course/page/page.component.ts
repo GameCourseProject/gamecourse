@@ -54,7 +54,7 @@ export class PageComponent implements OnInit {
 
         } else if (this.router.url.includes('participation')) {
           this.participationKey = params.key;
-          this.api.getCourse(this.courseID)
+          this.api.getCourseById(this.courseID)
             .pipe(finalize(() => this.loading = false))
             .subscribe(course => this.course = course)
 

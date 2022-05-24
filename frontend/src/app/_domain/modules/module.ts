@@ -1,9 +1,9 @@
 import {ApiHttpService} from "../../_services/api/api-http.service";
-import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
 import {exists} from "../../_utils/misc/misc";
 import {ModuleType} from "./ModuleType";
 import {ResourceManager} from "../../_utils/resources/resource-manager";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
+import {ErrorService} from "../../_services/error.service";
 
 export class Module {
   private _id: string;
@@ -134,22 +134,24 @@ export class Module {
   static loadStyles(courseId: number, sanitizer: DomSanitizer): void {
     Module.stylesLoaded.set(courseId, {state: LoadingState.PENDING});
 
-    ApiHttpService.getCourseResources(courseId)
+    ApiHttpService.getModulesResources(courseId, true)
       .subscribe(resources => {
         const styles: {name: string, path: SafeUrl}[] = [];
-        for (const module of resources) {
-          for (const resource of module.files) {
-            if (resource.includes('.css')) {
-              const split = resource.split('/');
+        for (const [moduleId, moduleResources] of Object.entries(resources)) {
+          for (const [key, keyResources] of Object.entries(moduleResources)) {
 
-              // Prevent unwanted browser caching
-              const path = new ResourceManager(sanitizer);
-              path.set(ApiEndpointsService.API_ENDPOINT + '/' + resource);
+            if (key === 'styles') {
+              for (const resourcePath of keyResources) {
+                // Prevent unwanted browser caching
+                const path = new ResourceManager(sanitizer);
+                path.set(resourcePath);
 
-              styles.push({
-                name: courseId + '-' + split[split.length - 1].replace('.css', ''),
-                path: path.get('URL')
-              });
+                const resourceName = (resourcePath.split('/').pop()).split('.')[0];
+                styles.push({
+                  name: courseId + '-' + resourceName,
+                  path: path.get('URL')
+                });
+              }
             }
           }
         }
@@ -162,12 +164,13 @@ export class Module {
           style.id = id;
           stylesIds.push(id);
           style.rel = 'stylesheet';
-          style.href = `${s.path}`;
+          style.href = s.path.toString();
           head.appendChild(style);
         });
 
         this.stylesLoaded.set(courseId, {state: LoadingState.LOADED, stylesIds});
-      });
+
+      }, error => ErrorService.set(error));
   }
 
   /**
