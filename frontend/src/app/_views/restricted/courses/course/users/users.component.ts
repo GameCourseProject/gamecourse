@@ -201,7 +201,7 @@ export class UsersComponent implements OnInit {
 
         const successBox = $('#action_completed');
         successBox.empty();
-        successBox.append("New user" + (newCourseUsers.length != 1 ? "s" : "") + " added");
+        successBox.append(newCourseUsers.length +  " User" + (newCourseUsers.length != 1 ? "s" : "") + " added");
         successBox.show().delay(3000).fadeOut();
       });
   }
@@ -429,8 +429,9 @@ export class UsersComponent implements OnInit {
     if (!this.selectedUsers.find(el => el.id === user.id)) {
       this.selectedUsers.push(user);
       const index = this.nonCourseUsers.findIndex(el => el.id === user.id);
-      this.nonCourseUsers.splice(index, 1);
+      this.nonCourseUsers.removeAtIndex(index);
       this.reduceList('non-course-users');
+      this.selectUserQuery = null;
     }
   }
 

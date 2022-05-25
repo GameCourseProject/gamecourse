@@ -3,6 +3,8 @@ import {RouterModule, Routes} from '@angular/router';
 import {CoursesComponent} from "./courses/courses.component";
 import {LoadingState, Module} from "../../../_domain/modules/module";
 import {DomSanitizer} from "@angular/platform-browser";
+import {ApiHttpService} from "../../../_services/api/api-http.service";
+import {ErrorService} from "../../../_services/error.service";
 
 const routes: Routes = [
   {
@@ -11,6 +13,7 @@ const routes: Routes = [
   },
   {
     // NOTE: This path is only here so that course modules' styles are loaded
+    //       and to trigger course user last activity refresh
     path: ':id',
     matcher: url => {
       const courseID = parseInt(url[0].path);
@@ -19,9 +22,13 @@ const routes: Routes = [
       if (!Module.stylesLoaded.has(courseID) || Module.stylesLoaded.get(courseID).state === LoadingState.NOT_LOADED)
         Module.loadStyles(courseID, CoursesRoutingModule.sanitizer);
 
+      // Trigger refresh on course user lastActivity
+      ApiHttpService.refreshCourseUserActivity(courseID)
+        .subscribe(lastActivity => {}, error => ErrorService.set(error));
+
       // Return null so the router matches the next ':id' path
       return null;
-    },
+    }
   },
   {
     path: ':id',

@@ -75,7 +75,7 @@ class CronJob
             case "AutoDisabling":
                 return ROOT_PATH . "models/GameCourse/Course/AutoDisablingScript.php";
             case "AutoGame":
-                return AUTOGAME_FOLDER . "/AutoGameScript.php";
+                return ROOT_PATH . "models/GameCourse/AutoGame/AutoGameScript.php";
             case "ProgressReport": // FIXME: should be compartimentalized inside module
                 return MODULES_FOLDER . "/" . Notifications::ID . "/ProgressReportScript.php";
             default:

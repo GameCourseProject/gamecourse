@@ -58,7 +58,7 @@ export class ApiHttpService {
     withCredentials: true
   };
 
-  static readonly AUTOGAME: string = 'autogame';
+  static readonly AUTOGAME: string = 'AutoGame';
   static readonly CORE: string = 'core';
   static readonly COURSE: string = 'course';
   static readonly DOCS: string = 'docs';
@@ -651,6 +651,17 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']) );
+  }
+
+  public static refreshCourseUserActivity(courseID: number): Observable<Moment> {
+    const module = ApiHttpService.COURSE;
+    const request = 'refreshCourseUserActivity';
+
+    const url = ApiEndpointsService.API_ENDPOINT + '/?module=' + module + '&request=' + request + '&courseId=' + courseID;
+
+    const httpClient = new HttpClient(new HttpXhrBackend({ build: () => new XMLHttpRequest() }));
+    return httpClient.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => dateFromDatabase(res)));
   }
 
   // TODO: refactor

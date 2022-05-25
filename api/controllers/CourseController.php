@@ -428,6 +428,23 @@ class CourseController
         API::response($courseUser->isStudent());
     }
 
+    /**
+     * @throws Exception
+     */
+    public function refreshCourseUserActivity()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $courseUser = $course->getCourseUserById(Core::getLoggedUser()->getId());
+        $courseUser->refreshActivity();
+        API::response($courseUser->getLastActivity());
+    }
+
 
     /*** --------------------------------------------- ***/
     /*** ------------------- Roles ------------------- ***/
