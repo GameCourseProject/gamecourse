@@ -28,6 +28,7 @@ class CourseController
      * Get course by its ID.
      *
      * @return void
+     * @throws Exception
      */
     public function getCourseById()
     {
@@ -37,7 +38,15 @@ class CourseController
         $course = API::verifyCourseExists($courseId);
 
         API::requireCoursePermission($course);
-        API::response($course->getData());
+
+        $loggedUser = Core::getLoggedUser();
+        $courseUser = $course->getCourseUserById($loggedUser->getId());
+
+        $courseInfo = $course->getData();
+        if ($loggedUser->isAdmin() || $courseUser->isTeacher())
+            $courseInfo["nrStudents"] = count($course->getStudents());
+
+        API::response($courseInfo);
     }
 
     /**
@@ -46,6 +55,7 @@ class CourseController
      *
      * @param bool $isActive (optional)
      * @param bool $isVisible (optional)
+     * @throws Exception
      */
     public function getCourses()
     {
@@ -207,6 +217,29 @@ class CourseController
         $active = API::getValue("active", "bool");
 
         $courseUsers = $course->getCourseUsers($active);
+        foreach ($courseUsers as &$courseUserInfo) {
+            $courseUser = $course->getCourseUserById($courseUserInfo["id"]);
+            $courseUserInfo["image"] = $courseUser->getImage();
+            $courseUserInfo["roles"] = $courseUser->getRoles(false);
+        }
+        API::response($courseUsers);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getCourseUsersWithRole()
+    {
+        API::requireValues("courseId", "role");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        $roleName = API::getValue("role");
+        $active = API::getValue("active", "bool");
+
+        $courseUsers = $course->getCourseUsersWithRole($active, $roleName);
         foreach ($courseUsers as &$courseUserInfo) {
             $courseUser = $course->getCourseUserById($courseUserInfo["id"]);
             $courseUserInfo["image"] = $courseUser->getImage();
@@ -484,6 +517,45 @@ class CourseController
 
         $enabled = API::getValue("enabled", "bool");
         API::response($course->getModulesResources($enabled));
+    }
+
+
+    /*** --------------------------------------------- ***/
+    /*** ------------------ Styling ------------------ ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * Get course styles.
+     *
+     * @throws Exception
+     */
+    public function getStyles()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        API::response($course->getStyles());
+    }
+
+    /**
+     * Update course styles.
+     *
+     * @throws Exception
+     */
+    public function updateStyles()
+    {
+        API::requireValues("courseId", "styles");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $styles = API::getValue("styles");
+        $course->updateStyles($styles);
     }
 
 

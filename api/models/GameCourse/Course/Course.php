@@ -543,8 +543,14 @@ class Course
         return $courseUsers;
     }
 
+    /**
+     * @throws Exception
+     */
     public function getCourseUsersWithRole(?bool $active = null, string $roleName = null, int $roleId = null): array
     {
+        if ($roleName === null && $roleId === null)
+            throw new Exception("Need either role name or ID to get course users with a specific role.");
+
         $where = ["cu.course" => $this->id, "r.course" => $this->id];
         if ($active !== null) $where["cu.isActive"] = $active;
         if ($roleName !== null) $where["r.name"] = $roleName;
@@ -562,11 +568,17 @@ class Course
         return $courseUsers;
     }
 
+    /**
+     * @throws Exception
+     */
     public function getStudents(?bool $active = null): array
     {
         return $this->getCourseUsersWithRole($active, "Student");
     }
 
+    /**
+     * @throws Exception
+     */
     public function getTeachers(?bool $active = null): array
     {
         return $this->getCourseUsersWithRole($active, "Teacher");
@@ -894,33 +906,31 @@ class Course
     /*** --------------------- Styling ---------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    public function getStyleFile(): ?array
+    public function getStyles(): ?array
     {
-        $path = $this->getDataFolder(false) . "/css/styling.css";
+        $path = $this->getDataFolder(false) . "/styles/main.css";
         if (file_exists(ROOT_PATH . $path)) return ["path" => API_URL . "/" . $path, "contents" => file_get_contents($path)];
         return null;
     }
 
     /**
+     * @param string $contents
+     * @return void
      * @throws Exception
      */
-    public function createStyleFile(): string
+    public function updateStyles(string $contents)
     {
-        return $this->updateStyleFile("");
-    }
+        $stylesFolder = $this->getDataFolder() . "/styles";
+        if (!file_exists($stylesFolder))
+            mkdir($stylesFolder, 0777, true);
 
-    /**
-     * @throws Exception
-     */
-    public function updateStyleFile(string $contents): string
-    {
-        $cssFolder = $this->getDataFolder(false) . "/css";
-        if (!file_exists(ROOT_PATH . $cssFolder))
-            mkdir($cssFolder, 0777, true);
+        $mainStyles = $stylesFolder . "/main.css";
+        if (!$contents && file_exists($mainStyles)) unlink($mainStyles);
+        else file_put_contents($mainStyles, $contents);
 
-        $path = $cssFolder . "/styling.css";
-        if (file_put_contents(ROOT_PATH . $path, $contents) !== false) return API_URL . "/" . $path;
-        else throw new Exception("An error ocurred when creating style file for course with ID = " . $this->id . ".");
+        // Delete styles folder if empty
+        if (count(glob($stylesFolder . "/*")) == 0)
+            Utils::deleteDirectory($stylesFolder);
     }
 
 
