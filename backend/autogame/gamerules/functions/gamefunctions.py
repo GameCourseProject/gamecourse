@@ -135,6 +135,23 @@ def consecutive_peergrading(target):
     return result
 
 @rule_function
+def get_valid_attempts(target, skill):
+    """
+    Returns number of valid attempts for a given skill
+    """
+    result = connector.get_valid_attempts(target, skill)
+    return result
+
+@rule_function
+def get_new_total(target, validAttempts, rating):
+    """
+    Checks if user has enough tokens to spend.
+    Returns the user's new wallet total.
+    """
+    (result1, result2) = connector.get_new_total(target, validAttempts, rating)
+    return (result1, result2)
+
+@rule_function
 def filter_excellence(logs, tiers, classes):
     """
     Filters the list of logs in a way that only
@@ -333,6 +350,16 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     """
     result = connector.remove_tokens(target, tokens, skillName, contributions)
     return result
+
+@rule_function
+def update_wallet(target, newTotal, removed, contributions=None):
+    """
+    Updates 'user_wallet' table with the new total tokens for
+    a user.
+    """
+    result = connector.update_wallet(target, newTotal, removed, contributions)
+    return result
+
 
 @rule_function
 def rule_unlocked(name, target):
