@@ -3,11 +3,16 @@ import {Role, RoleDatabase} from "../roles/role";
 import {AuthType} from "../auth/auth-type";
 import {Moment} from "moment";
 import {dateFromDatabase} from "../../_utils/misc/misc";
+import {LoadingState} from "../modules/module";
+import {ApiHttpService} from "../../_services/api/api-http.service";
+import {ErrorService} from "../../_services/error.service";
 
 export class CourseUser extends User {
   private _roles: Role[];
   private _lastActivity: Moment;
   private _isActiveInCourse: boolean;
+
+  static activityRefreshState: Map<number, LoadingState> = new Map<number, LoadingState>();
 
   constructor(id: number, name: string, email: string, major: string, nickname: string, studentNumber: number,
               isAdmin: boolean, isActive: boolean, username: string, authMethod: AuthType, photoUrl: string,
@@ -42,6 +47,21 @@ export class CourseUser extends User {
 
   set isActiveInCourse(value: boolean) {
     this._isActiveInCourse = value;
+  }
+
+  /**
+   * Refreshes course user activity.
+   *
+   * @param courseID
+   */
+  static refreshActivity(courseID: number): void {
+    this.activityRefreshState.set(courseID, LoadingState.PENDING);
+
+    ApiHttpService.refreshCourseUserActivity(courseID)
+      .subscribe(
+        lastActivity => this.activityRefreshState.delete(courseID),
+          error => ErrorService.set(error)
+      );
   }
 
   static fromDatabase(obj: CourseUserDatabase): CourseUser {
