@@ -12,7 +12,8 @@
     </div>
 
     <div *ngIf="reduce.items.length > 0" class="modules">
-      <div *ngFor="let module of filterList(reduce.items, type | as : $any(ModuleType))" class="module_card" (click)="moduleOpen = module; isEnabled = module.enabled; isModuleDetailsModalOpen = true;">
+      <div *ngFor="let module of filterList(reduce.items, type | as : $any(ModuleType))" class="module_card"
+           (click)="moduleOpen = module; isEnabled = module.enabled; isModuleDetailsModalOpen = true;">
         <div class="icon" [style.backgroundImage]="'url(' + module.icon +  ')'"></div>
         <div class="header">{{module.name}}</div>
         <div class="text">{{module.description}}</div>
@@ -52,8 +53,8 @@
     <div class="icon" [style.backgroundImage]="'url(' + moduleOpen.icon + ')'"></div>
     <div class="title">{{moduleOpen.name}}</div>
     <div class="on_off">
-      <label class="switch" [ngClass]="{'disabled': !moduleOpen.canBeEnabled}">
-        <input type="checkbox" [checked]="moduleOpen.enabled" [disabled]="!moduleOpen.canBeEnabled" (change)="isEnabled = !isEnabled">
+      <label class="switch" [ngClass]="{'disabled': !moduleOpen.canChangeState}">
+        <input type="checkbox" [checked]="moduleOpen.enabled" [disabled]="!moduleOpen.canChangeState" (change)="isEnabled = !isEnabled">
         <span class="slider round"></span>
       </label>
     </div>
@@ -64,8 +65,8 @@
       <div class="full" id="description">{{moduleOpen.description}}</div>
       <div class="row">
         <div>
-          <span class="label">Dependencies: </span>
-          <span *ngFor="let dependency of moduleOpen.dependencies; let last = last" class="details">
+          <span class="label">Hard Dependencies: </span>
+          <span *ngFor="let dependency of filterHardDependencies(moduleOpen.dependencies); let last = last" class="details">
             <span [ngStyle]="{'color': dependency.enabled ? 'green' : 'red'}">{{dependency.id}}</span>
             <span *ngIf="!last"> | </span>
           </span>
@@ -76,7 +77,7 @@
       </div>
     </div>
     <button class="save_btn" [disabled]="isEnabled === moduleOpen.enabled" (click)="toggleEnabled(moduleOpen)">Save</button>
-    <button *ngIf="moduleOpen.hasConfiguration" class="config_btn" [routerLink]="moduleOpen.id + '/config'">Configure</button>
+    <button *ngIf="moduleOpen.configurable && moduleOpen.enabled" class="config_btn" [routerLink]="moduleOpen.id + '/config'">Configure</button>
   </div>
 
 </ng-template>

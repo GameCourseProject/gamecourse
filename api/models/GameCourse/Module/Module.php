@@ -45,6 +45,13 @@ abstract class Module
         return $this->getData("description");
     }
 
+    public function getIcon(): string
+    {
+        $parts = explode("/", MODULES_FOLDER);
+        $moduleFolder = end($parts);
+        return API_URL . "/" . $moduleFolder . "/" . $this->id. "/icon.svg";
+    }
+
     public function getType(): string
     {
         return $this->getData("type");
@@ -208,44 +215,7 @@ abstract class Module
         if (!$this->course)
             throw new Exception("Can't enable/disable module '" . $this->id . "': no course given.");
 
-        // Check course/module compatibility
-        $compatibleModuleVersions = $this->course->getCompatibleModuleVersions($this->id);
-        $moduleVersion = $this->getVersion();
-        if (!(Utils::compareVersions($moduleVersion, $compatibleModuleVersions["min"]) >= 0 &&
-            (is_null($compatibleModuleVersions["max"]) || Utils::compareVersions($moduleVersion, $compatibleModuleVersions["max"]) <= 0)))
-            throw new Exception("Course with ID = " . $this->course->getId() . " is not compatible with module '" . $this->id . "' v" . $moduleVersion . ".
-                            Needs module version >= " . $compatibleModuleVersions["min"] . (!is_null($compatibleModuleVersions["max"]) ? " & <= " . $compatibleModuleVersions["max"] : "") . ".");
-
-        // Check project compatibility
-        $compatibleVersions = $this->getCompatibleVersions();
-        if (!(Utils::compareVersions(PROJECT_VERSION, $compatibleVersions["project"]["min"]) >= 0 &&
-            (is_null($compatibleVersions["project"]["max"]) || Utils::compareVersions(PROJECT_VERSION, $compatibleVersions["project"]["max"]) <= 0)))
-            throw new Exception("Module '" . $this->id . "' v" . $this->getVersion() . " is not compatible with project v" . PROJECT_VERSION . ".
-                            Needs project version >= " . $compatibleVersions["project"]["min"] . (!is_null($compatibleVersions["project"]["max"]) ? " & <= " . $compatibleVersions["project"]["max"] : "") . ".");
-
-        // Check API compatibility
-        if (!(Utils::compareVersions(API_VERSION, $compatibleVersions["api"]["min"]) >= 0 &&
-            (is_null($compatibleVersions["api"]["max"]) || Utils::compareVersions(API_VERSION, $compatibleVersions["api"]["max"]) <= 0)))
-            throw new Exception("Module '" . $this->id . "' v" . $this->getVersion() . " is not compatible with API v" . API_VERSION . ".
-                            Needs API version >= " . $compatibleVersions["api"]["min"] . (!is_null($compatibleVersions["api"]["max"]) ? " & <= " . $compatibleVersions["api"]["max"] : "") . ".");
-
-        // Check dependencies
-        if ($isEnabled) {
-            // Check dependencies of module are enabled
-            $hardDependencies = $this->getDependencies(DependencyMode::HARD);
-            foreach ($hardDependencies as $dependency) {
-                $depModule = $this->course->getModuleById($dependency["id"]);
-                if (!$depModule->isEnabled())
-                    throw new Exception("Can't enable module '" . $this->id . "' as its hard dependency '" . $dependency["id"] . "' is disabled.");
-            }
-
-        } else {
-            // Check there's no modules depending on it
-            $dependants = $this->getDependants(DependencyMode::HARD);
-            if (count($dependants) > 0)
-                throw new Exception("Can't disable module '" . $this->id . "' as module '" . $dependants[0]["id"] . "' depends on it.");
-        }
-
+        $this->canChangeState($isEnabled, true);
         Core::database()->update(self::TABLE_COURSE_MODULE, ["isEnabled" => +$isEnabled],
             ["module" => $this->id, "course" => $this->course->getId()]);
 
@@ -322,21 +292,16 @@ abstract class Module
         else return null;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function getModules(bool $IDsOnly = false): array
     {
-        $field = $IDsOnly ? "id" : "*";
-        $modules = Core::database()->selectMultiple(self::TABLE_MODULE, [], $field, "id");
-        foreach ($modules as &$module) {
-            $parts = explode("/", MODULES_FOLDER);
-            $moduleFolder = end($parts);
-            $module["icon"] = API_URL . "/" . $moduleFolder . "/" . $module["id"] . "/icon.svg";
-            $module["compatibility"] = [
-                "project" => Utils::compareVersions(PROJECT_VERSION, $module["minProjectVersion"]) >= 0 &&
-                    (is_null($module["maxProjectVersion"]) || Utils::compareVersions(PROJECT_VERSION, $module["maxProjectVersion"]) <= 0),
-                "api" => Utils::compareVersions(API_VERSION, $module["minAPIVersion"]) >= 0 &&
-                    (is_null($module["maxAPIVersion"]) || Utils::compareVersions(PROJECT_VERSION, $module["maxAPIVersion"]) <= 0)
-            ];
-            $module = self::parse($module);
+        $modules = Core::database()->selectMultiple(self::TABLE_MODULE, [], "*", "id");
+        if ($IDsOnly) return array_column($modules, "id");
+        foreach ($modules as &$moduleInfo) {
+            $moduleInfo = self::getExtraInfo($moduleInfo, null);
+            $moduleInfo = self::parse($moduleInfo);
         }
         return $modules;
     }
@@ -407,20 +372,53 @@ abstract class Module
     /*** ------------------- Dependencies ------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * Gets module dependencies.
+     * Option to get dependencies of a certain mode and/or dependencies'
+     * IDs only.
+     *
+     * @param string|null $mode
+     * @param bool $IDsOnly
+     * @return array
+     * @throws Exception
+     */
     public function getDependencies(string $mode = null, bool $IDsOnly = false): array
     {
-        $field = $IDsOnly ? "id" : "dependency as id, minDependencyVersion, maxDependencyVersion, mode";
+        $field = "dependency as id, minDependencyVersion, maxDependencyVersion, mode";
         $where = ["module" => $this->id];
         if ($mode !== null) $where["mode"] = $mode;
-        return Core::database()->selectMultiple(self::TABLE_MODULE_DEPENDENCY, $where, $field, "id");
+        $dependencies = Core::database()->selectMultiple(self::TABLE_MODULE_DEPENDENCY, $where, $field, "id");
+        if ($IDsOnly) return array_column($dependencies, "id");
+        foreach ($dependencies as &$dependencyInfo) {
+            $dependencyInfo = self::getExtraInfo($dependencyInfo, $this->course);
+            $dependencyInfo = self:: parse($dependencyInfo);
+        }
+        return $dependencies;
     }
 
+    /**
+     * Gets module dependants.
+     * Option to get dependants of a certain mode and/or dependants'
+     * IDs only.
+     *
+     * @param string|null $mode
+     * @param bool $IDsOnly
+     * @return array
+     * @throws Exception
+     */
     public function getDependants(string $mode = null, bool $IDsOnly = false): array
     {
-        $field = $IDsOnly ? "id" : "module as id, mode";
+        $field = "module as id, mode";
         $where = ["dependency" => $this->id];
         if ($mode !== null) $where["mode"] = $mode;
-        return Core::database()->selectMultiple(self::TABLE_MODULE_DEPENDENCY, $where, $field, "id");
+        $dependants = Core::database()->selectMultiple(self::TABLE_MODULE_DEPENDENCY, $where, $field, "id");
+        if ($IDsOnly) return array_column($dependants, "id");
+
+        foreach ($dependants as &$dependantInfo) {
+            $dependantInfo = self::getExtraInfo($dependantInfo, $this->course);
+            $dependantInfo = self:: parse($dependantInfo);
+        }
+        return $dependants;
     }
 
     public function setDependencies(array $dependencies)
@@ -563,7 +561,7 @@ abstract class Module
      *
      * @return bool
      */
-    protected function isConfigurable(): bool
+    public function isConfigurable(): bool
     {
         return false;
     }
@@ -574,7 +572,7 @@ abstract class Module
      *
      * @return bool
      */
-    protected function hasGeneralInputs(): bool
+    public function hasGeneralInputs(): bool
     {
         return false;
     }
@@ -589,7 +587,7 @@ abstract class Module
      *  - options?: list of options (check Config/InputType.php for more info)
      * @return array
      */
-    protected function getGeneralInputs(): array
+    public function getGeneralInputs(): array
     {
         return [];
     }
@@ -600,7 +598,7 @@ abstract class Module
      * @param array $inputs
      * @return mixed
      */
-    protected function saveGeneralInputs(array $inputs)
+    public function saveGeneralInputs(array $inputs)
     {
     }
 
@@ -609,7 +607,7 @@ abstract class Module
      *
      * @return bool
      */
-    protected function hasListingItems(): bool
+    public function hasListingItems(): bool
     {
         return false;
     }
@@ -624,7 +622,7 @@ abstract class Module
      *  - edit?: information for editing items
      * @return array
      */
-    protected function getListingItems(): array
+    public function getListingItems(): array
     {
         return [];
     }
@@ -636,7 +634,7 @@ abstract class Module
      * @param array $item
      * @return mixed
      */
-    protected function saveListingItem(string $action, array $item)
+    public function saveListingItem(string $action, array $item)
     {
     }
 
@@ -645,7 +643,7 @@ abstract class Module
      *
      * @return bool
      */
-    protected function hasPersonalizedConfig(): bool
+    public function hasPersonalizedConfig(): bool
     {
         return false;
     }
@@ -657,7 +655,7 @@ abstract class Module
      *  - Scripts it might have
      * @return array
      */
-    protected function getPersonalizedConfig(): array
+    public function getPersonalizedConfig(): array
     {
         return [];
     }
@@ -797,6 +795,109 @@ abstract class Module
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Utils ---------------------- ***/
     /*** ---------------------------------------------------- ***/
+
+    /**
+     * Checks whether a module can be enabled/disabled.
+     *
+     * @param bool $enable
+     * @param bool $throwErrors
+     * @return bool
+     * @throws Exception
+     */
+    public function canChangeState(bool $enable, bool $throwErrors = false): bool
+    {
+        $error = null;
+
+        // Check course/module compatibility
+        if ($this->course) {
+            $compatibleModuleVersions = $this->course->getCompatibleModuleVersions($this->id);
+            $moduleVersion = $this->getVersion();
+
+            if (!(Utils::compareVersions($moduleVersion, $compatibleModuleVersions["min"]) >= 0 &&
+                (is_null($compatibleModuleVersions["max"]) || Utils::compareVersions($moduleVersion, $compatibleModuleVersions["max"]) <= 0))) {
+
+                if ($throwErrors) $error = "Course with ID = " . $this->course->getId() . " is not compatible with module '" . $this->id . "' v" . $moduleVersion . ".
+                        Needs module version >= " . $compatibleModuleVersions["min"] . (!is_null($compatibleModuleVersions["max"]) ? " & <= " . $compatibleModuleVersions["max"] : "") . ".";
+                else return false;
+            }
+        }
+
+        // Check project compatibility
+        $compatibleVersions = $this->getCompatibleVersions();
+        if (!(Utils::compareVersions(PROJECT_VERSION, $compatibleVersions["project"]["min"]) >= 0 &&
+            (is_null($compatibleVersions["project"]["max"]) || Utils::compareVersions(PROJECT_VERSION, $compatibleVersions["project"]["max"]) <= 0))) {
+
+            if ($throwErrors) $error = "Module '" . $this->id . "' v" . $this->getVersion() . " is not compatible with project v" . PROJECT_VERSION . ".
+                        Needs project version >= " . $compatibleVersions["project"]["min"] . (!is_null($compatibleVersions["project"]["max"]) ? " & <= " . $compatibleVersions["project"]["max"] : "") . ".";
+            else return false;
+        }
+
+        // Check API compatibility
+        if (!(Utils::compareVersions(API_VERSION, $compatibleVersions["api"]["min"]) >= 0 &&
+            (is_null($compatibleVersions["api"]["max"]) || Utils::compareVersions(API_VERSION, $compatibleVersions["api"]["max"]) <= 0))) {
+
+            if ($throwErrors) $error = "Module '" . $this->id . "' v" . $this->getVersion() . " is not compatible with API v" . API_VERSION . ".
+                        Needs API version >= " . $compatibleVersions["api"]["min"] . (!is_null($compatibleVersions["api"]["max"]) ? " & <= " . $compatibleVersions["api"]["max"] : "") . ".";
+            else return false;
+        }
+
+        // Check dependencies
+        if ($enable) {
+            // Check dependencies of module are enabled
+            $hardDependenciesIDs = $this->getDependencies(DependencyMode::HARD, true);
+            foreach ($hardDependenciesIDs as $dependencyID) {
+                $depModule = $this->course->getModuleById($dependencyID);
+                if (!$depModule->isEnabled()) {
+                    if ($throwErrors) $error = "Can't enable module '" . $this->id . "' as its hard dependency '" . $dependencyID . "' is disabled.";
+                    else return false;
+                }
+            }
+
+        } else {
+            // Check there's no modules depending on it
+            $dependantsIDs = $this->getDependants(DependencyMode::HARD, true);
+            foreach ($dependantsIDs as $dependantID) {
+                $depModule = $this->course->getModuleById($dependantID);
+                if ($depModule->isEnabled()) {
+                    if ($throwErrors) $error = "Can't disable module '" . $this->id . "' as module '" . $dependantID . "' depends on it.";
+                    else return false;
+                }
+            }
+        }
+
+        if ($error) throw new Exception($error);
+        return true;
+    }
+
+    /**
+     * Gets extra module information that complement's database
+     * information, like its icon, dependencies, etc.
+     *
+     * @param array $moduleInfo
+     * @param Course|null $course
+     * @return void
+     * @throws Exception
+     */
+    public static function getExtraInfo(array $moduleInfo, ?Course $course): array
+    {
+        $module = self::getModuleById($moduleInfo["id"], $course);
+        $moduleInfo = array_merge($moduleInfo, $module->getData());
+        $moduleInfo["icon"] = $module->getIcon();
+        $moduleInfo["dependencies"] = $module->getDependencies();
+        $moduleInfo["configurable"] = $module->isConfigurable();
+        $moduleInfo["compatibility"] = [
+            "project" => Utils::compareVersions(PROJECT_VERSION, $moduleInfo["minProjectVersion"]) >= 0 &&
+                (is_null($moduleInfo["maxProjectVersion"]) || Utils::compareVersions(PROJECT_VERSION, $moduleInfo["maxProjectVersion"]) <= 0),
+            "api" => Utils::compareVersions(API_VERSION, $moduleInfo["minAPIVersion"]) >= 0 &&
+                (is_null($moduleInfo["maxAPIVersion"]) || Utils::compareVersions(PROJECT_VERSION, $moduleInfo["maxAPIVersion"]) <= 0)
+        ];
+
+        if ($course) {
+            $moduleInfo["isEnabled"] = $module->isEnabled();
+            $moduleInfo["canChangeState"] = $module->canChangeState(!$moduleInfo["isEnabled"]);
+        }
+        return $moduleInfo;
+    }
 
     /**
      * Parses a module coming from the database to appropriate types.

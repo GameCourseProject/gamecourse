@@ -540,6 +540,22 @@ class CourseController
     /*** ------------------ Modules ------------------ ***/
     /*** --------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
+    public function getModules()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $enabled = API::getValue("enabled");
+        API::response($course->getModules($enabled));
+    }
+
     public function getModulesResources()
     {
         API::requireValues("courseId");
@@ -551,6 +567,25 @@ class CourseController
 
         $enabled = API::getValue("enabled", "bool");
         API::response($course->getModulesResources($enabled));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setModuleState()
+    {
+        API::requireValues("courseId", "moduleId", "state");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $moduleId = API::getValue("moduleId");
+        $module = API::verifyModuleExists($moduleId, $course);
+
+        $state = API::getValue("state", "bool");
+        $course->setModuleState($moduleId, $state);
     }
 
 

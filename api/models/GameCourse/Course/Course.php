@@ -740,13 +740,19 @@ class Course
         return Module::getModuleById($moduleId, $this);
     }
 
+    /**
+     * @throws Exception
+     */
     public function getModules(?bool $enabled = null): array
     {
         $table = Module::TABLE_MODULE . " m JOIN " . Module::TABLE_COURSE_MODULE . " cm on cm.module=m.id";
-        $where = [];
+        $where = ["cm.course" => $this->id];
         if ($enabled !== null) $where["cm.isEnabled"] = $enabled;
         $modules = Core::database()->selectMultiple($table, $where, "m.*, cm.isEnabled, cm.minModuleVersion, cm.maxModuleVersion", "m.id");
-        foreach ($modules as &$module) { $module = Module::parse($module); }
+        foreach ($modules as &$moduleInfo) {
+            $moduleInfo = Module::getExtraInfo($moduleInfo, $this);
+            $moduleInfo = Module::parse($moduleInfo);
+        }
         return $modules;
     }
 
@@ -756,7 +762,7 @@ class Course
      * @return void
      * @throws Exception
      */
-    public function setModuleEnabled(string $moduleId, bool $isEnabled)
+    public function setModuleState(string $moduleId, bool $isEnabled)
     {
         $module = $this->getModuleById($moduleId);
         $module->setEnabled($isEnabled);

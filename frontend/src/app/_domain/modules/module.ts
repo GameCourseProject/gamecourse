@@ -4,6 +4,7 @@ import {ModuleType} from "./ModuleType";
 import {ResourceManager} from "../../_utils/resources/resource-manager";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {ErrorService} from "../../_services/error.service";
+import {DependencyMode} from "./DependencyMode";
 
 export class Module {
   private _id: string;
@@ -12,17 +13,18 @@ export class Module {
   private _icon: string;
   private _type: ModuleType;
   private _version: string;
+  private _dependencies: Module[];
+  private _configurable: boolean;
   private _compatibility: {project: boolean, api: boolean};
-  private _dependencies?: {id: string, mode?: string, enabled?: boolean}[];
   private _enabled?: boolean;
-  private _canBeEnabled?: boolean;
-  private _hasConfiguration?: boolean;
+  private _canChangeState?: boolean;
+  private _dependencyMode?: DependencyMode;
 
   static stylesLoaded: Map<number, {state: LoadingState, stylesIds?: string[]}> = new Map<number, {state: LoadingState, stylesIds?: string[]}>();
 
   constructor(id: string, name: string, description: string, icon: string, type: ModuleType, version: string,
-              compatibility: {project: boolean, api: boolean}, dependencies?: {id: string, mode?: string, enabled?: boolean}[],
-              enabled?: boolean, canBeEnabled?: boolean, hasConfiguration?: boolean) {
+              dependencies: Module[], configurable: boolean, compatibility: {project: boolean, api: boolean},
+              enabled?: boolean, canChangeState?: boolean, dependencyMode?: DependencyMode) {
 
     this._id = id;
     this._name = name;
@@ -30,11 +32,12 @@ export class Module {
     this._icon = icon;
     this._type = type;
     this._version = version;
+    this._dependencies = dependencies;
+    this._configurable = configurable;
     this._compatibility = compatibility;
-    if (exists(dependencies)) this._dependencies = dependencies;
     if (exists(enabled)) this._enabled = enabled;
-    if (exists(canBeEnabled)) this._canBeEnabled = canBeEnabled;
-    if (exists(hasConfiguration)) this._hasConfiguration = hasConfiguration;
+    if (exists(canChangeState)) this._canChangeState = canChangeState;
+    if (exists(dependencyMode)) this._dependencyMode = dependencyMode;
   }
 
   get id(): string {
@@ -85,20 +88,28 @@ export class Module {
     this._version = value;
   }
 
+  get dependencies(): Module[] {
+    return this._dependencies;
+  }
+
+  set dependencies(value: Module[]) {
+    this._dependencies = value;
+  }
+
+  get configurable(): boolean {
+    return this._configurable;
+  }
+
+  set configurable(value: boolean) {
+    this._configurable = value;
+  }
+
   get compatibility(): { project: boolean; api: boolean } {
     return this._compatibility;
   }
 
   set compatibility(value: { project: boolean; api: boolean }) {
     this._compatibility = value;
-  }
-
-  get dependencies(): { id: string; mode?: string, enabled?: boolean }[] {
-    return this._dependencies;
-  }
-
-  set dependencies(value: { id: string; mode?: string, enabled?: boolean }[]) {
-    this._dependencies = value;
   }
 
   get enabled(): boolean {
@@ -109,20 +120,20 @@ export class Module {
     this._enabled = value;
   }
 
-  get canBeEnabled(): boolean {
-    return this._canBeEnabled;
+  get canChangeState(): boolean {
+    return this._canChangeState;
   }
 
-  set canBeEnabled(value: boolean) {
-    this._canBeEnabled = value;
+  set canChangeState(value: boolean) {
+    this._canChangeState = value;
   }
 
-  get hasConfiguration(): boolean {
-    return this._hasConfiguration;
+  get dependencyMode(): DependencyMode {
+    return this._dependencyMode;
   }
 
-  set hasConfiguration(value: boolean) {
-    this._hasConfiguration = value;
+  set dependencyMode(value: DependencyMode) {
+    this._dependencyMode = value;
   }
 
   /**
@@ -196,11 +207,12 @@ export class Module {
       obj.icon,
       obj.type as ModuleType,
       obj.version,
+      obj.dependencies.map(dep => Module.fromDatabase(dep)),
+      obj.configurable,
       obj.compatibility,
-      obj.dependencies || null,
-      exists(obj.enabled) ? !!obj.enabled : null,
-      exists(obj.canBeEnabled) ? !!obj.canBeEnabled : null,
-      exists(obj.hasConfiguration) ? !!obj.hasConfiguration : null
+      obj.isEnabled ?? null,
+      obj.canChangeState ?? null,
+      obj.mode as DependencyMode ?? null
     );
   }
 }
@@ -212,11 +224,12 @@ interface ModuleDatabase {
   icon: string;
   type: string;
   version: string,
+  dependencies: ModuleDatabase[],
+  configurable: boolean;
   compatibility: {project: boolean, api: boolean},
-  dependencies?: {id: string, mode?: string, enabled?: boolean}[],
-  enabled?: boolean;
-  canBeEnabled?: boolean;
-  hasConfiguration?: boolean;
+  isEnabled?: boolean;
+  canChangeState?: boolean;
+  mode?: DependencyMode;
 }
 
 export enum LoadingState {

@@ -178,11 +178,18 @@ class API
         return $courseUser;
     }
 
-    public static function verifyModuleExists(string $moduleId, Course $course): Module
+    public static function verifyModuleExists(string $moduleId, ?Course $course): Module
     {
-        $module = $course->getModuleById($moduleId);
-        if (!$module)
-            API::error("There is no module with ID = " . $moduleId . " in course with ID = " . $course->getId() . ".", 404);
+        if ($course) {
+            $module = $course->getModuleById($moduleId);
+            if (!$module)
+                API::error("There is no module with ID = " . $moduleId . " in course with ID = " . $course->getId() . ".", 404);
+
+        } else {
+            $module = Module::getModuleById($moduleId, null);
+            if (!$module)
+                API::error("There is no module with ID = " . $moduleId . " in the system.", 404);
+        }
         return $module;
     }
 //

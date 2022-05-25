@@ -21,10 +21,12 @@ class ModuleController
     /*** ------------------ General ------------------ ***/
     /*** --------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function getModules()
     {
         API::requireAdminPermission();
-        $modules = Module::getModules();
-        API::response($modules);
+        API::response(Module::getModules());
     }
 }

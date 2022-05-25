@@ -763,12 +763,12 @@ export class ApiHttpService {
 
 
   // Modules
-  // TODO: refactor
-  public getCourseModules(courseID: number): Observable<Module[]> {
+  public getCourseModules(courseID: number, enabled?: boolean): Observable<Module[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'getCourseModules');
+      qs.push('request', 'getModules');
       qs.push('courseId', courseID);
+      if (enabled !== undefined) qs.push('enabled', enabled);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
@@ -787,6 +787,23 @@ export class ApiHttpService {
     const httpClient = new HttpClient(new HttpXhrBackend({ build: () => new XMLHttpRequest() }));
     return httpClient.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']));
+  }
+
+  public setModuleState(courseID: number, moduleID: string, isEnabled: boolean): Observable<void> {
+    const data = {
+      "courseId": courseID,
+      "moduleId": moduleID,
+      "state": isEnabled
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'setModuleState');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
   }
 
   // TODO: refactor
@@ -943,26 +960,6 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
-  }
-
-
-  // Module Manipulation
-  // TODO: refactor
-  public setModuleState(courseID: number, moduleID: string, isEnabled: boolean): Observable<void> {
-    const data = {
-      "courseId": courseID,
-      "moduleId": moduleID,
-      "isEnabled": isEnabled
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.MODULE);
-      qs.push('request', 'setModuleState');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
   }
 
 

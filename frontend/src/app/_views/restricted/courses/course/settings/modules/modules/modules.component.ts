@@ -1,14 +1,15 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
-import {finalize} from "rxjs/operators";
 
 import {ApiHttpService} from "../../../../../../../_services/api/api-http.service";
-import {ApiEndpointsService} from "../../../../../../../_services/api/api-endpoints.service";
 
+import {Course} from "../../../../../../../_domain/courses/course";
 import {Module} from "../../../../../../../_domain/modules/module";
 import {Reduce} from "../../../../../../../_utils/lists/reduce";
 import {ModuleType} from "../../../../../../../_domain/modules/ModuleType";
 import {DomSanitizer} from "@angular/platform-browser";
+import {DependencyMode} from "../../../../../../../_domain/modules/DependencyMode";
+import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-modules',
@@ -17,18 +18,18 @@ import {DomSanitizer} from "@angular/platform-browser";
 })
 export class ModulesComponent implements OnInit {
 
-  loading: boolean;
+  loading: boolean = true;
 
-  courseID: number;
+  course: Course;
 
-  allModules: Module[];
+  modules: Module[];
   modulesTypes: {[key in ModuleType]: string} = {
     GameElement: 'Game Elements',
     DataSource: 'Data Sources'
   };
 
   reduce = new Reduce();
-  searchQuery: string; // FIXME: create search component and remove this
+  searchQuery: string;
 
   isModuleDetailsModalOpen: boolean;
   moduleOpen: Module;
@@ -41,19 +42,12 @@ export class ModulesComponent implements OnInit {
     private sanitizer: DomSanitizer
   ) { }
 
-  get API_ENDPOINT(): string {
-    return ApiEndpointsService.API_ENDPOINT;
-  }
-
-  get ModuleType(): typeof ModuleType {
-    return ModuleType;
-  }
-
   ngOnInit(): void {
-    this.loading = true;
-    this.route.parent.params.subscribe(params => {
-      this.courseID = parseInt(params.id);
-      this.getModules(this.courseID);
+    this.route.parent.params.subscribe(async params => {
+      const courseID = parseInt(params.id);
+      await this.getCourse(courseID);
+      await this.getModules(courseID);
+      this.loading = false;
     });
   }
 
@@ -62,14 +56,14 @@ export class ModulesComponent implements OnInit {
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  getModules(courseID: number): void {
-    this.loading = true;
-    this.api.getCourseModules(courseID)
-      .pipe( finalize(() => this.loading = false) )
-      .subscribe(modules => {
-        this.allModules = modules.sort((a, b) => a.name.localeCompare(b.name));
-        this.reduceList();
-      });
+  async getCourse(courseID: number): Promise<void> {
+    this.course = await this.api.getCourseById(courseID).toPromise();
+  }
+
+  async getModules(courseID: number): Promise<void> {
+    this.modules = (await this.api.getCourseModules(courseID).toPromise())
+      .sort((a, b) => a.name.localeCompare(b.name));
+    this.reduceList();
   }
 
 
@@ -78,11 +72,15 @@ export class ModulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   reduceList(query?: string): void {
-    this.reduce.search(this.allModules, query);
+    this.reduce.search(this.modules, query);
   }
 
   filterList(modules: Module[], type: ModuleType): Module[] {
     return modules.filter(module => module.type === type);
+  }
+
+  filterHardDependencies(modules: Module[]): Module[] {
+    return modules.filter(module => module.dependencyMode === DependencyMode.HARD);
   }
 
 
@@ -94,13 +92,13 @@ export class ModulesComponent implements OnInit {
     this.saving = true;
     const isEnabled = !module.enabled;
 
-    this.api.setModuleState(this.courseID, module.id, isEnabled)
+    this.api.setModuleState(this.course.id, module.id, isEnabled)
       .pipe( finalize(() => this.saving = false) )
       .subscribe(
-        res => {
+        async () => {
           module.enabled = !module.enabled;
-          this.getModules(this.courseID);
-          Module.reloadStyles(this.courseID, this.sanitizer);
+          await this.getModules(this.course.id);
+          Module.reloadStyles(this.course.id, this.sanitizer);
         },
         error => {},
         () => {
@@ -117,6 +115,10 @@ export class ModulesComponent implements OnInit {
 
   objectKeys(obj: object): string[] {
     return Object.keys(obj);
+  }
+
+  get ModuleType(): typeof ModuleType {
+    return ModuleType;
   }
 
 }
