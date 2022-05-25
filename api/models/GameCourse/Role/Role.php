@@ -229,6 +229,40 @@ class Role
     }
 
     /**
+     * Updates course's roles in the database, without fully replacing them.
+     * NOTE: it doesn't update roles hierarchy
+     *
+     * @param int $courseId
+     * @param array $roles
+     * @return void
+     * @throws Exception
+     */
+    public static function updateCourseRoles(int $courseId, array $roles)
+    {
+        // Remove roles that got deleted
+        $oldRoles = Role::getCourseRoles($courseId, false);
+        foreach ($oldRoles as $oldRole) {
+            $exists = !empty(array_filter($roles, function ($role) use ($oldRole) {
+                return $role["id"] && $role["id"] == $oldRole["id"];
+            }));
+            if (!$exists) self::removeRoleFromCourse($courseId, $oldRole["name"], $oldRole["id"]);
+        }
+
+        // Update roles
+        foreach ($roles as $role) {
+            if (self::courseHasRole($courseId, $role["name"])) { // update
+                Core::database()->update(self::TABLE_ROLE, [
+                    "name" => $role["name"],
+                    "landingPage" => $role["landingPage"]
+                ], ["course" => $courseId, "id" => $role["id"]]);
+
+            } else { // add
+                self::addRoleToCourse($courseId, $role["name"], null, $role["landingPage"]);
+            }
+        }
+    }
+
+    /**
      * Removes a given role from a course, including its children.
      * Option to pass either role name or role ID.
      * NOTE: it doesn't update roles hierarchy

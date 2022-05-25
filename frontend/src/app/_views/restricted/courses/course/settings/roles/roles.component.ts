@@ -2,10 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
 import {Role} from "../../../../../../_domain/roles/role";
-import {ErrorService} from "../../../../../../_services/error.service";
 import {Page} from "../../../../../../_domain/pages & templates/page";
 import {exists} from "../../../../../../_utils/misc/misc";
 import {finalize} from "rxjs/operators";
+import {Course} from "../../../../../../_domain/courses/course";
 
 @Component({
   selector: 'app-roles',
@@ -14,21 +14,20 @@ import {finalize} from "rxjs/operators";
 })
 export class RolesComponent implements OnInit {
 
-  loading: boolean;
+  loading: boolean = true;
+  course: Course;
+  activePages: Page[];
 
-  courseID: number;
-
-  defaultRoles: string[] = ['Teacher', 'Student', 'Watcher'];
+  defaultRoles: string[];
   roles: Role[];
-  rolesHierarchy: Role[];
-  pages: Page[];
-
-  selectedPage: {[roleName: string]: number} = {};
 
   isNewRoleModalOpen: boolean;
-  newRole: {name: string, parent: Role} = {name: null, parent: null};
+  newRole: RoleData = {
+    name: null,
+    parent: null,
+    landingPage: null
+  };
   saving: boolean;
-
   hasChanges: boolean;
 
   constructor(
@@ -37,10 +36,13 @@ export class RolesComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loading = true;
-    this.route.parent.params.subscribe(params => {
-      this.courseID = parseInt(params.id);
-      this.getRoles(this.courseID);
+    this.route.parent.params.subscribe(async params => {
+      const courseID = parseInt(params.id);
+      await this.getCourse(courseID);
+      await this.getActivePages(courseID);
+      await this.getDefaultRoles(courseID);
+      await this.getRoles(courseID);
+      this.loading = false;
     });
   }
 
@@ -49,28 +51,29 @@ export class RolesComponent implements OnInit {
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  getRoles(courseId: number): void {
-    this.api.getRoles(courseId)
-      .pipe( finalize(() => this.loading = false) )
-      .subscribe(res => {
-        // this.roles = res.roles;
-        // this.roles.forEach(role => this.selectedPage[role.name] = role.landingPage);
-        // this.rolesHierarchy = res.rolesHierarchy;
-        // this.pages = res.pages;
-      },
-        error => {},
-        () => {
-        setTimeout(() => {
-          const dd = $('#roles-config');
-          // @ts-ignore
-          dd.nestable({
-            expandBtnHTML: '',
-            collapseBtnHTML: ''
-          });
+  async getCourse(courseID: number): Promise<void> {
+    this.course = await this.api.getCourseById(courseID).toPromise();
+  }
 
-          dd.on('change', () => this.hasChanges = true);
-        }, 0);
+  async getActivePages(courseID: number): Promise<void> {
+    this.activePages = []; // FIXME
+  }
+
+  async getDefaultRoles(courseID: number): Promise<void> {
+    this.defaultRoles = await this.api.getDefaultRoles(courseID).toPromise();
+  }
+
+  async getRoles(courseID: number): Promise<void> {
+    this.roles = await this.api.getRoles(courseID, false).toPromise() as Role[];
+    setTimeout(() => {
+      const dd = $('#roles-config');
+      // @ts-ignore
+      dd.nestable({
+        expandBtnHTML: '',
+        collapseBtnHTML: ''
       });
+      dd.on('change', () => this.hasChanges = true);
+    }, 0);
   }
 
 
@@ -80,15 +83,15 @@ export class RolesComponent implements OnInit {
 
   addRole(): void {
     const role = new Role(null, this.newRole.name, null, null);
+    this.roles.push(role)
 
     if (!this.newRole.parent) {
-      this.rolesHierarchy.push(role);
+      this.course.roleHierarchy.push(role);
 
     } else {
       if (!this.newRole.parent.children) this.newRole.parent.children = [];
       this.newRole.parent.children.push(role);
     }
-    this.roles.push(role);
 
     this.hasChanges = true;
     this.isNewRoleModalOpen = false;
@@ -102,7 +105,7 @@ export class RolesComponent implements OnInit {
     if (role.children)
       role.children.forEach(child => this.removeRole(child));
 
-    const parent = findParent(this.rolesHierarchy, role, null);
+    const parent = findParent(this.course.roleHierarchy, role, null);
 
     if (parent) {
       const index = parent.children.findIndex(el => el.name === role.name);
@@ -110,12 +113,12 @@ export class RolesComponent implements OnInit {
       if (parent.children.length === 0) parent.children = null;
 
     } else {
-      const index = this.rolesHierarchy.findIndex(el => el.name === role.name);
-      this.rolesHierarchy.splice(index, 1);
+      const index = this.course.roleHierarchy.findIndex(el => el.name === role.name);
+      this.course.roleHierarchy.removeAtIndex(index);
     }
 
     const index = this.roles.findIndex(el => el.name === role.name);
-    this.roles.splice(index, 1);
+    this.roles.removeAtIndex(index);
 
     this.hasChanges = true;
 
@@ -135,31 +138,16 @@ export class RolesComponent implements OnInit {
   saveRoles(): void {
     this.loading = true;
     // @ts-ignore
-    this.api.saveRoles(this.courseID, this.roles, $('#roles-config').nestable('serialize'))
+    const hierarchy = $('#roles-config').nestable('serialize');
+    this.api.updateRoles(this.course.id, this.roles, hierarchy)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
         res => {
-          this.getRoles(this.courseID);
           const successBox = $('#action_completed');
           successBox.empty();
           successBox.append("Role hierarchy changed!");
           successBox.show().delay(3000).fadeOut();
         })
-  }
-
-  saveLandingPage(role: Role): void {
-    role.landingPage = this.selectedPage[role.name];
-    this.hasChanges = true;
-  }
-
-  undo(): void {
-    // TODO: update from GameCourse v1
-    ErrorService.set('Error: This action still needs to be updated to the current version. (roles.component.ts::undo())');
-  }
-
-  redo(): void {
-    // TODO: update from GameCourse v1
-    ErrorService.set('Error: This action still needs to be updated to the current version. (roles.component.ts::redo())');
   }
 
 
@@ -169,7 +157,7 @@ export class RolesComponent implements OnInit {
 
   isReadyToSubmit() {
     let isValid = function (text) {
-      return exists(text) && !text.toString().isEmpty();
+      return exists(text) && !text.toString().isEmpty() && !/\s/g.test(text);
     }
 
     const roleExists = this.roles.find(role => role.name === this.newRole.name);
@@ -184,4 +172,10 @@ export class RolesComponent implements OnInit {
     }
   }
 
+}
+
+export interface RoleData {
+  name: string,
+  parent: Role,
+  landingPage: number
 }

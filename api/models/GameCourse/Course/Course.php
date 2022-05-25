@@ -691,6 +691,18 @@ class Course
     }
 
     /**
+     * Updates course's roles in the database, without fully replacing them.
+     *
+     * @param array $roles
+     * @return void
+     * @throws Exception
+     */
+    public function updateRoles(array $roles)
+    {
+        Role::updateCourseRoles($this->id, $roles);
+    }
+
+    /**
      * Removes a given role from course.
      * Option to pass either role name or role ID.
      *

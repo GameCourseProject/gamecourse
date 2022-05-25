@@ -712,6 +712,19 @@ export class ApiHttpService {
 
 
   // Roles
+  public getDefaultRoles(courseID: number): Observable<string[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getDefaultRoles');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
   public getRoles(courseID: number, onlyNames?: boolean, sortByHierarchy?: boolean): Observable<string[] | Role[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
@@ -731,20 +744,16 @@ export class ApiHttpService {
       }) );
   }
 
-  // TODO: refactor
-  public saveRoles(courseID: number, roles: Role[], hierarchy: any): Observable<void> {
+  public updateRoles(courseID: number, roles: Role[], hierarchy: any): Observable<void> {
     const data = {
       courseId: courseID,
-      updateRoleHierarchy: true,
-      hierarchy,
-      roles: roles.map(role => {
-        return {name: role.name, id: role.id ? role.id.toString() : null, landingPage: role.landingPage}
-      })
+      roles,
+      hierarchy
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'roles');
+      qs.push('request', 'updateRoles');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

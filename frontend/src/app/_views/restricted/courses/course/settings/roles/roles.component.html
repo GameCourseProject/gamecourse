@@ -10,7 +10,7 @@
 
       <ng-container
         [ngTemplateOutlet]="roleList"
-        [ngTemplateOutletContext]="{roles: rolesHierarchy}">
+        [ngTemplateOutletContext]="{rolesHierarchy: course.roleHierarchy}">
       </ng-container>
     </div>
 
@@ -21,8 +21,6 @@
 
     <!-- Action buttons -->
     <div class="action-buttons">
-      <div id="undo_icon" class="icon undo_icon disabled" title="Undo" (click)="undo()"></div>
-      <div id="redo_icon" class="icon redo_icon disabled" title="Redo" (click)="redo()"></div>
       <button id="role-change-button" class="button" [disabled]="!hasChanges" (click)="saveRoles()">Save Changes</button>
     </div>
   </div>
@@ -39,18 +37,18 @@
 
 
 <!-- Role List -->
-<ng-template #roleList let-roles='roles'>
+<ng-template #roleList let-rolesHierarchy='rolesHierarchy'>
 
   <ol class="dd-list">
-    <li *ngFor="let role of roles" class="dd-item" [ngClass]="{'dd-nodrag': defaultRoles.includes(role.name)}"
+    <li *ngFor="let role of rolesHierarchy" class="dd-item" [ngClass]="{'dd-nodrag': defaultRoles.includes(role.name)}"
         [attr.data-name]="role.name">
 
       <div class="handle icon" [ngClass]="{'dd-handle': !defaultRoles.includes(role.name)}"></div>
       <div class="dd-content">{{role.name}}</div>
 
-      <select class="dd-content" [(ngModel)]="selectedPage[role.name]" (ngModelChange)="saveLandingPage(role)">
-        <option [ngValue]="null" [selected]="role.landingPage === null">Default Course Page</option>
-        <option *ngFor="let page of pages" [ngValue]="page.id" [selected]="role.landingPage === page.id">{{page.name}}</option>
+      <select class="dd-content" [(ngModel)]="role.landingPage">
+        <option [ngValue]="null" [selected]="role.landingPage === null">Main Page</option>
+        <option *ngFor="let page of activePages" [ngValue]="page.id" [selected]="role.landingPage === page.id">{{page.name}}</option>
       </select>
 
       <img class="dd-add icon" (click)="isNewRoleModalOpen = true; newRole.parent = role" src="assets/icons/add_icon_no_outline.svg" title="New">
@@ -58,7 +56,7 @@
 
       <ng-container *ngIf="role.children"
         [ngTemplateOutlet]="roleList"
-        [ngTemplateOutletContext]="{roles: role.children}">
+        [ngTemplateOutletContext]="{rolesHierarchy: role.children}">
       </ng-container>
     </li>
   </ol>
@@ -81,6 +79,7 @@
   <div class="content">
     <div class="inputs">
       <div class="name full">
+        <p style="margin-top: 0; color: tomato">Role names cannot be repeated nor have whitespace.</p>
         <input type="text" class="form__input" id="role_name" placeholder="Name *" [(ngModel)]="newRole.name" [required]="true">
         <label for="role_name" class="form__label">Name</label>
       </div>

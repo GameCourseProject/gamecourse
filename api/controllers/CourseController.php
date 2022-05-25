@@ -4,6 +4,7 @@ namespace API;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Role\Role;
 use GameCourse\User\User;
 
 /**
@@ -486,6 +487,20 @@ class CourseController
     /**
      * @throws Exception
      */
+    public function getDefaultRoles()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        API::response(Role::DEFAULT_ROLES);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function getRoles()
     {
         API::requireValues("courseId");
@@ -499,6 +514,25 @@ class CourseController
         $sortByHierarchy = API::getValue("sortByHierarchy", "bool") ?? false;
 
         API::response($course->getRoles($onlyNames, $sortByHierarchy));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function updateRoles()
+    {
+        API::requireValues("courseId", "hierarchy", "roles");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $hierarchy = API::getValue("hierarchy");
+        $roles = API::getValue("roles");
+
+        $course->updateRoles($roles);
+        $course->setRolesHierarchy($hierarchy);
     }
 
 

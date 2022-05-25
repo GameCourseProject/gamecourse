@@ -1,3 +1,7 @@
+import {objectMap} from "../../_utils/misc/misc";
+import {Event} from "../events/event";
+import {Variable} from "../variables/variable";
+
 export class Role {
   private _id: number;
   private _name: string;
@@ -41,6 +45,20 @@ export class Role {
 
   set children(value: Role[]) {
     this._children = value;
+  }
+
+  /**
+   * Custom way to stringify this class.
+   * This is needed so that the output of JSON.stringify()
+   * doesn't have '_' on attributes
+   */
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      landingPage: this.landingPage,
+      children: this.children
+    }
   }
 
   /**
