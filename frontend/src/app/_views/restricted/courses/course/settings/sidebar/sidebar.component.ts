@@ -10,7 +10,6 @@ import {Navigation} from "../../../../../../_components/navbar/navbar.component"
 })
 export class SidebarComponent implements OnInit {
 
-  courseID: number;
   navigation: Navigation[] = [];
 
   constructor(
@@ -19,13 +18,13 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe(async params => {
-      this.courseID = parseInt(params.id);
-      this.initNavigation();
+      const courseID = parseInt(params.id);
+      this.initNavigation(courseID);
     });
   }
 
-  initNavigation() {
-    const path = '/courses/' + this.courseID + '/settings/';
+  initNavigation(courseID: number) {
+    const path = '/courses/' + courseID + '/settings/';
 
     this.navigation = [
       {

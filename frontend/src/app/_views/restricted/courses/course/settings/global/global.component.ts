@@ -3,10 +3,12 @@ import {ActivatedRoute} from "@angular/router";
 import {Subject} from "rxjs";
 
 import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
-import {ErrorService} from "../../../../../../_services/error.service";
-import {ApiEndpointsService} from "../../../../../../_services/api/api-endpoints.service";
+
+import {Course} from "../../../../../../_domain/courses/course";
+import {CourseUser} from "../../../../../../_domain/users/course-user";
 import {Page} from "../../../../../../_domain/pages & templates/page";
-import {finalize} from "rxjs/operators";
+import {ResourceManager} from "../../../../../../_utils/resources/resource-manager";
+import {DomSanitizer} from "@angular/platform-browser";
 
 @Component({
   selector: 'app-global',
@@ -15,123 +17,110 @@ import {finalize} from "rxjs/operators";
 })
 export class GlobalComponent implements OnInit {
 
-  loading: boolean;
+  loading: boolean = true;
 
-  info: { id: number, name: string, activeUsers: number, awards: number, participations: number };
+  course: Course;
+  activeStudents: CourseUser[];
   activePages: Page[];
 
   isViewDBModalOpen;
   isSuccessModalOpen;
   saving: boolean;
 
-  style: {contents: string, url: string};
-  hasStyleFile: boolean;
-  styleLoaded: Subject<void> = new Subject<void>();
-  styleInput: string = '';
+  originalStyles: string;
+  styles: {contents: string, path: string};
+  stylesLoaded: Subject<void> = new Subject<void>();
 
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
+    private sanitizer: DomSanitizer
   ) { }
 
   ngOnInit(): void {
-    this.loading = true;
-    this.route.parent.params.subscribe(params => {
-      this.getCourseInfo(parseInt(params.id));
+    this.route.parent.params.subscribe(async params => {
+      const courseID = parseInt(params.id);
+      await this.getCourse(courseID);
+      await this.getActiveStudents(courseID);
+      await this.getActivePages(courseID);
+      await this.getCourseStyles(courseID);
+      this.loading = false;
     });
   }
 
 
   /*** --------------------------------------------- ***/
-  /*** -------------------- Init ------------------- ***/
+  /*** ---------------- Information ---------------- ***/
   /*** --------------------------------------------- ***/
 
-  getCourseInfo(courseID: number): void {
-    this.api.getCourseGlobal(courseID)
-      .subscribe(
-        info => {
-          this.info = Object.assign({id: courseID}, info);
-
-          // this.api.getCourseWithInfo(courseID)
-          //   .subscribe(courseInfo => {
-          //     this.activePages = courseInfo.activePages;
-          //       this.getStyleFile(courseID);
-          //     })
-        })
+  async getCourse(courseID: number): Promise<void> {
+    this.course = await this.api.getCourseById(courseID).toPromise();
   }
 
-  getStyleFile(courseID: number): void {
-    this.api.getCourseStyleFile(courseID)
-      .pipe( finalize(() => this.loading = false) )
-      .subscribe(
-        data => {
-          this.style = {contents: data.styleFile, url: data.url};
-          this.hasStyleFile = !this.style.contents.isEmpty();
-          if (this.hasStyleFile) setTimeout(() => this.styleLoaded.next(), 0);
-
-          // Append style to global styles
-          $('#css-file').remove();
-          if (this.style.url && this.style.contents !== '')
-            $('head').append('<link id="css-file" rel="stylesheet" type="text/css" href="' + ApiEndpointsService.API_ENDPOINT + '/' + data.url + '">');
-        }
-      );
+  async getActiveStudents(courseID: number): Promise<void> {
+    this.activeStudents = await this.api.getCourseUsersWithRole(courseID, "Student", true).toPromise();
   }
-
-
-  /*** --------------------------------------------- ***/
-  /*** ------------------ Actions ------------------ ***/
-  /*** --------------------------------------------- ***/
 
   showDatabase(table: string): void {
     // TODO: update from GameCourse v1
-    this.api.getTableData(this.info.id, table)
-      .subscribe(
-        res => ErrorService.set('Error: This action still needs to be updated to the current version. (global.component.ts::showDatabase(table))')
-      )
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ----------------- Navigation ---------------- ***/
+  /*** --------------------------------------------- ***/
+
+  async getActivePages(courseID: number): Promise<void> {
+    this.activePages = []; // FIXME
   }
 
   move(page: Page, direction: number): void {
-    // TODO: update from GameCourse v1
-    ErrorService.set('Error: This action still needs to be updated to the current version. (global.component.ts::move(item, direction))');
+    // FIXME
   }
-
-  createStyleFile(): void {
-    this.saving = true;
-    this.api.createCourseStyleFile(this.info.id)
-      .pipe( finalize(() => this.saving = false) )
-      .subscribe(url => {
-        this.style = {contents: '', url: url};
-        this.hasStyleFile = true;
-        setTimeout(() => this.styleLoaded.next(), 0);
-      });
-  }
-
-  saveStyleFile(): void {
-    this.saving = true;
-    const updatedStyle = this.styleInput;
-
-    this.api.updateCourseStyleFile(this.info.id, updatedStyle)
-      .pipe( finalize(() => this.saving = false) )
-      .subscribe(url => {
-        this.isSuccessModalOpen = true;
-        this.style = {contents: updatedStyle, url: url};
-        this.hasStyleFile = !this.style.contents.isEmpty();
-
-        // Append style to global styles
-        $('#css-file').remove();
-        if (this.style.url && this.style.contents !== '')
-          $('head').append('<link id="css-file" rel="stylesheet" type="text/css" href="' + ApiEndpointsService.API_ENDPOINT + '/' + url + '">');
-      });
-  }
-
-
-  /*** --------------------------------------------- ***/
-  /*** ------------------ Helpers ------------------ ***/
-  /*** --------------------------------------------- ***/
 
   orderBySeqId(): Page[] {
-    if (this.activePages.length === 0) return [];
     return this.activePages.sort((a, b) => a.seqId - b.seqId)
   }
 
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Styling ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  async getCourseStyles(courseID: number): Promise<void> {
+    this.styles = await this.api.getCourseStyles(courseID).toPromise() ?? {contents: '', path: null};
+    this.originalStyles = this.styles.contents;
+    setTimeout(() => this.stylesLoaded.next(), 0);
+    this.loadStyles(courseID);
+  }
+
+  async updateCourseStyles(courseID: number): Promise<void> {
+    this.saving = true;
+    await this.api.updateCourseStyles(courseID, this.styles.contents).toPromise();
+    await this.getCourseStyles(courseID);
+    this.isSuccessModalOpen = true;
+    this.saving = false;
+  }
+
+  loadStyles(courseID): void {
+    const mainID = courseID + '-main-styling';
+
+    // Remove previous styles
+    const style = document.getElementById(mainID);
+    if (style) style.remove();
+
+    // Append new styles
+    if (!!this.styles && !this.styles.contents.isEmpty()) {
+      // Prevent unwanted browser caching
+      const path = new ResourceManager(this.sanitizer);
+      path.set(this.styles.path);
+
+      const head = document.getElementsByTagName('head')[0];
+      const newStyle = document.createElement('link');
+      newStyle.id = mainID;
+      newStyle.rel = 'stylesheet';
+      newStyle.href = path.get('URL').toString();
+      head.appendChild(newStyle);
+    }
+  }
 }

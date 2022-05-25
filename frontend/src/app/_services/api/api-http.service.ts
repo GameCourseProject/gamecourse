@@ -515,6 +515,21 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(obj => CourseUser.fromDatabase(obj))) );
   }
 
+  public getCourseUsersWithRole(courseID: number, roleName: string, active?: boolean): Observable<CourseUser[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getCourseUsersWithRole');
+      qs.push('courseId', courseID);
+      qs.push('role', roleName);
+      if (active !== undefined) qs.push('active', active);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => CourseUser.fromDatabase(obj))) );
+  }
+
   public getUsersNotInCourse(courseID: number, active?: boolean): Observable<User[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
@@ -819,51 +834,33 @@ export class ApiHttpService {
 
 
   // Styling
-  // TODO: refactor
-  public getCourseStyleFile(courseID: number): Observable<{styleFile: string, url: string}> {
+  public getCourseStyles(courseID: number): Observable<{path: string, contents: string} | null> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'getCourseStyleFile');
+      qs.push('request', 'getStyles');
       qs.push('courseId', courseID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => { return {styleFile: res['data']['styleFile'] === false ? '' : res['data']['styleFile'], url: res['data']['url']} }) );
+      .pipe( map((res: any) => res['data']) );
   }
 
-  // TODO: refactor
-  public createCourseStyleFile(courseID: number): Observable<string> {
-    const data = {
-      courseId: courseID
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'createCourseStyleFile');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['url']) );
-  }
-
-  // TODO: refactor
-  public updateCourseStyleFile(courseID: number, content: string): Observable<string> {
+  public updateCourseStyles(courseID: number, styles: string): Observable<void> {
     const data = {
       courseId: courseID,
-      content: content
+      styles
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'updateCourseStyleFile');
+      qs.push('request', 'updateStyles');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['url']) );
+      .pipe( map((res: any) => res) );
   }
 
 

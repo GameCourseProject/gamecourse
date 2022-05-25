@@ -8,14 +8,14 @@
 
     <div class="content">
       <div>
-        <p><b>Course Name: </b>{{info.name}}</p>
-        <p><b>Course ID: </b>{{info.id}}</p>
-        <p><b>Active Users: </b>{{info.activeUsers}}</p>
-        <p><b>Awards: </b>{{info.awards}}</p>
-        <p><b>Participations: </b>{{info.participations}}</p>
+        <p><b>Course Name: </b>{{course.name}}</p>
+        <p><b>Course ID: </b>{{course.id}}</p>
+        <p><b>Nº. Students: </b>{{course.nrStudents}} <span>({{activeStudents.length}} active)</span></p>
+<!--        <p><b>Awards: </b>{{info.awards}}</p>-->
+<!--        <p><b>Participations: </b>{{info.participations}}</p>-->
       </div>
 
-      <div><button id="edit_db_button" class="button" (click)="isViewDBModalOpen = true">View Database</button></div>
+<!--      <div><button id="edit_db_button" class="button" (click)="isViewDBModalOpen = true">View Database</button></div>-->
     </div>
   </div>
 
@@ -58,13 +58,9 @@
     </div>
 
     <div class="content">
-      <div *ngIf="!hasStyleFile">
-        <button id="create_style_button" class="button" (click)="createStyleFile()">Create Style File</button>
-      </div>
-
-      <ng-container *ngIf="hasStyleFile">
+      <ng-container>
         <div id="save-change-css" class="action-buttons" style="width:140px;">
-          <button class="button" title="Save" (click)="saveStyleFile()"> Save Changes </button>
+          <button class="button" title="Save" [disabled]="styles.contents === originalStyles" (click)="updateCourseStyles(course.id)"> Save Changes </button>
         </div>
 
         <div id="edit-css-file">
@@ -73,9 +69,9 @@
             [classList]="'form__input'"
             [placeholder]="'Write your style here...'"
             [mode]="'css'"
-            [init]="style.contents"
-            [canInit]="styleLoaded"
-            (valueChange)="this.styleInput = $event">
+            [init]="styles.contents"
+            [canInit]="stylesLoaded"
+            (valueChange)="styles.contents = $event">
           </app-input-code>
         </div>
       </ng-container>
