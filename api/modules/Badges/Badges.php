@@ -87,11 +87,6 @@ class Badges extends Module
         return true;
     }
 
-    public function hasGeneralInputs(): bool
-    {
-        return true;
-    }
-
     public function getGeneralInputs(): array
     {
         return [

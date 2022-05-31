@@ -11,7 +11,7 @@ class InputType
     /*** -------------------- Types -------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    const TEXT = "text";                // options:
+    const TEXT = "text";
     const TEXTAREA = "textarea";
     const NUMBER = "number";
     const CHECKBOX = "checkbox";
@@ -23,5 +23,6 @@ class InputType
     const DATETIME = "datetime";
     const IMAGE = "image";
     const FILE = "file";
+    const COLOR = "color";
     // NOTE: insert here new types of inputs
 }

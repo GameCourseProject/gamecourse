@@ -30,12 +30,14 @@ export class CacheInterceptor implements HttpInterceptor {
   private readonly dependencies: { [key: string]: string[] } = {};
 
   constructor() {
-    this.dependencies[ApiHttpService.AUTOGAME] = [ApiHttpService.AUTOGAME, ApiHttpService.COURSE];
-    this.dependencies[ApiHttpService.COURSE] = [ApiHttpService.COURSE, ApiHttpService.USER];
-    this.dependencies[ApiHttpService.MODULE] = [ApiHttpService.MODULE, ApiHttpService.COURSE, ApiHttpService.VIEWS];
-    this.dependencies[ApiHttpService.THEME] = [ApiHttpService.THEME];
-    this.dependencies[ApiHttpService.USER] = [ApiHttpService.USER, ApiHttpService.COURSE, ApiHttpService.VIEWS];
-    this.dependencies[ApiHttpService.VIEWS] = [ApiHttpService.VIEWS];
+    // Which caches to invalidate when a POST is done on each module
+    this.dependencies[ApiHttpService.AUTOGAME] = [ApiHttpService.COURSE];
+    this.dependencies[ApiHttpService.COURSE] = [ApiHttpService.USER];
+    this.dependencies[ApiHttpService.DOCS] = [];
+    this.dependencies[ApiHttpService.MODULE] = [ApiHttpService.COURSE, ApiHttpService.VIEWS];
+    this.dependencies[ApiHttpService.THEME] = [];
+    this.dependencies[ApiHttpService.USER] = [ApiHttpService.COURSE, ApiHttpService.VIEWS];
+    this.dependencies[ApiHttpService.VIEWS] = [];
     // NOTE: add new dependencies here
 
     // Add modules with requests
@@ -59,7 +61,7 @@ export class CacheInterceptor implements HttpInterceptor {
     }
 
     const cachedResponse: HttpResponse<any> = this.cache.get(request.url);
-    const hasModule = !!this.getUrlModule(request.url);
+    const hasModule = !!CacheInterceptor.getUrlModule(request.url);
 
     if (cachedResponse) {
       // Has request cached
@@ -98,7 +100,7 @@ export class CacheInterceptor implements HttpInterceptor {
    * @param request
    */
   resetCache(request: HttpRequest<any>) {
-    const module = this.getUrlModule(request.url);
+    const module = CacheInterceptor.getUrlModule(request.url);
     if (!module) return;
 
     if (module === ApiHttpService.CORE) {
@@ -108,14 +110,14 @@ export class CacheInterceptor implements HttpInterceptor {
       return;
     }
 
-    const dependencies = this.dependencies[module] || [module].concat(this.dependencies[ApiHttpService.MODULE]);
+    const dependencies = [module].concat(this.dependencies[module] || this.dependencies[ApiHttpService.MODULE]);
     this.cache.forEach((value, key, map) => {
-      if (dependencies.includes(this.getUrlModule(key)))
+      if (dependencies.includes(CacheInterceptor.getUrlModule(key)))
         map.delete(key);
     });
   }
 
-  private getUrlModule(url: string): string {
+  private static getUrlModule(url: string): string {
     const matches = url.match(/\bmodule=(.+?(?=&))/g);
     if (!matches) return null;
     return matches[0].split("=")[1];

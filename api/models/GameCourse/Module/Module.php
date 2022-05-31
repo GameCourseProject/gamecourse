@@ -567,17 +567,6 @@ abstract class Module
     }
 
     /**
-     * Whether the module has inputs to configure general attributes
-     * in its configuration page.
-     *
-     * @return bool
-     */
-    public function hasGeneralInputs(): bool
-    {
-        return false;
-    }
-
-    /**
      * Gets general inputs to show on configuration page where each
      * input has:
      *  - id: unique ID
@@ -587,65 +576,72 @@ abstract class Module
      *  - options?: list of options (check Config/InputType.php for more info)
      * @return array
      */
-    public function getGeneralInputs(): array
+    public function getGeneralInputs(): ?array
     {
-        return [];
+        return null;
     }
 
     /**
      * Updates general inputs.
      *
      * @param array $inputs
-     * @return mixed
+     * @return void
      */
     public function saveGeneralInputs(array $inputs)
     {
     }
 
     /**
-     * Whether the module has a list of items in its configuration page.
-     *
-     * @return bool
-     */
-    public function hasListingItems(): bool
-    {
-        return false;
-    }
-
-    /**
-     * Gets listing info to show on configuration page where info has:
+     * Gets lists to show on configuration page where each list has:
      *  - listName: name of the list
      *  - itemName: name for an item of the list
      *  - listInfo: information for every collumn
      *  - items: items of the list
      *  - actions?: actions available for items (check Config/Action.php for more info)
-     *  - edit?: information for editing items
+     *  - <action>?: information for acting on items
      * @return array
      */
-    public function getListingItems(): array
+    public function getLists(): ?array
     {
-        return [];
+        return null;
     }
 
     /**
-     * Updates listing item.
+     * Updates a listing item of a specific list.
      *
+     * @param string $listName
      * @param string $action
      * @param array $item
-     * @return mixed
+     * @return void
      */
-    public function saveListingItem(string $action, array $item)
+    public function saveListingItem(string $listName, string $action, array $item)
     {
     }
 
     /**
-     * Whether the module has a personalized section in its configuration page.
+     * Imports items into a specific list from a .csv file.
+     * Returns the nr. of items imported.
      *
-     * @return bool
+     * @param string $listName
+     * @param string $file
+     * @param bool $replace
+     * @return int|null
      */
-    public function hasPersonalizedConfig(): bool
+    public function importListingItems(string $listName, string $file, bool $replace = true): ?int
     {
-        return false;
+        return null;
+    }
+
+    /**
+     * Exports items from a specific list into a .csv file.
+     *
+     * @param string $listName
+     * @param int|null $itemId
+     * @return string|null
+     */
+    public function exportListingItems(string $listName, int $itemId = null): ?string
+    {
+        return null;
     }
 
     /**
@@ -655,9 +651,9 @@ abstract class Module
      *  - Scripts it might have
      * @return array
      */
-    public function getPersonalizedConfig(): array
+    public function getPersonalizedConfig(): ?array
     {
-        return [];
+        return null;
     }
 
 

@@ -23,7 +23,7 @@ class Cache
      */
     public static function get(string $cacheId)
     {
-        $cache = CACHE_FOLDER . "/" . $cacheId;
+        $cache = CACHE_FOLDER . "/" . $cacheId . ".txt";
         if (!file_exists($cache)) return null;
         return self::unserialize(file_get_contents($cache));
     }
@@ -36,7 +36,7 @@ class Cache
     public static function store(string $cacheId, $data)
     {
         if (!file_exists(CACHE_FOLDER)) mkdir(CACHE_FOLDER);
-        file_put_contents(CACHE_FOLDER . "/" . $cacheId, self::serialize($data));
+        file_put_contents(CACHE_FOLDER . "/" . $cacheId . ".txt", self::serialize($data));
     }
 
     /**
@@ -49,7 +49,7 @@ class Cache
     public static function clean(string $cacheId = null)
     {
         if (is_null($cacheId)) Utils::deleteDirectory(CACHE_FOLDER);
-        else unlink(CACHE_FOLDER . "/" . $cacheId);
+        else unlink(CACHE_FOLDER . "/" . $cacheId . ".txt");
     }
 
 

@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\XPLevels;
 
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use Utils\Utils;
@@ -39,27 +40,22 @@ class Level
         return new Course($this->getData("course"));
     }
 
-    public function getNumber(): int
-    {
-        return $this->getData("number");
-    }
-
     public function getGoal(): int
     {
         return $this->getData("goal");
     }
 
-    public function getTitle(): ?string
+    public function getDescription(): ?string
     {
-        return $this->getData("title");
+        return $this->getData("description");
     }
 
     /**
      * Gets level data from the database.
      *
      * @example getData() --> gets all level data
-     * @example getData("number") --> gets user name
-     * @example getData("number, title") --> gets level number & title
+     * @example getData("goal") --> gets level goal
+     * @example getData("goal, description") --> gets level goal & description
      *
      * @param string $field
      * @return array|int|null
@@ -78,32 +74,50 @@ class Level
     /*** ---------------------- Setters --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    public function setNumber(int $number)
-    {
-        $this->setData(["number" => $number]);
-    }
-
+    /**
+     * @param int $goal
+     * @return void
+     * @throws Exception
+     */
     public function setGoal(int $goal)
     {
         $this->setData(["goal" => $goal]);
     }
 
-    public function setTitle(?string $title)
+    /**
+     * @param string|null $description
+     * @return void
+     * @throws Exception
+     */
+    public function setDescription(?string $description)
     {
-        $this->setData(["title" => $title]);
+        $this->setData(["description" => $description]);
     }
 
     /**
      * Sets level data on the database.
-     * @example setData(["number" => 0])
-     * @example setData(["number" => 0, "title" => "New title"])
+     * @example setData(["goal" => 100])
+     * @example setData(["goal" => 100, "description" => "New description"])
      *
      * @param array $fieldValues
      * @return void
+     * @throws Exception
      */
     public function setData(array $fieldValues)
     {
+        if (key_exists("goal", $fieldValues)) {
+            $previousGoal = self::getGoal();
+            $newGoal = intval($fieldValues["goal"]);
+            if ($previousGoal !== 0 && $newGoal <= 0)
+                throw new Exception("Can't set level goal: goal needs to be a positive number.");
+
+            if ($previousGoal === 0 && $newGoal !== 0)
+                throw new Exception("Can't update goal of Level 0.");
+        }
+
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_LEVEL, $fieldValues, ["id" => $this->id]);
+
+        if (key_exists("goal", $fieldValues)) self::updateUsersLevel($this->getCourse()->getId());
     }
 
 
@@ -116,13 +130,6 @@ class Level
         $level = new Level($id);
         if ($level->exists()) return $level;
         else return null;
-    }
-
-    public static function getLevelByNumber(int $courseId, int $number): ?Level
-    {
-        $levelId = intval(Core::database()->select(self::TABLE_LEVEL, ["course" => $courseId, "number" => $number], "id"));
-        if (!$levelId) return null;
-        else return new Level($levelId);
     }
 
     public static function getLevelByGoal(int $courseId, int $goal): ?Level
@@ -142,10 +149,14 @@ class Level
         return null;
     }
 
-    public static function getLevels(int $courseId, string $orderBy = null): array
+    public static function getLevels(int $courseId, string $orderBy = "goal"): array
     {
-        $levels = Core::database()->selectMultiple(self::TABLE_LEVEL, ["course" => $courseId], "*", $orderBy ?? "number");
-        foreach ($levels as &$level) { $level = self::parse($level); }
+        $field = "id, goal, description";
+        $levels = Core::database()->selectMultiple(self::TABLE_LEVEL, ["course" => $courseId], $field, $orderBy);
+        foreach ($levels as $i => &$level) {
+            $level["number"] = $i;
+            $level = self::parse($level);
+        }
         return $levels;
     }
 
@@ -160,17 +171,18 @@ class Level
      *
      * @param int $courseId
      * @param int $goal
-     * @param string|null $title
+     * @param string|null $description
      * @return Level
+     * @throws Exception
      */
-    public static function addLevel(int $courseId, int $goal, ?string $title): Level
+    public static function addLevel(int $courseId, int $goal, ?string $description): Level
     {
         $id = Core::database()->insert(self::TABLE_LEVEL, [
-            "number" => $goal / 1000,
             "course" => $courseId,
             "goal" => $goal,
-            "title" => $title
+            "description" => $description
         ]);
+        self::updateUsersLevel($courseId);
         return new Level($id);
     }
 
@@ -179,15 +191,15 @@ class Level
      * Returns the edited level.
      *
      * @param int $goal
-     * @param string|null $title
+     * @param string|null $description
      * @return Level
+     * @throws Exception
      */
-    public function editLevel(int $goal, ?string $title): Level
+    public function editLevel(int $goal, ?string $description): Level
     {
         $this->setData([
-            "number" => $goal / 1000,
             "goal" => $goal,
-            "title" => $title
+            "description" => $description
         ]);
         return $this;
     }
@@ -197,9 +209,13 @@ class Level
      *
      * @param int $levelId
      * @return void
+     * @throws Exception
      */
     public static function deleteLevel(int $levelId) {
+        $level = self::getLevelById($levelId);
+        if ($level->getGoal() === 0) throw new Exception("Can't delete Level 0.");
         Core::database()->delete(self::TABLE_LEVEL, ["id" => $levelId]);
+        self::updateUsersLevel($level->getCourse()->getId());
     }
 
     /**
@@ -230,6 +246,29 @@ class Level
         return new Level($levelId);
     }
 
+    /**
+     * Automatically updates the current level for all users.
+     *
+     * @param int $courseId
+     * @return void
+     * @throws Exception
+     */
+    public static function updateUsersLevel(int $courseId)
+    {
+        $course = new Course($courseId);
+        $xpModule = new XPLevels($course);
+        $students = $course->getStudents();
+        foreach ($students as $student) {
+            $studentId = intval($student["id"]);
+            $userXP = $xpModule->getUserXP($studentId);
+            $newLevel = self::recalculateLevel($courseId, $userXP);
+            Core::database()->update(XPLevels::TABLE_XP,
+                ["level" => $newLevel->getId()],
+                ["course" => $courseId, "user" => $studentId]
+            );
+        }
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ------------------ Import/Export ------------------- ***/
@@ -243,20 +282,21 @@ class Level
      * @param string $file
      * @param bool $replace
      * @return int
+     * @throws Exception
      */
     public static function importLevels(int $courseId, string $file, bool $replace = true): int
     {
         return Utils::importFromCSV(self::HEADERS, function ($level, $indexes) use ($courseId, $replace) {
-            $title = $level[$indexes["title"]];
-            $minXP = $level[$indexes["minimum XP"]];
+            $description = $level[$indexes["title"]];
+            $minXP = self::parse(null, $level[$indexes["minimum XP"]], "goal");
 
             $level = self::getLevelByGoal($courseId, $minXP);
             if ($level) {  // level already exists
                 if ($replace)  // replace
-                    $level->editLevel($minXP, $title);
+                    $level->editLevel($minXP, $description);
 
             } else {  // level doesn't exist
-                Level::addLevel($courseId, $minXP, $title);
+                Level::addLevel($courseId, $minXP, $description);
                 return 1;
             }
             return 0;
@@ -269,10 +309,10 @@ class Level
      * @param int $courseId
      * @return string
      */
-    public static function exportUsers(int $courseId): string
+    public static function exportLevels(int $courseId): string
     {
         return Utils::exportToCSV(self::getLevels($courseId), function ($level) {
-            return [$level["title"], $level["goal"]];
+            return [$level["description"], $level["goal"]];
         }, self::HEADERS);
     }
 
@@ -280,6 +320,23 @@ class Level
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Utils ---------------------- ***/
     /*** ---------------------------------------------------- ***/
+
+    /**
+     * Recalculates which level corresponds to a given XP amount.
+     *
+     * @param int $courseId
+     * @param int $xp
+     * @return Level
+     * @throws Exception
+     */
+    private static function recalculateLevel(int $courseId, int $xp): Level
+    {
+        $levels = self::getLevels($courseId, "goal DESC");
+        foreach ($levels as $level) {
+            if ($xp >= intval($level["goal"])) return new Level($level["id"]);
+        }
+        throw new Exception("Couldn't recalculate level: XP must be positive.");
+    }
 
     /**
      * Parses a level coming from the database to appropriate types.
@@ -295,13 +352,11 @@ class Level
         if ($level) {
             if (isset($level["id"])) $level["id"] = intval($level["id"]);
             if (isset($level["course"])) $level["course"] = intval($level["course"]);
-            if (isset($level["number"])) $level["number"] = intval($level["number"]);
             if (isset($level["goal"])) $level["goal"] = intval($level["goal"]);
             return $level;
 
         } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "number" || $fieldName == "goal")
-                return intval($field);
+            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "goal") return intval($field);
             return $field;
         }
     }

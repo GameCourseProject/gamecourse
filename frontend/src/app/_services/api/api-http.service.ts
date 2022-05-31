@@ -24,7 +24,10 @@ import {RoleType} from "../../_domain/roles/role-type";
 import {View} from "../../_domain/views/view";
 import {buildView} from "../../_domain/views/build-view/build-view";
 import {dateFromDatabase, exists, objectMap} from "../../_utils/misc/misc";
-import {GeneralInput, ListingItems} from "../../_views/restricted/courses/course/settings/modules/config/config/config.component";
+import {
+  GeneralInput,
+  List
+} from "../../_views/restricted/courses/course/settings/modules/config/config/config.component";
 import {Tier} from "../../_domain/skills/tier";
 import {SkillData, TierData} from "../../_views/restricted/courses/course/settings/modules/config/skills/skills.component";
 import {Skill} from "../../_domain/skills/skill";
@@ -47,6 +50,7 @@ import {ErrorService} from "../error.service";
 import {Router} from "@angular/router";
 import {CourseUser} from "../../_domain/users/course-user";
 import {CourseUserData} from "../../_views/restricted/courses/course/users/users.component";
+import {Action} from "../../_domain/modules/config/Action";
 
 @Injectable({
   providedIn: 'root'
@@ -66,7 +70,7 @@ export class ApiHttpService {
   static readonly THEME: string = 'theme';
   static readonly USER: string = 'user';
   static readonly VIEWS: string = 'views';
-  // NOTE: insert here new controllers
+  // NOTE: insert here new controllers & update cache dependencies
 
   static readonly CLASSCHECK: string = 'classcheck';
   static readonly FENIX: string = 'fenix';
@@ -763,6 +767,20 @@ export class ApiHttpService {
 
 
   // Modules
+  public getCourseModuleById(courseID: number, moduleID: string): Observable<Module> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getModuleById');
+      qs.push('courseId', courseID);
+      qs.push('moduleId', moduleID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Module.fromDatabase(res['data'])) );
+  }
+
   public getCourseModules(courseID: number, enabled?: boolean): Observable<Module[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
@@ -963,46 +981,12 @@ export class ApiHttpService {
   }
 
 
-  // Import / Export
-  // TODO: refactor
-  public importModule(importData: ImportModulesData): Observable<void> {
-    const data = {
-      file: importData.file,
-      fileName: importData.fileName
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.MODULE);
-      qs.push('request', 'importModule');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']) );
-  }
-
-  // TODO: refactor
-  public exportModules(): Observable<string> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.MODULE);
-      qs.push('request', 'exportModule');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, null, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['file']) );
-  }
-
-
   // Configuration
-  // TODO: refactor
-  public getModuleConfigInfo(courseID: number, moduleID: string):
-    Observable<{module: Module, courseFolder: string, generalInputs?: GeneralInput[], listingItems?: ListingItems,
-      personalizedConfig?: string}> {
+  public getModuleConfig(courseID: number, moduleID: string): Observable<{generalInputs: GeneralInput[] | null, lists: List[] | null, personalizedConfig: string | null}> {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
-      qs.push('request', 'getModuleConfigInfo');
+      qs.push('request', 'getConfig');
       qs.push('courseId', courseID);
       qs.push('moduleId', moduleID);
     };
@@ -1010,21 +994,11 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map(
-        (res: any) => {
-          return {
-            module: Module.fromDatabase(res['data']['module']),
-            courseFolder: res['data']['courseFolder'],
-            generalInputs: res['data']['generalInputs'],
-            listingItems: res['data']['listingItems'],
-            personalizedConfig: res['data']['personalizedConfig']
-          }
-        }) );
+      .pipe( map((res: any) => res['data']) );
   }
 
-  // TODO: refactor
-  public saveModuleConfigInfo(courseID: number, moduleID: string, generalInputs?: {[key: string]: any}, listingItem?: any,
-                              actionType?: 'new' | 'edit' | 'delete' | 'duplicate'): Observable<void> {
+  public saveModuleConfig(courseID: number, moduleID: string, generalInputs?: GeneralInput[], listingItem?: any,
+                          listName?: string, action?: Action): Observable<void> {
     const data = {
       "courseId": courseID,
       "moduleId": moduleID,
@@ -1033,12 +1007,13 @@ export class ApiHttpService {
     if (generalInputs) data['generalInputs'] = generalInputs;
     if (listingItem) {
       data['listingItem'] = listingItem;
-      data['actionType'] = actionType;
+      data['listName'] = listName;
+      data['action'] = action;
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
-      qs.push('request', 'saveModuleConfigInfo');
+      qs.push('request', 'saveConfig');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
@@ -1087,11 +1062,11 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  // TODO: refactor
-  public importModuleItems(courseID: number, moduleID: string, file: string | ArrayBuffer, replace: boolean): Observable<number> {
+  public importModuleItems(courseID: number, moduleID: string, listName: string, file: string | ArrayBuffer, replace: boolean): Observable<number> {
     const data = {
       courseId: courseID,
       moduleId: moduleID,
+      listName,
       file,
       replace
     }
@@ -1103,30 +1078,53 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => parseInt(res['data']['nrItems'])) );
+      .pipe( map((res: any) => parseInt(res['data'])) );
   }
 
+  public exportModuleItems(courseID: number, moduleID: string, listName: string, itemID?: number): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'exportItems');
+      qs.push('courseId', courseID);
+      qs.push('moduleId', moduleID);
+      qs.push('listName', listName);
+      if (itemID !== undefined) qs.push('itemId', itemID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data'])) );
+  }
+
+
+  // Import / Export
   // TODO: refactor
-  public exportModuleItems(courseID: number, moduleID: string, itemID: number): Observable<{fileName: string, contents: string}> {
+  public importModule(importData: ImportModulesData): Observable<void> {
     const data = {
-      "courseId": courseID,
-      "moduleId": moduleID,
-      "itemId": itemID
+      file: importData.file,
+      fileName: importData.fileName
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
-      qs.push('request', 'exportItems');
+      qs.push('request', 'importModule');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => {
-        return {
-          fileName: res['data']['fileName'],
-          contents: 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['items'])
-        }
-      }) );
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  // TODO: refactor
+  public exportModules(): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'exportModule');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, null, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['file']) );
   }
 
 

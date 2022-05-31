@@ -1,10 +1,15 @@
 export enum InputType {
   TEXT = 'text',
-  TEXTAREA = 'paragraph',
+  TEXTAREA = 'textarea',
   NUMBER = 'number',
-  IMAGE = 'image',
-  COLOR = 'color',
-  DATE = 'date',
+  CHECKBOX = 'checkbox',
+  RADIO = 'radio',
   SELECT = 'select',
-  TOGGLE = 'on_off button'
+  TOGGLE = 'toggle',
+  DATE = 'date',
+  TIME = 'time',
+  DATETIME = 'datetime',
+  IMAGE = 'image',
+  FILE = 'file',
+  COLOR = 'color'
 }

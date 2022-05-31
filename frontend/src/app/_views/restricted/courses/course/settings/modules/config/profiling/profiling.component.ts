@@ -260,25 +260,25 @@ export class ProfilingComponent implements OnInit {
   }
 
   importItems(replace: boolean): void {
-    this.loadingAction = true;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const importedItems = reader.result;
-      this.api.importModuleItems(this.courseID, ApiHttpService.PROFILING, importedItems, replace)
-        .pipe( finalize(() => {
-          this.isImportModalOpen = false;
-          this.loadingAction = false;
-        }) )
-        .subscribe(
-          nrItems => {
-            const successBox = $('#action_completed');
-            successBox.empty();
-            successBox.append("Items imported");
-            successBox.show().delay(3000).fadeOut();
-          })
-    }
-    reader.readAsDataURL(this.importedFile);
+    // this.loadingAction = true;
+    //
+    // const reader = new FileReader();
+    // reader.onload = (e) => {
+    //   const importedItems = reader.result;
+    //   this.api.importModuleItems(this.courseID, ApiHttpService.PROFILING, importedItems, replace)
+    //     .pipe( finalize(() => {
+    //       this.isImportModalOpen = false;
+    //       this.loadingAction = false;
+    //     }) )
+    //     .subscribe(
+    //       nrItems => {
+    //         const successBox = $('#action_completed');
+    //         successBox.empty();
+    //         successBox.append("Items imported");
+    //         successBox.show().delay(3000).fadeOut();
+    //       })
+    // }
+    // reader.readAsDataURL(this.importedFile);
   }
 
 

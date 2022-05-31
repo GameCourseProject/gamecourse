@@ -4,6 +4,7 @@ namespace API;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Module;
 use GameCourse\Role\Role;
 use GameCourse\User\User;
 
@@ -541,13 +542,36 @@ class CourseController
     /*** --------------------------------------------- ***/
 
     /**
+     * Get course module by its ID.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getModuleById()
+    {
+        API::requireValues("courseId", "moduleId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $moduleId = API::getValue("moduleId");
+        $module = API::verifyModuleExists($moduleId, $course);
+
+        $moduleInfo = $module->getData();
+        $moduleInfo = Module::getExtraInfo($moduleInfo, $course);
+        API::response($moduleInfo);
+    }
+
+    /**
      * @throws Exception
      */
     public function getModules()
     {
         API::requireValues("courseId");
 
-        $courseId = API::getValue("courseId");
+        $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
 
         API::requireCourseAdminPermission($course);

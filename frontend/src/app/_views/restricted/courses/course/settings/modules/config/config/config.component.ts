@@ -1,14 +1,16 @@
 import {Component, OnInit} from '@angular/core';
-import {Module} from "../../../../../../../../_domain/modules/module";
-import {ApiHttpService} from "../../../../../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
-import {finalize} from "rxjs/operators";
-import {InputType} from "../../../../../../../../_domain/inputs/input-type";
-import {ResourceManager} from "../../../../../../../../_utils/resources/resource-manager";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
+import {finalize} from "rxjs/operators";
+
+import {ApiHttpService} from "../../../../../../../../_services/api/api-http.service";
 import {ApiEndpointsService} from "../../../../../../../../_services/api/api-endpoints.service";
-import {copyObject, exists} from "../../../../../../../../_utils/misc/misc";
-import {DownloadManager} from "../../../../../../../../_utils/download/download-manager";
+import {ResourceManager} from "../../../../../../../../_utils/resources/resource-manager";
+import {copyObject} from "../../../../../../../../_utils/misc/misc";
+
+import {Module} from "../../../../../../../../_domain/modules/module";
+import {InputType} from "../../../../../../../../_domain/inputs/input-type";
+import {Action, ActionScope} from 'src/app/_domain/modules/config/Action';
 import {FenixComponent} from "../fenix/fenix.component";
 import {ClasscheckComponent} from "../classcheck/classcheck.component";
 import {SkillsComponent} from "../skills/skills.component";
@@ -17,35 +19,7 @@ import {MoodleComponent} from "../moodle/moodle.component";
 import {QrComponent} from "../qr/qr.component";
 import {NotificationsComponent} from "../notifications/notifications.component";
 import {ProfilingComponent} from "../profiling/profiling.component";
-
-export interface GeneralInput {
-  id: string,
-  name: string,
-  type: InputType,
-  current_val: any
-  options: any,
-}
-
-export interface ListingItems {
-  listName: string,
-  itemName: string,
-  header: string[],
-  displayAttributes: {id: string, type: InputType}[],
-  actions: string[],
-  items: any[],
-  allAttributes: {id: string, name: string, type: InputType, options: any}[]
-}
-
-export enum PersonalizedConfig {
-  CLASSCHECK = 'classcheck',
-  FENIX = 'fenix',
-  GOOGLESHEETS = 'googlesheets',
-  MOODLE = 'moodle',
-  NOTIFICATIONS = 'notifications',
-  PROFILING = 'profiling',
-  QR = 'qr',
-  SKILLS = 'skills'
-}
+import {DownloadManager} from "../../../../../../../../_utils/download/download-manager";
 
 @Component({
   selector: 'app-config',
@@ -54,16 +28,15 @@ export enum PersonalizedConfig {
 })
 export class ConfigComponent implements OnInit {
 
-  loading: boolean;
+  loading: boolean = true;
   loadingAction = false;
   hasUnsavedChanges: boolean;
 
   courseID: number;
   module: Module;
-  courseFolder: string;
 
   generalInputs: GeneralInput[];
-  listingItems: ListingItems;
+  lists: List[];
   personalizedConfig: string;
 
   importedFile: File;
@@ -73,10 +46,16 @@ export class ConfigComponent implements OnInit {
   isImportModalOpen: boolean;
 
   mode: 'add' | 'edit';
-  newItem: any = { };
-  itemToEdit: any;
-  itemToDelete: any;
-  itemToExport: any;
+  newItem: {list: List, item: any, first: boolean, last: boolean, even: boolean, odd: boolean} = {
+    list: null,
+    item: {},
+    first: null,
+    last: null,
+    even: null,
+    odd: null
+  };
+  itemToDelete: {list: List, item: any};
+  listToAct: List;
 
   image: ResourceManager;
 
@@ -89,18 +68,16 @@ export class ConfigComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loading = true;
     this.route.parent.params.subscribe(params => {
       this.courseID = parseInt(params.id);
 
-      this.route.params.subscribe(childParams => {
-        this.getModuleConfigInfo(childParams.id);
+      this.route.params.subscribe(async childParams => {
+        const moduleID = childParams.id;
+        await this.getModule(this.courseID, moduleID);
+        await this.getModuleConfig(moduleID);
+        this.loading = false;
       });
     });
-  }
-
-  get InputType(): typeof InputType {
-    return InputType;
   }
 
   get PersonalizedConfig(): typeof PersonalizedConfig {
@@ -144,18 +121,15 @@ export class ConfigComponent implements OnInit {
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  getModuleConfigInfo(moduleId: string): void {
-    this.loading = true;
-    this.api.getModuleConfigInfo(this.courseID, moduleId)
-      .pipe( finalize(() => this.loading = false) )
-      .subscribe(
-        info => {
-          this.module = info.module;
-          this.courseFolder = info.courseFolder;
-          this.generalInputs = info.generalInputs;
-          this.listingItems = info.listingItems;
-          this.personalizedConfig = info.personalizedConfig;
-        })
+  async getModule(courseID: number, moduleID: string): Promise<void> {
+    this.module = await this.api.getCourseModuleById(courseID, moduleID).toPromise();
+  }
+
+  async getModuleConfig(moduleID: string): Promise<void> {
+    const config = await this.api.getModuleConfig(this.courseID, moduleID).toPromise();
+    this.generalInputs = config.generalInputs;
+    this.lists = config.lists;
+    this.personalizedConfig = config.personalizedConfig;
   }
 
 
@@ -163,74 +137,48 @@ export class ConfigComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  // General Inputs
   saveGeneralInputs() {
-    this.loadingAction = true;
-
-    // Parse inputs
-    const inputsObj = {};
-    for (const input of this.generalInputs) {
-      inputsObj[input.id] = input.current_val;
-    }
-
-    this.api.saveModuleConfigInfo(this.courseID, this.module.id, inputsObj)
-      .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(res => this.hasUnsavedChanges = false)
+    // this.loadingAction = true;
+    //
+    // // Parse inputs
+    // const inputsObj = {};
+    // for (const input of this.generalInputs) {
+    //   inputsObj[input.id] = input.current_val;
+    // }
+    //
+    // this.api.saveModuleConfig(this.courseID, this.module.id, inputsObj)
+    //   .pipe( finalize(() => this.loadingAction = false) )
+    //   .subscribe(res => this.hasUnsavedChanges = false)
   }
 
-  createItem(): void {
+  // Lists
+  doActionOnItem(listName: string, item: any, action: Action): void {
     this.loadingAction = true;
-    for (const param of this.listingItems.allAttributes) {
-      if (!this.newItem.hasOwnProperty(param.id)) {
-        this.newItem[param.id] = null;
-      }
-    }
-
-    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, this.newItem, 'new')
+    this.api.saveModuleConfig(this.courseID, this.module.id, null, item, listName, action)
       .pipe( finalize(() => {
         this.loadingAction = false;
         this.isItemModalOpen = false;
-        this.newItem = {};
-      }) )
-      .subscribe(res => this.getModuleConfigInfo(this.module.id),)
-  }
-
-  editItem(): void {
-    this.loadingAction = true;
-    for (const param of this.listingItems.allAttributes) {
-      if (!this.newItem.hasOwnProperty(param.id)) {
-        this.itemToEdit[param.id] = null;
-      }
-    }
-
-    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, this.itemToEdit, 'edit')
-      .pipe( finalize(() => {
-        this.loadingAction = false;
-        this.isItemModalOpen = false;
-        this.newItem = {};
-      }) )
-      .subscribe(res => this.getModuleConfigInfo(this.module.id))
-  }
-
-  duplicateItem(item: any) {
-    this.loadingAction = true;
-    delete item.id;
-    item.name = item.name + ' (Copy)';
-
-    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, item, 'duplicate')
-      .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(res => this.getModuleConfigInfo(this.module.id),)
-  }
-
-  deleteItem(item: any): void {
-    this.loadingAction = true;
-
-    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, item, 'delete')
-      .pipe( finalize(() => {
-        this.loadingAction = false;
+        this.isDeleteVerificationModalOpen = false;
+        this.newItem = {list: null, item: {}, first: null, last: null, even: null, odd: null};
         this.itemToDelete = null;
-        this.isDeleteVerificationModalOpen = false
       }) )
-      .subscribe(res => this.getModuleConfigInfo(this.module.id),)
+      .subscribe(async () => await this.getModuleConfig(this.module.id))
+  }
+
+  toggleItemParam(itemId: string, param: string) {
+    // this.loadingAction = true;
+    //
+    // const item = this.listingItems.items.find(item => item.id === itemId);
+    // item[param] = !item[param];
+    //
+    // this.api.toggleItemParam(this.courseID, this.module.id, parseInt(itemId), param)
+    //   .pipe( finalize(() => this.loadingAction = false) )
+    //   .subscribe(res => {})
+  }
+
+  moveItem(list: List, item: any, dir: number) {
+    // TODO
   }
 
   importItems(replace: boolean): void {
@@ -239,48 +187,29 @@ export class ConfigComponent implements OnInit {
     const reader = new FileReader();
     reader.onload = (e) => {
       const importedItems = reader.result;
-      this.api.importModuleItems(this.courseID, this.module.id, importedItems, replace)
+      this.api.importModuleItems(this.courseID, this.module.id, this.listToAct.listName, importedItems, replace)
         .pipe( finalize(() => {
           this.isImportModalOpen = false;
           this.loadingAction = false;
         }) )
         .subscribe(
-          nrItems => {
-            this.getModuleConfigInfo(this.module.id);
+          async nrItems => {
+            await this.getModuleConfig(this.module.id);
+
             const successBox = $('#action_completed');
             successBox.empty();
-            successBox.append(nrItems + " " + this.listingItems.itemName + (nrItems > 1 ? 's' : '') + " Imported");
+            successBox.append(nrItems + " " + this.listToAct.itemName.capitalize() + (nrItems !== 1 ? 's' : '') + " Imported");
             successBox.show().delay(3000).fadeOut();
           })
     }
-    reader.readAsDataURL(this.importedFile);
+    reader.readAsText(this.importedFile);
   }
 
-  exportItem(item: any): void {
+  exportItems(list: List, item?: any): void {
     this.loadingAction = true;
-
-    this.api.exportModuleItems(this.courseID, this.module.id, item?.id || null)
+    this.api.exportModuleItems(this.courseID, this.module.id, list.listName, item?.id ?? undefined)
       .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(res => DownloadManager.downloadAsCSV(res.fileName, res.contents),)
-  }
-
-  exportAllItems(): void {
-    this.exportItem(null);
-  }
-
-  toggleItemParam(itemId: string, param: string) {
-    this.loadingAction = true;
-
-    const item = this.listingItems.items.find(item => item.id === itemId);
-    item[param] = !item[param];
-
-    this.api.toggleItemParam(this.courseID, this.module.id, parseInt(itemId), param)
-      .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(res => {})
-  }
-
-  moveItem(dir: number) {
-    // TODO
+      .subscribe(contents => DownloadManager.downloadAsCSV(list.listName, contents))
   }
 
 
@@ -288,18 +217,24 @@ export class ConfigComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  capitalize(str: string): string {
-    return str.capitalize();
+  initEditItem(list: List, item: any, first: boolean, last: boolean, even: boolean, odd: boolean): void {
+    this.newItem = {list, item: copyObject(item), first, last, even, odd};
+  }
+
+  scopeAllows(scope: ActionScope, first: boolean, last: boolean, even: boolean, odd: boolean): boolean {
+    if (scope === ActionScope.ALL) return true;
+    if (scope === ActionScope.FIRST && first) return true;
+    if (scope === ActionScope.LAST && last) return true;
+    if (scope === ActionScope.EVEN && even) return true;
+    if (scope === ActionScope.ODD && odd) return true;
+    if (scope === ActionScope.ALL_BUT_FIRST && !first) return true;
+    if (scope === ActionScope.ALL_BUT_LAST && !last) return true;
+    return false;
   }
 
   onFileSelected(files: FileList): void {
     this.importedFile = files.item(0);
     this.hasUnsavedChanges = true;
-  }
-
-  initEditItem(item: any): void {
-    this.newItem = copyObject(item);
-    this.itemToEdit = item;
   }
 
   getImage(path: string): SafeUrl {
@@ -313,8 +248,39 @@ export class ConfigComponent implements OnInit {
     }
   }
 
-  filterEditableParams(list: ListingItems): {id: string, name: string, type: InputType, options: any}[] {
-    return list.allAttributes.filter(attr => !exists(attr.options['edit']) || attr.options['edit'] === true);
+  get InputType(): typeof InputType {
+    return InputType;
   }
 
+  get Action(): typeof Action {
+    return Action;
+  }
+}
+
+export interface GeneralInput {
+  id: string,
+  label: string,
+  type: InputType,
+  value: any,
+  options?: any // FIXME: either use options or remove
+}
+
+export type List = {
+  listName: string,
+  itemName: string,
+  listInfo: {id: string, label: string, type: InputType}[],
+  items: any[],
+  actions?: {action: Action, scope: ActionScope}[],
+  [Action.EDIT]?: {id: string, label: string, type: InputType, scope: ActionScope}[]
+}
+
+export enum PersonalizedConfig {
+  CLASSCHECK = 'classcheck',
+  FENIX = 'fenix',
+  GOOGLESHEETS = 'googlesheets',
+  MOODLE = 'moodle',
+  NOTIFICATIONS = 'notifications',
+  PROFILING = 'profiling',
+  QR = 'qr',
+  SKILLS = 'skills'
 }

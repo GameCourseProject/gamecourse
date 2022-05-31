@@ -289,11 +289,11 @@ export class UsersComponent implements OnInit {
           this.loadingAction = false;
         }) )
         .subscribe(
-          nUsers => {
+          nrUsers => {
             this.getCourseUsers(this.course.id);
             const successBox = $('#action_completed');
             successBox.empty();
-            successBox.append(nUsers + " Users" + (nUsers > 1 ? 's' : '') + " Imported");
+            successBox.append(nrUsers + " User" + (nrUsers !== 1 ? 's' : '') + " Imported");
             successBox.show().delay(3000).fadeOut();
           })
     }

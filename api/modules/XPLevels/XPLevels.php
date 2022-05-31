@@ -1,13 +1,14 @@
 <?php
 namespace GameCourse\XPLevels;
 
-use Error;
 use Event\Event;
 use Event\EventType;
+use Exception;
 use GameCourse\Awards\Awards;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Config\Action;
+use GameCourse\Module\Config\ActionScope;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
@@ -55,17 +56,15 @@ class XPLevels extends Module
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function init()
     {
         $this->initDatabase();
 
         // Create level zero
-        $level0Id = Core::database()->insert(self::TABLE_LEVEL, [
-            "course" => $this->course->getId(),
-            "number" => 0,
-            "goal" => 0,
-            "description" => "AWOL"
-        ]);
+        $level0Id = Level::addLevel($this->course->getId(), 0, "AWOL")->getId();
 
         // Init XP for all students
         $students = $this->course->getStudents(true);
@@ -114,38 +113,58 @@ class XPLevels extends Module
         return true;
     }
 
-    public function hasListingItems(): bool
-    {
-        return true;
-    }
-
-    public function getListingItems(): array
+    public function getLists(): array
     {
         return [
-            "listName" => "Levels",
-            "itemName" => "level",
-            "listInfo" => [
-                ["id" => "number", "label" => "Level", "type" => InputType::NUMBER],
-                ["id" => "description", "label" => "Title", "type" => InputType::TEXT],
-                ["id" => "goal", "label" => "Minimum XP", "type" => InputType::NUMBER]
-            ],
-            "items" => Level::getLevels($this->course->getId()),
-            "actions" => [Action::EDIT, Action::DELETE],
-            "edit" => [
-                ["id" => "description", "label" => "Title", "type" => InputType::TEXT],
-                ["id" => "goal", "label" => "Minimum XP", "type" => InputType::NUMBER]
+            [
+                "listName" => "Levels",
+                "itemName" => "level",
+                "listInfo" => [
+                    ["id" => "number", "label" => "Level", "type" => InputType::NUMBER],
+                    ["id" => "description", "label" => "Title", "type" => InputType::TEXT],
+                    ["id" => "goal", "label" => "Minimum XP", "type" => InputType::NUMBER]
+                ],
+                "items" => Level::getLevels($this->course->getId()),
+                "actions" => [
+                    ["action" => Action::EDIT, "scope" => ActionScope::ALL],
+                    ["action" => Action::DELETE, "scope" => ActionScope::ALL_BUT_FIRST]
+                ],
+                Action::EDIT => [
+                    ["id" => "description", "label" => "Title", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
+                    ["id" => "goal", "label" => "Minimum XP", "type" => InputType::NUMBER, "scope" => ActionScope::ALL_BUT_FIRST]
+                ],
             ]
         ];
     }
 
-    public function saveListingItem(string $action, array $item)
+    /**
+     * @throws Exception
+     */
+    public function saveListingItem(string $listName, string $action, array $item)
     {
         $courseId = $this->course->getId();
-        if ($action == Action::NEW || $action == Action::DUPLICATE) Level::addLevel($courseId, $item["goal"], $item["title"]);
-        elseif ($action == Action::EDIT) {
-            $level = new Level($item["id"]);
-            $level->editLevel($item["goal"], $item["title"]);
-        } elseif ($action == Action::DELETE) Level::deleteLevel($item["id"]);
+        if ($listName == "Levels") {
+            if ($action == Action::NEW) Level::addLevel($courseId, $item["goal"], $item["description"]);
+            elseif ($action == Action::EDIT) {
+                $level = new Level($item["id"]);
+                $level->editLevel($item["goal"], $item["description"]);
+            } elseif ($action == Action::DELETE) Level::deleteLevel($item["id"]);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function importListingItems(string $listName, string $file, bool $replace = true): ?int
+    {
+        if ($listName == "Levels") return Level::importLevels($this->course->getId(), $file, $replace);
+        return null;
+    }
+
+    public function exportListingItems(string $listName, int $itemId = null): ?string
+    {
+        if ($listName == "Levels") return Level::exportLevels($this->course->getId());
+        return null;
     }
 
 
@@ -166,7 +185,7 @@ class XPLevels extends Module
     private function initXPForUser(int $userId, int $level0Id = null)
     {
         $courseId = $this->course->getId();
-        if ($level0Id === null) $level0Id = Level::getLevelByNumber($this->course->getId(), 0)->getId();
+        if ($level0Id === null) $level0Id = Level::getLevelByXP($this->course->getId(), 0)->getId();
 
         if ($this->userHasXP($userId)) // already has XP
             Core::database()->delete(self::TABLE_XP, ["course" => $courseId, "user" => $userId]);
@@ -183,12 +202,13 @@ class XPLevels extends Module
      * Gets total XP for a given user.
      *
      * @param int $userId
-     * @return int|null
+     * @return int
+     * @throws Exception
      */
     public function getUserXP(int $userId): int
     {
         if (!$this->userHasXP($userId))
-            throw new Error("User with ID = " . $userId . " doesn't have XP initialized.");
+            throw new Exception("User with ID = " . $userId . " doesn't have XP initialized.");
 
         return intval(Core::database()->select(self::TABLE_XP,
             ["course" => $this->course->getId(), "user" => $userId],
@@ -267,11 +287,12 @@ class XPLevels extends Module
      * @param int $userId
      * @param int $xp
      * @return void
+     * @throws Exception
      */
     public function setUserXP(int $userId, int $xp)
     {
         if (!$this->userHasXP($userId))
-            throw new Error("User with ID = " . $userId . " doesn't have XP initialized.");
+            throw new Exception("User with ID = " . $userId . " doesn't have XP initialized.");
 
         $courseId = $this->course->getId();
         Core::database()->update(self::TABLE_XP, ["xp" => $xp, "level" => Level::getLevelByXP($courseId, $xp)->getId()],
@@ -284,6 +305,7 @@ class XPLevels extends Module
      * @param int $userId
      * @param int $xp
      * @return void
+     * @throws Exception
      */
     public function updateUserXP(int $userId, int $xp)
     {
@@ -299,7 +321,7 @@ class XPLevels extends Module
      */
     public function userHasXP(int $userId): bool
     {
-        return !empty(Core::database()->select(self::TABLE_XP, ["course" => $courseId, "user" => $userId]));
+        return !empty(Core::database()->select(self::TABLE_XP, ["course" => $this->course->getId(), "user" => $userId]));
     }
 
 

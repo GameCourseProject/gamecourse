@@ -2,7 +2,7 @@
 
   <!-- Header -->
   <div class="header">
-    <div id="name">{{capitalize(module.name)}} Configuration</div>
+    <div id="name">{{module.name}} Configuration</div>
     <div id="description">{{module.description}}</div>
   </div>
 
@@ -16,7 +16,7 @@
       <div *ngFor="let input of generalInputs" class="row">
         <ng-container
           [ngTemplateOutlet]="INPUT"
-          [ngTemplateOutletContext]="{type: input.type, id: input.id, label: input.name, obj: input, param: 'current_val', style: 'outer'}">
+          [ngTemplateOutletContext]="{id: input.id, label: input.label, type: input.type, obj: input, style: 'outer'}">
         </ng-container>
       </div>
 
@@ -26,28 +26,30 @@
     </div>
   </div>
 
-  <!-- Listing Items -->
-  <div *ngIf="listingItems" class="section">
-    <div class="divider">
-      <div class="title"><span>{{listingItems.listName}}</span></div>
-    </div>
-
-    <div class="allItems content">
-      <ng-container
-        [ngTemplateOutlet]="LIST"
-        [ngTemplateOutletContext]="{list: listingItems}">
-      </ng-container>
-
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <div class="icon add_icon" title="New" (click)="mode = 'add'; isItemModalOpen = true;"></div>
-        <div class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true"></div>
-        <div class="icon export_icon" title="Export All" (click)="exportAllItems()"></div>
+  <!-- Lists -->
+  <div *ngIf="lists">
+    <div *ngFor="let list of lists" class="section">
+      <div class="divider">
+        <div class="title"><span>{{list.listName}}</span></div>
       </div>
-    </div>
 
-    <div class='success_box'>
-      <div id='action_completed' class='success_msg'></div>
+      <div class="allItems content">
+        <ng-container
+          [ngTemplateOutlet]="LIST"
+          [ngTemplateOutletContext]="{list}">
+        </ng-container>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <div class="icon add_icon" title="New" (click)="mode = 'add'; newItem.list = list; newItem.item = {}; isItemModalOpen = true;"></div>
+          <div class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true; listToAct = list"></div>
+          <div class="icon export_icon" title="Export All" (click)="exportItems(list)"></div>
+        </div>
+      </div>
+
+      <div class='success_box'>
+        <div id='action_completed' class='success_msg'></div>
+      </div>
     </div>
   </div>
 
@@ -103,9 +105,9 @@
         <!-- Header -->
         <thead>
           <tr>
-            <th *ngFor="let header of list.header; let i = index"
-                [ngClass]="{'check-column': list.allAttributes[i].type === InputType.TOGGLE}">
-              {{header}}
+            <th *ngFor="let column of list.listInfo; let i = index"
+                [ngClass]="{'check-column': column.type === InputType.TOGGLE}">
+              {{column.label}}
             </th>
             <th *ngFor="let action of list.actions" class="action-column"></th>
           </tr>
@@ -113,43 +115,45 @@
 
         <!-- Body -->
         <tbody>
-          <tr *ngFor="let item of list.items">
+          <tr *ngFor="let item of list.items; let first = first; let last = last; let even = even; let odd = odd">
 
-            <td *ngFor="let param of list.displayAttributes"
-                [ngClass]="{'check-column': param.type === InputType.TOGGLE}">
+            <td *ngFor="let column of list.listInfo"
+                [ngClass]="{'check-column': column.type === InputType.TOGGLE}">
 
-              <ng-container *ngIf="param.type === InputType.IMAGE">
-                <img [src]="getImage(item[param.id] || 'photos/no-image.png')" alt="{{list.itemName}} image">
+              <ng-container *ngIf="column.type === InputType.IMAGE">
+                <img [src]="getImage(item[column.id] || 'assets/imgs/no-image.png')" alt="{{list.itemName}} image">
               </ng-container>
 
-              <ng-container *ngIf="param.type === InputType.TOGGLE" class="check-column">
+              <ng-container *ngIf="column.type === InputType.TOGGLE" class="check-column">
                 <label class="switch">
-                  <input type="checkbox" [checked]="item[param.id]" (change)="toggleItemParam(item.id, param.id)">
+                  <input type="checkbox" [checked]="item[column.id]" (change)="toggleItemParam(item.id, column.id)">
                   <span class="slider round"></span>
                 </label>
               </ng-container>
 
-              <ng-container *ngIf="param.type === InputType.COLOR">
+              <ng-container *ngIf="column.type === InputType.COLOR">
                 <div class="color">
                   <div class="color-sample">
-                    <div class="box" [ngStyle]="{'backgroundColor': item[param.id]}"></div>
+                    <div class="box" [ngStyle]="{'backgroundColor': item[column.id]}"></div>
                   </div>
-                  <div>{{item[param.id]}}</div>
+                  <div>{{item[column.id]}}</div>
                 </div>
               </ng-container>
 
-              <ng-container *ngIf="param.type !== InputType.IMAGE && param.type !== InputType.TOGGLE && param.type !== InputType.COLOR">
-                <span>{{item[param.id]}}</span>
+              <ng-container *ngIf="column.type !== InputType.IMAGE && column.type !== InputType.TOGGLE && column.type !== InputType.COLOR">
+                <span>{{item[column.id]}}</span>
               </ng-container>
             </td>
 
             <td *ngFor="let action of list.actions" class="action-column">
-              <div *ngIf="action === 'duplicate'" class="icon duplicate_icon" title="Duplicate" (click)="duplicateItem(item)"></div>
-              <div *ngIf="action === 'edit'" class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(item); isItemModalOpen = true;"></div>
-              <div *ngIf="action === 'delete'" class="icon delete_icon" title="Remove" (click)="itemToDelete = item; isDeleteVerificationModalOpen = true"></div>
-              <div *ngIf="action === 'move-up'" class="icon up_icon" title="Move up" (click)="moveItem(1)"></div>
-              <div *ngIf="action === 'move-down'" class="icon down_icon" title="Move down" (click)="moveItem(-1)"></div>
-              <div *ngIf="action === 'export'" class="icon export_icon_no_outline" title="Export" (click)="exportItem(item)"></div>
+              <ng-container *ngIf="scopeAllows(action.scope, first, last, even, odd)">
+                <div *ngIf="action.action === Action.DUPLICATE" class="icon duplicate_icon" title="Duplicate" (click)="doActionOnItem(list.listName, item, action.action)"></div>
+                <div *ngIf="action.action === Action.EDIT" class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(list, item, first, last, even, odd); isItemModalOpen = true;"></div>
+                <div *ngIf="action.action === Action.DELETE" class="icon delete_icon" title="Remove" (click)="itemToDelete = {list, item}; isDeleteVerificationModalOpen = true"></div>
+                <div *ngIf="action.action === Action.MOVE_UP" class="icon up_icon" title="Move up" (click)="moveItem(list, item, 1)"></div>
+                <div *ngIf="action.action === Action.MOVE_DOWN" class="icon down_icon" title="Move down" (click)="moveItem(list, item, -1)"></div>
+                <div *ngIf="action.action === Action.EXPORT" class="icon export_icon_no_outline" title="Export" (click)="exportItems(list, item)"></div>
+              </ng-container>
             </td>
           </tr>
         </tbody>
@@ -170,7 +174,7 @@
     [isModalOpen]="isItemModalOpen"
     [id]="mode === 'add' ? 'new-item' : 'edit-item'"
     [templateRef]="itemModal"
-    (closeBtnClicked)="isItemModalOpen = false; clearObject(newItem)"
+    (closeBtnClicked)="isItemModalOpen = false; newItem.list = null; clearObject(newItem.item)"
     [actionInProgress]="loading"
     [innerClickEvents]="false">
   </app-modal>
@@ -178,44 +182,45 @@
 
 <ng-template #itemModal>
   <!-- Title -->
-  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} {{listingItems.itemName}}:</div>
+  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} {{newItem.list.itemName}}:</div>
 
   <div class="content">
     <div id="new_box" class="inputs">
       <div class="row-inputs">
         <div class="details full config-item">
-          <div *ngFor="let input of filterEditableParams(listingItems)"
+          <div *ngFor="let input of newItem.list[Action.EDIT]"
                [ngClass]="{'half': input.type !== InputType.IMAGE && input.type !== InputType.TOGGLE, 'full': input.type === InputType.IMAGE, 'on_off': input.type === InputType.TOGGLE}">
 
             <ng-container
+              *ngIf="scopeAllows(input.scope, newItem.first, newItem.last, newItem.even, newItem.odd)"
               [ngTemplateOutlet]="INPUT"
-              [ngTemplateOutletContext]="{type: input.type, id: input.id, label: input.name, obj: mode === 'add' ? newItem : itemToEdit, param: input.id, style: 'inner'}">
+              [ngTemplateOutletContext]="{id: input.id, label: input.label, type: input.type, obj: newItem.item, style: 'inner'}">
             </ng-container>
           </div>
         </div>
       </div>
     </div>
 
-    <button class="cancel" (click)="isItemModalOpen = false; clearObject(newItem)">Cancel</button>
-    <button class="save_btn" [disabled]="!hasUnsavedChanges" (click)="mode === 'add' ? createItem() : editItem()">Save</button>
+    <button class="cancel" (click)="isItemModalOpen = false; newItem.list = null; clearObject(newItem.item)">Cancel</button>
+    <button class="save_btn" [disabled]="!hasUnsavedChanges" (click)="doActionOnItem(newItem.list.listName, newItem.item, mode === 'add' ? Action.NEW : Action.EDIT)">Save</button>
   </div>
 </ng-template>
 
 
-<!-- Inputs -->
-<ng-template #INPUT let-type='type' let-id='id' let-label='label' let-obj='obj' let-param='param' let-style='style'>
+<!-- Inputs FIXME: create components and an any-input component -->
+<ng-template #INPUT let-id='id' let-label='label' let-type='type' let-obj='obj' let-style='style'>
 
   <!-- Text -->
   <ng-container *ngIf="type === InputType.TEXT">
     <ng-container *ngIf="style === 'outer'">
       <div class="input-wrapper">
         <span *ngIf="label" class="label">{{label}}</span>
-        <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj[param]" (ngModelChange)="hasUnsavedChanges = true">
+        <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
       </div>
     </ng-container>
 
     <ng-container *ngIf="style === 'inner'">
-      <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj[param]" (ngModelChange)="hasUnsavedChanges = true">
+      <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
       <label [for]="id" class="form__label">{{label}}</label>
     </ng-container>
   </ng-container>
@@ -225,13 +230,13 @@
     <ng-container *ngIf="style === 'outer'">
       <div class="input-wrapper">
         <span *ngIf="label" class="label">{{label}}</span>
-        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj[param]" (ngModelChange)="hasUnsavedChanges = true">
+        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
       </div>
     </ng-container>
 
     <ng-container *ngIf="style === 'inner'">
       <div>
-        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj[param]" (ngModelChange)="hasUnsavedChanges = true">
+        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
         <label [for]="id" class="form__label">{{label}}</label>
       </div>
     </ng-container>
@@ -250,7 +255,7 @@
     <div class="input-wrapper toggle">
       <span *ngIf="label" class="label">{{label}}</span>
       <label class="switch">
-        <input type="checkbox" id="{{id}}" name="{{id}}" [(ngModel)]="obj[param]" (ngModelChange)="hasUnsavedChanges = true" [checked]="obj[param]">
+        <input type="checkbox" id="{{id}}" name="{{id}}" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true" [checked]="obj[id]">
         <span class="slider round"></span>
       </label>
     </div>
@@ -263,11 +268,10 @@
 <ng-container *ngIf="isDeleteVerificationModalOpen">
   <app-verification-modal
     [isModalOpen]="isDeleteVerificationModalOpen"
-    [id]="'delete-verification-' + itemToDelete.id"
-    [text]="'Are you sure you want to delete the ' + listingItems.itemName + '?'"
-    [target]="capitalize(listingItems.itemName) + ': ' + itemToDelete.name + ' (id:' + itemToDelete.id + ')'"
+    [id]="'delete-verification-' + itemToDelete.item.id"
+    [text]="'Are you sure you want to delete this ' + itemToDelete.list.itemName + '?'"
     [positiveBtnText]="'Delete'"
-    (positiveBtnClicked)="deleteItem(itemToDelete)"
+    (positiveBtnClicked)="doActionOnItem(itemToDelete.list.listName, itemToDelete.item, Action.DELETE)"
     (negativeBtnClicked)="itemToDelete = null; isDeleteVerificationModalOpen = false"
     (closeBtnClicked)="itemToDelete = null; isDeleteVerificationModalOpen = false"
     [actionInProgress]="loading">
@@ -281,7 +285,7 @@
     [isModalOpen]="isImportModalOpen"
     [id]="'import-item'"
     [templateRef]="importModal"
-    (closeBtnClicked)="isImportModalOpen = false"
+    (closeBtnClicked)="isImportModalOpen = false; listToAct = null"
     [actionInProgress]="loading"
     [innerClickEvents]="false"
     [classList]="'verification'">
@@ -300,8 +304,8 @@
   </app-input-file>
 
   <div class="confirmation_btns">
-    <button (click)="importItems(true)">Import {{listingItems.itemName}}s (Replace Duplicates)</button>
-    <button (click)="importItems(false)">Import {{listingItems.itemName}}s (Ignore Duplicates)</button>
+    <button (click)="importItems(true)">Import {{listToAct.itemName}}s (Replace Duplicates)</button>
+    <button (click)="importItems(false)">Import {{listToAct.itemName}}s (Ignore Duplicates)</button>
   </div>
 
 </ng-template>
