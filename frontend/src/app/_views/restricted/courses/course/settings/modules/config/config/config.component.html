@@ -6,10 +6,10 @@
     <div id="description">{{module.description}}</div>
   </div>
 
-  <!-- General Attributes -->
+  <!-- General Inputs -->
   <div *ngIf="generalInputs?.length > 0" class="section">
     <div class="divider">
-      <div class="title"><span>General Attributes</span></div>
+      <div class="title"><span>General</span></div>
     </div>
 
     <div class="multiple_inputs content">
@@ -126,7 +126,7 @@
 
               <ng-container *ngIf="column.type === InputType.TOGGLE" class="check-column">
                 <label class="switch">
-                  <input type="checkbox" [checked]="item[column.id]" (change)="toggleItemParam(item.id, column.id)">
+                  <input type="checkbox" [checked]="item[column.id]" (change)="toggleItemParam(list, item, column.id)">
                   <span class="slider round"></span>
                 </label>
               </ng-container>
@@ -215,12 +215,12 @@
     <ng-container *ngIf="style === 'outer'">
       <div class="input-wrapper">
         <span *ngIf="label" class="label">{{label}}</span>
-        <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
+        <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj.value" (ngModelChange)="hasUnsavedChanges = true">
       </div>
     </ng-container>
 
     <ng-container *ngIf="style === 'inner'">
-      <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
+      <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj.value" (ngModelChange)="hasUnsavedChanges = true">
       <label [for]="id" class="form__label">{{label}}</label>
     </ng-container>
   </ng-container>
@@ -230,13 +230,13 @@
     <ng-container *ngIf="style === 'outer'">
       <div class="input-wrapper">
         <span *ngIf="label" class="label">{{label}}</span>
-        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
+        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj.value" (ngModelChange)="hasUnsavedChanges = true">
       </div>
     </ng-container>
 
     <ng-container *ngIf="style === 'inner'">
       <div>
-        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
+        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj.value" (ngModelChange)="hasUnsavedChanges = true">
         <label [for]="id" class="form__label">{{label}}</label>
       </div>
     </ng-container>
@@ -255,7 +255,7 @@
     <div class="input-wrapper toggle">
       <span *ngIf="label" class="label">{{label}}</span>
       <label class="switch">
-        <input type="checkbox" id="{{id}}" name="{{id}}" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true" [checked]="obj[id]">
+        <input type="checkbox" id="{{id}}" name="{{id}}" [(ngModel)]="obj.value" (ngModelChange)="hasUnsavedChanges = true" [checked]="obj[id]">
         <span class="slider round"></span>
       </label>
     </div>

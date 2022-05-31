@@ -139,17 +139,10 @@ export class ConfigComponent implements OnInit {
 
   // General Inputs
   saveGeneralInputs() {
-    // this.loadingAction = true;
-    //
-    // // Parse inputs
-    // const inputsObj = {};
-    // for (const input of this.generalInputs) {
-    //   inputsObj[input.id] = input.current_val;
-    // }
-    //
-    // this.api.saveModuleConfig(this.courseID, this.module.id, inputsObj)
-    //   .pipe( finalize(() => this.loadingAction = false) )
-    //   .subscribe(res => this.hasUnsavedChanges = false)
+    this.loadingAction = true;
+    this.api.saveModuleConfig(this.courseID, this.module.id, this.generalInputs)
+      .pipe( finalize(() => this.loadingAction = false) )
+      .subscribe(() => this.hasUnsavedChanges = false)
   }
 
   // Lists
@@ -166,15 +159,10 @@ export class ConfigComponent implements OnInit {
       .subscribe(async () => await this.getModuleConfig(this.module.id))
   }
 
-  toggleItemParam(itemId: string, param: string) {
-    // this.loadingAction = true;
-    //
-    // const item = this.listingItems.items.find(item => item.id === itemId);
-    // item[param] = !item[param];
-    //
-    // this.api.toggleItemParam(this.courseID, this.module.id, parseInt(itemId), param)
-    //   .pipe( finalize(() => this.loadingAction = false) )
-    //   .subscribe(res => {})
+  toggleItemParam(listName: string, item: any, param: string) {
+    this.loadingAction = true;
+    item[param] = !item[param];
+    this.doActionOnItem(listName, item, Action.EDIT);
   }
 
   moveItem(list: List, item: any, dir: number) {
