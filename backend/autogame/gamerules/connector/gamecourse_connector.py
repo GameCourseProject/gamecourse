@@ -1660,32 +1660,7 @@ def get_consecutive_peergrading_logs(target, streak, contributions):
             connect.commit()
 
 
-        query = "SELECT participationId, isValid FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s;"
-        cursor.execute(query, (target, course, streakid))
-        table_all_participations = cursor.fetchall()
-
-        total = len(table_all_participations)
-
-        for p in range(total):
-            participationValid = table_all_participations[p][1]
-
-            if not participationValid:
-                for i in range(p-1, -1, -1):
-                    participationId = table_all_participations[i][0]
-                    query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND streakId = %s AND participationId= %s;"
-                    cursor.execute(query, (target, course, streakid, participationId))
-                    connect.commit()
-
-        query = "SELECT participationId FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s AND isValid = '1';"
-        cursor.execute(query, (target, course, streakid))
-        table_valid = cursor.fetchall()
-
-        for participation in table_valid:
-            participation_id = participation[0]
-            query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
-            cursor.execute(query, (course, target, streakid, participation_id))
-            connect.commit()
-
+        
 
 
 def get_consecutive_logs(streak, contributions, check):
@@ -1853,59 +1828,12 @@ def get_consecutive_logs(streak, contributions, check):
         # elif: other checks to implement
     else:
         for log in contributions:
-        query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
-        cursor.execute(query, (course, target, streakid, log.log_id))
+        query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s); "
+        cursor.execute(query, (course, target, streakid, log.log_id, '1'))
         cnx.commit()
 
 
-    # TODO:
-    # This part needs to be reviewed and redone.
-    # cleaning the whole thing is wrong and wont award a lot of streaks. -> Eg.: Grader extraordinaire
-
-    query = "SELECT participationId, isValid FROM streak_participations WHERE user = \"" + str(target) + "\" AND course = \"" + str(course) + "\" AND streakId= \"" + str(streakid) + "\" ;"
-    result = db.data_broker(query)
-    if not result:
-        cursor.execute(query)
-        table_all_participations = cursor.fetchall()
-        queries.append(query)
-        results.append(table_all_participations)
-    else:
-        table_all_participations = result
-
-    total = len(table_all_participations)
     
-    awards = 0
-
-    # get streak info
-    query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost, isActive from streak where course = \"" + course + "\" and name = \"" + streak_name + "\";"
-    result = db.data_broker(query)
-    if not result:
-        cursor.execute(query)
-        table_streak = cursor.fetchall()
-        queries.append(query)
-        results.append(table_streak)
-    else:
-        table_streak = result
-
-    streak_count = table_streak[0][3]
-
-    for p in range(total):
-        participationValid = table_all_participations[p][1]
-
-        if participationValid:
-            count = 0
-            for i in range(p, total):
-                if count == streak_count:
-                    awards = awards + 1
-
-                if table_all_participations[i][1]:
-                    count = count + 1
-                else:
-                    count = 0
-                    break
-
-
-
 
 
 
@@ -1974,8 +1902,8 @@ def get_periodic_logs(streak_name, contributions):
                         return
 
                     for log in contributions:
-                        query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
-                        cursor.execute(query, (course, target, streakid, log.log_id))
+                        query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s); "
+                        cursor.execute(query, (course, target, streakid, log.log_id, '1'))
                         connect.commit()
 
                 elif isAtMost:
@@ -2199,34 +2127,7 @@ def get_periodic_logs(streak_name, contributions):
             # not isPeriodic
             return
 
-        if (isPeriodic and not isCount) or (isPeriodic and isAtMost):
-        
-            query = "SELECT participationId, isValid FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s;"
-            cursor.execute(query, (target, course, streakid))
-            table_all_participations = cursor.fetchall()
-
-            total = len(table_all_participations)
-
-            for p in range(total):
-                participationValid = table_all_participations[p][1]
-
-                if not participationValid:
-                    for i in range(p-1, -1, -1):
-                        participationId = table_all_participations[i][0]
-
-                        query = "UPDATE streak_participations SET isValid = '0' WHERE user = %s AND course = %s AND streakId = %s AND participationId= %s;"
-                        cursor.execute(query, (target, course, streakid, participationId))
-                        connect.commit()
-    
-            query = "SELECT participationId FROM streak_participations WHERE user = %s AND course = %s AND streakId= %s AND isValid = '1';"
-            cursor.execute(query, (target, course, streakid))
-            table_valid = cursor.fetchall()
-
-            for participation in table_valid:
-                participation_id = participation[0]
-                query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
-                cursor.execute(query, (course, target, streakid, participation_id))
-                connect.commit()
+        # progression done in awards_to_give
 
 
 def awards_to_give(target, streak_name)
@@ -2242,10 +2143,12 @@ def awards_to_give(target, streak_name)
 
     course = config.course
 
+    #       isPeriodic and not isCount || isPeriodic and isAtMost
+
     # get streak info
     query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost, isActive from streak where course = \"" + course + "\" and name = \"" + streak_name + "\";"
     result = db.data_broker(query)
-    if not result:       
+    if not result:
         cursor.execute(query)
         table_streak = cursor.fetchall()
         queries.append(query)
@@ -2253,26 +2156,42 @@ def awards_to_give(target, streak_name)
     else:
         table_streak = result
 
-    streak_id, streak_count, isRepeatable  = table_streak[0][0], table_streak[0][3], table_streak[0][5]
-
-    # gets all streak progressions
-    query = "SELECT participationId FROM streak_progression where user = \"" + str(target) + "\" AND course = \"" + course + "\" AND streakId = \"" + str(streak_id) + "\" ;"
+    streak_count = table_streak[0][3]
+    
+    query = "SELECT participationId, isValid FROM streak_participations WHERE user = \"" + str(target) + "\" AND course = \"" + str(course) + "\" AND streakId= \"" + str(streakid) + "\" ;"
     result = db.data_broker(query)
     if not result:
         cursor.execute(query)
-        table_progressions = cursor.fetchall()
+        table_all_participations = cursor.fetchall()
         queries.append(query)
-        results.append(table_progressions)
+        results.append(table_all_participations)
     else:
-        table_progressions = result
+        table_all_participations = result
 
-    totalAwards = len(table_progressions) // streak_count
+    total = len(table_all_participations)
 
-    if not isRepeatable and totalAwards > 0 :
+    awards = 0
+
+    for p in range(total):
+        participationValid = table_all_participations[p][1]
+
+        if participationValid:
+            count = 0
+            for i in range(p, total):
+                if count == streak_count:
+                    awards = awards + 1
+
+                if table_all_participations[i][1]:
+                    count = count + 1
+                else:
+                    count = 0
+                    break
+
+
+    if not isRepeatable and awards > 0 :
         return 1
 
-
-    return totalAwards
+    return awards
 
 
 #  logs-> participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
@@ -2396,8 +2315,6 @@ def award_streak(target, streak, contributions=None, to_award):
                     nr_contributions = ''
 
                 config.award_list.append([str(target), str(streak), str(streak_reward), nr_contributions])
-
-
 
     # if this streak has already been awarded, check if it is repeatable to award it again.
     elif len(table) > 0:
