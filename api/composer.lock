@@ -284,16 +284,16 @@
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.249.0",
+            "version": "v0.251.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-api-php-client-services.git",
-                "reference": "95df14183356e45291e1c686cea57850281101db"
+                "reference": "73b7a41113bd6b5ae2d42795dbe0d76e0c482782"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/95df14183356e45291e1c686cea57850281101db",
-                "reference": "95df14183356e45291e1c686cea57850281101db",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/73b7a41113bd6b5ae2d42795dbe0d76e0c482782",
+                "reference": "73b7a41113bd6b5ae2d42795dbe0d76e0c482782",
                 "shasum": ""
             },
             "require": {
@@ -322,9 +322,9 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/google-api-php-client-services/issues",
-                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.249.0"
+                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.251.0"
             },
-            "time": "2022-05-16T01:10:12+00:00"
+            "time": "2022-05-30T00:56:11+00:00"
         },
         {
             "name": "google/auth",
@@ -386,16 +386,16 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "7.4.2",
+            "version": "7.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "ac1ec1cd9b5624694c3a40be801d94137afb12b4"
+                "reference": "74a8602c6faec9ef74b7a9391ac82c5e65b1cdab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/ac1ec1cd9b5624694c3a40be801d94137afb12b4",
-                "reference": "ac1ec1cd9b5624694c3a40be801d94137afb12b4",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/74a8602c6faec9ef74b7a9391ac82c5e65b1cdab",
+                "reference": "74a8602c6faec9ef74b7a9391ac82c5e65b1cdab",
                 "shasum": ""
             },
             "require": {
@@ -490,7 +490,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/7.4.2"
+                "source": "https://github.com/guzzle/guzzle/tree/7.4.3"
             },
             "funding": [
                 {
@@ -506,7 +506,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-03-20T14:16:28+00:00"
+            "time": "2022-05-25T13:24:33+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -1712,16 +1712,16 @@
         },
         {
             "name": "zircote/swagger-php",
-            "version": "4.4.2",
+            "version": "4.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zircote/swagger-php.git",
-                "reference": "1653b53eb3973a9a6dac87ef8f2676801b14469f"
+                "reference": "fb967b3ef9e311626e7232fa71096763d5f3eec2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zircote/swagger-php/zipball/1653b53eb3973a9a6dac87ef8f2676801b14469f",
-                "reference": "1653b53eb3973a9a6dac87ef8f2676801b14469f",
+                "url": "https://api.github.com/repos/zircote/swagger-php/zipball/fb967b3ef9e311626e7232fa71096763d5f3eec2",
+                "reference": "fb967b3ef9e311626e7232fa71096763d5f3eec2",
                 "shasum": ""
             },
             "require": {
@@ -1783,9 +1783,9 @@
             ],
             "support": {
                 "issues": "https://github.com/zircote/swagger-php/issues",
-                "source": "https://github.com/zircote/swagger-php/tree/4.4.2"
+                "source": "https://github.com/zircote/swagger-php/tree/4.4.4"
             },
-            "time": "2022-05-13T23:51:07+00:00"
+            "time": "2022-05-29T06:22:07+00:00"
         }
     ],
     "packages-dev": [
@@ -1916,12 +1916,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/mockery/mockery.git",
-                "reference": "c72ff6fbda9a3cd80c4dc242d25f636fcc52bc6d"
+                "reference": "33cb226f759d859a0753130795dbdb6b2fb763c9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mockery/mockery/zipball/c72ff6fbda9a3cd80c4dc242d25f636fcc52bc6d",
-                "reference": "c72ff6fbda9a3cd80c4dc242d25f636fcc52bc6d",
+                "url": "https://api.github.com/repos/mockery/mockery/zipball/33cb226f759d859a0753130795dbdb6b2fb763c9",
+                "reference": "33cb226f759d859a0753130795dbdb6b2fb763c9",
                 "shasum": ""
             },
             "require": {
@@ -1981,7 +1981,7 @@
                 "issues": "https://github.com/mockery/mockery/issues",
                 "source": "https://github.com/mockery/mockery/tree/master"
             },
-            "time": "2022-04-29T07:53:10+00:00"
+            "time": "2022-05-27T12:31:16+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -2044,16 +2044,16 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v4.13.2",
+            "version": "v4.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "210577fe3cf7badcc5814d99455df46564f3c077"
+                "reference": "34bea19b6e03d8153165d8f30bba4c3be86184c1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/210577fe3cf7badcc5814d99455df46564f3c077",
-                "reference": "210577fe3cf7badcc5814d99455df46564f3c077",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/34bea19b6e03d8153165d8f30bba4c3be86184c1",
+                "reference": "34bea19b6e03d8153165d8f30bba4c3be86184c1",
                 "shasum": ""
             },
             "require": {
@@ -2094,9 +2094,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v4.13.2"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v4.14.0"
             },
-            "time": "2021-11-30T19:35:32+00:00"
+            "time": "2022-05-31T20:59:12+00:00"
         },
         {
             "name": "opis/closure",

@@ -15,6 +15,7 @@ require_once ROOT_PATH . "/inc/config.php";
 
 // autoload classes
 require_once ROOT_PATH . "/vendor/autoload.php";
+require_once ROOT_PATH . "/inc/modules.autoload.php";
 
 // testing utilities
 require_once ROOT_PATH . "/tests/TestingUtils.php";

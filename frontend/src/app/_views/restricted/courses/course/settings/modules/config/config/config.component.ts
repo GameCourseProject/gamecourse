@@ -86,7 +86,7 @@ export class ConfigComponent implements OnInit {
     this.generalInputs = config.generalInputs;
     this.lists = config.lists;
     this.personalizedConfig = config.personalizedConfig;
-    this.loadPersonalizedConfig();
+    if (this.personalizedConfig) this.loadPersonalizedConfig();
   }
 
   loadPersonalizedConfig() {

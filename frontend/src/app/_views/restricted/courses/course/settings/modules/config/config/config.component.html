@@ -54,7 +54,7 @@
   </div>
 
   <!-- Personalized Config -->
-  <div class="personalized-config {{module.id}}">
+  <div *ngIf="personalizedConfig" class="personalized-config {{module.id}}">
     <div [innerHTML]="personalizedConfig.html"></div>
   </div>
 

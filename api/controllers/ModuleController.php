@@ -3,7 +3,6 @@ namespace API;
 
 use Exception;
 use GameCourse\Module\Module;
-use GameCourse\XPLevels\Level;
 
 /**
  * This is the Module controller, which holds API endpoints for
