@@ -48,8 +48,8 @@ abstract class Module
     public function getIcon(): string
     {
         $parts = explode("/", MODULES_FOLDER);
-        $moduleFolder = end($parts);
-        return API_URL . "/" . $moduleFolder . "/" . $this->id. "/icon.svg";
+        $modulesFolder = end($parts);
+        return API_URL . "/" . $modulesFolder . "/" . $this->id. "/icon.svg";
     }
 
     public function getType(): string
@@ -95,8 +95,8 @@ abstract class Module
             $path = MODULES_FOLDER . "/" . $this->id . "/" . $resource;
 
             $parts = explode("/", MODULES_FOLDER);
-            $moduleFolder = end($parts);
-            $realPath = API_URL . "/" . $moduleFolder . "/" . $this->id . "/" . $resource;
+            $modulesFolder = end($parts);
+            $realPath = API_URL . "/" . $modulesFolder . "/" . $this->id . "/" . $resource;
 
             if (is_dir($path)) {
                 $contents = Utils::getDirectoryContents($path);
@@ -647,13 +647,32 @@ abstract class Module
     /**
      * Gets module personalized configuration info like:
      *  - HTML to render
-     *  - Styles it might have (css format)
-     *  - Scripts it might have
+     *  - Styles it might have (.css format)
+     *  - Scripts it might have (.js format)
      * @return array
+     * @throws Exception
      */
     public function getPersonalizedConfig(): ?array
     {
-        return null;
+        $parts = explode("/", MODULES_FOLDER);
+        $modulesFolder = end($parts);
+        $configFolder = $modulesFolder . "/" . $this->id . "/config/";
+
+        if (!file_exists($configFolder)) return null;
+
+        $contents = Utils::getDirectoryContents(ROOT_PATH . $configFolder);
+        if (count(array_filter($contents, function ($file) { return $file["extension"] == ".html"; })) > 1)
+            throw new Exception("Can't have more than one HTML configuration file for module '" . $this->id . "'.");
+
+        return [
+            "html" => file_get_contents(ROOT_PATH . $configFolder . "config.html"),
+            "styles" => array_map(function ($file) use ($configFolder) {
+                return API_URL . "/" . $configFolder . $file["name"];
+            }, array_values(array_filter($contents, function ($file) { return $file["extension"] == ".css"; }))),
+            "scripts" => array_map(function ($file) use ($configFolder) {
+                return API_URL . "/" . $configFolder . $file["name"];
+            }, array_values(array_filter($contents, function ($file) { return $file["extension"] == ".js"; })))
+        ];
     }
 
 

@@ -982,7 +982,7 @@ export class ApiHttpService {
 
 
   // Configuration
-  public getModuleConfig(courseID: number, moduleID: string): Observable<{generalInputs: GeneralInput[] | null, lists: List[] | null, personalizedConfig: string | null}> {
+  public getModuleConfig(courseID: number, moduleID: string): Observable<{generalInputs: GeneralInput[] | null, lists: List[] | null, personalizedConfig: {html: string, styles: string[], scripts: string[]} | null}> {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);

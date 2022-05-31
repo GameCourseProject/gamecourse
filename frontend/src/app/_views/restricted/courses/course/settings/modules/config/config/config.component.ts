@@ -11,14 +11,6 @@ import {copyObject} from "../../../../../../../../_utils/misc/misc";
 import {Module} from "../../../../../../../../_domain/modules/module";
 import {InputType} from "../../../../../../../../_domain/inputs/input-type";
 import {Action, ActionScope} from 'src/app/_domain/modules/config/Action';
-import {FenixComponent} from "../fenix/fenix.component";
-import {ClasscheckComponent} from "../classcheck/classcheck.component";
-import {SkillsComponent} from "../skills/skills.component";
-import {GooglesheetsComponent} from "../googlesheets/googlesheets.component";
-import {MoodleComponent} from "../moodle/moodle.component";
-import {QrComponent} from "../qr/qr.component";
-import {NotificationsComponent} from "../notifications/notifications.component";
-import {ProfilingComponent} from "../profiling/profiling.component";
 import {DownloadManager} from "../../../../../../../../_utils/download/download-manager";
 
 @Component({
@@ -37,7 +29,7 @@ export class ConfigComponent implements OnInit {
 
   generalInputs: GeneralInput[];
   lists: List[];
-  personalizedConfig: string;
+  personalizedConfig: {html: string, styles: string[], scripts: string[]};
 
   importedFile: File;
 
@@ -80,42 +72,6 @@ export class ConfigComponent implements OnInit {
     });
   }
 
-  get PersonalizedConfig(): typeof PersonalizedConfig {
-    return PersonalizedConfig;
-  }
-
-  get ClassCheckConfig(): typeof ClasscheckComponent {
-    return ClasscheckComponent;
-  }
-
-  get FenixConfig(): typeof FenixComponent {
-    return FenixComponent;
-  }
-
-  get GoogleSheetsConfig(): typeof GooglesheetsComponent {
-    return GooglesheetsComponent;
-  }
-
-  get MoodleConfig(): typeof MoodleComponent {
-    return MoodleComponent;
-  }
-
-  get NotificationsConfig(): typeof NotificationsComponent {
-    return NotificationsComponent;
-  }
-
-  get ProfilingConfig(): typeof ProfilingComponent {
-    return ProfilingComponent;
-  }
-
-  get QRConfig(): typeof QrComponent {
-    return QrComponent;
-  }
-
-  get SkillsConfig(): typeof SkillsComponent {
-    return SkillsComponent;
-  }
-
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Init ------------------- ***/
@@ -130,6 +86,39 @@ export class ConfigComponent implements OnInit {
     this.generalInputs = config.generalInputs;
     this.lists = config.lists;
     this.personalizedConfig = config.personalizedConfig;
+    this.loadPersonalizedConfig();
+  }
+
+  loadPersonalizedConfig() {
+    const head = document.getElementsByTagName('head')[0];
+
+    // Load styles
+    for (const styleURL of this.personalizedConfig.styles) {
+      // Prevent unwanted browser caching
+      const path = new ResourceManager(this.sanitizer);
+      path.set(styleURL);
+
+      const style = document.createElement('link');
+      const name = (styleURL.split('/').pop()).split('.')[0];
+      style.id = this.module.id + '-' + name + '-styling';
+      style.rel = 'stylesheet';
+      style.href = path.get('URL').toString();
+      head.appendChild(style);
+    }
+
+    // Load scripts
+    for (const scriptURL of this.personalizedConfig.scripts) {
+      // Prevent unwanted browser caching
+      const path = new ResourceManager(this.sanitizer);
+      path.set(scriptURL);
+
+      const script = document.createElement('script');
+      const name = (scriptURL.split('/').pop()).split('.')[0];
+      script.id = this.module.id + '-' + name + '-script';
+      script.type = 'text/javascript';
+      script.src = path.get('URL').toString();
+      head.appendChild(script);
+    }
   }
 
 
@@ -260,15 +249,4 @@ export type List = {
   items: any[],
   actions?: {action: Action, scope: ActionScope}[],
   [Action.EDIT]?: {id: string, label: string, type: InputType, scope: ActionScope}[]
-}
-
-export enum PersonalizedConfig {
-  CLASSCHECK = 'classcheck',
-  FENIX = 'fenix',
-  GOOGLESHEETS = 'googlesheets',
-  MOODLE = 'moodle',
-  NOTIFICATIONS = 'notifications',
-  PROFILING = 'profiling',
-  QR = 'qr',
-  SKILLS = 'skills'
 }

@@ -54,38 +54,8 @@
   </div>
 
   <!-- Personalized Config -->
-  <div class="personalized-config">
-    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.CLASSCHECK">
-      <ng-container *ngComponentOutlet="ClassCheckConfig"></ng-container>
-    </ng-container>
-
-    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.FENIX">
-      <ng-container *ngComponentOutlet="FenixConfig"></ng-container>
-    </ng-container>
-
-    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.GOOGLESHEETS">
-      <ng-container *ngComponentOutlet="GoogleSheetsConfig"></ng-container>
-    </ng-container>
-
-    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.MOODLE">
-      <ng-container *ngComponentOutlet="MoodleConfig"></ng-container>
-    </ng-container>
-
-    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.NOTIFICATIONS">
-      <ng-container *ngComponentOutlet="NotificationsConfig"></ng-container>
-    </ng-container>
-
-    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.PROFILING">
-      <ng-container *ngComponentOutlet="ProfilingConfig"></ng-container>
-    </ng-container>
-
-    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.QR">
-      <ng-container *ngComponentOutlet="QRConfig"></ng-container>
-    </ng-container>
-
-    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.SKILLS">
-      <ng-container *ngComponentOutlet="SkillsConfig"></ng-container>
-    </ng-container>
+  <div class="personalized-config {{module.id}}">
+    <div [innerHTML]="personalizedConfig.html"></div>
   </div>
 
 </ng-container>
