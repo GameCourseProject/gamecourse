@@ -84,7 +84,7 @@
           },
           "configurations": {
             "production": {
-              "baseHref": "/gamecourse/",
+              "baseHref": "/gamecourse_test_v2/",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",

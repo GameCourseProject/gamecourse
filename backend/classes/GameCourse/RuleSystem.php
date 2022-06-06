@@ -575,7 +575,7 @@ class RuleSystem
         }
     }
 
-    public function editRuleDependencies($rule, $dependencies){
+    public function editRuleDependencies($rule, $newDependencies){
 
         /* Need: #dependencies ( = #combo in rule)    -- count from dependency table
          * get dependcies id to fectch id of skills in skill_dependency -> fetch name from skill via id retrieved from
@@ -585,6 +585,13 @@ class RuleSystem
          * str_replace(combo1, newcombo1, $rule)
          *
          */
+
+        //  "wildcard =" exits in rule ?  count from there to use wildcard
+        // replace with ''
+        // skill_based so aparece em skills com wildcard p dar unlock
+        //  otherwise, replace combo lines  
+        
+        //if (strpos($newDependencies, "Wildcard") !== false)
 
 
 

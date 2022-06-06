@@ -5,16 +5,20 @@ from gamerules.functions.utils import import_functions_from_rulepath
 from io import StringIO
 
 import os, sys, config, logging, json
+import mysql.connector
 
+from gamerules.connector.db_connection import Database
+#cnx = connect_to_db()
+db = Database()
 # TODO find a mechanism to test socket before opening dat files, get rid of basic inconsistency
 
 
 # Folder where rule files will be defined
 RULES_FOLDER = "rules"
 AUTOSAVE = False
-BASE_DIR = '/var/www/html/gamecourse/backend/'
+BASE_DIR = '/var/www/html/gamecourse_test_v2/backend/'
 LOGFILE_BASE = BASE_DIR + 'logs/log_course_'
-IMPORTED_FUNCTIONS_FOLDER = "/var/www/html/gamecourse/backend/autogame/imported-functions"
+IMPORTED_FUNCTIONS_FOLDER = "/var/www/html/gamecourse_test_v2/backend/autogame/imported-functions"
 
 def write_to_log(text, course, logfile):
 	logfile_path = logfile + str(course) + ".txt"
@@ -107,8 +111,6 @@ def process_indicators(output, course):
 
 		indicators.append(student)
 
-	
-
 
 def log_start(course, start_date, logfile):
 	separator = "=" * 80
@@ -139,118 +141,119 @@ def log_end(course, end_date, targets, logfile):
 # an argument that indicated which course is being run
 if __name__ == "__main__":
 
-	all_targets = False
-	targets_list = None
+    all_targets = False
+    targets_list = None
 
-	# Process Arguments
-	# cli prompt: python3 run_autogame.py [courseId] [rule_path] [all/targets]
+    # Process Arguments
+    # cli prompt: python3 run_autogame.py [courseId] [rule_path] [all/targets]
 
-	if len(sys.argv) < 2:
-		sys.exit("ERROR: GameRules received no course information.")
+    if len(sys.argv) < 2:
+        sys.exit("ERROR: GameRules received no course information.")
 
-	elif len(sys.argv) == 2:
-		sys.exit("ERROR: GameRules received no rule folder information.")
+    elif len(sys.argv) == 2:
+        sys.exit("ERROR: GameRules received no rule folder information.")
 
-	elif len(sys.argv) == 3:
-		if course_exists(sys.argv[1]):
-			course = sys.argv[1]
-			config.course = course
-			rulespath = sys.argv[2]
-			config.rules_folder = os.path.join(rulespath, RULES_FOLDER)
-		else:
-			sys.exit("ERROR: Course passed is not active or does not exist.")
-	
-	elif len(sys.argv) == 4:
-		if course_exists(sys.argv[1]):
-			course = sys.argv[1]
-			config.course = course
-			rulespath = sys.argv[2]
-			config.rules_folder = os.path.join(rulespath, RULES_FOLDER)
-		else:
-			sys.exit("ERROR: Course passed is not active or does not exist.")
+    elif len(sys.argv) == 3:
+        if course_exists(sys.argv[1]):
+            course = sys.argv[1]
+            config.course = course
+            rulespath = sys.argv[2]
+            config.rules_folder = os.path.join(rulespath, RULES_FOLDER)
+        else:
+            sys.exit("ERROR: Course passed is not active or does not exist.")
 
-		if sys.argv[3] == "all":
-			all_targets = True
-		else:
-			targets_list = sys.argv[3].strip("[]").split(",")
+    elif len(sys.argv) == 4:
+        if course_exists(sys.argv[1]):
+            course = sys.argv[1]
+            config.course = course
+            rulespath = sys.argv[2]
+            config.rules_folder = os.path.join(rulespath, RULES_FOLDER)
+        else:
+            sys.exit("ERROR: Course passed is not active or does not exist.")
 
-	logfile = LOGFILE_BASE + str(course) + '.txt'
+        if sys.argv[3] == "all":
+            all_targets = True
+        else:
+            targets_list = sys.argv[3].strip("[]").split(",")
+
+    logfile = LOGFILE_BASE + str(course) + '.txt'
 
 	# change the scripts running location to the folder in which it is located
 	#os.chdir(os.path.dirname(sys.argv[0]))
 	#rulespath = os.path.join(os.getcwd(),RULES_FOLDER)
 
 	# Configure Logging
-	sep = "=" * 80 + "\n"
-	log_date = "[%(asctime)s] [%(levelname)s] : %(message)s\n"
-	error_msg = "=" * 80 + "\n"
-	log_format = sep + log_date + error_msg
-	logging.basicConfig(filename=logfile, filemode='a', format=log_format, datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
+    sep = "=" * 80 + "\n"
+    log_date = "[%(asctime)s] [%(levelname)s] : %(message)s\n"
+    error_msg = "=" * 80 + "\n"
+    log_format = sep + log_date + error_msg
+    logging.basicConfig(filename=logfile, filemode='a', format=log_format, datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
 
-	# Check Autogame Status
-	last_activity, is_running = autogame_init(course)
+    # Check Autogame Status
+    last_activity, is_running = autogame_init(course)
 
-	if is_running:
-		error_msg = "ERROR: GameRules is already running for this course."
-		logging.error(error_msg)
-		sys.exit(error_msg)
-	
-	# Folder path of rules
-	# Course folder + rules folder
-	path = os.path.join(rulespath, RULES_FOLDER)
+    if is_running:
+        error_msg = "ERROR: GameRules is already running for this course."
+        logging.error(error_msg)
+        sys.exit(error_msg)
 
-	# Read and set Metadata
-	METADATA = get_config_metadata(course)
-	scope, logs = {"METADATA" : METADATA, "null": None}, {}
-	rs = RuleSystem(path, AUTOSAVE)
+    # Folder path of rules
+    # Course folder + rules folder
+    path = os.path.join(rulespath, RULES_FOLDER)
+
+    # Read and set Metadata
+    METADATA = get_config_metadata(course)
+    scope, logs = {"METADATA" : METADATA, "null": None}, {}
+    rs = RuleSystem(path, AUTOSAVE)
 
 	# Process targets
-	if targets_list != None:
+    if targets_list != None:
 		# if targets were passed in cli
-		students = {}
-		for target in targets_list:
-			students[target] = 1
-	else:
+        students = {}
+        for target in targets_list:
+            students[target] = 1
+    else:
 		# get targets
-		students = get_targets(course, last_activity, all_targets)
+        students = get_targets(course, last_activity, all_targets)
 
 
 	# Clear badge progression before calculating again
-	for el in students.keys():
-		clear_badge_progression(el)
-		clear_streak_progression(el)
-		clear_streak_participations(el)
-	
-	# Save the start date
-	timestamp = datetime.now()
-	start_date = timestamp.strftime("%Y/%m/%d %H:%M:%S")
-	log_start(course, start_date, logfile)
+    for el in students.keys():
+        clear_badge_progression(el)
+        clear_streak_progression(el)
+        clear_streak_participations(el)
 
-	# Import custom course functions
-	functions_path = os.path.join(IMPORTED_FUNCTIONS_FOLDER, course)
-	functions, fpaths, info = import_functions_from_rulepath(functions_path, info=True)
+    # Save the start date
+    timestamp = datetime.now()
+    start_date = timestamp.strftime("%Y/%m/%d %H:%M:%S")
+    log_start(course, start_date, logfile)
 
-	try:
-		rs_output = rs.fire(students,logs,scope)
-		
-		try:
-			timestamp = datetime.now()
-			finish_date = timestamp.strftime("%Y/%m/%d %H:%M:%S")
+    # Import custom course functions
+    functions_path = os.path.join(IMPORTED_FUNCTIONS_FOLDER, course)
+    functions, fpaths, info = import_functions_from_rulepath(functions_path, info=True)
+
+    try:
+        rs_output = rs.fire(students,logs,scope)
+
+        try:
+            timestamp = datetime.now()
+            finish_date = timestamp.strftime("%Y/%m/%d %H:%M:%S")
 			# if no errors in RS - set this instance as non-running
-			autogame_terminate(course, start_date, finish_date)
-			log_end(course, finish_date, students, logfile)
-			
+            autogame_terminate(course, start_date, finish_date)
+            log_end(course, finish_date, students, logfile)
+
 			# calculate new XP value for each student in targets
-			for el in students.keys():
-				calculate_xp(course, el)
-			
-			sys.exit()
+            for el in students.keys():
+                calculate_xp(course, el)
 
-		except Exception as e:
-			logging.error('Connection Refused in autogame_terminate().')
-			logging.error(str(e))
-			sys.exit()
+            db.close_db()
+            sys.exit()
 
-	except Exception as e:
-		logging.exception('Exception raised when firing rulesystem.\n\n\n')
-		sys.exit()
+        except Exception as e:
+            logging.error('Connection Refused in autogame_terminate().')
+            logging.error(str(e))
+            sys.exit()
+
+    except Exception as e:
+        logging.exception('Exception raised when firing rulesystem.\n\n\n')
+        sys.exit()

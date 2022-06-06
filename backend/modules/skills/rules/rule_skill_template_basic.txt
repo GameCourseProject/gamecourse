@@ -7,5 +7,14 @@ rule: <skill-name>
 		rating = get_rating(logs)
 		rating >= 3
 
+        # NOTE:
+        # Virtual Currency Enabled ? Uncomment code below : Delete 
+
+		# valid_attempts = get_valid_attempts(target, "<skill-name>")
+        # valid_attempts > 0
+        # (new_total, removed) = get_new_total(target, valid_attempts, rating)
+        # new_total >= 0
+
 	then:
 		award_skill(target, "<skill-name>", rating, logs)
+		# update_wallet(target, new_total, removed, logs)

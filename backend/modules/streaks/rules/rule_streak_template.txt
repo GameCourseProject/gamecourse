@@ -9,9 +9,14 @@ rule: <streak-name>
 
 		logs = GC.participations.getAllParticipations(target, "<participation-type>")
 		nlogs = len(logs)
+		nlogs > 0
 
+        <verification-function>
+        to_award = awards_to_give(target, "<streak-name>")
+        to_award > 0
+        
 	then:
-		award_streak(target, "<streak-name>", logs)
+		award_streak(target, "<streak-name>", to_award, logs)
 		# Virtual currency enabled?
 		# award_tokens_type(target, "streak", "<streak-name>", logs)
 
