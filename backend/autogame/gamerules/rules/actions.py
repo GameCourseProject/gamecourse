@@ -9,38 +9,37 @@ import logging
 
 class Actions(Block):
 
-	def fire(self, scope=None):
-		"""
-		Executes all statements in the block.
-		Returns a tuple with all the effects outputted by the block.  
-		A scope corresponding to a dictionary with name definitions
-		can be passed as argument and will be used at execution time.
-		This scope is updated with each execution.
-		"""
-		if scope is None:
-			scope = {}
-		effects = [] # default return value
-		# execute all statements defined in the block
-		i = 0
-		for s in self.stmts():
-		    start = time.time()
-			result = s.fire(scope)
-			
-			i +=1
-			if isinstance(result,Effect):
-				if isinstance(result, list):
-					effects = result
-				else:
-					effects.append(result)
+    def fire(self, scope=None):
+        """
+        Executes all statements in the block.
+        Returns a tuple with all the effects outputted by the block.
+        A scope corresponding to a dictionary with name definitions
+        can be passed as argument and will be used at execution time.
+        This scope is updated with each execution.
+        """
+        if scope is None:
+            scope = {}
+        effects = [] # default return value
+        # execute all statements defined in the block
+        i = 0
+        for s in self.stmts():
+            start = time.time()
+            result = s.fire(scope)
 
-			end = time.time()
-			logging.exception(s)
-			logging.exception(end-start)
-		
-		return effects
+            i +=1
+            if isinstance(result,Effect):
+                if isinstance(result, list):
+                    effects = result
+                else:
+                    effects.append(result)
 
-	def to_pickle(self):
-		return PickableActions(self)
+            end = time.time()
+            #logging.exception(s)
+            #logging.exception(end-start)
+        return effects
+
+    def to_pickle(self):
+        return PickableActions(self)
 
 class PickableActions:
 

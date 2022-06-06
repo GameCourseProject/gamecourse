@@ -334,11 +334,11 @@ def award_rating_streak(target, streak, rating, contributions=None, info=None):
     return result
 
 @rule_effect
-def award_streak(target, streak, contributions=None, info=None):
+def award_streak(target, streak, to_award, contributions=None):
     """
     returns the output of a streak and writes the award to database
     """
-    result = connector.award_streak(target, streak, contributions, info)
+    result = connector.award_streak(target, streak, to_award, contributions)
     return result
 
 @rule_function
@@ -368,6 +368,38 @@ def rule_unlocked(name, target):
     """
     result = connector.rule_unlocked(name, target)
     return result
+
+@rule_function
+def awards_to_give(target, streak_name):
+    """
+    Checks if rule was already unlocked by user.
+    """
+    result = connector.awards_to_give(target, streak_name)
+    return result
+
+@rule_effect
+def get_consecutive_peergrading_logs(target, streak, contributions):
+    """
+    Checks consecutive peergrader posts.
+    """
+    connector.get_consecutive_peergrading_logs(target, streak, contributions)
+    return
+
+@rule_effect
+def get_consecutive_logs(target, streak, contributions, check):
+    """
+    Checks consecutive logs - mainly based on rating or description.
+    """
+    connector.get_consecutive_logs(target, streak, contributions, check)
+    return
+
+@rule_effect
+def get_periodic_logs(target, streak_name, contributions):
+    """
+    Checks periodic logs - checks periodicity 
+    """
+    connector.get_periodic_logs(target, streak_name, contributions)
+    return
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## GameCourse Wrapper Functions
