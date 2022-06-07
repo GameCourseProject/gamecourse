@@ -34,8 +34,8 @@ class Actions(Block):
                     effects.append(result)
 
             end = time.time()
-            #logging.exception(s)
-            #logging.exception(end-start)
+            logging.exception(s)
+            logging.exception(end-start)
         return effects
 
     def to_pickle(self):

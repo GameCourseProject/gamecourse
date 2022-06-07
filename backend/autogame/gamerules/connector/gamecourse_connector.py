@@ -1661,9 +1661,6 @@ def get_consecutive_peergrading_logs(target, streak, contributions):
             connect.commit()
 
 
-        
-
-
 def get_consecutive_logs(target, streak, contributions, check):
     # -----------------------------------------------------------
     # Check if participations 
@@ -1766,42 +1763,42 @@ def get_consecutive_logs(target, streak, contributions, check):
                                             query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
                                             cursor.execute(query, (course, target, streakid, secondParticipationId, '0'))
                                             connect.commit()
-                        elif (description1 % 2 != 0):
-                            if rating1 != maxlab_impar:
-                                query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
-                                cursor.execute(query, (course, target, streakid, firstParticipationId, '0'))
-                                connect.commit()
-                            else:
-                                query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
-                                cursor.execute(query, (course, target, streakid, firstParticipationId, '1'))
-                                connect.commit()
-                                if j == size-1:
-                                    if rating2 != maxlab_par:
-                                        query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
-                                        cursor.execute(query, (course, target, streakid, secondParticipationId, '0'))
-                                        connect.commit()
-                                    else:
-                                        query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
-                                        cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
-                                        connect.commit()
-                        elif  (description1 % 2 == 0):
-                            if rating1 != maxlab_par:
-                                query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
-                                cursor.execute(query, (course, target, streakid, firstParticipationId, '0'))
-                                connect.commit()
-                            else:
-                                query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
-                                cursor.execute(query, (course, target, streakid, firstParticipationId, '1'))
-                                connect.commit()
-                                if j == size-1:
-                                    if rating2 != maxlab_impar:
-                                        query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
-                                        cursor.execute(query, (course, target, streakid, secondParticipationId, '0'))
-                                        connect.commit()
-                                    else:
-                                        query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
-                                        cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
-                                        connect.commit()
+                            elif (description1 % 2 != 0):
+                                if rating1 != maxlab_impar:
+                                    query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                                    cursor.execute(query, (course, target, streakid, firstParticipationId, '0'))
+                                    connect.commit()
+                                else:
+                                    query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                                    cursor.execute(query, (course, target, streakid, firstParticipationId, '1'))
+                                    connect.commit()
+                                    if j == size-1:
+                                        if rating2 != maxlab_par:
+                                            query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                                            cursor.execute(query, (course, target, streakid, secondParticipationId, '0'))
+                                            connect.commit()
+                                        else:
+                                            query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                                            cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
+                                            connect.commit()
+                            elif  (description1 % 2 == 0):
+                                if rating1 != maxlab_par:
+                                    query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                                    cursor.execute(query, (course, target, streakid, firstParticipationId, '0'))
+                                    connect.commit()
+                                else:
+                                    query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                                    cursor.execute(query, (course, target, streakid, firstParticipationId, '1'))
+                                    connect.commit()
+                                    if j == size-1:
+                                        if rating2 != maxlab_impar:
+                                            query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                                            cursor.execute(query, (course, target, streakid, secondParticipationId, '0'))
+                                            connect.commit()
+                                        else:
+                                            query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
+                                            cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
+                                            connect.commit()
                         else:
                             query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
                             cursor.execute(query, (course, target, streakid, firstParticipationId, '1'))
@@ -2303,7 +2300,7 @@ def award_streak(target, streak, to_award, contributions=None):
         isRepeatable = table_streak[0][5]
         streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
 
-        if isRepeatabl:
+        if isRepeatable:
 
             # inserts in award table the new streaks that have not been awarded
             for diff in range(len(table), to_award):

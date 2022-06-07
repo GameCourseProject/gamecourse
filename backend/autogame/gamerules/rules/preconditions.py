@@ -29,8 +29,8 @@ class Preconditions(Block):
             if result is False and return_val is True:
                 return_val = False
             end  =  time.time()
-            #logging.exception(s)
-            #logging.exception(end-start)
+            logging.exception(s)
+            logging.exception(end-start)
 
         return return_val
 
