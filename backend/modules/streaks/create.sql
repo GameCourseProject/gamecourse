@@ -32,7 +32,7 @@ create table streak_progression(
     participationId 	int unsigned,
     foreign key(course) references course(id) on delete cascade,
     foreign key(user) references game_course_user(id) on delete cascade,
-    foreign key(streakId) references streak(id) on delete cascade,
+    foreign key(streakId) references streak(id) on delete cascade
 );
 
 create table streak_participations(
@@ -43,6 +43,6 @@ create table streak_participations(
     isValid boolean not null default false,
     foreign key(course) references course(id) on delete cascade,
     foreign key(user) references game_course_user(id) on delete cascade,
-    foreign key(streakId) references streak(id) on delete cascade,
+    foreign key(streakId) references streak(id) on delete cascade
 );
 

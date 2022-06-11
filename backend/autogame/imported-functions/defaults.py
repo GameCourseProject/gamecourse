@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import datetime
-from decorators import rule_function
+from decorators import rule_function, rule_effect
 from gamerules.connector import gamecourse_connector as connector
 
 
@@ -204,12 +204,12 @@ def award_rating_streak(target, streak, rating, contributions=None, info=None):
 
 
 @rule_function
-def award_streak(target, streak, to_award, contributions=None)
+def award_streak(target, streak, to_award, participations, contributions=None):
     """
     Awards a Streak type award called "streak" to "target". The "contributions" parameter should
     receive the participations that justify the attribution of the streak for a given target.
     """
-    result = connector.award_streak(target, streak, to_award, contributions)
+    result = connector.award_streak(target, streak, to_award, participations, contributions)
     return result
 
     

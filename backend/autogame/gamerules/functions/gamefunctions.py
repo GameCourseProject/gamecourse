@@ -334,11 +334,11 @@ def award_rating_streak(target, streak, rating, contributions=None, info=None):
     return result
 
 @rule_effect
-def award_streak(target, streak, to_award, contributions=None):
+def award_streak(target, streak, to_award, participations, contributions=None):
     """
     returns the output of a streak and writes the award to database
     """
-    result = connector.award_streak(target, streak, to_award, contributions)
+    result = connector.award_streak(target, streak, to_award, participations, contributions)
     return result
 
 @rule_function
