@@ -514,7 +514,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
     # if badge is not active, do not run the function.
     if not isBadgeActive:
         return
-        
+
     if not config.test_mode:
 
         # update the badge_progression table with the current status
@@ -631,7 +631,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 
     queries = db.queries
     results = db.results
-    
+
     course = config.course
     typeof = "skill"
 
@@ -783,10 +783,10 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
 
     course = config.course
     typeof = "tokens"
-    
+
     if tokens != None:
         reward = int(tokens)
-    else:                                      
+    else:
         query = "SELECT tokens FROM virtual_currency_to_award WHERE course = %s AND name = %s;"
         cursor.execute(query, (course, reward_name))
         table_currency = cursor.fetchall()
@@ -874,7 +874,7 @@ def award_tokens_type(target, type, element_name, contributions):
     # 'user_wallet' table with the new total tokens for a user
     # and registers the award in the 'award' table.
     # -----------------------------------------------------------
-    
+
     cursor = db.cursor
     connect = db.connection
 
@@ -1096,7 +1096,7 @@ def update_wallet(target, newTotal, removed, contributions=None):
 
     if alreadyRemoved == 1:
         return
-        
+
     query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
     cursor.execute(query, (course, target, contributions[0].log_id, removed))
     connect.commit()
@@ -1114,13 +1114,13 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     # Updates 'user_wallet' table with the new total tokens for
     # a user.
     # -----------------------------------------------------------
-    
+
     cursor = db.cursor
     connect = db.connection
 
     queries = db.queries
     results = db.results
-    
+
     course = config.course
     typeof = "tokens"
 
@@ -1172,7 +1172,7 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
             #return newTotal
 
         # else: Tokens have already been removed for that participation
-        
+
     # Remove tokens for skill retry
     elif contributions != None and skillName != None:
 
@@ -1205,7 +1205,7 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
             #cnx.close()
             return currentTokens
         else:
-        
+
             # * * * * * * * * * * * * * FORMULA OPTIONS * * * * * * * * * * * * * #
             #                                                                     #
             #  Case 0 - SUB: removed = incrementCost                             #
@@ -1663,10 +1663,12 @@ def get_consecutive_peergrading_logs(target, streak, contributions):
             cursor.execute(query, (course, target, streakid, id, valid))
             connect.commit()
 
+def get_consecutive_rating_logs(target, streak, type, rating):
+    return
 
-def get_consecutive_logs(target, streak, contributions, check):
+def get_consecutive_logs(target, streak, type, check):
     # -----------------------------------------------------------
-    # Check if participations 
+    # Check if participations
     # -----------------------------------------------------------
 
     cursor = db.cursor
@@ -1678,11 +1680,20 @@ def get_consecutive_logs(target, streak, contributions, check):
     course = config.course
     typeof = "streak"
 
-    if len(contributions) <= 0:
-        return
+    participationType = type + "%"
 
-    participationType = contributions[0].log_type
-    contributions.sort(key = lambda x: x.description)
+    if participationType.startswith("quiz"):
+        query = "SELECT id, description, rating FROM participation WHERE user = %s AND course = %s AND type = %s AND description like 'Quiz%' ORDER BY description ASC;"
+        cursor.execute(query, (target, course, participationType))
+        table_participations = cursor.fetchall()
+    else:
+        query = "SELECT id, description, rating FROM participation WHERE user = %s AND course = %s AND type like %s ORDER BY description ASC;"
+        cursor.execute(query, (target, course, participationType))
+        table_participations = cursor.fetchall()
+
+
+    if len(table_participations) <= 0:
+        return
 
     # get streak info
     query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost, isActive from streak where course = \"" + course + "\" and name = \"" + streak + "\";"
@@ -1698,7 +1709,7 @@ def get_consecutive_logs(target, streak, contributions, check):
     streakid = table_streak[0][0]
 
     if check == "description":
-        if participationType.startswith("attended") or participationType.endswith("grade"):
+        if type.startswith("attended") or type.endswith("grade"):
 
             # NOTE:
             # This part is extremely tailored towads MCP 2021/2022
@@ -1711,28 +1722,32 @@ def get_consecutive_logs(target, streak, contributions, check):
             maxlab_par = 400
             max_quiz = 1000
 
-            size = len(contributions)
+            size = len(table_participations)
 
             for i in range(size):
                 j = i+1
+
                 if j < size:
-                    firstParticipationId = contributions[i].log_id
-                    secondParticipationId = contributions[j].log_id
-                    if participationType == "quiz grade":
-                        quiz1 = contributions[i].description
-                        quiz2 = contributions[j].description
+
+                    firstParticipationId = table_participations[i][0]
+                    secondParticipationId = table_participations[j][0]
+
+                    if type == "quiz grade":
+
+                        quiz1 = table_participations[i][1]
+                        quiz2 = table_participations[j][1]
                         # gets quiz number since description = 'Quiz X'
                         description1 = int(quiz1[-1])
                         description2 = int(quiz2[-1])
 
-                        rating1 = contributions[i].rating
-                        rating2 = contributions[j].rating
+                        rating1 = table_participations[i][2]
+                        rating2 = table_participations[j][2]
                     else:
-                        description1 = int(contributions[i].description)
-                        description2 = int(contributions[j].description)
-                        if participationType == "lab grade":
-                            rating1 = contributions[i].rating
-                            rating2 = contributions[j].rating
+                        description1 = int(table_participations[i][1])
+                        description2 = int(table_participations[j][1])
+                        if type == "lab grade":
+                            rating1 = table_participations[i][2]
+                            rating2 = table_participations[j][2]
 
 
                     # if participation is not consecutive, inserts in table as invalid
@@ -1760,13 +1775,14 @@ def get_consecutive_logs(target, streak, contributions, check):
                                         query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
                                         cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
                                         connect.commit()
-                        elif participationType == "lab grade":
+                        elif type == "lab grade":
                             if  description1 == 1 or description1 == 2:
                                 if rating1 != maxlabs:
                                     query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
                                     cursor.execute(query, (course, target, streakid, firstParticipationId, '0'))
                                     connect.commit()
                                 else:
+
                                     query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
                                     cursor.execute(query, (course, target, streakid, firstParticipationId, '1'))
                                     connect.commit()
@@ -1789,6 +1805,8 @@ def get_consecutive_logs(target, streak, contributions, check):
                                     cursor.execute(query, (course, target, streakid, firstParticipationId, '0'))
                                     connect.commit()
                                 else:
+                                    logging.exception("ENTROU   3")
+
                                     query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
                                     cursor.execute(query, (course, target, streakid, firstParticipationId, '1'))
                                     connect.commit()
@@ -1828,11 +1846,11 @@ def get_consecutive_logs(target, streak, contributions, check):
                                 cursor.execute(query, (course, target, streakid, secondParticipationId, '1'))
                                 connect.commit()
     elif check == "rating":
-        size = len(contributions)
+        size = len(table_participations)
         for i in range(size):
 
-            participation = contributions[i].log_id
-            participationRating = contributions[i].rating
+            participation = table_participations[i][0]
+            participationRating = table_participations[i][2]
 
             if participationRating < rating:
                 query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s);"
@@ -1845,7 +1863,7 @@ def get_consecutive_logs(target, streak, contributions, check):
 
         # elif: other checks to implement
     else:
-        for log in contributions:
+        for log in table_participations:
             query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s); "
             cursor.execute(query, (course, target, streakid, log.log_id, '1'))
             cnx.commit()
@@ -1878,7 +1896,7 @@ def get_periodic_logs(target, streak_name, contributions):
         results.append(table_streak)
     else:
         table_streak = result
-   
+
     if not config.test_mode:
         if len(contributions) > 0 :
             streakid, isCount, isPeriodic, isAtMost  = table_streak[0][0], table_streak[0][6], table_streak[0][7], table_streak[0][8]
@@ -1925,7 +1943,7 @@ def get_periodic_logs(target, streak_name, contributions):
                     #      Do X [action] with no more than [periodicity]      #
                     #    between them                                         #
                     # ******************************************************* #
-                    
+
                     all = len(contributions)
                     skills = []
 
@@ -1947,7 +1965,7 @@ def get_periodic_logs(target, streak_name, contributions):
                             query = "INSERT into streak_participations (course, user, streakId, participationId, isValid) values (%s,%s,%s,%s,%s); "
                             cursor.execute(query, (course, target, streakid, participation_id, '1'))
                             connect.commit()
-                            
+
                         if j < size:
 
                             # ************ FIRST SUBMISSION DATE ************** #
@@ -1962,7 +1980,7 @@ def get_periodic_logs(target, streak_name, contributions):
                             d_gradedPost = firstgradedPost[28:indexpost]
                             firstGraded  = "mod/peerforum/discuss.php?d=" + str(d_gradedPost) + "&parent="  +  str(p_gradedPost)
 
-                            # gets date from student post 
+                            # gets date from student post
                             query = "SELECT date FROM participation WHERE user = %s and course = %s and type = 'peerforum add post' AND post = %s;"
                             cursor.execute(query, (target, course, firstGraded))
                             table_first_date = cursor.fetchall()
@@ -1987,8 +2005,8 @@ def get_periodic_logs(target, streak_name, contributions):
                             # *********************************************** #
                             # ************ VERIFICATION BEGINS ************** #
                             # *********************************************** #
-                            
-                            firstParticipationId = filtered[i][0]  
+
+                            firstParticipationId = filtered[i][0]
                             secondParticipationId = filtered[j][0]
 
                             firstParticipationDate = table_first_date[0][0]  # YYYY-MM-DD HH:MM:SS
@@ -2171,7 +2189,7 @@ def awards_to_give(target, streak_name):
         table_streak = result
 
     streak_id, streak_count, isRepeatable = table_streak[0][0], table_streak[0][3], table_streak[0][5]
-    
+
     query = "SELECT participationId, isValid FROM streak_participations WHERE user = \"" + str(target) + "\" AND course = \"" + str(course) + "\" AND streakId= \"" + str(streak_id) + "\" ;"
     result = db.data_broker(query)
     if not result:
@@ -2193,7 +2211,7 @@ def awards_to_give(target, streak_name):
             participations.append(id)
         else:
             count = 0
-            
+
         if count == streak_count:
             awards = awards + 1
             count = 0
@@ -2206,8 +2224,7 @@ def awards_to_give(target, streak_name):
     return awards, participations
 
 
-#  logs-> participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
-def award_streak(target, streak, to_award, participations, contributions=None):
+def award_streak(target, streak, to_award, participations, type=None):
     # -----------------------------------------------------------
     # Writes and updates 'award' table with streaks won by the
     # user. Will retract if rules/participations have been
@@ -2224,10 +2241,10 @@ def award_streak(target, streak, to_award, participations, contributions=None):
     course = config.course
     typeof = "streak"
 
-    #nlogs = len(contributions)
+    nlogs = len(participations)
     participationType = ''
-    if contributions != None and streak != "Grader":
-        participationType = contributions[0].log_type
+    if type != None and streak != "Grader":
+        participationType = type
 
     if config.test_mode:
         awards_table = "award_test"
@@ -2256,7 +2273,7 @@ def award_streak(target, streak, to_award, participations, contributions=None):
 
     if not isStreakActive:
         return
-        
+
     # table contains  user, course, description,  type, reward, date
     # table = filtered awards_table
     if len(table) == 0:  # no streak has been awarded with this name for this user
@@ -2296,26 +2313,25 @@ def award_streak(target, streak, to_award, participations, contributions=None):
                 connect.commit()
 
                 if diff == 0:
-                    if contributions != None:
-                        query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
-                        cursor.execute(query, (target, course, description, typeof))
-                        table_id = cursor.fetchall()
-                        award_id = table_id[0][0]
+                    query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+                    cursor.execute(query, (target, course, description, typeof))
+                    table_id = cursor.fetchall()
+                    award_id = table_id[0][0]
 
-                        if not config.test_mode and not streak.startswith("Grader"):
-                            for id in participations:
-                                query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
-                                cursor.execute(query, (award_id, id))
-                                connect.commit()
+                    if not config.test_mode and not streak.startswith("Grader"):
+                        for id in participations:
+                            query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                            cursor.execute(query, (award_id, id))
+                            connect.commit()
 
 
-        if not config.test_mode:
-            if contributions != None and contributions != None:
-                nr_contributions = str(len(contributions))
-            else:
-                nr_contributions = ''
-
-            config.award_list.append([str(target), str(streak), str(streak_reward), nr_contributions])
+        #if not config.test_mode:
+        #    if contributions != None and contributions != None:
+        #        nr_contributions = str(len(contributions))
+        #    else:
+        #        nr_contributions = ''
+        #
+        #    config.award_list.append([str(target), str(streak), str(streak_reward), nr_contributions])
 
     # if this streak has already been awarded, check if it is repeatable to award it again.
     elif len(table) > 0:
@@ -2333,18 +2349,16 @@ def award_streak(target, streak, to_award, participations, contributions=None):
                 cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
                 connect.commit()
 
-                # inserir na award_participation ?
-                if contributions != None:
-                    query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
-                    cursor.execute(query, (target, course, description, typeof))
-                    table_id = cursor.fetchall()
-                    award_id = table_id[0][0]
+                query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+                cursor.execute(query, (target, course, description, typeof))
+                table_id = cursor.fetchall()
+                award_id = table_id[0][0]
 
-                    if not config.test_mode and not streak.startswith("Grader"):
-                        for id in participations:
-                            query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
-                            cursor.execute(query, (award_id, id))
-                            connect.commit()
+                if not config.test_mode and not streak.startswith("Grader"):
+                    for id in participations:
+                        query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                        cursor.execute(query, (award_id, id))
+                        connect.commit()
 
     connect.commit()
 
@@ -2402,7 +2416,7 @@ def get_username(target):
     # -----------------------------------------------------------
     # Returns the username of a target user
     # -----------------------------------------------------------
-    
+
     cursor = db.cursor
     #connect = db.connection
 

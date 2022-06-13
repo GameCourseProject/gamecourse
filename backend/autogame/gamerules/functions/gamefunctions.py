@@ -334,11 +334,11 @@ def award_rating_streak(target, streak, rating, contributions=None, info=None):
     return result
 
 @rule_effect
-def award_streak(target, streak, to_award, participations, contributions=None):
+def award_streak(target, streak, to_award, participations, type=None):
     """
     returns the output of a streak and writes the award to database
     """
-    result = connector.award_streak(target, streak, to_award, participations, contributions)
+    result = connector.award_streak(target, streak, to_award, participations, type)
     return result
 
 @rule_function
@@ -386,11 +386,11 @@ def get_consecutive_peergrading_logs(target, streak, contributions):
     return
 
 @rule_effect
-def get_consecutive_logs(target, streak, contributions, check):
+def get_consecutive_logs(target, streak, type, check):
     """
     Checks consecutive logs - mainly based on rating or description.
     """
-    connector.get_consecutive_logs(target, streak, contributions, check)
+    connector.get_consecutive_logs(target, streak, type, check)
     return
 
 @rule_effect
