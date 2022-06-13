@@ -1821,6 +1821,10 @@ def award_rating_streak(target, streak, rating, contributions=None, info=None):
     typeof = "streak"
 
     nlogs = len(contributions)
+
+    if nlogs == 0:
+        return
+
     if contributions != None:
         participationType = contributions[0].log_type
 
@@ -2811,7 +2815,7 @@ def get_username(target):
     #connect = db.connection
 
     course = config.course
-    query = "select username from auth right join course_user on auth.id=course_user.id where course = %s and auth.id = %s;"
+    query = "select username from auth right join course_user on auth.game_course_user_id=course_user.id where course = %s and auth.game_course_user_id = %s;"
 
     cursor.execute(query, (course, target))
     table = cursor.fetchall()
