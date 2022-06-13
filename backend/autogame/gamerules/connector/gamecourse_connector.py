@@ -350,7 +350,7 @@ def calculate_xp(course, target):
     total_xp = total_badge_xp + total_skill_xp + total_other_xp + total_extra_xp
 
 
-    query = "SELECT id, max(goal) from level where goal <= \"" + total_xp + "\" and course = \"" + course + "\" group by id order by number desc limit 1;"
+    query = "SELECT id, max(goal) from level where goal <= \"" +  str(total_xp) + "\" and course = \"" + str(course) + "\" group by id order by number desc limit 1;"
     result = db.data_broker(query)
     if not result:
         cursor.execute(query)
@@ -1678,11 +1678,15 @@ def get_consecutive_logs(target, streak, contributions, check):
     course = config.course
     typeof = "streak"
 
+    logging.exception(contributions)
 
     if len(contributions) <= 0:
         return
 
     participationType = contributions[0].log_type
+    contributions.sort(key = lambda x: x.description)
+
+    logging.exception(contributions)
 
     # get streak info
     query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost, isActive from streak where course = \"" + course + "\" and name = \"" + streak + "\";"
