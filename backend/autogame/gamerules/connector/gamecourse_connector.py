@@ -2305,7 +2305,7 @@ def award_streak(target, streak, to_award, participations, type=None):
         else:
             # inserts in award table the new streaks that have not been awarded
             for diff in range(len(table), to_award):
-                repeated_info = " (Repeated for the " + str(diff + 1) + ")"
+                repeated_info = " (" + str(diff + 1) + ")"
                 description = streak + repeated_info
 
                 query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
@@ -2342,7 +2342,7 @@ def award_streak(target, streak, to_award, participations, type=None):
 
             # inserts in award table the new streaks that have not been awarded
             for diff in range(len(table), to_award):
-                repeated_info = " (Repeated for the " + str(diff + 1) + ")"
+                repeated_info = " (" + str(diff + 1) + ")"
                 description = streak + repeated_info
 
                 query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
