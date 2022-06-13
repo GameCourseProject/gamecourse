@@ -1678,15 +1678,11 @@ def get_consecutive_logs(target, streak, contributions, check):
     course = config.course
     typeof = "streak"
 
-    logging.exception(contributions)
-
     if len(contributions) <= 0:
         return
 
     participationType = contributions[0].log_type
     contributions.sort(key = lambda x: x.description)
-
-    logging.exception(contributions)
 
     # get streak info
     query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost, isActive from streak where course = \"" + course + "\" and name = \"" + streak + "\";"
