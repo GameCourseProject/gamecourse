@@ -127,6 +127,35 @@ def get_username(target):
     return result
 
 @rule_function
+def get_logs(target, type):
+    """
+    Returns the logs of a target for a specific
+    participation type
+    """
+    result  = connector.get_logs(target, type)
+    return result
+
+
+@rule_function
+def get_graded_skill_logs(target, minRating):
+    """
+    Returns the logs of a target for a specific
+    participation type
+    """
+    result  = connector.get_graded_skill_logs(target, minRating)
+    return result
+
+
+@rule_function
+def get_graded_logs(target, minRating, include_skills):
+    """
+    Returns the logs of a target for a specific
+    participation type
+    """
+    result  = connector.get_graded_logs(target, minRating, include_skills)
+    return result
+
+@rule_function
 def consecutive_peergrading(target):
     """
     Returns the username of a given student
@@ -386,6 +415,14 @@ def get_consecutive_peergrading_logs(target, streak, contributions):
     return
 
 @rule_effect
+def get_consecutive_rating_logs(target, streak, type, rating, only_skill_posts):
+    """
+    Checks consecutive logs - mainly based on rating or description.
+    """
+    connector.get_consecutive_rating_logs(target, streak, type, rating, only_skill_posts)
+    return
+
+@rule_effect
 def get_consecutive_logs(target, streak, type, check):
     """
     Checks consecutive logs - mainly based on rating or description.
@@ -400,6 +437,7 @@ def get_periodic_logs(target, streak_name, contributions):
     """
     connector.get_periodic_logs(target, streak_name, contributions)
     return
+
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## GameCourse Wrapper Functions
