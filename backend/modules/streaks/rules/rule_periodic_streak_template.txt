@@ -4,14 +4,17 @@ rule: <streak-name>
 
 	when:
         # NOTE:
-        # get_consecutive_logs() is the default function.
+        # get_logs() is the default function.
         # CHANGE IT if that's not the correct function to use in this rule:
-        #   Get consecutive logs based on rating -> get_consecutive_rating_logs()
+        #    - Get all graded logs -> get_graded_logs(target, minRating, include_skills = False)
+        #    - Get all graded skill logs with the desired ratings -> get_graded_skill_logs(target, ratings)
+        
+        logs = get_logs(target, "<participation-type>")
 
-        get_consecutive_logs(target, "<streak-name>", "<participation-type>")
+        get_periodic_logs(target, "<streak-name>", logs)
         to_award, participations = awards_to_give(target, "<streak-name>")
         to_award > 0
-        
+
 	then:
 		award_streak(target, "<streak-name>", to_award, participations, "<participation-type>")
 		# Virtual currency enabled?

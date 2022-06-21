@@ -21,7 +21,7 @@ class Streaks extends Module
 
     //const STREAKS_TEMPLATE_NAME = 'Streaks block - by streaks';
     const STREAKS_RULE_TEMPLATE = 'rule_streak_template.txt';
-
+    const PERIODIC_STREAK_RULE_TEMPLATE = 'rule_periodic_streak_template.txt';
 
 
     /*** ----------------------------------------------- ***/
@@ -767,8 +767,7 @@ class Streaks extends Module
         
         $course = Course::getCourse($courseId, false);
         $streak = new Streaks();
-        $streak->generateStreakRule( $course, $achievement['name']);
-        
+        $streak->generateStreakRule( $course, $achievement['name'], ($achievement['isPeriodic']) ? 1 : 0);
     }
 
     public static function editStreak($achievement, $courseId)
@@ -824,9 +823,13 @@ class Streaks extends Module
     /*** -------------------- Rules -------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    public function generateStreakRule(Course $course, string $streakName)
+    public function generateStreakRule(Course $course, string $streakName, bool $isPeriodic)
     {
-        $template = file_get_contents(MODULES_FOLDER . "/" . self::ID . "/rules/" . self::STREAKS_RULE_TEMPLATE);
+        if ($isPeriodic){
+            $template = file_get_contents(MODULES_FOLDER . "/" . self::ID . "/rules/" . self::PERIODIC_STREAK_RULE_TEMPLATE);
+        } else {
+            $template = file_get_contents(MODULES_FOLDER . "/" . self::ID . "/rules/" . self::STREAKS_RULE_TEMPLATE);
+        }
 
         $newRule = str_replace("<streak-name>", $streakName, $template);
 
@@ -844,6 +847,7 @@ class Streaks extends Module
         $rs->addRule($newRule, null, $rule); // add to end
 
     }
+
 
     public function deleteGeneratedRule(Course $course, string $streakName)
     {

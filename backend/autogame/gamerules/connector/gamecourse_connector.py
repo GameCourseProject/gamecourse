@@ -219,7 +219,7 @@ def get_graded_skill_logs(target, ratings):
     return table_participations
 
 
-def get_graded_logs(target, minRating, include_skills = None):
+def get_graded_logs(target, minRating, include_skills = False):
 
     cursor = db.cursor
     connect = db.connection
