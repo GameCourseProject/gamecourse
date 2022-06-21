@@ -3,19 +3,17 @@ rule: <streak-name>
 # Replace all <..> with the respective value.
 
 	when:
-	    # NOTE:
-        # getAllParticipations() is the default function.
-        # CHANGE IT if that's not the correct function to use in this rule
+        # NOTE:
+        # get_consecutive_logs() is the default function.
+        # CHANGE IT if that's not the correct function to use in this rule:
+        #   Get consecutive logs based on rating -> get_consecutive_rating_logs()
 
-		logs = GC.participations.getAllParticipations(target, "<participation-type>")
-		len(logs) > 0
-
-        <verification-function>
-        to_award = awards_to_give(target, "<streak-name>")
+        get_consecutive_logs(target, "<streak-name>", "<participation-type>")
+        to_award, participations = awards_to_give(target, "<streak-name>")
         to_award > 0
         
 	then:
-		award_streak(target, "<streak-name>", to_award, logs)
+		award_streak(target, "<streak-name>", to_award, participations, "<participation-type>")
 		# Virtual currency enabled?
 		# award_tokens_type(target, "streak", "<streak-name>", logs)
 

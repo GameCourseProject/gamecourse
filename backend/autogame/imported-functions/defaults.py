@@ -265,11 +265,11 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
     return
 
 @rule_effect
-def award_tokens_type(target, type, element_name):
+def award_tokens_type(target, type, element_name, to_award):
     """
     Awards tokens to students based on an award given.
     """
-    connector.award_tokens_type(target, type, element_name)
+    connector.award_tokens_type(target, type, element_name, to_award)
     return
 
 @rule_effect
@@ -377,11 +377,11 @@ def get_consecutive_rating_logs(target, streak, type, rating, only_skill_posts):
     return
 
 @rule_effect
-def get_consecutive_logs(target, streak, type, check):
+def get_consecutive_logs(target, streak, type):
     """
-    Checks consecutive logs - mainly based on rating or description.
+    Checks consecutive logs - based on description.
     """
-    connector.get_consecutive_logs(target, streak, type, check)
+    connector.get_consecutive_logs(target, streak, type)
     return
 
 @rule_effect
