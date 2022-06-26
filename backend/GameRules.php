@@ -82,6 +82,25 @@ class GameRules{
 		Core::$systemDB->update("autogame", ["isRunning" => 0], ["course" => 0]);
 	}
 
+    public function resetAutogame() {
+        Core::$systemDB->update("autogame", ["isRunning" => 0], ["course" => $this->courseId]);
+    }
+    
+    public function checkAutoGameStuck(){
+        $sep = "\n================================================================================\n";
+        $file = escapeshellarg($this->logFile);
+        $lastline = `tail -n 1 $file`;
+
+        if ($lastline == $sep){
+            return FALSE;
+        }
+        else{
+            // error itself does not have separator, thus, if logfile ends without a separator,
+            // an error occurred and socket did not close so autogame appears to be running.
+            return TRUE;
+        }
+    }
+
 	public function callAutogame() {
 		if ($this->all) { 
 			// if running for all targets
@@ -121,8 +140,7 @@ class GameRules{
 
 		if (!$socket) {
             $this->logGameRules("Could not create server socket.");
-		} 
-		
+		}
 		else {
 			# command that calls python script - output is supressed by latter part of the command
 	    	$this->setServerSocketRunning();
@@ -131,6 +149,7 @@ class GameRules{
 				try {
 			        $conn = stream_socket_accept($socket);
 					if (!$conn){
+                        fclose($socket);
 						$error= "No connections received on the server socket.";
 						$this->logGameRules($error, "WARNING");
 						return $error;
@@ -140,7 +159,6 @@ class GameRules{
 
 			        # check if end message was received by instance of gamerules
 			        $res = strcmp($msg, "end gamerules;\n");
-
 
 			        # if the exit message is received, close connection to gamerules instance
 			        if ($res == 0) {
@@ -242,9 +260,15 @@ class GameRules{
 		}
 	
 	    if ($this->checkAutoGameRunning()) {
-            $error = "Autogame for the given course id is already running.";
-            $this->logGameRules($error);
-	    	return $error;
+            if ($this->checkAutoGameStuck()){
+                $this->resetAutogame();
+            }
+            else{
+                $error = "Autogame for the given course id is already running.";
+                $this->logGameRules($error);
+                return $error;
+            }
+
 	    }
 
 	    if ($this->checkServerSocket()) {

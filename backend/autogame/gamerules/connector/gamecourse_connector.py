@@ -2534,7 +2534,7 @@ def get_username(target):
     #connect = db.connection
 
     course = config.course
-    query = "select username from auth right join course_user on auth.id=course_user.id where course = %s and auth.id = %s;"
+    query = "select username from auth right join course_user on auth.game_course_user_id=course_user.id where course = %s and auth.id = %s;"
 
     cursor.execute(query, (course, target))
     table = cursor.fetchall()
