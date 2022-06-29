@@ -1,5 +1,5 @@
 <?php
-namespace Streaks;
+namespace Modules\Streaks;
 
 use GameCourse\Core;
 use GameCourse\RuleSystem;

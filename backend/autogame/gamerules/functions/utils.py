@@ -47,10 +47,10 @@ def import_gamefunctions (scope):
 
 def import_functions_from_FuncPaths (fp):
 	functions = {}
-	import imp
+	import importlib
 	for p in fp:
 		for f in fp[p].functions:
-			m = imp.load_source(fp[p].module,p)
+			m = importlib.load_source(fp[p].module,p)
 			stmt = fp[p].module + "." + f
 			scope = {fp[p].module: m}
 			obj = eval(stmt,scope)
@@ -73,7 +73,7 @@ def import_functions_from_rulepath (p, info=False):
 	fpaths = FPaths()
 	if not os.path.exists(p):
 		return functions, fpaths
-	import imp
+	import importlib
 
 	for entry in os.listdir(p):
 		# skip private names
@@ -85,7 +85,7 @@ def import_functions_from_rulepath (p, info=False):
 		module_path = os.path.join(p,entry)
 		module_name = entry[:-3]
 
-		mod = imp.load_source(module_name,module_path)
+		mod = importlib.load_source(module_name,module_path)
 		# import functions from module
 		for name in dir(mod):
 			# skip private names

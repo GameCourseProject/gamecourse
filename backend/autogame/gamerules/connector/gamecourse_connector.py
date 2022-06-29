@@ -1531,10 +1531,6 @@ def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, for
     # grade. Will not retract effects, but will not award twice
     # -----------------------------------------------------------
 
-    #(database, username, password) = get_credentials()
-    #cnx = mysql.connector.connect(user=username, password=password,
-    #host='localhost', database=database)
-    #cursor = cnx.cursor(prepared=True)
 
     cursor = db.cursor
     connect = db.connection
@@ -1592,11 +1588,6 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
     # Will not retract effects, but will not award twice
     # -----------------------------------------------------------
 
-    #(database, username, password) = get_credentials()
-    #cnx = mysql.connector.connect(user=username, password=password,
-    #host='localhost', database=database)
-    #cursor = cnx.cursor(prepared=True)
-
     cursor = db.cursor
     connect = db.connection
 
@@ -1647,11 +1638,6 @@ def clear_streak_progression(target):
       # the rule system runs.
       # -----------------------------------------------------------
 
-      #(database, username, password) = get_credentials()
-      #cnx = mysql.connector.connect(user=username, password=password,
-      #host='localhost', database=database)
-      #cursor = cnx.cursor(prepared=True)
-
       cursor = db.cursor
       connect = db.connection
 
@@ -1668,11 +1654,6 @@ def clear_streak_participations(target):
       # calculating new progression. Needs to be refresh everytime
       # the rule system runs.
       # -----------------------------------------------------------
-
-      #(database, username, password) = get_credentials()
-      #cnx = mysql.connector.connect(user=username, password=password,
-      #host='localhost', database=database)
-      #cursor = cnx.cursor(prepared=True)
 
       cursor = db.cursor
       connect = db.connection
@@ -2481,11 +2462,6 @@ def get_campus(target):
     # -----------------------------------------------------------
     # Returns the campus of a target user
     # -----------------------------------------------------------
-
-    #(database, username, password) = get_credentials()
-    #cnx = mysql.connector.connect(user=username, password=password,
-    #host='localhost', database=database)
-    #cursor = cnx.cursor(prepared=True)
 
     cursor = db.cursor
     connect = db.connection
