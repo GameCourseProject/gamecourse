@@ -89,13 +89,30 @@ function createUser($course, $count){
     // OR RUN THIS SCRIPT AFTER THE UNITTESTS.PHP ONE
 }
 
-function testPeergradingStreak($course, $count){
+function testPeergradingStreak($course, $count, $isRepeatable){
     /* function to test peergrading streak - needs access to Moodle's database */
 
-    //         Core::$systemDB->insert("user_page_history", ["user" => $viewer, "page" => $pageId]);
+    $name = "Grader Extraordinaire";
+    $streak = Core::$systemDB->select("streak", ["course" => $course, "name" => $name]);
+
+    if (! $streak){
+        $description = "Do the next " . $count . " peer-reviews assigned to you";
+        Core::$systemDB->insert("streak", ["course" => $course, "name" => $name, "description" => $description, "count" => $count, "isRepeatable" => $isRepeatable, "isCount" => 1, "isPeriodic" => 0, "isAtMost" => 0]);
+    }
+
+    /* needs access to moodle db*/
 }
 
 function testPeriodicStreak($course, $periodicity, $periodicityTime, $count){
+
+    $name = "Periodic Test";
+    $streak = Core::$systemDB->select("streak", ["course" => $course, "name" => $name]);
+    if ($streak){
+        Core::$systemDB->delete("streak", ["course" => $course, "name" => $name]);
+    }
+    
+    $description = "Do the next " . $count . " peer-reviews assigned to you";
+    Core::$systemDB->insert("streak", ["course" => $course, "name" => $name, "description" => $description, "count" => $count, "isRepeatable" => $isRepeatable, "isCount" => 1, "isPeriodic" => 0, "isAtMost" => 0]);
 
 }
 
