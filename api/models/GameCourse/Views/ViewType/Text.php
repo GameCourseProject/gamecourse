@@ -94,7 +94,7 @@ class Text extends ViewType
     /*** -------------------- Dictionary -------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    public function compile(array &$view)
+    public function dissect(array &$view)
     {
         // TODO: Implement parse() method.
     }

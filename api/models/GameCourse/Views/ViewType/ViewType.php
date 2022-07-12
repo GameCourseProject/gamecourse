@@ -287,14 +287,14 @@ abstract class ViewType
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Compiles a view of a specific type.
+     * Parses a view of a specific type.
      * If view type has parameters that can contain expressions,
-     * those parameters need to be compiled.
+     * those parameters need to be parsed.
      *
      * @param array $view
      * @return void
      */
-    abstract function compile(array &$view);
+    abstract function dissect(array &$view);
 
     /**
      * Processes a view of a specific type.
