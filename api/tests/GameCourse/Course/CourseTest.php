@@ -28,7 +28,7 @@ class CourseTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        TestingUtils::setUpBeforeClass(true, ["CronJob"]);
+        TestingUtils::setUpBeforeClass(["roles, modules"], ["CronJob"]);
     }
 
     protected function setUp(): void
@@ -43,7 +43,7 @@ class CourseTest extends TestCase
         // NOTE: try to only clean tables used during tests to improve efficiency;
         //       don't forget tables with foreign keys will be automatically deleted on cascade
 
-        TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER]);
+        TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE]);
         TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE]);
         TestingUtils::cleanFileStructure();
         TestingUtils::cleanEvents();

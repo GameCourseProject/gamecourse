@@ -1,6 +1,6 @@
-/** -----------------------------------
-  * -- Create Tables
-  * ----------------------------------- */
+/*** ---------------------------------------------------- ***/
+/*** ------------------- User tables -------------------- ***/
+/*** ---------------------------------------------------- ***/
 
 CREATE TABLE user(
 	id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
@@ -23,20 +23,25 @@ CREATE TABLE auth(
 	FOREIGN key(user) REFERENCES user(id) ON DELETE CASCADE
 );
 
+
+/*** ---------------------------------------------------- ***/
+/*** ------------------ Course tables ------------------- ***/
+/*** ---------------------------------------------------- ***/
+
 SET FOREIGN_KEY_CHECKS=0;
 CREATE TABLE course(
-	id 		                    int unsigned PRIMARY KEY AUTO_INCREMENT,
-	name 	                    varchar(100) NOT NULL,
-	short	                    varchar(20),
-	color	                    varchar(7),
-	year	                    varchar(10) NOT NULL,
-	startDate                   TIMESTAMP NULL DEFAULT NULL,
-	endDate                     TIMESTAMP NULL DEFAULT NULL,
+    id 		                    int unsigned PRIMARY KEY AUTO_INCREMENT,
+    name 	                    varchar(100) NOT NULL,
+    short	                    varchar(20),
+    color	                    varchar(7),
+    year	                    varchar(10) NOT NULL,
+    startDate                   TIMESTAMP NULL DEFAULT NULL,
+    endDate                     TIMESTAMP NULL DEFAULT NULL,
     landingPage                 int unsigned DEFAULT NULL,
-	isActive                    boolean DEFAULT TRUE,
-	isVisible                   boolean DEFAULT TRUE,
-	roleHierarchy               text,
-	theme                       varchar(50) DEFAULT NULL,
+    isActive                    boolean DEFAULT TRUE,
+    isVisible                   boolean DEFAULT TRUE,
+    roleHierarchy               text,
+    theme                       varchar(50) DEFAULT NULL,
 
     UNIQUE key(name, year),
     FOREIGN key(landingPage) REFERENCES page(id) ON DELETE CASCADE
@@ -45,54 +50,56 @@ SET FOREIGN_KEY_CHECKS=1;
 
 CREATE TABLE course_user(
     id                          int unsigned NOT NULL,
-   	course                      int unsigned NOT NULL,
+    course                      int unsigned NOT NULL,
     lastActivity                TIMESTAMP NULL,
-	isActive                    boolean NOT NULL DEFAULT TRUE,
+    isActive                    boolean NOT NULL DEFAULT TRUE,
 
     PRIMARY key(id, course),
     FOREIGN key(id) REFERENCES user(id) ON DELETE CASCADE,
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
-CREATE TABLE page(
-     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
-     course                      int unsigned NOT NULL,
-     name                        varchar(50) NOT NULL,
-     theme                       varchar(50),
-     viewId                      int unsigned,
-     isEnabled                   boolean DEFAULT FALSE,
-     seqId                       int unsigned NOT NULL,
 
-     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
-);
+/*** ---------------------------------------------------- ***/
+/*** -------------------- Role tables ------------------- ***/
+/*** ---------------------------------------------------- ***/
 
+SET FOREIGN_KEY_CHECKS=0;
 CREATE TABLE role(
-	id 		                    int unsigned AUTO_INCREMENT PRIMARY KEY,
-	name                        varchar(50) NOT NULL,
-	landingPage                 int unsigned DEFAULT NULL,
-	course                      int unsigned NOT NULL,
+    id 		                    int unsigned AUTO_INCREMENT PRIMARY KEY,
+    name                        varchar(50) NOT NULL,
+    landingPage                 int unsigned DEFAULT NULL,
+    course                      int unsigned NOT NULL,
+    module                      varchar(50) DEFAULT NULL,
 
     UNIQUE key(course, name),
-	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
-	FOREIGN key(landingPage) REFERENCES page(id) ON DELETE CASCADE
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN key(landingPage) REFERENCES page(id) ON DELETE CASCADE,
+    FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
 );
+SET FOREIGN_KEY_CHECKS=1;
 
 CREATE TABLE user_role(
-	id                          int unsigned NOT NULL, #user id
-	course                      int unsigned NOT NULL,
-	role                        int unsigned NOT NULL,
+    user                        int unsigned NOT NULL,
+    course                      int unsigned NOT NULL,
+    role                        int unsigned NOT NULL,
 
-	PRIMARY key(id, course, role),
-	FOREIGN key(id, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
-	FOREIGN key(role) REFERENCES role(id) ON DELETE CASCADE
+    PRIMARY key(user, course, role),
+    FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
+    FOREIGN key(role) REFERENCES role(id) ON DELETE CASCADE
 );
 
+
+/*** ---------------------------------------------------- ***/
+/*** ------------------ Module tables ------------------- ***/
+/*** ---------------------------------------------------- ***/
+
 CREATE TABLE module(
-	id                          varchar(50) NOT NULL PRIMARY KEY,
-	name                        varchar(50) NOT NULL,
-	description                 varchar(100) NOT NULL,
-	type                        ENUM ('GameElement', 'DataSource') NOT NULL,
-	version                     varchar(10) NOT NULL,
+    id                          varchar(50) NOT NULL PRIMARY KEY,
+    name                        varchar(50) NOT NULL,
+    description                 varchar(100) NOT NULL,
+    type                        ENUM ('GameElement', 'DataSource') NOT NULL,
+    version                     varchar(10) NOT NULL,
     minProjectVersion           varchar(10) NOT NULL,
     maxProjectVersion           varchar(10),
     minAPIVersion               varchar(10) NOT NULL,
@@ -113,147 +120,215 @@ CREATE TABLE module_dependency(
 
 CREATE TABLE course_module(
     course                      int unsigned NOT NULL,
-	module                      varchar(50) NOT NULL,
-	isEnabled                   boolean DEFAULT FALSE,
-	minModuleVersion            varchar(10) NOT NULL,
-	maxModuleVersion            varchar(10),
+    module                      varchar(50) NOT NULL,
+    isEnabled                   boolean DEFAULT FALSE,
+    minModuleVersion            varchar(10) NOT NULL,
+    maxModuleVersion            varchar(10),
 
-	PRIMARY key(module, course),
-	FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE,
-	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+    PRIMARY key(module, course),
+    FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE,
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
-CREATE TABLE participation(
-	id 		                    int unsigned AUTO_INCREMENT PRIMARY KEY,
-	user 	                    int unsigned NOT NULL,
-	course 	                    int unsigned NOT NULL,
-	description                 varchar(500) NOT NULL,
-    type 	                    varchar(50) NOT NULL, #(ex:grade,skill,badge, lab,quiz,presentation,bonus)
-	post 	                    varchar(255),
-	date                        TIMESTAMP,
-	rating                      int,
-	evaluator                   int unsigned,
 
-	FOREIGN key(evaluator,course) REFERENCES course_user(id,course) ON DELETE CASCADE, #needs trigger to set eval to null
-    FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE
-);
+/*** ---------------------------------------------------- ***/
+/*** ------------------- Views tables ------------------- ***/
+/*** ---------------------------------------------------- ***/
 
-CREATE TABLE view(
+CREATE TABLE aspect(
     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
-    viewId                      int unsigned,
-    type                        ENUM ('text', 'image', 'header', 'block', 'table', 'row', 'chart'),
-    role                        varchar(100) DEFAULT 'role.Default',
-    style                       varchar(200),
-    cssId                       varchar(50),
-    class                       varchar(200),
-    label                       varchar(50),
-    visibilityType              ENUM ('visible', 'invisible', 'conditional'),
-    visibilityCondition         varchar(200),
-    loopData                    varchar(500),
-    variables                   varchar(500),
-    events                      varchar(500)
+    course                      int unsigned NOT NULL,
+    viewerRole                  int unsigned DEFAULT NULL,
+    userRole                    int unsigned DEFAULT NULL,
+
+    UNIQUE key(course, viewerRole, userRole),
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN key(viewerRole) REFERENCES role(id) ON DELETE CASCADE,
+    FOREIGN key(userRole) REFERENCES role(id) ON DELETE CASCADE
 );
 
-CREATE TABLE view_text(
-     id                          int unsigned NOT NULL PRIMARY KEY,
-     value                       varchar(500) NOT NULL,
-     link                        varchar(200),
+CREATE TABLE view_type(
+    id                          varchar(50) NOT NULL PRIMARY KEY,
+    description                 varchar(100) NOT NULL,
+    module                      varchar(50) DEFAULT NULL,
 
-     FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
-);
-
-CREATE TABLE view_image(
-     id                          int unsigned NOT NULL PRIMARY KEY,
-     src                         varchar(200) NOT NULL,
-     link                        varchar(200),
-
-     FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
-);
-
-CREATE TABLE view_header(
-     id                          int unsigned NOT NULL PRIMARY KEY,
-     image                       int unsigned NOT NULL,
-     title                       int unsigned NOT NULL,
-
-     FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
-);
-
-CREATE TABLE view_table_header(
-    id                          int unsigned NOT NULL,
-    headerRow                   int unsigned NOT NULL,
-    viewIndex                   int unsigned NOT NULL,
-
-    FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
-);
-
-CREATE TABLE view_table_row(
-    id                          int unsigned NOT NULL,
-    row                         int unsigned NOT NULL,
-    viewIndex                   int unsigned NOT NULL,
-
-    FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
-);
-
-CREATE TABLE view_chart(
-    id                          int unsigned NOT NULL,
-    chartType                   ENUM ('line', 'bar', 'star', 'progress'),
-    info                        varchar(500),
-
-    FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
-);
-
-CREATE TABLE view_parent(
-    parentId                    int unsigned,
-    childId                     int unsigned,
-    viewIndex                   int unsigned,
-
-    FOREIGN key(parentId) REFERENCES view(id) ON DELETE CASCADE
-);
-
-CREATE TABLE template(
-	id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
-	name                        varchar(100) NOT NULL,
-	roleType                    ENUM ('ROLE_SINGLE','ROLE_INTERACTION') DEFAULT 'ROLE_SINGLE',
-	course                      int unsigned NOT NULL,
-	isGlobal                    boolean DEFAULT FALSE,
-
-	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
-);
-
-CREATE TABLE view_template(
-	viewId                      int unsigned NOT NULL,
-	templateId                  int unsigned NOT NULL,
-
-	FOREIGN key(templateId) REFERENCES template(id) ON DELETE CASCADE
-);
-
-CREATE TABLE template_role(
-    templateId                  int unsigned NOT NULL,
-    role                        varchar(100),
-
-    FOREIGN key(templateId) REFERENCES template(id) ON DELETE CASCADE
-);
-
-CREATE TABLE template_module(
-    templateId                  int unsigned NOT NULL,
-    module                      varchar(50),
-
-    FOREIGN key(templateId) REFERENCES template(id) ON DELETE CASCADE,
     FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
 );
 
-CREATE TABLE autogame(
-	course 	                    int unsigned NOT NULL PRIMARY KEY,
-	startedRunning              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	finishedRunning             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	isRunning                   boolean DEFAULT FALSE,
-    periodicityNumber           int NULL DEFAULT 10,
-    periodicityTime             varchar(25) NULL DEFAULT 'Minutes',
+CREATE TABLE view(
+    id                          bigint unsigned NOT NULL PRIMARY KEY,
+    type                        varchar(50) NOT NULL,
+    cssId                       varchar(50) DEFAULT NULL,
+    class                       varchar(200) DEFAULT NULL,
+    style                       varchar(255) DEFAULT NULL,
+    visibilityType              ENUM ('visible', 'invisible', 'conditional') DEFAULT 'visible',
+    visibilityCondition         varchar(200) DEFAULT NULL,
+    loopData                    varchar(500) DEFAULT NULL,
 
-	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+    FOREIGN key(type) REFERENCES view_type(id) ON DELETE CASCADE
+);
+
+CREATE TABLE view_aspect(
+    viewRoot                    bigint unsigned NOT NULL,
+    aspect                      int unsigned NOT NULL,
+    view                        bigint unsigned NOT NULL,
+
+    PRIMARY key(viewRoot, aspect),
+    FOREIGN key(aspect) REFERENCES aspect(id) ON DELETE CASCADE,
+    FOREIGN key(view) REFERENCES view(id) ON DELETE CASCADE
+);
+
+CREATE TABLE view_variable(
+    view                        bigint unsigned NOT NULL,
+    name                        varchar(50) NOT NULL,
+    value                       varchar(200) NOT NULL,
+
+    UNIQUE key(view, name),
+    FOREIGN key(view) REFERENCES view(id) ON DELETE CASCADE
+);
+
+CREATE TABLE view_event(
+    view                        bigint unsigned NOT NULL,
+    type                        ENUM ('click', 'dblclick', 'mouseover', 'mouseout', 'mouseup', 'wheel', 'drag') NOT NULL,
+    action                      varchar(200) NOT NULL,
+
+    UNIQUE key(view, type),
+    FOREIGN key(view) REFERENCES view(id) ON DELETE CASCADE
+);
+
+CREATE TABLE view_parent(
+    parent                      bigint unsigned NOT NULL,
+    child                       bigint unsigned NOT NULL,
+    position                    int unsigned,
+
+    UNIQUE key(parent, position),
+    FOREIGN key(parent) REFERENCES view(id) ON DELETE CASCADE,
+    FOREIGN key(child) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE
+);
+
+CREATE TABLE view_category(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    name                        varchar(25) NOT NULL
+);
+
+CREATE TABLE view_category_order(
+    parent                      int unsigned DEFAULT NULL,
+    child                       int unsigned NOT NULL,
+    position                    int unsigned NOT NULL,
+
+    UNIQUE key(parent, position),
+    FOREIGN key(parent) REFERENCES view_category(id) ON DELETE CASCADE,
+    FOREIGN key(child) REFERENCES view_category(id) ON DELETE CASCADE
+);
+
+CREATE TABLE component_core(
+    viewRoot                    bigint unsigned PRIMARY KEY,
+    description                 varchar(50) DEFAULT NULL,
+    category                    int unsigned NOT NULL,
+    module                      varchar(50) DEFAULT NULL,
+
+    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+    FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
+    FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
+);
+
+CREATE TABLE component_custom(
+    viewRoot                    bigint unsigned PRIMARY KEY,
+    name                        varchar(25) NOT NULL,
+    creationTimestamp           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updateTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    course                      int unsigned NOT NULL,
+    module                      varchar(50) DEFAULT NULL,
+
+    UNIQUE key(course, name),
+    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
+);
+
+CREATE TABLE component_global(
+    viewRoot                    bigint unsigned PRIMARY KEY,
+    description                 varchar(50) DEFAULT NULL,
+    category                    int unsigned NOT NULL,
+    sharedBy                    int unsigned NOT NULL,
+
+    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+    FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
+    FOREIGN key(sharedBy) REFERENCES user(id) ON DELETE CASCADE
+);
+
+CREATE TABLE template_core(
+    viewRoot                    bigint unsigned PRIMARY KEY,
+    name                        varchar(50) NOT NULL,
+    category                    int unsigned NOT NULL,
+    module                      varchar(50) DEFAULT NULL,
+
+    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+    FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
+    FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
+);
+
+CREATE TABLE template_global(
+    viewRoot                    bigint unsigned PRIMARY KEY,
+    name                        varchar(50) NOT NULL,
+    category                    int unsigned NOT NULL,
+    sharedBy                    int unsigned NOT NULL,
+
+    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+    FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
+    FOREIGN key(sharedBy) REFERENCES user(id) ON DELETE CASCADE
+);
+
+CREATE TABLE page(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    name                        varchar(25) NOT NULL,
+    viewRoot                    bigint unsigned NOT NULL,
+    creationTimestamp           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updateTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    visibleFrom                 TIMESTAMP NULL DEFAULT NULL,
+    visibleUntil                TIMESTAMP NULL DEFAULT NULL,
+    position                    int unsigned NOT NULL,
+    course                      int unsigned NOT NULL,
+
+    UNIQUE key(course, name),
+    UNIQUE key(course, position),
+    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+);
+
+
+/*** ---------------------------------------------------- ***/
+/*** ----------------- AutoGame tables ------------------ ***/
+/*** ---------------------------------------------------- ***/
+
+CREATE TABLE autogame(
+    course 	                    int unsigned NOT NULL PRIMARY KEY,
+    startedRunning              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    finishedRunning             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    isRunning                   boolean DEFAULT FALSE,
+    periodicityNumber           int unsigned DEFAULT 10,
+    periodicityTime             varchar(25) DEFAULT 'Minutes',
+
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
 
 SET FOREIGN_KEY_CHECKS=0;
 INSERT INTO autogame (course, periodicityNumber, periodicityTime) values (0, NULL, NULL);
 SET FOREIGN_KEY_CHECKS=1;
+
+CREATE TABLE participation(
+    id 		                    int unsigned AUTO_INCREMENT PRIMARY KEY,
+    user 	                    int unsigned NOT NULL,
+    course 	                    int unsigned NOT NULL,
+    description                 varchar(500) NOT NULL,
+    type 	                    varchar(50) NOT NULL, #(ex:grade,skill,badge, lab,quiz,presentation,bonus)
+    post 	                    varchar(255),
+    date                        TIMESTAMP,
+    rating                      int,
+    evaluator                   int unsigned,
+
+    FOREIGN key(evaluator, course) REFERENCES course_user(id, course) ON DELETE CASCADE, #needs trigger to set eval to null
+    FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE
+);
+

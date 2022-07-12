@@ -413,14 +413,16 @@ class Database
     }
 
     /**
-     * Resets auto increment to 1 on a given table.
+     * Resets auto increment value on a given table.
+     * Defaults to 1.
      *
      * @param string $table
+     * @param int|null $value
      * @return void
      */
-    public function resetAutoIncrement(string $table)
+    public function resetAutoIncrement(string $table, int $value = null)
     {
-        $sql = "ALTER TABLE " . $table . " AUTO_INCREMENT = 1";
+        $sql = "ALTER TABLE " . $table . " AUTO_INCREMENT = " . ($value ?? 1);
         $this->executeQuery($sql);
     }
 

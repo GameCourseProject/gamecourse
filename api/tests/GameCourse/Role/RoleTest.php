@@ -6,6 +6,8 @@ use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\User\User;
+use GameCourse\Views\Aspect\Aspect;
+use GameCourse\XPLevels\XPLevels;
 use PDOException;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
@@ -26,11 +28,14 @@ class RoleTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        TestingUtils::setUpBeforeClass(false, ["CronJob"]);
+        TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
     }
 
     protected function setUp(): void
     {
+        // Setup default roles
+        Role::setupRoles();
+
         // Set logged user
         $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, true);
@@ -64,7 +69,7 @@ class RoleTest extends TestCase
         // NOTE: try to only clean tables used during tests to improve efficiency;
         //       don't forget tables with foreign keys will be automatically deleted on cascade
 
-        TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER]);
+        TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER, ROLE::TABLE_ROLE]);
         TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE]);
         TestingUtils::cleanFileStructure();
         TestingUtils::cleanEvents();
@@ -89,11 +94,36 @@ class RoleTest extends TestCase
     /**
      * @test
      */
+    public function setupRoles()
+    {
+        // Given
+        Core::database()->delete(Role::TABLE_ROLE, ["course" => 0]);
+
+        // When
+        Role::setupRoles();
+
+        // Then
+        $defaultRoles = Role::getCourseRoles(0, false);
+        $this->assertSameSize(Role::DEFAULT_ROLES, $defaultRoles);
+        foreach ($defaultRoles as $role) {
+            $this->assertContains($role["name"], Role::DEFAULT_ROLES);
+            $this->assertNull($role["landingPage"]);
+            $this->assertNull($role["module"]);
+        }
+
+        $defaultAspects = Aspect::getAspects(0);
+        $this->assertCount((count(Role::DEFAULT_ROLES) + 1) ** 2, $defaultAspects);
+    }
+
+
+    /**
+     * @test
+     */
     public function getRoleId()
     {
-        $this->assertEquals(1, Role::getRoleId(Role::DEFAULT_ROLES[0], $this->course->getId()));
-        $this->assertEquals(2, Role::getRoleId(Role::DEFAULT_ROLES[1], $this->course->getId()));
-        $this->assertEquals(3, Role::getRoleId(Role::DEFAULT_ROLES[2], $this->course->getId()));
+        $this->assertEquals(1, Role::getRoleId(Role::DEFAULT_ROLES[0], 0));
+        $this->assertEquals(2, Role::getRoleId(Role::DEFAULT_ROLES[1], 0));
+        $this->assertEquals(3, Role::getRoleId(Role::DEFAULT_ROLES[2], 0));
     }
 
     /**
@@ -153,11 +183,9 @@ class RoleTest extends TestCase
         Core::database()->resetAutoIncrement(Role::TABLE_ROLE);
 
         // When
-        $teacherRoleId = Role::addDefaultRolesToCourse($this->course->getId());
+        Role::addDefaultRolesToCourse($this->course->getId());
 
         // Then
-        $this->assertEquals(1, $teacherRoleId);
-
         $rolesNames = $this->course->getRoles();
         $this->assertIsArray($rolesNames);
         $this->assertCount(count(Role::DEFAULT_ROLES), $rolesNames);
@@ -171,15 +199,6 @@ class RoleTest extends TestCase
             ["name" => Role::DEFAULT_ROLES[1]],
             ["name" => Role::DEFAULT_ROLES[2]]
         ], $hierarchy);
-    }
-
-    /**
-     * @test
-     */
-    public function addDefaultRolesToCourseRolesAlreadyExist()
-    {
-        $this->expectException(Exception::class);
-        Role::addDefaultRolesToCourse($this->course->getId());
     }
 
 
@@ -223,10 +242,11 @@ class RoleTest extends TestCase
         $this->assertIsArray($roles);
         $this->assertCount(5, $roles);
         foreach ($roles as $role) {
-            $this->assertCount(3, array_keys($role));
+            $this->assertCount(4, array_keys($role));
             $this->assertArrayHasKey("id", $role);
             $this->assertArrayHasKey("name", $role);
             $this->assertArrayHasKey("landingPage", $role);
+            $this->assertArrayHasKey("module", $role);
             $this->assertContains($role["name"], ["Teacher", "StudentA", "StudentB", "Student", "Watcher"]);
         }
     }
@@ -287,44 +307,49 @@ class RoleTest extends TestCase
 
         $teacherRole = $hierarchy[0];
         $this->assertIsArray($teacherRole);
-        $this->assertCount(3, array_keys($teacherRole));
+        $this->assertCount(4, array_keys($teacherRole));
         $this->assertArrayHasKey("id", $teacherRole);
         $this->assertArrayHasKey("name", $teacherRole);
         $this->assertArrayHasKey("landingPage", $teacherRole);
+        $this->assertArrayHasKey("module", $teacherRole);
         $this->assertEquals("Teacher", $teacherRole["name"]);
 
         $studentRole = $hierarchy[1];
         $this->assertIsArray($studentRole);
-        $this->assertCount(4, array_keys($studentRole));
+        $this->assertCount(5, array_keys($studentRole));
         $this->assertArrayHasKey("id", $studentRole);
         $this->assertArrayHasKey("name", $studentRole);
         $this->assertArrayHasKey("landingPage", $studentRole);
+        $this->assertArrayHasKey("module", $studentRole);
         $this->assertArrayHasKey("children", $studentRole);
         $this->assertEquals("Student", $studentRole["name"]);
         $this->assertCount(2, $studentRole["children"]);
 
         $studentARole = $studentRole["children"][0];
         $this->assertIsArray($studentARole);
-        $this->assertCount(3, array_keys($studentARole));
+        $this->assertCount(4, array_keys($studentARole));
         $this->assertArrayHasKey("id", $studentARole);
         $this->assertArrayHasKey("name", $studentARole);
         $this->assertArrayHasKey("landingPage", $studentARole);
+        $this->assertArrayHasKey("module", $studentARole);
         $this->assertEquals("StudentA", $studentARole["name"]);
 
         $studentBRole = $studentRole["children"][1];
         $this->assertIsArray($studentBRole);
-        $this->assertCount(3, array_keys($studentBRole));
+        $this->assertCount(4, array_keys($studentBRole));
         $this->assertArrayHasKey("id", $studentBRole);
         $this->assertArrayHasKey("name", $studentBRole);
         $this->assertArrayHasKey("landingPage", $studentBRole);
+        $this->assertArrayHasKey("module", $studentBRole);
         $this->assertEquals("StudentB", $studentBRole["name"]);
 
         $watcherRole = $hierarchy[2];
         $this->assertIsArray($watcherRole);
-        $this->assertCount(3, array_keys($watcherRole));
+        $this->assertCount(4, array_keys($watcherRole));
         $this->assertArrayHasKey("id", $watcherRole);
         $this->assertArrayHasKey("name", $watcherRole);
         $this->assertArrayHasKey("landingPage", $watcherRole);
+        $this->assertArrayHasKey("module", $watcherRole);
         $this->assertEquals("Watcher", $watcherRole["name"]);
     }
 
@@ -439,6 +464,25 @@ class RoleTest extends TestCase
     {
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function addRoleToCourseModuleRole()
+    {
+        Role::addRoleToCourse($this->course->getId(), "NewModuleRole", null, null, XPLevels::ID);
+        $roles = Role::getCourseRoles($this->course->getId(), false);
+        $this->assertCount(6, $roles);
+
+        foreach ($roles as $role) {
+            if ($role["name"] == "NewModuleRole") {
+                $this->assertEquals(XPLevels::ID, $role["module"]);
+                return;
+            }
+        }
+        $this->fail("Role 'NewModuleRole' was not added to course.");
+    }
+
 
     /**
      * @test
@@ -449,6 +493,8 @@ class RoleTest extends TestCase
         Role::removeRoleFromCourse($this->course->getId(), "Student");
         $roles = Role::getCourseRoles($this->course->getId());
         $this->assertCount(2, $roles);
+        $this->assertContains("Teacher", $roles);
+        $this->assertContains("Watcher", $roles);
         $this->assertNotContains("Student", $roles);
         $this->assertNotContains("StudentA", $roles);
         $this->assertNotContains("StudentB", $roles);
@@ -460,9 +506,11 @@ class RoleTest extends TestCase
      */
     public function removeRoleFromCourseByRoleId()
     {
-        Role::removeRoleFromCourse($this->course->getId(), null, 2);
+        Role::removeRoleFromCourse($this->course->getId(), null, Role::getRoleId("Student", $this->course->getId()));
         $roles = Role::getCourseRoles($this->course->getId());
         $this->assertCount(2, $roles);
+        $this->assertContains("Teacher", $roles);
+        $this->assertContains("Watcher", $roles);
         $this->assertNotContains("Student", $roles);
         $this->assertNotContains("StudentA", $roles);
         $this->assertNotContains("StudentB", $roles);
@@ -495,7 +543,7 @@ class RoleTest extends TestCase
      */
     public function courseHasRoleById()
     {
-        $this->assertTrue(Role::courseHasRole($this->course->getId(), null, 2));
+        $this->assertTrue(Role::courseHasRole(0, null, 2));
         $this->assertTrue(Role::courseHasRole($this->course->getId(), null, 4));
         $this->assertFalse(Role::courseHasRole($this->course->getId(), null, 100));
     }
@@ -548,10 +596,11 @@ class RoleTest extends TestCase
         $this->assertIsArray($roles);
         $this->assertCount(2, $roles);
         foreach ($roles as $role) {
-            $this->assertCount(3, array_keys($role));
+            $this->assertCount(4, array_keys($role));
             $this->assertArrayHasKey("id", $role);
             $this->assertArrayHasKey("name", $role);
             $this->assertArrayHasKey("landingPage", $role);
+            $this->assertArrayHasKey("module", $role);
             $this->assertContains($role["name"], ["StudentA", "Student"]);
         }
     }
@@ -610,20 +659,22 @@ class RoleTest extends TestCase
 
         $studentRole = $hierarchy[0];
         $this->assertIsArray($studentRole);
-        $this->assertCount(4, array_keys($studentRole));
+        $this->assertCount(5, array_keys($studentRole));
         $this->assertArrayHasKey("id", $studentRole);
         $this->assertArrayHasKey("name", $studentRole);
         $this->assertArrayHasKey("landingPage", $studentRole);
+        $this->assertArrayHasKey("module", $studentRole);
         $this->assertArrayHasKey("children", $studentRole);
         $this->assertEquals("Student", $studentRole["name"]);
         $this->assertCount(1, $studentRole["children"]);
 
         $studentARole = $studentRole["children"][0];
         $this->assertIsArray($studentARole);
-        $this->assertCount(3, array_keys($studentARole));
+        $this->assertCount(4, array_keys($studentARole));
         $this->assertArrayHasKey("id", $studentARole);
         $this->assertArrayHasKey("name", $studentARole);
         $this->assertArrayHasKey("landingPage", $studentARole);
+        $this->assertArrayHasKey("module", $studentARole);
         $this->assertEquals("StudentA", $studentARole["name"]);
     }
 
@@ -697,7 +748,7 @@ class RoleTest extends TestCase
      */
     public function addRoleToUserById()
     {
-        Role::addRoleToUser($this->courseUser->getId(), $this->course->getId(), null, 5);
+        Role::addRoleToUser($this->courseUser->getId(), $this->course->getId(), null, 8);
         $roles = Role::getUserRoles($this->courseUser->getId(), $this->course->getId());
         $this->assertCount(3, $roles);
         $this->assertContains("StudentB", $roles);
@@ -754,7 +805,7 @@ class RoleTest extends TestCase
      */
     public function removeRoleFromUserByRoleId()
     {
-        Role::removeRoleFromUser($this->courseUser->getId(), $this->course->getId(), null, 4);
+        Role::removeRoleFromUser($this->courseUser->getId(), $this->course->getId(), null, 7);
         $roles = Role::getUserRoles($this->courseUser->getId(), $this->course->getId());
         $this->assertCount(1, $roles);
         $this->assertContains("Student", $roles);
@@ -787,9 +838,9 @@ class RoleTest extends TestCase
      */
     public function userHasRoleById()
     {
-        $this->assertTrue(Role::userHasRole($this->courseUser->getId(), $this->course->getId(), null, 2));
-        $this->assertTrue(Role::userHasRole($this->courseUser->getId(), $this->course->getId(), null, 4));
-        $this->assertFalse(Role::userHasRole($this->courseUser->getId(), $this->course->getId(), null, 5));
+        $this->assertTrue(Role::userHasRole($this->courseUser->getId(), $this->course->getId(), null, 5));
+        $this->assertTrue(Role::userHasRole($this->courseUser->getId(), $this->course->getId(), null, 7));
+        $this->assertFalse(Role::userHasRole($this->courseUser->getId(), $this->course->getId(), null, 8));
         $this->assertFalse(Role::userHasRole($this->courseUser->getId(), $this->course->getId(), null, 100));
     }
 

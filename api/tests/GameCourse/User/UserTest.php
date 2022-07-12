@@ -27,7 +27,7 @@ class UserTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        TestingUtils::setUpBeforeClass(false, ["CronJob"]);
+        TestingUtils::setUpBeforeClass([], ["CronJob"]);
     }
 
     protected function tearDown(): void

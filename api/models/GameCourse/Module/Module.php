@@ -202,7 +202,7 @@ abstract class Module
         $this->setData(["maxAPIVersion" => $max]);
     }
 
-    public function setCourse(Course $course)
+    public function setCourse(?Course $course)
     {
         $this->course = $course;
     }
@@ -225,16 +225,16 @@ abstract class Module
 
     /**
      * Sets module data on the database.
+     *
+     * @example setData(["name" => "New name"])
+     * @example setData(["name" => "New name", "description" => "New description"])
+     *
      * @param array $fieldValues
      * @return void
      * @throws Exception
-     * @example setData(["name" => "New name", "description" => "New description"])
-     *
-     * @example setData(["name" => "New name"])
      */
     public function setData(array $fieldValues)
     {
-        if (key_exists("id", $fieldValues)) self::validateName($fieldValues["id"]);
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
         if (key_exists("description", $fieldValues)) self::validateDescription($fieldValues["description"]);
         if (key_exists("type", $fieldValues)) self::validateType($fieldValues["type"]);
@@ -698,11 +698,15 @@ abstract class Module
     private static function installModule()
     {
         // TODO: upload module files
+        // TODO: update composer for controllers & dictionary
+        // TODO: add new view types if available on module
     }
 
     public static function uninstallModule()
     {
         // TODO: remove module files (ver function deleteModule() on Module.php
+        // TODO: update composer for controllers & dictionary
+        // TODO: remove module view types if available on module
     }
 
 
@@ -718,8 +722,8 @@ abstract class Module
      * @param $description
      * @param $type
      * @param $version
-     * @param $projectCompatibility
-     * @param $APICompatibility
+     * @param array $projectCompatibility
+     * @param array $APICompatibility
      * @return void
      * @throws Exception
      */

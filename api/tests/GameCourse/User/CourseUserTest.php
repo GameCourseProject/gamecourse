@@ -28,7 +28,7 @@ class CourseUserTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        TestingUtils::setUpBeforeClass(false, ["CronJob"]);
+        TestingUtils::setUpBeforeClass(["roles"], ["CronJob"]);
     }
 
     protected function setUp(): void
@@ -85,9 +85,9 @@ class CourseUserTest extends TestCase
             "no role" => [$userId, $courseId, null, null, true],
             "with teacher role name" => [$userId, $courseId, "Teacher", null, true],
             "with student role name" => [$userId, $courseId, "Student", null, true],
-            "with teacher role ID" => [$userId, $courseId, null, 1, true],
-            "with student role ID" => [$userId, $courseId, null, 2, true],
-            "with role name and role ID" => [$userId, $courseId, "Student", 2, true],
+            "with teacher role ID" => [$userId, $courseId, null, 4, true],
+            "with student role ID" => [$userId, $courseId, null, 5, true],
+            "with role name and role ID" => [$userId, $courseId, "Student", 5, true],
             "active" => [$userId, $courseId, null, null, true],
             "inactive" => [$userId, $courseId, null, null, false]
         ];
@@ -756,10 +756,11 @@ class CourseUserTest extends TestCase
         $this->assertCount(4, $roles);
 
         foreach ($roles as $role) {
-            $this->assertCount(3, array_keys($role));
+            $this->assertCount(4, array_keys($role));
             $this->assertArrayHasKey("id", $role);
             $this->assertArrayHasKey("name", $role);
             $this->assertArrayHasKey("landingPage", $role);
+            $this->assertArrayHasKey("module", $role);
         }
 
         $rolesNames = array_column($roles, "name");
@@ -928,36 +929,40 @@ class CourseUserTest extends TestCase
 
         $student = $roles[0];
         $this->assertIsArray($student);
-        $this->assertCount(4, array_keys($student));
+        $this->assertCount(5, array_keys($student));
         $this->assertArrayHasKey("id", $student);
         $this->assertArrayHasKey("name", $student);
         $this->assertArrayHasKey("landingPage", $student);
+        $this->assertArrayHasKey("module", $student);
         $this->assertArrayHasKey("children", $student);
         $this->assertEquals("Student", $student["name"]);
         $this->assertCount(2, $student["children"]);
 
         $studentA = $student["children"][0];
-        $this->assertCount(4, array_keys($studentA));
+        $this->assertCount(5, array_keys($studentA));
         $this->assertArrayHasKey("id", $studentA);
         $this->assertArrayHasKey("name", $studentA);
         $this->assertArrayHasKey("landingPage", $studentA);
+        $this->assertArrayHasKey("module", $studentA);
         $this->assertArrayHasKey("children", $studentA);
         $this->assertEquals("StudentA", $studentA["name"]);
         $this->assertCount(1, $studentA["children"]);
 
         $studentA1 = $studentA["children"][0];
-        $this->assertCount(3, array_keys($studentA1));
+        $this->assertCount(4, array_keys($studentA1));
         $this->assertArrayHasKey("id", $studentA1);
         $this->assertArrayHasKey("name", $studentA1);
         $this->assertArrayHasKey("landingPage", $studentA1);
+        $this->assertArrayHasKey("module", $studentA1);
         $this->assertEquals("StudentA1", $studentA1["name"]);
 
 
         $studentB = $student["children"][1];
-        $this->assertCount(3, array_keys($studentB));
+        $this->assertCount(4, array_keys($studentB));
         $this->assertArrayHasKey("id", $studentB);
         $this->assertArrayHasKey("name", $studentB);
         $this->assertArrayHasKey("landingPage", $studentB);
+        $this->assertArrayHasKey("module", $studentB);
         $this->assertEquals("StudentB", $studentB["name"]);
     }
 

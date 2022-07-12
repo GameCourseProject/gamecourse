@@ -346,7 +346,8 @@ class Course
         self::setAutoDisabling($id, $endDate);
 
         // Add default roles
-        $teacherRoleId = Role::addDefaultRolesToCourse($id);
+        Role::addDefaultRolesToCourse($id);
+        $teacherRoleId = Role::getRoleId("Teacher", $id);
 
         // Add current user as a teacher of the course
         $course = new Course($id);
@@ -558,7 +559,7 @@ class Course
 
         $courseUsers = Core::database()->selectMultiple(
             User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id JOIN " .
-            CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id JOIN " . Role::TABLE_USER_ROLE . " ur on ur.id=u.id JOIN " .
+            CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id JOIN " . Role::TABLE_USER_ROLE . " ur on ur.user=u.id JOIN " .
             Role::TABLE_ROLE . " r on r.id=ur.role and r.course=cu.course",
             $where,
             "u.*, a.username, a.authentication_service, a.lastLogin, cu.lastActivity, cu.isActive as isActiveInCourse",
@@ -743,12 +744,13 @@ class Course
     /**
      * @throws Exception
      */
-    public function getModules(?bool $enabled = null): array
+    public function getModules(?bool $enabled = null, bool $IDsOnly = false): array
     {
         $table = Module::TABLE_MODULE . " m JOIN " . Module::TABLE_COURSE_MODULE . " cm on cm.module=m.id";
         $where = ["cm.course" => $this->id];
         if ($enabled !== null) $where["cm.isEnabled"] = $enabled;
         $modules = Core::database()->selectMultiple($table, $where, "m.*, cm.isEnabled, cm.minModuleVersion, cm.maxModuleVersion", "m.id");
+        if ($IDsOnly) return array_column($modules, "id");
         foreach ($modules as &$moduleInfo) {
             $moduleInfo = Module::getExtraInfo($moduleInfo, $this);
             $moduleInfo = Module::parse($moduleInfo);
@@ -793,10 +795,10 @@ class Course
     {
         $resources = [];
 
-        $modules = $this->getModules($enabled);
-        foreach ($modules as $moduleObj) {
-            $module = $this->getModuleById($moduleObj["id"]);
-            $resources[$module->getId()] = $module->getResources();
+        $moduleIds = $this->getModules($enabled, true);
+        foreach ($moduleIds as $moduleId) {
+            $module = $this->getModuleById($moduleId);
+            $resources[$moduleId] = $module->getResources();
         }
 
         return $resources;

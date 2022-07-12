@@ -13,7 +13,9 @@ use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
+use GameCourse\Role\Role;
 use GameCourse\User\User;
+use GameCourse\Views\ViewHandler;
 
 require __DIR__ . "/../inc/bootstrap.php";
 
@@ -47,11 +49,17 @@ if ($_SERVER['REQUEST_METHOD'] == "GET") {  // check setup
             null, true, true);
         Core::setLoggedUser($user);
 
+        // Register default system roles
+        Role::setupRoles();
+
         // Register modules available
         Module::setupModules();
 
+        // Init views
+        ViewHandler::setupViews();
+
         // Create course
-        // NOTE: user is automatically added as a teacher of the course
+        // NOTE: logged user is automatically added as a teacher of the course
         $course = Course::addCourse($courseName, null, date("Y", time()) . "-" . date("Y", strtotime("+1 year")),
             $courseColor, null, null, true, true);
 

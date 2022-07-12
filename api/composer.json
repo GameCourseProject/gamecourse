@@ -17,6 +17,7 @@
     "psr-4": {
       "Database\\": "models/Database",
       "GameCourse\\": ["models/GameCourse", "modules"],
+      "GameCourse\\Views\\Dictionary\\": ["models/GameCourse/Views/Dictionary/libraries", "modules/Awards/dictionary"],
       "Utils\\": "models/Utils",
       "API\\": "controllers",
       "Event\\": "events"

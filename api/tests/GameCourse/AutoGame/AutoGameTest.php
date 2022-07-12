@@ -23,7 +23,7 @@ class AutoGameTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        TestingUtils::setUpBeforeClass(true, ["CronJob"]);
+        TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
     }
 
     protected function setUp(): void

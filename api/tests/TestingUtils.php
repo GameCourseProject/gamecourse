@@ -3,6 +3,8 @@
 use Event\Event;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
+use GameCourse\Role\Role;
+use GameCourse\Views\ViewHandler;
 use Utils\Cache;
 use Utils\Utils;
 
@@ -19,13 +21,19 @@ class TestingUtils
     /**
      * @throws Exception
      */
-    public static function setUpBeforeClass(bool $setupModules = false, array $mocks = [])
+    public static function setUpBeforeClass(array $setup = [], array $mocks = [])
     {
         // Clean all tables in the database
         Core::database()->cleanDatabase();
 
+        // Setup default roles
+        if (in_array("roles", $setup)) Role::setupRoles();
+
         // Setup Modules
-        if ($setupModules) Module::setupModules();
+        if (in_array("modules", $setup)) Module::setupModules();
+
+        // Setup Views
+        if (in_array("views", $setup)) ViewHandler::setupViews();
 
         // Relocate important data temporarily
         if (file_exists(LOGS_FOLDER)) Utils::copyDirectory(LOGS_FOLDER . "/", LOGS_FOLDER . "_copy/");
@@ -96,7 +104,8 @@ class TestingUtils
     public static function resetAutoIncrement(array $tables)
     {
         foreach ($tables as $table) {
-            Core::database()->resetAutoIncrement($table);
+            if (is_array($table)) { $value = $table[1]; $table = $table[0]; }
+            Core::database()->resetAutoIncrement($table, $value ?? null);
         }
     }
 

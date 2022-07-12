@@ -8,6 +8,7 @@ use Facebook;
 use FenixEdu;
 use FenixEduException;
 use GameCourse\User\User;
+use GameCourse\Views\Dictionary\Dictionary;
 use GoogleHandler;
 use Linkedin;
 use Utils\Utils;
@@ -232,6 +233,21 @@ class Core
 
         echo json_encode(['isLoggedIn' => false]);
         exit();
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ----------------- Dictionary ------------------ ***/
+    /*** ----------------------------------------------- ***/
+
+    /**
+     * Get an instance of the dictionary.
+     *
+     * @return Dictionary
+     */
+    public static function dictionary(): Dictionary
+    {
+        return Dictionary::get();
     }
 
 

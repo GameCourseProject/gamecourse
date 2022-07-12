@@ -6,7 +6,8 @@ use Event\EventType;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Views\Page;
+use GameCourse\Views\Aspect\Aspect;
+use GameCourse\Views\Page\Page;
 use PDOException;
 
 /**
@@ -19,6 +20,24 @@ class Role
     const TABLE_USER_ROLE = "user_role";
 
     const DEFAULT_ROLES = ["Teacher", "Student", "Watcher"];  // default roles for each course
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ----------------------- Setup ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Registers default roles in the system.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public static function setupRoles()
+    {
+        Core::database()->setForeignKeyChecks(false);
+        self::setCourseRoles(0, self::DEFAULT_ROLES);
+        Core::database()->setForeignKeyChecks(true);
+    }
 
 
     /*** ---------------------------------------------------- ***/
@@ -48,7 +67,7 @@ class Role
     public static function getRoleName(int $roleId): string
     {
         $roleName = Core::database()->select(self::TABLE_ROLE, ["id" => $roleId], "name");
-        if (!$roleName) throw new PDOException("Role with ID = " . $roleId . "' doesn't exist.");
+        if (!$roleName) throw new PDOException("Role with ID = " . $roleId . " doesn't exist.");
         return $roleName;
     }
 
@@ -63,7 +82,7 @@ class Role
      *                          ]],
      *                          ["name" => "Watcher"]
      *                     ]
-     *          getRolesNamesByHierarchy($hierarchy) --> ["Teacher", "StudentA", "StudentB", "Student", "Watcher"]
+     *          getRolesNamesInHierarchy($hierarchy) --> ["Teacher", "StudentA", "StudentB", "Student", "Watcher"]
      *
      * @param array $hierarchy
      * @return array
@@ -85,31 +104,18 @@ class Role
 
     /**
      * Adds default roles to a given course.
-     * Returns ID of Teacher role.
      *
      * @param int $courseId
-     * @return int|null
      * @throws Exception
      */
-    public static function addDefaultRolesToCourse(int $courseId): ?int
+    public static function addDefaultRolesToCourse(int $courseId)
     {
-        // Check if default roles already exist
-        $rolesNames = array_column(Core::database()->selectMultiple(self::TABLE_ROLE, ["course" => $courseId], "name"), "name");
-        foreach ($rolesNames as $roleName) {
-            if (in_array($roleName, self::DEFAULT_ROLES))
-                throw new Exception("Default role '" . $roleName . "' already exists in course with ID = " . $courseId);
-        }
+        // Add default roles
+        self::setCourseRoles($courseId, self::DEFAULT_ROLES);
 
-        $teacherId = null;
-        foreach (self::DEFAULT_ROLES as $role) {
-            $id = Core::database()->insert(self::TABLE_ROLE, ["name" => $role, "course" => $courseId]);
-            if ($role === "Teacher") $teacherId = $id;
-        }
-
+        // Update roles hierarchy
         $hierarchy = array_map(function ($role) { return ["name" => $role]; }, self::DEFAULT_ROLES);
-        Core::database()->update(Course::TABLE_COURSE, ["roleHierarchy" => json_encode($hierarchy)], ["id" => $courseId]);
-
-        return $teacherId;
+        (new Course($courseId))->setRolesHierarchy($hierarchy);
     }
 
     /**
@@ -124,11 +130,11 @@ class Role
      *
      * @example Course Roles: Teacher, Student, StudentA, StudentB, Watcher
      *          getCourseRoles(<courseID>, false) --> [
-     *                                                  ["name" => "Watcher", "id" => 3, "landingPage" => null],
-     *                                                  ["name" => "Student", "id" => 2, "landingPage" => null],
-     *                                                  ["name" => "StudentB", "id" => 5, "landingPage" => null],
-     *                                                  ["name" => "StudentA", "id" => 4, "landingPage" => null],
-     *                                                  ["name" => "Teacher", "id" => 1, "landingPage" => null]
+     *                                                  ["name" => "Watcher", "id" => 3, "landingPage" => null, "module" => null],
+     *                                                  ["name" => "Student", "id" => 2, "landingPage" => null, "module" => null],
+     *                                                  ["name" => "StudentB", "id" => 5, "landingPage" => null"module" => null],
+     *                                                  ["name" => "StudentA", "id" => 4, "landingPage" => null"module" => null],
+     *                                                  ["name" => "Teacher", "id" => 1, "landingPage" => null"module" => null]
      *                                                ] (no fixed order)
      *
      * @example Course Roles: Teacher, Student, StudentA, StudentB, Watcher
@@ -136,12 +142,12 @@ class Role
      *
      * @example Course Roles: Teacher, Student, StudentA, StudentB, Watcher
      *          getCourseRoles(<courseID>, false, true) --> [
-     *                                                          ["name" => "Teacher", "id" => 1, "landingPage" => null],
-     *                                                          ["name" => "Student", "id" => 2, "landingPage" => null, "children" => [
-     *                                                              ["name" => "StudentA", "id" => 4, "landingPage" => null],
-     *                                                              ["name" => "StudentB", "id" => 5, "landingPage" => null]
+     *                                                          ["name" => "Teacher", "id" => 1, "landingPage" => null, "module" => null],
+     *                                                          ["name" => "Student", "id" => 2, "landingPage" => null, "module" => null, "children" => [
+     *                                                              ["name" => "StudentA", "id" => 4, "landingPage" => null, "module" => null],
+     *                                                              ["name" => "StudentB", "id" => 5, "landingPage" => null, "module" => null]
      *                                                          ]],
-     *                                                          ["name" => "Watcher", "id" => 3, "landingPage" => null]
+     *                                                          ["name" => "Watcher", "id" => 3, "landingPage" => null, "module" => null]
      *                                                      ]
      *
      * @param int $courseId
@@ -169,11 +175,12 @@ class Role
                     if ($hasChildren) $continue();
                     $role["id"] = $rolesByName[$role["name"]]["id"];
                     $role["landingPage"] = $rolesByName[$role["name"]]["landingPage"];
+                    $role["module"] = $rolesByName[$role["name"]]["module"];
                 });
                 return $hierarchy;
 
             } else {
-                $roles = Core::database()->selectMultiple(self::TABLE_ROLE, ["course" => $courseId], "id, name, landingPage", "id");
+                $roles = Core::database()->selectMultiple(self::TABLE_ROLE, ["course" => $courseId], "id, name, landingPage, module", "id");
                 foreach ($roles as &$role) { $role = self::parse($role); }
                 return $roles;
             }
@@ -183,6 +190,11 @@ class Role
     /**
      * Replaces course's roles in the database.
      * NOTE: it doesn't update roles hierarchy
+     *
+     * WARNING: be careful using this function as it will delete all
+     *          roles in the course, and subsequently every data that
+     *          depends on it on the database; consider using function
+     *          'updateCourseRoles' declared also on this class
      *
      * @param int $courseId
      * @param array|null $rolesNames
@@ -195,8 +207,12 @@ class Role
         if ($rolesNames === null && $hierarchy === null)
             throw new Exception("Need either roles names or hierarchy to set roles in a course.");
 
-        // Remove all course roles
+        // Remove all course roles & aspects
         Core::database()->delete(self::TABLE_ROLE, ["course" => $courseId]);
+        Aspect::deleteAllAspectsInCourse($courseId);
+
+        // Add default aspect
+        Aspect::addAspect($courseId, null, null);
 
         // Add new roles
         if ($rolesNames === null) $rolesNames = self::getRolesNamesInHierarchy($hierarchy);
@@ -214,17 +230,34 @@ class Role
      * @param string|null $roleName
      * @param string|null $landingPageName
      * @param int|null $landingPageId
+     * @param string|null $moduleId
      * @return void
      * @throws Exception
      */
-    public static function addRoleToCourse(int $courseId, string $roleName, string $landingPageName = null, int $landingPageId = null)
+    public static function addRoleToCourse(int $courseId, string $roleName, string $landingPageName = null, int $landingPageId = null, string $moduleId = null)
     {
         if (!self::courseHasRole($courseId, $roleName)) {
+            // Add role
             self::validateRoleName($roleName);
             $data = ["course" => $courseId, "name" => $roleName];
             if ($landingPageName !== null) $landingPageId = Page::getPageId($landingPageName, $courseId);
             if ($landingPageId !== null) $data["landingPage"] = $landingPageId;
-            Core::database()->insert(self::TABLE_ROLE, $data);
+            if ($moduleId !== null) $data["module"] = $moduleId;
+            $roleId = Core::database()->insert(self::TABLE_ROLE, $data);
+
+            // Add default aspects of role
+            Aspect::addAspect($courseId, $roleId, null);
+            Aspect::addAspect($courseId, null, $roleId);
+            Aspect::addAspect($courseId, $roleId, $roleId);
+
+            // Add combinations of aspects with other roles
+            $courseRoles = self::getCourseRoles($courseId, false);
+            foreach ($courseRoles as $role) {
+                if ($role["id"] != $roleId) {
+                    Aspect::addAspect($courseId, $role["id"], $roleId);
+                    Aspect::addAspect($courseId, $roleId, $role["id"]);
+                }
+            }
         }
     }
 
@@ -323,10 +356,10 @@ class Role
      *
      * @example User Roles: Student, StudentA, StudentA1, StudentB
      *          getUserRoles(<userID>, <courseID>, false) --> [
-     *                                                  ["name" => "Student", "id" => 2, "landingPage" => null],
-     *                                                  ["name" => "StudentA", "id" => 4, "landingPage" => null],
-     *                                                  ["name" => "StudentA1", "id" => 5, "landingPage" => null],
-     *                                                  ["name" => "StudentB", "id" => 6, "landingPage" => null]
+     *                                                  ["name" => "Student", "id" => 2, "landingPage" => null, "module" => null],
+     *                                                  ["name" => "StudentA", "id" => 4, "landingPage" => null, "module" => null],
+     *                                                  ["name" => "StudentA1", "id" => 5, "landingPage" => null, "module" => null],
+     *                                                  ["name" => "StudentB", "id" => 6, "landingPage" => null, "module" => null]
      *                                                ] (no fixed order)
      *
      * @example User Roles: Student, StudentA, StudentA1, StudentB
@@ -334,11 +367,11 @@ class Role
      *
      * @example User Roles: Student, StudentA, StudentA1, StudentB
      *          getUserRoles(<userID>, <courseID>, false, true) --> [
-     *                                                                  ["name" => "Student", "id" => 2, "landingPage" => null, "children" => [
-     *                                                                      ["name" => "StudentA", "id" => 4, "landingPage" => null, "children" => [
-     *                                                                          ["name" => "StudentA1", "id" => 5, "landingPage" => null]
+     *                                                                  ["name" => "Student", "id" => 2, "landingPage" => null, "module" => null, "children" => [
+     *                                                                      ["name" => "StudentA", "id" => 4, "landingPage" => null, "module" => null, "children" => [
+     *                                                                          ["name" => "StudentA1", "id" => 5, "landingPage" => null, "module" => null]
      *                                                                      ]],
-     *                                                                      ["name" => "StudentB", "id" => 5, "landingPage" => null]
+     *                                                                      ["name" => "StudentB", "id" => 5, "landingPage" => null, "module" => null]
      *                                                                  ]]
      *                                                              ]
      *
@@ -353,7 +386,7 @@ class Role
         if ($onlyNames) {
             $rolesNames = array_column(Core::database()->selectMultiple(
                 Role::TABLE_USER_ROLE . " ur JOIN " . Role::TABLE_ROLE . " r on ur.role=r.id",
-                ["ur.course" => $courseId, "ur.id" => $userId], "name"),
+                ["ur.course" => $courseId, "ur.user" => $userId], "name"),
                 "name");
 
             if ($sortByHierarchy) {
@@ -365,8 +398,8 @@ class Role
         } else {
             $roles = Core::database()->selectMultiple(
                 Role::TABLE_USER_ROLE . " ur JOIN " . Role::TABLE_ROLE . " r on ur.role=r.id",
-                ["ur.course" => $courseId, "ur.id" => $userId],
-                "r.id, name, landingPage"
+                ["ur.course" => $courseId, "ur.user" => $userId],
+                "r.id, name, landingPage, module"
             );
             foreach ($roles as &$role) { $role = self::parse($role); }
 
@@ -383,6 +416,7 @@ class Role
                         if ($hasChildren) $continue();
                         $role["id"] = $rolesByName[$role["name"]]["id"];
                         $role["landingPage"] = $rolesByName[$role["name"]]["landingPage"];
+                        $role["module"] = $rolesByName[$role["name"]]["module"];
                         if (isset($role["children"]) && count($role["children"]) == 0) unset($role["children"]);
                     }
                 });
@@ -410,7 +444,7 @@ class Role
         }
 
         // Remove all user roles
-        Core::database()->delete(self::TABLE_USER_ROLE, ["id" => $userId, "course" => $courseId]);
+        Core::database()->delete(self::TABLE_USER_ROLE, ["user" => $userId, "course" => $courseId]);
 
         // Add new roles
         foreach ($rolesNames as $roleName) {
@@ -440,7 +474,7 @@ class Role
         if (!self::userHasRole($userId, $courseId, $roleName, $roleId)) {
             if (!$roleId) $roleId = self::getRoleId($roleName, $courseId);
             Core::database()->insert(self::TABLE_USER_ROLE, [
-                "id" => $userId,
+                "user" => $userId,
                 "course" => $courseId,
                 "role" => $roleId
             ]);
@@ -473,7 +507,7 @@ class Role
 
         foreach ($remove as $rmRoleName) {
             $roleId = self::getRoleId($rmRoleName, $courseId);
-            Core::database()->delete(self::TABLE_USER_ROLE, ["id" => $userId, "course" => $courseId, "role" => $roleId]);
+            Core::database()->delete(self::TABLE_USER_ROLE, ["user" => $userId, "course" => $courseId, "role" => $roleId]);
         }
 
         // Trigger student removed event
@@ -498,7 +532,7 @@ class Role
             throw new Exception("Need either role name or ID to check whether a user has a given role.");
 
         if (!$roleId) $roleId = self::getRoleId($roleName, $courseId);
-        $where = ["id" => $userId, "course" => $courseId, "role" => $roleId];
+        $where = ["user" => $userId, "course" => $courseId, "role" => $roleId];
         return !empty(Core::database()->select(self::TABLE_USER_ROLE, $where));
     }
 
