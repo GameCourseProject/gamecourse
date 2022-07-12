@@ -194,7 +194,7 @@ class ViewHandler
     }
 
     /**
-     * Moves a view's position.
+     * Moves a view's position in the database.
      *
      * @param int $viewRoot
      * @param array|null $from
@@ -224,38 +224,6 @@ class ViewHandler
                 "child" => $viewRoot,
                 "position" => $from["pos"]
             ]);
-        }
-    }
-
-    private static function prepareViewParams(array $view): array
-    {
-        return [
-            "id" => $view["id"],
-            "type" => $view["type"],
-            "cssId" => $view["cssId"] ?? null,
-            "class" => $view["class"] ?? null,
-            "style" => $view["style"] ?? null,
-            "visibilityType" => $view["visibilityType"] ?? VisibilityType::VISIBLE,
-            "visibilityCondition" => $view["visibilityCondition"] ?? null,
-            "loopData" => $view["loopData"] ?? null
-        ];
-    }
-
-    private static function insertVariablesInView(array $view)
-    {
-        if (isset($view["variables"])) {
-            foreach ($view["variables"] as $name => $value) {
-                Variable::addVariable($view["id"], $name, $value);
-            }
-        }
-    }
-
-    private static function insertEventsInView(array $view)
-    {
-        if (isset($view["events"])) {
-            foreach ($view["events"] as $type => $action) {
-                Event::addEvent($view["id"], $type, $action);
-            }
         }
     }
 
@@ -331,6 +299,38 @@ class ViewHandler
         } else {
             if ($fieldName == "id") return intval($field);
             return $field;
+        }
+    }
+
+    private static function prepareViewParams(array $view): array
+    {
+        return [
+            "id" => $view["id"],
+            "type" => $view["type"],
+            "cssId" => $view["cssId"] ?? null,
+            "class" => $view["class"] ?? null,
+            "style" => $view["style"] ?? null,
+            "visibilityType" => $view["visibilityType"] ?? VisibilityType::VISIBLE,
+            "visibilityCondition" => $view["visibilityCondition"] ?? null,
+            "loopData" => $view["loopData"] ?? null
+        ];
+    }
+
+    private static function insertVariablesInView(array $view)
+    {
+        if (isset($view["variables"])) {
+            foreach ($view["variables"] as $name => $value) {
+                Variable::addVariable($view["id"], $name, $value);
+            }
+        }
+    }
+
+    private static function insertEventsInView(array $view)
+    {
+        if (isset($view["events"])) {
+            foreach ($view["events"] as $type => $action) {
+                Event::addEvent($view["id"], $type, $action);
+            }
         }
     }
 }
