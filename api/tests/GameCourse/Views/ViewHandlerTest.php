@@ -249,8 +249,8 @@ class ViewHandlerTest extends TestCase
             "visibilityType" => VisibilityType::CONDITIONAL,
             "visibilityCondition" => "1 + 2 == 3",
             "loopData" => "user.getUsers()",
-            "variables" => ["var1" => "1 + 2"],
-            "events" => [EventType::CLICK => "toggleView(100)"]
+            "variables" => [["name" => "var1", "value" => "1 + 2", "position" => 0]],
+            "events" => [["type" => EventType::CLICK, "action" => "toggleView(100)"]]
         ];
         $aspect = Aspect::getAspectBySpecs(0, null, null);
 
@@ -355,8 +355,8 @@ class ViewHandlerTest extends TestCase
             "visibilityType" => VisibilityType::CONDITIONAL,
             "visibilityCondition" => "1 + 2 == 3",
             "loopData" => "user.getUsers()",
-            "variables" => ["var1" => "1 + 2"],
-            "events" => [EventType::CLICK => "toggleView(100)"]
+            "variables" => [["name" => "var1", "value" => "1 + 2", "position" => 0]],
+            "events" => [["type" => EventType::CLICK, "action" => "toggleView(100)"]]
         ];
         $aspect = Aspect::getAspectBySpecs(0, null, null);
         ViewHandler::insertView($view, $aspect);
@@ -470,7 +470,7 @@ class ViewHandlerTest extends TestCase
             "id" => 1,
             "viewRoot" => 1,
             "type" => Block::ID,
-            "variables" => ["var1" => "1 + 2"],
+            "variables" => [["name" => "var1", "value" => "1 + 2", "position" => 0]],
         ];
         $aspect = Aspect::getAspectBySpecs(0, null, null);
         ViewHandler::insertView($view, $aspect);
@@ -478,8 +478,8 @@ class ViewHandlerTest extends TestCase
         // When
         $newView = ["id" => 1, "viewRoot" => 1, "type" => Block::ID,
             "variables" => [
-                "var1" => "1 + 2",
-                "var2" => "3 + 4",
+                ["name" => "var1", "value" => "1 + 2", "position" => 0],
+                ["name" => "var2", "value" => "3 + 4", "position" => 1]
             ]
         ];
         ViewHandler::updateView($newView, $aspect);
@@ -513,7 +513,7 @@ class ViewHandlerTest extends TestCase
             "id" => 1,
             "viewRoot" => 1,
             "type" => Block::ID,
-            "events" => [EventType::CLICK => "toggleView(100)"],
+            "events" => [["type" => EventType::CLICK, "action" => "toggleView(100)"]],
         ];
         $aspect = Aspect::getAspectBySpecs(0, null, null);
         ViewHandler::insertView($view, $aspect);
@@ -521,8 +521,8 @@ class ViewHandlerTest extends TestCase
         // When
         $newView = ["id" => 1, "viewRoot" => 1, "type" => Block::ID,
             "events" => [
-                EventType::CLICK => "toggleView(100)",
-                EventType::WHEEL => "toggleView(200)"
+                ["type" => EventType::CLICK, "action" => "toggleView(100)"],
+                ["type" => EventType::WHEEL, "action" => "toggleView(200)"]
             ]
         ];
         ViewHandler::updateView($newView, $aspect);
