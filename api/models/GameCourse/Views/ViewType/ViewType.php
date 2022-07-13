@@ -1,10 +1,10 @@
 <?php
 namespace GameCourse\Views\ViewType;
 
-use API\API;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
+use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\ViewHandler;
 use Utils\Utils;
 
@@ -195,9 +195,7 @@ abstract class ViewType
      */
     public static function deleteViewType(string $id)
     {
-        $viewType = self::getViewTypeById($id);
         Core::database()->delete(self::TABLE_VIEW_TYPE, ["id" => $id]);
-        $viewType->delete();
     }
 
     /**
@@ -281,30 +279,43 @@ abstract class ViewType
      */
     abstract function delete(int $viewId);
 
+    /**
+     * Builds a view of a specific type.
+     * Option to build for a specific aspect and/or to populate
+     * with actual data instead of expressions.
+     *
+     * @param array $view
+     * @param array|null $sortedAspects
+     * @param bool|array $populate
+     * @return void
+     */
+    abstract function build(array &$view, array $sortedAspects = null, $populate = false);
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Dictionary -------------------- ***/
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Parses a view of a specific type.
+     * Compiles a view of a specific type.
      * If view type has parameters that can contain expressions,
-     * those parameters need to be parsed.
+     * those parameters need to be compiled.
      *
      * @param array $view
      * @return void
      */
-    abstract function dissect(array &$view);
+    abstract function compile(array &$view);
 
     /**
-     * Processes a view of a specific type.
+     * Evaluates a view of a specific type.
      * If view type has parameters that can contain expressions,
-     * those parameters need to be processed.
+     * those parameters need to be evaluated.
      *
      * @param array $view
+     * @param EvaluateVisitor $visitor
      * @return void
      */
-    abstract function process(array &$view);
+    abstract function evaluate(array &$view, EvaluateVisitor $visitor);
 
 
     /*** ---------------------------------------------------- ***/

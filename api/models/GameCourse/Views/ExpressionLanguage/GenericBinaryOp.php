@@ -13,7 +13,7 @@ class GenericBinaryOp extends BinaryOp {
         return $this->op;
     }
 
-    public function accept(Visitor $visitor) {
+    public function accept(Visitor $visitor): ValueNode {
         return $visitor->visitGenericBinaryOp($this);
     }
 }

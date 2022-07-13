@@ -3,10 +3,13 @@ namespace GameCourse\Views;
 
 use Exception;
 use GameCourse\Core\Core;
-use GameCourse\Course\Course;
 use GameCourse\Role\Role;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Event\Event;
+use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
+use GameCourse\Views\ExpressionLanguage\ExpressionEvaluatorBase;
+use GameCourse\Views\ExpressionLanguage\Node;
+use GameCourse\Views\ExpressionLanguage\ValueNode;
 use GameCourse\Views\Variable\Variable;
 use GameCourse\Views\ViewType\ViewType;
 use GameCourse\Views\Visibility\VisibilityType;
@@ -55,52 +58,53 @@ class ViewHandler
      * Returns null if view doesn't exist.
      *
      * @param int $id
+     * @param bool $onlyNonNull
      * @return array|null
      */
-    public static function getViewById(int $id): ?array
+    public static function getViewById(int $id, bool $onlyNonNull = true): ?array
     {
         $view = Core::database()->select(self::TABLE_VIEW, ["id" => $id]);
         if (!$view) return null;
+
         $viewType = ViewType::getViewTypeById($view["type"]);
-        return array_merge(self::parse($view), $viewType->get($id),
+        $view = array_merge(self::parse($view), $viewType->get($id),
             ["variables" => Variable::getVariablesOfView($id)],
             ["events" => Event::getEventsOfView($id)]);
+
+        if ($onlyNonNull) return array_filter($view, function ($param) { return $param != null; });
+        return $view;
     }
 
     /**
      * Gets all views in the system.
+     * Option to get all parameters even if null.
      *
+     * @param bool $onlyNonNull
      * @return array
      */
-    public static function getViews(): array
+    public static function getViews(bool $onlyNonNull = true): array
     {
-        $views = Core::database()->selectMultiple(self::TABLE_VIEW, [], "*", "id");
-        foreach ($views as &$view) {
-            $view = array_merge(self::parse($view), self::getViewById($view["id"]));
+        $views = [];
+        $viewIds = array_column(Core::database()->selectMultiple(self::TABLE_VIEW, [], "id", "id"), "id");
+        foreach ($viewIds as $viewId) {
+            $views[] = self::getViewById($viewId, $onlyNonNull);
         }
         return $views;
     }
 
     /**
-     * Get a view's aspect.
+     * Gets children of a view parent.
+     * Option to get children's position in parent.
      *
-     * @param array $view
-     * @param int $courseId
-     * @return Aspect
-     * @throws Exception
+     * @param int $parentId
+     * @param bool $onlyViewRoots
+     * @return array
      */
-    public static function getViewAspect(array $view, int $courseId): Aspect
+    public static function getChildrenOfView(int $parentId, bool $onlyViewRoots = true): array
     {
-        $viewerRole = isset($view["aspect"]) ? $view["aspect"]["viewerRole"] ?? null : null;
-        $userRole = isset($view["aspect"]) ? $view["aspect"]["userRole"] ?? null : null;
-        $aspect = Aspect::getAspectBySpecs($courseId,
-            $viewerRole ? Role::getRoleId($viewerRole, $courseId) : null,
-            $userRole ? Role::getRoleId($userRole, $courseId) : null);
-
-        if (!$aspect)
-            throw new Exception("No aspect with vr = '" . $viewerRole . "' & ur = '" . $userRole . "' found for course with ID = " . $courseId . ".");
-
-        return $aspect;
+        $children = Core::database()->selectMultiple(self::TABLE_VIEW_PARENT, ["parent" => $parentId], "child, position", "position");
+        if ($onlyViewRoots) return array_column($children, "child");
+        return $children;
     }
 
     /**
@@ -234,47 +238,204 @@ class ViewHandler
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Builds a view to be rendered, either on a page or on editor.
+     * Builds a view which creates the entire view tree that has
+     * the view at its root.
+     * Option to build for a specific set of aspects and/or to populate
+     * with actual data instead of expressions.
      *
-     * @param int $viewId
-     * @param Course $course
-     * @param bool $edit
+     * @param int $viewRoot
+     * @param array|null $sortedAspects
+     * @param bool|array $populate --> (false or array with params e.g. ["course" => 1, "viewer" => 10, "user" => 20])
+     * @return array
+     * @throws Exception
      */
-    public static function renderView(int $viewId, Course $course, bool $edit = false)
+    public static function buildView(int $viewRoot, array $sortedAspects = null, $populate = false): array
     {
-        // TODO
+        $viewTree = [];
 
+        // Filter views by aspect
+        $viewsInfo = Core::database()->selectMultiple(self::TABLE_VIEW_ASPECT, ["viewRoot" => $viewRoot], "aspect, view", "aspect");
+        if ($sortedAspects) $viewsInfo = [self::pickViewByAspect($viewsInfo, $sortedAspects)];
 
-//        // Pick a specific aspect and build it
-//        self::buildView($view, false, $rolesHierarchy, $edit);
-//        if (count($view) == 1) $view = $view[0];
-//        else if (count($view) == 0) {
-//            if (!$edit) API::error('There\'s no aspect to render for current view and roles.');
-//            else $view = null;
-//        }
-//        else if (count($view) > 1) API::error('Should have only one aspect but got more.');
-//
-//        if (!$edit) {
-//            // Populate view with actual data, not just view specifications.
-//            self::parseView($view);
-//            var_dump($viewParams);
-//            self::processView($view, new EvaluateVisitor($viewParams));
-//        }
+        // Add views of aspect to the view tree
+        foreach ($viewsInfo as $info) {
+            $view = self::getViewById($info["view"]);
+
+            // Build view of a specific type
+            $viewType = ViewType::getViewTypeById($view["type"]);
+            $viewType->build($view, $sortedAspects, $populate);
+
+            // Create param 'aspect' for view
+            $viewAspect = Aspect::getAspectById($info["aspect"]);
+            $viewerRoleId = $viewAspect->getViewerRoleId();
+            $userRoleId = $viewAspect->getUserRoleId();
+            $viewAspect = [
+                "viewerRole" => $viewerRoleId ? Role::getRoleName($viewerRoleId) : null,
+                "userRole" =>  $userRoleId ? Role::getRoleName($userRoleId) : null
+            ];
+
+            // Add params 'viewRoot' and 'aspect'
+            $pos = 1;
+            $view = array_slice($view, 0, $pos) + ["viewRoot" => $viewRoot] + ["aspect" => $viewAspect] + array_slice($view, $pos);
+
+            // Populate with data
+            if ($populate) {
+                self::compileView($view);
+                self::evaluateView($view, new EvaluateVisitor($populate));
+            }
+
+            $viewTree[] = $view;
+        }
+
+        return $viewTree;
     }
 
 
     /*** ---------------------------------------------------- ***/
-    /*** ----------------- Dissecting views ----------------- ***/
+    /*** ------------------ Compiling views ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    // TODO
+    /**
+     * Compiles a view which puts each of its parameters in an
+     * appropriate format to be evaluated.
+     *
+     * @param array $view
+     * @throws Exception
+     */
+    public static function compileView(array &$view)
+    {
+        // Compile basic parameters
+        $params = ["cssId", "class", "style", "visibilityCondition", "loopData"];
+        foreach ($params as $param) {
+            if (isset($view[$param])) self::compileExpression($view[$param]);
+        }
+
+        // Compile variables
+        if (isset($view["variables"])) {
+            foreach ($view["variables"] as &$variable) {
+                self::compileExpression($variable["value"]);
+            }
+        }
+
+        // Compile events
+        if (isset($view["events"])) {
+            foreach ($view["events"] as &$event) {
+                self::compileExpression($event["action"]);
+            }
+        }
+
+        // Compile view of a specific type
+        $viewType = ViewType::getViewTypeById($view["type"]);
+        $viewType->compile($view);
+    }
+
+    /**
+     * Compiles an expression which puts it in an appropriate format to
+     * be evaluated.
+     *
+     * @param string $expression
+     * @throws Exception
+     */
+    public static function compileExpression(string &$expression)
+    {
+        static $parser;
+        if (!$parser) $parser = new ExpressionEvaluatorBase();
+        $expression = !empty(trim($expression)) ? $parser->parse($expression) : new ValueNode("");
+    }
 
 
     /*** ---------------------------------------------------- ***/
-    /*** ----------------- Processing views ----------------- ***/
+    /*** ----------------- Evaluating views ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    // TODO
+    /**
+     * Evaluates a view which processes each of its parameters to
+     * a certain value.
+     *
+     * @param array $view
+     * @param EvaluateVisitor $visitor
+     * @throws Exception
+     */
+    public static function evaluateView(array &$view, EvaluateVisitor $visitor)
+    {
+        // Evaluate variables & add them to visitor params
+        // NOTE: needs to be 1st so that expressions that use any of the variables can be evaluated
+        if (isset($view["variables"])) {
+            foreach ($view["variables"] as &$variable) {
+                self::evaluateNode($variable["value"], $visitor);
+                $visitor->addParam($variable["name"], $variable["value"]);
+            }
+        }
+
+        // Evaluate basic parameters
+        $params = ["cssId", "class", "style", "visibilityCondition", "loopData"];
+        foreach ($params as $param) {
+            if (isset($view[$param])) self::evaluateNode($view[$param], $visitor);
+        }
+
+        // Evaluate events
+        if (isset($view["events"])) {
+            foreach ($view["events"] as &$event) {
+                self::evaluateNode($event["action"], $visitor);
+            }
+        }
+
+        // Evaluate view of a specific type
+        $viewType = ViewType::getViewTypeById($view["type"]);
+        $viewType->evaluate($view, $visitor);
+    }
+
+    /**
+     * Evaluates a node which processes it to a certain value.
+     *
+     * @param Node $node
+     * @param EvaluateVisitor $visitor
+     */
+    public static function evaluateNode(Node &$node, EvaluateVisitor $visitor)
+    {
+        $node = $node->accept($visitor)->getValue();
+    }
+
+    /**
+     * Evaluates a loop which repeats a given view and processes
+     * each of their parameters to a certain value.
+     *
+     * @param array $view
+     * @param EvaluateVisitor $visitor
+     * @throws Exception
+     */
+    public static function evaluateLoop(array &$view, EvaluateVisitor $visitor)
+    {
+        // Get collection to loop
+        self::evaluateNode($view["loopData"], $visitor);
+        $collection = $view["loopData"];
+        if (is_null($collection)) $collection = [];
+        if (!is_array($collection)) throw new Exception("Loop data must be a collection");
+
+        // Transform to sequential array
+        $collection = array_values($collection);
+
+        // Format items with a key
+        $key = "item";
+        $items = array_map(function ($item) use ($key) { return [$key => $item]; }, $collection);
+
+        // Repeat views
+        $repeatedViews = [];
+        for ($i = 0; $i < count($items); $i++) {
+            // Copy view
+            $newView = $view;
+
+            // Update visitor params with %item and %index
+            $visitor->addParam($key, $items[$i][$key]);
+            $visitor->addParam("index", $i);
+
+            // Evaluate new view
+            self::evaluateView($newView, $visitor);
+            unset($newView["loopData"]);
+            $repeatedViews[] = $newView;
+        }
+        $view = $repeatedViews;
+    }
 
 
     /*** ---------------------------------------------------- ***/
@@ -319,8 +480,8 @@ class ViewHandler
     private static function insertVariablesInView(array $view)
     {
         if (isset($view["variables"])) {
-            foreach ($view["variables"] as $name => $value) {
-                Variable::addVariable($view["id"], $name, $value);
+            foreach ($view["variables"] as $variable) {
+                Variable::addVariable($view["id"], $variable["name"], $variable["value"], $variable["position"]);
             }
         }
     }
@@ -328,9 +489,27 @@ class ViewHandler
     private static function insertEventsInView(array $view)
     {
         if (isset($view["events"])) {
-            foreach ($view["events"] as $type => $action) {
-                Event::addEvent($view["id"], $type, $action);
+            foreach ($view["events"] as $event) {
+                Event::addEvent($view["id"], $event["type"], $event["action"]);
             }
         }
+    }
+
+    /**
+     * Picks the most specific aspect available in a view root.
+     *
+     * @param array $viewsInfo
+     * @param array $aspectsSortedByMostSpecific
+     * @return array
+     * @throws Exception
+     */
+    private static function pickViewByAspect(array $viewsInfo, array $aspectsSortedByMostSpecific): array
+    {
+        foreach ($aspectsSortedByMostSpecific as $aspect) {
+            foreach ($viewsInfo as $info) {
+                if ($aspect->equals(Aspect::getAspectById($info["aspect"]))) return $info;
+            }
+        }
+        throw new Exception("There's no view to pick for current aspects.");
     }
 }

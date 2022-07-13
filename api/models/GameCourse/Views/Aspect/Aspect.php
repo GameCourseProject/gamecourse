@@ -1,8 +1,10 @@
 <?php
 namespace GameCourse\Views\Aspect;
 
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Role\Role;
 
 /**
  * This is the Aspect model, which implements the necessary methods
@@ -34,12 +36,12 @@ class Aspect
         return Course::getCourseById($this->getData("course"));
     }
 
-    public function getViewerRoleId(): int
+    public function getViewerRoleId(): ?int
     {
         return $this->getData("viewerRole");
     }
 
-    public function getUserRoleId(): int
+    public function getUserRoleId(): ?int
     {
         return $this->getData("userRole");
     }
@@ -96,15 +98,66 @@ class Aspect
     }
 
     /**
-     * Gets aspects available in a given course.
+     * Gets a view's aspect in a given course.
+     *
+     * @param array $view
+     * @param int $courseId
+     * @return Aspect
+     * @throws Exception
+     */
+    public static function getAspectInView(array $view, int $courseId): Aspect
+    {
+        $viewerRole = isset($view["aspect"]) ? $view["aspect"]["viewerRole"] ?? null : null;
+        $userRole = isset($view["aspect"]) ? $view["aspect"]["userRole"] ?? null : null;
+        $aspect = self::getAspectBySpecs($courseId,
+            $viewerRole ? Role::getRoleId($viewerRole, $courseId) : null,
+            $userRole ? Role::getRoleId($userRole, $courseId) : null);
+
+        if (!$aspect) throw new Exception("No aspect with viewer role = '" . $viewerRole . "' & user role = '" .
+            $userRole . "' found for course with ID = " . $courseId . ".");
+
+        return $aspect;
+    }
+
+    /**
+     * Gets aspects available in a given course or user.
+     * Option to sort them by most specific.
      *
      * @param int $courseId
+     * @param int|null $userId
+     * @param bool $sortByMostSpecific
      * @return array
      */
-    public static function getAspects(int $courseId): array
+    public static function getAspects(int $courseId, int $userId = null, bool $sortByMostSpecific = false): array
     {
-        $aspects = Core::database()->selectMultiple(self::TABLE_ASPECT, ["course" => $courseId], "id, viewerRole, userRole");
-        foreach ($aspects as &$aspect) { $aspect = self::parse($aspect); }
+        $aspects = [];
+
+        if ($sortByMostSpecific) {
+            $roleIdsByMostSpecific = array_map(function ($roleName) use ($courseId) {
+                return Role::getRoleId($roleName, $courseId);
+            }, $userId ? Role::getUserRoles($userId, $courseId, true, true) : Role::getCourseRoles($courseId, true, true));
+            $roleIdsByMostSpecific[] = null;
+
+            foreach ($roleIdsByMostSpecific as $userRoleId) {
+                foreach ($roleIdsByMostSpecific as $viewerRoleId) {
+                    $aspects[] = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId);
+                }
+            }
+
+        } else {
+            $aspects = Core::database()->selectMultiple(self::TABLE_ASPECT, ["course" => $courseId], "id, viewerRole, userRole");
+            if ($userId) {
+                $userRoleIds = array_map(function ($roleName) use ($courseId) {
+                    return Role::getRoleId($roleName, $courseId);
+                }, Role::getUserRoles($userId, $courseId));
+                $userRoleIds[] = null;
+                $aspects = array_filter($aspects, function ($aspect) use ($userRoleIds) {
+                    return in_array($aspect["viewerRole"], $userRoleIds) && in_array($aspect["userRole"], $userRoleIds);
+                });
+            }
+            foreach ($aspects as &$aspect) { $aspect = self::parse($aspect); }
+        }
+
         return $aspects;
     }
 
@@ -164,6 +217,18 @@ class Aspect
         return !empty($this->getData("id"));
     }
 
+    /**
+     * Check whether two aspects are the same.
+     *
+     * @param Aspect $aspect
+     * @return bool
+     */
+    public function equals(Aspect $aspect): bool
+    {
+        return $this->getViewerRoleId() == $aspect->getViewerRoleId() &&
+            $this->getUserRoleId() == $aspect->getUserRoleId();
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Utils ---------------------- ***/
@@ -189,7 +254,7 @@ class Aspect
 
         } else {
             if ($fieldName == "id" || $fieldName == "course" || $fieldName == "viewerRole" || $fieldName == "userRole")
-                return intval($field);
+                return is_numeric($field) ? intval($field) : $field;
             return $field;
         }
     }

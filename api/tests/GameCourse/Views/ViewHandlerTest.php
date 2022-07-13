@@ -76,6 +76,32 @@ class ViewHandlerTest extends TestCase
 
         // Then
         $this->assertNotEmpty($viewInDB);
+        $this->assertCount(4, $viewInDB);
+        $this->assertEquals($view["id"], $viewInDB["id"]);
+        $this->assertEquals($view["type"], $viewInDB["type"]);
+        $this->assertEquals(VisibilityType::VISIBLE, $viewInDB["visibilityType"]);
+        $this->assertEquals("vertical", $viewInDB["direction"]);
+    }
+
+    /**
+     * @test
+     */
+    public function getViewByIdAllInfo()
+    {
+        // Given
+        $view = [
+            "id" => 1,
+            "viewRoot" => 1,
+            "type" => Block::ID
+        ];
+        $aspect = Aspect::getAspectBySpecs(0, null, null);
+        ViewHandler::insertView($view, $aspect);
+
+        // When
+        $viewInDB = ViewHandler::getViewById($view["id"], false);
+
+        // Then
+        $this->assertNotEmpty($viewInDB);
         $this->assertCount(11, $viewInDB);
         $this->assertEquals($view["id"], $viewInDB["id"]);
         $this->assertEquals($view["type"], $viewInDB["type"]);
@@ -111,16 +137,37 @@ class ViewHandlerTest extends TestCase
         // Then
         $this->assertCount(2, $views);
         foreach ($views as $view) {
-            $this->assertCount(11, $view);
+            $this->assertCount(4, $view);
             $this->assertEquals($view["type"], Block::ID);
+            $this->assertEquals(VisibilityType::VISIBLE, $view["visibilityType"]);
             $this->assertEquals("vertical", $view["direction"]);
-            $this->assertEmpty($view["variables"]);
-            $this->assertEmpty($view["events"]);
         }
     }
 
+    /**
+     * @test
+     */
+    public function getAllViewsAllInfo()
+    {
+        // Given
+        $view1 = ["id" => 1, "viewRoot" => 1, "type" => Block::ID];
+        $view2 = ["id" => 2, "viewRoot" => 2, "type" => Block::ID];
+        $aspect = Aspect::getAspectBySpecs(0, null, null);
+        ViewHandler::insertView($view1, $aspect);
+        ViewHandler::insertView($view2, $aspect);
 
-    // TODO: getViewAspect
+        // When
+        $views = ViewHandler::getViews(false);
+
+        // Then
+        $this->assertCount(2, $views);
+        foreach ($views as $view) {
+            $this->assertCount(11, $view);
+            $this->assertEquals($view["type"], Block::ID);
+            $this->assertEquals(VisibilityType::VISIBLE, $view["visibilityType"]);
+            $this->assertEquals("vertical", $view["direction"]);
+        }
+    }
 
 
     /**
@@ -167,7 +214,7 @@ class ViewHandlerTest extends TestCase
         ViewHandler::insertView($view, $aspect);
 
         // Then
-        $views = ViewHandler::getViews();
+        $views = ViewHandler::getViews(false);
         $this->assertCount(1, $views);
         $this->assertCount(11, $views[0]);
         foreach (["id", "type", "cssId", "class", "style", "visibilityCondition", "loopData"] as $param) {
@@ -319,7 +366,7 @@ class ViewHandlerTest extends TestCase
         ViewHandler::updateView($newView, $aspect);
 
         // Then
-        $views = ViewHandler::getViews();
+        $views = ViewHandler::getViews(false);
         $this->assertCount(1, $views);
         $this->assertCount(11, $views[0]);
         foreach (["id", "type", "cssId", "class", "style", "visibilityCondition", "loopData"] as $param) {
@@ -357,7 +404,7 @@ class ViewHandlerTest extends TestCase
         ViewHandler::updateView($newView, $aspect);
 
         // Then
-        $views = ViewHandler::getViews();
+        $views = ViewHandler::getViews(false);
         $this->assertCount(1, $views);
         $this->assertCount(11, $views[0]);
         foreach (["id", "type", "cssId", "class", "style", "visibilityCondition", "loopData"] as $param) {
@@ -394,7 +441,7 @@ class ViewHandlerTest extends TestCase
         ViewHandler::updateView($view, $newAspect);
 
         // Then
-        $views = ViewHandler::getViews();
+        $views = ViewHandler::getViews(false);
         $this->assertCount(1, $views);
         $this->assertCount(11, $views[0]);
         foreach (["id", "type", "cssId", "class", "style", "visibilityCondition", "loopData"] as $param) {
@@ -438,7 +485,7 @@ class ViewHandlerTest extends TestCase
         ViewHandler::updateView($newView, $aspect);
 
         // Then
-        $views = ViewHandler::getViews();
+        $views = ViewHandler::getViews(false);
         $this->assertCount(1, $views);
         $this->assertCount(11, $views[0]);
         foreach (["id", "type", "cssId", "class", "style", "visibilityCondition", "loopData"] as $param) {
@@ -481,7 +528,7 @@ class ViewHandlerTest extends TestCase
         ViewHandler::updateView($newView, $aspect);
 
         // Then
-        $views = ViewHandler::getViews();
+        $views = ViewHandler::getViews(false);
         $this->assertCount(1, $views);
         $this->assertCount(11, $views[0]);
         foreach (["id", "type", "cssId", "class", "style", "visibilityCondition", "loopData"] as $param) {

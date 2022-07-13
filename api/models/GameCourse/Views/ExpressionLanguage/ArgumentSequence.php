@@ -20,7 +20,7 @@ class ArgumentSequence extends Node {
         return $this->next;
     }
 
-    public function accept(Visitor $visitor) {
+    public function accept(Visitor $visitor): ValueNode {
         return $visitor->visitArgumentSequence($this);
     }
 }

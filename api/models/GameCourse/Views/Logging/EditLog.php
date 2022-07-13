@@ -2,6 +2,7 @@
 namespace GameCourse\Views\Logging;
 
 use Exception;
+use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\ViewHandler;
 
 class EditLog extends Log
@@ -21,7 +22,7 @@ class EditLog extends Log
     function process(array $views, int $courseId)
     {
         $view = $views[$this->viewId];
-        $aspect = ViewHandler::getViewAspect($view, $courseId);
+        $aspect = Aspect::getAspectInView($view, $courseId);
         ViewHandler::updateView($view, $aspect);
     }
 }

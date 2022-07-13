@@ -18,6 +18,18 @@ class EvaluateVisitor extends Visitor
         return $this->params;
     }
 
+    /**
+     * @throws Exception
+     */
+    public function addParam(string $name, $value)
+    {
+        // NOTE: a view and/or its children cannot have variables with same names
+        if (isset($this->params[$name]))
+            throw new Exception("Parameter with name '" . $name . "' already exists in visitor.");
+
+        $this->params[$name] = $value;
+    }
+
 
     /**
      * @param ArgumentSequence $node
@@ -33,10 +45,10 @@ class EvaluateVisitor extends Visitor
 
     /**
      * @param FunctionOp $node
-     * @return void
+     * @return ValueNode
      * @throws Exception
      */
-    public function visitFunctionOp(FunctionOp $node) {
+    public function visitFunctionOp(FunctionOp $node): ValueNode {
         $funcName = $node->getName();
         if ($node->getArgs() == null) $args = [];
         else $args = $node->getArgs()->accept($this)->getValue();

@@ -12,7 +12,7 @@ class ValueNode extends Node {
         return $this->value;
     }
 
-    public function accept(Visitor $visitor) {
+    public function accept(Visitor $visitor): ValueNode {
         return $visitor->visitValueNode($this);
     }
 }

@@ -39,7 +39,7 @@ class FunctionOp extends Node {
         return $this->libraryId = $libraryId;
     }
 
-    public function accept(Visitor $visitor) {
+    public function accept(Visitor $visitor): ValueNode {
         return $visitor->visitFunctionOp($this);
     }
 }

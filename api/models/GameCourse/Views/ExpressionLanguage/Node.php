@@ -2,5 +2,5 @@
 namespace GameCourse\Views\ExpressionLanguage;
 
 abstract class Node {
-    public abstract function accept(Visitor $visitor);
+    public abstract function accept(Visitor $visitor): ValueNode;
 }

@@ -182,8 +182,10 @@ CREATE TABLE view_variable(
     view                        bigint unsigned NOT NULL,
     name                        varchar(50) NOT NULL,
     value                       varchar(200) NOT NULL,
+    position                    int unsigned,
 
     UNIQUE key(view, name),
+    UNIQUE key(view, position),
     FOREIGN key(view) REFERENCES view(id) ON DELETE CASCADE
 );
 

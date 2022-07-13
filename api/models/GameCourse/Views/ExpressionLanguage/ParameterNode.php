@@ -18,7 +18,7 @@ class ParameterNode extends Node {
         return $this->key;
     }
 
-    public function accept(Visitor $visitor) {
+    public function accept(Visitor $visitor): ValueNode {
         return $visitor->visitParameterNode($this);
     }
 }

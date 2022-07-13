@@ -2,6 +2,7 @@
 namespace GameCourse\Views\Logging;
 
 use Exception;
+use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\CreationMode;
 use GameCourse\Views\ViewHandler;
 
@@ -26,7 +27,7 @@ class AddLog extends Log
         if ($this->mode == CreationMode::BY_REFERENCE) return;
 
         $view = $views[$this->viewId];
-        $aspect = ViewHandler::getViewAspect($view, $courseId);
+        $aspect = Aspect::getAspectInView($view, $courseId);
         ViewHandler::insertView($view, $aspect);
     }
 }

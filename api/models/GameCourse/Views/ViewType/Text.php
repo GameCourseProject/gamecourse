@@ -2,6 +2,8 @@
 namespace GameCourse\Views\ViewType;
 
 use GameCourse\Core\Core;
+use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
+use GameCourse\Views\ViewHandler;
 
 /**
  * This is the Text view type, which represents a core view for
@@ -89,19 +91,26 @@ class Text extends ViewType
         Core::database()->delete(self::TABLE_VIEW_TEXT, ["id" => $viewId]);
     }
 
+    public function build(array &$view, array $sortedAspects = null, $populate = false)
+    {
+        // Nothing to do here
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Dictionary -------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    public function dissect(array &$view)
+    public function compile(array &$view)
     {
-        // TODO: Implement parse() method.
+        if (isset($view["link"])) ViewHandler::compileExpression($view["link"]);
+        ViewHandler::compileExpression($view["text"]);
     }
 
-    public function process(array &$view)
+    public function evaluate(array &$view, EvaluateVisitor $visitor)
     {
-        // TODO: Implement process() method.
+        if (isset($view["link"])) ViewHandler::evaluateNode($view["link"], $visitor);
+        ViewHandler::evaluateNode($view["value"], $visitor);
     }
 
 

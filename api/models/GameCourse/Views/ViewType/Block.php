@@ -2,6 +2,8 @@
 namespace GameCourse\Views\ViewType;
 
 use GameCourse\Core\Core;
+use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
+use GameCourse\Views\ViewHandler;
 
 /**
  * This is the Block view type, which represents a core view that
@@ -72,10 +74,6 @@ class Block extends ViewType
             "id" => $view["id"],
             "direction" => $view["direction"] ?? "vertical"
         ]);
-
-        if (isset($view["children"])) {
-            // TODO
-        }
     }
 
     public function update(array $view)
@@ -83,15 +81,22 @@ class Block extends ViewType
         Core::database()->update(self::TABLE_VIEW_BLOCK, [
             "direction" => $view["direction"] ?? "vertical"
         ], ["id" => $view["id"]]);
-
-        if (isset($view["children"])) {
-            // TODO
-        }
     }
 
     public function delete(int $viewId)
     {
-        // TODO
+        Core::database()->delete(self::TABLE_VIEW_BLOCK, ["id" => $viewId]);
+    }
+
+    public function build(array &$view, array $sortedAspects = null, $populate = false)
+    {
+        $children = ViewHandler::getChildrenOfView($view["id"]);
+        if (!empty($children)) {
+            foreach ($children as &$child) {
+                $child = ViewHandler::buildView($child, $sortedAspects, $populate);
+                $view["children"][] = $child;
+            }
+        }
     }
 
 
@@ -99,14 +104,31 @@ class Block extends ViewType
     /*** -------------------- Dictionary -------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    public function dissect(array &$view)
+    public function compile(array &$view)
     {
-        // TODO: Implement parse() method.
+        if (isset($view["children"])) {
+            foreach ($view["children"] as &$child) {
+                ViewHandler::compileView($child);
+            }
+        }
     }
 
-    public function process(array &$view)
+    public function evaluate(array &$view, EvaluateVisitor $visitor)
     {
-        // TODO: Implement process() method.
+        if (isset($visitor["children"])) {
+            $childrenEvaluated = [];
+            foreach ($view["children"] as &$child) {
+                if (isset($child["loopData"])) {
+                    ViewHandler::evaluateLoop($child, $visitor);
+                    $childrenEvaluated = array_merge($childrenEvaluated, $child);
+
+                } else {
+                    ViewHandler::evaluateView($child, $visitor);
+                    $childrenEvaluated[] = $child;
+                }
+            }
+            $view["children"] = $childrenEvaluated;
+        }
     }
 
 

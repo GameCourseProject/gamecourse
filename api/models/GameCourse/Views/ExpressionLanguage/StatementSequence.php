@@ -20,7 +20,7 @@ class StatementSequence extends Node {
         return $this->next;
     }
 
-    public function accept(Visitor $visitor) {
+    public function accept(Visitor $visitor): ValueNode {
         return $visitor->visitStatementSequence($this);
     }
 }
