@@ -10,6 +10,9 @@ use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\ExpressionLanguage\ExpressionEvaluatorBase;
 use GameCourse\Views\ExpressionLanguage\Node;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use GameCourse\Views\Logging\AddLog;
+use GameCourse\Views\Logging\Logging;
+use GameCourse\Views\Logging\MoveLog;
 use GameCourse\Views\Variable\Variable;
 use GameCourse\Views\ViewType\ViewType;
 use GameCourse\Views\Visibility\VisibilityType;
@@ -153,6 +156,27 @@ class ViewHandler
 
         // Insert events
         self::insertEventsInView($view);
+    }
+
+    /**
+     * Inserts the complete view tree in the database.
+     * Returns the root.
+     *
+     * @param array $viewTree
+     * @param int $courseId
+     * @return int
+     * @throws Exception
+     */
+    public static function insertViewTree(array $viewTree, int $courseId): int
+    {
+        // Translate tree into logs
+        $translatedTree = self::translateViewTree($viewTree);
+        $logs = $translatedTree["logs"];
+        $views = $translatedTree["views"];
+
+        // Process logs
+        Logging::processLogs($logs, $views, $courseId);
+        return array_values($views)[0]["viewRoot"];
     }
 
     /**
@@ -461,6 +485,42 @@ class ViewHandler
             if ($fieldName == "id") return intval($field);
             return $field;
         }
+    }
+
+    /**
+     * Translates a view tree into logs.
+     *
+     * @param array $viewTree
+     * @param array|null $parent
+     * @return array
+     */
+    public static function translateViewTree(array $viewTree, array $parent = null): array
+    {
+        $logs = [];
+        $views = [];
+
+        $viewRoot = null;   // used to set the same viewRoot for all aspects
+        foreach ($viewTree as $view) {
+            // Create a unique ID and viewRoot
+            $view["id"] = hexdec(uniqid()); // unix timestamps --> JS timestamps
+            $view["viewRoot"] = $viewRoot ?? $view["id"];
+
+            // Add view
+            $views[$view["id"]] = $view;
+            $logs[] = new AddLog($view["id"], CreationMode::BY_VALUE);
+
+            // Translate view of a specific type
+            $viewType = ViewType::getViewTypeById($view["type"]);
+            $viewType->translate($view, $logs, $views, $parent);
+
+            // Update view root
+            if (!$viewRoot) $viewRoot = $view["viewRoot"];
+        }
+
+        // Move view
+        $logs[] = new MoveLog($viewRoot, null, $parent);
+
+        return ["logs" => $logs, "views" => $views];
     }
 
     private static function prepareViewParams(array $view): array

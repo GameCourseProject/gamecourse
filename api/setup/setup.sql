@@ -219,6 +219,7 @@ CREATE TABLE view_category_order(
     position                    int unsigned NOT NULL,
 
     UNIQUE key(parent, position),
+    UNIQUE key(parent, child),
     FOREIGN key(parent) REFERENCES view_category(id) ON DELETE CASCADE,
     FOREIGN key(child) REFERENCES view_category(id) ON DELETE CASCADE
 );
@@ -227,8 +228,10 @@ CREATE TABLE component_core(
     viewRoot                    bigint unsigned PRIMARY KEY,
     description                 varchar(50) DEFAULT NULL,
     category                    int unsigned NOT NULL,
+    position                    int unsigned NOT NULL,
     module                      varchar(50) DEFAULT NULL,
 
+    UNIQUE key(category, position),
     FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
     FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
     FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
@@ -253,6 +256,7 @@ CREATE TABLE component_global(
     description                 varchar(50) DEFAULT NULL,
     category                    int unsigned NOT NULL,
     sharedBy                    int unsigned NOT NULL,
+    sharedTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
     FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,

@@ -96,6 +96,11 @@ class Image extends ViewType
         // Nothing to do here
     }
 
+    public function translate(array $view, array &$logs, array &$views, array $parent = null)
+    {
+        // Nothing to do here
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Dictionary -------------------- ***/

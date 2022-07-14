@@ -291,6 +291,17 @@ abstract class ViewType
      */
     abstract function build(array &$view, array $sortedAspects = null, $populate = false);
 
+    /**
+     * Translates a view into logs.
+     *
+     * @param array $view
+     * @param array $logs
+     * @param array $views
+     * @param array|null $parent
+     * @return void
+     */
+    abstract function translate(array $view, array &$logs, array &$views, array $parent = null);
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Dictionary -------------------- ***/

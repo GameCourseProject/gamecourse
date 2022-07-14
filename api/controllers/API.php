@@ -56,7 +56,7 @@ class API
 
     public static function processRequest() {
         try {
-            $controllerClass = "\\API\\". ucfirst(self::$module) . "Controller";
+            $controllerClass = "\\API\\" . ucfirst(self::$module) . "Controller";
             $controller = new $controllerClass();
             $controller->{self::$endpoint}();
 

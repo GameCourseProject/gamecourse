@@ -99,6 +99,18 @@ class Block extends ViewType
         }
     }
 
+    public function translate(array $view, array &$logs, array &$views, array $parent = null)
+    {
+        if (isset($view["children"])) {
+            for ($i = 0; $i < count($view["children"]); $i++) {
+                $child = $view["children"][$i];
+                $translatedTree = ViewHandler::translateViewTree($child, ["parent" => $view["id"], "pos" => $i]);
+                $logs = array_merge($logs, $translatedTree["logs"]);
+                $views += $translatedTree["views"];
+            }
+        }
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Dictionary -------------------- ***/
