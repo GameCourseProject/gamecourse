@@ -72,6 +72,8 @@ class Core
         Core::database()->cleanDatabase(true);
         if (file_exists(LOGS_FOLDER)) Utils::deleteDirectory(LOGS_FOLDER);
         if (file_exists(COURSE_DATA_FOLDER)) Utils::deleteDirectory(COURSE_DATA_FOLDER);
+        if (file_exists(USER_DATA_FOLDER)) Utils::deleteDirectory(USER_DATA_FOLDER);
+        if (file_exists(CACHE_FOLDER)) Utils::deleteDirectory(CACHE_FOLDER);
         Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions", false, ["defaults.py"]);
         Utils::deleteDirectory(AUTOGAME_FOLDER . "/config", false, ["samples"]);
     }

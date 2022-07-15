@@ -105,9 +105,10 @@ class CoreComponent extends Component
     /**
      * Gets core components in the system.
      *
+     * @param int|null $courseId
      * @return array
      */
-    public static function getComponents(): array
+    public static function getComponents(int $courseId = null): array
     {
         $components = Core::database()->selectMultiple(self::TABLE_CORE_COMPONENT, [], "*", "viewRoot");
         foreach ($components as &$component) { $component = self::parse($component); }
@@ -153,18 +154,8 @@ class CoreComponent extends Component
      * @param int $viewRoot
      * @return void
      */
-    public static function deleteComponen(int $viewRoot) {
+    public static function deleteComponent(int $viewRoot) {
         Core::database()->delete(self::TABLE_CORE_COMPONENT, ["viewRoot" => $viewRoot]);
-    }
-
-    /**
-     * Checks whether core component exists.
-     *
-     * @return bool
-     */
-    public function exists(): bool
-    {
-        return !empty($this->getData("viewRoot"));
     }
 
 

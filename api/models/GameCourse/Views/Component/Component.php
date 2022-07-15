@@ -40,7 +40,7 @@ abstract class Component
      */
     public static function getComponentByViewRoot(string $type, int $viewRoot): ?Component
     {
-        $componentClass = self::getComponentClassOfType($type);
+        $componentClass = "\\GameCourse\\Views\\Component\\" . ucfirst($type) . "Component";
         $component = new $componentClass($viewRoot);
         if ($component->exists()) return $component;
         else return null;
@@ -49,22 +49,28 @@ abstract class Component
     /**
      * Gets components of a given type.
      *
-     * @param string $type
+     * @param int|null $courseId
      * @return array
      */
-    public static function getComponentsOfType(string $type): array
+    public static abstract function getComponents(int $courseId = null): array;
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** -------------- Component Manipulation -------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    public function render(): array
     {
-        $componentClass = self::getComponentClassOfType($type);
-        return $componentClass::{"getComponents"}();
+        // TODO
     }
 
-
-    /*** ---------------------------------------------------- ***/
-    /*** ---------------------- Helpers --------------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-    private static function getComponentClassOfType(string $type): string
+    /**
+     * Checks whether component exists.
+     *
+     * @return bool
+     */
+    public function exists(): bool
     {
-        return "\\GameCourse\\Views\\Component\\" . ucfirst($type) . "Component";
+        return !empty($this->getData("viewRoot"));
     }
 }

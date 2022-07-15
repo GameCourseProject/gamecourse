@@ -279,7 +279,10 @@ class ViewHandler
 
         // Filter views by aspect
         $viewsInfo = Core::database()->selectMultiple(self::TABLE_VIEW_ASPECT, ["viewRoot" => $viewRoot], "aspect, view", "aspect");
-        if ($sortedAspects) $viewsInfo = [self::pickViewByAspect($viewsInfo, $sortedAspects)];
+        if ($sortedAspects) {
+            $viewPicked = self::pickViewByAspect($viewsInfo, $sortedAspects);
+            $viewsInfo = $viewPicked ? [$viewPicked] : [];
+        }
 
         // Add views of aspect to the view tree
         foreach ($viewsInfo as $info) {
@@ -525,20 +528,20 @@ class ViewHandler
 
     /**
      * Picks the most specific aspect available in a view root.
+     * Returns null if there's no view for given aspects.
      *
      * @param array $viewsInfo
      * @param array $aspectsSortedByMostSpecific
-     * @return array
-     * @throws Exception
+     * @return array|null
      */
-    private static function pickViewByAspect(array $viewsInfo, array $aspectsSortedByMostSpecific): array
+    private static function pickViewByAspect(array $viewsInfo, array $aspectsSortedByMostSpecific): ?array
     {
         foreach ($aspectsSortedByMostSpecific as $aspect) {
             foreach ($viewsInfo as $info) {
                 if ($aspect->equals(Aspect::getAspectById($info["aspect"]))) return $info;
             }
         }
-        throw new Exception("There's no view to pick for current aspects.");
+        return null;
     }
 
 

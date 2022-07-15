@@ -114,11 +114,15 @@ class CustomComponent extends Component
     /**
      * Gets custom components of a given course.
      *
-     * @param int $courseId
+     * @param int|null $courseId
      * @return array
+     * @throws Exception
      */
-    public static function getComponentsOfCourse(int $courseId): array
+    public static function getComponents(int $courseId = null): array
     {
+        if ($courseId === null)
+            throw new Exception("Can't get custom components of course: no course given.");
+
         $components = Core::database()->selectMultiple(self::TABLE_CUSTOM_COMPONENT, ["course" => $courseId]);
         foreach ($components as &$component) { $component = self::parse($component); }
         return $components;
@@ -163,16 +167,6 @@ class CustomComponent extends Component
      */
     public static function deleteComponen(int $viewRoot) {
         Core::database()->delete(self::TABLE_CUSTOM_COMPONENT, ["viewRoot" => $viewRoot]);
-    }
-
-    /**
-     * Checks whether custom component exists.
-     *
-     * @return bool
-     */
-    public function exists(): bool
-    {
-        return !empty($this->getData("viewRoot"));
     }
 
 

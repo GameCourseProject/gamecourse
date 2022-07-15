@@ -102,9 +102,10 @@ class GlobalComponent extends Component
     /**
      * Gets global components in the system.
      *
+     * @param int|null $courseId
      * @return array
      */
-    public static function getComponents(): array
+    public static function getComponents(int $courseId = null): array
     {
         $components = Core::database()->selectMultiple(self::TABLE_GLOBAL_COMPONENT, [], "*", "viewRoot");
         foreach ($components as &$component) { $component = self::parse($component); }
@@ -146,16 +147,6 @@ class GlobalComponent extends Component
      */
     public static function deleteComponen(int $viewRoot) {
         Core::database()->delete(self::TABLE_GLOBAL_COMPONENT, ["viewRoot" => $viewRoot]);
-    }
-
-    /**
-     * Checks whether global component exists.
-     *
-     * @return bool
-     */
-    public function exists(): bool
-    {
-        return !empty($this->getData("viewRoot"));
     }
 
 

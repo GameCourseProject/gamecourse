@@ -94,7 +94,7 @@ class Block extends ViewType
         if (!empty($children)) {
             foreach ($children as &$child) {
                 $child = ViewHandler::buildView($child, $sortedAspects, $populate);
-                $view["children"][] = $child;
+                if (!empty($child)) $view["children"][] = $child;
             }
         }
     }
