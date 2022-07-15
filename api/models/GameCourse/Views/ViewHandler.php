@@ -257,7 +257,7 @@ class ViewHandler
 
 
     /*** ---------------------------------------------------- ***/
-    /*** ----------------- Rendering views ------------------ ***/
+    /*** ------------------ Building views ------------------ ***/
     /*** ---------------- ( from database ) ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
@@ -523,6 +523,29 @@ class ViewHandler
         return ["logs" => $logs, "views" => $views];
     }
 
+    /**
+     * Picks the most specific aspect available in a view root.
+     *
+     * @param array $viewsInfo
+     * @param array $aspectsSortedByMostSpecific
+     * @return array
+     * @throws Exception
+     */
+    private static function pickViewByAspect(array $viewsInfo, array $aspectsSortedByMostSpecific): array
+    {
+        foreach ($aspectsSortedByMostSpecific as $aspect) {
+            foreach ($viewsInfo as $info) {
+                if ($aspect->equals(Aspect::getAspectById($info["aspect"]))) return $info;
+            }
+        }
+        throw new Exception("There's no view to pick for current aspects.");
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------------- Helpers ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
     private static function prepareViewParams(array $view): array
     {
         return [
@@ -553,23 +576,5 @@ class ViewHandler
                 Event::addEvent($view["id"], $event["type"], $event["action"]);
             }
         }
-    }
-
-    /**
-     * Picks the most specific aspect available in a view root.
-     *
-     * @param array $viewsInfo
-     * @param array $aspectsSortedByMostSpecific
-     * @return array
-     * @throws Exception
-     */
-    private static function pickViewByAspect(array $viewsInfo, array $aspectsSortedByMostSpecific): array
-    {
-        foreach ($aspectsSortedByMostSpecific as $aspect) {
-            foreach ($viewsInfo as $info) {
-                if ($aspect->equals(Aspect::getAspectById($info["aspect"]))) return $info;
-            }
-        }
-        throw new Exception("There's no view to pick for current aspects.");
     }
 }
