@@ -293,9 +293,9 @@
   <app-verification-modal
     [isModalOpen]="isDeleteVerificationModalOpen"
     [id]="'delete-verification-' + userToDelete.id"
-    [text]="'Are you sure you want to delete the User?'"
+    [text]="'Are you sure you want to remove the User from the course?'"
     [target]="userToDelete.name + ' - ' + userToDelete.studentNumber"
-    [positiveBtnText]="'Delete'"
+    [positiveBtnText]="'Remove'"
     (positiveBtnClicked)="deleteUser(userToDelete)"
     (negativeBtnClicked)="userToDelete = null; isDeleteVerificationModalOpen = false"
     (closeBtnClicked)="isDeleteVerificationModalOpen = false"
