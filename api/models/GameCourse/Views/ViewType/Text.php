@@ -101,6 +101,11 @@ class Text extends ViewType
         // Nothing to do here
     }
 
+    public function traverse(array &$view, $func, &$parent, &...$data)
+    {
+        $func($view, $parent, ...$data);
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Dictionary -------------------- ***/

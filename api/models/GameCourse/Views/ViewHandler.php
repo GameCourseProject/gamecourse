@@ -514,6 +514,23 @@ class ViewHandler
     }
 
     /**
+     * Traverses a view tree and performs a given function.
+     *
+     * @param array $viewTree
+     * @param $func
+     * @param null $parent
+     * @param ...$data
+     * @return void
+     */
+    public static function traverseViewTree(array &$viewTree, $func, &$parent = null, &...$data)
+    {
+        foreach ($viewTree as &$view) {
+            $viewType = ViewType::getViewTypeById($view["type"]);
+            $viewType->traverse($view, $func, $parent, ...$data);
+        }
+    }
+
+    /**
      * Translates a view tree into logs.
      *
      * @param array $viewTree
@@ -552,25 +569,43 @@ class ViewHandler
     /**
      * Gets all aspects found in a view tree.
      *
-     * @param int $viewRoot
+     * @param int|null $viewRoot
+     * @param array|null $viewTree
+     * @param int|null $courseId
      * @return array
+     * @throws Exception
      */
-    public static function getAspectsInViewTree(int $viewRoot): array
+    public static function getAspectsInViewTree(int $viewRoot = null, array $viewTree = null, int $courseId = null): array
     {
+        if ($viewRoot === null && $viewTree === null)
+            throw new Exception("Need either view root or view tree to get aspects in a view tree.");
+
+        if ($viewTree && $courseId === null)
+            throw new Exception("Need course ID to get aspects in a view tree.");
+
         $aspects = [];
 
-        // Get aspects of view root
-        $viewsInfo = self::getAspectInfoOfViewRoot($viewRoot);
-        foreach ($viewsInfo as $info) {
-            $aspects[] = Aspect::getAspectById($info["aspect"]);
+        if ($viewRoot) {
+            // Get aspects of view root
+            $viewsInfo = self::getAspectInfoOfViewRoot($viewRoot);
+            foreach ($viewsInfo as $info) {
+                $aspects[] = Aspect::getAspectById($info["aspect"]);
 
-            // Get aspects of children
-            $children = self::getChildrenOfView($info["view"]);
-            if (!empty($children)) {
-                foreach ($children as $child) {
-                    $aspects = array_merge($aspects, self::getAspectsInViewTree($child));
+                // Get aspects of children
+                $children = self::getChildrenOfView($info["view"]);
+                if (!empty($children)) {
+                    foreach ($children as $child) {
+                        $aspects = array_merge($aspects, self::getAspectsInViewTree($child));
+                    }
                 }
             }
+
+        } else {
+            // Get aspects of view tree
+            $parent = null;
+            self::traverseViewTree($viewTree, function ($view, $parent, &...$data) use ($courseId) {
+                $data[0][] = Aspect::getAspectInView($view, $courseId);
+            }, $parent, $aspects);
         }
 
         return array_unique($aspects, SORT_REGULAR);

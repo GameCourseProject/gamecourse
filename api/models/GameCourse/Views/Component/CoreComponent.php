@@ -7,6 +7,7 @@ use GameCourse\Core\Core;
 use GameCourse\Module\Module;
 use GameCourse\Views\Category\Category;
 use GameCourse\Views\ViewHandler;
+use PDOException;
 
 /**
  * This is the Core Component model, which implements the necessary methods
@@ -134,6 +135,20 @@ class CoreComponent extends Component
      */
     public static function addComponent(array $viewTree, ?string $description, int $categoryId, int $position, string $moduleId = null): CoreComponent
     {
+        // Verify view tree only has system and/or module aspects
+        try {
+            ViewHandler::getAspectsInViewTree(null, $viewTree, 0);
+
+        } catch (PDOException $e) {
+            $error = $e->getMessage();
+            preg_match("/Role with name '(.+)' doesn't exist/", $error, $matches);
+            if (!empty($matches)) {
+                $roleName = $matches[1];
+                throw new Exception("Cannot use role with name '" . $roleName . "' as an aspect in a core component. 
+                Only system and/or module aspects are allowed.");
+            }
+        }
+
         // Add view tree of component
         $viewRoot = ViewHandler::insertViewTree($viewTree, 0);
 

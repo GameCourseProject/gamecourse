@@ -2,9 +2,12 @@
 namespace GameCourse\Views\Component;
 
 
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\User\User;
 use GameCourse\Views\Category\Category;
+use GameCourse\Views\ViewHandler;
+use PDOException;
 
 /**
  * This is the Global Component model, which implements the necessary methods
@@ -126,9 +129,24 @@ class GlobalComponent extends Component
      * @param Category $category
      * @param User $owner
      * @return GlobalComponent
+     * @throws Exception
      */
     public static function addComponent(int $viewRoot, ?string $description, Category $category, User $owner): GlobalComponent
     {
+        // Verify view tree only has system and/or module aspects
+        try {
+            ViewHandler::getAspectsInViewTree($viewRoot);
+
+        } catch (PDOException $e) {
+            $error = $e->getMessage();
+            preg_match("/Role with name '(.+)' doesn't exist/", $error, $matches);
+            if (!empty($matches)) {
+                $roleName = $matches[1];
+                throw new Exception("Cannot use role with name '" . $roleName . "' as an aspect in a global component. 
+                Only system and/or module aspects are allowed.");
+            }
+        }
+
         // Create new component
         Core::database()->insert(self::TABLE_GLOBAL_COMPONENT, [
             "viewRoot" => $viewRoot,

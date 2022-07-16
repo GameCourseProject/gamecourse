@@ -302,6 +302,17 @@ abstract class ViewType
      */
     abstract function translate(array $view, array &$logs, array &$views, array $parent = null);
 
+    /**
+     * Traverses a view of a specific type and performs a given function.
+     *
+     * @param array $view
+     * @param $func
+     * @param $parent
+     * @param ...$data
+     * @return mixed
+     */
+    abstract function traverse(array &$view, $func, &$parent, &...$data);
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Dictionary -------------------- ***/

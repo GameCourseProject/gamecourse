@@ -7,6 +7,7 @@ use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
 use GameCourse\Views\ViewHandler;
+use PDOException;
 
 /**
  * This is the Custom Component model, which implements the necessary methods
@@ -146,6 +147,20 @@ class CustomComponent extends Component
      */
     public static function addComponent(array $viewTree, string $name, int $courseId, string $moduleId = null): CustomComponent
     {
+        // Verify view tree only has course aspects
+        try {
+            ViewHandler::getAspectsInViewTree(null, $viewTree, $courseId);
+
+        } catch (PDOException $e) {
+            $error = $e->getMessage();
+            preg_match("/Role with name '(.+)' doesn't exist/", $error, $matches);
+            if (!empty($matches)) {
+                $roleName = $matches[1];
+                throw new Exception("Role with name '" . $roleName . "' not found in course with ID = " . $courseId . "." .
+                "Add this role to the course first before adding this custom component.");
+            }
+        }
+
         // Add view tree of component
         $viewRoot = ViewHandler::insertViewTree($viewTree, $courseId);
 

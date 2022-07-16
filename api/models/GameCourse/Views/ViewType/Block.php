@@ -111,6 +111,16 @@ class Block extends ViewType
         }
     }
 
+    public function traverse(array &$view, $func, &$parent, &...$data)
+    {
+        $func($view, $parent, ...$data);
+        if (isset($view["children"])) {
+            foreach ($view["children"] as &$child) {
+                ViewHandler::traverseViewTree($child, $func, $view,...$data);
+            }
+        }
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Dictionary -------------------- ***/

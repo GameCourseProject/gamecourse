@@ -581,7 +581,7 @@ class Role
             $hasChildren = array_key_exists("children", $role);
             $continue = function(&...$data) use (&$role, $func, $hasChildren, &$parent) {
                 if ($hasChildren)
-                    self::traverseRolesHelper($role["children"], $func, $role["children"], ...$data);
+                    self::traverseRoles($role["children"], $func, ...$data);
             };
             $func($role, $parent, $key, $hasChildren, $continue, ...$data);
         }
