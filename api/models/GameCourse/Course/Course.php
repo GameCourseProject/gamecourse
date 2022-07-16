@@ -236,12 +236,13 @@ class Course
             self::validateDateTime($fieldValues["startDate"]);
             $endDate = key_exists("endDate", $fieldValues) ? $fieldValues["endDate"] : $this->getEndDate();
             if ($endDate) self::validateStartAndEndDates($fieldValues["startDate"], $endDate);
+            $this->setAutomation("AutoEnabling", $fieldValues["startDate"]);
         }
         if (key_exists("endDate", $fieldValues)) {
             self::validateDateTime($fieldValues["endDate"]);
             $startDate = key_exists("startDate", $fieldValues) ? $fieldValues["startDate"] : $this->getStartDate();
             if ($startDate) self::validateStartAndEndDates($startDate, $fieldValues["endDate"]);
-            self::setAutoDisabling($this->id, $fieldValues["endDate"]);
+            $this->setAutomation("AutoDisabling", $fieldValues["endDate"]);
         }
 
         if (count($fieldValues) != 0)
@@ -342,15 +343,16 @@ class Course
         ]);
         $dataFolder = Course::createDataFolder($id, $name);
 
-        // Set auto disabling
-        self::setAutoDisabling($id, $endDate);
+        // Set automations
+        $course = new Course($id);
+        $course->setAutomation("AutoEnabling", $startDate);
+        $course->setAutomation("AutoDisabling", $endDate);
 
         // Add default roles
         Role::addDefaultRolesToCourse($id);
         $teacherRoleId = Role::getRoleId("Teacher", $id);
 
         // Add current user as a teacher of the course
-        $course = new Course($id);
         $course->addUserToCourse($loggedUser->getId(), "Teacher", $teacherRoleId);
 
         // Init modules
@@ -376,7 +378,7 @@ class Course
      * existing course.
      *
      * @param int $copyFrom
-     * @return void
+     * @return Course
      * @throws Exception
      */
     public static function copyCourse(int $copyFrom): Course
@@ -438,7 +440,11 @@ class Course
             "isActive" => +$isActive,
             "isVisible" => +$isVisible
         ]);
-        self::setAutoDisabling($this->id, $endDate);
+
+        // Update automations
+        $this->setAutomation("AutoEnabling", $startDate);
+        $this->setAutomation("AutoDisabling", $endDate);
+
         return $this;
     }
 
@@ -458,8 +464,10 @@ class Course
         AutoGame::setAutoGame($courseId, false);
         AutoGame::deleteAutoGameInfo($courseId);
 
-        // Remove auto disabling
-        self::setAutoDisabling($courseId, null);
+        // Remove automations
+        $course = new Course($courseId);
+        $course->setAutomation("AutoEnabling", null);
+        $course->setAutomation("AutoDisabling", null);
 
         // Delete from database
         Core::database()->delete(self::TABLE_COURSE, ["id" => $courseId]);
@@ -791,6 +799,11 @@ class Course
         ];
     }
 
+    /**
+     * @param bool|null $enabled
+     * @return array
+     * @throws Exception
+     */
     public function getModulesResources(bool $enabled = null): array
     {
         $resources = [];
@@ -951,6 +964,61 @@ class Course
         // Delete styles folder if empty
         if (count(glob($stylesFolder . "/*")) == 0)
             Utils::deleteDirectory($stylesFolder);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** -------------------- Automation -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Sets automation for some course processes.
+     *
+     * @param string $script
+     * @param ...$data
+     * @return void
+     * @throws Exception
+     */
+    private function setAutomation(string $script, ...$data)
+    {
+        switch ($script) {
+            case "AutoEnabling":
+                $this->setAutoEnabling($data[0]);
+                break;
+
+            case "AutoDisabling":
+                $this->setAutoDisabling($data[0]);
+                break;
+
+            default:
+                throw new Exception("Automation script '" . $script . "' not found for course.");
+        }
+    }
+
+    /**
+     * Enables auto enabling for a given course on a specific date.
+     * If date is null, it will disable it.
+     *
+     * @param string|null $startDate
+     * @return void
+     */
+    private function setAutoEnabling(?string $startDate)
+    {
+        if ($startDate) new CronJob("AutoCourseEnabling", $this->id, null, null, null, $startDate);
+        else CronJob::removeCronJob("AutoCourseEnabling", $this->id);
+    }
+
+    /**
+     * Enables auto disabling for a given course on a specific date.
+     * If date is null, it will disable it.
+     *
+     * @param string|null $endDate
+     * @return void
+     */
+    private function setAutoDisabling(?string $endDate)
+    {
+        if ($endDate) new CronJob("AutoCourseDisabling", $this->id, null, null, null, $endDate);
+        else CronJob::removeCronJob("AutoCourseDisabling", $this->id);
     }
 
 
@@ -1244,20 +1312,6 @@ class Course
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Utils ---------------------- ***/
     /*** ---------------------------------------------------- ***/
-
-    /**
-     * Enables auto disabling for a given course on a specific date.
-     * If date is null, it will disable it.
-     *
-     * @param int $courseId
-     * @param string|null $endDate
-     * @return void
-     */
-    private static function setAutoDisabling(int $courseId, ?string $endDate)
-    {
-        if ($endDate) new CronJob("AutoDisabling", $courseId, null, null, null, $endDate);
-        else CronJob::removeCronJob("AutoDisabling", $courseId);
-    }
 
     /**
      * Parses a course coming from the database to appropriate types.

@@ -13,17 +13,17 @@ class CronJob
 {
     const CRONFILE = ROOT_PATH . "crontab.txt";
 
-    public function __construct(string $script, int $courseId, ?int $number, ?string $time, int $day = null, string $datetime = null)
+    public function __construct(string $script, int $itemId, ?int $number, ?string $time, int $day = null, string $datetime = null)
     {
-        self::updateCronTab($script, $courseId, $number, $time, $day, $datetime);
+        self::updateCronTab($script, $itemId, $number, $time, $day, $datetime);
     }
 
-    public static function removeCronJob(string $script, int $courseId)
+    public static function removeCronJob(string $script, int $itemId)
     {
-        self::updateCronTab($script, $courseId, null, null, null, null, true);
+        self::updateCronTab($script, $itemId, null, null, null, null, true);
     }
 
-    private static function updateCronTab(string $script, int $courseId, ?int $number, ?string $time, int $day = null, string $datetime = null, bool $remove = false)
+    private static function updateCronTab(string $script, int $itemId, ?int $number, ?string $time, int $day = null, string $datetime = null, bool $remove = false)
     {
         $path = self::getScriptPath($script);
         $output = shell_exec('crontab -l');
@@ -34,7 +34,7 @@ class CronJob
             $toWrite = "";
             foreach ($lines as $line) {
                 $separated = explode(" ", $line);
-                if ((strpos($line, $path) === false or end($separated) != $courseId) and $line != '') {
+                if ((strpos($line, $path) === false or end($separated) != $itemId) and $line != '') {
                     $toWrite .= $line . "\n";
                 }
             }
@@ -61,7 +61,7 @@ class CronJob
                 } else if ($time == "Weekly" && $day != null) {
                     $periodStr = "0 " . $number . " * * " . $day;   // (0-sunday, 1-monday, 2-tuesday, etc)
                 }
-                $toWrite .= $periodStr . " /usr/bin/php " . $path . " " . $courseId . "\n";
+                $toWrite .= $periodStr . " /usr/bin/php " . $path . " " . $itemId . "\n";
             }
 
             file_put_contents(self::CRONFILE, $toWrite);
@@ -72,12 +72,24 @@ class CronJob
     private static function getScriptPath(string $script): ?string
     {
         switch ($script) {
-            case "AutoDisabling":
+            case "AutoCourseEnabling":
+                return ROOT_PATH . "models/GameCourse/Course/AutoEnablingScript.php";
+
+            case "AutoCourseDisabling":
                 return ROOT_PATH . "models/GameCourse/Course/AutoDisablingScript.php";
+
+            case "AutoPageEnabling":
+                return ROOT_PATH . "models/GameCourse/Views/Page/AutoEnablingScript.php";
+
+            case "AutoPageDisabling":
+                return ROOT_PATH . "models/GameCourse/Views/Page/AutoDisablingScript.php";
+
             case "AutoGame":
                 return ROOT_PATH . "models/GameCourse/AutoGame/AutoGameScript.php";
+
             case "ProgressReport": // FIXME: should be compartimentalized inside module
                 return MODULES_FOLDER . "/" . Notifications::ID . "/ProgressReportScript.php";
+
             default:
                 return null;
         }

@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Role\Role;
 use GameCourse\Views\Aspect\Aspect;
+use GameCourse\Views\Component\Component;
 use GameCourse\Views\Event\Event;
 use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\ExpressionLanguage\ExpressionEvaluatorBase;
@@ -13,6 +14,8 @@ use GameCourse\Views\ExpressionLanguage\ValueNode;
 use GameCourse\Views\Logging\AddLog;
 use GameCourse\Views\Logging\Logging;
 use GameCourse\Views\Logging\MoveLog;
+use GameCourse\Views\Page\Page;
+use GameCourse\Views\Page\Template\Template;
 use GameCourse\Views\Variable\Variable;
 use GameCourse\Views\ViewType\ViewType;
 use GameCourse\Views\Visibility\VisibilityType;
@@ -27,6 +30,8 @@ class ViewHandler
     const TABLE_VIEW = "view";
     const TABLE_VIEW_ASPECT = "view_aspect";
     const TABLE_VIEW_PARENT = "view_parent";
+
+    const ROOT_VIEW = [["type" => "block"]];
 
 
     /*** ---------------------------------------------------- ***/
@@ -235,7 +240,9 @@ class ViewHandler
             $children = self::getChildrenOfView($info["view"]);
             if (!empty($children)) {
                 foreach ($children as $child) {
-                    self::deleteViewTree($child);
+                    // NOTE: make sure not to delete other views that are not exclusive of this view root
+                    if ($child != $viewRoot && !Component::isComponent($child) && !Template::isTemplate($viewRoot) &&
+                        !Page::isPage($viewRoot)) self::deleteViewTree($child);
                 }
             }
             self::deleteView($info["view"]);
@@ -278,9 +285,39 @@ class ViewHandler
 
 
     /*** ---------------------------------------------------- ***/
-    /*** ------------------ Building views ------------------ ***/
+    /*** ----------------- Rendering views ------------------ ***/
     /*** ---------------- ( from database ) ----------------- ***/
     /*** ---------------------------------------------------- ***/
+
+    /**
+     * Renders a view by getting its entire view tree, as well as
+     * its view trees for each of its aspects.
+     * Option to populate view with mocked data.
+     *
+     * @param int $viewRoot
+     * @param int $courseId
+     * @param bool $populate
+     * @return array
+     * @throws Exception
+     */
+    public static function renderView(int $viewRoot, int $courseId, bool $populate = false): array
+    {
+        // Get entire view tree
+        $viewTree = self::buildView($viewRoot, null, $populate); // FIXME: populate with mocks
+
+        // Get default aspect
+        $defaultAspect = Aspect::getAspectBySpecs($courseId, null, null);
+
+        // Get view tree for each aspect of component
+        $viewTreeByAspect = [];
+        $aspects = self::getAspectsInViewTree($viewRoot);
+        foreach ($aspects as $aspect) {
+            $viewTreeOfAspect = self::buildView($viewRoot, [$aspect, $defaultAspect], $populate); // FIXME: populate with mocks
+            $viewTreeByAspect[$aspect->getId()] = $viewTreeOfAspect;
+        }
+
+        return ["viewTree" => $viewTree, "viewTreeByAspect" => $viewTreeByAspect];
+    }
 
     /**
      * Builds a view which creates the entire view tree that has
@@ -545,7 +582,7 @@ class ViewHandler
         $viewRoot = null;   // used to set the same viewRoot for all aspects
         foreach ($viewTree as $view) {
             // Create a unique ID and viewRoot
-            $view["id"] = hexdec(uniqid()); // unix timestamps --> JS timestamps
+            $view["id"] = hexdec(uniqid());
             $view["viewRoot"] = $viewRoot ?? $view["id"];
 
             // Add view

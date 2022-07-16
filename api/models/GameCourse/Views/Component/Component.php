@@ -3,8 +3,8 @@ namespace GameCourse\Views\Component;
 
 
 use Exception;
-use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\ViewHandler;
+use ReflectionClass;
 
 /**
  * This is the Component model, which implements the necessary methods
@@ -82,22 +82,8 @@ abstract class Component
      */
     public function render(bool $populate = false): array
     {
-        // Get entire view tree
-        $viewTree = ViewHandler::buildView($this->viewRoot, null, $populate); // FIXME: populate with mocks
-
-        // Get default aspect
         $courseId = method_exists($this, "getCourse") ? $this->getCourse()->getId() : 0;
-        $defaultAspect = Aspect::getAspectBySpecs($courseId, null, null);
-
-        // Get view tree for each aspect of component
-        $viewTreeByAspect = [];
-        $aspects = ViewHandler::getAspectsInViewTree($this->viewRoot);
-        foreach ($aspects as $aspect) {
-            $viewTreeOfAspect = ViewHandler::buildView($this->viewRoot, [$aspect, $defaultAspect], $populate); // FIXME: populate with mocks
-            $viewTreeByAspect[$aspect->getId()] = $viewTreeOfAspect;
-        }
-
-        return ["viewTree" => $viewTree, "viewTreeByAspect" => $viewTreeByAspect];
+        return ViewHandler::renderView($this->viewRoot, $courseId, $populate);
     }
 
     /**
@@ -108,5 +94,23 @@ abstract class Component
     public function exists(): bool
     {
         return !empty($this->getData("viewRoot"));
+    }
+
+    /**
+     * Checks whether a view root is a component.
+     *
+     * @param int $viewRoot
+     * @return bool
+     */
+    public static function isComponent(int $viewRoot): bool
+    {
+        $typeClass = new ReflectionClass(ComponentType::class);
+        $types = array_values($typeClass->getConstants());
+
+        $isComponent = false;
+        foreach ($types as $type) {
+            if (self::getComponentByViewRoot($type, $viewRoot)) $isComponent = true;
+        }
+        return $isComponent;
     }
 }

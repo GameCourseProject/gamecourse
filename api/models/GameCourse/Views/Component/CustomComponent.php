@@ -6,6 +6,7 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
+use GameCourse\Views\CreationMode;
 use GameCourse\Views\ViewHandler;
 use PDOException;
 
@@ -96,14 +97,16 @@ class CustomComponent extends Component
     /**
      * Sets custom component data on the database.
      *
-     * @example setData(["name" => "New name"])
-     * @example setData(["name" => "New name", "course" => 1])
-     *
      * @param array $fieldValues
      * @return void
+     * @throws Exception
+     * @example setData(["name" => "New name", "course" => 1])
+     *
+     * @example setData(["name" => "New name"])
      */
     public function setData(array $fieldValues)
     {
+        if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_CUSTOM_COMPONENT, $fieldValues, ["viewRoot" => $this->viewRoot]);
     }
 
@@ -129,6 +132,17 @@ class CustomComponent extends Component
         return $components;
     }
 
+    /**
+     * Updates custom component's updateTimestamp to current time.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function refreshUpdateTimestamp()
+    {
+        $this->setUpdateTimestamp(date("Y-m-d H:i:s", time()));
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------- Component Manipulation -------------- ***/
@@ -138,31 +152,44 @@ class CustomComponent extends Component
      * Adds a custom component to the database.
      * Returns the newly created component.
      *
-     * @param array $viewTree
+     * @param string $creationMode
      * @param string $name
      * @param int $courseId
+     * @param int|null $viewRoot
+     * @param array|null $viewTree
      * @param string|null $moduleId
      * @return CustomComponent
      * @throws Exception
      */
-    public static function addComponent(array $viewTree, string $name, int $courseId, string $moduleId = null): CustomComponent
+    public static function addComponent(string $creationMode, string $name, int $courseId, int $viewRoot = null,
+                                        ?array $viewTree = null, string $moduleId = null): CustomComponent
     {
-        // Verify view tree only has course aspects
-        try {
-            ViewHandler::getAspectsInViewTree(null, $viewTree, $courseId);
+        self::validateName($name);
 
-        } catch (PDOException $e) {
-            $error = $e->getMessage();
-            preg_match("/Role with name '(.+)' doesn't exist/", $error, $matches);
-            if (!empty($matches)) {
-                $roleName = $matches[1];
-                throw new Exception("Role with name '" . $roleName . "' not found in course with ID = " . $courseId . "." .
-                "Add this role to the course first before adding this custom component.");
-            }
+        if ($creationMode == CreationMode::BY_VALUE) {
+            if ($viewTree) {
+                // Verify view tree only has course aspects
+                try {
+                    ViewHandler::getAspectsInViewTree(null, $viewTree, $courseId);
+
+                } catch (PDOException $e) {
+                    $error = $e->getMessage();
+                    preg_match("/Role with name '(.+)' doesn't exist/", $error, $matches);
+                    if (!empty($matches)) {
+                        $roleName = $matches[1];
+                        throw new Exception("Role with name '" . $roleName . "' not found in course with ID = " . $courseId . "." .
+                            "Add this role to the course first before adding this custom component.");
+                    }
+                }
+            } else $viewTree = ViewHandler::ROOT_VIEW;
+
+            // Add view tree of component
+            $viewRoot = ViewHandler::insertViewTree($viewTree, $courseId);
+
+        } else if ($creationMode == CreationMode::BY_REFERENCE) {
+            if ($viewRoot === null)
+                throw new Exception("Can't add custom component by reference: no view root given.");
         }
-
-        // Add view tree of component
-        $viewRoot = ViewHandler::insertViewTree($viewTree, $courseId);
 
         // Create new component
         Core::database()->insert(self::TABLE_CUSTOM_COMPONENT, [
@@ -175,6 +202,42 @@ class CustomComponent extends Component
     }
 
     /**
+     * Adds a custom component to the database by copying from another
+     * existing custom component.
+     *
+     * @param int $copyFrom
+     * @return CustomComponent
+     * @throws Exception
+     */
+    public static function copyComponent(int $copyFrom): CustomComponent
+    {
+        $componentToCopy = self::getComponentByViewRoot(ComponentType::CORE, $copyFrom);
+        if (!$componentToCopy) throw new Exception("Component to copy from with view root = " . $copyFrom . " doesn't exist.");
+        $componentInfo = $componentToCopy->getData();
+
+        // Create copy
+        $name = $componentInfo["name"] . " (Copy)";
+        $viewTree = ViewHandler::buildView($componentInfo["viewRoot"]);
+        return self::addComponent(CreationMode::BY_VALUE, $name, $componentInfo["course"], null, $viewTree);
+    }
+
+    /**
+     * Edits an existing custom components in database.
+     * Returns the edited custom component.
+     *
+     * @param string $name
+     * @return $this
+     * @throws Exception
+     */
+    public function editComponent(string $name): CustomComponent
+    {
+        self::validateName($name);
+        $this->setName($name);
+        $this->refreshUpdateTimestamp();
+        return $this;
+    }
+
+    /**
      * Deletes a custom component from the database.
      *
      * @param int $viewRoot
@@ -182,6 +245,25 @@ class CustomComponent extends Component
      */
     public static function deleteComponent(int $viewRoot) {
         ViewHandler::deleteViewTree($viewRoot);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------- Validations -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Validates component name.
+     *
+     * @throws Exception
+     */
+    private static function validateName($name)
+    {
+        if (!is_string($name) || empty($name))
+            throw new Exception("Component name can't be null neither empty.");
+
+        if (iconv_strlen($name) > 25)
+            throw new Exception("Component name is too long: maximum of 25 characters.");
     }
 
 

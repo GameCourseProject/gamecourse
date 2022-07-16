@@ -267,8 +267,10 @@ CREATE TABLE template_core(
     viewRoot                    bigint unsigned PRIMARY KEY,
     name                        varchar(50) NOT NULL,
     category                    int unsigned NOT NULL,
+    position                    int unsigned NOT NULL,
     module                      varchar(50) DEFAULT NULL,
 
+    UNIQUE key(category, position),
     FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
     FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
     FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
@@ -279,6 +281,7 @@ CREATE TABLE template_global(
     name                        varchar(50) NOT NULL,
     category                    int unsigned NOT NULL,
     sharedBy                    int unsigned NOT NULL,
+    sharedTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
     FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
@@ -288,12 +291,13 @@ CREATE TABLE template_global(
 CREATE TABLE page(
     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
     name                        varchar(25) NOT NULL,
+    isVisible                   boolean DEFAULT FALSE,
     viewRoot                    bigint unsigned NOT NULL,
     creationTimestamp           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updateTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     visibleFrom                 TIMESTAMP NULL DEFAULT NULL,
     visibleUntil                TIMESTAMP NULL DEFAULT NULL,
-    position                    int unsigned NOT NULL,
+    position                    int unsigned NULL DEFAULT NULL,
     course                      int unsigned NOT NULL,
 
     UNIQUE key(course, name),
