@@ -275,10 +275,12 @@ class ViewHandler
      */
     public static function buildView(int $viewRoot, array $sortedAspects = null, $populate = false): array
     {
+        // TODO: when populate, allow for mocks as well
+
         $viewTree = [];
 
         // Filter views by aspect
-        $viewsInfo = Core::database()->selectMultiple(self::TABLE_VIEW_ASPECT, ["viewRoot" => $viewRoot], "aspect, view", "aspect");
+        $viewsInfo = self::getAspectInfoOfViewRoot($viewRoot);
         if ($sortedAspects) {
             $viewPicked = self::pickViewByAspect($viewsInfo, $sortedAspects);
             $viewsInfo = $viewPicked ? [$viewPicked] : [];
@@ -527,6 +529,33 @@ class ViewHandler
     }
 
     /**
+     * Gets all aspects found in a view tree.
+     *
+     * @param int $viewRoot
+     * @return array
+     */
+    public static function getAspectsInViewTree(int $viewRoot): array
+    {
+        $aspects = [];
+
+        // Get aspects of view root
+        $viewsInfo = self::getAspectInfoOfViewRoot($viewRoot);
+        foreach ($viewsInfo as $info) {
+            $aspects[] = Aspect::getAspectById($info["aspect"]);
+
+            // Get aspects of children
+            $children = self::getChildrenOfView($info["view"]);
+            if (!empty($children)) {
+                foreach ($children as $child) {
+                    $aspects = array_merge($aspects, self::getAspectsInViewTree($child));
+                }
+            }
+        }
+
+        return array_unique($aspects, SORT_REGULAR);
+    }
+
+    /**
      * Picks the most specific aspect available in a view root.
      * Returns null if there's no view for given aspects.
      *
@@ -579,5 +608,10 @@ class ViewHandler
                 Event::addEvent($view["id"], $event["type"], $event["action"]);
             }
         }
+    }
+
+    private static function getAspectInfoOfViewRoot(int $viewRoot): array
+    {
+        return Core::database()->selectMultiple(self::TABLE_VIEW_ASPECT, ["viewRoot" => $viewRoot], "aspect, view", "aspect");
     }
 }

@@ -208,6 +208,15 @@ CREATE TABLE view_parent(
     FOREIGN key(child) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE
 );
 
+CREATE TABLE view_tree(
+    viewTree                    bigint unsigned NOT NULL,
+    viewRoot                    bigint unsigned NOT NULL,
+
+    PRIMARY key(viewTree, viewRoot),
+    FOREIGN key(viewTree) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE
+);
+
 CREATE TABLE view_category(
     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
     name                        varchar(25) NOT NULL

@@ -2,6 +2,10 @@
 namespace GameCourse\Views\Component;
 
 
+use Exception;
+use GameCourse\Views\Aspect\Aspect;
+use GameCourse\Views\ViewHandler;
+
 /**
  * This is the Component model, which implements the necessary methods
  * to interact with view components in the MySQL database.
@@ -59,9 +63,33 @@ abstract class Component
     /*** -------------- Component Manipulation -------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    public function render(): array
+    /**
+     * Renders a component by getting its entire view tree, as well
+     * as its view trees for each of its aspects.
+     * Option to populate component with mocked data.
+     *
+     * @param bool $populate
+     * @return array
+     * @throws Exception
+     */
+    public function render(bool $populate = false): array
     {
-        // TODO
+        // Get entire view tree
+        $viewTree = ViewHandler::buildView($this->viewRoot, null, $populate); // FIXME: populate with mocks
+
+        // Get default aspect
+        $courseId = method_exists($this, "getCourse") ? $this->getCourse()->getId() : 0;
+        $defaultAspect = Aspect::getAspectBySpecs($courseId, null, null);
+
+        // Get view tree for each aspect of component
+        $viewTreeByAspect = [];
+        $aspects = ViewHandler::getAspectsInViewTree($this->viewRoot);
+        foreach ($aspects as $aspect) {
+            $viewTreeOfAspect = ViewHandler::buildView($this->viewRoot, [$aspect, $defaultAspect], $populate); // FIXME: populate with mocks
+            $viewTreeByAspect[$aspect->getId()] = $viewTreeOfAspect;
+        }
+
+        return ["viewTree" => $viewTree, "viewTreeByAspect" => $viewTreeByAspect];
     }
 
     /**
