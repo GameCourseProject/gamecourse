@@ -165,8 +165,8 @@ class CustomComponent extends Component
      * @param int $viewRoot
      * @return void
      */
-    public static function deleteComponen(int $viewRoot) {
-        Core::database()->delete(self::TABLE_CUSTOM_COMPONENT, ["viewRoot" => $viewRoot]);
+    public static function deleteComponent(int $viewRoot) {
+        ViewHandler::deleteViewTree($viewRoot);
     }
 
 

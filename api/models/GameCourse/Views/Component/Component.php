@@ -51,7 +51,7 @@ abstract class Component
     }
 
     /**
-     * Gets components of a given type.
+     * Gets components of a specific type.
      *
      * @param int|null $courseId
      * @return array
@@ -62,6 +62,14 @@ abstract class Component
     /*** ---------------------------------------------------- ***/
     /*** -------------- Component Manipulation -------------- ***/
     /*** ---------------------------------------------------- ***/
+
+    /**
+     * Deletes a component of a specific type from the database.
+     *
+     * @param int $viewRoot
+     * @return void
+     */
+    public static abstract function deleteComponent(int $viewRoot);
 
     /**
      * Renders a component by getting its entire view tree, as well

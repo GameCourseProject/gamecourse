@@ -145,7 +145,7 @@ class GlobalComponent extends Component
      * @param int $viewRoot
      * @return void
      */
-    public static function deleteComponen(int $viewRoot) {
+    public static function deleteComponent(int $viewRoot) {
         Core::database()->delete(self::TABLE_GLOBAL_COMPONENT, ["viewRoot" => $viewRoot]);
     }
 

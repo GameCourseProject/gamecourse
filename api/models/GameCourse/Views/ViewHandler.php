@@ -222,6 +222,27 @@ class ViewHandler
     }
 
     /**
+     * Deletes the complete view tree in the database.
+     *
+     * @param int $viewRoot
+     * @return void
+     */
+    public static function deleteViewTree(int $viewRoot)
+    {
+        $viewsInfo = self::getAspectInfoOfViewRoot($viewRoot);
+        foreach ($viewsInfo as $info) {
+            // Delete aspects of children
+            $children = self::getChildrenOfView($info["view"]);
+            if (!empty($children)) {
+                foreach ($children as $child) {
+                    self::deleteViewTree($child);
+                }
+            }
+            self::deleteView($info["view"]);
+        }
+    }
+
+    /**
      * Moves a view's position in the database.
      *
      * @param int $viewRoot

@@ -155,7 +155,7 @@ class CoreComponent extends Component
      * @return void
      */
     public static function deleteComponent(int $viewRoot) {
-        Core::database()->delete(self::TABLE_CORE_COMPONENT, ["viewRoot" => $viewRoot]);
+        ViewHandler::deleteViewTree($viewRoot);
     }
 
 
