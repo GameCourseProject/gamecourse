@@ -7,10 +7,12 @@ use GameCourse\Views\Dictionary\Dictionary;
 
 class EvaluateVisitor extends Visitor
 {
-    private $params; // variables available
+    private $params;        // variables available
+    private $mockData;      // whether to generate mocks
 
-    public function __construct(array $params) {
+    public function __construct(array $params, bool $mockData = false) {
         $this->params = $params;
+        $this->mockData = $mockData;
     }
 
     public function getParams(): array
@@ -23,13 +25,17 @@ class EvaluateVisitor extends Visitor
      */
     public function addParam(string $name, $value)
     {
-        // NOTE: a view and/or its children cannot have variables with same names
+        // NOTE: a view and/or its children cannot have variables with same name
         if (isset($this->params[$name]))
             throw new Exception("Parameter with name '" . $name . "' already exists in visitor.");
 
         $this->params[$name] = $value;
     }
 
+
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------ Visiting nodes ------------------ ***/
+    /*** ---------------------------------------------------- ***/
 
     /**
      * @param ArgumentSequence $node
@@ -56,17 +62,6 @@ class EvaluateVisitor extends Visitor
         $context = $node->getContext();
         $libraryId = $node->getLib();
 
-        if ($libraryId == "actions") {
-            if ($funcName === "showToolTip" || $funcName === "showPopUp") {
-                // does not have user argument
-                if (sizeof($args) == 1) $args[] = null;
-                $args[] = $this->params;
-
-            } else if ($funcName === "hideView" || $funcName === "showView" || $funcName === "toggleView") {
-                $args[] = $this;
-            }
-        }
-
         if ($context) {
             $contextVal = $context->accept($this)->getValue();
             if (!$libraryId) {
@@ -87,9 +82,9 @@ class EvaluateVisitor extends Visitor
             }
         } else $contextVal = null;
 
-        $course = Course::getCourseById($this->params["course"]);
+        $course = $this->mockData ? null : Course::getCourseById($this->params["course"]);
         $dictionary = Dictionary::get();
-        return $dictionary->callFunction($course, $libraryId, $funcName, $args, $contextVal);
+        return $dictionary->callFunction($course, $libraryId, $funcName, $args, $contextVal, $this->mockData);
     }
 
     /**

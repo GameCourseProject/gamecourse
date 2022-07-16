@@ -107,11 +107,12 @@ class Dictionary
      * @param string $libraryId
      * @param string $funcName
      * @param array $args
-     * @param $context
+     * @param null $context
+     * @param bool $mockData
      * @return mixed
      * @throws Exception
      */
-    public function callFunction(?Course $course, string $libraryId, string $funcName, array $args, $context = null)
+    public function callFunction(?Course $course, string $libraryId, string $funcName, array $args, $context = null, bool $mockData = false)
     {
         $library = $this->getLibraryById($libraryId, $course);
 
@@ -121,6 +122,9 @@ class Dictionary
 
         // Add context
         if ($context !== null) array_unshift($args, $context);
+
+        // Mock data
+        if ($mockData) $args[] = $mockData;
 
         // Call function
         return $library->{$funcName}(...$args);

@@ -292,18 +292,21 @@ class ViewHandler
     /**
      * Renders a view by getting its entire view tree, as well as
      * its view trees for each of its aspects.
-     * Option to populate view with mocked data.
+     * Option to populate view with data:
+     *  - false --> do not populate
+     *  - true --> populate with mocked data
+     *  - array with params --> populate with actual data (e.g. ["course" => 1, "viewer" => 10, "user" => 20])
      *
      * @param int $viewRoot
      * @param int $courseId
-     * @param bool $populate
+     * @param bool|array $populate
      * @return array
      * @throws Exception
      */
-    public static function renderView(int $viewRoot, int $courseId, bool $populate = false): array
+    public static function renderView(int $viewRoot, int $courseId, $populate = false): array
     {
         // Get entire view tree
-        $viewTree = self::buildView($viewRoot, null, $populate); // FIXME: populate with mocks
+        $viewTree = self::buildView($viewRoot, null, $populate);
 
         // Get default aspect
         $defaultAspect = Aspect::getAspectBySpecs($courseId, null, null);
@@ -312,7 +315,7 @@ class ViewHandler
         $viewTreeByAspect = [];
         $aspects = self::getAspectsInViewTree($viewRoot);
         foreach ($aspects as $aspect) {
-            $viewTreeOfAspect = self::buildView($viewRoot, [$aspect, $defaultAspect], $populate); // FIXME: populate with mocks
+            $viewTreeOfAspect = self::buildView($viewRoot, [$aspect, $defaultAspect], $populate);
             $viewTreeByAspect[$aspect->getId()] = $viewTreeOfAspect;
         }
 
@@ -323,18 +326,19 @@ class ViewHandler
      * Builds a view which creates the entire view tree that has
      * the view at its root.
      * Option to build for a specific set of aspects and/or to populate
-     * with actual data instead of expressions.
+     * with actual data instead of expressions:
+     *  - false --> do not populate
+     *  - true --> populate with mocked data
+     *  - array with params --> populate with actual data (e.g. ["course" => 1, "viewer" => 10, "user" => 20])
      *
      * @param int $viewRoot
      * @param array|null $sortedAspects
-     * @param bool|array $populate --> (false or array with params e.g. ["course" => 1, "viewer" => 10, "user" => 20])
+     * @param bool|array $populate
      * @return array
      * @throws Exception
      */
     public static function buildView(int $viewRoot, array $sortedAspects = null, $populate = false): array
     {
-        // TODO: when populate, allow for mocks as well
-
         $viewTree = [];
 
         // Filter views by aspect
@@ -366,9 +370,10 @@ class ViewHandler
             $view = array_slice($view, 0, $pos) + ["viewRoot" => $viewRoot] + ["aspect" => $viewAspect] + array_slice($view, $pos);
 
             // Populate with data
-            if ($populate) {
+            if ($populate) { // FIXME: being done multiple times
                 self::compileView($view);
-                self::evaluateView($view, new EvaluateVisitor($populate));
+                $mockData = !is_array($populate);
+                self::evaluateView($view, new EvaluateVisitor($mockData ? [] : $populate, $mockData));
             }
 
             $viewTree[] = $view;

@@ -74,11 +74,11 @@ abstract class Template
      * as its view trees for each of its aspects.
      * Option to populate template with mocked data.
      *
-     * @param bool $populate
+     * @param bool|array $populate
      * @return array
      * @throws Exception
      */
-    public function render(bool $populate = false): array
+    public function render($populate = false): array
     {
         return ViewHandler::renderView($this->viewRoot, 0, $populate);
     }

@@ -76,11 +76,11 @@ abstract class Component
      * as its view trees for each of its aspects.
      * Option to populate component with mocked data.
      *
-     * @param bool $populate
+     * @param bool|array $populate
      * @return array
      * @throws Exception
      */
-    public function render(bool $populate = false): array
+    public function render($populate = false): array
     {
         $courseId = method_exists($this, "getCourse") ? $this->getCourse()->getId() : 0;
         return ViewHandler::renderView($this->viewRoot, $courseId, $populate);

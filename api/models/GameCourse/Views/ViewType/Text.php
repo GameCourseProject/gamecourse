@@ -120,7 +120,7 @@ class Text extends ViewType
     public function evaluate(array &$view, EvaluateVisitor $visitor)
     {
         if (isset($view["link"])) ViewHandler::evaluateNode($view["link"], $visitor);
-        ViewHandler::evaluateNode($view["value"], $visitor);
+        ViewHandler::evaluateNode($view["text"], $visitor);
     }
 
 
