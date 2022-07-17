@@ -149,10 +149,7 @@ CREATE TABLE aspect(
 
 CREATE TABLE view_type(
     id                          varchar(50) NOT NULL PRIMARY KEY,
-    description                 varchar(125) NOT NULL,
-    module                      varchar(50) DEFAULT NULL,
-
-    FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
+    description                 varchar(125) NOT NULL
 );
 
 CREATE TABLE view(

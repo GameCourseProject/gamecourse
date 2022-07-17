@@ -3,7 +3,6 @@ namespace GameCourse\Views\ViewType;
 
 use Exception;
 use GameCourse\Core\Core;
-use GameCourse\Module\Module;
 use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\ViewHandler;
 use Utils\Utils;
@@ -33,17 +32,12 @@ abstract class ViewType
         return $this->getData("description");
     }
 
-    public function getModule(): ?Module
-    {
-        return Module::getModuleById($this->getData("module"), null);
-    }
-
     /**
      * Gets view type data from the database.
      *
      * @example getData() --> gets all view type data
      * @example getData("description") --> gets view type description
-     * @example getData("description, module") --> gets view type description & module ID
+     * @example getData("id, description") --> gets view type ID & description
      *
      * @param string $field
      * @return mixed|void
@@ -65,16 +59,10 @@ abstract class ViewType
         $this->setData(["description" => $description]);
     }
 
-    public function setModule(?string $moduleId)
-    {
-        $this->setData(["module" => $moduleId]);
-    }
-
     /**
      * Sets view type data on the database.
      *
      * @example setData(["description" => "New description"])
-     * @example setData(["description" => "New description", "module" => "<moduleID>"])
      *
      * @param array $fieldValues
      * @return void
@@ -98,27 +86,14 @@ abstract class ViewType
      */
     public static function setupViewTypes()
     {
-        $viewTypes = [];
-
-        // Get system view types
-        $systemViewTypesFolder = ROOT_PATH . "models/GameCourse/Views/ViewType/";
-        $viewTypes = array_merge($viewTypes, ["system" => self::getViewTypesInFolder($systemViewTypesFolder, ["ViewType"])]);
-
-        // Get module view types
-        $moduleIds = Module::getModules(true);
-        foreach ($moduleIds as $moduleId) {
-            $viewTypesFolder = MODULES_FOLDER . "/" . $moduleId . "/view-types/";
-            if (file_exists($viewTypesFolder))
-                $viewTypes = array_merge($viewTypes, [$moduleId => self::getViewTypesInFolder($viewTypesFolder)]);
-        }
+        // Get view types
+        $viewTypesFolder = ROOT_PATH . "models/GameCourse/Views/ViewType/";
+        $viewTypes = self::getViewTypesInFolder($viewTypesFolder, ["ViewType"]);
 
         // Add view types to database and initialize them
-        foreach ($viewTypes as $context => $types) {
-            $moduleId = $context != "system" ? $context : null;
-            foreach ($types as $viewType) {
-                self::addViewType($viewType::ID, $viewType::DESCRIPTION, $moduleId);
-                $viewType->init();
-            }
+        foreach ($viewTypes as $viewType) {
+            self::addViewType($viewType::ID, $viewType::DESCRIPTION);
+            $viewType->init();
         }
     }
 
@@ -174,15 +149,13 @@ abstract class ViewType
      *
      * @param string $id
      * @param string $description
-     * @param string|null $moduleId
      * @return ViewType
      */
-    public static function addViewType(string $id, string $description, string $moduleId = null): ViewType
+    public static function addViewType(string $id, string $description): ViewType
     {
         Core::database()->insert(self::TABLE_VIEW_TYPE, [
             "id" => $id,
-            "description" => $description,
-            "module" => $moduleId
+            "description" => $description
         ]);
         return self::getViewTypeById($id);
     }

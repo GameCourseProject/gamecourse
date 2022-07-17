@@ -699,14 +699,12 @@ abstract class Module
     {
         // TODO: upload module files
         // TODO: update composer for controllers & dictionary
-        // TODO: add new view types if available on module
     }
 
     public static function uninstallModule()
     {
         // TODO: remove module files (ver function deleteModule() on Module.php
         // TODO: update composer for controllers & dictionary
-        // TODO: remove module view types if available on module
     }
 
 
