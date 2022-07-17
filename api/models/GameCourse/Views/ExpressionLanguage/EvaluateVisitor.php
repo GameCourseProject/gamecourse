@@ -20,6 +20,11 @@ class EvaluateVisitor extends Visitor
         return $this->params;
     }
 
+    public function mockData(): bool
+    {
+        return $this->mockData;
+    }
+
     /**
      * @throws Exception
      */
