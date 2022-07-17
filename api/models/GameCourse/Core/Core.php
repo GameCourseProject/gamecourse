@@ -5,6 +5,8 @@ use API\API;
 use Database\Database;
 use Exception;
 use Facebook;
+use Faker\Factory;
+use Faker\Generator;
 use FenixEdu;
 use FenixEduException;
 use GameCourse\User\User;
@@ -250,6 +252,22 @@ class Core
     public static function dictionary(): Dictionary
     {
         return Dictionary::get();
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Mocks -------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    /**
+     * Get an instance of a faker generator to mock data.
+     * @see https://fakerphp.github.io/
+     *
+     * @return Generator
+     */
+    public static function mock(): Generator
+    {
+        return Factory::create();
     }
 
 
