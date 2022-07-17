@@ -149,7 +149,7 @@ CREATE TABLE aspect(
 
 CREATE TABLE view_type(
     id                          varchar(50) NOT NULL PRIMARY KEY,
-    description                 varchar(100) NOT NULL,
+    description                 varchar(125) NOT NULL,
     module                      varchar(50) DEFAULT NULL,
 
     FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
@@ -226,7 +226,7 @@ CREATE TABLE view_category_order(
 
 CREATE TABLE component_core(
     viewRoot                    bigint unsigned PRIMARY KEY,
-    description                 varchar(50) DEFAULT NULL,
+    description                 varchar(70) DEFAULT NULL,
     category                    int unsigned NOT NULL,
     position                    int unsigned NOT NULL,
     module                      varchar(50) DEFAULT NULL,
@@ -253,7 +253,7 @@ CREATE TABLE component_custom(
 
 CREATE TABLE component_global(
     viewRoot                    bigint unsigned PRIMARY KEY,
-    description                 varchar(50) DEFAULT NULL,
+    description                 varchar(70) DEFAULT NULL,
     category                    int unsigned NOT NULL,
     sharedBy                    int unsigned NOT NULL,
     sharedTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
