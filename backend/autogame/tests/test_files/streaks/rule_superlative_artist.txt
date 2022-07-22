@@ -1,0 +1,8 @@
+Rule: Superlative Artist
+	when:
+		get_consecutive_rating_logs(target, "Superlative Artist", "graded post", 4, True)
+		to_award, participations = awards_to_give(target, "Superlative Artist")
+		to_award > 0
+
+	then:
+		award_streak(target, "Superlative Artist", to_award, participations, "graded post")

@@ -716,7 +716,7 @@ API::registerFunction($MODULE, 'getCourseModules', function () {
 });
 
 /**
- * Check if virtual currency is enabled in course.
+ * Check if virtualcurrency is enabled in course.
  *
  * @param int $courseId
  */
@@ -735,7 +735,7 @@ API::registerFunction($MODULE, 'isVirtualCurrencyEnabled', function() {
 
 
 /**
- * Check if virtual currency is enabled in course.
+ * Check if virtualcurrency is enabled in course.
  *
  * @param int $courseId
  */

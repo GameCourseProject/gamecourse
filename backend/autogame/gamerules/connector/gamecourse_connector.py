@@ -2345,6 +2345,8 @@ def award_streak(target, streak, to_award, participations, type=None):
     else:
         awards_table = "award"
 
+
+   
     # gets all awards for this user order by descending date (most recent on top)
     query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description like %s AND type=%s;"
     streak_name = streak + "%"

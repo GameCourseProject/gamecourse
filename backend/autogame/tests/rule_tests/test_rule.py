@@ -436,19 +436,5 @@ class TestFire(TestRule):
 		self.assertFire("s1",precs=precs,scope=scope)
 
 
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # STREAKS RULES TESTING
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    def test_s01 (self):
-        """ fire streak rule with preconditions and actions with effects w/ target """
-        f = lambda v: Effect(v)
-        scope = {'f':f}
-        self.assertFire(
-            "target12",
-            precs=["len('word') > 3"],
-            acts=['x = 10','f(x)'],
-            scope=scope,
-            expected=[10])
 
 

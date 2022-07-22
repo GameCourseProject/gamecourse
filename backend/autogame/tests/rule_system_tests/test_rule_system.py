@@ -208,6 +208,13 @@ class TestLoad(TestRuleSystem):
 		from context import PathError
 		self.assertRaises(PathError,RuleSystem(autosave=False).load,'C:\\invalid\\path')
 
+	def test_s01 (self):
+	    """ test load a folder with files that only contain streak related rules
+	    with all fields initialized
+        """
+        self.assertLoad('streaks')
+
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RuleSystem.fire(path)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -755,3 +762,91 @@ class TestFire2 (TestRuleSystem):
 		for k in p.awards: awards += p.awards[k]
 		expected = awards, indicators
 		self.assertEqual(cfuncs.transform_rulesystem_output(output),expected)
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# This section is merely for convenience. This is just the continuation of
+# TestFire class, but these unittests will be validating streak-related functions.
+# This way we can run solely these specific tests without running the others
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class TestStreakFire (TestRuleSystem):
+
+	def test_s1 (self):
+		""" test award_streak function: test if the function outputs a
+		prize with the correct awards and indicators
+		"""
+		path = os.path.join(tp,"streaks","rule_01.txt")
+		targets = ["s1"]
+		indicators = {"s1":{"Ackerman":"contributions?"}}
+		p = Prize({"s1":[Award("s1","Ackerman",1,0,True,0,None)]},indicators)
+		expected = {"s1":{"Streak R1":[p]}}
+		self.assertFire(path,targets,expected=expected)
+
+    def test_grader (self):
+        """ test award_streak function for specific rule with specific precs:
+        test if the function outputs a prize with the correct awards and
+        indicators
+        """
+        path = os.path.join(tp,"streaks","rule_grader_extraordinaire.txt")
+        targets = ["s1"]
+        indicators = {"s1":{"Grader Extraordinaire":"contributions?"}}
+        p = Prize({"s1":[Award("s1","Grader Extraordinaire",1,0,True,0,None)]},indicators)
+        expected = {"s1":{"Grader Extraordinaire":[p]}}
+        self.assertFire(path,targets,expected=expected)
+
+    def test_constant_gardener (self):
+        """ test award_streak function for specific rule with specific precs:
+        prize with the correct awards and indicators
+        """
+        path = os.path.join(tp,"streaks","rule_constant_gardener.txt")
+        targets = ["s1"]
+        indicators = {"s1":{"Constant Gardener":"contributions?"}}
+        p = Prize({"s1":[Award("s1","Constant Gardener",1,0,True,0,None)]},indicators)
+        expected = {"s1":{"Constant Gardener":[p]}}
+        self.assertFire(path,targets,expected=expected)
+
+    def test_practitioner (self):
+        """ test award_streak function for specific rule with specific precs:
+        prize with the correct awards and indicators
+        """
+        path = os.path.join(tp,"streaks","rule_practitioner.txt")
+        targets = ["s1"]
+        indicators = {"s1":{"Practitioner":"contributions?"}}
+        p = Prize({"s1":[Award("s1","Practitioner",1,0,True,0,None)]},indicators)
+        expected = {"s1":{"Practitioner":[p]}}
+        self.assertFire(path,targets,expected=expected)
+
+    def test_sage (self):
+        """ test award_streak function for specific rule with specific precs:
+        prize with the correct awards and indicators
+        """
+        path = os.path.join(tp,"streaks","rule_sage.txt")
+        targets = ["s1"]
+        indicators = {"s1":{"Sage":"contributions?"}}
+        p = Prize({"s1":[Award("s1","Sage",1,0,True,0,None)]},indicators)
+        expected = {"s1":{"Sage":[p]}}
+        self.assertFire(path,targets,expected=expected)
+
+    def test_superlative_artist (self):
+        """ test award_streak function for specific rule with specific precs:
+        prize with the correct awards and indicators
+        """
+        path = os.path.join(tp,"streaks","rule_superlative_artist.txt")
+        targets = ["s1"]
+        indicators = {"s1":{"Superlative Artist":"contributions?"}}
+        p = Prize({"s1":[Award("s1","Superlative Artist",1,0,True,0,None)]},indicators)
+        expected = {"s1":{"Superlative Artist":[p]}}
+        self.assertFire(path,targets,expected=expected)
+
+
+
+
+
+
+
+
+
+
+
+
+
