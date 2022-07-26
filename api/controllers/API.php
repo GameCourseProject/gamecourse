@@ -8,6 +8,7 @@ use GameCourse\Course\Course;
 use GameCourse\Module\Module;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
+use GameCourse\Views\Page\Page;
 
 /**
  * Main API controller that holds functions to process an API request,
@@ -191,6 +192,14 @@ class API
                 API::error("There is no module with ID = " . $moduleId . " in the system.", 404);
         }
         return $module;
+    }
+
+    public static function verifyPageExists(int $pageId): Page
+    {
+        $page = Page::getPageById($pageId);
+        if (!$page)
+            API::error('There is no page with ID = ' . $pageId . '.', 404);
+        return $page;
     }
 //
 //    public static function verifyPageExists(int $courseId, int $pageId): array

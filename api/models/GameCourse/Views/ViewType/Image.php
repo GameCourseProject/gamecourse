@@ -39,7 +39,7 @@ class Image extends ViewType
     protected function initDatabase()
     {
         Core::database()->executeQuery("
-            CREATE TABLE " . self::TABLE_VIEW_IMAGE . "(
+            CREATE TABLE IF NOT EXISTS " . self::TABLE_VIEW_IMAGE . "(
                 id                          bigint unsigned NOT NULL PRIMARY KEY,
                 src                         varchar(200) NOT NULL,
                 link                        varchar(200),
@@ -91,7 +91,7 @@ class Image extends ViewType
         Core::database()->delete(self::TABLE_VIEW_IMAGE, ["id" => $viewId]);
     }
 
-    public function build(array &$view, array $sortedAspects = null, $populate = false)
+    public function build(array &$view, array $sortedAspects = null)
     {
         // Nothing to do here
     }

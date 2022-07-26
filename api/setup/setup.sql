@@ -287,6 +287,7 @@ CREATE TABLE template_global(
 
 CREATE TABLE page(
     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course                      int unsigned NOT NULL,
     name                        varchar(25) NOT NULL,
     isVisible                   boolean DEFAULT FALSE,
     viewRoot                    bigint unsigned NOT NULL,
@@ -295,7 +296,6 @@ CREATE TABLE page(
     visibleFrom                 TIMESTAMP NULL DEFAULT NULL,
     visibleUntil                TIMESTAMP NULL DEFAULT NULL,
     position                    int unsigned NULL DEFAULT NULL,
-    course                      int unsigned NOT NULL,
 
     UNIQUE key(course, name),
     UNIQUE key(course, position),

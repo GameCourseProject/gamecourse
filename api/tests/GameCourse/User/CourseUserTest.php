@@ -7,6 +7,7 @@ use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Role\Role;
+use GameCourse\Views\Page\Page;
 use PDOException;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
@@ -28,7 +29,7 @@ class CourseUserTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        TestingUtils::setUpBeforeClass(["roles"], ["CronJob"]);
+        TestingUtils::setUpBeforeClass(["roles", "views"], ["CronJob"]);
     }
 
     protected function setUp(): void
@@ -56,7 +57,7 @@ class CourseUserTest extends TestCase
         //       don't forget tables with foreign keys will be automatically deleted on cascade
 
         TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER]);
-        TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE]);
+        TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE, Page::TABLE_PAGE]);
         TestingUtils::cleanFileStructure();
         TestingUtils::cleanEvents();
     }
@@ -195,6 +196,31 @@ class CourseUserTest extends TestCase
     {
         $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
         $this->assertNull($courseUser->getLastActivity());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getLandingPage()
+    {
+        $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
+        $page = Page::addPage($this->course->getId(), "Landing Page");
+        $roles = Role::getCourseRoles($this->course->getId(), false);
+        $roles[0]["landingPage"] = $page->getId();
+        Role::updateCourseRoles($this->course->getId(), $roles);
+        $courseUser->addRole(null, $roles[0]["id"]);
+        $this->assertEquals($page, $courseUser->getLandingPage());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getLandingPageNull()
+    {
+        $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
+        $this->assertNull($courseUser->getLandingPage());
     }
 
     /**

@@ -39,7 +39,7 @@ class Block extends ViewType
     protected function initDatabase()
     {
         Core::database()->executeQuery("
-            CREATE TABLE " . self::TABLE_VIEW_BLOCK . "(
+            CREATE TABLE IF NOT EXISTS " . self::TABLE_VIEW_BLOCK . "(
                 id                          bigint unsigned NOT NULL PRIMARY KEY,
                 direction                   ENUM ('vertical', 'horizontal') DEFAULT 'vertical',
 
@@ -88,12 +88,12 @@ class Block extends ViewType
         Core::database()->delete(self::TABLE_VIEW_BLOCK, ["id" => $viewId]);
     }
 
-    public function build(array &$view, array $sortedAspects = null, $populate = false)
+    public function build(array &$view, array $sortedAspects = null)
     {
         $children = ViewHandler::getChildrenOfView($view["id"]);
         if (!empty($children)) {
             foreach ($children as &$child) {
-                $child = ViewHandler::buildView($child, $sortedAspects, $populate);
+                $child = ViewHandler::buildView($child, $sortedAspects);
                 if (!empty($child)) $view["children"][] = $child;
             }
         }

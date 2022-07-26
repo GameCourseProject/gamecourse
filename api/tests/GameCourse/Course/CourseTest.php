@@ -9,6 +9,7 @@ use GameCourse\Module\Module;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
+use GameCourse\Views\Page\Page;
 use PDOException;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
@@ -28,7 +29,7 @@ class CourseTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        TestingUtils::setUpBeforeClass(["roles, modules"], ["CronJob"]);
+        TestingUtils::setUpBeforeClass(["roles, modules", "views"], ["CronJob"]);
     }
 
     protected function setUp(): void
@@ -44,7 +45,7 @@ class CourseTest extends TestCase
         //       don't forget tables with foreign keys will be automatically deleted on cascade
 
         TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE]);
-        TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE]);
+        TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE, Page::TABLE_PAGE]);
         TestingUtils::cleanFileStructure();
         TestingUtils::cleanEvents();
     }
@@ -355,10 +356,17 @@ class CourseTest extends TestCase
         $this->assertNull($course->getEndDate());
     }
 
-    // TODO
+    /**
+     * @test
+     * @throws Exception
+     */
     public function getLandingPage()
     {
-
+        $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $page = Page::addPage($course->getId(), "Landing Page");
+        $course->setLandingPage($page->getId());
+        $this->assertEquals($page, $course->getLandingPage());
     }
 
     /**
@@ -615,6 +623,45 @@ class CourseTest extends TestCase
             null, null, true, false);
         $this->expectException(Exception::class);
         $course->setEndDate($endDate);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setLandingPageSuccess()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
+            null, null, true, false);
+        $page = Page::addPage($course->getId(), "Landing Page");
+
+        $course->setLandingPage($page->getId());
+        $this->assertEquals($page, $course->getLandingPage());
+
+        $course->setLandingPage(null);
+        $this->assertNull($course->getLandingPage());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setLandingPageFailure()
+    {
+        $course1 = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
+            null, null, true, false);
+        $course2 = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2022-2023", "#ffffff",
+            null, null, true, false);
+
+        $page = Page::addPage($course1->getId(), "Landing Page");
+
+        $this->expectException(Exception::class);
+        try {
+            $course2->setLandingPage($page->getId());
+        } catch (Exception $e) {
+            $this->expectException(Exception::class);
+            $course1->setLandingPage(100);
+        }
     }
 
     /**
@@ -1073,6 +1120,7 @@ class CourseTest extends TestCase
     /**
      * @test
      * @dataProvider addCourseFailureProvider
+     * @throws Exception
      */
     public function editCourseFailure($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible)
     {

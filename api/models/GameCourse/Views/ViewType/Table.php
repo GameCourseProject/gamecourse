@@ -65,12 +65,12 @@ class Table extends ViewType
         // Nothing to do here
     }
 
-    public function build(array &$view, array $sortedAspects = null, $populate = false)
+    public function build(array &$view, array $sortedAspects = null)
     {
         $children = ViewHandler::getChildrenOfView($view["id"]);
         if (!empty($children)) {
             foreach ($children as &$child) {
-                $child = ViewHandler::buildView($child, $sortedAspects, $populate);
+                $child = ViewHandler::buildView($child, $sortedAspects);
                 if (!empty($child)) $view["children"][] = $child;
             }
         }

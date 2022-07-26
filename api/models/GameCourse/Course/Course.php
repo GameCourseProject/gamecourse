@@ -9,6 +9,8 @@ use GameCourse\Module\Module;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
+use GameCourse\Views\Component\CustomComponent;
+use GameCourse\Views\Page\Page;
 use Utils\CronJob;
 use Utils\Utils;
 use ZipArchive;
@@ -73,9 +75,10 @@ class Course
         return $this->getData("endDate");
     }
 
-    public function getLandingPage(): ?int
+    public function getLandingPage(): ?Page
     {
-        return $this->getData("landingPage");
+        $pageId = $this->getData("landingPage");
+        return $pageId ? Page::getPageById($pageId) : null;
     }
 
     public function getRolesHierarchy(): array
@@ -244,6 +247,7 @@ class Course
             if ($startDate) self::validateStartAndEndDates($startDate, $fieldValues["endDate"]);
             $this->setAutomation("AutoDisabling", $fieldValues["endDate"]);
         }
+        if (key_exists("landingPage", $fieldValues)) self::validateLandingPage($this->id, $fieldValues["landingPage"]);
 
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_COURSE, $fieldValues, ["id" => $this->id]);
@@ -819,6 +823,34 @@ class Course
 
 
     /*** ---------------------------------------------------- ***/
+    /*** ----------------------- Views ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets course pages.
+     * Option for 'visible'.
+     *
+     * @param bool|null $visible
+     * @return array
+     */
+    public function getPages(?bool $visible = null): array
+    {
+        return Page::getPagesOfCourse($this->id, $visible);
+    }
+
+    /**
+     * Gets course components.
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function getComponents(): array
+    {
+        return CustomComponent::getComponents($this->id);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
     /*** ------------------- Course Data -------------------- ***/
     /*** ---------------------------------------------------- ***/
 
@@ -1306,6 +1338,20 @@ class Course
         if (is_null($dateTime)) return;
         if (!is_string($dateTime) || !Utils::isValidDate($dateTime, "Y-m-d H:i:s"))
             throw new Exception("Datetime '" . $dateTime . "' should be in format 'yyyy-mm-dd HH:mm:ss'");
+    }
+
+    /**
+     * Validates landing page.
+     *
+     * @throws Exception
+     */
+    private static function validateLandingPage(int $courseId, $pageId)
+    {
+        if (is_null($pageId)) return;
+        $page = Page::getPageById($pageId);
+        if (!$page) throw new Exception("Page with ID = " . $pageId . " doesn't exist.");
+        if ($page->getCourse()->getId() != $courseId)
+            throw new Exception("Page with ID = " . $pageId . " doesn't belong to course with ID = " . $courseId . ".");
     }
 
 

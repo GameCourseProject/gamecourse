@@ -254,15 +254,13 @@ abstract class ViewType
 
     /**
      * Builds a view of a specific type.
-     * Option to build for a specific aspect and/or to populate
-     * with actual data instead of expressions.
+     * Option to build for a specific set of aspects
      *
      * @param array $view
      * @param array|null $sortedAspects
-     * @param bool|array $populate
      * @return void
      */
-    abstract function build(array &$view, array $sortedAspects = null, $populate = false);
+    abstract function build(array &$view, array $sortedAspects = null);
 
     /**
      * Translates a view into logs.

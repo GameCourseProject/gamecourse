@@ -285,64 +285,70 @@ class ViewHandler
 
 
     /*** ---------------------------------------------------- ***/
-    /*** ----------------- Rendering views ------------------ ***/
+    /*** ------------------ Building views ------------------ ***/
     /*** ---------------- ( from database ) ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Renders a view by getting its entire view tree, as well as
-     * its view trees for each of its aspects.
-     * Option to populate view with data:
-     *  - false --> do not populate
-     *  - true --> populate with mocked data
-     *  - array with params --> populate with actual data (e.g. ["course" => 1, "viewer" => 10, "user" => 20])
+     * Renders a view which creates the entire view tree that has
+     * the view at its root.
+     * Option to build for a specific set of aspects and/or to
+     * populate with data instead of expressions.
      *
      * @param int $viewRoot
-     * @param int $courseId
+     * @param array|null $sortedAspects
      * @param bool|array $populate
+     *  - false --> don't populate;
+     *  - true --> populate w/ mocked data;
+     *  - array with params --> populate with actual data (e.g. ["course" => 1, "viewer" => 10, "user" => 20])
      * @return array
      * @throws Exception
      */
-    public static function renderView(int $viewRoot, int $courseId, $populate = false): array
+    public static function renderView(int $viewRoot, array $sortedAspects = null, $populate = false): array
     {
-        // Get entire view tree
-        $viewTree = self::buildView($viewRoot, null, $populate);
+        // Build view tree
+        $viewTree = self::buildView($viewRoot, $sortedAspects);
 
-        // Get default aspect
-        $defaultAspect = Aspect::getAspectBySpecs($courseId, null, null);
+        // Populate with data
+        if ($populate) {
+            // Compile each view
+            foreach ($viewTree as &$view) {
+                self::compileView($view);
+            }
 
-        // Get view tree for each aspect of component
-        $viewTreeByAspect = [];
-        $aspects = self::getAspectsInViewTree($viewRoot);
-        foreach ($aspects as $aspect) {
-            $viewTreeOfAspect = self::buildView($viewRoot, [$aspect, $defaultAspect], $populate);
-            $viewTreeByAspect[$aspect->getId()] = $viewTreeOfAspect;
+            // Evaluate each view
+            $mockData = !is_array($populate);
+            foreach ($viewTree as &$view) {
+                self::evaluateView($view, new EvaluateVisitor($mockData ? [] : $populate, $mockData));
+            }
         }
 
-        return ["viewTree" => $viewTree, "viewTreeByAspect" => $viewTreeByAspect];
+        // If rendering for specific aspects, put in correct format
+        if ($sortedAspects) {
+            $nrAspects = count($viewTree);
+            if ($nrAspects == 1) $viewTree = $viewTree[0];
+            else if ($nrAspects > 1) throw new Exception("Should have picked only one aspect but got more.");
+        }
+
+        return $viewTree;
     }
 
     /**
      * Builds a view which creates the entire view tree that has
      * the view at its root.
-     * Option to build for a specific set of aspects and/or to populate
-     * with actual data instead of expressions:
-     *  - false --> do not populate
-     *  - true --> populate with mocked data
-     *  - array with params --> populate with actual data (e.g. ["course" => 1, "viewer" => 10, "user" => 20])
+     * Option to build for a specific set of aspects.
      *
      * @param int $viewRoot
      * @param array|null $sortedAspects
-     * @param bool|array $populate
      * @return array
      * @throws Exception
      */
-    public static function buildView(int $viewRoot, array $sortedAspects = null, $populate = false): array
+    public static function buildView(int $viewRoot, array $sortedAspects = null): array
     {
         $viewTree = [];
+        $viewsInfo = self::getAspectInfoOfViewRoot($viewRoot);
 
         // Filter views by aspect
-        $viewsInfo = self::getAspectInfoOfViewRoot($viewRoot);
         if ($sortedAspects) {
             $viewPicked = self::pickViewByAspect($viewsInfo, $sortedAspects);
             $viewsInfo = $viewPicked ? [$viewPicked] : [];
@@ -354,7 +360,7 @@ class ViewHandler
 
             // Build view of a specific type
             $viewType = ViewType::getViewTypeById($view["type"]);
-            $viewType->build($view, $sortedAspects, $populate);
+            $viewType->build($view, $sortedAspects);
 
             // Create param 'aspect' for view
             $viewAspect = Aspect::getAspectById($info["aspect"]);
@@ -365,22 +371,41 @@ class ViewHandler
                 "userRole" =>  $userRoleId ? Role::getRoleName($userRoleId) : null
             ];
 
-            // Add params 'viewRoot' and 'aspect'
+            // Add params 'viewRoot' and 'aspect' immediately after ID
             $pos = 1;
             $view = array_slice($view, 0, $pos) + ["viewRoot" => $viewRoot] + ["aspect" => $viewAspect] + array_slice($view, $pos);
-
-            // Populate with data
-            if ($populate) { // FIXME: being done multiple times
-                self::compileView($view);
-                $mockData = !is_array($populate);
-                self::evaluateView($view, new EvaluateVisitor($mockData ? [] : $populate, $mockData));
-            }
 
             $viewTree[] = $view;
         }
 
         return $viewTree;
     }
+
+    /**
+     * Builds a view by getting its entire view tree, as well as
+     * its view trees for each of its aspects.
+     *
+     * @param int $viewRoot
+     * @param int $courseId
+     * @return array
+     * @throws Exception
+     */
+    public static function buildViewComplete(int $viewRoot, int $courseId): array
+    {
+        // Get entire view tree
+        $viewTree = self::buildView($viewRoot);
+
+        // Get view tree for each aspect of view root
+        $viewTreeByAspect = [];
+        $defaultAspect = Aspect::getAspectBySpecs($courseId, null, null);
+        $aspects = self::getAspectsInViewTree($viewRoot);
+        foreach ($aspects as $aspect) {
+            $viewTreeOfAspect = self::buildView($viewRoot, [$aspect, $defaultAspect]);
+            $viewTreeByAspect[$aspect->getId()] = $viewTreeOfAspect;
+        }
+
+        return ["viewTree" => $viewTree, "viewTreeByAspect" => $viewTreeByAspect];
+    } // FIXME: maybe don't need this like this
 
 
     /*** ---------------------------------------------------- ***/

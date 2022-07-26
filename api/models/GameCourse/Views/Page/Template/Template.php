@@ -70,20 +70,6 @@ abstract class Template
     public static abstract function deleteTemplate(int $viewRoot);
 
     /**
-     * Renders a template by getting its entire view tree, as well
-     * as its view trees for each of its aspects.
-     * Option to populate template with mocked data.
-     *
-     * @param bool|array $populate
-     * @return array
-     * @throws Exception
-     */
-    public function render($populate = false): array
-    {
-        return ViewHandler::renderView($this->viewRoot, 0, $populate);
-    }
-
-    /**
      * Checks whether template exists.
      *
      * @return bool
@@ -109,5 +95,30 @@ abstract class Template
             if (self::getTemplateByViewRoot($type, $viewRoot)) $isTemplate = true;
         }
         return $isTemplate;
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------------- Rendering -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Renders a template for a specific set of aspects.
+     * If no aspects given, it will render the template for all
+     * its aspects.
+     * Option to populate view with data:
+     *  - false --> do not populate
+     *  - true --> populate with mocked data
+     *  - array with params --> populate with actual data (e.g. ["course" => 1, "viewer" => 10, "user" => 20])
+     *
+     * @param array|null $sortedAspects
+     * @param bool|array $populate
+     * @return array
+     * @throws Exception
+     */
+    public function renderTemplate(array $sortedAspects = null, $populate = false): array
+    {
+        return ViewHandler::renderView($this->viewRoot, $sortedAspects, $populate);
+        // FIXME: render complete?
     }
 }

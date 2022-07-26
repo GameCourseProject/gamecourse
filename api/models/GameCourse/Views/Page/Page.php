@@ -4,6 +4,7 @@ namespace GameCourse\Views\Page;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\ViewHandler;
 use Utils\CronJob;
 use Utils\Utils;
@@ -31,6 +32,11 @@ class Page
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getCourse(): Course
+    {
+        return Course::getCourseById($this->getData("course"));
     }
 
     public function getName(): string
@@ -68,11 +74,6 @@ class Page
         return $this->getData("position");
     }
 
-    public function getCourse(): Course
-    {
-        return Course::getCourseById($this->getData("course"));
-    }
-
     public function isVisible(): bool
     {
         return $this->getData("isVisible");
@@ -105,6 +106,14 @@ class Page
     public function setName(string $name)
     {
         $this->setData(["name" => $name]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setCourse(Course $course)
+    {
+        $this->setData(["course" => $course->getId()]);
     }
 
     /**
@@ -161,14 +170,6 @@ class Page
     public function setPosition(int $position)
     {
         $this->setData(["position" => $position]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function setCourse(Course $course)
-    {
-        $this->setData(["course" => $course->getId()]);
     }
 
     /**
@@ -249,7 +250,7 @@ class Page
 
     /**
      * Gets pages of a given course.
-     * Option for 'active' and/or 'visible'.
+     * Option for 'visible'.
      *
      * @param int $courseId
      * @param bool|null $visible
@@ -302,11 +303,11 @@ class Page
 
         // Insert in database
         $id = Core::database()->insert(self::TABLE_PAGE, [
+            "course" => $courseId,
             "name" => $name,
             "viewRoot" => $viewRoot,
             "visibleFrom" => $visibleFrom,
-            "visibleUntil" => $visibleUntil,
-            "course" => $courseId
+            "visibleUntil" => $visibleUntil
         ]);
 
         // Set automations
@@ -400,6 +401,62 @@ class Page
     public static function isPage(int $viewRoot): bool
     {
         return !empty(Core::database()->select(self::TABLE_PAGE, ["viewRoot" => $viewRoot]));
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------------- Rendering -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Renders a page for a given viewer and user.
+     *
+     * @param int $viewerId
+     * @param int|null $userId
+     * @return array
+     * @throws Exception
+     */
+    public function renderPage(int $viewerId, int $userId = null): array
+    {
+        $userId = $userId ?? $viewerId;
+        $pageInfo = $this->getData("course, viewRoot");
+        $paramsToPopulate = ["course" => $pageInfo["course"], "viewer" => $viewerId, "user" => $userId];
+        $sortedAspects = Aspect::getAspectsByViewerAndUser($pageInfo["course"], $viewerId, $userId, true);
+        return ViewHandler::renderView($pageInfo["viewRoot"], $sortedAspects, $paramsToPopulate);
+    }
+
+    public function renderPageForEditor()
+    {
+        // TODO
+    }
+
+    /**
+     * Previews a page either for a specific viewer and user
+     * or a specific aspect.
+     *
+     * @example previewPage(1) --> previews page for viewer and user with ID = 1
+     * @example previewPage(1, 2) --> previews page for viewer with ID = 1 and user with ID = 2
+     * @example previewPage(null, null, <Aspect>) --> previews page for a given aspect
+     * @example previewPage(1, null, <Aspect>) --> same as 1st example
+     *
+     * @param int|null $viewerId
+     * @param int|null $userId
+     * @param Aspect|null $aspect
+     * @return array
+     * @throws Exception
+     */
+    public function previewPage(int $viewerId = null, int $userId = null, Aspect $aspect = null): array
+    {
+        if ($viewerId === null && $aspect === null)
+            throw new Exception("Need either viewer ID or an aspect to preview a page.");
+
+        // Render for a specific viewer and user
+        if ($viewerId) return $this->renderPage($viewerId, $userId);
+
+        // Render for a specific aspect
+        $pageInfo = $this->getData("course, viewRoot");
+        $defaultAspect = Aspect::getAspectBySpecs($pageInfo["course"], null, null);
+        return ViewHandler::renderView($pageInfo["viewRoot"], [$aspect, $defaultAspect], true);
     }
 
 
@@ -540,14 +597,14 @@ class Page
     {
         if ($page) {
             if (isset($page["id"])) $page["id"] = intval($page["id"]);
+            if (isset($page["course"])) $page["course"] = intval($page["course"]);
             if (isset($page["isVisible"])) $page["isVisible"] = boolval($page["isVisible"]);
             if (isset($page["viewRoot"])) $page["viewRoot"] = intval($page["viewRoot"]);
             if (isset($page["position"])) $page["position"] = intval($page["position"]);
-            if (isset($page["course"])) $page["course"] = intval($page["course"]);
             return $page;
 
         } else {
-            if ($fieldName == "id" || $fieldName == "viewRoot" || $fieldName == "position" || $fieldName == "course") return intval($field);
+            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "viewRoot" || $fieldName == "position") return intval($field);
             if ($fieldName == "isVisible") return boolval($field);
             return $field;
         }

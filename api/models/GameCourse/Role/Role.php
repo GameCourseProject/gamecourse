@@ -72,6 +72,19 @@ class Role
     }
 
     /**
+     * Gets a role landing page by role ID.
+     *
+     * @param int|null $roleId
+     * @return Page
+     */
+    public static function getRoleLandingPage(int $roleId = null): ?Page
+    {
+        $pageId = Core::database()->select(self::TABLE_ROLE, ["id" => $roleId], "landingPage");
+        if ($pageId === false) throw new PDOException("Role with ID = " . $roleId . " doesn't exist.");
+        return $pageId ? Page::getPageById($pageId) : null;
+    }
+
+    /**
      * Gets roles names in a given hierarchy.
      *
      * @example Hierarchy: [
@@ -240,7 +253,7 @@ class Role
             // Add role
             self::validateRoleName($roleName);
             $data = ["course" => $courseId, "name" => $roleName];
-            if ($landingPageName !== null) $landingPageId = Page::getPageId($landingPageName, $courseId);
+            if ($landingPageName !== null) $landingPageId = Page::getPageByName($courseId, $landingPageName);
             if ($landingPageId !== null) $data["landingPage"] = $landingPageId;
             if ($moduleId !== null) $data["module"] = $moduleId;
             $roleId = Core::database()->insert(self::TABLE_ROLE, $data);

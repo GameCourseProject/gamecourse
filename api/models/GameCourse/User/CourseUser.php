@@ -6,6 +6,7 @@ use GameCourse\Core\Auth;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Role\Role;
+use GameCourse\Views\Page\Page;
 use Utils\Utils;
 
 /**
@@ -41,9 +42,14 @@ class CourseUser extends User
         return $this->getData("lastActivity");
     }
 
-    public function getLandingPage(): array
+    public function getLandingPage(): ?Page
     {
-        // TODO
+        $roleNames = Role::getUserRoles($this->id, $this->course->getId(), true, true);
+        foreach ($roleNames as $roleName) {
+            $landingPage = Role::getRoleLandingPage(Role::getRoleId($roleName, $this->course->getId()));
+            if ($landingPage) return $landingPage;
+        }
+        return null;
     }
 
     public function isActive(): bool
@@ -527,7 +533,7 @@ class CourseUser extends User
      */
     private static function validateState(int $userId, bool $isActive)
     {
-        // If active, check that user is active in the systemd
+        // If active, check that user is active in the system
         if ($isActive) {
             $user = User::getUserById($userId);
             if ($user && !$user->isActive())

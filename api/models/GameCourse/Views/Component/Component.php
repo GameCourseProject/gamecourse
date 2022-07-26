@@ -72,21 +72,6 @@ abstract class Component
     public static abstract function deleteComponent(int $viewRoot);
 
     /**
-     * Renders a component by getting its entire view tree, as well
-     * as its view trees for each of its aspects.
-     * Option to populate component with mocked data.
-     *
-     * @param bool|array $populate
-     * @return array
-     * @throws Exception
-     */
-    public function render($populate = false): array
-    {
-        $courseId = method_exists($this, "getCourse") ? $this->getCourse()->getId() : 0;
-        return ViewHandler::renderView($this->viewRoot, $courseId, $populate);
-    }
-
-    /**
      * Checks whether component exists.
      *
      * @return bool
@@ -112,5 +97,33 @@ abstract class Component
             if (self::getComponentByViewRoot($type, $viewRoot)) $isComponent = true;
         }
         return $isComponent;
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------------- Rendering -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Renders a component for a specific set of aspects.
+     * If no aspects given, it will render the component for all
+     * its aspects.
+     * Option to populate view with data:
+     *  - false --> do not populate
+     *  - true --> populate with mocked data
+     *  - array with params --> populate with actual data (e.g. ["course" => 1, "viewer" => 10, "user" => 20])
+     *
+     * @param array|null $sortedAspects
+     * @param bool|array $populate
+     * @return array
+     * @throws Exception
+     */
+    public function renderComponent(array $sortedAspects = null, $populate = false): array
+    {
+        if ($sortedAspects) return ViewHandler::renderView($this->viewRoot, $sortedAspects, $populate);
+
+        // FIXME
+        $courseId = method_exists($this, "getCourse") ? $this->getCourse()->getId() : 0;
+        return ViewHandler::buildViewComplete($this->viewRoot, $courseId, $populate);
     }
 }

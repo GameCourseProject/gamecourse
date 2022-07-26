@@ -42,7 +42,7 @@ class Chart extends ViewType
     protected function initDatabase()
     {
         Core::database()->executeQuery("
-            CREATE TABLE " . self::TABLE_VIEW_CHART . "(
+            CREATE TABLE IF NOT EXISTS " . self::TABLE_VIEW_CHART . "(
                 id                          bigint unsigned NOT NULL PRIMARY KEY,
                 chartType                   ENUM ('bar', 'line', 'radar', 'progress'),
                 info                        varchar(500),
@@ -143,7 +143,7 @@ class Chart extends ViewType
         Core::database()->delete(self::TABLE_VIEW_CHART, ["id" => $viewId]);
     }
 
-    public function build(array &$view, array $sortedAspects = null, $populate = false)
+    public function build(array &$view, array $sortedAspects = null)
     {
         // Nothing to do here
     }

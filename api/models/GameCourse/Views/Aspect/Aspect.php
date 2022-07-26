@@ -155,7 +155,53 @@ class Aspect
                     return in_array($aspect["viewerRole"], $userRoleIds) && in_array($aspect["userRole"], $userRoleIds);
                 });
             }
-            foreach ($aspects as &$aspect) { $aspect = self::parse($aspect); }
+        }
+
+        foreach ($aspects as &$aspect) { $aspect = self::parse($aspect); }
+        return $aspects;
+    }
+
+    /**
+     * TODO
+     *
+     * @param int $courseId
+     * @param int|null $viewerId
+     * @param int|null $userId
+     * @param bool $sortByMostSpecific
+     * @param array|null $viewerRoleIds
+     * @param array|null $userRoleIds
+     * @return array
+     * @throws Exception
+     */
+    public static function getAspectsByViewerAndUser(int $courseId, ?int $viewerId, ?int $userId, bool $sortByMostSpecific = false,
+                                                     array $viewerRoleIds = null, array $userRoleIds = null): array
+    {
+        if ((!$viewerRoleIds || !$userRoleIds) && (!$viewerId || !$userId))
+            throw new Exception("Can't get aspects by viewer and user: need either viewer and user's IDs or role IDs.");
+
+        $aspects = [];
+
+        // Get viewer role IDs
+        if (!$viewerRoleIds) {
+            $viewerRoleIds = array_map(function ($roleName) use ($courseId) {
+                return Role::getRoleId($roleName, $courseId);
+            }, Role::getUserRoles($viewerId, $courseId, true, $sortByMostSpecific));
+            $viewerRoleIds[] = null;
+        }
+
+        // Get user role IDs
+        if (!$userRoleIds) {
+            $userRoleIds = array_map(function ($roleName) use ($courseId) {
+                return Role::getRoleId($roleName, $courseId);
+            }, Role::getUserRoles($userId, $courseId, true, $sortByMostSpecific));
+            $userRoleIds[] = null;
+        }
+
+        // Combine them
+        foreach ($userRoleIds as $userRoleId) {
+            foreach ($viewerRoleIds as $viewerRoleId) {
+                $aspects[] = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId);
+            }
         }
 
         return $aspects;
