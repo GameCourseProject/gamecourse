@@ -40,10 +40,13 @@ def fetch_data ():
 
     all_role_evolution = []
     for target in targets:
-        query = "SELECT user_profile.user, user_profile.date, user_profile.cluster, role.name FROM user_profile JOIN role ON user_profile.cluster = role.id WHERE user_profile.course = %s ORDER BY date ASC;"
-        cursor.execute(query, course)
-
+        query = "SELECT user_profile.user, user_profile.date, user_profile.cluster, role.name FROM user_profile JOIN role ON user_profile.cluster = role.id WHERE user_profile.course = %s  AND user_profile.user = %s ORDER BY date ASC;"
+        cursor.execute(query, (course, target))
         target_role_evolution = cursor.fetchall()
+
+        for line in target_role_evolution:
+            line_list =  list(line)
+            line_list[3] = line_list[3].decode("utf-8")
 
         all_role_evolution += target_role_evolution
 
@@ -57,14 +60,22 @@ def fetch_data ():
 def export():
     columns, evolution = fetch_data()
 
-    if os.path.exists("role_evolution.csv"):
+    if len (sys.argv) == 2 :
+        file_name = "all_role_evolution.csv"
+    elif (len(sys.argv)) == 3:
+        file_name = "role_evolution_" + sys.argv[2] + ".csv"
+    else:
+        file_name = ''
+        print("Incorrect number of arguments given.")
+
+    if os.path.exists("results/" + file_name):
         try:
-            os.remove("role_evolution.csv")
+            os.remove("results/" + file_name)
         except OSError:
             pass
-            
+
     # Create csv file
-    f = open('role_evolution' + '.csv', 'w')
+    f = open('results/' + file_name, 'w')
 
     # Write header
     f.write(','.join(columns) + '\n')
@@ -74,6 +85,8 @@ def export():
 
     f.close()
     print(str(len(evolution)) + ' rows written successfully to ' + f.name)
+
+
 
 
 export()

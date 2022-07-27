@@ -19,9 +19,6 @@ from course.coursedata import read_achievements, read_tree
 achievements = read_achievements()
 tree_awards = read_tree()
 
-#import gamerules.connector.db_connector as db
-#connect = db.connect_to_db()
-
 from gamerules.connector.db_connection import Database
 db = Database()
 

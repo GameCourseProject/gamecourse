@@ -42,8 +42,11 @@ def fetch_data ():
     for target in targets:
         query = "SELECT user, course, description, reward, date, @total:=@total + reward AS total_reward FROM award JOIN (SELECT @total:=0) AS t WHERE course = %s AND user = %s AND type != 'tokens' ORDER BY date ASC;"
         cursor.execute(query, (course, target))
-
         target_xp_evolution = cursor.fetchall()
+        
+        for line in target_xp_evolution:
+            line_list =  list(line)
+            line_list[2] = line_list[2].decode("utf-8")
 
         all_xp_evolution += target_xp_evolution
 
@@ -56,14 +59,22 @@ def fetch_data ():
 def export():
     columns, evolution = fetch_data()
     
-    if os.path.exists("xp_detailed_evolution.csv"):
+    if len (sys.argv) == 2 :
+        file_name = "all_xp_detailed_evolution.csv"
+    elif (len(sys.argv)) == 3:
+        file_name = "xp_detailed_evolution_" + sys.argv[2] + ".csv"
+    else:
+        file_name = ''
+        print("Incorrect number of arguments given.")
+
+    if os.path.exists("results/" + file_name):
         try:
-            os.remove("xp_detailed_evolution.csv")
+            os.remove("results/" + file_name)
         except OSError:
             pass
 
     # Create csv file
-    f = open('xp_detailed_evolution' + '.csv', 'w')
+    f = open('results/' + file_name, 'w')
 
     # Write header
     f.write(','.join(columns) + '\n')
