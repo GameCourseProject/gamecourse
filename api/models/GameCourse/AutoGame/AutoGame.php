@@ -121,7 +121,7 @@ class AutoGame
      * @param int $courseId
      * @return string
      */
-    public static function getLastRun(int $courseId): string
+    public static function getLastRun(int $courseId): ?string
     {
         return Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "finishedRunning");
     }

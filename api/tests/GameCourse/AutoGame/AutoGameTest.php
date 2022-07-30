@@ -171,4 +171,23 @@ class AutoGameTest extends TestCase
         $this->expectException(Exception::class);
         AutoGame::setAutoGame($course->getId(), true);
     }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getLastRun()
+    {
+        $courseId = 1;
+
+        Core::database()->setForeignKeyChecks(false);
+        AutoGame::initAutoGame($courseId);
+        Core::database()->setForeignKeyChecks(true);
+
+        $this->assertNull(AutoGame::getLastRun($courseId));
+
+        $date = "2022-07-30 19:20:00";
+        Core::database()->update(AutoGame::TABLE_AUTOGAME, ["finishedRunning" => $date], ["course" => $courseId]);
+        $this->assertEquals($date, AutoGame::getLastRun($courseId));
+    }
 }

@@ -310,8 +310,8 @@ CREATE TABLE page(
 
 CREATE TABLE autogame(
     course 	                    int unsigned NOT NULL PRIMARY KEY,
-    startedRunning              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    finishedRunning             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    startedRunning              TIMESTAMP NULL DEFAULT NULL,
+    finishedRunning             TIMESTAMP NULL DEFAULT NULL,
     isRunning                   boolean DEFAULT FALSE,
     periodicityNumber           int unsigned DEFAULT 10,
     periodicityTime             varchar(25) DEFAULT 'Minutes',
