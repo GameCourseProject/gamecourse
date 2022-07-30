@@ -1395,7 +1395,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($courseUsers);
         $this->assertCount(3, $courseUsers);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($courseUsers as $i => $courseUser) {
@@ -1432,7 +1432,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($courseUsers);
         $this->assertCount(2, $courseUsers);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($courseUsers as $i => $courseUser) {
@@ -1469,7 +1469,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($courseUsers);
         $this->assertCount(1, $courseUsers);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($courseUsers as $courseUser) {
@@ -1507,7 +1507,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($courseUsers);
         $this->assertCount(1, $courseUsers);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($courseUsers as $courseUser) {
@@ -1544,7 +1544,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($courseUsers);
         $this->assertCount(1, $courseUsers);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($courseUsers as $courseUser) {
@@ -1631,7 +1631,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($courseUsers);
         $this->assertCount(1, $courseUsers);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($courseUsers as $courseUser) {
@@ -1668,7 +1668,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($courseUsers);
         $this->assertCount(1, $courseUsers);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($courseUsers as $courseUser) {
@@ -1705,7 +1705,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($courseUsers);
         $this->assertCount(1, $courseUsers);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($courseUsers as $courseUser) {
@@ -1742,7 +1742,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($courseUsers);
         $this->assertCount(1, $courseUsers);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($courseUsers as $courseUser) {
@@ -1780,7 +1780,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($students);
         $this->assertCount(1, $students);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($students as $student) {
@@ -1817,7 +1817,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($students);
         $this->assertCount(1, $students);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($students as $student) {
@@ -1880,7 +1880,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($teachers);
         $this->assertCount(1, $teachers);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($teachers as $teacher) {
@@ -1917,7 +1917,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($teachers);
         $this->assertCount(1, $teachers);
 
-        $keys = ["id", "name", "username", "authentication_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($teachers as $teacher) {

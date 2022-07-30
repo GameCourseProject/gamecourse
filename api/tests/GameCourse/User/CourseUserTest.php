@@ -1715,7 +1715,7 @@ class CourseUserTest extends TestCase
         $user1 = new CourseUser(User::getUserByStudentNumber(84715)->getId(), $this->course);
         $expectedUser1 = ["id" => 3, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => AuthService::FENIX, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
+            "auth_service" => AuthService::FENIX, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
         $this->assertEquals($expectedUser1, $user1->getData());
 
@@ -1751,7 +1751,7 @@ class CourseUserTest extends TestCase
         $user1 = new CourseUser(User::getUserByStudentNumber(84715)->getId(), $this->course);
         $expectedUser1 = ["id" => 3, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
-            "authentication_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
+            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
             "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
         $this->assertEquals($expectedUser1, $user1->getData());
 
@@ -1823,7 +1823,7 @@ class CourseUserTest extends TestCase
         CourseUser::addCourseUser($user2->getId(), $this->course->getId(), "Student");
         CourseUser::addCourseUser($user3->getId(), $this->course->getId(), "Student");
 
-        $file = "name,email,major,nickname,studentNumber,username,authentication_service,isAdmin,isActive,isActiveInCourse,roles\n";
+        $file = "name,email,major,nickname,studentNumber,username,auth_service,isAdmin,isActive,isActiveInCourse,roles\n";
         $nrUsersImported = CourseUser::importCourseUsers($this->course->getId(), $file);
 
         $users = User::getUsers();
@@ -1869,7 +1869,7 @@ class CourseUserTest extends TestCase
         $courseUser->setRoles(["Teacher", "Student"]);
         $courseUser->setActive(false);
 
-        $expectedFile = "name,email,major,nickname,studentNumber,username,authentication_service,isAdmin,isActive,isActiveInCourse,roles\n";
+        $expectedFile = "name,email,major,nickname,studentNumber,username,auth_service,isAdmin,isActive,isActiveInCourse,roles\n";
         $expectedFile .= "John Smith Doe,johndoe@email.com,MEIC-A,John Doe,123456,ist123456,fenix,1,1,1,Teacher\n";
         $expectedFile .= "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1,1,Student\n";
         $expectedFile .= "Marcus Notø,marcus.n.hansen@gmail.com,MEEC,Marcus Notø,1101036,ist1101036,fenix,1,0,0,Student\n";
