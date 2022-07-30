@@ -7,6 +7,8 @@ use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\User\User;
 use GameCourse\Views\Aspect\Aspect;
+use GameCourse\Views\Page\Page;
+use GameCourse\Views\ViewHandler;
 use GameCourse\XPLevels\XPLevels;
 use PDOException;
 use PHPUnit\Framework\TestCase;
@@ -28,7 +30,7 @@ class RoleTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
+        TestingUtils::setUpBeforeClass(["modules", "views"], ["CronJob"]);
     }
 
     protected function setUp(): void
@@ -69,7 +71,7 @@ class RoleTest extends TestCase
         // NOTE: try to only clean tables used during tests to improve efficiency;
         //       don't forget tables with foreign keys will be automatically deleted on cascade
 
-        TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER, ROLE::TABLE_ROLE]);
+        TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE, ViewHandler::TABLE_VIEW]);
         TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE]);
         TestingUtils::cleanFileStructure();
         TestingUtils::cleanEvents();
@@ -153,6 +155,29 @@ class RoleTest extends TestCase
     {
         $this->expectException(PDOException::class);
         Role::getRoleName(100);
+    }
+
+    /**
+     * @test
+     */
+    public function getRoleLandingPage()
+    {
+        // Given
+        $roleId = Role::getRoleId("Teacher", $this->course->getId());
+        $page = Page::addPage($this->course->getId(), "Landing Page");
+        Core::database()->update(Role::TABLE_ROLE, ["landingPage" => $page->getId()], ["id" => $roleId]);
+
+        // Then
+        $this->assertEquals($page, Role::getRoleLandingPage($roleId));
+    }
+
+    /**
+     * @test
+     */
+    public function getRoleLandingPageNull()
+    {
+        $roleId = Role::getRoleId("Teacher", $this->course->getId());
+        $this->assertNull(Role::getRoleLandingPage($roleId));
     }
 
 
@@ -384,6 +409,10 @@ class RoleTest extends TestCase
         $this->assertCount(2, $rolesNames);
         $this->assertContains("NewRole1", $rolesNames);
         $this->assertContains("NewRole2", $rolesNames);
+
+        $aspects = Aspect::getAspects($this->course->getId());
+        $this->assertIsArray($aspects);
+        $this->assertCount((2 + 1) ** 2, $aspects);
     }
 
     /**
@@ -401,6 +430,10 @@ class RoleTest extends TestCase
         $this->assertCount(2, $rolesNames);
         $this->assertContains("NewRole1", $rolesNames);
         $this->assertContains("NewRole2", $rolesNames);
+
+        $aspects = Aspect::getAspects($this->course->getId());
+        $this->assertIsArray($aspects);
+        $this->assertCount((2 + 1) ** 2, $aspects);
     }
 
     /**
@@ -423,6 +456,10 @@ class RoleTest extends TestCase
         $roles = Role::getCourseRoles($this->course->getId());
         $this->assertCount(6, $roles);
         $this->assertContains("NewRole", $roles);
+
+        $aspects = Aspect::getAspects($this->course->getId());
+        $this->assertIsArray($aspects);
+        $this->assertCount((6 + 1) ** 2, $aspects);
     }
 
     /**
@@ -436,6 +473,10 @@ class RoleTest extends TestCase
         $roles = Role::getCourseRoles($this->course->getId());
         $this->assertCount(6, $roles);
         $this->assertContains("NewRole", $roles);
+
+        $aspects = Aspect::getAspects($this->course->getId());
+        $this->assertIsArray($aspects);
+        $this->assertCount((6 + 1) ** 2, $aspects);
     }
 
     /**
@@ -451,17 +492,45 @@ class RoleTest extends TestCase
             $roles = Role::getCourseRoles($this->course->getId());
             $this->assertCount(5, $roles);
             $this->assertNotContains("NewRole", $roles);
+
+            $aspects = Aspect::getAspects($this->course->getId());
+            $this->assertIsArray($aspects);
+            $this->assertCount((5 + 1) ** 2, $aspects);
         }
     }
 
-    // TODO
+    /**
+     * @test
+     */
     public function addRoleToCourseWithLandingPageName()
     {
+        $page = Page::addPage($this->course->getId(), "Landing Page");
+        Role::addRoleToCourse($this->course->getId(), "NewRole", "Landing Page");
+        $roles = Role::getCourseRoles($this->course->getId());
+        $this->assertCount(6, $roles);
+        $this->assertContains("NewRole", $roles);
+        $this->assertEquals($page, Role::getRoleLandingPage(Role::getRoleId("NewRole", $this->course->getId())));
+
+        $aspects = Aspect::getAspects($this->course->getId());
+        $this->assertIsArray($aspects);
+        $this->assertCount((6 + 1) ** 2, $aspects);
     }
 
-    // TODO
+    /**
+     * @test
+     */
     public function addRoleToCourseWithLandingPageId()
     {
+        $page = Page::addPage($this->course->getId(), "Landing Page");
+        Role::addRoleToCourse($this->course->getId(), "NewRole", null, $page->getId());
+        $roles = Role::getCourseRoles($this->course->getId());
+        $this->assertCount(6, $roles);
+        $this->assertContains("NewRole", $roles);
+        $this->assertEquals($page, Role::getRoleLandingPage(Role::getRoleId("NewRole", $this->course->getId())));
+
+        $aspects = Aspect::getAspects($this->course->getId());
+        $this->assertIsArray($aspects);
+        $this->assertCount((6 + 1) ** 2, $aspects);
     }
 
     /**
@@ -474,6 +543,10 @@ class RoleTest extends TestCase
         $roles = Role::getCourseRoles($this->course->getId(), false);
         $this->assertCount(6, $roles);
 
+        $aspects = Aspect::getAspects($this->course->getId());
+        $this->assertIsArray($aspects);
+        $this->assertCount((6 + 1) ** 2, $aspects);
+
         foreach ($roles as $role) {
             if ($role["name"] == "NewModuleRole") {
                 $this->assertEquals(XPLevels::ID, $role["module"]);
@@ -481,6 +554,46 @@ class RoleTest extends TestCase
             }
         }
         $this->fail("Role 'NewModuleRole' was not added to course.");
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function updateCourseRoles()
+    {
+        // Given
+        $roles = [
+            ["id" => Role::getRoleId("StudentA", $this->course->getId()), "name" => "StudentAAA", "landingPage" => null],
+            ["id" => Role::getRoleId("Student", $this->course->getId()), "name" => "Student", "landingPage" => null],
+            ["id" => null, "name" => "NewRole", "landingPage" => null]
+        ];
+
+        // When
+        Role::updateCourseRoles($this->course->getId(), $roles);
+
+        // Then
+        $rolesNames = Role::getCourseRoles($this->course->getId());
+        $this->assertIsArray($rolesNames);
+        $this->assertCount(3, $rolesNames);
+        $this->assertContains("StudentAAA", $rolesNames);
+        $this->assertContains("Student", $rolesNames);
+        $this->assertContains("NewRole", $rolesNames);
+
+        $aspects = Aspect::getAspects($this->course->getId());
+        $this->assertIsArray($aspects);
+        $this->assertCount((3 + 1) ** 2, $aspects);
+    }
+
+    /**
+     * @test
+     */
+    public function updateCourseRolesFailure()
+    {
+        $roles = [["id" => null, "name" => "New Role", "landingPage" => null]];
+        $this->expectException(Exception::class);
+        Role::updateCourseRoles($this->course->getId(), $roles);
     }
 
 
@@ -498,6 +611,10 @@ class RoleTest extends TestCase
         $this->assertNotContains("Student", $roles);
         $this->assertNotContains("StudentA", $roles);
         $this->assertNotContains("StudentB", $roles);
+
+        $aspects = Aspect::getAspects($this->course->getId());
+        $this->assertIsArray($aspects);
+        $this->assertCount((2 + 1) ** 2, $aspects);
     }
 
     /**
@@ -514,6 +631,10 @@ class RoleTest extends TestCase
         $this->assertNotContains("Student", $roles);
         $this->assertNotContains("StudentA", $roles);
         $this->assertNotContains("StudentB", $roles);
+
+        $aspects = Aspect::getAspects($this->course->getId());
+        $this->assertIsArray($aspects);
+        $this->assertCount((2 + 1) ** 2, $aspects);
     }
 
     /**

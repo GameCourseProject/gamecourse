@@ -253,7 +253,7 @@ class Role
             // Add role
             self::validateRoleName($roleName);
             $data = ["course" => $courseId, "name" => $roleName];
-            if ($landingPageName !== null) $landingPageId = Page::getPageByName($courseId, $landingPageName);
+            if ($landingPageName !== null) $landingPageId = Page::getPageByName($courseId, $landingPageName)->getId();
             if ($landingPageId !== null) $data["landingPage"] = $landingPageId;
             if ($moduleId !== null) $data["module"] = $moduleId;
             $roleId = Core::database()->insert(self::TABLE_ROLE, $data);
@@ -296,7 +296,7 @@ class Role
 
         // Update roles
         foreach ($roles as $role) {
-            if (self::courseHasRole($courseId, $role["name"])) { // update
+            if ($role["id"]) { // update
                 Core::database()->update(self::TABLE_ROLE, [
                     "name" => $role["name"],
                     "landingPage" => $role["landingPage"]
