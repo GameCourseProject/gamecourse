@@ -32,7 +32,7 @@ class DatabaseTest extends TestCase
         //       don't forget tables with foreign keys will be automatically deleted on cascade
 
         TestingUtils::cleanTables([User::TABLE_USER]);
-        TestingUtils::resetAutoIncrement([User::TABLE_USER]);
+        TestingUtils::resetAutoIncrement([User::TABLE_USER, Auth::TABLE_AUTH]);
     }
 
     protected function onNotSuccessfulTest(Throwable $t): void
@@ -958,14 +958,6 @@ class DatabaseTest extends TestCase
         Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
         Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
         $this->assertEquals(2, Core::database()->getLastId());
-    }
-
-    /**
-     * @test
-     */
-    public function getLastIdNoInsertMade()
-    {
-        $this->assertEquals(0, Core::database()->getLastId());
     }
 
 

@@ -133,6 +133,8 @@ class UtilsTest extends TestCase
     /*** ----------------------- Tests ---------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    // Getting directory contents
+
     /**
      * @test
      * @throws Exception
@@ -220,6 +222,54 @@ class UtilsTest extends TestCase
         Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir1");
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getDirectoryContentsDirectoryEmpty()
+    {
+        // Given
+        mkdir(ROOT_PATH . "tests/Utils/dir", 0777, true);
+
+        // When
+        $contents = Utils::getDirectoryContents(ROOT_PATH . "tests/Utils/dir");
+
+        // Then
+        $this->assertIsArray($contents);
+        $this->assertEmpty($contents);
+
+        // Clean up
+        Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir");
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getDirectoryContentsDirectoryDoesntExist()
+    {
+        $this->expectException(Exception::class);
+        Utils::getDirectoryContents(ROOT_PATH . "tests/Utils/dir");
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getDirectoryContentsNotADirectory()
+    {
+        file_put_contents(ROOT_PATH . "tests/Utils/file.txt", "");
+        try {
+            Utils::getDirectoryContents(ROOT_PATH . "tests/Utils/file.txt");
+
+        } catch (Exception $exception) {
+            $this->assertTrue(true);
+            unlink(ROOT_PATH . "tests/Utils/file.txt");
+        }
+    }
+
+
+    // Deleting directory
 
     /**
      * @test
@@ -364,6 +414,34 @@ class UtilsTest extends TestCase
         $this->assertFalse(file_exists(ROOT_PATH . "tests/Utils/dir1"));
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function deleteDirectoryDirectoryDoesntExist()
+    {
+        $this->expectException(Exception::class);
+        Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir");
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function deleteDirectoryNotADirectory()
+    {
+        file_put_contents(ROOT_PATH . "tests/Utils/file.txt", "");
+        try {
+            Utils::deleteDirectory(ROOT_PATH . "tests/Utils/file.txt");
+
+        } catch (Exception $exception) {
+            $this->assertTrue(true);
+            unlink(ROOT_PATH . "tests/Utils/file.txt");
+        }
+    }
+
+
+    // Copying directory
 
     /**
      * @test
@@ -534,6 +612,44 @@ class UtilsTest extends TestCase
         Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir2");
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copyDirectoryWrongFormat()
+    {
+        $this->expectException(Exception::class);
+        Utils::copyDirectory(ROOT_PATH . "tests/Utils/dir1", ROOT_PATH . "tests/Utils/dir2");
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copyDirectoryDirectoryDoesntExist()
+    {
+        $this->expectException(Exception::class);
+        Utils::copyDirectory(ROOT_PATH . "tests/Utils/dir1/", ROOT_PATH . "tests/Utils/dir2/");
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copyDirectoryNotADirectory()
+    {
+        file_put_contents(ROOT_PATH . "tests/Utils/file.txt", "");
+        try {
+            Utils::copyDirectory(ROOT_PATH . "tests/Utils/file.txt", ROOT_PATH . "tests/Utils/dir2/");
+
+        } catch (Exception $exception) {
+            $this->assertTrue(true);
+            unlink(ROOT_PATH . "tests/Utils/file.txt");
+        }
+    }
+
+
+    // Uploading file to directory
 
     /**
      * @test
@@ -610,6 +726,8 @@ class UtilsTest extends TestCase
     }
 
 
+    // Deleting file from directory
+
     /**
      * @test
      * @throws Exception
@@ -664,6 +782,8 @@ class UtilsTest extends TestCase
         Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir1");
     }
 
+
+    // Validations
 
     /**
      * @test
@@ -721,6 +841,8 @@ class UtilsTest extends TestCase
     }
 
 
+    // String manipulation
+
     /**
      * @test
      */
@@ -770,6 +892,8 @@ class UtilsTest extends TestCase
         $this->assertEquals("Agua", Utils::swapNonENChars($capital));
     }
 
+
+    // Import from CSV
 
     /**
      * @test
@@ -840,6 +964,8 @@ class UtilsTest extends TestCase
     }
 
 
+    // Export to CSV
+
     /**
      * @test
      */
@@ -861,6 +987,8 @@ class UtilsTest extends TestCase
         $this->assertEquals("Header #1,Header #2,Header #3\nItem 11,Item 12,Item 13\nItem 21,Item 22,Item 23\nItem 31,Item 32,Item 33", $file);
     }
 
+
+    // Detect CSV separator
 
     /**
      * @test
@@ -904,6 +1032,8 @@ class UtilsTest extends TestCase
         $this->assertNull(Utils::detectSeparator($file));
     }
 
+
+    // Compare versions
 
     /**
      * @test

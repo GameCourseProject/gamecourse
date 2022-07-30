@@ -83,6 +83,7 @@ class Dictionary
      *
      * @param string $folder
      * @return array
+     * @throws Exception
      */
     private function getLibrariesInFolder(string $folder): array
     {

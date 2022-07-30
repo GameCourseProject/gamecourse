@@ -87,6 +87,7 @@ abstract class Module
      * NOTE: only works with one-level directories
      *
      * @return array
+     * @throws Exception
      */
     public function getResources(): array
     {

@@ -2,7 +2,6 @@
 namespace Utils;
 
 use DateTime;
-use Error;
 use Exception;
 
 /**
@@ -22,9 +21,13 @@ class Utils
      *
      * @param string $dir
      * @return array
+     * @throws Exception
      */
     public static function getDirectoryContents(string $dir): array
     {
+        if (!file_exists($dir)) throw new Exception("'" . $dir . "' doesn't exist.");
+        if (!is_dir($dir)) throw new Exception("'" . $dir . "' is not a directory.");
+
         $contents = [];
         $objects = array_diff(scandir($dir), ["..", "."]);
 
@@ -83,8 +86,8 @@ class Utils
      */
     private static function deleteDirectoryHelper(string $dir, bool $deleteSelf = true, array $exceptions = [])
     {
-        if (!is_dir($dir))
-            throw new Exception("'" . $dir . "' is not a directory.");
+        if (!file_exists($dir)) throw new Exception("'" . $dir . "' doesn't exist.");
+        if (!is_dir($dir)) throw new Exception("'" . $dir . "' is not a directory.");
 
         foreach ($exceptions as $exception) {
             if (str_contains($exception, $dir)) {
@@ -112,18 +115,25 @@ class Utils
      * Option for exceptions that should not be copied and whether
      * to delete original directory.
      *
+     * @example copyDirectory("<path>/dir1/", "<path>/dir2/") --> copies contents of dir1 to dir2
+     * @example copyDirectory("<path>/dir1/", "<path>/dir2/", ["file.txt", "dir1/dir11"]) --> copies contents of dir1 to dir2, except for 'file.txt' and directory 'dir1/dir11'
+     * @example copyDirectory("<path>/dir1/", "<path>/dir2/", [], true) --> copies contents of dir1 to dir2 and deletes original directory
+     *
      * @param string $dir
      * @param string $copyTo
      * @param array $exceptions
      * @param bool $deleteOriginal
      * @return void
      * @throws Exception
-     *
-     * @example copyDirectory("<path>/dir1/", "<path>/dir2/") --> copies contents of dir1 to dir2
-     *
      */
     public static function copyDirectory(string $dir, string $copyTo, array $exceptions = [], bool $deleteOriginal = false)
     {
+        if (!Utils::strEndsWith($dir, "/") || !Utils::strEndsWith($copyTo, "/"))
+            throw new Exception("Directory paths need to end with '/'.");
+
+        if (!file_exists($dir)) throw new Exception("'" . $dir . "' doesn't exist.");
+        if (!is_dir($dir)) throw new Exception("'" . $dir . "' is not a directory.");
+
         if (in_array(PHP_OS, ["WIN32", "WINNT", "Windows"])) {
             // Change directory separator
             $dir = str_replace("/", "\\", $dir);
@@ -160,8 +170,10 @@ class Utils
     public static function uploadFile(string $to, string $base64, string $filename): string
     {
         if (!file_exists($to)) mkdir($to, 077, true);
-        if (!is_dir($to))
+        if (!is_dir($to)) {
+            unlink($to);
             throw new Exception("Can't upload file to '" . $to . "' since it isn't a directory.");
+        }
 
         preg_match('/\w/', substr($to, -1), $matches);
         if (count($matches) != 0) $to .= "/";

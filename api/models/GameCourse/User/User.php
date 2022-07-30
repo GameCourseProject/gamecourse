@@ -515,6 +515,7 @@ class User
      * Gets user data folder contents.
      *
      * @return array
+     * @throws Exception
      */
     public function getDataFolderContents(): array
     {

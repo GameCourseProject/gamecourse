@@ -65,6 +65,8 @@ class CacheTest extends TestCase
     /*** ----------------------- Tests ---------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    // Getting
+
     /**
      * @test
      * @dataProvider cacheProvider
@@ -84,6 +86,8 @@ class CacheTest extends TestCase
         $this->assertNull(Cache::get("test"));
     }
 
+
+    // Storing
 
     /**
      * @test
@@ -107,6 +111,8 @@ class CacheTest extends TestCase
         $this->assertEquals(2, Cache::get("test2"));
     }
 
+
+    // Cleaning
 
     /**
      * @test
