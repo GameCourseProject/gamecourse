@@ -16,10 +16,10 @@ CREATE TABLE user(
 CREATE TABLE auth(
 	user                        int unsigned NOT NULL,
 	username                    varchar(50) NOT NULL,
-	authentication_service      ENUM ('fenix', 'google', 'facebook', 'linkedin'),
+	auth_service      ENUM ('fenix', 'google', 'facebook', 'linkedin'),
     lastLogin                   TIMESTAMP NULL,
 
-    PRIMARY key(username, authentication_service),
+    PRIMARY key(username, auth_service),
 	FOREIGN key(user) REFERENCES user(id) ON DELETE CASCADE
 );
 

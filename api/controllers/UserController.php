@@ -74,7 +74,7 @@ class UserController
      *                         description="The user student number"
      *                     ),
      *                     @OA\Property(
-     *                         property="authentication_service",
+     *                         property="auth_service",
      *                         type="string",
      *                         enum={"fenix", "google", "facebook", "linkedin"}
      *                         description="The user chosen authentication service"
@@ -105,7 +105,7 @@ class UserController
      *                              "isAdmin"=false,
      *                              "isActive"=true,
      *                              "username"="ist12345",
-     *                              "authentication_service"="fenix",
+     *                              "auth_service"="fenix",
      *                              "image"="{API_URL}/user_data/1/profile.png"
      *                         }
      *                     }

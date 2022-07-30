@@ -549,7 +549,7 @@ class Course
         if ($active !== null) $where["cu.isActive"] = $active;
         $courseUsers =  Core::database()->selectMultiple($table,
             $where,
-            "u.*, a.username, a.authentication_service, a.lastLogin, cu.lastActivity, cu.isActive as isActiveInCourse",
+            "u.*, a.username, a.auth_service, a.lastLogin, cu.lastActivity, cu.isActive as isActiveInCourse",
             "u.id"
         );
         foreach ($courseUsers as &$courseUser) { $courseUser = CourseUser::parse($courseUser); }
@@ -574,7 +574,7 @@ class Course
             CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id JOIN " . Role::TABLE_USER_ROLE . " ur on ur.user=u.id JOIN " .
             Role::TABLE_ROLE . " r on r.id=ur.role and r.course=cu.course",
             $where,
-            "u.*, a.username, a.authentication_service, a.lastLogin, cu.lastActivity, cu.isActive as isActiveInCourse",
+            "u.*, a.username, a.auth_service, a.lastLogin, cu.lastActivity, cu.isActive as isActiveInCourse",
             "u.id"
         );
         foreach ($courseUsers as &$courseUser) { $courseUser = CourseUser::parse($courseUser); }
@@ -604,7 +604,7 @@ class Course
         if ($active !== null) $where["u.isActive"] = $active;
         $users =  Core::database()->selectMultiple($table,
             $where,
-            "u.*, a.username, a.authentication_service, a.lastLogin",
+            "u.*, a.username, a.auth_service, a.lastLogin",
             "u.id"
         );
         foreach ($users as &$user) { $user = User::parse($user); }

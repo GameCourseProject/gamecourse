@@ -17,7 +17,7 @@ class User
     const TABLE_USER = "user";
 
     const HEADERS = [   // headers for import/export functionality
-        "name", "email", "major", "nickname", "studentNumber", "username", "authentication_service", "isAdmin", "isActive"
+        "name", "email", "major", "nickname", "studentNumber", "username", "auth_service", "isAdmin", "isActive"
     ];
 
     protected $id;
@@ -69,7 +69,7 @@ class User
 
     public function getAuthService(): string
     {
-        return $this->getData("authentication_service");
+        return $this->getData("auth_service");
     }
 
     public function getLastLogin(): ?string
@@ -111,7 +111,7 @@ class User
     {
         $table = self::TABLE_USER . " u LEFT JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id";
         $where = ["u.id" => $this->id];
-        if ($field == "*") $fields = "u.*, a.username, a.authentication_service, a.lastLogin";
+        if ($field == "*") $fields = "u.*, a.username, a.auth_service, a.lastLogin";
         else $fields = str_replace("id", "u.id", $field);
         $data = Core::database()->select($table, $where, $fields);
         return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
@@ -175,7 +175,7 @@ class User
      */
     public function setAuthService(string $authService)
     {
-        $this->setData(["authentication_service" => $authService]);
+        $this->setData(["auth_service" => $authService]);
     }
 
     /**
@@ -227,10 +227,10 @@ class User
             $authValues["username"] = $fieldValues["username"];
             unset($fieldValues["username"]);
         }
-        if (key_exists("authentication_service", $fieldValues)) {
-            self::validateAuthService($fieldValues["authentication_service"]);
-            $authValues["authentication_service"] = $fieldValues["authentication_service"];
-            unset($fieldValues["authentication_service"]);
+        if (key_exists("auth_service", $fieldValues)) {
+            self::validateAuthService($fieldValues["auth_service"]);
+            $authValues["auth_service"] = $fieldValues["auth_service"];
+            unset($fieldValues["auth_service"]);
         }
         if (key_exists("lastLogin", $fieldValues)) {
             self::validateDateTime($fieldValues["lastLogin"]);
@@ -294,7 +294,7 @@ class User
 
         } else {
             self::validateAuthService($authService);
-            $userId = intval(Core::database()->select(Auth::TABLE_AUTH, ["username" => $username, "authentication_service" => $authService], "user"));
+            $userId = intval(Core::database()->select(Auth::TABLE_AUTH, ["username" => $username, "auth_service" => $authService], "user"));
         }
 
         if (!$userId) return null;
@@ -345,7 +345,7 @@ class User
         $users = Core::database()->selectMultiple(
             self::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on u.id = a.user",
             $where,
-            "u.*, a.username, a.authentication_service, a.lastLogin",
+            "u.*, a.username, a.auth_service, a.lastLogin",
             "id"
         );
         foreach ($users as &$user) { $user = self::parse($user); }
@@ -423,7 +423,7 @@ class User
         Core::database()->insert(Auth::TABLE_AUTH, [
             "user" => $id,
             "username" => $username,
-            "authentication_service" => $authService
+            "auth_service" => $authService
         ]);
         self::createDataFolder($id);
         return new User($id);
@@ -452,7 +452,7 @@ class User
         $this->setData([
             "name" => $name,
             "username" => $username,
-            "authentication_service" => $authService,
+            "auth_service" => $authService,
             "email" => $email,
             "studentNumber" => $studentNumber,
             "nickname" => $nickname,
@@ -573,7 +573,7 @@ class User
             $nickname = $user[$indexes["nickname"]];
             $studentNumber = self::parse(null, $user[$indexes["studentNumber"]], "studentNumber");
             $username = $user[$indexes["username"]];
-            $authService = $user[$indexes["authentication_service"]];
+            $authService = $user[$indexes["auth_service"]];
             $isAdmin = self::parse(null, $user[$indexes["isAdmin"]], "isAdmin");
             $isActive = self::parse(null, $user[$indexes["isActive"]], "isActive");
 
@@ -601,7 +601,7 @@ class User
             self::getUsers(),
             function ($user) {
                 return [$user["name"], $user["email"], $user["major"], $user["nickname"], $user["studentNumber"], $user["username"],
-                    $user["authentication_service"], +$user["isAdmin"], +$user["isActive"]];
+                    $user["auth_service"], +$user["isAdmin"], +$user["isActive"]];
             },
             self::HEADERS);
     }

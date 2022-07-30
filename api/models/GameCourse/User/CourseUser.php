@@ -192,7 +192,7 @@ class CourseUser extends User
 
         } else {
             self::validateAuthService($authService);
-            $userId = intval(Core::database()->select($table, ["username" => $username, "authentication_service" => $authService], "user"));
+            $userId = intval(Core::database()->select($table, ["username" => $username, "auth_service" => $authService], "user"));
         }
 
         if (!$userId) return null;
@@ -447,7 +447,7 @@ class CourseUser extends User
             $nickname = $user[$indexes["nickname"]];
             $studentNumber = $user[$indexes["studentNumber"]];
             $username = $user[$indexes["username"]];
-            $authService = $user[$indexes["authentication_service"]];
+            $authService = $user[$indexes["auth_service"]];
             $isAdmin = $user[$indexes["isAdmin"]];
             $isActive = $user[$indexes["isActive"]];
             $isActiveInCourse = $user[$indexes["isActiveInCourse"]];
@@ -498,7 +498,7 @@ class CourseUser extends User
 
         return Utils::exportToCSV($course->getCourseUsers(), function ($user) use ($course) {
             return [$user["name"], $user["email"], $user["major"], $user["nickname"], $user["studentNumber"],
-                $user["username"], $user["authentication_service"], +$user["isAdmin"], +$user["isActive"],
+                $user["username"], $user["auth_service"], +$user["isAdmin"], +$user["isActive"],
                 +$user["isActiveInCourse"], implode(" ", (new CourseUser($user["id"], $course))->getRoles())];
         }, array_merge(parent::HEADERS, self::HEADERS));
     }

@@ -51,6 +51,8 @@ class DatabaseTest extends TestCase
     /*** ----------------------- Tests ---------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    // Executing query
+
     /**
      * @test
      */
@@ -114,6 +116,8 @@ class DatabaseTest extends TestCase
     }
 
 
+    // Selecting 1st
+
     /**
      * @test
      */
@@ -134,9 +138,9 @@ class DatabaseTest extends TestCase
     public function selectFirstJoinedTables()
     {
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "johndoe", "authentication_service" => AuthService::FENIX]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "johndoe", "auth_service" => AuthService::FENIX]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "annadoe", "authentication_service" => AuthService::FENIX]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "annadoe", "auth_service" => AuthService::FENIX]);
 
         $first = Core::database()->select(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id", [], "*", "id");
         $this->assertIsArray($first);
@@ -351,6 +355,8 @@ class DatabaseTest extends TestCase
     }
 
 
+    // Selecting multiple
+
     /**
      * @test
      */
@@ -375,9 +381,9 @@ class DatabaseTest extends TestCase
     public function selectMultipleJoinedTables()
     {
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "johndoe", "authentication_service" => AuthService::FENIX]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "johndoe", "auth_service" => AuthService::FENIX]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "annadoe", "authentication_service" => AuthService::FENIX]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "annadoe", "auth_service" => AuthService::FENIX]);
 
         $users = Core::database()->selectMultiple(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id", [], "*", "id");
         $this->assertIsArray($users);
@@ -616,24 +622,24 @@ class DatabaseTest extends TestCase
     public function selectMultipleWhenGrouping()
     {
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "johndoe", "authentication_service" => AuthService::FENIX]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "johndoe", "auth_service" => AuthService::FENIX]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "annadoe", "authentication_service" => AuthService::GOOGLE]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "annadoe", "auth_service" => AuthService::GOOGLE]);
         $id = Core::database()->insert(User::TABLE_USER, ["name" => "Julia Doe"]);
-        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "juliadoe", "authentication_service" => AuthService::GOOGLE]);
+        Core::database()->insert(Auth::TABLE_AUTH, ["user" => $id, "username" => "juliadoe", "auth_service" => AuthService::GOOGLE]);
 
-        $authServices = Core::database()->selectMultiple(Auth::TABLE_AUTH, [], "count(user), authentication_service", null, [], [], "authentication_service");
+        $authServices = Core::database()->selectMultiple(Auth::TABLE_AUTH, [], "count(user), auth_service", null, [], [], "auth_service");
         $this->assertIsArray($authServices);
         $this->assertCount(2, $authServices);
 
-        $this->assertArrayHasKey("authentication_service", $authServices[0]);
+        $this->assertArrayHasKey("auth_service", $authServices[0]);
         $this->assertArrayHasKey("count(user)", $authServices[0]);
-        $this->assertEquals(AuthService::FENIX, $authServices[0]["authentication_service"]);
+        $this->assertEquals(AuthService::FENIX, $authServices[0]["auth_service"]);
         $this->assertEquals(1, intval($authServices[0]["count(user)"]));
 
-        $this->assertArrayHasKey("authentication_service", $authServices[1]);
+        $this->assertArrayHasKey("auth_service", $authServices[1]);
         $this->assertArrayHasKey("count(user)", $authServices[1]);
-        $this->assertEquals(AuthService::GOOGLE, $authServices[1]["authentication_service"]);
+        $this->assertEquals(AuthService::GOOGLE, $authServices[1]["auth_service"]);
         $this->assertEquals(2, intval($authServices[1]["count(user)"]));
     }
 
@@ -654,6 +660,8 @@ class DatabaseTest extends TestCase
         $this->assertEquals("Anna Doe", $users[1]["name"]);
     }
 
+
+    // Inserting
 
     /**
      * @test
@@ -690,6 +698,8 @@ class DatabaseTest extends TestCase
         Core::database()->insert("table_doesnt_exist", ["name" => "John Doe"]);
     }
 
+
+    // Updating
 
     /**
      * @test
@@ -803,6 +813,8 @@ class DatabaseTest extends TestCase
         $this->assertEquals("Julia Doe", $name2);
     }
 
+
+    // Deleting
 
     /**
      * @test
@@ -936,6 +948,8 @@ class DatabaseTest extends TestCase
     }
 
 
+    // Getting last ID
+
     /**
      * @test
      */
@@ -946,6 +960,16 @@ class DatabaseTest extends TestCase
         $this->assertEquals(2, Core::database()->getLastId());
     }
 
+    /**
+     * @test
+     */
+    public function getLastIdNoInsertMade()
+    {
+        $this->assertEquals(0, Core::database()->getLastId());
+    }
+
+
+    // Checking whether table exists
 
     /**
      * @test
@@ -964,6 +988,8 @@ class DatabaseTest extends TestCase
     }
 
 
+    // Checking whether column exists in table
+
     /**
      * @test
      */
@@ -981,6 +1007,33 @@ class DatabaseTest extends TestCase
     }
 
 
+    // Setting foreign key checks
+
+    /**
+     * @test
+     */
+    public function setForeignKeyChecks()
+    {
+        Core::database()->setForeignKeyChecks(false);
+        Core::database()->insert(Auth::TABLE_AUTH, [
+            "user" => 1,
+            "username" => "ist12345",
+            "auth_service" => AuthService::FENIX
+        ]);
+        $this->assertNotEmpty(Core::database()->selectMultiple(Auth::TABLE_AUTH));
+
+        Core::database()->setForeignKeyChecks(true);
+        $this->expectException(PDOException::class);
+        Core::database()->insert(Auth::TABLE_AUTH, [
+            "user" => 2,
+            "username" => "ist54321",
+            "auth_service" => AuthService::FENIX
+        ]);
+    }
+
+
+    // Resetting auto increment value
+
     /**
      * @test
      */
@@ -995,5 +1048,21 @@ class DatabaseTest extends TestCase
         Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
         $lastID = Core::database()->getLastId();
         $this->assertEquals(1, $lastID);
+    }
+
+    /**
+     * @test
+     */
+    public function resetAutoIncrementToValue()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        $lastID = Core::database()->getLastId();
+        $this->assertEquals(2, $lastID);
+        Core::database()->deleteAll(User::TABLE_USER);
+        Core::database()->resetAutoIncrement(User::TABLE_USER, 5);
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        $lastID = Core::database()->getLastId();
+        $this->assertEquals(5, $lastID);
     }
 }

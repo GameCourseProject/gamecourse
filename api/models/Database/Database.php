@@ -151,7 +151,7 @@ class Database
      * @example select 1st entry from 'auth' table and only show columns 'id' and 'username' --> select("auth", [], "id, username")
      * @example select 1st entry from 'auth' table when ordered by 'id' column --> select("auth", [], "*", "id")
      * @example select 1st entry from 'auth' table when ordered by 'id' (asc) and 'name' (desc) column --> select("auth", [], "*", "id ASC, name DESC")
-     * @example select 1st entry from 'auth' table where conditions don't apply --> select("auth", [], "*", null, [["authentication_service", "fenix"]])
+     * @example select 1st entry from 'auth' table where conditions don't apply --> select("auth", [], "*", null, [["auth_service", "fenix"]])
      * @example select 1st entry from 'auth' table where comparisons apply --> select("auth", [], "*", null, [], [["id", "<", 5]])
      * @example select 1st entry from 'auth' table where 'username' like --> select("auth", [], "*", null, [], [], ["username" => "ist%"])
      *
@@ -201,12 +201,12 @@ class Database
      * Options for filtering, selecting certain columns, ordering and grouping.
      *
      * @example select all entries from 'auth' table --> selectMultiple("auth")
-     * @example select all entries from 'auth' table where conditions apply --> selectMultiple("auth", ["authentication_service" => "fenix"])
+     * @example select all entries from 'auth' table where conditions apply --> selectMultiple("auth", ["auth_service" => "fenix"])
      * @example select all entries from 'auth' table and only show columns 'id' and 'username' --> selectMultiple("auth", [], "id, username")
      * @example select all entries from 'auth' table and order by 'id' column --> selectMultiple("auth", [], "*", "id")
-     * @example select all entries from 'auth' table where conditions don't apply --> selectMultiple("auth", [], "*", null, [["authentication_service", "fenix"]])
+     * @example select all entries from 'auth' table where conditions don't apply --> selectMultiple("auth", [], "*", null, [["auth_service", "fenix"]])
      * @example select all entries from 'auth' table where comparisons apply --> selectMultiple("auth", [], "*", null, [], [["id", "<", 5]])
-     * @example select all entries from 'auth' table and group by 'authentication_service' --> selectMultiple("auth", [], "count(id)", null, [], [], "authentication_service")
+     * @example select all entries from 'auth' table and group by 'auth_service' --> selectMultiple("auth", [], "count(id)", null, [], [], "auth_service")
      * @example select all entries from 'auth' table where 'username' like --> selectMultiple("auth", [], "*", null, [], [], ["username" => "ist%"])
      *
      * @param string $table
@@ -253,7 +253,7 @@ class Database
      * Returns last inserted ID.
      *
      * @example insert default values in 'auth' table --> insert("auth")
-     * @example insert some values in 'auth' table --> insert("auth", ["user" => 123, "username" => "ist123456", "authentication_service" => "fenix"])
+     * @example insert some values in 'auth' table --> insert("auth", ["user" => 123, "username" => "ist123456", "auth_service" => "fenix"])
      *
      * @param string $table
      * @param array $data
@@ -281,11 +281,11 @@ class Database
     /**
      * Updates data in a database table.
      *
-     * @example update all entries from 'auth' table --> update("auth", ["authentication_service" => "fenix"])
-     * @example update entries from 'auth' table where conditions apply --> update("auth", ["authentication_service" => "fenix"], ["id" => 123, "username" => "ist123456"])
-     * @example update entries from 'auth' table where conditions don't apply --> update("auth", ["authentication_service" => "fenix"], [], [["id", 123]])
-     * @example update entries from 'auth' table where comparisons apply --> update("auth", ["authentication_service" => "fenix"], [], [], [["id", "<", 5]])
-     * @example update entries from 'auth' table where 'username' like --> update("auth", ["authentication_service" => "fenix"], [], [], [], ["username" => "ist%"])
+     * @example update all entries from 'auth' table --> update("auth", ["auth_service" => "fenix"])
+     * @example update entries from 'auth' table where conditions apply --> update("auth", ["auth_service" => "fenix"], ["id" => 123, "username" => "ist123456"])
+     * @example update entries from 'auth' table where conditions don't apply --> update("auth", ["auth_service" => "fenix"], [], [["id", 123]])
+     * @example update entries from 'auth' table where comparisons apply --> update("auth", ["auth_service" => "fenix"], [], [], [["id", "<", 5]])
+     * @example update entries from 'auth' table where 'username' like --> update("auth", ["auth_service" => "fenix"], [], [], [], ["username" => "ist%"])
      *
      * @param string $table
      * @param array $data
@@ -368,6 +368,7 @@ class Database
 
     /**
      * Gets the last auto_increment id after an insertion in the database.
+     * Returns 0 if no insertion made.
      *
      * @return int
      */

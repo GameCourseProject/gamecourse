@@ -150,37 +150,37 @@ class UserTest extends TestCase
     public function setDataSuccessProvider(): array
     {
         return [
-            ["same data" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
+            ["same data" => ["name" => "Ana Gonçalves", "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false, "lastLogin" => null]],
-            ["different name" => ["name" => "Rita Alves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
+            ["different name" => ["name" => "Rita Alves", "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false, "lastLogin" => null]],
-            ["different email" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
+            ["different email" => ["name" => "Ana Gonçalves", "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.r.g@gmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false, "lastLogin" => null]],
-            ["different student number" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
+            ["different student number" => ["name" => "Ana Gonçalves", "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 81829, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false, "lastLogin" => null]],
-            ["different nickname" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
+            ["different nickname" => ["name" => "Ana Gonçalves", "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Rita Gonçalves", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false, "lastLogin" => null]],
-            ["null nickname" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
+            ["null nickname" => ["name" => "Ana Gonçalves", "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => null, "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false, "lastLogin" => null]],
-            ["empty nickname" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
+            ["empty nickname" => ["name" => "Ana Gonçalves", "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false, "lastLogin" => null]],
-            ["different major" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
+            ["different major" => ["name" => "Ana Gonçalves", "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEEC",
                 "isAdmin" => false, "isActive" => false, "lastLogin" => null]],
-            ["different isAdmin" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
+            ["different isAdmin" => ["name" => "Ana Gonçalves", "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => true, "isActive" => false, "lastLogin" => null]],
-            ["different isActive" => ["name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
+            ["different isActive" => ["name" => "Ana Gonçalves", "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => true, "lastLogin" => null]],
-            ["all different" => ["name" => "Rita Alves", "username" => "ist181829", "authentication_service" => AuthService::GOOGLE,
+            ["all different" => ["name" => "Rita Alves", "username" => "ist181829", "auth_service" => AuthService::GOOGLE,
                 "email" => "ana.r.g@gmail.com", "studentNumber" => 81829, "nickname" => "Rita A", "major" => "MEEC",
                 "isAdmin" => true, "isActive" => true, "lastLogin" => null]]
         ];
@@ -189,10 +189,10 @@ class UserTest extends TestCase
     public function setDataFailProvider(): array
     {
         return [
-            ["null name" => ["name" => null, "username" => "ist100000", "authentication_service" => AuthService::FENIX,
+            ["null name" => ["name" => null, "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false, "lastLogin" => null]],
-            ["empty name" => ["name" => "", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
+            ["empty name" => ["name" => "", "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@hotmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false, "lastLogin" => null]]
         ];
@@ -440,7 +440,7 @@ class UserTest extends TestCase
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $this->assertEquals(["id" => intval(Core::database()->select(User::TABLE_USER, ["studentNumber" => 123456], "id")),
-            "name" => "John Smith Doe", "username" => "ist123456", "authentication_service" => AuthService::FENIX, "email" => "johndoe@email.com",
+            "name" => "John Smith Doe", "username" => "ist123456", "auth_service" => AuthService::FENIX, "email" => "johndoe@email.com",
             "studentNumber" => 123456, "nickname" => "John Doe", "major" => "MEIC-A", "isAdmin" => false, "isActive" => true, "lastLogin" => null],
             $user->getData());
     }
@@ -454,7 +454,7 @@ class UserTest extends TestCase
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $this->assertEquals(["id" => intval(Core::database()->select(User::TABLE_USER, ["studentNumber" => 123456], "id")),
-            "username" => "ist123456", "authentication_service" => AuthService::FENIX], $user->getData("id, username, authentication_service"));
+            "username" => "ist123456", "auth_service" => AuthService::FENIX], $user->getData("id, username, auth_service"));
     }
 
     /**
@@ -763,7 +763,7 @@ class UserTest extends TestCase
 
         } catch (Exception $e) {
             $user = new User(1);
-            $this->assertEquals(["id" => 1, "name" => "Ana Gonçalves", "username" => "ist100000", "authentication_service" => AuthService::FENIX,
+            $this->assertEquals(["id" => 1, "name" => "Ana Gonçalves", "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@gmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
                 "isAdmin" => false, "isActive" => false, "lastLogin" => null], $user->getData());
         }

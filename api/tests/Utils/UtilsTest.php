@@ -867,7 +867,7 @@ class UtilsTest extends TestCase
      */
     public function detectSeparatorComma()
     {
-        $file = "name,email,major,nickname,studentNumber,username,authentication_service,isAdmin,isActive\n";
+        $file = "name,email,major,nickname,studentNumber,username,auth_service,isAdmin,isActive\n";
         $file .= "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1\n";
         $file .= "Inês Albano,ines.albano@tecnico.ulisboa.pt,MEIC-A,,87664,ist187664,linkedin,0,1\n";
         $this->assertEquals(",", Utils::detectSeparator($file));
@@ -878,7 +878,7 @@ class UtilsTest extends TestCase
      */
     public function detectSeparatorSemiColon()
     {
-        $file = "name;email;major;nickname;studentNumber;username;authentication_service;isAdmin;isActive\n";
+        $file = "name;email;major;nickname;studentNumber;username;auth_service;isAdmin;isActive\n";
         $file .= "Sabri M'Barki;sabri.m.barki@efrei.net;MEIC-T;Sabri M'Barki;100956;ist1100956;fenix;1;1\n";
         $file .= "Inês Albano;ines.albano@tecnico.ulisboa.pt;MEIC-A;;87664;ist187664;linkedin;0;1\n";
         $this->assertEquals(";", Utils::detectSeparator($file));
@@ -889,7 +889,7 @@ class UtilsTest extends TestCase
      */
     public function detectSeparatorVerticalBar()
     {
-        $file = "name|email|major|nickname|studentNumber|username|authentication_service|isAdmin|isActive\n";
+        $file = "name|email|major|nickname|studentNumber|username|auth_service|isAdmin|isActive\n";
         $file .= "Sabri M'Barki|sabri.m.barki@efrei.net|MEIC-T|Sabri M'Barki|100956|ist1100956|fenix|1|1\n";
         $file .= "Inês Albano|ines.albano@tecnico.ulisboa.pt|MEIC-A||87664|ist187664|linkedin|0|1\n";
         $this->assertEquals("|", Utils::detectSeparator($file));
