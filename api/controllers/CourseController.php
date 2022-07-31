@@ -603,7 +603,7 @@ class CourseController
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
 
-        API::requireCoursePermission($course);
+        API::requireCourseAdminPermission($course);
 
         $moduleId = API::getValue("moduleId");
         $module = API::verifyModuleExists($moduleId, $course);

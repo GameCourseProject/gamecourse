@@ -8,6 +8,7 @@ use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Role\Role;
 use GameCourse\Views\Page\Page;
+use GameCourse\Views\ViewHandler;
 use PDOException;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
@@ -56,7 +57,7 @@ class CourseUserTest extends TestCase
         // NOTE: try to only clean tables used during tests to improve efficiency;
         //       don't forget tables with foreign keys will be automatically deleted on cascade
 
-        TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER]);
+        TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER, ViewHandler::TABLE_VIEW]);
         TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE, Page::TABLE_PAGE]);
         TestingUtils::cleanFileStructure();
         TestingUtils::cleanEvents();

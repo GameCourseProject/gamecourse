@@ -1,7 +1,3 @@
-import {objectMap} from "../../_utils/misc/misc";
-import {Event} from "../events/event";
-import {Variable} from "../variables/variable";
-
 export class Role {
   private _id: number;
   private _name: string;

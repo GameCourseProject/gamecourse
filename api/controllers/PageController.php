@@ -33,17 +33,18 @@ class PageController
         $pageId = API::getValue("pageId", "int");
         $page = API::verifyPageExists($pageId);
 
+        $course = $page->getCourse();
+        API::requireCoursePermission($course);
+
         $viewerId = Core::getLoggedUser()->getId();
         $userId = API::getValue("userId", "int");
 
         // Verify page is visible for current user
-        $course = $page->getCourse();
         $courseUser = API::verifyCourseUserExists($course, $viewerId);
         if (!$courseUser->isTeacher() && !$page->isVisible())
-            throw new Exception("Page with ID = " . $pageId . " is not visible for current user.");
+            API::error("Page with ID = " . $pageId . " is not visible for current user.", 403);
 
         // Trigger page viewed event
-        // FIXME: handle on profiling module
         Event::trigger(EventType::PAGE_VIEWED, $pageId, $viewerId, $userId ?? $viewerId);
 
         API::response($page->renderPage($viewerId, $userId));

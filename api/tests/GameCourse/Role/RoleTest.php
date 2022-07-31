@@ -72,7 +72,7 @@ class RoleTest extends TestCase
         //       don't forget tables with foreign keys will be automatically deleted on cascade
 
         TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE, ViewHandler::TABLE_VIEW]);
-        TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE]);
+        TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE, Page::TABLE_PAGE]);
         TestingUtils::cleanFileStructure();
         TestingUtils::cleanEvents();
     }

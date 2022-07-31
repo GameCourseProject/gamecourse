@@ -25,6 +25,7 @@ class CronJob
 
     private static function updateCronTab(string $script, int $itemId, ?int $number, ?string $time, int $day = null, string $datetime = null, bool $remove = false)
     {
+        // FIXME: allow for arguments to be passed
         $path = self::getScriptPath($script);
         $output = shell_exec('crontab -l');
 

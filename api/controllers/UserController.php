@@ -3,6 +3,7 @@ namespace API;
 
 use Exception;
 use GameCourse\Core\Core;
+use GameCourse\Course\Course;
 use GameCourse\User\User;
 
 /**
@@ -169,11 +170,20 @@ class UserController
         $isActive = API::getValue("isActive", "bool");
         $isVisible = API::getValue("isVisible", "bool");
 
-        // Only admins can access invisible courses
-        if (!is_null($isVisible) && !$isVisible)
-            API::requireAdminPermission();
-
         $userCourses = $user->getCourses($isActive, $isVisible);
+
+        // Only course admins can access invisible courses
+        if (!$isVisible && !Core::getLoggedUser()->isAdmin()) {
+            $filteredCourses = [];
+            foreach ($userCourses as $courseInfo) {
+                $course = Course::getCourseById($courseInfo["id"]);
+                $courseUser = $course->getCourseUserById(Core::getLoggedUser()->getId());
+                if ($courseUser->isTeacher() || $course->isVisible())
+                    $filteredCourses[] = $courseInfo;
+            }
+            $userCourses = $filteredCourses;
+        }
+
         API::response($userCourses);
     }
 

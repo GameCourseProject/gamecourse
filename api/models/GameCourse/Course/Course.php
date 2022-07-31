@@ -394,7 +394,7 @@ class Course
         // Create a copy
         $name = $courseInfo["name"] . " (Copy)";
         $course = self::addCourse($name, $courseInfo["short"], $courseInfo["year"], $courseInfo["color"],
-            null, null, $courseInfo["isActive"], $courseInfo["isVisible"]);
+            null, null, false, false);
         $course->setTheme($courseInfo["theme"]);
 
         // Copy course data
