@@ -227,6 +227,7 @@ class XPLevels extends Module
      * @param int $userId
      * @param string $type
      * @return int
+     * @throws Exception
      */
     public function getUserXPByType(int $userId, string $type): int
     {
@@ -244,6 +245,7 @@ class XPLevels extends Module
      * @param int $userId
      * @param bool|null $extra
      * @return int
+     * @throws Exception
      */
     public function getUserBadgesXP(int $userId, bool $extra = null): int
     {
@@ -261,6 +263,7 @@ class XPLevels extends Module
      * @param int $userId
      * @param bool|null $collab
      * @return int
+     * @throws Exception
      */
     public function getUserSkillsXP(int $userId, bool $collab = null): int
     {
@@ -278,6 +281,7 @@ class XPLevels extends Module
      * @param int $userId
      * @param bool|null $extra
      * @return int
+     * @throws Exception
      */
     public function getUserStreaksXP(int $userId, bool $extra = null): int
     {
