@@ -124,6 +124,9 @@ class CourseUser extends User
         $this->setData(["lastActivity" => $lastActivity]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setActive(bool $isActive)
     {
         $this->setData(["isActive" => +$isActive]);

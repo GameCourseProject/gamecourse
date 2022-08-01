@@ -21,7 +21,7 @@ export class MainComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     const loggedUser = await this.api.getLoggedUser().toPromise();
-    this.activeCourses = await this.api.getUserCourses(loggedUser.id, true, loggedUser.isAdmin ? null : true).toPromise();
+    this.activeCourses = await this.api.getUserCourses(loggedUser.id, true, null).toPromise();
     this.loading = false;
   }
 

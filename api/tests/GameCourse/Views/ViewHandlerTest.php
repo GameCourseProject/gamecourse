@@ -5,6 +5,7 @@ use GameCourse\Core\Core;
 use GameCourse\Role\Role;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Event\EventType;
+use GameCourse\Views\Page\Page;
 use GameCourse\Views\ViewType\Block;
 use GameCourse\Views\ViewType\Text;
 use GameCourse\Views\Visibility\VisibilityType;
@@ -34,6 +35,7 @@ class ViewHandlerTest extends TestCase
         //       don't forget tables with foreign keys will be automatically deleted on cascade
 
         TestingUtils::cleanTables([ViewHandler::TABLE_VIEW]);
+        TestingUtils::resetAutoIncrement([Page::TABLE_PAGE]);
         TestingUtils::cleanFileStructure();
         TestingUtils::cleanEvents();
     }

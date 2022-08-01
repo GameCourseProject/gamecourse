@@ -152,7 +152,7 @@ export class User {
       obj.isAdmin,
       obj.isActive,
       obj.username,
-      obj.authentication_service as AuthType,
+      obj.auth_service as AuthType,
       obj.image,
       dateFromDatabase(obj.lastLogin),
       obj.nrCourses ?? null
@@ -170,7 +170,7 @@ interface UserDatabase {
   "isAdmin": boolean,
   "isActive": boolean,
   "username": string,
-  "authentication_service": string,
+  "auth_service": string,
   "image": string,
   "lastLogin": string
   "roles"?: RoleDatabase[],

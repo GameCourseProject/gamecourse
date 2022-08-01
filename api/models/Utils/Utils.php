@@ -16,6 +16,20 @@ class Utils
     /*** ---------------------------------------------------- ***/
 
     /**
+     * Gets the number of items in a directory.
+     *
+     * @param string $dir
+     * @return int
+     * @throws Exception
+     */
+    public static function getDirectorySize(string $dir): int
+    {
+        if (!file_exists($dir)) throw new Exception("'" . $dir . "' doesn't exist.");
+        if (!is_dir($dir)) throw new Exception("'" . $dir . "' is not a directory.");
+        return count(glob($dir . "/*"));
+    }
+
+    /**
      * Gets contents of a directory.
      * Ignores items that start with '.' or '..'.
      *
@@ -207,7 +221,7 @@ class Utils
             unlink($path);
 
         // Delete directory if empty
-        if (count(glob($from . "/*")) === 0 && $deleteIfEmpty) Utils::deleteDirectory($from);
+        if (self::getDirectorySize($from) === 0 && $deleteIfEmpty) Utils::deleteDirectory($from);
     }
 
 

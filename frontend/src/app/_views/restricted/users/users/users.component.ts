@@ -27,6 +27,7 @@ export class UsersComponent implements OnInit {
   loading = true;
   loadingAction = false;
 
+  loggedUser: User;
   users: User[];
 
   reduce = new Reduce();
@@ -71,6 +72,7 @@ export class UsersComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    this.loggedUser = await this.api.getLoggedUser().toPromise();
     await this.getUsers();
     this.loading = false;
   }

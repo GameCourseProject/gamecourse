@@ -385,7 +385,7 @@ class Course
      * @return Course
      * @throws Exception
      */
-    public static function copyCourse(int $copyFrom): Course
+    public static function copyCourse(int $copyFrom): Course // FIXME: review
     {
         $courseToCopy = Course::getCourseById($copyFrom);
         if (!$courseToCopy) throw new Exception("Course to copy from with ID = " . $copyFrom . " doesn't exist.");
@@ -401,11 +401,11 @@ class Course
         Utils::copyDirectory($courseToCopy->getDataFolder(true, $courseInfo["name"]) . "/",
             $course->getDataFolder(true, $name) . "/", ["rules/data"]);
 
+        // TODO: copy modules enabled and data
+
         // Copy roles
         $course->setRolesHierarchy($courseToCopy->getRolesHierarchy());
         $course->setRoles($courseToCopy->getRoles());
-
-        // TODO: copy modules enabled and data
 
         // TODO: default landing page, roles landingPages (copy pages and views first)
 
@@ -542,6 +542,13 @@ class Course
         return CourseUser::getCourseUserByStudentNumber($studentNumber, $this);
     }
 
+    /**
+     * Gets course users.
+     * Option for 'active'.
+     *
+     * @param bool|null $active
+     * @return array
+     */
     public function getCourseUsers(?bool $active = null): array
     {
         $table = User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id JOIN " . CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id";
@@ -557,6 +564,13 @@ class Course
     }
 
     /**
+     * Gets course users with a given role name and/or role ID.
+     * Option for 'active'.
+     *
+     * @param bool|null $active
+     * @param string|null $roleName
+     * @param int|null $roleId
+     * @return array
      * @throws Exception
      */
     public function getCourseUsersWithRole(?bool $active = null, string $roleName = null, int $roleId = null): array
@@ -582,6 +596,11 @@ class Course
     }
 
     /**
+     * Gets students of course.
+     * Option for 'active'.
+     *
+     * @param bool|null $active
+     * @return array
      * @throws Exception
      */
     public function getStudents(?bool $active = null): array
@@ -590,6 +609,11 @@ class Course
     }
 
     /**
+     * Gets teachers of course.
+     * Option for 'active'.
+     *
+     * @param bool|null $active
+     * @return array
      * @throws Exception
      */
     public function getTeachers(?bool $active = null): array
@@ -597,6 +621,13 @@ class Course
         return $this->getCourseUsersWithRole($active, "Teacher");
     }
 
+    /**
+     * Gets users not enrolled in course.
+     * Option for 'active'.
+     *
+     * @param bool|null $active
+     * @return array
+     */
     public function getUsersNotInCourse(?bool $active = null): array
     {
         $table = User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id LEFT JOIN " . CourseUser::TABLE_COURSE_USER . " cu on cu.id=u.id AND cu.course=" . $this->id;
@@ -612,6 +643,10 @@ class Course
     }
 
     /**
+     * Adds a given user to a course.
+     * Option to pass a role name or ID to be added as well.
+     * Returns the newly created course user.
+     *
      * @param int $userId
      * @param string|null $roleName
      * @param int|null $roleId
@@ -624,6 +659,12 @@ class Course
         return CourseUser::addCourseUser($userId, $this->id, $roleName, $roleId, $isActive);
     }
 
+    /**
+     * Removes a given user from the course.
+     *
+     * @param int $userId
+     * @return void
+     */
     public function removeUserFromCourse(int $userId)
     {
         CourseUser::deleteCourseUser($userId, $this->id);
@@ -748,12 +789,24 @@ class Course
     /*** ---------------------- Modules --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * Gets a module available in a course by its ID.
+     *
+     * @param string $moduleId
+     * @return Module|null
+     */
     public function getModuleById(string $moduleId): ?Module
     {
         return Module::getModuleById($moduleId, $this);
     }
 
     /**
+     * Gets all modules available in a course.
+     * Option for 'enabled' and to retrieve only IDs.
+     *
+     * @param bool|null $enabled
+     * @param bool $IDsOnly
+     * @return array
      * @throws Exception
      */
     public function getModules(?bool $enabled = null, bool $IDsOnly = false): array
@@ -771,6 +824,8 @@ class Course
     }
 
     /**
+     * Enables/disables a module in a course.
+     *
      * @param string $moduleId
      * @param bool $isEnabled
      * @return void
@@ -783,6 +838,8 @@ class Course
     }
 
     /**
+     * Checks whether a given module is enabled in a course.
+     *
      * @param string $moduleId
      * @return bool
      * @throws Exception
@@ -793,6 +850,13 @@ class Course
         return $module->isEnabled();
     }
 
+    /**
+     * Gets min. and max. compatible versions of a module for
+     * a course.
+     *
+     * @param string $moduleId
+     * @return array
+     */
     public function getCompatibleModuleVersions(string $moduleId): array
     {
         $compatibility = Core::database()->select(Module::TABLE_COURSE_MODULE,
@@ -804,6 +868,8 @@ class Course
     }
 
     /**
+     * Gets modules resources available in a course.
+     *
      * @param bool|null $enabled
      * @return array
      * @throws Exception
@@ -861,6 +927,15 @@ class Course
      */
     // TODO: getDataRecords
 
+    /**
+     * Gets course data folder path.
+     * Option to retrieve full server path or the short version
+     * ('course_data/<course_ID>-<course_name>').
+     *
+     * @param bool $fullPath
+     * @param string|null $courseName
+     * @return string
+     */
     public function getDataFolder(bool $fullPath = true, string $courseName = null): string
     {
         if (!$courseName) $courseName = $this->getName();
@@ -873,19 +948,37 @@ class Course
         }
     }
 
+    /**
+     * Gets course data folder contents.
+     *
+     * @return array
+     * @throws Exception
+     */
     public function getDataFolderContents(): array
     {
         return Utils::getDirectoryContents($this->getDataFolder());
     }
 
+    /**
+     * Creates a data folder for a given course. If folder exists, it
+     * will delete its contents.
+     *
+     * @param int $courseId
+     * @param string|null $courseName
+     * @return string
+     * @throws Exception
+     */
     public static function createDataFolder(int $courseId, string $courseName = null): string
     {
         $dataFolder = (new Course($courseId))->getDataFolder(true, $courseName);
-        if (!file_exists($dataFolder)) mkdir($dataFolder, 0777, true);
+        if (file_exists($dataFolder)) self::removeDataFolder($courseId, $courseName);
+        mkdir($dataFolder, 0777, true);
         return $dataFolder;
     }
 
     /**
+     * Deletes a given course's data folder.
+     *
      * @param int $courseId
      * @param string|null $courseName
      * @return void
@@ -894,7 +987,7 @@ class Course
     public static function removeDataFolder(int $courseId, string $courseName = null)
     {
         $dataFolder = (new Course($courseId))->getDataFolder(true, $courseName);
-        Utils::deleteDirectory($dataFolder);
+        if (file_exists($dataFolder)) Utils::deleteDirectory($dataFolder);
     }
 
     /**
@@ -928,49 +1021,17 @@ class Course
         return $url;
     }
 
-    /**
-     * Uploads a given file to a directory inside course's
-     * data folder.
-     *
-     * @example uploadFile("skills", <base64>, "name", "txt") --> uploads file with name "name" to skills folder inside course data
-     * @example uploadFile("skills/skill1", <base64>, "name", "txt") --> uploads file with name "name" to skill1 folder inside skills folder in course_data
-     *
-     * @param string $to
-     * @param string $base64
-     * @param string $name
-     * @param string $extension
-     * @return string
-     * @throws Exception
-     */
-    public function uploadFile(string $to, string $base64, string $name, string $extension): string
-    {
-        $path = $this->getDataFolder() . "/" . $to;
-        return Utils::uploadFile($path, $base64, $name . "." . $extension);
-    }
-
-    /**
-     * Deletes a given file from a directory inside course's
-     * date folder.
-     *
-     * @example deleteFile("skills", "file1.txt") --> deletes file "file1.txt" from skills folder inside course data
-     * @example deleteFile("skills/skill1", "file1.txt") --> deletes file "file1.txt" from skill1 folder inside skills folder in course_data
-     *
-     * @param string $from
-     * @param string $filename
-     * @return void
-     * @throws Exception
-     */
-    public function deleteFile(string $from, string $filename)
-    {
-        $path = $this->getDataFolder() . "/" . $from;
-        Utils::deleteFile($path, $filename);
-    }
-
 
     /*** ---------------------------------------------------- ***/
     /*** --------------------- Styling ---------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * Gets global styles available in a course.
+     * Returns null if no global styles set.
+     *
+     * @return array|null
+     */
     public function getStyles(): ?array
     {
         $path = $this->getDataFolder(false) . "/styles/main.css";
@@ -979,6 +1040,8 @@ class Course
     }
 
     /**
+     * Updates global styles for a given course.
+     *
      * @param string $contents
      * @return void
      * @throws Exception
@@ -994,7 +1057,7 @@ class Course
         else file_put_contents($mainStyles, $contents);
 
         // Delete styles folder if empty
-        if (count(glob($stylesFolder . "/*")) == 0)
+        if (Utils::getDirectorySize($stylesFolder) == 0)
             Utils::deleteDirectory($stylesFolder);
     }
 
@@ -1152,7 +1215,7 @@ class Course
 
         // Remove temporary folder
         Utils::deleteDirectory($tempFolder);
-        if (count(glob(ROOT_PATH . "temp/*")) == 0)
+        if (Utils::getDirectorySize(ROOT_PATH . "temp") == 0)
             Utils::deleteDirectory(ROOT_PATH . "temp");
 
         return $nrCoursesImported;

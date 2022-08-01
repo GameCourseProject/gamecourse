@@ -83,7 +83,7 @@ export class CoursesComponent implements OnInit {
 
   async getCourses(): Promise<void> {
     if (this.user.isAdmin) this.courses = await this.api.getCourses().toPromise();
-    else this.courses = await this.api.getUserCourses(this.user.id, null, true).toPromise();
+    else this.courses = await this.api.getUserCourses(this.user.id, null, null).toPromise();
 
     this.order.active = this.user.isAdmin ? { orderBy: this.orderBy.admin[0], sort: Sort.ASCENDING } : { orderBy: this.orderBy.nonAdmin[0], sort: Sort.ASCENDING };
     this.reduceList(undefined, this.user.isAdmin ? [...this.filters.admin] : [...this.filters.nonAdmin]);

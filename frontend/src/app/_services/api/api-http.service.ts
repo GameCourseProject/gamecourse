@@ -673,13 +673,14 @@ export class ApiHttpService {
   }
 
   public static refreshCourseUserActivity(courseID: number): Observable<Moment> {
+    const data = { courseId: courseID };
     const module = ApiHttpService.COURSE;
     const request = 'refreshCourseUserActivity';
 
-    const url = ApiEndpointsService.API_ENDPOINT + '/?module=' + module + '&request=' + request + '&courseId=' + courseID;
+    const url = ApiEndpointsService.API_ENDPOINT + '/?module=' + module + '&request=' + request;
 
     const httpClient = new HttpClient(new HttpXhrBackend({ build: () => new XMLHttpRequest() }));
-    return httpClient.get(url, ApiHttpService.httpOptions)
+    return httpClient.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => dateFromDatabase(res)));
   }
 

@@ -241,6 +241,9 @@ class User
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
         if (key_exists("email", $fieldValues)) self::validateEmail($fieldValues["email"]);
         if (key_exists("isActive", $fieldValues) && !$fieldValues["isActive"]) {
+            if (Core::getLoggedUser()->getId() == $this->id)
+                throw new Exception("You attempted to remove your access to the system. This was flagged as an error and had no effect.");
+
             $userCourses = $this->getCourses();
             foreach ($userCourses as $userCourse) {
                 $course = Course::getCourseById($userCourse["id"]);
@@ -686,6 +689,8 @@ class User
     }
 
     /**
+     * Validates a datetime.
+     *
      * @param $dateTime
      * @return void
      * @throws Exception

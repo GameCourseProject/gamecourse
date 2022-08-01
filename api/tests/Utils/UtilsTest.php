@@ -133,6 +133,84 @@ class UtilsTest extends TestCase
     /*** ----------------------- Tests ---------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    // Getting directory size
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getDirectorySize()
+    {
+        // Given
+        mkdir(ROOT_PATH . "tests/Utils/dir1", 0777, true);
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/file1.txt", "");
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/file2.txt", "");
+        mkdir(ROOT_PATH . "tests/Utils/dir1/dir11", 0777, true);
+        file_put_contents(ROOT_PATH . "tests/Utils/dir1/dir11/file3.txt", "");
+
+        // When
+        $nrItems = Utils::getDirectorySize(ROOT_PATH . "tests/Utils/dir1");
+
+        // Then
+        $this->assertEquals(3, $nrItems);
+
+        // Clean up
+        Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir1");
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getDirectorySizeDirectoryEmpty()
+    {
+        // Given
+        mkdir(ROOT_PATH . "tests/Utils/dir1", 0777, true);
+
+        // When
+        $nrItems = Utils::getDirectorySize(ROOT_PATH . "tests/Utils/dir1");
+
+        // Then
+        $this->assertEquals(0, $nrItems);
+
+        // Clean up
+        Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir1");
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getDirectorySizeDirectoryDoesntExist()
+    {
+        $this->expectException(Exception::class);
+        Utils::getDirectorySize(ROOT_PATH . "tests/Utils/dir1");
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getDirectorySizeNotADirectory()
+    {
+        // Given
+        file_put_contents(ROOT_PATH . "tests/Utils/file1.txt", "");
+
+        // Then
+        $this->expectException(Exception::class);
+        try {
+            // When
+            Utils::getDirectorySize(ROOT_PATH . "tests/Utils/file1.txt");
+
+        } catch (Exception $exception) {
+            // Clean up
+            unlink(ROOT_PATH . "tests/Utils/file1.txt");
+
+            throw new Exception($exception->getMessage());
+        }
+    }
+
+
     // Getting directory contents
 
     /**
@@ -603,9 +681,9 @@ class UtilsTest extends TestCase
 
         // Then
         $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir1"));
-        $this->assertCount(0, glob(ROOT_PATH . "tests/Utils/dir1/*"));
+        $this->assertEquals(0, Utils::getDirectorySize(ROOT_PATH . "tests/Utils/dir1"));
         $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir2"));
-        $this->assertCount(0, glob(ROOT_PATH . "tests/Utils/dir2/*"));
+        $this->assertEquals(0, Utils::getDirectorySize(ROOT_PATH . "tests/Utils/dir2"));
 
         // Clean up
         Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir1");
