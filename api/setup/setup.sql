@@ -98,7 +98,7 @@ CREATE TABLE module(
     id                          varchar(50) NOT NULL PRIMARY KEY,
     name                        varchar(50) NOT NULL,
     description                 varchar(100) NOT NULL,
-    type                        ENUM ('GameElement', 'DataSource') NOT NULL,
+    type                        ENUM ('GameElement', 'DataSource', 'Util') NOT NULL,
     version                     varchar(10) NOT NULL,
     minProjectVersion           varchar(10) NOT NULL,
     maxProjectVersion           varchar(10),

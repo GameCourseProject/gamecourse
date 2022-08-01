@@ -36,6 +36,7 @@ config.php
 config.production.php
 setup.done
 /crontab.txt
+/modules/composer.json
 
 # System Files
 .DS_Store

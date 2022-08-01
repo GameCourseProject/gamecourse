@@ -25,7 +25,8 @@ export class ModulesComponent implements OnInit {
   modules: Module[];
   modulesTypes: {[key in ModuleType]: string} = {
     GameElement: 'Game Elements',
-    DataSource: 'Data Sources'
+    DataSource: 'Data Sources',
+    Util: 'Tools'
   };
 
   reduce = new Reduce();

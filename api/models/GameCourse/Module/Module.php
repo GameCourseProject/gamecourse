@@ -735,14 +735,66 @@ abstract class Module
 
     private static function installModule()
     {
+        $moduleId = "";
         // TODO: upload module files
-        // TODO: update composer for controllers & dictionary
+
+        // TODO: update composer for controllers
+        $hasControllers = false;
+        if ($hasControllers) self::updateAutoload(true, "controllers", $moduleId);
+
+        // TODO: update composer for dictionary
+        $hasDictionary = false;
+        if ($hasDictionary) self::updateAutoload(true, "dictionary", $moduleId);
     }
 
     public static function uninstallModule()
     {
+        $moduleId = "";
         // TODO: remove module files (ver function deleteModule() on Module.php
-        // TODO: update composer for controllers & dictionary
+
+        // TODO: update composer for controllers
+        $hasControllers = false;
+        if ($hasControllers) self::updateAutoload(false, "controllers", $moduleId);
+
+        // TODO: update composer for dictionary
+        $hasDictionary = false;
+        if ($hasDictionary) self::updateAutoload(false, "dictionary", $moduleId);
+    }
+
+    /**
+     * Updates modules composer file by adding/removing autoload
+     * information on installation/uninstallation.
+     *
+     * @param bool $install
+     * @param string $category
+     * @param string $moduleId
+     * @return void
+     * @throws Exception
+     */
+    private static function updateAutoload(bool $install, string $category, string $moduleId)
+    {
+        $composerFile = ROOT_PATH . "modules/composer.json";
+        $contents = file_get_contents($composerFile);
+
+        if ($category === "controllers") $namespace = "API\\\\";
+        else if ($category === "dictionary") $namespace = "GameCourse\\\\Views\\\\Dictionary\\\\";
+        else throw new Exception("Can't update modules autoload: category '" . $category . "' not found.");
+
+        $item = "\"" . $moduleId . "/" . $category . "\"";
+        if ($install) { // install
+            $pos = strpos($contents, $namespace) + strlen($namespace) + strlen(": [") + 1;
+            $isEmpty = $contents[$pos] === "]";
+            $contents = substr_replace($contents, $item . (!$isEmpty ? ", " : ""), $pos, 0);
+
+        } else { // uninstall
+            $isBegin = !!strpos($contents, "[" . $item);
+            $isEnd = !!strpos($contents, $item . "]");
+            $search = $isBegin ? ($isEnd ? $item : $item . ", ") : ", " . $item;
+            $contents = str_replace($search, "", $contents);
+        }
+
+        file_put_contents($composerFile, $contents);
+        exec("composer dump-autoload");
     }
 
 

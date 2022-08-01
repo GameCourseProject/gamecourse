@@ -1,0 +1,12 @@
+/**
+ * This is the modules composer file template. Make a copy of it in the same
+ * directory, rename it to composer.json and remove this comment.
+ */
+{
+  "autoload": {
+    "psr-4": {
+      "GameCourse\\Views\\Dictionary\\": [],
+      "API\\": []
+    }
+  }
+}
