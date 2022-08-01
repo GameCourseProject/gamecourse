@@ -263,7 +263,7 @@ abstract class Module
     public static function setupModules()
     {
         Core::database()->setForeignKeyChecks(false);
-        $modulesFolders = Utils::getDirectoryContents(MODULES_FOLDER);
+        $modulesFolders = array_filter(Utils::getDirectoryContents(MODULES_FOLDER), function ($item) { return $item["type"] == "folder"; });
         foreach ($modulesFolders as $folder) {
             $moduleId = $folder["name"];
             $mainFile = MODULES_FOLDER . "/" . $moduleId . "/" . $moduleId. ".php";

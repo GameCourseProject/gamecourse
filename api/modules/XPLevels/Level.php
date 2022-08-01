@@ -40,9 +40,9 @@ class Level
         return new Course($this->getData("course"));
     }
 
-    public function getGoal(): int
+    public function getMinXP(): int
     {
-        return $this->getData("goal");
+        return $this->getData("minXP");
     }
 
     public function getDescription(): ?string
@@ -54,8 +54,8 @@ class Level
      * Gets level data from the database.
      *
      * @example getData() --> gets all level data
-     * @example getData("goal") --> gets level goal
-     * @example getData("goal, description") --> gets level goal & description
+     * @example getData("minXP") --> gets level minimum XP
+     * @example getData("minXP, description") --> gets level minimum XP & description
      *
      * @param string $field
      * @return array|int|null
@@ -75,18 +75,14 @@ class Level
     /*** ---------------------------------------------------- ***/
 
     /**
-     * @param int $goal
-     * @return void
      * @throws Exception
      */
-    public function setGoal(int $goal)
+    public function setMinXP(int $minXP)
     {
-        $this->setData(["goal" => $goal]);
+        $this->setData(["minXP" => $minXP]);
     }
 
     /**
-     * @param string|null $description
-     * @return void
      * @throws Exception
      */
     public function setDescription(?string $description)
@@ -96,8 +92,8 @@ class Level
 
     /**
      * Sets level data on the database.
-     * @example setData(["goal" => 100])
-     * @example setData(["goal" => 100, "description" => "New description"])
+     * @example setData(["minXP" => 100])
+     * @example setData(["minXP" => 100, "description" => "New description"])
      *
      * @param array $fieldValues
      * @return void
@@ -105,19 +101,19 @@ class Level
      */
     public function setData(array $fieldValues)
     {
-        if (key_exists("goal", $fieldValues)) {
-            $previousGoal = self::getGoal();
-            $newGoal = intval($fieldValues["goal"]);
-            if ($previousGoal !== 0 && $newGoal <= 0)
-                throw new Exception("Can't set level goal: goal needs to be a positive number.");
+        if (key_exists("minXP", $fieldValues)) {
+            $previousMinXP = self::getMinXP();
+            $newMinXP = intval($fieldValues["minXP"]);
+            if ($previousMinXP !== 0 && $newMinXP <= 0)
+                throw new Exception("Can't set level minimum XP: XP needs to be a positive number.");
 
-            if ($previousGoal === 0 && $newGoal !== 0)
-                throw new Exception("Can't update goal of Level 0.");
+            if ($previousMinXP === 0 && $newMinXP !== 0)
+                throw new Exception("Can't update minimum XP of Level 0.");
         }
 
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_LEVEL, $fieldValues, ["id" => $this->id]);
 
-        if (key_exists("goal", $fieldValues)) self::updateUsersLevel($this->getCourse()->getId());
+        if (key_exists("minXP", $fieldValues)) self::updateUsersLevel($this->getCourse()->getId());
     }
 
 
@@ -125,6 +121,13 @@ class Level
     /*** ---------------------- General --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * Gets a level by its ID.
+     * Returns null if level doesn't exist.
+     *
+     * @param int $id
+     * @return Level|null
+     */
     public static function getLevelById(int $id): ?Level
     {
         $level = new Level($id);
@@ -132,26 +135,50 @@ class Level
         else return null;
     }
 
-    public static function getLevelByGoal(int $courseId, int $goal): ?Level
+    /**
+     * Gets a level by its minimum XP.
+     * Returns null if level doesn't exist.
+     *
+     * @param int $courseId
+     * @param int $minXP
+     * @return Level|null
+     */
+    public static function getLevelByMinXP(int $courseId, int $minXP): ?Level
     {
-        $levelId = intval(Core::database()->select(self::TABLE_LEVEL, ["course" => $courseId, "goal" => $goal], "id"));
+        $levelId = intval(Core::database()->select(self::TABLE_LEVEL, ["course" => $courseId, "minXP" => $minXP], "id"));
         if (!$levelId) return null;
         else return new Level($levelId);
     }
 
+    /**
+     * Gets a level by its corresponding XP.
+     * Returns null if level doesn't exist.
+     *
+     * @param int $courseId
+     * @param int $xp
+     * @return Level|null
+     */
     public static function getLevelByXP(int $courseId, int $xp): ?Level
     {
-        $levels = self::getLevels($courseId, "goal DESC");
+        $levels = self::getLevels($courseId, "minXP DESC");
         foreach ($levels as $level) {
-            if ($xp >= $level["goal"])
+            if ($xp >= $level["minXP"])
                 return new Level($level["id"]);
         }
         return null;
     }
 
-    public static function getLevels(int $courseId, string $orderBy = "goal"): array
+    /**
+     * Gets all levels of course.
+     * Option for ordering.
+     *
+     * @param int $courseId
+     * @param string $orderBy
+     * @return array
+     */
+    public static function getLevels(int $courseId, string $orderBy = "minXP"): array
     {
-        $field = "id, goal, description";
+        $field = "id, minXP, description";
         $levels = Core::database()->selectMultiple(self::TABLE_LEVEL, ["course" => $courseId], $field, $orderBy);
         foreach ($levels as $i => &$level) {
             $level["number"] = $i;
@@ -170,19 +197,19 @@ class Level
      * Returns the newly created level.
      *
      * @param int $courseId
-     * @param int $goal
+     * @param int $minXP
      * @param string|null $description
      * @return Level
      * @throws Exception
      */
-    public static function addLevel(int $courseId, int $goal, ?string $description): Level
+    public static function addLevel(int $courseId, int $minXP, ?string $description): Level
     {
         $id = Core::database()->insert(self::TABLE_LEVEL, [
             "course" => $courseId,
-            "goal" => $goal,
+            "minXP" => $minXP,
             "description" => $description
         ]);
-        self::updateUsersLevel($courseId);
+        if (count(Level::getLevels($courseId)) != 1) self::updateUsersLevel($courseId);
         return new Level($id);
     }
 
@@ -190,15 +217,15 @@ class Level
      * Edits an existing level in the database.
      * Returns the edited level.
      *
-     * @param int $goal
+     * @param int $minXP
      * @param string|null $description
      * @return Level
      * @throws Exception
      */
-    public function editLevel(int $goal, ?string $description): Level
+    public function editLevel(int $minXP, ?string $description): Level
     {
         $this->setData([
-            "goal" => $goal,
+            "minXP" => $minXP,
             "description" => $description
         ]);
         return $this;
@@ -213,7 +240,7 @@ class Level
      */
     public static function deleteLevel(int $levelId) {
         $level = self::getLevelById($levelId);
-        if ($level->getGoal() === 0) throw new Exception("Can't delete Level 0.");
+        if ($level->getMinXP() === 0) throw new Exception("Can't delete Level 0.");
         Core::database()->delete(self::TABLE_LEVEL, ["id" => $levelId]);
         self::updateUsersLevel($level->getCourse()->getId());
     }
@@ -247,7 +274,8 @@ class Level
     }
 
     /**
-     * Automatically updates the current level for all users.
+     * Automatically updates the current level for all users
+     * when levels changed.
      *
      * @param int $courseId
      * @return void
@@ -288,9 +316,9 @@ class Level
     {
         return Utils::importFromCSV(self::HEADERS, function ($level, $indexes) use ($courseId, $replace) {
             $description = $level[$indexes["title"]];
-            $minXP = self::parse(null, $level[$indexes["minimum XP"]], "goal");
+            $minXP = self::parse(null, $level[$indexes["minimum XP"]], "minXP");
 
-            $level = self::getLevelByGoal($courseId, $minXP);
+            $level = self::getLevelByMinXP($courseId, $minXP);
             if ($level) {  // level already exists
                 if ($replace)  // replace
                     $level->editLevel($minXP, $description);
@@ -312,7 +340,7 @@ class Level
     public static function exportLevels(int $courseId): string
     {
         return Utils::exportToCSV(self::getLevels($courseId), function ($level) {
-            return [$level["description"], $level["goal"]];
+            return [$level["description"], $level["minXP"]];
         }, self::HEADERS);
     }
 
@@ -331,9 +359,9 @@ class Level
      */
     private static function recalculateLevel(int $courseId, int $xp): Level
     {
-        $levels = self::getLevels($courseId, "goal DESC");
+        $levels = self::getLevels($courseId, "minXP DESC");
         foreach ($levels as $level) {
-            if ($xp >= intval($level["goal"])) return new Level($level["id"]);
+            if ($xp >= intval($level["minXP"])) return new Level($level["id"]);
         }
         throw new Exception("Couldn't recalculate level: XP must be positive.");
     }
@@ -352,11 +380,11 @@ class Level
         if ($level) {
             if (isset($level["id"])) $level["id"] = intval($level["id"]);
             if (isset($level["course"])) $level["course"] = intval($level["course"]);
-            if (isset($level["goal"])) $level["goal"] = intval($level["goal"]);
+            if (isset($level["minXP"])) $level["minXP"] = intval($level["minXP"]);
             return $level;
 
         } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "goal") return intval($field);
+            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "minXP") return intval($field);
             return $field;
         }
     }

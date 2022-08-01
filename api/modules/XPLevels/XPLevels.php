@@ -36,7 +36,7 @@ class XPLevels extends Module
 
     const ID = "XPLevels";  // NOTE: must match the name of the class
     const NAME = "XP & Levels";
-    const DESCRIPTION = "Enables Experience Points (XP) to be given to students, and their division between different levels.";
+    const DESCRIPTION = "Enables Experience Points (XP) to be given to students, distributed between different levels.";
     const TYPE = ModuleType::GAME_ELEMENT;
 
     const VERSION = "2.2.0";                                     // Current module version
@@ -122,7 +122,7 @@ class XPLevels extends Module
                 "listInfo" => [
                     ["id" => "number", "label" => "Level", "type" => InputType::NUMBER],
                     ["id" => "description", "label" => "Title", "type" => InputType::TEXT],
-                    ["id" => "goal", "label" => "Minimum XP", "type" => InputType::NUMBER]
+                    ["id" => "minXP", "label" => "Minimum XP", "type" => InputType::NUMBER]
                 ],
                 "items" => Level::getLevels($this->course->getId()),
                 "actions" => [
@@ -131,7 +131,7 @@ class XPLevels extends Module
                 ],
                 Action::EDIT => [
                     ["id" => "description", "label" => "Title", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
-                    ["id" => "goal", "label" => "Minimum XP", "type" => InputType::NUMBER, "scope" => ActionScope::ALL_BUT_FIRST]
+                    ["id" => "minXP", "label" => "Minimum XP", "type" => InputType::NUMBER, "scope" => ActionScope::ALL_BUT_FIRST]
                 ],
             ]
         ];
@@ -144,10 +144,10 @@ class XPLevels extends Module
     {
         $courseId = $this->course->getId();
         if ($listName == "Levels") {
-            if ($action == Action::NEW) Level::addLevel($courseId, $item["goal"], $item["description"]);
+            if ($action == Action::NEW) Level::addLevel($courseId, $item["minXP"], $item["description"]);
             elseif ($action == Action::EDIT) {
                 $level = new Level($item["id"]);
-                $level->editLevel($item["goal"], $item["description"]);
+                $level->editLevel($item["minXP"], $item["description"]);
             } elseif ($action == Action::DELETE) Level::deleteLevel($item["id"]);
         }
     }
@@ -188,14 +188,18 @@ class XPLevels extends Module
         if ($level0Id === null) $level0Id = Level::getLevelByXP($this->course->getId(), 0)->getId();
 
         if ($this->userHasXP($userId)) // already has XP
-            Core::database()->delete(self::TABLE_XP, ["course" => $courseId, "user" => $userId]);
+            Core::database()->update(self::TABLE_XP, [
+                "xp" => 0,
+                "level" => $level0Id
+            ], ["course" => $courseId, "user" => $userId]);
 
-        Core::database()->insert(self::TABLE_XP, [
-            "course" => $courseId,
-            "user" => $userId,
-            "xp" => 0,
-            "level" => $level0Id
-        ]);
+        else
+            Core::database()->insert(self::TABLE_XP, [
+                "course" => $courseId,
+                "user" => $userId,
+                "xp" => 0,
+                "level" => $level0Id
+            ]);
     }
 
     /**
