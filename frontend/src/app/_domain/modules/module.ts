@@ -13,9 +13,9 @@ export class Module {
   private _icon: string;
   private _type: ModuleType;
   private _version: string;
-  private _dependencies: Module[];
   private _configurable: boolean;
   private _compatibility: {project: boolean, api: boolean};
+  private _dependencies?: Module[];
   private _enabled?: boolean;
   private _canChangeState?: boolean;
   private _dependencyMode?: DependencyMode;
@@ -23,7 +23,7 @@ export class Module {
   static stylesLoaded: Map<number, {state: LoadingState, stylesIds?: string[]}> = new Map<number, {state: LoadingState, stylesIds?: string[]}>();
 
   constructor(id: string, name: string, description: string, icon: string, type: ModuleType, version: string,
-              dependencies: Module[], configurable: boolean, compatibility: {project: boolean, api: boolean},
+              configurable: boolean, compatibility: {project: boolean, api: boolean}, dependencies?: Module[],
               enabled?: boolean, canChangeState?: boolean, dependencyMode?: DependencyMode) {
 
     this._id = id;
@@ -32,9 +32,9 @@ export class Module {
     this._icon = icon;
     this._type = type;
     this._version = version;
-    this._dependencies = dependencies;
     this._configurable = configurable;
     this._compatibility = compatibility;
+    if (exists(dependencies)) this._dependencies = dependencies;
     if (exists(enabled)) this._enabled = enabled;
     if (exists(canChangeState)) this._canChangeState = canChangeState;
     if (exists(dependencyMode)) this._dependencyMode = dependencyMode;
@@ -88,14 +88,6 @@ export class Module {
     this._version = value;
   }
 
-  get dependencies(): Module[] {
-    return this._dependencies;
-  }
-
-  set dependencies(value: Module[]) {
-    this._dependencies = value;
-  }
-
   get configurable(): boolean {
     return this._configurable;
   }
@@ -110,6 +102,14 @@ export class Module {
 
   set compatibility(value: { project: boolean; api: boolean }) {
     this._compatibility = value;
+  }
+
+  get dependencies(): Module[] {
+    return this._dependencies;
+  }
+
+  set dependencies(value: Module[]) {
+    this._dependencies = value;
   }
 
   get enabled(): boolean {
@@ -207,9 +207,9 @@ export class Module {
       obj.icon,
       obj.type as ModuleType,
       obj.version,
-      obj.dependencies.map(dep => Module.fromDatabase(dep)),
       obj.configurable,
       obj.compatibility,
+      obj.dependencies ? obj.dependencies.map(dep => Module.fromDatabase(dep)) : null,
       obj.isEnabled ?? null,
       obj.canChangeState ?? null,
       obj.mode as DependencyMode ?? null
@@ -224,9 +224,9 @@ interface ModuleDatabase {
   icon: string;
   type: string;
   version: string,
-  dependencies: ModuleDatabase[],
   configurable: boolean;
   compatibility: {project: boolean, api: boolean},
+  dependencies?: ModuleDatabase[],
   isEnabled?: boolean;
   canChangeState?: boolean;
   mode?: DependencyMode;

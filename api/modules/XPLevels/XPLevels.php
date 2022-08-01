@@ -21,7 +21,8 @@ use GameCourse\Module\ModuleType;
 class XPLevels extends Module
 {
     const TABLE_LEVEL = Level::TABLE_LEVEL;
-    const TABLE_XP = 'user_xp';
+    const TABLE_XP = "user_xp";
+    const TABLE_XP_CONFIG = "xp_config";
 
     public function __construct(?Course $course)
     {
@@ -63,6 +64,9 @@ class XPLevels extends Module
     {
         $this->initDatabase();
 
+        // Init config
+        Core::database()->insert(self::TABLE_XP_CONFIG, ["course" => $this->course->getId()]);
+
         // Create level zero
         $level0Id = Level::addLevel($this->course->getId(), 0, "AWOL")->getId();
 
@@ -101,6 +105,7 @@ class XPLevels extends Module
     {
         Core::database()->delete(self::TABLE_XP, ["course" => $this->course->getId()]);
         Core::database()->delete(self::TABLE_LEVEL, ["course" => $this->course->getId()]);
+        Core::database()->delete(self::TABLE_XP_CONFIG, ["course" => $this->course->getId()]);
     }
 
 
@@ -111,6 +116,20 @@ class XPLevels extends Module
     public function isConfigurable(): bool
     {
         return true;
+    }
+
+    public function getGeneralInputs(): array
+    {
+        return [
+            ["id" => "maxExtraCredit", "label" => "Max. Extra Credit", "type" => InputType::NUMBER, "value" => $this->getMaxExtraCredit()],
+        ];
+    }
+
+    public function saveGeneralInputs(array $inputs)
+    {
+        foreach ($inputs as $input) {
+            Core::database()->update(self::TABLE_XP_CONFIG, [$input["id"] => $input["value"]], ["course" => $this->course->getId()]);
+        }
     }
 
     public function getLists(): array
@@ -171,6 +190,14 @@ class XPLevels extends Module
     /*** ----------------------------------------------- ***/
     /*** --------------- Module Specific --------------- ***/
     /*** ----------------------------------------------- ***/
+
+    /*** ---------- Config ---------- ***/
+
+    public function getMaxExtraCredit(): int
+    {
+        return intval(Core::database()->select(self::TABLE_XP_CONFIG, ["course" => $this->course->getId()], "maxExtraCredit"));
+    }
+
 
     /*** ------------ XP ------------ ***/
 

@@ -35,7 +35,7 @@ class Awards extends Module
 
     const ID = "Awards";  // NOTE: must match the name of the class
     const NAME = "Awards";
-    const DESCRIPTION = "Enables awards to be given to students based on a set of active rules.";
+    const DESCRIPTION = "Enables awards to be given to students under certain conditions.";
     const TYPE = ModuleType::GAME_ELEMENT;
 
     const VERSION = "2.2.0";                                     // Current module version

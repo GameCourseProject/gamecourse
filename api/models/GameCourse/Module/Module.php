@@ -404,7 +404,7 @@ abstract class Module
         $dependencies = Core::database()->selectMultiple(self::TABLE_MODULE_DEPENDENCY, $where, $field, "id");
         if ($IDsOnly) return array_column($dependencies, "id");
         foreach ($dependencies as &$dependencyInfo) {
-            $dependencyInfo = self::getExtraInfo($dependencyInfo, $this->course);
+            $dependencyInfo = self::getExtraInfo($dependencyInfo, $this->course, false);
             $dependencyInfo = self:: parse($dependencyInfo);
         }
         return $dependencies;
@@ -982,15 +982,16 @@ abstract class Module
      *
      * @param array $moduleInfo
      * @param Course|null $course
+     * @param bool $dependencies
      * @return void
      * @throws Exception
      */
-    public static function getExtraInfo(array $moduleInfo, ?Course $course): array
+    public static function getExtraInfo(array $moduleInfo, ?Course $course, bool $dependencies = true): array
     {
         $module = self::getModuleById($moduleInfo["id"], $course);
         $moduleInfo = array_merge($moduleInfo, $module->getData());
         $moduleInfo["icon"] = $module->getIcon();
-        $moduleInfo["dependencies"] = $module->getDependencies();
+        if ($dependencies) $moduleInfo["dependencies"] = $module->getDependencies();
         $moduleInfo["configurable"] = $module->isConfigurable();
         $moduleInfo["compatibility"] = [
             "project" => Utils::compareVersions(PROJECT_VERSION, $moduleInfo["minProjectVersion"]) >= 0 &&
