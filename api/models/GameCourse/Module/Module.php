@@ -285,6 +285,14 @@ abstract class Module
     /*** ---------------------- General --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * Gets a module by its ID.
+     * Returns null if module doesn't exist.
+     *
+     * @param string $id
+     * @param Course|null $course
+     * @return Module|null
+     */
     public static function getModuleById(string $id, ?Course $course): ?Module
     {
         $moduleClass = "\\GameCourse\\" . $id . "\\" . $id;
@@ -294,6 +302,11 @@ abstract class Module
     }
 
     /**
+     * Gets modules available in the system.
+     * Option to retrieve module IDs only.
+     *
+     * @param bool $IDsOnly
+     * @return array
      * @throws Exception
      */
     public static function getModules(bool $IDsOnly = false): array
@@ -422,6 +435,12 @@ abstract class Module
         return $dependants;
     }
 
+    /**
+     * Sets module dependencies.
+     *
+     * @param array $dependencies
+     * @return void
+     */
     public function setDependencies(array $dependencies)
     {
         // Remove all module dependencies
@@ -433,6 +452,12 @@ abstract class Module
         }
     }
 
+    /**
+     * Adds a new dependency to module.
+     *
+     * @param array $dependency
+     * @return void
+     */
     public function addDependency(array $dependency)
     {
         if (!$this->hasDependency($dependency["id"])) {
@@ -446,18 +471,30 @@ abstract class Module
         }
     }
 
+    /**
+     * Removes dependency from module.
+     *
+     * @param string $dependencyId
+     * @return void
+     */
     public function removeDependency(string $dependencyId)
     {
         Core::database()->delete(self::TABLE_MODULE_DEPENDENCY, ["module" => $this->getId(), "dependency" => $dependencyId]);
     }
 
+    /**
+     * Checks whether module has a given dependency.
+     *
+     * @param string $dependencyId
+     * @return bool
+     */
     public function hasDependency(string $dependencyId): bool
     {
         return !empty(Core::database()->select(self::TABLE_MODULE_DEPENDENCY, ["module" => $this->getId(), "dependency" => $dependencyId]));
     }
 
     /**
-     * Checks if a given dependecy exists and is enabled in the course.
+     * Checks if a given dependency exists and is enabled in the course.
      * This is most useful to check soft dependencies.
      *
      * @param string $dependencyId

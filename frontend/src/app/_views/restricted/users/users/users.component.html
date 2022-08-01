@@ -15,7 +15,7 @@
     <div id="mainContent">
       <!-- Action buttons -->
       <div class="action-buttons ">
-        <div class="icon add_icon" (click)="mode = 'add'; isUserModalOpen = true"></div>
+        <div class="icon add_icon" (click)="mode = 'add'; isUserModalOpen = true;"></div>
         <div class="icon import_icon" title="Import" (click)="isImportModalOpen = true"></div>
         <div class="icon export_icon" title="Export all" (click)="exportUsers()"></div>
       </div>
@@ -52,14 +52,14 @@
               <td class="ng-binding">{{user.nrCourses}}</td>
               <td class="ng-binding">{{user.lastLogin ? user.lastLogin.fromNow() : 'Never'}}</td>
               <td class="check-column">
-                <label class="switch">
-                  <input type="checkbox" [checked]="user.isAdmin" (change)="toggleAdmin(user.id)">
+                <label class="switch" [ngClass]="{'disabled': loggedUser.id === user.id}">
+                  <input type="checkbox" [checked]="user.isAdmin" [disabled]="loggedUser.id === user.id" (change)="toggleAdmin(user.id)">
                   <span class="slider round"></span>
                 </label>
               </td>
               <td class="check-column">
-                <label class="switch">
-                  <input type="checkbox" [checked]="user.isActive" (change)="toggleActive(user.id)">
+                <label class="switch" [ngClass]="{'disabled': loggedUser.id === user.id}">
+                  <input type="checkbox" [checked]="user.isActive" [disabled]="loggedUser.id === user.id" (change)="toggleActive(user.id)">
                   <span class="slider round"></span>
                 </label>
               </td>
@@ -195,8 +195,8 @@
       </div>
 
       <div class="row">
-        <div class="on_off"><span>Admin </span><label class="switch"><input id="admin" type="checkbox" [(ngModel)]="newUser.isAdmin"><span class="slider round"></span></label></div>
-        <div class="on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" [(ngModel)]="newUser.isActive"><span class="slider round"></span></label></div>
+        <div class="on_off"><span>Admin </span><label class="switch" [ngClass]="{'disabled': mode === 'edit' && loggedUser.id === userToEdit.id}"><input id="admin" type="checkbox" [disabled]="mode === 'edit' && loggedUser.id === userToEdit.id" [(ngModel)]="newUser.isAdmin"><span class="slider round"></span></label></div>
+        <div class="on_off"><span>Active </span><label class="switch" [ngClass]="{'disabled': mode === 'edit' && loggedUser.id === userToEdit.id}"><input id="active" type="checkbox" [disabled]="mode === 'edit' && loggedUser.id === userToEdit.id" [(ngModel)]="newUser.isActive"><span class="slider round"></span></label></div>
       </div>
     </div>
 
