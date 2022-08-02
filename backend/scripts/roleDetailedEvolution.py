@@ -15,13 +15,14 @@ def get_credentials():
             pw = data[2].strip('\n')
             return (db, un, pw)
 
+
 def fetch_data ():
     (database, username, password) = get_credentials()
     cnx = mysql.connector.connect(user=username, password=password,
     host='localhost', database=database)
     cursor = cnx.cursor(prepared=True)
 
-    # COMMAND : python3 xpEvolution.py 'course_id' 'target (OPTIONAL)'
+    # COMMAND : python3 profillingResults.py 'course_id' 'target (OPTIONAL)'
     if len(sys.argv) <= 1:
         print("Missing argument: Please specify the course.")
     else:
@@ -37,55 +38,32 @@ def fetch_data ():
             # target was given
             targets.append(sys.argv[2])
 
-    first = ["user"]
-    # gets all unique dates from award table
-    if len (sys.argv) == 2:
-        query = "SELECT DISTINCT(DATE_FORMAT(date, '%d %c %Y')) AS day FROM award WHERE course = \"" + str(course) + "\"GROUP BY DATE_FORMAT(date, '%d %c %Y') ORDER BY date ASC; "
-        cursor.execute(query)
-        all_dates = cursor.fetchall()
-    else:
-        query = "SELECT DISTINCT(DATE_FORMAT(date, '%d %c %Y')) FROM award WHERE course = \"" + str(course) + "\" AND user = \"" + str(targets[0]) + "\" GROUP BY DATE_FORMAT(date, '%d %c %Y') ORDER BY date ASC;"
-        cursor.execute(query)
-        all_dates = cursor.fetchall()
-
-    header = ["user"]
-    for date in all_dates:
-        header.append(date[0].decode())
-
-    # header = ['user', 'date_1', 'date_2', 'date_3', ... , 'date_n']
-
-    all_xp_evolution = []
+    all_role_evolution = []
     for target in targets:
-        query = "SELECT user, DATE_FORMAT(date, '%d %c %Y'), @total:=@total + reward AS total_reward FROM award JOIN (SELECT @total:=0) AS t WHERE course = \"" + str(course) + "\" AND user = \"" + str(target) + "\" AND type != 'tokens' ORDER BY date ASC;"
-        cursor.execute(query)
-        target_xp_evolution = cursor.fetchall()
+        query = "SELECT user_profile.user, user_profile.date, user_profile.cluster, role.name FROM user_profile JOIN role ON user_profile.cluster = role.id WHERE user_profile.course = %s  AND user_profile.user = %s ORDER BY date ASC;"
+        cursor.execute(query, (course, target))
+        target_role_evolution = cursor.fetchall()
 
-        lst = [None] * len(header)
-        for i in range(len(target_xp_evolution)):
-            line = target_xp_evolution[i]
-            date_index = header.index(line[1].decode())
-            lst[0] = line[0]
-            lst[date_index] = line[2]
+        for line in target_role_evolution:
+            line_list =  list(line)
+            line_list[3] = line_list[3].decode("utf-8")
 
-        if lst[1] is None:
-            lst[1] = 0
-
-        for i in range(2, len(lst)):
-            if lst[i] is None and lst[i-1] is not None:
-                lst[i] = lst[i-1]
-
-        all_xp_evolution.append(lst,)
+        all_role_evolution += target_role_evolution
 
     cnx.close()
-    return header, all_xp_evolution
+
+    header = ["user", "date", "cluster", "cluster_name"]
+
+    return header, all_role_evolution
+
 
 def export():
     columns, evolution = fetch_data()
 
     if len (sys.argv) == 2 :
-        file_name = "all_xp_evolution.csv"
+        file_name = "all_role_detailed_evolution.csv"
     elif (len(sys.argv)) == 3:
-        file_name = "xp_evolution_" + sys.argv[2] + ".csv"
+        file_name = "role_detailed_evolution_" + sys.argv[2] + ".csv"
     else:
         file_name = ''
         print("Incorrect number of arguments given.")
@@ -107,6 +85,8 @@ def export():
 
     f.close()
     print(str(len(evolution)) + ' rows written successfully to ' + f.name)
+
+
 
 
 export()
