@@ -958,6 +958,16 @@ class UtilsTest extends TestCase
     /**
      * @test
      */
+    public function trim()
+    {
+        // True
+        $this->assertEquals("abcdefgh", Utils::trim(" abc def gh  "));
+        $this->assertEquals("_abc_def_gh_", Utils::trim(" abc def  gh ", "_"));
+    }
+
+    /**
+     * @test
+     */
     public function swapNonENChars()
     {
         $portuguese = "Produção de Conteúdos Multimédia";
@@ -968,6 +978,16 @@ class UtilsTest extends TestCase
 
         $capital = "Água";
         $this->assertEquals("Agua", Utils::swapNonENChars($capital));
+    }
+
+    /**
+     * @test
+     */
+    public function strip()
+    {
+        // True
+        $this->assertEquals("abcdEfgh", Utils::strip(" abç dÉf gh  "));
+        $this->assertEquals("_abc_dEf_gh_", Utils::strip(" abç dÉf  gh ", "_"));
     }
 
 
