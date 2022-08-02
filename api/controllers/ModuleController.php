@@ -134,7 +134,6 @@ class ModuleController
         $listName = API::getValue("listName");
         $itemId = API::getValue("itemId");
 
-        $csv = $module->exportListingItems($listName, $itemId);
-        API::response($csv);
+        API::response( $module->exportListingItems($listName, $itemId));
     }
 }

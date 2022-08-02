@@ -1082,7 +1082,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => parseInt(res['data'])) );
   }
 
-  public exportModuleItems(courseID: number, moduleID: string, listName: string, itemID?: number): Observable<string> {
+  public exportModuleItems(courseID: number, moduleID: string, listName: string, itemID?: number): Observable<{extension: string, file?: string, path?: string}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
       qs.push('request', 'exportItems');
@@ -1094,7 +1094,11 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data'])) );
+      .pipe( map((res: any) => {
+        if (res['data']['extension'] === '.csv') return {extension: res['data']['extension'], file: 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['file'])};
+        if (res['data']['extension'] === '.txt') return {extension: res['data']['extension'], file: 'data:text/txt;charset=utf-8,' + encodeURIComponent(res['data']['file'])};
+        return {extension: res['data']['extension'], path: res['data']['path']};
+      }));
   }
 
 

@@ -189,7 +189,7 @@ class Level
 
 
     /*** ---------------------------------------------------- ***/
-    /*** ---------------- Level Manipulation ----------------- ***/
+    /*** ---------------- Level Manipulation ---------------- ***/
     /*** ---------------------------------------------------- ***/
 
     /**
@@ -204,6 +204,7 @@ class Level
      */
     public static function addLevel(int $courseId, int $minXP, ?string $description): Level
     {
+        self::validateLevel($description);
         $id = Core::database()->insert(self::TABLE_LEVEL, [
             "course" => $courseId,
             "minXP" => $minXP,
@@ -224,6 +225,7 @@ class Level
      */
     public function editLevel(int $minXP, ?string $description): Level
     {
+        self::validateLevel($description);
         $this->setData([
             "minXP" => $minXP,
             "description" => $description
@@ -335,13 +337,45 @@ class Level
      * Exports levels from a given course into a .csv file.
      *
      * @param int $courseId
-     * @return string
+     * @return array
      */
-    public static function exportLevels(int $courseId): string
+    public static function exportLevels(int $courseId): array
     {
-        return Utils::exportToCSV(self::getLevels($courseId), function ($level) {
+        return ["extension" => ".csv", "file" => Utils::exportToCSV(self::getLevels($courseId), function ($level) {
             return [$level["description"], $level["minXP"]];
-        }, self::HEADERS);
+        }, self::HEADERS)];
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------- Validations -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Validates level parameters.
+     *
+     * @param $description
+     * @return void
+     * @throws Exception
+     */
+    private static function validateLevel($description)
+    {
+        self::validateDescription($description);
+    }
+
+    /**
+     * Validates level description.
+     *
+     * @param $description
+     * @return void
+     * @throws Exception
+     */
+    private static function validateDescription($description)
+    {
+        if (is_null($description)) return;
+
+        if (iconv_strlen($description) > 50)
+            throw new Exception("Level description is too long: maximum of 50 characters.");
     }
 
 

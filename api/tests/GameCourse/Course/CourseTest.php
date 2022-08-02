@@ -85,7 +85,7 @@ class CourseTest extends TestCase
         return [
             "null name" => [null],
             "empty" => [""],
-            "special characthers" => ["-*./\\!"],
+            "special characthers" => ["*./\\!"],
             "too long" => ["Multimedia Content Production Multimedia Content Production Multimedia Content Production Multimedia "]
         ];
     }
@@ -475,7 +475,7 @@ class CourseTest extends TestCase
             null, null, true, false);
         $course->setName($name);
         $this->assertEquals($name, $course->getName());
-        $this->assertTrue(file_exists(COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::swapNonENChars($name)));
+        $this->assertTrue(file_exists(COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::strip($name, "_")));
     }
 
     /**
@@ -763,7 +763,7 @@ class CourseTest extends TestCase
             null, null, true, false);
         $course->setName($name);
         $this->assertEquals($name, $course->getName());
-        $this->assertTrue(file_exists(COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::swapNonENChars($name)));
+        $this->assertTrue(file_exists(COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::strip($name, "_")));
     }
 
     /**
@@ -1014,7 +1014,7 @@ class CourseTest extends TestCase
         $this->assertEquals($courseData, $courseDB);
 
         // Check course data folder was created
-        $dataFolder = COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::swapNonENChars($name);
+        $dataFolder = COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::strip($name, "_");
         $this->assertEquals($dataFolder, $course->getDataFolder());
         $this->assertTrue(file_exists($dataFolder));
 
@@ -1113,7 +1113,7 @@ class CourseTest extends TestCase
         $this->assertEquals($courseData, $courseDB);
 
         // Check course data folder was updated
-        $dataFolder = COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::swapNonENChars($name);
+        $dataFolder = COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::strip($name, "_");
         $this->assertEquals($dataFolder, $course->getDataFolder());
         $this->assertTrue(file_exists($dataFolder));
     }
@@ -1141,7 +1141,7 @@ class CourseTest extends TestCase
             $this->assertEquals($courseData, $courseDB);
 
             // Check course data folder didn't change
-            $dataFolder = COURSE_DATA_FOLDER . "/1-Computacao Movel e Ubiqua";
+            $dataFolder = COURSE_DATA_FOLDER . "/1-Computacao_Movel_e_Ubiqua";
             $this->assertEquals($dataFolder, $course->getDataFolder());
             $this->assertTrue(file_exists($dataFolder));
         }

@@ -633,6 +633,7 @@ abstract class Module
      * Gets lists to show on configuration page where each list has:
      *  - listName: name of the list
      *  - itemName: name for an item of the list
+     *  - importExtensions: types of files that can be used on import
      *  - listInfo: information for every collumn
      *  - items: items of the list
      *  - actions?: actions available for items (check Config/Action.php for more info)
@@ -675,9 +676,9 @@ abstract class Module
      *
      * @param string $listName
      * @param int|null $itemId
-     * @return string|null
+     * @return array|null
      */
-    public function exportListingItems(string $listName, int $itemId = null): ?string
+    public function exportListingItems(string $listName, int $itemId = null): ?array
     {
         return null;
     }

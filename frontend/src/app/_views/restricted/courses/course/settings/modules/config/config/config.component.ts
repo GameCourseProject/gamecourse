@@ -148,9 +148,8 @@ export class ConfigComponent implements OnInit {
       .subscribe(async () => await this.getModuleConfig(this.module.id))
   }
 
-  toggleItemParam(listName: string, item: any, param: string) {
+  toggleItemParam(listName: string, item: any) {
     this.loadingAction = true;
-    item[param] = !item[param];
     this.doActionOnItem(listName, item, Action.EDIT);
   }
 
@@ -186,7 +185,11 @@ export class ConfigComponent implements OnInit {
     this.loadingAction = true;
     this.api.exportModuleItems(this.courseID, this.module.id, list.listName, item?.id ?? undefined)
       .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(contents => DownloadManager.downloadAsCSV(list.listName, contents))
+      .subscribe(res => {
+        if (res.extension === ".csv") DownloadManager.downloadAsCSV(list.listName, res.file);
+        if (res.extension === ".txt") DownloadManager.downloadAsText(list.listName, res.file);
+        if (res.extension === ".zip") DownloadManager.downloadAsZip(list.listName, res.path);
+      })
   }
 
 
@@ -209,13 +212,17 @@ export class ConfigComponent implements OnInit {
     return false;
   }
 
-  onFileSelected(files: FileList): void {
-    this.importedFile = files.item(0);
+  async onFileSelected(files: FileList, type: 'image' | 'file', item?: any, param?: string): Promise<void> {
+    if (type === 'image') {
+      await ResourceManager.getBase64(files.item(0)).then(data => item[param] = data);
+      this.image.set(files.item(0));
+
+    } else this.importedFile = files.item(0);
     this.hasUnsavedChanges = true;
   }
 
   getImage(path: string): SafeUrl {
-    this.image.set(ApiEndpointsService.API_ENDPOINT + '/' + path);
+    this.image.set(path);
     return this.image.get();
   }
 
@@ -232,6 +239,10 @@ export class ConfigComponent implements OnInit {
   get Action(): typeof Action {
     return Action;
   }
+
+  get API_ENDPOINT(): string {
+    return ApiEndpointsService.API_ENDPOINT;
+  }
 }
 
 export interface GeneralInput {
@@ -245,6 +256,7 @@ export interface GeneralInput {
 export type List = {
   listName: string,
   itemName: string,
+  importExtensions: string[],
   listInfo: {id: string, label: string, type: InputType}[],
   items: any[],
   actions?: {action: Action, scope: ActionScope}[],

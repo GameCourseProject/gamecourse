@@ -138,6 +138,7 @@ class XPLevels extends Module
             [
                 "listName" => "Levels",
                 "itemName" => "level",
+                "importExtensions" => [".csv", ".txt"],
                 "listInfo" => [
                     ["id" => "number", "label" => "Level", "type" => InputType::NUMBER],
                     ["id" => "description", "label" => "Title", "type" => InputType::TEXT],
@@ -180,7 +181,7 @@ class XPLevels extends Module
         return null;
     }
 
-    public function exportListingItems(string $listName, int $itemId = null): ?string
+    public function exportListingItems(string $listName, int $itemId = null): ?array
     {
         if ($listName == "Levels") return Level::exportLevels($this->course->getId());
         return null;

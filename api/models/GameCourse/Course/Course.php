@@ -939,7 +939,7 @@ class Course
     public function getDataFolder(bool $fullPath = true, string $courseName = null): string
     {
         if (!$courseName) $courseName = $this->getName();
-        $courseFolderName = $this->id . '-' . Utils::swapNonENChars($courseName);
+        $courseFolderName = $this->id . '-' . Utils::strip($courseName, "_");
 
         if ($fullPath) return COURSE_DATA_FOLDER . "/" . $courseFolderName;
         else {
@@ -1261,7 +1261,7 @@ class Course
             $dir = opendir($dataFolder);
             while ($f = readdir($dir)) {
                 if (is_file($dataFolder . $f))
-                    $zip->addFile($dataFolder . $f, $courseFolder . $f);
+                    $zip->addFile($dataFolder . $f, $courseFolder . "/" . $f);
             }
 
             // Import modules

@@ -306,6 +306,18 @@ class Utils
     }
 
     /**
+     * Removes all whitespace from a string.
+     *
+     * @param string $str
+     * @param string $replace
+     * @return string
+     */
+    public static function trim(string $str, string $replace = ""): string
+    {
+        return preg_replace("/\s+/", $replace, $str);
+    }
+
+    /**
      * Replaces non-English characters by their English counterparts.
      *
      * @param string $str
@@ -340,6 +352,18 @@ class Utils
         $str = preg_replace("/Æ/u", "AE", $str);
 
         return preg_replace("/[^a-zA-Z\d_ ]/", "", $str);
+    }
+
+    /**
+     * Strips string of non-English characters and/or whitespace.
+     *
+     * @param string $str
+     * @param string $replace
+     * @return string
+     */
+    public static function strip(string $str, string $replace = ""): string
+    {
+        return self::trim(self::swapNonENChars($str), $replace);
     }
 
 

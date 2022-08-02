@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS level(
     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
     course                      int unsigned NOT NULL,
     minXP                       int NOT NULL,
-    description                 varchar(200),
+    description                 varchar(50),
 
     UNIQUE key(course, minXP),
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE

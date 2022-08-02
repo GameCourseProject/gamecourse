@@ -91,12 +91,12 @@
                 [ngClass]="{'check-column': column.type === InputType.TOGGLE}">
 
               <ng-container *ngIf="column.type === InputType.IMAGE">
-                <img [src]="getImage(item[column.id] || 'assets/imgs/no-image.png')" alt="{{list.itemName}} image">
+                <img [src]="getImage(item[column.id] || API_ENDPOINT + '/' + 'assets/imgs/no-image.png')" alt="{{list.itemName}} image">
               </ng-container>
 
               <ng-container *ngIf="column.type === InputType.TOGGLE" class="check-column">
                 <label class="switch">
-                  <input type="checkbox" [checked]="item[column.id]" (change)="toggleItemParam(list, item, column.id)">
+                  <input type="checkbox" [(ngModel)]="item[column.id]" (change)="toggleItemParam(list.listName, item)">
                   <span class="slider round"></span>
                 </label>
               </ng-container>
@@ -185,12 +185,12 @@
     <ng-container *ngIf="style === 'outer'">
       <div class="input-wrapper">
         <span *ngIf="label" class="label">{{label}}</span>
-        <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj.value" (ngModelChange)="hasUnsavedChanges = true">
+        <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
       </div>
     </ng-container>
 
     <ng-container *ngIf="style === 'inner'">
-      <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj.value" (ngModelChange)="hasUnsavedChanges = true">
+      <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
       <label [for]="id" class="form__label">{{label}}</label>
     </ng-container>
   </ng-container>
@@ -200,13 +200,13 @@
     <ng-container *ngIf="style === 'outer'">
       <div class="input-wrapper">
         <span *ngIf="label" class="label">{{label}}</span>
-        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj.value" (ngModelChange)="hasUnsavedChanges = true">
+        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
       </div>
     </ng-container>
 
     <ng-container *ngIf="style === 'inner'">
       <div>
-        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj.value" (ngModelChange)="hasUnsavedChanges = true">
+        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
         <label [for]="id" class="form__label">{{label}}</label>
       </div>
     </ng-container>
@@ -217,7 +217,7 @@
       [id]="id"
       [accept]="'image/*'"
       [label]="label"
-      (valueChange)="onFileSelected($event)">
+      (valueChange)="onFileSelected($event, 'image', obj, id)">
   </app-input-file>
 
   <!-- Toggle -->
@@ -225,7 +225,7 @@
     <div class="input-wrapper toggle">
       <span *ngIf="label" class="label">{{label}}</span>
       <label class="switch">
-        <input type="checkbox" id="{{id}}" name="{{id}}" [(ngModel)]="obj.value" (ngModelChange)="hasUnsavedChanges = true" [checked]="obj[id]">
+        <input type="checkbox" id="{{id}}" name="{{id}}" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true" [checked]="obj[id]">
         <span class="slider round"></span>
       </label>
     </div>
@@ -264,13 +264,14 @@
 
 <ng-template #importModal>
 
-  <div class="warning">Please select a .csv or .txt file to be imported</div>
+  <div class="warning">Please select a {{listToAct.importExtensions.length === 1 ? listToAct.importExtensions[0] + " " : ""}}file to be imported.
+                       {{listToAct.importExtensions.length > 1 ? "Supported file types: " + listToAct.importExtensions : ""}}</div>
   <div class="target">The separator must be comma <br>The encoding must be UTF-8</div>
   <app-input-file
     [id]="'import_item'"
-    [accept]="'.csv, .txt'"
+    [accept]="listToAct.importExtensions.toString()"
     [classList]="'config_input'"
-    (valueChange)="onFileSelected($event)">
+    (valueChange)="onFileSelected($event, 'file')">
   </app-input-file>
 
   <div class="confirmation_btns">
