@@ -695,6 +695,7 @@ class UserTest extends TestCase
     {
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
+        Core::setLoggedUser(null);
         $user->setActive(false);
         $this->assertFalse($user->isActive());
     }
@@ -713,6 +714,7 @@ class UserTest extends TestCase
         $courseUser = $course->getCourseUserById($user->getId());
         $courseUser->setActive(false);
 
+        Core::setLoggedUser(null);
         $user->setActive(false);
         $this->assertFalse($user->isActive());
         $this->assertFalse($courseUser->isActive());
@@ -731,6 +733,7 @@ class UserTest extends TestCase
             null, null, true, false);
         $courseUser = $course->getCourseUserById($user->getId());
 
+        Core::setLoggedUser(null);
         $user->setActive(false);
         $this->assertFalse($user->isActive());
         $this->assertFalse($courseUser->isActive());
@@ -1433,6 +1436,7 @@ class UserTest extends TestCase
     {
         $user = User::addUser("João Carlos Sousa", "ist654321", AuthService::FENIX, "joao@gmail.com",
             654321, "João Sousa", "MEIC-A", false, false);
+        Core::setLoggedUser(null);
         $user->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
 
         $user = Core::database()->select(User::TABLE_USER, ["id" => 1]);
@@ -1575,7 +1579,7 @@ class UserTest extends TestCase
     {
         $user = User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
-        $this->assertEquals(USER_DATA_FOLDER . "/1", $user->getDataFolder(false));
+        $this->assertEquals(Utils::getDirectoryName(USER_DATA_FOLDER) . "/1", $user->getDataFolder(false));
     }
 
     /**

@@ -241,7 +241,8 @@ class User
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
         if (key_exists("email", $fieldValues)) self::validateEmail($fieldValues["email"]);
         if (key_exists("isActive", $fieldValues) && !$fieldValues["isActive"]) {
-            if (Core::getLoggedUser()->getId() == $this->id)
+            $loggedUser = Core::getLoggedUser();
+            if ($loggedUser && $loggedUser->getId() == $this->id)
                 throw new Exception("You attempted to remove your access to the system. This was flagged as an error and had no effect.");
 
             $userCourses = $this->getCourses();
@@ -474,7 +475,8 @@ class User
      * @throws Exception
      */
     public static function deleteUser(int $userId) {
-        if (Core::getLoggedUser()->getId() == $userId)
+        $loggedUser = Core::getLoggedUser();
+        if ($loggedUser && $loggedUser->getId() == $userId)
             throw new Exception("You attempted to remove yourself from the system. This was flagged as an error and had no effect.");
 
         Core::database()->delete(self::TABLE_USER, ["id" => $userId]);

@@ -224,7 +224,7 @@ class Core
         return static::$loggedUser;
     }
 
-    public static function setLoggedUser(User $user)
+    public static function setLoggedUser(?User $user)
     {
         self::$loggedUser = $user;
     }
@@ -234,6 +234,7 @@ class Core
         session_start();
         $_SESSION = [];
         session_destroy();
+        self::setLoggedUser(null);
 
         echo json_encode(['isLoggedIn' => false]);
         exit();

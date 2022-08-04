@@ -911,8 +911,8 @@ abstract class Module
         if (is_numeric($description))
             throw new Exception("Module description can't be composed of only numbers.");
 
-        if (iconv_strlen($description) > 100)
-            throw new Exception("Module description is too long: maximum of 100 characters.");
+        if (iconv_strlen($description) > 150)
+            throw new Exception("Module description is too long: maximum of 150 characters.");
     }
 
     /**
