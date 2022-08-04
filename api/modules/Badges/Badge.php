@@ -4,6 +4,7 @@ namespace GameCourse\Badges;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\XPLevels\XPLevels;
 use Utils\Utils;
 use ZipArchive;
 
@@ -68,12 +69,8 @@ class Badge
     {
         if ($this->hasImage()) return API_URL . "/" . $this->getCourse()->getDataFolder(false) . "/" .
             $this->getDataFolder(false) . "/badge.png";
-        else {
-            $parts = explode("/", MODULES_FOLDER);
-            $modulesFolder = end($parts);
-            return API_URL . "/" . $modulesFolder . "/" . Badges::ID . "/assets/" .
-                ($this->isExtra() ? Badge::DEFAULT_IMAGE_EXTRA : Badge::DEFAULT_IMAGE);
-        }
+        else return API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . Badges::ID . "/assets/" .
+                ($this->isExtra() ? self::DEFAULT_IMAGE_EXTRA : self::DEFAULT_IMAGE);
     }
 
     public function hasImage(): bool
@@ -223,10 +220,22 @@ class Badge
 
             // Update badge folder if name has changed
             $oldName = $this->getName();
-            if (strcmp($oldName, $newName) !== 0 && $this->getImage())
+            if (strcmp($oldName, $newName) !== 0)
                 rename($this->getDataFolder(true, $oldName), $this->getDataFolder(true, $newName));
         }
         if (key_exists("description", $fieldValues)) self::validateDescription($fieldValues["description"]);
+        if (key_exists("isExtra", $fieldValues) && $fieldValues["isExtra"]) {
+            $course = $this->getCourse();
+            $xpLevelsModule = new XPLevels($course);
+            if ($xpLevelsModule->isEnabled() && !$xpLevelsModule->getMaxExtraCredit())
+                throw new Exception("You're attempting to set a badge as extra credit while there's no extra credit available to earn.\n
+            Go to " . XPLevels::NAME . " module and set a max. global extra credit value first.");
+
+            $badgesModule = new Badges($course);
+            if (!$badgesModule->getMaxExtraCredit())
+                throw new Exception("You're attempting to set a badge as extra credit while there's no badge extra credit available to earn.\n
+            Set a max. badge extra credit value first.");
+        }
 
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_BADGE, $fieldValues, ["id" => $this->id]);
     }
@@ -267,16 +276,19 @@ class Badge
 
     /**
      * Gets all badges of course.
-     * Option for ordering.
+     * Option for 'active' and ordering.
      *
      * @param int $courseId
+     * @param bool|null $active
      * @param string $orderBy
      * @return array
      */
-    public static function getBadges(int $courseId, string $orderBy = "name"): array
+    public static function getBadges(int $courseId, bool $active = null, string $orderBy = "name"): array
     {
         $field = "id, name, description, nrLevels, isExtra, isBragging, isCount, isPost, isPoint, isActive";
-        $badges = Core::database()->selectMultiple(self::TABLE_BADGE, ["course" => $courseId], $field, $orderBy);
+        $where = ["course" => $courseId];
+        if ($active !== null) $where["isActive"] = $active;
+        $badges = Core::database()->selectMultiple(self::TABLE_BADGE, $where, $field, $orderBy);
         foreach ($badges as &$badgeInfo) {
             $badgeInfo = self::parse($badgeInfo);
 
@@ -314,15 +326,14 @@ class Badge
      * @param bool $isCount
      * @param bool $isPost
      * @param bool $isPoint
-     * @param bool $isActive
      * @param array $levels
      * @return Badge
      * @throws Exception
      */
     public static function addBadge(int $courseId, string $name, string $description, bool $isExtra,
-                                    bool $isBragging, bool $isCount, bool $isPost, bool $isPoint, bool $isActive, array $levels): Badge
+                                    bool $isBragging, bool $isCount, bool $isPost, bool $isPoint, array $levels): Badge
     {
-        self::validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $isActive);
+        self::validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint);
         $id = Core::database()->insert(self::TABLE_BADGE, [
             "course" => $courseId,
             "name" => $name,
@@ -331,8 +342,7 @@ class Badge
             "isBragging" => +$isBragging,
             "isCount" => +$isCount,
             "isPost" => +$isPost,
-            "isPoint" => +$isPoint,
-            "isActive" => +$isActive
+            "isPoint" => +$isPoint
         ]);
         self::setLevels($id, $levels);
         self::createDataFolder($courseId, $name);
@@ -358,7 +368,7 @@ class Badge
     public function editBadge(string $name, string $description, bool $isExtra, bool $isBragging,
                               bool $isCount, bool $isPost, bool $isPoint, bool $isActive, array $levels): Badge
     {
-        self::validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $isActive);
+        self::validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint);
         $this->setData([
             "name" => $name,
             "description" => $description,
@@ -451,8 +461,7 @@ class Badge
 
     /**
      * Gets badge data folder path.
-     * Option to retrieve full server path or the short version
-     * ('badges/<badge_name>').
+     * Option to retrieve full server path or the short version.
      *
      * @param bool $fullPath
      * @param string|null $badgeName
@@ -461,9 +470,8 @@ class Badge
     public function getDataFolder(bool $fullPath = true, string $badgeName = null): string
     {
         if (!$badgeName) $badgeName = $this->getName();
-        $badgesFolder = Badges::BADGE_DATA_FOLDER . "/" . Utils::strip($badgeName, "_");
-        if ($fullPath) return $this->getCourse()->getDataFolder($fullPath) . "/" . $badgesFolder;
-        else return $badgesFolder;
+        $badgesModule = new Badges($this->getCourse());
+        return $badgesModule->getDataFolder($fullPath) . "/" . Utils::strip($badgeName, "_");
     }
 
     /**
@@ -488,7 +496,7 @@ class Badge
      */
     public static function createDataFolder(int $courseId, string $badgeName): string
     {
-        $dataFolder = Badge::getBadgeByName($courseId, $badgeName)->getDataFolder();
+        $dataFolder = self::getBadgeByName($courseId, $badgeName)->getDataFolder();
         if (file_exists($dataFolder)) self::removeDataFolder($courseId, $badgeName);
         mkdir($dataFolder, 0777, true);
         return $dataFolder;
@@ -504,7 +512,7 @@ class Badge
      */
     public static function removeDataFolder(int $courseId, string $badgeName)
     {
-        $dataFolder = Badge::getBadgeByName($courseId, $badgeName)->getDataFolder();
+        $dataFolder = self::getBadgeByName($courseId, $badgeName)->getDataFolder();
         if (file_exists($dataFolder)) Utils::deleteDirectory($dataFolder);
     }
 
@@ -581,7 +589,7 @@ class Badge
                     if ($image) copy($image, $badge->getDataFolder() . "/badge.png");
                 }
             } else {  // badge doesn't exist
-                $badge = self::addBadge($courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $isActive, $levels[$name]);
+                $badge = self::addBadge($courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels[$name]);
                 if ($image) copy($image, $badge->getDataFolder() . "/badge.png");
                 return 1;
             }
@@ -597,7 +605,7 @@ class Badge
     }
 
     /**
-     * Exports badges information to a .zip file.
+     * Exports badges to a .zip file.
      *
      * @param int $courseId
      * @return array
@@ -628,7 +636,7 @@ class Badge
 
         $levels = [];
         foreach ($badges as $badgeInfo) {
-            $badge = Badge::getBadgeById($badgeInfo["id"]);
+            $badge = self::getBadgeById($badgeInfo["id"]);
             $badgeLevels = $badge->getLevels();
             foreach ($badgeLevels as &$level) { $level["badge_name"] = $badgeInfo["name"]; }
             $levels = array_merge($levels, $badgeLevels);
@@ -662,11 +670,10 @@ class Badge
      * @param $isCount
      * @param $isPost
      * @param $isPoint
-     * @param $isActive
      * @return void
      * @throws Exception
      */
-    private static function validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $isActive)
+    private static function validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint)
     {
         self::validateName($name);
         self::validateDescription($description);
@@ -675,7 +682,6 @@ class Badge
         if (!is_bool($isCount)) throw new Exception("'isCount' must be either true or false.");
         if (!is_bool($isPost)) throw new Exception("'isPost' must be either true or false.");
         if (!is_bool($isPoint)) throw new Exception("'isPoint' must be either true or false.");
-        if (!is_bool($isActive)) throw new Exception("'isActive' must be either true or false.");
     }
 
     /**

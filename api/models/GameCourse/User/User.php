@@ -499,8 +499,7 @@ class User
 
     /**
      * Gets user data folder path.
-     * Option to retrieve full server path or the short version
-     * ('user_data/<user_ID>').
+     * Option to retrieve full server path or the short version.
      *
      * @param bool $fullPath
      * @return string
@@ -508,10 +507,7 @@ class User
     public function getDataFolder(bool $fullPath = true): string
     {
         if ($fullPath) return USER_DATA_FOLDER . "/" . $this->getId();
-        else {
-            $parts = explode("/", USER_DATA_FOLDER);
-            return end($parts) . "/" . $this->getId();
-        }
+        else return Utils::getDirectoryName(USER_DATA_FOLDER) . "/" . $this->getId();
     }
 
     /**

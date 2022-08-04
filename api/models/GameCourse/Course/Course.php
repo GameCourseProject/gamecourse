@@ -929,8 +929,7 @@ class Course
 
     /**
      * Gets course data folder path.
-     * Option to retrieve full server path or the short version
-     * ('course_data/<course_ID>-<course_name>').
+     * Option to retrieve full server path or the short version.
      *
      * @param bool $fullPath
      * @param string|null $courseName
@@ -942,10 +941,7 @@ class Course
         $courseFolderName = $this->id . '-' . Utils::strip($courseName, "_");
 
         if ($fullPath) return COURSE_DATA_FOLDER . "/" . $courseFolderName;
-        else {
-            $parts = explode("/", COURSE_DATA_FOLDER);
-            return end($parts) . "/" . $courseFolderName;
-        }
+        else return Utils::getDirectoryName(COURSE_DATA_FOLDER) . "/" . $courseFolderName;
     }
 
     /**
@@ -999,12 +995,12 @@ class Course
      * but absolute paths can be retrieved when needed.
      *
      * @example absolute -> relative
-     *  URL: http://localhost/gamecourse/api/course_data/<courseFolder>/skills/<skillName>/<filename>
-     *  NEW URL: skills/<skillName>/<filename>
+     *  URL: <API_URL>/<COURSE_DATA_FOLDER>/<courseFolder>/<somePath>
+     *  NEW URL: <somePath>
      *
      * @example relative -> absolute
-     *  URL: skills/<skillName>/<filename>
-     *  NEW URL: http://localhost/gamecourse/api/course_data/<courseFolder>/skills/<skillName>/<filename>
+     *  URL: <somePath>
+     *  NEW URL: <API_URL>/<COURSE_DATA_FOLDER>/<courseFolder>/<somePath>
      *
      * @param string $url
      * @param string $to (absolute | relative)

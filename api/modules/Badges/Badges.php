@@ -3,6 +3,7 @@ namespace GameCourse\Badges;
 
 use Exception;
 use GameCourse\Awards\Awards;
+use GameCourse\Awards\AwardType;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Config\Action;
@@ -11,6 +12,7 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\User\User;
 use GameCourse\XPLevels\XPLevels;
 use Utils\Utils;
 
@@ -25,7 +27,7 @@ class Badges extends Module
     const TABLE_BADGE_PROGRESSION = Badge::TABLE_BADGE_PROGRESSION;
     const TABLE_BADGE_CONFIG = 'badges_config';
 
-    const BADGE_DATA_FOLDER = 'badges';
+    const DATA_FOLDER = 'badges';
 
     public function __construct(?Course $course)
     {
@@ -49,7 +51,8 @@ class Badges extends Module
     // NOTE: versions should be updated on code changes
 
     const DEPENDENCIES = [
-        ["id" => Awards::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD]
+        ["id" => Awards::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD],
+        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
     ];
     // NOTE: dependencies should be updated on code changes
 
@@ -66,14 +69,10 @@ class Badges extends Module
     public function init()
     {
         $this->initDatabase();
+        $this->createDataFolder();
 
         // Init config
         Core::database()->insert(self::TABLE_BADGE_CONFIG, ["course" => $this->course->getId()]);
-
-        // Create folder in course_data
-        $folder = $this->course->getDataFolder() . "/" . self::BADGE_DATA_FOLDER;
-        if (!file_exists($folder)) mkdir($folder);
-        else Utils::deleteDirectory($folder, false);
     }
 
     /**
@@ -82,10 +81,7 @@ class Badges extends Module
     public function disable()
     {
         $this->cleanDatabase();
-
-        // Remove folder in course_data
-        $folder = $this->course->getDataFolder() . "/" . self::BADGE_DATA_FOLDER;
-        Utils::deleteDirectory($folder);
+        $this->removeDataFolder();
     }
 
     protected function deleteEntries()
@@ -206,13 +202,13 @@ class Badges extends Module
 
                     $badge = Badge::addBadge($courseId, $name, $item["description"], $item["isExtra"] ?? false,
                         $item["isBragging"] ?? false, $item["isCount"] ?? false, $item["isPost"] ?? false,
-                        $item["isPoint"] ?? false, $item["isActive"] ?? false, $levels);
+                        $item["isPoint"] ?? false, $levels);
 
                     if ($action == Action::DUPLICATE)
                         Utils::copyDirectory(Badge::getBadgeByName($courseId, $item["name"])->getDataFolder() . "/", $badge->getDataFolder() . "/");
 
                 } else {
-                    $badge = new Badge($item["id"]);
+                    $badge = Badge::getBadgeById($item["id"]);
                     $badge->editBadge($item["name"], $item["description"], $item["isExtra"] ?? false,
                         $item["isBragging"] ?? false, $item["isCount"] ?? false, $item["isPost"] ?? false,
                         $item["isPoint"] ?? false, $item["isActive"] ?? false, $levels);
@@ -260,14 +256,83 @@ class Badges extends Module
      */
     private function updateMaxExtraCredit(int $max)
     {
-        $generalMax = (new XPLevels($this->course))->getMaxExtraCredit();
-        if ($max > $generalMax)
-            throw new Exception("Badges max. extra credit cannot be bigger than " . $generalMax . " (general max. extra credit).");
+        if ($this->course->getModuleById(XPLevels::ID)->isEnabled()) {
+            $generalMax = (new XPLevels($this->course))->getMaxExtraCredit();
+            if ($max > $generalMax)
+                throw new Exception("Badges max. extra credit cannot be bigger than " . $generalMax . " (general max. extra credit).");
+        }
+
         Core::database()->update(self::TABLE_BADGE_CONFIG, ["maxExtraCredit" => $max], ["course" => $this->course->getId()]);
     }
 
 
     /*** ---------- Badges ---------- ***/
 
-    // NOTE: use Badge model to access badge methods
+    /**
+     * Gets users who have earned a given badge up to a
+     * specific level.
+     *
+     * @param int $badgeId
+     * @param int $level
+     * @return array
+     */
+    public function getUsersWithBadge(int $badgeId, int $level): array
+    {
+        $courseId = $this->getCourse()->getId();
+        $usersWithBadgeIds = array_map(function ($userId) { return intval($userId); },
+            array_column(array_filter(Core::database()->selectMultiple(Awards::TABLE_AWARD,
+            ["course" => $courseId, "type" => AwardType::BADGE, "moduleInstance" => $badgeId],
+            "user, count(moduleInstance) as level", null, [], [], "user"
+        ), function ($user) use ($level) { return intval($user["level"]) >= $level; }), "user"));
+
+        $users = [];
+        foreach ($usersWithBadgeIds as $userId) {
+            $users[] = (new User($userId))->getData();
+        }
+        return $users;
+    }
+
+    /**
+     * Gets badges earned by a given user.
+     *
+     * @param int $userId
+     * @param bool $isExtra
+     * @param bool $isBragging
+     * @param bool $isCount
+     * @param bool $isPost
+     * @param bool $isPoint
+     * @return array
+     */
+    public function getUserBadges(int $userId, bool $isExtra, bool $isBragging, bool $isCount, bool $isPost, bool $isPoint): array
+    {
+        // TODO (only actives)
+    }
+
+    /**
+     * Gets user progression on a given badge.
+     *
+     * @param int $userId
+     * @param int $badgeId
+     * @return array
+     */
+    public function getUserBadgeProgression(int $userId, int $badgeId): array
+    {
+        // TODO
+    }
+
+    /**
+     * Gets level earned by a given user on a specific badge.
+     *
+     * @param int $userId
+     * @param int $badgeId
+     * @return int
+     */
+    public function getUserBadgeLevel(int $userId, int $badgeId): int
+    {
+        $courseId = $this->getCourse()->getId();
+        return intval(Core::database()->select(Awards::TABLE_AWARD,
+            ["user" => $userId, "course" => $courseId, "type" => AwardType::BADGE, "moduleInstance" => $badgeId],
+        "count(*)")
+        );
+    }
 }

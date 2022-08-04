@@ -107,7 +107,7 @@ class UserController
      *                              "isActive"=true,
      *                              "username"="ist12345",
      *                              "auth_service"="fenix",
-     *                              "image"="{API_URL}/user_data/1/profile.png"
+     *                              "image"="{API_URL}/{USER_DATA_FOLDER}/1/profile.png"
      *                         }
      *                     }
      *                 )

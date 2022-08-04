@@ -170,6 +170,8 @@ export class UsersComponent implements OnInit {
         this.isNewUserMethodModal = false;
         this.isUserModalOpen = false;
         this.clearObject(this.newCourseUser);
+        this.selectedUserRole = null;
+        this.selectedUsers = [];
         this.loadingAction = false;
       }) )
       .subscribe(
@@ -220,6 +222,8 @@ export class UsersComponent implements OnInit {
         this.isNewUserMethodModal = false;
         this.isUserModalOpen = false;
         this.clearObject(this.newCourseUser);
+        this.selectedUserRole = null;
+        this.selectedUsers = [];
         this.loadingAction = false;
       }) )
       .subscribe(

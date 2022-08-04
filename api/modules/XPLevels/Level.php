@@ -285,7 +285,7 @@ class Level
      */
     public static function updateUsersLevel(int $courseId)
     {
-        $course = new Course($courseId);
+        $course = Course::getCourseById($courseId);
         $xpModule = new XPLevels($course);
         $students = $course->getStudents();
         foreach ($students as $student) {

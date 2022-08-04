@@ -30,6 +30,18 @@ class Utils
     }
 
     /**
+     * Gets directory name from its path.
+     *
+     * @param string $path
+     * @return string
+     */
+    public static function getDirectoryName(string $path): string
+    {
+        $parts = explode("/", $path);
+        return end($parts);
+    }
+
+    /**
      * Gets contents of a directory.
      * Ignores items that start with '.' or '..'.
      *
@@ -74,10 +86,10 @@ class Utils
      * Options to only delete contents and for exceptions that
      * should not be deleted.
      *
-     * @example deleteDirectory("course_data") --> deletes contents and directory 'course_data'
-     * @example deleteDirectory("course_data", false) --> deletes only contents of directory 'course_data'
-     * @example deleteDirectory("course_data", false, ["defaultData", "keep.txt"]) --> deletes only contents of directory
-     *          'course_data', but keeps directory 'defaultData' and file 'keep.txt' and their parent directories
+     * @example deleteDirectory("dir") --> deletes contents and directory 'dir'
+     * @example deleteDirectory("dir", false) --> deletes only contents of directory 'dir'
+     * @example deleteDirectory("dir", false, ["defaultData", "keep.txt"]) --> deletes only contents of directory
+     *          'dir', but keeps directory 'defaultData' and file 'keep.txt' and their parent directories
      *
      * @param string $dir
      * @param bool $deleteSelf

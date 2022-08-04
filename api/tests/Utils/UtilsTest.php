@@ -211,6 +211,18 @@ class UtilsTest extends TestCase
     }
 
 
+    // Getting directory name
+
+    /**
+     * @test
+     */
+    public function getDirectoryName()
+    {
+        $path = ROOT_PATH . "dir/dir1/dir11";
+        $this->assertEquals("dir11", Utils::getDirectoryName($path));
+    }
+
+
     // Getting directory contents
 
     /**

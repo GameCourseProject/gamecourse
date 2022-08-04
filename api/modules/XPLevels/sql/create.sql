@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS xp_config(
     course                      int unsigned PRIMARY KEY,
-    maxExtraCredit              int NOT NULL DEFAULT 0,
+    maxExtraCredit              int unsigned NOT NULL DEFAULT 0,
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );

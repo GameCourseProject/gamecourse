@@ -2094,4 +2094,30 @@ class CourseTest extends TestCase
         $this->assertIsArray($courseUsers);
         $this->assertCount(2, $courseUsers);
     }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function transformURL()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $courseDataFolder = $course->getDataFolder(false);
+
+        // absolute --> relative
+        $this->assertEquals("file.txt", Course::transformURL(API_URL . "/" . $courseDataFolder . "/file.txt", "relative", $course->getId()));
+        $this->assertEquals("file.txt", Course::transformURL("file.txt", "relative", $course->getId()));
+        $this->assertEquals("dir/dir1/file.txt", Course::transformURL(API_URL . "/" . $courseDataFolder . "/dir/dir1/file.txt", "relative", $course->getId()));
+        $this->assertEquals("dir/dir1/file.txt", Course::transformURL("dir/dir1/file.txt", "relative", $course->getId()));
+        $this->assertEquals("https://www.google.com", Course::transformURL("https://www.google.com", "relative", $course->getId()));
+
+        // relative --> absolute
+        $this->assertEquals(API_URL . "/" . $courseDataFolder . "/file.txt", Course::transformURL("file.txt", "absolute", $course->getId()));
+        $this->assertEquals(API_URL . "/" . $courseDataFolder . "/file.txt", Course::transformURL(API_URL . "/" . $courseDataFolder . "/file.txt", "absolute", $course->getId()));
+        $this->assertEquals(API_URL . "/" . $courseDataFolder . "/dir/dir1/file.txt", Course::transformURL("dir/dir1/file.txt", "absolute", $course->getId()));
+        $this->assertEquals(API_URL . "/" . $courseDataFolder . "/dir/dir1/file.txt", Course::transformURL(API_URL . "/" . $courseDataFolder . "/dir/dir1/file.txt", "absolute", $course->getId()));
+        $this->assertEquals("https://www.google.com", Course::transformURL("https://www.google.com", "absolute", $course->getId()));
+    }
 }

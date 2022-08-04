@@ -47,9 +47,7 @@ abstract class Module
 
     public function getIcon(): string
     {
-        $parts = explode("/", MODULES_FOLDER);
-        $modulesFolder = end($parts);
-        return API_URL . "/" . $modulesFolder . "/" . $this->id. "/icon.svg";
+        return API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . $this->id. "/icon.svg";
     }
 
     public function getType(): string
@@ -94,10 +92,7 @@ abstract class Module
         $resources = [];
         foreach ($this::RESOURCES as $resource) {
             $path = MODULES_FOLDER . "/" . $this->id . "/" . $resource;
-
-            $parts = explode("/", MODULES_FOLDER);
-            $modulesFolder = end($parts);
-            $realPath = API_URL . "/" . $modulesFolder . "/" . $this->id . "/" . $resource;
+            $realPath = API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . $this->id . "/" . $resource;
 
             if (is_dir($path)) {
                 $contents = Utils::getDirectoryContents($path);
@@ -427,7 +422,6 @@ abstract class Module
         if ($mode !== null) $where["mode"] = $mode;
         $dependants = Core::database()->selectMultiple(self::TABLE_MODULE_DEPENDENCY, $where, $field, "id");
         if ($IDsOnly) return array_column($dependants, "id");
-
         foreach ($dependants as &$dependantInfo) {
             $dependantInfo = self::getExtraInfo($dependantInfo, $this->course);
             $dependantInfo = self:: parse($dependantInfo);
@@ -444,7 +438,7 @@ abstract class Module
     public function setDependencies(array $dependencies)
     {
         // Remove all module dependencies
-        Core::database()->delete(self::TABLE_MODULE_DEPENDENCY, ["module" => $this->getId()]);
+        Core::database()->delete(self::TABLE_MODULE_DEPENDENCY, ["module" => $this->id]);
 
         // Add new dependencies
         foreach ($dependencies as $dependency) {
@@ -462,7 +456,7 @@ abstract class Module
     {
         if (!$this->hasDependency($dependency["id"])) {
             Core::database()->insert(self::TABLE_MODULE_DEPENDENCY, [
-                "module" => $this->getId(),
+                "module" => $this->id,
                 "dependency" => $dependency["id"],
                 "minDependencyVersion" => $dependency["minVersion"],
                 "maxDependencyVersion" => $dependency["maxVersion"],
@@ -479,7 +473,7 @@ abstract class Module
      */
     public function removeDependency(string $dependencyId)
     {
-        Core::database()->delete(self::TABLE_MODULE_DEPENDENCY, ["module" => $this->getId(), "dependency" => $dependencyId]);
+        Core::database()->delete(self::TABLE_MODULE_DEPENDENCY, ["module" => $this->id, "dependency" => $dependencyId]);
     }
 
     /**
@@ -490,7 +484,7 @@ abstract class Module
      */
     public function hasDependency(string $dependencyId): bool
     {
-        return !empty(Core::database()->select(self::TABLE_MODULE_DEPENDENCY, ["module" => $this->getId(), "dependency" => $dependencyId]));
+        return !empty(Core::database()->select(self::TABLE_MODULE_DEPENDENCY, ["module" => $this->id, "dependency" => $dependencyId]));
     }
 
     /**
@@ -693,25 +687,79 @@ abstract class Module
      */
     public function getPersonalizedConfig(): ?array
     {
-        $parts = explode("/", MODULES_FOLDER);
-        $modulesFolder = end($parts);
-        $configFolder = $modulesFolder . "/" . $this->id . "/config/";
+        $configFolderAbs = MODULES_FOLDER . "/" . $this->id . "/config/";
+        $configFolderRel = Utils::getDirectoryName(MODULES_FOLDER) . "/" . $this->id . "/config/";
+        if (!file_exists($configFolderAbs)) return null;
 
-        if (!file_exists($configFolder)) return null;
-
-        $contents = Utils::getDirectoryContents(ROOT_PATH . $configFolder);
+        $contents = Utils::getDirectoryContents($configFolderAbs);
         if (count(array_filter($contents, function ($file) { return $file["extension"] == ".html"; })) > 1)
             throw new Exception("Can't have more than one HTML configuration file for module '" . $this->id . "'.");
 
         return [
-            "html" => file_get_contents(ROOT_PATH . $configFolder . "config.html"),
-            "styles" => array_map(function ($file) use ($configFolder) {
-                return API_URL . "/" . $configFolder . $file["name"];
+            "html" => file_get_contents($configFolderAbs . "config.html"),
+            "styles" => array_map(function ($file) use ($configFolderRel) {
+                return API_URL . "/" . $configFolderRel . $file["name"];
             }, array_values(array_filter($contents, function ($file) { return $file["extension"] == ".css"; }))),
-            "scripts" => array_map(function ($file) use ($configFolder) {
-                return API_URL . "/" . $configFolder . $file["name"];
+            "scripts" => array_map(function ($file) use ($configFolderRel) {
+                return API_URL . "/" . $configFolderRel . $file["name"];
             }, array_values(array_filter($contents, function ($file) { return $file["extension"] == ".js"; })))
         ];
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** -------------------- Module Data ------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets module data folder path.
+     * Option to retrieve full server path or the short version.
+     *
+     * @param bool $fullPath
+     * @return string
+     */
+    public function getDataFolder(bool $fullPath = true): string
+    {
+        if ($fullPath) return $this->getCourse()->getDataFolder($fullPath) . "/" . $this::DATA_FOLDER;
+        else return $this::DATA_FOLDER;
+    }
+
+    /**
+     * Gets module data folder contents.
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function getDataFolderContents(): array
+    {
+        return Utils::getDirectoryContents($this->getDataFolder());
+    }
+
+    /**
+     * Creates a data folder for a given module. If folder exists, it
+     * will delete its contents.
+     *
+     * @return string
+     * @throws Exception
+     */
+    public function createDataFolder(): string
+    {
+        $dataFolder = $this->getDataFolder();
+        if (file_exists($dataFolder)) self::removeDataFolder();
+        mkdir($dataFolder, 0777, true);
+        return $dataFolder;
+    }
+
+    /**
+     * Deletes a module's data folder.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function removeDataFolder()
+    {
+        $dataFolder = $this->getDataFolder();
+        if (file_exists($dataFolder)) Utils::deleteDirectory($dataFolder);
     }
 
 

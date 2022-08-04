@@ -1575,7 +1575,7 @@ class UserTest extends TestCase
     {
         $user = User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             101036, "Marcus Notø", "MEEC", false, true);
-        $this->assertEquals("user_data/1", $user->getDataFolder(false));
+        $this->assertEquals(USER_DATA_FOLDER . "/1", $user->getDataFolder(false));
     }
 
     /**

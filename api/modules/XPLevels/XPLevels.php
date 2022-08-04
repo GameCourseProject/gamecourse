@@ -125,10 +125,13 @@ class XPLevels extends Module
         ];
     }
 
+    /**
+     * @throws Exception
+     */
     public function saveGeneralInputs(array $inputs)
     {
         foreach ($inputs as $input) {
-            Core::database()->update(self::TABLE_XP_CONFIG, [$input["id"] => $input["value"]], ["course" => $this->course->getId()]);
+            if ($input["id"] == "maxExtraCredit") $this->updateMaxExtraCredit($input["value"]);
         }
     }
 
@@ -166,7 +169,7 @@ class XPLevels extends Module
         if ($listName == "Levels") {
             if ($action == Action::NEW) Level::addLevel($courseId, $item["minXP"], $item["description"]);
             elseif ($action == Action::EDIT) {
-                $level = new Level($item["id"]);
+                $level = Level::getLevelById($item["id"]);
                 $level->editLevel($item["minXP"], $item["description"]);
             } elseif ($action == Action::DELETE) Level::deleteLevel($item["id"]);
         }
@@ -197,6 +200,14 @@ class XPLevels extends Module
     public function getMaxExtraCredit(): int
     {
         return intval(Core::database()->select(self::TABLE_XP_CONFIG, ["course" => $this->course->getId()], "maxExtraCredit"));
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function updateMaxExtraCredit(int $max)
+    {
+        Core::database()->update(self::TABLE_XP_CONFIG, ["maxExtraCredit" => $max], ["course" => $this->course->getId()]);
     }
 
 
@@ -359,11 +370,6 @@ class XPLevels extends Module
     {
         return !empty(Core::database()->select(self::TABLE_XP, ["course" => $this->course->getId(), "user" => $userId]));
     }
-
-
-    /*** ---------- Levels ---------- ***/
-
-    // NOTE: use Level model to access level methods
 
 
     /*** ---- Grade Verifications ---- ***/
