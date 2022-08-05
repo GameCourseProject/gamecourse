@@ -324,6 +324,50 @@ SET FOREIGN_KEY_CHECKS=0;
 INSERT INTO autogame (course, periodicityNumber, periodicityTime) values (0, NULL, NULL);
 SET FOREIGN_KEY_CHECKS=1;
 
+CREATE TABLE rule_section(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course                      int unsigned NOT NULL,
+    name                        varchar(50) NOT NULL,
+    position                    int unsigned,
+
+    UNIQUE key(name, course),
+    UNIQUE key(position, course),
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+);
+
+CREATE TABLE rule_tag(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course                      int unsigned NOT NULL,
+    name                        varchar(50) NOT NULL,
+    color                       varchar(7) NOT NULL,
+
+    UNIQUE key(name, course),
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+);
+
+CREATE TABLE rule(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course                      int unsigned NOT NULL,
+    section                     int unsigned NOT NULL,
+    name                        varchar(100) NOT NULL,
+    description                 TEXT,
+    position                    int unsigned,
+
+    UNIQUE key(name, course),
+    UNIQUE key(name, section),
+    UNIQUE key(position, section),
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN key(section) REFERENCES rule_section(id) ON DELETE CASCADE
+);
+
+CREATE TABLE rule_tags(
+    rule                        int unsigned NOT NULL,
+    tag                         int unsigned NOT NULL,
+
+    FOREIGN key(rule) REFERENCES rule(id) ON DELETE CASCADE,
+    FOREIGN key(tag) REFERENCES rule_tag(id) ON DELETE CASCADE
+);
+
 CREATE TABLE participation(
     id 		                    int unsigned AUTO_INCREMENT PRIMARY KEY,
     user 	                    int unsigned NOT NULL,

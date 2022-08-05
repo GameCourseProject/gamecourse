@@ -11,7 +11,7 @@ use Utils\Utils;
  * This is the AutoGame model, which implements the necessary methods
  * to interact with the autogame in the MySQL database.
  */
-class AutoGame
+abstract class AutoGame
 {
     const TABLE_AUTOGAME = "autogame";
 
