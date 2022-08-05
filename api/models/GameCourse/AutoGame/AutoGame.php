@@ -24,30 +24,16 @@ abstract class AutoGame
      * Initializes AutoGame for a given course.
      *
      * @param int $courseId
-     * @param string|null $courseName
-     * @param string|null $dataFolder
      * @return void
+     * @throws Exception
      */
-    public static function initAutoGame(int $courseId, string $courseName = null, string $dataFolder = null)
+    public static function initAutoGame(int $courseId)
     {
-        if ($dataFolder === null)
-            $dataFolder = (new Course($courseId))->getDataFolder(true, $courseName);
-
         // Insert line in autogame table
         Core::database()->insert(self::TABLE_AUTOGAME, ["course" => $courseId]);
 
         // Setup rules system
-        $rulesFolder = $dataFolder . "/rules";
-        $functionsFolder = AUTOGAME_FOLDER . "/imported-functions/" . $courseId;
-        $functionsFileDefault = AUTOGAME_FOLDER . "/imported-functions/defaults.py";
-        $defaultFunctionsFile = "/defaults.py";
-        $metadataFile = AUTOGAME_FOLDER . "/config/config_" . $courseId . ".txt";
-
-        mkdir($rulesFolder, 0777, true);
-        mkdir($functionsFolder, 0777, true);
-
-        file_put_contents($functionsFolder . $defaultFunctionsFile, file_get_contents($functionsFileDefault));
-        file_put_contents($metadataFile, "");
+        RuleSystem::initRuleSystem($courseId);
 
         // Setup logging
         if (!file_exists(LOGS_FOLDER)) mkdir(LOGS_FOLDER, 0777, true);
@@ -81,8 +67,7 @@ abstract class AutoGame
     public static function deleteAutoGameInfo(int $courseId)
     {
         // Remove rules system info
-        Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions/" . $courseId);
-        unlink(AUTOGAME_FOLDER . "/config/config_" . $courseId . ".txt");
+        RuleSystem::deleteRuleSystemInfo($courseId);
 
         // Remove logging info
         unlink(LOGS_FOLDER . "/autogame_" . $courseId . ".txt");

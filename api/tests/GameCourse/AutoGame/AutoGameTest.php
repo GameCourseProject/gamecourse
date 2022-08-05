@@ -93,7 +93,7 @@ class AutoGameTest extends TestCase
         $this->assertEquals(10, $courseAutoGame["periodicityNumber"]);
         $this->assertEquals("Minutes", $courseAutoGame["periodicityTime"]);
 
-        $this->assertTrue(file_exists($dataFolder . "/rules"));
+        $this->assertTrue(file_exists(RuleSystem::getDataFolder($courseId)));
         $this->assertTrue(file_exists(AUTOGAME_FOLDER . "/imported-functions/" . $courseId));
         $this->assertEquals(file_get_contents(AUTOGAME_FOLDER . "/imported-functions/defaults.py"), file_get_contents(AUTOGAME_FOLDER . "/imported-functions/" . $courseId . "/defaults.py"));
         $this->assertTrue(file_exists(AUTOGAME_FOLDER . "/config/config_" . $courseId . ".txt"));

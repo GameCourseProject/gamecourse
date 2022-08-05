@@ -19,6 +19,47 @@ abstract class RuleSystem
 
 
     /*** ---------------------------------------------------- ***/
+    /*** ---------------------- General --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Initializes Rule System for a given course.
+     *
+     * @param int $courseId
+     * @return void
+     * @throws Exception
+     */
+    public static function initRuleSystem(int $courseId)
+    {
+        // Setup rules folder
+        self::createDataFolder($courseId);
+
+        // Setup autogame functions and config
+        $functionsFolder = AUTOGAME_FOLDER . "/imported-functions/" . $courseId;
+        $functionsFileDefault = AUTOGAME_FOLDER . "/imported-functions/defaults.py";
+        $defaultFunctionsFile = "/defaults.py";
+        $metadataFile = AUTOGAME_FOLDER . "/config/config_" . $courseId . ".txt";
+        mkdir($functionsFolder, 0777, true);
+        file_put_contents($functionsFolder . $defaultFunctionsFile, file_get_contents($functionsFileDefault));
+        file_put_contents($metadataFile, "");
+    }
+
+    /**
+     * Deletes Rule System information from a given course.
+     *
+     * @param int $courseId
+     * @return void
+     * @throws Exception
+     */
+    public static function deleteRuleSystemInfo(int $courseId)
+    {
+        self::removeDataFolder($courseId);
+        Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions/" . $courseId);
+        unlink(AUTOGAME_FOLDER . "/config/config_" . $courseId . ".txt");
+    }
+
+
+    /*** ---------------------------------------------------- ***/
     /*** --------------------- Sections --------------------- ***/
     /*** ---------------------------------------------------- ***/
 

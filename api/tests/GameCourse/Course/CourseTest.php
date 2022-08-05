@@ -3,6 +3,7 @@ namespace GameCourse\Course;
 
 use Exception;
 use GameCourse\AutoGame\AutoGame;
+use GameCourse\AutoGame\RuleSystem;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
@@ -1041,7 +1042,7 @@ class CourseTest extends TestCase
         $this->assertEquals(10, $autogame["periodicityNumber"]);
         $this->assertEquals("Minutes", $autogame["periodicityTime"]);
 
-        $this->assertTrue(file_exists($dataFolder . "/rules"));
+        $this->assertTrue(file_exists(RuleSystem::getDataFolder($course->getId())));
         $this->assertTrue(file_exists(AUTOGAME_FOLDER . "/imported-functions/" . $course->getId()));
         $this->assertEquals(file_get_contents(AUTOGAME_FOLDER . "/imported-functions/defaults.py"), file_get_contents(AUTOGAME_FOLDER . "/imported-functions/" . $course->getId() . "/defaults.py"));
         $this->assertTrue(file_exists(AUTOGAME_FOLDER . "/config/config_" . $course->getId() . ".txt"));

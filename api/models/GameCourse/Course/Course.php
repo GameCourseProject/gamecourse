@@ -3,6 +3,7 @@ namespace GameCourse\Course;
 
 use Exception;
 use GameCourse\AutoGame\AutoGame;
+use GameCourse\AutoGame\RuleSystem;
 use GameCourse\Core\Auth;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
@@ -345,7 +346,6 @@ class Course
             "isActive" => +$isActive,
             "isVisible" => +$isVisible
         ]);
-        $dataFolder = Course::createDataFolder($id, $name);
 
         // Set automations
         $course = new Course($id);
@@ -371,7 +371,7 @@ class Course
         }
 
         // Prepare AutoGame
-        AutoGame::initAutoGame($id, $name, $dataFolder);
+        AutoGame::initAutoGame($id);
         if ($isActive) AutoGame::setAutoGame($id, true);
 
         return $course;
@@ -399,7 +399,7 @@ class Course
 
         // Copy course data
         Utils::copyDirectory($courseToCopy->getDataFolder(true, $courseInfo["name"]) . "/",
-            $course->getDataFolder(true, $name) . "/", ["rules/data"]);
+            $course->getDataFolder(true, $name) . "/", [RuleSystem::DATA_FOLDER . "/data"]);
 
         // TODO: copy modules enabled and data
 
