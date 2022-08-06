@@ -234,7 +234,117 @@ abstract class RuleSystem
     /*** ----------------------- Tags ----------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    // TODO: follow same structure as sections
+    /**
+     * Gets a tag by its ID.
+     * Returns null if tag doesn't exist.
+     *
+     * @param int $id
+     * @return array|null
+     */
+    public static function getTagById(int $id): ?array
+    {
+        $tag = Core::database()->select(self::TABLE_RULE_TAG, ["id" => $id]);
+        if (!empty($tag)) return $tag;
+        else return null;
+    }
+
+    /**
+     * Gets a tag by its name.
+     * Returns null if tag doesn't exist.
+     *
+     * @param int $courseId
+     * @param string $name
+     * @return array|null
+     */
+    public static function getTagByName(int $courseId, string $name): ?array
+    {
+        $tag = Core::database()->select(self::TABLE_RULE_TAG, ["course" => $courseId, "name" => $name]);
+        if (!empty($tag)) return $tag;
+        else return null;
+    }
+
+    /**
+     * Gets tags in the rule system.
+     *
+     * @param int $courseId
+     * @return array
+     */
+    public static function getTags(int $courseId): array
+    {
+        $tags = Core::database()->selectMultiple(self::TABLE_RULE_TAG, ["course" => $courseId], "*", "name");
+        foreach ($tags as &$tag) { $tag = self::parseTag($tag); }
+        return $tags;
+    }
+
+    /**
+     * Adds a tag to the database.
+     * Returns the newly created tag.
+     *
+     * @param int $courseId
+     * @param string $name
+     * @param string $color
+     * @return array
+     * @throws Exception
+     */
+    public static function addTag(int $courseId, string $name, string $color): array
+    {
+        self::validateTag($name, $color);
+        $tag = [
+            "course" => $courseId,
+            "name" => $name,
+            "color" => $color
+        ];
+        $id = Core::database()->insert(self::TABLE_RULE_TAG, $tag);
+        $tag["id"] = $id;
+        return $tag;
+    }
+
+    /**
+     * Edits an existing tag in the database.
+     * Returns the edited tag.
+     *
+     * @param int $id
+     * @param string $name
+     * @param string $color
+     * @return array
+     * @throws Exception
+     */
+    public static function editTag(int $id, string $name, string $color): array
+    {
+        self::validateTag($name, $color);
+        $tag = self::getTagById($id);
+
+        // Update name
+        $oldName = $tag["name"];
+        if ($name != $oldName) {
+            Core::database()->update(self::TABLE_RULE_TAG, ["name" => $name], ["id" => $id]);
+            // TODO: update tag name on all rules
+            $tag["name"] = $name;
+        }
+
+        // Update color
+        $oldColor = $tag["color"];
+        if ($color != $oldColor) {
+            Core::database()->update(self::TABLE_RULE_TAG, ["color" => $color], ["id" => $id]);
+            $tag["color"] = $color;
+        }
+
+        return $tag;
+    }
+
+    /**
+     * Deletes a tag from the database.
+     *
+     * @param int $id
+     * @return void
+     * @throws Exception
+     */
+    public static function deleteTag(int $id)
+    {
+        $tag = self::getTagById($id);
+        Core::database()->delete(self::TABLE_RULE_TAG, ["id" => $id]);
+        // TODO: remove tag from all rules
+    }
 
 
     /*** ---------------------------------------------------- ***/
@@ -302,7 +412,7 @@ abstract class RuleSystem
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Validates rule section parameters.
+     * Validates section parameters.
      *
      * @param $name
      * @return void
@@ -321,31 +431,62 @@ abstract class RuleSystem
             throw new Exception("Rule section name is too long: maximum of 50 characters.");
     }
 
+    /**
+     * Validates tag parameters.
+     *
+     * @param $name
+     * @param $color
+     * @return void
+     * @throws Exception
+     */
+    private static function validateTag($name, $color)
+    {
+        if (!is_string($name) || empty($name))
+            throw new Exception("Tag name can't be null neither empty.");
+
+        preg_match("/[^\w()\s-]/u", $name, $matches);
+        if (count($matches) != 0)
+            throw new Exception("Tag name '" . $name . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-'");
+
+        if (iconv_strlen($name) > 50)
+            throw new Exception("Tag name is too long: maximum of 50 characters.");
+
+        preg_match("/^#[\w\d]{6}$/", $color, $matches);
+        if (!is_string($color) || empty($color) || count($matches) == 0)
+            throw new Exception("Tag color needs to be in HEX format.");
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Utils ---------------------- ***/
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Parses a rule section coming from the database to appropriate types.
+     * Parses a section coming from the database to appropriate types.
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $section
-     * @param $field
-     * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|null
      */
-    private static function parseSection(array $section = null, $field = null, string $fieldName = null)
+    private static function parseSection(array $section): ?array
     {
-        if ($section) {
-            if (isset($section["id"])) $section["id"] = intval($section["id"]);
-            if (isset($section["course"])) $section["course"] = intval($section["course"]);
-            if (isset($section["position"])) $section["position"] = intval($section["position"]);
-            return $section;
+        if (isset($section["id"])) $section["id"] = intval($section["id"]);
+        if (isset($section["course"])) $section["course"] = intval($section["course"]);
+        if (isset($section["position"])) $section["position"] = intval($section["position"]);
+        return $section;
+    }
 
-        } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "position") return intval($field);
-            return $field;
-        }
+    /**
+     * Parses a tag coming from the database to appropriate types.
+     * Option to pass a specific field to parse instead.
+     *
+     * @param array|null $tag
+     * @return array|null
+     */
+    private static function parseTag(array $tag): ?array
+    {
+        if (isset($tag["id"])) $tag["id"] = intval($tag["id"]);
+        if (isset($tag["course"])) $tag["course"] = intval($tag["course"]);
+        return $tag;
     }
 }
