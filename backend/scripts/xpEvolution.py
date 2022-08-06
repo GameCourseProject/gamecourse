@@ -83,9 +83,9 @@ def export():
     columns, evolution = fetch_data()
 
     if len (sys.argv) == 2 :
-        file_name = "all_xp_evolution.csv"
+        file_name = "all_xp_evolution_course" + sys.argv[1] +".csv"
     elif (len(sys.argv)) == 3:
-        file_name = "xp_evolution_" + sys.argv[2] + ".csv"
+        file_name = "xp_evolution_course" + sys.argv[1] + "_"+ sys.argv[2] + ".csv"
     else:
         file_name = ''
         print("Incorrect number of arguments given.")

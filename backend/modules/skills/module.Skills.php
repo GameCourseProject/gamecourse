@@ -1532,18 +1532,35 @@ class Skills extends Module
         if ($oldName != $skill["name"])
             $this->editSkillRuleName($courseId, $oldName, $skill["name"]);
 
-//        if ($oldSkillData["dependencies"] != $skill["dependencies"]) { TODO
-//            $dependencyList = [];
-//            if ($skill["dependencies"] != "") {
-//                $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
-//                foreach ($pairDep as $dep) {
-//                    $dependencies = explode("+", str_replace(" + ", "+", $dep));
-//                    $dependencyList[] = $dependencies;
-//                }
-//            }
-//            $hasWildcard = strpos($skill["dependencies"], "Wildcard") !== false;
-//            $this->editSkillRuleDependencies($courseId, $dependencyList, $hasWildcard);
-//        }
+        //if ($oldSkillData["dependencies"] != $skill["dependencies"]) {
+        $dependencyList = [];
+        if ($skill["dependencies"] != "") {
+            $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
+            foreach ($pairDep as $dep) {
+                $dependencies = explode("+", str_replace(" + ", "+", $dep));
+                $dependency = [];
+                foreach ($dependencies as $d) {
+                    $isTier = false;
+                    $normalSkillId = Core::$systemDB->select(self::TABLE, ["name" => trim($d)], "id");
+                    if (empty($normalSkillId)) {
+                        $skillTierId = Core::$systemDB->select(self::TABLE_TIERS, ["tier" => trim($d)], "id");
+                        if (!empty($skillTierId)) {
+                            $isTier = true;
+                        } else {
+                            echo "The skill " . $d . " does not exist";
+                        }
+                    }
+                    $dependencySkill = array('name' => $d, 'isTier' => $isTier);
+                    array_push($dependency, $dependencySkill);
+                }
+                array_push($dependencyList, $dependency);
+            }
+            $skill['dependencies'] = trim($skill['dependencies']);
+        }
+        
+        $hasWildcard = strpos($skill["dependencies"], "Wildcard") !== false;
+        $this->editSkillRuleDependencies($courseId, $skill["name"], $dependencyList, $hasWildcard);
+        //}
     }
 
     public function deleteSkill(int $skillId, int $courseId)
@@ -1947,12 +1964,12 @@ class Skills extends Module
         $rs->changeRuleNameInFile($filename, $oldName, $newName);
     }
 
-    public function editSkillRuleDependencies(int $courseId, string $skillName, array $dependencies, bool $hasWildcard)
+    public function editSkillRuleDependencies(int $courseId, string $skillName, array $newDependencies, bool $hasWildcard)
     {
         // TODO: edit rule based on changes; only change the necessary
         $rs = new RuleSystem(Course::getCourse($courseId));
         $filename = $rs->getFilename(self::ID);
-        $rs->changeSkillDependencies($filename, $skillName, $dependencies, $hasWildcard);
+        $rs->changeSkillDependencies($filename, $skillName, $newDependencies, $hasWildcard);
 
     }
 

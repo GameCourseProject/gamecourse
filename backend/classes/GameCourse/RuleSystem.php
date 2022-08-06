@@ -67,6 +67,11 @@ class RuleSystem
         file_put_contents($this->metadatadir, $varstxt);
     }
 
+    // ------------- AUXILIARS -------------
+    function startsWith( $haystack, $needle ) {
+        $length = strlen( $needle );
+        return substr( $haystack, 0, $length ) === $needle;
+    }
 
     // -------------- GETTERS --------------
 
@@ -557,7 +562,7 @@ class RuleSystem
         return $edited;
     }
 
-    public function changeSkillDependencies($ruleFile, $ruleName, $dependencies, $hasWildcard){
+    public function changeSkillDependencies($ruleFile, $ruleName, $newDependencies, $hasWildcard){
         if ($this->ruleFileExists($ruleFile)) {
             $txt = file_get_contents($this->rulesdir . $ruleFile);
 
@@ -566,41 +571,128 @@ class RuleSystem
 
             $sectionRules = $this->splitRules($txt);
 
-            $editedRule = $this->editRuleDependencies($rule, $dependencies);
+            $noDependenciesRule = $this->dealWithOldDependencies($rule);
 
-            $sectionRules[intval($position)] = $editedRule;
+            // $editedRule = $this->editRuleDependencies($noDependenciesRule, $newDependencies, $hasWildcard);
+
+            $sectionRules[intval($position)] = $noDependenciesRule;
 
             $content = $this->joinRules($sectionRules);
             $file = file_put_contents($this->rulesdir . $ruleFile, $content);
         }
     }
 
-    public function editRuleDependencies($rule, $newDependencies){
+    public function editRuleDependencies($rule, $newDependencies, $hasWildcard){
 
-        /* Need: #dependencies ( = #combo in rule)    -- count from dependency table
-         * get dependcies id to fectch id of skills in skill_dependency -> fetch name from skill via id retrieved from
-         * skill_dependency
-         * creat combo 1 = rule_unlocked(<NAME_SKILL>, target)
-         * find combo1 = rule_unlocked
-         * str_replace(combo1, newcombo1, $rule)
-         *
-         */
+        if (sizeof($newDependencies) == 0){ // dependencies eliminated
+            $rule = str_replace("<new-skill-dependencies>","" ,$rule);
+        }
+        else{
+            if ($hasWildcard){
+                $ruletxt = explode("<new-skill-dependencies>", $rule);
+                $linesDependencies = "";
+                $conditiontxt = array();
+                $comboNr = 1;
+                foreach ($newDependencies as $dependency) {
+                    $deptxt = "combo" . $comboNr . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
+                    $linesDependencies .= $deptxt;
+                    array_push($conditiontxt, "combo" . $comboNr);
+                    $comboNr += 1;
+                }
+                $linesDependencies = trim($linesDependencies, "\t\n");
+                $lineCombo = implode(" or ", $conditiontxt);
+                $linesDependencies .= "\n\t\t";
+                $linesDependencies .= $lineCombo;
+                array_splice($ruletxt, 1, 0, $linesDependencies);
+                $rule = implode("", $ruletxt);
+            }
+            else{
 
-        //  "wildcard =" exits in rule ?  count from there to use wildcard
-        // replace with ''
-        // skill_based so aparece em skills com wildcard p dar unlock
-        //  otherwise, replace combo lines  
+                $template = "\t\t" . "wildcard = GC.skillTrees.wildcardAvailable(\"<skill-name>\", \"<tier-name>\", target)" . "\n\t\t" ."<new-skill-dependencies>" . "\n\t\t" . "skill_based = <skill-based>" . "\n\t\t" . "use_wildcard = False if skill_based else True";
+                $rule = str_replace("<new-skill-dependencies>", $template, $rule);
+
+                $wildcard = "Wildcard";
+                $ruletxt = explode("<new-skill-dependencies>", $rule);
+                $linesDependencies = "";
+                $skillBasedCombos = array();
+                $conditiontxt = array();
+                $comboNr = 1;
+                foreach ($newDependencies as $dependency) {
+                    if ($dependency[0]['name'] === $wildcard || $dependency[1]['name'] === $wildcard) { // has wildcard(s)
+                        $deptxt = "combo" . $comboNr . " = " .
+                            ($dependency[0]['name'] === $wildcard ? "wildcard" : "rule_unlocked(\"" . $dependency[0]['name'] . "\", target)") . " and " .
+                            ($dependency[1]['name'] === $wildcard ? "wildcard\n\t\t" : "rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t");
+
+                    } else { // no wildcard(s)
+                        $deptxt = "combo" . $comboNr . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
+                        array_push($skillBasedCombos, "combo" . $comboNr);
+                    }
+                    $linesDependencies .= $deptxt;
+                    array_push($conditiontxt, "combo" . $comboNr);
+                    $comboNr += 1;
+                }
+                $linesDependencies = trim($linesDependencies, "\t\n");
+                $lineCombo = implode(" or ", $conditiontxt);
+                $linesDependencies .= "\n\t\t";
+                $linesDependencies .= $lineCombo;
+                array_splice($ruletxt, 1, 0, $linesDependencies);
+                $txt = implode("", $ruletxt);
+
+                // Write skill_based
+                if (count($skillBasedCombos) > 0) {
+                    $skillBased = $skillBasedCombos[0];
+                    foreach ($skillBasedCombos as $index => $combo) {
+                        if ($index == 0) continue;
+                        $skillBased .= " or " . $combo;
+                    }
+
+                } else $skillBased = "False";
+                $rule = str_replace("<skill-based>", $skillBased, $txt);
+            }
+        }
         
-        //if (strpos($newDependencies, "Wildcard") !== false)
-
-
-
-
-
         return $rule;
     }
 
+    public function dealWithOldDependencies($rule){
 
+        # Check if rule already contains history of changes made
+        #    if yes, delete them.
+        if (strpos($rule, "#CHANGED") !== false){
+            $lines = explode("\n", $rule);
+
+            foreach ($lines  as $key => $line){
+                $line = trim($line);
+                if($this->startsWith($line, '#')){
+                    unset($lines[$key]);
+                }
+            }
+            $rule = implode("\n", $lines);
+        }
+
+        $lines = explode("\n", $rule);
+        $count =  0;
+        foreach ($lines as $line){
+            $count = $count  + 1;
+            $line = trim($line);
+
+            if ($this->startsWith($line, "wildcard")){
+                $line = "\t\t#CHANGED:" . "\n\t\t" . "# " . $line;
+            }
+            else if ($this->startsWith($line, "combo") or $this->startsWith($line, "skill_based") or $this->startsWith($line, "use_wildcard") ){
+                $line = "# " . $line;
+            }
+            else if ($this->startsWith($line, "logs")){
+                $line = "<new-skill-dependencies>" . "\n" . $line ;
+            }
+            
+        }
+
+        $newRule = implode("\n", $lines);
+        str_replace("<count>", $count, $newRule);
+        return $newRule;
+
+    }
 
     public function findRuleLine($ruleFile, $ruleName){
 
