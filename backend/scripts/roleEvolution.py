@@ -65,7 +65,7 @@ def fetch_data ():
             line = target_role_evolution[i]
             date_index = header.index(line[1].decode())
             lst[0] = line[0]
-            lst[date_index] = line[2]
+            lst[date_index] = line[3]
 
         if lst[1] is None:
             lst[1] = 0

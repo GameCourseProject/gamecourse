@@ -18,3 +18,6 @@ create table user_xp(
     foreign key(user) references course_user(id) on delete cascade,
     foreign key(level) references level(id)
 );
+
+
+

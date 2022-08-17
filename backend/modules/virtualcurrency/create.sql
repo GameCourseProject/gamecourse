@@ -20,6 +20,15 @@ create table user_wallet(
     foreign key(user) references game_course_user(id) on delete cascade
 );
 
+create table teams_wallet(
+    course      int unsigned not null,
+    teamId 	    int unsigned,
+    tokens          int not null,
+    primary key(user, course),
+    foreign key(course) references course(id) on delete cascade,
+    foreign key(teamId) references teams(teamId) on delete cascade
+);
+
 create table remove_tokens_participation(
     course          int unsigned not null,
     user            int unsigned not null,

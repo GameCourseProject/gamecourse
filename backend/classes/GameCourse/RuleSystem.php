@@ -562,7 +562,7 @@ class RuleSystem
         return $edited;
     }
 
-    public function changeSkillDependencies($ruleFile, $ruleName, $newDependencies, $hasWildcard){
+    public function changeSkillDependencies($ruleFile, $ruleName, $newDependencies, $hasWildcard, $hadWildcard){
         if ($this->ruleFileExists($ruleFile)) {
             $txt = file_get_contents($this->rulesdir . $ruleFile);
 
@@ -571,24 +571,27 @@ class RuleSystem
 
             $sectionRules = $this->splitRules($txt);
 
-            $noDependenciesRule = $this->dealWithOldDependencies($rule);
+            $noDependenciesRule = $this->dealWithOldDependencies($rule, $hasWildcard, $hadWildcard);
 
-            // $editedRule = $this->editRuleDependencies($noDependenciesRule, $newDependencies, $hasWildcard);
+            $editedRule = $this->editRuleDependencies($ruleName, $noDependenciesRule, $newDependencies, $hasWildcard);
 
-            $sectionRules[intval($position)] = $noDependenciesRule;
+            $sectionRules[intval($position)] = $editedRule;
 
             $content = $this->joinRules($sectionRules);
             $file = file_put_contents($this->rulesdir . $ruleFile, $content);
         }
     }
 
-    public function editRuleDependencies($rule, $newDependencies, $hasWildcard){
-
+    public function editRuleDependencies($ruleName, $rule, $newDependencies, $hasWildcard){
+        
         if (sizeof($newDependencies) == 0){ // dependencies eliminated
             $rule = str_replace("<new-skill-dependencies>","" ,$rule);
         }
         else{
-            if ($hasWildcard){
+            if (!($hasWildcard)){
+                $awardFunctionTemplate = "\t\taward_skill(target, \"". $ruleName . "\", rating, logs)";
+                $rule = str_replace("<award-function>", $awardFunctionTemplate, $rule);
+
                 $ruletxt = explode("<new-skill-dependencies>", $rule);
                 $linesDependencies = "";
                 $conditiontxt = array();
@@ -607,8 +610,10 @@ class RuleSystem
                 $rule = implode("", $ruletxt);
             }
             else{
+                $awardFunctionTemplate = "\t\taward_skill(target, \"". $ruleName . "\", rating, logs, use_wildcard, \"Wildcard\")";
+                $rule = str_replace("<award-function>", $awardFunctionTemplate, $rule);
 
-                $template = "\t\t" . "wildcard = GC.skillTrees.wildcardAvailable(\"<skill-name>\", \"<tier-name>\", target)" . "\n\t\t" ."<new-skill-dependencies>" . "\n\t\t" . "skill_based = <skill-based>" . "\n\t\t" . "use_wildcard = False if skill_based else True";
+                $template = "wildcard = GC.skillTrees.wildcardAvailable(\"<skill-name>\", \"<tier-name>\", target)" . "\n\t\t" ."<new-skill-dependencies>" . "\n\t\t" . "skill_based = <skill-based>" . "\n\t\t" . "use_wildcard = False if skill_based else True";
                 $rule = str_replace("<new-skill-dependencies>", $template, $rule);
 
                 $wildcard = "Wildcard";
@@ -654,42 +659,50 @@ class RuleSystem
         return $rule;
     }
 
-    public function dealWithOldDependencies($rule){
+    public function dealWithOldDependencies($rule, $hasWildcard, $hadWildcard){
 
         # Check if rule already contains history of changes made
         #    if yes, delete them.
-        if (strpos($rule, "#CHANGED") !== false){
+        if (strpos($rule, "#CHANGED")){
             $lines = explode("\n", $rule);
 
-            foreach ($lines  as $key => $line){
-                $line = trim($line);
-                if($this->startsWith($line, '#')){
-                    unset($lines[$key]);
+            for ($x = 0; $x < count($lines); $x++){
+                $trimmedLine = trim($lines[$x]);
+                if($this->startsWith($trimmedLine, '#')) {
+                    if ($this->startsWith($trimmedLine, "combo") or $this->startsWith($trimmedLine, "skill_based") or $this->startsWith($trimmedLine, "use_wildcard") or $this->startsWith($trimmedLine, "award_skill") or $this->startsWith($trimmedLine, "CHANGED")) {
+                        $lines[$x] = '';
+                    }
                 }
             }
             $rule = implode("\n", $lines);
         }
 
         $lines = explode("\n", $rule);
-        $count =  0;
-        foreach ($lines as $line){
-            $count = $count  + 1;
-            $line = trim($line);
-
-            if ($this->startsWith($line, "wildcard")){
-                $line = "\t\t#CHANGED:" . "\n\t\t" . "# " . $line;
+        for ($x = 0; $x < count($lines); $x++){
+            $trimmedLine = trim($lines[$x]);
+            if ($this->startsWith($trimmedLine, "wildcard")){
+                $lines[$x] = "\t\t#CHANGED:" . "\n" . "# " . $lines[$x];
             }
-            else if ($this->startsWith($line, "combo") or $this->startsWith($line, "skill_based") or $this->startsWith($line, "use_wildcard") ){
-                $line = "# " . $line;
+            else if($this->startsWith($trimmedLine, "award_skill") and ( ($hadWildcard and !$hasWildcard) or (!$hadWildcard and $hasWildcard))){
+                $lines[$x] = "\t\t#CHANGED:" . "\n" . "# " . $lines[$x] . "\n<award-function>";
             }
-            else if ($this->startsWith($line, "logs")){
-                $line = "<new-skill-dependencies>" . "\n" . $line ;
+            else if ($this->startsWith($trimmedLine, "combo1") ){
+                if ($hasWildcard){
+                    $lines[$x] = "\t\t# " . $trimmedLine;
+                }
+                else {
+                    $lines[$x] = "\t\t#CHANGED:" . "\n" . "# " . $lines[$x];
+                }
+            }
+            else if ($this->startsWith($trimmedLine, "combo") or $this->startsWith($trimmedLine, "skill_based") or $this->startsWith($trimmedLine, "use_wildcard") ){
+                $lines[$x] = "\t\t# " . $trimmedLine;
+            }
+            else if ($this->startsWith($trimmedLine, "logs")){
+                $lines[$x] = "<new-skill-dependencies>" . "\n" . $lines[$x] ;
             }
             
         }
-
         $newRule = implode("\n", $lines);
-        str_replace("<count>", $count, $newRule);
         return $newRule;
 
     }
@@ -724,7 +737,6 @@ class RuleSystem
         }
     }
 
-
     public function changeDuplicateRuleStatus($rule, $active) {
         $rows = explode("\n", $rule);
         if ((substr($rows[1], 0, 8) === "INACTIVE")) {
@@ -748,7 +760,6 @@ class RuleSystem
             }
         } 
     }
-
 
     public function changeRuleStatus($ruleFile, $ruleName, $active) {
         $rule = $this->getRuleContent($ruleFile, $ruleName);
@@ -864,10 +875,6 @@ class RuleSystem
             $file = file_put_contents($this->rulesdir . $rule["rulefile"], $content);
         }
     }
-
-
-
-
 
 
     // Rule Actions
