@@ -39,7 +39,7 @@ class Category
         return $this->getData("parent");
     }
 
-    public function getPosition(): int
+    public function getPosition(): ?int
     {
         return $this->getData("position");
     }

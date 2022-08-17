@@ -270,6 +270,25 @@ class Utils
     }
 
     /**
+     * Checks whether a given color is in a valid format.
+     *
+     * @param string|null $color
+     * @param string $format
+     * @return bool
+     * @throws Exception
+     */
+    public static function isValidColor(?string $color, string $format): bool
+    {
+        if ($format == "HEX") $pattern = "/^#[\dabcdef]{6}$/";
+        else if ($format == "RGB") $pattern = "/^RGB\(\b(?:1\d{2}|2[0-4]\d|[1-9]?\d|25[0-5])\b,\s*\b(?:1\d{2}|2[0-4]\d|[1-9]?\d|25[0-5])\b,\s*\b(?:1\d{2}|2[0-4]\d|[1-9]?\d|25[0-5])\b\)$/i";
+        else throw new Exception("Color format '" . $format . "' not found.");
+
+        preg_match($pattern, $color, $matches);
+        if (!is_string($color) || empty($color) || count($matches) == 0) return false;
+        return true;
+    }
+
+    /**
      * Checks whether a given version is in a valid format.
      *
      * @param string|null $version

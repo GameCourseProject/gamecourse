@@ -33,7 +33,7 @@ class CoreTemplate extends Template
         return Category::getCategoryById($this->getData("category"));
     }
 
-    public function getPosition(): int
+    public function getPosition(): ?int
     {
         return $this->getData("position");
     }

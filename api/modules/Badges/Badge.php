@@ -735,7 +735,7 @@ class Badge
         if (is_null($description)) return;
 
         if (iconv_strlen($description) > 100)
-            throw new Exception("Badge level descruption is too long: maximum of 100 characters.");
+            throw new Exception("Badge level description is too long: maximum of 100 characters.");
     }
 
 

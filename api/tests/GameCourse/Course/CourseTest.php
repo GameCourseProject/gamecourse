@@ -77,6 +77,7 @@ class CourseTest extends TestCase
             "parenthesis" => ["PCM (Copy)"],
             "hyphen" => ["PCM-21"],
             "underscore" => ["PCM_21"],
+            "ampersand" => ["PC & M"],
             "length limit" => ["Multimedia Content Production Multimedia Content Production Multimedia Content Production Multimedia"]
         ];
     }
@@ -84,17 +85,37 @@ class CourseTest extends TestCase
     public function setCourseNameFailureProvider(): array
     {
         return [
-            "null name" => [null],
+            "null" => [null],
             "empty" => [""],
-            "special characthers" => ["*./\\!"],
-            "too long" => ["Multimedia Content Production Multimedia Content Production Multimedia Content Production Multimedia "]
+            "whitespace" => [" "],
+            "star" => ["*"],
+            "dot" => ["."],
+            "apostrophe" => ["'"],
+            "double quote" => ["\""],
+            "hashtag" => ["#"],
+            "at" => ["@"],
+            "percent" => ["%"],
+            "slash" => ["/"],
+            "backslash" => ["\\"],
+            "comma" => [","],
+            "colon" => [":"],
+            "semicolon" => [";"],
+            "less than" => ["<"],
+            "greater than" => [">"],
+            "equal" => ["="],
+            "plus" => ["+"],
+            "exclamation" => ["!"],
+            "question" => ["?"],
+            "brackets" => ["[]"],
+            "braces" => ["{}"],
+            "too long" => ["Multimedia Content Production Multimedia Content Production Multimedia Content Production Multimediaa"]
         ];
     }
 
     public function setShortSuccessProvider(): array
     {
         return [
-            "null short" => [null],
+            "null" => [null],
             "MEIC" => ["MEIC"],
             "MEIC-A" => ["MEIC-A"],
             "length limit" => ["MEIC-A MEIC-A MEIC-A"]
@@ -107,7 +128,8 @@ class CourseTest extends TestCase
             "only numbers" => ["123"],
             "not a string" => [123],
             "empty" => [""],
-            "too long" => ["MEIC-A MEIC-A MEIC-A "]
+            "whitespace" => [" "],
+            "too long" => ["MEIC-A MEIC-A MEIC-AA"]
         ];
     }
 

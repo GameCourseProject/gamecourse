@@ -69,7 +69,7 @@ class Page
         return $this->getData("visibleUntil");
     }
 
-    public function getPosition(): int
+    public function getPosition(): ?int
     {
         return $this->getData("position");
     }

@@ -128,7 +128,7 @@ class Course
      */
     public function setName(string $name)
     {
-        $this->setData(["name" => $name]);
+        $this->setData(["name" => trim($name)]);
     }
 
     /**
@@ -136,7 +136,7 @@ class Course
      */
     public function setShort(?string $short)
     {
-        $this->setData(["short" => $short]);
+        $this->setData(["short" => !is_null($short) ? trim($short) : $short]);
     }
 
     /**
@@ -335,6 +335,7 @@ class Course
         if (!$loggedUser->isAdmin()) throw new Exception("Only admins can create new courses.");
 
         // Insert in database & create data folder
+        self::trim($name, $short);
         self::validateCourse($name, $short, $color, $year, $startDate, $endDate, $isActive, $isVisible);
         $id = Core::database()->insert(self::TABLE_COURSE, [
             "name" => $name,
@@ -433,6 +434,7 @@ class Course
     public function editCourse(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
                                ?string $endDate, bool $isActive, bool $isVisible): Course
     {
+        self::trim($name, $short);
         self::validateCourse($name, $short, $color, $year, $startDate, $endDate, $isActive, $isVisible);
         $this->setData([
             "name" => $name,
@@ -1323,7 +1325,7 @@ class Course
         if (!is_string($name) || empty($name))
             throw new Exception("Course name can't be null neither empty.");
 
-        preg_match("/[^\w()\s-]/u", $name, $matches);
+        preg_match("/[^\w()\&\s-]/u", $name, $matches);
         if (count($matches) != 0)
             throw new Exception("Course name '" . $name . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-'");
 
@@ -1359,8 +1361,7 @@ class Course
     {
         if (is_null($color)) return;
 
-        preg_match("/^#[\w\d]{6}$/", $color, $matches);
-        if (!is_string($color) || empty($color) || count($matches) == 0)
+        if (!Utils::isValidColor($color, "HEX"))
             throw new Exception("Course color needs to be in HEX format.");
     }
 
@@ -1417,6 +1418,19 @@ class Course
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Utils ---------------------- ***/
     /*** ---------------------------------------------------- ***/
+
+    /**
+     * Trims course parameters' whitespace at start/end.
+     *
+     * @param string $name
+     * @param string|null $short
+     * @return void
+     */
+    public static function trim(string &$name, ?string &$short)
+    {
+        $name = trim($name);
+        if (!is_null($short)) $short = trim($short);
+    }
 
     /**
      * Parses a course coming from the database to appropriate types.

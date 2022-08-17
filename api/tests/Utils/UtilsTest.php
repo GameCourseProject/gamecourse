@@ -64,6 +64,35 @@ class UtilsTest extends TestCase
         ];
     }
 
+    public function validColorProvider(): array
+    {
+        return [
+            "HEX: black" => ["#000000", "HEX"],
+            "HEX: white" => ["#111111", "HEX"],
+            "HEX: only digits" => ["#012345", "HEX"],
+            "HEX: only letters" => ["#abcdef", "HEX"],
+            "HEX: mixed" => ["#0a2c3e", "HEX"],
+            "RGB: black" => ["RGB(0, 0, 0)", "RGB"],
+            "RGB: white" => ["RGB(255, 255, 255)", "RGB"],
+            "RGB: upper case" => ["RGB(23, 45, 164)", "RGB"],
+            "RGB: lower case" => ["rgb(23, 45, 164)", "RGB"],
+            "RGB: no spacing" => ["rgb(23,45,164)", "RGB"]
+        ];
+    }
+
+    public function invalidColorProvider(): array
+    {
+        return [
+            "null" => [null, "HEX"],
+            "not a string" => [123, "HEX"],
+            "HEX: no #" => ["0a2c3e", "HEX"],
+            "HEX: letters out of range" => ["#ghijkl", "HEX"],
+            "HEX: too small" => ["#0a2", "HEX"],
+            "HEX: too big" => ["#0a2c3e4f", "HEX"],
+            "RGB: numbers out of range" => ["RGB(256, 300, 1000)", "RGB"]
+        ];
+    }
+
     public function validVersionProvider(): array
     {
         return [
@@ -909,6 +938,26 @@ class UtilsTest extends TestCase
     public function isValidDateInvalidDate(?string $date, string $format)
     {
         $this->assertFalse(Utils::isValidDate($date, $format));
+    }
+
+    /**
+     * @test
+     * @dataProvider validColorProvider
+     * @throws Exception
+     */
+    public function isValidColorValidColor(string $color, string $format)
+    {
+        $this->assertTrue(Utils::isValidColor($color, $format));
+    }
+
+    /**
+     * @test
+     * @dataProvider invalidColorProvider
+     * @throws Exception
+     */
+    public function isValidColorInvalidColor($color, string $format)
+    {
+        $this->assertFalse(Utils::isValidColor($color, $format));
     }
 
     /**

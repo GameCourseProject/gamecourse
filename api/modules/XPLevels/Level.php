@@ -110,6 +110,7 @@ class Level
             if ($previousMinXP === 0 && $newMinXP !== 0)
                 throw new Exception("Can't update minimum XP of Level 0.");
         }
+        if (key_exists("description", $fieldValues)) self::validateDescription($fieldValues["description"]);
 
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_LEVEL, $fieldValues, ["id" => $this->id]);
 
