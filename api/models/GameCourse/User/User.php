@@ -723,7 +723,7 @@ class User
      * @param string|null $major
      * @return void
      */
-    public static function trim(string &$name, string &$username, ?string &$email, ?string &$nickname, ?string &$major)
+    private static function trim(string &$name, string &$username, ?string &$email, ?string &$nickname, ?string &$major)
     {
         $name = trim($name);
         $username = trim($username);

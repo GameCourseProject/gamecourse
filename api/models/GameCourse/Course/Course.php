@@ -1329,7 +1329,7 @@ class Course
         if (!is_string($name) || empty(trim($name)))
             throw new Exception("Course name can't be null neither empty.");
 
-        preg_match("/[^\w()\&\s-]/u", $name, $matches);
+        preg_match("/[^\w()&\s-]/u", $name, $matches);
         if (count($matches) != 0)
             throw new Exception("Course name '" . $name . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-'");
 
@@ -1430,7 +1430,7 @@ class Course
      * @param string|null $short
      * @return void
      */
-    public static function trim(string &$name, ?string &$short)
+    private static function trim(string &$name, ?string &$short)
     {
         $name = trim($name);
         if (!is_null($short)) $short = trim($short);

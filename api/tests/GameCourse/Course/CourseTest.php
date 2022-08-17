@@ -68,7 +68,7 @@ class CourseTest extends TestCase
     /*** ------------------ Data Providers ------------------ ***/
     /*** ---------------------------------------------------- ***/
 
-    public function setCourseNameSuccessProvider(): array
+    public function courseNameSuccessProvider(): array
     {
         return [
             "ASCII characters" => ["Multimedia Content Production"],
@@ -78,11 +78,12 @@ class CourseTest extends TestCase
             "hyphen" => ["PCM-21"],
             "underscore" => ["PCM_21"],
             "ampersand" => ["PC & M"],
+            "trimmed" => [" Multimedia Content Production Multimedia Content Production Multimedia Content Production Multimed "],
             "length limit" => ["Multimedia Content Production Multimedia Content Production Multimedia Content Production Multimedia"]
         ];
     }
 
-    public function setCourseNameFailureProvider(): array
+    public function courseNameFailureProvider(): array
     {
         return [
             "null" => [null],
@@ -112,127 +113,72 @@ class CourseTest extends TestCase
         ];
     }
 
-    public function setShortSuccessProvider(): array
+
+    public function courseShortSuccessProvider(): array
     {
         return [
             "null" => [null],
-            "MEIC" => ["MEIC"],
-            "MEIC-A" => ["MEIC-A"],
+            "letters" => ["MEIC"],
+            "letters & numbers" => ["MEIC22"],
+            "hyphen" => ["MEIC-A"],
+            "trimmed" => [" MEIC-A MEIC-A MEIC "],
             "length limit" => ["MEIC-A MEIC-A MEIC-A"]
         ];
     }
 
-    public function setShortFailureProvider(): array
+    public function courseShortFailureProvider(): array
     {
         return [
-            "only numbers" => ["123"],
-            "not a string" => [123],
             "empty" => [""],
             "whitespace" => [" "],
+            "only numbers" => ["123"],
+            "not a string" => [123],
             "too long" => ["MEIC-A MEIC-A MEIC-AA"]
         ];
     }
 
-    public function setColorSuccessProvider(): array
+
+    public function courseColorSuccessProvider(): array
     {
         return [
-            "HEX" => ["#ffffff"],
-            "null" => [null]
+            "null" => [null],
+            "HEX" => ["#ffffff"]
         ];
     }
 
-    public function setColorFailureProvider(): array
+    public function courseColorFailureProvider(): array
     {
         return [
+            "empty" => [""],
+            "whitespace" => [" "],
             "RGB" => ["rgb(255,255,255)"],
             "words" => ["white"],
             "only numbers" => ["123"],
-            "not a string" => [123],
-            "empty" => [""]
+            "not a string" => [123]
         ];
     }
 
-    public function setYearSuccessProvider(): array
+
+    public function courseYearSuccessProvider(): array
     {
         return [
             "valid format" => ["2021-2022"]
         ];
     }
 
-    public function setYearFailureProvider(): array
+    public function courseYearFailureProvider(): array
     {
         return [
             "null" => [null],
             "empty" => [""],
+            "whitespace" => [" "],
             "invalid format" => ["21-22"],
             "only one year" => ["2021"]
         ];
     }
 
-    public function setDataSuccessProvider(): array
-    {
-        return [
-            ["same data" => ["name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
-                "color" => "#ffffff", "startDate" => null, "endDate" => null, "landingPage" => null, "isActive" => true,
-                "isVisible" => false, "roleHierarchy" => json_encode([["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]]),
-                "theme" => null]],
-            ["different short" => ["name" => "Produção de Conteúdos Multimédia", "short" => "MCP", "year" => "2021-2022",
-                "color" => "#ffffff", "startDate" => null, "endDate" => null, "landingPage" => null, "isActive" => true,
-                "isVisible" => false, "roleHierarchy" => json_encode([["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]]),
-                "theme" => null]],
-            ["different year" => ["name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2022-2023",
-                "color" => "#ffffff", "startDate" => null, "endDate" => null, "landingPage" => null, "isActive" => true,
-                "isVisible" => false, "roleHierarchy" => json_encode([["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]]),
-                "theme" => null]],
-            ["different color" => ["name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
-                "color" => "#000000", "startDate" => null, "endDate" => null, "landingPage" => null, "isActive" => true,
-                "isVisible" => false, "roleHierarchy" => json_encode([["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]]),
-                "theme" => null]],
-            ["different start date" => ["name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
-                "color" => "#ffffff", "startDate" => "2022-04-20 12:00:00", "endDate" => null, "landingPage" => null, "isActive" => true,
-                "isVisible" => false, "roleHierarchy" => json_encode([["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]]),
-                "theme" => null]],
-            ["different end date" => ["name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
-                "color" => "#ffffff", "startDate" => null, "endDate" => "2022-04-20 12:00:00", "landingPage" => null, "isActive" => true,
-                "isVisible" => false, "roleHierarchy" => json_encode([["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]]),
-                "theme" => null]],
-            ["both start and end date" => ["name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
-                "color" => "#ffffff", "startDate" => "2022-04-19 12:00:00", "endDate" => "2022-04-20 12:00:00", "landingPage" => null, "isActive" => true,
-                "isVisible" => false, "roleHierarchy" => json_encode([["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]]),
-                "theme" => null]],
-            ["different theme" => ["name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
-                "color" => "#ffffff", "startDate" => null, "endDate" => null, "landingPage" => null, "isActive" => true,
-                "isVisible" => false, "roleHierarchy" => json_encode([["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]]),
-                "theme" => "dark"]],
-            ["different isAdmin" => ["name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
-                "color" => "#ffffff", "startDate" => null, "endDate" => null, "landingPage" => null, "isActive" => false,
-                "isVisible" => false, "roleHierarchy" => json_encode([["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]]),
-                "theme" => null]],
-            ["different isAdmin" => ["name" => "Produção de Conteúdos Multimédia", "short" => "PCM", "year" => "2021-2022",
-                "color" => "#ffffff", "startDate" => null, "endDate" => null, "landingPage" => null, "isActive" => true,
-                "isVisible" => true, "roleHierarchy" => json_encode([["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]]),
-                "theme" => null]],
-            ["all different" => ["name" => "Produção de Conteúdos Multimédia", "short" => "MCP", "year" => "2022-2023",
-                "color" => "#000000", "startDate" => "2022-04-20 12:00:00", "endDate" => "2022-04-20 12:00:01", "landingPage" => null, "isActive" => false,
-                "isVisible" => true, "roleHierarchy" => json_encode([["name" => "Teacher"],["name" => "Student"],["name" => "Watcher"]]),
-                "theme" => "dark"]]
-        ];
-    }
 
-    public function setDataFailureProvider(): array
-    {
-        return [
-            ["invalid name" => ["name" => "*!"]],
-            ["invalid short" => ["short" => ""]],
-            ["invalid color" => ["color" => "white"]],
-            ["invalid year" => ["color" => "20-21"]],
-            ["invalid start date" => ["startDate" => "2022-04-20"]],
-            ["invalid end date" => ["endDate" => "2022-04-20"]],
-            ["invalid start and end date" => ["startDate" => "2022-04-21", "endDate" => "2022-04-20"]]
-        ];
-    }
-
-    public function dateTimeSuccessProvider(): array
+    public function courseDateTimeSuccessProvider(): array
     {
         return [
             "null" => [null],
@@ -240,16 +186,18 @@ class CourseTest extends TestCase
         ];
     }
 
-    public function dateTimeFailureProvider(): array
+    public function courseDateTimeFailureProvider(): array
     {
         return [
+            "empty" => [""],
+            "whitespace" => [" "],
             "only date" => ["2022-04-20"],
-            "only time" => ["20:43:00"],
-            "empty" => [""]
+            "only time" => ["20:43:00"]
         ];
     }
 
-    public function addCourseSuccessProvider(): array
+
+    public function courseSuccessProvider(): array
     {
         return [
             "default" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, false],
@@ -265,7 +213,7 @@ class CourseTest extends TestCase
         ];
     }
 
-    public function addCourseFailureProvider(): array
+    public function courseFailureProvider(): array
     {
         return [
             "special chars in name" => ["Multimedia Content Production!", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, false],
@@ -283,7 +231,7 @@ class CourseTest extends TestCase
             "empty end date" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "", false, false],
             "invalid start and end date" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-04-01 00:00:00", "2022-03-01 00:00:00", false, false],
             "null isActive" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", null, false],
-            "null is Visible" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, null],
+            "null isVisible" => ["Multimedia Content Production", "MCP", "2021-2022", "#ffffff", "2022-03-01 00:00:00", "2022-05-01 00:00:00", false, null],
         ];
     }
 
@@ -489,7 +437,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider setCourseNameSuccessProvider
+     * @dataProvider courseNameSuccessProvider
      * @throws Exception
      */
     public function setCourseNameSuccess(string $name)
@@ -497,13 +445,13 @@ class CourseTest extends TestCase
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
         $course->setName($name);
-        $this->assertEquals($name, $course->getName());
-        $this->assertTrue(file_exists($course->getDataFolder(true, $name)));
+        $this->assertEquals(trim($name), $course->getName());
+        $this->assertTrue(file_exists($course->getDataFolder(true, trim($name))));
     }
 
     /**
      * @test
-     * @dataProvider setCourseNameFailureProvider
+     * @dataProvider courseNameFailureProvider
      * @throws Exception
      */
     public function setCourseNameFailure($name)
@@ -523,7 +471,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider setShortSuccessProvider
+     * @dataProvider courseShortSuccessProvider
      * @throws Exception
      */
     public function setShortSucess(?string $short)
@@ -531,12 +479,12 @@ class CourseTest extends TestCase
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
         $course->setShort($short);
-        $this->assertEquals($short, $course->getShort());
+        $this->assertEquals(trim($short), $course->getShort());
     }
 
     /**
      * @test
-     * @dataProvider setShortFailureProvider
+     * @dataProvider courseShortFailureProvider
      * @throws Exception
      */
     public function setShortFailure($short)
@@ -549,7 +497,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider setColorSuccessProvider
+     * @dataProvider courseColorSuccessProvider
      * @throws Exception
      */
     public function setColorSuccess(?string $color)
@@ -562,7 +510,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider setColorFailureProvider
+     * @dataProvider courseColorFailureProvider
      * @throws Exception
      */
     public function setColorFailure($color)
@@ -575,7 +523,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider setYearSuccessProvider
+     * @dataProvider courseYearSuccessProvider
      * @throws Exception
      */
     public function setYearSuccess(?string $year)
@@ -588,7 +536,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider setYearFailureProvider
+     * @dataProvider courseYearFailureProvider
      * @throws Exception
      */
     public function setYearFailure($year)
@@ -601,7 +549,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider dateTimeSuccessProvider
+     * @dataProvider courseDateTimeSuccessProvider
      * @throws Exception
      */
     public function setStartDateSuccess(?string $startDate)
@@ -614,7 +562,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider dateTimeFailureProvider
+     * @dataProvider courseDateTimeFailureProvider
      * @throws Exception
      */
     public function setStartDateFailure($startDate)
@@ -627,7 +575,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider dateTimeSuccessProvider
+     * @dataProvider courseDateTimeSuccessProvider
      * @throws Exception
      */
     public function setEndDateSuccess(?string $endDate)
@@ -640,7 +588,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider dateTimeFailureProvider
+     * @dataProvider courseDateTimeFailureProvider
      * @throws Exception
      */
     public function setEndDateFailure($endDate)
@@ -743,25 +691,35 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider setDataSuccessProvider
+     * @dataProvider courseSuccessProvider
      * @throws Exception
      */
-    public function setDataSuccess(array $fieldValues)
+    public function setDataSuccess(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
+                                   ?string $endDate, bool $isActive, bool $isVisible)
     {
+        $fieldValues = ["name" => $name, "short" => $short, "year" => $year, "color" => $color, "startDate" => $startDate,
+                        "endDate" => $endDate, "isActive" => $isActive, "isVisible" => $isVisible];
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
         $course->setData($fieldValues);
         $fieldValues["id"] = $course->getId();
         $fieldValues["roleHierarchy"] = $course->getRolesHierarchy();
-        $this->assertEquals($course->getData(), array_merge($fieldValues, ["id" => $course->getId()]));
+        $this->assertEquals($course->getData(), array_merge($fieldValues, ["id" => $course->getId(), "landingPage" => null, "theme" => null]));
     }
 
     /**
      * @test
-     * @dataProvider setDataFailureProvider
+     * @dataProvider courseFailureProvider
      */
-    public function setDataFailure(array $fieldValues)
+    public function setDataFailure($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible)
     {
+        if (is_null($isActive) || is_null($isVisible)) {
+            $this->assertTrue(true);
+            return;
+        }
+
+        $fieldValues = ["name" => $name, "short" => $short, "year" => $year, "color" => $color, "startDate" => $startDate,
+            "endDate" => $endDate, "isActive" => $isActive, "isVisible" => $isVisible];
         try {
             $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
                 null, null, true, false);
@@ -779,7 +737,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider setCourseNameSuccessProvider
+     * @dataProvider courseNameSuccessProvider
      * @throws Exception
      */
     public function setDataNameSuccess(string $name)
@@ -793,7 +751,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider setCourseNameFailureProvider
+     * @dataProvider courseNameFailureProvider
      * @throws Exception
      */
     public function setDataNameFailure($name)
@@ -1031,7 +989,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider addCourseSuccessProvider
+     * @dataProvider courseSuccessProvider
      * @throws Exception
      */
     public function addCourseSuccess(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
@@ -1041,14 +999,14 @@ class CourseTest extends TestCase
 
         // Check is added to database
         $courseDB = Core::database()->select(Course::TABLE_COURSE, ["id" => $course->getId()]);
-        $courseData = ["id" => strval($course->getId()), "name" => $name, "short" => $short, "year" => $year,
+        $courseData = ["id" => strval($course->getId()), "name" => trim($name), "short" => trim($short), "year" => $year,
             "color" => $color, "startDate" => $startDate, "endDate" => $endDate, "landingPage" => null, "isActive" => strval(+$isActive),
             "isVisible" => strval(+$isVisible), "roleHierarchy" => '[{"name":"Teacher"},{"name":"Student"},{"name":"Watcher"}]',
             "theme" => null];
         $this->assertEquals($courseData, $courseDB);
 
         // Check course data folder was created
-        $dataFolder = COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::strip($name, "_");
+        $dataFolder = COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::strip(trim($name), "_");
         $this->assertEquals($dataFolder, $course->getDataFolder());
         $this->assertTrue(file_exists($dataFolder));
 
@@ -1088,7 +1046,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider addCourseFailureProvider
+     * @dataProvider courseFailureProvider
      */
     public function addCourseFailure($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible)
     {
@@ -1128,7 +1086,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider addCourseSuccessProvider
+     * @dataProvider courseSuccessProvider
      * @throws Exception
      */
     public function editCourseSuccess(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
@@ -1154,7 +1112,7 @@ class CourseTest extends TestCase
 
     /**
      * @test
-     * @dataProvider addCourseFailureProvider
+     * @dataProvider courseFailureProvider
      * @throws Exception
      */
     public function editCourseFailure($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible)

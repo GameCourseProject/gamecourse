@@ -696,7 +696,7 @@ class Badge
         if (!is_string($name) || empty($name))
             throw new Exception("Badge name can't be null neither empty.");
 
-        preg_match("/[^\w()\&\s-]/u", $name, $matches);
+        preg_match("/[^\w()&\s-]/u", $name, $matches);
         if (count($matches) != 0)
             throw new Exception("Badge name '" . $name . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-'");
 
