@@ -127,7 +127,7 @@ class User
      */
     public function setName(string $name)
     {
-        $this->setData(["name" => $name]);
+        $this->setData(["name" => trim($name)]);
     }
 
     /**
@@ -135,7 +135,7 @@ class User
      */
     public function setEmail(?string $email)
     {
-        $this->setData(["email" => $email]);
+        $this->setData(["email" => !is_null($email) ? trim($email) : $email]);
     }
 
     /**
@@ -143,7 +143,7 @@ class User
      */
     public function setMajor(?string $major)
     {
-        $this->setData(["major" => $major]);
+        $this->setData(["major" => !is_null($major) ? trim($major) : $major]);
     }
 
     /**
@@ -151,7 +151,7 @@ class User
      */
     public function setNickname(?string $nickname)
     {
-        $this->setData(["nickname" => $nickname]);
+        $this->setData(["nickname" => !is_null($nickname) ? trim($nickname) : $nickname]);
     }
 
     /**
@@ -167,7 +167,7 @@ class User
      */
     public function setUsername(string $username)
     {
-        $this->setData(["username" => $username]);
+        $this->setData(["username" => trim($username)]);
     }
 
     /**
@@ -414,6 +414,7 @@ class User
     public static function addUser(string $name, string $username, string $authService, ?string $email, int $studentNumber,
                                    ?string $nickname, ?string $major, bool $isAdmin, bool $isActive): User
     {
+        self::trim($name, $username, $email, $nickname, $major);
         self::validateUser($name, $email, $authService, $isAdmin, $isActive);
         $id = Core::database()->insert(self::TABLE_USER, [
             "name" => $name,
@@ -452,6 +453,7 @@ class User
     public function editUser(string $name, string $username, string $authService, ?string $email, int $studentNumber,
                              ?string $nickname, ?string $major, bool $isAdmin, bool $isActive): User
     {
+        self::trim($name, $username, $email, $nickname, $major);
         self::validateUser($name, $email, $authService, $isAdmin, $isActive);
         $this->setData([
             "name" => $name,
@@ -704,6 +706,25 @@ class User
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Utils ---------------------- ***/
     /*** ---------------------------------------------------- ***/
+
+    /**
+     * Trims user parameters' whitespace at start/end.
+     *
+     * @param string $name
+     * @param string $username
+     * @param string|null $email
+     * @param string|null $nickname
+     * @param string|null $major
+     * @return void
+     */
+    public static function trim(string &$name, string &$username, ?string &$email, ?string &$nickname, ?string &$major)
+    {
+        $name = trim($name);
+        $username = trim($username);
+        if (!is_null($email)) $email = trim($email);
+        if (!is_null($nickname)) $nickname = trim($nickname);
+        if (!is_null($major)) $major = trim($major);
+    }
 
     /**
      * Parses a user coming from the database to appropriate types.

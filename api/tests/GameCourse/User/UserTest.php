@@ -65,7 +65,7 @@ class UserTest extends TestCase
             "hyphen" => ["John Smith-Doe"],
             "apostrophe" => ["John Smith'Doe"],
             "dot" => ["John S. Doe"],
-            "length limit" => ["John Smith Doe John Smith Doe John Smith Doe John Smith Doe "]
+            "length limit" => ["John Smith Doe John Smith Doe John Smith Doe John Smith Doee"]
         ];
     }
 
@@ -74,6 +74,7 @@ class UserTest extends TestCase
         return [
             "null" => [null],
             "empty" => [""],
+            "whitespace" => [" "],
             "not a string" => [123],
             "too long" => ["John Smith Doe John Smith Doe John Smith Doe John Smith Doe J"]
         ];
@@ -96,6 +97,7 @@ class UserTest extends TestCase
         return [
             "invalid e-mail" => ["johndoe@example.123"],
             "empty" => [""],
+            "whitespace" => [" "],
             "not a string" => [123],
             "too long" => ["somerandomsuperduperlongthelongestemail@somerandomcompany.com"]
         ];
