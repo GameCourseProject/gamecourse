@@ -95,6 +95,7 @@ class CoreComponent extends Component
      */
     public function setData(array $fieldValues)
     {
+        // Update data
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_CORE_COMPONENT, $fieldValues, ["viewRoot" => $this->viewRoot]);
     }
 
@@ -196,7 +197,8 @@ class CoreComponent extends Component
             return $component;
 
         } else {
-            if ($fieldName == "viewRoot" || $fieldName == "category" || $fieldName == "position") return intval($field);
+            if ($fieldName == "viewRoot" || $fieldName == "category" || $fieldName == "position")
+                return is_numeric($field) ? intval($field) : $field;
             return $field;
         }
     }

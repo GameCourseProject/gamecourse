@@ -238,23 +238,29 @@ class User
             unset($fieldValues["lastLogin"]);
         }
 
+        // Validate data
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
         if (key_exists("email", $fieldValues)) self::validateEmail($fieldValues["email"]);
         if (key_exists("isActive", $fieldValues) && !$fieldValues["isActive"]) {
             $loggedUser = Core::getLoggedUser();
             if ($loggedUser && $loggedUser->getId() == $this->id)
                 throw new Exception("You attempted to remove your access to the system. This was flagged as an error and had no effect.");
+        }
 
+        // Update data
+        if (count($authValues) != 0) Core::database()->update(Auth::TABLE_AUTH, $authValues, ["user" => $this->id]);
+        if (count($fieldValues) != 0) Core::database()->update(self::TABLE_USER, $fieldValues, ["id" => $this->id]);
+
+        // Additional actions
+        if (key_exists("isActive", $fieldValues) && !$fieldValues["isActive"]) {
+            // Disable user in their courses when disabling from system
             $userCourses = $this->getCourses();
             foreach ($userCourses as $userCourse) {
                 $course = Course::getCourseById($userCourse["id"]);
-                $userCourse = $course->getCourseUserById($this->id);
-                $userCourse->setActive(false);
+                $courseUser = $course->getCourseUserById($this->id);
+                $courseUser->setActive(false);
             }
         }
-
-        if (count($authValues) != 0) Core::database()->update(Auth::TABLE_AUTH, $authValues, ["user" => $this->id]);
-        if (count($fieldValues) != 0) Core::database()->update(self::TABLE_USER, $fieldValues, ["id" => $this->id]);
     }
 
 
@@ -745,7 +751,7 @@ class User
             return $user;
 
         } else {
-            if ($fieldName == "id" || $fieldName == "studentNumber") return intval($field);
+            if ($fieldName == "id" || $fieldName == "studentNumber") return is_numeric($field) ? intval($field) : $field;
             if ($fieldName == "isAdmin" || $fieldName == "isActive") return boolval($field);
             return $field;
         }

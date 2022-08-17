@@ -106,7 +106,10 @@ class CustomComponent extends Component
      */
     public function setData(array $fieldValues)
     {
+        // Validate data
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
+
+        // Update data
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_CUSTOM_COMPONENT, $fieldValues, ["viewRoot" => $this->viewRoot]);
     }
 
@@ -288,7 +291,8 @@ class CustomComponent extends Component
             return $component;
 
         } else {
-            if ($fieldName == "viewRoot" || $fieldName == "course") return intval($field);
+            if ($fieldName == "viewRoot" || $fieldName == "course")
+                return is_numeric($field) ? intval($field) : $field;
             return $field;
         }
     }

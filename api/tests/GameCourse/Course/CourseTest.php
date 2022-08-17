@@ -498,7 +498,7 @@ class CourseTest extends TestCase
             null, null, true, false);
         $course->setName($name);
         $this->assertEquals($name, $course->getName());
-        $this->assertTrue(file_exists(COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::strip($name, "_")));
+        $this->assertTrue(file_exists($course->getDataFolder(true, $name)));
     }
 
     /**
@@ -516,6 +516,8 @@ class CourseTest extends TestCase
 
         } catch (Exception|TypeError $error) {
             $this->assertEquals("Produção de Conteúdos Multimédia", $course->getName());
+            $this->assertTrue(file_exists($course->getDataFolder(true, "Produção de Conteúdos Multimédia")));
+            $this->assertEquals(1, Utils::getDirectorySize(COURSE_DATA_FOLDER));
         }
     }
 
@@ -784,7 +786,7 @@ class CourseTest extends TestCase
     {
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
-        $course->setName($name);
+        $course->setData(["name" => $name]);
         $this->assertEquals($name, $course->getName());
         $this->assertTrue(file_exists(COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::strip($name, "_")));
     }
@@ -799,11 +801,13 @@ class CourseTest extends TestCase
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
         try {
-            $course->setName($name);
+            $course->setData(["name" => $name]);
             $this->fail("Exception should have been thrown on 'setCourseNameFailure'");
 
         } catch (Exception|TypeError $error) {
             $this->assertEquals("Produção de Conteúdos Multimédia", $course->getName());
+            $this->assertTrue(file_exists($course->getDataFolder(true, "Produção de Conteúdos Multimédia")));
+            $this->assertEquals(1, Utils::getDirectorySize(COURSE_DATA_FOLDER));
         }
     }
 
@@ -817,8 +821,15 @@ class CourseTest extends TestCase
             null, null, true, false);
         $course = Course::addCourse("Multimedia Content Production", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
-        $this->expectException(PDOException::class);
-        $course->setData(["name" => "Produção de Conteúdos Multimédia"]);
+        try {
+            $course->setData(["name" => "Produção de Conteúdos Multimédia"]);
+            $this->fail("Exception should have been thrown on 'setDataDuplicateNameAndYear'");
+
+        } catch (PDOException $e) {
+            $this->assertEquals("Multimedia Content Production", $course->getName());
+            $this->assertTrue(file_exists($course->getDataFolder(true, "Multimedia Content Production")));
+            $this->assertFalse(file_exists($course->getDataFolder(true, "Produção de Conteúdos Multimédia")));
+        }
     }
 
 
@@ -1030,10 +1041,10 @@ class CourseTest extends TestCase
 
         // Check is added to database
         $courseDB = Core::database()->select(Course::TABLE_COURSE, ["id" => $course->getId()]);
-        $courseData = array("id" => strval($course->getId()), "name" => $name, "short" => $short, "year" => $year,
+        $courseData = ["id" => strval($course->getId()), "name" => $name, "short" => $short, "year" => $year,
             "color" => $color, "startDate" => $startDate, "endDate" => $endDate, "landingPage" => null, "isActive" => strval(+$isActive),
             "isVisible" => strval(+$isVisible), "roleHierarchy" => '[{"name":"Teacher"},{"name":"Student"},{"name":"Watcher"}]',
-            "theme" => null);
+            "theme" => null];
         $this->assertEquals($courseData, $courseDB);
 
         // Check course data folder was created
@@ -1120,7 +1131,7 @@ class CourseTest extends TestCase
      * @dataProvider addCourseSuccessProvider
      * @throws Exception
      */
-    public function editCourse(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
+    public function editCourseSuccess(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
                                ?string $endDate, bool $isActive, bool $isVisible)
     {
         $course = Course::addCourse("Computação Móvel e Ubíqua", "CMU", "2020-2021", "#000000",

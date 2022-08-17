@@ -184,17 +184,28 @@ class Page
      */
     public function setData(array $fieldValues)
     {
+        // Validate data
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
         if (key_exists("visibleFrom", $fieldValues)) {
             self::validateDateTime($fieldValues["visibleFrom"]);
             $visibleUntil = key_exists("visibleUntil", $fieldValues) ? $fieldValues["visibleUntil"] : $this->getVisibleUntil();
             if ($visibleUntil) self::validateVisibleFromAndUntilDates($fieldValues["visibleFrom"], $visibleUntil);
-            $this->setAutomation("AutoEnabling", $fieldValues["visibleFrom"]);
         }
         if (key_exists("visibleUntil", $fieldValues)) {
             self::validateDateTime($fieldValues["visibleUntil"]);
             $visibleFrom = key_exists("visibleFrom", $fieldValues) ? $fieldValues["visibleFrom"] : $this->getVisibleFrom();
             if ($visibleFrom) self::validateVisibleFromAndUntilDates($visibleFrom, $fieldValues["visibleUntil"]);
+        }
+
+        // Update data
+        if (count($fieldValues) != 0)
+            Core::database()->update(self::TABLE_PAGE, $fieldValues, ["id" => $this->id]);
+
+        // Additional actions
+        if (key_exists("visibleFrom", $fieldValues)) {
+            $this->setAutomation("AutoEnabling", $fieldValues["visibleFrom"]);
+        }
+        if (key_exists("visibleUntil", $fieldValues)) {
             $this->setAutomation("AutoDisabling", $fieldValues["visibleUntil"]);
         }
     }
@@ -604,7 +615,8 @@ class Page
             return $page;
 
         } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "viewRoot" || $fieldName == "position") return intval($field);
+            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "viewRoot" || $fieldName == "position")
+                return is_numeric($field) ? intval($field) : $field;
             if ($fieldName == "isVisible") return boolval($field);
             return $field;
         }

@@ -94,6 +94,7 @@ class GlobalComponent extends Component
      */
     public function setData(array $fieldValues)
     {
+        // Update data
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_GLOBAL_COMPONENT, $fieldValues, ["viewRoot" => $this->viewRoot]);
     }
 
@@ -190,7 +191,8 @@ class GlobalComponent extends Component
             return $component;
 
         } else {
-            if ($fieldName == "viewRoot" || $fieldName == "category" || $fieldName == "sharedBy") return intval($field);
+            if ($fieldName == "viewRoot" || $fieldName == "category" || $fieldName == "sharedBy")
+                return is_numeric($field) ? intval($field) : $field;
             return $field;
         }
     }

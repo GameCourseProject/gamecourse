@@ -144,9 +144,11 @@ class CourseUser extends User
      */
     public function setData(array $fieldValues)
     {
+        // Validate data
         if (key_exists("lastActivity", $fieldValues)) self::validateDateTime($fieldValues["lastActivity"]);
         if (key_exists("isActive", $fieldValues)) self::validateState($this->id, $fieldValues["isActive"]);
 
+        // Update data
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_COURSE_USER, $fieldValues, ["id" => $this->id, "course" => $this->course->getId()]);
     }

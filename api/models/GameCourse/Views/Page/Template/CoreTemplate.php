@@ -95,6 +95,7 @@ class CoreTemplate extends Template
      */
     public function setData(array $fieldValues)
     {
+        // Update data
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_CORE_TEMPLATE, $fieldValues, ["viewRoot" => $this->viewRoot]);
     }
 
@@ -195,7 +196,8 @@ class CoreTemplate extends Template
             return $template;
 
         } else {
-            if ($fieldName == "viewRoot" || $fieldName == "category" || $fieldName == "position") return intval($field);
+            if ($fieldName == "viewRoot" || $fieldName == "category" || $fieldName == "position")
+                return is_numeric($field) ? intval($field) : $field;
             return $field;
         }
     }

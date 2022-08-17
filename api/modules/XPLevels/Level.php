@@ -419,7 +419,8 @@ class Level
             return $level;
 
         } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "minXP") return intval($field);
+            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "minXP")
+                return is_numeric($field) ? intval($field) : $field;
             return $field;
         }
     }

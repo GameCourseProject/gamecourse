@@ -105,6 +105,7 @@ class Category
             unset($fieldValues["position"]);
         }
 
+        // Update data
         if (count($orderValues) != 0) Core::database()->update(self::TABLE_CATEGORY_ORDER, $orderValues, ["child" => $this->id]);
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_CATEGORY, $fieldValues, ["id" => $this->id]);
     }
@@ -213,7 +214,8 @@ class Category
             return $category;
 
         } else {
-            if ($fieldName == "id" || $fieldName == "parent" || $fieldName == "child" || $fieldName == "position") return intval($field);
+            if ($fieldName == "id" || $fieldName == "parent" || $fieldName == "child" || $fieldName == "position")
+                return is_numeric($field) ? intval($field) : $field;
             return $field;
         }
     }

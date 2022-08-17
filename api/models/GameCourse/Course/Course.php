@@ -224,14 +224,11 @@ class Course
      */
     public function setData(array $fieldValues)
     {
+        // Validate data
         if (key_exists("name", $fieldValues)) {
             $newName = $fieldValues["name"];
             self::validateName($newName);
-
-            // Update course data folder if name has changed
             $oldName = $this->getName();
-            if (strcmp($oldName, $newName) !== 0)
-                rename($this->getDataFolder(true, $oldName), $this->getDataFolder(true, $newName));
         }
         if (key_exists("short", $fieldValues)) self::validateShort($fieldValues["short"]);
         if (key_exists("color", $fieldValues)) self::validateColor($fieldValues["color"]);
@@ -240,18 +237,30 @@ class Course
             self::validateDateTime($fieldValues["startDate"]);
             $endDate = key_exists("endDate", $fieldValues) ? $fieldValues["endDate"] : $this->getEndDate();
             if ($endDate) self::validateStartAndEndDates($fieldValues["startDate"], $endDate);
-            $this->setAutomation("AutoEnabling", $fieldValues["startDate"]);
         }
         if (key_exists("endDate", $fieldValues)) {
             self::validateDateTime($fieldValues["endDate"]);
             $startDate = key_exists("startDate", $fieldValues) ? $fieldValues["startDate"] : $this->getStartDate();
             if ($startDate) self::validateStartAndEndDates($startDate, $fieldValues["endDate"]);
-            $this->setAutomation("AutoDisabling", $fieldValues["endDate"]);
         }
         if (key_exists("landingPage", $fieldValues)) self::validateLandingPage($this->id, $fieldValues["landingPage"]);
 
+        // Update data
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_COURSE, $fieldValues, ["id" => $this->id]);
+
+        // Additional actions
+        if (key_exists("name", $fieldValues)) {
+            // Update course data folder if name has changed
+            if (strcmp($oldName, $newName) !== 0)
+                rename($this->getDataFolder(true, $oldName), $this->getDataFolder(true, $newName));
+        }
+        if (key_exists("startDate", $fieldValues)) {
+            $this->setAutomation("AutoEnabling", $fieldValues["startDate"]);
+        }
+        if (key_exists("endDate", $fieldValues)) {
+            $this->setAutomation("AutoDisabling", $fieldValues["endDate"]);
+        }
     }
 
 
@@ -446,11 +455,6 @@ class Course
             "isActive" => +$isActive,
             "isVisible" => +$isVisible
         ]);
-
-        // Update automations
-        $this->setAutomation("AutoEnabling", $startDate);
-        $this->setAutomation("AutoDisabling", $endDate);
-
         return $this;
     }
 
@@ -924,7 +928,7 @@ class Course
 
     /**
      * Gets a readable copy of all course's records of users, like
-     * awards given to students, their grade, etc, so teachers can
+     * awards given to students, their grade, etc., so teachers can
      * keep hard copies for themselves.
      */
     // TODO: getDataRecords
@@ -1322,7 +1326,7 @@ class Course
      */
     private static function validateName($name)
     {
-        if (!is_string($name) || empty($name))
+        if (!is_string($name) || empty(trim($name)))
             throw new Exception("Course name can't be null neither empty.");
 
         preg_match("/[^\w()\&\s-]/u", $name, $matches);
@@ -1452,7 +1456,7 @@ class Course
             return $course;
 
         } else {
-            if ($fieldName == "id" || ($fieldName == "landingPage" && $field)) return intval($field);
+            if ($fieldName == "id" || $fieldName == "landingPage") return is_numeric($field) ? intval($field) : $field;
             if ($fieldName == "isActive" || $fieldName == "isVisible") return boolval($field);
             if ($fieldName == "roleHierarchy") return json_decode($field, true);
             return $field;

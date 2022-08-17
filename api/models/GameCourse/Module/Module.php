@@ -231,6 +231,7 @@ abstract class Module
      */
     public function setData(array $fieldValues)
     {
+        // Validate data
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
         if (key_exists("description", $fieldValues)) self::validateDescription($fieldValues["description"]);
         if (key_exists("type", $fieldValues)) self::validateType($fieldValues["type"]);
@@ -240,6 +241,7 @@ abstract class Module
         if (key_exists("minAPIVersion", $fieldValues)) self::validateVersion($fieldValues["minAPIVersion"]);
         if (key_exists("maxAPIVersion", $fieldValues)) self::validateVersion($fieldValues["maxAPIVersion"]);
 
+        // Update data
         if (count($fieldValues) != 0) Core::database()->update(self::TABLE_MODULE, $fieldValues, ["id" => $this->id]);
     }
 

@@ -771,7 +771,8 @@ class Badge
             return $badge;
 
         } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "nrLevels") return intval($field);
+            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "nrLevels")
+                return is_numeric($field) ? intval($field) : $field;
             if ($fieldName == "isExtra" || $fieldName == "isBragging" || $fieldName == "isCount" || $fieldName == "isPost"
                 || $fieldName == "isPoint" || $fieldName == "isActive") return boolval($field);
             return $field;
