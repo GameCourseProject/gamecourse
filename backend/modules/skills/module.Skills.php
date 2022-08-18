@@ -1444,7 +1444,7 @@ class Skills extends Module
                     $dependencySkill = array('name' => $d, 'isTier' => $isTier);
                     array_push($dependency, $dependencySkill);
                 }
-                array_push($dependencyList, $dependency);
+                array_push($dependencyListBefore, $dependency);
             }
             $skill['dependencies'] = trim($skill['dependencies']);
         }

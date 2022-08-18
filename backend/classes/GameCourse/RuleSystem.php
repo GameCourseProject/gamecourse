@@ -597,7 +597,7 @@ class RuleSystem
                 $conditiontxt = array();
                 $comboNr = 1;
                 foreach ($newDependencies as $dependency) {
-                    $deptxt = "combo" . $comboNr . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
+                    $deptxt = "\t\tcombo" . $comboNr . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
                     $linesDependencies .= $deptxt;
                     array_push($conditiontxt, "combo" . $comboNr);
                     $comboNr += 1;
@@ -624,12 +624,12 @@ class RuleSystem
                 $comboNr = 1;
                 foreach ($newDependencies as $dependency) {
                     if ($dependency[0]['name'] === $wildcard || $dependency[1]['name'] === $wildcard) { // has wildcard(s)
-                        $deptxt = "combo" . $comboNr . " = " .
+                        $deptxt = "\t\tcombo" . $comboNr . " = " .
                             ($dependency[0]['name'] === $wildcard ? "wildcard" : "rule_unlocked(\"" . $dependency[0]['name'] . "\", target)") . " and " .
                             ($dependency[1]['name'] === $wildcard ? "wildcard\n\t\t" : "rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t");
 
                     } else { // no wildcard(s)
-                        $deptxt = "combo" . $comboNr . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
+                        $deptxt = "\t\tcombo" . $comboNr . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
                         array_push($skillBasedCombos, "combo" . $comboNr);
                     }
                     $linesDependencies .= $deptxt;
@@ -663,15 +663,12 @@ class RuleSystem
 
         # Check if rule already contains history of changes made
         #    if yes, delete them.
-        if (strpos($rule, "#CHANGED")){
+        if (strpos($rule, "#CHANGED") !== false){
             $lines = explode("\n", $rule);
-
             for ($x = 0; $x < count($lines); $x++){
                 $trimmedLine = trim($lines[$x]);
-                if($this->startsWith($trimmedLine, '#')) {
-                    if ($this->startsWith($trimmedLine, "combo") or $this->startsWith($trimmedLine, "skill_based") or $this->startsWith($trimmedLine, "use_wildcard") or $this->startsWith($trimmedLine, "award_skill") or $this->startsWith($trimmedLine, "CHANGED")) {
-                        $lines[$x] = '';
-                    }
+                if ($this->startsWith($trimmedLine, "#combo") or $this->startsWith($trimmedLine, "#skill_based") or $this->startsWith($trimmedLine, "#use_wildcard") or $this->startsWith($trimmedLine, "#award_skill") or $this->startsWith($trimmedLine, "#CHANGED")) {
+                    unset($lines[$x]);
                 }
             }
             $rule = implode("\n", $lines);
@@ -681,21 +678,21 @@ class RuleSystem
         for ($x = 0; $x < count($lines); $x++){
             $trimmedLine = trim($lines[$x]);
             if ($this->startsWith($trimmedLine, "wildcard")){
-                $lines[$x] = "\t\t#CHANGED:" . "\n" . "# " . $lines[$x];
+                $lines[$x] = "\t\t#CHANGED:" . "\n" . "\t\t#" . $trimmedLine;
             }
             else if($this->startsWith($trimmedLine, "award_skill") and ( ($hadWildcard and !$hasWildcard) or (!$hadWildcard and $hasWildcard))){
-                $lines[$x] = "\t\t#CHANGED:" . "\n" . "# " . $lines[$x] . "\n<award-function>";
+                $lines[$x] = "\t\t#CHANGED:" . "\n" . "\t\t#" . $trimmedLine . "\n<award-function>";
             }
-            else if ($this->startsWith($trimmedLine, "combo1") ){
+            else if ($this->startsWith($trimmedLine, "combo1 =") or $this->startsWith($trimmedLine, "combo1=") ){
                 if ($hasWildcard){
                     $lines[$x] = "\t\t# " . $trimmedLine;
                 }
                 else {
-                    $lines[$x] = "\t\t#CHANGED:" . "\n" . "# " . $lines[$x];
+                    $lines[$x] = "\t\t#CHANGED:" . "\n" . "\t\t#" . $trimmedLine;
                 }
             }
             else if ($this->startsWith($trimmedLine, "combo") or $this->startsWith($trimmedLine, "skill_based") or $this->startsWith($trimmedLine, "use_wildcard") ){
-                $lines[$x] = "\t\t# " . $trimmedLine;
+                $lines[$x] = "\t\t#" . $trimmedLine;
             }
             else if ($this->startsWith($trimmedLine, "logs")){
                 $lines[$x] = "<new-skill-dependencies>" . "\n" . $lines[$x] ;
