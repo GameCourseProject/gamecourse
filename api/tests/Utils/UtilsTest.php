@@ -72,6 +72,7 @@ class UtilsTest extends TestCase
             "HEX: only digits" => ["#012345", "HEX"],
             "HEX: only letters" => ["#abcdef", "HEX"],
             "HEX: mixed" => ["#0a2c3e", "HEX"],
+            "HEX: uppercase" => ["#2334B7", "HEX"],
             "RGB: black" => ["RGB(0, 0, 0)", "RGB"],
             "RGB: white" => ["RGB(255, 255, 255)", "RGB"],
             "RGB: upper case" => ["RGB(23, 45, 164)", "RGB"],

@@ -279,7 +279,7 @@ class Utils
      */
     public static function isValidColor(?string $color, string $format): bool
     {
-        if ($format == "HEX") $pattern = "/^#[\dabcdef]{6}$/";
+        if ($format == "HEX") $pattern = "/^#[\dabcdef]{6}$/i";
         else if ($format == "RGB") $pattern = "/^RGB\(\b(?:1\d{2}|2[0-4]\d|[1-9]?\d|25[0-5])\b,\s*\b(?:1\d{2}|2[0-4]\d|[1-9]?\d|25[0-5])\b,\s*\b(?:1\d{2}|2[0-4]\d|[1-9]?\d|25[0-5])\b\)$/i";
         else throw new Exception("Color format '" . $format . "' not found.");
 
