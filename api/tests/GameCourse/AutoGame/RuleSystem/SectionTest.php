@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Module;
 use GameCourse\User\User;
 use PDOException;
 use PHPUnit\Framework\TestCase;
@@ -27,7 +28,7 @@ class SectionTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        TestingUtils::setUpBeforeClass([], ["CronJob"]);
+        TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
     }
 
     protected function setUp(): void
@@ -204,6 +205,28 @@ class SectionTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function getModule()
+    {
+        $course = Course::getCourseById($this->courseId);
+        $moduleId = $course->getModules(null, true)[0];
+        $section = Section::addSection($this->courseId, "Section Name", $moduleId);
+        $this->assertEquals($course->getModuleById($moduleId), $section->getModule());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getModuleNull()
+    {
+        $section = Section::addSection($this->courseId, "Section Name");
+        $this->assertNull($section->getModule());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function getFile()
     {
         $section = Section::addSection($this->courseId, "Section Name");
@@ -240,7 +263,7 @@ class SectionTest extends TestCase
     public function getData()
     {
         $section = Section::addSection($this->courseId, "Section Name");
-        $this->assertEquals(["id" => 1, "course" => $this->courseId, "name" => "Section Name", "position" => 0], $section->getData());
+        $this->assertEquals(["id" => 1, "course" => $this->courseId, "name" => "Section Name", "position" => 0, "module" => null], $section->getData());
     }
 
 
@@ -325,6 +348,32 @@ class SectionTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
+     */
+    public function setModule()
+    {
+        $course = Course::getCourseById($this->courseId);
+        $moduleIds = $course->getModules(null, true);
+        $section = Section::addSection($this->courseId, "Section Name", $moduleIds[0]);
+        $section->setModule($course->getModuleById($moduleIds[1]));
+        $this->assertEquals($course->getModuleById($moduleIds[1]), $section->getModule());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setModuleNull()
+    {
+        $course = Course::getCourseById($this->courseId);
+        $moduleId = $course->getModules(null, true)[0];
+        $section = Section::addSection($this->courseId, "Section Name", $moduleId);
+        $section->setModule(null);
+        $this->assertNull($section->getModule());
+    }
+
+    /**
+     * @test
      * @dataProvider sectionSuccessProvider
      * @throws Exception
      */
@@ -335,6 +384,7 @@ class SectionTest extends TestCase
         $section->setData($fieldValues);
         $fieldValues["id"] = $section->getId();
         $fieldValues["course"] = $this->courseId;
+        $fieldValues["module"] = null;
         $this->assertEquals($section->getData(), $fieldValues);
     }
 
@@ -351,7 +401,7 @@ class SectionTest extends TestCase
             $this->fail("Exception should have been thrown on 'setDataFailure'");
 
         } catch (Exception $e) {
-            $this->assertEquals(["id" => 1, "course" => $this->courseId, "name" => "Section Name", "position" => 0],
+            $this->assertEquals(["id" => 1, "course" => $this->courseId, "name" => "Section Name", "position" => 0, "module" => null],
                 $section->getData());
         }
     }
@@ -432,7 +482,7 @@ class SectionTest extends TestCase
         $this->assertIsArray($sections);
         $this->assertCount(2, $sections);
 
-        $keys = ["id", "course", "name", "position"];
+        $keys = ["id", "course", "name", "position", "module"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($sections as $i => $section) {
@@ -470,7 +520,7 @@ class SectionTest extends TestCase
 
         // Check is added to database
         $sectionDB = Core::database()->select(Section::TABLE_RULE_SECTION, ["id" => $section->getId()]);
-        $sectionData = ["id" => strval($section->getId()), "course" => strval($this->courseId), "name" => trim($name), "position" => "0"];
+        $sectionData = ["id" => strval($section->getId()), "course" => strval($this->courseId), "name" => trim($name), "position" => "0", "module" => null];
         $this->assertEquals($sectionData, $sectionDB);
 
         // Check section file was created
@@ -512,6 +562,28 @@ class SectionTest extends TestCase
             $sections = Section::getSections($this->courseId);
             $this->assertCount(1, $sections);
         }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function addSectionModule()
+    {
+        $course = Course::getCourseById($this->courseId);
+        $moduleId = $course->getModules(null, true)[0];
+        $section = Section::addSection($this->courseId, "Section Name", $moduleId);
+
+        // Check is added to database
+        $sectionDB = Core::database()->select(Section::TABLE_RULE_SECTION, ["id" => $section->getId()]);
+        $sectionData = ["id" => strval($section->getId()), "course" => strval($this->courseId), "name" => "Section Name",
+            "position" => "0", "module" => $moduleId];
+        $this->assertEquals($sectionData, $sectionDB);
+
+        // Check section file was created
+        $filePath = RuleSystem::getDataFolder($this->courseId) . "/1-Section_Name.txt";
+        $this->assertEquals($filePath, $section->getFile());
+        $this->assertTrue(file_exists($filePath));
     }
 
 

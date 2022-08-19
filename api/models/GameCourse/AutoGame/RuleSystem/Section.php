@@ -4,6 +4,7 @@ namespace GameCourse\AutoGame\RuleSystem;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Module;
 use Utils\Utils;
 
 /**
@@ -46,6 +47,13 @@ class Section
     public function getPosition(): ?int
     {
         return $this->getData("position");
+    }
+
+    public function getModule(): ?Module
+    {
+        $moduleId = $this->getData("module");
+        if ($moduleId) return $this->getCourse()->getModuleById($moduleId);
+        return null;
     }
 
     public function getFile(bool $fullPath = true, string $name = null, int $priority = null): string
@@ -93,6 +101,14 @@ class Section
     public function setPosition(?int $position)
     {
         $this->setData(["position" => $position]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setModule(?Module $module)
+    {
+        $this->setData(["module" => $module ? $module->getId() : null]);
     }
 
     /**
@@ -212,10 +228,11 @@ class Section
      *
      * @param int $courseId
      * @param string $name
+     * @param string|null $moduleId
      * @return Section
      * @throws Exception
      */
-    public static function addSection(int $courseId, string $name): Section
+    public static function addSection(int $courseId, string $name, string $moduleId = null): Section
     {
         self::trim($name);
         self::validateSection($name);
@@ -225,7 +242,8 @@ class Section
         $id = Core::database()->insert(self::TABLE_RULE_SECTION, [
             "course" => $courseId,
             "name" => $name,
-            "position" => $position
+            "position" => $position,
+            "module" => $moduleId
         ]);
         $section = new Section($id);
 

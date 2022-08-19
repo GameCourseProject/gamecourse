@@ -329,10 +329,12 @@ CREATE TABLE rule_section(
     course                      int unsigned NOT NULL,
     name                        varchar(50) NOT NULL,
     position                    int unsigned,
+    module                      varchar(50) DEFAULT NULL,
 
     UNIQUE key(name, course),
     UNIQUE key(position, course),
-    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
 );
 
 CREATE TABLE rule_tag(
