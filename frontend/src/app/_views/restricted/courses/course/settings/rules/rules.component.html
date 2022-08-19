@@ -1,6 +1,24 @@
 <ng-container *ngIf="!loading">
-  <!-- TODO -->
-  <p>rules works!</p>
+  <!-- Search -->
+  <div class="search">
+    <input type="text" id="seach_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="reduceList(searchQuery)">
+    <button class="magnifying-glass" id="search-btn" (click)="reduceList(searchQuery)"></button>
+  </div>
+
+  <!-- Header -->
+  <div class="section course-related visible rule-header">
+    <h2 class="title">Rule List</h2>
+    <div class="description">List of available rules in the course.</div>
+
+    <!-- Action buttons -->
+    <div class="action-buttons general-rule-actions">
+      <div class="icon add_icon" title="Create New Section" ng-click="newSection(this)"></div>
+      <div class="icon tags_circle_icon" title="Edit Tags" ng-click="editTags()"></div>
+      <div class="icon import_icon" title="Import Rule File" ng-click="importRuleFile()"></div>
+      <div class="icon export_icon" title="Export Rule Files" ng-click="exportRuleFiles()"></div>
+      <div class="icon configure_circle_icon" title="Settings" ng-click="rulesystemSettings()"></div>
+    </div>
+  </div>
 </ng-container>
 
 <!-- Loader -->
