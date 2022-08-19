@@ -1209,8 +1209,8 @@ tags:
         $text = "rule: Rule Name
 tags: 
 # Some description:
-	- line1
-	- line2
+#	- line1
+#	- line2
 
 	when:
 		line1
@@ -1309,8 +1309,8 @@ tags:
         $text = "rule: Rule Name
 tags: 
 # Some description:
-	- line1
-	- line2
+#	- line1
+#	- line2
 
 	when:
 		when

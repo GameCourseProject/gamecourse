@@ -28,6 +28,7 @@ class Badges extends Module
     const TABLE_BADGE_CONFIG = 'badges_config';
 
     const DATA_FOLDER = 'badges';
+    const RULE_SECTION = "Badges";
 
     public function __construct(?Course $course)
     {
@@ -70,6 +71,7 @@ class Badges extends Module
     {
         $this->initDatabase();
         $this->createDataFolder();
+        $this->initRules();
 
         // Init config
         Core::database()->insert(self::TABLE_BADGE_CONFIG, ["course" => $this->course->getId()]);
@@ -82,6 +84,7 @@ class Badges extends Module
     {
         $this->cleanDatabase();
         $this->removeDataFolder();
+        $this->removeRules();
     }
 
     protected function deleteEntries()

@@ -710,6 +710,47 @@ class SectionTest extends TestCase
         $this->assertEquals("Section1", $sections[0]["name"]);
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function deleteSectionWithRules()
+    {
+        // Given
+        $section1 = Section::addSection($this->courseId, "Section1");
+        $section2 = Section::addSection($this->courseId, "Section2");
+
+        $rule1 = $section1->addRule("Rule1", null, "when", "then", 0);
+        $rule2 = $section1->addRule("Rule2", null, "when", "then", 1);
+        $rule3 = $section2->addRule("Rule3", null, "when", "then", 0);
+
+        // When
+        Section::deleteSection($section1->getId());
+
+        // Then
+        $this->assertFalse($section1->exists());
+        $this->assertTrue($section2->exists());
+        $this->assertEquals(0, $section2->getPosition());
+
+        $sections = Section::getSections($this->courseId);
+        $this->assertIsArray($sections);
+        $this->assertCount(1, $sections);
+        $this->assertEquals("Section2", $sections[0]["name"]);
+
+        $this->assertEquals(1, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
+        $this->assertFalse(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-Section1.txt"));
+        $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-Section2.txt"));
+
+        $this->assertFalse($rule1->exists());
+        $this->assertFalse($rule2->exists());
+        $this->assertTrue($rule3->exists());
+
+        $rules = RuleSystem::getRules($this->courseId);
+        $this->assertIsArray($rules);
+        $this->assertCount(1, $rules);
+        $this->assertEquals("Rule3", $rules[0]["name"]);
+    }
+
 
     /**
      * @test

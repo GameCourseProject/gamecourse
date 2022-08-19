@@ -21,9 +21,11 @@ CREATE TABLE IF NOT EXISTS badge(
 	isPost                      boolean NOT NULL DEFAULT FALSE,
 	isPoint                     boolean NOT NULL DEFAULT FALSE,
 	isActive                    boolean NOT NULL DEFAULT TRUE,
+    rule                        int unsigned NOT NULL,
 
     UNIQUE key(name, course),
-    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN key(rule) REFERENCES rule(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS badge_level(

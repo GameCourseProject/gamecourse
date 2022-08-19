@@ -1,0 +1,1 @@
+award_badge(target, "<badge-name>", lvl)

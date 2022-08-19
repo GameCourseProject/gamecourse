@@ -76,12 +76,13 @@ abstract class RuleSystem
      *
      * @param int $courseId
      * @param string $name
+     * @param string|null $moduleId
      * @return Section
      * @throws Exception
      */
-    public static function addSection(int $courseId, string $name): Section
+    public static function addSection(int $courseId, string $name, string $moduleId = null): Section
     {
-        return Section::addSection($courseId, $name);
+        return Section::addSection($courseId, $name, $moduleId);
     }
 
     /**
@@ -187,6 +188,26 @@ abstract class RuleSystem
     public static function getRules(int $courseId, bool $active = null): array
     {
         return Rule::getRulesOfCourse($courseId, $active);
+    }
+
+    /**
+     * Updates a given regex pattern with a replacement in all
+     * rules of the Rule System.
+     *
+     * @param int $courseId
+     * @param string $pattern
+     * @param string $replace
+     * @return void
+     * @throws Exception
+     */
+    public static function updateInAllRules(int $courseId, string $pattern, string $replace)
+    {
+        $rules = self::getRules($courseId);
+        foreach ($rules as $r) {
+            $rule = Rule::getRuleById($r["id"]);
+            $rule->setWhen(preg_replace($pattern, $replace, $rule->getWhen()));
+            $rule->setThen(preg_replace($pattern, $replace, $rule->getThen()));
+        }
     }
 
 

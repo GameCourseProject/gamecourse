@@ -1,0 +1,4 @@
+progress = None # TODO: get student progress in badge
+
+# Compute badge level the student deserves
+lvl = compute_lvl(progress, <goals>)

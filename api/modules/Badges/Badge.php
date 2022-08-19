@@ -2,6 +2,9 @@
 namespace GameCourse\Badges;
 
 use Exception;
+use GameCourse\AutoGame\RuleSystem\Rule;
+use GameCourse\AutoGame\RuleSystem\RuleSystem;
+use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\XPLevels\XPLevels;
@@ -27,6 +30,9 @@ class Badge
 
     const DEFAULT_IMAGE = "blank.png";
     const DEFAULT_IMAGE_EXTRA = "blank_extra.png";
+
+    const RULE_WHEN_TEMPLATE = MODULES_FOLDER . "/" . Badges::ID . "/rules/when_template.txt";
+    const RULE_THEN_TEMPLATE = MODULES_FOLDER . "/" . Badges::ID . "/rules/then_template.txt";
 
     protected $id;
 
@@ -214,16 +220,20 @@ class Badge
      */
     public function setData(array $fieldValues)
     {
+        $courseId = $this->getCourse()->getId();
+        $rule = $this->getRule();
+
+        // Validate data
         if (key_exists("name", $fieldValues)) {
             $newName = $fieldValues["name"];
             self::validateName($newName);
-
-            // Update badge folder if name has changed
             $oldName = $this->getName();
-            if (strcmp($oldName, $newName) !== 0)
-                rename($this->getDataFolder(true, $oldName), $this->getDataFolder(true, $newName));
         }
-        if (key_exists("description", $fieldValues)) self::validateDescription($fieldValues["description"]);
+        if (key_exists("description", $fieldValues)) {
+            $newDescription = $fieldValues["description"];
+            self::validateDescription($newDescription);
+            $oldDescription = $this->getDescription();
+        }
         if (key_exists("isExtra", $fieldValues) && $fieldValues["isExtra"]) {
             $course = $this->getCourse();
             $xpLevelsModule = new XPLevels($course);
@@ -236,8 +246,40 @@ class Badge
                 throw new Exception("You're attempting to set a badge as extra credit while there's no badge extra credit available to earn.\n
             Set a max. badge extra credit value first.");
         }
+        if (key_exists("isActive", $fieldValues)) {
+            $newStatus = $fieldValues["isActive"];
+            $oldStatus = $this->isActive();
+        }
 
-        if (count($fieldValues) != 0) Core::database()->update(self::TABLE_BADGE, $fieldValues, ["id" => $this->id]);
+        // Update data
+        if (count($fieldValues) != 0)
+            Core::database()->update(self::TABLE_BADGE, $fieldValues, ["id" => $this->id]);
+
+        // Additional actions
+        if (key_exists("name", $fieldValues)) {
+            if (strcmp($oldName, $newName) !== 0) {
+                // Update badge folder
+                rename($this->getDataFolder(true, $oldName), $this->getDataFolder(true, $newName));
+
+                // Update rules
+                $rule->setName($newName);
+                RuleSystem::updateInAllRules($courseId, "/[\"']" . $oldName . "[\"']/", "\"" . $newName . "\"");
+            }
+        }
+        if (key_exists("description", $fieldValues)) {
+            if (strcmp($oldDescription, $newDescription) !== 0) {
+                // Update rule description
+                $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
+                $ruleDescription = self::generateRuleParams($name, $newDescription, $this->getLevels())["description"];
+                $rule->setDescription($ruleDescription);
+            }
+        }
+        if (key_exists("isActive", $fieldValues)) {
+            if ($oldStatus != $newStatus) {
+                // Update rule status
+                $rule->setActive($newStatus);
+            }
+        }
     }
 
 
@@ -334,6 +376,7 @@ class Badge
                                     bool $isBragging, bool $isCount, bool $isPost, bool $isPoint, array $levels): Badge
     {
         self::validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint);
+        $rule = self::addRule($courseId, $name, $description, $levels);
         $id = Core::database()->insert(self::TABLE_BADGE, [
             "course" => $courseId,
             "name" => $name,
@@ -342,7 +385,8 @@ class Badge
             "isBragging" => +$isBragging,
             "isCount" => +$isCount,
             "isPost" => +$isPost,
-            "isPoint" => +$isPoint
+            "isPoint" => +$isPoint,
+            "rule" => $rule->getId()
         ]);
         self::setLevels($id, $levels);
         self::createDataFolder($courseId, $name);
@@ -392,7 +436,15 @@ class Badge
      */
     public static function deleteBadge(int $badgeId) {
         $badge = self::getBadgeById($badgeId);
+
+        // Remove badge data folder
         self::removeDataFolder($badge->getCourse()->getId(), $badge->getName());
+
+        // Remove badge rule
+        $badgesSection = Section::getSectionByName($badge->getCourse()->getId(), Badges::RULE_SECTION);
+        $badgesSection->removeRule($badge->getRule()->getId());
+
+        // Delete badge from database
         Core::database()->delete(self::TABLE_BADGE, ["id" => $badgeId]);
     }
 
@@ -452,6 +504,88 @@ class Badge
             ]);
         }
         Core::database()->update(self::TABLE_BADGE, ["nrLevels" => count($levels)], ["id" => $badgeId]);
+
+        // Update badge rule
+        $badge = Badge::getBadgeById($badgeId);
+        $rule = $badge->getRule();
+        $params = self::generateRuleParams($badge->getName(), $badge->getDescription(), $levels, false, $rule->getId());
+        $rule->setDescription($params["description"]);
+        $rule->setWhen($params["when"]);
+        $rule->setThen($params["then"]);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ----------------------- Rules ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets badge rule.
+     *
+     * @return Rule
+     */
+    public function getRule(): Rule
+    {
+        return Rule::getRuleById($this->getData("rule"));
+    }
+
+    /**
+     * Adds a new badge rule to the Rule System.
+     * Returns the newly created rule.
+     *
+     * @param int $courseId
+     * @param string $name
+     * @param string $description
+     * @param array $levels
+     * @return Rule
+     * @throws Exception
+     */
+    public static function addRule(int $courseId, string $name, string $description, array $levels): Rule
+    {
+        // Generate rule
+        $params = self::generateRuleParams($name, $description, $levels);
+
+        // Add rule to badges section
+        $badgesSection = Section::getSectionByName($courseId, Badges::RULE_SECTION);
+        return $badgesSection->addRule($name, $params["description"], $params["when"], $params["then"]);
+    }
+
+    /**
+     * Generates badge rule parameters.
+     * Option to generate params fresh from templates, or to keep
+     * existing data intact.
+     *
+     * @param string $name
+     * @param string $description
+     * @param array $levels
+     * @param bool $fresh
+     * @param int|null $ruleId
+     * @return array
+     * @throws Exception
+     */
+    public static function generateRuleParams(string $name, string $description, array $levels, bool $fresh = true, int $ruleId = null): array
+    {
+        // Generate description
+        foreach ($levels as $i => $level) {
+            $description .= "\n\tlvl." . ($i + 1) . ": " . $level["description"];
+        }
+
+        // Generate rule clauses
+        if (!$fresh) {
+            if (is_null($ruleId))
+                throw new Exception("Can't generate rule parameters for badge: no rule ID found.");
+
+            // Update compute_lvl args
+            $rule = Rule::getRuleById($ruleId);
+            $when = $rule->getWhen();
+            preg_match('/compute_lvl\((.*)\)/', $when, $matches);
+            $progress = explode(", ", $matches[1])[0];
+            $when = preg_replace("/compute_lvl\((.*)\)/", "compute_lvl($progress, " . implode(", ", array_column($levels, "goal")) . ")", $when);
+
+        } else $when = str_replace("<goals>", implode(", ", array_column($levels, "goal")), file_get_contents(self::RULE_WHEN_TEMPLATE));
+        $then = str_replace("<badge-name>", $name, file_get_contents(self::RULE_THEN_TEMPLATE));
+
+        return ["description" => $description, "when" => $when, "then" => $then];
     }
 
 
@@ -762,6 +896,7 @@ class Badge
             if (isset($badge["id"])) $badge["id"] = intval($badge["id"]);
             if (isset($badge["course"])) $badge["course"] = intval($badge["course"]);
             if (isset($badge["nrLevels"])) $badge["nrLevels"] = intval($badge["nrLevels"]);
+            if (isset($badge["rule"])) $badge["rule"] = intval($badge["rule"]);
             if (isset($badge["isExtra"])) $badge["isExtra"] = boolval($badge["isExtra"]);
             if (isset($badge["isBragging"])) $badge["isBragging"] = boolval($badge["isBragging"]);
             if (isset($badge["isCount"])) $badge["isCount"] = boolval($badge["isCount"]);
@@ -771,7 +906,7 @@ class Badge
             return $badge;
 
         } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "nrLevels")
+            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "nrLevels" || $fieldName == "rule")
                 return is_numeric($field) ? intval($field) : $field;
             if ($fieldName == "isExtra" || $fieldName == "isBragging" || $fieldName == "isCount" || $fieldName == "isPost"
                 || $fieldName == "isPoint" || $fieldName == "isActive") return boolval($field);

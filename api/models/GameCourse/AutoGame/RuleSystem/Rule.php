@@ -635,9 +635,13 @@ class Rule
         $rule = str_replace("<tags>", implode(", ", array_column($tags, "name")), $rule);
 
         // Fill-in rule description
-        $rule = $description ?
-            str_replace("<description>", "# $description", $rule) :
-            preg_replace("/<description>\r*\n/", "", $rule);
+        if ($description) {
+            $lines = preg_split("/\r*\n/", $description);
+            $rule = str_replace("<description>", implode("\n", array_map(function ($line, $index) {
+                return "#" . ($index == 0 ? " " : "") . "$line";
+            }, $lines, array_keys($lines))), $rule);
+
+        } else $rule = preg_replace("/<description>\r*\n/", "", $rule);
 
         // Fill-in when clause
         $lines = preg_split("/\r*\n/", $when);
