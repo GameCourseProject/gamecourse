@@ -1,0 +1,10 @@
+rule: <name>
+<status>
+tags: <tags>
+<description>
+
+	when:
+		<when>
+
+	then:
+		<then>

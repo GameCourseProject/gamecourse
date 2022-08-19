@@ -3,7 +3,7 @@ namespace GameCourse\Course;
 
 use Exception;
 use GameCourse\AutoGame\AutoGame;
-use GameCourse\AutoGame\RuleSystem;
+use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;

@@ -698,7 +698,7 @@ class Badge
 
         preg_match("/[^\w()&\s-]/u", $name, $matches);
         if (count($matches) != 0)
-            throw new Exception("Badge name '" . $name . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-'");
+            throw new Exception("Badge name '" . $name . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-', '&'");
 
         if (iconv_strlen($name) > 70)
             throw new Exception("Badge name is too long: maximum of 70 characters.");

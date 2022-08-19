@@ -351,6 +351,9 @@ CREATE TABLE rule(
     section                     int unsigned NOT NULL,
     name                        varchar(100) NOT NULL,
     description                 TEXT,
+    whenClause                  TEXT NOT NULL,
+    thenClause                  TEXT NOT NULL,
+    isActive                    boolean NOT NULL DEFAULT TRUE,
     position                    int unsigned,
 
     UNIQUE key(name, course),

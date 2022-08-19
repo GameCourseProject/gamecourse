@@ -3,7 +3,7 @@ namespace GameCourse\Course;
 
 use Exception;
 use GameCourse\AutoGame\AutoGame;
-use GameCourse\AutoGame\RuleSystem;
+use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\Core\Auth;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
@@ -1331,7 +1331,7 @@ class Course
 
         preg_match("/[^\w()&\s-]/u", $name, $matches);
         if (count($matches) != 0)
-            throw new Exception("Course name '" . $name . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-'");
+            throw new Exception("Course name '" . $name . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-', '&'");
 
         if (iconv_strlen($name) > 100)
             throw new Exception("Course name is too long: maximum of 100 characters.");

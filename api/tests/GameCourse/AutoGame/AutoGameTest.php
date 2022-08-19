@@ -2,6 +2,7 @@
 namespace GameCourse\AutoGame;
 
 use Exception;
+use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
