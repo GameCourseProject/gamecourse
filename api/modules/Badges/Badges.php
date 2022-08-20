@@ -257,7 +257,7 @@ class Badges extends Module
     /**
      * @throws Exception
      */
-    private function updateMaxExtraCredit(int $max)
+    public function updateMaxExtraCredit(int $max)
     {
         if ($this->course->getModuleById(XPLevels::ID)->isEnabled()) {
             $generalMax = (new XPLevels($this->course))->getMaxExtraCredit();

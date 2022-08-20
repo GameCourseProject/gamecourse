@@ -31,9 +31,6 @@ class Badge
     const DEFAULT_IMAGE = "blank.png";
     const DEFAULT_IMAGE_EXTRA = "blank_extra.png";
 
-    const RULE_WHEN_TEMPLATE = MODULES_FOLDER . "/" . Badges::ID . "/rules/when_template.txt";
-    const RULE_THEN_TEMPLATE = MODULES_FOLDER . "/" . Badges::ID . "/rules/then_template.txt";
-
     protected $id;
 
     public function __construct(int $id)
@@ -540,7 +537,7 @@ class Badge
      * @return Rule
      * @throws Exception
      */
-    public static function addRule(int $courseId, string $name, string $description, array $levels): Rule
+    private static function addRule(int $courseId, string $name, string $description, array $levels): Rule
     {
         // Generate rule
         $params = self::generateRuleParams($name, $description, $levels);
@@ -563,7 +560,8 @@ class Badge
      * @return array
      * @throws Exception
      */
-    public static function generateRuleParams(string $name, string $description, array $levels, bool $fresh = true, int $ruleId = null): array
+    private static function generateRuleParams(string $name, string $description, array $levels, bool $fresh = true,
+                                               int $ruleId = null): array
     {
         // Generate description
         foreach ($levels as $i => $level) {
@@ -571,19 +569,29 @@ class Badge
         }
 
         // Generate rule clauses
-        if (!$fresh) {
+        $goals = implode(", ", array_column($levels, "goal"));
+        if ($fresh) { // generate from templates
+            $when = str_replace("<goals>", $goals, file_get_contents(__DIR__ . "/rules/when_template.txt"));
+            $then = str_replace("<badge-name>", $name, file_get_contents(__DIR__ . "/rules/then_template.txt"));
+
+        } else { // keep data intact
             if (is_null($ruleId))
                 throw new Exception("Can't generate rule parameters for badge: no rule ID found.");
 
-            // Update compute_lvl args
             $rule = Rule::getRuleById($ruleId);
+
             $when = $rule->getWhen();
             preg_match('/compute_lvl\((.*)\)/', $when, $matches);
             $progress = explode(", ", $matches[1])[0];
-            $when = preg_replace("/compute_lvl\((.*)\)/", "compute_lvl($progress, " . implode(", ", array_column($levels, "goal")) . ")", $when);
+            $when = preg_replace("/compute_lvl\((.*)\)/", "compute_lvl($progress, $goals)", $when);
 
-        } else $when = str_replace("<goals>", implode(", ", array_column($levels, "goal")), file_get_contents(self::RULE_WHEN_TEMPLATE));
-        $then = str_replace("<badge-name>", $name, file_get_contents(self::RULE_THEN_TEMPLATE));
+            $then = $rule->getThen();
+            preg_match('/award_badge\((.*)\)/', $then, $matches);
+            $args = explode(", ", $matches[1]);
+            $args[1] = "\"$name\"";
+            $args = implode(", ", $args);
+            $then = preg_replace("/award_badge\((.*)\)/", "award_badge($args)", $then);
+        }
 
         return ["description" => $description, "when" => $when, "then" => $then];
     }
