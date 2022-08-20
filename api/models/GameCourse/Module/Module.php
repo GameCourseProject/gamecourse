@@ -268,7 +268,7 @@ abstract class Module
             if (!file_exists($mainFile))
                 throw new Exception("Can't find main file for module '" . $moduleId . "'.");
 
-            $moduleClass = "\\GameCourse\\" . $moduleId . "\\" . $moduleId;
+            $moduleClass = "\\GameCourse\\Module\\" . $moduleId . "\\" . $moduleId;
             $module = new $moduleClass(null);
 
             self::addModule($moduleId, $module::NAME, $module::DESCRIPTION, $module::TYPE, $module::VERSION,
@@ -292,7 +292,7 @@ abstract class Module
      */
     public static function getModuleById(string $id, ?Course $course): ?Module
     {
-        $moduleClass = "\\GameCourse\\" . $id . "\\" . $id;
+        $moduleClass = "\\GameCourse\\Module\\" . $id . "\\" . $id;
         $module = new $moduleClass($course);
         if ($module->exists()) return $module;
         else return null;
@@ -788,6 +788,7 @@ abstract class Module
     {
         $moduleId = "";
         // TODO: upload module files
+        // TODO: upload module tests
 
         // TODO: update composer for controllers
         $hasControllers = false;
@@ -802,6 +803,7 @@ abstract class Module
     {
         $moduleId = "";
         // TODO: remove module files (ver function deleteModule() on Module.php
+        // TODO: remove module tests
 
         // TODO: update composer for controllers
         $hasControllers = false;

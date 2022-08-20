@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse\Badges;
+namespace GameCourse\Module\Badges;
 
 use Exception;
 use GameCourse\AutoGame\RuleSystem\Rule;
@@ -7,7 +7,7 @@ use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\XPLevels\XPLevels;
+use GameCourse\Module\XPLevels\XPLevels;
 use Utils\Utils;
 use ZipArchive;
 

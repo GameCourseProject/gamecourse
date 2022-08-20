@@ -1,12 +1,12 @@
 <?php
-namespace GameCourse\XPLevels;
+namespace GameCourse\Module\XPLevels;
 
 use Event\Event;
 use Event\EventType;
 use Exception;
-use GameCourse\Awards\Awards;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Config\Action;
 use GameCourse\Module\Config\ActionScope;
 use GameCourse\Module\Config\InputType;

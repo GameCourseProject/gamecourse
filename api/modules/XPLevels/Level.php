@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse\XPLevels;
+namespace GameCourse\Module\XPLevels;
 
 use Exception;
 use GameCourse\Core\Core;

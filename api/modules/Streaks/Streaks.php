@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse\Streaks;
+namespace GameCourse\Module\Streaks;
 
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;

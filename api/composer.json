@@ -18,7 +18,8 @@
   "autoload": {
     "psr-4": {
       "Database\\": "models/Database",
-      "GameCourse\\": ["models/GameCourse", "modules"],
+      "GameCourse\\": "models/GameCourse",
+      "GameCourse\\Module\\": "modules",
       "GameCourse\\Views\\Dictionary\\": ["models/GameCourse/Views/Dictionary/libraries"],
       "Utils\\": "models/Utils",
       "API\\": "controllers",

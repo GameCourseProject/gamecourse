@@ -1,19 +1,19 @@
 <?php
-namespace GameCourse\Badges;
+namespace GameCourse\Module\Badges;
 
 use Exception;
-use GameCourse\Awards\Awards;
-use GameCourse\Awards\AwardType;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Awards\Awards;
+use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\Config\Action;
 use GameCourse\Module\Config\ActionScope;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
-use GameCourse\XPLevels\XPLevels;
 use Utils\Utils;
 
 /**

@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse\Awards;
+namespace GameCourse\Module\Awards;
 
 /**
  * This class holds all award types available in the system

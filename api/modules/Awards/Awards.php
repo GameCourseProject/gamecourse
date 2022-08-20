@@ -1,16 +1,16 @@
 <?php
-namespace GameCourse\Awards;
+namespace GameCourse\Module\Awards;
 
 use Exception;
-use GameCourse\Badges\Badges;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Badges\Badges;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
-use GameCourse\Skills\Skills;
-use GameCourse\Streaks\Streaks;
-use GameCourse\VirtualCurrency\VirtualCurrency;
+use GameCourse\Module\Skills\Skills;
+use GameCourse\Module\Streaks\Streaks;
+use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 
 /**
  * This is the Awards module, which serves as a compartimentalized
