@@ -3,6 +3,7 @@ namespace Utils;
 
 use DateTime;
 use Exception;
+use GameCourse\Core\Core;
 
 /**
  * Holds a set of utility functions that can be used
@@ -521,5 +522,148 @@ class Utils
         $parts = array_map('intval', explode(".", $version));
         while (count($parts) != 3) { $parts[] = 0; }
         return $parts;
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------- Re-ordering items ----------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Updates a given item's position.
+     * Option to perform an additional action on items whose
+     * position has changed as a consequence.
+     *
+     * @param int|null $from
+     * @param int|null $to
+     * @param string $itemTable
+     * @param string $orderKey
+     * @param $itemId
+     * @param array $items
+     * @param null $action
+     * @return void
+     */
+    public static function updateItemPosition(?int $from, ?int $to, string $itemTable, string $orderKey, $itemId,
+                                              array $items, $action = null)
+    {
+        if ($to !== $from) {
+            if (is_null($from)) self::addItemPosition($to, $itemTable, $orderKey, $itemId, $items, $action);
+            else if (is_null($to)) self::deleteItemPosition($from, $itemTable, $orderKey, $itemId, $items, $action);
+            else self::editItemPosition($from, $to, $itemTable, $orderKey, $itemId, $items, $action);
+        }
+    }
+
+    /**
+     * Adds a given item's position.
+     * Option to perform an additional action on items whose
+     * position has changed as a consequence.
+     *
+     * @param int $to
+     * @param string $itemTable
+     * @param string $orderKey
+     * @param $itemId
+     * @param array $items
+     * @param null $action
+     * @return void
+     */
+    private static function addItemPosition(int $to, string $itemTable, string $orderKey, $itemId, array $items, $action = null)
+    {
+        // Filter items that must move down
+        $moveDown = array_filter($items, function ($item) use ($itemId, $orderKey, $to) {
+            return $item["id"] != $itemId && $item[$orderKey] >= $to;
+        });
+
+        // Move items down
+        foreach (array_reverse($moveDown) as $item) {
+            self::setItemPosition($item["id"], $item[$orderKey] + 1, $itemTable, $orderKey);
+            if ($action) $action($item["id"], $item[$orderKey], $item[$orderKey] + 1);
+        }
+
+        // Set new item position
+        self::setItemPosition($itemId, $to, $itemTable, $orderKey);
+    }
+
+    /**
+     * Edits a given item's position.
+     * Option to perform an additional action on items whose
+     * position has changed as a consequence.
+     *
+     * @param int $from
+     * @param int $to
+     * @param string $itemTable
+     * @param string $orderKey
+     * @param $itemId
+     * @param array $items
+     * @param null $action
+     * @return void
+     */
+    private static function editItemPosition(int $from, int $to, string $itemTable, string $orderKey, $itemId,
+                                             array $items, $action = null)
+    {
+        $direction = $from - $to > 0 ? "up" : "down";
+
+        // Remove item position
+        self::setItemPosition($itemId, null, $itemTable, $orderKey);
+
+        // Filter items that must move
+        $move = array_filter($items, function ($item) use ($itemId, $direction, $from, $to, $orderKey) {
+            if ($item["id"] == $itemId) return false;
+            if ($direction == "up") return $item[$orderKey] >= $to && $item[$orderKey] < $from;
+            else return $item[$orderKey] > $from && $item[$orderKey] <= $to;
+        });
+
+        // Move items
+        if ($direction == "up") $move = array_reverse($move);
+        foreach ($move as $item) {
+            self::setItemPosition($item["id"], $item[$orderKey] + ($direction == "up" ? 1 : -1), $itemTable, $orderKey);
+            if ($action) $action($item["id"], $item[$orderKey], $item[$orderKey] + ($direction == "up" ? 1 : -1));
+        }
+
+        // Set item position
+        self::setItemPosition($itemId, $to, $itemTable, $orderKey);
+    }
+
+    /**
+     * Deletes a given item's position.
+     * Option to perform an additional action on items whose
+     * position has changed as a consequence.
+     *
+     * @param int $from
+     * @param string $itemTable
+     * @param string $orderKey
+     * @param $itemId
+     * @param array $items
+     * @param null $action
+     * @return void
+     */
+    private static function deleteItemPosition(int $from, string $itemTable, string $orderKey, $itemId, array $items,
+                                               $action = null)
+    {
+        // Remove item position
+        self::setItemPosition($itemId, null, $itemTable, $orderKey);
+
+        // Filter items that must move up
+        $moveUp = array_filter($items, function ($item) use ($itemId, $orderKey, $from) {
+            return $item["id"] != $itemId && $item[$orderKey] > $from;
+        });
+
+        // Move items up
+        foreach ($moveUp as $item) {
+            self::setItemPosition($item["id"], $item[$orderKey] - 1, $itemTable, $orderKey);
+            if ($action) $action($item["id"], $item[$orderKey], $item[$orderKey] - 1);
+        }
+    }
+
+    /**
+     * Sets a given item's position on the database.
+     *
+     * @param $itemId
+     * @param int|null $position
+     * @param string $table
+     * @param string $key
+     * @return void
+     */
+    private static function setItemPosition($itemId, ?int $position, string $table, string $key) {
+        Core::database()->update($table, [$key => $position], ["id" => $itemId]);
     }
 }

@@ -15,7 +15,7 @@ abstract class RuleSystem
 
 
     /*** ---------------------------------------------------- ***/
-    /*** ---------------------- General --------------------- ***/
+    /*** ----------------------- Setup ---------------------- ***/
     /*** ---------------------------------------------------- ***/
 
     /**
@@ -76,13 +76,14 @@ abstract class RuleSystem
      *
      * @param int $courseId
      * @param string $name
+     * @param int|null $position
      * @param string|null $moduleId
      * @return Section
      * @throws Exception
      */
-    public static function addSection(int $courseId, string $name, string $moduleId = null): Section
+    public static function addSection(int $courseId, string $name, int $position = null, string $moduleId = null): Section
     {
-        return Section::addSection($courseId, $name, $moduleId);
+        return Section::addSection($courseId, $name, $position, $moduleId);
     }
 
     /**

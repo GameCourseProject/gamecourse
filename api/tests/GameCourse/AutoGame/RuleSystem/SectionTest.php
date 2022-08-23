@@ -209,7 +209,7 @@ class SectionTest extends TestCase
     {
         $course = Course::getCourseById($this->courseId);
         $moduleId = $course->getModules(null, true)[0];
-        $section = Section::addSection($this->courseId, "Section Name", $moduleId);
+        $section = Section::addSection($this->courseId, "Section Name", null, $moduleId);
         $this->assertEquals($course->getModuleById($moduleId), $section->getModule());
     }
 
@@ -243,17 +243,6 @@ class SectionTest extends TestCase
         $section = Section::addSection($this->courseId, "Section Name");
         $this->assertEquals(RuleSystem::getDataFolder($this->courseId) . "/1-Section_Name.txt",
             $section->getFile());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function getFilePositionNull()
-    {
-        $section = Section::addSection($this->courseId, "Section Name");
-        $section->setPosition(null);
-        $this->assertEquals(RuleSystem::getDataFolder($this->courseId) . "/0-Section_Name.txt", $section->getFile());
     }
 
     /**
@@ -310,14 +299,8 @@ class SectionTest extends TestCase
      */
     public function setPositionSuccess()
     {
-        Section::addSection($this->courseId, "Section1");
-        $section = Section::addSection($this->courseId, "Section2");
-
-        $section->setPosition(null);
-        $this->assertNull($section->getPosition());
-        $this->assertEquals(RuleSystem::getDataFolder($this->courseId) . "/0-Section2.txt", $section->getFile());
-        $this->assertTrue(file_exists($section->getFile()));
-        $this->assertFalse(file_exists(RuleSystem::getDataFolder($this->courseId) . "/2-Section2.txt"));
+        Section::addSection($this->courseId, "Section1", 0);
+        $section = Section::addSection($this->courseId, "Section2", 1);
 
         $section->setPosition(1);
         $this->assertEquals(1, $section->getPosition());
@@ -330,31 +313,11 @@ class SectionTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function setPositionFailure()
-    {
-        Section::addSection($this->courseId, "Section1");
-        $section = Section::addSection($this->courseId, "Section2");
-
-        try {
-            $section->setPosition(0);
-            $this->fail("Exception should have been thrown on 'setPositionFailure'");
-
-        } catch (PDOException $e) {
-            $this->assertEquals(1, $section->getPosition());
-            $this->assertTrue(file_exists($section->getFile(true, "Section2", 2)));
-            $this->assertFalse(file_exists($section->getFile(true, "Section2", 1)));
-        }
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
     public function setModule()
     {
         $course = Course::getCourseById($this->courseId);
         $moduleIds = $course->getModules(null, true);
-        $section = Section::addSection($this->courseId, "Section Name", $moduleIds[0]);
+        $section = Section::addSection($this->courseId, "Section Name", null, $moduleIds[0]);
         $section->setModule($course->getModuleById($moduleIds[1]));
         $this->assertEquals($course->getModuleById($moduleIds[1]), $section->getModule());
     }
@@ -367,7 +330,7 @@ class SectionTest extends TestCase
     {
         $course = Course::getCourseById($this->courseId);
         $moduleId = $course->getModules(null, true)[0];
-        $section = Section::addSection($this->courseId, "Section Name", $moduleId);
+        $section = Section::addSection($this->courseId, "Section Name", null, $moduleId);
         $section->setModule(null);
         $this->assertNull($section->getModule());
     }
@@ -471,8 +434,8 @@ class SectionTest extends TestCase
      */
     public function getAllSections()
     {
-        $section1 = Section::addSection($this->courseId, "Section1");
-        $section2 = Section::addSection($this->courseId, "Section2");
+        $section1 = Section::addSection($this->courseId, "Section1", 0);
+        $section2 = Section::addSection($this->courseId, "Section2", 1);
 
         $course = Course::addCourse("Multimedia Content Production", "MCP", "2022-2023", "#ffffff",
             null, null, true, true);
@@ -572,7 +535,7 @@ class SectionTest extends TestCase
     {
         $course = Course::getCourseById($this->courseId);
         $moduleId = $course->getModules(null, true)[0];
-        $section = Section::addSection($this->courseId, "Section Name", $moduleId);
+        $section = Section::addSection($this->courseId, "Section Name", null, $moduleId);
 
         // Check is added to database
         $sectionDB = Core::database()->select(Section::TABLE_RULE_SECTION, ["id" => $section->getId()]);
@@ -593,8 +556,8 @@ class SectionTest extends TestCase
      */
     public function editSectionSuccess()
     {
-        $section1 = Section::addSection($this->courseId, "Section1");
-        $section2 = Section::addSection($this->courseId, "Section2");
+        $section1 = Section::addSection($this->courseId, "Section1", 0);
+        $section2 = Section::addSection($this->courseId, "Section2", 1);
 
         $section2->editSection("New Name", 0);
 
@@ -616,8 +579,8 @@ class SectionTest extends TestCase
      */
     public function editSectionFailure($name)
     {
-        Section::addSection($this->courseId, "Section1");
-        $section2 = Section::addSection($this->courseId, "Section2");
+        Section::addSection($this->courseId, "Section1", 0);
+        $section2 = Section::addSection($this->courseId, "Section2", 1);
 
         try {
             $section2->editSection($name, 1);
@@ -636,34 +599,14 @@ class SectionTest extends TestCase
      */
     public function editSectionDuplicateName()
     {
-        Section::addSection($this->courseId, "Section1");
-        $section2 = Section::addSection($this->courseId, "Section2");
+        Section::addSection($this->courseId, "Section1", 0);
+        $section2 = Section::addSection($this->courseId, "Section2", 1);
 
         try {
             $section2->editSection("Section1", 1);
 
         } catch (PDOException $e) {
             $this->assertEquals("Section2", $section2->getName());
-            $this->assertEquals(2, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
-            $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-Section1.txt"));
-            $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/2-Section2.txt"));
-        }
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function editSectionPositionFailure()
-    {
-        Section::addSection($this->courseId, "Section1");
-        $section2 = Section::addSection($this->courseId, "Section2");
-
-        try {
-            $section2->editSection("Section2", 3);
-
-        } catch (Exception $e) {
-            $this->assertEquals(1, $section2->getPosition());
             $this->assertEquals(2, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
             $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-Section1.txt"));
             $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/2-Section2.txt"));
@@ -677,8 +620,8 @@ class SectionTest extends TestCase
      */
     public function deleteSection()
     {
-        $section1 = Section::addSection($this->courseId, "Section1");
-        $section2 = Section::addSection($this->courseId, "Section2");
+        $section1 = Section::addSection($this->courseId, "Section1", 0);
+        $section2 = Section::addSection($this->courseId, "Section2", 1);
         Section::deleteSection($section1->getId());
 
         $this->assertFalse($section1->exists());
@@ -717,8 +660,8 @@ class SectionTest extends TestCase
     public function deleteSectionWithRules()
     {
         // Given
-        $section1 = Section::addSection($this->courseId, "Section1");
-        $section2 = Section::addSection($this->courseId, "Section2");
+        $section1 = Section::addSection($this->courseId, "Section1", 0);
+        $section2 = Section::addSection($this->courseId, "Section2", 1);
 
         $rule1 = $section1->addRule("Rule1", null, "when", "then", 0);
         $rule2 = $section1->addRule("Rule2", null, "when", "then", 1);

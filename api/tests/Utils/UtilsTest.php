@@ -2,6 +2,7 @@
 namespace Utils;
 
 use Exception;
+use GameCourse\Core\Core;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -45,6 +46,7 @@ class UtilsTest extends TestCase
         ];
     }
 
+
     public function validDateProvider(): array
     {
         return [
@@ -63,6 +65,7 @@ class UtilsTest extends TestCase
             "HH:mm:ss" => [date("Y-m-d", time()), "H:i:s"],
         ];
     }
+
 
     public function validColorProvider(): array
     {
@@ -94,6 +97,7 @@ class UtilsTest extends TestCase
         ];
     }
 
+
     public function validVersionProvider(): array
     {
         return [
@@ -120,6 +124,7 @@ class UtilsTest extends TestCase
         ];
     }
 
+
     public function uploadFileProvider(): array
     {
         return [
@@ -129,6 +134,7 @@ class UtilsTest extends TestCase
             ]
         ];
     }
+
 
     public function compareVersionsBiggerThanProvider(): array
     {
@@ -155,6 +161,25 @@ class UtilsTest extends TestCase
         return [
             "zero" => ["0.0.0", "0.0.0"],
             "default" => ["2.2.0", "2.2.0"]
+        ];
+    }
+
+
+    public function updateItemPositionProvider(): array
+    {
+        return [
+            "add: start" => [null, 0, 4],
+            "add: middle" => [null, 1, 4],
+            "add: end" => [null, 2, 4],
+            "edit: same position start" => [0, 0, 1],
+            "edit: same position middle" => [1, 1, 2],
+            "edit: same position end" => [2, 2, 3],
+            "edit: start" => [2, 0, 3],
+            "edit: middle" => [2, 1, 3],
+            "edit: end" => [0, 2, 1],
+            "delete: start" => [0, null, 1],
+            "delete: middle" => [1, null, 2],
+            "delete: end" => [2, null, 3]
         ];
     }
 
@@ -1230,5 +1255,89 @@ class UtilsTest extends TestCase
         $this->assertEquals(-1, Utils::compareVersions("2.1.0", "2.2"));
         $this->assertEquals(1, Utils::compareVersions("2.2", "2.1.0"));
         $this->assertEquals(0, Utils::compareVersions("2.2", "2.2.0"));
+    }
+
+
+    // Re-ordering items
+
+    /**
+     * @test
+     * @dataProvider updateItemPositionProvider
+     */
+    public function updateItemPosition(?int $from, ?int $to, int $itemId)
+    {
+        // Given
+        $table = "utils_test";
+        $key = "position";
+        Core::database()->executeQuery("CREATE TABLE IF NOT EXISTS $table(
+            id              int unsigned AUTO_INCREMENT PRIMARY KEY,
+            $key            int unsigned UNIQUE
+        );");
+        $item1 = $this->addItem($table, $key, 0);
+        $item2 = $this->addItem($table, $key, 1);
+        $item3 = $this->addItem($table, $key, 2);
+        $itemNull = $this->addItem($table, $key, null);
+        $items = [
+            ["id" => $item1, $key => 0],
+            ["id" => $item2, $key => 1],
+            ["id" => $item3, $key => 2]
+        ];
+
+        // When
+        Utils::updateItemPosition($from, $to, $table, $key, $itemId, $items);
+
+        // Then
+        $this->assertEquals($to, $this->getItemPosition($table, $key, $itemId));
+
+        // Clean-up
+        Core::database()->deleteAll($table);
+        Core::database()->resetAutoIncrement($table);
+    }
+
+    /**
+     * @test
+     */
+    public function updateItemPositionWithAction()
+    {
+        // Given
+        $table = "utils_test";
+        $key = "position";
+        Core::database()->executeQuery("CREATE TABLE IF NOT EXISTS $table(
+            id              int unsigned AUTO_INCREMENT PRIMARY KEY,
+            $key            int unsigned UNIQUE
+        );");
+        $item1 = $this->addItem($table, $key, 0);
+        $item2 = $this->addItem($table, $key, 1);
+        $item3 = $this->addItem($table, $key, 2);
+        $items = [
+            ["id" => $item1, $key => 0],
+            ["id" => $item2, $key => 1],
+            ["id" => $item3, $key => 2]
+        ];
+
+        // When
+        Utils::updateItemPosition(1, 2, $table, $key, $item2, $items, function ($itemId, $from, $to) use ($item3) {
+            // Then
+            $this->assertEquals($item3, $itemId);
+            $this->assertEquals(2, $from);
+            $this->assertEquals(1, $to);
+        });
+
+        // Then
+        $this->assertEquals(2, $this->getItemPosition($table, $key, $item2));
+
+        // Clean-up
+        Core::database()->deleteAll($table);
+        Core::database()->resetAutoIncrement($table);
+    }
+
+    private function addItem(string $table, string $key, ?int $position): int
+    {
+        return Core::database()->insert($table, [$key => $position]);
+    }
+
+    private function getItemPosition(string $table, string $key, int $itemId): int
+    {
+        return intval(Core::database()->select($table, ["id" => $itemId], $key));
     }
 }

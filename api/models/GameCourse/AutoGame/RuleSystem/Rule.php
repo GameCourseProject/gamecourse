@@ -4,6 +4,7 @@ namespace GameCourse\AutoGame\RuleSystem;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use Utils\Utils;
 
 /**
  * This is the Rule model, which implements the necessary methods
@@ -176,22 +177,7 @@ class Rule
         if (key_exists("position", $fieldValues)) {
             $newPosition = $fieldValues["position"];
             $oldPosition = $this->getPosition();
-
-            // Update rule position if position has changed
-            if ($newPosition !== $oldPosition) {
-                $action = "move-" . ($oldPosition - $newPosition > 0 ? "up" : "down");
-                $this->setPositionInDB(null);
-                $rules = $section->getRules();
-                $move = array_filter($rules, function ($rule) use ($action, $newPosition, $oldPosition) {
-                    if ($action == "move-up") return $rule["id"] != $this->id && $rule["position"] >= $newPosition && $rule["position"] < $oldPosition;
-                    return $rule["id"] != $this->id && $rule["position"] > $oldPosition && $rule["position"] <= $newPosition;
-                });
-                if ($action == "move-up") $move = array_reverse($move);
-                foreach ($move as $r) {
-                    $r = new Rule($r["id"]);
-                    $r->setPositionInDB($r->getPosition() + ($action == "move-up" ? 1 : -1));
-                }
-            }
+            Utils::updateItemPosition($oldPosition, $newPosition, self::TABLE_RULE, "position", $this->id, $section->getRules());
         }
 
         // Update data
@@ -350,16 +336,8 @@ class Rule
             "thenClause" => $then,
             "isActive" => +$isActive
         ]);
+        Utils::updateItemPosition(null, $position, self::TABLE_RULE, "position", $id, $section->getRules());
         $rule = new Rule($id);
-
-        // Set position in database
-        $rules = $section->getRules();
-        $moveDown = array_filter($rules, function ($r) use ($id, $position) { return $r["id"] != $id && $r["position"] >= $position; });
-        foreach (array_reverse($moveDown) as $r) {
-            $r = new Rule($r["id"]);
-            $r->setPositionInDB($r->getPosition() + 1);
-        }
-        $rule->setPositionInDB($position);
 
         // Add rule text to section file
         $ruleText = self::generateText($name, $description, $when, $then, $isActive, $tags);
@@ -416,18 +394,11 @@ class Rule
             $section = $rule->getSection();
 
             // Update position
-            $rules = $section->getRules();
-            $pos = $rule->getPosition();
-            $rule->setPositionInDB(null);
-
-            $moveUp = array_filter($rules, function ($r) use ($ruleId, $pos) { return $r["id"] != $ruleId && $r["position"] > $pos; });
-            foreach ($moveUp as $r) {
-                $r = new Rule($r["id"]);
-                $r->setPositionInDB($r->getPosition() - 1);
-            }
+            $position = $rule->getPosition();
+            Utils::updateItemPosition($position, null, self::TABLE_RULE, "position", $ruleId, $section->getRules());
 
             // Remove rule text from section file
-            $section->removeRuleText($pos);
+            $section->removeRuleText($position);
 
             // Delete rule from database
             Core::database()->delete(self::TABLE_RULE, ["id" => $ruleId]);
@@ -683,21 +654,5 @@ class Rule
             if ($fieldName == "isActive") return boolval($field);
             return $field;
         }
-    }
-
-
-    /*** ---------------------------------------------------- ***/
-    /*** --------------------- Helpers ---------------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-    /**
-     * Sets rule position only in database.
-     *
-     * @param int|null $position
-     * @return void
-     */
-    private function setPositionInDB(?int $position)
-    {
-        Core::database()->update(self::TABLE_RULE, ["position" => $position], ["id" => $this->id]);
     }
 }

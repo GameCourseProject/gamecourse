@@ -60,7 +60,7 @@ class Section
     {
         $courseId = $this->getCourse()->getId();
         if (is_null($name)) $name = $this->getName();
-        if (is_null($priority)) $priority = ($this->getPosition() ?? -1) + 1;
+        if (is_null($priority)) $priority = $this->getPosition() + 1;
         return RuleSystem::getDataFolder($courseId, $fullPath) . "/" . $priority . "-" . Utils::strip($name, "_") . ".txt";
     }
 
@@ -132,6 +132,12 @@ class Section
         if (key_exists("position", $fieldValues)) {
             $newPosition = $fieldValues["position"];
             $oldPosition = $this->getPosition();
+            Utils::updateItemPosition($oldPosition, $newPosition, self::TABLE_RULE_SECTION, "position",
+                $this->id, self::getSections($this->getCourse()->getId()), function ($sectionId, $oldPosition, $newPosition) {
+                    $section = new Section($sectionId);
+                    $name = $section->getName();
+                    rename($section->getFile(true, $name, $oldPosition + 1), $section->getFile(true, $name, $newPosition + 1));
+                });
         }
 
         // Update data
@@ -228,23 +234,24 @@ class Section
      *
      * @param int $courseId
      * @param string $name
+     * @param int|null $position
      * @param string|null $moduleId
      * @return Section
      * @throws Exception
      */
-    public static function addSection(int $courseId, string $name, string $moduleId = null): Section
+    public static function addSection(int $courseId, string $name, int $position = null, string $moduleId = null): Section
     {
         self::trim($name);
         self::validateSection($name);
 
         // Insert in database
-        $position = count(self::getSections($courseId));
+        if (is_null($position)) $position = 0;
         $id = Core::database()->insert(self::TABLE_RULE_SECTION, [
             "course" => $courseId,
             "name" => $name,
-            "position" => $position,
             "module" => $moduleId
         ]);
+        Utils::updateItemPosition(null, $position, self::TABLE_RULE_SECTION, "position", $id, self::getSections($courseId));
         $section = new Section($id);
 
         // Create section file
@@ -264,20 +271,10 @@ class Section
      */
     public function editSection(string $name, int $position): Section
     {
-        $this->setName($name);
-
-        // Update position
-        $oldPosition = $this->getPosition();
-        if ($position != $oldPosition) {
-            if (abs($position - $oldPosition) != 1)
-                throw new Exception("Can only update section position by increments/decrements of 1.");
-
-            $switchWith = self::getSectionByPosition($this->getCourse()->getId(), $position);
-            $this->setPosition(null);
-            $switchWith->setPosition($oldPosition);
-            $this->setPosition($position);
-        }
-
+        $this->setData([
+            "name" => $name,
+            "position" => $position
+        ]);
         return $this;
     }
 
@@ -292,18 +289,19 @@ class Section
     {
         $section = self::getSectionById($sectionId);
         if ($section) {
-            // Update position
-            $sections = self::getSections($section->getCourse()->getId());
-            $pos = $section->getPosition();
-            $section->setPosition(null);
-
-            $moveUp = array_filter($sections, function ($s) use ($sectionId, $pos) { return $s["id"] != $sectionId && $s["position"] > $pos; });
-            foreach ($moveUp as $s) {
-                $s = new Section($s["id"]);
-                $s->setPosition($s->getPosition() - 1);
-            }
-
+            // Remove section file
             unlink($section->getFile());
+
+            // Update position
+            $position = $section->getPosition();
+            Utils::updateItemPosition($position, null, self::TABLE_RULE_SECTION, "position", $sectionId,
+                self::getSections($section->getCourse()->getId()), function ($sectionId, $oldPosition, $newPosition) {
+                    $section = new Section($sectionId);
+                    $name = $section->getName();
+                    rename($section->getFile(true, $name, $oldPosition + 1), $section->getFile(true, $name, $newPosition + 1));
+                });
+
+            // Delete section from database
             Core::database()->delete(self::TABLE_RULE_SECTION, ["id" => $sectionId]);
         }
     }

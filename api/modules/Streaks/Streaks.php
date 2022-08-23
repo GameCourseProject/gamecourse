@@ -1,9 +1,12 @@
 <?php
 namespace GameCourse\Module\Streaks;
 
+use Exception;
+use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\Module\XPLevels\XPLevels;
 
 /**
  * This is the Streaks module, which serves as a compartimentalized
@@ -54,5 +57,31 @@ class Streaks extends Module
     public function disable()
     {
         // TODO
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** --------------- Module Specific --------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    /*** ---------- Config ---------- ***/
+
+    public function getMaxExtraCredit(): int
+    {
+        return intval(Core::database()->select(self::TABLE_STREAK_CONFIG, ["course" => $this->course->getId()], "maxExtraCredit"));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function updateMaxExtraCredit(int $max)
+    {
+        if ($this->course->getModuleById(XPLevels::ID)->isEnabled()) {
+            $generalMax = (new XPLevels($this->course))->getMaxExtraCredit();
+            if ($max > $generalMax)
+                throw new Exception("Streaks max. extra credit cannot be bigger than " . $generalMax . " (general max. extra credit).");
+        }
+
+        Core::database()->update(self::TABLE_STREAK_CONFIG, ["maxExtraCredit" => $max], ["course" => $this->course->getId()]);
     }
 }

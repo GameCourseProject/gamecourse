@@ -15,6 +15,7 @@ class ReturnType
     const STRING = "string";
     const OBJECT = "object";
     const ARRAY = "array";
+    const BOOLEAN = "boolean";
     const MIXED = "mixed";
     // NOTE: insert here new return types
 }

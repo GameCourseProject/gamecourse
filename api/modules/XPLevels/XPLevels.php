@@ -7,12 +7,15 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
+use GameCourse\Module\Badges\Badges;
 use GameCourse\Module\Config\Action;
 use GameCourse\Module\Config\ActionScope;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\Module\Skills\Skills;
+use GameCourse\Module\Streaks\Streaks;
 
 /**
  * This is the XP & Levels module, which serves as a compartimentalized
@@ -46,7 +49,10 @@ class XPLevels extends Module
     // NOTE: versions should be updated on code changes
 
     const DEPENDENCIES = [
-        ["id" => Awards::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD]
+        ["id" => Awards::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD],
+        ["id" => Badges::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT],
+        ["id" => Skills::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT],
+        ["id" => Streaks::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
     ];
     // NOTE: dependencies should be updated on code changes
 
@@ -71,7 +77,7 @@ class XPLevels extends Module
         $level0Id = Level::addLevel($this->course->getId(), 0, "AWOL")->getId();
 
         // Init XP for all students
-        $students = $this->course->getStudents(true);
+        $students = $this->course->getStudents();
         foreach ($students as $student) {
             $this->initXPForUser($student["id"], $level0Id);
         }
@@ -205,9 +211,22 @@ class XPLevels extends Module
     /**
      * @throws Exception
      */
-    private function updateMaxExtraCredit(int $max)
+    public function updateMaxExtraCredit(int $max)
     {
         Core::database()->update(self::TABLE_XP_CONFIG, ["maxExtraCredit" => $max], ["course" => $this->course->getId()]);
+
+        // Update other max. extra credits according to new global max.
+        $badgesModule = new Badges($this->course);
+        if ($badgesModule->isEnabled() && $badgesModule->getMaxExtraCredit() > $max)
+            $badgesModule->updateMaxExtraCredit($max);
+
+        $skillsModule = new Skills($this->course);
+        if ($skillsModule->isEnabled() && $skillsModule->getMaxExtraCredit() > $max)
+            $skillsModule->updateMaxExtraCredit($max);
+
+        $streaksModule = new Streaks($this->course);
+        if ($streaksModule->isEnabled() && $streaksModule->getMaxExtraCredit() > $max)
+            $streaksModule->updateMaxExtraCredit($max);
     }
 
 

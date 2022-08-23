@@ -57,7 +57,7 @@ class Badges extends Module
     ];
     // NOTE: dependencies should be updated on code changes
 
-    const RESOURCES = ['assets/', 'styles/'];
+    const RESOURCES = ['assets/'];
 
 
     /*** ----------------------------------------------- ***/
@@ -282,11 +282,10 @@ class Badges extends Module
     public function getUsersWithBadge(int $badgeId, int $level): array
     {
         $courseId = $this->getCourse()->getId();
-        $usersWithBadgeIds = array_map(function ($userId) { return intval($userId); },
-            array_column(array_filter(Core::database()->selectMultiple(Awards::TABLE_AWARD,
+        $usersWithBadgeIds = array_column(array_filter(Core::database()->selectMultiple(Awards::TABLE_AWARD,
             ["course" => $courseId, "type" => AwardType::BADGE, "moduleInstance" => $badgeId],
             "user, count(moduleInstance) as level", null, [], [], "user"
-        ), function ($user) use ($level) { return intval($user["level"]) >= $level; }), "user"));
+        ), function ($user) use ($level) { return intval($user["level"]) >= $level; }), "user");
 
         $users = [];
         foreach ($usersWithBadgeIds as $userId) {
@@ -297,18 +296,43 @@ class Badges extends Module
 
     /**
      * Gets badges earned by a given user.
+     * Only returns badges that are currently active.
      *
      * @param int $userId
-     * @param bool $isExtra
-     * @param bool $isBragging
-     * @param bool $isCount
-     * @param bool $isPost
-     * @param bool $isPoint
+     * @param bool|null $isExtra
+     * @param bool|null $isBragging
+     * @param bool|null $isCount
+     * @param bool|null $isPost
+     * @param bool|null $isPoint
      * @return array
      */
-    public function getUserBadges(int $userId, bool $isExtra, bool $isBragging, bool $isCount, bool $isPost, bool $isPoint): array
+    public function getUserBadges(int $userId, bool $isExtra = null, bool $isBragging = null, bool $isCount = null,
+                                  bool $isPost = null, bool $isPoint = null): array
     {
-        // TODO (only actives)
+        $courseId = $this->getCourse()->getId();
+
+        $table = Awards::TABLE_AWARD . " a JOIN " . self::TABLE_BADGE . " b on a.moduleInstance=b.id";
+        $where = ["a.course" => $courseId, "a.user" => $userId, "a.type" => AwardType::BADGE, "b.isActive" => true];
+        if ($isExtra !== null) $where["b.isExtra"] = $isExtra;
+        if ($isBragging !== null) $where["b.isBragging"] = $isBragging;
+        if ($isCount !== null) $where["b.isCount"] = $isCount;
+        if ($isPost !== null) $where["b.isPost"] = $isPost;
+        if ($isPoint !== null) $where["b.isPoint"] = $isPoint;
+        $userBadgeIds = Core::database()->selectMultiple($table, $where, "DISTINCT moduleInstance");
+
+        $badges = [];
+        foreach ($userBadgeIds as $badgeId) {
+            $badge = (new Badge($badgeId));
+            $badgeData = $badge->getData();
+
+            $userLevel = $this->getUserBadgeLevel($userId, $badgeId);
+            for ($lvl = 1; $lvl <= $userLevel; $lvl++) {
+                $badge = $badgeData;
+                $badge["level"] = $lvl;
+                $badges[] = $badge;
+            }
+        }
+        return $badges;
     }
 
     /**

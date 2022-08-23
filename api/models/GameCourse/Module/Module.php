@@ -82,7 +82,7 @@ abstract class Module
 
     /**
      * Gets module's registered resources.
-     * NOTE: only works with one-level directories
+     * NOTE: only works with single files or one-level directories
      *
      * @return array
      * @throws Exception
@@ -93,6 +93,9 @@ abstract class Module
         foreach ($this::RESOURCES as $resource) {
             $path = MODULES_FOLDER . "/" . $this->id . "/" . $resource;
             $realPath = API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . $this->id . "/" . $resource;
+
+            if (!file_exists($path))
+                throw new Exception("Resource '" . $resource . "' doesn't exist in module '" . $this->id . "'.");
 
             if (is_dir($path)) {
                 $contents = Utils::getDirectoryContents($path);
@@ -527,6 +530,8 @@ abstract class Module
 
     /**
      * Creates default templates of module.
+     *
+     * @return void
      */
     protected function initTemplates()
     {}
@@ -539,6 +544,17 @@ abstract class Module
      */
     protected function initEvents()
     {
+    }
+
+    /**
+     * Creates Rule System section for module rules.
+     *
+     * @return void
+     * @throws Exception
+     */
+    protected function initRules()
+    {
+        RuleSystem::addSection($this->course->getId(), $this::RULE_SECTION, 0, $this->id);
     }
 
     /**
@@ -571,7 +587,7 @@ abstract class Module
     {
     }
 
-    protected function cleanTemplates()
+    protected function removeTemplates()
     {
     }
 
@@ -583,6 +599,18 @@ abstract class Module
     protected function removeEvents()
     {
         Event::stopAll($this->getId());
+    }
+
+    /**
+     * Removes Rule System section and rules for module.
+     *
+     * @return void
+     * @throws Exception
+     */
+    protected function removeRules()
+    {
+        $sectionId = Section::getSectionByName($this->course->getId(), $this::RULE_SECTION)->getId();
+        RuleSystem::deleteSection($sectionId);
     }
 
 
@@ -680,32 +708,93 @@ abstract class Module
     }
 
     /**
-     * Gets module personalized configuration info like:
-     *  - HTML to render
-     *  - Styles it might have (.css format)
-     *  - Scripts it might have (.js format)
-     * @return array
+     * Gets module personalized configuration Frontend
+     * component name.
+     *
+     * @return string
+     */
+    public function getPersonalizedConfig(): ?string
+    {
+        return null;
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------- Rule System -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Adds a new module item rule to the Rule System.
+     * Returns the newly created rule.
+     *
+     * @param int|null $position
+     * @param mixed ...$args
+     * @return Rule
      * @throws Exception
      */
-    public function getPersonalizedConfig(): ?array
+    public function addRuleOfItem(int $position = null, ...$args): Rule
     {
-        $configFolderAbs = MODULES_FOLDER . "/" . $this->id . "/config/";
-        $configFolderRel = Utils::getDirectoryName(MODULES_FOLDER) . "/" . $this->id . "/config/";
-        if (!file_exists($configFolderAbs)) return null;
+        // Generate rule params
+        $params = $this->generateRuleParams(...$args);
+        $name = $params["name"];
+        $tags = key_exists("tags", $params) ? $params["tags"] : [];
+        $description = key_exists("description", $params) ? $params["description"] : null;
+        $when = $params["when"];
+        $then = $params["then"];
 
-        $contents = Utils::getDirectoryContents($configFolderAbs);
-        if (count(array_filter($contents, function ($file) { return $file["extension"] == ".html"; })) > 1)
-            throw new Exception("Can't have more than one HTML configuration file for module '" . $this->id . "'.");
+        // Add rule
+        $section = Section::getSectionByName($this->course->getId(), $this::RULE_SECTION);
+        return $section->addRule($name, $description, $when, $then, $position, true, $tags);
+    }
 
-        return [
-            "html" => file_get_contents($configFolderAbs . "config.html"),
-            "styles" => array_map(function ($file) use ($configFolderRel) {
-                return API_URL . "/" . $configFolderRel . $file["name"];
-            }, array_values(array_filter($contents, function ($file) { return $file["extension"] == ".css"; }))),
-            "scripts" => array_map(function ($file) use ($configFolderRel) {
-                return API_URL . "/" . $configFolderRel . $file["name"];
-            }, array_values(array_filter($contents, function ($file) { return $file["extension"] == ".js"; })))
-        ];
+    /**
+     * Updates rule of a module item.
+     *
+     * @param int $ruleId
+     * @param int|null $position
+     * @param bool $isActive
+     * @param mixed ...$args
+     * @return void
+     * @throws Exception
+     */
+    public function updateRuleOfItem(int $ruleId, int $position = null, bool $isActive = true, ...$args)
+    {
+        // Re-generate rule params
+        $params = $this->generateRuleParams(...$args);
+        $name = $params["name"];
+        $tags = key_exists("tags", $params) ? $params["tags"] : [];
+        $description = key_exists("description", $params) ? $params["description"] : null;
+        $when = $params["when"];
+        $then = $params["then"];
+
+        // Update rule
+        $rule = Rule::getRuleById($ruleId);
+        $rule->editRule($name, $description, $when, $then, $position, $isActive, $tags);
+    }
+
+    /**
+     * Deletes rule of a module item.
+     *
+     * @param int $ruleId
+     * @return void
+     * @throws Exception
+     */
+    public function deleteRuleOfItem(int $ruleId)
+    {
+        // Delete rule
+        $section = Section::getSectionByName($this->course->getId(), $this::RULE_SECTION);
+        $section->removeRule($ruleId);
+    }
+
+    /**
+     * Generates rule parameters for a module item.
+     *
+     * @param mixed ...$args
+     * @return array
+     */
+    protected function generateRuleParams(...$args): array
+    {
+        return [];
     }
 
 
@@ -786,6 +875,9 @@ abstract class Module
 
     private static function installModule()
     {
+        // NOTE: if module has personalized config, need to 1st add
+        //       it manually, re-build frontend & deploy new app
+
         $moduleId = "";
         // TODO: upload module files
         // TODO: upload module tests
@@ -801,6 +893,9 @@ abstract class Module
 
     public static function uninstallModule()
     {
+        // NOTE: if module has personalized config, need to remove
+        //       it manually, re-build frontend & deploy new app
+
         $moduleId = "";
         // TODO: remove module files (ver function deleteModule() on Module.php
         // TODO: remove module tests

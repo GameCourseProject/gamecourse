@@ -55,7 +55,7 @@ class LevelTest extends TestCase
         //       don't forget tables with foreign keys will be automatically deleted on cascade
 
         TestingUtils::cleanTables([Course::TABLE_COURSE, User::TABLE_USER]);
-        TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE]);
+        TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, XPLevels::TABLE_LEVEL]);
         TestingUtils::cleanFileStructure();
         TestingUtils::cleanEvents();
     }
@@ -145,5 +145,5 @@ class LevelTest extends TestCase
     // Setters
     // TODO
 
-    // TODO
+    // TODO: other tests
 }

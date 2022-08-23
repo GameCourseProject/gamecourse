@@ -124,8 +124,11 @@ class Dictionary
         // Add context
         if ($context !== null) array_unshift($args, $context);
 
+        // Add course
+        $args[] = $course;
+
         // Mock data
-        if ($mockData) $args[] = $mockData;
+        $args[] = $mockData;
 
         // Call function
         return $library->{$funcName}(...$args);

@@ -51,7 +51,7 @@ class Awards extends Module
     ];
     // NOTE: dependencies should be updated on code changes
 
-    const RESOURCES = ['assets/', 'styles/'];
+    const RESOURCES = ['assets/'];
 
 
     /*** ----------------------------------------------- ***/
