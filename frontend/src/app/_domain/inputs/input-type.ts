@@ -11,5 +11,6 @@ export enum InputType {
   DATETIME = 'datetime',
   IMAGE = 'image',
   FILE = 'file',
-  COLOR = 'color'
+  COLOR = 'color',
+  MARKDOWN = 'markdown'
 }

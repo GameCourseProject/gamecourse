@@ -35,6 +35,7 @@ import {InputRichTextComponent} from "./_components/inputs/rich-text/input-rich-
 import {FilePickerModalComponent} from "./_components/modals/file-picker-modal/file-picker-modal.component";
 import {SanitizeHTMLPipe} from "./_pipes/sanitize-html.pipe";
 import {DatatableComponent} from "./_components/tables/datatable/datatable.component";
+import { InputColorComponent } from './_components/inputs/general/input-color/input-color.component';
 
 
 @NgModule({
@@ -70,29 +71,31 @@ import {DatatableComponent} from "./_components/tables/datatable/datatable.compo
     InputRichTextComponent,
     FilePickerModalComponent,
     SanitizeHTMLPipe,
-    DatatableComponent
+    DatatableComponent,
+    InputColorComponent
   ],
-  exports: [
-    NavbarComponent,
-    SidebarComponent,
-    ModalComponent,
-    VerificationModalComponent,
-    InputFileComponent,
-    ErrorModalComponent,
-    FooterComponent,
-    InputCodeComponent,
-    TextComponent,
-    ImageComponent,
-    HeaderComponent,
-    BlockComponent,
-    AnyComponent,
-    TableComponent,
-    AsPipe,
-    ClickedOutsideDirective,
-    InputRichTextComponent,
-    SanitizeHTMLPipe,
-    DatatableComponent
-  ],
+    exports: [
+        NavbarComponent,
+        SidebarComponent,
+        ModalComponent,
+        VerificationModalComponent,
+        InputFileComponent,
+        ErrorModalComponent,
+        FooterComponent,
+        InputCodeComponent,
+        TextComponent,
+        ImageComponent,
+        HeaderComponent,
+        BlockComponent,
+        AnyComponent,
+        TableComponent,
+        AsPipe,
+        ClickedOutsideDirective,
+        InputRichTextComponent,
+        SanitizeHTMLPipe,
+        DatatableComponent,
+        InputColorComponent
+    ],
   imports: [
     CommonModule,
     RouterModule,

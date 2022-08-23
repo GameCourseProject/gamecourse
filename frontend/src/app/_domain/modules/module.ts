@@ -145,6 +145,11 @@ export class Module {
   static loadStyles(courseId: number, sanitizer: DomSanitizer): void {
     Module.stylesLoaded.set(courseId, {state: LoadingState.PENDING});
 
+    // Remove other course's styles
+    this.stylesLoaded.forEach((value, courseId, map) => {
+      if (value.stylesIds) this.removeStyles(courseId);
+    })
+
     ApiHttpService.getModulesResources(courseId, true)
       .subscribe(resources => {
         const styles: {name: string, path: SafeUrl}[] = [];
@@ -159,7 +164,7 @@ export class Module {
 
                 const resourceName = (resourcePath.split('/').pop()).split('.')[0];
                 styles.push({
-                  name: courseId + '-' + resourceName,
+                  name: courseId + '-' + moduleId + '-' + resourceName,
                   path: path.get('URL')
                 });
               }
@@ -167,6 +172,7 @@ export class Module {
           }
         }
 
+        // Load course styles
         const head = document.getElementsByTagName('head')[0];
         const stylesIds: string[] = [];
         styles.forEach(s => {
@@ -185,18 +191,27 @@ export class Module {
   }
 
   /**
-   * Removes course's modules' styles and reloads them
+   * Reloads course's modules' styles
    *
    * @param courseId
    * @param sanitizer
    */
   static reloadStyles(courseId: number, sanitizer: DomSanitizer): void {
+    this.removeStyles(courseId);
+    this.loadStyles(courseId, sanitizer);
+  }
+
+  /**
+   * Removes course's modules' styles
+   *
+   * @param courseId
+   */
+  static removeStyles(courseId: number): void {
     this.stylesLoaded.get(courseId).stylesIds.forEach(id => {
       const style = document.getElementById(id);
       style.remove();
     });
-
-    this.loadStyles(courseId, sanitizer);
+    this.stylesLoaded.delete(courseId);
   }
 
   static fromDatabase(obj: ModuleDatabase): Module {

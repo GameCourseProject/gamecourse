@@ -20,12 +20,12 @@ export class InputFileComponent implements OnInit, AfterViewInit, OnChanges {
 
   // Essentials
   @Input() id: string;                        // Unique id
-  @Input() form: NgForm;                      // Form it's part of
+  @Input() form?: NgForm;                     // Form it's part of
+  @Input() accept?: string;                   // Types of files to accept
 
   // Extras
   @Input() label?: string;                    // Label prepend
   @Input() multiple?: boolean;                // Accept multiple files
-  @Input() accept?: string;                   // Types of files to accept
   @Input() camera?: boolean;                  // Accept camera input
   @Input() classList?: string;                // Classes to add
   @Input() disabled?: boolean;                // Make it disabled

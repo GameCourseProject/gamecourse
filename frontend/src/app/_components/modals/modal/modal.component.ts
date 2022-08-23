@@ -10,7 +10,7 @@ export class ModalComponent implements OnInit {
   @Input() id?: string;                         // Modal id
   @Input() classList?: string;                  // Classes to append
 
-  @Input() isModalOpen: boolean;                // Whether or not the modal is visible
+  @Input() isModalOpen: boolean;                // Whether the modal is visible
   @Input() actionInProgress?: boolean;          // Show loader while action in progress
   @Input() innerClickEvents: boolean = true;    // Whether to close the modal when clicking outside
 
