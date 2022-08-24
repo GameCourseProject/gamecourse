@@ -82,6 +82,20 @@ class Awards extends Module
     /*** ---------- Awards ---------- ***/
 
     /**
+     * Gets awards for a given user.
+     *
+     * @param int $userId
+     * @return array
+     */
+    public function getUserAwards(int $userId): array
+    {
+        return Core::database()->selectMultiple(self::TABLE_AWARD, [
+            "course" => $this->course->getId(),
+            "user" => $userId
+        ]);
+    }
+
+    /**
      * Gets awards for a given user of a specific type of award.
      * NOTE: types of awards in AwardType.php
      *
@@ -118,8 +132,8 @@ class Awards extends Module
     {
         $this->checkDependency(Badges::ID);
         $table = self::TABLE_AWARD . " a LEFT JOIN " . Badges::TABLE_BADGE . " b on a.moduleInstance=b.id";
-        $where = ["a.course" => $this->course->getId(), "user" => $userId, "type" => AwardType::BADGE, "isActive" => true];
-        if ($extra !== null) $where["isExtra"] = $extra;
+        $where = ["a.course" => $this->course->getId(), "a.user" => $userId, "a.type" => AwardType::BADGE, "b.isActive" => true];
+        if ($extra !== null) $where["b.isExtra"] = $extra;
         return Core::database()->selectMultiple($table, $where, "a.*");
     }
 
@@ -129,18 +143,24 @@ class Awards extends Module
      *  - if null --> gets awards for all skills
      *  - if false --> gets awards only for skills that are not collaborative
      *  - if true --> gets awards only for skills that are collaborative
+     * Option for extra:
+     *  - if null --> gets awards for all skills
+     *  - if false --> gets awards only for skills that are not extra credit
+     *  - if true --> gets awards only for skills that are extra credit
      *
      * @param int $userId
      * @param bool|null $collab
+     * @param bool|null $extra
      * @return array
      * @throws Exception
      */
-    public function getUserSkillsAwards(int $userId, bool $collab = null): array
+    public function getUserSkillsAwards(int $userId, bool $collab = null, bool $extra = null): array
     {
         $this->checkDependency(Skills::ID);
         $table = self::TABLE_AWARD . " a LEFT JOIN " . Skills::TABLE_SKILL . " s on a.moduleInstance=s.id";
-        $where = ["a.course" => $this->course->getId(), "user" => $userId, "type" => AwardType::SKILL, "isActive" => true];
-        if ($collab !== null) $where["isCollab"] = $collab;
+        $where = ["a.course" => $this->course->getId(), "a.user" => $userId, "a.type" => AwardType::SKILL, "s.isActive" => true];
+        if ($collab !== null) $where["s.isCollab"] = $collab;
+        if ($extra !== null) $where["s.isExtra"] = $extra;
         return Core::database()->selectMultiple($table, $where, "a.*");
     }
 
@@ -160,13 +180,24 @@ class Awards extends Module
     {
         $this->checkDependency(Streaks::ID);
         $table = self::TABLE_AWARD . " a LEFT JOIN " . Streaks::TABLE_STREAK . " s on a.moduleInstance=s.id";
-        $where = ["a.course" => $this->course->getId(), "user" => $userId, "type" => AwardType::STREAK, "isActive" => true];
-        if ($extra !== null) $where["isExtra"] = $extra;
+        $where = ["a.course" => $this->course->getId(), "a.user" => $userId, "a.type" => AwardType::STREAK, "s.isActive" => true];
+        if ($extra !== null) $where["s.isExtra"] = $extra;
         return Core::database()->selectMultiple($table, $where, "a.*");
     }
 
 
     /*** ---------- Rewards ---------- ***/
+
+    /**
+     * Gets total reward for a given user.
+     *
+     * @param int $userId
+     * @return int
+     */
+    public function getUserTotalReward(int $userId): int
+    {
+       return array_sum(array_column($this->getUserAwards($userId), "reward"));
+    }
 
     /**
      * Gets total reward for a given user of a specific type of award.
@@ -179,15 +210,7 @@ class Awards extends Module
      */
     public function getUserTotalRewardByType(int $userId, string $type): int
     {
-        if ($type === AwardType::BADGE) return $this->getUserBadgesTotalReward($userId);
-        elseif ($type === AwardType::SKILL) return $this->getUserSkillsTotalReward($userId);
-        elseif ($type === AwardType::STREAK) return $this->getUserStreaksTotalReward($userId);
-        return intval(Core::database()->select(self::TABLE_AWARD, [
-            "course" => $this->course->getId(),
-            "user" => $userId,
-            "type" => $type],
-            "sum(reward)")
-        );
+        return array_sum(array_column($this->getUserAwardsByType($userId, $type), "reward"));
     }
 
     /**
@@ -205,10 +228,7 @@ class Awards extends Module
     public function getUserBadgesTotalReward(int $userId, bool $extra = null): int
     {
         $this->checkDependency(Badges::ID);
-        $table = self::TABLE_AWARD . " a LEFT JOIN " . Badges::TABLE_BADGE . " b on a.moduleInstance=b.id";
-        $where = ["a.course" => $this->course->getId(), "user" => $userId, "type" => AwardType::BADGE, "isActive" => true];
-        if ($extra !== null) $where["isExtra"] = $extra;
-        return intval(Core::database()->select($table, $where, "sum(reward)"));
+        return array_sum(array_column($this->getUserBadgesAwards($userId, $extra), "reward"));
     }
 
     /**
@@ -217,19 +237,21 @@ class Awards extends Module
      *  - if null --> gets total reward for all skills
      *  - if false --> gets total reward only for skills that are not collaborative
      *  - if true --> gets total reward only for skills that are collaborative
+     * Option for extra:
+     *  - if null --> gets total reward for all skills
+     *  - if false --> gets total reward only for skills that are not extra credit
+     *  - if true --> gets total reward only for skills that are extra credit
      *
      * @param int $userId
      * @param bool|null $collab
+     * @param bool|null $extra
      * @return int
      * @throws Exception
      */
-    public function getUserSkillsTotalReward(int $userId, bool $collab = null): int
+    public function getUserSkillsTotalReward(int $userId, bool $collab = null, bool $extra = null): int
     {
         $this->checkDependency(Skills::ID);
-        $table = self::TABLE_AWARD . " a LEFT JOIN " . Skills::TABLE_SKILL . " s on a.moduleInstance=s.id";
-        $where = ["a.course" => $this->course->getId(), "user" => $userId, "type" => AwardType::SKILL, "isActive" => true];
-        if ($collab !== null) $where["isCollab"] = $collab;
-        return intval(Core::database()->select($table, $where, "sum(reward)"));
+        return array_sum(array_column($this->getUserSkillsAwards($userId, $collab, $extra), "reward"));
     }
 
     /**
@@ -247,9 +269,6 @@ class Awards extends Module
     public function getUserStreaksTotalReward(int $userId, bool $extra = null): int
     {
         $this->checkDependency(Streaks::ID);
-        $table = self::TABLE_AWARD . " a LEFT JOIN " . Streaks::TABLE_STREAK . " s on a.moduleInstance=s.id";
-        $where = ["a.course" => $this->course->getId(), "user" => $userId, "type" => AwardType::STREAK, "isActive" => true];
-        if ($extra !== null) $where["isExtra"] = $extra;
-        return intval(Core::database()->select($table, $where, "sum(reward)"));
+        return array_sum(array_column($this->getUserStreaksAwards($userId, $extra), "reward"));
     }
 }
