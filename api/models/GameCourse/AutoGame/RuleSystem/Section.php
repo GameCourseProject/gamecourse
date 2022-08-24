@@ -251,7 +251,13 @@ class Section
             "name" => $name,
             "module" => $moduleId
         ]);
-        Utils::updateItemPosition(null, $position, self::TABLE_RULE_SECTION, "position", $id, self::getSections($courseId));
+        Utils::updateItemPosition(null, $position, self::TABLE_RULE_SECTION, "position", $id,
+            self::getSections($courseId), function ($sectionId, $oldPosition, $newPosition) {
+                $section = new Section($sectionId);
+                $name = $section->getName();
+                rename($section->getFile(true, $name, $oldPosition + 1), $section->getFile(true, $name, $newPosition + 1));
+            });
+
         $section = new Section($id);
 
         // Create section file

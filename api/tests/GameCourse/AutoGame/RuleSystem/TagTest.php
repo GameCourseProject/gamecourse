@@ -139,7 +139,7 @@ class TagTest extends TestCase
     public function tagSuccessProvider(): array
     {
         $names = array_map(function ($name) { return $name[0]; }, $this->tagNameSuccessProvider());
-        $colors = array_map(function ($color) { return$color[0]; }, $this->tagColorSuccessProvider());
+        $colors = array_map(function ($color) { return $color[0]; }, $this->tagColorSuccessProvider());
 
         $provider = [];
         foreach ($names as $d1 => $name) {

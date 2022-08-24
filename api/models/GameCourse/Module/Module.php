@@ -3,6 +3,9 @@ namespace GameCourse\Module;
 
 use Event\Event;
 use Exception;
+use GameCourse\AutoGame\RuleSystem\Rule;
+use GameCourse\AutoGame\RuleSystem\RuleSystem;
+use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use Utils\Utils;
@@ -657,6 +660,7 @@ abstract class Module
      * Gets lists to show on configuration page where each list has:
      *  - listName: name of the list
      *  - itemName: name for an item of the list
+     *  - parent?: list parent ID
      *  - importExtensions: types of files that can be used on import
      *  - listInfo: information for every collumn
      *  - items: items of the list
@@ -708,8 +712,7 @@ abstract class Module
     }
 
     /**
-     * Gets module personalized configuration Frontend
-     * component name.
+     * Gets module personalized configuration ID.
      *
      * @return string
      */

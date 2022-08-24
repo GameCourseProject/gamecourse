@@ -239,11 +239,12 @@ class XPLevels extends Module
      * @param int $userId
      * @param int|null $level0Id
      * @return void
+     * @throws Exception
      */
     private function initXPForUser(int $userId, int $level0Id = null)
     {
         $courseId = $this->course->getId();
-        if ($level0Id === null) $level0Id = Level::getLevelByXP($this->course->getId(), 0)->getId();
+        if ($level0Id === null) $level0Id = Level::getLevelZero($this->course->getId())->getId();
 
         if ($this->userHasXP($userId)) // already has XP
             Core::database()->update(self::TABLE_XP, [

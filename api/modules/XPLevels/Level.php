@@ -101,6 +101,7 @@ class Level
      */
     public function setData(array $fieldValues)
     {
+        // Validate data
         if (key_exists("minXP", $fieldValues)) {
             $previousMinXP = self::getMinXP();
             $newMinXP = intval($fieldValues["minXP"]);
@@ -112,8 +113,11 @@ class Level
         }
         if (key_exists("description", $fieldValues)) self::validateDescription($fieldValues["description"]);
 
-        if (count($fieldValues) != 0) Core::database()->update(self::TABLE_LEVEL, $fieldValues, ["id" => $this->id]);
+        // Update data
+        if (count($fieldValues) != 0)
+            Core::database()->update(self::TABLE_LEVEL, $fieldValues, ["id" => $this->id]);
 
+        // Additional actions
         if (key_exists("minXP", $fieldValues)) self::updateUsersLevel($this->getCourse()->getId());
     }
 
@@ -158,15 +162,31 @@ class Level
      * @param int $courseId
      * @param int $xp
      * @return Level|null
+     * @throws Exception
      */
-    public static function getLevelByXP(int $courseId, int $xp): ?Level
+    public static function getLevelByXP(int $courseId, int $xp): Level
     {
         $levels = self::getLevels($courseId, "minXP DESC");
         foreach ($levels as $level) {
             if ($xp >= $level["minXP"])
                 return new Level($level["id"]);
         }
-        return null;
+
+        throw new Exception("Level 0 not found.");
+    }
+
+    /**
+     * Gets level 0.
+     *
+     * @param int $courseId
+     * @return Level
+     * @throws Exception
+     */
+    public static function getLevelZero(int $courseId): Level
+    {
+        $level0 = self::getLevelByMinXP($courseId, 0);
+        if (!$level0) throw new Exception("Couldn't find Level 0.");
+        return $level0;
     }
 
     /**
@@ -243,9 +263,15 @@ class Level
      */
     public static function deleteLevel(int $levelId) {
         $level = self::getLevelById($levelId);
-        if ($level->getMinXP() === 0) throw new Exception("Can't delete Level 0.");
-        Core::database()->delete(self::TABLE_LEVEL, ["id" => $levelId]);
-        self::updateUsersLevel($level->getCourse()->getId());
+        if ($level) {
+            if ($level->getMinXP() === 0)
+                throw new Exception("Can't delete Level 0.");
+
+            $courseId = $level->getCourse()->getId();
+            self::resetUsersLevel($courseId);
+            Core::database()->delete(self::TABLE_LEVEL, ["id" => $levelId]);
+            self::updateUsersLevel($courseId);
+        }
     }
 
     /**
@@ -270,7 +296,7 @@ class Level
      * @param int $userId
      * @return void
      */
-    public function getUserLevel(int $courseId, int $userId): Level
+    public static function getUserLevel(int $courseId, int $userId): Level
     {
         $levelId = intval(Core::database()->select(XPLevels::TABLE_XP, ["course" => $courseId, "user" => $userId], "level"));
         return new Level($levelId);
@@ -295,6 +321,27 @@ class Level
             $newLevel = self::recalculateLevel($courseId, $userXP);
             Core::database()->update(XPLevels::TABLE_XP,
                 ["level" => $newLevel->getId()],
+                ["course" => $courseId, "user" => $studentId]
+            );
+        }
+    }
+
+    /**
+     * Set the current level for all users as level 0.
+     *
+     * @param int $courseId
+     * @return void
+     * @throws Exception
+     */
+    private static function resetUsersLevel(int $courseId)
+    {
+        $course = Course::getCourseById($courseId);
+        $level0 = self::getLevelZero($courseId);
+        $students = $course->getStudents();
+        foreach ($students as $student) {
+            $studentId = intval($student["id"]);
+            Core::database()->update(XPLevels::TABLE_XP,
+                ["level" => $level0->getId()],
                 ["course" => $courseId, "user" => $studentId]
             );
         }
@@ -375,6 +422,9 @@ class Level
     {
         if (is_null($description)) return;
 
+        if (!is_string($description) || empty($description))
+            throw new Exception("Level description can't be empty.");
+
         if (iconv_strlen($description) > 50)
             throw new Exception("Level description is too long: maximum of 50 characters.");
     }
@@ -410,7 +460,7 @@ class Level
      * @param string|null $fieldName
      * @return array|int|null
      */
-    private static function parse(array $level = null, $field = null, string $fieldName = null)
+    public static function parse(array $level = null, $field = null, string $fieldName = null)
     {
         if ($level) {
             if (isset($level["id"])) $level["id"] = intval($level["id"]);
