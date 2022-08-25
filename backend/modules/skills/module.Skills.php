@@ -33,6 +33,8 @@ class Skills extends Module
     const WILDCARD_RULE_TEMPLATE = 'rule_skill_template_wildcard.txt';
 
 
+
+
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/
@@ -1423,34 +1425,31 @@ class Skills extends Module
         Core::$systemDB->update(self::TABLE, $skillData, ["id" => $skill["id"]]);
         $skillId = $skill["id"];
 
-        // Update dependencies
-        $dependencyListBefore = [];
-        if ($skill["dependencies"] != "") {
-            $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
-            foreach ($pairDep as $dep) {
-                $dependencies = explode("+", str_replace(" + ", "+", $dep));
-                $dependency = [];
-                foreach ($dependencies as $d) {
-                    $isTier = false;
-                    $normalSkillId = Core::$systemDB->select(self::TABLE, ["name" => trim($d)], "id");
-                    if (empty($normalSkillId)) {
-                        $skillTierId = Core::$systemDB->select(self::TABLE_TIERS, ["tier" => trim($d)], "id");
-                        if (!empty($skillTierId)) {
-                            $isTier = true;
-                        } else {
-                            echo "The skill " . $d . " does not exist";
-                        }
-                    }
-                    $dependencySkill = array('name' => $d, 'isTier' => $isTier);
-                    array_push($dependency, $dependencySkill);
-                }
-                array_push($dependencyListBefore, $dependency);
-            }
-            $skill['dependencies'] = trim($skill['dependencies']);
-        }
         $hadWildcard = strpos($skill["dependencies"], "Wildcard") !== false;
 
+        // update dependencies
         $dependencyIds = Core::$systemDB->selectMultiple(self::TABLE_SUPER_SKILLS, ["superSkillId" => $skillId], "id");
+        $ids = array();
+        foreach ($dependencyIds as $id){
+            foreach ($id as $id1) {
+                array_push($ids, $id1);
+            }
+        }
+        $oldDependencySkills = array();
+        foreach ($dependencyIds as $dependency) {
+            $dependencySkills = Core::$systemDB->selectMultiple(self::TABLE_DEPENDENCIES, ["dependencyId" => $skillId], "normalSkillId");
+            array_push($oldDependencySkills, $dependencySkills);
+        }
+
+        $oldSkills = array();
+        foreach ($oldDependencySkills as $oldSkill){
+            foreach ($oldSkill as $oldSkillName) {
+                foreach ($oldSkillName as $oldSkillName1) {
+                    array_push($oldSkills, $oldSkillName1);
+                }
+            }
+        }
+
         if ($skill['tier'] == 1 || ($skill["dependencies"] == "" && !empty($dependencyIds))) { // 1st tier or no dependencies
             // Delete dependencies
             Core::$systemDB->delete(self::TABLE_SUPER_SKILLS, ["superSkillId" => $skillId]);
@@ -1558,35 +1557,79 @@ class Skills extends Module
         if ($oldName != $skill["name"])
             $this->editSkillRuleName($courseId, $oldName, $skill["name"]);
 
-        //if ($oldSkillData["dependencies"] != $skill["dependencies"]) {
-        $dependencyList = [];
-        if ($skill["dependencies"] != "") {
-            $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
-            foreach ($pairDep as $dep) {
-                $dependencies = explode("+", str_replace(" + ", "+", $dep));
-                $dependency = [];
-                foreach ($dependencies as $d) {
-                    $isTier = false;
-                    $normalSkillId = Core::$systemDB->select(self::TABLE, ["name" => trim($d)], "id");
-                    if (empty($normalSkillId)) {
-                        $skillTierId = Core::$systemDB->select(self::TABLE_TIERS, ["tier" => trim($d)], "id");
-                        if (!empty($skillTierId)) {
-                            $isTier = true;
-                        } else {
-                            echo "The skill " . $d . " does not exist";
+        // Check if rule dependencies were changed
+        $updateDependencies = false;
+
+        $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
+        $numOfDep = count($dependencyIds);
+        $numOfNewDep =  count($pairDep);
+
+        if ($numOfDep != $numOfNewDep){
+            $updateDependencies = true;
+        } else {
+            // if nr of dependencies stays the same, we need to check if they are the same
+            $newDependencyIds = Core::$systemDB->selectMultiple(self::TABLE_SUPER_SKILLS, ["superSkillId" => $skillId], "id");
+            $newIds = array();
+            foreach ($newDependencyIds as $id){
+                foreach ($id as $id1) {
+                    array_push($newIds, $id1);
+                }
+            }
+
+            if (count(array_intersect($ids, $newIds)) !== $numOfNewDep){
+                $updateDependencies = true;
+            } else {
+                $newDependencySkills = array();
+                foreach ($ids as $dependency) {
+                    $dependencySkills = Core::$systemDB->selectMultiple(self::TABLE_DEPENDENCIES, ["dependencyId" => $dependency], "normalSkillId");
+                    array_push($newDependencySkills, $dependencySkills);
+                }
+
+                $newSkills = array();
+                foreach ($newDependencySkills as $newSkill){
+                    foreach ($newSkill as $newSkillName) {
+                        foreach ($newSkillName as $newSkillName1) {
+                            array_push($newSkills, $newSkillName1);
                         }
                     }
-                    $dependencySkill = array('name' => $d, 'isTier' => $isTier);
-                    array_push($dependency, $dependencySkill);
                 }
-                array_push($dependencyList, $dependency);
+
+                if (count(array_intersect($oldSkills, $newSkills)) !== ($numOfNewDep * 2)){
+                    $updateDependencies = true;
+                }
             }
-            $skill['dependencies'] = trim($skill['dependencies']);
         }
-        
-        $hasWildcard = strpos($skill["dependencies"], "Wildcard") !== false;
-        $this->editSkillRuleDependencies($courseId, $skill["name"], $dependencyList, $hasWildcard, $hadWildcard);
-        //}
+
+        if ($updateDependencies){
+            $dependencyList = [];
+            if ($skill["dependencies"] != "") {
+                $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
+                foreach ($pairDep as $dep) {
+                    $dependencies = explode("+", str_replace(" + ", "+", $dep));
+                    $dependency = [];
+                    foreach ($dependencies as $d) {
+                        $isTier = false;
+                        $normalSkillId = Core::$systemDB->select(self::TABLE, ["name" => trim($d)], "id");
+                        if (empty($normalSkillId)) {
+                            $skillTierId = Core::$systemDB->select(self::TABLE_TIERS, ["tier" => trim($d)], "id");
+                            if (!empty($skillTierId)) {
+                                $isTier = true;
+                            } else {
+                                echo "The skill " . $d . " does not exist";
+                            }
+                        }
+                        $dependencySkill = array('name' => $d, 'isTier' => $isTier);
+                        array_push($dependency, $dependencySkill);
+                    }
+                    array_push($dependencyList, $dependency);
+                }
+                $skill['dependencies'] = trim($skill['dependencies']);
+            }
+
+            $hasWildcard = strpos($skill["dependencies"], "Wildcard") !== false;
+            $this->editSkillRuleDependencies($courseId, $skill["name"], $dependencyList, $hasWildcard, $hadWildcard);
+        }
+
     }
 
     public function deleteSkill(int $skillId, int $courseId)
@@ -1816,7 +1859,7 @@ class Skills extends Module
             ["a.user" => $user, "t.tier" => $tier, "a.course" => $course],
             "count(w.awardId) as numUsed"
         );
-
+                                     
         return $usedWildcards[0]["numUsed"];
     }
 
@@ -1996,6 +2039,15 @@ class Skills extends Module
         $rs = new RuleSystem(Course::getCourse($courseId));
         $filename = $rs->getFilename(self::ID);
         $rs->changeSkillDependencies($filename, $skillName, $newDependencies, $hasWildcard, $hadWildcard);
+
+    }
+
+    public function debuggerzito(int $courseId, string $skillName, string $toPrint)
+    {
+        // TODO: edit rule based on changes; only change the necessary
+        $rs = new RuleSystem(Course::getCourse($courseId));
+        $filename = $rs->getFilename(self::ID);
+        $rs->debugger($filename, $skillName, $toPrint);
 
     }
 

@@ -582,6 +582,23 @@ class RuleSystem
         }
     }
 
+    public function debugger($ruleFile, $ruleName, $toPrint){
+        if ($this->ruleFileExists($ruleFile)) {
+            $txt = file_get_contents($this->rulesdir . $ruleFile);
+
+            $position =  $this->findRulePosition($ruleFile, $ruleName) ;
+            $rule = $this->getRuleContent($ruleFile, $ruleName);
+
+            $sectionRules = $this->splitRules($txt);
+
+            $editedRule = str_replace("<here>", $toPrint, $rule);
+
+            $sectionRules[intval($position)] = $editedRule;
+
+            $content = $this->joinRules($sectionRules);
+            $file = file_put_contents($this->rulesdir . $ruleFile, $content);
+        }
+    }
     public function editRuleDependencies($ruleName, $rule, $newDependencies, $hasWildcard){
         
         if (sizeof($newDependencies) == 0){ // dependencies eliminated
@@ -597,7 +614,7 @@ class RuleSystem
                 $conditiontxt = array();
                 $comboNr = 1;
                 foreach ($newDependencies as $dependency) {
-                    $deptxt = "\t\tcombo" . $comboNr . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
+                    $deptxt = "combo" . $comboNr . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
                     $linesDependencies .= $deptxt;
                     array_push($conditiontxt, "combo" . $comboNr);
                     $comboNr += 1;
@@ -614,6 +631,14 @@ class RuleSystem
                 $rule = str_replace("<award-function>", $awardFunctionTemplate, $rule);
 
                 $template = "wildcard = GC.skillTrees.wildcardAvailable(\"<skill-name>\", \"<tier-name>\", target)" . "\n\t\t" ."<new-skill-dependencies>" . "\n\t\t" . "skill_based = <skill-based>" . "\n\t\t" . "use_wildcard = False if skill_based else True";
+                // Write skill name
+                $newRule = str_replace("<skill-name>", $ruleName, $template);
+
+                // Write tier name
+                $wildcard = "Wildcard";
+                $newRule = str_replace("<tier-name>", $wildcard, $newRule);
+
+                // Write template for dependencies
                 $rule = str_replace("<new-skill-dependencies>", $template, $rule);
 
                 $wildcard = "Wildcard";
@@ -624,12 +649,12 @@ class RuleSystem
                 $comboNr = 1;
                 foreach ($newDependencies as $dependency) {
                     if ($dependency[0]['name'] === $wildcard || $dependency[1]['name'] === $wildcard) { // has wildcard(s)
-                        $deptxt = "\t\tcombo" . $comboNr . " = " .
+                        $deptxt = "combo" . $comboNr . " = " .
                             ($dependency[0]['name'] === $wildcard ? "wildcard" : "rule_unlocked(\"" . $dependency[0]['name'] . "\", target)") . " and " .
                             ($dependency[1]['name'] === $wildcard ? "wildcard\n\t\t" : "rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t");
 
                     } else { // no wildcard(s)
-                        $deptxt = "\t\tcombo" . $comboNr . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
+                        $deptxt = "combo" . $comboNr . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
                         array_push($skillBasedCombos, "combo" . $comboNr);
                     }
                     $linesDependencies .= $deptxt;
@@ -667,25 +692,29 @@ class RuleSystem
             $lines = explode("\n", $rule);
             for ($x = 0; $x < count($lines); $x++){
                 $trimmedLine = trim($lines[$x]);
-                if ($this->startsWith($trimmedLine, "#combo") or $this->startsWith($trimmedLine, "#skill_based") or $this->startsWith($trimmedLine, "#use_wildcard") or $this->startsWith($trimmedLine, "#award_skill") or $this->startsWith($trimmedLine, "#CHANGED")) {
+                if ($this->startsWith($trimmedLine, "#combo") or $this->startsWith($trimmedLine, "#skill_based") or $this->startsWith($trimmedLine, "#use_wildcard") or $this->startsWith($trimmedLine, "#award_skill") or $this->startsWith($trimmedLine, "#CHANGED") or $this->startsWith($trimmedLine, "#wildcard")) {
                     unset($lines[$x]);
                 }
             }
             $rule = implode("\n", $lines);
         }
 
+        $hadWildcard1 = strpos($rule, "wildcard");
+        
         $lines = explode("\n", $rule);
         for ($x = 0; $x < count($lines); $x++){
             $trimmedLine = trim($lines[$x]);
             if ($this->startsWith($trimmedLine, "wildcard")){
                 $lines[$x] = "\t\t#CHANGED:" . "\n" . "\t\t#" . $trimmedLine;
             }
-            else if($this->startsWith($trimmedLine, "award_skill") and ( ($hadWildcard and !$hasWildcard) or (!$hadWildcard and $hasWildcard))){
-                $lines[$x] = "\t\t#CHANGED:" . "\n" . "\t\t#" . $trimmedLine . "\n<award-function>";
+            else if($this->startsWith($trimmedLine, "award_skill") ){
+                if (((strpos($trimmedLine, "Wildcard") !== false or strpos($trimmedLine, "use_wildcard") !== false) and !$hasWildcard) or ((strpos($trimmedLine, "Wildcard") === false or strpos($trimmedLine, "use_wildcard") === false) and $hasWildcard)){
+                    $lines[$x] = "\t\t#CHANGED:" . "\n" . "\t\t#" . $trimmedLine . "\n<award-function>";
+                }
             }
-            else if ($this->startsWith($trimmedLine, "combo1 =") or $this->startsWith($trimmedLine, "combo1=") ){
-                if ($hasWildcard){
-                    $lines[$x] = "\t\t# " . $trimmedLine;
+            else if ($this->startsWith($trimmedLine, "combo1") ){
+                if ($hadWildcard1){
+                    $lines[$x] = "\t\t#" . $trimmedLine;
                 }
                 else {
                     $lines[$x] = "\t\t#CHANGED:" . "\n" . "\t\t#" . $trimmedLine;
