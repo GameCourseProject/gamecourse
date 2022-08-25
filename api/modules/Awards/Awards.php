@@ -122,31 +122,38 @@ class Awards extends Module
      *  - if null --> gets awards for all badges
      *  - if false --> gets awards only for badges that are not extra credit
      *  - if true --> gets awards only for badges that are extra credit
+     * (same for other options)
      *
      * @param int $userId
      * @param bool|null $extra
+     * @param bool|null $bragging
+     * @param bool|null $count
+     * @param bool|null $post
+     * @param bool|null $point
      * @return array
      * @throws Exception
      */
-    public function getUserBadgesAwards(int $userId, bool $extra = null): array
+    public function getUserBadgesAwards(int $userId, bool $extra = null, bool $bragging = null, bool $count = null,
+                                        bool $post = null, bool $point = null): array
     {
         $this->checkDependency(Badges::ID);
         $table = self::TABLE_AWARD . " a LEFT JOIN " . Badges::TABLE_BADGE . " b on a.moduleInstance=b.id";
         $where = ["a.course" => $this->course->getId(), "a.user" => $userId, "a.type" => AwardType::BADGE, "b.isActive" => true];
         if ($extra !== null) $where["b.isExtra"] = $extra;
+        if ($bragging !== null) $where["b.isBragging"] = $bragging;
+        if ($count !== null) $where["b.isCount"] = $count;
+        if ($post !== null) $where["b.isPost"] = $post;
+        if ($point !== null) $where["b.isPoint"] = $point;
         return Core::database()->selectMultiple($table, $where, "a.*");
     }
 
     /**
      * Gets skills awards for a given user.
-     * Option for collaborative:
-     *  - if null --> gets awards for all skills
-     *  - if false --> gets awards only for skills that are not collaborative
-     *  - if true --> gets awards only for skills that are collaborative
      * Option for extra:
      *  - if null --> gets awards for all skills
      *  - if false --> gets awards only for skills that are not extra credit
      *  - if true --> gets awards only for skills that are extra credit
+     * (same for other options)
      *
      * @param int $userId
      * @param bool|null $collab
@@ -219,16 +226,22 @@ class Awards extends Module
      *  - if null --> gets total reward for all badges
      *  - if false --> gets total reward only for badges that are not extra credit
      *  - if true --> gets total reward only for badges that are extra credit
+     * (same for other options)
      *
      * @param int $userId
      * @param bool|null $extra
+     * @param bool|null $bragging
+     * @param bool|null $count
+     * @param bool|null $post
+     * @param bool|null $point
      * @return int
      * @throws Exception
      */
-    public function getUserBadgesTotalReward(int $userId, bool $extra = null): int
+    public function getUserBadgesTotalReward(int $userId, bool $extra = null, bool $bragging = null, bool $count = null,
+                                             bool $post = null, bool $point = null): int
     {
         $this->checkDependency(Badges::ID);
-        return array_sum(array_column($this->getUserBadgesAwards($userId, $extra), "reward"));
+        return array_sum(array_column($this->getUserBadgesAwards($userId, $extra, $bragging, $count, $post, $point), "reward"));
     }
 
     /**
@@ -237,10 +250,7 @@ class Awards extends Module
      *  - if null --> gets total reward for all skills
      *  - if false --> gets total reward only for skills that are not collaborative
      *  - if true --> gets total reward only for skills that are collaborative
-     * Option for extra:
-     *  - if null --> gets total reward for all skills
-     *  - if false --> gets total reward only for skills that are not extra credit
-     *  - if true --> gets total reward only for skills that are extra credit
+     * (same for other options)
      *
      * @param int $userId
      * @param bool|null $collab

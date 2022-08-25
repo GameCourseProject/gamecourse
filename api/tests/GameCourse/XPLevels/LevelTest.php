@@ -213,7 +213,6 @@ class LevelTest extends TestCase
             $level0->setMinXP(1000);
 
         } catch (Exception $e) {
-            var_dump($e->getMessage());
             $this->assertEquals(0, $level0->getMinXP());
         }
     }
@@ -488,6 +487,22 @@ class LevelTest extends TestCase
         } catch (Exception $e) {
             $this->assertEquals(2000, $level->getMinXP());
             $this->assertEquals("Some description", $level->getDescription());
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function editLevelDuplicateMinXP()
+    {
+        Level::addLevel($this->courseId, 2000, "Some description");
+        $level = Level::addLevel($this->courseId, 5000, "Some description");
+        try {
+            $level->editLevel(2000, "Some description");
+
+        } catch (PDOException $e) {
+            $this->assertEquals(5000, $level->getMinXP());
         }
     }
 

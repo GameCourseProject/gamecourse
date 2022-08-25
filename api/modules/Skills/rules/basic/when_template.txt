@@ -1,0 +1,5 @@
+<skill-dependencies>
+
+logs = GC.participations.getSkillParticipations(target, "<skill-name>")
+rating = get_rating(logs)
+rating >= 3

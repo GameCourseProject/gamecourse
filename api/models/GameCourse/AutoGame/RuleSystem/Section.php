@@ -98,7 +98,7 @@ class Section
     /**
      * @throws Exception
      */
-    public function setPosition(?int $position)
+    public function setPosition(int $position)
     {
         $this->setData(["position" => $position]);
     }

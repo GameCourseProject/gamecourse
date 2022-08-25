@@ -478,25 +478,6 @@ tags:
      * @test
      * @throws Exception
      */
-    public function setPositionNull()
-    {
-        $rule = Rule::addRule($this->courseId, $this->sectionId, "Rule Name", null, "when", "then", 0);
-
-        try {
-            $rule->setPosition(null);
-            $this->fail("Exception should have been thrown on 'setPositionNull'");
-
-        } catch (TypeError $e) {
-            $this->assertEquals(0, $rule->getPosition());
-            $rulesText = implode("\n\n" . Section::RULE_DIVIDER . "\n\n", [$rule->getText()]);
-            $this->assertEquals($rulesText, file_get_contents(Section::getSectionById($this->sectionId)->getFile()));
-        }
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
     public function setText()
     {
         $rule = Rule::addRule($this->courseId, $this->sectionId, "Rule Name", null, "when", "then", 0);

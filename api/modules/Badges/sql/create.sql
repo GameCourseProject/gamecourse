@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS badges_config(
 CREATE TABLE IF NOT EXISTS badge(
 	id 		                    int unsigned AUTO_INCREMENT PRIMARY KEY,
     course                      int unsigned NOT NULL,
-	name                        varchar(70) NOT NULL,
+	name                        varchar(50) NOT NULL,
 	description                 varchar(150) NOT NULL,
 	nrLevels                    int NOT NULL DEFAULT 0,
 	isExtra                     boolean NOT NULL DEFAULT FALSE,

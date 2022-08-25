@@ -217,7 +217,6 @@ class Badge
      */
     public function setData(array $fieldValues)
     {
-        $courseId = $this->getCourse()->getId();
         $rule = $this->getRule();
 
         // Validate data
@@ -255,18 +254,6 @@ class Badge
             if (strcmp($oldName, $newName) !== 0) {
                 // Update badge folder
                 rename($this->getDataFolder(true, $oldName), $this->getDataFolder(true, $newName));
-
-                // Update rules
-                $rule->setName($newName);
-                RuleSystem::updateInAllRules($courseId, "/[\"']" . $oldName . "[\"']/", "\"" . $newName . "\"");
-            }
-        }
-        if (key_exists("description", $fieldValues)) {
-            if (strcmp($oldDescription, $newDescription) !== 0) {
-                // Update rule description
-                $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
-                $ruleDescription = self::generateRuleParams($name, $newDescription, $this->getLevels())["description"];
-                $rule->setDescription($ruleDescription);
             }
         }
         if (key_exists("isActive", $fieldValues)) {
@@ -274,6 +261,12 @@ class Badge
                 // Update rule status
                 $rule->setActive($newStatus);
             }
+        }
+        if (key_exists("name", $fieldValues) | key_exists("description", $fieldValues)) {
+            // Update badge rule
+            $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
+            $description = key_exists("description", $fieldValues) ? $newDescription : $this->getDescription();
+            self::updateRule($rule->getId(), $name, $description, $this->getLevels());
         }
     }
 
@@ -322,10 +315,9 @@ class Badge
      */
     public static function getBadges(int $courseId, bool $active = null, string $orderBy = "name"): array
     {
-        $field = "id, name, description, nrLevels, isExtra, isBragging, isCount, isPost, isPoint, isActive";
         $where = ["course" => $courseId];
         if ($active !== null) $where["isActive"] = $active;
-        $badges = Core::database()->selectMultiple(self::TABLE_BADGE, $where, $field, $orderBy);
+        $badges = Core::database()->selectMultiple(self::TABLE_BADGE, $where, "*", $orderBy);
         foreach ($badges as &$badgeInfo) {
             $badgeInfo = self::parse($badgeInfo);
 
@@ -371,7 +363,11 @@ class Badge
                                     bool $isBragging, bool $isCount, bool $isPost, bool $isPoint, array $levels): Badge
     {
         self::validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint);
+
+        // Create badge rule
         $rule = self::addRule($courseId, $name, $description, $levels);
+
+        // Insert in database
         $id = Core::database()->insert(self::TABLE_BADGE, [
             "course" => $courseId,
             "name" => $name,
@@ -383,9 +379,15 @@ class Badge
             "isPoint" => +$isPoint,
             "rule" => $rule->getId()
         ]);
-        self::setLevels($id, $levels);
+        $badge = new Badge($id);
+
+        // Set badge levels
+        $badge->setLevels($levels);
+
+        // Create badge data folder
         self::createDataFolder($courseId, $name);
-        return new Badge($id);
+
+        return $badge;
     }
 
     /**
@@ -407,7 +409,6 @@ class Badge
     public function editBadge(string $name, string $description, bool $isExtra, bool $isBragging,
                               bool $isCount, bool $isPost, bool $isPoint, bool $isActive, array $levels): Badge
     {
-        self::validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint);
         $this->setData([
             "name" => $name,
             "description" => $description,
@@ -418,7 +419,7 @@ class Badge
             "isPoint" => +$isPoint,
             "isActive" => +$isActive
         ]);
-        self::setLevels($this->id, $levels);
+        $this->setLevels($levels);
         return $this;
     }
 
@@ -431,16 +432,18 @@ class Badge
      */
     public static function deleteBadge(int $badgeId) {
         $badge = self::getBadgeById($badgeId);
+        if ($badge) {
+            $courseId = $badge->getCourse()->getId();
 
-        // Remove badge data folder
-        self::removeDataFolder($badge->getCourse()->getId(), $badge->getName());
+            // Remove badge data folder
+            self::removeDataFolder($courseId, $badge->getName());
 
-        // Remove badge rule
-        $badgesSection = Section::getSectionByName($badge->getCourse()->getId(), Badges::RULE_SECTION);
-        $badgesSection->removeRule($badge->getRule()->getId());
+            // Remove badge rule
+            self::removeRule($courseId, $badge->getRule()->getId());
 
-        // Delete badge from database
-        Core::database()->delete(self::TABLE_BADGE, ["id" => $badgeId]);
+            // Delete badge from database
+            Core::database()->delete(self::TABLE_BADGE, ["id" => $badgeId]);
+        }
     }
 
     /**
@@ -482,31 +485,26 @@ class Badge
      * @return void
      * @throws Exception
      */
-    private static function setLevels(int $badgeId, array $levels)
+    public function setLevels(array $levels)
     {
         // Delete all levels
-        Core::database()->delete(self::TABLE_BADGE_LEVEL, ["badge" => $badgeId]);
+        Core::database()->delete(self::TABLE_BADGE_LEVEL, ["badge" => $this->id]);
 
         // Set new levels
         foreach ($levels as $i => $level) {
             self::validateLevel($level["description"]);
             Core::database()->insert(self::TABLE_BADGE_LEVEL, [
-                "badge" => $badgeId,
+                "badge" => $this->id,
                 "number" => $i + 1,
                 "goal" => $level["goal"],
                 "description" => $level["description"],
                 "reward" => $level["reward"]
             ]);
         }
-        Core::database()->update(self::TABLE_BADGE, ["nrLevels" => count($levels)], ["id" => $badgeId]);
+        Core::database()->update(self::TABLE_BADGE, ["nrLevels" => count($levels)], ["id" => $this->id]);
 
         // Update badge rule
-        $badge = Badge::getBadgeById($badgeId);
-        $rule = $badge->getRule();
-        $params = self::generateRuleParams($badge->getName(), $badge->getDescription(), $levels, false, $rule->getId());
-        $rule->setDescription($params["description"]);
-        $rule->setWhen($params["when"]);
-        $rule->setThen($params["then"]);
+        self::updateRule($this->getRule()->getId(), $this->getName(), $this->getDescription(), $levels);
     }
 
 
@@ -537,12 +535,43 @@ class Badge
      */
     private static function addRule(int $courseId, string $name, string $description, array $levels): Rule
     {
-        // Generate rule
-        $params = self::generateRuleParams($name, $description, $levels);
-
         // Add rule to badges section
-        $badgesSection = Section::getSectionByName($courseId, Badges::RULE_SECTION);
-        return $badgesSection->addRule($name, $params["description"], $params["when"], $params["then"]);
+        $badgesModule = new Badges(new Course($courseId));
+        return $badgesModule->addRuleOfItem(null, $name, $description, $levels);
+    }
+
+    /**
+     * Updates badge rule in the Rule System.
+     *
+     * @param int $ruleId
+     * @param string $name
+     * @param string $description
+     * @param array $levels
+     * @return void
+     * @throws Exception
+     */
+    private static function updateRule(int $ruleId, string $name, string $description, array $levels)
+    {
+        $rule = new Rule($ruleId);
+        $params = self::generateRuleParams($name, $description, $levels, false, $ruleId);
+        $rule->setName($params["name"]);
+        $rule->setDescription($params["description"]);
+        $rule->setWhen($params["when"]);
+        $rule->setThen($params["then"]);
+    }
+
+    /**
+     * Deletes badge rule from the Rule System.
+     *
+     * @param int $courseId
+     * @param int $ruleId
+     * @return void
+     * @throws Exception
+     */
+    private static function removeRule(int $courseId, int $ruleId)
+    {
+        $badgesModule = new Badges(new Course($courseId));
+        $badgesModule->deleteRuleOfItem($ruleId);
     }
 
     /**
@@ -558,7 +587,7 @@ class Badge
      * @return array
      * @throws Exception
      */
-    private static function generateRuleParams(string $name, string $description, array $levels, bool $fresh = true,
+    public static function generateRuleParams(string $name, string $description, array $levels, bool $fresh = true,
                                                int $ruleId = null): array
     {
         // Generate description
@@ -833,15 +862,15 @@ class Badge
      */
     private static function validateName($name)
     {
-        if (!is_string($name) || empty($name))
+        if (!is_string($name) || empty(trim($name)))
             throw new Exception("Badge name can't be null neither empty.");
 
         preg_match("/[^\w()&\s-]/u", $name, $matches);
         if (count($matches) != 0)
             throw new Exception("Badge name '" . $name . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-', '&'");
 
-        if (iconv_strlen($name) > 70)
-            throw new Exception("Badge name is too long: maximum of 70 characters.");
+        if (iconv_strlen($name) > 50)
+            throw new Exception("Badge name is too long: maximum of 50 characters.");
     }
 
     /**
@@ -853,7 +882,7 @@ class Badge
      */
     private static function validateDescription($description)
     {
-        if (!is_string($description) || empty($description))
+        if (!is_string($description) || empty(trim($description)))
             throw new Exception("Badge description can't be null neither empty.");
 
         if (is_numeric($description))
@@ -896,7 +925,7 @@ class Badge
      * @param string|null $fieldName
      * @return array|int|null
      */
-    private static function parse(array $badge = null, $field = null, string $fieldName = null)
+    public static function parse(array $badge = null, $field = null, string $fieldName = null)
     {
         if ($badge) {
             if (isset($badge["id"])) $badge["id"] = intval($badge["id"]);

@@ -191,26 +191,6 @@ abstract class RuleSystem
         return Rule::getRulesOfCourse($courseId, $active);
     }
 
-    /**
-     * Updates a given regex pattern with a replacement in all
-     * rules of the Rule System.
-     *
-     * @param int $courseId
-     * @param string $pattern
-     * @param string $replace
-     * @return void
-     * @throws Exception
-     */
-    public static function updateInAllRules(int $courseId, string $pattern, string $replace)
-    {
-        $rules = self::getRules($courseId);
-        foreach ($rules as $r) {
-            $rule = Rule::getRuleById($r["id"]);
-            $rule->setWhen(preg_replace($pattern, $replace, $rule->getWhen()));
-            $rule->setThen(preg_replace($pattern, $replace, $rule->getThen()));
-        }
-    }
-
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Rules Data -------------------- ***/

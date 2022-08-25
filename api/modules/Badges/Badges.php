@@ -5,7 +5,6 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
-use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\Config\Action;
 use GameCourse\Module\Config\ActionScope;
 use GameCourse\Module\Config\InputType;
@@ -13,7 +12,6 @@ use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\XPLevels\XPLevels;
-use GameCourse\User\User;
 use Utils\Utils;
 
 /**
@@ -26,9 +24,6 @@ class Badges extends Module
     const TABLE_BADGE_LEVEL = Badge::TABLE_BADGE_LEVEL;
     const TABLE_BADGE_PROGRESSION = Badge::TABLE_BADGE_PROGRESSION;
     const TABLE_BADGE_CONFIG = 'badges_config';
-
-    const DATA_FOLDER = 'badges';
-    const RULE_SECTION = "Badges";
 
     public function __construct(?Course $course)
     {
@@ -58,6 +53,9 @@ class Badges extends Module
     // NOTE: dependencies should be updated on code changes
 
     const RESOURCES = ['assets/'];
+
+    const DATA_FOLDER = 'badges';
+    const RULE_SECTION = "Badges";
 
 
     /*** ----------------------------------------------- ***/
@@ -244,6 +242,19 @@ class Badges extends Module
 
 
     /*** ----------------------------------------------- ***/
+    /*** ----------------- Rule System ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    /**
+     * @throws Exception
+     */
+    protected function generateRuleParams(...$args): array
+    {
+        return Badge::generateRuleParams(...$args);
+    }
+
+
+    /*** ----------------------------------------------- ***/
     /*** --------------- Module Specific --------------- ***/
     /*** ----------------------------------------------- ***/
 
@@ -259,8 +270,9 @@ class Badges extends Module
      */
     public function updateMaxExtraCredit(int $max)
     {
-        if ($this->course->getModuleById(XPLevels::ID)->isEnabled()) {
-            $generalMax = (new XPLevels($this->course))->getMaxExtraCredit();
+        $xpLevels = $this->course->getModuleById(XPLevels::ID);
+        if ($xpLevels && $xpLevels->isEnabled()) {
+            $generalMax = $xpLevels->getMaxExtraCredit();
             if ($max > $generalMax)
                 throw new Exception("Badges max. extra credit cannot be bigger than " . $generalMax . " (general max. extra credit).");
         }
@@ -272,31 +284,26 @@ class Badges extends Module
     /*** ---------- Badges ---------- ***/
 
     /**
-     * Gets users who have earned a given badge up to a
-     * specific level.
+     * Gets users who have earned a given badge up to a certain level.
      *
      * @param int $badgeId
      * @param int $level
      * @return array
+     * @throws Exception
      */
     public function getUsersWithBadge(int $badgeId, int $level): array
     {
-        $courseId = $this->getCourse()->getId();
-        $usersWithBadgeIds = array_column(array_filter(Core::database()->selectMultiple(Awards::TABLE_AWARD,
-            ["course" => $courseId, "type" => AwardType::BADGE, "moduleInstance" => $badgeId],
-            "user, count(moduleInstance) as level", null, [], [], "user"
-        ), function ($user) use ($level) { return intval($user["level"]) >= $level; }), "user");
-
         $users = [];
-        foreach ($usersWithBadgeIds as $userId) {
-            $users[] = (new User($userId))->getData();
+        foreach ($this->getCourse()->getStudents() as $student) {
+            $badgeLevel = $this->getUserBadgeLevel($student["id"], $badgeId);
+            if ($badgeLevel >= $level) $users[] = $student;
         }
         return $users;
     }
 
     /**
      * Gets badges earned by a given user.
-     * Only returns badges that are currently active.
+     * NOTE: only returns badges that are currently active.
      *
      * @param int $userId
      * @param bool|null $isExtra
@@ -305,32 +312,28 @@ class Badges extends Module
      * @param bool|null $isPost
      * @param bool|null $isPoint
      * @return array
+     * @throws Exception
      */
     public function getUserBadges(int $userId, bool $isExtra = null, bool $isBragging = null, bool $isCount = null,
                                   bool $isPost = null, bool $isPoint = null): array
     {
-        $courseId = $this->getCourse()->getId();
+        $course = $this->getCourse();
+        $awardsModule = new Awards($course);
+        $userBadgeAwards = $awardsModule->getUserBadgesAwards($userId, $isExtra, $isBragging, $isCount, $isPost, $isPoint);
 
-        $table = Awards::TABLE_AWARD . " a JOIN " . self::TABLE_BADGE . " b on a.moduleInstance=b.id";
-        $where = ["a.course" => $courseId, "a.user" => $userId, "a.type" => AwardType::BADGE, "b.isActive" => true];
-        if ($isExtra !== null) $where["b.isExtra"] = $isExtra;
-        if ($isBragging !== null) $where["b.isBragging"] = $isBragging;
-        if ($isCount !== null) $where["b.isCount"] = $isCount;
-        if ($isPost !== null) $where["b.isPost"] = $isPost;
-        if ($isPoint !== null) $where["b.isPoint"] = $isPoint;
-        $userBadgeIds = Core::database()->selectMultiple($table, $where, "DISTINCT moduleInstance");
+        // Group by badge ID
+        $awards = [];
+        foreach ($userBadgeAwards as $award) {
+            $awards[$award["moduleInstance"]][] = $award;
+        }
+        $userBadgeAwards = $awards;
 
+        // Get badge info & user level on it
         $badges = [];
-        foreach ($userBadgeIds as $badgeId) {
-            $badge = (new Badge($badgeId));
-            $badgeData = $badge->getData();
-
-            $userLevel = $this->getUserBadgeLevel($userId, $badgeId);
-            for ($lvl = 1; $lvl <= $userLevel; $lvl++) {
-                $badge = $badgeData;
-                $badge["level"] = $lvl;
-                $badges[] = $badge;
-            }
+        foreach ($userBadgeAwards as $badgeId => $awards) {
+            $badge = (new Badge($badgeId))->getData();
+            $badge["level"] = count($awards);
+            $badges[] = $badge;
         }
         return $badges;
     }
@@ -353,13 +356,14 @@ class Badges extends Module
      * @param int $userId
      * @param int $badgeId
      * @return int
+     * @throws Exception
      */
     public function getUserBadgeLevel(int $userId, int $badgeId): int
     {
-        $courseId = $this->getCourse()->getId();
-        return intval(Core::database()->select(Awards::TABLE_AWARD,
-            ["user" => $userId, "course" => $courseId, "type" => AwardType::BADGE, "moduleInstance" => $badgeId],
-        "count(*)")
-        );
+        $userBadges = $this->getUserBadges($userId);
+        foreach ($userBadges as $badge) {
+            if ($badge["id"] == $badgeId) return $badge["level"];
+        }
+        return 0;
     }
 }

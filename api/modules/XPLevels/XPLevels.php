@@ -72,6 +72,7 @@ class XPLevels extends Module
 
         // Init config
         Core::database()->insert(self::TABLE_XP_CONFIG, ["course" => $this->course->getId()]);
+        $this->updateMaxExtraCredit(0);
 
         // Create level zero
         $level0Id = Level::addLevel($this->course->getId(), 0, "AWOL")->getId();
