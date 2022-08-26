@@ -33,10 +33,11 @@ CREATE TABLE IF NOT EXISTS badge_level(
 	badge 	                    int unsigned NOT NULL,
     number                      int unsigned NOT NULL,
     goal                        int unsigned NOT NULL DEFAULT 0,
-    description                 varchar(100),
+    description                 varchar(100) NOT NULL,
 	reward 		                int unsigned NOT NULL DEFAULT 0,
 
     UNIQUE key(number, badge),
+    UNIQUE key(goal, badge),
     FOREIGN key(badge) REFERENCES badge(id) ON DELETE CASCADE
 );
 

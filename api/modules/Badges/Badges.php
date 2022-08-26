@@ -174,8 +174,6 @@ class Badges extends Module
      */
     public function saveListingItem(string $listName, string $action, array $item)
     {
-        // NOTE: limit of 3 levels
-
         $courseId = $this->course->getId();
         if ($listName == "Badges") {
             if (!isset($item["reward1"]))

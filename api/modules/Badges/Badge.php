@@ -362,7 +362,7 @@ class Badge
     public static function addBadge(int $courseId, string $name, string $description, bool $isExtra,
                                     bool $isBragging, bool $isCount, bool $isPost, bool $isPoint, array $levels): Badge
     {
-        self::validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint);
+        self::validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels);
 
         // Create badge rule
         $rule = self::addRule($courseId, $name, $description, $levels);
@@ -487,6 +487,8 @@ class Badge
      */
     public function setLevels(array $levels)
     {
+        self::validateLevels($levels);
+
         // Delete all levels
         Core::database()->delete(self::TABLE_BADGE_LEVEL, ["badge" => $this->id]);
 
@@ -839,13 +841,15 @@ class Badge
      * @param $isCount
      * @param $isPost
      * @param $isPoint
+     * @param $levels
      * @return void
      * @throws Exception
      */
-    private static function validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint)
+    private static function validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels)
     {
         self::validateName($name);
         self::validateDescription($description);
+        self::validateLevels($levels);
         if (!is_bool($isExtra)) throw new Exception("'isExtra' must be either true or false.");
         if (!is_bool($isBragging)) throw new Exception("'isBragging' must be either true or false.");
         if (!is_bool($isCount)) throw new Exception("'isCount' must be either true or false.");
@@ -890,6 +894,39 @@ class Badge
 
         if (iconv_strlen($description) > 150)
             throw new Exception("Badge description is too long: maximum of 150 characters.");
+    }
+
+    /**
+     * Validates badge levels.
+     *
+     * @param $levels
+     * @return void
+     * @throws Exception
+     */
+    private static function validateLevels($levels)
+    {
+        if (!is_array($levels) || empty($levels))
+            throw new Exception("Badge needs to have at least one level.");
+
+        $size = count($levels);
+        if ($size > 3)
+            throw new Exception("Badge can't have more than three levels.");
+
+        for ($i = 0; $i < $size; $i++) {
+            if (!isset($levels[$i]["description"]) || !is_string($levels[$i]["description"]) || empty(trim($levels[$i]["description"])))
+                throw new Exception("Badge level " . ($i+1) . " description can't be null nor empty.");
+
+            if (!isset($levels[$i]["goal"]) || !is_numeric($levels[$i]["goal"]) || $levels[$i]["goal"] < 0)
+                throw new Exception("Badge level " . ($i+1) . " goal can't be null nor negative.");
+
+            if (!isset($levels[$i]["reward"]) || !is_numeric($levels[$i]["reward"]) || $levels[$i]["reward"] < 0)
+                throw new Exception("Badge level " . ($i+1) . " reward can't be null nor negative.");
+
+            if ($i != 0) {
+                if ($levels[$i - 1]["goal"] >= $levels[$i]["goal"])
+                    throw new Exception("Badge goal for level " . ($i+1) . " needs to be bigger than goal for level " . ($i) . ".");
+            }
+        }
     }
 
     /**
