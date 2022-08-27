@@ -1,1 +1,1 @@
-award_skill(target, "<skill-name>", rating, logs, use_wildcard, "<tier-name>")
+award_skill(target, "<skill-name>", rating, logs, use_wildcard, "<wildcard-tier-name>")

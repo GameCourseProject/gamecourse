@@ -57,9 +57,10 @@ CREATE TABLE IF NOT EXISTS skill_dependency(
 
 CREATE TABLE IF NOT EXISTS skill_dependency_combo(
     dependency                  int unsigned NOT NULL,
-    skill                       int unsigned NOT NULL,  /* 0 = wildcard dependency */
+    skill                       int unsigned DEFAULT NULL,
+    wildcard                    boolean NOT NULL DEFAULT FALSE,
 
-    PRIMARY key(dependency, skill),
+    UNIQUE key(dependency, skill),
     FOREIGN key(dependency) REFERENCES skill_dependency(id) ON DELETE CASCADE,
     FOREIGN key(skill) REFERENCES skill(id) ON DELETE CASCADE
 );

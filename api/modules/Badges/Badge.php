@@ -3,8 +3,6 @@ namespace GameCourse\Module\Badges;
 
 use Exception;
 use GameCourse\AutoGame\RuleSystem\Rule;
-use GameCourse\AutoGame\RuleSystem\RuleSystem;
-use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\XPLevels\XPLevels;
@@ -228,7 +226,6 @@ class Badge
         if (key_exists("description", $fieldValues)) {
             $newDescription = $fieldValues["description"];
             self::validateDescription($newDescription);
-            $oldDescription = $this->getDescription();
         }
         if (key_exists("isExtra", $fieldValues) && $fieldValues["isExtra"]) {
             $course = $this->getCourse();
@@ -480,7 +477,6 @@ class Badge
     /**
      * Sets badge levels.
      *
-     * @param int $badgeId
      * @param array $levels
      * @return void
      * @throws Exception

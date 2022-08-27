@@ -1376,10 +1376,11 @@ tags:
 
     /**
      * @test
+     * @throws Exception
      */
     public function deleteBadgeInexistentBadge()
     {
-        $badge = new Badge(100);
+        Badge::deleteBadge(100);
         $this->assertEmpty(Badge::getBadges($this->courseId));
     }
 

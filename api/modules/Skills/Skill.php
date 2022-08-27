@@ -216,10 +216,13 @@ class Skill
             $oldName = $this->getName();
         }
         if (key_exists("color", $fieldValues)) self::validateColor($fieldValues["color"]);
-        if (key_exists("page", $fieldValues) && !empty($fieldValues["page"])) {
-            $oldSkillName = key_exists("name", $fieldValues) ? $oldName : $this->getName();
-            $newSkillName = key_exists("name", $fieldValues) ? $newName : $oldSkillName;
-            self::updatePageURLs($fieldValues["page"], $oldSkillName, $newSkillName, "relative");
+        if (key_exists("page", $fieldValues)) {
+            self::validatePage($fieldValues["page"]);
+            if (!is_null($fieldValues["page"])) {
+                $oldSkillName = key_exists("name", $fieldValues) ? $oldName : $this->getName();
+                $newSkillName = key_exists("name", $fieldValues) ? $newName : $oldSkillName;
+                self::updatePageURLs($fieldValues["page"], $oldSkillName, $newSkillName, "relative");
+            }
         }
         if (key_exists("isExtra", $fieldValues) && $fieldValues["isExtra"]) {
             $xpLevelsModule = new XPLevels($course);
@@ -254,7 +257,10 @@ class Skill
             $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
             $isActive = key_exists("isActive", $fieldValues) ? $newStatus : $this->isActive();
             self::updateRule($course->getId(), $rule->getId(), $position, $isActive, $this->hasWildcardDependency(),
-                $newTier->getSkillTree()->getId(), $name, $this->getDependencies());
+                $newTier->getSkillTree()->getId(), $name, array_map(function ($dependency) {
+                    return array_column($dependency, "id");
+                }, $this->getDependencies())
+            );
         }
         if (key_exists("name", $fieldValues)) {
             if (strcmp($oldName, $newName) !== 0) {
@@ -271,12 +277,25 @@ class Skill
             $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
             $isActive = key_exists("isActive", $fieldValues) ? $newStatus : $this->isActive();
             self::updateRule($course->getId(), $rule->getId(), $newPosition, $isActive, $this->hasWildcardDependency(),
-                $this->getTier()->getSkillTree()->getId(), $name, $this->getDependencies());
+                $this->getTier()->getSkillTree()->getId(), $name, array_map(function ($dependency) {
+                    return array_column($dependency, "id");
+                }, $this->getDependencies())
+            );
         }
         if (key_exists("isActive", $fieldValues)) {
             if ($oldStatus != $newStatus) {
-                // If inactive, remove as dependency
-                if (!$newStatus) $this->removeAsDependency();
+                if (!$newStatus) {
+                    // Remove as dependency
+                    $this->removeAsDependency();
+
+                    // If no wildcard skills active, remove wildcard dependencies
+                    if ($this->isWildcard()) {
+                        $skillTreeId = $this->getTier()->getSkillTree()->getId();
+                        $wildcardTier = Tier::getWildcard($skillTreeId);
+                        if (empty($wildcardTier->getSkills(true)))
+                            self::removeAllWildcardDependencies($skillTreeId);
+                    }
+                }
 
                 // Update rule status
                 $rule->setActive($newStatus);
@@ -455,7 +474,7 @@ class Skill
     public static function addSkill(int $tierId, string $name, ?string $color, ?string $page, bool $isCollab,
                                     bool $isExtra, array $dependencies): Skill
     {
-        self::validateSkill($tierId, $name, $color, $isCollab, $isExtra, $dependencies);
+        self::validateSkill($tierId, $name, $color, $page, $isCollab, $isExtra, $dependencies);
         $tier = Tier::getTierById($tierId);
         $courseId = $tier->getCourse()->getId();
         $nrSkillsInTier = count($tier->getSkills());
@@ -532,6 +551,12 @@ class Skill
         if ($skill) {
             $courseId = $skill->getCourse()->getId();
 
+            if ($skill->isWildcard()) {
+                // Disable wildcard skill
+                // NOTE: needed to remove wildcard dependencies
+                $skill->setActive(false);
+            }
+
             // Remove skill data folder
             self::removeDataFolder($courseId, $skill->getName());
 
@@ -577,13 +602,12 @@ class Skill
 
         $dependencyIds = array_column(Core::database()->selectMultiple(self::TABLE_SKILL_DEPENDENCY, ["skill" => $this->id], "id", "id"), "id");
         foreach ($dependencyIds as $dependencyId) {
-            $combo = self::getDependencyCombo($dependencyId);
-            foreach ($combo as &$skill) {
-                if ($skill == 0) // wildcard
+            $combo = array_map(function ($skillId) {
+                if ($skillId == 0) // wildcard
                     $skill = ["id" => 0, "name" => Tier::WILDCARD];
-                else $skill = self::getSkillById($skill);
-                $skill = self::parse($skill->getData());
-            }
+                else $skill = self::getSkillById($skillId)->getData();
+                return self::parse($skill);
+            }, self::getDependencyCombo($dependencyId));
             $dependencies[$dependencyId] = $combo;
         }
 
@@ -628,8 +652,8 @@ class Skill
         }
 
         // Add new dependencies
-        foreach ($dependencies as $dependency) {
-            $this->addDependency($dependency);
+        foreach ($dependencies as $combo) {
+            $this->addDependency($combo);
         }
     }
 
@@ -642,22 +666,30 @@ class Skill
      */
     public function addDependency(array $combo)
     {
-        if ($this->isWildcard() && self::hasWildcardInDependencies([$combo]))
-            throw new Exception("A wildcard skill can't have dependencies.");
+        $dependencies = array_map(function ($dependency) {
+            return array_column($dependency, "id");
+        }, $this->getDependencies());
+        $dependencies[] = $combo;
+        self::validateDependencies($this->getTier(), $dependencies);
 
         if (!$this->hasDependency(null, $combo)) {
             $dependencyId = Core::database()->insert(self::TABLE_SKILL_DEPENDENCY, ["skill" => $this->id]);
             foreach ($combo as $skillId) {
-                Core::database()->insert(self::TABLE_SKILL_DEPENDENCY_COMBO, [
-                    "dependency" => $dependencyId,
-                    "skill" => $skillId
-                ]);
+                $where = ["dependency" => $dependencyId];
+                if ($skillId == 0) // wildcard
+                    $where["wildcard"] = true;
+                else $where["skill"] = $skillId;
+                Core::database()->insert(self::TABLE_SKILL_DEPENDENCY_COMBO, $where);
             }
 
             // Update skill rule
             $rule = $this->getRule();
             self::updateRule($this->getCourse()->getId(), $rule->getId(), $rule->getPosition(), $rule->isActive(),
-                $this->hasWildcardDependency(), $this->getTier()->getSkillTree()->getId(), $this->getName(), $this->getDependencies());
+                $this->hasWildcardDependency(), $this->getTier()->getSkillTree()->getId(), $this->getName(),
+                array_map(function ($dependency) {
+                    return array_column($dependency, "id");
+                }, $this->getDependencies())
+            );
         }
     }
 
@@ -675,11 +707,15 @@ class Skill
         // Update skill rule
         $rule = $this->getRule();
         self::updateRule($this->getCourse()->getId(), $rule->getId(), $rule->getPosition(), $rule->isActive(),
-            $this->hasWildcardDependency(), $this->getTier()->getSkillTree()->getId(), $this->getName(), $this->getDependencies());
+            $this->hasWildcardDependency(), $this->getTier()->getSkillTree()->getId(), $this->getName(),
+            array_map(function ($dependency) {
+                return array_column($dependency, "id");
+            }, $this->getDependencies())
+        );
     }
 
     /**
-     * Remove skill as a dependency of other skills.
+     * Removes skill as a dependency of other skills.
      *
      * @return void
      * @throws Exception
@@ -694,6 +730,25 @@ class Skill
                 $combo = self::getDependencyCombo($dependencyId);
                 if (in_array($this->id, $combo))
                     $dependant->removeDependency($dependencyId);
+            }
+        }
+    }
+
+    /**
+     * Removes all wildcard dependencies from skill.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function removeWildcardDependencies()
+    {
+        $dependencies = $this->getDependencies();
+        foreach ($dependencies as $dependencyId => $combo) {
+            foreach ($combo as $skill) {
+                if ($skill["id"] == 0) { // wildcard dependency
+                    $this->removeDependency($dependencyId);
+                    break;
+                }
             }
         }
     }
@@ -717,12 +772,12 @@ class Skill
         if (empty($combo))
             throw new Exception("Combo is empty: can't check whether skill has dependency.");
 
-        $dependenciesOfSkill = Core::database()->selectMultiple(self::TABLE_SKILL_DEPENDENCY, ["skill" => $this->id], "id");
-        foreach ($dependenciesOfSkill as $dependency) {
-            $depCombo = self::getDependencyCombo($dependency["id"]);
+        $dependencyIds = array_column(Core::database()->selectMultiple(self::TABLE_SKILL_DEPENDENCY, ["skill" => $this->id], "id"), "id");
+        foreach ($dependencyIds as $dependencyId) {
+            $depCombo = self::getDependencyCombo($dependencyId);
             $hasCombo = true;
-            foreach ($depCombo as $skill) {
-                if (!in_array($skill, $combo)) {
+            foreach ($depCombo as $skillId) {
+                if (!in_array($skillId, $combo)) {
                     $hasCombo = false;
                     break;
                 }
@@ -740,40 +795,62 @@ class Skill
      */
     public function hasWildcardDependency(): bool
     {
-        $dependencies = $this->getDependencies();
+        $dependencies = array_map(function ($dependency) {
+            return array_column($dependency, "id");
+        }, $this->getDependencies());
         return self::hasWildcardInDependencies($dependencies);
     }
 
     /**
-     * Gets a given dependency combo.
+     * Gets a dependency combo of a given dependency ID.
      *
      * @param int $dependencyId
      * @return array
      */
     private static function getDependencyCombo(int $dependencyId): array
     {
-        $skillIds = array_column(Core::database()->selectMultiple(self::TABLE_SKILL_DEPENDENCY_COMBO . " s JOIN " .
-            self::TABLE_SKILL_DEPENDENCY . " d on d.id=s.dependency", ["d.id" => $dependencyId], "s.skill as id"), "id");
+        $comboInfo = Core::database()->selectMultiple(self::TABLE_SKILL_DEPENDENCY_COMBO . " s JOIN " .
+            self::TABLE_SKILL_DEPENDENCY . " d on d.id=s.dependency", ["d.id" => $dependencyId], "s.skill, s.wildcard");
 
         $combo = [];
-        foreach ($skillIds as $skillId) {
-            $combo[] = intval($skillId);
+        foreach ($comboInfo as $info) {
+            $skillId = $info["wildcard"] ? 0 : intval($info["skill"]);
+            $combo[] = $skillId;
         }
         return $combo;
+    }
+
+    /**
+     * Removes all wildcard dependencies in the Skill Tree.
+     *
+     * @param int $skillTreeId
+     * @return void
+     * @throws Exception
+     */
+    private static function removeAllWildcardDependencies(int $skillTreeId)
+    {
+        $skills = Skill::getSkillsOfSkillTree($skillTreeId);
+        foreach ($skills as $skill) {
+            $skill = new Skill($skill["id"]);
+            $skill->removeWildcardDependencies();
+        }
     }
 
     /**
      * Checks whether there's at least one wildcard dependency
      * in an array of dependencies.
      *
+     * @example hasWildcardInDependencies([[1, 2], [1, 0], [2, 0]]) --> true
+     * @example hasWildcardInDependencies([[1, 2]]) --> false
+     *
      * @param array $dependencies
      * @return bool
      */
     private static function hasWildcardInDependencies(array $dependencies): bool
     {
-        foreach ($dependencies as $dependency) {
-            foreach ($dependency as $skill) {
-                if ($skill["id"] == 0) return true;
+        foreach ($dependencies as $combo) {
+            foreach ($combo as $skillId) {
+                if ($skillId == 0) return true;
             }
         }
         return false;
@@ -802,7 +879,6 @@ class Skill
      * @param int $tierId
      * @param int $positionInTier
      * @param bool $hasWildcardDependency
-     * @param int $skillTreeId
      * @param string $skillName
      * @param array $dependencies
      * @return Rule
@@ -846,7 +922,10 @@ class Skill
         foreach ($skillRules as $r) {
             $skill = self::getSkillByRule($r["id"]);
             self::updateRule($courseId, $r["id"], $r["position"], $r["isActive"], $skill->hasWildcardDependency(),
-                $skill->getTier()->getSkillTree()->getId(), $skill->getName(), $skill->getDependencies());
+                $skill->getTier()->getSkillTree()->getId(), $skill->getName(), array_map(function ($dependency) {
+                    return array_column($dependency, "id");
+                }, $skill->getDependencies())
+            );
         }
     }
 
@@ -908,9 +987,9 @@ class Skill
         $then = str_replace("<skill-name>", $skillName, $then);
 
         if ($isWildcard) {
-            // Fill-in tier name
-            $when = str_replace("<tier-name>", Tier::WILDCARD, $when);
-            $then = str_replace("<tier-name>", Tier::WILDCARD, $then);
+            // Fill-in wildcard tier name
+            $when = str_replace("<wildcard-tier-name>", Tier::WILDCARD, $when);
+            $then = str_replace("<wildcard-tier-name>", Tier::WILDCARD, $then);
         }
 
         // Fill-in skill dependencies
@@ -924,8 +1003,8 @@ class Skill
             // Generate dependencies text
             foreach ($dependencies as $dependency) {
                 $combo = [];
-                foreach ($dependency as $skill) {
-                    $combo[] = $skill["name"] == Tier::WILDCARD ? "wildcard" : "rule_unlocked(\"" . $skill["name"] . "\", target)";
+                foreach ($dependency as $skillId) {
+                    $combo[] = $skillId == 0 ? "wildcard" : "rule_unlocked(\"" . (new Skill($skillId))->getName() . "\", target)";
                 }
                 $dependenciesTxt .= "combo" . $comboNr . " = " . implode(" and ", $combo) . "\n";
                 $conditions[] = "combo" . $comboNr;
@@ -1029,17 +1108,19 @@ class Skill
      * @param $tierId
      * @param $name
      * @param $color
+     * @param $page
      * @param $isCollab
      * @param $isExtra
      * @param $dependencies
      * @return void
      * @throws Exception
      */
-    private static function validateSkill($tierId, $name, $color, $isCollab, $isExtra, $dependencies)
+    private static function validateSkill($tierId, $name, $color, $page, $isCollab, $isExtra, $dependencies)
     {
         self::validateTier($tierId);
         self::validateName($name);
         self::validateColor($color);
+        self::validatePage($page);
         self::validateDependencies(new Tier($tierId), $dependencies);
         if (!is_bool($isCollab)) throw new Exception("'isCollab' must be either true or false.");
         if (!is_bool($isExtra)) throw new Exception("'isExtra' must be either true or false.");
@@ -1092,6 +1173,19 @@ class Skill
     }
 
     /**
+     * Validates skill page.
+     *
+     * @throws Exception
+     */
+    private static function validatePage($page)
+    {
+        if (is_null($page)) return;
+
+        if (!is_string($page) || empty(trim($page)))
+            throw new Exception("Skill page can't be empty.");
+    }
+
+    /**
      * Validates skill dependencies.
      *
      * @param Tier $tier
@@ -1104,6 +1198,30 @@ class Skill
     {
         if ($tier->isWildcard() && !empty($dependencies))
             throw new Exception("A wilcard skill can't have dependencies.");
+
+        if ($tier->getPosition() == 0 && !empty($dependencies))
+            throw new Exception("The first tier can't have dependencies.");
+
+        foreach ($dependencies as $combo) {
+            $invalidFormat = false;
+            if (!is_array($combo)) $invalidFormat = true;
+
+            if (!$invalidFormat) {
+                foreach ($combo as $skillId) {
+                    if (!is_numeric($skillId)) {
+                        $invalidFormat = true;
+                        break;
+                    }
+                }
+            }
+
+            if ($invalidFormat)
+                throw new Exception("Invalid combo format. Format must be: [<skillID>, <skillID>, ...]");
+        }
+
+        $wildcardTier = Tier::getWildcard($tier->getSkillTree()->getId());
+        if (self::hasWildcardInDependencies($dependencies) && empty($wildcardTier->getSkills(true)))
+            throw new Exception("Can't add wildcard dependency on skill: there's no wildcard skills active.");
     }
 
 
@@ -1145,7 +1263,7 @@ class Skill
      * @param string|null $fieldName
      * @return array|int|null
      */
-    private static function parse(array $skill = null, $field = null, string $fieldName = null)
+    public static function parse(array $skill = null, $field = null, string $fieldName = null)
     {
         if ($skill) {
             if (isset($skill["id"])) $skill["id"] = intval($skill["id"]);

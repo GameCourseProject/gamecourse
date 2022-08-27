@@ -330,12 +330,16 @@ class Tier
      * Deletes a tier from the database.
      *
      * @param int $tierId
+     * @param bool $allowWildcard
      * @return void
      * @throws Exception
      */
-    public static function deleteTier(int $tierId) {
+    public static function deleteTier(int $tierId, bool $allowWildcard = false) {
         $tier = self::getTierById($tierId);
         if ($tier) {
+            if (!$allowWildcard && $tierId == self::getWildcard($tier->getSkillTree()->getId())->getId())
+                throw new Exception("It's not possible to delete '" . self::WILDCARD . "' tier.");
+
             // Delete skills
             $skills = $tier->getSkills();
             foreach ($skills as $skill) {

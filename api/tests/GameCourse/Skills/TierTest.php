@@ -407,6 +407,35 @@ class TierTest extends TestCase
         $this->assertFalse($skill2->isActive());
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setInactiveWildcard()
+    {
+        // Given
+        $wildcardTier = Tier::getWildcard($this->skillTreeId);
+        $skillWildcard = Skill::addSkill($wildcardTier->getId(), "Skill Wildcard", null, null, false, false, []);
+
+        $tier1 = Tier::addTier($this->skillTreeId, "Tier1", 100);
+        $skill1 = Skill::addSkill($tier1->getId(), "Skill1", null, null, false, false, []);
+
+        $tier2 = Tier::addTier($this->skillTreeId, "Tier2", 200);
+        $skill2 = Skill::addSkill($tier2->getId(), "Skill2", null, null, false, false, [
+            [$skill1->getId()],
+            [0]
+        ]);
+
+        // When
+        $wildcardTier->setActive(false);
+
+        // Then
+        $this->assertFalse($wildcardTier->isActive());
+        $this->assertFalse($skillWildcard->isActive());
+        $this->assertFalse($skill2->hasWildcardDependency());
+        $this->assertCount(1, $skill2->getDependencies());
+    }
+
 
     // General
 
@@ -909,6 +938,21 @@ class TierTest extends TestCase
         $this->assertCount(1, Tier::getTiers($this->courseId));
     }
 
+    /**
+     * @test
+     */
+    public function deleteWildcardTier()
+    {
+        $wildcardTier = Tier::getWildcard($this->skillTreeId);
+        try {
+            Tier::deleteTier($wildcardTier->getId());
+            $this->fail("Error should have been thrown on 'deleteWildcardTier'");
+
+        } catch (Exception $e) {
+            $this->assertCount(1, Tier::getTiers($this->courseId));
+        }
+    }
+
 
     /**
      * @test
@@ -923,11 +967,12 @@ class TierTest extends TestCase
     /**
      * @test
      */
-    public function skillTreeDoesntExist()
+    public function tierDoesntExist()
     {
         $tier = new Tier(100);
         $this->assertFalse($tier->exists());
     }
+
 
     // Import / Export
     // TODO

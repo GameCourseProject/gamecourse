@@ -217,7 +217,7 @@ class SkillTree
             // Delete tiers
             $tiers = $skillTree->getTiers();
             foreach ($tiers as $tier) {
-                Tier::deleteTier($tier["id"]);
+                Tier::deleteTier($tier["id"], true);
             }
 
             // Delete skill tree from database
