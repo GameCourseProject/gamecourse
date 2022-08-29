@@ -599,6 +599,7 @@ class RuleSystem
             $file = file_put_contents($this->rulesdir . $ruleFile, $content);
         }
     }
+
     public function editRuleDependencies($ruleName, $rule, $newDependencies, $hasWildcard){
         
         if (sizeof($newDependencies) == 0){ // dependencies eliminated
@@ -712,11 +713,11 @@ class RuleSystem
                     $lines[$x] = "\t\t#CHANGED:" . "\n" . "\t\t#" . $trimmedLine . "\n<award-function>";
                 }
             }
-            else if ($this->startsWith($trimmedLine, "combo1") ){
+            else if ($this->startsWith($trimmedLine, "combo1 =") ){
                 if ($hadWildcard1){
                     $lines[$x] = "\t\t#" . $trimmedLine;
                 }
-                else {
+                else {                                                                
                     $lines[$x] = "\t\t#CHANGED:" . "\n" . "\t\t#" . $trimmedLine;
                 }
             }

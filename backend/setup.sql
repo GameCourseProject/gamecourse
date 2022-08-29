@@ -75,6 +75,10 @@ DROP TABLE IF EXISTS streak_participations;
 DROP TABLE IF EXISTS virtual_currency_config;
 DROP TABLE IF EXISTS user_wallet;
 
+DROP TABLE IF EXISTS teams_config;
+DROP TABLE IF EXISTS teams;
+DROP TABLE IF EXISTS teams_wallet;
+
 DROP TABLE IF EXISTS template;
 
 DROP TABLE IF EXISTS user_profile;

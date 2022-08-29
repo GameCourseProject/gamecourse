@@ -25,16 +25,18 @@ class Teams extends Module
     static $teams;
 
     public function init() {
+        $this->setupData($this->getCourseId());
         $this->initTemplates();
     }
 
     public function initTemplates()
     {
-        $courseId = $this->getCourseId();
+        /*$courseId = $this->getCourseId();
 
         if (!Views::templateExists($courseId, self::TEAM_LEADERBOARD_TEMPLATE))
             Views::createTemplateFromFile(self::TEAM_LEADERBOARD_TEMPLATE, file_get_contents(__DIR__ . '/leaderboard.txt'), $courseId, self::ID);
-    }
+        */
+        }
 
     public function setupResources() {
         parent::addResources('css/leaderboard.css');
@@ -43,8 +45,10 @@ class Teams extends Module
 
     public function setupData(int $courseId)
     {
-        $this->addTables(self::ID, self::TABLE_CONFIG);
-        self::$teams = new Teams($courseId);
+        if ($this->addTables(self::ID, self::TABLE_CONFIG) || empty(Core::$systemDB->select(self::TABLE, ["course" => $courseId]))) {
+            Core::$systemDB->insert(self::TABLE_CONFIG, ["course" => $courseId, "nrTeamMembers" => 3]);
+        }
+
     }
 
     public function update_module($compatibleVersions)
@@ -55,6 +59,73 @@ class Teams extends Module
     /*** ----------------------------------------------- ***/
     /*** ---------------- Module Config ---------------- ***/
     /*** ----------------------------------------------- ***/
+
+    public function moduleConfigJson(int $courseId)
+    {
+        $teamsConfigArray = array();
+        $teamsArray = array();
+
+        $teamsArr = array();
+        if (Core::$systemDB->tableExists(self::TABLE_CONFIG)) {
+            $teamsConfigVarDB = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
+            if ($teamsConfigVarDB) {
+                unset($teamsConfigVarDB["course"]);
+                array_push($teamsConfigArray, $teamsConfigVarDB);
+            }
+        }
+        if (Core::$systemDB->tableExists(self::TABLE)) {
+            $teamsVarDB = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*");
+            if ($teamsVarDB) {
+                unset($teamsConfigVarDB["course"]);
+                foreach ($teamsVarDB as $team) {
+                    array_push($teamsArray, $team);
+
+                }
+            }
+        }
+
+        $teamsArr[self::TABLE_CONFIG] = $teamsConfigArray;
+        $teamsArr[self::TABLE] = $teamsArray;
+
+        if ($teamsConfigArray || $teamsArray ) {
+            return $teamsArr;
+        } else {
+            return false;
+        }
+    }
+
+    public function readConfigJson(int $courseId, array $tables, bool $update = false): array
+    {
+        $tableName = array_keys($tables);
+        $i = 0;
+        $teamIds = array();
+        $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
+        foreach ($tables as $table) {
+            foreach ($table as $entry) {
+                if ($tableName[$i] == self::TABLE_CONFIG) {
+                    if ($update && $existingCourse) {
+                        Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
+                    } else {
+                        $entry["course"] = $courseId;
+                        Core::$systemDB->insert($tableName[$i], $entry);
+                    }
+                } else  if ($tableName[$i] == self::TABLE) {
+                    $importId = $entry["id"];
+                    unset($entry["id"]);
+                    if ($update && $existingCourse) {
+                        Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
+                    } else {
+                        $entry["course"] = $courseId;
+                        $newId = Core::$systemDB->insert($tableName[$i], $entry);
+                    }
+                    $teamIds[$importId] = $newId;
+                }
+            }
+            $i++;
+        }
+        return $teamIds;
+    }
+
 
     public function is_configurable(): bool
     {
@@ -68,10 +139,8 @@ class Teams extends Module
 
     public function get_general_inputs(int $courseId): array
     {
-        $input = [
-            array('name' => "Number of team members", 'id' => 'nrTeamMembers', 'type' => "number", 'options' => "", 'current_val' => intval($this->getNumberOfTeamMembers($courseId))),
-        ];
-        return $input;
+        $input = array('name' => "Number of team members", 'id' => 'nrTeamMembers', 'type' => "number", 'options' => "", 'current_val' => intval($this->getNumberOfTeamMembers($courseId)));
+        return [$input];
     }
 
     public function save_general_inputs(array $generalInputs, int $courseId)
@@ -157,7 +226,7 @@ class Teams extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => Teams()::ID,
+    'id' => Teams::ID,
     'name' => 'Teams',
     'description' => 'Creates a view template with a leaderboard of the students teams progress on the course.',
     'type' => 'GameElement',

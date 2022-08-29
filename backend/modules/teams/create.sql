@@ -7,7 +7,7 @@ create table teams_config(
 create table teams(
     id          int unsigned auto_increment primary key,
     course      int unsigned not null,
-    teamId      int unsigned auto_increment,
+    teamId      int unsigned,
     teamName    varchar(70) not null,
     memberId    int unsigned not null,
     memberName  varchar(70) not null,
