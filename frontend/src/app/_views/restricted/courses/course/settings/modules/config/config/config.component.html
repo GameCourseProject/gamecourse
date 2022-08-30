@@ -16,7 +16,7 @@
       <div *ngFor="let input of generalInputs" class="row">
         <ng-container
           [ngTemplateOutlet]="INPUT"
-          [ngTemplateOutletContext]="{id: input.id, label: input.label, type: input.type, obj: input, style: 'outer'}">
+          [ngTemplateOutletContext]="{id: 'value', label: input.label, type: input.type, obj: input, style: 'outer', options: input.options}">
         </ng-container>
       </div>
 
@@ -55,7 +55,7 @@
 
   <!-- Personalized Config -->
   <div *ngIf="personalizedConfig" class="personalized-config {{module.id}}">
-    <div [innerHTML]="personalizedConfig.html"></div>
+    <ng-container [ngComponentOutlet]="PersonalizedConfig"></ng-container>
   </div>
 
 </ng-container>
@@ -79,13 +79,15 @@
                 [ngClass]="{'check-column': column.type === InputType.TOGGLE}">
               {{column.label}}
             </th>
-            <th *ngFor="let action of list.actions" class="action-column"></th>
+            <ng-container *ngFor="let action of list.actions">
+              <th *ngIf="showAtLeastOnce(action.scope, list.items.length)" class="action-column"></th>
+            </ng-container>
           </tr>
         </thead>
 
         <!-- Body -->
         <tbody>
-          <tr *ngFor="let item of list.items; let first = first; let last = last; let even = even; let odd = odd">
+          <tr *ngFor="let item of list.items; let i = index; let first = first; let last = last; let even = even; let odd = odd">
 
             <td *ngFor="let column of list.listInfo"
                 [ngClass]="{'check-column': column.type === InputType.TOGGLE}">
@@ -96,7 +98,7 @@
 
               <ng-container *ngIf="column.type === InputType.TOGGLE" class="check-column">
                 <label class="switch">
-                  <input type="checkbox" [(ngModel)]="item[column.id]" (change)="toggleItemParam(list.listName, item)">
+                  <input type="checkbox" [(ngModel)]="item[column.id]" (change)="toggleItemParam(list, item)">
                   <span class="slider round"></span>
                 </label>
               </ng-container>
@@ -115,16 +117,19 @@
               </ng-container>
             </td>
 
-            <td *ngFor="let action of list.actions" class="action-column">
-              <ng-container *ngIf="scopeAllows(action.scope, first, last, even, odd)">
-                <div *ngIf="action.action === Action.DUPLICATE" class="icon duplicate_icon" title="Duplicate" (click)="doActionOnItem(list.listName, item, action.action)"></div>
-                <div *ngIf="action.action === Action.EDIT" class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(list, item, first, last, even, odd); isItemModalOpen = true;"></div>
-                <div *ngIf="action.action === Action.DELETE" class="icon delete_icon" title="Remove" (click)="itemToDelete = {list, item}; isDeleteVerificationModalOpen = true"></div>
-                <div *ngIf="action.action === Action.MOVE_UP" class="icon up_icon" title="Move up" (click)="moveItem(list, item, 1)"></div>
-                <div *ngIf="action.action === Action.MOVE_DOWN" class="icon down_icon" title="Move down" (click)="moveItem(list, item, -1)"></div>
-                <div *ngIf="action.action === Action.EXPORT" class="icon export_icon_no_outline" title="Export" (click)="exportItems(list, item)"></div>
-              </ng-container>
-            </td>
+            <ng-container *ngFor="let action of list.actions">
+              <td *ngIf="showAtLeastOnce(action.scope, list.items.length)" class="action-column">
+                <ng-container *ngIf="scopeAllows(action.scope, list.items.length, i, first, last, even, odd)">
+                  <div *ngIf="action.action === Action.DUPLICATE" class="icon duplicate_icon" title="Duplicate" (click)="doActionOnItem(list.listName, item, action.action, list.parent ?? null)"></div>
+                  <div *ngIf="action.action === Action.EDIT" class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(list, item, i, first, last, even, odd); isItemModalOpen = true;"></div>
+                  <div *ngIf="action.action === Action.DELETE" class="icon delete_icon" title="Remove" (click)="itemToDelete = {list, item}; isDeleteVerificationModalOpen = true"></div>
+                  <div *ngIf="action.action === Action.VIEW" class="icon preview_icon" title="View" (click)="viewItem(list, item)"></div>
+                  <div *ngIf="action.action === Action.MOVE_UP" class="icon up_icon" title="Move up" (click)="moveItem(list, item, 1)"></div>
+                  <div *ngIf="action.action === Action.MOVE_DOWN" class="icon down_icon" title="Move down" (click)="moveItem(list, item, -1)"></div>
+                  <div *ngIf="action.action === Action.EXPORT" class="icon export_icon_no_outline" title="Export" (click)="exportItems(list, item)"></div>
+                </ng-container>
+              </td>
+            </ng-container>
           </tr>
         </tbody>
       </table>
@@ -162,9 +167,9 @@
                [ngClass]="{'half': input.type !== InputType.IMAGE && input.type !== InputType.TOGGLE, 'full': input.type === InputType.IMAGE, 'on_off': input.type === InputType.TOGGLE}">
 
             <ng-container
-              *ngIf="scopeAllows(input.scope, newItem.first, newItem.last, newItem.even, newItem.odd)"
+              *ngIf="scopeAllows(input.scope, newItem.nrItems, newItem.index, newItem.first, newItem.last, newItem.even, newItem.odd)"
               [ngTemplateOutlet]="INPUT"
-              [ngTemplateOutletContext]="{id: input.id, label: input.label, type: input.type, obj: newItem.item, style: 'inner'}">
+              [ngTemplateOutletContext]="{id: input.id, label: input.label, type: input.type, obj: newItem.item, style: 'inner', options: input.options}">
             </ng-container>
           </div>
         </div>
@@ -172,13 +177,13 @@
     </div>
 
     <button class="cancel" (click)="isItemModalOpen = false; newItem.list = null; clearObject(newItem.item)">Cancel</button>
-    <button class="save_btn" [disabled]="!hasUnsavedChanges" (click)="doActionOnItem(newItem.list.listName, newItem.item, mode === 'add' ? Action.NEW : Action.EDIT)">Save</button>
+    <button class="save_btn" [disabled]="!hasUnsavedChanges" (click)="doActionOnItem(newItem.list.listName, newItem.item, mode === 'add' ? Action.NEW : Action.EDIT, newItem.list.parent || null)">Save</button>
   </div>
 </ng-template>
 
 
 <!-- Inputs FIXME: create components and an any-input component -->
-<ng-template #INPUT let-id='id' let-label='label' let-type='type' let-obj='obj' let-style='style'>
+<ng-template #INPUT let-id='id' let-label='label' let-type='type' let-obj='obj' let-style='style' let-options='options'>
 
   <!-- Text -->
   <ng-container *ngIf="type === InputType.TEXT">
@@ -212,13 +217,13 @@
     </ng-container>
   </ng-container>
 
-  <!-- Image -->
-  <app-input-file *ngIf="type === InputType.IMAGE"
-      [id]="id"
-      [accept]="'image/*'"
-      [label]="label"
-      (valueChange)="onFileSelected($event, 'image', obj, id)">
-  </app-input-file>
+  <!-- Select -->
+  <ng-container *ngIf="type === InputType.SELECT">
+    <select class="form__input" [(ngModel)]="obj[id]">
+      <option [value]="undefined" disabled>Select {{label}}</option>
+      <option *ngFor="let item of options['items']" [value]="item[options['id']]">{{item[options['labelParam']]}}</option>
+    </select>
+  </ng-container>
 
   <!-- Toggle -->
   <ng-container *ngIf="type === InputType.TOGGLE">
@@ -230,6 +235,20 @@
       </label>
     </div>
   </ng-container>
+
+  <!-- Image -->
+  <app-input-file *ngIf="type === InputType.IMAGE"
+      [id]="id"
+      [accept]="'image/*'"
+      [label]="label"
+      (valueChange)="onFileSelected($event, 'image', obj, id)">
+  </app-input-file>
+
+  <!-- Color -->
+  <app-input-color *ngIf="type === InputType.COLOR"
+      [id]="id"
+      [(value)]="obj[id]">
+  </app-input-color>
 
 </ng-template>
 

@@ -9,9 +9,10 @@ import {ResourceManager} from "../../../../../../../../_utils/resources/resource
 import {copyObject} from "../../../../../../../../_utils/misc/misc";
 
 import {Module} from "../../../../../../../../_domain/modules/module";
-import {InputType} from "../../../../../../../../_domain/inputs/input-type";
-import {Action, ActionScope} from 'src/app/_domain/modules/config/Action';
+import {InputType} from "../../../../../../../../_domain/modules/config/input-type";
+import {Action, ActionScope, scopeAllows, showAtLeastOnce} from 'src/app/_domain/modules/config/Action';
 import {DownloadManager} from "../../../../../../../../_utils/download/download-manager";
+import {SkillsComponent} from "../personalized-config/skills/skills.component";
 
 @Component({
   selector: 'app-config',
@@ -29,7 +30,7 @@ export class ConfigComponent implements OnInit {
 
   generalInputs: GeneralInput[];
   lists: List[];
-  personalizedConfig: {html: string, styles: string[], scripts: string[]};
+  personalizedConfig: string;
 
   importedFile: File;
 
@@ -38,9 +39,11 @@ export class ConfigComponent implements OnInit {
   isImportModalOpen: boolean;
 
   mode: 'add' | 'edit';
-  newItem: {list: List, item: any, first: boolean, last: boolean, even: boolean, odd: boolean} = {
+  newItem: {list: List, item: any, nrItems: number, index: number, first: boolean, last: boolean, even: boolean, odd: boolean} = {
     list: null,
     item: {},
+    nrItems: null,
+    index: null,
     first: null,
     last: null,
     even: null,
@@ -86,39 +89,6 @@ export class ConfigComponent implements OnInit {
     this.generalInputs = config.generalInputs;
     this.lists = config.lists;
     this.personalizedConfig = config.personalizedConfig;
-    if (this.personalizedConfig) this.loadPersonalizedConfig();
-  }
-
-  loadPersonalizedConfig() {
-    const head = document.getElementsByTagName('head')[0];
-
-    // Load styles
-    for (const styleURL of this.personalizedConfig.styles) {
-      // Prevent unwanted browser caching
-      const path = new ResourceManager(this.sanitizer);
-      path.set(styleURL);
-
-      const style = document.createElement('link');
-      const name = (styleURL.split('/').pop()).split('.')[0];
-      style.id = this.module.id + '-' + name + '-styling';
-      style.rel = 'stylesheet';
-      style.href = path.get('URL').toString();
-      head.appendChild(style);
-    }
-
-    // Load scripts
-    for (const scriptURL of this.personalizedConfig.scripts) {
-      // Prevent unwanted browser caching
-      const path = new ResourceManager(this.sanitizer);
-      path.set(scriptURL);
-
-      const script = document.createElement('script');
-      const name = (scriptURL.split('/').pop()).split('.')[0];
-      script.id = this.module.id + '-' + name + '-script';
-      script.type = 'text/javascript';
-      script.src = path.get('URL').toString();
-      head.appendChild(script);
-    }
   }
 
 
@@ -135,25 +105,29 @@ export class ConfigComponent implements OnInit {
   }
 
   // Lists
-  doActionOnItem(listName: string, item: any, action: Action): void {
+  doActionOnItem(listName: string, item: any, action: Action, parentID?: number): void {
     this.loadingAction = true;
-    this.api.saveModuleConfig(this.courseID, this.module.id, null, item, listName, action)
+    this.api.saveModuleConfig(this.courseID, this.module.id, null, item, listName, parentID, action)
       .pipe( finalize(() => {
         this.loadingAction = false;
         this.isItemModalOpen = false;
         this.isDeleteVerificationModalOpen = false;
-        this.newItem = {list: null, item: {}, first: null, last: null, even: null, odd: null};
+        this.newItem = {list: null, item: {}, nrItems: null, index: null, first: null, last: null, even: null, odd: null};
         this.itemToDelete = null;
       }) )
       .subscribe(async () => await this.getModuleConfig(this.module.id))
   }
 
-  toggleItemParam(listName: string, item: any) {
+  toggleItemParam(list: List, item: any) {
     this.loadingAction = true;
-    this.doActionOnItem(listName, item, Action.EDIT);
+    this.doActionOnItem(list.listName, item, Action.EDIT, list.parent ?? null);
   }
 
   moveItem(list: List, item: any, dir: number) {
+    this.doActionOnItem(list.listName, item, dir > 0 ? Action.MOVE_UP : Action.MOVE_DOWN, list.parent);
+  }
+
+  viewItem(list: List, item: any) {
     // TODO
   }
 
@@ -194,22 +168,30 @@ export class ConfigComponent implements OnInit {
 
 
   /*** --------------------------------------------- ***/
+  /*** ------------ Personalized Config ------------ ***/
+  /*** --------------------------------------------- ***/
+
+  get PersonalizedConfig() {
+    if (this.personalizedConfig === ApiHttpService.SKILLS) return SkillsComponent;
+    else throw Error("Personalized config for module '" + this.module.id + "' not found.");
+  }
+
+
+  /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  initEditItem(list: List, item: any, first: boolean, last: boolean, even: boolean, odd: boolean): void {
-    this.newItem = {list, item: copyObject(item), first, last, even, odd};
+  initEditItem(list: List, item: any, index: number, first: boolean, last: boolean, even: boolean, odd: boolean): void {
+    this.newItem = {list, item: copyObject(item), nrItems: list.items.length, index, first, last, even, odd};
   }
 
-  scopeAllows(scope: ActionScope, first: boolean, last: boolean, even: boolean, odd: boolean): boolean {
-    if (scope === ActionScope.ALL) return true;
-    if (scope === ActionScope.FIRST && first) return true;
-    if (scope === ActionScope.LAST && last) return true;
-    if (scope === ActionScope.EVEN && even) return true;
-    if (scope === ActionScope.ODD && odd) return true;
-    if (scope === ActionScope.ALL_BUT_FIRST && !first) return true;
-    if (scope === ActionScope.ALL_BUT_LAST && !last) return true;
-    return false;
+  scopeAllows(scope: ActionScope, nrItems: number, index?: number, first?: boolean, last?: boolean, even?: boolean, odd?: boolean): boolean {
+    return scopeAllows(scope, nrItems, index, first, last, even, odd);
+  }
+
+  showAtLeastOnce(scope: ActionScope, nrItems: number): boolean
+  {
+    return showAtLeastOnce(scope, nrItems);
   }
 
   async onFileSelected(files: FileList, type: 'image' | 'file', item?: any, param?: string): Promise<void> {
@@ -250,15 +232,16 @@ export interface GeneralInput {
   label: string,
   type: InputType,
   value: any,
-  options?: any // FIXME: either use options or remove
+  options?: {[key: string]: any}[]
 }
 
 export type List = {
   listName: string,
   itemName: string,
+  parent?: number,
   importExtensions: string[],
   listInfo: {id: string, label: string, type: InputType}[],
   items: any[],
   actions?: {action: Action, scope: ActionScope}[],
-  [Action.EDIT]?: {id: string, label: string, type: InputType, scope: ActionScope}[]
+  [Action.EDIT]?: {id: string, label: string, type: InputType, scope: ActionScope, options?: {[key: string]: any}[]}[]
 }

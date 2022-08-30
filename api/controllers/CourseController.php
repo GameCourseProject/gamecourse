@@ -45,6 +45,7 @@ class CourseController
         $courseUser = $course->getCourseUserById($loggedUser->getId());
 
         $courseInfo = $course->getData();
+        $courseInfo["folder"] = $course->getDataFolder(false, $courseInfo["name"]);
         if ($loggedUser->isAdmin() || $courseUser->isTeacher())
             $courseInfo["nrStudents"] = count($course->getStudents());
 
@@ -72,6 +73,24 @@ class CourseController
         }
 
         API::response($courses);
+    }
+
+    /**
+     * Get contents of course data folder.
+     *
+     * @param int $courseId
+     * @throws Exception
+     */
+    public function getCourseDataFolderContents()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        API::response($course->getDataFolderContents());
     }
 
 

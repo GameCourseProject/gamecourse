@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {ApiHttpService} from "../../../../../_services/api/api-http.service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {View} from "../../../../../_domain/views/view";
-import {Skill} from "../../../../../_domain/skills/skill";
+import {Skill} from "../../../../../_domain/modules/config/personalized-config/skills/skill";
 import {ApiEndpointsService} from "../../../../../_services/api/api-endpoints.service";
 import {finalize} from "rxjs/operators";
 import {Course} from "../../../../../_domain/courses/course";
@@ -85,7 +85,7 @@ export class PageComponent implements OnInit {
 
   getSkill(): void {
     this.loading = true;
-    this.api.renderSkillPage(this.courseID, this.skillID)
+    this.api.getSkillById(this.skillID)
       .pipe(finalize(() => this.loading = false))
       .subscribe(skill => this.skill = skill);
   }

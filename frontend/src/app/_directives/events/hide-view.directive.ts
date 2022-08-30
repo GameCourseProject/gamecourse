@@ -1,5 +1,5 @@
 import {Directive, HostListener, Input} from '@angular/core';
-import {EventHideView} from "../../_domain/events/event-hide-view";
+import {EventHideView} from "../../_domain/views/events/event-hide-view";
 import {exists} from "../../_utils/misc/misc";
 import {ViewMode} from "../../_domain/views/view";
 

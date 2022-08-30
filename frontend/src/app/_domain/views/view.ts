@@ -1,9 +1,9 @@
 import {Role} from "../roles/role";
-import {EventType} from "../events/event-type";
+import {EventType} from "./events/event-type";
 import {ViewType} from "./view-type";
-import {Event} from "../events/event";
-import {Variable} from "../variables/variable";
-import {buildEvent} from "../events/build-event";
+import {Event} from "./events/event";
+import {Variable} from "./variables/variable";
+import {buildEvent} from "./events/build-event";
 import {objectMap} from "../../_utils/misc/misc";
 
 export enum ViewMode {

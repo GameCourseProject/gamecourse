@@ -21,7 +21,7 @@ import {EventToggleView} from "./event-toggle-view";
 export function buildEvent(type: EventType, eventStr: string): Event {
   eventStr = eventStr.replace(/([{}]|\bactions.\b)/g, '');
   const action = eventStr.split('(')[0];
-  const args = eventStr.split('(')[1].split(',').map(arg => arg.noWhiteSpace().replace(')', ''));
+  const args = eventStr.split('(')[1].split(',').map(arg => arg.noWhiteSpace('').replace(')', ''));
 
   if (action === EventAction.GO_TO_PAGE) return new EventGoToPage(type, args[0], args[1] || null);
   else if (action === EventAction.HIDE_VIEW) return new EventHideView(type, args[0]);

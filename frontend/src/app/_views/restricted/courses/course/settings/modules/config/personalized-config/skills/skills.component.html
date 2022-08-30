@@ -1,0 +1,247 @@
+<ng-container *ngFor="let info of getSkillTreeInfo()">
+  <!-- Skills -->
+  <div *ngIf="info.tiers?.length > 0" class="section skills-section">
+    <div class="divider">
+      <div class="title"><span>Skills</span></div>
+    </div>
+
+    <div class="skills content">
+
+      <!-- Skills List -->
+      <div id="skills-list">
+        <div class="data-table">
+
+          <table *ngIf="info.skills?.length > 0" id="listing-table-skills">
+            <!-- Header -->
+            <thead>
+            <tr>
+              <th>Tier</th>
+              <th>Name</th>
+              <th>Dependencies</th>
+              <th>Color</th>
+              <th>XP</th>
+              <th class="check-column">Collab</th>
+              <th class="check-column">Extra</th>
+              <th class="check-column">Active</th>
+              <th class="action-column"></th>
+              <th class="action-column"></th>
+              <th class="action-column"></th>
+              <th class="action-column"></th>
+              <th class="action-column"></th>
+            </tr>
+            </thead>
+
+            <!-- Body -->
+            <tbody>
+            <tr *ngFor="let skill of info.skills">
+              <td><span>{{getTier(skill.tierID).name}}</span></td>
+              <td><span>{{skill.name}}</span></td>
+              <td><span>{{getDependenciesText(skill.dependencies)}}</span></td>
+              <td>
+                <div class="color">
+                  <div class="color-sample">
+                    <div class="box" [ngStyle]="{'backgroundColor': skill.color}"></div>
+                  </div>
+                  <div>{{skill.color}}</div>
+                </div>
+              </td>
+              <td><span>{{getTier(skill.tierID).reward}}</span></td>
+              <td class="check-column">
+                <label class="switch">
+                  <input type="checkbox" [checked]="skill.isCollab" (change)="toggleSkill(skill.id, 'isCollab')">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="check-column">
+                <label class="switch">
+                  <input type="checkbox" [checked]="skill.isExtra" (change)="toggleSkill(skill.id, 'isExtra')">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="check-column">
+                <label class="switch">
+                  <input type="checkbox" [checked]="skill.isActive" (change)="toggleSkill(skill.id, 'isActive')">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="action-column">
+                <div *ngIf="skill.page" class="icon preview_icon" title="Preview" (click)="goToSkillPage(skill.id)"></div>
+              </td>
+              <td class="action-column">
+                <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; infoSelected = info; initEditSkill(skill); isSkillModalOpen = true; initTextEditor()"></div>
+              </td>
+              <td class="action-column">
+                <div class="icon delete_icon" title="Remove" (click)="infoSelected = info; skillToDelete = skill; isDeleteVerificationModalOpen = true"></div>
+              </td>
+              <td class="action-column">
+                <div *ngIf="skill.position != 0" class="icon up_icon" title="Move up" (click)="moveSkill(skill, 1)"></div>
+              </td>
+              <td class="action-column">
+                <div *ngIf="skill.position != info.skills.length - 1" class="icon down_icon" title="Move down" (click)="moveSkill(skill, -1)"></div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+
+          <div *ngIf="info.skills.length === 0" class='error_box'>
+            <div id='empty_table_skills' class='error_msg'>No skills found</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <div class="icon add_icon" title="New" (click)="mode = 'add'; isSkillModalOpen = true; infoSelected = info; initTextEditor()"></div>
+        <div class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true"></div>
+        <div class="icon export_icon" title="Export All" (click)="exportAllSkills()"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Skill Tree -->
+  <div *ngIf="info.tiers?.length > 0 && info.skills?.length > 0" class="section skills-tree-section">
+    <div class="divider">
+      <div class="title"><span>Skill Tree</span></div>
+    </div>
+
+    <div class="content">
+      <div class="row">
+        <div class="row" style="float: left; width: 100%">
+          <div *ngFor="let tier of info.tiers" class="block tier column" style="float: left" [ngStyle]="{'width': 100 / info.tiers.length + '%'}">
+            {{tier.name}}: {{tier.reward}} XP
+            <div *ngFor="let skill of filterSkillsByTier(info.skills, tier.id)" class="block skill" style="color: #ffffff; width: 60px; height:60px"
+                 [ngStyle]="{'backgroundColor': skill.color}">
+              <span style="font-size: 80%; overflow-wrap:anywhere;">{{skill.name}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- Loader -->
+<div *ngIf="loading" id="page-loading">
+  <img src="../../../../../../../../../../assets/loader/loader.gif" alt="loader">
+</div>
+
+
+<!-- New / Edit Skill Modal -->
+<ng-container *ngIf="isSkillModalOpen">
+  <app-modal
+    [isModalOpen]="isSkillModalOpen"
+    [id]="mode === 'add' ? 'new-skill' : 'edit-skill'"
+    [templateRef]="skillModal"
+    [width]="'calc(100% - 200px)'"
+    (closeBtnClicked)="isSkillModalOpen = false; clearObject(newSkill); selectedDependency1 = null; selectedDependency2 = null; infoSelected = null"
+    [actionInProgress]="saving"
+    [innerClickEvents]="false">
+  </app-modal>
+</ng-container>
+
+<ng-template #skillModal>
+  <!-- Title -->
+  <div class="title">{{mode === 'add' ? 'New Skill:' : 'Edit Skill:'}}</div>
+
+  <div class="content">
+    <div class="inputs">
+
+      <div class="row_inputs">
+        <!-- Tier -->
+        <div class="third">
+          <select class="form__input" id="skill-tier" [(ngModel)]="newSkill.tierID">
+            <option [value]="null" disabled>Select a Tier</option>
+            <option *ngFor="let tier of infoSelected.tiers" [value]="tier.id">{{tier.name}}</option>
+          </select>
+        </div>
+
+        <!-- Name -->
+        <div class="third">
+          <input type="text" class="form__input" id="skill-name" placeholder="Name" [(ngModel)]="newSkill.name" [required]="true">
+          <label for="skill-name" class="form__label">Name</label>
+        </div>
+
+        <!-- Color -->
+        <app-input-color
+          [id]="'color-picker'"
+          [(value)]="newSkill.color">
+        </app-input-color>
+      </div>
+
+      <ng-container *ngIf="newSkill.tierID && !getTier(newSkill.tierID).isWildcard() && getTier(newSkill.tierID).position > 0">
+        <!-- Add dependencies -->
+        <div [id]="'add_dependencies'" class="full">
+          <span style="margin-right: 30px; white-space: nowrap">New Dependency: </span>
+          <select [id]="'skill1'" class="form__input" name="skill1" style="margin-bottom: 0; margin-right: 30px" [(ngModel)]="selectedDependency1">
+            <option [value]="null" disabled selected>Select Skill 1</option>
+            <option *ngFor="let skill of filterSkillsForDependencies(mode === 'add' ? null : skillToEdit.id, getTier(newSkill.tierID))" [ngValue]="skill">{{skill.name}}</option>
+          </select>
+          <select [id]="'skill2'" class="form__input" name="skill2" style="margin-bottom: 0; margin-right: 20px" [(ngModel)]="selectedDependency2">
+            <option [value]="null" disabled selected>Select Skill 2</option>
+            <option *ngFor="let skill of filterSkillsForDependencies(mode === 'add' ? null : skillToEdit.id, getTier(newSkill.tierID))" [ngValue]="skill">{{skill.name}}</option>
+          </select>
+          <button (click)="addSkillDependency(selectedDependency1, selectedDependency2)">Add</button>
+        </div>
+
+        <!-- Dependencies list -->
+        <div class="full" style="margin-bottom: 30px">
+          <span style="margin-right: 10px;">Dependencies: </span>
+          <ng-container *ngFor="let combo of newSkill.dependencies">
+            <div (click)="removeSkillDependency(combo)" class="role_tag">{{getComboText(combo)}}</div>
+          </ng-container>
+        </div>
+      </ng-container>
+
+      <div id="editor" style="height: 400px">
+        <app-input-rich-text
+          [id]="'skill-description'"
+          [placeholder]="'Add the skill page here...'"
+          [container]="'editor'"
+          [courseFolder]="courseFolder"
+          [whereToStore]="'skills/' + (newSkill.name ? newSkill.name.swapNonENChars().noWhiteSpace('_') : '')"
+          [init]="newSkill.page"
+          [canInit]="skillModalRendered"
+          (valueChange)="newSkill.page = $event">
+        </app-input-rich-text>
+      </div>
+    </div>
+
+    <button *ngIf="mode === 'edit'" class="cancel" (click)="isSkillModalOpen = false; clearObject(newSkill); selectedDependency1 = null; selectedDependency2 = null; infoSelected = null;">Cancel</button>
+    <button class="save_btn" [disabled]="!isReadyToSubmit()" (click)="mode === 'add' ? createSkill() : editSkill()">Save</button>
+    <button class="preview_btn" (click)="isSkillPreviewModalOpen = true">Preview</button>
+  </div>
+</ng-template>
+
+
+<!-- Delete Verification Modal -->
+<ng-container *ngIf="isDeleteVerificationModalOpen">
+  <app-verification-modal
+    [isModalOpen]="isDeleteVerificationModalOpen"
+    [id]="'delete-verification'"
+    [text]="'Are you sure you want to delete the Skill?'"
+    [target]="'Skill: ' + skillToDelete.name"
+    [positiveBtnText]="'Delete'"
+    (positiveBtnClicked)="deleteSkill()"
+    (negativeBtnClicked)="skillToDelete = null; isDeleteVerificationModalOpen = false"
+    (closeBtnClicked)="isDeleteVerificationModalOpen = false"
+    [actionInProgress]="saving">
+  </app-verification-modal>
+</ng-container>
+
+
+<!-- Skill Preview Modal -->
+<ng-container *ngIf="isSkillPreviewModalOpen">
+  <app-modal
+    [isModalOpen]="isSkillPreviewModalOpen"
+    [id]="'skill-preview'"
+    [templateRef]="skillPreview"
+    [width]="'calc(100% - 200px)'"
+    (closeBtnClicked)="isSkillPreviewModalOpen = false"
+    [innerClickEvents]="false">
+  </app-modal>
+</ng-container>
+
+<ng-template #skillPreview>
+  <div [innerHTML]="newSkill.page"></div>
+</ng-template>

@@ -73,7 +73,7 @@ export class InputRichTextComponent implements OnInit {
             }
           },
           imageResize: {},
-          htmlEditButton: {},
+          // htmlEditButton: {},
           clipboard: {
             matchVisual: false
           }

@@ -15,7 +15,7 @@ class Action
     const EDIT = "edit";
     const DELETE = "delete";
     const DUPLICATE = "duplicate";
-    const PREVIEW = "preview";
+    const VIEW = "view";
     const MOVE_UP = "move-up";
     const MOVE_DOWN = "move-down";
     const EXPORT = "export";

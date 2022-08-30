@@ -100,7 +100,7 @@ import { InputColorComponent } from './_components/inputs/general/input-color/in
     CommonModule,
     RouterModule,
     FormsModule,
-    NgApexchartsModule
+    NgApexchartsModule,
   ]
 })
 export class SharedModule { }

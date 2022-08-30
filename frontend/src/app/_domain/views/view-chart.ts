@@ -1,7 +1,7 @@
 import {View, ViewDatabase, ViewMode, VisibilityType} from "./view";
-import {Variable} from "../variables/variable";
-import {EventType} from "../events/event-type";
-import {Event} from "../events/event";
+import {Variable} from "./variables/variable";
+import {EventType} from "./events/event-type";
+import {Event} from "./events/event";
 import {ViewType} from "./view-type";
 import {copyObject, exists} from "../../_utils/misc/misc";
 import {ViewSelectionService} from "../../_services/view-selection.service";

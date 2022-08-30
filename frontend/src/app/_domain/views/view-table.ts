@@ -6,9 +6,9 @@ import {ViewRow, ViewRowDatabase} from "./view-row";
 import {copyObject, exists} from "../../_utils/misc/misc";
 import {ViewSelectionService} from "../../_services/view-selection.service";
 import {baseFakeId, viewsAdded, viewTree} from "./build-view-tree/build-view-tree";
-import {EventType} from "../events/event-type";
-import {Event} from "../events/event";
-import {Variable} from "../variables/variable";
+import {EventType} from "./events/event-type";
+import {Event} from "./events/event";
+import {Variable} from "./variables/variable";
 import {ViewText} from "./view-text";
 
 export class ViewTable extends View {

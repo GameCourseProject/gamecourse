@@ -2,12 +2,12 @@ import {Component, Input, OnInit} from '@angular/core';
 import {ViewText} from "../../../_domain/views/view-text";
 import {exists, requireValues} from "../../../_utils/misc/misc";
 import {ViewMode, VisibilityType} from "../../../_domain/views/view";
-import {EventGoToPage} from "../../../_domain/events/event-go-to-page";
-import {Event} from "../../../_domain/events/event";
-import {EventAction, getEventFromAction} from "../../../_domain/events/event-action";
-import {EventHideView} from 'src/app/_domain/events/event-hide-view';
-import {EventShowView} from "../../../_domain/events/event-show-view";
-import {EventToggleView} from 'src/app/_domain/events/event-toggle-view';
+import {EventGoToPage} from "../../../_domain/views/events/event-go-to-page";
+import {Event} from "../../../_domain/views/events/event";
+import {EventAction, getEventFromAction} from "../../../_domain/views/events/event-action";
+import {EventHideView} from 'src/app/_domain/views/events/event-hide-view';
+import {EventShowView} from "../../../_domain/views/events/event-show-view";
+import {EventToggleView} from 'src/app/_domain/views/events/event-toggle-view';
 
 @Component({
   selector: 'bb-text',

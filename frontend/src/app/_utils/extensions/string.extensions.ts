@@ -3,7 +3,7 @@ interface String {
   concatWithDivider(str: string, divider: string);
   containsWord(word: string): boolean;
   isEmpty(): boolean;
-  noWhiteSpace(): string;
+  noWhiteSpace(replace: string): string;
   removeWord(word: string): string;
   swapNonENChars(): string;
   toFlat(): string;
@@ -53,8 +53,8 @@ String.prototype.isEmpty = function (): boolean {
  *
  * @return string
  */
-String.prototype.noWhiteSpace = function(): string {
-  return this.replace(/\s*/g, '');
+String.prototype.noWhiteSpace = function(replace: string = ''): string {
+  return this.replace(/\s+/g, replace);
 }
 
 /**
@@ -72,15 +72,33 @@ String.prototype.removeWord = function(word: string): string {
  * @return string
  */
 String.prototype.swapNonENChars = function(): string {
-  return this.replace(/[ãáâàåä]/ig, 'a')
-    .replace(/[óôõòøö]/ig, 'o')
-    .replace(/ç/ig, 'c')
-    .replace(/[éêè]/ig, 'e')
-    .replace(/[íì]/ig, 'i')
-    .replace(/[úùüû]/ig, 'u')
-    .replace(/ñ/ig, 'n')
-    .replace(/ß/ig, 'b')
-    .replace(/æ/ig, 'ae');
+  return this.replace(/[ãáâàåä]/u, 'a')
+    .replace(/[ÃÁÂÀÅÄ]/u, 'A')
+
+    .replace(/[óôõòøö]/u, 'o')
+    .replace(/[ÓÔÕÒØÖ]/u, 'O')
+
+    .replace(/ç/u, 'c')
+    .replace(/Ç/u, 'C')
+
+    .replace(/[éêè]/u, 'e')
+    .replace(/[ÉÊÈ]/u, 'E')
+
+    .replace(/[íì]/u, 'i')
+    .replace(/[ÍÌ]/u, 'I')
+
+    .replace(/[úùüû]/u, 'u')
+    .replace(/[ÚÙÜÛ]/u, 'U')
+
+    .replace(/ñ/u, 'n')
+    .replace(/Ñ/u, 'N')
+
+    .replace(/ß/u, 'b')
+
+    .replace(/æ/u, 'ae')
+    .replace(/Æ/u, 'AE')
+
+    .replace(/[^a-zA-Z\d_ ]/, '');
 }
 
 /**

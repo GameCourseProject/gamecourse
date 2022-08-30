@@ -16,7 +16,7 @@ class InputType
     const NUMBER = "number";
     const CHECKBOX = "checkbox";
     const RADIO = "radio";
-    const SELECT = "select";
+    const SELECT = "select";        // options: items: array; id: string; labelParam: string
     const TOGGLE = "toggle";
     const DATE = "date";
     const TIME = "time";
@@ -24,5 +24,6 @@ class InputType
     const IMAGE = "image";
     const FILE = "file";
     const COLOR = "color";
+    const MARKDOWN = "markdown";
     // NOTE: insert here new types of inputs
 }

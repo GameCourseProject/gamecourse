@@ -6,11 +6,11 @@
   <button *ngIf="isPreview" (click)="goBack()" style="float: right">Close<br> Preview</button>
 
   <div class="header">
-    <img [src]="ApiEndpointsService.API_ENDPOINT + '/modules/skills/imgs/skills.svg'">
+    <img [src]="ApiEndpointsService.API_ENDPOINT + '/modules/skills/icon.svg'">
     <span class="ng-binding">Skill - {{skill.name}}</span>
   </div>
 
-  <div [innerHTML]="skill.description | sanitizeHTML"></div>
+  <div [innerHTML]="skill.page | sanitizeHTML"></div>
 </div>
 
 <div *ngIf="participationKey" class="page participation-page">

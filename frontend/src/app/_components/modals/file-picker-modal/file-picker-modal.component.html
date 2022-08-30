@@ -41,7 +41,7 @@
 
         <div class="grid">
           <ng-container *ngFor="let item of getFolderContents(contents, path)">
-            <div class="square" [ngClass]="{'folder': item.filetype === ContentType.FOLDER, 'image': item.filetype === ContentType.FILE}"
+            <div class="square" [ngClass]="{'folder': item.type === ContentType.FOLDER, 'image': item.type === ContentType.FILE}"
               (click)="goInside(item)">
               <img style="width: 60px; height: 60px;" [ngClass]="{'selected': path + '/' + item.name === this.file}"
                    [src]="getItemIcon(item)">

@@ -30,9 +30,9 @@ export class CacheInterceptor implements HttpInterceptor {
   private readonly dependencies: { [key: string]: string[] } = {};
 
   constructor() {
-    // Which caches to invalidate when a POST is done on each module
+    // Which caches to invalidate when a POST is done on each module FIXME: review
     this.dependencies[ApiHttpService.AUTOGAME] = [ApiHttpService.COURSE];
-    this.dependencies[ApiHttpService.COURSE] = [ApiHttpService.USER];
+    this.dependencies[ApiHttpService.COURSE] = [ApiHttpService.USER, ApiHttpService.MODULE];
     this.dependencies[ApiHttpService.DOCS] = [];
     this.dependencies[ApiHttpService.MODULE] = [ApiHttpService.COURSE, ApiHttpService.VIEWS];
     this.dependencies[ApiHttpService.THEME] = [];

@@ -1,9 +1,3 @@
-.tiers-section {
-  .divider .title:after {
-    width: calc(100% - 50px);
-  }
-}
-
 .skills-section {
   .divider .title:after {
     width: calc(100% - 140px);
@@ -66,24 +60,10 @@ button.cancel {
   padding: 0;
 }
 
-.notAllActive {
-  background-color: rgba(235, 57, 57, 0.562);
-
-  &:hover {
-    background-color: rgba(187, 49, 49, 0.562);
-  }
-}
-
 .row {
   display: flex;
   align-items: baseline;
   margin-bottom: 20px;
-}
-
-.block.tier.column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 .block.skill {

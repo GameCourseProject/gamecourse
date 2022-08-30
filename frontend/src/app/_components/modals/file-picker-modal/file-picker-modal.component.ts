@@ -1,7 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {ResourceManager} from "../../../_utils/resources/resource-manager";
 import {ApiHttpService} from "../../../_services/api/api-http.service";
-import {ErrorService} from "../../../_services/error.service";
 import {exists} from "../../../_utils/misc/misc";
 import {finalize} from "rxjs/operators";
 import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
@@ -90,19 +89,19 @@ export class FilePickerModalComponent implements OnInit {
   filterItems(items: ContentItem[], type: string): ContentItem[] {
     let files = [];
     if (type.containsWord('image'))
-      files = files.concat(items.filter(item => item.filetype === ContentType.FILE && this.imageExtensions.includes(item.extension.toLowerCase())));
+      files = files.concat(items.filter(item => item.type === ContentType.FILE && this.imageExtensions.includes(item.extension.toLowerCase())));
 
     if (type.containsWord('video'))
-      files = files.concat(items.filter(item => item.filetype === ContentType.FILE &&  this.videoExtensions.includes(item.extension.toLowerCase())));
+      files = files.concat(items.filter(item => item.type === ContentType.FILE &&  this.videoExtensions.includes(item.extension.toLowerCase())));
 
     if (type.containsWord('audio'))
-      files = files.concat(items.filter(item => item.filetype === ContentType.FILE &&  this.audioExtensions.includes(item.extension.toLowerCase())));
+      files = files.concat(items.filter(item => item.type === ContentType.FILE &&  this.audioExtensions.includes(item.extension.toLowerCase())));
 
-    return files.concat(items.filter(item => item.filetype === ContentType.FOLDER));
+    return files.concat(items.filter(item => item.type === ContentType.FOLDER));
   }
 
   goInside(item: ContentItem) {
-    if (item.filetype !== ContentType.FOLDER) {
+    if (item.type !== ContentType.FOLDER) {
       this.selectItem(item);
       return;
     }
@@ -154,7 +153,7 @@ export class FilePickerModalComponent implements OnInit {
   }
 
   getItemIcon(item: ContentItem): string {
-    if (item.filetype === ContentType.FOLDER)
+    if (item.type === ContentType.FOLDER)
       return 'assets/icons/folder.svg';
 
     if (this.imageExtensions.includes(item.extension.toLowerCase()))
@@ -178,7 +177,7 @@ enum ContentType {
 
 export interface ContentItem {
   name: string,
-  filetype: ContentType,
-  files?: ContentItem[],
-  extension?: string
+  type: ContentType,
+  extension?: string,
+  contents?: ContentItem[]
 }

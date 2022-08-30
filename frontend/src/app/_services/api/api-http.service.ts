@@ -28,9 +28,9 @@ import {
   GeneralInput,
   List
 } from "../../_views/restricted/courses/course/settings/modules/config/config/config.component";
-import {Tier} from "../../_domain/skills/tier";
-import {SkillData, TierData} from "../../_views/restricted/courses/course/settings/modules/config/skills/skills.component";
-import {Skill} from "../../_domain/skills/skill";
+import {Tier} from "../../_domain/modules/config/personalized-config/skills/tier";
+import {SkillData} from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/skills/skills.component";
+import {Skill} from "../../_domain/modules/config/personalized-config/skills/skill";
 import {ContentItem} from "../../_components/modals/file-picker-modal/file-picker-modal.component";
 import {
   Credentials,
@@ -51,6 +51,7 @@ import {Router} from "@angular/router";
 import {CourseUser} from "../../_domain/users/course-user";
 import {CourseUserData} from "../../_views/restricted/courses/course/users/users.component";
 import {Action} from "../../_domain/modules/config/Action";
+import {SkillTree} from "../../_domain/modules/config/personalized-config/skills/skill-tree";
 
 @Injectable({
   providedIn: 'root'
@@ -63,13 +64,13 @@ export class ApiHttpService {
   };
 
   static readonly AUTOGAME: string = 'AutoGame';
-  static readonly CORE: string = 'core';
-  static readonly COURSE: string = 'course';
-  static readonly DOCS: string = 'docs';
-  static readonly MODULE: string = 'module';
-  static readonly THEME: string = 'theme';
-  static readonly USER: string = 'user';
-  static readonly VIEWS: string = 'views';
+  static readonly CORE: string = 'Core';
+  static readonly COURSE: string = 'Course';
+  static readonly DOCS: string = 'Docs';
+  static readonly MODULE: string = 'Module';
+  static readonly THEME: string = 'Theme';
+  static readonly USER: string = 'User';
+  static readonly VIEWS: string = 'Views';
   // NOTE: insert here new controllers & update cache dependencies
 
   static readonly CLASSCHECK: string = 'classcheck';
@@ -80,7 +81,7 @@ export class ApiHttpService {
   static readonly PROFILING: string = 'profiling';
   static readonly QR: string = 'qr';
   static readonly QUEST: string = 'quest';
-  static readonly SKILLS: string = 'skills';
+  static readonly SKILLS: string = 'Skills';
   static readonly VIRTUAL_CURRENCY: string = 'virtualcurrency';
   // FIXME: should be compartimentalized
 
@@ -361,28 +362,6 @@ export class ApiHttpService {
       .pipe( map((res: any) => (res['data']).map(obj => Course.fromDatabase(obj))) );
   }
 
-  // TODO: refactor
-  public getCourseGlobal(courseID: number): Observable<{ name: string, activeUsers: number, awards: number, participations: number }> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'getCourseGlobal');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => {
-        return {
-          name: res['data']['name'],
-          activeUsers: res['data']['activeUsers'],
-          awards: res['data']['awards'],
-          participations: res['data']['participations'],
-        };
-      }) );
-  }
-
-  // TODO: refactor
   public getCourseDataFolderContents(courseID: number): Observable<ContentItem[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
@@ -393,7 +372,7 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['contents']) );
+      .pipe( map((res: any) => res['data']) );
   }
 
 
@@ -983,7 +962,7 @@ export class ApiHttpService {
 
 
   // Configuration
-  public getModuleConfig(courseID: number, moduleID: string): Observable<{generalInputs: GeneralInput[] | null, lists: List[] | null, personalizedConfig: {html: string, styles: string[], scripts: string[]} | null}> {
+  public getModuleConfig(courseID: number, moduleID: string): Observable<{generalInputs: GeneralInput[] | null, lists: List[] | null, personalizedConfig: string | null}> {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
@@ -999,7 +978,7 @@ export class ApiHttpService {
   }
 
   public saveModuleConfig(courseID: number, moduleID: string, generalInputs?: GeneralInput[], listingItem?: any,
-                          listName?: string, action?: Action): Observable<void> {
+                          listName?: string, parentID?: number, action?: Action): Observable<void> {
     const data = {
       "courseId": courseID,
       "moduleId": moduleID,
@@ -1007,6 +986,7 @@ export class ApiHttpService {
 
     if (generalInputs) data['generalInputs'] = generalInputs;
     if (listingItem) {
+      if (parentID) listingItem.parent = parentID;
       data['listingItem'] = listingItem;
       data['listName'] = listName;
       data['action'] = action;
@@ -1020,7 +1000,6 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
-
   }
 
   // TODO: refactor
@@ -1543,90 +1522,74 @@ export class ApiHttpService {
 
 
   // Skills
-  // TODO: refactor
-  public getTiers(courseID: number): Observable<Tier[]> {
+
+  public getSkillTrees(courseID: number): Observable<SkillTree[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'getTiers');
+      qs.push('request', 'getSkillTrees');
       qs.push('courseId', courseID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => (res['data']['tiers']).map(obj => Tier.fromDatabase(obj))) );
+      .pipe( map((res: any) => res['data'].map(obj => SkillTree.fromDatabase(obj))) );
   }
 
-  // TODO: refactor
-  public createTier(courseID: number, tier: TierData): Observable<Tier> {
-    const data = {
-      courseId: courseID,
-      tier
-    }
-
+  public getTiersOfSkillTree(skillTreeID: number, active: boolean): Observable<Tier[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'createTier');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => Tier.fromDatabase(res['data']['tier'])) );
-  }
-
-  // TODO: refactor
-  public editTier(courseID: number, tier: TierData): Observable<void> {
-    const data = {
-      courseId: courseID,
-      tier
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'editTier');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  // TODO: refactor
-  public deleteTier(courseID: number, tier: TierData): Observable<void> {
-    const data = {
-      courseId: courseID,
-      tier
-    };
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'deleteTier');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  // TODO: refactor
-  public getSkills(courseID: number): Observable<Skill[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'getSkills');
-      qs.push('courseId', courseID);
+      qs.push('request', 'getTiersOfSkillTree');
+      qs.push('skillTreeId', skillTreeID);
+      if (active !== null) qs.push('active', active);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => (res['data']['skills']).map(obj => Skill.fromDatabase(obj))) );
+      .pipe( map((res: any) => res['data'].map(obj => Tier.fromDatabase(obj))) );
+  }
+
+  public getSkillsOfSkillTree(skillTreeID: number, active: boolean, extra: boolean, collab: boolean): Observable<Skill[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'getSkillsOfSkillTree');
+      qs.push('skillTreeId', skillTreeID);
+      if (active !== null) qs.push('active', active);
+      if (extra !== null) qs.push('extra', extra);
+      if (collab !== null) qs.push('collab', collab);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => Skill.fromDatabase(obj))) );
   }
 
   // TODO: refactor
+  public getSkillById(skillID: number): Observable<Skill> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'getSkillById');
+      qs.push('skillId', skillID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Skill.fromDatabase(res['data'])) );
+  }
+
   public createSkill(courseID: number, skill: SkillData): Observable<void> {
     const data = {
       courseId: courseID,
-      skill
+      tierId: skill.tierID,
+      name: skill.name,
+      color: skill.color,
+      page: skill.page,
+      isCollab: skill.isCollab,
+      isExtra: skill.isExtra,
+      dependencies: skill.dependencies? skill.dependencies.map(combo => combo.map(skill => skill.id)) : []
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -1639,11 +1602,19 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  // TODO: refactor
   public editSkill(courseID: number, skill: SkillData): Observable<void> {
     const data = {
       courseId: courseID,
-      skill
+      skillId: skill.id,
+      tierId: skill.tierID,
+      name: skill.name,
+      color: skill.color,
+      page: skill.page,
+      isCollab: skill.isCollab,
+      isExtra: skill.isExtra,
+      isActive: skill.isActive,
+      position: skill.position,
+      dependencies: skill.dependencies? skill.dependencies.map(combo => combo.map(skill => skill.id)) : []
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -1656,7 +1627,6 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  // TODO: refactor
   public deleteSkill(courseID: number, skillID: number): Observable<void> {
     const data = {
       courseId: courseID,
@@ -1671,21 +1641,6 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
-  }
-
-  // TODO: refactor
-  public renderSkillPage(courseID: number, skillID: number): Observable<Skill> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'renderSkillPage');
-      qs.push('courseId', courseID);
-      qs.push('skillId', skillID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => Skill.fromDatabase(res['data']['skill'])) );
   }
 
 
