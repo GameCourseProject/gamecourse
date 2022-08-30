@@ -55,7 +55,7 @@ class Skills extends Module
     ];
     // NOTE: dependencies should be updated on code changes
 
-    const RESOURCES = [];
+    const RESOURCES = ['assets/'];
 
     const DATA_FOLDER = 'skills';
     const RULE_SECTION = "Skills";
