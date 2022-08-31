@@ -2,6 +2,7 @@
 namespace Utils;
 
 use Exception;
+use GameCourse\Course\Course;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
@@ -73,9 +74,15 @@ class CacheTest extends TestCase
      */
     public function get($var)
     {
+        // No course
         $cacheId = "test";
-        Cache::store($cacheId, $var);
-        $this->assertEquals($var, Cache::get($cacheId));
+        Cache::store(null, $cacheId, $var);
+        $this->assertEquals($var, Cache::get(null, $cacheId));
+
+        // With course
+        $courseId = 100;
+        Cache::store($courseId, $cacheId, $var);
+        $this->assertEquals($var, Cache::get($courseId, $cacheId));
     }
 
     /**
@@ -83,7 +90,11 @@ class CacheTest extends TestCase
      */
     public function getCacheDoesntExist()
     {
-        $this->assertNull(Cache::get("test"));
+        // No Course
+        $this->assertNull(Cache::get(null, "test"));
+
+        // With course
+        $this->assertNull(Cache::get(100, "test"));
     }
 
 
@@ -95,9 +106,15 @@ class CacheTest extends TestCase
      */
     public function store($data)
     {
+        // No course
         $cacheId = "test";
-        Cache::store($cacheId, $data);
-        $this->assertEquals($data, Cache::get($cacheId));
+        Cache::store(null, $cacheId, $data);
+        $this->assertEquals($data, Cache::get(null, $cacheId));
+
+        // With course
+        $courseId = 100;
+        Cache::store($courseId, $cacheId, $data);
+        $this->assertEquals($data, Cache::get($courseId, $cacheId));
     }
 
     /**
@@ -105,10 +122,18 @@ class CacheTest extends TestCase
      */
     public function storeMultiple()
     {
-        Cache::store("test1", 1);
-        Cache::store("test2", 2);
-        $this->assertEquals(1, Cache::get("test1"));
-        $this->assertEquals(2, Cache::get("test2"));
+        // No course
+        Cache::store(null, "test1", 1);
+        Cache::store(null, "test2", 2);
+        $this->assertEquals(1, Cache::get(null, "test1"));
+        $this->assertEquals(2, Cache::get(null, "test2"));
+
+        // With course
+        $courseId = 100;
+        Cache::store($courseId, "test1", 1);
+        Cache::store($courseId, "test2", 2);
+        $this->assertEquals(1, Cache::get($courseId, "test1"));
+        $this->assertEquals(2, Cache::get($courseId, "test2"));
     }
 
 
@@ -120,8 +145,8 @@ class CacheTest extends TestCase
      */
     public function cleanWholeCache()
     {
-        $cacheId = "test";
-        Cache::store($cacheId, 1);
+        Cache::store(null, "test", 1);
+        Cache::store(100, "test", 1);
         Cache::clean();
         $this->assertFalse(file_exists(CACHE_FOLDER));
     }
@@ -132,10 +157,45 @@ class CacheTest extends TestCase
      */
     public function cleanSpecificCache()
     {
-        Cache::store("test1", 1);
-        Cache::store("test2", 2);
-        Cache::clean("test1");
-        $this->assertNull(Cache::get("test1"));
-        $this->assertEquals(2, Cache::get("test2"));
+        Cache::store(null, "test1", 1);
+        Cache::store(null, "test2", 2);
+        Cache::store(100, "test3", 3);
+        Cache::clean(null, "test1");
+        $this->assertNull(Cache::get(null, "test1"));
+        $this->assertEquals(2, Cache::get(null, "test2"));
+        $this->assertEquals(3, Cache::get(100, "test3"));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function cleanCourseCache()
+    {
+        Cache::store(null, "test1", 1);
+        Cache::store(null, "test2", 2);
+        Cache::store(100, "test3", 3);
+        Cache::clean(100);
+        $this->assertEquals(1, Cache::get(null, "test1"));
+        $this->assertEquals(2, Cache::get(null, "test2"));
+        $this->assertNull(Cache::get(100, "test3"));
+        $this->assertFalse(file_exists(CACHE_FOLDER . "/100"));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function cleanSpecificCourseCache()
+    {
+        Cache::store(null, "test1", 1);
+        Cache::store(null, "test2", 2);
+        Cache::store(100, "test3", 3);
+        Cache::store(100, "test4", 4);
+        Cache::clean(100, "test3");
+        $this->assertEquals(1, Cache::get(null, "test1"));
+        $this->assertEquals(2, Cache::get(null, "test2"));
+        $this->assertNull(Cache::get(100, "test3"));
+        $this->assertEquals(4, Cache::get(100, "test4"));
     }
 }

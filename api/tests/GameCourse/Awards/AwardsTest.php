@@ -13,6 +13,8 @@ use GameCourse\Module\Skills\Skill;
 use GameCourse\Module\Skills\Skills;
 use GameCourse\Module\Skills\SkillTree;
 use GameCourse\Module\Skills\Tier;
+use GameCourse\Module\Streaks\Streak;
+use GameCourse\Module\Streaks\Streaks;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
@@ -644,7 +646,207 @@ class AwardsTest extends TestCase
     }
 
 
-    // TODO: getUserStreaksAwards
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getUserStreaksAwards()
+    {
+        // Given
+        $streaksModule = new Streaks($this->course);
+        $streaksModule->setEnabled(true);
+        $streak = Streak::addStreak($this->course->getId(), "Streak", "Perform action", null,
+            10, null, null, 100, null, false, true,
+            false, false, false);
+
+        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::STREAK, $streak->getId(), "Award 1", 100);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::STREAK, $streak->getId(), "Award 2", 100);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BONUS, null, "Bonus", 500);
+
+        // When
+        $awards = $this->module->getUserStreaksAwards($user->getId());
+
+        // Then
+        $this->assertIsArray($awards);
+        $this->assertCount(2, $awards);
+
+        $keys = ["id", "user", "course", "description", "type", "moduleInstance", "reward", "date"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            if ($key === "date") continue;
+            foreach ($awards as $i => $award) {
+                $this->assertCount($nrKeys, array_keys($award));
+                $this->assertArrayHasKey($key, $award);
+                if ($key === "description") $this->assertEquals($award[$key], "Award " . ($i+1));
+                else $this->assertEquals($award[$key], [
+                    "id" => $i + 1,
+                    "user" => $user->getId(),
+                    "course" => $this->course->getId(),
+                    "type" => AwardType::STREAK,
+                    "moduleInstance" => $streak->getId(),
+                    "reward" => 100
+                ][$key]);
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getUserStreaksAwardsExtraCredit()
+    {
+        // Given
+        $streaksModule = new Streaks($this->course);
+        $streaksModule->setEnabled(true);
+        $streakExtra = Streak::addStreak($this->course->getId(), "Streak Extra", "Perform action", null,
+            10, null, null, 100, null, false, true,
+            false, false, true);
+        $streakNotExtra = Streak::addStreak($this->course->getId(), "Streak Not Extra", "Perform action", null,
+            10, null, null, 100, null, false, true,
+            false, false, false);
+
+        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::STREAK, $streakExtra->getId(), "Award 1", 100);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::STREAK, $streakNotExtra->getId(), "Award 2", 100);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BONUS, null, "Bonus", 500);
+
+        // When
+        $awards = $this->module->getUserStreaksAwards($user->getId(), true);
+
+        // Then
+        $this->assertIsArray($awards);
+        $this->assertCount(1, $awards);
+
+        $keys = ["id", "user", "course", "description", "type", "moduleInstance", "reward", "date"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            $this->assertCount($nrKeys, array_keys($awards[0]));
+            $this->assertArrayHasKey($key, $awards[0]);
+
+            if ($key === "date") continue;
+            if ($key === "description") $this->assertEquals($awards[0][$key], "Award 1");
+            else $this->assertEquals($awards[0][$key], [
+                "id" => 1,
+                "user" => $user->getId(),
+                "course" => $this->course->getId(),
+                "type" => AwardType::STREAK,
+                "moduleInstance" => $streakExtra->getId(),
+                "reward" => 100
+            ][$key]);
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getUserStreaksAwardsNotExtraCredit()
+    {
+        // Given
+        $streaksModule = new Streaks($this->course);
+        $streaksModule->setEnabled(true);
+        $streakExtra = Streak::addStreak($this->course->getId(), "Streak Extra", "Perform action", null,
+            10, null, null, 100, null, false, true,
+            false, false, true);
+        $streakNotExtra = Streak::addStreak($this->course->getId(), "Streak Not Extra", "Perform action", null,
+            10, null, null, 100, null, false, true,
+            false, false, false);
+
+        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::STREAK, $streakExtra->getId(), "Award 1", 100);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::STREAK, $streakNotExtra->getId(), "Award 2", 100);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BONUS, null, "Bonus", 500);
+
+        // When
+        $awards = $this->module->getUserStreaksAwards($user->getId(), false);
+
+        // Then
+        $this->assertIsArray($awards);
+        $this->assertCount(1, $awards);
+
+        $keys = ["id", "user", "course", "description", "type", "moduleInstance", "reward", "date"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            $this->assertCount($nrKeys, array_keys($awards[0]));
+            $this->assertArrayHasKey($key, $awards[0]);
+
+            if ($key === "date") continue;
+            if ($key === "description") $this->assertEquals($awards[0][$key], "Award 2");
+            else $this->assertEquals($awards[0][$key], [
+                "id" => 2,
+                "user" => $user->getId(),
+                "course" => $this->course->getId(),
+                "type" => AwardType::STREAK,
+                "moduleInstance" => $streakNotExtra->getId(),
+                "reward" => 100
+            ][$key]);
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getUserStreaksAwardsOnlyActive()
+    {
+        // Given
+        $streaksModule = new Streaks($this->course);
+        $streaksModule->setEnabled(true);;
+        $streakActive = Streak::addStreak($this->course->getId(), "Streak Active", "Perform action", null,
+            10, null, null, 100, null, false, true,
+            false, false, false);
+        $streakNotActive = Streak::addStreak($this->course->getId(), "Streak Not Active", "Perform action", null,
+            10, null, null, 100, null, false, true,
+            false, false, false);
+
+        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::STREAK, $streakActive->getId(), "Award 1", 100);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::STREAK, $streakNotActive->getId(), "Award 2", 100);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BONUS, null, "Bonus", 500);
+
+        // When
+        $streakNotActive->setActive(false);
+        $awards = $this->module->getUserStreaksAwards($user->getId());
+
+        // Then
+        $this->assertIsArray($awards);
+        $this->assertCount(1, $awards);
+
+        $keys = ["id", "user", "course", "description", "type", "moduleInstance", "reward", "date"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            $this->assertCount($nrKeys, array_keys($awards[0]));
+            $this->assertArrayHasKey($key, $awards[0]);
+
+            if ($key === "date") continue;
+            if ($key === "description") $this->assertEquals($awards[0][$key], "Award 1");
+            else $this->assertEquals($awards[0][$key], [
+                "id" => 1,
+                "user" => $user->getId(),
+                "course" => $this->course->getId(),
+                "type" => AwardType::STREAK,
+                "moduleInstance" => $streakActive->getId(),
+                "reward" => 100
+            ][$key]);
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getUserStreaksAwardsStreaksNotEnabled()
+    {
+        // Given
+        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BONUS, null, "Bonus", 500);
+
+        // Then
+        $this->expectException(Exception::class);
+        $this->module->getUserStreaksAwards($user->getId());
+    }
 
 
     // Rewards

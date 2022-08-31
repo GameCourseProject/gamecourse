@@ -42,7 +42,7 @@ class Event
     {
         $id = uniqid($prefix !== null ? $prefix : "");
         self::$events[$type][$id] = $callback;
-        Cache::store("events", self::$events);
+        Cache::store(null, "events", self::$events);
         return $id;
     }
 
@@ -73,7 +73,7 @@ class Event
     public static function stop(int $type, string $id)
     {
         unset(self::$events[$type][$id]);
-        Cache::store("events", self::$events);
+        Cache::store(null, "events", self::$events);
     }
 
     /**
@@ -95,7 +95,7 @@ class Event
                 if (count(self::$events[$type]) == 0) unset(self::$events[$type]);
             }
         }
-        Cache::store("events", self::$events);
+        Cache::store(null, "events", self::$events);
     }
 
 
@@ -111,6 +111,6 @@ class Event
      */
     public static function initEvents()
     {
-        self::$events = Cache::get("events");
+        self::$events = Cache::get(null, "events");
     }
 }

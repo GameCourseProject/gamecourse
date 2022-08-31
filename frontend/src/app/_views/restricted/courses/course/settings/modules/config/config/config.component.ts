@@ -243,5 +243,5 @@ export type List = {
   listInfo: {id: string, label: string, type: InputType}[],
   items: any[],
   actions?: {action: Action, scope: ActionScope}[],
-  [Action.EDIT]?: {id: string, label: string, type: InputType, scope: ActionScope, options?: {[key: string]: any}[]}[]
+  [Action.EDIT]?: {id: string, label: string, type: InputType, scope: ActionScope, options?: {[key: string]: any}}[]
 }

@@ -94,7 +94,7 @@ class EventTest extends TestCase
         // Then
         $this->assertTrue($triggered);
 
-        $cache = Cache::get("events");
+        $cache = Cache::get(null, "events");
         $this->assertIsArray($cache);
         $this->assertCount(1, $cache);
         $this->assertEquals(EventType::STUDENT_ADDED_TO_COURSE, array_keys($cache)[0]);
@@ -130,7 +130,7 @@ class EventTest extends TestCase
         // Then
         $this->assertFalse($triggeredWithoutPrefix);
         $this->assertFalse($triggeredWithPrefix);
-        $this->assertEmpty(Cache::get("events"));
+        $this->assertEmpty(Cache::get(null, "events"));
     }
 
     /**
@@ -158,7 +158,7 @@ class EventTest extends TestCase
         $this->assertFalse($triggered1stEvent);
         $this->assertTrue($triggered2ndEvent);
 
-        $cache = Cache::get("events");
+        $cache = Cache::get(null, "events");
         $this->assertNotEmpty($cache);
         $this->assertCount(1, $cache);
         $this->assertCount(1, $cache[EventType::STUDENT_ADDED_TO_COURSE]);
@@ -187,7 +187,7 @@ class EventTest extends TestCase
         $this->assertTrue($triggeredWithoutPrefix);
         $this->assertFalse($triggeredWithPrefix);
 
-        $cache = Cache::get("events");
+        $cache = Cache::get(null, "events");
         $this->assertNotEmpty($cache);
         $this->assertCount(1, $cache);
         $this->assertCount(1, $cache[EventType::STUDENT_ADDED_TO_COURSE]);

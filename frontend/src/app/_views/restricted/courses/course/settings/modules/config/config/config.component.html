@@ -221,7 +221,7 @@
   <ng-container *ngIf="type === InputType.SELECT">
     <select class="form__input" [(ngModel)]="obj[id]">
       <option [value]="undefined" disabled>Select {{label}}</option>
-      <option *ngFor="let item of options['items']" [value]="item[options['id']]">{{item[options['labelParam']]}}</option>
+      <option *ngFor="let item of options['items']" [value]="item['id']">{{item['labelParam']}}</option>
     </select>
   </ng-container>
 

@@ -16,7 +16,7 @@ class InputType
     const NUMBER = "number";
     const CHECKBOX = "checkbox";
     const RADIO = "radio";
-    const SELECT = "select";        // options: items: array; id: string; labelParam: string
+    const SELECT = "select";        // options: items: array (id: string; labelParam: string)
     const TOGGLE = "toggle";
     const DATE = "date";
     const TIME = "time";

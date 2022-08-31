@@ -19,11 +19,13 @@ class Cache
      * Gets data from cache.
      * Returns null if cache doesn't exist.
      *
+     * @param int|null $courseId,
+     * @param string $cacheId
      * @return mixed|null
      */
-    public static function get(string $cacheId)
+    public static function get(?int $courseId, string $cacheId)
     {
-        $cache = CACHE_FOLDER . "/" . $cacheId . ".txt";
+        $cache = CACHE_FOLDER . "/" . (!is_null($courseId) ? $courseId . "/" : "") . $cacheId . ".txt";
         if (!file_exists($cache)) return null;
         return self::unserialize(file_get_contents($cache));
     }
@@ -31,25 +33,40 @@ class Cache
     /**
      * Stores data in cache.
      *
+     * @param int|null $courseId
+     * @param string $cacheId
+     * @param $data
      * @return void
      */
-    public static function store(string $cacheId, $data)
+    public static function store(?int $courseId, string $cacheId, $data)
     {
-        if (!file_exists(CACHE_FOLDER)) mkdir(CACHE_FOLDER);
-        file_put_contents(CACHE_FOLDER . "/" . $cacheId . ".txt", self::serialize($data));
+        if (is_null($courseId) && !file_exists(CACHE_FOLDER))
+            mkdir(CACHE_FOLDER, 0777, true);
+        else if (!is_null($courseId) && !file_exists(CACHE_FOLDER . "/" . $courseId))
+            mkdir(CACHE_FOLDER . "/" . $courseId, 0777, true);
+
+        $cache = CACHE_FOLDER . "/" . (!is_null($courseId) ? $courseId . "/" : "") . $cacheId . ".txt";
+        file_put_contents($cache, self::serialize($data));
     }
 
     /**
      * Cleans whole cache or a specific cache if ID given.
      *
+     * @param int|null $courseId
      * @param string|null $cacheId
      * @return void
      * @throws Exception
      */
-    public static function clean(string $cacheId = null)
+    public static function clean(int $courseId = null, string $cacheId = null)
     {
-        if (is_null($cacheId)) Utils::deleteDirectory(CACHE_FOLDER);
-        else unlink(CACHE_FOLDER . "/" . $cacheId . ".txt");
+        if (is_null($courseId) && is_null($cacheId) && file_exists(CACHE_FOLDER))
+            Utils::deleteDirectory(CACHE_FOLDER);
+        else if (!is_null($courseId) && is_null($cacheId) && file_exists(CACHE_FOLDER . "/" . $courseId))
+            Utils::deleteDirectory(CACHE_FOLDER . "/" . $courseId);
+        else if (is_null($courseId) && !is_null($cacheId) && file_exists(CACHE_FOLDER . "/" . $cacheId . ".txt"))
+            Utils::deleteFile(CACHE_FOLDER, $cacheId . ".txt");
+        else if (!is_null($courseId) && !is_null($cacheId) && file_exists(CACHE_FOLDER . "/" . $courseId . "/" . $cacheId . ".txt"))
+            Utils::deleteFile(CACHE_FOLDER . "/" . $courseId, $cacheId . ".txt");
     }
 
 

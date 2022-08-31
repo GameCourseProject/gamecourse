@@ -51,7 +51,7 @@ abstract class RuleSystem
     {
         self::removeDataFolder($courseId);
         Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions/" . $courseId);
-        unlink(AUTOGAME_FOLDER . "/config/config_" . $courseId . ".txt");
+        Utils::deleteFile(AUTOGAME_FOLDER . "/config", "config_" . $courseId . ".txt", false);
     }
 
 

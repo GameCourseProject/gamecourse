@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS badge_progression(
 	course                      int unsigned NOT NULL,
 	user                        int unsigned NOT NULL,
 	badge 	                    int unsigned NOT NULL,
-	participation 	        int unsigned NOT NULL,
+	participation 	            int unsigned NOT NULL,
 
     FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
     FOREIGN key(badge) REFERENCES badge(id) ON DELETE CASCADE,

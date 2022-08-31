@@ -808,6 +808,9 @@ class BadgeTest extends TestCase
         ]);
         $badge->setBragging(true);
         $this->assertTrue($badge->isBragging());
+        foreach ($badge->getLevels() as $level) {
+            $this->assertEquals(0, $level["reward"]);
+        }
     }
 
     /**
@@ -1032,6 +1035,10 @@ class BadgeTest extends TestCase
         }
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
     public function getAllActiveBadges()
     {
         $badge1 = Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, false, [
@@ -1046,7 +1053,7 @@ class BadgeTest extends TestCase
         ]);
         $badge2->setActive(false);
 
-        $badges = Badge::getBadges($this->courseId);
+        $badges = Badge::getBadges($this->courseId, true);
         $this->assertIsArray($badges);
         $this->assertCount(1, $badges);
 
@@ -1065,6 +1072,10 @@ class BadgeTest extends TestCase
         }
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
     public function getAllInactiveBadges()
     {
         $badge1 = Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, false, [
@@ -1079,7 +1090,7 @@ class BadgeTest extends TestCase
         ]);
         $badge2->setActive(false);
 
-        $badges = Badge::getBadges($this->courseId);
+        $badges = Badge::getBadges($this->courseId, false);
         $this->assertIsArray($badges);
         $this->assertCount(1, $badges);
 
@@ -1151,7 +1162,8 @@ tags:
 #	lvl.1: " . $lvl1["description"] . ($size >= 2 ? "\n#\tlvl.2: " . $lvl2["description"] : "") . ($size == 3 ? "\n#\tlvl.3: " . $lvl3["description"] : "") . "
 
 	when:
-		progress = None # TODO: get student progress in badge
+		progress = None # COMPLETE THIS: get student progress in badge
+		len(progress) > 0
 		
 		# Compute badge level the student deserves
 		lvl = compute_lvl(progress, " . $lvl1["goal"] . ($size >= 2 ? ", " . $lvl2["goal"] : "") . ($size == 3 ? ", " . $lvl3["goal"] : "") . ")
@@ -1265,7 +1277,8 @@ tags:
 #	lvl.1: " . $lvl1["description"] . ($size >= 2 ? "\n#\tlvl.2: " . $lvl2["description"] : "") . ($size == 3 ? "\n#\tlvl.3: " . $lvl3["description"] : "") . "
 
 	when:
-		progress = None # TODO: get student progress in badge
+		progress = None # COMPLETE THIS: get student progress in badge
+		len(progress) > 0
 		
 		# Compute badge level the student deserves
 		lvl = compute_lvl(progress, " . $lvl1["goal"] . ($size >= 2 ? ", " . $lvl2["goal"] : "") . ($size == 3 ? ", " . $lvl3["goal"] : "") . ")
@@ -1333,7 +1346,8 @@ tags:
 #	lvl.3: three times
 
 	when:
-		progress = None # TODO: get student progress in badge
+		progress = None # COMPLETE THIS: get student progress in badge
+		len(progress) > 0
 		
 		# Compute badge level the student deserves
 		lvl = compute_lvl(progress, 1, 2, 3)
@@ -1370,7 +1384,7 @@ tags:
         // Empty
         Badge::deleteBadge($badge1->getId());
         $this->assertEmpty(Badge::getBadges($this->courseId));
-        $this->assertFalse(file_exists($badge2->getDataFolder(true, "Badge1")));
+        $this->assertFalse(file_exists($badge1->getDataFolder(true, "Badge1")));
         $this->assertEmpty(Section::getSectionByName($this->courseId, Badges::RULE_SECTION)->getRules());
     }
 
@@ -1525,7 +1539,8 @@ tags:
 
         // When
         $this->assertTrue(isset($params["when"]));
-        $this->assertEquals("progress = None # TODO: get student progress in badge
+        $this->assertEquals("progress = None # COMPLETE THIS: get student progress in badge
+len(progress) > 0
 
 # Compute badge level the student deserves
 lvl = compute_lvl(progress, " . $levels[0]["goal"] . (count($levels) >= 2 ? ", " . $levels[1]["goal"] : "") .

@@ -2,6 +2,7 @@
 namespace GameCourse\Module\Badges;
 
 use Exception;
+use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
@@ -12,6 +13,7 @@ use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\XPLevels\XPLevels;
+use Utils\Cache;
 use Utils\Utils;
 
 /**
@@ -38,7 +40,7 @@ class Badges extends Module
 
     const ID = "Badges";  // NOTE: must match the name of the class
     const NAME = "Badges";
-    const DESCRIPTION = "Enables badges as a type of award to be given to students.";
+    const DESCRIPTION = "Enables badges as a type of award to be given to students under certain conditions.";
     const TYPE = ModuleType::GAME_ELEMENT;
 
     const VERSION = "2.2.0";                                     // Current module version
@@ -134,9 +136,7 @@ class Badges extends Module
                     ["id" => "description", "label" => "Description", "type" => InputType::TEXT],
                     ["id" => "image", "label" => "Image", "type" => InputType::IMAGE],
                     ["id" => "nrLevels", "label" => "# Levels", "type" => InputType::NUMBER],
-                    ["id" => "isCount", "label" => "is Count", "type" => InputType::TOGGLE],
-                    ["id" => "isPost", "label" => "is Post", "type" => InputType::TOGGLE],
-                    ["id" => "isPoint", "label" => "is Point", "type" => InputType::TOGGLE],
+                    ["id" => "isBragging", "label" => "Bragging", "type" => InputType::TOGGLE],
                     ["id" => "isExtra", "label" => "Extra Credit", "type" => InputType::TOGGLE],
                     ["id" => "isActive", "label" => "Active", "type" => InputType::TOGGLE]
                 ],
@@ -159,7 +159,6 @@ class Badges extends Module
                     ["id" => "isCount", "label" => "is Count", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],
                     ["id" => "isPost", "label" => "is Post", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],
                     ["id" => "isPoint", "label" => "is Point", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],
-                    ["id" => "isExtra", "label" => "is Extra", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],
                     ["id" => "goal1", "label" => "Goal level 1", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
                     ["id" => "goal2", "label" => "Goal level 2", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
                     ["id" => "goal3", "label" => "Goal level 3", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
@@ -341,11 +340,23 @@ class Badges extends Module
      *
      * @param int $userId
      * @param int $badgeId
-     * @return array
+     * @return int
      */
-    public function getUserBadgeProgression(int $userId, int $badgeId): array
+    public function getUserBadgeProgression(int $userId, int $badgeId): int
     {
-        // TODO
+        $courseId = $this->getCourse()->getId();
+
+        $cacheId = "badge_progression_b" . $badgeId . "_u" . $userId;
+        $cacheValue = Cache::get($courseId, $cacheId);
+
+        if (AutoGame::isRunning($courseId) && !is_null($cacheValue)) {
+            // NOTE: get value from cache while AutoGame is running
+            //       since progression table is not stable
+            return $cacheValue;
+
+        } else {
+            // TODO
+        }
     }
 
     /**

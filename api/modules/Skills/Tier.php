@@ -415,7 +415,7 @@ class Tier
         if (!$zip->open($zipPath)) throw new Exception("Failed to create zip archive.");
         $zip->extractTo($tempFolder);
         $zip->close();
-        unlink($zipPath);
+        Utils::deleteFile($tempFolder, "tiers.zip");
 
         $nrTiersImported = 0;
         // TODO: import skill tiers

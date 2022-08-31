@@ -12,6 +12,7 @@ use GameCourse\User\CourseUser;
 use GameCourse\User\User;
 use GameCourse\Views\Component\CustomComponent;
 use GameCourse\Views\Page\Page;
+use Utils\Cache;
 use Utils\CronJob;
 use Utils\Utils;
 use ZipArchive;
@@ -478,6 +479,9 @@ class Course
         $course = new Course($courseId);
         $course->setAutomation("AutoEnabling", null);
         $course->setAutomation("AutoDisabling", null);
+
+        // Delete cache
+        Cache::clean($courseId);
 
         // Delete from database
         Core::database()->delete(self::TABLE_COURSE, ["id" => $courseId]);
@@ -1055,7 +1059,7 @@ class Course
             mkdir($stylesFolder, 0777, true);
 
         $mainStyles = $stylesFolder . "/main.css";
-        if (!$contents && file_exists($mainStyles)) unlink($mainStyles);
+        if (!$contents && file_exists($mainStyles)) Utils::deleteFile($stylesFolder, "main.css");
         else file_put_contents($mainStyles, $contents);
 
         // Delete styles folder if empty
@@ -1154,7 +1158,7 @@ class Course
         if (!$zip->open($zipPath)) throw new Exception("Failed to create zip archive.");
         $zip->extractTo($tempFolder);
         $zip->close();
-        unlink($zipPath);
+        Utils::deleteFile($tempFolder, "courses.zip");
 
         // Import courses
         $file = file_get_contents($tempFolder . "/courses.csv");

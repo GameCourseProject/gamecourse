@@ -15,6 +15,7 @@ use Utils\Utils;
 abstract class AutoGame
 {
     const TABLE_AUTOGAME = "autogame";
+    const TABLE_PARTICIPATION = "participation";
 
 
     /*** ---------------------------------------------------- ***/
@@ -71,7 +72,7 @@ abstract class AutoGame
         RuleSystem::deleteRuleSystemInfo($courseId);
 
         // Remove logging info
-        unlink(LOGS_FOLDER . "/autogame_" . $courseId . ".txt");
+        Utils::deleteFile(LOGS_FOLDER, "autogame_" . $courseId . ".txt");
     }
 
     /**
@@ -110,5 +111,16 @@ abstract class AutoGame
     public static function getLastRun(int $courseId): ?string
     {
         return Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "finishedRunning");
+    }
+
+    /**
+     * Checks whether AutoGame is running for a given course.
+     *
+     * @param int $courseId
+     * @return bool
+     */
+    public static function isRunning(int $courseId): bool
+    {
+        return boolval(Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "isRunning"));
     }
 }

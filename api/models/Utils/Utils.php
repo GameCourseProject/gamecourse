@@ -206,7 +206,7 @@ class Utils
         if (count($matches) != 0) $to .= "/";
         $path = $to . $filename;
 
-        $file = base64_decode(preg_replace('#^data:\w+/\w+;base64,#i', '', $base64));
+        $file = base64_decode(preg_replace('/^data:.*\/.*?;base64,/i', '', $base64));
         file_put_contents($path, $file);
         return $path;
     }

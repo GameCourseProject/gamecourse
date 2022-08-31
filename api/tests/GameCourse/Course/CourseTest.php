@@ -17,6 +17,7 @@ use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
 use TypeError;
+use Utils\Cache;
 use Utils\Utils;
 
 /**
@@ -1196,6 +1197,25 @@ class CourseTest extends TestCase
             $this->assertCount(1, $courses);
             $this->assertEquals("Produção de Conteúdos Multimédia", $courses[0]["name"]);
         }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function deleteCourseWithCache()
+    {
+        // Given
+        $id = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false)->getId();
+        Cache::store($id, "test", 1);
+
+        // When
+        Course::deleteCourse($id);
+
+        // Then
+        $this->assertNull(Cache::get($id, "test"));
+        $this->assertFalse(file_exists(CACHE_FOLDER . "/" . $id));
     }
 
 

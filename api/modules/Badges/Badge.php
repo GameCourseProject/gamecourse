@@ -259,7 +259,15 @@ class Badge
                 $rule->setActive($newStatus);
             }
         }
-        if (key_exists("name", $fieldValues) | key_exists("description", $fieldValues)) {
+        if (key_exists("isBragging", $fieldValues) && $fieldValues["isBragging"]) {
+            // Set all levels' reward as 0
+            $levels = array_map(function ($level) {
+                $level["reward"] = 0;
+                return $level;
+            }, $this->getLevels());
+            $this->setLevels($levels, $fieldValues["isBragging"]);
+        }
+        if (key_exists("name", $fieldValues) || key_exists("description", $fieldValues)) {
             // Update badge rule
             $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
             $description = key_exists("description", $fieldValues) ? $newDescription : $this->getDescription();
@@ -379,7 +387,7 @@ class Badge
         $badge = new Badge($id);
 
         // Set badge levels
-        $badge->setLevels($levels);
+        $badge->setLevels($levels, $isBragging);
 
         // Create badge data folder
         self::createDataFolder($courseId, $name);
@@ -416,7 +424,7 @@ class Badge
             "isPoint" => +$isPoint,
             "isActive" => +$isActive
         ]);
-        $this->setLevels($levels);
+        $this->setLevels($levels, $isBragging);
         return $this;
     }
 
@@ -478,12 +486,13 @@ class Badge
      * Sets badge levels.
      *
      * @param array $levels
+     * @param bool $isBragging
      * @return void
      * @throws Exception
      */
-    public function setLevels(array $levels)
+    public function setLevels(array $levels, bool $isBragging = false)
     {
-        self::validateLevels($levels);
+        self::validateLevels($levels, $isBragging);
 
         // Delete all levels
         Core::database()->delete(self::TABLE_BADGE_LEVEL, ["badge" => $this->id]);
@@ -496,7 +505,7 @@ class Badge
                 "number" => $i + 1,
                 "goal" => $level["goal"],
                 "description" => $level["description"],
-                "reward" => $level["reward"]
+                "reward" => !$isBragging ? $level["reward"] : 0
             ]);
         }
         Core::database()->update(self::TABLE_BADGE, ["nrLevels" => count($levels)], ["id" => $this->id]);
@@ -714,7 +723,7 @@ class Badge
         if (!$zip->open($zipPath)) throw new Exception("Failed to create zip archive.");
         $zip->extractTo($tempFolder);
         $zip->close();
-        unlink($zipPath);
+        Utils::deleteFile($tempFolder, "badges.zip");
 
         // Get badges images
         $images = [];
@@ -845,12 +854,12 @@ class Badge
     {
         self::validateName($name);
         self::validateDescription($description);
-        self::validateLevels($levels);
         if (!is_bool($isExtra)) throw new Exception("'isExtra' must be either true or false.");
         if (!is_bool($isBragging)) throw new Exception("'isBragging' must be either true or false.");
         if (!is_bool($isCount)) throw new Exception("'isCount' must be either true or false.");
         if (!is_bool($isPost)) throw new Exception("'isPost' must be either true or false.");
         if (!is_bool($isPoint)) throw new Exception("'isPoint' must be either true or false.");
+        self::validateLevels($levels, $isBragging);
     }
 
     /**
@@ -896,10 +905,11 @@ class Badge
      * Validates badge levels.
      *
      * @param $levels
+     * @param bool $isBragging
      * @return void
      * @throws Exception
      */
-    private static function validateLevels($levels)
+    private static function validateLevels($levels, bool $isBragging)
     {
         if (!is_array($levels) || empty($levels))
             throw new Exception("Badge needs to have at least one level.");
@@ -915,7 +925,7 @@ class Badge
             if (!isset($levels[$i]["goal"]) || !is_numeric($levels[$i]["goal"]) || $levels[$i]["goal"] < 0)
                 throw new Exception("Badge level " . ($i+1) . " goal can't be null nor negative.");
 
-            if (!isset($levels[$i]["reward"]) || !is_numeric($levels[$i]["reward"]) || $levels[$i]["reward"] < 0)
+            if (!$isBragging && (!isset($levels[$i]["reward"]) || !is_numeric($levels[$i]["reward"]) || $levels[$i]["reward"] < 0))
                 throw new Exception("Badge level " . ($i+1) . " reward can't be null nor negative.");
 
             if ($i != 0) {

@@ -302,7 +302,7 @@ class SkillTree
         if (!$zip->open($zipPath)) throw new Exception("Failed to create zip archive.");
         $zip->extractTo($tempFolder);
         $zip->close();
-        unlink($zipPath);
+        Utils::deleteFile($tempFolder, "skillTrees.zip");
 
         $nrSkillTreesImported = 0;
         // TODO: import skill trees

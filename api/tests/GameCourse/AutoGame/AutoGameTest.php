@@ -65,6 +65,8 @@ class AutoGameTest extends TestCase
     /*** ----------------------- Tests ---------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    // Setup
+
     /**
      * @test
      */
@@ -76,6 +78,9 @@ class AutoGameTest extends TestCase
         $this->assertNull($autogame["periodicityNumber"]);
         $this->assertNull($autogame["periodicityTime"]);
     }
+
+
+    // General
 
     /**
      * @test
@@ -173,6 +178,9 @@ class AutoGameTest extends TestCase
         AutoGame::setAutoGame($course->getId(), true);
     }
 
+
+    // Information
+
     /**
      * @test
      * @throws Exception
@@ -190,5 +198,22 @@ class AutoGameTest extends TestCase
         $date = "2022-07-30 19:20:00";
         Core::database()->update(AutoGame::TABLE_AUTOGAME, ["finishedRunning" => $date], ["course" => $courseId]);
         $this->assertEquals($date, AutoGame::getLastRun($courseId));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isRunning()
+    {
+        $courseId = 1;
+
+        Core::database()->setForeignKeyChecks(false);
+        AutoGame::initAutoGame($courseId);
+        Core::database()->setForeignKeyChecks(true);
+
+        $this->assertFalse(AutoGame::isRunning($courseId));
+        Core::database()->update(AutoGame::TABLE_AUTOGAME, ["isRunning" => true], ["course" => $courseId]);
+        $this->assertTrue(AutoGame::isRunning($courseId));
     }
 }
