@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 use Utils\Utils;
 
@@ -83,9 +84,15 @@ class Streak
         return $this->getData("reward");
     }
 
+    /**
+     * @throws Exception
+     */
     public function getTokens(): ?int
     {
-        return $this->getData("tokens");
+        $virtualCurrencyModule = $this->getCourse()->getModuleById(VirtualCurrency::ID);
+        if ($virtualCurrencyModule && $virtualCurrencyModule->isEnabled())
+            return $this->getData("tokens");
+        return null;
     }
 
     public function getImage(): string
@@ -292,6 +299,11 @@ class Streak
         if (key_exists("periodicity", $fieldValues) && !is_null($fieldValues["periodicity"])) self::validateInteger("periodicity", $fieldValues["periodicity"]);
         if (key_exists("reward", $fieldValues)) self::validateInteger("reward", $fieldValues["reward"]);
         if (key_exists("tokens", $fieldValues)) {
+            $course = $this->getCourse();
+            $virtualCurrencyModule = $course->getModuleById(VirtualCurrency::ID);
+            if (!$virtualCurrencyModule || !$virtualCurrencyModule->isEnabled())
+                throw new Exception($virtualCurrencyModule::NAME . " is not enabled for course with ID = " . $course->getId() . ".");
+
             $newTokens = $fieldValues["tokens"];
             if (!is_null($newTokens)) self::validateInteger("tokens", $newTokens);
         }
@@ -605,7 +617,7 @@ class Streak
      *
      * @param string $name
      * @param string $description
-     * @param array $levels
+     * @param int|null $tokens
      * @param bool $fresh
      * @param int|null $ruleId
      * @return array

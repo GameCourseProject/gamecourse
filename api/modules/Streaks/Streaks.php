@@ -12,6 +12,7 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 use Utils\Cache;
 use Utils\Utils;
@@ -50,7 +51,8 @@ class Streaks extends Module
 
     const DEPENDENCIES = [
         ["id" => Awards::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD],
-        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
+        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT],
+        ["id" => VirtualCurrency::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
     ];
     // NOTE: dependencies should be updated on code changes
 
@@ -120,9 +122,12 @@ class Streaks extends Module
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function getLists(): array
     {
-        return [
+        $lists = [
             [
                 "listName" => "Streaks",
                 "itemName" => "streak",
@@ -133,7 +138,6 @@ class Streaks extends Module
                     ["id" => "color", "label" => "Color", "type" => InputType::COLOR],
                     ["id" => "count", "label" => "Count", "type" => InputType::NUMBER],
                     ["id" => "reward", "label" => "XP", "type" => InputType::NUMBER],
-                    ["id" => "tokens", "label" => "Tokens", "type" => InputType::NUMBER],
                     ["id" => "isExtra", "label" => "Extra Credit", "type" => InputType::TOGGLE],
                     ["id" => "isActive", "label" => "Active", "type" => InputType::TOGGLE]
                 ],
@@ -150,7 +154,6 @@ class Streaks extends Module
                     ["id" => "color", "label" => "Color", "type" => InputType::COLOR, "scope" => ActionScope::ALL],
                     ["id" => "count", "label" => "Count", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
                     ["id" => "reward", "label" => "Reward (XP)", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
-                    ["id" => "tokens", "label" => "Reward (Tokens)", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
                     ["id" => "isRepeatable", "label" => "is Repeatable", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],
                     ["id" => "isPeriodic", "label" => "is Periodic", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],
                     ["id" => "isCount", "label" => "is Count", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],
@@ -164,6 +167,19 @@ class Streaks extends Module
                 ],
             ]
         ];
+
+        // Tokens info
+        $virtualCurrencyModule = $this->course->getModuleById(VirtualCurrency::ID);
+        if ($virtualCurrencyModule && $virtualCurrencyModule->isEnabled()) {
+            array_splice($lists[0]["listInfo"], 5, 0, [
+                ["id" => "tokens", "label" => "Tokens", "type" => InputType::NUMBER]
+            ]);
+            array_splice($lists[0][Action::EDIT], 5, 0, [
+                ["id" => "tokens", "label" => "Reward (Tokens)", "type" => InputType::NUMBER, "scope" => ActionScope::ALL]
+            ]);
+        }
+
+        return $lists;
     }
 
     /**
