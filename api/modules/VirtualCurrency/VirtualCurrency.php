@@ -113,13 +113,6 @@ class VirtualCurrency extends Module
         $this->removeEvents();
     }
 
-    protected function deleteEntries()
-    {
-        Core::database()->delete(self::TABLE_WALLET, ["course" => $this->course->getId()]);
-        Core::database()->delete(self::TABLE_REMOVE_TOKENS, ["course" => $this->course->getId()]);
-        Core::database()->delete(self::TABLE_VC_CONFIG, ["course" => $this->course->getId()]);
-    }
-
 
     /*** ----------------------------------------------- ***/
     /*** ---------------- Configuration ---------------- ***/

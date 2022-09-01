@@ -21,7 +21,7 @@ import { ClasscheckComponent } from './settings/modules/config/classcheck/classc
 import { SkillsComponent } from './settings/modules/config/personalized-config/skills/skills.component';
 import { GooglesheetsComponent } from './settings/modules/config/googlesheets/googlesheets.component';
 import { MoodleComponent } from './settings/modules/config/moodle/moodle.component';
-import { QrComponent } from './settings/modules/config/qr/qr.component';
+import { QrComponent } from './settings/modules/config/personalized-config/qr/qr.component';
 import { NotificationsComponent } from './settings/modules/config/notifications/notifications.component';
 import { ProfilingComponent } from './settings/modules/config/profiling/profiling.component';
 

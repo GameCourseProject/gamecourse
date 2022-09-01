@@ -13,6 +13,7 @@ import {InputType} from "../../../../../../../../_domain/modules/config/input-ty
 import {Action, ActionScope, scopeAllows, showAtLeastOnce} from 'src/app/_domain/modules/config/Action';
 import {DownloadManager} from "../../../../../../../../_utils/download/download-manager";
 import {SkillsComponent} from "../personalized-config/skills/skills.component";
+import {QrComponent} from "../personalized-config/qr/qr.component";
 
 @Component({
   selector: 'app-config',
@@ -173,6 +174,7 @@ export class ConfigComponent implements OnInit {
 
   get PersonalizedConfig() {
     if (this.personalizedConfig === ApiHttpService.SKILLS) return SkillsComponent;
+    if (this.personalizedConfig === ApiHttpService.QR) return QrComponent;
     else throw Error("Personalized config for module '" + this.module.id + "' not found.");
   }
 

@@ -108,13 +108,6 @@ class XPLevels extends Module
         $this->removeEvents();
     }
 
-    protected function deleteEntries()
-    {
-        Core::database()->delete(self::TABLE_XP, ["course" => $this->course->getId()]);
-        Core::database()->delete(self::TABLE_LEVEL, ["course" => $this->course->getId()]);
-        Core::database()->delete(self::TABLE_XP_CONFIG, ["course" => $this->course->getId()]);
-    }
-
 
     /*** ----------------------------------------------- ***/
     /*** ---------------- Configuration ---------------- ***/

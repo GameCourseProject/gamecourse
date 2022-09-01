@@ -67,7 +67,7 @@
         <div>
           <span class="label">Hard Dependencies: </span>
           <span *ngFor="let dependency of filterHardDependencies(moduleOpen.dependencies); let last = last" class="details">
-            <span [ngStyle]="{'color': dependency.enabled ? 'green' : 'red'}">{{dependency.id}}</span>
+            <span [ngStyle]="{'color': dependency.enabled ? 'green' : 'red'}">{{dependency.name}}</span>
             <span *ngIf="!last"> | </span>
           </span>
         </div>

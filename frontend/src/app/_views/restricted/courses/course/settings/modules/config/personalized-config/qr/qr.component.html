@@ -31,7 +31,7 @@
     </div>
 
     <div class="action-buttons">
-      <div class="icon add_icon" title="New" (click)="isNewParticipationModalOpen = true; getStudents()"></div>
+      <div class="icon add_icon" title="New" (click)="getExtraInfo(); isNewParticipationModalOpen = true"></div>
     </div>
   </div>
 
@@ -67,7 +67,7 @@
 
 <!-- Loader -->
 <div *ngIf="loading" id="page-loading">
-  <img src="assets/loader/loader.gif" alt="loader">
+  <img src="../../../../../../../../../../assets/loader/loader.gif" alt="loader">
 </div>
 
 
@@ -87,12 +87,12 @@
   <!-- Title -->
   <div class="title">New Participation:</div>
 
-  <div class="content multiple_inputs">
+  <div *ngIf="students && typesOfClass" class="content multiple_inputs">
     <div class="row">
       <!-- Student -->
       <select class="form__input" id="student-id" [(ngModel)]="newParticipation.studentId">
         <option disabled [value]="null">Select a student</option>
-        <option *ngFor="let student of students" [label]="student.nickname || student.name" [value]="student.id">{{student.nickname || student.name}}</option>
+        <option *ngFor="let student of students" [label]="student.nickname ?? student.name" [value]="student.id">{{student.nickname ?? student.name}}</option>
       </select>
     </div>
 
@@ -106,12 +106,12 @@
       <!-- Class Type -->
       <select class="form__input" id="type-of-class" [(ngModel)]="newParticipation.typeOfClass">
         <option disabled [value]="null">Select a type of class</option>
-        <option *ngFor="let type of getTypesOfClasses()" [label]="type" [value]="type">{{type}}</option>
+        <option *ngFor="let type of typesOfClass" [label]="type" [value]="type">{{type}}</option>
       </select>
     </div>
   </div>
 
-  <div class="action_buttons" style="display: flex; justify-content: flex-end">
+  <div *ngIf="students && typesOfClass" class="action_buttons" style="display: flex; justify-content: flex-end">
     <button class="cancel" (click)="isNewParticipationModalOpen = false; clearObject(newParticipation)">Cancel</button>
     <button class="save_btn" style="position: relative; margin-left: 15px" [disabled]="!isReadyToSubmit()" (click)="submitNewParticipation()">Save</button>
   </div>

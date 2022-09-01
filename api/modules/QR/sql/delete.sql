@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS qr_error;
+DROP TABLE IF EXISTS qr_code;

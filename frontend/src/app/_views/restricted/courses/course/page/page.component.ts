@@ -4,9 +4,10 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {View} from "../../../../../_domain/views/view";
 import {Skill} from "../../../../../_domain/modules/config/personalized-config/skills/skill";
 import {ApiEndpointsService} from "../../../../../_services/api/api-endpoints.service";
-import {finalize} from "rxjs/operators";
 import {Course} from "../../../../../_domain/courses/course";
 import {exists} from "../../../../../_utils/misc/misc";
+import {User} from "../../../../../_domain/users/user";
+import {Page} from "../../../../../_domain/pages & templates/page";
 
 @Component({
   selector: 'app-page',
@@ -15,22 +16,21 @@ import {exists} from "../../../../../_utils/misc/misc";
 })
 export class PageComponent implements OnInit {
 
-  courseID: number;
-  pageID: number;
-  userID: number;
+  loading: boolean = true;
 
-  skillID: number;
+  course: Course;
+  user: User;
 
+  page: Page;
   pageView: View;
+
   skill: Skill;
+  isPreview: boolean;
 
   participationKey: string;
-  course: Course;
   lectureNr: number;
-  typeOfClass: TypeOfClass;
-
-  loading: boolean;
-  isPreview: boolean;
+  typeOfClass: string;
+  typesOfClass: string[];
 
   constructor(
     private api: ApiHttpService,
@@ -44,81 +44,65 @@ export class PageComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.parent.params.subscribe(params => {
-      this.courseID = parseInt(params.id);
+      const courseID = parseInt(params.id);
 
-      this.route.params.subscribe(params => {
-        if (this.router.url.includes('skills')) {
-          this.skillID = parseInt(params.id);
+      this.route.params.subscribe(async params => {
+        if (this.router.url.includes('skills')) { // Skill page
+          this.skill = await this.api.getSkillById(params.id).toPromise();
           this.isPreview = !!params.preview;
-          this.getSkill();
 
-        } else if (this.router.url.includes('participation')) {
+        } else if (this.router.url.includes('participation')) { // QR participation
           this.participationKey = params.key;
-          this.api.getCourseById(this.courseID)
-            .pipe(finalize(() => this.loading = false))
-            .subscribe(course => this.course = course)
+          this.course = await this.api.getCourseById(courseID).toPromise();
+          this.typesOfClass = await this.api.getTypesOfClass().toPromise();
 
-        } else {
-          this.pageID = parseInt(params.id);
-          this.userID = parseInt(params.userId) || null;
-          this.getPage();
+        } else { // Render page
+          this.pageView = null; // NOTE: Important - Forces view to completely refresh
+
+          // const pageID = parseInt(params.id); FIXME: render page
+          // const userID = parseInt(params.userId) || null;
+          // this.api.getLoggedUser()
+          //   .subscribe(user => {
+          //     this.api.renderPage(this.courseID, this.pageID, this.userID || user.id)
+          //       .pipe(finalize(() => this.loading = false))
+          //       .subscribe(view => this.pageView = view);
+          //   });
         }
+        this.loading = false;
       });
     });
   }
 
 
   /*** --------------------------------------------- ***/
-  /*** -------------------- Init ------------------- ***/
+  /*** ------------------- Skills ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  getPage(): void {
-    this.loading = true;
-    this.pageView = null; // NOTE: Important - Forces view to completely refresh
-    this.api.getLoggedUser()
-      .subscribe(user => {
-        this.api.renderPage(this.courseID, this.pageID, this.userID || user.id)
-          .pipe(finalize(() => this.loading = false))
-          .subscribe(view => this.pageView = view);
-      });
-  }
-
-  getSkill(): void {
-    this.loading = true;
-    this.api.getSkillById(this.skillID)
-      .pipe(finalize(() => this.loading = false))
-      .subscribe(skill => this.skill = skill);
-  }
-
-  goBack() {
+  closePreview() {
     this.router.navigate(['./settings/modules/skills/config'], {relativeTo: this.route.parent});
   }
 
-  getTypesOfClasses(): string[] {
-    return Object.values(TypeOfClass);
-  }
 
-  submitParticipation() {
+  /*** --------------------------------------------- ***/
+  /*** ------------- QR Participation -------------- ***/
+  /*** --------------------------------------------- ***/
+
+  async submitParticipation() {
     this.loading = true;
-    this.api.submitQRParticipation(this.courseID, this.participationKey, this.lectureNr, this.typeOfClass)
-      .pipe(finalize(() => this.loading = false))
-      .subscribe(
-        res => {
-          const successBox = $('.success_msg');
-          successBox.empty();
-          successBox.append("Your active participation was registered.<br />Congratulations! Keep participating. ;)");
-          successBox.show().delay(5000).fadeOut();
-        });
+
+    const loggedUser = await this.api.getLoggedUser().toPromise();
+    await this.api.submitQRParticipation(this.course.id, loggedUser.id, this.lectureNr, this.typeOfClass, this.participationKey).toPromise();
+
+    const successBox = $('.success_msg');
+    successBox.empty();
+    successBox.append("Your class participation was registered.<br />Congratulations! Keep participating. 😊");
+    successBox.show().delay(5000).fadeOut();
+
+    this.loading = false;
   }
 
   isReadyToSubmitParticipation(): boolean {
-    return exists(this.lectureNr) && this.lectureNr > 0 &&
-      exists(this.typeOfClass) && Object.values(TypeOfClass).includes(this.typeOfClass);
+    return exists(this.lectureNr) && this.lectureNr > 0 && exists(this.typeOfClass);
   }
 
-}
-
-export enum TypeOfClass {
-  LECTURE = 'Lecture',
-  INVITED_LECTURE = 'Invited Lecture'
 }

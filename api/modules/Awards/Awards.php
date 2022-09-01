@@ -68,12 +68,6 @@ class Awards extends Module
         $this->cleanDatabase();
     }
 
-    protected function deleteEntries()
-    {
-        Core::database()->delete(self::TABLE_AWARD, ["course" => $this->course->getId()]);
-        Core::database()->delete(self::TABLE_AWARD_TEST, ["course" => $this->course->getId()]);
-    }
-
 
     /*** ----------------------------------------------- ***/
     /*** --------------- Module Specific --------------- ***/

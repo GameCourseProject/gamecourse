@@ -89,12 +89,6 @@ class Streaks extends Module
         $this->removeRules();
     }
 
-    protected function deleteEntries()
-    {
-        Core::database()->delete(self::TABLE_STREAK_CONFIG, ["course" => $this->course->getId()]);
-        Core::database()->delete(self::TABLE_STREAK, ["course" => $this->course->getId()]);
-    }
-
 
     /*** ----------------------------------------------- ***/
     /*** ---------------- Configuration ---------------- ***/

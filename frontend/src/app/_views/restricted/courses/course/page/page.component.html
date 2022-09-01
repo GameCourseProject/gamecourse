@@ -3,7 +3,7 @@
 </div>
 
 <div *ngIf="skill" class="page skill-page">
-  <button *ngIf="isPreview" (click)="goBack()" style="float: right">Close<br> Preview</button>
+  <button *ngIf="isPreview" (click)="closePreview()" style="float: right">Close<br> Preview</button>
 
   <div class="header">
     <img [src]="ApiEndpointsService.API_ENDPOINT + '/modules/skills/icon.svg'">
@@ -14,8 +14,10 @@
 </div>
 
 <div *ngIf="participationKey" class="page participation-page">
-  <h1>Bonus XP - Lecture Active Participation</h1>
+  <h1>In-class participation</h1>
   <h4 *ngIf="course">{{course.name}} - {{course.year}}</h4>
+
+  <p>Fill-in the following form to register your participation in class:</p>
 
   <div class="row">
     <div class="input-wrapper" style="width: 230px; margin-bottom: 20px;">
@@ -25,7 +27,7 @@
 
     <select class="form__input" id="type-of-class" style="width: 230px" [(ngModel)]="typeOfClass">
       <option disabled [value]="undefined">Select a type of class</option>
-      <option *ngFor="let type of getTypesOfClasses()" [label]="type" [value]="type">{{type}}</option>
+      <option *ngFor="let type of typesOfClass" [label]="type" [value]="type">{{type}}</option>
     </select>
 
     <button class="button" [disabled]="!isReadyToSubmitParticipation()" style="display: block; width: 230px" (click)="submitParticipation()">Submit</button>

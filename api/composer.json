@@ -5,6 +5,7 @@
     "ext-json": "*",
     "ext-zip": "*",
     "ext-iconv": "*",
+    "ext-curl": "*",
     "zircote/swagger-php": "^4.2",
     "google/apiclient": "2.12.1",
     "fakerphp/faker": "^1.19"

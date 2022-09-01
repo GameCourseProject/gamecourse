@@ -88,13 +88,6 @@ class Skills extends Module
         $this->removeRules();
     }
 
-    protected function deleteEntries()
-    {
-        Core::database()->delete(self::TABLE_SKILL_CONFIG, ["course" => $this->course->getId()]);
-        Core::database()->delete(self::TABLE_SKILL_TREE, ["course" => $this->course->getId()]);
-        Core::database()->delete(self::TABLE_SKILL, ["course" => $this->course->getId()]);
-    }
-
 
     /*** ----------------------------------------------- ***/
     /*** ---------------- Configuration ---------------- ***/

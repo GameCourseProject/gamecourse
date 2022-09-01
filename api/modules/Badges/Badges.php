@@ -87,12 +87,6 @@ class Badges extends Module
         $this->removeRules();
     }
 
-    protected function deleteEntries()
-    {
-        Core::database()->delete(self::TABLE_BADGE_CONFIG, ["course" => $this->course->getId()]);
-        Core::database()->delete(self::TABLE_BADGE, ["course" => $this->course->getId()]);
-    }
-
 
     /*** ----------------------------------------------- ***/
     /*** ---------------- Configuration ---------------- ***/
