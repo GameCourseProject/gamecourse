@@ -9,6 +9,7 @@ use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Streaks\Streak;
 use GameCourse\Module\Streaks\Streaks;
+use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
 use PDOException;
@@ -755,6 +756,8 @@ class StreakTest extends TestCase
      */
     public function setTokensSuccess()
     {
+        $virtualCurrency = (new Course($this->courseId))->getModuleById(VirtualCurrency::ID);
+        $virtualCurrency->setEnabled(true);
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
             null, null, 100, null, false, true, false,
             false, false);
@@ -1206,6 +1209,9 @@ tags:
                                       ?string $periodicityTime, int $reward, ?int $tokens, bool $isRepeatable, bool $isCount,
                                       bool $isPeriodic, bool $isAtMost, bool $isExtra)
     {
+        $virtualCurrency = (new Course($this->courseId))->getModuleById(VirtualCurrency::ID);
+        $virtualCurrency->setEnabled(true);
+
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
             null, null, 100, null, false, true, false,
             false, false);
@@ -1273,6 +1279,9 @@ tags:
      */
     public function editStreakDuplicateName()
     {
+        $virtualCurrency = (new Course($this->courseId))->getModuleById(VirtualCurrency::ID);
+        $virtualCurrency->setEnabled(true);
+
         Streak::addStreak($this->courseId, "Streak1", "Perform action", null, 10,
             null, null, 100, null, false, true, false,
             false, false);

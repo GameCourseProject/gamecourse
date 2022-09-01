@@ -41,9 +41,9 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-          <div class="icon add_icon" title="New" (click)="mode = 'add'; newItem.list = list; newItem.item = {}; isItemModalOpen = true;"></div>
-          <div class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true; listToAct = list"></div>
-          <div class="icon export_icon" title="Export All" (click)="exportItems(list)"></div>
+          <div *ngIf="hasAction(list, Action.NEW)" class="icon add_icon" title="New" (click)="mode = 'add'; newItem.list = list; newItem.item = {}; isItemModalOpen = true;"></div>
+          <div *ngIf="hasAction(list, Action.IMPORT)" class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true; listToAct = list"></div>
+          <div *ngIf="hasAction(list, Action.EXPORT)" class="icon export_icon" title="Export All" (click)="exportItems(list)"></div>
         </div>
       </div>
 

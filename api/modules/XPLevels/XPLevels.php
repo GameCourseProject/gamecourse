@@ -40,7 +40,7 @@ class XPLevels extends Module
 
     const ID = "XPLevels";  // NOTE: must match the name of the class
     const NAME = "XP & Levels";
-    const DESCRIPTION = "Enables Experience Points (XP) to be given to students, distributed between different levels.";
+    const DESCRIPTION = "Enables Experience Points (XP) to be given to students as a reward, distributed between different levels.";
     const TYPE = ModuleType::GAME_ELEMENT;
 
     const VERSION = "2.2.0";                                     // Current module version
@@ -377,7 +377,7 @@ class XPLevels extends Module
      */
     public function updateUserXP(int $userId, int $xp)
     {
-        $newXP = $this->getUserXP($userId) + $xp;
+        $newXP = max($this->getUserXP($userId) + $xp, 0);
         $this->setUserXP($userId, $newXP);
     }
 

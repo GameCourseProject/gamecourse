@@ -6,6 +6,7 @@ export enum Action {
   VIEW = 'view',
   MOVE_UP = 'move-up',
   MOVE_DOWN = 'move-down',
+  IMPORT = 'import',
   EXPORT = 'export'
 }
 

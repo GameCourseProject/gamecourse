@@ -171,11 +171,12 @@ class Streaks extends Module
         // Tokens info
         $virtualCurrencyModule = $this->course->getModuleById(VirtualCurrency::ID);
         if ($virtualCurrencyModule && $virtualCurrencyModule->isEnabled()) {
+            $VCName = $virtualCurrencyModule->getName();
             array_splice($lists[0]["listInfo"], 5, 0, [
-                ["id" => "tokens", "label" => "Tokens", "type" => InputType::NUMBER]
+                ["id" => "tokens", "label" => $VCName, "type" => InputType::NUMBER]
             ]);
             array_splice($lists[0][Action::EDIT], 5, 0, [
-                ["id" => "tokens", "label" => "Reward (Tokens)", "type" => InputType::NUMBER, "scope" => ActionScope::ALL]
+                ["id" => "tokens", "label" => "Reward ($VCName)", "type" => InputType::NUMBER, "scope" => ActionScope::ALL]
             ]);
         }
 

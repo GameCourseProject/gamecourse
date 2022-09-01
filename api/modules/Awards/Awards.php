@@ -192,6 +192,30 @@ class Awards extends Module
         return Core::database()->selectMultiple($table, $where, "a.*");
     }
 
+    /**
+     * Gives an award to a given user.
+     *
+     * @param int $userId
+     * @param string $description
+     * @param string $type
+     * @param int|null $moduleInstance
+     * @param int $reward
+     * @return void
+     * @throws Exception
+     */
+    public function giveAward(int $userId, string $description, string $type, int $moduleInstance = null, int $reward = 0)
+    {
+        self::validateAward($description, $type, $reward);
+        Core::database()->insert(self::TABLE_AWARD, [
+            "user" => $userId,
+            "course" => $this->course->getId(),
+            "description" => $description,
+            "type" => $type,
+            "moduleInstance" => $moduleInstance,
+            "reward" => $reward
+        ]);
+    }
+
 
     /*** ---------- Rewards ---------- ***/
 
@@ -280,5 +304,57 @@ class Awards extends Module
     {
         $this->checkDependency(Streaks::ID);
         return array_sum(array_column($this->getUserStreaksAwards($userId, $extra), "reward"));
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ----------------- Validations ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    /**
+     * Validates award parameters.
+     *
+     * @param $description
+     * @param $type
+     * @param $reward
+     * @return void
+     * @throws Exception
+     */
+    private static function validateAward($description, $type, $reward)
+    {
+        self::validateDescription($description);
+        self::validateReward($reward);
+
+        if (!AwardType::exists($type))
+            throw new Exception("Award type '$type' doesn't exist in the system.");
+    }
+
+    /**
+     * Validates award description.
+     *
+     * @param $description
+     * @return void
+     * @throws Exception
+     */
+    private static function validateDescription($description)
+    {
+        if (!is_string($description) || empty(trim($description)))
+            throw new Exception("Award description can't be null neither empty.");
+
+        if (iconv_strlen($description) > 100)
+            throw new Exception("Award description is too long: maximum of 100 characters.");
+    }
+
+    /**
+     * Validates award reward.
+     *
+     * @param $reward
+     * @return void
+     * @throws Exception
+     */
+    private static function validateReward($reward)
+    {
+        if (!is_numeric($reward) || $reward < 0)
+            throw new Exception("Award reward must be a number bigger or equal than 0.");
     }
 }

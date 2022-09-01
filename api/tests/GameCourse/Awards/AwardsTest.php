@@ -849,6 +849,35 @@ class AwardsTest extends TestCase
     }
 
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function giveAward()
+    {
+        // Given
+        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
+
+        // When
+        $this->module->giveAward($user->getId(), "Award", AwardType::BONUS);
+
+        // Then
+        $userAwards = $this->module->getUserAwards($user->getId());
+        $this->assertCount(1, $userAwards);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function giveAwardUnavailableAwardType()
+    {
+        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
+        $this->expectException(Exception::class);
+        $this->module->giveAward($user->getId(), "Award", "award_type");
+    }
+
+
     // Rewards
 
     /**

@@ -185,6 +185,13 @@ export class ConfigComponent implements OnInit {
     this.newItem = {list, item: copyObject(item), nrItems: list.items.length, index, first, last, even, odd};
   }
 
+  hasAction(list: List, action: Action): boolean {
+    for (const a of list.actions) {
+      if (a.action === action) return true;
+    }
+    return false;
+  }
+
   scopeAllows(scope: ActionScope, nrItems: number, index?: number, first?: boolean, last?: boolean, even?: boolean, odd?: boolean): boolean {
     return scopeAllows(scope, nrItems, index, first, last, even, odd);
   }

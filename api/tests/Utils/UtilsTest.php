@@ -817,7 +817,9 @@ class UtilsTest extends TestCase
 
         // Then
         $this->assertTrue(file_exists($path1));
+        $this->assertEquals($base64, "data:image/jpeg;base64," . base64_encode(file_get_contents($path1)));
         $this->assertTrue(file_exists($path2));
+        $this->assertEquals($base64, "data:image/jpeg;base64," . base64_encode(file_get_contents($path2)));
 
         // Clean up
         Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir1");
@@ -841,6 +843,7 @@ class UtilsTest extends TestCase
 
         // Then
         $this->assertTrue(file_exists($path));
+        $this->assertEquals($base64, "data:image/jpeg;base64," . base64_encode(file_get_contents($path)));
 
         // Clean up
         Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir1");
@@ -862,6 +865,7 @@ class UtilsTest extends TestCase
         $this->expectException(Exception::class);
         try {
             Utils::uploadFile(ROOT_PATH . "tests/Utils/dir1/dir11/file1.txt", "", "");
+
         } catch (Exception $error) {
             // Clean up
             Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir1");
