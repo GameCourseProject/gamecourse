@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse\XPLevels;
+namespace GameCourse\Module\XPLevels;
 
 use Event\Event;
 use Exception;
@@ -8,8 +8,6 @@ use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Badges\Badges;
-use GameCourse\Module\XPLevels\Level;
-use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
@@ -30,11 +28,17 @@ class XPLevelsTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         // Set logged user
@@ -62,6 +66,9 @@ class XPLevelsTest extends TestCase
         $this->module = $xpLevels;
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -79,6 +86,9 @@ class XPLevelsTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -105,8 +115,8 @@ class XPLevelsTest extends TestCase
 
         // Then
         $sql = file_get_contents(MODULES_FOLDER . "/" . XPLevels::ID . "/sql/create.sql");
-        preg_match_all("/CREATE TABLE IF NOT EXISTS (.*)\(/i", $sql, $matches);
-        $tables = $matches[1];
+        preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
+        $tables = $matches[2];
         foreach ($tables as $table) {
             $this->assertTrue(Core::database()->tableExists($table));
         }
@@ -136,7 +146,7 @@ class XPLevelsTest extends TestCase
 
         // Then
         $sql = file_get_contents(MODULES_FOLDER . "/" . XPLevels::ID . "/sql/create.sql");
-        preg_match_all("/CREATE TABLE IF NOT EXISTS (.*)\(/i", $sql, $matches);
+        preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
         $tables = $matches[1];
         foreach ($tables as $table) {
             $this->assertFalse(Core::database()->tableExists($table));

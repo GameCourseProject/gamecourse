@@ -1,6 +1,7 @@
 <?php
 namespace Event;
 
+use Exception;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -24,11 +25,17 @@ class EventTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass([], ["CronJob"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         // Set logged user
@@ -47,6 +54,9 @@ class EventTest extends TestCase
         $this->user = $user;
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -64,6 +74,9 @@ class EventTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -76,6 +89,7 @@ class EventTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function listenAndTrigger()
     {
@@ -108,6 +122,7 @@ class EventTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function stopListeningToAllEvents()
     {
@@ -135,6 +150,7 @@ class EventTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function stopListeningToASpecificEvent()
     {
@@ -166,6 +182,7 @@ class EventTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function stopListeningToAllEventsWithSamePrefix()
     {

@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse\Streaks;
+namespace GameCourse\Module\Streaks;
 
 use Exception;
 use GameCourse\AutoGame\RuleSystem\Section;
@@ -7,8 +7,6 @@ use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
-use GameCourse\Module\Streaks\Streak;
-use GameCourse\Module\Streaks\Streaks;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
@@ -31,11 +29,17 @@ class StreakTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         // Set logged user
@@ -54,6 +58,9 @@ class StreakTest extends TestCase
         $streaks->setEnabled(true);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -72,6 +79,9 @@ class StreakTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -1079,7 +1089,7 @@ class StreakTest extends TestCase
             "tokens", "isRepeatable", "isCount", "isPeriodic", "isAtMost", "isExtra", "isActive", "rule", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
-            foreach ($streaks as $i => $streak) {
+            foreach ($streaks as $streak) {
                 $this->assertCount($nrKeys, array_keys($streak));
                 $this->assertArrayHasKey($key, $streak);
                 if ($key == "image") $this->assertEquals($streak[$key], $streak1->getImage());
@@ -1110,7 +1120,7 @@ class StreakTest extends TestCase
             "tokens", "isRepeatable", "isCount", "isPeriodic", "isAtMost", "isExtra", "isActive", "rule", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
-            foreach ($streaks as $i => $streak) {
+            foreach ($streaks as $streak) {
                 $this->assertCount($nrKeys, array_keys($streak));
                 $this->assertArrayHasKey($key, $streak);
                 if ($key == "image") $this->assertEquals($streak[$key], $streak2->getImage());
@@ -1379,8 +1389,7 @@ tags:
      * @throws Exception
      */
     public function generateRuleParamsFresh(string $name, string $description, ?string $color, int $count, ?int $periodicity,
-                                            ?string $periodicityTime, int $reward, ?int $tokens, bool $isRepeatable, bool $isCount,
-                                            bool $isPeriodic, bool $isAtMost, bool $isExtra)
+                                            ?string $periodicityTime, int $reward, ?int $tokens)
     {
         $params = Streak::generateRuleParams($name, $description, $tokens);
 
@@ -1407,9 +1416,7 @@ len(progress) > 0", $params["when"]);
      * @dataProvider streakSuccessProvider
      * @throws Exception
      */
-    public function generateRuleParamsNotFresh(string $name, string $description, ?string $color, int $count, ?int $periodicity,
-                                               ?string $periodicityTime, int $reward, ?int $tokens, bool $isRepeatable, bool $isCount,
-                                               bool $isPeriodic, bool $isAtMost, bool $isExtra)
+    public function generateRuleParamsNotFresh(string $name, string $description)
     {
         // Given
         $when = "progress = None # Some changes";

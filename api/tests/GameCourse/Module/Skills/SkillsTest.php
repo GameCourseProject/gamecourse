@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse\Skills;
+namespace GameCourse\Module\Skills;
 
 use Exception;
 use GameCourse\AutoGame\RuleSystem\Section;
@@ -8,10 +8,6 @@ use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Awards\AwardType;
-use GameCourse\Module\Skills\Skill;
-use GameCourse\Module\Skills\Skills;
-use GameCourse\Module\Skills\SkillTree;
-use GameCourse\Module\Skills\Tier;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
@@ -31,11 +27,17 @@ class SkillsTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         // Set logged user
@@ -55,6 +57,9 @@ class SkillsTest extends TestCase
         $this->module = $skills;
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -74,6 +79,9 @@ class SkillsTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -100,8 +108,8 @@ class SkillsTest extends TestCase
 
         // Then
         $sql = file_get_contents(MODULES_FOLDER . "/" . Skills::ID . "/sql/create.sql");
-        preg_match_all("/CREATE TABLE IF NOT EXISTS (.*)\(/i", $sql, $matches);
-        $tables = $matches[1];
+        preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
+        $tables = $matches[2];
         foreach ($tables as $table) {
             $this->assertTrue(Core::database()->tableExists($table));
         }
@@ -121,7 +129,7 @@ class SkillsTest extends TestCase
 
         // Then
         $sql = file_get_contents(MODULES_FOLDER . "/" . Skills::ID . "/sql/create.sql");
-        preg_match_all("/CREATE TABLE IF NOT EXISTS (.*)\(/i", $sql, $matches);
+        preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
         $tables = $matches[1];
         foreach ($tables as $table) {
             $this->assertFalse(Core::database()->tableExists($table));

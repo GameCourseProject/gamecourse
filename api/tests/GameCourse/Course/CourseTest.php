@@ -30,11 +30,17 @@ class CourseTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["roles, modules", "views"], ["CronJob"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
@@ -42,6 +48,9 @@ class CourseTest extends TestCase
         Core::setLoggedUser($user);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -59,6 +68,9 @@ class CourseTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();

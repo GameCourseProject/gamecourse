@@ -22,6 +22,9 @@ class AutoGameTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
@@ -38,6 +41,9 @@ class AutoGameTest extends TestCase
         Core::database()->setForeignKeyChecks(true);
     }
 
+    /**
+     * @throws Exception
+     */
     public function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -55,6 +61,9 @@ class AutoGameTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -84,11 +93,11 @@ class AutoGameTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function initAutoGame()
     {
         $courseId = 1;
-        $dataFolder = (new Course($courseId))->getDataFolder();
 
         Core::database()->setForeignKeyChecks(false);
         AutoGame::initAutoGame($courseId);

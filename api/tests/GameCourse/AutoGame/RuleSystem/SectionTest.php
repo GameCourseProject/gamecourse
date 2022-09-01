@@ -5,7 +5,6 @@ use Exception;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\Module;
 use GameCourse\User\User;
 use PDOException;
 use PHPUnit\Framework\TestCase;
@@ -26,11 +25,17 @@ class SectionTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         // Set logged user
@@ -44,6 +49,9 @@ class SectionTest extends TestCase
         $this->courseId = $course->getId();
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -61,6 +69,9 @@ class SectionTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -500,7 +511,7 @@ class SectionTest extends TestCase
     public function addSectionFailure($name)
     {
         try {
-            $section = Section::addSection($this->courseId, $name);
+            Section::addSection($this->courseId, $name);
             $this->fail("Exception should have been thrown on 'addSectionFailure'");
 
         } catch (Exception|TypeError $e) {
@@ -1018,7 +1029,7 @@ class SectionTest extends TestCase
     {
         // Given
         $section = Section::addSection($this->courseId, "Section Name");
-        $rule1 = $section->addRule("Rule1", null, "when", "then", 0);
+        $section->addRule("Rule1", null, "when", "then", 0);
 
         $section->removeRuleText(0);
         $rulesText = implode("\n\n" . Section::RULE_DIVIDER . "\n\n", []);

@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse\Skills;
+namespace GameCourse\Module\Skills;
 
 use Exception;
 use GameCourse\AutoGame\RuleSystem\Section;
@@ -7,10 +7,6 @@ use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
-use GameCourse\Module\Skills\Skill;
-use GameCourse\Module\Skills\Skills;
-use GameCourse\Module\Skills\SkillTree;
-use GameCourse\Module\Skills\Tier;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
@@ -32,11 +28,17 @@ class SkillTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         // Set logged user
@@ -60,6 +62,9 @@ class SkillTest extends TestCase
         $this->tierId = $tier->getId();
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -79,6 +84,9 @@ class SkillTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -848,7 +856,7 @@ tags:
         $keys = ["id", "course", "tier", "name", "color", "page", "isCollab", "isExtra", "isActive", "position", "rule", "dependencies"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
-            foreach ($skills as $i => $skill) {
+            foreach ($skills as $skill) {
                 $this->assertCount($nrKeys, array_keys($skill));
                 $this->assertArrayHasKey($key, $skill);
                 if ($key == "dependencies") $this->assertEmpty($skill[$key]);
@@ -902,7 +910,7 @@ tags:
         $keys = ["id", "course", "tier", "name", "color", "page", "isCollab", "isExtra", "isActive", "position", "rule", "dependencies"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
-            foreach ($skills as $i => $skill) {
+            foreach ($skills as $skill) {
                 $this->assertCount($nrKeys, array_keys($skill));
                 $this->assertArrayHasKey($key, $skill);
                 if ($key == "dependencies") $this->assertEmpty($skill[$key]);
@@ -929,7 +937,7 @@ tags:
         $keys = ["id", "course", "tier", "name", "color", "page", "isCollab", "isExtra", "isActive", "position", "rule", "dependencies"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
-            foreach ($skills as $i => $skill) {
+            foreach ($skills as $skill) {
                 $this->assertCount($nrKeys, array_keys($skill));
                 $this->assertArrayHasKey($key, $skill);
                 if ($key == "dependencies") $this->assertEmpty($skill[$key]);
@@ -1985,6 +1993,7 @@ rating >= 3", $params["when"]);
 
     /**
      * @test
+     * @throws Exception
      */
     public function generateRuleParamsBasicSkillWithDependencies()
     {
@@ -2019,6 +2028,7 @@ rating >= 3"), $this->trim($params["when"]));
 
     /**
      * @test
+     * @throws Exception
      */
     public function generateRuleParamsWildcardSkill()
     {

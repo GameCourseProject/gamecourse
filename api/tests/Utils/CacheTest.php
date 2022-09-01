@@ -2,7 +2,6 @@
 namespace Utils;
 
 use Exception;
-use GameCourse\Course\Course;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
@@ -17,11 +16,17 @@ class CacheTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass();
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         TestingUtils::cleanFileStructure();
@@ -33,6 +38,9 @@ class CacheTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();

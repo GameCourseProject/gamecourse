@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse\Streaks;
+namespace GameCourse\Module\Streaks;
 
 use Exception;
 use GameCourse\AutoGame\AutoGame;
@@ -9,8 +9,6 @@ use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Awards\AwardType;
-use GameCourse\Module\Streaks\Streak;
-use GameCourse\Module\Streaks\Streaks;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
@@ -30,11 +28,17 @@ class StreaksTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         // Set logged user
@@ -54,6 +58,9 @@ class StreaksTest extends TestCase
         $this->module = $streaks;
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -72,6 +79,9 @@ class StreaksTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -98,8 +108,8 @@ class StreaksTest extends TestCase
 
         // Then
         $sql = file_get_contents(MODULES_FOLDER . "/" . Streaks::ID . "/sql/create.sql");
-        preg_match_all("/CREATE TABLE IF NOT EXISTS (.*)\(/i", $sql, $matches);
-        $tables = $matches[1];
+        preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
+        $tables = $matches[2];
         foreach ($tables as $table) {
             $this->assertTrue(Core::database()->tableExists($table));
         }
@@ -119,7 +129,7 @@ class StreaksTest extends TestCase
 
         // Then
         $sql = file_get_contents(MODULES_FOLDER . "/" . Streaks::ID . "/sql/create.sql");
-        preg_match_all("/CREATE TABLE IF NOT EXISTS (.*)\(/i", $sql, $matches);
+        preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
         $tables = $matches[1];
         foreach ($tables as $table) {
             $this->assertFalse(Core::database()->tableExists($table));

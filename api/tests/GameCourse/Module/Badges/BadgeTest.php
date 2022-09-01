@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse\Badges;
+namespace GameCourse\Module\Badges;
 
 use Exception;
 use GameCourse\AutoGame\RuleSystem\Section;
@@ -7,8 +7,6 @@ use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
-use GameCourse\Module\Badges\Badge;
-use GameCourse\Module\Badges\Badges;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
 use PDOException;
@@ -30,11 +28,17 @@ class BadgeTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         // Set logged user
@@ -53,6 +57,9 @@ class BadgeTest extends TestCase
         $badges->setEnabled(true);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -71,6 +78,9 @@ class BadgeTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -1061,7 +1071,7 @@ class BadgeTest extends TestCase
             "isActive", "rule", "image", "desc1", "goal1", "reward1", "desc2", "goal2", "reward2", "desc3", "goal3", "reward3"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
-            foreach ($badges as $i => $badge) {
+            foreach ($badges as $badge) {
                 $this->assertCount($nrKeys, array_keys($badge));
                 $this->assertArrayHasKey($key, $badge);
                 if ($key == "image") $this->assertEquals($badge[$key], $badge1->getImage());
@@ -1078,7 +1088,7 @@ class BadgeTest extends TestCase
      */
     public function getAllInactiveBadges()
     {
-        $badge1 = Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, false, [
+        Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1098,7 +1108,7 @@ class BadgeTest extends TestCase
             "isActive", "rule", "image", "desc1", "goal1", "reward1", "desc2", "goal2", "reward2", "desc3", "goal3", "reward3"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
-            foreach ($badges as $i => $badge) {
+            foreach ($badges as $badge) {
                 $this->assertCount($nrKeys, array_keys($badge));
                 $this->assertArrayHasKey($key, $badge);
                 if ($key == "image") $this->assertEquals($badge[$key], $badge2->getImage());

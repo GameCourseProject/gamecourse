@@ -1,15 +1,11 @@
 <?php
-namespace GameCourse\Skills;
+namespace GameCourse\Module\Skills;
 
 use Exception;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
-use GameCourse\Module\Skills\Skill;
-use GameCourse\Module\Skills\Skills;
-use GameCourse\Module\Skills\SkillTree;
-use GameCourse\Module\Skills\Tier;
 use GameCourse\User\User;
 use PDOException;
 use PHPUnit\Framework\TestCase;
@@ -30,11 +26,17 @@ class TierTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         // Set logged user
@@ -57,6 +59,9 @@ class TierTest extends TestCase
         $this->skillTreeId = $skillTree->getId();
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -76,6 +81,9 @@ class TierTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -496,6 +504,7 @@ class TierTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getWildcard()
     {
@@ -510,6 +519,7 @@ class TierTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getAllTiers()
     {
@@ -657,6 +667,7 @@ class TierTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getAllTiersOfSkillTree()
     {

@@ -1,6 +1,7 @@
 <?php
 namespace Database;
 
+use Exception;
 use GameCourse\Core\Auth;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
@@ -21,6 +22,9 @@ class DatabaseTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass();
@@ -41,6 +45,9 @@ class DatabaseTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();

@@ -1,12 +1,10 @@
 <?php
-namespace GameCourse\Awards;
+namespace GameCourse\Module\Awards;
 
 use Exception;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\Awards\Awards;
-use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\Badges\Badge;
 use GameCourse\Module\Badges\Badges;
 use GameCourse\Module\Skills\Skill;
@@ -34,11 +32,17 @@ class AwardsTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         // Set logged user
@@ -65,6 +69,9 @@ class AwardsTest extends TestCase
         $this->module = $awards;
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -83,6 +90,9 @@ class AwardsTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -109,8 +119,8 @@ class AwardsTest extends TestCase
 
         // Then
         $sql = file_get_contents(MODULES_FOLDER . "/" . Awards::ID . "/sql/create.sql");
-        preg_match_all("/CREATE TABLE IF NOT EXISTS (.*)\(/i", $sql, $matches);
-        $tables = $matches[1];
+        preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
+        $tables = $matches[2];
         foreach ($tables as $table) {
             $this->assertTrue(Core::database()->tableExists($table));
         }
@@ -127,7 +137,7 @@ class AwardsTest extends TestCase
 
         // Then
         $sql = file_get_contents(MODULES_FOLDER . "/" . Awards::ID . "/sql/create.sql");
-        preg_match_all("/CREATE TABLE IF NOT EXISTS (.*)\(/i", $sql, $matches);
+        preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
         $tables = $matches[1];
         foreach ($tables as $table) {
             $this->assertFalse(Core::database()->tableExists($table));
@@ -318,7 +328,7 @@ class AwardsTest extends TestCase
             $this->assertArrayHasKey($key, $awards[0]);
 
             if ($key === "date") continue;
-            if ($key === "description") $this->assertEquals($awards[0][$key], "Award 1");
+            if ($key === "description") $this->assertEquals("Award 1", $awards[0][$key]);
             else $this->assertEquals($awards[0][$key], [
                 "id" => 1,
                 "user" => $user->getId(),
@@ -369,7 +379,7 @@ class AwardsTest extends TestCase
             $this->assertArrayHasKey($key, $awards[0]);
 
             if ($key === "date") continue;
-            if ($key === "description") $this->assertEquals($awards[0][$key], "Award 2");
+            if ($key === "description") $this->assertEquals("Award 2", $awards[0][$key]);
             else $this->assertEquals($awards[0][$key], [
                 "id" => 2,
                 "user" => $user->getId(),
@@ -421,7 +431,7 @@ class AwardsTest extends TestCase
             $this->assertArrayHasKey($key, $awards[0]);
 
             if ($key === "date") continue;
-            if ($key === "description") $this->assertEquals($awards[0][$key], "Award 1");
+            if ($key === "description") $this->assertEquals("Award 1", $awards[0][$key]);
             else $this->assertEquals($awards[0][$key], [
                 "id" => 1,
                 "user" => $user->getId(),
@@ -527,7 +537,7 @@ class AwardsTest extends TestCase
             $this->assertArrayHasKey($key, $awards[0]);
 
             if ($key === "date") continue;
-            if ($key === "description") $this->assertEquals($awards[0][$key], "Award 1");
+            if ($key === "description") $this->assertEquals("Award 1", $awards[0][$key]);
             else $this->assertEquals($awards[0][$key], [
                 "id" => 1,
                 "user" => $user->getId(),
@@ -572,7 +582,7 @@ class AwardsTest extends TestCase
             $this->assertArrayHasKey($key, $awards[0]);
 
             if ($key === "date") continue;
-            if ($key === "description") $this->assertEquals($awards[0][$key], "Award 2");
+            if ($key === "description") $this->assertEquals("Award 2", $awards[0][$key]);
             else $this->assertEquals($awards[0][$key], [
                 "id" => 2,
                 "user" => $user->getId(),
@@ -618,7 +628,7 @@ class AwardsTest extends TestCase
             $this->assertArrayHasKey($key, $awards[0]);
 
             if ($key === "date") continue;
-            if ($key === "description") $this->assertEquals($awards[0][$key], "Award 1");
+            if ($key === "description") $this->assertEquals("Award 1", $awards[0][$key]);
             else $this->assertEquals($awards[0][$key], [
                 "id" => 1,
                 "user" => $user->getId(),
@@ -726,7 +736,7 @@ class AwardsTest extends TestCase
             $this->assertArrayHasKey($key, $awards[0]);
 
             if ($key === "date") continue;
-            if ($key === "description") $this->assertEquals($awards[0][$key], "Award 1");
+            if ($key === "description") $this->assertEquals("Award 1", $awards[0][$key]);
             else $this->assertEquals($awards[0][$key], [
                 "id" => 1,
                 "user" => $user->getId(),
@@ -773,7 +783,7 @@ class AwardsTest extends TestCase
             $this->assertArrayHasKey($key, $awards[0]);
 
             if ($key === "date") continue;
-            if ($key === "description") $this->assertEquals($awards[0][$key], "Award 2");
+            if ($key === "description") $this->assertEquals("Award 2", $awards[0][$key]);
             else $this->assertEquals($awards[0][$key], [
                 "id" => 2,
                 "user" => $user->getId(),
@@ -793,7 +803,7 @@ class AwardsTest extends TestCase
     {
         // Given
         $streaksModule = new Streaks($this->course);
-        $streaksModule->setEnabled(true);;
+        $streaksModule->setEnabled(true);
         $streakActive = Streak::addStreak($this->course->getId(), "Streak Active", "Perform action", null,
             10, null, null, 100, null, false, true,
             false, false, false);
@@ -821,7 +831,7 @@ class AwardsTest extends TestCase
             $this->assertArrayHasKey($key, $awards[0]);
 
             if ($key === "date") continue;
-            if ($key === "description") $this->assertEquals($awards[0][$key], "Award 1");
+            if ($key === "description") $this->assertEquals("Award 1", $awards[0][$key]);
             else $this->assertEquals($awards[0][$key], [
                 "id" => 1,
                 "user" => $user->getId(),

@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\Views;
 
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Role\Role;
 use GameCourse\Views\Aspect\Aspect;
@@ -24,11 +25,17 @@ class ViewHandlerTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["roles", "views"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -46,6 +53,9 @@ class ViewHandlerTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -140,7 +150,7 @@ class ViewHandlerTest extends TestCase
         $this->assertCount(2, $views);
         foreach ($views as $view) {
             $this->assertCount(4, $view);
-            $this->assertEquals($view["type"], Block::ID);
+            $this->assertEquals(Block::ID, $view["type"]);
             $this->assertEquals(VisibilityType::VISIBLE, $view["visibilityType"]);
             $this->assertEquals("vertical", $view["direction"]);
         }
@@ -165,7 +175,7 @@ class ViewHandlerTest extends TestCase
         $this->assertCount(2, $views);
         foreach ($views as $view) {
             $this->assertCount(11, $view);
-            $this->assertEquals($view["type"], Block::ID);
+            $this->assertEquals(Block::ID, $view["type"]);
             $this->assertEquals(VisibilityType::VISIBLE, $view["visibilityType"]);
             $this->assertEquals("vertical", $view["direction"]);
         }

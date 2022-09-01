@@ -28,11 +28,17 @@ class RoleTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["modules", "views"], ["CronJob"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         // Setup default roles
@@ -66,6 +72,9 @@ class RoleTest extends TestCase
         $this->courseUser = $courseUser;
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -83,6 +92,9 @@ class RoleTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -95,6 +107,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function setupRoles()
     {
@@ -159,6 +172,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function getRoleLandingPage()
     {
@@ -501,6 +515,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addRoleToCourseWithLandingPageName()
     {
@@ -518,6 +533,7 @@ class RoleTest extends TestCase
 
     /**
      * @test
+     * @throws Exception
      */
     public function addRoleToCourseWithLandingPageId()
     {

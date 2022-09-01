@@ -1,13 +1,11 @@
 <?php
-namespace GameCourse\XPLevels;
+namespace GameCourse\Module\XPLevels;
 
 use Exception;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
-use GameCourse\Module\XPLevels\Level;
-use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
 use PDOException;
 use PHPUnit\Framework\TestCase;
@@ -26,11 +24,17 @@ class LevelTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         // Set logged user
@@ -49,6 +53,9 @@ class LevelTest extends TestCase
         $xpLevels->setEnabled(true);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -66,6 +73,9 @@ class LevelTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -336,7 +346,7 @@ class LevelTest extends TestCase
      */
     public function getLevelByXPFailure()
     {
-        $level = Level::addLevel($this->courseId, 1000, null);
+        Level::addLevel($this->courseId, 1000, null);
         Core::database()->delete(Level::TABLE_LEVEL, ["course" => $this->courseId, "minXP" => 0]);
         $this->expectException(Exception::class);
         Level::getLevelByXP($this->courseId, 500);
@@ -408,7 +418,7 @@ class LevelTest extends TestCase
         foreach ($keys as $key) {
             $this->assertCount($nrKeys, array_keys($levels[0]));
             $this->assertArrayHasKey($key, $levels[0]);
-            if ($key == "number") $this->assertEquals($levels[0]["number"], 0);
+            if ($key == "number") $this->assertEquals(0, $levels[0]["number"]);
             else $this->assertEquals($levels[0][$key], $level0->getData($key));
         }
     }

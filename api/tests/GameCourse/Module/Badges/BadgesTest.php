@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse\Badges;
+namespace GameCourse\Module\Badges;
 
 use Exception;
 use GameCourse\AutoGame\RuleSystem\Section;
@@ -8,8 +8,6 @@ use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Awards\AwardType;
-use GameCourse\Module\Badges\Badge;
-use GameCourse\Module\Badges\Badges;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
@@ -29,11 +27,17 @@ class BadgesTest extends TestCase
     /*** ---------------- Setup & Tear Down ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public static function setUpBeforeClass(): void
     {
         TestingUtils::setUpBeforeClass(["modules"], ["CronJob"]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         // Set logged user
@@ -53,6 +57,9 @@ class BadgesTest extends TestCase
         $this->module = $badges;
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         // NOTE: try to only clean tables used during tests to improve efficiency;
@@ -71,6 +78,9 @@ class BadgesTest extends TestCase
         parent::onNotSuccessfulTest($t);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function tearDownAfterClass(): void
     {
         TestingUtils::tearDownAfterClass();
@@ -97,8 +107,8 @@ class BadgesTest extends TestCase
 
         // Then
         $sql = file_get_contents(MODULES_FOLDER . "/" . Badges::ID . "/sql/create.sql");
-        preg_match_all("/CREATE TABLE IF NOT EXISTS (.*)\(/i", $sql, $matches);
-        $tables = $matches[1];
+        preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
+        $tables = $matches[2];
         foreach ($tables as $table) {
             $this->assertTrue(Core::database()->tableExists($table));
         }
@@ -118,7 +128,7 @@ class BadgesTest extends TestCase
 
         // Then
         $sql = file_get_contents(MODULES_FOLDER . "/" . Badges::ID . "/sql/create.sql");
-        preg_match_all("/CREATE TABLE IF NOT EXISTS (.*)\(/i", $sql, $matches);
+        preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
         $tables = $matches[1];
         foreach ($tables as $table) {
             $this->assertFalse(Core::database()->tableExists($table));
