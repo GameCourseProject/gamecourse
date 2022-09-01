@@ -73,7 +73,7 @@ export class ApiHttpService {
   // NOTE: insert here new controllers & update cache dependencies
 
   static readonly CLASSCHECK: string = 'classcheck';
-  static readonly FENIX: string = 'fenix';
+  static readonly FENIX: string = 'Fenix';
   static readonly GOOGLESHEETS: string = 'googlesheets';
   static readonly MOODLE: string = 'moodle';
   static readonly NOTIFICATIONS: string = 'notifications';
@@ -1145,11 +1145,11 @@ export class ApiHttpService {
 
 
   // Fenix
-  // TODO: refactor
+
   public importFenixStudents(courseID: number, file: string | ArrayBuffer): Observable<number> {
     const data = {
       courseId: courseID,
-      file,
+      file
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -1159,7 +1159,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => parseInt(res['data']['nrStudents'])) );
+      .pipe( map((res: any) => parseInt(res['data'])) );
   }
 
 

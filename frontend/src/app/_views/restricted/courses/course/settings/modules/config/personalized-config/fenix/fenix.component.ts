@@ -1,6 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {finalize} from "rxjs/operators";
-import {ApiHttpService} from "../../../../../../../../_services/api/api-http.service";
+import {ApiHttpService} from "../../../../../../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
 
 @Component({
@@ -10,7 +9,7 @@ import {ActivatedRoute} from "@angular/router";
 })
 export class FenixComponent implements OnInit {
 
-  loading: boolean;
+  loading: boolean = true;
   hasUnsavedChanges: boolean;
 
   courseID: number;
@@ -23,7 +22,6 @@ export class FenixComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loading = true;
     this.route.parent.params.subscribe(params => {
       this.courseID = parseInt(params.id);
       this.loading = false;
@@ -34,17 +32,15 @@ export class FenixComponent implements OnInit {
     this.loading = true;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const students = reader.result;
-      this.api.importFenixStudents(this.courseID, students)
-        .pipe( finalize(() => this.loading = false) )
-        .subscribe(
-          nrStudents => {
-            const successBox = $('#action_completed');
-            successBox.empty();
-            successBox.append(nrStudents + " Student" + (nrStudents > 1 ? 's' : '') + " Imported");
-            successBox.show().delay(3000).fadeOut();
-          })
+    reader.onload = async (e) => {
+      const nrStudents = await this.api.importFenixStudents(this.courseID, reader.result).toPromise();
+
+      const successBox = $('#action_completed');
+      successBox.empty();
+      successBox.append(nrStudents + " Student" + (nrStudents > 1 ? 's' : '') + " Imported");
+      successBox.show().delay(3000).fadeOut();
+
+      this.loading = false;
     }
     reader.readAsText(this.importedFile);
   }

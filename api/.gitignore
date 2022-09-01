@@ -52,8 +52,3 @@ autogame/imported-functions/*/
 /autogame/config/**
 !/autogame/config/samples
 !/autogame/config/samples/**
-
-# Resources
-/qr-code.png
-modules/skills/resources/
-modules/quest/resources/

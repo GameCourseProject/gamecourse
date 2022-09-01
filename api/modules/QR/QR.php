@@ -20,7 +20,7 @@ class QR extends Module
     const TABLE_QR_CODE = "qr_code";
     const TABLE_QR_ERROR = "qr_error";
 
-    const QR_FILE = 'qr-code.png';
+    const QR_FILE = '/qr-code.png';
 
     public function __construct(?Course $course)
     {
@@ -181,8 +181,8 @@ class QR extends Module
             $tinyUrl = $this->getTinyURL($url);
 
             // Generate QR Code with URL
-            \QRcode::png($url, self::QR_FILE);
-            $data = file_get_contents(self::QR_FILE);
+            \QRcode::png($url, __DIR__ . self::QR_FILE);
+            $data = file_get_contents(__DIR__ . self::QR_FILE);
             $base64 = "data:image/png;base64," . base64_encode($data);
             $QRCodes[] = ["key" => $key, "qr" => $base64, "url" => $tinyUrl];
 
@@ -190,6 +190,7 @@ class QR extends Module
             Core::database()->insert(self::TABLE_QR_CODE, ["qrkey" => $key, "course" => $courseId]);
         }
 
+        unlink(__DIR__ . self::QR_FILE);
         return $QRCodes;
     }
 
