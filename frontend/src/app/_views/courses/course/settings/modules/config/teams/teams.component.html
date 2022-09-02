@@ -1,0 +1,111 @@
+<p>teams works!</p>
+
+<!-- Teams -->
+
+
+<div class="section teams-section">
+  <div class="divider">
+    <div class="title"><span>Teams</span></div>
+  </div>
+
+  <div class="teams content">
+
+    <!-- Teams List -->
+    <div id="teams-list">
+      <div class="data-table">
+        <table *ngIf="teams?.length > 0" id="listing-table-teams">
+          <!-- Header -->
+          <thead>
+          <tr>
+            <th>#</th>
+            <th>Team</th>
+            <th>Photo</th>
+            <th>Major</th>
+            <th>Member</th>
+            <th>Experience</th>
+            <th>Level</th>
+          </tr>
+          </thead>
+
+          <!-- Body -->
+          <tbody>
+            <tr *ngFor="let team of teams" >
+              <td><span>{{team.number}}</span></td>
+              <!--
+              <td><span>{{team.members}}</span></td>
+              <td><span>{{team.xp}}</span></td>
+              -->
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="teams.length === 0" class='error_box'>
+          <div id='empty_table_teams' class='error_msg'>No skills found</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <div class="icon add_icon" title="New" (click)="mode = 'add'; isTeamModalOpen = true; initItem('team'); initTextEditor()"></div>
+      <div class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true"></div>
+      <div class="icon export_icon" title="Export All" (click)="exportAllTeams()"></div>
+    </div>
+
+
+  </div>
+
+</div>
+
+<!-- Loader -->
+<div *ngIf="loading" id="page-loading">
+  <img src="assets/loader/loader.gif" alt="loader">
+</div>
+
+
+<!-- New / Edit Team Modal -->
+<ng-container *ngIf="isTeamModalOpen">
+  <app-modal
+    [isModalOpen]="isTeamModalOpen"
+    [id]="mode === 'add' ? 'new-team' : 'edit-team'"
+    [templateRef]="teamModal"
+    [width]="'calc(100% - 200px)'"
+    (closeBtnClicked)="isTeamModalOpen = false; clearObject(newTeam); selectedMember = null;"
+    [actionInProgress]="saving"
+    [innerClickEvents]="false">
+  </app-modal>
+</ng-container>
+
+<ng-template #teamModal>
+  <div class="title">{{mode === 'add' ? 'New Team:' : 'Edit Team:'}}</div>
+
+  <div class="content">
+
+    <div class="row_inputs">
+      <!-- Team Name -->
+      <div class="third">
+        <input type="text" class="form__input" id="team-name" placeholder="Name" [(ngModel)]="newTeam.name" [required]="false">
+        <label for="team-name" class="form__label">Name</label>
+      </div>
+
+        <!-- Add dependencies -->
+        <div [id]="'add_dependencies'" class="full">
+          <span style="margin-right: 30px; white-space: nowrap">New Team Member: </span>
+          <select [id]="'member'" class="form__input" name="member" style="margin-bottom: 0; margin-right: 30px" [(ngModel)]="selectedMember">
+            <option [value]="null" disabled selected>Select Team Member</option>
+            <option *ngFor="let user of filterSkillsForDependencies(mode === 'add' ? null : teamToEdit.id)" [ngValue]="user">{{user.id, user.name}}</option>
+          </select>
+
+          <button (click)="addTeamMember(selectedMember)">Add</button>
+        </div>
+
+
+    </div>
+
+
+  </div>
+
+
+
+</ng-template>

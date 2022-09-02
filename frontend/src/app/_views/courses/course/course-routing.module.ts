@@ -46,6 +46,10 @@ const routes: Routes = [
         component: RulesComponent
       },
       {
+        path: 'rules/:id/editor',
+        component: RulesComponent
+      },
+      {
         path: 'views',
         component: ViewsComponent,
       },

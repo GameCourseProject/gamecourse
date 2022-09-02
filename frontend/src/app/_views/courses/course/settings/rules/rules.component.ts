@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-rules',
@@ -9,9 +10,15 @@ export class RulesComponent implements OnInit {
 
   loading: boolean;
 
-  constructor() { }
+  constructor(
+    private router: Router,
+
+  ) {
+
+  }
 
   ngOnInit(): void {
   }
+
 
 }

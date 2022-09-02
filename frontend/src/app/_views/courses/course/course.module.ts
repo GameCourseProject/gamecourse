@@ -25,6 +25,7 @@ import { QrComponent } from './settings/modules/config/qr/qr.component';
 import { NotificationsComponent } from './settings/modules/config/notifications/notifications.component';
 import { ProfilingComponent } from './settings/modules/config/profiling/profiling.component';
 import {VirtualcurrencyComponent} from "./settings/modules/config/virtualcurrency/virtualcurrency.component";
+import { TeamsComponent } from './settings/modules/config/teams/teams.component';
 
 
 @NgModule({
@@ -49,7 +50,8 @@ import {VirtualcurrencyComponent} from "./settings/modules/config/virtualcurrenc
     VirtualcurrencyComponent,
     QrComponent,
     NotificationsComponent,
-    ProfilingComponent
+    ProfilingComponent,
+    TeamsComponent
   ],
   imports: [
     CommonModule,

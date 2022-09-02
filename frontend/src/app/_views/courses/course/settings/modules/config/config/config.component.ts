@@ -19,6 +19,9 @@ import {QrComponent} from "../qr/qr.component";
 import {NotificationsComponent} from "../notifications/notifications.component";
 import {ProfilingComponent} from "../profiling/profiling.component";
 import {VirtualcurrencyComponent} from "../virtualcurrency/virtualcurrency.component";
+import {User} from "../../../../../../../_domain/users/user";
+import {Course} from "../../../../../../../_domain/courses/course";
+import {UsersComponent} from "../../../../users/users.component";
 
 export interface GeneralInput {
   id: string,
@@ -47,6 +50,7 @@ export enum PersonalizedConfig {
   PROFILING = 'profiling',
   QR = 'qr',
   SKILLS = 'skills',
+  TEAMS = 'teams',
   VIRTUAL_CURRENCY = 'virtualcurrency'
 }
 
@@ -62,9 +66,14 @@ export class ConfigComponent implements OnInit {
   loadingAction = false;
   hasUnsavedChanges: boolean;
 
+  user: User;
+  course: Course;
   courseID: number;
   module: Module;
   courseFolder: string;
+
+  allUsers: User[];
+  allNonUsers: User[];
 
   generalInputs: GeneralInput[];
   listingItems: ListingItems;
@@ -83,6 +92,8 @@ export class ConfigComponent implements OnInit {
   itemToExport: any;
 
   image: ResourceManager;
+
+  selectedUsers: User[] = [];
 
   constructor(
     private api: ApiHttpService,
@@ -348,6 +359,13 @@ export class ConfigComponent implements OnInit {
 
   filterEditableParams(list: ListingItems): {id: string, name: string, type: InputType, options: any}[] {
     return list.allAttributes.filter(attr => !exists(attr.options['edit']) || attr.options['edit'] === true);
+  }
+
+  addUser(user: User): void {
+  }
+
+  removeUser(userID: number): void {
+
   }
 
 }

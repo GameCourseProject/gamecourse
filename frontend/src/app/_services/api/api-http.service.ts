@@ -48,6 +48,8 @@ import {
   CurrencySkillsVars
 } from "../../_views/courses/course/settings/modules/config/virtualcurrency/virtualcurrency.component";
 import {ActionsToRemove} from "../../_domain/virtualcurrency/actionstoremove";
+import {Team} from "../../_domain/teams/team";
+import {TeamData} from "../../_views/courses/course/settings/modules/config/teams/teams.component";
 
 @Injectable({
   providedIn: 'root'
@@ -75,6 +77,7 @@ export class ApiHttpService {
   static readonly QR: string = 'qr';
   static readonly QUEST: string = 'quest';
   static readonly SKILLS: string = 'skills';
+  static readonly TEAMS: string = 'teams';
   static readonly VIRTUAL_CURRENCY: string = 'virtualcurrency';
 
 
@@ -1476,6 +1479,70 @@ export class ApiHttpService {
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => Skill.fromDatabase(res['data']['skill'])) );
   }x
+
+
+  // Teams
+
+  public getTeams(courseID: number): Observable<Team[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.TEAMS);
+      qs.push('request', 'getTeams');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (res['data']['teams']).map(obj => Team.fromDatabase(obj))) );
+  }
+
+  public createTeam(courseID: number, team: TeamData): Observable<void> {
+    const data = {
+      courseId: courseID,
+      team
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.TEAMS);
+      qs.push('request', 'createTeam');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public editTeam(courseID: number, team: TeamData): Observable<void> {
+    const data = {
+      courseId: courseID,
+      team
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.TEAMS);
+      qs.push('request', 'editTeam');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteTeam(courseID: number, teamID: number): Observable<void> {
+    const data = {
+      courseId: courseID,
+      teamId: teamID
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.TEAMS);
+      qs.push('request', 'deleteTeam');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
 
 
   // Virtual Currency

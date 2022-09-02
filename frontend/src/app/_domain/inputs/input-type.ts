@@ -5,6 +5,7 @@ export enum InputType {
   IMAGE = 'image',
   COLOR = 'color',
   DATE = 'date',
+  SEARCH = 'search',
   SELECT = 'select',
   TOGGLE = 'on_off button'
 }

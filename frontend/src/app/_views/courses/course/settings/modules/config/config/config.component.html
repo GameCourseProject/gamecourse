@@ -88,6 +88,8 @@
     <ng-container *ngIf="personalizedConfig === PersonalizedConfig.VIRTUAL_CURRENCY">
       <ng-container *ngComponentOutlet="CurrencyConfig"></ng-container>
     </ng-container>
+
+
   </div>
 
 </ng-container>
@@ -241,6 +243,28 @@
     </ng-container>
   </ng-container>
 
+  <!-- SEARCH -->
+  <ng-container *ngIf="type === InputType.SEARCH">
+    <div id="user_box" class="inputs">
+      <!-- Search -->
+      <div class="search_box" id="selected_team_users">
+        <div *ngFor="let user of selectedUsers" class="role_tag" [ngStyle]="{backgroundColor: course.color, color: 'white'}"
+             (click)="removeUser(user.id)">
+          {{user.name}}
+        </div>
+        <input id="select_team_user" type="text" placeholder="Search.." [(ngModel)]="selectUserQuery" (ngModelChange)="reduceListNonUsers($event)">
+      </div>
+
+      <!-- Users -->
+      <div class="select_box" id="gamecourse_users">
+        <div *ngFor="let user of reduceNonUsers.items" class="line">
+          <div>{{user.name + ' - ' + user.studentNumber}}</div>
+          <div class="add_icon_no_outline icon" (click)="addUser(user)"></div>
+        </div>
+      </div>
+
+    </div>
+  </ng-container>
 
   <!-- Select -->
   <ng-container *ngIf="type === InputType.SELECT">
