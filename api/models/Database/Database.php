@@ -17,7 +17,7 @@ class Database
 
     private function __construct()
     {
-        $this->connectToDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD);
+        $this->connectToDB(DB_HOST, DB_NAME, DB_USER, DB_PASSWORD);
     }
 
     public static function get(): Database
@@ -47,11 +47,10 @@ class Database
     public function initForTesting()
     {
         // Create database
-        $dbName = $this->getDBNameFromConnection(CONNECTION_STRING_TEST);
-        $this->executeQuery("CREATE DATABASE IF NOT EXISTS " . $dbName . " COLLATE utf8mb4_general_ci;");
+        $this->executeQuery("CREATE DATABASE IF NOT EXISTS " . DB_NAME_TEST . " COLLATE utf8mb4_general_ci;");
 
         // Connect to database
-        $this->connectToDB(CONNECTION_STRING_TEST, CONNECTION_USERNAME, CONNECTION_PASSWORD);
+        $this->connectToDB(DB_HOST, DB_NAME_TEST, DB_USER, DB_PASSWORD);
 
         // Init database
         $this->cleanDatabase(true);
@@ -386,7 +385,7 @@ class Database
      */
     public function tableExists(string $table): bool
     {
-        return !empty($this->executeQuery("show tables like '" . $table . "';")->fetchAll(\PDO::FETCH_ASSOC));
+        return !empty($this->executeQuery("show tables like '" . $table . "';")->fetchAll(PDO::FETCH_ASSOC));
     }
 
     /**
@@ -461,22 +460,15 @@ class Database
     /*** ---------------------- Helpers --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    private function getDBNameFromConnection(string $connection): string
+    private function connectToDB(string $host, string $name, string $username, string $password)
     {
-        preg_match("/dbname=(.+)/", $connection, $matches);
-        return $matches[1];
-    }
-
-    private function connectToDB(string $dsn, string $username, string $password)
-    {
-        $dbName = $this->getDBNameFromConnection($dsn);
         try {
-            $this->db = new PDO($dsn, $username, $password);
+            $this->db = new PDO("mysql:host=$host;dbname=$name", $username, $password);
             $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            self::$dbName = $dbName;
+            self::$dbName = $name;
 
         } catch (PDOException $e) {
-            echo ("Could not connect to database '" . $dbName . "'.\n");
+            echo ("Could not connect to database '" . $name . "'.\n");
         }
     }
 }

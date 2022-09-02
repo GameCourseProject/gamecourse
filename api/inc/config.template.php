@@ -7,52 +7,50 @@
     const URL = '<WEBSITE_URL>';
     const API_URL = '<API_URL>';
 
-    /** Versioning */
+    /** Versioning **/
     const PROJECT_VERSION = '<PROJECT_VERSION>';
     const API_VERSION = '<API_VERSION>';
 
-    /** Database Connection */
-    const CONNECTION_STRING = 'mysql:host=<DB_HOST>;dbname=<DB_NAME>';
-    const CONNECTION_STRING_TEST = 'mysql:host=localhost;dbname=gamecourse_testing';
-    const CONNECTION_USERNAME = '<DB_USER>';
-    const CONNECTION_PASSWORD = '<DB_PASSWORD>';
+    /** Database **/
+    const DB_HOST = '<DB_HOST>';
+    const DB_NAME = '<DB_NAME>';
+    const DB_NAME_TEST = '<DB_NAME_TEST>';
+    const DB_USER = '<DB_USER>';
+    const DB_PASSWORD = '<DB_PASSWORD>';
 
-    /** Fénix Auth */
+    /** Fénix Auth **/
     const FENIX_CLIENT_ID = '<FENIX_CLIENT_ID>';
     const FENIX_CLIENT_SECRET = '<FENIX_CLIENT_SECRET>';
     const FENIX_REDIRECT_URL = API_URL . '/auth/';
     const FENIX_API_BASE_URL = 'https://fenix.tecnico.ulisboa.pt';
 
-    /** Google Auth */
+    /** Google Auth **/
     const GOOGLE_CLIENT_ID = '<GOOGLE_CLIENT_ID>';
     const GOOGLE_CLIENT_SECRET = '<GOOGLE_CLIENT_SECRET>';
     const GOOGLE_REDIRECT_URL = API_URL . '/auth?google';
 
-    /** Facebook Auth */
+    /** Facebook Auth **/
     const FACEBOOK_CLIENT_ID = '<FACEBOOK_CLIENT_ID>';
     const FACEBOOK_CLIENT_SECRET = '<FACEBOOK_CLIENT_SECRET>';
     const FACEBOOK_REDIRECT_URL = API_URL . '/auth?facebook';
 
-    /** Linkedin Auth */
+    /** Linkedin Auth **/
     const LINKEDIN_CLIENT_ID = '<LINKEDIN_CLIENT_ID>';
     const LINKEDIN_CLIENT_SECRET = '<LINKEDIN_CLIENT_SECRET>';
     const LINKEDIN_REDIRECT_URL = API_URL . '/auth?linkedin';
 
-    /** Google Account */
+    /** Google Account **/
     const GOOGLE_ACCOUNT_EMAIL = '<GOOGLE_ACCOUNT_EMAIL>';
     const GOOGLE_ACCOUNT_PASSWORD = '<GOOGLE_ACCOUNT_PASSWORD>';
 
-    /** Tiny URL */
+    /** Tiny URL **/
     const TINY_API_TOKEN = '<TINY_API_TOKEN>';
     const TINY_API_URL = '<TINY_API_URL>';
 
-    /** File Structure */
-    const AUTOGAME_FOLDER = ROOT_PATH . 'autogame';
-    const CACHE_FOLDER = ROOT_PATH . 'cache';
-    const COURSE_DATA_FOLDER = ROOT_PATH . 'course_data';
-    const LOGS_FOLDER = ROOT_PATH . 'logs';
-    const MODULES_FOLDER = ROOT_PATH . 'modules';
-    const USER_DATA_FOLDER = ROOT_PATH . 'user_data';
-
-    /** Themes */
-    $GLOBALS['theme'] = "default"; // FIXME: remove when removing themes
+    /** File Structure **/
+    const AUTOGAME_FOLDER = ROOT_PATH . '<AUTOGAME_FOLDER>';
+    const CACHE_FOLDER = ROOT_PATH . '<CACHE_FOLDER>>';
+    const COURSE_DATA_FOLDER = ROOT_PATH . '<COURSE_DATA_FOLDER>';
+    const LOGS_FOLDER = ROOT_PATH . '<LOGS_FOLDER>';
+    const MODULES_FOLDER = ROOT_PATH . '<MODULES_FOLDER>';
+    const USER_DATA_FOLDER = ROOT_PATH . '<USER_DATA_FOLDER>';
