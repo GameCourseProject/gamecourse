@@ -3,14 +3,12 @@
 namespace Modules\Teams;
 
 use GameCourse\Core;
+use GameCourse\Course;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Expression\ValueNode;
-use GameCourse\Views\Views;
 use Modules\Charts\Charts;
-use Modules\Leaderboard\Leaderboard;
-use Modules\Moodle\Moodle;
 
 class Teams extends Module
 {
@@ -19,6 +17,7 @@ class Teams extends Module
     const TABLE = self::ID ;
     const TABLE_CONFIG = self::ID . '_config';
     const TABLE_XP = self::ID . '_xp';
+    const TABLE_MEMBERS = self::ID . '_members';
 
     const TEAM_LEADERBOARD_TEMPLATE = 'Team Leaderboard - by teams';
 
@@ -26,8 +25,98 @@ class Teams extends Module
 
     public function init() {
         $this->setupData($this->getCourseId());
+        $this->initDictionary();
         $this->initTemplates();
     }
+
+    public function initDictionary()
+    {
+
+        $courseId = $this->getCourseId();
+
+        /*** ------------ Libraries ------------ ***/
+
+        Dictionary::registerLibrary(self::ID, self::ID, "This library provides information regarding Teams. It is provided by the teams module.");
+
+
+        /*** ------------ Functions ------------ ***/
+        // teams.getAllTeams()
+        Dictionary::registerFunction(
+            self::ID,
+            'getAllTeams',
+            function (int $courseId) {
+                return $this->getTeam(true, $courseId);
+            },
+            "Returns a collection with all the teams in the Course. The optional parameters can be used to find badges that specify a given combination of conditions:\nisActive: Streak is active.",
+            'collection',
+            'team',
+            'library',
+            null,
+            true
+        );
+
+        //teams.getTeam(name)
+        Dictionary::registerFunction(
+            self::ID,
+            'getTeam',
+            function (string $name = null) {
+                return $this->getTeam(false, ["name" => $name]);
+            },
+            "Returns the team object with the specific name.",
+            'object',
+            'team',
+            'library',
+            null,
+            true
+        );
+
+        //$team.name, returns name
+        Dictionary::registerFunction(
+            self::ID,
+            'name',
+            function ($team) {
+                return Dictionary::basicGetterFunction($team, "teamName");
+            },
+            'Returns the name of the team.',
+            'string',
+            null,
+            'object',
+            'team',
+            true
+        );
+
+        //$team.getTeamMembers(team), returns all members of team
+        Dictionary::registerFunction(
+            self::ID,
+            'getTeamMembers',
+            function ($team) {
+                return $this->getTeamMembers($team);
+            },
+            'Returns all the members of a certain team.',
+            'collection',
+            'teamMember',
+            'library',
+            null,
+            true
+        );
+
+        //$team.getTeamMember(team, userNumber), returns a member of a team
+        // eg.: userNumber = ist112345
+        Dictionary::registerFunction(
+            self::ID,
+            'getTeamMember',
+            function (string $name = null, int $memberId = null) {
+                return $this->getTeamMember(false, ["teamName" => $name, "memberId" => $memberId]);
+            },
+            'Returns all the members of a certain team.',
+            'collection',
+            'teamMember',
+            'library',
+            null,
+            true
+        );
+    }
+
 
     public function initTemplates()
     {
@@ -45,7 +134,7 @@ class Teams extends Module
 
     public function setupData(int $courseId)
     {
-        if ($this->addTables(self::ID, self::TABLE_CONFIG) || empty(Core::$systemDB->select(self::TABLE, ["course" => $courseId]))) {
+        if ($this->addTables(self::ID, self::TABLE) || empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId]))) {
             Core::$systemDB->insert(self::TABLE_CONFIG, ["course" => $courseId, "nrTeamMembers" => 3]);
         }
 
@@ -126,7 +215,6 @@ class Teams extends Module
         return $teamIds;
     }
 
-
     public function is_configurable(): bool
     {
         return true;
@@ -149,29 +237,14 @@ class Teams extends Module
         $this->saveNumberOfTeamElements($nrElements, $courseId);
     }
 
-    public function has_listing_items(): bool
+    public function has_personalized_config(): bool
     {
-        return  true;
+        return true;
     }
 
-    public function get_listing_items(int $courseId): array
+    public function get_personalized_function(): string
     {
-        $header = ['Team', 'Member'];
-        $displayAtributes = [
-            ['id' => 'teamName', 'type' => 'text'],
-            ['id' => 'memberName', 'type' => 'text'],
-        ];
-        $actions = ['duplicate', 'edit', 'delete', 'export'];
-
-        $items = $this->getTeams($courseId);
-
-        // Arguments for adding/editing
-        $allAtributes = [
-            array('name' => "Team", 'id' => 'teamName', 'type' => "text", 'options' => ""),
-            array('name' => "Member", 'id' => 'memberName', 'type' => "text", 'options' => ""),
-        ];
-
-        return array('listName' => 'Teams', 'itemName' => 'team', 'header' => $header, 'displayAttributes' => $displayAtributes, 'actions' => $actions, 'items' => $items, 'allAttributes' => $allAtributes);
+        return self::ID;
     }
 
     /*** ----------------------------------------------- ***/
@@ -184,12 +257,25 @@ class Teams extends Module
     }
 
     /*** ----------------------------------------------- ***/
+    /*** --------------- Import / Export --------------- ***/
+    /*** ----------------------------------------------- ***/
+    // TODO
+    // import teams onto the system with a file.
+    public function importItems($fileData, $replace = true){
+
+    }
+
+    public function exportItems(){
+
+    }
+
+    /*** ----------------------------------------------- ***/
     /*** -------------------- Utils -------------------- ***/
     /*** ----------------------------------------------- ***/
 
     public function getTeams($courseId)
     {
-        $teams = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*", "name");
+        $teams = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*", "teamName");
         foreach ($teams as &$team) {
             //information to match needing fields
             $team['memberName'] = $team["memberName"];
@@ -206,10 +292,20 @@ class Teams extends Module
         } else {
             $teamArray = Core::$systemDB->select(self::TABLE, $where);
             if (empty($teamArray))
-                throw new \Exception("In function teams.getTeam(name): couldn't find badge with name '" . $where["name"] . "'.");
+                throw new \Exception("In function teams.getTeam(teamName): couldn't find badge with name '" . $where["name"] . "'.");
             $type = "object";
         }
         return Dictionary::createNode($teamArray, self::ID, $type);
+    }
+
+    public function getTeamMembers($teamId, $courseId)
+    {
+        return Core::$systemDB->selectMultiple(self::TABLE_MEMBERS, ["course" => $courseId, "id" => $teamId], "*", "memberId");
+    }
+    
+    public function getTeamMember($memberId, $courseId)
+    {
+        // TODO
     }
 
     public function getNumberOfTeamMembers($courseId)
@@ -220,6 +316,59 @@ class Teams extends Module
     public function saveNumberOfTeamElements($nr, $courseId)
     {
         Core::$systemDB->update(self::TABLE_CONFIG, ["nrTeamMembers" => $nr], ["course" => $courseId]);
+    }
+
+    public function newTeam($team, $courseId){
+        $teamData = [
+            "teamName" => $team['teamName'],
+            "teamNumber" => $team['teamNumber'],
+            "course" => $courseId
+        ];
+
+        Core::$systemDB->insert(self::TABLE, $teamData);
+        $teamId = Core::$systemDB->getLastId();
+
+        if ($team['members'] != "") {
+            // eg.: $team['members] = "120 | 125 | 130"
+            $members = explode("|", str_replace(" | ", "|", $team["members"]));
+            foreach ($members as $m) {
+                $memberId = (int)$m;
+                Core::$systemDB->insert(self::TABLE_MEMBERS, [ 'teamId' => $teamId, "memberId" => $memberId ]);
+            }
+
+        }
+
+    }
+
+    public function editTeam($team, int $courseId){
+
+        $originalTeam = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'id' => $team['id']], "*");
+        $originalTeamMembers = Core::$systemDB->select(self::TABLE_MEMBERS, ["course" => $courseId, 'teamId' => $team['id']], "*");
+
+        if(!empty($originalTeam)){
+            $teamData = [
+                "teamName" => $team['teamName'],
+                "teamNumber" => $team['teamNumber'],
+                "course" => $courseId
+            ];
+            Core::$systemDB->update(self::TABLE, $teamData, ["id" => $team["id"]]);
+        }
+        
+        if(!empty($originalTeamMembers)){
+            Core::$systemDB->delete(self::TABLE_MEMBERS, ["teamId" => $team["id"]]);
+
+            $members = explode("|", str_replace(" | ", "|", $team["members"]));
+            foreach ($members as $m) {
+                $memberId = (int)$m;
+                Core::$systemDB->insert(self::TABLE_MEMBERS, [ 'teamId' => $team["id"], "memberId" => $memberId ]);
+            }
+
+        }
+    }
+
+    public function deleteTeam(int $teamId, int $courseId)
+    {
+        Core::$systemDB->delete(self::TABLE, ["id" => $teamId]);
     }
 
 

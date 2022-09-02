@@ -426,4 +426,13 @@ abstract class Module
         else
             return $id = $user;
     }
+
+    // NOTE: used in functions of the expression language inside modules
+    public function getTeamId($team)
+    {
+        if (is_array($team))
+            return $team["value"]["teamId"];
+        else
+            return $id = $team;
+    }
 }

@@ -19,6 +19,7 @@ class XPLevels extends Module
 
     const TABLE_LEVELS = 'level';
     const TABLE_XP = 'user_xp';
+    const TABLE_TEAMS_XP = 'teams_xp';
 
 
     /*** ----------------------------------------------- ***/
@@ -201,6 +202,22 @@ class XPLevels extends Module
                 return new ValueNode($this->getUserXP($user, $courseId));
             },
             'Returns the sum of XP that all Modules provide as reward from a GameCourseUser identified by user.',
+            'integer',
+            null,
+            'library',
+            null,
+            true
+        );
+
+        //xp.getTeamXP(team) returns value of xp for user
+        Dictionary::registerFunction(
+            self::ID,
+            'getTeamXP',
+            function ($team) use ($courseId) {
+                //return new ValueNode($this->calculateXP($user, $courseId));
+                return new ValueNode($this->getTeamXP($team, $courseId));
+            },
+            'Returns the sum of XP that all Modules provide as reward from a Team.',
             'integer',
             null,
             'library',
@@ -596,6 +613,16 @@ class XPLevels extends Module
     {
         $userId = $this->getUserId($user);
         $totalXP = Core::$systemDB->select(self::TABLE_XP, ["course" => $courseId, "user" => $userId], "xp");
+        return $totalXP;
+    }
+
+    /**
+     * Returns the total XP from user_xp table for the course user.
+     */
+    public function getTeamXP($team, $courseId)
+    {
+        $teamId = $this->getTeamId($team);
+        $totalXP = Core::$systemDB->select(self::TABLE_TEAMS_XP, ["course" => $courseId, "teamId" => $teamId], "xp");
         return $totalXP;
     }
 
