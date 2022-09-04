@@ -6,7 +6,7 @@ import {finalize} from "rxjs/operators";
 import {ApiHttpService} from "../../../../../../../../_services/api/api-http.service";
 import {ApiEndpointsService} from "../../../../../../../../_services/api/api-endpoints.service";
 import {ResourceManager} from "../../../../../../../../_utils/resources/resource-manager";
-import {copyObject} from "../../../../../../../../_utils/misc/misc";
+import {copyObject, dateFromDatabase} from "../../../../../../../../_utils/misc/misc";
 
 import {Module} from "../../../../../../../../_domain/modules/module";
 import {InputType} from "../../../../../../../../_domain/modules/config/input-type";
@@ -190,6 +190,7 @@ export class ConfigComponent implements OnInit {
   }
 
   hasAction(list: List, action: Action): boolean {
+    if (!list.actions) return false;
     for (const a of list.actions) {
       if (a.action === action) return true;
     }
@@ -223,6 +224,12 @@ export class ConfigComponent implements OnInit {
     for (const key of Object.keys(obj)) {
       obj[key] = null;
     }
+  }
+
+  formatDate(date: string, format: string): string
+  {
+    if (!date) return 'Never';
+    return dateFromDatabase(date).format(format);
   }
 
   get InputType(): typeof InputType {

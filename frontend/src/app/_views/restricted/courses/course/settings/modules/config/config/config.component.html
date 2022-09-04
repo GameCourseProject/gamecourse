@@ -108,11 +108,15 @@
                   <div class="color-sample">
                     <div class="box" [ngStyle]="{'backgroundColor': item[column.id]}"></div>
                   </div>
-                  <div>{{item[column.id]}}</div>
+                  <div *ngIf="column.options['showLabel']">{{item[column.id]}}</div>
                 </div>
               </ng-container>
 
-              <ng-container *ngIf="column.type !== InputType.IMAGE && column.type !== InputType.TOGGLE && column.type !== InputType.COLOR">
+              <ng-container *ngIf="column.type === InputType.DATETIME">
+                <span>{{formatDate(item[column.id], 'DD/MM/YYYY HH:mm:ss')}}</span>
+              </ng-container>
+
+              <ng-container *ngIf="column.type !== InputType.IMAGE && column.type !== InputType.TOGGLE && column.type !== InputType.COLOR && column.type !== InputType.DATETIME">
                 <span>{{item[column.id]}}</span>
               </ng-container>
             </td>

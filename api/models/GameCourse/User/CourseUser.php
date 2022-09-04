@@ -187,7 +187,7 @@ class CourseUser extends User
     {
         $table = self::TABLE_COURSE_USER . " cu LEFT JOIN " . Auth::TABLE_AUTH . " a on cu.id=a.user";
         if (!$authService) {
-            $userIds = Core::database()->selectMultiple($table, ["username" => $username], "a.user");
+            $userIds = array_column(Core::database()->selectMultiple($table, ["username" => $username], "a.user"), "user");
             $nrCourseUsersWithUsername = count($userIds);
 
             if ($nrCourseUsersWithUsername > 1)

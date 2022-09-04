@@ -439,7 +439,7 @@ class VirtualCurrency extends Module
 
         $totalTokens = $this->getUserTokens($userId);
         $exchangeableTokens = !is_null($threshold) ? min($totalTokens, $threshold) : $totalTokens;
-        $earnedXP = intval(ceil($exchangeableTokens * $ratio));
+        $earnedXP = intval(round($exchangeableTokens * $ratio));
 
         // Remove tokens & set flag
         $this->updateUserTokens($userId, -$exchangeableTokens);

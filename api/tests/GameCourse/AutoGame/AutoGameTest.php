@@ -50,7 +50,7 @@ class AutoGameTest extends TestCase
         //       don't forget tables with foreign keys will be automatically deleted on cascade
 
         TestingUtils::cleanTables([AutoGame::TABLE_AUTOGAME, Course::TABLE_COURSE, User::TABLE_USER]);
-        TestingUtils::resetAutoIncrement([AutoGame::TABLE_AUTOGAME, Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE]);
+        TestingUtils::resetAutoIncrement([AutoGame::TABLE_AUTOGAME, AutoGame::TABLE_PARTICIPATION,  Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE]);
         TestingUtils::cleanFileStructure();
         TestingUtils::cleanEvents();
     }
@@ -224,5 +224,159 @@ class AutoGameTest extends TestCase
         $this->assertFalse(AutoGame::isRunning($courseId));
         Core::database()->update(AutoGame::TABLE_AUTOGAME, ["isRunning" => true], ["course" => $courseId]);
         $this->assertTrue(AutoGame::isRunning($courseId));
+    }
+
+
+    // Participations
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getParticipations()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set a course
+        $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $this->course = $course;
+
+        // Set students
+        $user1 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user2 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+        $this->course->addUserToCourse($user1->getId(), "Student");
+        $this->course->addUserToCourse($user2->getId(), "Student", null, false);
+
+        AutoGame::addParticipation($course->getId(), $user1->getId(), "Participation 1", "testing");
+        AutoGame::addParticipation($course->getId(), $user2->getId(), "Participation 2", "testing");
+
+        $participations = AutoGame::getParticipations($course->getId());
+        $this->assertIsArray($participations);
+        $this->assertCount(2, $participations);
+
+        $keys = ["id", "user", "course", "source", "description", "type", "post", "date", "rating", "evaluator"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($participations as $participation) {
+                $this->assertCount($nrKeys, array_keys($participation));
+                $this->assertArrayHasKey($key, $participation);
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getParticipationsEmpty()
+    {
+        $this->assertEmpty(AutoGame::getParticipations(1));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function addParticipation()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set a course
+        $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $this->course = $course;
+
+        // Set students
+        $user1 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user2 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+        $this->course->addUserToCourse($user1->getId(), "Student");
+        $this->course->addUserToCourse($user2->getId(), "Student", null, false);
+
+        AutoGame::addParticipation($course->getId(), $user1->getId(), "Participation", "testing", null,
+            "2022-09-02 19:23:00", null, 3.4);
+
+        $participations = AutoGame::getParticipations($course->getId());
+        $this->assertCount(1, $participations);
+        $this->assertEquals(["id" => 1, "user" => $user1->getData(), "course" => $course->getId(), "source" => "GameCourse",
+            "description" => "Participation", "type" => "testing", "post" => null, "date" => "2022-09-02 19:23:00", "rating" => 3,
+            "evaluator" => null], $participations[0]);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function updateParticipation()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set a course
+        $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $this->course = $course;
+
+        // Set students
+        $user1 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user2 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+        $this->course->addUserToCourse($user1->getId(), "Student");
+        $this->course->addUserToCourse($user2->getId(), "Student", null, false);
+
+        $id = AutoGame::addParticipation($course->getId(), $user1->getId(), "DESCRIPTION", "TYPE", "QR",
+            "2022-08-02 19:23:00", "URL", 10, $loggedUser->getId());
+        AutoGame::updateParticipation($id, "Participation", "testing", "2022-09-02 19:23:00", null,
+            null, 3.4);
+
+        $participations = AutoGame::getParticipations($course->getId());
+        $this->assertCount(1, $participations);
+        $this->assertEquals(["id" => 1, "user" => $user1->getData(), "course" => $course->getId(), "source" => "GameCourse",
+            "description" => "Participation", "type" => "testing", "post" => null, "date" => "2022-09-02 19:23:00", "rating" => 3,
+            "evaluator" => null], $participations[0]);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function removeParticipation()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set a course
+        $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $this->course = $course;
+
+        // Set students
+        $user1 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user2 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
+            123, "Julia Doe", "MEIC-A", false, true);
+        $this->course->addUserToCourse($user1->getId(), "Student");
+        $this->course->addUserToCourse($user2->getId(), "Student", null, false);
+
+        $id = AutoGame::addParticipation($course->getId(), $user1->getId(), "Participation", "testing", null,
+            "2022-09-02 19:23:00", null, 3.4);
+        AutoGame::removeParticipation($id);
+
+        $this->assertEmpty(AutoGame::getParticipations($course->getId()));
     }
 }

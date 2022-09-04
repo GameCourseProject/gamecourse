@@ -36,7 +36,6 @@ import {
   Credentials,
   GoogleSheetsVars
 } from "../../_views/restricted/courses/course/settings/modules/config/googlesheets/googlesheets.component";
-import {MoodleVars} from "../../_views/restricted/courses/course/settings/modules/config/moodle/moodle.component";
 import {ClassCheckVars} from "../../_views/restricted/courses/course/settings/modules/config/classcheck/classcheck.component";
 import {
   ProgressReportVars
@@ -75,7 +74,6 @@ export class ApiHttpService {
   static readonly CLASSCHECK: string = 'classcheck';
   static readonly FENIX: string = 'Fenix';
   static readonly GOOGLESHEETS: string = 'googlesheets';
-  static readonly MOODLE: string = 'moodle';
   static readonly NOTIFICATIONS: string = 'notifications';
   static readonly PROFILING: string = 'profiling';
   static readonly QR: string = 'QR';
@@ -1214,39 +1212,6 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['authUrl']) );
-  }
-
-
-  // Moodle
-  // TODO: refactor
-  public getMoodleVars(courseID: number): Observable<MoodleVars> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.MOODLE);
-      qs.push('request', 'getMoodleVars');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['moodleVars']) );
-  }
-
-  // TODO: refactor
-  public setMoodleVars(courseID: number, moodleVars: MoodleVars): Observable<void> {
-    const data = {
-      courseId: courseID,
-      moodle: moodleVars
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.MOODLE);
-      qs.push('request', 'setMoodleVars');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
   }
 
 

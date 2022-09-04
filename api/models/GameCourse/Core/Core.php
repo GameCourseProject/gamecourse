@@ -26,6 +26,7 @@ require_once ROOT_PATH . "lib/google/Google.php";
 class Core
 {
     private static $loggedUser;
+    private static $database;
 
 
     /*** ----------------------------------------------- ***/
@@ -39,7 +40,31 @@ class Core
      */
     public static function database(): Database
     {
-        return Database::get();
+        if (!self::$database)
+            self::$database = new Database(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+        return self::$database;
+    }
+
+    /**
+     * Creates a new database (if not already created) for testing
+     * purposes, and initializes it.
+     * This ensures the original database stays untouched while
+     * running tests.
+     *
+     * @return void
+     */
+    public static function initTestDatabase()
+    {
+        // Create database
+        self::database()->executeQuery("CREATE DATABASE IF NOT EXISTS " . DB_NAME_TEST . " COLLATE utf8mb4_general_ci;");
+
+        // Connect to database
+        self::$database = new Database(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME_TEST);
+
+        // Init database
+        self::$database->cleanDatabase(true);
+        $sql = file_get_contents(ROOT_PATH . "setup/setup.sql");
+        self::$database->executeQuery($sql);
     }
 
 

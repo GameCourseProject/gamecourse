@@ -352,13 +352,13 @@ class DatabaseTest extends TestCase
      */
     public function selectFirstWithLikeParams()
     {
-        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Smith Doe"]);
         Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
-        $first = Core::database()->select(User::TABLE_USER, [], "*", null, [], [], ["name" => "John%"]);
+        $first = Core::database()->select(User::TABLE_USER, [], "*", null, [], [], ["name" => "%Smith%"]);
         $this->assertIsArray($first);
         $this->assertCount(8, $first);
         $this->assertArrayHasKey("name", $first);
-        $this->assertEquals("John Doe", $first["name"]);
+        $this->assertEquals("John Smith Doe", $first["name"]);
     }
 
 
@@ -501,6 +501,22 @@ class DatabaseTest extends TestCase
         $this->assertEquals("Anna Doe", $users[0]["name"]);
         $this->assertArrayHasKey("name", $users[1]);
         $this->assertEquals("John Doe", $users[1]["name"]);
+    }
+
+    /**
+     * @test
+     */
+    public function selectMultipleWhenOrderingFieldChanged()
+    {
+        Core::database()->insert(User::TABLE_USER, ["name" => "John Doe"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER, [], "name as nome", "name");
+        $this->assertIsArray($users);
+        $this->assertCount(2, $users);
+        $this->assertArrayHasKey("nome", $users[0]);
+        $this->assertEquals("Anna Doe", $users[0]["nome"]);
+        $this->assertArrayHasKey("nome", $users[1]);
+        $this->assertEquals("John Doe", $users[1]["nome"]);
     }
 
     /**
@@ -656,15 +672,15 @@ class DatabaseTest extends TestCase
     public function selectMultipleWithLikeParams()
     {
         Core::database()->insert(User::TABLE_USER, ["name" => "John Doe", "email" => "c"]);
-        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "a"]);
-        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "b"]);
-        $users = Core::database()->selectMultiple(User::TABLE_USER, [], "*", null, [], [], null, ["name" => "Anna%"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Smith Doe", "email" => "a"]);
+        Core::database()->insert(User::TABLE_USER, ["name" => "Anna Smith Doe", "email" => "b"]);
+        $users = Core::database()->selectMultiple(User::TABLE_USER, ["email" => "b"], "*", null, [], [], null, ["name" => "%Smith%"]);
         $this->assertIsArray($users);
-        $this->assertCount(2, $users);
+        $this->assertCount(1, $users);
         $this->assertArrayHasKey("name", $users[0]);
-        $this->assertEquals("Anna Doe", $users[0]["name"]);
-        $this->assertArrayHasKey("name", $users[1]);
-        $this->assertEquals("Anna Doe", $users[1]["name"]);
+        $this->assertEquals("Anna Smith Doe", $users[0]["name"]);
+        $this->assertArrayHasKey("email", $users[0]);
+        $this->assertEquals("b", $users[0]["email"]);
     }
 
 

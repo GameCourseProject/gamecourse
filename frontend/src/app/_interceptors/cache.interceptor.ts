@@ -45,7 +45,6 @@ export class CacheInterceptor implements HttpInterceptor {
       ApiHttpService.CLASSCHECK,
       ApiHttpService.FENIX,
       ApiHttpService.GOOGLESHEETS,
-      ApiHttpService.MOODLE,
       ApiHttpService.NOTIFICATIONS,
       ApiHttpService.PROFILING,
       ApiHttpService.QR,

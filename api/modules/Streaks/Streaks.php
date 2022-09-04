@@ -129,7 +129,7 @@ class Streaks extends Module
                 "listInfo" => [
                     ["id" => "name", "label" => "Name", "type" => InputType::TEXT],
                     ["id" => "description", "label" => "Description", "type" => InputType::TEXT],
-                    ["id" => "color", "label" => "Color", "type" => InputType::COLOR],
+                    ["id" => "color", "label" => "Color", "type" => InputType::COLOR, "options" => ["showLabel" => true]],
                     ["id" => "count", "label" => "Count", "type" => InputType::NUMBER],
                     ["id" => "reward", "label" => "XP", "type" => InputType::NUMBER],
                     ["id" => "isExtra", "label" => "Extra Credit", "type" => InputType::TOGGLE],
@@ -145,7 +145,7 @@ class Streaks extends Module
                 Action::EDIT => [
                     ["id" => "name", "label" => "Name", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
                     ["id" => "description", "label" => "Description", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
-                    ["id" => "color", "label" => "Color", "type" => InputType::COLOR, "scope" => ActionScope::ALL],
+                    ["id" => "color", "label" => "Color", "type" => InputType::COLOR, "scope" => ActionScope::ALL, "options" => ["showLabel" => true]],
                     ["id" => "count", "label" => "Count", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
                     ["id" => "reward", "label" => "Reward (XP)", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
                     ["id" => "isRepeatable", "label" => "is Repeatable", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],

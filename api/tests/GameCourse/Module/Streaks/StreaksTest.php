@@ -365,6 +365,7 @@ class StreaksTest extends TestCase
         $id = Core::database()->insert(AutoGame::TABLE_PARTICIPATION, [
             "user" => $userId,
             "course" => $courseId,
+            "source" => $this->module->getId(),
             "description" => $description,
             "type" => AwardType::STREAK
         ]);

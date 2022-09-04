@@ -6,56 +6,22 @@ use PDOException;
 use PDOStatement;
 
 /**
- * The database access layer which will be used to interact with
- * the underlying MySQL database.
+ * The database access layer which is used to interact with
+ * different MySQL databases.
  */
 class Database
 {
-    private static $instance; // singleton
     private $db;
-    private static $dbName;
+    private $dbName;
 
-    private function __construct()
+    public function __construct(string $host, string $username, string $password, string $dbName = null, int $port = null)
     {
-        $this->connectToDB(DB_HOST, DB_NAME, DB_USER, DB_PASSWORD);
-    }
-
-    public static function get(): Database
-    {
-        if (self::$instance == null) self::$instance = new Database();
-        return self::$instance;
+        $this->connectToDB($host, $username, $password, $dbName, $port);
     }
 
     public function getName(): string
     {
-        return self::$dbName;
-    }
-
-
-    /*** ---------------------------------------------------- ***/
-    /*** --------------- Testing Environment ---------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-    /**
-     * Creates a new database (if not already created) for testing
-     * purposes, and initializes it.
-     * This ensures the original database stays untouched while
-     * running tests.
-     *
-     * @return void
-     */
-    public function initForTesting()
-    {
-        // Create database
-        $this->executeQuery("CREATE DATABASE IF NOT EXISTS " . DB_NAME_TEST . " COLLATE utf8mb4_general_ci;");
-
-        // Connect to database
-        $this->connectToDB(DB_HOST, DB_NAME_TEST, DB_USER, DB_PASSWORD);
-
-        // Init database
-        $this->cleanDatabase(true);
-        $sql = file_get_contents(ROOT_PATH . "setup/setup.sql");
-        $this->executeQuery($sql);
+        return $this->dbName;
     }
 
 
@@ -460,12 +426,16 @@ class Database
     /*** ---------------------- Helpers --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    private function connectToDB(string $host, string $name, string $username, string $password)
+    private function connectToDB(string $host, string $username, string $password, string $name = null, int $port = null)
     {
+        $dsn = "mysql:host=$host";
+        if (!is_null($name)) $dsn .= ";dbname=$name";
+        if (!is_null($port)) $dsn .= ";port=$port";
+
         try {
-            $this->db = new PDO("mysql:host=$host;dbname=$name", $username, $password);
+            $this->db = new PDO($dsn, $username, $password);
             $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            self::$dbName = $name;
+            $this->dbName = $name;
 
         } catch (PDOException $e) {
             echo ("Could not connect to database '" . $name . "'.\n");

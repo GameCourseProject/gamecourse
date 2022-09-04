@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\User\User;
 use Utils\CronJob;
 use Utils\Utils;
 
@@ -122,5 +123,109 @@ abstract class AutoGame
     public static function isRunning(int $courseId): bool
     {
         return boolval(Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "isRunning"));
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------ Participations ------------------ ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets all participations of a given course.
+     * Option for a specific user and/or source and/or type.
+     *
+     * @param int $courseId
+     * @param int|null $userId
+     * @param string|null $source
+     * @param string|null $type
+     * @return array
+     */
+    public static function getParticipations(int $courseId, int $userId = null, string $source = null, string $type = null): array
+    {
+        $table = self::TABLE_PARTICIPATION;
+        $where = ["course" => $courseId];
+        if (!is_null($userId)) $where["user"] = $userId;
+        if (!is_null($source)) $where["source"] = $source;
+        if (!is_null($type)) $where["type"] = $type;
+        $participations = Core::database()->selectMultiple($table, $where, "*", "date DESC");
+
+        // Parse
+        foreach ($participations as &$participation) {
+            $participation["id"] = intval($participation["id"]);
+            $participation["user"] = (new User($participation["user"]))->getData();
+            $participation["course"] = intval($participation["course"]);
+            if (isset($participation["rating"])) $participation["rating"] = intval($participation["rating"]);
+            if (isset($participation["evaluator"])) $participation["evaluator"] = intval($participation["evaluator"]);
+        }
+
+        return $participations;
+    }
+
+    /**
+     * Adds a new participation to a given course.
+     *
+     * @param int $courseId
+     * @param int $userId
+     * @param string $description
+     * @param string $type
+     * @param string $date
+     * @param string|null $source
+     * @param string|null $post
+     * @param int|null $rating
+     * @param int|null $evaluator
+     * @return int
+     */
+    public static function addParticipation(int $courseId, int $userId, string $description, string $type, ?string $source = null,
+                                            string $date = null, ?string $post = null, ?int $rating = null, ?int $evaluator = null): int
+    {
+        return Core::database()->insert(self::TABLE_PARTICIPATION, [
+            "user" => $userId,
+            "course" => $courseId,
+            "source" => $source ?? "GameCourse",
+            "description" => $description,
+            "type" => $type,
+            "post" => $post,
+            "date" => $date ?? date("Y-m-d H:i:s", time()),
+            "rating" => $rating,
+            "evaluator" => $evaluator
+        ]);
+    }
+
+    /**
+     * Updates a given participation.
+     *
+     * @param int $id
+     * @param string $description
+     * @param string $type
+     * @param string $date
+     * @param string|null $source
+     * @param string|null $post
+     * @param int|null $rating
+     * @param int|null $evaluator
+     * @return void
+     */
+    public static function updateParticipation(int $id, string $description, string $type, string $date, ?string $source = null,
+                                        ?string $post = null, ?int $rating = null, ?int $evaluator = null)
+    {
+        Core::database()->update(self::TABLE_PARTICIPATION, [
+            "source" => $source ?? "GameCourse",
+            "description" => $description,
+            "type" => $type,
+            "post" => $post,
+            "date" => $date,
+            "rating" => $rating,
+            "evaluator" => $evaluator
+        ], ["id" => $id]);
+    }
+
+    /**
+     * Removes a given participation from the system.
+     *
+     * @param int $id
+     * @return void
+     */
+    public static function removeParticipation(int $id)
+    {
+        Core::database()->delete(self::TABLE_PARTICIPATION, ["id" => $id]);
     }
 }

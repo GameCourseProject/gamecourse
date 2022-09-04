@@ -23,7 +23,7 @@ class InputType
     const DATETIME = "datetime";
     const IMAGE = "image";
     const FILE = "file";
-    const COLOR = "color";
+    const COLOR = "color";          // options: showLabel: bool
     const MARKDOWN = "markdown";
     // NOTE: insert here new types of inputs
 }

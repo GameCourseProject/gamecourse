@@ -23,4 +23,4 @@ require_once ROOT_PATH . "/tests/TestingUtils.php";
 date_default_timezone_set('Europe/Lisbon');
 
 // init testing environment
-Core::database()->initForTesting();
+Core::initTestDatabase();

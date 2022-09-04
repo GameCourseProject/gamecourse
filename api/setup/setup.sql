@@ -16,7 +16,7 @@ CREATE TABLE user(
 CREATE TABLE auth(
 	user                        int unsigned NOT NULL,
 	username                    varchar(50) NOT NULL,
-	auth_service      ENUM ('fenix', 'google', 'facebook', 'linkedin'),
+	auth_service                ENUM ('fenix', 'google', 'facebook', 'linkedin'),
     lastLogin                   TIMESTAMP NULL,
 
     PRIMARY key(username, auth_service),
@@ -377,14 +377,15 @@ CREATE TABLE participation(
     id 		                    int unsigned AUTO_INCREMENT PRIMARY KEY,
     user 	                    int unsigned NOT NULL,
     course 	                    int unsigned NOT NULL,
+    source                      varchar(50) NOT NULL DEFAULT 'GameCourse',
     description                 varchar(500) NOT NULL,
-    type 	                    varchar(50) NOT NULL, #(ex:grade,skill,badge, lab,quiz,presentation,bonus)
-    post 	                    varchar(255),
-    date                        TIMESTAMP,
-    rating                      int,
-    evaluator                   int unsigned,
+    type 	                    varchar(50) NOT NULL,
+    post 	                    varchar(255) DEFAULT NULL,
+    date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    rating                      int DEFAULT NULL,
+    evaluator                   int unsigned DEFAULT NULL,
 
-    FOREIGN key(evaluator, course) REFERENCES course_user(id, course) ON DELETE CASCADE, #needs trigger to set eval to null
+    FOREIGN key(evaluator, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
     FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE
 );
 
