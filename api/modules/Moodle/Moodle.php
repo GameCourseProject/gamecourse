@@ -172,12 +172,8 @@ class Moodle extends Module
                                      string $tablesPrefix, string $moodleURL, ?int $moodleCourse)
     {
         // Check connection to Moodle database
-        try {
-            new Database($dbServer, $dbUser, $dbPass, $dbName, $dbPort);
-
-        } catch (Exception | PDOException $e) {
+        if (!self::canConnect($dbServer, $dbUser, $dbPass, $dbName, $dbPort))
             throw new Exception("Connection to Moodle database failed.");
-        }
 
         Core::database()->update(self::TABLE_MOODLE_CONFIG, [
             "dbServer" => $dbServer,
@@ -269,6 +265,29 @@ class Moodle extends Module
             self::$courseId = $config["moodleCourse"];
         }
         return self::$MoodleDatabase;
+    }
+
+    /**
+     * Checks connection to Moodle database.
+     *
+     * @param string $dbServer
+     * @param string $dbUser
+     * @param string|null $dbPass
+     * @param string $dbName
+     * @param int $dbPort
+     * @return bool
+     * @throws Exception
+     */
+    private static function canConnect(string $dbServer, string $dbUser, ?string $dbPass, string $dbName, int $dbPort): bool
+    {
+        try {
+            if (!$dbPass) return false;
+            new Database($dbServer, $dbUser, $dbPass, $dbName, $dbPort);
+            return true;
+
+        } catch (Exception | PDOException $e) {
+            return false;
+        }
     }
 
     /**

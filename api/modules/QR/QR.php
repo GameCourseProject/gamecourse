@@ -233,7 +233,7 @@ class QR extends Module
         }
 
         // Submit participation
-        $id = AutoGame::addParticipation($this->course->getId(), $userId, "$classType $classNumber", "class participation", $this->id);
+        $id = AutoGame::addParticipation($this->course->getId(), $userId, strval($classNumber), "participated in lecture", $this->id);
         Core::database()->update(self::TABLE_QR_CODE,
             ["user" => $userId, "classNumber" => $classNumber, "classType" => $classType, "participation" => $id],
             ["qrkey" => $qrKey]
