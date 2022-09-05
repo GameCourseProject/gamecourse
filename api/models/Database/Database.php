@@ -1,6 +1,7 @@
 <?php
 namespace Database;
 
+use Exception;
 use PDO;
 use PDOException;
 use PDOStatement;
@@ -14,6 +15,9 @@ class Database
     private $db;
     private $dbName;
 
+    /**
+     * @throws Exception
+     */
     public function __construct(string $host, string $username, string $password, string $dbName = null, int $port = null)
     {
         $this->connectToDB($host, $username, $password, $dbName, $port);
@@ -426,6 +430,9 @@ class Database
     /*** ---------------------- Helpers --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     private function connectToDB(string $host, string $username, string $password, string $name = null, int $port = null)
     {
         $dsn = "mysql:host=$host";
@@ -438,7 +445,7 @@ class Database
             $this->dbName = $name;
 
         } catch (PDOException $e) {
-            echo ("Could not connect to database '" . $name . "'.\n");
+            throw new Exception("Could not connect to database '$name'.");
         }
     }
 }

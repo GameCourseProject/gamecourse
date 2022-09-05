@@ -10,6 +10,7 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use PDO;
+use PDOException;
 
 /**
  * This is the Moodle module, which serves as a compartimentalized
@@ -171,8 +172,12 @@ class Moodle extends Module
                                      string $tablesPrefix, string $moodleURL, ?int $moodleCourse)
     {
         // Check connection to Moodle database
-        if (!mysqli_connect($dbServer, $dbUser, $dbPass, $dbName, $dbPort))
+        try {
+            new Database($dbServer, $dbUser, $dbPass, $dbName, $dbPort);
+
+        } catch (Exception | PDOException $e) {
             throw new Exception("Connection to Moodle database failed.");
+        }
 
         Core::database()->update(self::TABLE_MOODLE_CONFIG, [
             "dbServer" => $dbServer,
@@ -275,16 +280,28 @@ class Moodle extends Module
      */
     public function importData(): bool
     {
-        $timestamps = []; // Timestamps of last record imported on each item
+        if ($this->isRunning())
+            throw new Exception("Already importing data from Moodle.");
 
-        $import = ["Logs", "ForumGrades", "Peergrades", "QuizGrades", "AssignmentGrades"];
-        foreach ($import as $item) {
-            $timestamp = $this->${"import".$item}();
-            if ($timestamp) $timestamps[] = $timestamp;
+        $this->setStartedRunning(date("Y-m-d H:i:s", time()));
+        $this->setIsRunning(true);
+
+        try {
+            $timestamps = []; // Timestamps of last record imported on each item
+
+            $import = ["Logs", "ForumGrades", "Peergrades", "QuizGrades", "AssignmentGrades"];
+            foreach ($import as $item) {
+                $timestamp = $this->${"import".$item}();
+                if ($timestamp) $timestamps[] = $timestamp;
+            }
+
+            $this->setCheckpoint(date("Y-m-d H:i:s", max($timestamps)));
+            return !empty($timestamps);
+
+        } finally {
+            $this->setIsRunning(false);
+            $this->setFinishedRunning(date("Y-m-d H:i:s", time()));
         }
-
-        $this->setCheckpoint(date("Y-m-d H:i:s", max($timestamps)));
-        return !empty($timestamps);
     }
 
 

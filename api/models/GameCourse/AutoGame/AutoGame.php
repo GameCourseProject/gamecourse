@@ -6,6 +6,7 @@ use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\User\User;
+use Throwable;
 use Utils\CronJob;
 use Utils\Utils;
 
@@ -100,7 +101,7 @@ abstract class AutoGame
 
 
     /*** ---------------------------------------------------- ***/
-    /*** ------------------- Information -------------------- ***/
+    /*** ---------------------- Running --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
     /**
@@ -115,6 +116,21 @@ abstract class AutoGame
     }
 
     /**
+     * Updates AutoGame status for a given course.
+     *
+     * @param int $courseId
+     * @param bool $isRunning
+     * @param bool $onlyStatus
+     * @return void
+     */
+    private static function setIsRunning(int $courseId, bool $isRunning, bool $onlyStatus = false)
+    {
+        $where = ["isRunning" => $isRunning];
+        if (!$onlyStatus) $where[$isRunning ? "startedRunning" : "finishedRunning"] = date("Y-m-d H:i:s", time());
+        Core::database()->update(self::TABLE_AUTOGAME, $where, ["course" => $courseId]);
+    }
+
+    /**
      * Checks whether AutoGame is running for a given course.
      *
      * @param int $courseId
@@ -123,6 +139,200 @@ abstract class AutoGame
     public static function isRunning(int $courseId): bool
     {
         return boolval(Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "isRunning"));
+    }
+
+    /**
+     * Runs AutoGame for a given course.
+     * Option for targets to run and whether to run on test mode.
+     *
+     * @param int $courseId
+     * @param bool $all
+     * @param array|null $targets
+     * @param bool $testMode
+     * @return void
+     */
+    public static function run(int $courseId, bool $all = false, ?array $targets = null, bool $testMode = false)
+    {
+        if (!Course::getCourseById($courseId)) {
+            self::log($courseId, "There's no course with ID = $courseId.");
+            return;
+        }
+
+        if (self::isRunning($courseId)) {
+            self::log($courseId, "AutoGame is already running.");
+            return;
+        }
+
+        if (self::isSocketOpen()) {
+            self::callAutoGame($courseId, $all, $targets, $testMode);
+
+        } else {
+            self::setIsRunning(0, false);
+            self::setIsRunning($courseId, false, true);
+            self::startSocket($courseId, $all, $targets, $testMode);
+        }
+    }
+
+    /**
+     * Calls AutoGame python script for a given course.
+     *
+     * @param int $courseId
+     * @param bool $all
+     * @param array|null $targets
+     * @param bool $testMode
+     * @return void
+     */
+    private static function callAutoGame(int $courseId, bool $all = false, ?array $targets = null, bool $testMode = false)
+    {
+        $AutoGamePath = ROOT_PATH . "autogame/" . ($testMode ? "run_autogame_test.py" : "run_autogame.py");
+        $courseDataFolder = (new Course($courseId))->getDataFolder();
+
+        $cmd = "python3 $AutoGamePath $courseId \"$courseDataFolder\" ";
+        if ($all) {
+            // Running for all targets
+            $cmd .= "all ";
+
+        } else if (!is_null($targets)) {
+            // Running for certain targets
+            $cmd .= implode(", ", $targets) . " ";
+        }
+        $cmd .= ">> " . ROOT_PATH . "autogame/test_log.txt &";
+        system($cmd);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------------- Socket ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    // NOTE: course 0 is restricted for AutoGame socket
+
+    private static $host = "127.0.0.1";
+    private static $port = 8004;
+
+    /**
+     * Starts AutoGame socket.
+     *
+     * @param int $courseId
+     * @param bool $all
+     * @param array|null $targets
+     * @param bool $testMode
+     * @return void|null
+     */
+    private static function startSocket(int $courseId, bool $all = false, ?array $targets = null, bool $testMode = false)
+    {
+        try {
+            $address = "tcp://" . self::$host . ":" . self::$port;
+            $socket = stream_socket_server($address, $errorCode, $errorMsg);
+            if (!$socket) {
+                self::log($courseId, "Could not create socket.");
+                return;
+            }
+
+            self::setIsRunning(0, true);
+            self::callAutoGame($courseId, $all, $targets, $testMode);
+
+            while (true) {
+                $connection = stream_socket_accept($socket);
+                if (!$connection){
+                    self::log($courseId, "No connections received on the socket.", "WARNING");
+                    return;
+                }
+
+                $endMsg = "end gamerules;\n";
+                $msg = fgets($connection);
+
+                if ($msg == $endMsg) { // exit msg received
+                    break;
+
+                } else { // otherwise correctly process data
+                    $requestCourseId = intval(trim($msg)); // gamerules instance that made the request
+                    $course = Course::getCourseById($requestCourseId);
+
+                    $libraryId = trim(fgets($connection));
+                    $funcName = trim(fgets($connection));
+                    $args = json_decode(fgets($connection));
+
+                    // Call dictionary function
+                    $result = Core::dictionary()->callFunction($course, $libraryId, $funcName, !empty($args) ? $args : []);
+
+                    // Determine type of data to be sent
+                    $resultType = is_iterable($result) ? "collection" : "other";
+                    fwrite($connection, $resultType);
+
+                    // NOTE: this OK is used only for synching purposes
+                    $ok = fgets($connection);
+
+                    if ($resultType == "collection") {
+                        foreach ($result as $res) {
+                            fwrite($connection, json_encode($res) . "\n");
+                        }
+
+                    } else {
+                        fwrite($connection, json_encode($result));
+                    }
+
+                    fclose($connection);
+                }
+            }
+
+        } catch (Throwable $e) {
+            self::log($courseId, "Caught an error on startSocket().");
+
+        } finally {
+            if (isset($connection)) fclose($connection);
+
+            $nrCoursesRunning = Core::database()->select(self::TABLE_AUTOGAME, ["isRunning" => true], "COUNT(*)", null, [["course", 0]]);
+            if ($nrCoursesRunning == 0 && $socket) fclose($socket);
+
+            self::setIsRunning(0, false);
+            self::setIsRunning($courseId, false, true);
+        }
+    }
+
+    /**
+     * Checks whether AutoGame socket is open.
+     *
+     * @return bool
+     */
+    private static function isSocketOpen(): bool
+    {
+        return self::isRunning(0) && fsockopen(self::$host, self::$port);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------------- Logging --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets AutoGame logs for a given course.
+     *
+     * @param int $courseId
+     * @return string
+     */
+    public static function getLogs(int $courseId): string
+    {
+        $logsFile = LOGS_FOLDER . "/autogame_" . $courseId . ".txt";
+        return file_get_contents($logsFile);
+    }
+
+    /**
+     * Creates a new AutoGame log on a given course.
+     *
+     * @param int $courseId
+     * @param string $message
+     * @param string $type
+     * @return void
+     */
+    public static function log(int $courseId, string $message, string $type = "ERROR")
+    {
+        $sep = "\n================================================================================\n";
+        $date = "[" . date("Y/m/d H:i:s") . "] : php : " . $type . " \n\n";
+        $error = "\n\n================================================================================\n\n";
+
+        $logsFile = LOGS_FOLDER . "/autogame_" . $courseId . ".txt";
+        file_put_contents($logsFile, $sep . $date . $message . $error, FILE_APPEND);
     }
 
 
@@ -168,8 +378,8 @@ abstract class AutoGame
      * @param int $userId
      * @param string $description
      * @param string $type
-     * @param string $date
      * @param string|null $source
+     * @param string|null $date
      * @param string|null $post
      * @param int|null $rating
      * @param int|null $evaluator

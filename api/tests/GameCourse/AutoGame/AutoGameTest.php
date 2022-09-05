@@ -188,7 +188,7 @@ class AutoGameTest extends TestCase
     }
 
 
-    // Information
+    // Running
 
     /**
      * @test
@@ -227,6 +227,85 @@ class AutoGameTest extends TestCase
     }
 
 
+    // Logging
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getLogs()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set a course
+        $courseId = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true)->getId();
+
+        // Empty
+        $this->assertEmpty(AutoGame::getLogs($courseId));
+
+        // Not empty
+        AutoGame::log($courseId, "Testing 1");
+        AutoGame::log($courseId, "Testing 2", "WARNING");
+        $this->assertEquals($this->trim("
+================================================================================
+[" . date("Y/m/d H:i:s", time()) . "] : php : ERROR 
+
+Testing 1
+
+================================================================================
+
+
+================================================================================
+[" . date("Y/m/d H:i:s", time()) . "] : php : WARNING 
+
+Testing 2
+
+================================================================================
+
+"), $this->trim(AutoGame::getLogs($courseId)));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function log()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set a course
+        $courseId = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true)->getId();
+
+        AutoGame::log($courseId, "Testing 1");
+        AutoGame::log($courseId, "Testing 2", "WARNING");
+        $this->assertEquals($this->trim("
+================================================================================
+[" . date("Y/m/d H:i:s", time()) . "] : php : ERROR 
+
+Testing 1
+
+================================================================================
+
+
+================================================================================
+[" . date("Y/m/d H:i:s", time()) . "] : php : WARNING 
+
+Testing 2
+
+================================================================================
+
+"), $this->trim(AutoGame::getLogs($courseId)));
+    }
+
+
     // Participations
 
     /**
@@ -243,15 +322,14 @@ class AutoGameTest extends TestCase
         // Set a course
         $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
             null, null, true, true);
-        $this->course = $course;
 
         // Set students
         $user1 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
         $user2 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
             123, "Julia Doe", "MEIC-A", false, true);
-        $this->course->addUserToCourse($user1->getId(), "Student");
-        $this->course->addUserToCourse($user2->getId(), "Student", null, false);
+        $course->addUserToCourse($user1->getId(), "Student");
+        $course->addUserToCourse($user2->getId(), "Student", null, false);
 
         AutoGame::addParticipation($course->getId(), $user1->getId(), "Participation 1", "testing");
         AutoGame::addParticipation($course->getId(), $user2->getId(), "Participation 2", "testing");
@@ -293,15 +371,14 @@ class AutoGameTest extends TestCase
         // Set a course
         $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
             null, null, true, true);
-        $this->course = $course;
 
         // Set students
         $user1 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
         $user2 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
             123, "Julia Doe", "MEIC-A", false, true);
-        $this->course->addUserToCourse($user1->getId(), "Student");
-        $this->course->addUserToCourse($user2->getId(), "Student", null, false);
+        $course->addUserToCourse($user1->getId(), "Student");
+        $course->addUserToCourse($user2->getId(), "Student", null, false);
 
         AutoGame::addParticipation($course->getId(), $user1->getId(), "Participation", "testing", null,
             "2022-09-02 19:23:00", null, 3.4);
@@ -327,15 +404,14 @@ class AutoGameTest extends TestCase
         // Set a course
         $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
             null, null, true, true);
-        $this->course = $course;
 
         // Set students
         $user1 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
         $user2 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
             123, "Julia Doe", "MEIC-A", false, true);
-        $this->course->addUserToCourse($user1->getId(), "Student");
-        $this->course->addUserToCourse($user2->getId(), "Student", null, false);
+        $course->addUserToCourse($user1->getId(), "Student");
+        $course->addUserToCourse($user2->getId(), "Student", null, false);
 
         $id = AutoGame::addParticipation($course->getId(), $user1->getId(), "DESCRIPTION", "TYPE", "QR",
             "2022-08-02 19:23:00", "URL", 10, $loggedUser->getId());
@@ -363,20 +439,29 @@ class AutoGameTest extends TestCase
         // Set a course
         $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
             null, null, true, true);
-        $this->course = $course;
 
         // Set students
         $user1 = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
         $user2 = User::addUser("Julia Smith Doe", "ist123", AuthService::FENIX, "juliadoe@email.com",
             123, "Julia Doe", "MEIC-A", false, true);
-        $this->course->addUserToCourse($user1->getId(), "Student");
-        $this->course->addUserToCourse($user2->getId(), "Student", null, false);
+        $course->addUserToCourse($user1->getId(), "Student");
+        $course->addUserToCourse($user2->getId(), "Student", null, false);
 
         $id = AutoGame::addParticipation($course->getId(), $user1->getId(), "Participation", "testing", null,
             "2022-09-02 19:23:00", null, 3.4);
         AutoGame::removeParticipation($id);
 
         $this->assertEmpty(AutoGame::getParticipations($course->getId()));
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------------- Helpers ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    private function trim(string $str)
+    {
+        return str_replace("\r", "", $str);
     }
 }
