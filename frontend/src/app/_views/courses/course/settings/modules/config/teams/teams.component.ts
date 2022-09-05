@@ -25,6 +25,7 @@ export class TeamsComponent implements OnInit {
     name: "",
     number: null,
     members: null,
+    xp: null
   };
   teamToEdit: Team;
   teamToDelete: Team;
@@ -134,7 +135,8 @@ export class TeamsComponent implements OnInit {
       this.newTeam = {
         name: item?.name || "",
         number: item?.number || null,
-        members: item?.members || null
+        members: item?.members || null,
+        xp: item?.xp || null
       };
       if (this.mode === 'edit') this.newTeam.id = item.id;
       this.teamToDelete = item;
@@ -169,4 +171,5 @@ export interface TeamData {
   name: string,
   number: number,
   members: string,
+  xp: number
 }

@@ -2,7 +2,6 @@
 
 <!-- Teams -->
 
-
 <div class="section teams-section">
   <div class="divider">
     <div class="title"><span>Teams</span></div>
@@ -31,10 +30,12 @@
           <tbody>
             <tr *ngFor="let team of teams" >
               <td><span>{{team.number}}</span></td>
-              <!--
-              <td><span>{{team.members}}</span></td>
+
+              <td *ngFor="let member of team.members">
+                <span>{{member}}</span>
+              </td>
+
               <td><span>{{team.xp}}</span></td>
-              -->
             </tr>
           </tbody>
         </table>
@@ -53,7 +54,6 @@
       <div class="icon export_icon" title="Export All" (click)="exportAllTeams()"></div>
     </div>
 
-
   </div>
 
 </div>
@@ -62,7 +62,6 @@
 <div *ngIf="loading" id="page-loading">
   <img src="assets/loader/loader.gif" alt="loader">
 </div>
-
 
 <!-- New / Edit Team Modal -->
 <ng-container *ngIf="isTeamModalOpen">
@@ -100,12 +99,8 @@
           <button (click)="addTeamMember(selectedMember)">Add</button>
         </div>
 
-
     </div>
 
-
   </div>
-
-
 
 </ng-template>

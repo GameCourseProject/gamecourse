@@ -3,13 +3,17 @@ export class Team {
   private _name: string;
   private _number: number;
   private _members: string;
+  private _xp: number;
 
-  constructor(id: number, name: string, number: number,  members: string) {
+
+  constructor(id: number, name: string, number: number,  members: string, xp: number) {
 
     this.id = id;
     this.name = name;
     this.number = number;
     this.members = members;
+    this.xp = xp;
+
   }
 
   get id(): number {
@@ -45,6 +49,16 @@ export class Team {
   }
 
 
+  get xp(): number {
+    return this._xp;
+  }
+
+  set xp(value: number) {
+    this._xp = value;
+  }
+
+
+
   /**
    * Custom way to stringify this class.
    * This is needed so that the output of JSON.stringify()
@@ -56,6 +70,7 @@ export class Team {
       name: this.name,
       number: this.number,
       members: this.members,
+      xp: this.xp,
     };
   }
 
@@ -64,7 +79,8 @@ export class Team {
       parseInt(obj.id),
       obj.name,
       parseInt(obj.number),
-      obj.members
+      obj.members,
+      parseInt(obj.xp)
     );
   }
 }
@@ -74,4 +90,5 @@ interface TeamDatabase {
   name: string,
   number: string,
   members?: string,
+  xp?: string
 }
