@@ -42,7 +42,6 @@ export class CacheInterceptor implements HttpInterceptor {
 
     // Add modules with requests
     this.dependencies[ApiHttpService.MODULE] = this.dependencies[ApiHttpService.MODULE].concat([
-      ApiHttpService.CLASSCHECK,
       ApiHttpService.FENIX,
       ApiHttpService.GOOGLESHEETS,
       ApiHttpService.NOTIFICATIONS,

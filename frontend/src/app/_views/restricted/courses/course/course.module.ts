@@ -17,7 +17,6 @@ import {SidebarComponent} from "./settings/sidebar/sidebar.component";
 import { PageComponent } from './page/page.component';
 import { ConfigComponent } from './settings/modules/config/config/config.component';
 import { FenixComponent } from './settings/modules/config/personalized-config/fenix/fenix.component';
-import { ClasscheckComponent } from './settings/modules/config/classcheck/classcheck.component';
 import { SkillsComponent } from './settings/modules/config/personalized-config/skills/skills.component';
 import { GooglesheetsComponent } from './settings/modules/config/googlesheets/googlesheets.component';
 import { QrComponent } from './settings/modules/config/personalized-config/qr/qr.component';
@@ -40,7 +39,6 @@ import { ProfilingComponent } from './settings/modules/config/profiling/profilin
     PageComponent,
     ConfigComponent,
     FenixComponent,
-    ClasscheckComponent,
     SkillsComponent,
     GooglesheetsComponent,
     QrComponent,
