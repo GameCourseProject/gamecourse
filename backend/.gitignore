@@ -54,6 +54,8 @@ photos/**
 modules/skills/resources/
 modules/quest/resources/
 
+scripts/results/
+
 cache/
 /nbproject/private/
 /setup.done
