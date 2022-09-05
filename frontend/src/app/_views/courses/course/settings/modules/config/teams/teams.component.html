@@ -48,7 +48,7 @@
 
     <!-- Action Buttons -->
     <div class="action-buttons">
-      <div class="icon add_icon" title="New" (click)="mode = 'add'; isTeamModalOpen = true; initItem('team'); initTextEditor()"></div>
+      <div class="icon add_icon" title="New" (click)="mode = 'add'; isTeamModalOpen = true; initItem('team'); "></div>
       <div class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true"></div>
       <div class="icon export_icon" title="Export All" (click)="exportAllTeams()"></div>
     </div>
@@ -94,7 +94,7 @@
           <span style="margin-right: 30px; white-space: nowrap">New Team Member: </span>
           <select [id]="'member'" class="form__input" name="member" style="margin-bottom: 0; margin-right: 30px" [(ngModel)]="selectedMember">
             <option [value]="null" disabled selected>Select Team Member</option>
-            <option *ngFor="let user of filterSkillsForDependencies(mode === 'add' ? null : teamToEdit.id)" [ngValue]="user">{{user.id, user.name}}</option>
+            <!--<option *ngFor="let user of filterSkillsForDependencies(mode === 'add' ? null : teamToEdit.id)" [ngValue]="user">{{user.id}}</option>-->
           </select>
 
           <button (click)="addTeamMember(selectedMember)">Add</button>

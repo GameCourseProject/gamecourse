@@ -361,11 +361,5 @@ export class ConfigComponent implements OnInit {
     return list.allAttributes.filter(attr => !exists(attr.options['edit']) || attr.options['edit'] === true);
   }
 
-  addUser(user: User): void {
-  }
-
-  removeUser(userID: number): void {
-
-  }
 
 }
