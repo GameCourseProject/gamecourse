@@ -1,5 +1,7 @@
 <?php
 
+use Google\Service\Sheets;
+
 require_once("google.config.php");
 
 class GoogleHandler
@@ -93,21 +95,21 @@ class GoogleHandler
         file_put_contents($path, $img);
     }
 
-    public static function setCredentials($credentials, $course = 0): Google_Client
+    public static function setCredentials(array $credentials, int $courseId): Google_Client
     {
-        $client = new \Google_Client();
+        $client = new Google_Client();
         $client->setApplicationName('spreadsheets');
-        $client->setScopes([\Google_Service_Sheets::SPREADSHEETS]);
-        $client->setAuthConfig($credentials, false);
-        $client->setState($course);
+        $client->setScopes([Sheets::SPREADSHEETS]);
+        $client->setAuthConfig($credentials);
+        $client->setState($courseId);
         $client->setAccessType('offline');
         $client->setPrompt('select_account consent');
         return $client;
     }
 
-    public static function checkToken($credentials, $token, $authCode, $course)
+    public static function checkToken(array $credentials, ?string $token, ?string $authCode, int $courseId)
     {
-        $client = GoogleHandler::setCredentials($credentials, $course);
+        $client = GoogleHandler::setCredentials($credentials, $courseId);
         if ($token) {
             $accessToken = $token;
             $client->setAccessToken($accessToken);
@@ -133,9 +135,9 @@ class GoogleHandler
         }
     }
 
-    public static function getGoogleSheets($credentials, $token, $authCode, $course): Google_Service_Sheets
+    public static function getGoogleSheets(array $credentials, string $token, ?string $authCode, int $courseId): Sheets
     {
-        $result = GoogleHandler::checkToken($credentials, $token, $authCode, $course);
-        return new \Google_Service_Sheets($result["client"]);
+        $result = GoogleHandler::checkToken($credentials, $token, $authCode, $courseId);
+        return new Sheets($result["client"]);
     }
 }

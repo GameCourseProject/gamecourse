@@ -283,7 +283,7 @@ class ClassCheck extends Module
      * Returns null if not found.
      *
      * @param int $userId
-     * @param int $assignmentId
+     * @param int $classNumber
      * @return int|null
      */
     private function getAttendanceParticipationId(int $userId, int $classNumber): ?int
@@ -302,7 +302,7 @@ class ClassCheck extends Module
      * Checks whether a given attendance is already in the system.
      *
      * @param int $userId
-     * @param int $assignmentId
+     * @param int $classNumber
      * @return bool
      */
     private function hasAttendance(int $userId, int $classNumber): bool

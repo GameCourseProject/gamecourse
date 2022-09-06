@@ -2,7 +2,6 @@
 namespace API;
 
 use Exception;
-use GameCourse\Core\Core;
 use GameCourse\Module\QR\ClassType;
 use GameCourse\Module\QR\QR;
 

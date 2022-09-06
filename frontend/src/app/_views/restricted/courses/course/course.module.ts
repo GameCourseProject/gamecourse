@@ -18,7 +18,7 @@ import { PageComponent } from './page/page.component';
 import { ConfigComponent } from './settings/modules/config/config/config.component';
 import { FenixComponent } from './settings/modules/config/personalized-config/fenix/fenix.component';
 import { SkillsComponent } from './settings/modules/config/personalized-config/skills/skills.component';
-import { GooglesheetsComponent } from './settings/modules/config/googlesheets/googlesheets.component';
+import { GooglesheetsComponent } from './settings/modules/config/personalized-config/googlesheets/googlesheets.component';
 import { QrComponent } from './settings/modules/config/personalized-config/qr/qr.component';
 import { NotificationsComponent } from './settings/modules/config/notifications/notifications.component';
 import { ProfilingComponent } from './settings/modules/config/profiling/profiling.component';

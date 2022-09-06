@@ -47,7 +47,7 @@
             <p class="label">Owner</p>
             <input type="text" id="sheet-owner{{i}}" name="sheet-owner{{i}}" class="input" [(ngModel)]="sheets[i].owner" (ngModelChange)="hasUnsavedChanges = true">
           </div>
-          <img src="assets/icons/delete_icon.svg" (click)="removeSheet(sheet.name, sheet.owner)" style="height: 23px; width: 23px; margin-left: 20px; cursor: pointer" title="Remove" class="icon">
+          <img src="../../../../../../../../../../assets/icons/delete_icon.svg" (click)="removeSheet(sheet.name, sheet.owner)" style="height: 23px; width: 23px; margin-left: 20px; cursor: pointer" title="Remove" class="icon">
         </div>
       </div>
 
@@ -55,7 +55,7 @@
     </div>
 
     <div class="action-buttons">
-      <button id="save-button" class="button" [disabled]="!hasUnsavedChanges || !isReadyToSubmit()" (click)="saveGoogleSheets()">Save</button>
+      <button id="save-button" class="button" [disabled]="!hasUnsavedChanges || !isReadyToSubmit()" (click)="saveConfig()">Save</button>
     </div>
   </div>
 
@@ -66,5 +66,5 @@
 
 <!-- Loader -->
 <div *ngIf="loading" id="page-loading">
-  <img src="assets/loader/loader.gif" alt="loader">
+  <img src="../../../../../../../../../../assets/loader/loader.gif" alt="loader">
 </div>

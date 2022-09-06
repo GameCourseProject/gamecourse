@@ -33,9 +33,8 @@ import {SkillData} from "../../_views/restricted/courses/course/settings/modules
 import {Skill} from "../../_domain/modules/config/personalized-config/skills/skill";
 import {ContentItem} from "../../_components/modals/file-picker-modal/file-picker-modal.component";
 import {
-  Credentials,
-  GoogleSheetsVars
-} from "../../_views/restricted/courses/course/settings/modules/config/googlesheets/googlesheets.component";
+  Credentials, GoogleSheetsConfig,
+} from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/googlesheets/googlesheets.component";
 import {
   ProgressReportVars
 } from "../../_views/restricted/courses/course/settings/modules/config/notifications/notifications.component";
@@ -71,7 +70,7 @@ export class ApiHttpService {
   // NOTE: insert here new controllers & update cache dependencies
 
   static readonly FENIX: string = 'Fenix';
-  static readonly GOOGLESHEETS: string = 'googlesheets';
+  static readonly GOOGLESHEETS: string = 'GoogleSheets';
   static readonly NOTIFICATIONS: string = 'notifications';
   static readonly PROFILING: string = 'profiling';
   static readonly QR: string = 'QR';
@@ -1127,34 +1126,31 @@ export class ApiHttpService {
 
 
   // GoogleSheets
-  // TODO: refactor
-  public getGoogleSheetsVars(courseID: number): Observable<GoogleSheetsVars> {
+
+  public getGoogleSheetsConfig(courseID: number): Observable<GoogleSheetsConfig> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.GOOGLESHEETS);
-      qs.push('request', 'getGoogleSheetsVars');
+      qs.push('request', 'getConfig');
       qs.push('courseId', courseID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['googleSheetsVars']) );
+      .pipe( map((res: any) => res['data']) );
   }
 
-  // TODO: refactor
-  public setGoogleSheetsVars(courseID: number, spreadsheetId: string, sheets: {name: string, owner: string}[]): Observable<void> {
+  public setGoogleSheetsConfig(courseID: number, spreadsheetId: string, sheetNames: string[], ownerNames: string[]): Observable<void> {
     const data = {
       courseId: courseID,
-      googleSheets: {
-        spreadsheetId,
-        sheetName: sheets.map(sheet => sheet.name),
-        ownerName: sheets.map(sheet => sheet.owner)
-      }
+      spreadsheetId,
+      sheetNames,
+      ownerNames
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.GOOGLESHEETS);
-      qs.push('request', 'setGoogleSheetsVars');
+      qs.push('request', 'saveConfig');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
@@ -1162,8 +1158,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  // TODO: refactor
-  public setGoogleSheetsCredentials(courseID: number, credentials: Credentials): Observable<string> {
+  public authenticateGoogleSheets(courseID: number, credentials: Credentials): Observable<string> {
     const data = {
       courseId: courseID,
       credentials
@@ -1171,12 +1166,12 @@ export class ApiHttpService {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.GOOGLESHEETS);
-      qs.push('request', 'setGoogleSheetsCredentials');
+      qs.push('request', 'authenticate');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['authUrl']) );
+      .pipe( map((res: any) => res['data']) );
   }
 
 
