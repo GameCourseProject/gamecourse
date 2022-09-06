@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GoogleHandler;
@@ -72,6 +73,28 @@ class GoogleSheets extends Module
     public function isConfigurable(): bool
     {
         return true;
+    }
+
+    public function getLists(): array
+    {
+        return [
+            [
+                "listName" => "Status",
+                "itemName" => "status",
+                "listInfo" => [
+                    ["id" => "startedRunning", "label" => "Started Running", "type" => InputType::DATETIME],
+                    ["id" => "finishedRunning", "label" => "Finished Running", "type" => InputType::DATETIME],
+                    ["id" => "isRunning", "label" => "Is Running", "type" => InputType::COLOR, "options" => ["showLabel" => false]]
+                ],
+                "items" => [
+                    [
+                        "startedRunning" => $this->getStartedRunning(),
+                        "finishedRunning" => $this->getFinishedRunning(),
+                        "isRunning" => $this->isRunning() ? "green" : "tomato"
+                    ]
+                ]
+            ]
+        ];
     }
 
     public function getPersonalizedConfig(): ?string

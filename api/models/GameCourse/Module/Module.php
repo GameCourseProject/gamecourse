@@ -667,7 +667,7 @@ abstract class Module
      *  - listName: name of the list
      *  - itemName: name for an item of the list
      *  - parent?: list parent ID
-     *  - importExtensions: types of files that can be used on import
+     *  - listActions?: actions available for list (check Config/Action.php for more info)
      *  - listInfo: information for every collumn
      *  - items: items of the list
      *  - actions?: actions available for items (check Config/Action.php for more info)

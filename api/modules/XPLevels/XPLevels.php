@@ -141,7 +141,11 @@ class XPLevels extends Module
             [
                 "listName" => "Levels",
                 "itemName" => "level",
-                "importExtensions" => [".csv", ".txt"],
+                "listActions" => [
+                    Action::NEW,
+                    Action::IMPORT,
+                    Action::EXPORT
+                ],
                 "listInfo" => [
                     ["id" => "number", "label" => "Level", "type" => InputType::NUMBER],
                     ["id" => "description", "label" => "Title", "type" => InputType::TEXT],
@@ -156,6 +160,9 @@ class XPLevels extends Module
                     ["id" => "description", "label" => "Title", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
                     ["id" => "minXP", "label" => "Minimum XP", "type" => InputType::NUMBER, "scope" => ActionScope::ALL_BUT_FIRST]
                 ],
+                Action::IMPORT => [
+                    "extensions" => [".csv", ".txt"]
+                ]
             ]
         ];
     }

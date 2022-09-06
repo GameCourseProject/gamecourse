@@ -18,6 +18,7 @@ class Action
     const VIEW = "view";
     const MOVE_UP = "move-up";
     const MOVE_DOWN = "move-down";
+    const IMPORT = "import";
     const EXPORT = "export";
     // NOTE: insert here new types of actions
 }

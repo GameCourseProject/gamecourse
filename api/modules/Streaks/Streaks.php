@@ -125,7 +125,11 @@ class Streaks extends Module
             [
                 "listName" => "Streaks",
                 "itemName" => "streak",
-                "importExtensions" => [".zip"],
+                "listActions" => [
+                    Action::NEW,
+                    Action::IMPORT,
+                    Action::EXPORT
+                ],
                 "listInfo" => [
                     ["id" => "name", "label" => "Name", "type" => InputType::TEXT],
                     ["id" => "description", "label" => "Description", "type" => InputType::TEXT],
@@ -159,6 +163,9 @@ class Streaks extends Module
                         ]
                     ]],
                 ],
+                Action::IMPORT => [
+                    "extensions" => [".zip"]
+                ]
             ]
         ];
 

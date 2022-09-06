@@ -124,7 +124,11 @@ class Badges extends Module
             [
                 "listName" => "Badges",
                 "itemName" => "badge",
-                "importExtensions" => [".zip"],
+                "listActions" => [
+                    Action::NEW,
+                    Action::IMPORT,
+                    Action::EXPORT
+                ],
                 "listInfo" => [
                     ["id" => "name", "label" => "Name", "type" => InputType::TEXT],
                     ["id" => "description", "label" => "Description", "type" => InputType::TEXT],
@@ -158,6 +162,9 @@ class Badges extends Module
                     ["id" => "goal3", "label" => "Goal level 3", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
                     ["id" => "image", "label" => "Image", "type" => InputType::IMAGE, "scope" => ActionScope::ALL]
                 ],
+                Action::IMPORT => [
+                    "extensions" => [".zip"]
+                ]
             ]
         ];
     }

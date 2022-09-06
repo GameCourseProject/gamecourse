@@ -97,7 +97,6 @@ class ClassCheck extends Module
             [
                 "listName" => "Status",
                 "itemName" => "status",
-                "importExtensions" => [],
                 "listInfo" => [
                     ["id" => "startedRunning", "label" => "Started Running", "type" => InputType::DATETIME],
                     ["id" => "finishedRunning", "label" => "Finished Running", "type" => InputType::DATETIME],

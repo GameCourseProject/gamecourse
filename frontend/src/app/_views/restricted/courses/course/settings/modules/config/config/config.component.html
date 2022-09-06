@@ -41,9 +41,11 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-          <div *ngIf="hasAction(list, Action.NEW)" class="icon add_icon" title="New" (click)="mode = 'add'; newItem.list = list; newItem.item = {}; isItemModalOpen = true;"></div>
-          <div *ngIf="hasAction(list, Action.IMPORT)" class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true; listToAct = list"></div>
-          <div *ngIf="hasAction(list, Action.EXPORT)" class="icon export_icon" title="Export All" (click)="exportItems(list)"></div>
+          <ng-container *ngFor="let action of list.listActions">
+            <div *ngIf="action === Action.NEW" class="icon add_icon" title="New" (click)="mode = 'add'; newItem.list = list; newItem.item = {}; isItemModalOpen = true;"></div>
+            <div *ngIf="action === Action.IMPORT" class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true; listToAct = list"></div>
+            <div *ngIf="action === Action.EXPORT" class="icon export_icon" title="Export All" (click)="exportItems(list)"></div>
+          </ng-container>
         </div>
       </div>
 
@@ -287,12 +289,12 @@
 
 <ng-template #importModal>
 
-  <div class="warning">Please select a {{listToAct.importExtensions.length === 1 ? listToAct.importExtensions[0] + " " : ""}}file to be imported.
-                       {{listToAct.importExtensions.length > 1 ? "Supported file types: " + listToAct.importExtensions : ""}}</div>
+  <div class="warning">Please select a {{listToAct[Action.IMPORT].extensions.length === 1 ? listToAct[Action.IMPORT].extensions[0] + " " : ""}}file to be imported.
+                       {{listToAct[Action.IMPORT].extensions.length > 1 ? "Supported file types: " + listToAct[Action.IMPORT].extensions : ""}}</div>
   <div class="target">The separator must be comma <br>The encoding must be UTF-8</div>
   <app-input-file
     [id]="'import_item'"
-    [accept]="listToAct.importExtensions.toString()"
+    [accept]="listToAct[Action.IMPORT].extensions.toString()"
     [classList]="'config_input'"
     (valueChange)="onFileSelected($event, 'file')">
   </app-input-file>

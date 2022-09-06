@@ -150,7 +150,6 @@ class VirtualCurrency extends Module
             [
                 "listName" => "Settings",
                 "itemName" => "virtual currency",
-                "importExtensions" => [],
                 "listInfo" => [
                     ["id" => "name", "label" => "Name", "type" => InputType::TEXT],
                     ["id" => "image", "label" => "Image", "type" => InputType::IMAGE]

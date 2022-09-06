@@ -121,7 +121,11 @@ class Skills extends Module
         $lists = [[ // Skill Trees
             "listName" => "Skill Trees",
             "itemName" => "skill tree",
-            "importExtensions" => [".zip"],
+            "listActions" => [
+                Action::NEW,
+                Action::IMPORT,
+                Action::EXPORT
+            ],
             "listInfo" => [
                 ["id" => "name", "label" => "Name", "type" => InputType::TEXT],
                 ["id" => "maxReward", "label" => "Max. Reward", "type" => InputType::NUMBER]
@@ -136,6 +140,9 @@ class Skills extends Module
             Action::EDIT => [
                 ["id" => "name", "label" => "Name", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
                 ["id" => "maxReward", "label" => "Max. Reward", "type" => InputType::NUMBER, "scope" => ActionScope::ALL]
+            ],
+            Action::IMPORT => [
+                "extensions" => [".zip"]
             ]
         ]];
 
@@ -148,7 +155,11 @@ class Skills extends Module
                 "listName" => $getListName("Tiers"),
                 "itemName" => "tier",
                 "parent" => $skillTree["id"],
-                "importExtensions" => [".zip"],
+                "listActions" => [
+                    Action::NEW,
+                    Action::IMPORT,
+                    Action::EXPORT
+                ],
                 "listInfo" => [
                     ["id" => "name", "label" => "Name", "type" => InputType::TEXT],
                     ["id" => "reward", "label" => "Reward", "type" => InputType::NUMBER],
@@ -165,6 +176,9 @@ class Skills extends Module
                 Action::EDIT => [
                     ["id" => "name", "label" => "Name", "type" => InputType::TEXT, "scope" => ActionScope::ALL_BUT_LAST],
                     ["id" => "reward", "label" => "Reward", "type" => InputType::NUMBER, "scope" => ActionScope::ALL]
+                ],
+                Action::IMPORT => [
+                    "extensions" => [".zip"]
                 ]
             ];
         }
