@@ -2,6 +2,7 @@
 
 namespace Modules\Teams;
 
+use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\Module;
@@ -127,6 +128,76 @@ class Teams extends Module
         */
         }
 
+
+        
+    public function initAPIEndpoints()
+    {
+
+        /**
+         * Gets all teams in course.
+         *
+         * @param int $courseId
+         */
+        API::registerFunction(self::ID, 'getTeams', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('courseId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            API::response(["teams" => $this->getTeams($courseId)]);
+        });
+        
+        /**
+         * Creates a new team in the course.
+         *
+         * @param int $courseId
+         * @param $team
+         */
+        API::registerFunction(self::ID, 'createTeam', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('courseId', 'team');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $this->newTeam(API::getValue('team'), $courseId);
+        });
+
+        /**
+         * Edit an existing skill in the course skill tree.
+         *
+         * @param int $courseId
+         * @param $skill
+         */
+        API::registerFunction(self::ID, 'editTeam', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('courseId', 'team');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $this->editTeam(API::getValue('team'), $courseId);
+        });
+
+        /**
+         * Deletes a team from the course.
+         *
+         * @param int $courseId
+         * @param int $teamId
+         */
+        API::registerFunction(self::ID, 'deleteTeam', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('courseId', 'teamId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $this->deleteTeam(API::getValue('teamId'), $courseId);
+        });
+        
+    }
+
     public function setupResources() {
         parent::addResources('css/leaderboard.css');
         parent::addResources('imgs/');
@@ -134,10 +205,10 @@ class Teams extends Module
 
     public function setupData(int $courseId)
     {
+        /*
         if ($this->addTables(self::ID, self::TABLE) || empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId]))) {
             Core::$systemDB->insert(self::TABLE_CONFIG, ["course" => $courseId, "nrTeamMembers" => 3]);
-        }
-
+        }             */
     }
 
     public function update_module($compatibleVersions)
@@ -259,6 +330,7 @@ class Teams extends Module
     /*** ----------------------------------------------- ***/
     /*** --------------- Import / Export --------------- ***/
     /*** ----------------------------------------------- ***/
+
     // TODO
     // import teams onto the system with a file.
     public function importItems($fileData, $replace = true){
@@ -275,11 +347,20 @@ class Teams extends Module
 
     public function getTeams($courseId)
     {
+        $teamsArray = array();
+
         $teams = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*", "teamName");
         foreach ($teams as &$team) {
+            $teamMembers = Core::$systemDB->selectMultiple(self::TABLE_MEMBERS, ["teamId" => $team["id"]], "*", "memberId");;
+
             //information to match needing fields
-            $team['memberName'] = $team["memberName"];
+            $team['teamName'] = $team["teamName"];
+
         }
+
+
+
+
         return $teams;
     }
 
@@ -319,9 +400,9 @@ class Teams extends Module
     }
 
     public function newTeam($team, $courseId){
+        // "teamNumber" => $team['teamNumber'],
         $teamData = [
             "teamName" => $team['teamName'],
-            "teamNumber" => $team['teamNumber'],
             "course" => $courseId
         ];
 
@@ -345,10 +426,10 @@ class Teams extends Module
         $originalTeam = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'id' => $team['id']], "*");
         $originalTeamMembers = Core::$systemDB->select(self::TABLE_MEMBERS, ["course" => $courseId, 'teamId' => $team['id']], "*");
 
+        // "teamNumber" => $team['teamNumber'],
         if(!empty($originalTeam)){
             $teamData = [
-                "teamName" => $team['teamName'],
-                "teamNumber" => $team['teamNumber'],
+                "teamName" => $team['name'],
                 "course" => $courseId
             ];
             Core::$systemDB->update(self::TABLE, $teamData, ["id" => $team["id"]]);
@@ -366,7 +447,7 @@ class Teams extends Module
         }
     }
 
-    public function deleteTeam(int $teamId, int $courseId)
+    public function deleteTeam(int $teamId)
     {
         Core::$systemDB->delete(self::TABLE, ["id" => $teamId]);
     }

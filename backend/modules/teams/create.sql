@@ -9,11 +9,12 @@ create table teams(
     course      int unsigned not null,
     teamNumber  int unsigned,
     teamName    varchar(70) ,
-    foreign key(course) references course(id) on delete cascade,
+    foreign key(course) references course(id) on delete cascade
 );
 
 create table teams_members(
-    teamId      int unsigned auto_increment primary key,
+    id          int unsigned auto_increment primary key,
+    teamId      int unsigned not null,
     memberId    int unsigned not null,
     foreign key(teamId) references teams(id) on delete cascade,
     foreign key(memberId) references game_course_user(id) on delete cascade
@@ -25,5 +26,5 @@ create table teams_xp(
     xp          int not null,
     primary key (course,teamId),
     foreign key(course) references course(id) on delete cascade,
-    foreign key(teamId) references teams(teamId) on delete cascade
+    foreign key(teamId) references teams(id) on delete cascade
 );
