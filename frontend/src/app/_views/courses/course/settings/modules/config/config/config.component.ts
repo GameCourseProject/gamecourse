@@ -22,6 +22,7 @@ import {VirtualcurrencyComponent} from "../virtualcurrency/virtualcurrency.compo
 import {User} from "../../../../../../../_domain/users/user";
 import {Course} from "../../../../../../../_domain/courses/course";
 import {UsersComponent} from "../../../../users/users.component";
+import {TeamsComponent} from "../teams/teams.component";
 
 export interface GeneralInput {
   id: string,
@@ -152,6 +153,10 @@ export class ConfigComponent implements OnInit {
 
   get SkillsConfig(): typeof SkillsComponent {
     return SkillsComponent;
+  }
+
+  get TeamsConfig(): typeof TeamsComponent {
+    return TeamsComponent;
   }
 
   get CurrencyConfig(): typeof VirtualcurrencyComponent {

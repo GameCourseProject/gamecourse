@@ -1,5 +1,3 @@
-<p>teams works!</p>
-
 <!-- Teams -->
 
 <div class="section teams-section">
@@ -17,31 +15,39 @@
           <thead>
           <tr>
             <th>#</th>
-            <th>Team</th>
+            <th *ngIf="teams[0]['teamName'] !== null ">Team</th>
             <th>Photo</th>
             <th>Major</th>
             <th>Member</th>
             <th>Experience</th>
             <th>Level</th>
+            <th class="action-column"></th>
+            <th class="action-column"></th>
           </tr>
           </thead>
 
           <!-- Body -->
           <tbody>
             <tr *ngFor="let team of teams" >
-              <td><span>{{team.number}}</span></td>
+              <td><span>{{team.id}}</span></td>
 
               <td *ngFor="let member of team.members">
                 <span>{{member}}</span>
               </td>
 
               <td><span>{{team.xp}}</span></td>
+              <td class="action-column">
+                <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initItem('team', team); isTeamModalOpen = true;"></div>
+              </td>
+              <td class="action-column">
+                <div class="icon delete_icon" title="Remove" (click)="teamToDelete = team; isDeleteVerificationModalOpen = true"></div>
+              </td>
             </tr>
           </tbody>
         </table>
 
         <div *ngIf="teams.length === 0" class='error_box'>
-          <div id='empty_table_teams' class='error_msg'>No skills found</div>
+          <div id='empty_table_teams' class='error_msg'>No teams found</div>
         </div>
 
       </div>
@@ -70,11 +76,12 @@
     [id]="mode === 'add' ? 'new-team' : 'edit-team'"
     [templateRef]="teamModal"
     [width]="'calc(100% - 200px)'"
-    (closeBtnClicked)="isTeamModalOpen = false; clearObject(newTeam); selectedMember = null;"
+    (closeBtnClicked)="isTeamModalOpen = false; clearObject(newTeam);"
     [actionInProgress]="saving"
     [innerClickEvents]="false">
   </app-modal>
 </ng-container>
+
 
 <ng-template #teamModal>
   <div class="title">{{mode === 'add' ? 'New Team:' : 'Edit Team:'}}</div>
@@ -84,23 +91,63 @@
     <div class="row_inputs">
       <!-- Team Name -->
       <div class="third">
-        <input type="text" class="form__input" id="team-name" placeholder="Name" [(ngModel)]="newTeam.name" [required]="false">
+        <input type="text" class="form__input" id="team-name" placeholder="Name" [(ngModel)]="newTeam.teamName" [required]="false">
         <label for="team-name" class="form__label">Name</label>
       </div>
 
-        <!-- Add dependencies -->
-        <div [id]="'add_dependencies'" class="full">
-          <span style="margin-right: 30px; white-space: nowrap">New Team Member: </span>
-          <select [id]="'member'" class="form__input" name="member" style="margin-bottom: 0; margin-right: 30px" [(ngModel)]="selectedMember">
-            <option [value]="null" disabled selected>Select Team Member</option>
-            <!--<option *ngFor="let user of filterSkillsForDependencies(mode === 'add' ? null : teamToEdit.id)" [ngValue]="user">{{user.id}}</option>-->
-          </select>
+      <!-- Select Team Members -->
+      <div class="title">Select Members: </div>
+      <div class="content">
+        <div id="new_box" class="inputs">
 
-          <button (click)="addTeamMember(selectedMember)">Add</button>
+          <!-- Search -->
+          <div class="search_box" id="selected_users">
+            <div *ngFor="let user of selectedMembers" class="role_tag"
+                 (click)="removeTeamMember(user.id)">
+              {{user.name}}
+            </div>
+            <input id="select_system_user" type="text" placeholder="Search.." [(ngModel)]="selectUserQuery" (ngModelChange)="reduceListUsers($event)">
+          </div>
+
+          <!-- Users -->
+          <div class="select_box" id="system_users">
+            <div *ngFor="let user of allUsers" class="line">
+              <div>{{user.name + ' - ' + user.studentNumber}}</div>
+              <div class="add_icon_no_outline icon" (click)="addTeamMember(user)"></div>
+            </div>
+          </div>
+
+
         </div>
+        <div> cjxnsjncx</div>
+        <button class="save_btn" [disabled]="!isReadyToSubmit('team')" (click)="mode === 'add' ? createTeam() : editTeam()">Save</button>
+
+      </div>
+      <!-- <button class="save_btn" (click)="createTeam()" [disabled]="selectedMembers?.length === 0 ">Save</button> -->
+
 
     </div>
 
   </div>
 
 </ng-template>
+
+
+<!-- Delete Verification Modal -->
+<ng-container *ngIf="isDeleteVerificationModalOpen">
+  <app-verification-modal
+    [isModalOpen]="isDeleteVerificationModalOpen"
+    [id]="'delete-verification-' + teamToDelete.id"
+    [text]="'Are you sure you want to delete this Team?'"
+    [target]="teamToDelete.id + ' - ' + teamToDelete.teamName"
+    [positiveBtnText]="'Delete'"
+    (positiveBtnClicked)="deleteTeam()"
+    (negativeBtnClicked)="teamToDelete = null; isDeleteVerificationModalOpen = false"
+    (closeBtnClicked)="isDeleteVerificationModalOpen = false"
+    [actionInProgress]="saving">
+  </app-verification-modal>
+</ng-container>
+
+
+
+

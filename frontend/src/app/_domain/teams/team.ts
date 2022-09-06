@@ -1,16 +1,16 @@
 export class Team {
   private _id: number;
-  private _name: string;
-  private _number: number;
+  private _teamName: string;
+  private _teamNumber: number;
   private _members: string;
   private _xp: number;
 
 
-  constructor(id: number, name: string, number: number,  members: string, xp: number) {
+  constructor(id: number, teamName: string, teamNumber: number,  members: string, xp: number) {
 
     this.id = id;
-    this.name = name;
-    this.number = number;
+    this.teamName = teamName;
+    this.teamNumber = teamNumber;
     this.members = members;
     this.xp = xp;
 
@@ -24,20 +24,20 @@ export class Team {
     this._id = value;
   }
 
-  get name(): string {
-    return this._name;
+  get teamName(): string {
+    return this._teamName;
   }
 
-  set name(value: string) {
-    this._name = value;
+  set teamName(value: string) {
+    this._teamName = value;
   }
 
-  get number(): number {
-    return this._number;
+  get teamNumber(): number {
+    return this._teamNumber;
   }
 
-  set number(value: number) {
-    this._number = value;
+  set teamNumber(value: number) {
+    this._teamNumber = value;
   }
 
   get members(): string {
@@ -67,8 +67,8 @@ export class Team {
   toJSON(){
     return {
       id: this.id,
-      name: this.name,
-      number: this.number,
+      teamName: this.teamName,
+      teamNumber: this.teamNumber,
       members: this.members,
       xp: this.xp,
     };
@@ -77,8 +77,8 @@ export class Team {
   static fromDatabase(obj: TeamDatabase): Team {
     return new Team(
       parseInt(obj.id),
-      obj.name,
-      parseInt(obj.number),
+      obj.teamName,
+      parseInt(obj.teamNumber),
       obj.members,
       parseInt(obj.xp)
     );
@@ -87,8 +87,8 @@ export class Team {
 
 interface TeamDatabase {
   id: string,
-  name: string,
-  number: string,
+  teamName: string,
+  teamNumber: string,
   members?: string,
   xp?: string
 }

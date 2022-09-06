@@ -85,6 +85,11 @@
       <ng-container *ngComponentOutlet="SkillsConfig"></ng-container>
     </ng-container>
 
+    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.TEAMS">
+      <ng-container *ngComponentOutlet="TeamsConfig"></ng-container>
+    </ng-container>
+
+
     <ng-container *ngIf="personalizedConfig === PersonalizedConfig.VIRTUAL_CURRENCY">
       <ng-container *ngComponentOutlet="CurrencyConfig"></ng-container>
     </ng-container>

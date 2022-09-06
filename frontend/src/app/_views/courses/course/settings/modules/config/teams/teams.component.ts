@@ -2,9 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import {Team} from "../../../../../../../_domain/teams/team";
 import {ApiHttpService} from "../../../../../../../_services/api/api-http.service";
 import {ActivatedRoute, Router} from "@angular/router";
-import {finalize} from "rxjs/operators";
 import {ErrorService} from "../../../../../../../_services/error.service";
+import {User} from "../../../../../../../_domain/users/user";
+import {Reduce} from "../../../../../../../_utils/lists/reduce";
+import {Course} from "../../../../../../../_domain/courses/course";
+import {Order, Sort} from "../../../../../../../_utils/lists/order";
+
+import _ from 'lodash';
 import {exists} from "../../../../../../../_utils/misc/misc";
+import {finalize} from "rxjs/operators";
+
+
 
 @Component({
   selector: 'app-teams',
@@ -15,15 +23,25 @@ export class TeamsComponent implements OnInit {
 
   loading: boolean;
 
+  course: Course;
+
   courseID: number;
   courseFolder: string;
   teams: Team[]  = [];
 
+  allUsers: User[];
+  teamMembers: User[];
+
+  reduce = new Reduce();
+  order = new Order();
+
+  reduceUsers = new Reduce();
+
   mode: 'add' | 'edit';
 
   newTeam: TeamData = {
-    name: "",
-    number: null,
+    teamName: "",
+    teamNumber: null,
     members: null,
     xp: null
   };
@@ -35,6 +53,12 @@ export class TeamsComponent implements OnInit {
   isImportModalOpen: boolean;
   saving: boolean;
 
+
+  filters: string[];
+  orderBy = ['Name', 'Nickname', 'Student Number', 'Last Login'];
+
+  selectUserQuery: string;
+  selectedMembers: User[] = [];
   selectedMember: number = null;
 
   constructor(
@@ -49,6 +73,7 @@ export class TeamsComponent implements OnInit {
     this.route.parent.params.subscribe(params => {
       this.courseID = parseInt(params.id);
       this.getTeams();
+      this.getCourseUsers(this.courseID);
     });
   }
 
@@ -66,6 +91,23 @@ export class TeamsComponent implements OnInit {
       );
   }
 
+  getCourseUsers(courseId: number): void {
+
+    this.api.getCourseUsers(courseId)
+      .subscribe(users => {
+          this.allUsers = users;
+
+          this.order.active = { orderBy: this.orderBy[0], sort: Sort.ASCENDING };
+          this.reduceList(undefined, _.cloneDeep(this.filters));
+
+        },
+        error => ErrorService.set(error))
+  }
+
+  getTeamMember(teamId: number): void {
+
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
@@ -77,11 +119,16 @@ export class TeamsComponent implements OnInit {
       .pipe( finalize(() => {
         this.isTeamModalOpen = false;
         this.clearObject(this.newTeam);
-        this.selectedMember = null;
+        this.selectedMembers = null;
         this.loading = false;
       }) )
-      .subscribe(
-        res => this.getTeams(),
+      .subscribe(() => {
+        this.getTeams();
+        const successBox = $('#action_completed');
+        successBox.empty();
+        successBox.append("New Team created");
+        successBox.show().delay(3000).fadeOut();
+      },
         error => ErrorService.set(error)
       )
   }
@@ -117,13 +164,65 @@ export class TeamsComponent implements OnInit {
       )
   }
 
-  addTeamMember(member: number){
-    if (!this.newTeam.members) this.newTeam.members = member.toString();
-    else this.newTeam.members += ' | ' + member.toString();
+  addTeamMember(user: User): void {
+    if (!this.selectedMembers) this.selectedMembers = [];
+
+    if (!this.selectedMembers.find(el => el.id === user.id)) {
+      this.selectedMembers.push(user);
+      const index = this.allUsers.findIndex(el => el.id === user.id);
+      this.allUsers.splice(index, 1);
+      this.reduceListUsers();
+    }
+
+    if (this.selectedMembers.length == 1){
+      this.newTeam.members = (user.id).toString()
+    } else {
+      this.newTeam.members += '|' + (user.id).toString()
+    }
+  }
+
+  removeTeamMember(userID: number): void {
+    const index = this.selectedMembers.findIndex(el => el.id === userID);
+    this.allUsers.push(this.selectedMembers[index]);
+    this.selectedMembers.splice(index, 1);
+    this.reduceListUsers();
   }
 
   exportAllTeams() {
     // TODO
+  }
+
+  /*** --------------------------------------------- ***/
+  /*** ---------- Search, Filter & Order ----------- ***/
+  /*** --------------------------------------------- ***/
+
+  reduceList(query?: string, filters?: string[]): void {
+    this.reduce.searchAndFilter(this.allUsers, query, filters);
+    this.orderList();
+  }
+
+  reduceListUsers(query?: string): void {
+    this.reduceUsers.search(this.allUsers, query);
+  }
+
+  orderList(): void {
+    switch (this.order.active.orderBy) {
+      case "Name":
+        this.reduce.items.sort((a, b) => Order.byString(a.name, b.name, this.order.active.sort))
+        break;
+
+      case "Nickname":
+        this.reduce.items.sort((a, b) => Order.byString(a.nickname, b.nickname, this.order.active.sort))
+        break;
+
+      case "Student Number":
+        this.reduce.items.sort((a, b) => Order.byNumber(a.studentNumber, b.studentNumber, this.order.active.sort))
+        break;
+
+      case "Last Login":
+        this.reduce.items.sort((a, b) => Order.byDate(a.lastLogin, b.lastLogin, this.order.active.sort))
+        break;
+    }
   }
 
   /*** --------------------------------------------- ***/
@@ -133,8 +232,8 @@ export class TeamsComponent implements OnInit {
   initItem(type: 'team', item?: any): void {
     if (type === 'team') {
       this.newTeam = {
-        name: item?.name || "",
-        number: item?.number || null,
+        teamName: item?.teamName || "",
+        teamNumber: item?.teamNumber || null,
         members: item?.members || null,
         xp: item?.xp || null
       };
@@ -155,21 +254,17 @@ export class TeamsComponent implements OnInit {
     }
 
     // Validate inputs
-    if (type === 'team') return isValid(this.newTeam.name) && isValid(this.newTeam.number);
-    // && isValid(this.newSkill.description); FIXME
+    if (type === 'team') return (isValid(this.newTeam.teamName) && this.selectedMembers.length !== 0 ) || this.selectedMembers.length !== 0 ;
     return true;
   }
 
-  getCourseStudents(id: number){
-
-  }
 
 }
 
 export interface TeamData {
   id?: number,
-  name: string,
-  number: number,
+  teamName: string,
+  teamNumber: number,
   members: string,
   xp: number
 }
