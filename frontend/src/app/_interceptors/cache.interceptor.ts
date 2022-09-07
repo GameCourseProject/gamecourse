@@ -47,7 +47,6 @@ export class CacheInterceptor implements HttpInterceptor {
       ApiHttpService.NOTIFICATIONS,
       ApiHttpService.PROFILING,
       ApiHttpService.QR,
-      ApiHttpService.QUEST,
       ApiHttpService.SKILLS,
     ]);
   }

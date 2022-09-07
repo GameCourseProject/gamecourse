@@ -16,6 +16,8 @@ import {SkillsComponent} from "../personalized-config/skills/skills.component";
 import {QrComponent} from "../personalized-config/qr/qr.component";
 import {FenixComponent} from "../personalized-config/fenix/fenix.component";
 import {GooglesheetsComponent} from "../personalized-config/googlesheets/googlesheets.component";
+import {NotificationsComponent} from "../personalized-config/notifications/notifications.component";
+import {ProfilingComponent} from "../personalized-config/profiling/profiling.component";
 
 @Component({
   selector: 'app-config',
@@ -177,6 +179,8 @@ export class ConfigComponent implements OnInit {
   get PersonalizedConfig() {
     if (this.personalizedConfig === ApiHttpService.FENIX) return FenixComponent;
     if (this.personalizedConfig === ApiHttpService.GOOGLESHEETS) return GooglesheetsComponent;
+    if (this.personalizedConfig === ApiHttpService.NOTIFICATIONS) return NotificationsComponent;
+    if (this.personalizedConfig === ApiHttpService.PROFILING) return ProfilingComponent;
     if (this.personalizedConfig === ApiHttpService.SKILLS) return SkillsComponent;
     if (this.personalizedConfig === ApiHttpService.QR) return QrComponent;
     else throw Error("Personalized config for module '" + this.module.id + "' not found.");

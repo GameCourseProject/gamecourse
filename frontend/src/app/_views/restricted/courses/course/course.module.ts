@@ -20,8 +20,8 @@ import { FenixComponent } from './settings/modules/config/personalized-config/fe
 import { SkillsComponent } from './settings/modules/config/personalized-config/skills/skills.component';
 import { GooglesheetsComponent } from './settings/modules/config/personalized-config/googlesheets/googlesheets.component';
 import { QrComponent } from './settings/modules/config/personalized-config/qr/qr.component';
-import { NotificationsComponent } from './settings/modules/config/notifications/notifications.component';
-import { ProfilingComponent } from './settings/modules/config/profiling/profiling.component';
+import { NotificationsComponent } from './settings/modules/config/personalized-config/notifications/notifications.component';
+import { ProfilingComponent } from './settings/modules/config/personalized-config/profiling/profiling.component';
 
 
 @NgModule({

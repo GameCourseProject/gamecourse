@@ -36,12 +36,12 @@ import {
   Credentials, GoogleSheetsConfig,
 } from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/googlesheets/googlesheets.component";
 import {
-  ProgressReportVars
-} from "../../_views/restricted/courses/course/settings/modules/config/notifications/notifications.component";
+  ProgressReportConfig
+} from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/notifications/notifications.component";
 import {
   ProfilingHistory,
   ProfilingNode
-} from "../../_views/restricted/courses/course/settings/modules/config/profiling/profiling.component";
+} from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/profiling/profiling.component";
 import {ErrorService} from "../error.service";
 import {Router} from "@angular/router";
 import {CourseUser} from "../../_domain/users/course-user";
@@ -71,12 +71,11 @@ export class ApiHttpService {
 
   static readonly FENIX: string = 'Fenix';
   static readonly GOOGLESHEETS: string = 'GoogleSheets';
-  static readonly NOTIFICATIONS: string = 'notifications';
-  static readonly PROFILING: string = 'profiling';
+  static readonly NOTIFICATIONS: string = 'Notifications';
+  static readonly PROFILING: string = 'Profiling';
   static readonly QR: string = 'QR';
-  static readonly QUEST: string = 'quest';
   static readonly SKILLS: string = 'Skills';
-  static readonly VIRTUAL_CURRENCY: string = 'virtualcurrency';
+  static readonly VIRTUAL_CURRENCY: string = 'VirtualCurrency';
   // FIXME: should be compartimentalized
 
 
@@ -882,23 +881,6 @@ export class ApiHttpService {
   }
 
 
-  // Database Manipulation
-  // TODO: refactor
-  public getTableData(courseID: number, table: string): Observable<{entries: any[], columns: any}> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'getTableData');
-      qs.push('courseId', courseID);
-      qs.push('table', table);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']) );
-  }
-
-
   // Import / Export
   // TODO: refactor
   public importCourses(importData: ImportCoursesData): Observable<number> {
@@ -1176,30 +1158,29 @@ export class ApiHttpService {
 
 
   // Notifications
-  // TODO: refactor
-  public getProgressReportVars(courseID: number): Observable<ProgressReportVars> {
+
+  public getProgressReportConfig(courseID: number): Observable<ProgressReportConfig> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.NOTIFICATIONS);
-      qs.push('request', 'getProgressReportVars');
+      qs.push('request', 'getProgressReportConfig');
       qs.push('courseId', courseID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['getProgressReportVars']) );
+      .pipe( map((res: any) => res['data']) );
   }
 
-  // TODO: refactor
-  public setProgressReportVars(courseID: number, progressReportVars: ProgressReportVars): Observable<void> {
+  public saveProgressReportConfig(courseID: number, config: ProgressReportConfig): Observable<void> {
     const data = {
       courseId: courseID,
-      progressReport: progressReportVars
+      progressReport: config
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.NOTIFICATIONS);
-      qs.push('request', 'setProgressReportVars');
+      qs.push('request', 'saveProgressReportConfig');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
@@ -1207,7 +1188,61 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  // TODO: refactor
+  public getProgressReports(courseID: number): Observable<{seqNr: number, reportsSent: number, periodStart: Moment, periodEnd: Moment, dateSent: Moment}[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATIONS);
+      qs.push('request', 'getReports');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => {
+        return res['data'].map(report => {
+          return {
+            seqNr: report.seqNr,
+            reportsSent: report.reportsSent,
+            periodStart: dateFromDatabase(report.periodStart),
+            periodEnd: dateFromDatabase(report.periodEnd),
+            dateSent: dateFromDatabase(report.dateSent),
+          }
+        });
+      }) );
+  }
+
+  public getStudentsWithProgressReports(courseID: number, seqNr: number): Observable<{user: User, totalXP: number,
+    periodXP: number, diffXP: number, timeLeft: number, prediction: number, pieChart: string, areaChart: string,
+    emailSend: string, dateSent: Moment}[]> {
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATIONS);
+      qs.push('request', 'getStudentsWithReport');
+      qs.push('courseId', courseID);
+      qs.push('seqNr', seqNr);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => {
+        return res['data'].map(user => {
+          return {
+            user: User.fromDatabase(user.user),
+            totalXP: user.totalXP,
+            periodXP: user.periodXP,
+            diffXP: user.diffXP,
+            timeLeft: user.timeLeft,
+            prediction: user.prediction,
+            pieChart: user.pieChart,
+            areaChart: user.areaChart,
+            emailSend: user.emailSend,
+            dateSent: dateFromDatabase(user.dateSent),
+          }
+        });
+      }) );
+  }
+
   public getStudentProgressReport(courseID: number, userID: number, seqNr: number): Observable<string> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.NOTIFICATIONS);
@@ -1220,7 +1255,7 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['report']) );
+      .pipe( map((res: any) => res['data']) );
   }
 
 
@@ -1611,7 +1646,7 @@ export class ApiHttpService {
 
 
   // Virtual Currency
-  // TODO: refactor
+
   public getUserTokens(courseID: number, userID: number): Observable<number> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.VIRTUAL_CURRENCY);
@@ -1623,7 +1658,7 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['tokens']) );
+      .pipe( map((res: any) => res['data']) );
   }
 
 

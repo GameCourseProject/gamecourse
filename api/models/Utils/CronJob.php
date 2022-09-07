@@ -1,7 +1,7 @@
 <?php
 namespace Utils;
 
-use GameCourse\Notifications;
+use GameCourse\Module\Notifications\Notifications;
 
 /**
  * This class is responsible to enable/disable cron jobs,
@@ -89,7 +89,7 @@ class CronJob
                 return ROOT_PATH . "models/GameCourse/Views/Page/AutoDisablingScript.php";
 
             case "ProgressReport": // FIXME: should be compartimentalized inside module
-                return MODULES_FOLDER . "/" . Notifications::ID . "/ProgressReportScript.php";
+                return MODULES_FOLDER . "/" . Notifications::ID . "/scripts/ProgressReportScript.php";
 
             default:
                 return null;
