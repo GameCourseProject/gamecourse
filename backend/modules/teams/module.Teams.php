@@ -5,8 +5,10 @@ namespace Modules\Teams;
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Course;
+use GameCourse\CourseUser;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
+use GameCourse\User;
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Expression\ValueNode;
 use Modules\Charts\Charts;
@@ -19,6 +21,7 @@ class Teams extends Module
     const TABLE_CONFIG = self::ID . '_config';
     const TABLE_XP = self::ID . '_xp';
     const TABLE_MEMBERS = self::ID . '_members';
+    const TABLE_GC_USERS = 'game_course_user';
 
     const TEAM_LEADERBOARD_TEMPLATE = 'Team Leaderboard - by teams';
 
@@ -147,6 +150,63 @@ class Teams extends Module
 
             API::response(["teams" => $this->getTeams($courseId)]);
         });
+
+        /**
+         * Gets all members of a team.
+         *
+         * @param int $courseId
+         */
+        
+        API::registerFunction(self::ID, 'getTeamMembers', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('teamId');
+
+            $teamId = API::getValue('teamId');
+
+            API::response(["teams" => $this->getTeamMembers($teamId)]);
+        });
+
+        /**
+         * Gets all users that belong to a team in the course.
+         * 
+         * @param int $courseId
+         */
+        API::registerFunction(self::ID, 'getAllUsersInTeams', function () {
+
+            API::requireCourseAdminPermission();
+            API::requireValues('courseId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $role = API::getValue('role');
+
+            $users = $this->getAllUsersInTeams($courseId, $role);
+
+            $usersInfo = [];
+
+            // For security reasons, we only send what is needed
+            foreach ($users as $userData) {
+                $id = $userData['id'];
+                $user = new CourseUser($id, $course);
+                $usersInfo[] = array(
+                    'id' => $id,
+                    'name' => $user->getName(),
+                    'nickname' => $user->getNickname(),
+                    'studentNumber' => $user->getStudentNumber(),
+                    'roles' => $user->getRolesNames(),
+                    'major' => $user->getMajor(),
+                    'email' => $user->getEmail(),
+                    'lastLogin' => $user->getLastLogin(),
+                    'username' => $user->getUsername(),
+                    'authenticationService' => User::getUserAuthenticationService($user->getUsername()),
+                    'isActive' => $user->isActive(),
+                    'hasImage' => User::hasImage($user->getUsername())
+                );
+            }
+
+            API::response(array('userList' => $usersInfo));
+        });
         
         /**
          * Creates a new team in the course.
@@ -194,6 +254,21 @@ class Teams extends Module
             $course = API::verifyCourseExists($courseId);
 
             $this->deleteTeam(API::getValue('teamId'), $courseId);
+        });
+
+        /**
+         * Gets isTeamNameActive from teams_config table.
+         *
+         * @param int $courseId
+         */
+        API::registerFunction(self::ID, 'getIsTeamNameActive', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('courseId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            API::response(["isTeamNameActive" => intval($this->getIsTeamNameActive($courseId))]);
         });
         
     }
@@ -298,14 +373,19 @@ class Teams extends Module
 
     public function get_general_inputs(int $courseId): array
     {
-        $input = array('name' => "Number of team members", 'id' => 'nrTeamMembers', 'type' => "number", 'options' => "", 'current_val' => intval($this->getNumberOfTeamMembers($courseId)));
-        return [$input];
+        $input = [
+            array('name' => "Number of team members", 'id' => 'nrTeamMembers', 'type' => "number", 'options' => "", 'current_val' => intval($this->getNumberOfTeamMembers($courseId))),
+            array('name' => "Allow Team Names", 'id' => 'isTeamNameActive', 'type' => "on_off button", 'options' => "", 'current_val' => intval($this->getIsTeamNameActive($courseId)))
+        ];
+        return $input;
     }
 
     public function save_general_inputs(array $generalInputs, int $courseId)
     {
         $nrElements = $generalInputs["nrTeamMembers"];
         $this->saveNumberOfTeamElements($nrElements, $courseId);
+        $isTeamNameActive = $generalInputs["isTeamNameActive"];
+        $this->saveIsTeamNameActive(intval($isTeamNameActive), $courseId);
     }
 
     public function has_personalized_config(): bool
@@ -348,19 +428,39 @@ class Teams extends Module
     public function getTeams($courseId)
     {
         $teamsArray = array();
-
         $teams = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*", "teamName");
         foreach ($teams as &$team) {
-            $teamMembers = Core::$systemDB->selectMultiple(self::TABLE_MEMBERS, ["teamId" => $team["id"]], "*", "memberId");;
-
+            $teamMembers = Core::$systemDB->selectMultiple(self::TABLE_MEMBERS, ["teamId" => $team["id"]], "memberId");;
+            $xp = Core::$systemDB->select(self::TABLE_XP, ["teamId" => $team["id"]], "xp");
             //information to match needing fields
             $team['teamName'] = $team["teamName"];
+            $team['teamNumber'] = $team["teamNumber"];
+            $team['members'] = '';
+            $team['teamMembers'] = [];
+            if(!empty($xp)){
+                $team['xp'] = $xp;
+            } else{
+                $team['xp'] = 0;
+            }
+
+            if(!empty($teamMembers)){
+                for ($i = 0; $i < sizeof($teamMembers); $i++) {
+                    if ($i == sizeof($teamMembers) -1){
+                        $team['members'] .= $teamMembers[$i]['memberId'];
+                    }else{
+                        $team['members'] .= $teamMembers[$i]['memberId'] . "|";
+                    }
+
+                    $memberId = $teamMembers[$i]['memberId'];
+                    $member = Core::$systemDB->select(self::TABLE_GC_USERS, ["id" => $memberId], "name, major, studentNumber");
+
+                    array_push($team['teamMembers'], $member);
+                }
+
+            }
+
 
         }
-
-
-
-
         return $teams;
     }
 
@@ -379,9 +479,24 @@ class Teams extends Module
         return Dictionary::createNode($teamArray, self::ID, $type);
     }
 
-    public function getTeamMembers($teamId, $courseId)
+    public function getAllUsersInTeams($courseId, $role, $active = true){
+        if (!$active) {
+            $where = ["r.course" => $courseId, "r.name" => $role];
+        } else {
+            $where = ["r.course" => $courseId, "r.name" => $role, "cu.isActive" => true];
+        }
+        $result = Core::$systemDB->selectMultiple(
+            "course_user cu JOIN game_course_user u ON cu.id=u.id JOIN user_role ur ON ur.id=u.id JOIN role r ON r.id=ur.role AND r.course=cu.course JOIN auth a ON u.id=a.game_course_user_id JOIN teams_members tm ON u.id = tm.memberId",
+            $where,
+            "u.*,cu.lastActivity, cu.previousActivity,a.username,r.name as role"
+        );
+        return $result;
+
+    }
+
+    public function getTeamMembers($teamId)
     {
-        return Core::$systemDB->selectMultiple(self::TABLE_MEMBERS, ["course" => $courseId, "id" => $teamId], "*", "memberId");
+        return Core::$systemDB->selectMultiple(self::TABLE_MEMBERS, ["teamId" => $teamId], "*", "memberId");
     }
     
     public function getTeamMember($memberId, $courseId)
@@ -397,6 +512,16 @@ class Teams extends Module
     public function saveNumberOfTeamElements($nr, $courseId)
     {
         Core::$systemDB->update(self::TABLE_CONFIG, ["nrTeamMembers" => $nr], ["course" => $courseId]);
+    }
+
+    public function getIsTeamNameActive($courseId)
+    {
+        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "isTeamNameActive");
+    }
+
+    public function saveIsTeamNameActive($val, $courseId)
+    {
+        Core::$systemDB->update(self::TABLE_CONFIG, ["isTeamNameActive" => $val], ["course" => $courseId]);
     }
 
     public function newTeam($team, $courseId){
@@ -416,6 +541,8 @@ class Teams extends Module
                 $memberId = (int)$m;
                 Core::$systemDB->insert(self::TABLE_MEMBERS, [ 'teamId' => $teamId, "memberId" => $memberId ]);
             }
+
+            $team['members'] = $team['members'];
 
         }
 

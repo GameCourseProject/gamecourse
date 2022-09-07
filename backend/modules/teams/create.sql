@@ -1,5 +1,6 @@
 create table teams_config(
     nrTeamMembers 	int not null default 3,
+    isTeamNameActive boolean not null default false,
     course          int unsigned primary key,
     foreign key(course) references course(id) on delete cascade
 );
