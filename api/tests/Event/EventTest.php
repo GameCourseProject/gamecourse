@@ -30,7 +30,7 @@ class EventTest extends TestCase
      */
     public static function setUpBeforeClass(): void
     {
-        TestingUtils::setUpBeforeClass([], ["CronJob"]);
+        TestingUtils::setUpBeforeClass(["events"], ["CronJob"]);
     }
 
     /**
@@ -86,6 +86,41 @@ class EventTest extends TestCase
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Tests ---------------------- ***/
     /*** ---------------------------------------------------- ***/
+
+    // Setup
+
+    /**
+     * @test
+     */
+    public function setupEvents()
+    {
+        $events = Event::getEvents();
+        $this->assertNotEmpty($events);
+
+        // System events
+        $systemEvents = [EventType::PAGE_VIEWED];
+        foreach ($systemEvents as $event) {
+            $this->assertArrayHasKey($event, $events);
+        }
+
+        // Page viewed
+        // TODO: test event when page is viewed
+    }
+
+
+    // Getters
+
+    /**
+     * @test
+     */
+    public function getEvents()
+    {
+        $events = Event::getEvents();
+        $this->assertNotEmpty($events);
+    }
+
+
+    // General
 
     /**
      * @test

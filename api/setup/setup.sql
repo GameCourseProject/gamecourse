@@ -303,6 +303,19 @@ CREATE TABLE page(
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS user_page_history(
+    course          int unsigned NOT NULL,
+    page            int unsigned NOT NULL,
+    viewer          int unsigned NOT NULL,
+    user            int unsigned DEFAULT NULL,
+    date            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN key(page) REFERENCES page(id) ON DELETE CASCADE,
+    FOREIGN key(viewer, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
+    FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE
+);
+
 
 /*** ---------------------------------------------------- ***/
 /*** ----------------- AutoGame tables ------------------ ***/

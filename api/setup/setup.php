@@ -9,6 +9,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
 use API\API;
+use Event\Event;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -57,6 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] == "GET") {  // check setup
 
         // Init views
         ViewHandler::setupViews();
+
+        // Register system events
+        Event::setupEvents();
 
         // Create course
         // NOTE: logged user is automatically added as a teacher of the course

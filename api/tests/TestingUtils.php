@@ -35,6 +35,9 @@ class TestingUtils
         // Setup Views
         if (in_array("views", $setup)) ViewHandler::setupViews();
 
+        // Setup Events
+        if (in_array("events", $setup)) Event::setupEvents();
+
         // Relocate important data temporarily
         if (file_exists(LOGS_FOLDER)) Utils::copyDirectory(LOGS_FOLDER . "/", LOGS_FOLDER . "_copy/");
         if (file_exists(COURSE_DATA_FOLDER)) Utils::copyDirectory(COURSE_DATA_FOLDER . "/", COURSE_DATA_FOLDER . "_copy/");

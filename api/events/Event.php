@@ -1,6 +1,8 @@
 <?php
 namespace Event;
 
+use GameCourse\Core\Core;
+use GameCourse\Views\Page\Page;
 use Utils\Cache;
 use Utils\Utils;
 
@@ -12,6 +14,46 @@ use Utils\Utils;
 class Event
 {
     private static $events = [];
+
+
+    /*** --------------------------------------------- ***/
+    /*** ------------------- Setup ------------------- ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * Listens for events available in the system.
+     * This is only performed once during system setup.
+     *
+     * @return void
+     */
+    public static function setupEvents()
+    {
+        Event::listen(EventType::PAGE_VIEWED, function (int $pageId, int $viewerId, int $userId) {
+            $page = Page::getPageById($pageId);
+            Core::database()->insert(Page::TABLE_PAGE_HISTORY, [
+                "course" => $page->getCourse()->getId(),
+                "page" => $pageId,
+                "viewer" => $viewerId,
+                "user" => $userId
+            ]);
+        });
+    }
+
+
+    /*** --------------------------------------------- ***/
+    /*** -------------- Initialization --------------- ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * Initializes events on each request so that they can
+     * be triggered.
+     *
+     * @return void
+     */
+    public static function initEvents()
+    {
+        self::$events = Cache::get(null, "events");
+    }
 
 
     /*** --------------------------------------------- ***/
@@ -96,21 +138,5 @@ class Event
             }
         }
         Cache::store(null, "events", self::$events);
-    }
-
-
-    /*** --------------------------------------------- ***/
-    /*** -------------- Initialization --------------- ***/
-    /*** --------------------------------------------- ***/
-
-    /**
-     * Initializes events on each request so that they can
-     * be triggered.
-     *
-     * @return void
-     */
-    public static function initEvents()
-    {
-        self::$events = Cache::get(null, "events");
     }
 }

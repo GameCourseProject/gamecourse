@@ -16,6 +16,7 @@ use Utils\Utils;
 class Page
 {
     const TABLE_PAGE = "page";
+    const TABLE_PAGE_HISTORY = "user_page_history";
 
     protected $id;
 

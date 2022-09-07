@@ -749,9 +749,9 @@ class Course
      * @return void
      * @throws Exception
      */
-    public function addRole(string $roleName, string $landingPageName = null, int $landingPageId = null)
+    public function addRole(string $roleName, string $landingPageName = null, int $landingPageId = null, string $moduleId = null)
     {
-        Role::addRoleToCourse($this->id, $roleName, $landingPageName, $landingPageId);
+        Role::addRoleToCourse($this->id, $roleName, $landingPageName, $landingPageId, $moduleId);
     }
 
     /**
