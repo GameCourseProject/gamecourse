@@ -1,17 +1,22 @@
+import {User, UserDatabase} from "../users/user";
+import {Role} from "../roles/role";
+
 export class Team {
   private _id: number;
   private _teamName: string;
   private _teamNumber: number;
   private _members: string;
+  private _teamMembers: User[];
   private _xp: number;
 
 
-  constructor(id: number, teamName: string, teamNumber: number,  members: string, xp: number) {
+  constructor(id: number, teamName: string, teamNumber: number,  members: string, teamMembers: User[], xp: number) {
 
     this.id = id;
     this.teamName = teamName;
     this.teamNumber = teamNumber;
     this.members = members;
+    this.teamMembers = teamMembers;
     this.xp = xp;
 
   }
@@ -48,6 +53,14 @@ export class Team {
     this._members = value;
   }
 
+  get teamMembers(): User[] {
+    return this._teamMembers;
+  }
+
+  set teamMembers(value: User[]) {
+    this._teamMembers = value;
+  }
+
 
   get xp(): number {
     return this._xp;
@@ -70,6 +83,7 @@ export class Team {
       teamName: this.teamName,
       teamNumber: this.teamNumber,
       members: this.members,
+      teamMembers: this.teamMembers,
       xp: this.xp,
     };
   }
@@ -80,6 +94,7 @@ export class Team {
       obj.teamName,
       parseInt(obj.teamNumber),
       obj.members,
+      obj.teamMembers ? obj.teamMembers.map(member => User.fromDatabase(member)) : null,
       parseInt(obj.xp)
     );
   }
@@ -90,5 +105,6 @@ interface TeamDatabase {
   teamName: string,
   teamNumber: string,
   members?: string,
+  teamMembers: UserDatabase[],
   xp?: string
 }

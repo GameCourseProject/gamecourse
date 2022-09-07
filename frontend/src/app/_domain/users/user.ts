@@ -173,7 +173,7 @@ export class User {
   }
 }
 
-interface UserDatabase {
+export interface UserDatabase {
   "id": string,
   "name": string,
   "email": string,

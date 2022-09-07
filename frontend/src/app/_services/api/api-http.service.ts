@@ -1496,6 +1496,36 @@ export class ApiHttpService {
       .pipe( map((res: any) => (res['data']['teams']).map(obj => Team.fromDatabase(obj))) );
   }
 
+  public getTeamMembers(teamID: number): Observable<User[]>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.TEAMS);
+      qs.push('request', 'getTeamMembers');
+      qs.push('teamId', teamID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (res['data']['teams']).map(obj => Team.fromDatabase(obj))) );
+
+  }
+
+  public getAllUsersInTeams(courseID: number,  role: string): Observable<User[]>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.TEAMS);
+      qs.push('request', 'getAllUsersInTeams');
+      qs.push('courseId', courseID);
+      qs.push('role', role);
+
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (res['data']['teams']).map(obj => Team.fromDatabase(obj))) );
+
+  }
+
   public createTeam(courseID: number, team: TeamData): Observable<void> {
     const data = {
       courseId: courseID,
@@ -1544,6 +1574,18 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
+  public getIsTeamNameActive(courseID: number): Observable<boolean> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.TEAMS);
+      qs.push('request', 'getIsTeamNameActive');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['isTeamNameActive']) );
+  }
 
   // Virtual Currency
   public getUserTokens(courseID: number, userID: number): Observable<number> {

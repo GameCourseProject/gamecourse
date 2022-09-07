@@ -12,8 +12,6 @@ import _ from 'lodash';
 import {exists} from "../../../../../../../_utils/misc/misc";
 import {finalize} from "rxjs/operators";
 
-
-
 @Component({
   selector: 'app-teams',
   templateUrl: './teams.component.html',
@@ -24,13 +22,15 @@ export class TeamsComponent implements OnInit {
   loading: boolean;
 
   course: Course;
-
   courseID: number;
   courseFolder: string;
+
   teams: Team[]  = [];
+  isTeamNameActive: boolean;
+  teamMembers: User[];
 
   allUsers: User[];
-  teamMembers: User[];
+  allUsersInTeams: User[];
 
   reduce = new Reduce();
   order = new Order();
@@ -43,6 +43,7 @@ export class TeamsComponent implements OnInit {
     teamName: "",
     teamNumber: null,
     members: null,
+    teamMembers: null,
     xp: null
   };
   teamToEdit: Team;
@@ -53,13 +54,11 @@ export class TeamsComponent implements OnInit {
   isImportModalOpen: boolean;
   saving: boolean;
 
-
   filters: string[];
   orderBy = ['Name', 'Nickname', 'Student Number', 'Last Login'];
 
   selectUserQuery: string;
   selectedMembers: User[] = [];
-  selectedMember: number = null;
 
   constructor(
     private api: ApiHttpService,
@@ -74,6 +73,7 @@ export class TeamsComponent implements OnInit {
       this.courseID = parseInt(params.id);
       this.getTeams();
       this.getCourseUsers(this.courseID);
+      this.getIsTeamNameActive();
     });
   }
 
@@ -93,19 +93,44 @@ export class TeamsComponent implements OnInit {
 
   getCourseUsers(courseId: number): void {
 
-    this.api.getCourseUsers(courseId)
+    this.api.getCourseUsers(courseId, "Student")
       .subscribe(users => {
           this.allUsers = users;
+          this.reduceListUsers();
 
           this.order.active = { orderBy: this.orderBy[0], sort: Sort.ASCENDING };
           this.reduceList(undefined, _.cloneDeep(this.filters));
-
         },
         error => ErrorService.set(error))
   }
 
-  getTeamMember(teamId: number): void {
+  getAllUsersInTeams(courseId: number): void {
 
+    this.api.getAllUsersInTeams(courseId, "Student")
+      .subscribe(users => {
+          this.allUsersInTeams = users;
+        },
+        error => ErrorService.set(error))
+  }
+
+  getTeamMembers(teamId: number) {
+    this.api.getTeamMembers(teamId)
+      .subscribe(members => {
+          this.teamMembers = members;
+        },
+        error => ErrorService.set(error))
+
+    return this.teamMembers;
+  }
+
+  getIsTeamNameActive() {
+    this.loading = true;
+    this.api.getIsTeamNameActive(this.courseID)
+      .pipe( finalize(() => this.loading = false) )
+      .subscribe(
+        isTeamNameActive => this.isTeamNameActive = isTeamNameActive,
+        error => ErrorService.set(error)
+      );
   }
 
   /*** --------------------------------------------- ***/
@@ -141,7 +166,6 @@ export class TeamsComponent implements OnInit {
       .pipe( finalize(() => {
         this.isTeamModalOpen = false;
         this.clearObject(this.newTeam);
-        this.selectedMember = null;
         this.loading = false;
       }) )
       .subscribe(
@@ -166,6 +190,7 @@ export class TeamsComponent implements OnInit {
 
   addTeamMember(user: User): void {
     if (!this.selectedMembers) this.selectedMembers = [];
+    if (!this.newTeam.teamMembers) this.newTeam.teamMembers = [];
 
     if (!this.selectedMembers.find(el => el.id === user.id)) {
       this.selectedMembers.push(user);
@@ -179,6 +204,8 @@ export class TeamsComponent implements OnInit {
     } else {
       this.newTeam.members += '|' + (user.id).toString()
     }
+
+    this.newTeam.teamMembers.push(user)
   }
 
   removeTeamMember(userID: number): void {
@@ -186,6 +213,9 @@ export class TeamsComponent implements OnInit {
     this.allUsers.push(this.selectedMembers[index]);
     this.selectedMembers.splice(index, 1);
     this.reduceListUsers();
+
+    const index2 = this.newTeam.teamMembers.findIndex(el => el.id === userID);
+    this.newTeam.teamMembers.splice(index2, 1);
   }
 
   exportAllTeams() {
@@ -235,6 +265,7 @@ export class TeamsComponent implements OnInit {
         teamName: item?.teamName || "",
         teamNumber: item?.teamNumber || null,
         members: item?.members || null,
+        teamMembers: item?.teamMembers || null,
         xp: item?.xp || null
       };
       if (this.mode === 'edit') this.newTeam.id = item.id;
@@ -266,5 +297,6 @@ export interface TeamData {
   teamName: string,
   teamNumber: number,
   members: string,
+  teamMembers: User[],
   xp: number
 }

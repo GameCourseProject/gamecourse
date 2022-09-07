@@ -15,9 +15,8 @@
           <thead>
           <tr>
             <th>#</th>
-            <th *ngIf="teams[0]['teamName'] !== null ">Team</th>
-            <th>Photo</th>
-            <th>Major</th>
+            <th *ngIf="isTeamNameActive" >Team</th>
+            <!--<th>Photo</th> -->
             <th>Member</th>
             <th>Experience</th>
             <th>Level</th>
@@ -30,12 +29,27 @@
           <tbody>
             <tr *ngFor="let team of teams" >
               <td><span>{{team.id}}</span></td>
+              <td *ngIf="isTeamNameActive"><span>{{team.teamName}}</span></td>
 
-              <td *ngFor="let member of team.members">
-                <span>{{member}}</span>
-              </td>
+              <table id="listing-table-teams-members">
+                <tr *ngFor="let member of team.teamMembers">
+                  <td>
+                    <span>{{member['studentNumber']}}</span>
+                  </td>
+                  <td>
+                    <span>{{member['name']}}</span>
+                  </td>
+                  <td>
+                    <span>{{member['major']}}</span>
+                  </td>
+                </tr>
+              </table>
+
 
               <td><span>{{team.xp}}</span></td>
+              <td><span>{{0}}</span></td>
+
+
               <td class="action-column">
                 <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initItem('team', team); isTeamModalOpen = true;"></div>
               </td>
@@ -90,28 +104,40 @@
 
     <div class="row_inputs">
       <!-- Team Name -->
-      <div class="third">
+      <!-- <div *ngIf="isTeamNameActive" class="third" > -->
+      <!-- <div class="third" > -->
+
+      <div *ngIf="isTeamNameActive" class="third" >
         <input type="text" class="form__input" id="team-name" placeholder="Name" [(ngModel)]="newTeam.teamName" [required]="false">
         <label for="team-name" class="form__label">Name</label>
       </div>
 
       <!-- Select Team Members -->
-      <div class="title">Select Members: </div>
+      <div class="sub_title">Select Members: </div>
       <div class="content">
         <div id="new_box" class="inputs">
 
           <!-- Search -->
           <div class="search_box" id="selected_users">
-            <div *ngFor="let user of selectedMembers" class="role_tag"
-                 (click)="removeTeamMember(user.id)">
-              {{user.name}}
+            <div *ngIf="selectedMembers.length != 0">
+              <div *ngFor="let user of selectedMembers" class="role_tag"
+                   (click)="removeTeamMember(user.id)">
+                {{user.name}}
+              </div>
             </div>
+            <div *ngIf="selectedMembers.length == 0">
+              <div *ngFor="let user of newTeam.teamMembers" class="role_tag"
+                   (click)="removeTeamMember(user.id)">
+                {{user.name}}
+              </div>
+            </div>
+
             <input id="select_system_user" type="text" placeholder="Search.." [(ngModel)]="selectUserQuery" (ngModelChange)="reduceListUsers($event)">
           </div>
 
           <!-- Users -->
           <div class="select_box" id="system_users">
-            <div *ngFor="let user of allUsers" class="line">
+            <div *ngFor="let user of reduceUsers.items" class="line">
               <div>{{user.name + ' - ' + user.studentNumber}}</div>
               <div class="add_icon_no_outline icon" (click)="addTeamMember(user)"></div>
             </div>
@@ -119,7 +145,7 @@
 
 
         </div>
-        <div> cjxnsjncx</div>
+        <div> Save Team </div>
         <button class="save_btn" [disabled]="!isReadyToSubmit('team')" (click)="mode === 'add' ? createTeam() : editTeam()">Save</button>
 
       </div>
