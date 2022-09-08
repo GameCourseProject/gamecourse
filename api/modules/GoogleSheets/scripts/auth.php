@@ -25,5 +25,5 @@ if (array_key_exists("state", $_GET)) {
     }
 
     // Close authentication window
-    echo "<script>window.close();window.opener.location.reload(false);</script>"; // FIXME: check if can remove
+    echo "<script>window.close();window.opener.location.reload(false);</script>";
 }

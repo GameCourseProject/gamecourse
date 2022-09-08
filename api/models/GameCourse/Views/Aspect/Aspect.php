@@ -162,7 +162,8 @@ class Aspect
     }
 
     /**
-     * TODO
+     * Gets all aspects of a given course for a specific viewer and user.
+     * Option to sort them by most specific.
      *
      * @param int $courseId
      * @param int|null $viewerId

@@ -51,10 +51,7 @@ class Profiling extends Module
     // NOTE: versions should be updated on code changes
 
     const DEPENDENCIES = [
-        ["id" => Awards::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD],
-        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD],
-        ["id" => Badges::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD], // FIXME: should be a soft dep.
-        ["id" => Skills::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD] // FIXME: should be a soft dep.
+        ["id" => Awards::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD]
     ];
     // NOTE: dependencies should be updated on code changes
 

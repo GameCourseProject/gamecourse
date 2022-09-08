@@ -20,7 +20,7 @@ class Awards extends Module
 {
     const TABLE_AWARD = 'award';
     const TABLE_AWARD_PARTICIPATION = 'award_participation';
-    const TABLE_AWARD_TEST = 'award_test'; // FIXME: keep it?
+    const TABLE_AWARD_TEST = 'award_test';
 
     public function __construct(?Course $course)
     {

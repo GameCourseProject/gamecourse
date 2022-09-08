@@ -395,5 +395,5 @@ class XPLevels extends Module
 
     /*** ---- Grade Verifications ---- ***/
 
-    // TODO: refactor and improve
+    // TODO: refactor and improve (check old gamecourse 21/22)
 }

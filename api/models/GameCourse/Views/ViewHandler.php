@@ -53,7 +53,7 @@ class ViewHandler
 
         // TODO: register core components
         // TODO: register page templates
-        // TODO: regoster editor categories
+        // TODO: register editor categories
     }
 
 
