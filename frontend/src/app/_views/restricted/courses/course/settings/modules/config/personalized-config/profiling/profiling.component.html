@@ -1,5 +1,5 @@
 <!-- Overview -->
-<div class="section">
+<div *ngIf="data?.length > 0" class="section">
   <div class="divider">
     <div class="title"><span>Overview</span></div>
   </div>
@@ -8,14 +8,13 @@
     <figure class="highcharts-figure">
       <div id="overview"></div>
     </figure>
-    <p *ngIf="data?.length == 0">Nothing to show yet</p>
   </div>
 </div>
 
 <!-- Run the profiler -->
 <div class="section profiler">
   <div class="divider">
-    <div class="title"><span>Run the Profiler</span></div>
+    <div class="title"><span>Profiler</span></div>
   </div>
 
   <div class="success_box">
@@ -31,7 +30,14 @@
           <span class="label">Number of clusters:</span>
           <input type="number" [min]="3" [max]="10" id="'nr-clusters'" name="'nr-clusters'" class="input" [(ngModel)]="nrClusters">
           <button *ngIf="!predictorIsRunning" style="margin-left: 10px" (click)="isPredictModalOpen = true">Predict</button>
-          <button *ngIf="predictorIsRunning" style="margin-left: 10px" (click)="checkPredictorStatus()">Refresh</button>
+          <button *ngIf="predictorIsRunning" style="margin-left: 10px" style="background-color: tomato" (click)="checkPredictorStatus()">Refresh</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="input-wrapper">
+          <span class="label">End Date:</span>
+          <input type="datetime-local" id="end-date" name="end-date" class="input" [(ngModel)]="endDate">
         </div>
       </div>
 
@@ -45,7 +51,7 @@
 
     <!-- Time -->
     <div id="time">
-      <p><b>Last run: </b>{{lastRun}}</p>
+      <p><b>Last run: </b>{{lastRun ? lastRun.format('DD/MM/YYYY HH:mm:ss') : 'Never'}}</p>
     </div>
 
     <!-- Status -->
@@ -54,7 +60,7 @@
     </div>
 
     <!-- Results -->
-    <div id="results">
+    <div *ngIf="data?.length > 0" id="results">
 
       <!-- Committed results -->
       <p><b>Profiling Results:</b></p>
@@ -82,7 +88,7 @@
               <td>{{result.name}}</td>
               <td class="modal_content">
                 <select id="roles" class="form__input" [(ngModel)]="result.cluster">
-                  <option *ngFor="let cluster of clusterNames" [ngValue]="cluster.name">{{cluster.name}}</option>
+                  <option *ngFor="let name of clusterNames" [ngValue]="name">{{name}}</option>
                 </select>
               </td>
             </tr>
@@ -96,10 +102,10 @@
       <button *ngIf="!clusters" id="export_button" class="icon export_icon profiling_button other" (click)="exportItem()"></button>
       <button *ngIf="!clusters" id="import_button" class="icon import_icon profiling_button other" (click)="isImportModalOpen = true"></button>
       <button *ngIf="!clusters && !profilerIsRunning" id="run-button" class="button small" (click)="runProfiler()">Run</button>
-      <button *ngIf="!clusters && profilerIsRunning" id="refresh-button" class="button small" (click)="checkRunningStatus()">Refresh</button>
+      <button *ngIf="!clusters && profilerIsRunning" id="refresh-button" class="button small" style="background-color: tomato" (click)="checkProfilerStatus()">Refresh</button>
       <button *ngIf="clusters" id="save-button" class="button small" (click)="saveClusters()">Save</button>
       <button *ngIf="clusters" id="commit-button" class="button small" (click)="commitClusters()">Commit</button>
-      <button *ngIf="clusters" id="cancel-button" class="button small" style="background-color: tomato" (click)="deleteSaved()">Cancel</button>
+      <button *ngIf="clusters" id="cancel-button" class="button small" style="background-color: tomato" (click)="deleteSavedClusters()">Cancel</button>
     </div>
   </div>
 </div>

@@ -147,7 +147,7 @@ class Tier
         // Validate data
         if (key_exists("name", $fieldValues)) {
             self::validateName($fieldValues["name"]);
-            if ($this->isWildcard())
+            if ($this->isWildcard() && $fieldValues["name"] != self::WILDCARD)
                 throw new Exception("Can't change name of '" . self::WILDCARD . "' tier.");
         }
         if (key_exists("position", $fieldValues)) {

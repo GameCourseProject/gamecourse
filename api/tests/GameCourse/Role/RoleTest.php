@@ -1016,7 +1016,47 @@ class RoleTest extends TestCase
      */
     public function getChildrenNamesOfRole()
     {
+        // Given
+        $this->course->setRolesHierarchy([
+            ["name" => "Teacher"],
+            ["name" => "Student", "children" => [
+                ["name" => "StudentA", "children" => [
+                    ["name" => "StudentA1"]
+                ]],
+                ["name" => "StudentB"]
+            ]],
+            ["name" => "Watcher"]
+        ]);
+        $this->course->addRole("StudentA1");
+
         $children = Role::getChildrenNamesOfRole($this->course->getRolesHierarchy(), "Student");
+        $this->assertIsArray($children);
+        $this->assertCount(3, $children);
+        $this->assertContains("StudentA", $children);
+        $this->assertContains("StudentA1", $children);
+        $this->assertContains("StudentB", $children);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getChildrenNamesOfRoleOnlyDirectChildren()
+    {
+        // Given
+        $this->course->setRolesHierarchy([
+            ["name" => "Teacher"],
+            ["name" => "Student", "children" => [
+                ["name" => "StudentA", "children" => [
+                    ["name" => "StudentA1"]
+                ]],
+                ["name" => "StudentB"]
+            ]],
+            ["name" => "Watcher"]
+        ]);
+        $this->course->addRole("StudentA1");
+
+        $children = Role::getChildrenNamesOfRole($this->course->getRolesHierarchy(), "Student", null, true);
         $this->assertIsArray($children);
         $this->assertCount(2, $children);
         $this->assertContains("StudentA", $children);

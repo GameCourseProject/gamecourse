@@ -4,6 +4,8 @@ import {ActivatedRoute} from "@angular/router";
 import {finalize} from "rxjs/operators";
 
 import * as Highcharts from 'highcharts';
+import {Moment} from "moment";
+import * as moment from "moment";
 declare var require: any;
 let Sankey = require('highcharts/modules/sankey');
 let Export = require('highcharts/modules/exporting');
@@ -22,23 +24,24 @@ Accessibility(Highcharts)
 })
 export class ProfilingComponent implements OnInit {
 
-  loading: boolean;
+  loading: boolean = true;
   loadingAction: boolean;
   courseID: number;
 
   nrClusters: number = 4;
   minClusterSize: number = 4;
-  clusterNames: {name: string}[];
-  clusters: {[studentNr: string]: {name: string, cluster: string}};
+  endDate: string = moment().format('YYYY-MM-DDTHH:mm:ss');
+  clusterNames: string[];
+  clusters: {[studentId: string]: {name: string, cluster: string}};
 
-  lastRun: string;
-  profilerIsRunning: boolean;
+  lastRun: Moment;
   predictorIsRunning: boolean;
-  select: any[];
+  profilerIsRunning: boolean;
+  select: {[studentId: number]: string}[];
 
   history: ProfilingHistory[];
   nodes: ProfilingNode[];
-  data: any[][];
+  data: string|number[][];
   days: string[];
 
   table: {
@@ -67,75 +70,60 @@ export class ProfilingComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loading = true;
-    this.route.parent.params.subscribe(params => {
+    this.route.parent.params.subscribe(async params => {
       this.courseID = parseInt(params.id);
-      this.getHistory();
+      await this.getHistory();
+      await this.getLastRun();
+      await this.getSavedClusters();
+      this.loading = false;
     });
   }
 
-  getHistory() {
-    this.loading = true;
-    this.api.getHistory(this.courseID)
-      .subscribe(
-        res => {
-          this.history = res.history;
-          this.nodes = res.nodes;
-          this.data = res.data;
-          this.days = res.days.length > 0 ? res.days : ["Current"];
-          if (this.data.length > 0) this.buildChart();
-          this.getTime();
-        })
+  async getHistory() {
+    const res = await this.api.getHistory(this.courseID).toPromise();
+    this.history = res.history;
+    this.nodes = res.nodes;
+    this.data = res.data;
+    this.days = res.days.length > 0 ? res.days : ["Current"];
+    if (this.data.length > 0) this.buildChart();
   }
 
-  getTime() {
-    this.loading = true;
-    this.api.getTime(this.courseID)
-      .subscribe(
-        time => {
-          this.lastRun = time != null ? time : 'Never';
-          this.getSaved();
-        })
+  async getLastRun() {
+    this.lastRun = await this.api.getLastRun(this.courseID).toPromise();
   }
 
-  getSaved() {
-    this.loading = true;
-    this.api.getSaved(this.courseID)
-      .pipe(finalize(() => this.loading = false))
-      .subscribe(
-        res => {
-          this.clusterNames = res.names;
-          this.select = res.saved;
+  async getSavedClusters() {
+    const res = await this.api.getSavedClusters(this.courseID).toPromise();
+    this.clusterNames = res.names;
+    this.select = res.saved;
 
-          if (this.select.length == 0) {
-            this.buildResultsTable();
-            this.checkRunningStatus();
+    if (this.select.length == 0) { // no saved clusters
+      this.buildResultsTable();
+      await this.checkProfilerStatus();
+    }
 
-          } else {
-            console.log('select not empty'); // FIXME
-          }
-
-          this.checkPredictorStatus();
-        })
+    await this.checkPredictorStatus();
   }
 
-  runProfiler() {
-    this.loadingAction = true;
-    this.profilerIsRunning = true;
-    this.api.runProfiler(this.courseID, this.nrClusters, this.minClusterSize)
-      .pipe(finalize(() => this.loadingAction = false))
-      .subscribe(res => {})
-  }
-
-  runPredictor() {
+  async runPredictor() {
     this.loadingAction = true;
     this.predictorIsRunning = true;
-    this.api.runPredictor(this.courseID, this.methodSelected)
-      .pipe(finalize(() => this.loadingAction = false))
-      .subscribe(res => {})
+
+    const endDate = moment(this.endDate).format("YYYY-MM-DD HH:mm:ss");
+    await this.api.runPredictor(this.courseID, this.methodSelected, endDate).toPromise();
+    this.loadingAction = false;
   }
 
-  saveClusters() {
+  async runProfiler() {
+    this.loadingAction = true;
+    this.profilerIsRunning = true;
+
+    const endDate = moment(this.endDate).format("YYYY-MM-DD HH:mm:ss");
+    await this.api.runProfiler(this.courseID, this.nrClusters, this.minClusterSize, endDate).toPromise();
+    this.loadingAction = false;
+  }
+
+  async saveClusters() {
     this.loadingAction = true;
 
     const cls = {}
@@ -143,12 +131,11 @@ export class ProfilingComponent implements OnInit {
       cls[user] = this.clusters[user].cluster;
     }
 
-    this.api.saveClusters(this.courseID, cls)
-      .pipe(finalize(() => this.loadingAction = false))
-      .subscribe(res => {})
+    await this.api.saveClusters(this.courseID, cls).toPromise();
+    this.loadingAction = false;
   }
 
-  commitClusters() {
+  async commitClusters() {
     this.loadingAction = true;
 
     const cls = {}
@@ -156,55 +143,50 @@ export class ProfilingComponent implements OnInit {
       cls[user] = this.clusters[user].cluster;
     }
 
-    this.api.commitClusters(this.courseID, cls)
-      .pipe(finalize(() => {
-        this.clusters = null
-        this.loadingAction = false;
-      }))
-      .subscribe(res => this.getHistory());
+    await this.api.commitClusters(this.courseID, cls).toPromise();
+    await this.getHistory();
+
+    this.clusters = null
+    this.loadingAction = false;
   }
 
-  deleteSaved() {
+  async deleteSavedClusters() {
     this.loadingAction = true;
-    this.api.deleteSaved(this.courseID)
-      .pipe(finalize(() => {
-        this.clusters = null
-        this.loadingAction = false;
-      }))
-      .subscribe(res => {});
+    await this.api.deleteSavedClusters(this.courseID).toPromise();
+    this.clusters = null
+    this.loadingAction = false;
   }
 
-  checkRunningStatus() {
+  async checkProfilerStatus() {
     this.loadingAction = true;
-    this.api.checkRunningStatus(this.courseID)
-      .pipe(finalize(() => this.loadingAction = false))
-      .subscribe(
-        res => {
-          if (typeof res == 'boolean') {
-            this.profilerIsRunning = res;
 
-          } else { // got clusters as result
-            this.clusters = res.clusters;
-            this.clusterNames = res.names;
-            this.profilerIsRunning = false;
-          }
-        })
+    const status = await this.api.checkProfilerStatus(this.courseID).toPromise();
+    if (typeof status == 'boolean') {
+      this.profilerIsRunning = status;
+
+    } else { // got clusters as result
+      this.clusters = status.clusters;
+      this.clusterNames = status.names;
+      this.profilerIsRunning = false;
+    }
+
+    this.loadingAction = false;
   }
 
-  checkPredictorStatus() {
+  async checkPredictorStatus() {
     this.loadingAction = true;
-    this.api.checkPredictorStatus(this.courseID)
-      .pipe(finalize(() => this.loadingAction = false))
-      .subscribe(
-        res => {
-          if (typeof res == 'boolean') {
-            this.predictorIsRunning = res;
 
-          } else { // got nrClusters as result
-            this.nrClusters = res;
-            this.predictorIsRunning = false;
-          }
-        })
+    const status = await this.api.checkPredictorStatus(this.courseID).toPromise();
+    if (typeof status == 'boolean') {
+      this.predictorIsRunning = status;
+
+    } else { // got nrClusters as result
+      this.nrClusters = status;
+      this.minClusterSize = Math.min(this.minClusterSize, this.nrClusters);
+      this.predictorIsRunning = false;
+    }
+
+    this.loadingAction = false
   }
 
   buildChart() {
@@ -252,14 +234,14 @@ export class ProfilingComponent implements OnInit {
     this.table.loading = false;
   }
 
-  exportItem() {
+  exportItem() { // FIXME
     this.loadingAction = true;
     this.api.exportModuleItems(this.courseID, ApiHttpService.PROFILING, null)
       .pipe( finalize(() => this.loadingAction = false) )
       .subscribe(res => {})
   }
 
-  importItems(replace: boolean): void {
+  importItems(replace: boolean): void { // FIXME
     // this.loadingAction = true;
     //
     // const reader = new FileReader();
@@ -298,7 +280,7 @@ export class ProfilingComponent implements OnInit {
 export interface ProfilingHistory {
   id: string,
   name: string,
-  [key: string]: string
+  [day: string]: string
 }
 
 export interface ProfilingNode {

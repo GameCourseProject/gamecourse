@@ -316,13 +316,19 @@ class Role
      * @param int $courseId
      * @param string|null $roleName
      * @param int|null $roleId
+     * @param string|null $moduleId
      * @return void
      * @throws Exception
      */
-    public static function removeRoleFromCourse(int $courseId, string $roleName = null, int $roleId = null)
+    public static function removeRoleFromCourse(int $courseId, string $roleName = null, int $roleId = null, string $moduleId = null)
     {
-        if ($roleName === null && $roleId === null)
-            throw new Exception("Need either role name or ID to add new role to a user.");
+        if ($roleName === null && $roleId === null && $moduleId === null)
+            throw new Exception("Need either role name, role ID or module ID to remove roles from course.");
+
+        if ($moduleId) {
+            Core::database()->delete(self::TABLE_ROLE, ["module" => $moduleId]);
+            return;
+        }
 
         if ($roleName === null) $roleName = self::getRoleName($roleId);
         $remove = array_merge([$roleName], self::getChildrenNamesOfRole((new Course($courseId))->getRolesHierarchy(), $roleName));
@@ -620,29 +626,31 @@ class Role
 
     /**
      * Gets children names of a given role.
-     * Option to pass either role name or role ID.
+     * Option to pass either role name or role ID, and to only
+     * retrieve direct children of role.
      *
      * @param array $hierarchy
      * @param string|null $roleName
      * @param int|null $roleId
+     * @param bool $onlyDirectChildren
      * @return array
      * @throws Exception
      */
-    public static function getChildrenNamesOfRole(array $hierarchy, string $roleName = null, int $roleId = null): array
+    public static function getChildrenNamesOfRole(array $hierarchy, string $roleName = null, int $roleId = null, bool $onlyDirectChildren = false): array
     {
         if ($roleName === null && $roleId === null)
             throw new Exception("Need either role name or ID to get children of a role.");
 
         $children = [];
         if ($roleName === null) $roleName = self::getRoleName($roleId);
-        self::traverseRoles($hierarchy, function ($role, $parent, $key, $hasChildren, $continue, &...$data) use ($roleName) {
+        self::traverseRoles($hierarchy, function ($role, $parent, $key, $hasChildren, $continue, &...$data) use ($roleName, $onlyDirectChildren) {
             if ($hasChildren) {
                 if ($role["name"] == $roleName || (in_array($role["name"], $data[0]) && array_key_exists("children", $role))) {
                     foreach ($role["children"] as $child) {
                         $data[0][] = $child["name"];
                     }
                 }
-                $continue(...$data);
+                if (!$onlyDirectChildren) $continue(...$data);
             }
         }, $children);
         return $children;

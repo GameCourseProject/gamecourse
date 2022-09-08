@@ -52,3 +52,183 @@
     border: 2px solid lightgray;
   }
 }
+
+.arrow_right{
+  background-image: url(/gamecourse/images/arrow_right_icon.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.8;
+  height: 12px;
+  width: 12px;
+}
+
+.button .cancel{
+  position: absolute;
+  right: 200;
+  background-color: tomato;
+}
+
+.confirmation_btns .prediction-cancel{
+  background-color: tomato;
+}
+
+#run-button, #refresh-button{
+  margin-right: 10;
+}
+
+.predict-button{
+  margin-left: 10;
+}
+
+.save{
+  position: absolute;
+  right: 0;
+}
+
+#csv {
+  display: none;
+}
+
+.other{
+  background-color: white;
+}
+
+.profiling_button {
+  margin-right: 10;
+}
+
+.export_icon.profiling_button,
+.import_icon.profiling_button{
+  opacity: 0.8;
+}
+
+.highcharts-figure, .highcharts-data-table table {
+  min-width: 310px;
+  max-width: 1000px;
+  margin: 1em auto;
+}
+
+.triangle-up {
+  background-image: url(/gamecourse/images/arrow_top_icon.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  height: 18px;
+  width: 21px;
+  opacity: 0.5;
+}
+
+.triangle-down {
+  background-image: url(/gamecourse/images/arrow_bottom_icon.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  height: 18px;
+  width: 21px;
+  opacity: 0.5;
+}
+
+.results_row {
+  display: flex;
+  align-items: baseline;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.cluster_row {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 20px;
+}
+
+.cluster_input input {
+  width: 150px;
+}
+
+.cluster_column{
+  grid-template-columns: repeat(auto-fill, 460px);
+  display: grid;
+  justify-content: space-between;
+}
+
+.checked_arrow{
+  opacity: 1;
+}
+
+.disabled_arrow{
+  opacity: 0; /* css standard */
+}
+
+th:hover .disabled_arrow{
+  opacity: 0.5; /* css standard */
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.predictor-container {
+  width: 180px;
+  margin-left: 20px;
+  margin-top: 30px;
+  display: flex;
+}
+
+#predictor-modal .predictor-methods {
+  position: relative;
+}
+
+#predictor-modal .predictor-methods .predictor-container .checkmark {
+  border-radius: 50%;
+}
+
+#predictor-modal .predictor-methods .predictor-container .checkmark:after {
+  top: 5px;
+  left: 5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}
+
+#predictor-modal .predictor-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+#predictor-modal .predictor-container .checkmark {
+  position: absolute;
+  left: 0;
+  height: 18px;
+  width: 18px;
+  background-color: #eee;
+}
+
+#predictor-modal .predictor-container .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+#predictor-modal .predictor-container:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+
+#predictor-modal .predictor-container input:checked ~ .checkmark {
+  background-color: #2196F3;
+}
+
+#results-modal .confirmation_btns{
+  display: flex;
+}
+
+.continue#no-predictor-button{
+  min-width: 55px;
+}
+
+
+

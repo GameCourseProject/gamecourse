@@ -1260,8 +1260,8 @@ export class ApiHttpService {
 
 
   // Profiling
-  // TODO: refactor
-  public getHistory(courseID: number): Observable<{data: any[][], days: string[], history: ProfilingHistory[], nodes: ProfilingNode[]}> {
+
+  public getHistory(courseID: number): Observable<{days: string[], history: ProfilingHistory[], nodes: ProfilingNode[], data: string|number[][]}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PROFILING);
       qs.push('request', 'getHistory');
@@ -1274,25 +1274,23 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  // TODO: refactor
-  public getTime(courseID: number): Observable<string> {
+  public getLastRun(courseID: number): Observable<Moment> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PROFILING);
-      qs.push('request', 'getTime');
+      qs.push('request', 'getLastRun');
       qs.push('courseId', courseID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['time']) );
+      .pipe( map((res: any) => dateFromDatabase(res['data'])) );
   }
 
-  // TODO: refactor
-  public getSaved(courseID: number): Observable<{names: {name: string}[], saved: any[]}> {
+  public getSavedClusters(courseID: number): Observable<{names: string[], saved: {[studentId: number]: string}[]}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PROFILING);
-      qs.push('request', 'getSaved');
+      qs.push('request', 'getSavedClusters');
       qs.push('courseId', courseID);
     };
 
@@ -1302,29 +1300,11 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  // TODO: refactor
-  public runProfiler(courseID: number, nrClusters: number, minClusterSize: number): Observable<void> {
+  public runPredictor(courseID: number, method: string, endDate: string): Observable<void> {
     const data = {
       courseId: courseID,
-      nrClusters,
-      minSize: minClusterSize
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.PROFILING);
-      qs.push('request', 'runProfiler');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  // TODO: refactor
-  public runPredictor(courseID: number, method: string): Observable<void> {
-    const data = {
-      courseId: courseID,
-      method
+      method,
+      endDate
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -1337,8 +1317,25 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  // TODO: refactor
-  public saveClusters(courseID: number, clusters: {[studentNr: string]: string}): Observable<void> {
+  public runProfiler(courseID: number, nrClusters: number, minClusterSize: number, endDate: string): Observable<void> {
+    const data = {
+      courseId: courseID,
+      nrClusters,
+      minSize: minClusterSize,
+      endDate
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PROFILING);
+      qs.push('request', 'runProfiler');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public saveClusters(courseID: number, clusters: {[studentId: number]: string}): Observable<void> {
     const data = {
       courseId: courseID,
       clusters
@@ -1354,8 +1351,22 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  // TODO: refactor
-  public commitClusters(courseID: number, clusters: {[studentNr: string]: string}): Observable<void> {
+  public deleteSavedClusters(courseID: number): Observable<void> {
+    const data = {
+      courseId: courseID
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PROFILING);
+      qs.push('request', 'deleteSavedClusters');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public commitClusters(courseID: number, clusters: {[studentId: string]: string}): Observable<void> {
     const data = {
       courseId: courseID,
       clusters
@@ -1371,31 +1382,14 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  // TODO: refactor
-  public deleteSaved(courseID: number): Observable<void> {
+  public checkProfilerStatus(courseID: number): Observable<boolean | {clusters: {[studentNr: string]: {name: string, cluster: string}}, names: string[]}> {
     const data = {
       courseId: courseID
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PROFILING);
-      qs.push('request', 'deleteSaved');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  // TODO: refactor
-  public checkRunningStatus(courseID: number): Observable<boolean | {clusters: {[studentNr: string]: {name: string, cluster: string}}, names: {name: string}[]}> {
-    const data = {
-      courseId: courseID
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.PROFILING);
-      qs.push('request', 'checkRunningStatus');
+      qs.push('request', 'checkProfilerStatus');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
@@ -1404,7 +1398,6 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].hasOwnProperty('running') ? res['data']['running'] : res['data']) );
   }
 
-  // TODO: refactor
   public checkPredictorStatus(courseID: number): Observable<boolean | number> {
     const data = {
       courseId: courseID

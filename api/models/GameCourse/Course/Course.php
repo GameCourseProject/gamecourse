@@ -772,12 +772,13 @@ class Course
      *
      * @param string|null $roleName
      * @param int|null $roleId
+     * @param string|null $moduleId
      * @return void
      * @throws Exception
      */
-    public function removeRole(string $roleName = null, int $roleId = null)
+    public function removeRole(string $roleName = null, int $roleId = null, string $moduleId = null)
     {
-        Role::removeRoleFromCourse($this->id, $roleName, $roleId);
+        Role::removeRoleFromCourse($this->id, $roleName, $roleId, $moduleId);
     }
 
     /**
