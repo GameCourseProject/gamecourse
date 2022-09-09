@@ -20,6 +20,7 @@ class EventTest extends TestCase
 {
     private $user;
     private $course;
+    private $nrSystemEvents;
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------- Setup & Tear Down ----------------- ***/
@@ -52,6 +53,8 @@ class EventTest extends TestCase
         $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
         $this->user = $user;
+
+        $this->nrSystemEvents = count(Event::getEvents());
     }
 
     /**
@@ -66,6 +69,7 @@ class EventTest extends TestCase
         TestingUtils::resetAutoIncrement([Course::TABLE_COURSE, User::TABLE_USER, Role::TABLE_ROLE]);
         TestingUtils::cleanFileStructure();
         TestingUtils::cleanEvents();
+        Event::setupEvents();
     }
 
     protected function onNotSuccessfulTest(Throwable $t): void
@@ -96,6 +100,7 @@ class EventTest extends TestCase
     {
         $events = Event::getEvents();
         $this->assertNotEmpty($events);
+        $this->assertCount($this->nrSystemEvents, $events);
 
         // System events
         $systemEvents = [EventType::PAGE_VIEWED];
@@ -116,7 +121,7 @@ class EventTest extends TestCase
     public function getEvents()
     {
         $events = Event::getEvents();
-        $this->assertNotEmpty($events);
+        $this->assertCount($this->nrSystemEvents, $events);
     }
 
 
@@ -145,12 +150,12 @@ class EventTest extends TestCase
 
         $cache = Cache::get(null, "events");
         $this->assertIsArray($cache);
-        $this->assertCount(1, $cache);
-        $this->assertEquals(EventType::STUDENT_ADDED_TO_COURSE, array_keys($cache)[0]);
+        $this->assertCount($this->nrSystemEvents + 1, $cache);
+        $this->assertEquals(EventType::STUDENT_ADDED_TO_COURSE, array_keys($cache)[$this->nrSystemEvents]);
         $this->assertIsArray($cache[EventType::STUDENT_ADDED_TO_COURSE]);
         $this->assertCount(1, $cache[EventType::STUDENT_ADDED_TO_COURSE]);
 
-        $func = $cache[0][array_keys($cache[0])[0]];
+        $func = $cache[EventType::STUDENT_ADDED_TO_COURSE][array_keys($cache[EventType::STUDENT_ADDED_TO_COURSE])[0]];
         $this->assertIsObject($func);
         $this->assertTrue($func($this->course->getId(), $this->user->getId()));
     }
@@ -211,7 +216,7 @@ class EventTest extends TestCase
 
         $cache = Cache::get(null, "events");
         $this->assertNotEmpty($cache);
-        $this->assertCount(1, $cache);
+        $this->assertCount($this->nrSystemEvents + 1, $cache);
         $this->assertCount(1, $cache[EventType::STUDENT_ADDED_TO_COURSE]);
     }
 
@@ -241,7 +246,7 @@ class EventTest extends TestCase
 
         $cache = Cache::get(null, "events");
         $this->assertNotEmpty($cache);
-        $this->assertCount(1, $cache);
+        $this->assertCount($this->nrSystemEvents + 1, $cache);
         $this->assertCount(1, $cache[EventType::STUDENT_ADDED_TO_COURSE]);
     }
 }
