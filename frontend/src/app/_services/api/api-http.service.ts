@@ -49,7 +49,7 @@ import {
 } from "../../_views/courses/course/settings/modules/config/virtualcurrency/virtualcurrency.component";
 import {ActionsToRemove} from "../../_domain/virtualcurrency/actionstoremove";
 import {Team} from "../../_domain/teams/team";
-import {TeamData} from "../../_views/courses/course/settings/modules/config/teams/teams.component";
+import {ImportTeamsData, TeamData} from "../../_views/courses/course/settings/modules/config/teams/teams.component";
 
 @Injectable({
   providedIn: 'root'
@@ -1585,6 +1585,36 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['isTeamNameActive']) );
+  }
+
+  public getNrTeamMembers(courseID: number): Observable<number> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.TEAMS);
+      qs.push('request', 'getNrTeamMembers');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['nrTeamMembers']) );
+  }
+
+  public importCourseTeams(courseID: number, importData: ImportTeamsData): Observable<number> {
+    const data = {
+      courseId: courseID,
+      file: importData.file,
+      replace: importData.replace
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.TEAMS);
+      qs.push('request', 'importTeams');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => parseInt(res['data']['nrTeams'])) );
   }
 
   // Virtual Currency

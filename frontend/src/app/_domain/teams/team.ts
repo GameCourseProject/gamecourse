@@ -8,9 +8,10 @@ export class Team {
   private _members: string;
   private _teamMembers: User[];
   private _xp: number;
+  private _level: number;
 
 
-  constructor(id: number, teamName: string, teamNumber: number,  members: string, teamMembers: User[], xp: number) {
+  constructor(id: number, teamName: string, teamNumber: number,  members: string, teamMembers: User[], xp: number, level: number) {
 
     this.id = id;
     this.teamName = teamName;
@@ -18,6 +19,7 @@ export class Team {
     this.members = members;
     this.teamMembers = teamMembers;
     this.xp = xp;
+    this.level = level;
 
   }
 
@@ -70,6 +72,14 @@ export class Team {
     this._xp = value;
   }
 
+  get level(): number {
+    return this._level;
+  }
+
+  set level(value: number) {
+    this._level = value;
+  }
+
 
 
   /**
@@ -85,6 +95,7 @@ export class Team {
       members: this.members,
       teamMembers: this.teamMembers,
       xp: this.xp,
+      level: this.level,
     };
   }
 
@@ -95,7 +106,8 @@ export class Team {
       parseInt(obj.teamNumber),
       obj.members,
       obj.teamMembers ? obj.teamMembers.map(member => User.fromDatabase(member)) : null,
-      parseInt(obj.xp)
+      parseInt(obj.xp),
+      parseInt(obj.level)
     );
   }
 }
@@ -107,4 +119,5 @@ interface TeamDatabase {
   members?: string,
   teamMembers: UserDatabase[],
   xp?: string
+  level?: string
 }

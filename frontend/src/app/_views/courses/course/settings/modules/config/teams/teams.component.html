@@ -45,10 +45,8 @@
                 </tr>
               </table>
 
-
               <td><span>{{team.xp}}</span></td>
-              <td><span>{{0}}</span></td>
-
+              <td><span>{{team.level}}</span></td>
 
               <td class="action-column">
                 <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initItem('team', team); isTeamModalOpen = true;"></div>
@@ -113,7 +111,9 @@
       </div>
 
       <!-- Select Team Members -->
+
       <div class="sub_title">Select Members: </div>
+      <div *ngIf="newTeam.teamMembers != null && newTeam.teamMembers.length == nrTeamMembers" class = "info_message"> Team is complete! You'll need to remove existent members to add new ones.</div>
       <div class="content">
         <div id="new_box" class="inputs">
 
@@ -139,7 +139,7 @@
           <div class="select_box" id="system_users">
             <div *ngFor="let user of reduceUsers.items" class="line">
               <div>{{user.name + ' - ' + user.studentNumber}}</div>
-              <div class="add_icon_no_outline icon" (click)="addTeamMember(user)"></div>
+              <div *ngIf="newTeam.teamMembers == null || newTeam.teamMembers.length < nrTeamMembers " class="add_icon_no_outline icon" (click)="addTeamMember(user)"></div>
             </div>
           </div>
 
@@ -174,6 +174,36 @@
   </app-verification-modal>
 </ng-container>
 
+<!-- Import Modal -->
+<ng-container *ngIf="isImportModalOpen">
+  <app-modal
+    [isModalOpen]="isImportModalOpen"
+    [id]="'import-teams'"
+    [templateRef]="importModal"
+    (closeBtnClicked)="isImportModalOpen = false"
+    [actionInProgress]="saving"
+    [innerClickEvents]="false"
+    [classList]="'verification'">
+  </app-modal>
+</ng-container>
+
+<ng-template #importModal>
+
+  <div class="warning">Please select a .csv file to be imported</div>
+  <div class="target">The separator must be comma <br>The encoding must be UTF-8</div>
+  <app-input-file
+    [id]="'import_teams'"
+    [accept]="'.csv'"
+    [classList]="'config_input'"
+    (valueChange)="onCSVFileSelected($event)">
+  </app-input-file>
+
+  <div class="confirmation_btns">
+    <button (click)="importTeams(true)">Import Teams (Replace Duplicates)</button>
+    <button (click)="importTeams(false)">Import Teams (Ignore Duplicates)</button>
+  </div>
+
+</ng-template>
 
 
 

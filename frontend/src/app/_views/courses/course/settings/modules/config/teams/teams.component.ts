@@ -11,6 +11,7 @@ import {Order, Sort} from "../../../../../../../_utils/lists/order";
 import _ from 'lodash';
 import {exists} from "../../../../../../../_utils/misc/misc";
 import {finalize} from "rxjs/operators";
+import * as moment from "moment";
 
 @Component({
   selector: 'app-teams',
@@ -20,6 +21,10 @@ import {finalize} from "rxjs/operators";
 export class TeamsComponent implements OnInit {
 
   loading: boolean;
+  loadingAction = false;
+  maxMembersReached: boolean;
+
+  nrTeamMembers: number;
 
   course: Course;
   courseID: number;
@@ -44,10 +49,13 @@ export class TeamsComponent implements OnInit {
     teamNumber: null,
     members: null,
     teamMembers: null,
-    xp: null
+    xp: null,
+    level: null
   };
   teamToEdit: Team;
   teamToDelete: Team;
+
+  importedFile: File;
 
   isTeamModalOpen: boolean;
   isDeleteVerificationModalOpen: boolean;
@@ -74,6 +82,7 @@ export class TeamsComponent implements OnInit {
       this.getTeams();
       this.getCourseUsers(this.courseID);
       this.getIsTeamNameActive();
+      this.getNrTeamMembers();
     });
   }
 
@@ -97,9 +106,6 @@ export class TeamsComponent implements OnInit {
       .subscribe(users => {
           this.allUsers = users;
           this.reduceListUsers();
-
-          this.order.active = { orderBy: this.orderBy[0], sort: Sort.ASCENDING };
-          this.reduceList(undefined, _.cloneDeep(this.filters));
         },
         error => ErrorService.set(error))
   }
@@ -109,6 +115,10 @@ export class TeamsComponent implements OnInit {
     this.api.getAllUsersInTeams(courseId, "Student")
       .subscribe(users => {
           this.allUsersInTeams = users;
+
+          this.order.active = { orderBy: this.orderBy[0], sort: Sort.ASCENDING };
+          this.reduceList(undefined, _.cloneDeep(this.filters));
+          this.getCourseUsers(courseId);
         },
         error => ErrorService.set(error))
   }
@@ -129,6 +139,16 @@ export class TeamsComponent implements OnInit {
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
         isTeamNameActive => this.isTeamNameActive = isTeamNameActive,
+        error => ErrorService.set(error)
+      );
+  }
+
+  getNrTeamMembers() {
+    this.loading = true;
+    this.api.getNrTeamMembers(this.courseID)
+      .pipe( finalize(() => this.loading = false) )
+      .subscribe(
+        nrTeamMembers => this.nrTeamMembers = nrTeamMembers,
         error => ErrorService.set(error)
       );
   }
@@ -192,20 +212,23 @@ export class TeamsComponent implements OnInit {
     if (!this.selectedMembers) this.selectedMembers = [];
     if (!this.newTeam.teamMembers) this.newTeam.teamMembers = [];
 
-    if (!this.selectedMembers.find(el => el.id === user.id)) {
-      this.selectedMembers.push(user);
-      const index = this.allUsers.findIndex(el => el.id === user.id);
-      this.allUsers.splice(index, 1);
-      this.reduceListUsers();
+    if(this.selectedMembers.length == 3) this.maxMembersReached = true;
+    else {
+      if (!this.selectedMembers.find(el => el.id === user.id)) {
+        this.selectedMembers.push(user);
+        const index = this.allUsers.findIndex(el => el.id === user.id);
+        this.allUsers.splice(index, 1);
+        this.reduceListUsers();
+
+        if (this.selectedMembers.length == 1){
+          this.newTeam.members = (user.id).toString()
+        } else {
+          this.newTeam.members += '|' + (user.id).toString()
+        }
+        this.newTeam.teamMembers.push(user)
+      }
     }
 
-    if (this.selectedMembers.length == 1){
-      this.newTeam.members = (user.id).toString()
-    } else {
-      this.newTeam.members += '|' + (user.id).toString()
-    }
-
-    this.newTeam.teamMembers.push(user)
   }
 
   removeTeamMember(userID: number): void {
@@ -216,6 +239,40 @@ export class TeamsComponent implements OnInit {
 
     const index2 = this.newTeam.teamMembers.findIndex(el => el.id === userID);
     this.newTeam.teamMembers.splice(index2, 1);
+
+    if(this.newTeam.teamMembers.length < 3) this.maxMembersReached = false;
+
+
+    /*const index3 = this.allUsersInTeams.findIndex(el => el.id === userID);
+    this.allUsersInTeams.splice(index3, 1);
+    this.reduceList();
+    this.getAllUsersInTeams(this.course.id);*/
+
+  }
+
+  importTeams(replace: boolean): void {
+    this.loadingAction = true;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const importedTeams = reader.result;
+      this.api.importCourseTeams(this.courseID, {file: importedTeams, replace})
+        .pipe( finalize(() => {
+          this.isImportModalOpen = false;
+          this.loadingAction = false;
+        }) )
+        .subscribe(
+          nTeams => {
+            this.getTeams();
+            const successBox = $('#action_completed');
+            successBox.empty();
+            successBox.append(nTeams + " Teams" + (nTeams > 1 ? 's' : '') + " Imported");
+            successBox.show().delay(3000).fadeOut();
+          },
+          error => ErrorService.set(error),
+        )
+    }
+    reader.readAsDataURL(this.importedFile);
   }
 
   exportAllTeams() {
@@ -227,7 +284,7 @@ export class TeamsComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   reduceList(query?: string, filters?: string[]): void {
-    this.reduce.searchAndFilter(this.allUsers, query, filters);
+    this.reduce.searchAndFilter(this.allUsersInTeams, query, filters);
     this.orderList();
   }
 
@@ -266,7 +323,8 @@ export class TeamsComponent implements OnInit {
         teamNumber: item?.teamNumber || null,
         members: item?.members || null,
         teamMembers: item?.teamMembers || null,
-        xp: item?.xp || null
+        xp: item?.xp || null,
+        level: item?.level || null
       };
       if (this.mode === 'edit') this.newTeam.id = item.id;
       this.teamToDelete = item;
@@ -289,6 +347,10 @@ export class TeamsComponent implements OnInit {
     return true;
   }
 
+  onCSVFileSelected(files: FileList): void {
+      this.importedFile = files.item(0);
+  }
+
 
 }
 
@@ -298,5 +360,16 @@ export interface TeamData {
   teamNumber: number,
   members: string,
   teamMembers: User[],
-  xp: number
+  xp: number,
+  level: number
+}
+
+/*  export interface TeamsConfigVars {
+  maxMembers: number,
+  isTeamNameActive: boolean,
+}*/
+
+export interface ImportTeamsData {
+  file: string | ArrayBuffer,
+  replace: boolean
 }
