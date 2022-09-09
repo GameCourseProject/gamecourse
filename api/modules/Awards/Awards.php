@@ -63,6 +63,11 @@ class Awards extends Module
         $this->initDatabase();
     }
 
+    public function copyTo(Course $copyTo)
+    {
+        // Nothing to do here
+    }
+
     public function disable()
     {
         $this->cleanDatabase();

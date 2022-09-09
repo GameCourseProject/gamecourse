@@ -47,6 +47,11 @@ class Overview extends Module
         $this->initTemplates();
     }
 
+    public function copyTo(Course $copyTo)
+    {
+        // TODO: Implement copy() method.
+    }
+
     public function disable()
     {
         $this->removeTemplates();

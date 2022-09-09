@@ -51,6 +51,11 @@ class Fenix extends Module
         // Nothing to do here
     }
 
+    public function copyTo(Course $copyTo)
+    {
+        // Nothing to do here
+    }
+
     public function disable()
     {
         // Nothing to do here

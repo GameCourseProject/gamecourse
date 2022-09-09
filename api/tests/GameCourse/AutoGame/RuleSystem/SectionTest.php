@@ -629,6 +629,32 @@ class SectionTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function copySection()
+    {
+        // Given
+        $section = Section::addSection($this->courseId, "Section");
+        $rule = Rule::addRule($this->courseId, $section->getId(), "Rule", null, "when", "then", 0);
+
+        $course2 = Course::addCourse("Course2", "C2", "2021-2022", "#ffffff",
+            null, null, true, true);
+
+        // When
+        $section->copySection($course2);
+
+        // Then
+        $this->assertCount(1, RuleSystem::getSections($course2->getId()));
+        $this->assertCount(1, RuleSystem::getRules($course2->getId()));
+
+        $copiedSection = Section::getSectionByName($course2->getId(), $section->getName());
+        $this->assertEquals($section->getPosition(), $copiedSection->getPosition());
+        $this->assertEquals($section->getModule(), $copiedSection->getModule());
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function deleteSection()
     {
         $section1 = Section::addSection($this->courseId, "Section1", 0);

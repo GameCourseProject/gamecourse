@@ -3,7 +3,10 @@ namespace GameCourse\Course;
 
 use Exception;
 use GameCourse\AutoGame\AutoGame;
+use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\RuleSystem;
+use GameCourse\AutoGame\RuleSystem\Section;
+use GameCourse\AutoGame\RuleSystem\Tag;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
@@ -1165,6 +1168,192 @@ class CourseTest extends TestCase
         $this->expectException(PDOException::class);
         $course->editCourse("Produção de Conteúdos Multimédia", "CMU", "2021-2022", "#000000", null,
         null, true, false);
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copyCourse()
+    {
+        // Given
+        $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#000000",
+            "2022-10-01 00:00:00", "2022-11-01 00:00:00", true, true);
+
+        // When
+        $copy = Course::copyCourse($course->getId());
+
+        // Then
+        $this->assertEquals($course->getName() . " (Copy)", $copy->getName());
+        $this->assertEquals($course->getShort(), $copy->getShort());
+        $this->assertEquals($course->getColor(), $copy->getColor());
+        $this->assertEquals($course->getYear(), $copy->getYear());
+        $this->assertNull($copy->getStartDate());
+        $this->assertNull($copy->getEndDate());
+        $this->assertNull($copy->getLandingPage());
+        $this->assertFalse($copy->isActive());
+        $this->assertFalse($copy->isVisible());
+        $this->assertEquals($course->getTheme(), $copy->getTheme());
+
+        $this->assertEquals($course->getRolesHierarchy(), $copy->getRolesHierarchy());
+        $this->assertEquals($course->getRoles(true, true), $copy->getRoles(true, true));
+
+        $this->assertEquals(Utils::getDirectoryContents(AUTOGAME_FOLDER . "/imported-functions/" . $course->getId() . "/"),
+            Utils::getDirectoryContents(AUTOGAME_FOLDER . "/imported-functions/" . $copy->getId() . "/"));
+        $this->assertEquals(file_get_contents(AUTOGAME_FOLDER . "/config/config_" . $course->getId() . ".txt"),
+            file_get_contents(AUTOGAME_FOLDER . "/config/config_" . $copy->getId() . ".txt"));
+
+        $tags = RuleSystem::getTags($course->getId());
+        $copiedTags = RuleSystem::getTags($copy->getId());
+        $this->assertSameSize($tags, $copiedTags);
+        $this->assertEmpty($copiedTags);
+
+        $sections = RuleSystem::getSections($course->getId());
+        $copiedSections = RuleSystem::getSections($copy->getId());
+        $this->assertSameSize($sections, $copiedSections);
+        $this->assertEmpty($copiedSections);
+
+        $this->assertEquals($course->getStyles(), $copy->getStyles());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copyCourseWithRoles()
+    {
+        // Given
+        $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#000000",
+            "2022-10-01 00:00:00", "2022-11-01 00:00:00", true, true);
+        $course->setRolesHierarchy([
+            ["name" => "Teacher"],
+            ["name" => "Student", "children" => [
+                ["name" => "StudentA"],
+                ["name" => "StudentB"]
+            ]],
+            ["name" => "Watcher"],
+        ]);
+        $course->addRole("StudentA");
+        $course->addRole("StudentB");
+
+        // When
+        $copy = Course::copyCourse($course->getId());
+
+        // Then
+        $this->assertEquals($course->getRolesHierarchy(), $copy->getRolesHierarchy());
+        $this->assertEquals($course->getRoles(true, true), $copy->getRoles(true, true));
+    }
+
+    public function copyCourseWithModulesEnabled()
+    {
+        // TODO
+    }
+
+    public function copyCourseWithViews()
+    {
+        // TODO
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copyCourseWithAutoGameInfo()
+    {
+        // Given
+        $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#000000",
+            "2022-10-01 00:00:00", "2022-11-01 00:00:00", true, true);
+        file_put_contents(AUTOGAME_FOLDER . "/imported-functions/" . $course->getId() . "/default.py", "TEST");
+        file_put_contents(AUTOGAME_FOLDER . "/config/config_" . $course->getId() . ".txt", "TEST");
+
+        // When
+        $copy = Course::copyCourse($course->getId());
+
+        // Then
+        $this->assertEquals(file_get_contents(AUTOGAME_FOLDER . "/imported-functions/" . $course->getId() . "/default.py"),
+            file_get_contents(AUTOGAME_FOLDER . "/imported-functions/" . $copy->getId() . "/default.py"));
+        $this->assertEquals(file_get_contents(AUTOGAME_FOLDER . "/config/config_" . $course->getId() . ".txt"),
+            file_get_contents(AUTOGAME_FOLDER . "/config/config_" . $copy->getId() . ".txt"));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copyCourseWithRules()
+    {
+        // Given
+        $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#000000",
+            "2022-10-01 00:00:00", "2022-11-01 00:00:00", true, true);
+
+        $tag1 = Tag::addTag($course->getId(), "tag1", "#ffffff");
+        $tag2 = Tag::addTag($course->getId(), "tag2", "#ffffff");
+        $tag3 = Tag::addTag($course->getId(), "tag3", "#ffffff");
+
+        $section1 = Section::addSection($course->getId(), "Section1");
+        $section2 = Section::addSection($course->getId(), "Section2");
+
+        $rule1 = Rule::addRule($course->getId(), $section1->getId(), "Rule1", "desc1", "WHEN", "THEN", 0, true, [
+            $tag1->getData(),
+            $tag2->getData()
+        ]);
+        $rule2 = Rule::addRule($course->getId(), $section1->getId(), "Rule2", null, "WHEN", "THEN", 1, false, [
+            $tag3->getData()
+        ]);
+        $rule3 = Rule::addRule($course->getId(), $section2->getId(), "Rule3", null, "WHEN", "THEN", 0, false, []);
+
+        // When
+        $copy = Course::copyCourse($course->getId());
+
+        // Then
+        $tags = RuleSystem::getTags($course->getId());
+        $copiedTags = RuleSystem::getTags($copy->getId());
+        $this->assertSameSize($tags, $copiedTags);
+        foreach ($tags as $i => $tag) {
+            $this->assertEquals($tag["name"], $copiedTags[$i]["name"]);
+            $this->assertEquals($tag["color"], $copiedTags[$i]["color"]);
+        }
+
+        $sections = RuleSystem::getSections($course->getId());
+        $copiedSections = RuleSystem::getSections($copy->getId());
+        $this->assertSameSize($sections, $copiedSections);
+        foreach ($sections as $i => $section) {
+            $this->assertEquals($section["name"], $copiedSections[$i]["name"]);
+            $this->assertEquals($section["position"], $copiedSections[$i]["position"]);
+            $this->assertEquals($section["module"], $copiedSections[$i]["module"]);
+
+            $rules = (new Section($section["id"]))->getRules();
+            $copiedRules = (new Section($copiedSections[$i]["id"]))->getRules();
+            $this->assertSameSize($rules, $copiedRules);
+            foreach ($rules as $j => $rule) {
+                $this->assertEquals($rule["name"], $copiedRules[$j]["name"]);
+                $this->assertEquals($rule["description"], $copiedRules[$j]["description"]);
+                $this->assertEquals($rule["whenClause"], $copiedRules[$j]["whenClause"]);
+                $this->assertEquals($rule["thenClause"], $copiedRules[$j]["thenClause"]);
+                $this->assertEquals($rule["isActive"], $copiedRules[$j]["isActive"]);
+                $this->assertEquals($rule["position"], $copiedRules[$j]["position"]);
+                $this->assertEquals((new Rule($rule["id"]))->getText(), (new Rule($copiedRules[$j]["id"]))->getText());
+            }
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copyCourseWithStyles()
+    {
+        // Given
+        $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#000000",
+            "2022-10-01 00:00:00", "2022-11-01 00:00:00", true, true);
+        $course->updateStyles("button { background-color: red; }");
+
+        // When
+        $copy = Course::copyCourse($course->getId());
+
+        // Then
+        $this->assertEquals($course->getStyles()["contents"], $copy->getStyles()["contents"]);
     }
 
 

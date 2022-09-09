@@ -7,6 +7,7 @@ use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
+use GameCourse\Module\Skills\Skills;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
@@ -144,6 +145,40 @@ class VirtualCurrencyTest extends TestCase
         }
 
         $this->assertNotEmpty(Event::getEvents());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copy()
+    {
+        // Given
+        $copyTo = Course::addCourse("Course Copy", "CPY", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        (new Awards($copyTo))->setEnabled(true);
+        (new XPLevels($copyTo))->setEnabled(true);
+        (new Skills($copyTo))->setEnabled(true);
+        $VC = new VirtualCurrency($copyTo);
+        $VC->setEnabled(true);
+
+        $this->module->setName("Gold");
+        $this->module->setSkillCost(10);
+        $this->module->setWildcardCost(40);
+        $this->module->setAttemptRating(3);
+        $this->module->setImage($this->imageProvider()["png"][0]);
+
+        // When
+        $this->module->copyTo($copyTo);
+
+        // Then
+        $this->assertEquals($this->module->getName(), $VC->getName());
+        $this->assertEquals($this->module->getSkillCost(), $VC->getSkillCost());
+        $this->assertEquals($this->module->getWildcardCost(), $VC->getWildcardCost());
+        $this->assertEquals($this->module->getAttemptRating(), $VC->getAttemptRating());
+        $this->assertTrue($VC->hasImage());
+        $this->assertEquals(file_get_contents($this->module->getImage()), file_get_contents($VC->getImage()));
     }
 
     /**

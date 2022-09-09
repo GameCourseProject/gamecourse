@@ -2,6 +2,7 @@
 namespace GameCourse\Module\Badges;
 
 use Exception;
+use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
@@ -115,6 +116,67 @@ class BadgesTest extends TestCase
         $this->assertEquals(0, $this->module->getMaxExtraCredit());
         $this->assertTrue(file_exists($this->module->getDataFolder()));
         $this->assertTrue(Section::getSectionByName($this->course->getId(), $this->module::RULE_SECTION)->exists());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copy()
+    {
+        // Given
+        $copyTo = Course::addCourse("Course Copy", "CPY", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        (new Awards($copyTo))->setEnabled(true);
+        $xpLevels = (new XPLevels($copyTo));
+        $xpLevels->setEnabled(true);
+        $xpLevels->updateMaxExtraCredit(1000);
+        $badgesModule = new Badges($copyTo);
+        $badgesModule->setEnabled(true);
+
+        $this->module->updateMaxExtraCredit(500);
+        $badge1 = Badge::addBadge($this->course->getId(), "Badge1", "Perform action", false, false, false, false, false, [
+            ["description" => "one time", "goal" => 1, "reward" => 100],
+            ["description" => "two times", "goal" => 2, "reward" => 100],
+            ["description" => "three times", "goal" => 3, "reward" => 100]
+        ]);
+        $badge2 = Badge::addBadge($this->course->getId(), "Badge2", "Perform action", false, false, false, false, false, [
+            ["description" => "one time", "goal" => 1, "reward" => 100],
+            ["description" => "two times", "goal" => 2, "reward" => 100],
+            ["description" => "three times", "goal" => 3, "reward" => 100]
+        ]);
+
+        // When
+        $this->module->copyTo($copyTo);
+
+        // Then
+        $this->assertEquals($this->module->getMaxExtraCredit(), $badgesModule->getMaxExtraCredit());
+
+        $badges = Badge::getBadges($this->course->getId());
+        $copiedBadges = Badge::getBadges($copyTo->getId());
+        $this->assertSameSize($badges, $copiedBadges);
+        foreach ($badges as $i => $badge) {
+            $this->assertEquals($badge["name"], $copiedBadges[$i]["name"]);
+            $this->assertEquals($badge["description"], $copiedBadges[$i]["description"]);
+            $this->assertEquals($badge["isExtra"], $copiedBadges[$i]["isExtra"]);
+            $this->assertEquals($badge["isBragging"], $copiedBadges[$i]["isBragging"]);
+            $this->assertEquals($badge["isCount"], $copiedBadges[$i]["isCount"]);
+            $this->assertEquals($badge["isPost"], $copiedBadges[$i]["isPost"]);
+            $this->assertEquals($badge["isPoint"], $copiedBadges[$i]["isPoint"]);
+            $this->assertEquals($badge["isActive"], $copiedBadges[$i]["isActive"]);
+
+            $this->assertEquals(file_get_contents($badge["image"]), file_get_contents($copiedBadges[$i]["image"]));
+
+            $this->assertEquals($badge["nrLevels"], $copiedBadges[$i]["nrLevels"]);
+            for ($l = 1; $l <= $badge["nrLevels"]; $l++) {
+                $this->assertEquals($badge["desc$l"], $copiedBadges[$i]["desc$l"]);
+                $this->assertEquals($badge["goal$l"], $copiedBadges[$i]["goal$l"]);
+                $this->assertEquals($badge["reward$l"], $copiedBadges[$i]["reward$l"]);
+            }
+
+            $this->assertEquals((new Rule($badge["rule"]))->getText(), (new Rule($copiedBadges[$i]["rule"]))->getText());
+        }
     }
 
     /**

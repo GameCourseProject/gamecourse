@@ -327,6 +327,33 @@ class Tier
     }
 
     /**
+     * Copies an existing tier into another given skill tree.
+     *
+     * @param SkillTree $copyTo
+     * @return void
+     * @throws Exception
+     */
+    public function copyTier(SkillTree $copyTo)
+    {
+        // Copy tier
+        $tierInfo = $this->getData();
+        if ($this->isWildcard()) {
+            $copiedWildcard = self::getWildcard($copyTo->getId());
+            $copiedWildcard->setReward($tierInfo["reward"]);
+            $copiedWildcard->setActive($tierInfo["isActive"]);
+            $copiedTier = $copiedWildcard;
+
+        } else $copiedTier = self::addTier($copyTo->getId(), $tierInfo["name"], $tierInfo["reward"]);
+
+        // Copy skills of tier
+        $skills = $this->getSkills();
+        foreach ($skills as $skill) {
+            $skill = new Skill($skill["id"]);
+            $skill->copySkill($copiedTier);
+        }
+    }
+
+    /**
      * Deletes a tier from the database.
      *
      * @param int $tierId
@@ -377,12 +404,13 @@ class Tier
      * @param bool|null $active
      * @param bool|null $extra
      * @param bool|null $collab
+     * @param string $orderBy
      * @return array
      * @throws Exception
      */
-    public function getSkills(bool $active = null, bool $extra = null, bool $collab = null): array
+    public function getSkills(bool $active = null, bool $extra = null, bool $collab = null, string $orderBy = "s.position"): array
     {
-        return Skill::getSkillsOfTier($this->id, $active, $extra, $collab);
+        return Skill::getSkillsOfTier($this->id, $active, $extra, $collab, $orderBy);
     }
 
 

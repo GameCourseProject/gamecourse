@@ -59,6 +59,18 @@ class ClassCheck extends Module
         Core::database()->insert(self::TABLE_CLASSCHECK_STATUS, ["course" => $this->getCourse()->getId()]);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function copyTo(Course $copyTo)
+    {
+        $copiedModule = new ClassCheck($copyTo);
+
+        // Copy config
+        $tsvCode = $this->getTSVCode();
+        $copiedModule->saveTSVCode($tsvCode);
+    }
+
     public function disable()
     {
         $this->cleanDatabase();

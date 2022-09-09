@@ -139,6 +139,40 @@ class XPLevelsTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function copy()
+    {
+        // Given
+        $copyTo = Course::addCourse("Course Copy", "CPY", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        (new Awards($copyTo))->setEnabled(true);
+        $xpLevels = new XPLevels($copyTo);
+        $xpLevels->setEnabled(true);
+
+        $this->module->updateMaxExtraCredit(1000);
+        Level::getLevelZero($this->course->getId())->setDescription("Level 0");
+        Level::addLevel($this->course->getId(), 1000, "Level 1");
+        Level::addLevel($this->course->getId(), 2000, "Level 2");
+
+        // When
+        $this->module->copyTo($copyTo);
+
+        // Then
+        $this->assertEquals($this->module->getMaxExtraCredit(), $xpLevels->getMaxExtraCredit());
+
+        $levels = Level::getLevels($this->course->getId());
+        $copiedLevels = Level::getLevels($copyTo->getId());
+        $this->assertSameSize($levels, $copiedLevels);
+        foreach ($levels as $i => $level) {
+            $this->assertEquals($level["minXP"], $copiedLevels[$i]["minXP"]);
+            $this->assertEquals($level["description"], $copiedLevels[$i]["description"]);
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function disable()
     {
         // When

@@ -106,6 +106,28 @@ class VirtualCurrency extends Module
     /**
      * @throws Exception
      */
+    public function copyTo(Course $copyTo)
+    {
+        $copiedModule = new VirtualCurrency($copyTo);
+
+        // Copy config
+        $copiedModule->setName($this->getName());
+        $copiedModule->setSkillCost($this->getSkillCost());
+        $copiedModule->setWildcardCost($this->getWildcardCost());
+        $copiedModule->setAttemptRating($this->getAttemptRating());
+
+        // Copy image
+        if ($this->hasImage()) {
+            $path = $this->getDataFolder() . "/token.png";
+            $type = pathinfo($path, PATHINFO_EXTENSION);
+            $base64 = 'data:image/' . $type . ';base64,' . base64_encode(file_get_contents($path));
+            $copiedModule->setImage($base64);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
     public function disable()
     {
         $this->cleanDatabase();

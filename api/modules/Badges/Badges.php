@@ -80,6 +80,25 @@ class Badges extends Module
     /**
      * @throws Exception
      */
+    public function copyTo(Course $copyTo)
+    {
+        $copiedModule = new Badges($copyTo);
+
+        // Copy config
+        $maxExtraCredit = $this->getMaxExtraCredit();
+        $copiedModule->updateMaxExtraCredit($maxExtraCredit);
+
+        // Copy badges
+        $badges = Badge::getBadges($this->course->getId(), null, "id");
+        foreach ($badges as $badge) {
+            $badge = new Badge($badge["id"]);
+            $badge->copyBadge($copyTo);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
     public function disable()
     {
         $this->cleanDatabase();

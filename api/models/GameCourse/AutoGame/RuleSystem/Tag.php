@@ -206,6 +206,25 @@ class Tag
     }
 
     /**
+     * Copies an existing tag into another given course.
+     *
+     * @param Course $copyTo
+     * @return Tag
+     * @throws Exception
+     */
+    public function copyTag(Course $copyTo): Tag
+    {
+        if ($this->getCourse()->getId() == $copyTo->getId()) // tag already exists
+            return $this;
+
+        $tagName = $this->getName();
+        if (!RuleSystem::hasTag($copyTo->getId(), $tagName))
+            $tag = RuleSystem::addTag($copyTo->getId(), $tagName, $this->getColor());
+        else $tag = Tag::getTagByName($copyTo->getId(), $tagName);
+        return $tag;
+    }
+
+    /**
      * Deletes a tag from the Rule System.
      *
      * @param int $id

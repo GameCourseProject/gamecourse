@@ -381,6 +381,54 @@ class Rule
     }
 
     /**
+     * Copies an existing rule into another given section.
+     *
+     * @param Section $section
+     * @return void
+     * @throws Exception
+     */
+    public function copyRule(Section $section)
+    {
+        // Copy tags
+        $tags = [];
+        $copyTo = $section->getCourse();
+        foreach ($this->getTags() as $tag) {
+            $tag = new Tag($tag["id"]);
+            $copiedTag = $tag->copyTag($copyTo);
+            $tags[] = $copiedTag->getData();
+        }
+
+        // Copy rule
+        $ruleInfo = $this->getData();
+        self::addRule($section->getCourse()->getId(), $section->getId(), $ruleInfo["name"], $ruleInfo["description"],
+            $ruleInfo["whenClause"], $ruleInfo["thenClause"], $ruleInfo["position"], $ruleInfo["isActive"], $tags);
+    }
+
+    /**
+     * Edits an existing rule to be the same as another rule.
+     *
+     * @param Rule $mirrorTo
+     * @return void
+     * @throws Exception
+     */
+    public function mirrorRule(Rule $mirrorTo)
+    {
+        // Mirror tags
+        $tags = [];
+        $mirrorToCourse = $mirrorTo->getCourse();
+        foreach ($this->getTags() as $tag) {
+            $tag = new Tag($tag["id"]);
+            $copiedTag = $tag->copyTag($mirrorToCourse);
+            $tags[] = $copiedTag->getData();
+        }
+
+        // Mirror rule
+        $ruleInfo = $this->getData();
+        $mirrorTo->editRule($ruleInfo["name"], $ruleInfo["description"], $ruleInfo["whenClause"], $ruleInfo["thenClause"],
+            $mirrorTo->getPosition(), $ruleInfo["isActive"], $tags);
+    }
+
+    /**
      * Deletes a rule from the Rule System.
      *
      * @param int $ruleId

@@ -2,6 +2,7 @@
 namespace GameCourse\Module\Skills;
 
 use Exception;
+use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
@@ -1408,6 +1409,75 @@ tags:
         $this->assertEquals($tier2, $skill1->getTier());
         $this->assertEquals(1, $skill1->getPosition());
         $this->assertCount(2, $skill1->getDependencies());
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copySkill()
+    {
+        // Given
+        $copyTo = Course::addCourse("Course Copy", "CPY", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        (new Awards($copyTo))->setEnabled(true);
+        (new XPLevels($copyTo))->setEnabled(true);
+        (new Skills($copyTo))->setEnabled(true);
+
+        $cpSkillTree = SkillTree::addSkillTree($copyTo->getId(), "Skill Tree", 1000);
+        $cpTier1 = Tier::addTier($cpSkillTree->getId(), "Tier 1", 100);
+        $cpTier2 = Tier::addTier($cpSkillTree->getId(), "Tier 2", 200);
+
+        $cpSkill1 = Skill::addSkill($cpTier1->getId(), "Skill1", null, null, false, false, []);
+        $cpSkill2 = Skill::addSkill($cpTier1->getId(), "Skill2", null, null, false, false, []);
+
+        $skillTree = SkillTree::addSkillTree($this->courseId, "Skill Tree", 1000);
+        $tier1 = Tier::addTier($skillTree->getId(), "Tier 1", 100);
+        $tier2 = Tier::addTier($skillTree->getId(), "Tier 2", 200);
+
+        $skill1 = Skill::addSkill($tier1->getId(), "Skill1", null, null, false, false, []);
+        $skill2 = Skill::addSkill($tier1->getId(), "Skill2", null, null, false, false, []);
+
+        $skill = Skill::addSkill($tier2->getId(), "Skill", "#ffffff", null, false, false, [
+            [$skill1->getId(), $skill2->getId()]
+        ]);
+        $courseDataFolder = API_URL . "/" . (new Course($this->courseId))->getDataFolder(false);
+        $page = "<img src=\"https://some/random/image.png\"><img src=\"" . $courseDataFolder . "/" . $skill->getDataFolder(false) . "/image.jpg\">";
+        $skill->setPage($page);
+        file_put_contents($skill->getDataFolder() . "/file.txt", "TEST");
+
+        // When
+        $skill->copySkill($cpTier2);
+
+        // Then
+        $skills = $tier2->getSkills();
+        $copiedSkills = $cpTier2->getSkills();
+        $this->assertSameSize($skills, $copiedSkills);
+        foreach ($skills as $i => $skill) {
+            $this->assertEquals($skill["name"], $copiedSkills[$i]["name"]);
+            $this->assertEquals($skill["color"], $copiedSkills[$i]["color"]);
+            $this->assertEquals($skill["isCollab"], $copiedSkills[$i]["isCollab"]);
+            $this->assertEquals($skill["isExtra"], $copiedSkills[$i]["isExtra"]);
+            $this->assertEquals($skill["isActive"], $copiedSkills[$i]["isActive"]);
+
+            $copiedSkill = new Skill($copiedSkills[$i]["id"]);
+            $courseDataFolder = API_URL . "/" . $copyTo->getDataFolder(false);
+            $this->assertEquals("<img src=\"https://some/random/image.png\"><img src=\"" . $courseDataFolder . "/" . $copiedSkill->getDataFolder(false) . "/image.jpg\">", $copiedSkills[$i]["page"]);
+
+            $this->assertTrue(file_exists($copiedSkill->getDataFolder() . "/file.txt"));
+            $this->assertEquals(file_get_contents((new Skill($skill["id"]))->getDataFolder() . "/file.txt"), file_get_contents($copiedSkill->getDataFolder() . "/file.txt"));
+
+            $this->assertSameSize($skill["dependencies"], $copiedSkills[$i]["dependencies"]);
+            foreach ($skill["dependencies"] as $dependencyId => $combo) {
+                foreach ($combo as $j => $s) {
+                    $this->assertEquals($s["name"], $copiedSkills[$i]["dependencies"][$dependencyId + 1][$j]["name"]);
+                }
+            }
+
+            $this->assertEquals((new Rule($skill["rule"]))->getText(), (new Rule($copiedSkills[$i]["rule"]))->getText());
+        }
     }
 
 

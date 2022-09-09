@@ -515,6 +515,8 @@ abstract class Module
     /*** ---------------------- Actions --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    // Initialization
+
     /**
      * Actions to be performed when enabling the module.
      */
@@ -559,6 +561,14 @@ abstract class Module
     {
         RuleSystem::addSection($this->course->getId(), $this::RULE_SECTION, 0, $this->id);
     }
+
+
+    // Copying
+
+    abstract function copyTo(Course $copyTo);
+
+
+    // Cleaning
 
     /**
      * Actions to be performed when disabling the module.

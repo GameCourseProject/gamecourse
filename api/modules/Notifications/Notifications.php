@@ -74,6 +74,16 @@ class Notifications extends Module
         file_put_contents($this->getLogsPath(), "");
     }
 
+    public function copyTo(Course $copyTo)
+    {
+        $copiedModule = new Notifications($copyTo);
+
+        // Copy config
+        $config = $this->getProgressReportConfig();
+        $copiedModule->saveProgressReportConfig(null, $config["periodicityTime"], $config["periodicityHours"],
+            $config["periodicityDay"], false);
+    }
+
     public function disable()
     {
         $this->cleanDatabase();
@@ -808,7 +818,7 @@ class Notifications extends Module
             case "streak": return "Streak";
             case "post": return "Post";
             case "assignment": return "Assignment";
-            case "tokens": return $tokensName ?? "Gold";
+            case "tokens": return $tokensName ?? "Token(s)";
             default: return ucfirst($type);
         }
     }

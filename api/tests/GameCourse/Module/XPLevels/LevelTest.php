@@ -557,6 +557,39 @@ class LevelTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function copyLevel()
+    {
+        // Given
+        $copyTo = Course::addCourse("Course Copy", "CPY", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        (new Awards($copyTo))->setEnabled(true);
+        (new XPLevels($copyTo))->setEnabled(true);
+
+        $level0 = Level::getLevelZero($this->courseId);
+        $level0->setDescription("Level 0");
+
+        $level1 = Level::addLevel($this->courseId, 1000, "Level 1");
+
+        // When
+        $level0->copyLevel($copyTo);
+        $level1->copyLevel($copyTo);
+
+        // Then
+        $levels = Level::getLevels($this->courseId);
+        $copiedLevels = Level::getLevels($copyTo->getId());
+        $this->assertSameSize($levels, $copiedLevels);
+        foreach ($levels as $i => $level) {
+            $this->assertEquals($level["minXP"], $copiedLevels[$i]["minXP"]);
+            $this->assertEquals($level["description"], $copiedLevels[$i]["description"]);
+        }
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function deleteLevel()
     {
         $level = Level::addLevel($this->courseId, 1000, null);

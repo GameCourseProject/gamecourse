@@ -511,6 +511,27 @@ class Streak
     }
 
     /**
+     * Copies an existing streak into another given course.
+     *
+     * @param Course $copyTo
+     * @return void
+     * @throws Exception
+     */
+    public function copyStreak(Course $copyTo)
+    {
+        $streakInfo = $this->getData();
+
+        // Copy streak
+        $copiedStreak = self::addStreak($copyTo->getId(), $streakInfo["name"], $streakInfo["description"], $streakInfo["color"],
+            $streakInfo["count"], $streakInfo["periodicity"], $streakInfo["periodicityTime"], $streakInfo["reward"],
+            $streakInfo["tokens"], $streakInfo["isRepeatable"], $streakInfo["isCount"], $streakInfo["isPeriodic"],
+            $streakInfo["isAtMost"], $streakInfo["isExtra"]);
+
+        // Copy rule
+        $this->getRule()->mirrorRule($copiedStreak->getRule());
+    }
+
+    /**
      * Deletes a streak from the database.
      *
      * @param int $streakId

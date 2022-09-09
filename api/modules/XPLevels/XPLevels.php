@@ -102,6 +102,25 @@ class XPLevels extends Module
         }, self::ID);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function copyTo(Course $copyTo)
+    {
+        $copiedModule = new XPLevels($copyTo);
+
+        // Copy config
+        $maxExtraCredit = $this->getMaxExtraCredit();
+        $copiedModule->updateMaxExtraCredit($maxExtraCredit);
+
+        // Copy levels
+        $levels = Level::getLevels($this->course->getId());
+        foreach ($levels as $level) {
+            $level = new Level($level["id"]);
+            $level->copyLevel($copyTo);
+        }
+    }
+
     public function disable()
     {
         $this->cleanDatabase();

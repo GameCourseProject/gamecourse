@@ -429,6 +429,34 @@ class Badge
     }
 
     /**
+     * Copies an existing badge into another given course.
+     *
+     * @param Course $copyTo
+     * @return void
+     * @throws Exception
+     */
+    public function copyBadge(Course $copyTo)
+    {
+        $badgeInfo = $this->getData();
+
+        // Copy badge
+        $levels = $this->getLevels();
+        $copiedBadge = self::addBadge($copyTo->getId(), $badgeInfo["name"], $badgeInfo["description"], $badgeInfo["isExtra"],
+            $badgeInfo["isBragging"], $badgeInfo["isCount"], $badgeInfo["isPost"], $badgeInfo["isPoint"], $levels);
+
+        // Copy image
+        if ($this->hasImage()) {
+            $path = $this->getDataFolder() . "/badge.png";
+            $type = pathinfo($path, PATHINFO_EXTENSION);
+            $base64 = 'data:image/' . $type . ';base64,' . base64_encode(file_get_contents($path));
+            $copiedBadge->setImage($base64);
+        }
+
+        // Copy rule
+        $this->getRule()->mirrorRule($copiedBadge->getRule());
+    }
+
+    /**
      * Deletes a badge from the database.
      *
      * @param int $badgeId

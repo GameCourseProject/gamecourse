@@ -205,6 +205,33 @@ class SkillTree
     }
 
     /**
+     * Copies an existing skill tree into another given course.
+     *
+     * @param Course $copyTo
+     * @return void
+     * @throws Exception
+     */
+    public function copySkillTree(Course $copyTo)
+    {
+        // Copy skill tree
+        $skillTreeInfo = $this->getData();
+        $copiedSkillTree = self::addSkillTree($copyTo->getId(), $skillTreeInfo["name"], $skillTreeInfo["maxReward"]);
+
+        // Copy wildcard tier
+        // NOTE: wildcard tier needs to come 1st as other tiers might have skills with wildcard dependencies
+        $wildcardTier = Tier::getWildcard($this->id);
+        $wildcardTier->copyTier($copiedSkillTree);
+
+        // Copy other tiers
+        $tiers = $this->getTiers();
+        foreach ($tiers as $tier) {
+            $tier = new Tier($tier["id"]);
+            if ($tier->isWildcard()) continue;
+            $tier->copyTier($copiedSkillTree);
+        }
+    }
+
+    /**
      * Deletes a skill tree from the database.
      *
      * @param int $skillTreeId
@@ -245,11 +272,12 @@ class SkillTree
      * Option for 'active'.
      *
      * @param bool|null $active
+     * @param string $orderBy
      * @return array
      */
-    public function getTiers(bool $active = null): array
+    public function getTiers(bool $active = null, string $orderBy = "position"): array
     {
-        return Tier::getTiersOfSkillTree($this->id, $active);
+        return Tier::getTiersOfSkillTree($this->id, $active, $orderBy);
     }
 
 

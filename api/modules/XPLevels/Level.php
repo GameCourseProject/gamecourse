@@ -255,6 +255,25 @@ class Level
     }
 
     /**
+     * Copies an existing level into another given course.
+     *
+     * @param Course $copyTo
+     * @return void
+     * @throws Exception
+     */
+    public function copyLevel(Course $copyTo)
+    {
+        $minXP = $this->getMinXP();
+        $description = $this->getDescription();
+
+        if ($minXP == 0) {
+            $copiedLevel0 = self::getLevelZero($copyTo->getId());
+            $copiedLevel0->editLevel($minXP, $description);
+
+        } else self::addLevel($copyTo->getId(), $minXP, $description);
+    }
+
+    /**
      * Deletes a level from the database.
      *
      * @param int $levelId

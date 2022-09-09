@@ -981,6 +981,85 @@ tags:
      * @test
      * @throws Exception
      */
+    public function copyRule()
+    {
+        // Given
+        $tag1 = Tag::addTag($this->courseId, "tag1", "#ffffff");
+        $tag2 = Tag::addTag($this->courseId, "tag2", "#ffffff");
+        $tag3 = Tag::addTag($this->courseId, "tag3", "#ffffff");
+        $rule = Rule::addRule($this->courseId, $this->sectionId, "Rule", null, "when", "then",
+            0, true, [$tag1->getData(), $tag2->getData()]);
+
+        $course2 = Course::addCourse("Course2", "C2", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $section2 = Section::addSection($course2->getId(), "Section");
+
+        // When
+        $rule->copyRule($section2);
+
+        // Then
+        $this->assertCount(1, RuleSystem::getRules($course2->getId()));
+        $this->assertCount(1, $section2->getRules());
+
+        $copiedRule = Rule::getRuleByName($course2->getId(), $rule->getName());
+        $this->assertEquals($rule->getDescription(), $copiedRule->getDescription());
+        $this->assertEquals($rule->getWhen(), $copiedRule->getWhen());
+        $this->assertEquals($rule->getThen(), $copiedRule->getThen());
+        $this->assertEquals($rule->getPosition(), $copiedRule->getPosition());
+        $this->assertEquals($rule->isActive(), $copiedRule->isActive());
+
+        $tags = $rule->getTags();
+        $copiedTags = $copiedRule->getTags();
+        $this->assertSameSize($tags, $copiedTags);
+        foreach ($tags as $i => $tag) {
+            $this->assertEquals($tag["name"], $copiedTags[$i]["name"]);
+            $this->assertEquals($tag["color"], $copiedTags[$i]["color"]);
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function mirrorRule()
+    {
+        // Given
+        $tag1 = Tag::addTag($this->courseId, "tag1", "#ffffff");
+        $tag2 = Tag::addTag($this->courseId, "tag2", "#ffffff");
+        $tag3 = Tag::addTag($this->courseId, "tag3", "#ffffff");
+        $rule = Rule::addRule($this->courseId, $this->sectionId, "Rule1", null, "when", "then",
+            0, false, [$tag1->getData(), $tag2->getData()]);
+
+        $copyTo = Course::addCourse("Course Copy", "CPY", "2021-2022", "#ffffff",
+            null, null, false, false);
+        $copyToSection = Section::addSection($copyTo->getId(), "Section");
+        $copiedRule = Rule::addRule($copyTo->getId(), $copyToSection->getId(), "RULE", "DESCRIPTION",
+            "WHEN", "THEN", 0, true, [$tag3->getData()]);
+
+        // When
+        $rule->mirrorRule($copiedRule);
+
+        // Then
+        $this->assertEquals($rule->getName(), $copiedRule->getName());
+        $this->assertEquals($rule->getDescription(), $copiedRule->getDescription());
+        $this->assertEquals($rule->getWhen(), $copiedRule->getWhen());
+        $this->assertEquals($rule->getThen(), $copiedRule->getThen());
+        $this->assertEquals($rule->isActive(), $copiedRule->isActive());
+
+        $tags = $rule->getTags();
+        $copiedTags = $copiedRule->getTags();
+        $this->assertSameSize($tags, $copiedTags);
+        foreach ($tags as $i => $tag) {
+            $this->assertEquals($tag["name"], $copiedTags[$i]["name"]);
+            $this->assertEquals($tag["color"], $copiedTags[$i]["color"]);
+        }
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function deleteRule()
     {
         // Given

@@ -285,6 +285,26 @@ class Section
     }
 
     /**
+     * Copies an existing section into another given course.
+     *
+     * @param Course $copyTo
+     * @return void
+     * @throws Exception
+     */
+    public function copySection(Course $copyTo)
+    {
+        // Copy section
+        $copiedSection = self::addSection($copyTo->getId(), $this->getName(), $this->getPosition(),
+            $this->getModule() ? $this->getModule()->getId() : null);
+
+        // Copy rules
+        foreach ($this->getRules() as $rule) {
+            $rule = new Rule($rule["id"]);
+            $rule->copyRule($copiedSection);
+        }
+    }
+
+    /**
      * Deletes a section from the Rule System.
      *
      * @param int $sectionId

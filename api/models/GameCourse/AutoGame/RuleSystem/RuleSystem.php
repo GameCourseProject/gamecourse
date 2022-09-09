@@ -41,6 +41,25 @@ abstract class RuleSystem
     }
 
     /**
+     * Copies Rule System info from one course to another.
+     *
+     * @param Course $from
+     * @param Course $to
+     * @return void
+     * @throws Exception
+     */
+    public static function copyRuleSystem(Course $from, Course $to)
+    {
+        $sections = self::getSections($from->getId());
+        foreach ($sections as $section) {
+            if (!self::hasSection($to->getId(), $section["name"])) {
+                $section = new Section($section["id"]);
+                $section->copySection($to);
+            }
+        }
+    }
+
+    /**
      * Deletes Rule System information from a given course.
      *
      * @param int $courseId
@@ -114,6 +133,25 @@ abstract class RuleSystem
         Section::deleteSection($sectionId);
     }
 
+    /**
+     * Checks whether a given section exists in the Rule System.
+     *
+     * @param int $courseId
+     * @param string|null $sectionName
+     * @param int|null $sectionId
+     * @return bool
+     * @throws Exception
+     */
+    public static function hasSection(int $courseId, string $sectionName = null, int $sectionId = null): bool
+    {
+        if ($sectionName === null && $sectionId === null)
+            throw new Exception("Need either section name or ID to check whether a section exists in the Rule System.");
+
+        if ($sectionName) $section = Section::getSectionByName($courseId, $sectionName);
+        else $section = Section::getSectionById($sectionId);
+        return !!$section && $section->getCourse()->getId() == $courseId;
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Tags ----------------------- ***/
@@ -173,6 +211,25 @@ abstract class RuleSystem
         Tag::deleteTag($tagId);
     }
 
+    /**
+     * Checks whether a given tag exists in the Rule System.
+     *
+     * @param int $courseId
+     * @param string|null $tagName
+     * @param int|null $tagId
+     * @return bool
+     * @throws Exception
+     */
+    public static function hasTag(int $courseId, string $tagName = null, int $tagId = null): bool
+    {
+        if ($tagName === null && $tagId === null)
+            throw new Exception("Need either tag name or ID to check whether a tag exists in the Rule System.");
+
+        if ($tagName) $tag = Tag::getTagByName($courseId, $tagName);
+        else $tag = Tag::getTagById($tagId);
+        return !!$tag && $tag->getCourse()->getId() == $courseId;
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Rules ---------------------- ***/
@@ -189,6 +246,25 @@ abstract class RuleSystem
     public static function getRules(int $courseId, bool $active = null): array
     {
         return Rule::getRulesOfCourse($courseId, $active);
+    }
+
+    /**
+     * Checks whether a given rule exists in the Rule System.
+     *
+     * @param int $courseId
+     * @param string|null $ruleName
+     * @param int|null $ruleId
+     * @return bool
+     * @throws Exception
+     */
+    public static function hasRule(int $courseId, string $ruleName = null, int $ruleId = null): bool
+    {
+        if ($ruleName === null && $ruleId === null)
+            throw new Exception("Need either rule name or ID to check whether a rule exists in the Rule System.");
+
+        if ($ruleName) $rule = Rule::getRuleByName($courseId, $ruleName);
+        else $rule = Rule::getRuleById($ruleId);
+        return !!$rule && $rule->getCourse()->getId() == $courseId;
     }
 
 

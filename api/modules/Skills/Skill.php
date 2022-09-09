@@ -388,6 +388,7 @@ class Skill
         $skills = Core::database()->selectMultiple(self::TABLE_SKILL, $where, "*", $orderBy);
         foreach ($skills as &$skillInfo) {
             $skill = self::getSkillById($skillInfo["id"]);
+            $skillInfo["page"] = $skill->getPage();
             $skillInfo["dependencies"] = $skill->getDependencies();
             $skillInfo = self::parse($skillInfo);
         }
@@ -417,6 +418,7 @@ class Skill
             " t on s.tier=t.id LEFT JOIN " . SkillTree::TABLE_SKILL_TREE . " st on t.skillTree=st.id", $where, "s.*", $orderBy);
         foreach ($skills as &$skillInfo) {
             $skill = self::getSkillById($skillInfo["id"]);
+            $skillInfo["page"] = $skill->getPage();
             $skillInfo["dependencies"] = $skill->getDependencies();
             $skillInfo = self::parse($skillInfo);
         }
@@ -436,7 +438,7 @@ class Skill
      * @throws Exception
      */
     public static function getSkillsOfTier(int $tierId, bool $active = null, bool $extra = null, bool $collab = null,
-                                           string $orderBy = "name"): array
+                                           string $orderBy = "s.position"): array
     {
         $where = ["t.id" => $tierId];
         if ($active !== null) $where["s.isActive"] = $active;
@@ -446,6 +448,7 @@ class Skill
             $where, "s.*", $orderBy);
         foreach ($skills as &$skillInfo) {
             $skill = self::getSkillById($skillInfo["id"]);
+            $skillInfo["page"] = $skill->getPage();
             $skillInfo["dependencies"] = $skill->getDependencies();
             $skillInfo = self::parse($skillInfo);
         }
@@ -537,6 +540,39 @@ class Skill
         ]);
         $this->setDependencies($dependencies);
         return $this;
+    }
+
+    /**
+     * Copies an existing skill into another given tier.
+     *
+     * @param Tier $copyTo
+     * @return void
+     * @throws Exception
+     */
+    public function copySkill(Tier $copyTo)
+    {
+        $skillInfo = $this->getData();
+
+        // Copy dependencies
+        $courseIdCopyTo = $copyTo->getCourse()->getId();
+        $dependencies = array_map(function ($combo) use ($courseIdCopyTo) {
+            foreach ($combo as &$skill) {
+                $s = Skill::getSkillByName($courseIdCopyTo, $skill["name"]);
+                if (!$s) throw new Exception("Skill '" . $skill["name"] . "' not found in course with ID = " . $courseIdCopyTo);
+                $skill = $s->getId();
+            }
+            return $combo;
+        }, $this->getDependencies());
+
+        // Copy skill
+        $copiedSkill = self::addSkill($copyTo->getId(), $skillInfo["name"], $skillInfo["color"], $skillInfo["page"],
+            $skillInfo["isCollab"], $skillInfo["isExtra"], $dependencies);
+
+        // Copy data folder
+        Utils::copyDirectory($this->getDataFolder() . "/", $copiedSkill->getDataFolder() . "/");
+
+        // Copy rule
+        $this->getRule()->mirrorRule($copiedSkill->getRule());
     }
 
     /**

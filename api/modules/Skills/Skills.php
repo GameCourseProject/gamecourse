@@ -40,7 +40,7 @@ class Skills extends Module
     /*** ----------------------------------------------- ***/
 
     const ID = "Skills";  // NOTE: must match the name of the class
-    const NAME = "Skills";
+    const NAME = "Skill Tree";
     const DESCRIPTION = "Gives the ability to create skill trees where students have to complete skills in order to achieve higher tiers.";
     const TYPE = ModuleType::GAME_ELEMENT;
 
@@ -76,6 +76,25 @@ class Skills extends Module
 
         // Init config
         Core::database()->insert(self::TABLE_SKILL_CONFIG, ["course" => $this->course->getId()]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function copyTo(Course $copyTo)
+    {
+        $copiedModule = new Skills($copyTo);
+
+        // Copy config
+        $maxExtraCredit = $this->getMaxExtraCredit();
+        $copiedModule->updateMaxExtraCredit($maxExtraCredit);
+
+        // Copy skill trees
+        $skillTrees = SkillTree::getSkillTrees($this->course->getId(), "id");
+        foreach ($skillTrees as $skillTree) {
+            $skillTree = new SkillTree($skillTree["id"]);
+            $skillTree->copySkillTree($copyTo);
+        }
     }
 
     /**

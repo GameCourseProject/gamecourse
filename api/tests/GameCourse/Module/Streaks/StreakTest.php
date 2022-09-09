@@ -2,6 +2,7 @@
 namespace GameCourse\Module\Streaks;
 
 use Exception;
+use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
@@ -1318,6 +1319,58 @@ tags:
 
 	then:
 		award_streak(target, \"Streak2\", progress)"), $this->trim($streak->getRule()->getText()));
+        }
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copyStreak()
+    {
+        // Given
+        $copyTo = Course::addCourse("Course Copy", "CPY", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        (new Awards($copyTo))->setEnabled(true);
+        (new XPLevels($copyTo))->setEnabled(true);
+        (new Streaks($copyTo))->setEnabled(true);
+
+        $streak1 = Streak::addStreak($this->courseId, "Streak1", "Perform action", "#ffffff", 10,
+            null, null, 100, null, false, true, false,
+            false, false);
+        $streak2 = Streak::addStreak($this->courseId, "Streak2", "Perform action", null, 5,
+            null, null, 200, null, false, true, false,
+            false, true);
+
+        // When
+        $streak1->copyStreak($copyTo);
+        $streak2->copyStreak($copyTo);
+
+        // Then
+        $streaks = Streak::getStreaks($this->courseId);
+        $copiedStreaks = Streak::getStreaks($copyTo->getId());
+        $this->assertSameSize($streaks, $copiedStreaks);
+        foreach ($streaks as $i => $streak) {
+            $this->assertEquals($streak["name"], $copiedStreaks[$i]["name"]);
+            $this->assertEquals($streak["description"], $copiedStreaks[$i]["description"]);
+            $this->assertEquals($streak["color"], $copiedStreaks[$i]["color"]);
+            $this->assertEquals($streak["count"], $copiedStreaks[$i]["count"]);
+            $this->assertEquals($streak["periodicity"], $copiedStreaks[$i]["periodicity"]);
+            $this->assertEquals($streak["periodicityTime"], $copiedStreaks[$i]["periodicityTime"]);
+            $this->assertEquals($streak["reward"], $copiedStreaks[$i]["reward"]);
+            $this->assertEquals($streak["tokens"], $copiedStreaks[$i]["tokens"]);
+            $this->assertEquals($streak["isRepeatable"], $copiedStreaks[$i]["isRepeatable"]);
+            $this->assertEquals($streak["isCount"], $copiedStreaks[$i]["isCount"]);
+            $this->assertEquals($streak["isPeriodic"], $copiedStreaks[$i]["isPeriodic"]);
+            $this->assertEquals($streak["isAtMost"], $copiedStreaks[$i]["isAtMost"]);
+            $this->assertEquals($streak["isExtra"], $copiedStreaks[$i]["isExtra"]);
+            $this->assertEquals($streak["isActive"], $copiedStreaks[$i]["isActive"]);
+
+            $this->assertEquals($streak["image"], $copiedStreaks[$i]["image"]);
+
+            $this->assertEquals((new Rule($streak["rule"]))->getText(), (new Rule($copiedStreaks[$i]["rule"]))->getText());
         }
     }
 

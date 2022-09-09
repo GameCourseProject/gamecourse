@@ -82,6 +82,25 @@ class Streaks extends Module
     /**
      * @throws Exception
      */
+    public function copyTo(Course $copyTo)
+    {
+        $copiedModule = new Streaks($copyTo);
+
+        // Copy config
+        $maxExtraCredit = $this->getMaxExtraCredit();
+        $copiedModule->updateMaxExtraCredit($maxExtraCredit);
+
+        // Copy streaks
+        $streaks = Streak::getStreaks($this->course->getId(), null, "id");
+        foreach ($streaks as $streak) {
+            $streak = new Streak($streak["id"]);
+            $streak->copyStreak($copyTo);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
     public function disable()
     {
         $this->cleanDatabase();

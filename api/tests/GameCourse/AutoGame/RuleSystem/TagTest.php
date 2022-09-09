@@ -632,6 +632,82 @@ tags: tag1, tag2
      * @test
      * @throws Exception
      */
+    public function copyTag()
+    {
+        // Given
+        $tag = Tag::addTag($this->courseId, "tag1", "#ffffff");
+        $course2 = Course::addCourse("Course2", "C2", "2021-2022", "#ffffff",
+            null, null, true, true);
+
+        // When
+        $t = $tag->copyTag($course2);
+
+        // Then
+        $this->assertTrue(RuleSystem::hasTag($course2->getId(), $tag->getName()));
+        $copiedTag = Tag::getTagByName($course2->getId(), $tag->getName());
+        $this->assertEquals($tag->getName(), $copiedTag->getName());
+        $this->assertEquals($tag->getColor(), $copiedTag->getColor());
+
+        $this->assertEquals($tag->getName(), $t->getName());
+        $this->assertEquals($tag->getColor(), $t->getColor());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copyTagSameCourse()
+    {
+        // Given
+        $tag = Tag::addTag($this->courseId, "tag1", "#ffffff");
+
+        // When
+        $t = $tag->copyTag(new Course($this->courseId));
+
+        // Then
+        $this->assertCount(1, RuleSystem::getTags($this->courseId));
+        $this->assertTrue(RuleSystem::hasTag($this->courseId, $tag->getName()));
+
+        $copiedTag = Tag::getTagByName($this->courseId, $tag->getName());
+        $this->assertEquals($tag->getName(), $copiedTag->getName());
+        $this->assertEquals($tag->getColor(), $copiedTag->getColor());
+
+        $this->assertEquals($tag->getName(), $t->getName());
+        $this->assertEquals($tag->getColor(), $t->getColor());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copyTagDifferentCoursesTagAlreadyExists()
+    {
+        // Given
+        $tag = Tag::addTag($this->courseId, "tag1", "#ffffff");
+        $course2 = Course::addCourse("Course2", "C2", "2021-2022", "#ffffff",
+            null, null, true, true);
+        Tag::addTag($course2->getId(), $tag->getName(), $tag->getColor());
+
+        // When
+        $t = $tag->copyTag($course2);
+
+        // Then
+        $this->assertCount(1, RuleSystem::getTags($course2->getId()));
+        $this->assertTrue(RuleSystem::hasTag($course2->getId(), $tag->getName()));
+
+        $copiedTag = Tag::getTagByName($course2->getId(), $tag->getName());
+        $this->assertEquals($tag->getName(), $copiedTag->getName());
+        $this->assertEquals($tag->getColor(), $copiedTag->getColor());
+
+        $this->assertEquals($tag->getName(), $t->getName());
+        $this->assertEquals($tag->getColor(), $t->getColor());
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function deleteTag()
     {
         $tag = Tag::addTag($this->courseId, "tag", "#ffffff");

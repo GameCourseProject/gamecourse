@@ -76,6 +76,19 @@ class Moodle extends Module
         Core::database()->insert(self::TABLE_MOODLE_STATUS, ["course" => $this->getCourse()->getId()]);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function copyTo(Course $copyTo)
+    {
+        $copiedModule = new Moodle($copyTo);
+
+        // Copy config
+        $config = $this->getMoodleConfig();
+        $copiedModule->saveMoodleConfig($config["dbServer"], $config["dbUser"], $config["dbPass"], $config["dbName"],
+            $config["dbPort"], $config["tablesPrefix"], $config["moodleURL"], null);
+    }
+
     public function disable()
     {
         $this->cleanDatabase();

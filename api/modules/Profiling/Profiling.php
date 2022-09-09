@@ -77,6 +77,11 @@ class Profiling extends Module
         $this->course->setRolesHierarchy($hierarchy);
     }
 
+    public function copyTo(Course $copyTo)
+    {
+        // Nothing to do here
+    }
+
     public function disable()
     {
         $this->cleanDatabase();

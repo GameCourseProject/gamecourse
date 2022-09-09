@@ -6,6 +6,7 @@ use GameCourse\AutoGame\AutoGame;
 use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\Core\Auth;
 use GameCourse\Core\Core;
+use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
@@ -396,7 +397,7 @@ class Course
      * @return Course
      * @throws Exception
      */
-    public static function copyCourse(int $copyFrom): Course // FIXME: review
+    public static function copyCourse(int $copyFrom): Course
     {
         $courseToCopy = Course::getCourseById($copyFrom);
         if (!$courseToCopy) throw new Exception("Course to copy from with ID = " . $copyFrom . " doesn't exist.");
@@ -408,20 +409,55 @@ class Course
             null, null, false, false);
         $course->setTheme($courseInfo["theme"]);
 
-        // Copy course data
-        Utils::copyDirectory($courseToCopy->getDataFolder(true, $courseInfo["name"]) . "/",
-            $course->getDataFolder(true, $name) . "/", [RuleSystem::DATA_FOLDER . "/data"]);
-
-        // TODO: copy modules enabled and data
-
         // Copy roles
         $course->setRolesHierarchy($courseToCopy->getRolesHierarchy());
         $course->setRoles($courseToCopy->getRoles());
 
-        // TODO: default landing page, roles landingPages (copy pages and views first)
+        // Copy modules info
+        // NOTE: module dependencies are copied before the module
+        $modulesEnabled = $courseToCopy->getModules(true, true);
+        $modulesCopied = [];
+        while (count($modulesCopied) != count($modulesEnabled)) {
+            foreach ($modulesEnabled as $moduleId) {
+                if (in_array($moduleId, $modulesCopied)) // already copied
+                    continue;
+
+                // Check if dependencies have already been copied
+                $allDependenciesCopied = true;
+                foreach (($course->getModuleById($moduleId))->getDependencies(DependencyMode::HARD, true) as $dependencyId) {
+                    $dependency = $course->getModuleById($dependencyId);
+                    if (!$dependency->isEnabled()) {
+                        $allDependenciesCopied = false;
+                        break;
+                    }
+                }
+
+                // Copy module
+                if ($allDependenciesCopied) {
+                    // Enable module
+                    $copiedModule = $course->getModuleById($moduleId);
+                    $copiedModule->setEnabled(true);
+
+                    // Copy module
+                    $module = $courseToCopy->getModuleById($moduleId);
+                    $module->copyTo($course);
+                    $modulesCopied[] = $moduleId;
+                }
+            }
+        }
+
+        // TODO: copy views
+        // TODO: copy default landing page, roles landingPages
 
         // Copy AutoGame info
         AutoGame::copyAutoGameInfo($course->getId(), $courseToCopy->getId());
+
+        // Copy Rule System
+        RuleSystem::copyRuleSystem($courseToCopy, $course);
+
+        // Copy styles
+        $styles = $courseToCopy->getStyles();
+        if ($styles) $course->updateStyles($styles["contents"]);
 
         return $course;
     }
@@ -1042,7 +1078,7 @@ class Course
     public function getStyles(): ?array
     {
         $path = $this->getDataFolder(false) . "/styles/main.css";
-        if (file_exists(ROOT_PATH . $path)) return ["path" => API_URL . "/" . $path, "contents" => file_get_contents($path)];
+        if (file_exists(ROOT_PATH . $path)) return ["path" => API_URL . "/" . $path, "contents" => file_get_contents(ROOT_PATH . $path)];
         return null;
     }
 

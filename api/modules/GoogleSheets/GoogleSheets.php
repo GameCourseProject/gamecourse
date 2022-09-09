@@ -60,6 +60,34 @@ class GoogleSheets extends Module
         Core::database()->insert(self::TABLE_GOOGLESHEETS_STATUS, ["course" => $this->getCourse()->getId()]);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function copyTo(Course $copyTo)
+    {
+        // Copy config
+        $config = Core::database()->select(self::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->getCourse()->getId()]);
+        Core::database()->update(self::TABLE_GOOGLESHEETS_CONFIG, [
+            "key_" => $config["key_"],
+            "clientId" => $config["clientId"],
+            "projectId" => $config["projectId"],
+            "authUri" => $config["authUri"],
+            "tokenUri" => $config["tokenUri"],
+            "authProvider" => $config["authProvider"],
+            "clientSecret" => $config["clientSecret"],
+            "redirectUris" => $config["redirectUris"],
+            "authUrl" => $config["authUrl"],
+            "accessToken" => $config["accessToken"],
+            "expiresIn" => $config["expiresIn"],
+            "scope" => $config["scope"],
+            "tokenType" => $config["tokenType"],
+            "created" => $config["created"],
+            "refreshToken" => $config["refreshToken"],
+            "spreadsheetId" => $config["spreadsheetId"],
+            "sheetName" => $config["sheetName"]
+        ], ["course" => $copyTo->getId()]);
+    }
+
     public function disable()
     {
         $this->cleanDatabase();
@@ -237,20 +265,20 @@ class GoogleSheets extends Module
 
     /*** ----------- Token ---------- ***/
 
-    public function getToken(): ?string
+    public function getToken(): ?array
     {
         $accessToken = Core::database()->select(self::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->course->getId()], "accessToken");
         if (!$accessToken) return null;
 
         $config = Core::database()->select(self::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->course->getId()]);
-        return json_encode([
+        return [
             "access_token" => $config["accessToken"],
             "expires_in" => $config["expiresIn"],
             "scope" => $config["scope"],
             "token_type" => $config["tokenType"],
             "created" => $config["created"],
             "refresh_token" => $config["refreshToken"]
-        ]);
+        ];
     }
 
     /**
@@ -277,7 +305,7 @@ class GoogleSheets extends Module
     private function handleToken(?string $authCode = null): array
     {
         $credentials = $this->getCredentials();
-        $token = $this->getToken();
+        $token = json_encode($this->getToken());
         return GoogleHandler::checkToken($credentials, $token, $authCode, $this->course->getId());
     }
 
@@ -341,7 +369,7 @@ class GoogleSheets extends Module
             $credentials = $this->getCredentials();
             if (!$credentials) return false;
 
-            $token = $this->getToken();
+            $token = json_encode($this->getToken());
             if (!$token) return false;
 
             $service = GoogleHandler::getGoogleSheets($credentials, $token, null, $this->course->getId());
@@ -373,7 +401,7 @@ class GoogleSheets extends Module
 
         try {
             $credentials = $this->getCredentials();
-            $token = $this->getToken();
+            $token = json_encode($this->getToken());
             self::$GoogleSheetsService = GoogleHandler::getGoogleSheets($credentials, $token, null, $this->course->getId());
 
             $newData = false;
@@ -381,7 +409,7 @@ class GoogleSheets extends Module
             foreach ($config["sheetNames"] as $i => $sheetName) {
                 $prof = $this->course->getCourseUserByUsername($config["ownerNames"][$i]);
                 if ($prof) {
-                    $data = $this->getSheetData($config["spreadsheetId"], $sheetName, );
+                    $data = $this->getSheetData($config["spreadsheetId"], $sheetName);
                     if ($this->saveSheetData($data, $prof->getId())) $newData = true;
                 }
             }
@@ -398,9 +426,7 @@ class GoogleSheets extends Module
      *
      * @param string $spreadsheetId
      * @param string $sheetName
-     * @param string $sheetOwner
      * @return array
-     * @throws Exception
      */
     public function getSheetData(string $spreadsheetId, string $sheetName): array
     {
