@@ -348,8 +348,8 @@ export class CoursesComponent implements OnInit {
       short: course.short,
       year: course.year,
       color: course.color,
-      startDate: course.startDate?.format('DD/MM/YYYY') || null,
-      endDate: course.endDate?.format('DD/MM/YYYY') || null,
+      startDate: course.startDate?.format('YYYY-MM-DD') || null,
+      endDate: course.endDate?.format('YYYY-MM-DD') || null,
       isActive: course.isActive,
       isVisible: course.isVisible
     };
