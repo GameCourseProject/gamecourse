@@ -25,6 +25,7 @@ create table teams_xp(
     course  int unsigned not null,
     teamId 	    int unsigned not null,
     xp          int not null,
+    level       int not null,
     primary key (course,teamId),
     foreign key(course) references course(id) on delete cascade,
     foreign key(teamId) references teams(id) on delete cascade

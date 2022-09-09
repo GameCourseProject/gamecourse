@@ -12,6 +12,7 @@ use GameCourse\User;
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Expression\ValueNode;
 use Modules\Charts\Charts;
+use Modules\Skills\Skills;
 
 class Teams extends Module
 {
@@ -121,7 +122,6 @@ class Teams extends Module
         );
     }
 
-
     public function initTemplates()
     {
         /*$courseId = $this->getCourseId();
@@ -131,8 +131,6 @@ class Teams extends Module
         */
         }
 
-
-        
     public function initAPIEndpoints()
     {
 
@@ -270,6 +268,39 @@ class Teams extends Module
 
             API::response(["isTeamNameActive" => intval($this->getIsTeamNameActive($courseId))]);
         });
+
+        /**
+         * Gets max nr of team members from teams_config table.
+         *
+         * @param int $courseId
+         */
+        API::registerFunction(self::ID, 'getNrTeamMembers', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('courseId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            API::response(["nrTeamMembers" => intval($this->getNumberOfTeamMembers($courseId))]);
+        });
+
+        /**
+         * Import teams into the system.
+         *
+         * @param $file
+         * @param bool $replace (optional)
+         */
+        API::registerFunction(self::ID, 'importTeams', function () {
+            API::requireAdminPermission();
+            API::requireValues('file');
+
+            $file = explode(",", API::getValue('file'));
+            $fileContents = base64_decode($file[1]);
+            $replace = API::getValue('replace');
+            $nrTeams = $this->importTeams($fileContents, $replace);
+            API::response(array('nrTeams' => $nrTeams));
+        });
+
         
     }
 
@@ -413,7 +444,75 @@ class Teams extends Module
 
     // TODO
     // import teams onto the system with a file.
-    public function importItems($fileData, $replace = true){
+    public function importTeams($fileData, $replace = true): int{
+
+        $courseId = $this->getCourseId();
+
+        $newTeamsNr = 0;
+        $lines = explode("\n", $fileData);
+
+        $groupColumnName = "Agrupamento VI Projects";
+
+        $separator = ";"; # - DEFAULT
+
+        $pos = strpos($lines[0], $separator);
+        if ($pos === false) {
+            $separator = ",";
+        }
+        
+        $lines[0] = trim($lines[0]);
+        $firstLine = explode(",",$lines[0]);
+        $firstLine = array_map('trim', $firstLine);
+
+        $usernameIndex = array_search("Username", $firstLine);
+        $groupNameIndex = array_search($groupColumnName, $firstLine);
+
+        # $lines[0] = column names
+        for ($line = 1; $line < sizeof($lines); $line++) {
+            # e.g: line = ist149372;49372;5 - VIL04    (username, group)
+            $line = trim($line);
+            $lineContent = explode($separator, $line);
+            $lineContent = array_map('trim', $lineContent);
+
+            $username = $lineContent[$usernameIndex];
+            $groupNr = $lineContent[$groupNameIndex];
+            $group =  $this->getTeamNumberFromFile($groupNr);
+
+            $gcUserId = Core::$systemDB->select("auth", ["username" => $username], "game_course_user_id");
+            if ($gcUserId != null) {
+                $courseUserId = Core::$systemDB->select("course_user", ["course" => $courseId, "id" => $gcUserId], "id");
+            } else {
+                $courseUserId = null;
+            }
+
+            // check if game_course_user is course_user
+            if ($courseUserId != null){
+                $teamMember = Core::$systemDB->select(self::TABLE_MEMBERS, ["course" => $courseId, 'memberId' => $gcUserId], "teamId");
+                $teamId = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'teamNumber' => intval($group)], "id");
+
+                # check if user is already a member of a team in the course
+                if ($teamMember == null){
+                    # check if team with group number already exists. If not, create the team and add the user.
+                    if ($teamId == null){
+                        $teamData = [
+                            "teamNumber" => intval($group),
+                            "course" => $courseId
+                        ];
+                        Core::$systemDB->insert(self::TABLE, $teamData);
+                        $newTeamId = Core::$systemDB->getLastId();
+                        Core::$systemDB->insert(self::TABLE_MEMBERS, [ 'teamId' => $newTeamId, "memberId" => $gcUserId ]);
+                        $newTeamsNr++;
+                    } else {
+                        // team already exists
+                        Core::$systemDB->insert(self::TABLE_MEMBERS, [ 'teamId' => $teamId, "memberId" => $gcUserId ]);
+                    }
+
+                }
+            }
+
+        }
+
+        return $newTeamsNr;
 
     }
 
@@ -425,6 +524,11 @@ class Teams extends Module
     /*** -------------------- Utils -------------------- ***/
     /*** ----------------------------------------------- ***/
 
+    public function getTeamsConfigVars($courseId)
+    {
+        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
+    }
+
     public function getTeams($courseId)
     {
         $teamsArray = array();
@@ -432,6 +536,8 @@ class Teams extends Module
         foreach ($teams as &$team) {
             $teamMembers = Core::$systemDB->selectMultiple(self::TABLE_MEMBERS, ["teamId" => $team["id"]], "memberId");;
             $xp = Core::$systemDB->select(self::TABLE_XP, ["teamId" => $team["id"]], "xp");
+            $level = Core::$systemDB->select(self::TABLE_XP, ["teamId" => $team["id"]], "level");
+
             //information to match needing fields
             $team['teamName'] = $team["teamName"];
             $team['teamNumber'] = $team["teamNumber"];
@@ -442,6 +548,11 @@ class Teams extends Module
             } else{
                 $team['xp'] = 0;
             }
+            if(!empty($level)){
+                $team['level'] = $level;
+            } else{
+                $team['level'] = 0;
+            }
 
             if(!empty($teamMembers)){
                 for ($i = 0; $i < sizeof($teamMembers); $i++) {
@@ -450,16 +561,12 @@ class Teams extends Module
                     }else{
                         $team['members'] .= $teamMembers[$i]['memberId'] . "|";
                     }
-
                     $memberId = $teamMembers[$i]['memberId'];
                     $member = Core::$systemDB->select(self::TABLE_GC_USERS, ["id" => $memberId], "name, major, studentNumber");
-
                     array_push($team['teamMembers'], $member);
                 }
 
             }
-
-
         }
         return $teams;
     }
@@ -525,7 +632,7 @@ class Teams extends Module
     }
 
     public function newTeam($team, $courseId){
-        // "teamNumber" => $team['teamNumber'],
+        // "teamNumber" => $team['teamNumber'] || $team['id'],
         $teamData = [
             "teamName" => $team['teamName'],
             "course" => $courseId
@@ -541,11 +648,8 @@ class Teams extends Module
                 $memberId = (int)$m;
                 Core::$systemDB->insert(self::TABLE_MEMBERS, [ 'teamId' => $teamId, "memberId" => $memberId ]);
             }
-
             $team['members'] = $team['members'];
-
         }
-
     }
 
     public function editTeam($team, int $courseId){
@@ -579,6 +683,19 @@ class Teams extends Module
         Core::$systemDB->delete(self::TABLE, ["id" => $teamId]);
     }
 
+    /*** ----------------------------------------------- ***/
+    /*** ------------------- Helpers ------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+   public function getTeamNumberFromFile($group){
+       // group default = "12 - VIL04"    (groupNumber - classSlot)
+
+       if (is_numeric($group)) return $group;
+       else{
+           return strtok($group, '-');
+       }
+
+   }
 
 }
 

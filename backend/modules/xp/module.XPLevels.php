@@ -11,6 +11,7 @@ use GameCourse\Views\Expression\ValueNode;
 use Modules\AwardList\AwardList;
 use Modules\Badges\Badges;
 use Modules\Skills\Skills;
+use Modules\Teams\Teams;
 use Streaks\Streaks;
 
 class XPLevels extends Module
@@ -214,7 +215,6 @@ class XPLevels extends Module
             self::ID,
             'getTeamXP',
             function ($team) use ($courseId) {
-                //return new ValueNode($this->calculateXP($user, $courseId));
                 return new ValueNode($this->getTeamXP($team, $courseId));
             },
             'Returns the sum of XP that all Modules provide as reward from a Team.',
@@ -290,6 +290,14 @@ class XPLevels extends Module
             $entry = Core::$systemDB->select(self::TABLE_XP, ["course" => $courseId, "user" => $student["id"]]);
             if(!$entry)
                 Core::$systemDB->insert(self::TABLE_XP, ["course" => $courseId, "user" => $student["id"], "xp" => 0 ,"level" => $levelZero]);
+        }
+
+        $teams = new Teams($courseId);
+        $allTeams = $teams->getTeams($courseId);
+        foreach ($allTeams as $team){
+            $entry = Core::$systemDB->select(self::TABLE_TEAMS_XP, ["course" => $courseId, "teamId" => $team["id"]]);
+            if(!$entry)
+                Core::$systemDB->insert(self::TABLE_TEAMS_XP, ["course" => $courseId, "teamId" => $team["id"], "xp" => 0 ,"level" => $levelZero]);
         }
     }
 
