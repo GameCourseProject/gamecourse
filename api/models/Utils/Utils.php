@@ -207,7 +207,15 @@ class Utils
         $path = $to . $filename;
 
         $file = base64_decode(preg_replace("/^data:.*\/.*;base64,/i", '', $base64));
-        file_put_contents($path, $file);
+
+        if (self::strStartsWith($base64, "data:image") && self::getBase64ImgSize($base64) > 300) {
+            // If image is too big, compress it
+            self::compressImage($file, $path, 25);
+
+        } else {
+            file_put_contents($path, $file);
+        }
+
         return $path;
     }
 
@@ -235,6 +243,42 @@ class Utils
 
         // Delete directory if empty
         if (self::getDirectorySize($from) === 0 && $deleteIfEmpty) Utils::deleteDirectory($from);
+    }
+
+    /**
+     * Gets size of a base64 image.
+     *
+     * @param string $base64
+     * @param string $resultIn
+     * @return float|int
+     */
+    public static function getBase64ImgSize(string $base64, string $resultIn = "KB")
+    {
+        $size_in_bytes = (int) (strlen(rtrim($base64, '=')) * 3 / 4);
+        $size_in_kb = $size_in_bytes / 1024;
+        $size_in_mb = $size_in_kb / 1024;
+
+        if ($resultIn == "B") return $size_in_bytes;
+        if ($resultIn == "KB") return $size_in_kb;
+        if ($resultIn == "MB") return $size_in_mb;
+
+        return $size_in_mb;
+    }
+
+    /**
+     * Compresses a given image.
+     * Quality ranges from 0 (worst quality, smaller file) to 100
+     * (best quality, biggest file).
+     *
+     * @param string $img
+     * @param string $to
+     * @param int $quality
+     * @return void
+     */
+    public static function compressImage(string $img, string $to, int $quality = 75)
+    {
+        $img = imagecreatefromstring($img);
+        imagejpeg($img, $to, $quality);
     }
 
 

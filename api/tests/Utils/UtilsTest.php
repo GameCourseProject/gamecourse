@@ -932,6 +932,44 @@ class UtilsTest extends TestCase
     }
 
 
+    // Getting base64 image size
+
+    /**
+     * @test
+     */
+    public function getBase64ImgSize()
+    {
+        $base64 = $this->uploadFileProvider()["image"][0];
+        $size = Utils::getBase64ImgSize($base64);
+        $this->assertEquals(14, round($size));
+    }
+
+
+    // Compressing images
+
+    /**
+     * @test
+     */
+    public function compressImage()
+    {
+        // Given
+        $base64 = $this->uploadFileProvider()["image"][0];
+        $img = base64_decode(preg_replace("/^data:.*\/.*;base64,/i", '', $base64));
+        $originalImgSize = Utils::getBase64ImgSize($base64);
+
+        // When
+        Utils::compressImage($img, ROOT_PATH . "tests/Utils/image.png", 25);
+
+        // Then
+        $base64 = 'data:image/png;base64,' . base64_encode(file_get_contents(ROOT_PATH . "tests/Utils/image.png"));
+        $newImgSize = Utils::getBase64ImgSize($base64);
+        $this->assertTrue($newImgSize < $originalImgSize);
+
+        // Clean up
+        unlink(ROOT_PATH . "tests/Utils/image.png");
+    }
+
+
     // Validations
 
     /**
