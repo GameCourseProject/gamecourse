@@ -72,7 +72,6 @@ class XPLevels extends Module
 
         // Init config
         Core::database()->insert(self::TABLE_XP_CONFIG, ["course" => $this->course->getId()]);
-        $this->updateMaxExtraCredit(0);
 
         // Create level zero
         $level0Id = Level::addLevel($this->course->getId(), 0, "AWOL")->getId();
@@ -234,19 +233,6 @@ class XPLevels extends Module
     public function updateMaxExtraCredit(int $max)
     {
         Core::database()->update(self::TABLE_XP_CONFIG, ["maxExtraCredit" => $max], ["course" => $this->course->getId()]);
-
-        // Update other max. extra credits according to new global max.
-        $badgesModule = new Badges($this->course);
-        if ($badgesModule->isEnabled() && $badgesModule->getMaxExtraCredit() > $max)
-            $badgesModule->updateMaxExtraCredit($max);
-
-        $skillsModule = new Skills($this->course);
-        if ($skillsModule->isEnabled() && $skillsModule->getMaxExtraCredit() > $max)
-            $skillsModule->updateMaxExtraCredit($max);
-
-        $streaksModule = new Streaks($this->course);
-        if ($streaksModule->isEnabled() && $streaksModule->getMaxExtraCredit() > $max)
-            $streaksModule->updateMaxExtraCredit($max);
     }
 
 

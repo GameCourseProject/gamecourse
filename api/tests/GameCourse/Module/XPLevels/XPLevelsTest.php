@@ -245,17 +245,8 @@ class XPLevelsTest extends TestCase
      */
     public function updateMaxExtraCredit()
     {
-        // No module enabled
         $this->module->updateMaxExtraCredit(1000);
         $this->assertEquals(1000, $this->module->getMaxExtraCredit());
-
-        // Module enabled
-        $badgesModule = new Badges($this->course);
-        $badgesModule->setEnabled(true);
-        $badgesModule->updateMaxExtraCredit(800);
-        $this->module->updateMaxExtraCredit(500);
-        $this->assertEquals(500, $this->module->getMaxExtraCredit());
-        $this->assertEquals(500, $badgesModule->getMaxExtraCredit());
     }
 
 

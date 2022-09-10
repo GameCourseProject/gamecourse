@@ -248,21 +248,6 @@ class SkillsTest extends TestCase
      */
     public function updateMaxExtraCredit()
     {
-        // XP & Levels not enabled
-        $this->module->updateMaxExtraCredit(1000);
-        $this->assertEquals(1000, $this->module->getMaxExtraCredit());
-
-        // XP & Levels enabled; smaller value
-        $xpLevels = new XPLevels($this->course);
-        $xpLevels->setEnabled(true);
-        try {
-            $this->module->updateMaxExtraCredit(2000);
-        } catch (Exception $e) {
-            $this->assertEquals(0, $this->module->getMaxExtraCredit());
-        }
-
-        // XP & Levels enabled; bigger value
-        $xpLevels->updateMaxExtraCredit(2000);
         $this->module->updateMaxExtraCredit(1000);
         $this->assertEquals(1000, $this->module->getMaxExtraCredit());
     }

@@ -286,13 +286,6 @@ class Streaks extends Module
      */
     public function updateMaxExtraCredit(int $max)
     {
-        $xpLevels = $this->course->getModuleById(XPLevels::ID);
-        if ($xpLevels && $xpLevels->isEnabled()) {
-            $generalMax = $xpLevels->getMaxExtraCredit();
-            if ($max > $generalMax)
-                throw new Exception("Streaks max. extra credit cannot be bigger than " . $generalMax . " (general max. extra credit).");
-        }
-
         Core::database()->update(self::TABLE_STREAK_CONFIG, ["maxExtraCredit" => $max], ["course" => $this->course->getId()]);
     }
 
