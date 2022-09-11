@@ -102,11 +102,6 @@ export class SkillsComponent implements OnInit {
     this.loading = true;
     this.newSkill['id'] = this.skillToEdit.id;
 
-    // Clean dependencies if wildcard skill
-    if (this.newSkill.tierID == this.getWildcardTier(this.infoSelected.tiers).id) {
-      this.newSkill.dependencies = [];
-    }
-
     this.api.editSkill(this.courseID, this.newSkill)
       .pipe( finalize(() => {
         this.isSkillModalOpen = false;

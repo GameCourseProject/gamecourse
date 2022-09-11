@@ -257,7 +257,7 @@ class Skill
                 $position = count($newTier->getSkills()) - 1;
                 Utils::updateItemPosition(null, $position, self::TABLE_SKILL, "position", $this->id, $newTier->getSkills());
 
-                // Update skill rule position
+                // Update skill rule
                 $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
                 $isActive = key_exists("isActive", $fieldValues) ? $newStatus : $this->isActive();
                 self::updateRule($course->getId(), $rule->getId(), self::findRulePosition($newTier->getId(), $position),
@@ -535,6 +535,7 @@ class Skill
     public function editSkill(int $tierId, string $name, ?string $color, ?string $page, bool $isCollab, bool $isExtra,
                               bool $isActive, int $position, array $dependencies): Skill
     {
+        $oldTier = $this->getTier();
         $this->setData([
             "tier" => $tierId,
             "name" => $name,
@@ -545,6 +546,20 @@ class Skill
             "isActive" => +$isActive,
             "position" => $position
         ]);
+
+        // If tier changed, remove invalid dependencies
+        if ($tierId != $oldTier->getId()) {
+            $newTier = new Tier($tierId);
+            if ($newTier->getPosition() == 0 || $newTier->isWildcard()) $dependencies = [];
+            else $dependencies = array_filter($dependencies, function ($combo) use ($newTier) {
+                foreach ($combo as $skillId) {
+                    $skillTier = (new Skill($skillId))->getTier();
+                    if (!$skillTier->isWildcard() && $skillTier->getPosition() >= $newTier->getPosition()) return false;
+                }
+                return true;
+            });
+        }
+
         $this->setDependencies($dependencies);
         return $this;
     }
@@ -564,9 +579,12 @@ class Skill
         $courseIdCopyTo = $copyTo->getCourse()->getId();
         $dependencies = array_map(function ($combo) use ($courseIdCopyTo) {
             foreach ($combo as &$skill) {
-                $s = Skill::getSkillByName($courseIdCopyTo, $skill["name"]);
-                if (!$s) throw new Exception("Skill '" . $skill["name"] . "' not found in course with ID = " . $courseIdCopyTo);
-                $skill = $s->getId();
+                if ($skill["name"] == Tier::WILDCARD) $skill = 0;
+                else {
+                    $s = Skill::getSkillByName($courseIdCopyTo, $skill["name"]);
+                    if (!$s) throw new Exception("Skill '" . $skill["name"] . "' not found in course with ID = " . $courseIdCopyTo);
+                    $skill = $s->getId();
+                };
             }
             return $combo;
         }, $this->getDependencies());
@@ -641,15 +659,18 @@ class Skill
      */
     public function getDependencies(): array
     {
+        $skillTreeId = $this->getTier()->getSkillTree()->getId();
+        $wildcardTier = Tier::getWildcard($skillTreeId);
+
         $dependencies = [];
 
         $dependencyIds = array_column(Core::database()->selectMultiple(self::TABLE_SKILL_DEPENDENCY, ["skill" => $this->id], "id", "id"), "id");
         foreach ($dependencyIds as $dependencyId) {
             $hasWildcard = false;
-            $combo = array_map(function ($skillId) use (&$hasWildcard) {
+            $combo = array_map(function ($skillId) use (&$hasWildcard, $wildcardTier) {
                 if ($skillId == 0) { // wildcard
                     $hasWildcard = true;
-                    $skill = ["id" => 0, "name" => Tier::WILDCARD];
+                    $skill = ["id" => 0, "tier" => $wildcardTier->getId(), "name" => Tier::WILDCARD];
                 } else $skill = self::getSkillById($skillId)->getData();
                 return self::parse($skill);
             }, self::getDependencyCombo($dependencyId));

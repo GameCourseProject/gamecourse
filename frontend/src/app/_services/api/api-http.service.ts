@@ -1560,7 +1560,6 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(obj => Skill.fromDatabase(obj))) );
   }
 
-  // TODO: refactor
   public getSkillById(skillID: number): Observable<Skill> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.SKILLS);

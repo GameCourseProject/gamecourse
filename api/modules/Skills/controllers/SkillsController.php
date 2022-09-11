@@ -86,7 +86,12 @@ class SkillsController
 
         API::requireCoursePermission($skill->getCourse());
 
-        API::response($skill->getData());
+        $skillInfo = $skill->getData();
+        $skillInfo["page"] = $skill->getPage();
+        $skillInfo["dependencies"] = $skill->getDependencies();
+        $skillInfo = Skill::parse($skillInfo);
+
+        API::response($skillInfo);
     }
 
     /**

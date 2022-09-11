@@ -1459,6 +1459,51 @@ tags:
      * @test
      * @throws Exception
      */
+    public function editSkillTierChangedWithDependencies()
+    {
+        // Given
+        $skillTreeId = (new Tier($this->tierId))->getSkillTree()->getId();
+        $wildcardTier = Tier::getWildcard($skillTreeId);
+        $skillWildard = Skill::addSkill($wildcardTier->getId(), "Skill Wildcard", null, null, false, false, []);
+
+        $tier2 = Tier::addTier($skillTreeId, "Tier 2", 200);
+        $skill1 = Skill::addSkill($tier2->getId(), "Skill1", null, null, false, false, []);
+        $skill2 = Skill::addSkill($tier2->getId(), "Skill2", null, null, false, false, []);
+
+        $tier3 = Tier::addTier($skillTreeId, "Tier 3", 300);
+        $skill3 = Skill::addSkill($tier3->getId(), "Skill3", null, null, false, false, [
+            [$skill1->getId()],
+            [$skill2->getId()],
+            [0]
+        ]);
+
+        // When
+        $skill3->editSkill($tier2->getId(), "Skill3", null, null, false, false, true, 0, [
+            [$skill1->getId()],
+            [$skill2->getId()],
+            [0]
+        ]);
+
+        // Then
+        $this->assertEquals($tier2, $skill3->getTier());
+        $this->assertCount(1, $skill3->getDependencies());
+        $this->assertEquals(0, $skill3->getDependencies()[4][0]["id"]);
+
+        $this->assertEquals(0, $skillWildard->getPosition());
+        $this->assertEquals(0, $skill1->getPosition());
+        $this->assertEquals(1, $skill2->getPosition());
+        $this->assertEquals(2, $skill3->getPosition());
+
+        $this->assertEquals(0, $skillWildard->getRule()->getPosition());
+        $this->assertEquals(1, $skill1->getRule()->getPosition());
+        $this->assertEquals(2, $skill2->getRule()->getPosition());
+        $this->assertEquals(3, $skill3->getRule()->getPosition());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function editSkillPositionChanged()
     {
         // Given
@@ -1578,8 +1623,9 @@ tags:
         $skillWildcard = Skill::addSkill($wildcardTier->getId(), "Skill Wildcard", null, null, false, false, []);
 
         $skill1 = Skill::addSkill($this->tierId, "Skill1", null, null, false, false, []);
+        $skill2 = Skill::addSkill($this->tierId, "Skill2", null, null, false, false, []);
         $tier2 = Tier::addTier($skillTreeId, "Tier2", 200);
-        $skill2 = Skill::addSkill($tier2->getId(), "Skill2", null, null, false, false, [
+        $skill3 = Skill::addSkill($tier2->getId(), "Skill3", null, null, false, false, [
             [$skill1->getId()],
             [0]
         ]);
@@ -1597,7 +1643,8 @@ tags:
 
         $this->assertEquals(0, $skillWildcard->getRule()->getPosition());
         $this->assertEquals(1, $skill2->getRule()->getPosition());
-        $this->assertEquals(2, $skill1->getRule()->getPosition());
+        $this->assertEquals(2, $skill3->getRule()->getPosition());
+        $this->assertEquals(3, $skill1->getRule()->getPosition());
     }
 
 
