@@ -941,14 +941,17 @@ class Skill
         $skillTreeId = $tier->getSkillTree()->getId();
 
         // Find rule position
-        $position = 0;
-        $tiers = Tier::getTiersOfSkillTree($skillTreeId, null, "position DESC");
-        foreach ($tiers as $t) {
-            if ($t["id"] == $tierId) {
-                $position += $positionInTier;
-                break;
+        if ($tier->isWildcard()) $position = $positionInTier; // wildcard skills come first
+        else {
+            $position = 0;
+            $tiers = Tier::getTiersOfSkillTree($skillTreeId);
+            foreach ($tiers as $t) {
+                if ($t["id"] == $tierId) {
+                    $position += $positionInTier + count(Tier::getWildcard($skillTreeId)->getSkills());
+                    break;
+                }
+                $position += count(self::getSkillsOfTier($t["id"]));
             }
-            $position += count(self::getSkillsOfTier($t["id"]));
         }
 
         // Add rule to skills section

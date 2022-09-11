@@ -1206,9 +1206,9 @@ tags:
         $this->assertEquals(0, $skill2->getPosition());
 
         $this->assertEquals(0, $skillWildcard->getRule()->getPosition());
-        $this->assertEquals(1, $skill2->getRule()->getPosition());
-        $this->assertEquals(2, $skill1->getRule()->getPosition());
-        $this->assertEquals(3, $skill->getRule()->getPosition());
+        $this->assertEquals(1, $skill1->getRule()->getPosition());
+        $this->assertEquals(2, $skill->getRule()->getPosition());
+        $this->assertEquals(3, $skill2->getRule()->getPosition());
     }
 
     /**
@@ -1238,9 +1238,9 @@ tags:
         $this->assertEquals(1, $skill->getPosition());
 
         $this->assertEquals(0, $skillWildcard->getRule()->getPosition());
-        $this->assertEquals(1, $skill2->getRule()->getPosition());
-        $this->assertEquals(2, $skill->getRule()->getPosition());
-        $this->assertEquals(3, $skill1->getRule()->getPosition());
+        $this->assertEquals(1, $skill1->getRule()->getPosition());
+        $this->assertEquals(2, $skill2->getRule()->getPosition());
+        $this->assertEquals(3, $skill->getRule()->getPosition());
     }
 
     /**
@@ -1322,8 +1322,8 @@ tags:
 
         $this->assertEquals(0, $skillWildcard->getRule()->getPosition());
         $this->assertEquals(1, $skill->getRule()->getPosition());
-        $this->assertEquals(2, $skill2->getRule()->getPosition());
-        $this->assertEquals(3, $skill1->getRule()->getPosition());
+        $this->assertEquals(2, $skill1->getRule()->getPosition());
+        $this->assertEquals(3, $skill2->getRule()->getPosition());
     }
 
 
