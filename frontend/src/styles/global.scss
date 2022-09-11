@@ -207,6 +207,20 @@ select:focus {
   cursor: pointer;
 }
 
+.data-table table .group-column {
+  width: 80px;
+}
+.data-table table .index-column {
+  width: 20px;
+}
+.data-table table .members-column {
+  width: 400px;
+}
+
+.data-table table .team-name-column {
+  width: 120px;
+}
+
 #allUsers table .name-column {
   max-width: 150px;
   cursor: auto;

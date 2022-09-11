@@ -1617,6 +1617,23 @@ export class ApiHttpService {
       .pipe( map((res: any) => parseInt(res['data']['nrTeams'])) );
   }
 
+  public getFileContent(courseID: number, importData: ImportTeamsData): Observable<string> {
+    const data = {
+      courseId: courseID,
+      file: importData.file,
+      replace: importData.replace
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.TEAMS);
+      qs.push('request', 'getFileContent');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (res['data']['content'])) );
+  }
+
   // Virtual Currency
   public getUserTokens(courseID: number, userID: number): Observable<number> {
     const params = (qs: QueryStringParameters) => {

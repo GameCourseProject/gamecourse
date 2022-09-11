@@ -11,15 +11,26 @@
     <div id="teams-list">
       <div class="data-table">
         <table *ngIf="teams?.length > 0" id="listing-table-teams">
+          <!-- <colgroup>
+            <col span="1" style="width: 5%;">
+            <col span="1" style="width: 20%;">
+            <col span="1" style="width: 60%;">
+
+          </colgroup> -->
           <!-- Header -->
           <thead>
           <tr>
-            <th>#</th>
-            <th *ngIf="isTeamNameActive" >Team</th>
+            <th class = "index-column">#</th>
+            <th class = "group-column">Fénix Group</th>
+            <th *ngIf="isTeamNameActive" class="team-name-column" >Team</th>
+
             <!--<th>Photo</th> -->
-            <th>Member</th>
+            <th class = "members-column">Members</th>
+            <!--
             <th>Experience</th>
             <th>Level</th>
+            -->
+
             <th class="action-column"></th>
             <th class="action-column"></th>
           </tr>
@@ -27,12 +38,15 @@
 
           <!-- Body -->
           <tbody>
-            <tr *ngFor="let team of teams" >
-              <td><span>{{team.id}}</span></td>
-              <td *ngIf="isTeamNameActive"><span>{{team.teamName}}</span></td>
+            <tr *ngFor="let team of teams;  let i = index" >
+              <!--<td><span>{{team.id}}</span></td>-->
+              <td class = "index-column"><span> {{(i + 1)}}</span></td>
+              <td class = "group-column"><span>{{team.teamNumber || "---"}}</span></td>
 
-              <table id="listing-table-teams-members">
-                <tr *ngFor="let member of team.teamMembers">
+              <td *ngIf="isTeamNameActive" class="team-name-column"><span>{{team.teamName}}</span></td>
+
+              <table id="listing-table-teams-members" >
+                <tr class = "members-column" *ngFor="let member of team.teamMembers">
                   <td>
                     <span>{{member['studentNumber']}}</span>
                   </td>
@@ -44,11 +58,11 @@
                   </td>
                 </tr>
               </table>
-
+              <!--
               <td><span>{{team.xp}}</span></td>
               <td><span>{{team.level}}</span></td>
-
-              <td class="action-column">
+              -->
+              <td class="action-column" style="right: 0px">
                 <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initItem('team', team); isTeamModalOpen = true;"></div>
               </td>
               <td class="action-column">
@@ -190,7 +204,8 @@
 <ng-template #importModal>
 
   <div class="warning">Please select a .csv file to be imported</div>
-  <div class="target">The separator must be comma <br>The encoding must be UTF-8</div>
+  <div class="target">The separator must be semicolon <br>The encoding must be UTF-8</div>
+
   <app-input-file
     [id]="'import_teams'"
     [accept]="'.csv'"
@@ -199,11 +214,30 @@
   </app-input-file>
 
   <div class="confirmation_btns">
-    <button (click)="importTeams(true)">Import Teams (Replace Duplicates)</button>
-    <button (click)="importTeams(false)">Import Teams (Ignore Duplicates)</button>
+    <button (click)="importTeams(true)">Import Teams (Update If Needed)</button>
+    <button (click)="importTeams(false)">Import Teams (Ignore Changes)</button>
   </div>
 
 </ng-template>
 
+<!-- Import Modal -->
+<ng-container *ngIf="isTestModalOpen">
+  <app-modal
+    [isModalOpen]="isTestModalOpen"
+    [id]="'test-import-teams'"
+    [templateRef]="testModal"
+    (closeBtnClicked)="isTestModalOpen = false"
+    [actionInProgress]="saving"
+    [innerClickEvents]="false"
+    [classList]="'verification'">
+  </app-modal>
+</ng-container>
+
+
+<ng-template #testModal>
+
+  <div class="warning">{{content}}</div>
+
+</ng-template>
 
 

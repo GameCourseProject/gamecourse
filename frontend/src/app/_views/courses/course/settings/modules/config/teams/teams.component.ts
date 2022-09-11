@@ -26,6 +26,8 @@ export class TeamsComponent implements OnInit {
 
   nrTeamMembers: number;
 
+  content: string;
+
   course: Course;
   courseID: number;
   courseFolder: string;
@@ -60,6 +62,8 @@ export class TeamsComponent implements OnInit {
   isTeamModalOpen: boolean;
   isDeleteVerificationModalOpen: boolean;
   isImportModalOpen: boolean;
+  isTestModalOpen: boolean;
+
   saving: boolean;
 
   filters: string[];
@@ -277,6 +281,32 @@ export class TeamsComponent implements OnInit {
 
   exportAllTeams() {
     // TODO
+  }
+
+  getFileContent(replace: boolean) {
+    this.loadingAction = true;
+    this.isTestModalOpen = true;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const importedTeams = reader.result;
+      this.api.getFileContent(this.courseID, {file: importedTeams, replace})
+        .pipe( finalize(() => {
+          this.loadingAction = false;
+          this.isTestModalOpen = false;
+        }) )
+        .subscribe(
+          content => {
+            this.content = content;
+            const successBox = $('#action_completed');
+            successBox.empty();
+            successBox.append(content);
+            successBox.show().delay(3000).fadeOut();
+          },
+          error => ErrorService.set(error),
+        )
+    }
+    reader.readAsDataURL(this.importedFile);
   }
 
   /*** --------------------------------------------- ***/
