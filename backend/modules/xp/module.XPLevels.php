@@ -297,7 +297,7 @@ class XPLevels extends Module
         foreach ($allTeams as $team){
             $entry = Core::$systemDB->select(self::TABLE_TEAMS_XP, ["course" => $courseId, "teamId" => $team["id"]]);
             if(!$entry)
-                Core::$systemDB->insert(self::TABLE_TEAMS_XP, ["course" => $courseId, "teamId" => $team["id"], "xp" => 0 ,"level" => $levelZero]);
+                Core::$systemDB->insert(self::TABLE_TEAMS_XP, ["course" => $courseId, "teamId" => $team["id"], "xp" => 0 ,"level" => 0]);
         }
     }
 

@@ -10,6 +10,7 @@ use GameCourse\GoogleHandler;
 use Modules\Badges\Badges;
 use Modules\ClassCheck\ClassCheckModule;
 use Modules\Fenix\Fenix;
+use Modules\Teams\Teams;
 use Modules\GoogleSheets\GoogleSheetsModule;
 use Modules\Moodle\MoodleModule;
 
@@ -1008,6 +1009,45 @@ function importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId
 }
 
 
+function testTeamImport(){
+
+    // maybe import users first
+
+    $teamsCSV = "ist190709, 4 - VIL04";
+    $teamsCSV .= "ist145124, 4 - VIL04\n";
+    $teamsCSV .= "ist123456, 5 - VIL06\n";
+    $teamsCSV .= "ist123457, 5 - VIL06\n";
+    $teamsCSV .= "ist123458, 6 - VIL06\n";
+
+    $gcUserId1 = Core::$systemDB->select("auth", ["username" => "ist190709"], "game_course_user_id");
+    $gcUserId2 = Core::$systemDB->select("auth", ["username" => "ist145124"], "game_course_user_id");
+    $gcUserId3 = Core::$systemDB->select("auth", ["username" => "ist123456"], "game_course_user_id");
+    $gcUserId4 = Core::$systemDB->select("auth", ["username" => "ist123457"], "game_course_user_id");
+    $gcUserId5 = Core::$systemDB->select("auth", ["username" => "ist123458"], "game_course_user_id");
+
+    if ($gcUserId1 === null || $gcUserId2 === null ||$gcUserId3 === null || $gcUserId4 === null || $gcUserId5 === null ) {
+
+        $GLOBALS['c_1'] = ["warning", "
+        <strong style='color:#F7941D;'>Warning: </strong>To test the teams's import, do the following:
+        <ul>
+        <li>Create a course named 'Course X' and year '2021/2022'.</li>
+        <li>Inside that course, enable teams.</li>
+        <li>Import the following users to the course.</li>
+        </ul>"];
+
+    } else {
+        $courseUserId = Core::$systemDB->select("course_user", ["course" => $courseId, "id" => $gcUserId], "id");
+    }
+
+    Teams::importTeams($teamsCSV, false);
+
+
+
+    $teamMember = Core::$systemDB->select(self::TABLE_MEMBERS, ['memberId' => $gcUserId], "teamId");
+
+
+
+}
 
 /*************************** Auxiliar functions ***************************/
 
