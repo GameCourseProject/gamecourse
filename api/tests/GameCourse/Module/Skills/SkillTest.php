@@ -1062,6 +1062,7 @@ tags:
         // Check rule was created
         $rule = $skill->getRule();
         $this->assertTrue($rule->exists());
+        $this->assertEquals(0, $rule->getPosition());
         $this->assertEquals($this->trim("rule: $name
 tags: 
 
@@ -1135,9 +1136,11 @@ tags:
         // Then
         $this->assertCount(3, Skill::getSkills($this->courseId));
         $this->assertCount(2, $skill2->getDependencies());
+        $this->assertEquals(0, $skill2->getPosition());
 
         $rule = $skill2->getRule();
         $this->assertTrue($rule->exists());
+        $this->assertEquals(2, $rule->getPosition());
         $this->assertEquals($this->trim("rule: Skill2
 tags: 
 
@@ -1262,6 +1265,7 @@ tags:
 
         $rule = $skillWildcard->getRule();
         $this->assertTrue($rule->exists());
+        $this->assertEquals(0, $rule->getPosition());
         $this->assertEquals($this->trim("rule: Skill Wildcard
 tags: 
 
@@ -1338,13 +1342,16 @@ tags:
         $skill = Skill::addSkill($this->tierId, "NAME", "#ffffff", "PAGE", false, false, []);
         $skill->editSkill($this->tierId, $name, $color, $page, $isCollab, $isExtra, true, $skill->getPosition(), $dependencies);
 
+        $this->assertEquals($this->tierId, $skill->getTier()->getId());
         $this->assertEquals($name, $skill->getName());
         $this->assertEquals($color, $skill->getColor());
         $this->assertEquals($page, $skill->getPage());
         $this->assertEquals($isCollab, $skill->isCollab());
         $this->assertEquals($isExtra, $skill->isExtra());
         $this->assertTrue($skill->isActive());
+        $this->assertEquals(0, $skill->getPosition());
         $this->assertSameSize($dependencies, $skill->getDependencies());
+        $this->assertEquals(0, $skill->getRule()->getPosition());
     }
 
     /**
@@ -1360,13 +1367,16 @@ tags:
             $this->fail("Error should have been thrown on 'editSkillFailure'");
 
         } catch (Exception|TypeError $e) {
+            $this->assertEquals($this->tierId, $skill->getTier()->getId());
             $this->assertEquals("NAME", $skill->getName());
             $this->assertEquals("#ffffff", $skill->getColor());
             $this->assertEquals("PAGE", $skill->getPage());
             $this->assertFalse($skill->isCollab());
             $this->assertFalse($skill->isExtra());
             $this->assertTrue($skill->isActive());
+            $this->assertEquals(0, $skill->getPosition());
             $this->assertEquals($dependencies, $skill->getDependencies());
+            $this->assertEquals(0, $skill->getRule()->getPosition());
         }
     }
 
@@ -1398,6 +1408,36 @@ tags:
         $skill1 = Skill::addSkill($this->tierId, "Skill1", null, null, false, false, []);
         $skill2 = Skill::addSkill($this->tierId, "Skill2", null, null, false, false, []);
 
+        $skillTreeId = (new Tier($this->tierId))->getSkillTree()->getId();
+        $wildcardTier = Tier::getWildcard($skillTreeId);
+        $skillWildard = Skill::addSkill($wildcardTier->getId(), "Skill Wildcard", null, null, false, false, []);
+
+        $tier2 = Tier::addTier($skillTreeId, "Tier 2", 200);
+
+        // When
+        $skill1->editSkill($tier2->getId(), "Skill1", null, null, false, false, true, 0, []);
+
+        // Then
+        $this->assertEquals($tier2, $skill1->getTier());
+        $this->assertEquals(0, $skillWildard->getPosition());
+        $this->assertEquals(0, $skill1->getPosition());
+        $this->assertEquals(0, $skill2->getPosition());
+
+        $this->assertEquals(0, $skillWildard->getRule()->getPosition());
+        $this->assertEquals(1, $skill2->getRule()->getPosition());
+        $this->assertEquals(2, $skill1->getRule()->getPosition());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function editSkillTierChangedWildcardTier()
+    {
+        // Given
+        $skill1 = Skill::addSkill($this->tierId, "Skill1", null, null, false, false, []);
+        $skill2 = Skill::addSkill($this->tierId, "Skill2", null, null, false, false, []);
+
         $wildcardTier = Tier::getWildcard((new Tier($this->tierId))->getSkillTree()->getId());
         $skillWildard = Skill::addSkill($wildcardTier->getId(), "Skill Wildcard", null, null, false, false, []);
 
@@ -1406,6 +1446,7 @@ tags:
 
         // Then
         $this->assertEquals($wildcardTier, $skill1->getTier());
+        $this->assertEquals(0, $skillWildard->getPosition());
         $this->assertEquals(1, $skill1->getPosition());
         $this->assertEquals(0, $skill2->getPosition());
 
@@ -1424,15 +1465,20 @@ tags:
         $skill1 = Skill::addSkill($this->tierId, "Skill1", null, null, false, false, []);
         $skill2 = Skill::addSkill($this->tierId, "Skill2", null, null, false, false, []);
 
+        $wildcardTier = Tier::getWildcard((new Tier($this->tierId))->getSkillTree()->getId());
+        $skillWildard = Skill::addSkill($wildcardTier->getId(), "Skill Wildcard", null, null, false, false, []);
+
         // When
         $skill1->editSkill($this->tierId, "Skill1", null, null, false, false, true, 1, []);
 
         // Then
+        $this->assertEquals(0, $skillWildard->getPosition());
         $this->assertEquals(1, $skill1->getPosition());
         $this->assertEquals(0, $skill2->getPosition());
 
-        $this->assertEquals(0, $skill2->getRule()->getPosition());
-        $this->assertEquals(1, $skill1->getRule()->getPosition());
+        $this->assertEquals(0, $skillWildard->getRule()->getPosition());
+        $this->assertEquals(1, $skill2->getRule()->getPosition());
+        $this->assertEquals(2, $skill1->getRule()->getPosition());
     }
 
     /**
@@ -1548,6 +1594,10 @@ tags:
         $this->assertEquals($tier2, $skill1->getTier());
         $this->assertEquals(1, $skill1->getPosition());
         $this->assertCount(2, $skill1->getDependencies());
+
+        $this->assertEquals(0, $skillWildcard->getRule()->getPosition());
+        $this->assertEquals(1, $skill2->getRule()->getPosition());
+        $this->assertEquals(2, $skill1->getRule()->getPosition());
     }
 
 
@@ -1626,20 +1676,42 @@ tags:
      */
     public function deleteSkill()
     {
+        $skillTreeId = (new Tier($this->tierId))->getSkillTree()->getId();
+        $wildcardTier = Tier::getWildcard($skillTreeId);
+        $skillWildard = Skill::addSkill($wildcardTier->getId(), "Skill Wildcard", null, null, false, false, []);
+
         $skill1 = Skill::addSkill($this->tierId, "Skill1", null, null, false, false, []);
         $skill2 = Skill::addSkill($this->tierId, "Skill2", null, null, false, false, []);
 
-        // Not empty
-        Skill::deleteSkill($skill1->getId());
-        $this->assertCount(1, Skill::getSkills($this->courseId));
-        $this->assertFalse(file_exists($skill1->getDataFolder(true, "Skill1")));
-        $this->assertCount(1, Section::getSectionByName($this->courseId, Skills::RULE_SECTION)->getRules());
-        $this->assertEquals(0, $skill2->getPosition());
+        $tier2 = Tier::addTier($skillTreeId, "Tier 2", 200);
+        $skill3 = Skill::addSkill($tier2->getId(), "Skill3", null, null, false, false, []);
 
-        // Empty
-        Skill::deleteSkill($skill2->getId());
+        Skill::deleteSkill($skill1->getId());
+        $this->assertCount(3, Skill::getSkills($this->courseId));
+        $this->assertFalse(file_exists($skill1->getDataFolder(true, "Skill1")));
+
+        $this->assertEquals(0, $skillWildard->getPosition());
+        $this->assertEquals(0, $skill2->getPosition());
+        $this->assertEquals(0, $skill3->getPosition());
+
+        $this->assertCount(3, Section::getSectionByName($this->courseId, Skills::RULE_SECTION)->getRules());
+        $this->assertEquals(0, $skillWildard->getRule()->getPosition());
+        $this->assertEquals(1, $skill2->getRule()->getPosition());
+        $this->assertEquals(2, $skill3->getRule()->getPosition());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function deleteSkillEmpty()
+    {
+        $skill = Skill::addSkill($this->tierId, "Skill", null, null, false, false, []);
+
+        Skill::deleteSkill($skill->getId());
+
         $this->assertEmpty(Skill::getSkills($this->courseId));
-        $this->assertFalse(file_exists($skill2->getDataFolder(true, "Skill2")));
+        $this->assertFalse(file_exists($skill->getDataFolder(true, "Skill")));
         $this->assertEmpty(Section::getSectionByName($this->courseId, Skills::RULE_SECTION)->getRules());
     }
 

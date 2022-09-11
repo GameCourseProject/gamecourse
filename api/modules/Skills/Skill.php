@@ -207,8 +207,11 @@ class Skill
             self::validateTier($fieldValues["tier"]);
             $oldTier = $this->getTier();
 
-            // Update skill position
-            Utils::updateItemPosition($this->getPosition(), null, self::TABLE_SKILL, "position", $this->id, $oldTier->getSkills());
+            if ($newTier->getId() != $oldTier->getId()) {
+                // Update skill position
+                Utils::updateItemPosition($this->getPosition(), null, self::TABLE_SKILL, "position", $this->id, $oldTier->getSkills());
+                unset($fieldValues["position"]);
+            }
         }
         if (key_exists("name", $fieldValues)) {
             $newName = $fieldValues["name"];
@@ -249,18 +252,20 @@ class Skill
 
         // Additional actions
         if (key_exists("tier", $fieldValues)) {
-            // Update skill position
-            $position = count($newTier->getSkills()) - 1;
-            Utils::updateItemPosition(null, $position, self::TABLE_SKILL, "position", $this->id, $newTier->getSkills());
+            if ($newTier->getId() != $oldTier->getId()) {
+                // Update skill position
+                $position = count($newTier->getSkills()) - 1;
+                Utils::updateItemPosition(null, $position, self::TABLE_SKILL, "position", $this->id, $newTier->getSkills());
 
-            // Update skill rule position
-            $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
-            $isActive = key_exists("isActive", $fieldValues) ? $newStatus : $this->isActive();
-            self::updateRule($course->getId(), $rule->getId(), $position, $isActive, $this->hasWildcardDependency(),
-                $newTier->getSkillTree()->getId(), $name, array_map(function ($dependency) {
-                    return array_column($dependency, "id");
-                }, $this->getDependencies())
-            );
+                // Update skill rule position
+                $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
+                $isActive = key_exists("isActive", $fieldValues) ? $newStatus : $this->isActive();
+                self::updateRule($course->getId(), $rule->getId(), self::findRulePosition($newTier->getId(), $position),
+                    $isActive, $this->hasWildcardDependency(), $newTier->getSkillTree()->getId(), $name, array_map(function ($dependency) {
+                        return array_column($dependency, "id");
+                    }, $this->getDependencies())
+                );
+            }
         }
         if (key_exists("name", $fieldValues)) {
             if (strcmp($oldName, $newName) !== 0) {
@@ -273,14 +278,16 @@ class Skill
             }
         }
         if (key_exists("position", $fieldValues)) {
-            // Update skill rule position
-            $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
-            $isActive = key_exists("isActive", $fieldValues) ? $newStatus : $this->isActive();
-            self::updateRule($course->getId(), $rule->getId(), $newPosition, $isActive, $this->hasWildcardDependency(),
-                $this->getTier()->getSkillTree()->getId(), $name, array_map(function ($dependency) {
-                    return array_column($dependency, "id");
-                }, $this->getDependencies())
-            );
+            if ($newPosition != $oldPosition) {
+                // Update skill rule position
+                $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
+                $isActive = key_exists("isActive", $fieldValues) ? $newStatus : $this->isActive();
+                self::updateRule($course->getId(), $rule->getId(), self::findRulePosition($this->getTier()->getId(), $newPosition),
+                    $isActive, $this->hasWildcardDependency(), $this->getTier()->getSkillTree()->getId(), $name, array_map(function ($dependency) {
+                        return array_column($dependency, "id");
+                    }, $this->getDependencies())
+                );
+            }
         }
         if (key_exists("isActive", $fieldValues)) {
             if ($oldStatus != $newStatus) {
@@ -937,24 +944,11 @@ class Skill
     private static function addRule(int $courseId, int $tierId, int $positionInTier, bool $hasWildcardDependency,
                                     string $skillName, array $dependencies): Rule
     {
-        $tier = new Tier($tierId);
-        $skillTreeId = $tier->getSkillTree()->getId();
-
         // Find rule position
-        if ($tier->isWildcard()) $position = $positionInTier; // wildcard skills come first
-        else {
-            $position = 0;
-            $tiers = Tier::getTiersOfSkillTree($skillTreeId);
-            foreach ($tiers as $t) {
-                if ($t["id"] == $tierId) {
-                    $position += $positionInTier + count(Tier::getWildcard($skillTreeId)->getSkills());
-                    break;
-                }
-                $position += count(self::getSkillsOfTier($t["id"]));
-            }
-        }
+        $position = self::findRulePosition($tierId, $positionInTier);
 
         // Add rule to skills section
+        $skillTreeId = (new Tier($tierId))->getSkillTree()->getId();
         $skillsModule = new Skills(new Course($courseId));
         return $skillsModule->addRuleOfItem($position, $hasWildcardDependency, $skillTreeId, $skillName, $dependencies);
     }
@@ -1076,6 +1070,33 @@ class Skill
         }
 
         return ["name" => $skillName, "when" => $when, "then" => $then];
+    }
+
+    /**
+     * Finds skill rule position based on skill position in a given tier.
+     *
+     * @param int $tierId
+     * @param int $positionInTier
+     * @return int
+     * @throws Exception
+     */
+    private static function findRulePosition(int $tierId, int $positionInTier): int
+    {
+        $tier = new Tier($tierId);
+        $skillTreeId = $tier->getSkillTree()->getId();
+
+        if ($tier->isWildcard()) return $positionInTier; // wildcard skills come first
+
+        $position = 0;
+        $tiers = Tier::getTiersOfSkillTree($skillTreeId);
+        foreach ($tiers as $t) {
+            if ($t["id"] == $tierId) {
+                $position += $positionInTier + count(Tier::getWildcard($skillTreeId)->getSkills());
+                break;
+            }
+            $position += count(self::getSkillsOfTier($t["id"]));
+        }
+        return $position;
     }
 
 
