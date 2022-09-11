@@ -638,12 +638,26 @@ class Skill
 
         $dependencyIds = array_column(Core::database()->selectMultiple(self::TABLE_SKILL_DEPENDENCY, ["skill" => $this->id], "id", "id"), "id");
         foreach ($dependencyIds as $dependencyId) {
-            $combo = array_map(function ($skillId) {
-                if ($skillId == 0) // wildcard
+            $hasWildcard = false;
+            $combo = array_map(function ($skillId) use (&$hasWildcard) {
+                if ($skillId == 0) { // wildcard
+                    $hasWildcard = true;
                     $skill = ["id" => 0, "name" => Tier::WILDCARD];
-                else $skill = self::getSkillById($skillId)->getData();
+                } else $skill = self::getSkillById($skillId)->getData();
                 return self::parse($skill);
             }, self::getDependencyCombo($dependencyId));
+
+            // Force wildcard in dependency to come last
+            if ($hasWildcard) {
+                for ($i = 0; $i < count($combo); $i++) {
+                    $skill = $combo[$i];
+                    if ($skill["name"] == Tier::WILDCARD) {
+                        array_splice($combo, $i, 1);
+                        $combo[] = $skill;
+                    }
+                }
+            }
+
             $dependencies[$dependencyId] = $combo;
         }
 
