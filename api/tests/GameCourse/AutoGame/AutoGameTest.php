@@ -88,9 +88,6 @@ class AutoGameTest extends TestCase
         $this->assertNull($autogame["periodicityTime"]);
     }
 
-
-    // General
-
     /**
      * @test
      * @throws Exception
@@ -168,6 +165,9 @@ class AutoGameTest extends TestCase
         $this->assertFalse(file_exists(LOGS_FOLDER . "/autogame_" . $courseId . ".txt"));
     }
 
+
+    // General
+
     /**
      * @test
      * @throws Exception
@@ -224,6 +224,51 @@ class AutoGameTest extends TestCase
         $this->assertFalse(AutoGame::isRunning($courseId));
         Core::database()->update(AutoGame::TABLE_AUTOGAME, ["isRunning" => true], ["course" => $courseId]);
         $this->assertTrue(AutoGame::isRunning($courseId));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function runInexistentCourse()
+    {
+        $courseId = 1;
+
+        Core::database()->setForeignKeyChecks(false);
+        AutoGame::initAutoGame($courseId);
+        Core::database()->setForeignKeyChecks(true);
+
+        try {
+            AutoGame::run($courseId);
+            $this->fail("Exception should have been thrown on 'runInexistentCourse'.");
+
+        } catch (Exception $e) {
+            $logsFile = LOGS_FOLDER . "/autogame_$courseId.txt";
+            $this->assertNotEmpty(file_get_contents($logsFile));
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function runAutoGameAlreadyRunning()
+    {
+        $courseId = 1;
+
+        Core::database()->setForeignKeyChecks(false);
+        AutoGame::initAutoGame($courseId);
+        Core::database()->setForeignKeyChecks(true);
+        Core::database()->update(AutoGame::TABLE_AUTOGAME, ["isRunning" => true], ["course" => $courseId]);
+
+        try {
+            AutoGame::run($courseId);
+            $this->fail("Exception should have been thrown on 'runAutoGameAlreadyRunning'.");
+
+        } catch (Exception $e) {
+            $logsFile = LOGS_FOLDER . "/autogame_$courseId.txt";
+            $this->assertNotEmpty(file_get_contents($logsFile));
+        }
     }
 
 

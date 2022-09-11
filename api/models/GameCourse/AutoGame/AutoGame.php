@@ -21,7 +21,7 @@ abstract class AutoGame
 
 
     /*** ---------------------------------------------------- ***/
-    /*** ---------------------- General --------------------- ***/
+    /*** ----------------------- Setup ---------------------- ***/
     /*** ---------------------------------------------------- ***/
 
     /**
@@ -117,6 +117,8 @@ abstract class AutoGame
 
     /**
      * Updates AutoGame status for a given course.
+     * Option to only update AutoGame status and leave started &
+     * finished running timestamps unaltered.
      *
      * @param int $courseId
      * @param bool $isRunning
