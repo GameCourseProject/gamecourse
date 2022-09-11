@@ -256,8 +256,15 @@ class SkillTest extends TestCase
      */
     public function getPage()
     {
+        // Empty
         $skill = Skill::addSkill($this->tierId, "Skill", null, null, false, false, []);
         $this->assertNull($skill->getPage());
+
+        // Not empty
+        $courseDataFolder = API_URL . "/" . (new Course($this->courseId))->getDataFolder(false);
+        $page = "<img src=\"https://some/random/image.png\"><img src=\"" . $courseDataFolder . "/" . $skill->getDataFolder(false) . "/image.jpg\">";
+        $skill->setPage($page);
+        $this->assertEquals("<img src=\"https://some/random/image.png\"><img src=\"" . $courseDataFolder . "/" . $skill->getDataFolder(false) . "/image.jpg\">", $skill->getPage());
     }
 
     /**

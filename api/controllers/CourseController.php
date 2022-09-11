@@ -75,24 +75,6 @@ class CourseController
         API::response($courses);
     }
 
-    /**
-     * Get contents of course data folder.
-     *
-     * @param int $courseId
-     * @throws Exception
-     */
-    public function getCourseDataFolderContents()
-    {
-        API::requireValues("courseId");
-
-        $courseId = API::getValue("courseId", "int");
-        $course = API::verifyCourseExists($courseId);
-
-        API::requireCourseAdminPermission($course);
-
-        API::response($course->getDataFolderContents());
-    }
-
 
     /*** --------------------------------------------- ***/
     /*** ------------ Course Manipulation ------------ ***/
@@ -629,6 +611,81 @@ class CourseController
 
         $state = API::getValue("state", "bool");
         $course->setModuleState($moduleId, $state);
+    }
+
+
+    /*** --------------------------------------------- ***/
+    /*** ---------------- Course Data ---------------- ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * Get contents of course data folder.
+     *
+     * @param int $courseId
+     * @throws Exception
+     */
+    public function getCourseDataFolderContents()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        API::response($course->getDataFolderContents());
+    }
+
+    /**
+     * Uploads file to a given location on course data folder.
+     *
+     * @param int $courseId
+     * @param string $file
+     * @param string $folder
+     * @param string $filename
+     * @throws Exception
+     */
+    public function uploadFile()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        API::requireValues("file", "folder", "fileName");
+        $base64 = API::getValue("file");
+        $to = API::getValue("folder");
+        $filename = API::getValue("fileName");
+
+        API::response($course->uploadFile($to, $base64, $filename));
+    }
+
+    /**
+     * Uploads file to a given location on course data folder.
+     *
+     * @param int $courseId
+     * @param string $file
+     * @param string $folder
+     * @param string $filename
+     * @throws Exception
+     */
+    public function deleteFile()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        API::requireValues("folder", "fileName", "deleteIfEmpty");
+        $from = API::getValue("folder");
+        $filename = API::getValue("fileName");
+        $deleteIfEmpty = API::getValue("deleteIfEmpty", "bool");
+
+        $course->deleteFile($from, $filename, $deleteIfEmpty);
     }
 
 

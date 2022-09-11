@@ -202,6 +202,11 @@ class Utils
             throw new Exception("Can't upload file to '" . $to . "' since it isn't a directory.");
         }
 
+        if (!strpos($filename, ".")) {
+            preg_match("/data:(.*?)\/(.*?);base64,/", $base64, $matches);
+            $filename .= "." . $matches[2];
+        }
+
         preg_match('/\w/', substr($to, -1), $matches);
         if (count($matches) != 0) $to .= "/";
         $path = $to . $filename;

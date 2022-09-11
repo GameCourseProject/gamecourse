@@ -1059,9 +1059,42 @@ class Course
         $dataFolder = (new Course($courseId))->getDataFolder(false);
         $dataFolderPath = API_URL . "/" . $dataFolder . "/";
 
+        if (strpos($url, "?")) $url = substr($url, 0, strpos($url, "?"));
         if ($to === "absolute" && strpos($url, 'http') !== 0) return $dataFolderPath . $url;
         elseif ($to === "relative" && strpos($url, API_URL) === 0) return str_replace($dataFolderPath, "", $url);
         return $url;
+    }
+
+    /**
+     * Uploads a given file to a given directory inside course data.
+     *
+     * @example uploadFile("dir1", <file>, "file.txt") --> uploads file to directory 'dir1' inside course data with name 'file.txt'
+     *
+     * @param string $to
+     * @param string $base64
+     * @param string $filename
+     * @return string
+     * @throws Exception
+     */
+    public function uploadFile(string $to, string $base64, string $filename): string
+    {
+        $path = Utils::uploadFile($this->getDataFolder() . "/$to", $base64, $filename);
+        return substr($path, strpos($path, Utils::getDirectoryName(COURSE_DATA_FOLDER)));
+    }
+
+    /**
+     * Deletes a given file from a given directory inside course data.
+     * Option to delete given directory if it becomes empty.
+     *
+     * @param string $from
+     * @param string $filename
+     * @param bool $deleteIfEmpty
+     * @return void
+     * @throws Exception
+     */
+    public function deleteFile(string $from, string $filename, bool $deleteIfEmpty = true)
+    {
+        Utils::deleteFile($from, $filename, $deleteIfEmpty);
     }
 
 

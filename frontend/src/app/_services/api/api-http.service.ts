@@ -355,19 +355,6 @@ export class ApiHttpService {
       .pipe( map((res: any) => (res['data']).map(obj => Course.fromDatabase(obj))) );
   }
 
-  public getCourseDataFolderContents(courseID: number): Observable<ContentItem[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'getCourseDataFolderContents');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']) );
-  }
-
 
   // Course Manipulation
   public createCourse(courseData: CourseData): Observable<Course> {
@@ -813,7 +800,20 @@ export class ApiHttpService {
 
 
   // Course Data
-  // TODO: refactor
+
+  public getCourseDataFolderContents(courseID: number): Observable<ContentItem[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getCourseDataFolderContents');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
   public uploadFileToCourse(courseID: number, file: string | ArrayBuffer, folder: string, fileName: string): Observable<string> {
     const data = {
       courseId: courseID,
@@ -824,24 +824,25 @@ export class ApiHttpService {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'uploadFileToCourse');
+      qs.push('request', 'uploadFile');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['path']) );
+      .pipe( map((res: any) => res['data']) );
   }
 
-  // TODO: refactor
-  public deleteFileFromCourse(courseID: number, filePath: string): Observable<void> {
+  public deleteFileFromCourse(courseID: number, folder: string, fileName: string, deleteIfEmpty: boolean): Observable<void> {
     const data = {
       courseId: courseID,
-      path: filePath,
+      folder,
+      fileName,
+      deleteIfEmpty
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'deleteFileFromCourse');
+      qs.push('request', 'deleteFile');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

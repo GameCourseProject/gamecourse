@@ -79,11 +79,11 @@ export class FilePickerModalComponent implements OnInit {
     if (path[0] === '/') path = path.substr(1);
 
     if (path === '')
-      return this.filterItems(folder.hasOwnProperty('files') ? folder.files : folder, this.type);
+      return this.filterItems(folder.hasOwnProperty('contents') ? folder.contents : folder, this.type);
 
     const split = path.split('/');
     const f = folder.find(el => el.name === split[0]);
-    return this.getFolderContents(f.files, split.length === 1 ? '' : split.slice(1).join('/'));
+    return this.getFolderContents(f.contents, split.length === 1 ? '' : split.slice(1).join('/'));
   }
 
   filterItems(items: ContentItem[], type: string): ContentItem[] {
