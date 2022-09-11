@@ -480,11 +480,11 @@ class Skill
         self::validateSkill($tierId, $name, $color, $page, $isCollab, $isExtra, $dependencies);
         $tier = Tier::getTierById($tierId);
         $courseId = $tier->getCourse()->getId();
-        $nrSkillsInTier = count($tier->getSkills());
+        $positionInTier = count($tier->getSkills());
 
         // Create skill rule
         $hasWildcardDependency = self::hasWildcardInDependencies($dependencies);
-        $rule = self::addRule($courseId, $tierId, $nrSkillsInTier, $hasWildcardDependency, $name, $dependencies);
+        $rule = self::addRule($courseId, $tierId, $positionInTier, $hasWildcardDependency, $name, $dependencies);
 
         // Insert in database
         $id = Core::database()->insert(self::TABLE_SKILL, [
@@ -494,7 +494,7 @@ class Skill
             "color" => $color,
             "isCollab" => +$isCollab,
             "isExtra" => +$isExtra,
-            "position" => $nrSkillsInTier,
+            "position" => $positionInTier,
             "rule" => $rule->getId()
         ]);
         $skill = new Skill($id);
@@ -927,17 +927,14 @@ class Skill
         $skillTreeId = $tier->getSkillTree()->getId();
 
         // Find rule position
-        if ($tier->isWildcard()) $position = $positionInTier; // wildcard skills come first
-        else {
-            $position = 0;
-            $tiers = Tier::getTiersOfSkillTree($skillTreeId);
-            foreach ($tiers as $t) {
-                if ($t["id"] == $tierId) {
-                    $position += $positionInTier + count(Tier::getWildcard($skillTreeId)->getSkills());
-                    break;
-                }
-                $position += count(self::getSkillsOfTier($t["id"]));
+        $position = 0;
+        $tiers = Tier::getTiersOfSkillTree($skillTreeId, null, "position DESC");
+        foreach ($tiers as $t) {
+            if ($t["id"] == $tierId) {
+                $position += $positionInTier;
+                break;
             }
+            $position += count(self::getSkillsOfTier($t["id"]));
         }
 
         // Add rule to skills section

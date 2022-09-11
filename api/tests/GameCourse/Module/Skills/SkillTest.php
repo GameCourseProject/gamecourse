@@ -665,7 +665,9 @@ tags:
 
         $skillTreeId = (new Tier($this->tierId))->getSkillTree()->getId();
         $tier2 = Tier::addTier($skillTreeId, "Tier2", 200);
-        $skill2 = Skill::addSkill($tier2->getId(), "Skill2", null, null, false, false, [[1]]);
+        $skill2 = Skill::addSkill($tier2->getId(), "Skill2", null, null, false, false, [
+            [$skill1->getId()]
+        ]);
 
         // When
         $skill1->setActive(false);
@@ -1048,6 +1050,9 @@ tags:
         $skillDB = Skill::parse(Core::database()->select(Skill::TABLE_SKILL, ["id" => $skill->getId()]));
         $this->assertEquals($skill->getData(), $skillDB);
 
+        // Check position
+        $this->assertEquals(0, $skill->getPosition());
+
         // Check dependencies
         $this->assertSameSize($dependencies, $skill->getDependencies());
 
@@ -1159,6 +1164,120 @@ tags:
      * @test
      * @throws Exception
      */
+    public function addFirstSkillWithDependencies()
+    {
+        $skillTreeId = (new Tier($this->tierId))->getSkillTree()->getId();
+        $wildcardTier = Tier::getWildcard($skillTreeId);
+        $skillWildcard = Skill::addSkill($wildcardTier->getId(), "Skill Wildcard", null, null, false, false, []);
+
+        try {
+            Skill::addSkill($this->tierId, "Skill Name", null, null, false, false, [[0]]);
+            $this->fail("Error should have been thrown on 'addFirstSkillWithDependencies'");
+
+        } catch (Exception $e) {
+            $this->assertCount(1, Skill::getSkills($this->courseId));
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function addSkillWithSkillsAlreadyAddedFirstTier()
+    {
+        // Given
+        $skillTreeId = (new Tier($this->tierId))->getSkillTree()->getId();
+
+        $skill1 = Skill::addSkill($this->tierId, "Skill1", null, null, false, false, []);
+
+        $tier2 = Tier::addTier($skillTreeId, "Tier2", 200);
+        $skill2 = Skill::addSkill($tier2->getId(), "Skill2", null, null, false, false, []);
+
+        $wildcardTier = Tier::getWildcard($skillTreeId);
+        $skillWildcard = Skill::addSkill($wildcardTier->getId(), "Skill Wildcard", null, null, false, false, []);
+
+        // When
+        $skill = Skill::addSkill($this->tierId, "Skill Name", null, null, false, false, []);
+
+        // Then
+        $this->assertEquals(0, $skillWildcard->getPosition());
+        $this->assertEquals(0, $skill1->getPosition());
+        $this->assertEquals(1, $skill->getPosition());
+        $this->assertEquals(0, $skill2->getPosition());
+
+        $this->assertEquals(0, $skillWildcard->getRule()->getPosition());
+        $this->assertEquals(1, $skill2->getRule()->getPosition());
+        $this->assertEquals(2, $skill1->getRule()->getPosition());
+        $this->assertEquals(3, $skill->getRule()->getPosition());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function addSkillWithSkillsAlreadyAddedNotFirstTier()
+    {
+        // Given
+        $skillTreeId = (new Tier($this->tierId))->getSkillTree()->getId();
+
+        $skill1 = Skill::addSkill($this->tierId, "Skill1", null, null, false, false, []);
+
+        $tier2 = Tier::addTier($skillTreeId, "Tier2", 200);
+        $skill2 = Skill::addSkill($tier2->getId(), "Skill2", null, null, false, false, []);
+
+        $wildcardTier = Tier::getWildcard($skillTreeId);
+        $skillWildcard = Skill::addSkill($wildcardTier->getId(), "Skill Wildcard", null, null, false, false, []);
+
+        // When
+        $skill = Skill::addSkill($tier2->getId(), "Skill Name", null, null, false, false, []);
+
+        // Then
+        $this->assertEquals(0, $skillWildcard->getPosition());
+        $this->assertEquals(0, $skill1->getPosition());
+        $this->assertEquals(0, $skill2->getPosition());
+        $this->assertEquals(1, $skill->getPosition());
+
+        $this->assertEquals(0, $skillWildcard->getRule()->getPosition());
+        $this->assertEquals(1, $skill2->getRule()->getPosition());
+        $this->assertEquals(2, $skill->getRule()->getPosition());
+        $this->assertEquals(3, $skill1->getRule()->getPosition());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function addWildcardSkill()
+    {
+        // Given
+        $skillTreeId = (new Tier($this->tierId))->getSkillTree()->getId();
+        $wildcardTier = Tier::getWildcard($skillTreeId);
+
+        // When
+        $skillWildcard = Skill::addSkill($wildcardTier->getId(), "Skill Wildcard", null, null, false, false, []);
+
+        // Then
+        $this->assertCount(1, $wildcardTier->getSkills());
+        $this->assertEquals(0, $skillWildcard->getPosition());
+
+        $rule = $skillWildcard->getRule();
+        $this->assertTrue($rule->exists());
+        $this->assertEquals($this->trim("rule: Skill Wildcard
+tags: 
+
+	when:
+		logs = GC.participations.getSkillParticipations(target, \"Skill Wildcard\")
+		rating = get_rating(logs)
+		rating >= 3
+
+	then:
+		award_skill(target, \"Skill Wildcard\", rating, logs)"), $this->trim($rule->getText()));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function addWildcardSkillWithDependencies()
     {
         $skillTreeId = (new Tier($this->tierId))->getSkillTree()->getId();
@@ -1179,19 +1298,32 @@ tags:
      * @test
      * @throws Exception
      */
-    public function addFirstSkillWithDependencies()
+    public function addWildcardSkillWithSkillsAlreadyAdded()
     {
+        // Given
         $skillTreeId = (new Tier($this->tierId))->getSkillTree()->getId();
+
+        $skill1 = Skill::addSkill($this->tierId, "Skill1", null, null, false, false, []);
+
+        $tier2 = Tier::addTier($skillTreeId, "Tier2", 200);
+        $skill2 = Skill::addSkill($tier2->getId(), "Skill2", null, null, false, false, []);
+
         $wildcardTier = Tier::getWildcard($skillTreeId);
         $skillWildcard = Skill::addSkill($wildcardTier->getId(), "Skill Wildcard", null, null, false, false, []);
 
-        try {
-            Skill::addSkill($this->tierId, "Skill Name", null, null, false, false, [[0]]);
-            $this->fail("Error should have been thrown on 'addFirstSkillWithDependencies'");
+        // When
+        $skill = Skill::addSkill($wildcardTier->getId(), "Skill Name", null, null, false, false, []);
 
-        } catch (Exception $e) {
-            $this->assertCount(1, Skill::getSkills($this->courseId));
-        }
+        // Then
+        $this->assertEquals(0, $skillWildcard->getPosition());
+        $this->assertEquals(1, $skill->getPosition());
+        $this->assertEquals(0, $skill1->getPosition());
+        $this->assertEquals(0, $skill2->getPosition());
+
+        $this->assertEquals(0, $skillWildcard->getRule()->getPosition());
+        $this->assertEquals(1, $skill->getRule()->getPosition());
+        $this->assertEquals(2, $skill2->getRule()->getPosition());
+        $this->assertEquals(3, $skill1->getRule()->getPosition());
     }
 
 
@@ -1276,6 +1408,10 @@ tags:
         $this->assertEquals($wildcardTier, $skill1->getTier());
         $this->assertEquals(1, $skill1->getPosition());
         $this->assertEquals(0, $skill2->getPosition());
+
+        $this->assertEquals(0, $skillWildard->getRule()->getPosition());
+        $this->assertEquals(1, $skill1->getRule()->getPosition());
+        $this->assertEquals(2, $skill2->getRule()->getPosition());
     }
 
     /**
@@ -1294,6 +1430,9 @@ tags:
         // Then
         $this->assertEquals(1, $skill1->getPosition());
         $this->assertEquals(0, $skill2->getPosition());
+
+        $this->assertEquals(0, $skill2->getRule()->getPosition());
+        $this->assertEquals(1, $skill1->getRule()->getPosition());
     }
 
     /**
