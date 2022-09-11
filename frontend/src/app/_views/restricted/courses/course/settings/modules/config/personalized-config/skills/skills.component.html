@@ -77,7 +77,7 @@
                 <div *ngIf="skill.position != 0" class="icon up_icon" title="Move up" (click)="moveSkill(skill, 1)"></div>
               </td>
               <td class="action-column">
-                <div *ngIf="skill.position != info.skills.length - 1" class="icon down_icon" title="Move down" (click)="moveSkill(skill, -1)"></div>
+                <div *ngIf="skill.position != getSkillsOfTier(skill.tierID).length - 1" class="icon down_icon" title="Move down" (click)="moveSkill(skill, -1)"></div>
               </td>
             </tr>
             </tbody>

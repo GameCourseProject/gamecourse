@@ -102,6 +102,11 @@ export class SkillsComponent implements OnInit {
     this.loading = true;
     this.newSkill['id'] = this.skillToEdit.id;
 
+    // Clean dependencies if wildcard skill
+    if (this.newSkill.tierID == this.getWildcardTier(this.infoSelected.tiers).id) {
+      this.newSkill.dependencies = [];
+    }
+
     this.api.editSkill(this.courseID, this.newSkill)
       .pipe( finalize(() => {
         this.isSkillModalOpen = false;
@@ -141,7 +146,7 @@ export class SkillsComponent implements OnInit {
   moveSkill(skill: Skill, direction: number) {
     this.loading = true;
 
-    skill.position += (direction > 0 ? -1 : 1);
+    skill.position += -direction;
     this.api.editSkill(this.courseID, skill)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(async () => await this.getSkillTreesInfo(this.courseID))
@@ -237,6 +242,16 @@ export class SkillsComponent implements OnInit {
       }
     }
     return null;
+  }
+
+  getSkillsOfTier(tierId: number): Skill[] {
+    const skills = [];
+    for (const info of this.getSkillTreeInfo()) {
+      for (const skill of info.skills) {
+        if (skill.tierID === tierId) skills.push(skill);
+      }
+    }
+    return skills;
   }
 
   getDependenciesText(dependencies: Skill[][]): string {
