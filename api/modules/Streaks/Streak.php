@@ -530,6 +530,7 @@ class Streak
             $streakInfo["count"], $streakInfo["periodicity"], $streakInfo["periodicityTime"], $streakInfo["reward"],
             $streakInfo["tokens"], $streakInfo["isRepeatable"], $streakInfo["isCount"], $streakInfo["isPeriodic"],
             $streakInfo["isAtMost"], $streakInfo["isExtra"]);
+        $copiedStreak->setActive($streakInfo["isActive"]);
 
         // Copy rule
         $this->getRule()->mirrorRule($copiedStreak->getRule());

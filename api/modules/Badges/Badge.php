@@ -447,6 +447,7 @@ class Badge
         $levels = $this->getLevels();
         $copiedBadge = self::addBadge($copyTo->getId(), $badgeInfo["name"], $badgeInfo["description"], $badgeInfo["isExtra"],
             $badgeInfo["isBragging"], $badgeInfo["isCount"], $badgeInfo["isPost"], $badgeInfo["isPoint"], $levels);
+        $copiedBadge->setActive($badgeInfo["isActive"]);
 
         // Copy image
         if ($this->hasImage()) {

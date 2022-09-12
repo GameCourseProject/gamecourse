@@ -9,6 +9,7 @@
     aria-label="toggle color picker dialog"
     [placeholder]="placeholder"
     [(ngModel)]="value"
+    (ngModelChange)="valueChange.emit($event)"
     [disabled]="disabled"
     [required]="required"
     #inputColor="ngModel"

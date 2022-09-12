@@ -347,7 +347,10 @@ class Tier
             $copiedWildcard->setActive($tierInfo["isActive"]);
             $copiedTier = $copiedWildcard;
 
-        } else $copiedTier = self::addTier($copyTo->getId(), $tierInfo["name"], $tierInfo["reward"]);
+        } else {
+            $copiedTier = self::addTier($copyTo->getId(), $tierInfo["name"], $tierInfo["reward"]);
+            $copiedTier->setActive($tierInfo["isActive"]);
+        }
 
         // Copy skills of tier
         $skills = $this->getSkills();

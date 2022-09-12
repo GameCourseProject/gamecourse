@@ -596,6 +596,7 @@ class Skill
         // Copy skill
         $copiedSkill = self::addSkill($copyTo->getId(), $skillInfo["name"], $skillInfo["color"], $skillInfo["page"],
             $skillInfo["isCollab"], $skillInfo["isExtra"], $dependencies);
+        $copiedSkill->setActive($skillInfo["isActive"]);
 
         // Copy data folder
         Utils::copyDirectory($this->getDataFolder() . "/", $copiedSkill->getDataFolder() . "/");
