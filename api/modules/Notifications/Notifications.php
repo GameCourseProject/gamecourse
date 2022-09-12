@@ -2,6 +2,8 @@
 namespace GameCourse\Module\Notifications;
 
 use DateTime;
+use Event\Event;
+use Event\EventType;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -72,6 +74,19 @@ class Notifications extends Module
 
         // Init logs file
         file_put_contents($this->getLogsPath(), "");
+
+        $this->initEvents();
+    }
+
+    public function initEvents()
+    {
+        Event::listen(EventType::COURSE_DISABLED, function (int $courseId) {
+            if ($courseId == $this->course->getId()) {
+                $config = $this->getProgressReportConfig();
+                $this->saveProgressReportConfig($config["endDate"], $config["periodicityTime"],  $config["periodicityHours"],
+                    $config["periodicityDay"], false);
+            }
+        });
     }
 
     public function copyTo(Course $copyTo)
@@ -87,6 +102,8 @@ class Notifications extends Module
     public function disable()
     {
         $this->cleanDatabase();
+        $this->removeEvents();
+
         CronJob::removeCronJob("ProgressReport", $this->course->getId());
         unlink($this->getLogsPath());
     }

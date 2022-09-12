@@ -1,6 +1,8 @@
 <?php
 namespace GameCourse\Course;
 
+use Event\Event;
+use Event\EventType;
 use Exception;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\AutoGame\RuleSystem\RuleSystem;
@@ -205,7 +207,6 @@ class Course
     public function setActive(bool $isActive)
     {
         $this->setData(["isActive" => +$isActive]);
-        AutoGame::setAutoGame($this->id, $isActive);
     }
 
     /**
@@ -267,6 +268,10 @@ class Course
         }
         if (key_exists("endDate", $fieldValues)) {
             $this->setAutomation("AutoDisabling", $fieldValues["endDate"]);
+        }
+        if (key_exists("isActive", $fieldValues)) {
+            AutoGame::setAutoGame($this->id, $fieldValues["isActive"]);
+            Event::trigger($fieldValues["isActive"] ? EventType::COURSE_ENABLED : EventType::COURSE_DISABLED, $this->id);
         }
     }
 
@@ -384,6 +389,7 @@ class Course
             "isActive" => +$isActive,
             "isVisible" => +$isVisible
         ]);
+        Event::trigger($isActive ? EventType::COURSE_ENABLED : EventType::COURSE_DISABLED, $id);
 
         // Set automations
         $course = new Course($id);
