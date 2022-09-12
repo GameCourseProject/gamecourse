@@ -157,61 +157,6 @@ abstract class Module
     /**
      * @throws Exception
      */
-    public function setName(string $name)
-    {
-        $this->setData(["name" => $name]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function setDescription(string $description)
-    {
-        $this->setData(["description" => $description]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function setType(string $type)
-    {
-        $this->setData(["type" => $type]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function setVersion(string $version)
-    {
-        $this->setData(["version" => $version]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function setProjectCompatibility(string $min, ?string $max)
-    {
-        $this->setData(["minProjectVersion" => $min]);
-        $this->setData(["maxProjectVersion" => $max]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function setAPICompatibility(string $min, ?string $max)
-    {
-        $this->setData(["minAPIVersion" => $min]);
-        $this->setData(["maxAPIVersion" => $max]);
-    }
-
-    public function setCourse(?Course $course)
-    {
-        $this->course = $course;
-    }
-
-    /**
-     * @throws Exception
-     */
     public function setEnabled(bool $isEnabled)
     {
         if (!$this->course)
@@ -223,35 +168,6 @@ abstract class Module
 
         if ($isEnabled) $this->init();
         else $this->disable();
-    }
-
-    /**
-     * Sets module data on the database.
-     *
-     * @example setData(["name" => "New name"])
-     * @example setData(["name" => "New name", "description" => "New description"])
-     *
-     * @param array $fieldValues
-     * @return void
-     * @throws Exception
-     */
-    public function setData(array $fieldValues)
-    {
-        // Trim values
-        self::trim($fieldValues);
-
-        // Validate data
-        if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
-        if (key_exists("description", $fieldValues)) self::validateDescription($fieldValues["description"]);
-        if (key_exists("type", $fieldValues)) self::validateType($fieldValues["type"]);
-        if (key_exists("version", $fieldValues)) self::validateVersion($fieldValues["version"]);
-        if (key_exists("minProjectVersion", $fieldValues)) self::validateVersion($fieldValues["minProjectVersion"]);
-        if (key_exists("maxProjectVersion", $fieldValues)) self::validateVersion($fieldValues["maxProjectVersion"]);
-        if (key_exists("minAPIVersion", $fieldValues)) self::validateVersion($fieldValues["minAPIVersion"]);
-        if (key_exists("maxAPIVersion", $fieldValues)) self::validateVersion($fieldValues["maxAPIVersion"]);
-
-        // Update data
-        if (count($fieldValues) != 0) Core::database()->update(self::TABLE_MODULE, $fieldValues, ["id" => $this->id]);
     }
 
 
