@@ -2317,6 +2317,206 @@ class CourseTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function getDataFolder()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $this->assertEquals(Utils::getDirectoryName(COURSE_DATA_FOLDER) . "/" . $course->getId() . "-" . Utils::strip("Produção de Conteúdos Multimédia", "_"), $course->getDataFolder(false));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getDataFolderFullPath()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+        $this->assertEquals(COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::strip("Produção de Conteúdos Multimédia", "_"), $course->getDataFolder());
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getDataFolderContents()
+    {
+        // Given
+        $course = new Course(1);
+        Course::createDataFolder($course->getId());
+        $dataFolder = $course->getDataFolder();
+        file_put_contents($dataFolder . "/file.txt", "");
+
+        // When
+        $contents = $course->getDataFolderContents();
+
+        // Then
+        $this->assertIsArray($contents);
+        $this->assertCount(1, $contents);
+
+        $file = $contents[0];
+        $this->assertIsArray($file);
+        $this->assertCount(3, array_keys($file));
+        $this->assertArrayHasKey("name", $file);
+        $this->assertArrayHasKey("type", $file);
+        $this->assertArrayHasKey("extension", $file);
+        $this->assertEquals("file.txt", $file["name"]);
+        $this->assertEquals("file", $file["type"]);
+        $this->assertEquals(".txt", $file["extension"]);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getDataFolderContentsEmpty()
+    {
+        // Given
+        $course = new Course(1);
+        Course::createDataFolder($course->getId());
+
+        // When
+        $contents = $course->getDataFolderContents();
+
+        // Then
+        $this->assertEmpty($contents);
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function createDataFolder()
+    {
+        Course::createDataFolder(1);
+        $dataFolder = (new Course(1))->getDataFolder();
+        $this->assertTrue(file_exists($dataFolder));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function createDataFolderFolderAlreadyExists()
+    {
+        // Given
+        Course::createDataFolder(1);
+        $dataFolder = (new Course(1))->getDataFolder();
+        file_put_contents($dataFolder . "/file.txt", "");
+
+        // When
+        Course::createDataFolder(1);
+
+        // Then
+        $this->assertTrue(file_exists($dataFolder));
+        $this->assertEmpty(Utils::getDirectoryContents($dataFolder));
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function removeDataFolder()
+    {
+        Course::createDataFolder(1);
+        Course::removeDataFolder(1);
+        $dataFolder = (new Course(1))->getDataFolder();
+        $this->assertFalse(file_exists($dataFolder));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function removeDataFolderFolderDoesntExist()
+    {
+        $dataFolder = (new Course(1))->getDataFolder();
+        $this->assertFalse(file_exists($dataFolder));
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getStyles()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $css = "button {background-color: red; }";
+        $course->updateStyles($css);
+
+        $styles = $course->getStyles();
+
+        $this->assertEquals(API_URL . "/" . $course->getDataFolder(false) . "/styles/main.css", $styles["path"]);
+        $this->assertTrue(file_exists($course->getDataFolder() . "/styles/main.css"));
+        $this->assertEquals($css, $styles["contents"]);
+        $this->assertEquals($css, file_get_contents($course->getDataFolder() . "/styles/main.css"));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getStylesEmpty()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $styles = $course->getStyles();
+
+        $this->assertNull($styles);
+        $this->assertFalse(file_exists($course->getDataFolder() . "/styles/main.css"));
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function updateStyles()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $css = "button {background-color: red; }";
+        $course->updateStyles($css);
+
+        $styles = $course->getStyles();
+
+        $this->assertEquals(API_URL . "/" . $course->getDataFolder(false) . "/styles/main.css", $styles["path"]);
+        $this->assertTrue(file_exists($course->getDataFolder() . "/styles/main.css"));
+        $this->assertEquals($css, $styles["contents"]);
+        $this->assertEquals($css, file_get_contents($course->getDataFolder() . "/styles/main.css"));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function updateStylesEmpty()
+    {
+        $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
+            null, null, true, false);
+
+        $css = "";
+        $course->updateStyles($css);
+
+        $styles = $course->getStyles();
+
+        $this->assertNull($styles);
+        $this->assertFalse(file_exists($course->getDataFolder() . "/styles/main.css"));
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function transformURL()
     {
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",

@@ -1140,16 +1140,18 @@ class Course
     public function updateStyles(string $contents)
     {
         $stylesFolder = $this->getDataFolder() . "/styles";
-        if (!file_exists($stylesFolder))
-            mkdir($stylesFolder, 0777, true);
 
-        $mainStyles = $stylesFolder . "/main.css";
-        if (!$contents && file_exists($mainStyles)) Utils::deleteFile($stylesFolder, "main.css");
-        else file_put_contents($mainStyles, $contents);
+        if (empty($contents)) { // remove styles
+            if (file_exists($stylesFolder . "/main.css"))
+                Utils::deleteFile($stylesFolder, "main.css");
 
-        // Delete styles folder if empty
-        if (Utils::getDirectorySize($stylesFolder) == 0)
-            Utils::deleteDirectory($stylesFolder);
+        } else { // update styles
+            if (!file_exists($stylesFolder))
+                mkdir($stylesFolder, 0777, true);
+
+            $mainStyles = $stylesFolder . "/main.css";
+            file_put_contents($mainStyles, $contents);
+        }
     }
 
 
