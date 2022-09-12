@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\Module;
 
+use Error;
 use Event\Event;
 use Exception;
 use GameCourse\AutoGame\RuleSystem\Rule;
@@ -217,10 +218,15 @@ abstract class Module
      */
     public static function getModuleById(string $id, ?Course $course): ?Module
     {
-        $moduleClass = "\\GameCourse\\Module\\" . $id . "\\" . $id;
-        $module = new $moduleClass($course);
-        if ($module->exists()) return $module;
-        else return null;
+        try {
+            $moduleClass = "\\GameCourse\\Module\\" . $id . "\\" . $id;
+            $module = new $moduleClass($course);
+            if ($module->exists()) return $module;
+            else return null;
+
+        } catch (Error $error) {
+            return null;
+        }
     }
 
     /**
