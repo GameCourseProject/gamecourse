@@ -101,6 +101,9 @@ class Level
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         // Validate data
         if (key_exists("minXP", $fieldValues)) {
             $previousMinXP = self::getMinXP();
@@ -225,6 +228,7 @@ class Level
      */
     public static function addLevel(int $courseId, int $minXP, ?string $description): Level
     {
+        self::trim($description);
         self::validateLevel($description);
         $id = Core::database()->insert(self::TABLE_LEVEL, [
             "course" => $courseId,
@@ -246,7 +250,6 @@ class Level
      */
     public function editLevel(int $minXP, ?string $description): Level
     {
-        self::validateLevel($description);
         $this->setData([
             "minXP" => $minXP,
             "description" => $description
@@ -475,22 +478,27 @@ class Level
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $level
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $level = null, $field = null, string $fieldName = null)
+    private static function parse(array $level = null, $field = null, string $fieldName = null)
     {
-        if ($level) {
-            if (isset($level["id"])) $level["id"] = intval($level["id"]);
-            if (isset($level["course"])) $level["course"] = intval($level["course"]);
-            if (isset($level["minXP"])) $level["minXP"] = intval($level["minXP"]);
-            return $level;
+        $intValues = ["id", "course", "minXP"];
+        $boolValues = ["isActive"];
 
-        } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "minXP")
-                return is_numeric($field) ? intval($field) : $field;
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues, "bool" => $boolValues], $level, $field, $fieldName);
+    }
+
+    /**
+     * Trims level parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["description"];
+        Utils::trim($params, ...$values);
     }
 }

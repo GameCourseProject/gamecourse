@@ -288,73 +288,6 @@ class Utils
 
 
     /*** ---------------------------------------------------- ***/
-    /*** -------------------- Validations ------------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-    /**
-     * Checks whether a given e-mail is in a valid format.
-     *
-     * @param string|null $email
-     * @return bool
-     */
-    public static function isValidEmail(?string $email): bool
-    {
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
-        $prefix = explode("@", $email)[0];
-        $domain = explode("@", $email)[1];
-        if (Utils::strEndsWith($prefix, "-") || str_contains($prefix, "#")) return false;
-        foreach (explode(".", $domain) as $part) if (strlen($part) < 2) return false;
-        return true;
-    }
-
-    /**
-     * Checks whether a date is in a given format.
-     *
-     * @param string|null $date
-     * @param string $format
-     * @return bool
-     */
-    public static function isValidDate(?string $date, string $format): bool
-    {
-        return !!DateTime::createFromFormat($format, $date);
-    }
-
-    /**
-     * Checks whether a given color is in a valid format.
-     *
-     * @param string|null $color
-     * @param string $format
-     * @return bool
-     * @throws Exception
-     */
-    public static function isValidColor(?string $color, string $format): bool
-    {
-        if ($format == "HEX") $pattern = "/^#[\dabcdef]{6}$/i";
-        else if ($format == "RGB") $pattern = "/^RGB\(\b(?:1\d{2}|2[0-4]\d|[1-9]?\d|25[0-5])\b,\s*\b(?:1\d{2}|2[0-4]\d|[1-9]?\d|25[0-5])\b,\s*\b(?:1\d{2}|2[0-4]\d|[1-9]?\d|25[0-5])\b\)$/i";
-        else throw new Exception("Color format '" . $format . "' not found.");
-
-        preg_match($pattern, $color, $matches);
-        if (!is_string($color) || empty($color) || count($matches) == 0) return false;
-        return true;
-    }
-
-    /**
-     * Checks whether a given version is in a valid format.
-     *
-     * @param string|null $version
-     * @return bool
-     */
-    public static function isValidVersion(?string $version): bool
-    {
-        if (is_null($version)) return true;
-        preg_match("/^(\d+\.)?(\d+\.)?(\*|\d+)$/", $version, $matches);
-        if (!is_string($version) || empty($version) || count($matches) == 0)
-            return false;
-        return true;
-    }
-
-
-    /*** ---------------------------------------------------- ***/
     /*** --------------- String Manipulation ---------------- ***/
     /*** ---------------------------------------------------- ***/
 
@@ -393,7 +326,7 @@ class Utils
      * @param string $replace
      * @return string
      */
-    public static function trim(string $str, string $replace = ""): string
+    public static function trimWhitespace(string $str, string $replace = ""): string
     {
         return preg_replace("/\s+/", $replace, $str);
     }
@@ -444,7 +377,7 @@ class Utils
      */
     public static function strip(string $str, string $replace = ""): string
     {
-        return self::trim(self::swapNonENChars($str), $replace);
+        return self::trimWhitespace(self::swapNonENChars($str), $replace);
     }
 
 
@@ -531,6 +464,141 @@ class Utils
             $count = count(str_getcsv($firstLine, $separator));
         }
         return array_search(max($separators), $separators);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** -------------------- Validations ------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Checks whether a given e-mail is in a valid format.
+     *
+     * @param string|null $email
+     * @return bool
+     */
+    public static function isValidEmail(?string $email): bool
+    {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
+        $prefix = explode("@", $email)[0];
+        $domain = explode("@", $email)[1];
+        if (Utils::strEndsWith($prefix, "-") || str_contains($prefix, "#")) return false;
+        foreach (explode(".", $domain) as $part) if (strlen($part) < 2) return false;
+        return true;
+    }
+
+    /**
+     * Checks whether a date is in a given format.
+     *
+     * @param string|null $date
+     * @param string $format
+     * @return bool
+     */
+    public static function isValidDate(?string $date, string $format): bool
+    {
+        return !!DateTime::createFromFormat($format, $date);
+    }
+
+    /**
+     * Checks whether a given color is in a valid format.
+     *
+     * @param string|null $color
+     * @param string $format
+     * @return bool
+     * @throws Exception
+     */
+    public static function isValidColor(?string $color, string $format): bool
+    {
+        if ($format == "HEX") $pattern = "/^#[\dabcdef]{6}$/i";
+        else if ($format == "RGB") $pattern = "/^RGB\(\b(?:1\d{2}|2[0-4]\d|[1-9]?\d|25[0-5])\b,\s*\b(?:1\d{2}|2[0-4]\d|[1-9]?\d|25[0-5])\b,\s*\b(?:1\d{2}|2[0-4]\d|[1-9]?\d|25[0-5])\b\)$/i";
+        else throw new Exception("Color format '" . $format . "' not found.");
+
+        preg_match($pattern, $color, $matches);
+        if (!is_string($color) || empty($color) || count($matches) == 0) return false;
+        return true;
+    }
+
+    /**
+     * Checks whether a given version is in a valid format.
+     *
+     * @param string|null $version
+     * @return bool
+     */
+    public static function isValidVersion(?string $version): bool
+    {
+        if (is_null($version)) return true;
+        preg_match("/^(\d+\.)?(\d+\.)?(\*|\d+)$/", $version, $matches);
+        if (!is_string($version) || empty($version) || count($matches) == 0)
+            return false;
+        return true;
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------- Parsing & Trimming ---------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Parses an item coming from the database to appropriate types.
+     * Option to pass a specific field to parse instead.
+     *
+     * @example parse item --> parse(["int" => ["id", "course"], "bool" => "isActive"], <item>)
+     * @example parse specific field --> parse(["int" => ["id", "course"], "bool" => "isActive"], null, <field>, "id")
+     *
+     * @param array $values
+     * @param array|null $item
+     * @param $field
+     * @param string|null $fieldName
+     * @return array|bool|int|mixed|null
+     */
+    public static function parse(array $values, array $item = null, $field = null, string $fieldName = null)
+    {
+        $intValues = $values["int"] ?? [];
+        $boolValues = $values["bool"] ?? [];
+        $jsonValues = $values["json"] ?? [];
+
+        if ($item) { // parsing an item
+            foreach ($values as $type => $params) {
+                foreach ($params as $param) {
+                    if (isset($item[$param])) {
+                        if ($type == "int") $item[$param] = intval($item[$param]);
+                        if ($type == "bool") $item[$param] = boolval($item[$param]);
+                        if ($type == "json") $item[$param] = json_decode($item[$param], true);
+                    }
+                }
+            }
+            return $item;
+
+        } else { // parsing a specific field
+            if (in_array($fieldName, $intValues)) return is_numeric($field) ? intval($field) : $field;
+            if (in_array($fieldName, $boolValues)) return boolval($field);
+            if (in_array($fieldName, $jsonValues)) return json_decode($field, true);
+            return $field;
+        }
+    }
+
+    /**
+     * Removes whitespace from the beginning and end of a set of
+     * values.
+     *
+     * @example trim array of values --> trim(["name", "description"], ["name" => " Name ", "description" => "Description"])
+     * @example trim multiple values --> trim(["name", "description"], " Name ", "Description", ...)
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    public static function trim(array $params, &...$values)
+    {
+        if (is_array($values[0])) { // array of values
+            foreach ($params as $param) {
+                if (isset($values[0][$param])) $values[0][$param] = trim($values[0][$param]);
+            }
+
+        } else { // multiple values
+            foreach ($values as &$value) {
+                if (is_string($value)) $value = trim($value);
+            }
+        }
     }
 
 

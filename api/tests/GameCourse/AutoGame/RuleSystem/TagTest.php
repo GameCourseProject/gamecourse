@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
 use TypeError;
+use Utils\Utils;
 
 /**
  * NOTE: only run tests outside the production environment as
@@ -130,7 +131,8 @@ class TagTest extends TestCase
     public function tagColorSuccessProvider(): array
     {
         return [
-            "HEX" => ["#ffffff"]
+            "HEX" => ["#ffffff"],
+            "trimmed" => [" #ffffff "],
         ];
     }
 
@@ -252,7 +254,9 @@ class TagTest extends TestCase
     {
         $tag = Tag::addTag($this->courseId, "NAME", "#ffffff");
         $tag->setName($name);
-        $this->assertEquals(trim($name), $tag->getName());
+
+        $name = trim($name);
+        $this->assertEquals($name, $tag->getName());
     }
 
     /**
@@ -324,6 +328,8 @@ tags: tag1, tag2
     {
         $tag = Tag::addTag($this->courseId, "NAME", "#000000");
         $tag->setColor($color);
+
+        $color = trim($color);
         $this->assertEquals($color, $tag->getColor());
     }
 
@@ -356,6 +362,7 @@ tags: tag1, tag2
         $tag->setData($fieldValues);
         $fieldValues["id"] = $tag->getId();
         $fieldValues["course"] = $this->courseId;
+        Utils::trim(["name", "color"], $fieldValues);
         $this->assertEquals($tag->getData(), $fieldValues);
     }
 
@@ -515,7 +522,7 @@ tags: tag1, tag2
         $tag = Tag::addTag($this->courseId, $name, $color);
 
         // Check is added to database
-        $tagDB = Tag::parse(Core::database()->select(Tag::TABLE_RULE_TAG, ["id" => $tag->getId()]));
+        $tagDB = Tag::getTags($this->courseId)[0];
         $this->assertEquals($tag->getData(), $tagDB);
     }
 
@@ -562,8 +569,8 @@ tags: tag1, tag2
     {
         $tag = Tag::addTag($this->courseId, "NAME", "#ffffff");
         $tag->editTag($name, $color);
-        $this->assertEquals($name, $tag->getName());
-        $this->assertEquals($color, $tag->getColor());
+        $this->assertEquals(trim($name), $tag->getName());
+        $this->assertEquals(trim($color), $tag->getColor());
     }
 
     /**

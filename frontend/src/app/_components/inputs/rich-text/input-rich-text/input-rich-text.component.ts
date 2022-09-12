@@ -52,7 +52,6 @@ export class InputRichTextComponent implements OnInit {
   }
 
   initQuill() {
-    console.log(this.init)
     if (this.quill) return;
 
     const that = this;

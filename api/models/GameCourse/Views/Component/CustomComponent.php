@@ -9,6 +9,7 @@ use GameCourse\Module\Module;
 use GameCourse\Views\CreationMode;
 use GameCourse\Views\ViewHandler;
 use PDOException;
+use Utils\Utils;
 
 /**
  * This is the Custom Component model, which implements the necessary methods
@@ -106,11 +107,15 @@ class CustomComponent extends Component
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         // Validate data
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
 
         // Update data
-        if (count($fieldValues) != 0) Core::database()->update(self::TABLE_CUSTOM_COMPONENT, $fieldValues, ["viewRoot" => $this->viewRoot]);
+        if (count($fieldValues) != 0)
+            Core::database()->update(self::TABLE_CUSTOM_COMPONENT, $fieldValues, ["viewRoot" => $this->viewRoot]);
     }
 
 
@@ -167,6 +172,7 @@ class CustomComponent extends Component
     public static function addComponent(string $creationMode, string $name, int $courseId, int $viewRoot = null,
                                         ?array $viewTree = null, string $moduleId = null): CustomComponent
     {
+        self::trim($name);
         self::validateName($name);
 
         if ($creationMode == CreationMode::BY_VALUE) {
@@ -234,7 +240,6 @@ class CustomComponent extends Component
      */
     public function editComponent(string $name): CustomComponent
     {
-        self::validateName($name);
         $this->setName($name);
         $this->refreshUpdateTimestamp();
         return $this;
@@ -279,21 +284,26 @@ class CustomComponent extends Component
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $component
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $component = null, $field = null, string $fieldName = null)
+    private static function parse(array $component = null, $field = null, string $fieldName = null)
     {
-        if ($component) {
-            if (isset($component["viewRoot"])) $component["viewRoot"] = intval($component["viewRoot"]);
-            if (isset($component["course"])) $component["course"] = intval($component["course"]);
-            return $component;
+        $intValues = ["viewRoot", "course"];
 
-        } else {
-            if ($fieldName == "viewRoot" || $fieldName == "course")
-                return is_numeric($field) ? intval($field) : $field;
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues], $component, $field, $fieldName);
+    }
+
+    /**
+     * Trims custom component parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name", "creationTimestamp", "updateTimestamp"];
+        Utils::trim($params, ...$values);
     }
 }

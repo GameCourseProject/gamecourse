@@ -276,9 +276,11 @@ class SectionTest extends TestCase
     {
         $section = Section::addSection($this->courseId, "NAME");
         $section->setName($name);
-        $this->assertEquals(trim($name), $section->getName());
 
-        $this->assertEquals(RuleSystem::getDataFolder($this->courseId) . "/1-" . Utils::strip(trim($name), "_") . ".txt", $section->getFile());
+        $name = trim($name);
+        $this->assertEquals($name, $section->getName());
+
+        $this->assertEquals(RuleSystem::getDataFolder($this->courseId) . "/1-" . Utils::strip($name, "_") . ".txt", $section->getFile());
         $this->assertTrue(file_exists($section->getFile()));
         $this->assertFalse(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-NAME.txt"));
     }
@@ -359,6 +361,7 @@ class SectionTest extends TestCase
         $fieldValues["id"] = $section->getId();
         $fieldValues["course"] = $this->courseId;
         $fieldValues["module"] = null;
+        Utils::trim(["name"], $fieldValues);
         $this->assertEquals($section->getData(), $fieldValues);
     }
 
@@ -491,14 +494,15 @@ class SectionTest extends TestCase
     public function addSectionSuccess(string $name)
     {
         $section = Section::addSection($this->courseId, $name);
+        $name = trim($name);
 
         // Check is added to database
         $sectionDB = Core::database()->select(Section::TABLE_RULE_SECTION, ["id" => $section->getId()]);
-        $sectionData = ["id" => strval($section->getId()), "course" => strval($this->courseId), "name" => trim($name), "position" => "0", "module" => null];
+        $sectionData = ["id" => strval($section->getId()), "course" => strval($this->courseId), "name" => $name, "position" => "0", "module" => null];
         $this->assertEquals($sectionData, $sectionDB);
 
         // Check section file was created
-        $filePath = RuleSystem::getDataFolder($this->courseId) . "/1-" . Utils::strip(trim($name), "_") . ".txt";
+        $filePath = RuleSystem::getDataFolder($this->courseId) . "/1-" . Utils::strip($name, "_") . ".txt";
         $this->assertEquals($filePath, $section->getFile());
         $this->assertTrue(file_exists($filePath));
     }

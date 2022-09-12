@@ -97,6 +97,9 @@ class Tag
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         // Validate data
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
         if (key_exists("color", $fieldValues)) self::validateColor($fieldValues["color"]);
@@ -163,6 +166,21 @@ class Tag
         return $tags;
     }
 
+    /**
+     * Gets tags for a given rule.
+     *
+     * @param int $ruleId
+     * @return array
+     */
+    public static function getRuleTags(int $ruleId): array
+    {
+        $table = Rule::TABLE_RULE_TAGS . " rt JOIN " . self::TABLE_RULE_TAG . " t on rt.tag=t.id";
+        $where = ["rt.rule" => $ruleId];
+        $tags = Core::database()->selectMultiple($table, $where, "t.*", "t.name");
+        foreach ($tags as &$tag) { $tag = self::parse($tag); }
+        return $tags;
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------- Tag Manipulation ----------------- ***/
@@ -180,7 +198,7 @@ class Tag
      */
     public static function addTag(int $courseId, string $name, string $color): Tag
     {
-        self::trim($name);
+        self::trim($name, $color);
         self::validateTag($name, $color);
         $id = Core::database()->insert(self::TABLE_RULE_TAG, [
             "course" => $courseId,
@@ -313,35 +331,30 @@ class Tag
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Trims tag parameters' whitespace at start/end.
-     *
-     * @param string $name
-     * @return void
-     */
-    private static function trim(string &$name)
-    {
-        $name = trim($name);
-    }
-
-    /**
      * Parses a tag coming from the database to appropriate types.
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $tag
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $tag = null, $field = null, string $fieldName = null)
+    private static function parse(array $tag = null, $field = null, string $fieldName = null)
     {
-        if ($tag) {
-            if (isset($tag["id"])) $tag["id"] = intval($tag["id"]);
-            if (isset($tag["course"])) $tag["course"] = intval($tag["course"]);
-            return $tag;
+        $intValues = ["id", "course"];
 
-        } else {
-            if ($fieldName == "id" || $fieldName == "course") return is_numeric($field) ? intval($field) : $field;
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues], $tag, $field, $fieldName);
+    }
+
+    /**
+     * Trims tag parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name", "color"];
+        Utils::trim($params, ...$values);
     }
 }

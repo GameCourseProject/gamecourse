@@ -284,6 +284,9 @@ class Streak
     {
         $rule = $this->getRule();
 
+        // Trim values
+        self::trim($fieldValues);
+
         // Validate data
         if (key_exists("name", $fieldValues)) {
             $newName = $fieldValues["name"];
@@ -436,6 +439,7 @@ class Streak
                                      ?int $periodicity, ?string $periodicityTime, int $reward, ?int $tokens,
                                      bool $isRepeatable, bool $isCount, bool $isPeriodic, bool $isAtMost, bool $isExtra): Streak
     {
+        self::trim($name, $description, $color, $periodicityTime);
         self::validateStreak($name, $description, $color, $count, $periodicity, $reward, $tokens, $isRepeatable, $isCount, $isPeriodic, $isAtMost, $isExtra);
 
         // Create streak rule
@@ -886,35 +890,27 @@ class Streak
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $streak
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $streak = null, $field = null, string $fieldName = null)
+    private static function parse(array $streak = null, $field = null, string $fieldName = null)
     {
-        if ($streak) {
-            if (isset($streak["id"])) $streak["id"] = intval($streak["id"]);
-            if (isset($streak["course"])) $streak["course"] = intval($streak["course"]);
-            if (isset($streak["count"])) $streak["count"] = intval($streak["count"]);
-            if (isset($streak["periodicity"])) $streak["periodicity"] = intval($streak["periodicity"]);
-            if (isset($streak["reward"])) $streak["reward"] = intval($streak["reward"]);
-            if (isset($streak["tokens"])) $streak["tokens"] = intval($streak["tokens"]);
-            if (isset($streak["rule"])) $streak["rule"] = intval($streak["rule"]);
-            if (isset($streak["isRepeatable"])) $streak["isRepeatable"] = boolval($streak["isRepeatable"]);
-            if (isset($streak["isCount"])) $streak["isCount"] = boolval($streak["isCount"]);
-            if (isset($streak["isPeriodic"])) $streak["isPeriodic"] = boolval($streak["isPeriodic"]);
-            if (isset($streak["isAtMost"])) $streak["isAtMost"] = boolval($streak["isAtMost"]);
-            if (isset($streak["isExtra"])) $streak["isExtra"] = boolval($streak["isExtra"]);
-            if (isset($streak["isActive"])) $streak["isActive"] = boolval($streak["isActive"]);
-            return $streak;
+        $intValues = ["id", "course", "count", "periodicity", "reward", "tokens", "rule"];
+        $boolValues = ["isRepeatable", "isCount", "isPeriodic", "isAtMost", "isExtra", "isActive"];
 
-        } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "count" || $fieldName == "periodicity"
-                || $fieldName == "reward" || $fieldName == "tokens" || $fieldName == "rule")
-                return is_numeric($field) ? intval($field) : $field;
-            if ($fieldName == "isRepeatable" || $fieldName == "isCount" || $fieldName == "isPeriodic" || $fieldName == "isAtMost"
-                || $fieldName == "isExtra" || $fieldName == "isActive") return boolval($field);
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues, "bool" => $boolValues], $streak, $field, $fieldName);
+    }
+
+    /**
+     * Trims streak parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name", "description", "color", "periodicityTime"];
+        Utils::trim($params, ...$values);
     }
 }

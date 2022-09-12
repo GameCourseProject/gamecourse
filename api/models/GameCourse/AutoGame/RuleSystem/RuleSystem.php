@@ -245,7 +245,7 @@ abstract class RuleSystem
      */
     public static function getRules(int $courseId, bool $active = null): array
     {
-        return Rule::getRulesOfCourse($courseId, $active);
+        return Rule::getRules($courseId, $active);
     }
 
     /**

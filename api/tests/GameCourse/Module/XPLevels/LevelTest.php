@@ -90,6 +90,7 @@ class LevelTest extends TestCase
     {
         return [
             "null" => [null],
+            "trimmed" => [" This is some incredibly enormous level description "],
             "length limit" => ["This is some incredibly enormous level description"]
         ];
     }
@@ -272,7 +273,7 @@ class LevelTest extends TestCase
     {
         $level = Level::addLevel($this->courseId, 1000, "Some description");
         $level->setDescription($description);
-        $this->assertEquals($description, $level->getDescription());
+        $this->assertEquals(trim($description), $level->getDescription());
     }
 
     /**
@@ -436,8 +437,11 @@ class LevelTest extends TestCase
         $level = Level::addLevel($this->courseId, $minXP, $description);
 
         // Check is added to database
-        $levelDB = Level::parse(Core::database()->select(Level::TABLE_LEVEL, ["id" => $level->getId()]));
-        $this->assertEquals($level->getData(), $levelDB);
+        $levelDB = Level::getLevels($this->courseId)[1];
+        $levelDB["course"] = $this->courseId;
+        $levelInfo = $level->getData();
+        $levelInfo["number"] = 1;
+        $this->assertEquals($levelInfo, $levelDB);
     }
 
     /**
@@ -480,7 +484,7 @@ class LevelTest extends TestCase
         $level = Level::addLevel($this->courseId, 2000, "Some description");
         $level->editLevel($minXP, $description);
         $this->assertEquals($minXP, $level->getMinXP());
-        $this->assertEquals($description, $level->getDescription());
+        $this->assertEquals(trim($description), $level->getDescription());
     }
 
     /**

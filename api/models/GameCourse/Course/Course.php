@@ -116,8 +116,10 @@ class Course
      */
     public function getData(string $field = "*")
     {
-        $data = Core::database()->select(self::TABLE_COURSE, ["id" => $this->id], $field);
-        return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
+        $table = self::TABLE_COURSE;
+        $where = ["id" => $this->id];
+        $res = Core::database()->select($table, $where, $field);
+        return is_array($res) ? self::parse($res) : self::parse(null, $res, $field);
     }
 
 
@@ -130,7 +132,7 @@ class Course
      */
     public function setName(string $name)
     {
-        $this->setData(["name" => trim($name)]);
+        $this->setData(["name" => $name]);
     }
 
     /**
@@ -138,7 +140,7 @@ class Course
      */
     public function setShort(?string $short)
     {
-        $this->setData(["short" => !is_null($short) ? trim($short) : $short]);
+        $this->setData(["short" => $short]);
     }
 
     /**
@@ -226,6 +228,9 @@ class Course
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         // Validate data
         if (key_exists("name", $fieldValues)) {
             $newName = $fieldValues["name"];
@@ -309,10 +314,31 @@ class Course
      */
     public static function getCourses(?bool $active = null, ?bool $visible = null): array
     {
+        $table = self::TABLE_COURSE;
         $where = [];
         if ($active !== null) $where["isActive"] = $active;
         if ($visible !== null) $where["isVisible"] = $visible;
-        $courses = Core::database()->selectMultiple(self::TABLE_COURSE, $where, "*", "id");
+        $courses = Core::database()->selectMultiple($table, $where, "*", "id");
+        foreach ($courses as &$course) { $course = self::parse($course); }
+        return $courses;
+    }
+
+    /**
+     * Gets user courses.
+     * Option for 'active' and/or 'visible'.
+     *
+     * @param int $userId
+     * @param bool|null $active
+     * @param bool|null $visible
+     * @return array
+     */
+    public static function getCoursesOfUser(int $userId, ?bool $active = null, ?bool $visible = null): array
+    {
+        $table = CourseUser::TABLE_COURSE_USER . " cu JOIN " . self::TABLE_COURSE . " c on cu.course=c.id";
+        $where = ["cu.id" => $userId];
+        if ($active !== null) $where["c.isActive"] = $active;
+        if ($visible !== null) $where["c.isVisible"] = $visible;
+        $courses = Core::database()->selectMultiple($table, $where, "c.*", "c.id");
         foreach ($courses as &$course) { $course = self::parse($course); }
         return $courses;
     }
@@ -346,7 +372,7 @@ class Course
         if (!$loggedUser->isAdmin()) throw new Exception("Only admins can create new courses.");
 
         // Insert in database & create data folder
-        self::trim($name, $short);
+        self::trim($name, $short, $color, $year, $startDate, $endDate);
         self::validateCourse($name, $short, $color, $year, $startDate, $endDate, $isActive, $isVisible);
         $id = Core::database()->insert(self::TABLE_COURSE, [
             "name" => $name,
@@ -480,8 +506,6 @@ class Course
     public function editCourse(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
                                ?string $endDate, bool $isActive, bool $isVisible): Course
     {
-        self::trim($name, $short);
-        self::validateCourse($name, $short, $color, $year, $startDate, $endDate, $isActive, $isVisible);
         $this->setData([
             "name" => $name,
             "short" => $short,
@@ -858,16 +882,7 @@ class Course
      */
     public function getModules(?bool $enabled = null, bool $IDsOnly = false): array
     {
-        $table = Module::TABLE_MODULE . " m JOIN " . Module::TABLE_COURSE_MODULE . " cm on cm.module=m.id";
-        $where = ["cm.course" => $this->id];
-        if ($enabled !== null) $where["cm.isEnabled"] = $enabled;
-        $modules = Core::database()->selectMultiple($table, $where, "m.*, cm.isEnabled, cm.minModuleVersion, cm.maxModuleVersion", "m.id");
-        if ($IDsOnly) return array_column($modules, "id");
-        foreach ($modules as &$moduleInfo) {
-            $moduleInfo = Module::getExtraInfo($moduleInfo, $this);
-            $moduleInfo = Module::parse($moduleInfo);
-        }
-        return $modules;
+        return Module::getModulesInCourse($this->id, $enabled, $IDsOnly);
     }
 
     /**
@@ -1498,42 +1513,32 @@ class Course
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Trims course parameters' whitespace at start/end.
-     *
-     * @param string $name
-     * @param string|null $short
-     * @return void
-     */
-    private static function trim(string &$name, ?string &$short)
-    {
-        $name = trim($name);
-        if (!is_null($short)) $short = trim($short);
-    }
-
-    /**
      * Parses a course coming from the database to appropriate types.
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $course
      * @param $field
      * @param string|null $fieldName
-     * @return array|bool|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $course = null, $field = null, string $fieldName = null)
+    private static function parse(array $course = null, $field = null, string $fieldName = null)
     {
-        if ($course) {
-            if (isset($course["id"])) $course["id"] = intval($course["id"]);
-            if (isset($course["landingPage"])) $course["landingPage"] = intval($course["landingPage"]);
-            if (isset($course["isActive"])) $course["isActive"] = boolval($course["isActive"]);
-            if (isset($course["isVisible"])) $course["isVisible"] = boolval($course["isVisible"]);
-            if (isset($course["roleHierarchy"])) $course["roleHierarchy"] = json_decode($course["roleHierarchy"], true);
-            return $course;
+        $intValues = ["id", "landingPage"];
+        $boolValues = ["isActive", "isVisible"];
+        $jsonValues = ["roleHierarchy"];
 
-        } else {
-            if ($fieldName == "id" || $fieldName == "landingPage") return is_numeric($field) ? intval($field) : $field;
-            if ($fieldName == "isActive" || $fieldName == "isVisible") return boolval($field);
-            if ($fieldName == "roleHierarchy") return json_decode($field, true);
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues, "bool" => $boolValues, "json" => $jsonValues], $course, $field, $fieldName);
+    }
+
+    /**
+     * Trims course parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name", "short", "color", "year", "startDate", "endDate", "roleHierarchy", "theme"];
+        Utils::trim($params, ...$values);
     }
 }

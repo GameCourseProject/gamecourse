@@ -123,6 +123,9 @@ class Section
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         // Validate data
         if (key_exists("name", $fieldValues)) {
             $newName = trim($fieldValues["name"]);
@@ -512,37 +515,30 @@ class Section
     }
 
     /**
-     * Trims section parameters' whitespace at start/end.
-     *
-     * @param string $name
-     * @return void
-     */
-    private static function trim(string &$name)
-    {
-        $name = trim($name);
-    }
-
-    /**
      * Parses a section coming from the database to appropriate types.
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $section
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $section = null, $field = null, string $fieldName = null)
+    private static function parse(array $section = null, $field = null, string $fieldName = null)
     {
-        if ($section) {
-            if (isset($section["id"])) $section["id"] = intval($section["id"]);
-            if (isset($section["course"])) $section["course"] = intval($section["course"]);
-            if (isset($section["position"])) $section["position"] = intval($section["position"]);
-            return $section;
+        $intValues = ["id", "course", "position"];
 
-        } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "position")
-                return is_numeric($field) ? intval($field) : $field;
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues], $section, $field, $fieldName);
+    }
+
+    /**
+     * Trims section parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name"];
+        Utils::trim($params, ...$values);
     }
 }

@@ -8,6 +8,7 @@ use GameCourse\Module\Module;
 use GameCourse\Views\Category\Category;
 use GameCourse\Views\ViewHandler;
 use PDOException;
+use Utils\Utils;
 
 /**
  * This is the Core Template model, which implements the necessary methods
@@ -95,8 +96,12 @@ class CoreTemplate extends Template
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         // Update data
-        if (count($fieldValues) != 0) Core::database()->update(self::TABLE_CORE_TEMPLATE, $fieldValues, ["viewRoot" => $this->viewRoot]);
+        if (count($fieldValues) != 0)
+            Core::database()->update(self::TABLE_CORE_TEMPLATE, $fieldValues, ["viewRoot" => $this->viewRoot]);
     }
 
 
@@ -153,6 +158,7 @@ class CoreTemplate extends Template
         $viewRoot = ViewHandler::insertViewTree($viewTree, 0);
 
         // Create new template
+        self::trim($name);
         Core::database()->insert(self::TABLE_CORE_TEMPLATE, [
             "viewRoot" => $viewRoot,
             "name" => $name,
@@ -183,22 +189,26 @@ class CoreTemplate extends Template
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $template
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $template = null, $field = null, string $fieldName = null)
+    private static function parse(array $template = null, $field = null, string $fieldName = null)
     {
-        if ($template) {
-            if (isset($template["viewRoot"])) $template["viewRoot"] = intval($template["viewRoot"]);
-            if (isset($template["category"])) $template["category"] = intval($template["category"]);
-            if (isset($template["position"])) $template["position"] = intval($template["position"]);
-            return $template;
+        $intValues = ["viewRoot", "category", "position"];
 
-        } else {
-            if ($fieldName == "viewRoot" || $fieldName == "category" || $fieldName == "position")
-                return is_numeric($field) ? intval($field) : $field;
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues], $template, $field, $fieldName);
+    }
+
+    /**
+     * Trims core template parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name"];
+        Utils::trim($params, ...$values);
     }
 }

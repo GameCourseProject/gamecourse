@@ -144,6 +144,9 @@ class CourseUser extends User
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         // Validate data
         if (key_exists("lastActivity", $fieldValues)) self::validateDateTime($fieldValues["lastActivity"]);
         if (key_exists("isActive", $fieldValues)) self::validateState($this->id, $fieldValues["isActive"]);
@@ -558,22 +561,28 @@ class CourseUser extends User
      * @param array|null $user
      * @param $field
      * @param string|null $fieldName
-     * @return array|bool|int|null
+     * @return array|bool|int|mixed|null
      */
     public static function parse(array $user = null, $field = null, string $fieldName = null)
     {
-        if ($user) {
-            $user = parent::parse($user);
-            if (isset($user["course"])) $user["course"] = intval($user["course"]);
-            if (isset($user["isActive"])) $user["isActive"] = boolval($user["isActive"]);
-            if (isset($user["isActiveInCourse"])) $user["isActiveInCourse"] = boolval($user["isActiveInCourse"]);
-            return $user;
+        $intValues = ["course"];
+        $boolValues = ["isActive", "isActiveInCourse"];
 
-        } else {
-            if ($fieldName == "course") return intval($field);
-            if ($fieldName == "isActive") return boolval($field);
-            if ($fieldName == "isActiveInCourse") return boolval($field);
-            return $field;
-        }
+        if ($user) $user = parent::parse($user);
+        else $field = parent::parse(null, $field, $fieldName);
+        return Utils::parse(["int" => $intValues, "bool" => $boolValues], $user, $field, $fieldName);
+    }
+
+    /**
+     * Trims course user parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    protected static function trim(&...$values)
+    {
+        $params = ["lastActivity"];
+        parent::trim($values);
+        Utils::trim($params, ...$values);
     }
 }

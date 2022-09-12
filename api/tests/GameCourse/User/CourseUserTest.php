@@ -119,11 +119,13 @@ class CourseUserTest extends TestCase
         ];
     }
 
+
     public function setActivitySuccessProvider(): array
     {
         return [
             "null" => [null],
-            "datetime" => [date("Y-m-d H:i:s", time())]
+            "datetime" => [date("Y-m-d H:i:s", time())],
+            "trimmed" => [" " . date("Y-m-d H:i:s", time()) . " "]
         ];
     }
 
@@ -135,6 +137,7 @@ class CourseUserTest extends TestCase
             "empty" => [""]
         ];
     }
+
 
     public function setDataSuccessProvider(): array
     {
@@ -316,7 +319,7 @@ class CourseUserTest extends TestCase
     {
         $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
         $courseUser->setLastActivity($lastActivity);
-        $this->assertEquals($lastActivity, $courseUser->getLastActivity());
+        $this->assertEquals(trim($lastActivity), $courseUser->getLastActivity());
     }
 
     /**

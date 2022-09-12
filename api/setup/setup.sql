@@ -366,7 +366,7 @@ CREATE TABLE rule(
     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
     course                      int unsigned NOT NULL,
     section                     int unsigned NOT NULL,
-    name                        varchar(100) NOT NULL,
+    name                        varchar(50) NOT NULL,
     description                 TEXT,
     whenClause                  TEXT NOT NULL,
     thenClause                  TEXT NOT NULL,

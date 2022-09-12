@@ -100,6 +100,7 @@ class TierTest extends TestCase
     {
         return [
             "simple name" => ["Tier 1"],
+            "trimmed" => [" This is some incredibly enormous skill tier nameee "],
             "length limit" => ["This is some incredibly enormous skill tier nameee"]
         ];
     }
@@ -113,6 +114,7 @@ class TierTest extends TestCase
             "too long" => ["This is some incredibly enormous skill tier nameeee"]
         ];
     }
+
 
     public function tierSuccessProvider(): array
     {
@@ -280,7 +282,7 @@ class TierTest extends TestCase
     {
         $tier = Tier::addTier($this->skillTreeId, "Tier", 100);
         $tier->setName($name);
-        $this->assertEquals($name, $tier->getName());
+        $this->assertEquals(trim($name), $tier->getName());
     }
 
     /**
@@ -799,7 +801,7 @@ class TierTest extends TestCase
         $tier = Tier::addTier($this->skillTreeId, $name, $reward);
 
         // Check is added to database
-        $tierDB = Tier::parse(Core::database()->select(Tier::TABLE_SKILL_TIER, ["id" => $tier->getId()]));
+        $tierDB = Tier::getTiers($this->courseId)[0];
         $this->assertEquals($tier->getData(), $tierDB);
 
         // Check position is correct
@@ -848,7 +850,7 @@ class TierTest extends TestCase
     {
         $tier = Tier::addTier($this->skillTreeId, $name, $reward);
         $tier->editTier($name, $reward, $tier->getPosition(), $tier->isActive());
-        $this->assertEquals($name, $tier->getName());
+        $this->assertEquals(trim($name), $tier->getName());
         $this->assertEquals($reward, $tier->getReward());
     }
 

@@ -217,6 +217,9 @@ class Badge
     {
         $rule = $this->getRule();
 
+        // Trim values
+        self::trim($fieldValues);
+
         // Validate data
         if (key_exists("name", $fieldValues)) {
             $newName = $fieldValues["name"];
@@ -367,6 +370,7 @@ class Badge
     public static function addBadge(int $courseId, string $name, string $description, bool $isExtra,
                                     bool $isBragging, bool $isCount, bool $isPost, bool $isPoint, array $levels): Badge
     {
+        self::trim($name, $description);
         self::validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels);
 
         // Create badge rule
@@ -527,6 +531,7 @@ class Badge
 
         // Set new levels
         foreach ($levels as $i => $level) {
+            self::trim($level["description"]);
             self::validateLevel($level["description"]);
             Core::database()->insert(self::TABLE_BADGE_LEVEL, [
                 "badge" => $this->id,
@@ -992,31 +997,27 @@ class Badge
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $badge
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $badge = null, $field = null, string $fieldName = null)
+    private static function parse(array $badge = null, $field = null, string $fieldName = null)
     {
-        if ($badge) {
-            if (isset($badge["id"])) $badge["id"] = intval($badge["id"]);
-            if (isset($badge["course"])) $badge["course"] = intval($badge["course"]);
-            if (isset($badge["nrLevels"])) $badge["nrLevels"] = intval($badge["nrLevels"]);
-            if (isset($badge["rule"])) $badge["rule"] = intval($badge["rule"]);
-            if (isset($badge["isExtra"])) $badge["isExtra"] = boolval($badge["isExtra"]);
-            if (isset($badge["isBragging"])) $badge["isBragging"] = boolval($badge["isBragging"]);
-            if (isset($badge["isCount"])) $badge["isCount"] = boolval($badge["isCount"]);
-            if (isset($badge["isPost"])) $badge["isPost"] = boolval($badge["isPost"]);
-            if (isset($badge["isPoint"])) $badge["isPoint"] = boolval($badge["isPoint"]);
-            if (isset($badge["isActive"])) $badge["isActive"] = boolval($badge["isActive"]);
-            return $badge;
+        $intValues = ["id", "course", "nrLevels", "rule"];
+        $boolValues = ["isExtra", "isBragging", "isCount", "isPost", "isPoint", "isActive"];
 
-        } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "nrLevels" || $fieldName == "rule")
-                return is_numeric($field) ? intval($field) : $field;
-            if ($fieldName == "isExtra" || $fieldName == "isBragging" || $fieldName == "isCount" || $fieldName == "isPost"
-                || $fieldName == "isPoint" || $fieldName == "isActive") return boolval($field);
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues, "bool" => $boolValues], $badge, $field, $fieldName);
+    }
+
+    /**
+     * Trims badge parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name", "description", "desc1", "desc2", "desc3"];
+        Utils::trim($params, ...$values);
     }
 }

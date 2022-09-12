@@ -9,6 +9,7 @@ use GameCourse\Course\Course;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Page\Page;
 use PDOException;
+use Utils\Utils;
 
 /**
  * This is the Role model, which implements the necessary methods
@@ -249,9 +250,11 @@ class Role
      */
     public static function addRoleToCourse(int $courseId, string $roleName, string $landingPageName = null, int $landingPageId = null, string $moduleId = null)
     {
+        self::trim($roleName);
+        self::validateRoleName($roleName);
+
         if (!self::courseHasRole($courseId, $roleName)) {
             // Add role
-            self::validateRoleName($roleName);
             $data = ["course" => $courseId, "name" => $roleName];
             if ($landingPageName !== null) $landingPageId = Page::getPageByName($courseId, $landingPageName)->getId();
             if ($landingPageId !== null) $data["landingPage"] = $landingPageId;
@@ -298,7 +301,7 @@ class Role
         foreach ($roles as $role) {
             if ($role["id"]) { // update
                 Core::database()->update(self::TABLE_ROLE, [
-                    "name" => $role["name"],
+                    "name" => trim($role["name"]),
                     "landingPage" => $role["landingPage"]
                 ], ["course" => $courseId, "id" => $role["id"]]);
 
@@ -663,11 +666,22 @@ class Role
      * @param array|null $role
      * @return array
      */
-    public static function parse(array $role): array
+    private static function parse(array $role = null): array
     {
-        if (isset($role["id"])) $role["id"] = intval($role["id"]);
-        if (isset($role["landingPage"])) $role["landingPage"] = intval($role["landingPage"]);
-        if (isset($role["course"])) $role["course"] = intval($role["course"]);
-        return $role;
+        $intValues = ["id", "landingPage", "course"];
+
+        return Utils::parse(["int" => $intValues], $role);
+    }
+
+    /**
+     * Trims rule parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name"];
+        Utils::trim($params, ...$values);
     }
 }

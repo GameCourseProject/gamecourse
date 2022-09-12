@@ -8,6 +8,7 @@ use GameCourse\User\User;
 use GameCourse\Views\Category\Category;
 use GameCourse\Views\ViewHandler;
 use PDOException;
+use Utils\Utils;
 
 /**
  * This is the Global Template model, which implements the necessary methods
@@ -94,8 +95,12 @@ class GlobalTemplate extends Template
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         // Update data
-        if (count($fieldValues) != 0) Core::database()->update(self::TABLE_GLOBAL_TEMPLATE, $fieldValues, ["viewRoot" => $this->viewRoot]);
+        if (count($fieldValues) != 0)
+            Core::database()->update(self::TABLE_GLOBAL_TEMPLATE, $fieldValues, ["viewRoot" => $this->viewRoot]);
     }
 
 
@@ -147,6 +152,7 @@ class GlobalTemplate extends Template
         }
 
         // Create new template
+        self::trim($name);
         Core::database()->insert(self::TABLE_GLOBAL_TEMPLATE, [
             "viewRoot" => $viewRoot,
             "name" => $name,
@@ -176,22 +182,26 @@ class GlobalTemplate extends Template
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $template
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $template = null, $field = null, string $fieldName = null)
+    private static function parse(array $template = null, $field = null, string $fieldName = null)
     {
-        if ($template) {
-            if (isset($template["viewRoot"])) $template["viewRoot"] = intval($template["viewRoot"]);
-            if (isset($template["category"])) $template["category"] = intval($template["category"]);
-            if (isset($template["sharedBy"])) $template["sharedBy"] = intval($template["sharedBy"]);
-            return $template;
+        $intValues = ["viewRoot", "category", "sharedBy"];
 
-        } else {
-            if ($fieldName == "viewRoot" || $fieldName == "category" || $fieldName == "sharedBy")
-                return is_numeric($field) ? intval($field) : $field;
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues], $template, $field, $fieldName);
+    }
+
+    /**
+     * Trims global template parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name", "sharedTimestamp"];
+        Utils::trim($params, ...$values);
     }
 }

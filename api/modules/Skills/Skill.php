@@ -201,6 +201,9 @@ class Skill
         $course = $this->getCourse();
         $rule = $this->getRule();
 
+        // Trim values
+        self::trim($fieldValues);
+
         // Validate data
         if (key_exists("tier", $fieldValues)) {
             $newTier = new Tier($fieldValues["tier"]);
@@ -484,6 +487,7 @@ class Skill
     public static function addSkill(int $tierId, string $name, ?string $color, ?string $page, bool $isCollab,
                                     bool $isExtra, array $dependencies): Skill
     {
+        self::trim($name, $color, $page);
         self::validateSkill($tierId, $name, $color, $page, $isCollab, $isExtra, $dependencies);
         $tier = Tier::getTierById($tierId);
         $courseId = $tier->getCourse()->getId();
@@ -1351,28 +1355,27 @@ class Skill
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $skill
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $skill = null, $field = null, string $fieldName = null)
+    private static function parse(array $skill = null, $field = null, string $fieldName = null)
     {
-        if ($skill) {
-            if (isset($skill["id"])) $skill["id"] = intval($skill["id"]);
-            if (isset($skill["course"])) $skill["course"] = intval($skill["course"]);
-            if (isset($skill["tier"])) $skill["tier"] = intval($skill["tier"]);
-            if (isset($skill["position"])) $skill["position"] = intval($skill["position"]);
-            if (isset($skill["rule"])) $skill["rule"] = intval($skill["rule"]);
-            if (isset($skill["isCollab"])) $skill["isCollab"] = boolval($skill["isCollab"]);
-            if (isset($skill["isExtra"])) $skill["isExtra"] = boolval($skill["isExtra"]);
-            if (isset($skill["isActive"])) $skill["isActive"] = boolval($skill["isActive"]);
-            return $skill;
+        $intValues = ["id", "course", "tier", "position", "rule"];
+        $boolValues = ["isCollab", "isExtra", "isActive"];
 
-        } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "tier" || $fieldName == "position")
-                return is_numeric($field) ? intval($field) : $field;
-            if ($fieldName == "isCollab" || $fieldName == "isExtra" || $fieldName == "isActive") return boolval($field);
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues, "bool" => $boolValues], $skill, $field, $fieldName);
+    }
+
+    /**
+     * Trims skill parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name", "color", "page"];
+        Utils::trim($params, ...$values);
     }
 }

@@ -101,6 +101,9 @@ class SkillTree
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         // Validate data
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
 
@@ -176,6 +179,7 @@ class SkillTree
      */
     public static function addSkillTree(int $courseId, ?string $name, int $maxReward): SkillTree
     {
+        self::trim($name);
         self::validateName($name);
         $id = Core::database()->insert(self::TABLE_SKILL_TREE, [
             "course" => $courseId,
@@ -402,22 +406,26 @@ class SkillTree
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $skillTree
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $skillTree = null, $field = null, string $fieldName = null)
+    private static function parse(array $skillTree = null, $field = null, string $fieldName = null)
     {
-        if ($skillTree) {
-            if (isset($skillTree["id"])) $skillTree["id"] = intval($skillTree["id"]);
-            if (isset($skillTree["course"])) $skillTree["course"] = intval($skillTree["course"]);
-            if (isset($skillTree["maxReward"])) $skillTree["maxReward"] = intval($skillTree["maxReward"]);
-            return $skillTree;
+        $intValues = ["id", "course", "maxReward"];
 
-        } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "maxReward")
-                return is_numeric($field) ? intval($field) : $field;
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues], $skillTree, $field, $fieldName);
+    }
+
+    /**
+     * Trims skill tree parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name"];
+        Utils::trim($params, ...$values);
     }
 }

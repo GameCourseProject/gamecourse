@@ -96,6 +96,7 @@ class SkillTreeTest extends TestCase
         return [
             "null" => [null],
             "simple name" => ["Skill Tree"],
+            "trimmed" => [" This is some incredibly enormous skill tree nameee "],
             "length limit" => ["This is some incredibly enormous skill tree nameee"]
         ];
     }
@@ -107,6 +108,7 @@ class SkillTreeTest extends TestCase
             "too long" => ["This is some incredibly enormous skill tree nameeee"]
         ];
     }
+
 
     public function skillTreeSuccessProvider(): array
     {
@@ -212,7 +214,7 @@ class SkillTreeTest extends TestCase
     {
         $skillTree = SkillTree::addSkillTree($this->courseId, null, 6000);
         $skillTree->setName($name);
-        $this->assertEquals($name, $skillTree->getName());
+        $this->assertEquals(trim($name), $skillTree->getName());
     }
 
     /**
@@ -378,8 +380,10 @@ class SkillTreeTest extends TestCase
         $skillTree = SkillTree::addSkillTree($this->courseId, $name, $maxReward);
 
         // Check is added to database
-        $skillTreeDB = SkillTree::parse(Core::database()->select(SkillTree::TABLE_SKILL_TREE, ["id" => $skillTree->getId()]));
-        $this->assertEquals($skillTree->getData(), $skillTreeDB);
+        $skillTreeDB = SkillTree::getSkillTrees($this->courseId)[0];
+        $skillTreeInfo = $skillTree->getData();
+        unset($skillTreeInfo["course"]);
+        $this->assertEquals($skillTreeInfo, $skillTreeDB);
 
         // Check it has wildcard tier
         $tiers = $skillTree->getTiers();
@@ -430,7 +434,7 @@ class SkillTreeTest extends TestCase
     {
         $skillTree = SkillTree::addSkillTree($this->courseId, null, 1000);
         $skillTree->editSkillTree($name, $maxReward);
-        $this->assertEquals($name, $skillTree->getName());
+        $this->assertEquals(trim($name), $skillTree->getName());
         $this->assertEquals($maxReward, $skillTree->getMaxReward());
     }
 

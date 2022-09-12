@@ -1,13 +1,13 @@
 <?php
 namespace GameCourse\Views\Component;
 
-
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
 use GameCourse\Views\Category\Category;
 use GameCourse\Views\ViewHandler;
 use PDOException;
+use Utils\Utils;
 
 /**
  * This is the Core Component model, which implements the necessary methods
@@ -95,8 +95,12 @@ class CoreComponent extends Component
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         // Update data
-        if (count($fieldValues) != 0) Core::database()->update(self::TABLE_CORE_COMPONENT, $fieldValues, ["viewRoot" => $this->viewRoot]);
+        if (count($fieldValues) != 0)
+            Core::database()->update(self::TABLE_CORE_COMPONENT, $fieldValues, ["viewRoot" => $this->viewRoot]);
     }
 
 
@@ -154,6 +158,7 @@ class CoreComponent extends Component
         $viewRoot = ViewHandler::insertViewTree($viewTree, 0);
 
         // Create new component
+        self::trim($description);
         Core::database()->insert(self::TABLE_CORE_COMPONENT, [
             "viewRoot" => $viewRoot,
             "description" => $description,
@@ -184,22 +189,26 @@ class CoreComponent extends Component
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $component
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $component = null, $field = null, string $fieldName = null)
+    private static function parse(array $component = null, $field = null, string $fieldName = null)
     {
-        if ($component) {
-            if (isset($component["viewRoot"])) $component["viewRoot"] = intval($component["viewRoot"]);
-            if (isset($component["category"])) $component["category"] = intval($component["category"]);
-            if (isset($component["position"])) $component["position"] = intval($component["position"]);
-            return $component;
+        $intValues = ["viewRoot", "category", "position"];
 
-        } else {
-            if ($fieldName == "viewRoot" || $fieldName == "category" || $fieldName == "position")
-                return is_numeric($field) ? intval($field) : $field;
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues], $component, $field, $fieldName);
+    }
+
+    /**
+     * Trims core component parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["description"];
+        Utils::trim($params, ...$values);
     }
 }

@@ -158,7 +158,8 @@ class CourseTest extends TestCase
     {
         return [
             "null" => [null],
-            "HEX" => ["#ffffff"]
+            "HEX" => ["#ffffff"],
+            "trimmed" => [" #ffffff "]
         ];
     }
 
@@ -178,7 +179,8 @@ class CourseTest extends TestCase
     public function courseYearSuccessProvider(): array
     {
         return [
-            "valid format" => ["2021-2022"]
+            "valid format" => ["2021-2022"],
+            "trimmed" => [" 2021-2022 "]
         ];
     }
 
@@ -198,7 +200,8 @@ class CourseTest extends TestCase
     {
         return [
             "null" => [null],
-            "valid format" => ["2022-04-20 20:43:00"]
+            "valid format" => ["2022-04-20 20:43:00"],
+            "trimmed" => [" 2022-04-20 20:43:00 "]
         ];
     }
 
@@ -521,7 +524,7 @@ class CourseTest extends TestCase
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
         $course->setColor($color);
-        $this->assertEquals($color, $course->getColor());
+        $this->assertEquals(trim($color), $course->getColor());
     }
 
     /**
@@ -547,7 +550,7 @@ class CourseTest extends TestCase
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
         $course->setYear($year);
-        $this->assertEquals($year, $course->getYear());
+        $this->assertEquals(trim($year), $course->getYear());
     }
 
     /**
@@ -573,7 +576,7 @@ class CourseTest extends TestCase
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
         $course->setStartDate($startDate);
-        $this->assertEquals($startDate, $course->getStartDate());
+        $this->assertEquals(trim($startDate), $course->getStartDate());
     }
 
     /**
@@ -599,7 +602,7 @@ class CourseTest extends TestCase
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
         $course->setEndDate($endDate);
-        $this->assertEquals($endDate, $course->getEndDate());
+        $this->assertEquals(trim($endDate), $course->getEndDate());
     }
 
     /**
@@ -761,6 +764,7 @@ class CourseTest extends TestCase
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
         $course->setData(["name" => $name]);
+        $name = trim($name);
         $this->assertEquals($name, $course->getName());
         $this->assertTrue(file_exists(COURSE_DATA_FOLDER . "/" . $course->getId() . "-" . Utils::strip($name, "_")));
     }

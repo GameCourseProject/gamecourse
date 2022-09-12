@@ -103,6 +103,7 @@ class StreakTest extends TestCase
             "hyphen" => ["Streak-Name"],
             "underscore" => ["Streak_Name"],
             "ampersand" => ["Streak & Name"],
+            "trimmed" => [" This is some incredibly humongous streak nameeeeee "],
             "length limit" => ["This is some incredibly humongous streak nameeeeee"]
         ];
     }
@@ -148,6 +149,7 @@ class StreakTest extends TestCase
             "hyphen" => ["Streak-Description"],
             "underscore" => ["Streak_Description"],
             "ampersand" => ["Streak & Description"],
+            "trimmed" => [" This is some incredibly humongous streak description This is some incredibly humongous badge description This is some incredibly humongous badge descr "],
             "length limit" => ["This is some incredibly humongous streak description This is some incredibly humongous badge description This is some incredibly humongous badge descr"]
         ];
     }
@@ -168,7 +170,8 @@ class StreakTest extends TestCase
     {
         return [
             "null" => [null],
-            "HEX" => ["#ffffff"]
+            "HEX" => ["#ffffff"],
+            "trimmed" => [" #ffffff "]
         ];
     }
 
@@ -531,6 +534,7 @@ class StreakTest extends TestCase
             null, null, 100, null, false, true, false,
             false, false);
         $streak->setName($name);
+        $name = trim($name);
         $this->assertEquals($name, $streak->getName());
 
         $this->assertTrue(file_exists($streak->getDataFolder(true, $name)));
@@ -597,6 +601,7 @@ class StreakTest extends TestCase
             null, null, 100, null, false, true, false,
             false, false);
         $streak->setDescription($description);
+        $description = trim($description);
         $this->assertEquals($description, $streak->getDescription());
 
         $this->assertEquals($description, $streak->getRule()->getDescription());
@@ -633,7 +638,7 @@ class StreakTest extends TestCase
             null, null, 100, null, false, true, false,
             false, false);
         $streak->setColor($color);
-        $this->assertEquals($color, $streak->getColor());
+        $this->assertEquals(trim($color), $streak->getColor());
     }
 
     /**
@@ -1146,8 +1151,10 @@ class StreakTest extends TestCase
             $reward, $tokens, $isRepeatable, $isCount, $isPeriodic, $isAtMost, $isExtra);
 
         // Check is added to database
-        $streakDB = Streak::parse(Core::database()->select(Streak::TABLE_STREAK, ["id" => $streak->getId()]));
-        $this->assertEquals($streak->getData(), $streakDB);
+        $streakDB = Streak::getStreaks($this->courseId)[0];
+        $streakInfo = $streak->getData();
+        $streakInfo["image"] = $streak->getImage();
+        $this->assertEquals($streakInfo, $streakDB);
 
         // Check data folder was created
         $this->assertTrue(file_exists($streak->getDataFolder()));
@@ -1526,6 +1533,7 @@ len(progress) > 0", $params["when"]);
         $streak = Streak::addStreak($this->courseId, $name, "Perform action", null, 10,
             null, null, 100, null, false, true, false,
             false, false);
+        $name = trim($name);
         Streak::createDataFolder($this->courseId, $name);
         $this->assertTrue(file_exists($streak->getDataFolder(true, $name)));
     }
@@ -1540,6 +1548,7 @@ len(progress) > 0", $params["when"]);
         $streak = Streak::addStreak($this->courseId, $name, "Perform action", null, 10,
             null, null, 100, null, false, true, false,
             false, false);
+        $name = trim($name);
         Streak::removeDataFolder($this->courseId, $name);
         $this->assertFalse(file_exists($streak->getDataFolder(true, $name)));
     }

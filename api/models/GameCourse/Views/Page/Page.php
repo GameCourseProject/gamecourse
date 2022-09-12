@@ -185,6 +185,9 @@ class Page
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         // Validate data
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
         if (key_exists("visibleFrom", $fieldValues)) {
@@ -308,6 +311,7 @@ class Page
     public static function addPage(int $courseId, string $name, array $viewTree = null, ?string $visibleFrom = null,
                                    ?string $visibleUntil = null): Page
     {
+        self::trim($name, $visibleFrom, $visibleUntil);
         self::validatePage($name, false, $visibleFrom, $visibleUntil);
 
         // Add view tree of page
@@ -365,7 +369,6 @@ class Page
     public function editPage(string $name, bool $isVisible, ?string $visibleFrom = null, ?string $visibleUntil = null,
                              ?int $position = null): Page
     {
-        self::validatePage($name, $isVisible, $visibleFrom, $visibleUntil);
         $this->setData([
             "name" => $name,
             "isVisible" => +$isVisible,
@@ -601,25 +604,27 @@ class Page
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $page
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $page = null, $field = null, string $fieldName = null)
+    private static function parse(array $page = null, $field = null, string $fieldName = null)
     {
-        if ($page) {
-            if (isset($page["id"])) $page["id"] = intval($page["id"]);
-            if (isset($page["course"])) $page["course"] = intval($page["course"]);
-            if (isset($page["isVisible"])) $page["isVisible"] = boolval($page["isVisible"]);
-            if (isset($page["viewRoot"])) $page["viewRoot"] = intval($page["viewRoot"]);
-            if (isset($page["position"])) $page["position"] = intval($page["position"]);
-            return $page;
+        $intValues = ["id", "course", "position", "viewRoot", "position"];
+        $boolValues = ["isVisible"];
 
-        } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "viewRoot" || $fieldName == "position")
-                return is_numeric($field) ? intval($field) : $field;
-            if ($fieldName == "isVisible") return boolval($field);
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues, "bool" => $boolValues], $page, $field, $fieldName);
+    }
+
+    /**
+     * Trims page parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name", "creationTimestamp", "updateTimestamp", "visibleFrom", "visibleUntil"];
+        Utils::trim($params, ...$values);
     }
 }

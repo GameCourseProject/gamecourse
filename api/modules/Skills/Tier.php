@@ -144,6 +144,9 @@ class Tier
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         // Validate data
         if (key_exists("name", $fieldValues)) {
             self::validateName($fieldValues["name"]);
@@ -287,6 +290,7 @@ class Tier
      */
     public static function addTier(int $skillTreeId, string $name, int $reward): Tier
     {
+        self::trim($name);
         self::validateName($name);
         $id = Core::database()->insert(self::TABLE_SKILL_TIER, [
             "skillTree" => $skillTreeId,
@@ -513,25 +517,27 @@ class Tier
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $tier
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $tier = null, $field = null, string $fieldName = null)
+    private static function parse(array $tier = null, $field = null, string $fieldName = null)
     {
-        if ($tier) {
-            if (isset($tier["id"])) $tier["id"] = intval($tier["id"]);
-            if (isset($tier["skillTree"])) $tier["skillTree"] = intval($tier["skillTree"]);
-            if (isset($tier["reward"])) $tier["reward"] = intval($tier["reward"]);
-            if (isset($tier["position"])) $tier["position"] = intval($tier["position"]);
-            if (isset($tier["isActive"])) $tier["isActive"] = boolval($tier["isActive"]);
-            return $tier;
+        $intValues = ["id", "skillTree", "reward", "position"];
+        $boolValues = ["isActive"];
 
-        } else {
-            if ($fieldName == "id" || $fieldName == "skillTree" || $fieldName == "reward" || $fieldName == "position")
-                return is_numeric($field) ? intval($field) : $field;
-            if ($fieldName == "isActive") return boolval($field);
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues, "bool" => $boolValues], $tier, $field, $fieldName);
+    }
+
+    /**
+     * Trims tier parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name"];
+        Utils::trim($params, ...$values);
     }
 }

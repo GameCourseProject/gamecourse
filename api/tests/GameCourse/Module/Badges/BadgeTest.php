@@ -102,6 +102,7 @@ class BadgeTest extends TestCase
             "hyphen" => ["Badge-Name"],
             "underscore" => ["Badge_Name"],
             "ampersand" => ["Badge & Name"],
+            "trimmed" => [" This is some incredibly humongous badge nameeeeeee "],
             "length limit" => ["This is some incredibly humongous badge nameeeeeee"]
         ];
     }
@@ -147,6 +148,7 @@ class BadgeTest extends TestCase
             "hyphen" => ["Badge-Description"],
             "underscore" => ["Badge_Description"],
             "ampersand" => ["Badge & Description"],
+            "trimmed" => [" This is some incredibly humongous badge description This is some incredibly humongous badge description This is some incredibly humongous badge descri "],
             "length limit" => ["This is some incredibly humongous badge description This is some incredibly humongous badge description This is some incredibly humongous badge descri"]
         ];
     }
@@ -174,6 +176,7 @@ class BadgeTest extends TestCase
             "hyphen" => ["Badge-Level-Description"],
             "underscore" => ["Badge_Level_Description"],
             "ampersand" => ["Badge & Level & Description"],
+            "trimmed" => [" This is some incredibly humongous badge level description This is some incredibly humongous badge le "],
             "length limit" => ["This is some incredibly humongous badge level description This is some incredibly humongous badge le"]
         ];
     }
@@ -616,6 +619,7 @@ class BadgeTest extends TestCase
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
         $badge->setName($name);
+        $name = trim($name);
         $this->assertEquals($name, $badge->getName());
 
         $this->assertTrue(file_exists($badge->getDataFolder(true, $name)));
@@ -690,6 +694,7 @@ class BadgeTest extends TestCase
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
         $badge->setDescription($description);
+        $description = trim($description);
         $this->assertEquals($description, $badge->getDescription());
 
         $this->assertEquals($description . "\n\tlvl.1: one time\n\tlvl.2: two times\n\tlvl.3: three times", $badge->getRule()->getDescription());
@@ -1134,8 +1139,23 @@ class BadgeTest extends TestCase
         $badge = Badge::addBadge($this->courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels);
 
         // Check is added to database
-        $badgeDB = Badge::parse(Core::database()->select(Badge::TABLE_BADGE, ["id" => $badge->getId()]));
-        $this->assertEquals($badge->getData(), $badgeDB);
+        $badgeDB = Badge::getBadges($this->courseId)[0];
+        $badgeInfo = $badge->getData();
+        $badgeInfo["image"] = $badge->getImage();
+        $badgeInfo["desc1"] = $levels[0]["description"];
+        $badgeInfo["goal1"] = $levels[0]["goal"];
+        $badgeInfo["reward1"] = $levels[0]["reward"];
+        if (count($levels) > 1) {
+            $badgeInfo["desc2"] = $levels[1]["description"];
+            $badgeInfo["goal2"] = $levels[1]["goal"];
+            $badgeInfo["reward2"] = $levels[1]["reward"];
+        }
+        if (count($levels) > 2) {
+            $badgeInfo["desc3"] = $levels[2]["description"];
+            $badgeInfo["goal3"] = $levels[2]["goal"];
+            $badgeInfo["reward3"] = $levels[2]["reward"];
+        }
+        $this->assertEquals($badgeInfo, $badgeDB);
 
         // Check levels
         $lvls = $badge->getLevels();
@@ -1701,6 +1721,7 @@ award_badge(target, \"New Name\", lvl)", $params["then"]);
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
+        $name = trim($name);
         Badge::createDataFolder($this->courseId, $name);
         $this->assertTrue(file_exists($badge->getDataFolder(true, $name)));
     }
@@ -1717,6 +1738,7 @@ award_badge(target, \"New Name\", lvl)", $params["then"]);
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
+        $name = trim($name);
         Badge::removeDataFolder($this->courseId, $name);
         $this->assertFalse(file_exists($badge->getDataFolder(true, $name)));
     }

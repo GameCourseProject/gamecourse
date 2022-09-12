@@ -237,6 +237,9 @@ abstract class Module
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         // Validate data
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
         if (key_exists("description", $fieldValues)) self::validateDescription($fieldValues["description"]);
@@ -323,6 +326,30 @@ abstract class Module
         return $modules;
     }
 
+    /**
+     * Gets all modules available in a course.
+     * Option for 'enabled' and to retrieve module IDs only.
+     *
+     * @param int $courseId
+     * @param bool|null $enabled
+     * @param bool $IDsOnly
+     * @return array
+     * @throws Exception
+     */
+    public static function getModulesInCourse(int $courseId, ?bool $enabled = null, bool $IDsOnly = false): array
+    {
+        $table = self::TABLE_MODULE . " m JOIN " . self::TABLE_COURSE_MODULE . " cm on cm.module=m.id";
+        $where = ["cm.course" => $courseId];
+        if ($enabled !== null) $where["cm.isEnabled"] = $enabled;
+        $modules = Core::database()->selectMultiple($table, $where, "m.*, cm.isEnabled, cm.minModuleVersion, cm.maxModuleVersion", "m.id");
+        if ($IDsOnly) return array_column($modules, "id");
+        foreach ($modules as &$moduleInfo) {
+            $moduleInfo = self::getExtraInfo($moduleInfo, new Course($courseId));
+            $moduleInfo = self::parse($moduleInfo);
+        }
+        return $modules;
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** --------------- Module Manipulation ---------------- ***/
@@ -346,6 +373,7 @@ abstract class Module
     public static function addModule(string $id, string $name, string $description, string $type, string $version,
                                     array $projectCompatibility, array $APICompatibility, array $dependencies): Module
     {
+        self::trim($id, $name, $description, $type, $version);
         self::validateModule($id, $name, $description, $type, $version, $projectCompatibility, $APICompatibility);
         Core::database()->insert(self::TABLE_MODULE, [
             "id" => $id,
@@ -1078,7 +1106,7 @@ abstract class Module
      * @return bool
      * @throws Exception
      */
-    public function canChangeState(bool $enable, bool $throwErrors = false): bool
+    private function canChangeState(bool $enable, bool $throwErrors = false): bool
     {
         $error = null;
 
@@ -1181,17 +1209,24 @@ abstract class Module
      * @param array|null $module
      * @param $field
      * @param string|null $fieldName
-     * @return array|bool|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $module = null, $field = null, string $fieldName = null)
+    private static function parse(array $module = null, $field = null, string $fieldName = null)
     {
-        if ($module) {
-            if (isset($module["isEnabled"])) $module["isEnabled"] = boolval($module["isEnabled"]);
-            return $module;
+        $boolValues = ["isEnabled"];
 
-        } else {
-            if ($fieldName == "isEnabled") return boolval($field);
-            return $field;
-        }
+        return Utils::parse(["bool" => $boolValues], $module, $field, $fieldName);
+    }
+
+    /**
+     * Trims module parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["id", "name", "description", "type", "version", "minProjectVersion", "maxProjectVersion", "minAPIVersion", "maxAPIVersion"];
+        Utils::trim($params, ...$values);
     }
 }

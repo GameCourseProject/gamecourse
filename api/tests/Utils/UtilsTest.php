@@ -974,84 +974,6 @@ class UtilsTest extends TestCase
     }
 
 
-    // Validations
-
-    /**
-     * @test
-     * @dataProvider validEmailProvider
-     */
-    public function isValidEmailValidEmail(string $email)
-    {
-        $this->assertTrue(Utils::isValidEmail($email));
-    }
-
-    /**
-     * @test
-     * @dataProvider invalidEmailProvider
-     */
-    public function isValidEmailInvalidEmail($email)
-    {
-        $this->assertFalse(Utils::isValidEmail($email));
-    }
-
-    /**
-     * @test
-     * @dataProvider validDateProvider
-     */
-    public function isValidDateValidDate(string $date, string $format)
-    {
-        $this->assertTrue(Utils::isValidDate($date, $format));
-    }
-
-    /**
-     * @test
-     * @dataProvider invalidDateProvider
-     */
-    public function isValidDateInvalidDate(?string $date, string $format)
-    {
-        $this->assertFalse(Utils::isValidDate($date, $format));
-    }
-
-    /**
-     * @test
-     * @dataProvider validColorProvider
-     * @throws Exception
-     */
-    public function isValidColorValidColor(string $color, string $format)
-    {
-        $this->assertTrue(Utils::isValidColor($color, $format));
-    }
-
-    /**
-     * @test
-     * @dataProvider invalidColorProvider
-     * @throws Exception
-     */
-    public function isValidColorInvalidColor($color, string $format)
-    {
-        $this->assertFalse(Utils::isValidColor($color, $format));
-    }
-
-    /**
-     * @test
-     * @dataProvider validVersionProvider
-     */
-    public function isValidVersionValidVersion(?string $version)
-    {
-        $this->assertTrue(Utils::isValidVersion($version));
-    }
-
-    /**
-     * @test
-     * @dataProvider invalidVersionProvider
-     */
-    public function isValidVersionInvalidVersion($version)
-    {
-        $res = Utils::isValidVersion($version);
-        $this->assertFalse($res);
-    }
-
-
     // String manipulation
 
     /**
@@ -1091,11 +1013,11 @@ class UtilsTest extends TestCase
     /**
      * @test
      */
-    public function trim()
+    public function trimWhitespace()
     {
         // True
-        $this->assertEquals("abcdefgh", Utils::trim(" abc def gh  "));
-        $this->assertEquals("_abc_def_gh_", Utils::trim(" abc def  gh ", "_"));
+        $this->assertEquals("abcdefgh", Utils::trimWhitespace(" abc def gh  "));
+        $this->assertEquals("_abc_def_gh_", Utils::trimWhitespace(" abc def  gh ", "_"));
     }
 
     /**
@@ -1261,6 +1183,156 @@ class UtilsTest extends TestCase
     {
         $file = "";
         $this->assertNull(Utils::detectSeparator($file));
+    }
+
+
+    // Validations
+
+    /**
+     * @test
+     * @dataProvider validEmailProvider
+     */
+    public function isValidEmailValidEmail(string $email)
+    {
+        $this->assertTrue(Utils::isValidEmail($email));
+    }
+
+    /**
+     * @test
+     * @dataProvider invalidEmailProvider
+     */
+    public function isValidEmailInvalidEmail($email)
+    {
+        $this->assertFalse(Utils::isValidEmail($email));
+    }
+
+    /**
+     * @test
+     * @dataProvider validDateProvider
+     */
+    public function isValidDateValidDate(string $date, string $format)
+    {
+        $this->assertTrue(Utils::isValidDate($date, $format));
+    }
+
+    /**
+     * @test
+     * @dataProvider invalidDateProvider
+     */
+    public function isValidDateInvalidDate(?string $date, string $format)
+    {
+        $this->assertFalse(Utils::isValidDate($date, $format));
+    }
+
+    /**
+     * @test
+     * @dataProvider validColorProvider
+     * @throws Exception
+     */
+    public function isValidColorValidColor(string $color, string $format)
+    {
+        $this->assertTrue(Utils::isValidColor($color, $format));
+    }
+
+    /**
+     * @test
+     * @dataProvider invalidColorProvider
+     * @throws Exception
+     */
+    public function isValidColorInvalidColor($color, string $format)
+    {
+        $this->assertFalse(Utils::isValidColor($color, $format));
+    }
+
+    /**
+     * @test
+     * @dataProvider validVersionProvider
+     */
+    public function isValidVersionValidVersion(?string $version)
+    {
+        $this->assertTrue(Utils::isValidVersion($version));
+    }
+
+    /**
+     * @test
+     * @dataProvider invalidVersionProvider
+     */
+    public function isValidVersionInvalidVersion($version)
+    {
+        $res = Utils::isValidVersion($version);
+        $this->assertFalse($res);
+    }
+
+
+    // Parsing
+
+    /**
+     * @test
+     */
+    public function parseItem()
+    {
+        $intValues = ["id", "course", "position"];
+        $boolValues = ["isActive"];
+        $jsonValues = ["hierarchy"];
+
+        $item = ["id" => "123", "course" => "1", "name" => "Name", "description" => null, "position" => null, "isActive" => "0",
+            "hierarchy" => "[{\"name\":\"Teacher\"},{\"name\":\"Student\"},{\"name\":\"Watcher\"}]"];
+        $parsed = Utils::parse(["int" => $intValues, "bool" => $boolValues, "json" => $jsonValues], $item);
+
+        $this->assertEquals(["id" => 123, "course" => 1, "name" => "Name", "description" => null, "position" => null, "isActive" => false, "hierarchy" => [
+            ["name" => "Teacher"],
+            ["name" => "Student"],
+            ["name" => "Watcher"]
+        ]], $parsed);
+    }
+
+    /**
+     * @test
+     */
+    public function parseField()
+    {
+        $intValues = ["id", "course", "position"];
+        $boolValues = ["isActive"];
+        $jsonValues = ["hierarchy"];
+
+        $this->assertEquals(123, Utils::parse(["int" => $intValues, "bool" => $boolValues, "json" => $jsonValues], null, "123", "id"));
+        $this->assertEquals(1, Utils::parse(["int" => $intValues, "bool" => $boolValues, "json" => $jsonValues], null, "1", "course"));
+        $this->assertEquals("Name", Utils::parse(["int" => $intValues, "bool" => $boolValues, "json" => $jsonValues], null, "Name", "name"));
+        $this->assertNull(Utils::parse(["int" => $intValues, "bool" => $boolValues, "json" => $jsonValues], null, null, "description"));
+        $this->assertNull(Utils::parse(["int" => $intValues, "bool" => $boolValues, "json" => $jsonValues], null, null, "position"));
+        $this->assertFalse(Utils::parse(["int" => $intValues, "bool" => $boolValues, "json" => $jsonValues], null, "0", "isActive"));
+        $this->assertEquals([
+            ["name" => "Teacher"],
+            ["name" => "Student"],
+            ["name" => "Watcher"]
+        ], Utils::parse(["int" => $intValues, "bool" => $boolValues, "json" => $jsonValues], null, "[{\"name\":\"Teacher\"},{\"name\":\"Student\"},{\"name\":\"Watcher\"}]", "hierarchy"));
+    }
+
+
+    // Trimming
+
+    /**
+     * @test
+     */
+    public function trimArrayOfValues()
+    {
+        $params = ["name", "description", "nickname"];
+        $values = ["name" => " Name ", "description" => " Some description ", "nickname" => null];
+        Utils::trim($params, $values);
+
+        $this->assertEquals(["name" => "Name", "description" => "Some description", "nickname" => null], $values);
+    }
+
+    /**
+     * @test
+     */
+    public function trimMultipleValues()
+    {
+        $params = ["name", "description", "nickname"];
+        $values = ["name" => " Name ", "description" => " Some description ", "nickname" => null];
+        Utils::trim($params, $values["name"], $values["description"], $values["nickname"]);
+
+        $this->assertEquals(["name" => "Name", "description" => "Some description", "nickname" => null], $values);
     }
 
 

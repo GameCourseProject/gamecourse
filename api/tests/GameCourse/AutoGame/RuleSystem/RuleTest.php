@@ -96,7 +96,8 @@ class RuleTest extends TestCase
             "hyphen" => ["Rule-Name"],
             "underscore" => ["Rule_Name"],
             "ampersand" => ["Rule & Name"],
-            "length limit" => ["This is some incredibly humongous rule name This is some incredibly humongous rule name This is some"]
+            "trimmed" => [" This is some incredibly humongous rule name This i "],
+            "length limit" => ["This is some incredibly humongous rule name This i"]
         ];
     }
 
@@ -126,7 +127,7 @@ class RuleTest extends TestCase
             "question" => ["?"],
             "brackets" => ["[]"],
             "braces" => ["{}"],
-            "too long" => ["This is some incredibly humongous rule name This is some incredibly humongous rule name This is somee"]
+            "too long" => ["This is some incredibly humongous rule name This is"]
         ];
     }
 
@@ -309,6 +310,8 @@ tags:
     {
         $rule = Rule::addRule($this->courseId, $this->sectionId, "NAME", null, "when", "then", 0);
         $rule->setName($name);
+
+        $name = trim($name);
         $this->assertEquals($name, $rule->getName());
 
         $rulesText = file_get_contents(Section::getSectionById($this->sectionId)->getFile());
@@ -654,7 +657,7 @@ tags:
         $section2 = Section::addSection($course->getId(), "Section2");
         Rule::addRule($course->getId(), $section2->getId(), "Rule1", null, "when", "then", 0);
 
-        $rules = Rule::getRulesOfCourse($this->courseId);
+        $rules = Rule::getRules($this->courseId);
         $this->assertIsArray($rules);
         $this->assertCount(2, $rules);
 
@@ -680,7 +683,7 @@ tags:
         $section2 = Section::addSection($course->getId(), "Section2");
         Rule::addRule($course->getId(), $section2->getId(), "Rule1", null, "when", "then", 0);
 
-        $rules = Rule::getRulesOfCourse($this->courseId);
+        $rules = Rule::getRules($this->courseId);
         $this->assertIsArray($rules);
         $this->assertEmpty($rules);
     }
@@ -793,7 +796,7 @@ tags:
     {
         $rule = Rule::addRule($this->courseId, $this->sectionId, $name, $description, $when, $then, $position, $isActive, $tags);
 
-        $rules = Rule::getRulesOfCourse($this->courseId);
+        $rules = Rule::getRules($this->courseId);
         $this->assertIsArray($rules);
         $this->assertCount(1, $rules);
         $this->assertEquals($rule->getId(), $rules[0]["id"]);
@@ -825,7 +828,7 @@ tags:
             $this->fail("Exception should have been thrown on 'addRuleFailure'");
 
         } catch (Exception|TypeError $e) {
-            $rules = Rule::getRulesOfCourse($this->courseId);
+            $rules = Rule::getRules($this->courseId);
             $this->assertIsArray($rules);
             $this->assertEmpty($rules);
 
@@ -854,7 +857,7 @@ tags:
             "then", 0, true, $tags);
         $this->assertEquals($tags, $rule->getTags());
 
-        $rules = Rule::getRulesOfCourse($this->courseId);
+        $rules = Rule::getRules($this->courseId);
         $this->assertIsArray($rules);
         $this->assertCount(1, $rules);
         $this->assertEquals($rule->getId(), $rules[0]["id"]);
@@ -881,7 +884,7 @@ tags:
             $this->fail("Exception should have been thrown on 'addRuleDuplicateName'");
 
         } catch (PDOException $e) {
-            $rules = Rule::getRulesOfCourse($this->courseId);
+            $rules = Rule::getRules($this->courseId);
             $this->assertCount(1, $rules);
         }
     }
@@ -898,7 +901,7 @@ tags:
         $rule = Rule::addRule($this->courseId, $this->sectionId, "NAME", null, "WHEN", "THEN", 0);
         $rule->editRule($name, $description, $when, $then, $position, $isActive, $tags);
 
-        $rules = Rule::getRulesOfCourse($this->courseId);
+        $rules = Rule::getRules($this->courseId);
         $this->assertIsArray($rules);
         $this->assertCount(1, $rules);
         $this->assertEquals($rule->getId(), $rules[0]["id"]);
@@ -928,7 +931,7 @@ tags:
             $this->fail("Exception should have been thrown on 'editRuleFailure'");
 
         } catch (Exception|TypeError $e) {
-            $rules = Rule::getRulesOfCourse($this->courseId);
+            $rules = Rule::getRules($this->courseId);
             $this->assertIsArray($rules);
             $this->assertCount(1, $rules);
             $this->assertEquals($rule->getId(), $rules[0]["id"]);
@@ -1071,7 +1074,7 @@ tags:
         Rule::deleteRule($rule2->getId());
 
         // Then
-        $rules = Rule::getRulesOfCourse($this->courseId);
+        $rules = Rule::getRules($this->courseId);
         $this->assertIsArray($rules);
         $this->assertCount(2, $rules);
 
@@ -1099,7 +1102,7 @@ tags:
         Rule::deleteRule(100);
 
         // Then
-        $rules = Rule::getRulesOfCourse($this->courseId);
+        $rules = Rule::getRules($this->courseId);
         $this->assertIsArray($rules);
         $this->assertCount(1, $rules);
         $this->assertEquals($rule->getId(), $rules[0]["id"]);

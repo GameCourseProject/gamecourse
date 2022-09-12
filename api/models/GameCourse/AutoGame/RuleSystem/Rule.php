@@ -87,7 +87,7 @@ class Rule
      * @example getData("name, description") --> gets rule name & description
      *
      * @param string $field
-     * @return array|int|null
+     * @return array|int|string|bool|null
      */
     public function getData(string $field = "*")
     {
@@ -145,7 +145,7 @@ class Rule
     public function setText(string $text)
     {
         $section = $this->getSection();
-        $section->updateRuleText($text, $this->getPosition());
+        $section->updateRuleText(trim($text), $this->getPosition());
     }
 
     /**
@@ -169,6 +169,9 @@ class Rule
     public function setData(array $fieldValues)
     {
         $section = $this->getSection();
+
+        // Trim values
+        self::trim($fieldValues);
 
         // Validate data
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
@@ -241,14 +244,14 @@ class Rule
     }
 
     /**
-     * Gets all rules of course, ordered by priority.
+     * Gets rules in the Rule System for a given course, ordered by priority.
      * Option for 'active'.
      *
      * @param int $courseId
      * @param bool|null $active
      * @return array
      */
-    public static function getRulesOfCourse(int $courseId, bool $active = null): array
+    public static function getRules(int $courseId, bool $active = null): array
     {
         $table = self::TABLE_RULE . " r JOIN " . Section::TABLE_RULE_SECTION . " s on r.section=s.id";
         $where = ["r.course" => $courseId];
@@ -262,7 +265,7 @@ class Rule
     }
 
     /**
-     * Gets all rules of section, ordered by priority.
+     * Gets all rules of a given section, ordered by priority.
      * Option for 'active'.
      *
      * @param int $sectionId
@@ -323,6 +326,7 @@ class Rule
     public static function addRule(int $courseId, int $sectionId, string $name, ?string $description, string $when,
                                    string $then, int $position, bool $isActive = true, array $tags = []): Rule
     {
+        self::trim($name, $description, $when, $then);
         self::validateRule($name, $when, $then, $isActive);
         $section = new Section($sectionId);
 
@@ -475,11 +479,7 @@ class Rule
      */
     public function getTags(): array
     {
-        $table = self::TABLE_RULE_TAGS . " rt JOIN " . Tag::TABLE_RULE_TAG . " t on rt.tag=t.id";
-        $where = ["rt.rule" => $this->id];
-        $tags = Core::database()->selectMultiple($table, $where, "t.*", "t.id");
-        foreach ($tags as &$tag) { $tag = Tag::parse($tag); }
-        return $tags;
+        return Tag::getRuleTags($this->id);
     }
 
     /**
@@ -586,8 +586,8 @@ class Rule
         if (count($matches) != 0)
             throw new Exception("Rule name '" . $name . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-', '&'");
 
-        if (iconv_strlen($name) > 100)
-            throw new Exception("Rule name is too long: maximum of 100 characters.");
+        if (iconv_strlen($name) > 50)
+            throw new Exception("Rule name is too long: maximum of 50 characters.");
     }
 
     /**
@@ -682,25 +682,27 @@ class Rule
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $rule
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|bool|null
+     * @return array|bool|int|mixed|null
      */
     private static function parse(array $rule = null, $field = null, string $fieldName = null)
     {
-        if ($rule) {
-            if (isset($rule["id"])) $rule["id"] = intval($rule["id"]);
-            if (isset($rule["course"])) $rule["course"] = intval($rule["course"]);
-            if (isset($rule["section"])) $rule["section"] = intval($rule["section"]);
-            if (isset($rule["position"])) $rule["position"] = intval($rule["position"]);
-            if (isset($rule["isActive"])) $rule["isActive"] = boolval($rule["isActive"]);
-            return $rule;
+        $intValues = ["id", "course", "section", "position"];
+        $boolValues = ["isActive"];
 
-        } else {
-            if ($fieldName == "id" || $fieldName == "course" || $fieldName == "section" || $fieldName == "position")
-                return is_numeric($field) ? intval($field) : $field;
-            if ($fieldName == "isActive") return boolval($field);
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues, "bool" => $boolValues], $rule, $field, $fieldName);
+    }
+
+    /**
+     * Trims rule parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name", "description", "whenClause", "thenClause"];
+        Utils::trim($params, ...$values);
     }
 }

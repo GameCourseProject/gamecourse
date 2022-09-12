@@ -3,6 +3,7 @@ namespace GameCourse\Core;
 
 use API\API;
 use Database\Database;
+use Event\Event;
 use Exception;
 use Facebook;
 use Faker\Factory;
@@ -103,6 +104,7 @@ class Core
         if (file_exists(CACHE_FOLDER)) Utils::deleteDirectory(CACHE_FOLDER);
         Utils::deleteDirectory(AUTOGAME_FOLDER . "/imported-functions", false, ["defaults.py"]);
         Utils::deleteDirectory(AUTOGAME_FOLDER . "/config", false, ["samples"]);
+        Event::stopAll();
     }
 
 

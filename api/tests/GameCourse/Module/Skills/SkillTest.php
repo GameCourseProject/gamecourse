@@ -108,6 +108,7 @@ class SkillTest extends TestCase
             "hyphen" => ["Skill-Name"],
             "underscore" => ["Skill_Name"],
             "ampersand" => ["Skill & Name"],
+            "trimmed" => [" This is some incredibly humongous skill nameeeeeee "],
             "length limit" => ["This is some incredibly humongous skill nameeeeeee"]
         ];
     }
@@ -147,7 +148,8 @@ class SkillTest extends TestCase
     {
         return [
             "null" => [null],
-            "HEX" => ["#ffffff"]
+            "HEX" => ["#ffffff"],
+            "trimmed" => [" #ffffff "]
         ];
     }
 
@@ -411,6 +413,8 @@ class SkillTest extends TestCase
     {
         $skill = Skill::addSkill($this->tierId, "Skill", null, null, false, false, []);
         $skill->setName($name);
+
+        $name = trim($name);
         $this->assertEquals($name, $skill->getName());
 
         $this->assertTrue(file_exists($skill->getDataFolder(true, $name)));
@@ -479,7 +483,7 @@ tags:
     {
         $skill = Skill::addSkill($this->tierId, "Skill", null, null, false, false, []);
         $skill->setColor($color);
-        $this->assertEquals($color, $skill->getColor());
+        $this->assertEquals(trim($color), $skill->getColor());
     }
 
     /**
@@ -1054,8 +1058,10 @@ tags:
         $skill = Skill::addSkill($this->tierId, $name, $color, $page, $isCollab, $isExtra, $dependencies);
 
         // Check is added to database
-        $skillDB = Skill::parse(Core::database()->select(Skill::TABLE_SKILL, ["id" => $skill->getId()]));
-        $this->assertEquals($skill->getData(), $skillDB);
+        $skillDB = Skill::getSkills($this->courseId)[0];
+        $skillInfo = $skill->getData();
+        $skillInfo["dependencies"] = $skill->getDependencies();
+        $this->assertEquals($skillInfo, $skillDB);
 
         // Check position
         $this->assertEquals(0, $skill->getPosition());
@@ -2429,6 +2435,7 @@ rating >= 3"), $this->trim($params["when"]));
     public function createDataFolder(string $name)
     {
         $skill = Skill::addSkill($this->tierId, $name, null, null, false, false, []);
+        $name = trim($name);
         Skill::createDataFolder($this->courseId, $name);
         $this->assertTrue(file_exists($skill->getDataFolder(true, $name)));
     }
@@ -2441,6 +2448,7 @@ rating >= 3"), $this->trim($params["when"]));
     public function removeDataFolder(string $name)
     {
         $skill = Skill::addSkill($this->tierId, $name, null, null, false, false, []);
+        $name = trim($name);
         Skill::removeDataFolder($this->courseId, $name);
         $this->assertFalse(file_exists($skill->getDataFolder(true, $name)));
     }

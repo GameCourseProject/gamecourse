@@ -127,7 +127,7 @@ class User
      */
     public function setName(string $name)
     {
-        $this->setData(["name" => trim($name)]);
+        $this->setData(["name" => $name]);
     }
 
     /**
@@ -135,7 +135,7 @@ class User
      */
     public function setEmail(?string $email)
     {
-        $this->setData(["email" => !is_null($email) ? trim($email) : $email]);
+        $this->setData(["email" => $email]);
     }
 
     /**
@@ -143,7 +143,7 @@ class User
      */
     public function setMajor(?string $major)
     {
-        $this->setData(["major" => !is_null($major) ? trim($major) : $major]);
+        $this->setData(["major" => $major]);
     }
 
     /**
@@ -151,7 +151,7 @@ class User
      */
     public function setNickname(?string $nickname)
     {
-        $this->setData(["nickname" => !is_null($nickname) ? trim($nickname) : $nickname]);
+        $this->setData(["nickname" => $nickname]);
     }
 
     /**
@@ -167,7 +167,7 @@ class User
      */
     public function setUsername(string $username)
     {
-        $this->setData(["username" => trim($username)]);
+        $this->setData(["username" => $username]);
     }
 
     /**
@@ -222,6 +222,9 @@ class User
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         $authValues = []; // values that need to go to 'auth' table
         if (key_exists("username", $fieldValues)) {
             $authValues["username"] = $fieldValues["username"];
@@ -363,29 +366,6 @@ class User
     }
 
     /**
-     * Gets user courses.
-     * Option for 'active' and/or 'visible'.
-     *
-     * @param bool|null $active
-     * @param bool|null $visible
-     * @return array
-     */
-    public function getCourses(?bool $active = null, ?bool $visible = null): array
-    {
-        $where = ["cu.id" => $this->id];
-        if ($active !== null) $where["c.isActive"] = $active;
-        if ($visible !== null) $where["c.isVisible"] = $visible;
-        $courses = Core::database()->selectMultiple(
-            CourseUser::TABLE_COURSE_USER . " cu JOIN " . Course::TABLE_COURSE . " c on cu.course=c.id",
-            $where,
-            "c.*",
-            "c.id"
-        );
-        foreach ($courses as &$course) { $course = Course::parse($course); }
-        return $courses;
-    }
-
-    /**
      * Updates user's lastLogin to current time.
      *
      * @return void
@@ -420,7 +400,7 @@ class User
     public static function addUser(string $name, string $username, string $authService, ?string $email, int $studentNumber,
                                    ?string $nickname, ?string $major, bool $isAdmin, bool $isActive): User
     {
-        self::trim($name, $username, $email, $nickname, $major);
+        self::trim($name, $username, $authService, $email, $nickname, $major);
         self::validateUser($name, $email, $authService, $isAdmin, $isActive);
         $id = Core::database()->insert(self::TABLE_USER, [
             "name" => $name,
@@ -459,8 +439,6 @@ class User
     public function editUser(string $name, string $username, string $authService, ?string $email, int $studentNumber,
                              ?string $nickname, ?string $major, bool $isAdmin, bool $isActive): User
     {
-        self::trim($name, $username, $email, $nickname, $major);
-        self::validateUser($name, $email, $authService, $isAdmin, $isActive);
         $this->setData([
             "name" => $name,
             "username" => $username,
@@ -500,6 +478,24 @@ class User
     public function exists(): bool
     {
         return !empty($this->getData("id"));
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------------- Courses --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets user courses.
+     * Option for 'active' and/or 'visible'.
+     *
+     * @param bool|null $active
+     * @param bool|null $visible
+     * @return array
+     */
+    public function getCourses(?bool $active = null, ?bool $visible = null): array
+    {
+        return Course::getCoursesOfUser($this->id, $active, $visible);
     }
 
 
@@ -714,46 +710,31 @@ class User
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Trims user parameters' whitespace at start/end.
-     *
-     * @param string $name
-     * @param string $username
-     * @param string|null $email
-     * @param string|null $nickname
-     * @param string|null $major
-     * @return void
-     */
-    private static function trim(string &$name, string &$username, ?string &$email, ?string &$nickname, ?string &$major)
-    {
-        $name = trim($name);
-        $username = trim($username);
-        if (!is_null($email)) $email = trim($email);
-        if (!is_null($nickname)) $nickname = trim($nickname);
-        if (!is_null($major)) $major = trim($major);
-    }
-
-    /**
      * Parses a user coming from the database to appropriate types.
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $user
      * @param $field
      * @param string|null $fieldName
-     * @return array|bool|int|null
+     * @return array|bool|int|mixed|null
      */
     public static function parse(array $user = null, $field = null, string $fieldName = null)
     {
-        if ($user) {
-            if (isset($user["id"])) $user["id"] = intval($user["id"]);
-            if (isset($user["studentNumber"])) $user["studentNumber"] = intval($user["studentNumber"]);
-            if (isset($user["isAdmin"])) $user["isAdmin"] = boolval($user["isAdmin"]);
-            if (isset($user["isActive"])) $user["isActive"] = boolval($user["isActive"]);
-            return $user;
+        $intValues = ["id", "studentNumber"];
+        $boolValues = ["isAdmin", "isActive"];
 
-        } else {
-            if ($fieldName == "id" || $fieldName == "studentNumber") return is_numeric($field) ? intval($field) : $field;
-            if ($fieldName == "isAdmin" || $fieldName == "isActive") return boolval($field);
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues, "bool" => $boolValues], $user, $field, $fieldName);
+    }
+
+    /**
+     * Trims user parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    protected static function trim(&...$values)
+    {
+        $params = ["name", "email", "major", "nickname", "username", "auth_service", "lastLogin"];
+        Utils::trim($params, ...$values);
     }
 }

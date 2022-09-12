@@ -2,6 +2,7 @@
 namespace GameCourse\Views\Category;
 
 use GameCourse\Core\Core;
+use Utils\Utils;
 
 /**
  * This is the Category model, which implements the necessary methods
@@ -95,6 +96,9 @@ class Category
      */
     public function setData(array $fieldValues)
     {
+        // Trim values
+        self::trim($fieldValues);
+
         $orderValues = []; // values that need to go to 'view_category_order' table
         if (key_exists("parent", $fieldValues)) {
             $orderValues["parent"] = $fieldValues["parent"];
@@ -162,6 +166,7 @@ class Category
      */
     public static function addCategory(string $name, ?int $parent, int $position): Category
     {
+        self::trim($name);
         $id = Core::database()->insert(self::TABLE_CATEGORY, ["name" => $name]);
         Core::database()->insert(self::TABLE_CATEGORY_ORDER, [
             "parent" => $parent,
@@ -197,26 +202,30 @@ class Category
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Parses a user coming from the database to appropriate types.
+     * Parses a category coming from the database to appropriate types.
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $category
-     * @param null $field
+     * @param $field
      * @param string|null $fieldName
-     * @return array|int|null
+     * @return array|bool|int|mixed|null
      */
-    public static function parse(array $category = null, $field = null, string $fieldName = null)
+    private static function parse(array $category = null, $field = null, string $fieldName = null)
     {
-        if ($category) {
-            if (isset($category["id"])) $category["id"] = intval($category["id"]);
-            if (isset($category["parent"])) $category["parent"] = intval($category["parent"]);
-            if (isset($category["position"])) $category["position"] = intval($category["position"]);
-            return $category;
+        $intValues = ["id", "parent", "child", "position"];
 
-        } else {
-            if ($fieldName == "id" || $fieldName == "parent" || $fieldName == "child" || $fieldName == "position")
-                return is_numeric($field) ? intval($field) : $field;
-            return $field;
-        }
+        return Utils::parse(["int" => $intValues], $category, $field, $fieldName);
+    }
+
+    /**
+     * Trims category parameters' whitespace at start/end.
+     *
+     * @param mixed ...$values
+     * @return void
+     */
+    private static function trim(&...$values)
+    {
+        $params = ["name"];
+        Utils::trim($params, ...$values);
     }
 }
