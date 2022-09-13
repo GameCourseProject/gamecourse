@@ -214,6 +214,9 @@ if ($GLOBALS['courseInfo'] == 0) {
     if ($courseObj->getModule(GoogleSheetsModule::ID)) {
         testGoogleSheetsPlugin($course);
     }
+    if ($courseObj->getModule(Teams::ID)) {
+        testTeamImport($course);
+    }
     //testDictionaryManagement($course);
     //testUserImport();
     //testCourseUserImport($course);
@@ -1008,44 +1011,88 @@ function importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId
     }
 }
 
-
-function testTeamImport(){
+function testTeamImport($course){
 
     // maybe import users first
-
-    $teamsCSV = "ist190709, 4 - VIL04";
+    $teamsCSV = "ist190709, 4 - VIL04\n";
     $teamsCSV .= "ist145124, 4 - VIL04\n";
     $teamsCSV .= "ist123456, 5 - VIL06\n";
     $teamsCSV .= "ist123457, 5 - VIL06\n";
-    $teamsCSV .= "ist123458, 6 - VIL06\n";
+    $teamsCSV .= "ist123458, 6 - VIL08\n";
+    $teamsCSV .= "ist123459, 5 - VIL06\n";
+
 
     $gcUserId1 = Core::$systemDB->select("auth", ["username" => "ist190709"], "game_course_user_id");
     $gcUserId2 = Core::$systemDB->select("auth", ["username" => "ist145124"], "game_course_user_id");
     $gcUserId3 = Core::$systemDB->select("auth", ["username" => "ist123456"], "game_course_user_id");
     $gcUserId4 = Core::$systemDB->select("auth", ["username" => "ist123457"], "game_course_user_id");
     $gcUserId5 = Core::$systemDB->select("auth", ["username" => "ist123458"], "game_course_user_id");
+    $gcUserId6 = Core::$systemDB->select("auth", ["username" => "ist123459"], "game_course_user_id");
 
-    if ($gcUserId1 === null || $gcUserId2 === null ||$gcUserId3 === null || $gcUserId4 === null || $gcUserId5 === null ) {
+    if ($gcUserId1 === null || $gcUserId2 === null ||$gcUserId3 === null || $gcUserId4 === null || $gcUserId5 === null || $gcUserId6 === null ) {
 
         $GLOBALS['c_1'] = ["warning", "
         <strong style='color:#F7941D;'>Warning: </strong>To test the teams's import, do the following:
         <ul>
         <li>Create a course named 'Course X' and year '2021/2022'.</li>
         <li>Inside that course, enable teams.</li>
-        <li>Import the following users to the course.</li>
+        <li>Import the following users to the course: <a href=''> Users To Import</a></li>
         </ul>"];
 
     } else {
-        $courseUserId = Core::$systemDB->select("course_user", ["course" => $courseId, "id" => $gcUserId], "id");
+        $courseUserId1 = Core::$systemDB->select("course_user", ["course" => $course, "id" => $gcUserId1], "id");
+        $courseUserId2 = Core::$systemDB->select("course_user", ["course" => $course, "id" => $gcUserId2], "id");
+        $courseUserId3 = Core::$systemDB->select("course_user", ["course" => $course, "id" => $gcUserId3], "id");
+        $courseUserId4 = Core::$systemDB->select("course_user", ["course" => $course, "id" => $gcUserId4], "id");
+        $courseUserId5 = Core::$systemDB->select("course_user", ["course" => $course, "id" => $gcUserId5], "id");
+        $courseUserId6 = Core::$systemDB->select("course_user", ["course" => $course, "id" => $gcUserId6], "id");
+
+        if ($courseUserId1 === null || $courseUserId2 === null ||$courseUserId3 === null || $courseUserId4 === null || $courseUserId5 === null || $courseUserId6 === null ) {
+            $GLOBALS['c_1'] = ["warning", "
+            <strong style='color:#F7941D;'>Warning: </strong>To test the teams's import, import the following users to the course:  
+                <a href=''> Users To Import</a>
+            </ul>"];
+        } else {
+            Teams::importTeams($teamsCSV, false);
+
+            $member1 = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId1], "*");
+            $member2 = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId2], "*");
+            $member3 = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId3], "*");
+            $member4 = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId4], "*");
+            $member5 = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId5], "*");
+            $member6 = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId6], "*");
+
+            if ($member1 && $member2 && $member3 && $member4 && $member5 && $member6) {
+                // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users imported - created and updated (not replaced).</h3>";
+                $GLOBALS['cou_2'] = ["success", "<strong style='color:green'>Success:</strong>  Teams imported - created and updated (not replaced)."];
+                $GLOBALS['success']++;
+            } else {
+                // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Course Users not imported - created and updated (not replaced).</h3>";
+                $GLOBALS['cou_2'] = ["fail", "<strong style='color:red'>Fail:</strong> Teams not imported - created and updated (not replaced)."];
+                $GLOBALS['fail']++;
+            }
+
+            $teamsCSV .= "ist123459, 7 - VIL06\n";
+            Teams::importTeams($teamsCSV, true);
+            $updatedTeamId = Core::$systemDB->select("teams", ["teamNumber" => "7"], "id");
+            $updatedMember = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId6, "teamId" => $updatedTeamId], "*");
+
+            if ($updatedMember){
+                $GLOBALS['cou_3'] = ["success", "<strong style='color:green'>Success:</strong>  Teams imported - updated (and replaced)."];
+                $GLOBALS['success']++;
+            } else {
+                $GLOBALS['cou_3'] = ["fail", "<strong style='color:red'>Fail:</strong> Teams not imported."];
+                $GLOBALS['fail']++;
+            }
+
+        }
+        Core::$systemDB->delete("teams_members", ["memberId" => $gcUserId1]);
+        Core::$systemDB->delete("teams_members", ["memberId" => $gcUserId2]);
+        Core::$systemDB->delete("teams_members", ["memberId" => $gcUserId3]);
+        Core::$systemDB->delete("teams_members", ["memberId" => $gcUserId4]);
+        Core::$systemDB->delete("teams_members", ["memberId" => $gcUserId5]);
+        Core::$systemDB->delete("teams_members", ["memberId" => $gcUserId6]);
     }
-
-    Teams::importTeams($teamsCSV, false);
-
-
-
-    $teamMember = Core::$systemDB->select(self::TABLE_MEMBERS, ['memberId' => $gcUserId], "teamId");
-
-
 
 }
 

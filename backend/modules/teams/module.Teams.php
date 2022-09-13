@@ -203,6 +203,46 @@ class Teams extends Module
                 );
             }
 
+            API::response(array('membersList' => $usersInfo));
+        });
+
+        /**
+         * Gets all non team members.
+         *
+         * @param int $courseId
+         */
+        API::registerFunction(self::ID, 'getAllNonMembers', function () {
+
+            API::requireCourseAdminPermission();
+            API::requireValues('courseId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $users = $this->getAllNonMembers($courseId);
+
+            $usersInfo = [];
+
+            // For security reasons, we only send what is needed
+            foreach ($users as $userData) {
+                $id = $userData['id'];
+                $user = new CourseUser($id, $course);
+                $usersInfo[] = array(
+                    'id' => $id,
+                    'name' => $user->getName(),
+                    'nickname' => $user->getNickname(),
+                    'studentNumber' => $user->getStudentNumber(),
+                    'roles' => $user->getRolesNames(),
+                    'major' => $user->getMajor(),
+                    'email' => $user->getEmail(),
+                    'lastLogin' => $user->getLastLogin(),
+                    'username' => $user->getUsername(),
+                    'authenticationService' => User::getUserAuthenticationService($user->getUsername()),
+                    'isActive' => $user->isActive(),
+                    'hasImage' => User::hasImage($user->getUsername())
+                );
+            }
+
             API::response(array('userList' => $usersInfo));
         });
         
@@ -248,10 +288,7 @@ class Teams extends Module
             API::requireCourseAdminPermission();
             API::requireValues('courseId', 'teamId');
 
-            $courseId = API::getValue('courseId');
-            $course = API::verifyCourseExists($courseId);
-
-            $this->deleteTeam(API::getValue('teamId'), $courseId);
+            $this->deleteTeam(API::getValue('teamId'));
         });
 
         /**
@@ -457,8 +494,7 @@ class Teams extends Module
     /*** --------------- Import / Export --------------- ***/
     /*** ----------------------------------------------- ***/
 
-    // TODO
-    // import teams onto the system with a file.
+    // import teams onto the system with a .csv file.
     public function importTeams($fileData, $replace = true): int{
 
         $courseId = $this->getCourseId();
@@ -467,7 +503,7 @@ class Teams extends Module
         $lines = explode("\n", $fileData);
 
         # DEFAULT:
-        $groupColumnName = "Agrupamento VI Projects";
+        $groupColumnName = "grupo";
         $separator = ";"; # - DEFAULT
 
         $pos = strpos($lines[0], $separator);
@@ -542,21 +578,9 @@ class Teams extends Module
                     // user already enrolled in a team with id = $teamId.
 
                     if($replace){
-                        // check if team with teamNumber exists, otherwise, create it.
-                        $teamID = $teamMember;
-                        if ($teamId == null) {
-                            $teamData = [
-                                "teamNumber" => intval($group),
-                                "course" => $courseId
-                            ];
-                            Core::$systemDB->insert(self::TABLE, $teamData);
-                            $teamID = Core::$systemDB->getLastId();
-                            Core::$systemDB->insert(self::TABLE_MEMBERS, [ 'teamId' => $teamID, "memberId" => $gcUserId ]);
-                            $newTeamsNr++;
-                        }
-                        
+
                         Core::$systemDB->update(self::TABLE_MEMBERS, [
-                        "teamId" => $teamMember
+                        "teamId" => $teamId
                         ], ["memberId" => $gcUserId]);
                     }
                 }
@@ -677,6 +701,19 @@ class Teams extends Module
 
     }
 
+    // getAllNonMembers
+    public function getAllNonMembers($courseId){
+
+        $where = ["r.course" => $courseId, "r.name" => "Student", "cu.isActive" => true, "tm.memberId" => null];
+        $result = Core::$systemDB->selectMultiple(
+            "course_user cu JOIN game_course_user u ON cu.id=u.id JOIN user_role ur ON ur.id=u.id JOIN role r ON r.id=ur.role AND r.course=cu.course JOIN auth a ON u.id=a.game_course_user_id LEFT JOIN teams_members tm ON u.id = tm.memberId",
+            $where,
+            "u.*,cu.lastActivity, cu.previousActivity,a.username,r.name as role"
+        );
+        return $result;
+
+    }
+
     public function getTeamMembers($teamId)
     {
         return Core::$systemDB->selectMultiple(self::TABLE_MEMBERS, ["teamId" => $teamId], "*", "memberId");
@@ -731,12 +768,12 @@ class Teams extends Module
     public function editTeam($team, int $courseId){
 
         $originalTeam = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'id' => $team['id']], "*");
-        $originalTeamMembers = Core::$systemDB->select(self::TABLE_MEMBERS, ["course" => $courseId, 'teamId' => $team['id']], "*");
+        $originalTeamMembers = Core::$systemDB->select(self::TABLE_MEMBERS, ['teamId' => $team['id']], "*");
 
         // "teamNumber" => $team['teamNumber'],
         if(!empty($originalTeam)){
             $teamData = [
-                "teamName" => $team['name'],
+                "teamName" => $team['teamName'],
                 "course" => $courseId
             ];
             Core::$systemDB->update(self::TABLE, $teamData, ["id" => $team["id"]]);
@@ -747,7 +784,7 @@ class Teams extends Module
 
             $members = explode("|", str_replace(" | ", "|", $team["members"]));
             foreach ($members as $m) {
-                $memberId = (int)$m;
+                $memberId = intval(trim($m));
                 Core::$systemDB->insert(self::TABLE_MEMBERS, [ 'teamId' => $team["id"], "memberId" => $memberId ]);
             }
 
