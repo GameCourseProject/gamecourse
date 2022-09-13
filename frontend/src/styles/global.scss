@@ -214,8 +214,16 @@ select:focus {
   width: 20px;
 }
 .data-table table .members-column {
-  width: 400px;
+  width: 500px;
 }
+
+.data-table table .members-detail-column {
+  width: 160px;
+}
+.data-table table .blank {
+  width: 30px;
+}
+
 
 .data-table table .team-name-column {
   width: 120px;

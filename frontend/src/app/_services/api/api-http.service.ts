@@ -1522,9 +1522,24 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => (res['data']['teams']).map(obj => Team.fromDatabase(obj))) );
+      .pipe( map((res: any) => (res['data']['membersList']).map(obj => User.fromDatabase(obj))) );
 
   }
+
+  public getAllNonMembers(courseID: number): Observable<User[]>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.TEAMS);
+      qs.push('request', 'getAllNonMembers');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (res['data']['userList']).map(obj => User.fromDatabase(obj))) );
+
+  }
+
 
   public createTeam(courseID: number, team: TeamData): Observable<void> {
     const data = {

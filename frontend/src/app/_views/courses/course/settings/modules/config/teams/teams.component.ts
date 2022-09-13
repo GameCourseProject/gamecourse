@@ -38,11 +38,9 @@ export class TeamsComponent implements OnInit {
 
   allUsers: User[];
   allUsersInTeams: User[];
+  allNonMembers: User[];
 
-  reduce = new Reduce();
   order = new Order();
-
-  reduceUsers = new Reduce();
 
   mode: 'add' | 'edit';
 
@@ -87,6 +85,8 @@ export class TeamsComponent implements OnInit {
       this.getCourseUsers(this.courseID);
       this.getIsTeamNameActive();
       this.getNrTeamMembers();
+      this.getAllUsersInTeams(this.courseID);
+      this.getAllNonMembers(this.courseID);
     });
   }
 
@@ -109,7 +109,6 @@ export class TeamsComponent implements OnInit {
     this.api.getCourseUsers(courseId, "Student")
       .subscribe(users => {
           this.allUsers = users;
-          this.reduceListUsers();
         },
         error => ErrorService.set(error))
   }
@@ -121,12 +120,20 @@ export class TeamsComponent implements OnInit {
           this.allUsersInTeams = users;
 
           this.order.active = { orderBy: this.orderBy[0], sort: Sort.ASCENDING };
-          this.reduceList(undefined, _.cloneDeep(this.filters));
           this.getCourseUsers(courseId);
         },
         error => ErrorService.set(error))
   }
 
+  // getAllNonMembers
+  getAllNonMembers(courseId: number): void {
+
+    this.api.getAllNonMembers(courseId)
+      .subscribe(users => {
+          this.allNonMembers = users;
+        },
+        error => ErrorService.set(error))
+  }
   getTeamMembers(teamId: number) {
     this.api.getTeamMembers(teamId)
       .subscribe(members => {
@@ -185,7 +192,6 @@ export class TeamsComponent implements OnInit {
   editTeam(): void{
     this.loading = true;
     this.newTeam['id'] = this.teamToEdit.id;
-
     this.api.editTeam(this.courseID, this.newTeam)
       .pipe( finalize(() => {
         this.isTeamModalOpen = false;
@@ -220,39 +226,39 @@ export class TeamsComponent implements OnInit {
     else {
       if (!this.selectedMembers.find(el => el.id === user.id)) {
         this.selectedMembers.push(user);
-        const index = this.allUsers.findIndex(el => el.id === user.id);
-        this.allUsers.splice(index, 1);
-        this.reduceListUsers();
 
-        if (this.selectedMembers.length == 1){
+        const index = this.allNonMembers.findIndex(el => el.id === user.id);
+        this.allNonMembers.splice(index, 1);
+
+        this.newTeam.teamMembers.push(user)
+
+        if (this.newTeam.teamMembers.length == 1){
           this.newTeam.members = (user.id).toString()
         } else {
           this.newTeam.members += '|' + (user.id).toString()
         }
-        this.newTeam.teamMembers.push(user)
       }
     }
 
   }
-
-  removeTeamMember(userID: number): void {
-    const index = this.selectedMembers.findIndex(el => el.id === userID);
-    this.allUsers.push(this.selectedMembers[index]);
+  removeMember(user: User): void {
+    const index = this.selectedMembers.findIndex(el => el.id === user.id);
+    this.allNonMembers.push(user);
     this.selectedMembers.splice(index, 1);
-    this.reduceListUsers();
 
-    const index2 = this.newTeam.teamMembers.findIndex(el => el.id === userID);
+    const index2 = this.newTeam.teamMembers.findIndex(el => el.id === user.id);
     this.newTeam.teamMembers.splice(index2, 1);
 
+    this.newTeam.members = '';
+    if (this.newTeam.teamMembers.length == 1){
+      this.newTeam.members = (user.id).toString()
+    } else {
+      this.newTeam.members += '|' + (user.id).toString()
+    }
+
     if(this.newTeam.teamMembers.length < 3) this.maxMembersReached = false;
-
-
-    /*const index3 = this.allUsersInTeams.findIndex(el => el.id === userID);
-    this.allUsersInTeams.splice(index3, 1);
-    this.reduceList();
-    this.getAllUsersInTeams(this.course.id);*/
-
   }
+
 
   importTeams(replace: boolean): void {
     this.loadingAction = true;
@@ -310,39 +316,6 @@ export class TeamsComponent implements OnInit {
   }
 
   /*** --------------------------------------------- ***/
-  /*** ---------- Search, Filter & Order ----------- ***/
-  /*** --------------------------------------------- ***/
-
-  reduceList(query?: string, filters?: string[]): void {
-    this.reduce.searchAndFilter(this.allUsersInTeams, query, filters);
-    this.orderList();
-  }
-
-  reduceListUsers(query?: string): void {
-    this.reduceUsers.search(this.allUsers, query);
-  }
-
-  orderList(): void {
-    switch (this.order.active.orderBy) {
-      case "Name":
-        this.reduce.items.sort((a, b) => Order.byString(a.name, b.name, this.order.active.sort))
-        break;
-
-      case "Nickname":
-        this.reduce.items.sort((a, b) => Order.byString(a.nickname, b.nickname, this.order.active.sort))
-        break;
-
-      case "Student Number":
-        this.reduce.items.sort((a, b) => Order.byNumber(a.studentNumber, b.studentNumber, this.order.active.sort))
-        break;
-
-      case "Last Login":
-        this.reduce.items.sort((a, b) => Order.byDate(a.lastLogin, b.lastLogin, this.order.active.sort))
-        break;
-    }
-  }
-
-  /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
@@ -357,7 +330,7 @@ export class TeamsComponent implements OnInit {
         level: item?.level || null
       };
       if (this.mode === 'edit') this.newTeam.id = item.id;
-      this.teamToDelete = item;
+      this.teamToEdit = item;
     }
   }
 
@@ -373,7 +346,7 @@ export class TeamsComponent implements OnInit {
     }
 
     // Validate inputs
-    if (type === 'team') return (isValid(this.newTeam.teamName) && this.selectedMembers.length !== 0 ) || this.selectedMembers.length !== 0 ;
+    if (type === 'team' && this.newTeam && this.newTeam.teamMembers) return (isValid(this.newTeam.teamName) && this.newTeam.teamMembers.length !== 0 ) || (this.newTeam.teamMembers.length !== 0 ) ;
     return true;
   }
 
