@@ -58,7 +58,7 @@
               "node_modules/quill/dist/quill.snow.css",
               "node_modules/datatables.net-dt/css/jquery.dataTables.min.css",
               "node_modules/swagger-ui/dist/swagger-ui.css",
-              "src/styles/global.scss"
+              "src/styles/main.scss"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
@@ -150,13 +150,9 @@
               "src/assets"
             ],
             "styles": [
-              "node_modules/@simonwep/pickr/dist/themes/monolith.min.css",
-              "src/styles/global.scss"
+              "src/styles/main.scss"
             ],
-            "scripts": [
-              "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/@simonwep/pickr/dist/pickr.min.js"
-            ]
+            "scripts": []
           }
         }
       }

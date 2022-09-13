@@ -36,6 +36,8 @@ import {FilePickerModalComponent} from "./_components/modals/file-picker-modal/f
 import {SanitizeHTMLPipe} from "./_pipes/sanitize-html.pipe";
 import {DatatableComponent} from "./_components/tables/datatable/datatable.component";
 import { InputColorComponent } from './_components/inputs/general/input-color/input-color.component';
+import { ThemeTogglerComponent } from './_components/theming/theme-toggler/theme-toggler.component';
+import {NgIconsModule} from "@ng-icons/core";
 
 
 @NgModule({
@@ -72,7 +74,8 @@ import { InputColorComponent } from './_components/inputs/general/input-color/in
     FilePickerModalComponent,
     SanitizeHTMLPipe,
     DatatableComponent,
-    InputColorComponent
+    InputColorComponent,
+    ThemeTogglerComponent
   ],
     exports: [
         NavbarComponent,
@@ -94,13 +97,15 @@ import { InputColorComponent } from './_components/inputs/general/input-color/in
         InputRichTextComponent,
         SanitizeHTMLPipe,
         DatatableComponent,
-        InputColorComponent
+        InputColorComponent,
+        ThemeTogglerComponent
     ],
   imports: [
     CommonModule,
     RouterModule,
     FormsModule,
     NgApexchartsModule,
+    NgIconsModule,
   ]
 })
 export class SharedModule { }

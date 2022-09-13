@@ -1,8 +1,7 @@
-import { Component } from '@angular/core';
-import { ErrorService } from "./_services/error.service";
-import { NavigationCancel, NavigationEnd, NavigationStart, Router } from "@angular/router";
-
-import * as $ from "jquery";
+import {Component} from '@angular/core';
+import {ErrorService} from "./_services/error.service";
+import {NavigationCancel, NavigationEnd, NavigationStart, Router} from "@angular/router";
+import {ThemingService} from "./_services/theming/theming.service";
 
 import '@extensions/string.extensions';
 import '@extensions/array.extensions';
@@ -15,7 +14,10 @@ import '@extensions/number.extensions';
 export class AppComponent {
   loading: boolean = true;
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private themeService: ThemingService
+  ) {
     // Wait for guard checks
     this.router.events.subscribe(event => {
       if (event instanceof NavigationStart)
@@ -24,6 +26,10 @@ export class AppComponent {
       if (event instanceof NavigationEnd || event instanceof NavigationCancel)
         this.loading = false;
     });
+
+    // Apply theming
+    const theme = themeService.getTheme();
+    themeService.apply(theme);
   }
 
   hasError(): boolean {

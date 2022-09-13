@@ -1,40 +1,50 @@
-<div class="body">
-  <div class="background"></div>
+<div class="flex items-center min-h-screen p-6 bg-base-200">
+  <div class="relative flex-1 h-full max-w-4xl mx-auto overflow-hidden bg-base-100 rounded-lg shadow-xl">
+    <div class="flex flex-col overflow-y-auto md:flex-row">
 
-  <div class="login_box">
-    <div id="logo"></div>
-    <h3>Login using:</h3>
-    <form>
+      <!-- Background Image -->
+      <div class="h-32 md:h-auto md:w-1/2"><img src="assets/imgs/login.jpg" alt="login" class="object-cover w-full h-full"></div>
 
-      <!-- Fenix -->
-      <div class="block" (click)="api.doLogin(AuthType.FENIX)">
-        <div class="hovicon effect-1 sub-a">
-          <input name="Fenix" id="Fenix" type="button" class="icon" value="Fenix">
+      <!-- Form -->
+      <div class="flex items-center justify-center p-6 sm:p-12 md:w-1/2">
+        <div class="w-full">
+
+          <!-- Logo -->
+          <h2 [routerLink]="'/'" class="mb-12 text-2xl text-center font-bold">🎮 GameCourse</h2>
+
+          <!-- Text -->
+          <div class="prose">
+            <h3>A wild player appears!</h3>
+            <p>Choose how to login to GameCourse</p>
+          </div>
+
+          <!-- Auth Methods -->
+          <div class="mt-8">
+            <button class="btn btn-square btn-fenix btn-outline border-2 w-full mb-3 gap-2" (click)="api.doLogin(AuthType.FENIX)">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 256 310" fill="none">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M0 129.943C0 246.952 127.762 309.627 127.762 309.627C127.762 309.627 256 246.952 256 129.943V0H0V129.943ZM185.484 97.764H196.147V81.6956H151.783V97.764H162.414L162.417 177.902H185.484V97.764ZM93.1639 177.849H70.1052L70.1322 81.6956H93.1337L93.1639 177.849ZM116.259 56.1832C116.259 37.1008 131.723 27.2115 150.804 27.2115C169.882 27.2115 185.483 35.5447 185.483 51.7594H185.459C185.459 58.125 180.305 63.2754 173.94 63.2754C167.585 63.2754 162.43 58.125 162.43 51.7594H162.417C162.417 39.9974 161.482 32.0082 150.804 32.0082C139.326 32.0082 139.326 40.0139 139.326 56.1649L139.315 203.462C139.315 222.544 123.849 232.437 104.771 232.437C85.6959 232.437 70.0952 224.097 70.0952 207.882H70.116C70.116 201.524 75.2761 196.366 81.6307 196.366C87.993 196.366 93.1544 201.524 93.1544 207.882H93.157C93.157 219.66 94.0956 227.641 104.771 227.641C116.253 227.641 116.253 219.626 116.253 203.462L116.259 56.1832Z" fill="currentColor"/>
+              </svg>
+              Fénix
+            </button>
+
+            <button class="btn btn-square btn-outline btn-google border-2 w-full mb-3 gap-2" (click)="api.doLogin(AuthType.GOOGLE)">
+              <ng-icon name="jam-google" size="1.5rem" color="fillCurrent"></ng-icon>
+              Google
+            </button>
+
+            <button class="btn btn-square btn-outline btn-facebook border-2 w-full mb-3 gap-2" (click)="api.doLogin(AuthType.FACEBOOK)">
+              <ng-icon name="jam-facebook" size="1.5rem" color="fillCurrent"></ng-icon>
+              Facebook
+            </button>
+
+            <button class="btn btn-square btn-outline btn-linkedin border-2 w-full gap-2" (click)="api.doLogin(AuthType.LINKEDIN)">
+              <ng-icon name="jam-linkedin" size="1.5rem" color="fillCurrent"></ng-icon>
+              Linkedin
+            </button>
+          </div>
+
         </div>
       </div>
-
-      <!-- Google -->
-      <div class="block" (click)="api.doLogin(AuthType.GOOGLE)">
-        <div class="hovicon effect-1 sub-a">
-          <input name="Google" id="Google" type="button" class="icon" value="Google">
-        </div>
-      </div>
-
-      <!-- Facebook -->
-      <div class="block">
-        <div class="hovicon effect-1 sub-a">
-          <input name="Facebook" id="Facebook" type="button" class="icon" value="Facebook">
-        </div>
-      </div>
-
-      <!-- Linkedin -->
-      <div class="block">
-        <div class="hovicon effect-1 sub-a">
-          <input name="Linkedin" id="Linkedin" type="button" class="icon" value="Linkedin">
-        </div>
-      </div>
-
-    </form>
+    </div>
   </div>
-
 </div>
