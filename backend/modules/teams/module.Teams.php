@@ -45,7 +45,7 @@ class Teams extends Module
 
 
         /*** ------------ Functions ------------ ***/
-        // teams.getAllTeams()
+        // teams.getAllTeams(courseId)
         Dictionary::registerFunction(
             self::ID,
             'getAllTeams',
@@ -105,13 +105,13 @@ class Teams extends Module
             true
         );
 
-        //$team.getTeamMember(team, userNumber), returns a member of a team
+        //$team.getTeamMember(memberId, course), returns a member of a team
         // eg.: userNumber = ist112345
         Dictionary::registerFunction(
             self::ID,
             'getTeamMember',
-            function (string $name = null, int $memberId = null) {
-                return $this->getTeamMember(false, ["teamName" => $name, "memberId" => $memberId]);
+            function (int $memberId = null, int $courseId = null) {
+                return $this->getTeamMember($memberId, $courseId);
             },
             'Returns all the members of a certain team.',
             'collection',
@@ -120,6 +120,7 @@ class Teams extends Module
             null,
             true
         );
+
     }
 
     public function initTemplates()
@@ -721,7 +722,13 @@ class Teams extends Module
 
     public function getTeamMember($memberId, $courseId)
     {
-        // TODO
+        $where = ["r.course" => $courseId, "r.name" => "Student", "cu.isActive" => true, "u.id" => $memberId];
+        $result = Core::$systemDB->selectMultiple(
+            "course_user cu JOIN game_course_user u ON cu.id=u.id JOIN user_role ur ON ur.id=u.id JOIN role r ON r.id=ur.role AND r.course=cu.course JOIN auth a ON u.id=a.game_course_user_id",
+            $where,
+            "u.*,cu.lastActivity, cu.previousActivity,a.username,r.name as role"
+        );
+        return $result;
     }
 
     public function getNumberOfTeamMembers($courseId)
