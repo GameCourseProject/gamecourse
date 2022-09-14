@@ -1,4 +1,4 @@
-<nav class="navbar fixed w-full flex justify-between bg-primary h-20 z-40 pl-2 pr-3" [ngStyle]="{'background-color': course ? course.color : ''}">
+<nav class="navbar fixed w-full flex justify-between bg-primary h-20 z-40 pl-2 pr-3" [ngStyle]="{'background-color': course?.color ? course.color : ''}">
   <!-- Left -->
   <div class="flex justify-start gap-2 lg:ml-72">
 
@@ -20,12 +20,20 @@
     <!-- Middle -->
     <div>
       <ng-container *ngIf="course">
+        <!-- Breadcrumbs -->
         <div class="text-sm text-white text-opacity-50 breadcrumbs pt-0 hidden lg:block">
           <ul>
             <li *ngFor="let part of getURLParts()">{{part.capitalize()}}</li>
           </ul>
         </div>
+
+        <!-- Course Name -->
         <h6 class="mb-0 font-bold text-white hidden lg:block">{{course.name}}</h6>
+      </ng-container>
+
+      <!-- Course Skeleton -->
+      <ng-container *ngIf="!course && getURLParts(true).length >= 2">
+        <div class="hidden lg:block w-40 h-4 bg-indigo-300 opacity-40 rounded-md mt-6 animate-pulse"></div>
       </ng-container>
     </div>
 
@@ -66,7 +74,7 @@
         </div>
       </ng-container>
 
-      <!-- Skeleton -->
+      <!-- User Skeleton -->
       <ng-container *ngIf="!user">
         <div class="w-24 h-4 bg-indigo-300 opacity-40 rounded-md animate-pulse"></div>
         <div class="w-10 h-10 bg-indigo-300 opacity-40 rounded-full animate-pulse"></div>
@@ -76,7 +84,14 @@
 </nav>
 
 <!-- Course Name on mobile -->
-<div *ngIf="course" class="lg:hidden fixed top-20 w-full flex flex-col justify-center items-center bg-primary h-10 z-40 pl-5 pr-3"
-     [ngStyle]="{'background-color': course ? course.color : ''}">
-  <h6 class="mb-0 font-bold text-white text-center">{{course.name}}</h6>
+<div *ngIf="getURLParts(true).length >= 2" class="lg:hidden fixed top-20 w-full flex flex-col justify-center items-center bg-primary h-10 z-40 pl-5 pr-3"
+     [ngStyle]="{'background-color': course?.color ? course.color : ''}">
+
+  <!-- Course Name -->
+  <h6 *ngIf="course" class="mb-0 font-bold text-white text-center">{{course.name}}</h6>
+
+  <!-- Course Skeleton -->
+  <ng-container *ngIf="!course">
+    <div class="lg:hidden w-40 h-4 bg-indigo-300 opacity-40 rounded-md animate-pulse"></div>
+  </ng-container>
 </div>

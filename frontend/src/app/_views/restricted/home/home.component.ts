@@ -1,15 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 
-import {Course} from "../../../../_domain/courses/course";
-
-import {ApiHttpService} from "../../../../_services/api/api-http.service";
+import {Course} from "../../../_domain/courses/course";
+import {ApiHttpService} from "../../../_services/api/api-http.service";
 
 @Component({
-  selector: 'app-main',
-  templateUrl: './main.component.html',
-  styleUrls: ['./main.component.scss']
+  selector: 'app-home',
+  templateUrl: './home.component.html'
 })
-export class MainComponent implements OnInit {
+export class HomeComponent implements OnInit {
 
   loading = true;
 

@@ -10,8 +10,8 @@ const routes: Routes = [
     component: RestrictedComponent ,
     children: [
       {
-        path: 'main',
-        loadChildren: () => import('./main/main.module').then(mod => mod.MainModule)
+        path: 'home',
+        loadChildren: () => import('./home/home.module').then(mod => mod.HomeModule)
       },
       {
         path: 'profile',
@@ -39,7 +39,7 @@ const routes: Routes = [
         path: 'docs',
         loadChildren: () => import('./docs/docs.module').then(mod => mod.DocsModule)
       },
-      { path: '', redirectTo: 'main', pathMatch: 'full' }
+      { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   }
 ];

@@ -1,10 +1,10 @@
 import {Component, OnInit} from '@angular/core';
-import {Course} from "../../_domain/courses/course";
-import {Page} from "../../_domain/pages & templates/page";
+import {Course} from "../../../_domain/courses/course";
+import {Page} from "../../../_domain/pages & templates/page";
 import {NavigationEnd, Router} from "@angular/router";
-import {UpdateService, UpdateType} from "../../_services/update.service";
-import {User} from "../../_domain/users/user";
-import {ApiHttpService} from "../../_services/api/api-http.service";
+import {UpdateService, UpdateType} from "../../../_services/update.service";
+import {User} from "../../../_domain/users/user";
+import {ApiHttpService} from "../../../_services/api/api-http.service";
 
 @Component({
   selector: 'app-sidebar',
@@ -61,7 +61,9 @@ export class SidebarComponent implements OnInit {
 
   async getLoggedUser(): Promise<void> {
     this.user = await this.api.getLoggedUser().toPromise();
+    // this.user.isAdmin = false; // FIXME: remove
     this.isATeacher = await this.api.isATeacher(this.user.id).toPromise();
+    // this.isATeacher = false; // FIXME: remove
   }
 
 
@@ -112,8 +114,8 @@ export class SidebarComponent implements OnInit {
     this.mainNavigation = [];
     const pages: {[key: string]: Navigation} = {
       mainPage: {
-        link: '/main',
-        name: 'Main Page',
+        link: '/home',
+        name: 'Homepage',
         icon: 'feather-home'
       },
       coursesPage: {
@@ -176,12 +178,17 @@ export class SidebarComponent implements OnInit {
 
       const pages: Navigation[] = [
         {
+            link: path + 'main',
+            name: 'Main Page',
+            icon: 'feather-home'
+        },
+        {
           category: 'Pages',
           children: []
         }
       ];
 
-      pages[0].children = activePages.map(page => {
+      pages[1].children = activePages.map(page => {
         return {
           link: path + 'pages/' + page.id,
           name: page.name

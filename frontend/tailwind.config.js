@@ -1,5 +1,9 @@
 module.exports = {
-  content: ['./src/**/*.{html,ts}'],
+  purge: {
+    content: [
+      './src/**/*.{html,ts,css,scss,sass,less,styl}',
+    ]
+  },
   plugins: [
     require('@tailwindcss/typography'),
     require('daisyui')

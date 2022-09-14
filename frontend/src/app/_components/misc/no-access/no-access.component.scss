@@ -6,7 +6,7 @@
   flex-direction: column;
 }
 .background{
-  background-image: url("~src/assets/imgs/ist2.jpg");
+  background-image: url("../../../../assets/imgs/ist2.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -120,22 +120,22 @@
   color: transparent;
 }
 .icon-camera-retro{
-  background-image:  url("~src/assets/icons/duplicate_icon.svg");
+  background-image:  url("../../../../assets/icons/duplicate_icon.svg");
 }
 #Fenix{
-  background-image:  url("~src/assets/icons/fenix_icon.png");
+  background-image:  url("../../../../assets/icons/fenix_icon.png");
 }
 #Google{
-  background-image:  url("~src/assets/icons/google_icon.png");
+  background-image:  url("../../../../assets/icons/google_icon.png");
 }
 #Facebook{
-  background-image:  url("~src/assets/icons/facebook_icon.png");
+  background-image:  url("../../../../assets/icons/facebook_icon.png");
 }
 #Linkedin{
-  background-image:  url("~src/assets/icons/linkedin_icon.png");
+  background-image:  url("../../../../assets/icons/linkedin_icon.png");
 }
 .icon.arrow_back{
-  background-image: url("~src/assets/icons/arrow_back.svg");
+  background-image: url("../../../../assets/icons/arrow_back.svg");
   height: 12px;
   width: 12px;
 }
@@ -168,7 +168,7 @@ form#back_form{
 }
 
 #logo{
-  background-image:  url("~src/assets/logo/logo_horz.svg");
+  background-image:  url("../../../../assets/logo/logo_horz.svg");
   background-size: contain;
   background-position: top;
   background-repeat: no-repeat;

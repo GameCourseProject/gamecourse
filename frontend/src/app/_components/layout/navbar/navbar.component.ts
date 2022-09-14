@@ -2,14 +2,14 @@ import {Component, OnInit} from '@angular/core';
 import {NavigationEnd, PRIMARY_OUTLET, Router} from "@angular/router";
 import {DomSanitizer} from "@angular/platform-browser";
 
-import {ApiHttpService} from "../../_services/api/api-http.service";
-import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
-import {UpdateService, UpdateType} from "../../_services/update.service";
+import {ApiHttpService} from "../../../_services/api/api-http.service";
+import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
+import {UpdateService, UpdateType} from "../../../_services/update.service";
 
-import {User} from "../../_domain/users/user";
+import {User} from "../../../_domain/users/user";
 import {Course} from 'src/app/_domain/courses/course';
-import {ResourceManager} from "../../_utils/resources/resource-manager";
-import {environment} from "../../../environments/environment";
+import {ResourceManager} from "../../../_utils/resources/resource-manager";
+import {environment} from "../../../../environments/environment";
 import {of} from "rxjs";
 
 @Component({
@@ -124,9 +124,9 @@ export class NavbarComponent implements OnInit {
     else return null;
   }
 
-  getURLParts(): string[] {
+  getURLParts(full: boolean = false): string[] {
     const segments = this.router.parseUrl(this.router.url).root.children[PRIMARY_OUTLET].segments;
-    return segments.map(segment => segment.path).slice(2);
+    return segments.map(segment => segment.path).slice(full ? 0 : 2);
   }
 
   async isVirtualCurrencyEnabled(): Promise<boolean> {

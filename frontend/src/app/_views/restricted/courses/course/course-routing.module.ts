@@ -14,7 +14,7 @@ import {ConfigComponent} from "./settings/modules/config/config/config.component
 
 const routes: Routes = [
   {
-    path: '',
+    path: 'main',
     component: MainComponent
   },
   {
@@ -79,7 +79,8 @@ const routes: Routes = [
   {
     path: 'participation/:key',
     component: PageComponent
-  }
+  },
+  { path: '', redirectTo: 'main', pathMatch: 'full' }
 ];
 
 @NgModule({

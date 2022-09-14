@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
-import {Navigation} from "../../../../../../_components/sidebar/sidebar.component";
+import { Navigation } from 'src/app/_components/layout/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-course-settings-sidebar',
