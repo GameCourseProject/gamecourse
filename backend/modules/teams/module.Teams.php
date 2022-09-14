@@ -45,12 +45,13 @@ class Teams extends Module
 
 
         /*** ------------ Functions ------------ ***/
-        // teams.getAllTeams(courseId)
+        // teams.getAllTeams()
         Dictionary::registerFunction(
             self::ID,
             'getAllTeams',
-            function (int $courseId) {
-                return $this->getTeam(true, $courseId);
+            function () {
+                $where= [] ;
+                return $this->getTeam(true, $where);
             },
             "Returns a collection with all the teams in the Course. The optional parameters can be used to find badges that specify a given combination of conditions:\nisActive: Streak is active.",
             'collection',
@@ -60,12 +61,12 @@ class Teams extends Module
             true
         );
 
-        //teams.getTeam(name)
+        //teams.getTeam(teamId)
         Dictionary::registerFunction(
             self::ID,
             'getTeam',
-            function (string $name = null) {
-                return $this->getTeam(false, ["name" => $name]);
+            function (int $id = null, int $courseId) {
+                return $this->getTeam(false, ["id" => $id, "course" => $courseId]);
             },
             "Returns the team object with the specific name.",
             'object',
@@ -75,10 +76,10 @@ class Teams extends Module
             true
         );
 
-        //$team.name, returns name
+        //$team.teamName, returns name
         Dictionary::registerFunction(
             self::ID,
-            'name',
+            'teamName',
             function ($team) {
                 return Dictionary::basicGetterFunction($team, "teamName");
             },
@@ -90,16 +91,17 @@ class Teams extends Module
             true
         );
 
-        //$team.getTeamMembers(team), returns all members of team
+
+        //$teams.getTeamMembers(team), returns all members of team
         Dictionary::registerFunction(
             self::ID,
             'getTeamMembers',
-            function ($team) {
-                return $this->getTeamMembers($team);
+            function (int $teamId, int $courseId) {
+                return Dictionary::createNode($this->getUsersInTeam($teamId, $courseId), self::ID, "collection");
             },
-            'Returns all the members of a certain team.',
+            'Returns all the users of a certain team.',
             'collection',
-            'teamMember',
+            'user',
             'library',
             null,
             true
@@ -115,9 +117,59 @@ class Teams extends Module
             },
             'Returns all the members of a certain team.',
             'collection',
-            'teamMember',
+            'user',
             'library',
             null,
+            true
+        );
+
+        //teamMember.picture returns boolean
+        Dictionary::registerFunction(
+            self::ID,
+            'picture',
+            function ($user) {
+                Dictionary::checkArray($user, "object", "picture", "id");
+                if (file_exists("photos/" . $user["value"]["username"] . ".png")) {
+                    return new ValueNode("photos/" . $user["value"]["username"] . ".png");
+                }
+                return new ValueNode("photos/no-photo.png");
+            },
+            'Returns the picture of the profile of the GameCourseUser.',
+            'picture',
+            null,
+            'object',
+            'teamMember',
+            true
+        );
+        
+        //%teamMember.studentNumber
+        Dictionary::registerFunction(
+            self::ID,
+            'studentNumber',
+            function ($user) {
+                $id = Dictionary::basicGetterFunction($user, "id")->getValue();
+                $studentNumber = Core::$systemDB->select("game_course_user", ["id" => $id], "studentNumber");
+                return new ValueNode($studentNumber);
+            },
+            'Returns a string with the student number of the GameCourseUser.',
+            'string',
+            null,
+            'object',
+            'teamMember',
+            true
+        );
+        //%teamMember.major
+        Dictionary::registerFunction(
+            self::ID,
+            'major',
+            function ($user) {
+                return Dictionary::basicGetterFunction($user, "major");
+            },
+            'Returns a string with the major of the GameCourseUser.',
+            'string',
+            null,
+            'object',
+            'teamMember',
             true
         );
 
@@ -681,7 +733,7 @@ class Teams extends Module
         } else {
             $teamArray = Core::$systemDB->select(self::TABLE, $where);
             if (empty($teamArray))
-                throw new \Exception("In function teams.getTeam(teamName): couldn't find badge with name '" . $where["name"] . "'.");
+                throw new \Exception("In function teams.getTeam(team): couldn't find badge with id '" . $where["id"] . "'.");
             $type = "object";
         }
         return Dictionary::createNode($teamArray, self::ID, $type);
@@ -715,10 +767,22 @@ class Teams extends Module
 
     }
 
+    public function getUsersInTeam($teamId, $courseId)
+    {
+        $where = ["r.course" => $courseId, "r.name" => "Student", "cu.isActive" => true, "tm.teamId" => $teamId];
+        $result = Core::$systemDB->selectMultiple(
+            "course_user cu JOIN game_course_user u ON cu.id=u.id JOIN user_role ur ON ur.id=u.id JOIN role r ON r.id=ur.role AND r.course=cu.course JOIN auth a ON u.id=a.game_course_user_id LEFT JOIN teams_members tm ON u.id = tm.memberId",
+            $where,
+            "u.*,cu.lastActivity, cu.previousActivity,a.username,r.name as role"
+        );
+        return $result;
+    }
+
     public function getTeamMembers($teamId)
     {
         return Core::$systemDB->selectMultiple(self::TABLE_MEMBERS, ["teamId" => $teamId], "*", "memberId");
     }
+
 
     public function getTeamMember($memberId, $courseId)
     {

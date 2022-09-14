@@ -193,6 +193,7 @@ function testDictionary()
 }
 
 testPhotoDownload();
+
 if ($GLOBALS['courseInfo'] == 0) {
     // testUserImport();
     // return "<strong style='color:#F7941D;'>Warning:</strong> If you desire to test the whole script, please specify a course id as an URL parameter: ?course=1 or &course=1.";
@@ -202,7 +203,7 @@ if ($GLOBALS['courseInfo'] == 0) {
 } else if ($GLOBALS['courseInfo'] == 1) {
     $course = $_GET["course"];
     $courseObj = Course::getCourse($course);
-    if ($courseObj->getModule(Fenix::ID)) {
+  /*  if ($courseObj->getModule(Fenix::ID)) {
         testFenixPlugin($course);
     }
     if ($courseObj->getModule(MoodleModule::ID)) {
@@ -213,7 +214,7 @@ if ($GLOBALS['courseInfo'] == 0) {
     }
     if ($courseObj->getModule(GoogleSheetsModule::ID)) {
         testGoogleSheetsPlugin($course);
-    }
+    }     */
     if ($courseObj->getModule(Teams::ID)) {
         testTeamImport($course);
     }
@@ -1214,6 +1215,7 @@ if ($GLOBALS['courseInfo'] == 1) {
 }
 
 //Plugin
+/*
 echo "<tr>";
 if ($GLOBALS['courseInfo'] == 1) {
     if ($GLOBALS["fenixInfo"] == 0) {
@@ -1242,7 +1244,7 @@ if ($GLOBALS['courseInfo'] == 1) {
     }
 } else {
     checkCourseTable("Plugins", 3);
-}
+}  */
 // Dictionary
 if ($GLOBALS['courseInfo'] == 1) {
     if ($GLOBALS['dictionaryInfo'] == 1) {
@@ -1315,6 +1317,7 @@ echo "<tr>";
 echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["u_3"][1] . "</td>";
 echo "</tr>";
 
+
 //Import/Export Course Users
 if ($GLOBALS['courseInfo'] == 1) {
     $info = $GLOBALS["cou_1"][0] . $GLOBALS["cou_2"][0] . $GLOBALS["cou_3"][0];
@@ -1366,6 +1369,32 @@ if ($GLOBALS['courseInfo'] == 1) {
 } else {
     checkCourseTable("Import/Export Courses", 3);
 }
+
+//Import/Export Course Teams
+if ($GLOBALS['courseInfo'] == 1) {
+    $info = $GLOBALS["cou_1"][0] . $GLOBALS["cou_2"][0] . $GLOBALS["cou_3"][0];
+    $countedInfo = countInfos($info, 3);
+    echo "<tr>";
+    echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;'>Import/Export Course Teams</td>";
+    echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["cou_1"][1] . "</td>";
+
+    echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[4] . ";'>" . $countedInfo[2] . "%</br>(" . $countedInfo[1] . "/3)</td>";
+    echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[5] . ";'>" . $countedInfo[3] . "%</br>(" . (3 - $countedInfo[0]) . "/3)</td>";
+    echo "</tr>";
+
+    echo "<tr>";
+    echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["cou_2"][1] . "</td>";
+    echo "</tr>";
+
+    echo "<tr>";
+    echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["cou_3"][1] . "</td>";
+    echo "</tr>";
+} else {
+    checkCourseTable("Import/Export Course Teams", 3);
+}
+
+
+
 //total
 
 $percentage = ($GLOBALS['success'] / ($GLOBALS['success'] + $GLOBALS['fail'])) * 100;

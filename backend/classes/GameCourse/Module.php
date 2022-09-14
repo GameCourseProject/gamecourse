@@ -431,7 +431,7 @@ abstract class Module
     public function getTeamId($team)
     {
         if (is_array($team))
-            return $team["value"]["teamId"];
+            return $team["value"]["id"];
         else
             return $id = $team;
     }
