@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import {AdminGuard} from "../../_guards/admin.guard";
 import {RestrictedComponent} from "./restricted.component";
+import {AboutComponent} from "./about/about.component";
 
 const routes: Routes = [
   {
@@ -13,12 +14,12 @@ const routes: Routes = [
         loadChildren: () => import('./main/main.module').then(mod => mod.MainModule)
       },
       {
-        path: 'my-info',
+        path: 'profile',
         loadChildren: () => import('./my-info/my-info.module').then(mod => mod.MyInfoModule)
       },
       {
         path: 'courses',
-        loadChildren: () => import('./courses/courses.module').then(mod => mod.CoursesModule)
+        loadChildren: () => import('./courses/courses.module').then(mod => mod.CoursesModule),
       },
       {
         path: 'users',
@@ -29,6 +30,10 @@ const routes: Routes = [
         path: 'settings',
         loadChildren: () => import('./settings/settings.module').then(mod => mod.SettingsModule),
         canActivate: [AdminGuard]
+      },
+      {
+        path: 'about',
+        component: AboutComponent
       },
       {
         path: 'docs',

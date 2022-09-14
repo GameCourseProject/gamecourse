@@ -4,11 +4,10 @@ import {Moment} from "moment";
 import {Router} from "@angular/router";
 
 @Component({
-  selector: 'app-footer',
-  templateUrl: './footer.component.html',
-  styleUrls: ['./footer.component.scss']
+  selector: 'app-autogame-toast',
+  templateUrl: './auto-game-toast.component.html'
 })
-export class FooterComponent implements OnInit {
+export class AutoGameToastComponent implements OnInit {
 
   loading: boolean = true;
   lastRun: Moment;

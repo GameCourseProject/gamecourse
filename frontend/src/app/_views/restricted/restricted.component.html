@@ -1,3 +1,8 @@
 <app-navbar></app-navbar>
-<router-outlet></router-outlet>
-<app-footer *ngIf="hasFooter()"></app-footer>
+<app-sidebar></app-sidebar>
+
+<main class="relative h-screen transition-all duration-200 ease-in-out pl-5 lg:pl-80 pr-5 pt-36 lg:pt-28 pb-8 bg-base-200 overflow-y-auto">
+  <router-outlet></router-outlet>
+</main>
+
+<app-autogame-toast *ngIf="isInsideCourse()"></app-autogame-toast>

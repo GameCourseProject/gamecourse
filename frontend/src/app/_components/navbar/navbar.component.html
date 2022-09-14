@@ -1,36 +1,83 @@
-<div class="navbar">
+<nav class="navbar fixed w-full flex justify-between bg-primary h-20 z-40 pl-2 pr-3" [ngStyle]="{'background-color': course ? course.color : ''}">
+  <!-- Left -->
+  <div class="flex justify-start gap-2 lg:ml-72">
 
-  <!-- Logo -->
-  <a class="logo" [routerLink]="'/'"></a>
+    <!-- Hamburger Menu -->
+    <label class="btn btn-ghost btn-circle swap swap-rotate text-white lg:hidden">
+      <!-- this hidden checkbox controls the state -->
+      <input type="checkbox" (click)="toggleSidebar()"/>
 
-  <!-- User Info -->
-  <div *ngIf="!isDocs" class="user_info">
+      <!-- hamburger icon -->
+      <ng-icon name="feather-menu" size="1.5rem" color="fillCurrent" class="swap-off"></ng-icon>
 
-    <!-- Configurable Area FIXME: make configurable in modules -->
-    <div *ngIf="course && hasTokensEnabled && isStudent" class="user_tokens">
-      <span>{{tokens}}</span>
-      <img src="{{tokensImg}}" alt="token image">
-    </div>
+      <!-- close icon -->
+      <ng-icon name="feather-x" size="1.5rem" color="fillCurrent" class="swap-on"></ng-icon>
 
-    <ng-container *ngIf="user">
-      <div class="user_id">{{user.username}}</div>
-      <a class="icon" id="user_icon" [routerLink]="'/my-info'"><img [src]="photo.get()" alt=""></a>
-      <a class="icon" id="user_exit" (click)="logout()"></a>
-    </ng-container>
+    </label>
   </div>
 
-  <!-- Navigation -->
-  <ul class="menu" [ngClass]="{'documentation': isDocs}">
-    <li *ngFor="let nav of navigation" [ngClass]="{'dropdown': nav.children?.length > 0}">
-      <a *ngIf="nav.link" [routerLink]="nav.link" [routerLinkActive]="'active focused'">{{nav.name}}</a>
-      <a *ngIf="!nav.link">{{nav.name}}</a>
-      <div *ngIf="nav.children" class="dropdown-content">
-        <a *ngFor="let subNav of nav.children" [routerLink]="subNav.link">{{subNav.name}}</a>
+  <div class="flex justify-between w-full">
+    <!-- Middle -->
+    <div>
+      <ng-container *ngIf="course">
+        <div class="text-sm text-white text-opacity-50 breadcrumbs pt-0 hidden lg:block">
+          <ul>
+            <li><a>Pages</a></li>
+            <li>Leaderboard</li>
+          </ul>
+        </div>
+        <h6 class="mb-0 font-bold text-white hidden lg:block">{{course.name}}</h6>
+      </ng-container>
+    </div>
+
+    <!-- Right -->
+    <div class="flex justify-end items-center gap-1.5">
+
+      <!-- Home -->
+      <div class="btn btn-ghost btn-circle btn-accent" [routerLink]="'/'">
+        <ng-icon name="feather-home" size="1.7rem" color="fillCurrent"></ng-icon>
       </div>
-    </li>
-  </ul>
 
+      <!-- Theme Toggler -->
+      <ng-container *ngIf="!router.url.includes('courses/')">
+        <app-theme-toggler></app-theme-toggler>
+      </ng-container>
+
+      <ng-container *ngIf="user">
+        <!-- Greet -->
+        <p class="text-white align-middle ml-2">Hey, {{user.nickname || user.name.split(' ')[0] || user.username}}!</p>
+
+        <!-- Avatar -->
+        <div class="dropdown dropdown-end">
+          <label tabindex="0" class="btn btn-ghost btn-circle avatar">
+            <div class="w-10 rounded-full">
+              <img [src]="photo.get()" alt="user profile image" />
+            </div>
+          </label>
+          <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-48">
+            <li><a [routerLink]="'/my-info'">
+              <ng-icon name="feather-user" size="1rem" color="fillCurrent"></ng-icon>
+              Profile
+            </a></li>
+            <li><a (click)="logout()">
+              <ng-icon name="feather-log-out" size="1rem" color="fillCurrent"></ng-icon>
+              Logout
+            </a></li>
+          </ul>
+        </div>
+      </ng-container>
+
+      <!-- Skeleton -->
+      <ng-container *ngIf="!user">
+        <div class="w-24 h-4 bg-indigo-300 opacity-40 rounded-md animate-pulse"></div>
+        <div class="w-10 h-10 bg-indigo-300 opacity-40 rounded-full animate-pulse"></div>
+      </ng-container>
+    </div>
+  </div>
+</nav>
+
+<!-- Course Name on mobile -->
+<div *ngIf="course" class="lg:hidden fixed top-20 w-full flex flex-col justify-center items-center bg-primary h-10 z-40 pl-5 pr-3"
+     [ngStyle]="{'background-color': course ? course.color : ''}">
+  <h6 class="mb-0 font-bold text-white text-center">{{course.name}}</h6>
 </div>
-
-<!-- Course Banner -->
-<div *ngIf="course" id="course_name" [ngStyle]="{'background-color': course.color}">{{course.name}}</div>

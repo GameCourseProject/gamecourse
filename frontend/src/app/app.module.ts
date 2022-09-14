@@ -11,8 +11,16 @@ import { DataTablesModule } from "angular-datatables";
 import { NgIconsModule } from "@ng-icons/core";
 
 import {
+  FeatherHome,
+  FeatherInfo,
+  FeatherLayout,
+  FeatherLogOut,
+  FeatherMenu,
   FeatherMoon,
-  FeatherSun
+  FeatherSun,
+  FeatherUser,
+  FeatherUsers,
+  FeatherX
 } from "@ng-icons/feather-icons";
 
 import {
@@ -20,6 +28,15 @@ import {
   JamFacebook,
   JamLinkedin
 } from "@ng-icons/jam-icons";
+
+import {
+  TablerBooks,
+  TablerClipboardList,
+  TablerColorSwatch,
+  TablerIdBadge2,
+  TablerPlug,
+  TablerPrompt
+} from "@ng-icons/tabler-icons";
 
 @NgModule({
   declarations: [
@@ -32,11 +49,27 @@ import {
     SharedModule,
     DataTablesModule,
     NgIconsModule.withIcons({
+      FeatherHome,
+      FeatherInfo,
+      FeatherLayout,
+      FeatherLogOut,
+      FeatherMenu,
       FeatherMoon,
       FeatherSun,
+      FeatherUser,
+      FeatherUsers,
+      FeatherX,
+
       JamGoogle,
       JamFacebook,
-      JamLinkedin
+      JamLinkedin,
+
+      TablerBooks,
+      TablerClipboardList,
+      TablerColorSwatch,
+      TablerIdBadge2,
+      TablerPlug,
+      TablerPrompt
     })
   ],
   providers: [{

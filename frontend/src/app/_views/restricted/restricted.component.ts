@@ -9,7 +9,7 @@ export class RestrictedComponent {
 
   constructor(private router: Router) { }
 
-  hasFooter(): boolean {
+  isInsideCourse(): boolean {
     const urlParts = this.router.url.substr(1).split('/');
     return urlParts.includes('courses') && urlParts.length >= 2;
   }

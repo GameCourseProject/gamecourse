@@ -4,6 +4,16 @@ module.exports = {
     require('@tailwindcss/typography'),
     require('daisyui')
   ],
+  theme: {
+    extend: {
+      keyframes: {
+        pulse: {
+          '0%, 100%': { opacity: 0.9 },
+          '50%': { opacity: 0.3 },
+        }
+      }
+    }
+  },
   daisyui: {
     themes: [
       {

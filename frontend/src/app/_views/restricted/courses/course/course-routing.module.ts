@@ -22,17 +22,17 @@ const routes: Routes = [
     component: UsersComponent
   },
   {
+    path: 'roles',
+    component: RolesComponent
+  },
+  {
+    path: 'info',
+    component: GlobalComponent
+  },
+  {
     path: 'settings',
     component: SettingsComponent,
     children: [
-      {
-        path: 'global',
-        component: GlobalComponent
-      },
-      {
-        path: 'roles',
-        component: RolesComponent
-      },
       {
         path: 'modules',
         component: ModulesComponent
@@ -46,11 +46,15 @@ const routes: Routes = [
         component: RulesComponent
       },
       {
-        path: 'views',
+        path: 'themes',
+        component: GlobalComponent
+      },
+      {
+        path: 'pages',
         component: ViewsComponent,
       },
       {
-        path: 'views/templates/:id/editor',
+        path: 'pages/templates/:id/editor',
         component: ViewsEditorComponent
       },
       { path: '', redirectTo: 'global', pathMatch: 'full' }

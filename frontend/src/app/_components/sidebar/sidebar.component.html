@@ -1,36 +1,54 @@
-<div class="sidebar">
+<aside class="fixed w-64 lg:inset-y-0 flex flex-col items-center justify-between block p-0 lg:my-4 antialiased
+              transition-transform duration-200 -translate-x-full bg-base-100 border-0 z-50 lg:ml-6 rounded-r-2xl lg:rounded-2xl
+              lg:left-0 lg:translate-x-0 shadow-xl h-[90%] lg:h-auto bottom-0 pb-4">
 
-  <!-- Search -->
-  <div class="search">
-    <input type="text" id="seach_input" placeholder="Search.." name="search" [(ngModel)]="searchInput" (ngModelChange)="onSearch.emit(searchInput)">
-    <button class="magnifying-glass" id="search-btn" (click)="onSearch.emit(searchInput)"></button>
-  </div>
-
-  <!-- Filter -->
-  <div *ngIf="filters.length > 0" class="filter">
-    <div class="title">Filter</div>
-    <label class="container" *ngFor="let filter of filters; let i = index">
-      {{filter}}
-      <input type="checkbox" [checked]="true" id="filter-{{filter}}" [(ngModel)]="filtersInput[i].state" (ngModelChange)="onFilterChange.emit(filtersInput[i])">
-      <span class="checkmark"></span>
-    </label>
-  </div>
-
-
-  <!-- Order by -->
-  <div *ngIf="orderBy.length > 0" class="order-by">
-    <div class="title">Order by</div>
-    <label class="container" *ngFor="let order of orderBy; let first = first">
-      {{order}}
-      <input type="radio" [checked]="first" name="radio" id="order-{{order}}" (click)="orderInput = order; onOrderChange.emit({orderBy: orderInput, sort: sortInput})">
-      <span class="checkmark"></span>
-    </label>
-
-    <!-- Sort -->
-    <div class="sort">
-      <div class="triangle icon" [ngClass]="{'checked': sortInput === -1}" id="triangle-up" (click)="sortInput = -sortInput; onOrderChange.emit({orderBy: orderInput, sort: sortInput})"></div>
-      <div class="triangle icon" [ngClass]="{'checked': sortInput === 1}" id="triangle-down" (click)="sortInput = -sortInput; onOrderChange.emit({orderBy: orderInput, sort: sortInput})"></div>
+  <div>
+    <!-- Logo -->
+    <div class="h-25 px-6 py-6 pb-3">
+      <a [routerLink]="'/'">
+        <img class="max-h-full" src="assets/logo/logo_horz.jpg" alt="">
+      </a>
     </div>
+
+    <div class="divider m-0"></div>
+
+    <!-- Navigation -->
+    <ul *ngIf="navigation?.length > 0" class="menu bg-base-100 p-2 rounded-box overflow-y-auto">
+      <ng-container *ngFor="let nav of navigation; let i = index">
+
+        <!-- Category -->
+        <ng-container *ngIf="nav.category && nav.children?.length > 0">
+          <div *ngIf="i > 0" class="divider before:bg-base-200 after:bg-base-200 mt-0"></div>
+          <li class="menu-title uppercase"><span>{{nav.category}}</span></li>
+        </ng-container>
+
+        <!-- Nav. Item(s) -->
+        <li *ngFor="let item of (nav.children ?? [nav])">
+          <a class="py-4 pl-5 hover:bg-primary hover:bg-opacity-10" [routerLink]="item.link" [routerLinkActive]="'bg-primary bg-opacity-30 hover:bg-primary hover:bg-opacity-30'">
+            <ng-icon [name]="item.icon" size="1.5rem" color="fillCurrent"></ng-icon>
+            {{item.name}}
+          </a>
+        </li>
+
+        <!-- Divider -->
+        <ng-container *ngIf="nav.category && nav.children?.length > 0 && i < navigation.length - 1 && !navigation[i+1].category">
+          <div class="divider before:bg-base-200 after:bg-base-200 m-0"></div>
+        </ng-container>
+
+      </ng-container>
+    </ul>
   </div>
 
-</div>
+  <!-- Docs -->
+  <div *ngIf="user?.isAdmin || isATeacher" class="relative flex flex-col min-w-0 break-words bg-transparent border-0 shadow-none rounded-2xl bg-clip-border mx-3">
+    <img class="w-1/2 mx-auto" src="https://demos.creative-tim.com/argon-dashboard-tailwind/assets/img/illustrations/icon-documentation.svg" alt="docs illustration">
+    <div class="flex-auto w-full p-4 pt-0 text-center">
+      <div class="transition-all duration-200 ease-nav-brand prose">
+        <h6 class="mb-0 font-semibold">Need help?</h6>
+        <p class="my-0 leading-tight text-xs">Please check our docs</p>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-sm normal-case" [routerLink]="'/docs'">Documentation</button>
+  </div>
+
+</aside>

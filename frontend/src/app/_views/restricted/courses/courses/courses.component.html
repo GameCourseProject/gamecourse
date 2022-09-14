@@ -3,13 +3,13 @@
   <div id="content-wrapper" *ngIf="!loading">
 
     <!-- Sidebar -->
-    <app-sidebar
-      [filters]="user.isAdmin ? filters.admin : filters.nonAdmin"
-      [orderBy]="user.isAdmin ? orderBy.admin : orderBy.nonAdmin"
-      (onSearch)="reduceList($event)"
-      (onFilterChange)="reduce.updateFilter($event.filter, $event.state); reduceList()"
-      (onOrderChange)="order.active = $event; orderList()">
-    </app-sidebar>
+<!--    <app-sidebar-->
+<!--      [filters]="user.isAdmin ? filters.admin : filters.nonAdmin"-->
+<!--      [orderBy]="user.isAdmin ? orderBy.admin : orderBy.nonAdmin"-->
+<!--      (onSearch)="reduceList($event)"-->
+<!--      (onFilterChange)="reduce.updateFilter($event.filter, $event.state); reduceList()"-->
+<!--      (onOrderChange)="order.active = $event; orderList()">-->
+<!--    </app-sidebar>-->
 
     <!-- Main Content -->
     <div id="mainContent">

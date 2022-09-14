@@ -11,7 +11,7 @@ import {ClickedOutsideDirective} from "./_directives/clicked-outside.directive";
 import { VerificationModalComponent } from './_components/modals/verification-modal/verification-modal.component';
 import { InputFileComponent } from './_components/inputs/general/input-file/input-file.component';
 import { ErrorModalComponent } from './_components/modals/error-modal/error-modal.component';
-import { FooterComponent } from './_components/footer/footer.component';
+import { AutoGameToastComponent } from './_components/autogame-toast/auto-game-toast.component';
 import { InputCodeComponent } from './_components/inputs/code/input-code/input-code.component';
 import { BlockComponent } from './_components/building-blocks/block/block.component';
 import { TextComponent } from './_components/building-blocks/text/text.component';
@@ -51,7 +51,7 @@ import {NgIconsModule} from "@ng-icons/core";
     VerificationModalComponent,
     InputFileComponent,
     ErrorModalComponent,
-    FooterComponent,
+    AutoGameToastComponent,
     InputCodeComponent,
     BlockComponent,
     TextComponent,
@@ -84,7 +84,7 @@ import {NgIconsModule} from "@ng-icons/core";
         VerificationModalComponent,
         InputFileComponent,
         ErrorModalComponent,
-        FooterComponent,
+        AutoGameToastComponent,
         InputCodeComponent,
         TextComponent,
         ImageComponent,

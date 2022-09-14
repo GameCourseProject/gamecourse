@@ -1,5 +1,5 @@
-import {Component, HostListener, OnInit} from '@angular/core';
-import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
+import {Component, OnInit} from '@angular/core';
+import {NavigationEnd, Router} from "@angular/router";
 import {DomSanitizer} from "@angular/platform-browser";
 
 import {ApiHttpService} from "../../_services/api/api-http.service";
@@ -7,31 +7,20 @@ import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
 import {UpdateService, UpdateType} from "../../_services/update.service";
 
 import {User} from "../../_domain/users/user";
-import {Course} from "../../_domain/courses/course";
+import {Course} from 'src/app/_domain/courses/course';
 import {ResourceManager} from "../../_utils/resources/resource-manager";
-import {Page} from "../../_domain/pages & templates/page";
 import {environment} from "../../../environments/environment";
 import {of} from "rxjs";
 
 @Component({
   selector: 'app-navbar',
-  templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.scss']
+  templateUrl: './navbar.component.html'
 })
 export class NavbarComponent implements OnInit {
 
   user: User;
-  photo: ResourceManager;
-
-  navigation: Navigation[];
-  mainNavigation: Navigation[];
-  courseNavigation: Navigation[];
-  docsNavigation: Navigation[];
-
-  isDocs: boolean;
-
   course: Course;
-  activePages: Page[];
+  photo: ResourceManager;
 
   // FIXME: navbar space should be configurable in modules
   hasTokensEnabled: boolean;
@@ -41,8 +30,7 @@ export class NavbarComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private router: Router,
-    private route: ActivatedRoute,
+    public router: Router,
     private sanitizer: DomSanitizer,
     private updateManager: UpdateService
   ) {
@@ -53,24 +41,22 @@ export class NavbarComponent implements OnInit {
     // Get logged user information
     await this.getLoggedUser();
 
-    // Init navigations
-    await this.initNavigations();
+    // Get course information
+    await this.getCourse();
 
     // Whenever URL changes
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.initNavigations();
+        const courseID = this.getCourseIDFromURL();
+        if (courseID !== this.course?.id) this.getCourse();
       }
     });
 
     // Whenever updates are received
     this.updateManager.update.subscribe(type => {
       if (type === UpdateType.AVATAR) {
+        this.user = null; // NOTE: forces skeleton
         this.getLoggedUser();
-
-      } else if (type === UpdateType.ACTIVE_PAGES) {
-        this.activePages = null;
-        this.initNavigations();
       }
     });
   }
@@ -87,139 +73,13 @@ export class NavbarComponent implements OnInit {
 
 
   /*** --------------------------------------------- ***/
-  /*** ---------------- Navigation ----------------- ***/
+  /*** -------------------- Course ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  async initNavigations(): Promise<void> {
-    this.isDocs = this.router.url.includes('docs');
-    const isInCourse = this.router.url.includes('courses/');
-
-    if (this.isDocs) this.navigation = this.getDocsNavigation();
-    else if (!isInCourse) {
-      this.navigation = this.getMainNavigation();
-      this.course = null;
-
-    } else if (isInCourse) {
-      this.navigation = await this.getCourseNavigation();
-      await this.getConfigurableArea();
-
-    } else this.navigation = [];
-  }
-
-  getDocsNavigation(): Navigation[] {
-    const pages: {[key: string]: Navigation} = {
-      viewsPage: {
-        link: '/docs/views',
-        name: 'Views',
-      },
-      functionsPage: {
-        link: '/docs/functions',
-        name: 'Functions',
-      },
-      modulesPage: {
-        link: '/docs/modules',
-        name: 'Modules',
-      }
-    };
-
-    this.docsNavigation = [
-      pages.viewsPage,
-      pages.functionsPage,
-      pages.modulesPage
-    ];
-    return this.docsNavigation;
-  }
-
-  getMainNavigation(): Navigation[] {
-    this.mainNavigation = [];
-    const pages: {[key: string]: Navigation} = {
-      mainPage: {
-        link: '/main',
-        name: 'Main Page'
-      },
-      coursesPage: {
-        link: '/courses',
-        name: 'Courses'
-      },
-      usersPage: {
-        link: '/users',
-        name: 'Users'
-      },
-      settings: {
-        link: '/settings',
-        name: 'Settings',
-        children: [
-          {link: '/settings/global', name: 'Global'},
-          {link: '/settings/modules', name: 'Modules'},
-          {link: '/settings/about', name: 'About'}
-        ]
-      },
-    }
-
-    if (window.innerWidth >= 915)
-      this.mainNavigation.push(pages.mainPage);
-
-    if (window.innerWidth < 1000) {
-      this.mainNavigation.push({
-        link: null,
-        name: 'Other Pages',
-        children: []
-      });
-
-      const otherPages = this.mainNavigation[this.mainNavigation.length - 1];
-      if (window.innerWidth < 915) otherPages.children.push(pages.mainPage)
-      otherPages.children.push(pages.coursesPage);
-
-      if (this.user.isAdmin)
-        this.mainNavigation[this.mainNavigation.length - 1].children.push(pages.usersPage);
-
-    } else {
-      this.mainNavigation.push(pages.coursesPage);
-      if (this.user.isAdmin)
-        this.mainNavigation.push(pages.usersPage);
-    }
-
-    if (this.user.isAdmin)
-      this.mainNavigation.push(pages.settings);
-
-    return this.mainNavigation;
-  }
-
-  async getCourseNavigation(): Promise<Navigation[]> {
-    if (!this.course || this.course.id !== this.getCourseIDFromURL() || !this.activePages) {
-      const courseID = this.getCourseIDFromURL();
-
-      this.course = await this.api.getCourseById(courseID).toPromise();
-      this.activePages = []; // FIXME
-      const isAdminOrTeacher = this.user.isAdmin || await this.api.isTeacher(courseID, this.user.id).toPromise();
-
-      this.courseNavigation = buildCourseNavigation(this.course, this.activePages, isAdminOrTeacher);
-    }
-    return this.courseNavigation;
-
-    function buildCourseNavigation(course: Course, activePages: Page[], isAdminOrTeacher: boolean): Navigation[] {
-      const path = '/courses/' + course.id + '/';
-
-      const pages = activePages.map(page => {
-        return {link: path + 'pages/' + page.id, name: page.name};
-      });
-
-      if (isAdminOrTeacher) {
-        const fixed = [
-          {link: path + 'users', name: 'Users'},
-          {link: path + 'settings', name: 'Course Settings', children: [
-              {link: path + 'settings/global', name: 'This Course'},
-              {link: path + 'settings/roles', name: 'Roles'},
-              {link: path + 'settings/modules', name: 'Modules'},
-              {link: path + 'settings/rules', name: 'Rules'},
-              {link: path + 'settings/views', name: 'Views'}
-            ]}
-        ];
-        return pages.concat(fixed);
-      }
-
-      return pages;
-    }
+  async getCourse(): Promise<void> {
+    const courseID = this.getCourseIDFromURL();
+    if (courseID) this.course = await this.api.getCourseById(courseID).toPromise();
+    else this.course = null;
   }
 
 
@@ -229,11 +89,11 @@ export class NavbarComponent implements OnInit {
 
   async getConfigurableArea(): Promise<void> {
     // FIXME: should be made general
-    this.hasTokensEnabled = await this.isVirtualCurrencyEnabled();
-    if (this.hasTokensEnabled) {
-      this.isStudent = await this.api.isStudent(this.course.id, this.user.id).toPromise();
-      if (this.isStudent) this.tokens = await this.getUserTokens();
-    }
+    // this.hasTokensEnabled = await this.isVirtualCurrencyEnabled();
+    // if (this.hasTokensEnabled) {
+    //   this.isStudent = await this.api.isStudent(this.course.id, this.user.id).toPromise();
+    //   if (this.isStudent) this.tokens = await this.getUserTokens();
+    // }
   }
 
 
@@ -252,6 +112,11 @@ export class NavbarComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  toggleSidebar() {
+    const sidebar = document.getElementsByTagName('aside')[0];
+    sidebar.classList.toggle('-translate-x-full');
+  }
 
   getCourseIDFromURL(): number {
     const urlParts = this.router.url.substr(1).split('/');
@@ -272,17 +137,4 @@ export class NavbarComponent implements OnInit {
     // if (courseID) return await this.api.getUserTokens(courseID, this.user.id).toPromise();
     // return null;
   }
-
-
-  @HostListener('window:resize', [])
-  onWindowResize(): void {
-    this.initNavigations();
-  }
-
-}
-
-export interface Navigation {
-  link: string,
-  name: string,
-  children?: Navigation[]
 }
