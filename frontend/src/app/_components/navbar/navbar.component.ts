@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {NavigationEnd, Router} from "@angular/router";
+import {NavigationEnd, PRIMARY_OUTLET, Router} from "@angular/router";
 import {DomSanitizer} from "@angular/platform-browser";
 
 import {ApiHttpService} from "../../_services/api/api-http.service";
@@ -122,6 +122,11 @@ export class NavbarComponent implements OnInit {
     const urlParts = this.router.url.substr(1).split('/');
     if (urlParts.includes('courses') && urlParts.length >= 2) return parseInt(urlParts[1]);
     else return null;
+  }
+
+  getURLParts(): string[] {
+    const segments = this.router.parseUrl(this.router.url).root.children[PRIMARY_OUTLET].segments;
+    return segments.map(segment => segment.path).slice(2);
   }
 
   async isVirtualCurrencyEnabled(): Promise<boolean> {

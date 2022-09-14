@@ -22,8 +22,7 @@
       <ng-container *ngIf="course">
         <div class="text-sm text-white text-opacity-50 breadcrumbs pt-0 hidden lg:block">
           <ul>
-            <li><a>Pages</a></li>
-            <li>Leaderboard</li>
+            <li *ngFor="let part of getURLParts()">{{part.capitalize()}}</li>
           </ul>
         </div>
         <h6 class="mb-0 font-bold text-white hidden lg:block">{{course.name}}</h6>
