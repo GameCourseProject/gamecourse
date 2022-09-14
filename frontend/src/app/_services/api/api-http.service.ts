@@ -293,6 +293,35 @@ export class ApiHttpService {
   }
 
 
+  // Courses
+
+  public isATeacher(userID: number): Observable<boolean> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'isATeacher');
+      qs.push('userId', userID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public isAStudent(userID: number): Observable<boolean> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'isAStudent');
+      qs.push('userId', userID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+
   // Import/Export
   public importUsers(importData: ImportUsersData): Observable<number> {
     const data = {

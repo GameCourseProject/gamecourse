@@ -1357,6 +1357,119 @@ class UserTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function isATeacher()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set courses
+        $course1 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $course2 = Course::addCourse("Producao de Conteudos Multimedia", "PCM", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        // Set a user
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+
+        // Given
+        $course1->addUserToCourse($user->getId(), "Teacher");
+
+        // Then
+        $this->assertTrue($user->isATeacher());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isNotATeacher()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set courses
+        $course1 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $course2 = Course::addCourse("Producao de Conteudos Multimedia", "PCM", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        // Set a user
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+
+        // Given
+        $course1->addUserToCourse($user->getId(), "Student");
+
+        // Then
+        $this->assertFalse($user->isATeacher());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isAStudent()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set courses
+        $course1 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $course2 = Course::addCourse("Producao de Conteudos Multimedia", "PCM", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        // Set a user
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+
+        // Given
+        $course1->addUserToCourse($user->getId(), "Student");
+
+        // Then
+        $this->assertTrue($user->isAStudent());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isNotAStudent()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set courses
+        $course1 = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+        $course2 = Course::addCourse("Producao de Conteudos Multimedia", "PCM", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        // Set a user
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+
+        // Given
+        $course1->addUserToCourse($user->getId(), "Teacher");
+
+        // Then
+        $this->assertFalse($user->isAStudent());
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function refreshLastLogin()
     {
         $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",

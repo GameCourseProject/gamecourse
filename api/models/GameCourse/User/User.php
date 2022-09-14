@@ -498,6 +498,40 @@ class User
         return Course::getCoursesOfUser($this->id, $active, $visible);
     }
 
+    /**
+     * Checks whether user is a teacher of any course.
+     * @return bool
+     * @throws Exception
+     */
+    public function isATeacher(): bool
+    {
+        $courses = Course::getCourses();
+        foreach ($courses as $c) {
+            $course = new Course($c["id"]);
+            $courseUser = $course->getCourseUserById($this->id);
+            if (!$courseUser) continue;
+            if ($courseUser->isTeacher()) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether user is a student of any course.
+     * @return bool
+     * @throws Exception
+     */
+    public function isAStudent(): bool
+    {
+        $courses = Course::getCourses();
+        foreach ($courses as $c) {
+            $course = new Course($c["id"]);
+            $courseUser = $course->getCourseUserById($this->id);
+            if (!$courseUser) continue;
+            if ($courseUser->isStudent()) return true;
+        }
+        return false;
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** --------------------- User Data -------------------- ***/

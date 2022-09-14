@@ -301,6 +301,51 @@ class UserController
 
 
     /*** --------------------------------------------- ***/
+    /*** ------------------ Courses ------------------ ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * Checks whether a user is a teacher of any course.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function isATeacher()
+    {
+        API::requireValues("userId");
+
+        $userId = API::getValue("userId", "int");
+        $user = API::verifyUserExists($userId);
+
+        // Only admins can access other users' information
+        if (Core::getLoggedUser()->getId() != $userId)
+            API::requireAdminPermission();
+
+        API::response($user->isATeacher());
+    }
+
+    /**
+     * Checks whether a user is a student of any course.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function isAStudent()
+    {
+        API::requireValues("userId");
+
+        $userId = API::getValue("userId", "int");
+        $user = API::verifyUserExists($userId);
+
+        // Only admins can access other users' information
+        if (Core::getLoggedUser()->getId() != $userId)
+            API::requireAdminPermission();
+
+        API::response($user->isAStudent());
+    }
+
+
+    /*** --------------------------------------------- ***/
     /*** -------------- Import / Export -------------- ***/
     /*** --------------------------------------------- ***/
 
