@@ -1,0 +1,74 @@
+@layer components {
+  .btn-outline {
+    @apply border-2;
+  }
+
+  [data-theme="light"] .btn:not(.btn-outline),
+  [data-theme="dark"] .btn:not(.btn-outline) {
+    &.btn-info:hover {
+      @apply bg-info-focus
+    }
+
+    &.btn-success:hover {
+      @apply bg-success-focus
+    }
+
+    &.btn-warning:hover {
+      @apply bg-warning-focus
+    }
+
+    &.btn-error:hover {
+      @apply bg-error-focus
+    }
+  }
+}
+
+@layer components {
+  .btn-fenix {
+    @apply text-white bg-fenix border-fenix;
+
+    &.btn-outline {
+      @apply text-fenix bg-transparent hover:text-white border-fenix hover:bg-fenix hover:border-fenix;
+    }
+
+    &:hover {
+      @apply bg-fenix-dark border-fenix-dark;
+    }
+  }
+
+  .btn-google {
+    @apply text-white bg-google border-google;
+
+    &.btn-outline {
+      @apply text-google bg-transparent hover:text-white border-google hover:bg-google hover:border-google;
+    }
+
+    &:hover {
+      @apply bg-google-dark border-google-dark;
+    }
+  }
+
+  .btn-facebook {
+    @apply text-white bg-facebook border-facebook;
+
+    &.btn-outline {
+      @apply text-facebook bg-transparent hover:text-white border-facebook hover:bg-facebook hover:border-facebook;
+    }
+
+    &:hover {
+      @apply bg-facebook-dark border-facebook-dark;
+    }
+  }
+
+  .btn-linkedin {
+    @apply text-white bg-linkedin border-linkedin;
+
+    &.btn-outline {
+      @apply text-linkedin bg-transparent hover:text-white border-linkedin hover:bg-linkedin hover:border-linkedin;
+    }
+
+    &:hover {
+      @apply bg-linkedin-dark border-linkedin-dark;
+    }
+  }
+}
