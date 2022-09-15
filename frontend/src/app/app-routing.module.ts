@@ -1,10 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import {PageNotFoundComponent} from "./_components/misc/page-not-found/page-not-found.component";
-import {LoginGuard} from "./_guards/login.guard";
-import {RedirectIfLoggedInGuard} from "./_guards/redirect-if-logged-in.guard";
-import {NoAccessComponent} from "./_components/misc/no-access/no-access.component";
-import {RedirectIfSetupDoneGuard} from "./_guards/redirect-if-setup-done.guard";
+
+import { LoginGuard } from "./_guards/login.guard";
+import { RedirectIfLoggedInGuard } from "./_guards/redirect-if-logged-in.guard";
+import { RedirectIfSetupDoneGuard } from "./_guards/redirect-if-setup-done.guard";
+
+import { NoAccessComponent } from "./_components/misc/no-access/no-access.component";
+import { PageNotFoundComponent } from "./_components/misc/page-not-found/page-not-found.component";
 
 const routes: Routes = [
   {

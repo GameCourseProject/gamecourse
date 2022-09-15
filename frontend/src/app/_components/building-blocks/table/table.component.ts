@@ -15,7 +15,7 @@ import { ViewRow } from 'src/app/_domain/views/view-row';
   selector: 'bb-table',
   templateUrl: './table.component.html'
 })
-export class TableComponent implements OnInit {
+export class BBTableComponent implements OnInit {
 
   @Input() view: ViewTable;
   edit: boolean;

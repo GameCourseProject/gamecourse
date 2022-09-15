@@ -1,11 +1,12 @@
-import {Component} from '@angular/core';
-import {ErrorService} from "./_services/error.service";
-import {NavigationCancel, NavigationEnd, NavigationStart, Router} from "@angular/router";
-import {ThemingService} from "./_services/theming/theming.service";
+import { Component } from '@angular/core';
+import { NavigationCancel, NavigationEnd, NavigationStart, Router } from "@angular/router";
 
-import '@extensions/string.extensions';
+import { ErrorService } from "./_services/error.service";
+import { ThemingService } from "./_services/theming/theming.service";
+
 import '@extensions/array.extensions';
 import '@extensions/number.extensions';
+import '@extensions/string.extensions';
 
 @Component({
   selector: 'app-root',
@@ -18,6 +19,7 @@ export class AppComponent {
     private router: Router,
     private themeService: ThemingService
   ) {
+
     // Wait for guard checks
     this.router.events.subscribe(event => {
       if (event instanceof NavigationStart)
@@ -31,6 +33,11 @@ export class AppComponent {
     const theme = themeService.getTheme();
     themeService.apply(theme);
   }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Errors ------------------- ***/
+  /*** --------------------------------------------- ***/
 
   hasError(): boolean {
     return !!ErrorService.error.full;

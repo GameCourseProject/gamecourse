@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 
+import { ApiHttpService } from "../../../_services/api/api-http.service";
+
 import { AuthType } from 'src/app/_domain/auth/auth-type';
-import {ApiHttpService} from "../../../_services/api/api-http.service";
-import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-login',
@@ -10,13 +10,15 @@ import {Router} from "@angular/router";
 })
 export class LoginComponent implements OnInit {
 
-  constructor(public api: ApiHttpService, public router: Router) { }
+  constructor(
+    public api: ApiHttpService
+  ) { }
+
+  ngOnInit(): void {
+  }
 
   get AuthType(): typeof AuthType {
     return AuthType;
-  }
-
-  ngOnInit(): void {
   }
 
 }

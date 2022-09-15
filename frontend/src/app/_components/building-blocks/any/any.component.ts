@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {View, ViewMode, VisibilityType} from "../../../_domain/views/view";
 import {ViewType} from "../../../_domain/views/view-type";
 import { ViewText } from 'src/app/_domain/views/view-text';
@@ -13,7 +13,7 @@ import {ViewChart} from "../../../_domain/views/view-chart";
   selector: 'bb-any',
   templateUrl: './any.component.html'
 })
-export class AnyComponent implements OnInit {
+export class BBAnyComponent implements OnInit {
 
   @Input() view: View;
 

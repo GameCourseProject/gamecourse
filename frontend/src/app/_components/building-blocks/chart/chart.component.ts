@@ -13,7 +13,7 @@ import {EventToggleView} from 'src/app/_domain/views/events/event-toggle-view';
   selector: 'bb-chart',
   templateUrl: './chart.component.html'
 })
-export class ChartComponent implements OnInit {
+export class BBChartComponent implements OnInit {
 
   @Input() view: ViewChart;
   edit: boolean;

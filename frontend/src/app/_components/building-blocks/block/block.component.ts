@@ -16,7 +16,7 @@ import {EditorAction, ViewEditorService} from "../../../_services/view-editor.se
   selector: 'bb-block',
   templateUrl: './block.component.html'
 })
-export class BlockComponent implements OnInit {
+export class BBBlockComponent implements OnInit {
 
   @Input() view: ViewBlock;
   edit: boolean;

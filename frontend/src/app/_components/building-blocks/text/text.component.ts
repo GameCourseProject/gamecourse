@@ -13,7 +13,7 @@ import {EventToggleView} from 'src/app/_domain/views/events/event-toggle-view';
   selector: 'bb-text',
   templateUrl: './text.component.html'
 })
-export class TextComponent implements OnInit {
+export class BBTextComponent implements OnInit {
 
   @Input() view: ViewText;
   edit: boolean;

@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
-import {ThemingService} from "../../../_services/theming/theming.service";
-import {Theme} from "../../../_services/theming/themes-available";
+import {ThemingService} from "../../../../_services/theming/theming.service";
+import {Theme} from "../../../../_services/theming/themes-available";
 
 @Component({
   selector: 'app-theme-toggler',

@@ -13,7 +13,7 @@ import { EventToggleView } from 'src/app/_domain/views/events/event-toggle-view'
   selector: 'bb-header',
   templateUrl: './header.component.html'
 })
-export class HeaderComponent implements OnInit {
+export class BBHeaderComponent implements OnInit {
 
   @Input() view: ViewHeader;
   edit: boolean;

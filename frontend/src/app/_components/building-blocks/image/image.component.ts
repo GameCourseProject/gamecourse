@@ -1,6 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ViewImage} from "../../../_domain/views/view-image";
-import {DomSanitizer} from "@angular/platform-browser";
 import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
 import {exists, requireValues} from "../../../_utils/misc/misc";
 import {ViewMode, VisibilityType} from "../../../_domain/views/view";
@@ -15,7 +14,7 @@ import { EventToggleView } from 'src/app/_domain/views/events/event-toggle-view'
   selector: 'bb-image',
   templateUrl: './image.component.html'
 })
-export class ImageComponent implements OnInit {
+export class BBImageComponent implements OnInit {
 
   @Input() view: ViewImage;
   edit: boolean;
