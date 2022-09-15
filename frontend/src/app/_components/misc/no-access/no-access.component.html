@@ -1,19 +1,21 @@
-<div class="container">
+<div class="relative overflow-hidden h-screen bg-base-100">
+  <div class="container mx-auto px-6 md:px-12 relative z-10 flex items-center py-32 xl:py-40">
+    <div class="w-full flex flex-col items-center relative z-10">
+      <!-- Icon -->
+      <ng-icon name="jam-stop-sign" size="7rem" class="text-secondary"></ng-icon>
 
-  <div class="background"></div>
+      <!-- Text -->
+      <div class="prose text-center mt-5">
+        <h1 class="mb-3">No Access</h1>
+        <p>It seems like you don't have access to this page.</p>
+      </div>
 
-  <div class="login_box">
-    <div id="logo"></div>
-    <div class="middle-box">
-      <h3>You don't have access to this.</h3>
+      <!-- Button -->
+      <button class="btn btn-square btn-wide mt-9 gap-2" (click)="goBack()">
+        <ng-icon name="tabler-arrow-back-up" size="1.5rem"></ng-icon>
+        Go back
+      </button>
+
     </div>
   </div>
-
-  <div id="go_back">
-    <form id="back_form" (click)="goBack()">
-      <div class="icon arrow_back"></div>
-      <input name="goBack" id="goBack" type="submit" class="button" value="back">
-    </form>
-  </div>
-
 </div>

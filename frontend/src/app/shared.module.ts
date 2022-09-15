@@ -88,6 +88,7 @@ import {
 } from "@ng-icons/jam-icons";
 
 import {
+  TablerArrowBackUp,
   TablerBooks,
   TablerClipboardList,
   TablerColorSwatch,
@@ -220,6 +221,7 @@ import {
       JamFacebook,
       JamLinkedin,
 
+      TablerArrowBackUp,
       TablerBooks,
       TablerClipboardList,
       TablerColorSwatch,
