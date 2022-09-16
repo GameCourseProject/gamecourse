@@ -1,0 +1,6 @@
+<div id="{{type}}-alert" class="hidden alert alert-{{type}} w-11/12 sm:w-96 mb-2 shadow-lg cursor-pointer" (click)="hide()">
+  <div>
+    <ng-icon [name]="getIcon()" size="1.3rem" class="text-{{type}}-content"></ng-icon>
+    <span class="alert-msg">{{msg}}</span>
+  </div>
+</div>

@@ -45,6 +45,9 @@ import { TableComponent } from "./_components/tables/table/table.component";
 import { TableData } from "./_components/tables/table-data/table-data.component";
 import { PaginationComponent } from "./_components/tables/pagination/pagination.component";
 
+// Components: alerts
+import { AlertComponent } from './_components/alerts/alert/alert.component';
+
 // Components: spinners
 import { SpinnerComponent } from './_components/spinners/spinner/spinner.component';
 
@@ -70,6 +73,8 @@ import { NgApexchartsModule } from "ng-apexcharts";
 
 // Icons
 import {
+  FeatherAlertTriangle,
+  FeatherCheckCircle,
   FeatherHome,
   FeatherInfo,
   FeatherLayout,
@@ -80,7 +85,8 @@ import {
   FeatherSun,
   FeatherUser,
   FeatherUsers,
-  FeatherX
+  FeatherX,
+  FeatherXCircle
 } from "@ng-icons/feather-icons";
 
 import {
@@ -139,6 +145,8 @@ import {
     TableData,
     PaginationComponent,
 
+    AlertComponent,
+
     SpinnerComponent,
 
     BBAnyComponent,
@@ -190,6 +198,8 @@ import {
     TableData,
     PaginationComponent,
 
+    AlertComponent,
+
     SpinnerComponent,
 
     BBAnyComponent,
@@ -213,6 +223,8 @@ import {
     FormsModule,
 
     NgIconsModule.withIcons({
+      FeatherAlertTriangle,
+      FeatherCheckCircle,
       FeatherHome,
       FeatherInfo,
       FeatherLayout,
@@ -224,6 +236,7 @@ import {
       FeatherUser,
       FeatherUsers,
       FeatherX,
+      FeatherXCircle,
 
       JamGoogle,
       JamFacebook,

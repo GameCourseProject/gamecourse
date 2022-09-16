@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import {throwError} from "rxjs";
-import {HttpErrorResponse} from "@angular/common/http";
+import { HttpErrorResponse } from "@angular/common/http";
+import { throwError } from "rxjs";
+
+import { AlertService, AlertType } from "./alert.service";
 
 @Injectable({
   providedIn: 'root'
@@ -47,6 +49,7 @@ export class ErrorService {
       this.error.message = error;
       this.error.stack = null;
       this.error.full = error;
+      AlertService.showAlert(AlertType.ERROR, this.error.message, 12000);
     }
 
     throwError(error);

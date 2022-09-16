@@ -10,8 +10,15 @@
   </div>
 </ng-container>
 
-<!-- Error Modal
-================================================== -->
+<!-- Alerts -->
+<div class="fixed top-3 right-auto sm:right-3 h-auto w-full sm:w-96 z-[60] flex flex-col items-center sm:block">
+  <app-alert [type]="AlertType.INFO"></app-alert>
+  <app-alert [type]="AlertType.SUCCESS"></app-alert>
+  <app-alert [type]="AlertType.WARNING"></app-alert>
+  <app-alert [type]="AlertType.ERROR"></app-alert>
+</div>
+
+<!-- Error Modal -->
 <app-error-modal
   [isModalOpen]="hasError()"
   [error]="getError()"

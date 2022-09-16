@@ -4,6 +4,8 @@ import { NavigationCancel, NavigationEnd, NavigationStart, Router } from "@angul
 import { ErrorService } from "./_services/error.service";
 import { ThemingService } from "./_services/theming/theming.service";
 
+import { AlertType } from "./_services/alert.service";
+
 import '@extensions/array.extensions';
 import '@extensions/number.extensions';
 import '@extensions/string.extensions';
@@ -32,6 +34,10 @@ export class AppComponent {
     // Apply theming
     const theme = themeService.getTheme();
     themeService.apply(theme);
+  }
+
+  get AlertType(): typeof AlertType {
+    return AlertType;
   }
 
 
