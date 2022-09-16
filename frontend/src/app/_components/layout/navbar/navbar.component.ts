@@ -1,16 +1,17 @@
-import {Component, OnInit} from '@angular/core';
-import {NavigationEnd, PRIMARY_OUTLET, Router} from "@angular/router";
-import {DomSanitizer} from "@angular/platform-browser";
+import { Component, OnInit } from '@angular/core';
+import { NavigationEnd, PRIMARY_OUTLET, Router } from "@angular/router";
+import { DomSanitizer } from "@angular/platform-browser";
+import { environment } from "../../../../environments/environment";
+import { of } from "rxjs";
 
-import {ApiHttpService} from "../../../_services/api/api-http.service";
-import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
-import {UpdateService, UpdateType} from "../../../_services/update.service";
+import { ApiHttpService } from "../../../_services/api/api-http.service";
+import { ApiEndpointsService } from "../../../_services/api/api-endpoints.service";
+import { UpdateService, UpdateType } from "../../../_services/update.service";
+import { SidebarService } from "../../../_services/sidebar.service";
 
-import {User} from "../../../_domain/users/user";
-import {Course} from 'src/app/_domain/courses/course';
-import {ResourceManager} from "../../../_utils/resources/resource-manager";
-import {environment} from "../../../../environments/environment";
-import {of} from "rxjs";
+import { User } from "../../../_domain/users/user";
+import { Course } from 'src/app/_domain/courses/course';
+import { ResourceManager } from "../../../_utils/resources/resource-manager";
 
 @Component({
   selector: 'app-navbar',
@@ -32,7 +33,8 @@ export class NavbarComponent implements OnInit {
     private api: ApiHttpService,
     public router: Router,
     private sanitizer: DomSanitizer,
-    private updateManager: UpdateService
+    private updateManager: UpdateService,
+    public sidebar: SidebarService
   ) {
     this.photo = new ResourceManager(sanitizer);
   }
@@ -112,11 +114,6 @@ export class NavbarComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
-
-  toggleSidebar() {
-    const sidebar = document.getElementsByTagName('aside')[0];
-    sidebar.classList.toggle('-translate-x-full');
-  }
 
   getCourseIDFromURL(): number {
     const urlParts = this.router.url.substr(1).split('/');

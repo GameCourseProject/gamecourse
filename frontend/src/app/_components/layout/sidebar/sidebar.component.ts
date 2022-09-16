@@ -1,10 +1,13 @@
-import {Component, OnInit} from '@angular/core';
-import {Course} from "../../../_domain/courses/course";
-import {Page} from "../../../_domain/pages & templates/page";
-import {NavigationEnd, Router} from "@angular/router";
-import {UpdateService, UpdateType} from "../../../_services/update.service";
-import {User} from "../../../_domain/users/user";
-import {ApiHttpService} from "../../../_services/api/api-http.service";
+import { Component, OnInit } from '@angular/core';
+import { NavigationEnd, Router } from "@angular/router";
+
+import { ApiHttpService } from "../../../_services/api/api-http.service";
+import { UpdateService, UpdateType } from "../../../_services/update.service";
+import { SidebarService } from "../../../_services/sidebar.service";
+
+import { User } from "../../../_domain/users/user";
+import { Course } from "../../../_domain/courses/course";
+import { Page } from "../../../_domain/pages & templates/page";
 
 @Component({
   selector: 'app-sidebar',
@@ -28,7 +31,8 @@ export class SidebarComponent implements OnInit {
   constructor(
     private api: ApiHttpService,
     private router: Router,
-    private updateManager: UpdateService
+    private updateManager: UpdateService,
+    public sidebar: SidebarService
   ) { }
 
   async ngOnInit(): Promise<void> {

@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
-import {Router} from "@angular/router";
+import { Router } from "@angular/router";
+
+import { SidebarService } from "../../_services/sidebar.service";
 
 @Component({
   selector: 'app-restricted',
@@ -7,7 +9,10 @@ import {Router} from "@angular/router";
 })
 export class RestrictedComponent {
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    public sidebar: SidebarService
+  ) { }
 
   isInsideCourse(): boolean {
     const urlParts = this.router.url.substr(1).split('/');

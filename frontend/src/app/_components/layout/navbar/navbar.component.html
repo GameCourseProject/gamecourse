@@ -7,7 +7,7 @@
     <!-- Hamburger Menu -->
     <label class="btn btn-ghost btn-circle swap swap-rotate text-primary-content lg:hidden">
       <!-- this hidden checkbox controls the state -->
-      <input type="checkbox" (click)="toggleSidebar()"/>
+      <input id="sidebar-toggler" type="checkbox" (click)="sidebar.toggle()"/>
 
       <!-- hamburger icon -->
       <ng-icon name="feather-menu" size="1.5rem" color="fillCurrent" class="swap-off"></ng-icon>
