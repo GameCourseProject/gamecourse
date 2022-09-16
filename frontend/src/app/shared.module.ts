@@ -85,7 +85,8 @@ import {
 import {
   JamGoogle,
   JamFacebook,
-  JamLinkedin
+  JamLinkedin,
+  JamStopSign
 } from "@ng-icons/jam-icons";
 
 import {
@@ -223,6 +224,7 @@ import {
       JamGoogle,
       JamFacebook,
       JamLinkedin,
+      JamStopSign,
 
       TablerArrowBackUp,
       TablerBooks,

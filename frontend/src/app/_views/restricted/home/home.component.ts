@@ -11,7 +11,7 @@ export class HomeComponent implements OnInit {
 
   loading = true;
 
-  activeCourses: Course[] = [];
+  activeCourses: Course[];
 
   constructor(
     private api: ApiHttpService
