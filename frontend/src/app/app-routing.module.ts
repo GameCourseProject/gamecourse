@@ -7,6 +7,7 @@ import { RedirectIfSetupDoneGuard } from "./_guards/redirect-if-setup-done.guard
 
 import { NoAccessComponent } from "./_components/misc/no-access/no-access.component";
 import { PageNotFoundComponent } from "./_components/misc/page-not-found/page-not-found.component";
+import { ComingSoonComponent } from "./_components/misc/coming-soon/coming-soon.component";
 
 const routes: Routes = [
   {
@@ -26,6 +27,7 @@ const routes: Routes = [
   },
   { path: '404', component: PageNotFoundComponent},
   { path: 'no-access', component: NoAccessComponent},
+  { path: 'coming-soon', component: ComingSoonComponent},
   { path: '**', redirectTo: '404', pathMatch: 'full' }
 ];
 

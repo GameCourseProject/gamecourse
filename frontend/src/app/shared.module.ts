@@ -60,6 +60,7 @@ import { BBChartComponent } from "./_components/building-blocks/chart/chart.comp
 // Components: misc
 import { PageNotFoundComponent } from './_components/misc/page-not-found/page-not-found.component';
 import { NoAccessComponent } from './_components/misc/no-access/no-access.component';
+import { ComingSoonComponent } from './_components/misc/coming-soon/coming-soon.component';
 import { AutoGameToastComponent } from './_components/misc/autogame-toast/auto-game-toast.component';
 
 // Libraries
@@ -91,6 +92,7 @@ import {
 
 import {
   TablerArrowBackUp,
+  TablerBarrierBlock,
   TablerBooks,
   TablerClipboardList,
   TablerColorSwatch,
@@ -149,6 +151,7 @@ import {
 
     PageNotFoundComponent,
     NoAccessComponent,
+    ComingSoonComponent,
     AutoGameToastComponent
   ],
   exports: [
@@ -199,6 +202,7 @@ import {
 
     PageNotFoundComponent,
     NoAccessComponent,
+    ComingSoonComponent,
     AutoGameToastComponent,
 
     NgIconsModule
@@ -227,6 +231,7 @@ import {
       JamStopSign,
 
       TablerArrowBackUp,
+      TablerBarrierBlock,
       TablerBooks,
       TablerClipboardList,
       TablerColorSwatch,
