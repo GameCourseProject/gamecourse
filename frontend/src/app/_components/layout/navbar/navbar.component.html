@@ -1,9 +1,11 @@
-<nav class="navbar fixed w-full flex justify-between bg-primary h-20 z-40 pl-2 pr-3" [ngStyle]="{'background-color': course?.color ? course.color : ''}">
+<nav class="navbar fixed w-full flex justify-between bg-primary h-20 z-40 pl-2 pr-3"
+     [ngStyle]="{'background-color': course?.color ? course.color : ''}">
+
   <!-- Left -->
   <div class="flex justify-start gap-2 lg:ml-72">
 
     <!-- Hamburger Menu -->
-    <label class="btn btn-ghost btn-circle swap swap-rotate text-white lg:hidden">
+    <label class="btn btn-ghost btn-circle swap swap-rotate text-primary-content lg:hidden">
       <!-- this hidden checkbox controls the state -->
       <input type="checkbox" (click)="toggleSidebar()"/>
 
@@ -12,8 +14,8 @@
 
       <!-- close icon -->
       <ng-icon name="feather-x" size="1.5rem" color="fillCurrent" class="swap-on"></ng-icon>
-
     </label>
+
   </div>
 
   <div class="flex justify-between w-full">
@@ -21,18 +23,18 @@
     <div>
       <ng-container *ngIf="course">
         <!-- Breadcrumbs -->
-        <div class="text-sm text-white text-opacity-50 breadcrumbs pt-0 hidden lg:block">
+        <div class="text-sm text-primary-content text-opacity-50 breadcrumbs pt-0 hidden lg:block">
           <ul>
             <li *ngFor="let part of getURLParts()">{{part.capitalize()}}</li>
           </ul>
         </div>
 
         <!-- Course Name -->
-        <h6 class="mb-0 font-bold text-white hidden lg:block">{{course.name}}</h6>
+        <h6 class="mb-0 font-bold text-primary-content hidden lg:block">{{course.name}}</h6>
       </ng-container>
 
       <!-- Course Skeleton -->
-      <ng-container *ngIf="!course && getURLParts(true).length >= 2">
+      <ng-container *ngIf="!course && isInCourse()">
         <div class="hidden lg:block w-40 h-4 bg-indigo-300 opacity-40 rounded-md mt-6 animate-pulse"></div>
       </ng-container>
     </div>
@@ -41,12 +43,12 @@
     <div class="flex justify-end items-center gap-1.5">
 
       <!-- Home -->
-      <div class="btn btn-ghost btn-circle btn-accent" [routerLink]="'/'">
+      <div class="btn btn-ghost btn-circle text-primary-content" [routerLink]="'/'">
         <ng-icon name="feather-home" size="1.7rem" color="fillCurrent"></ng-icon>
       </div>
 
       <!-- Theme Toggler -->
-      <ng-container *ngIf="!router.url.includes('courses/')">
+      <ng-container *ngIf="!isInCourse()">
         <app-theme-toggler></app-theme-toggler>
       </ng-container>
 
@@ -84,7 +86,7 @@
 </nav>
 
 <!-- Course Name on mobile -->
-<div *ngIf="getURLParts(true).length >= 2" class="lg:hidden fixed top-20 w-full flex flex-col justify-center items-center bg-primary h-10 z-40 pl-5 pr-3"
+<div *ngIf="isInCourse" class="lg:hidden fixed top-20 w-full flex flex-col justify-center items-center bg-primary h-10 z-40 pl-5 pr-3"
      [ngStyle]="{'background-color': course?.color ? course.color : ''}">
 
   <!-- Course Name -->

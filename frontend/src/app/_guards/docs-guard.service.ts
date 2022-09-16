@@ -4,14 +4,13 @@ import {
   Router, RouterStateSnapshot,
   UrlTree
 } from '@angular/router';
-import {Observable, throwError} from 'rxjs';
+import {Observable} from 'rxjs';
 import {ApiHttpService} from "../_services/api/api-http.service";
-import {catchError, map} from "rxjs/operators";
 
 @Injectable({
   providedIn: 'root'
 })
-export class TeacherGuard implements CanActivate {
+export class DocsGuard implements CanActivate {
 
   constructor(
     private api: ApiHttpService,
@@ -25,14 +24,11 @@ export class TeacherGuard implements CanActivate {
     return this.check();
   }
 
-  check() {
-    return this.api.getLoggedUser().pipe(
-      map(user => {
-        const isATeacher = this.api.isATeacher(user.id).toPromise();
-        if (isATeacher) return true;
-        else return this.router.parseUrl('/no-access');
-      } ),
-      catchError(error => throwError(error))
-    );
+  async check() {
+    const user = await this.api.getLoggedUser().toPromise();
+    const isATeacher = await this.api.isATeacher(user.id).toPromise();
+
+    if (user.isAdmin || isATeacher) return true;
+    else return this.router.parseUrl('/no-access');
   }
 }

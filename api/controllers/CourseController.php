@@ -417,6 +417,30 @@ class CourseController
     }
 
     /**
+     * Checks whether a user is a user of a course.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function isCourseUser()
+    {
+        API::requireValues("userId", "courseId");
+
+        $userId = API::getValue("userId", "int");
+        $user = API::verifyUserExists($userId);
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        // Only course admins can access other users' information
+        if (Core::getLoggedUser()->getId() != $userId)
+            API::requireCourseAdminPermission($course);
+
+        $courseUser = $course->getCourseUserById($userId);
+        API::response(!!$courseUser);
+    }
+
+    /**
      * Checks whether a user is a teacher of a course.
      *
      * @return void

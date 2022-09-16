@@ -1,9 +1,12 @@
-import {NgModule} from '@angular/core';
-import {RouterModule, Routes} from '@angular/router';
-import {CoursesComponent} from "./courses/courses.component";
-import {LoadingState, Module} from "../../../_domain/modules/module";
-import {DomSanitizer} from "@angular/platform-browser";
-import {CourseUser} from "../../../_domain/users/course-user";
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { DomSanitizer } from "@angular/platform-browser";
+
+import { CourseUserGuard } from "../../../_guards/course-user.guard";
+
+import { CoursesComponent } from "./courses/courses.component";
+import { LoadingState, Module } from "../../../_domain/modules/module";
+import { CourseUser } from "../../../_domain/users/course-user";
 
 const routes: Routes = [
   {
@@ -27,11 +30,13 @@ const routes: Routes = [
 
       // Return null so the router matches the next ':id' path
       return null;
-    }
+    },
+    canActivate: [CourseUserGuard]
   },
   {
     path: ':id',
     loadChildren: () => import('./course/course.module').then(mod => mod.CourseModule),
+    canActivate: [CourseUserGuard]
   }
 ];
 

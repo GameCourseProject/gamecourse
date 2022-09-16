@@ -129,6 +129,11 @@ export class NavbarComponent implements OnInit {
     return segments.map(segment => segment.path).slice(full ? 0 : 2);
   }
 
+  isInCourse(): boolean {
+    const parts = this.getURLParts(true);
+    return parts.includes('courses') && parts.length >= 2;
+  }
+
   async isVirtualCurrencyEnabled(): Promise<boolean> {
     return of(false).toPromise(); // FIXME
     // const courseID = this.getCourseIDFromURL();

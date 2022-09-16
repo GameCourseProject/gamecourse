@@ -10,29 +10,27 @@
       </a>
     </div>
 
-    <div class="divider m-0"></div>
-
     <!-- Navigation -->
     <ul *ngIf="navigation?.length > 0" class="menu bg-base-100 p-2 rounded-box overflow-y-auto">
       <ng-container *ngFor="let nav of navigation; let i = index">
 
         <!-- Category -->
         <ng-container *ngIf="nav.category && nav.children?.length > 0">
-          <div *ngIf="i > 0" class="divider before:bg-base-200 after:bg-base-200 mt-0"></div>
+          <div *ngIf="showDivider('top', i, navigation)" class="divider rounded before:bg-base-200 after:bg-base-200 mt-0"></div>
           <li class="menu-title uppercase"><span>{{nav.category}}</span></li>
         </ng-container>
 
         <!-- Nav. Item(s) -->
         <li *ngFor="let item of (nav.children ?? [nav])">
-          <a class="py-4 pl-5 hover:bg-primary hover:bg-opacity-10" [routerLink]="item.link" [routerLinkActive]="'bg-primary bg-opacity-30 hover:bg-primary hover:bg-opacity-30'">
+          <a class="py-3 pl-5 hover:bg-primary hover:bg-opacity-10" [routerLink]="item.link" [routerLinkActive]="'bg-primary bg-opacity-30 hover:bg-primary hover:bg-opacity-30'">
             <ng-icon [name]="item.icon" size="1.5rem" color="fillCurrent"></ng-icon>
             {{item.name}}
           </a>
         </li>
 
         <!-- Divider -->
-        <ng-container *ngIf="nav.category && nav.children?.length > 0 && i < navigation.length - 1 && !navigation[i+1].category">
-          <div class="divider before:bg-base-200 after:bg-base-200 m-0"></div>
+        <ng-container *ngIf="showDivider('bottom', i, navigation)">
+          <div class="divider rounded before:bg-base-200 after:bg-base-200 m-0"></div>
         </ng-container>
 
       </ng-container>
@@ -40,7 +38,7 @@
   </div>
 
   <!-- Docs -->
-  <div *ngIf="user?.isAdmin || isATeacher" class="relative flex flex-col min-w-0 break-words bg-transparent border-0 shadow-none rounded-2xl bg-clip-border mx-3">
+  <div *ngIf="isCourseAdmin" class="relative flex flex-col min-w-0 break-words bg-transparent border-0 shadow-none rounded-2xl bg-clip-border mx-3">
     <img class="w-1/2 mx-auto" src="https://demos.creative-tim.com/argon-dashboard-tailwind/assets/img/illustrations/icon-documentation.svg" alt="docs illustration">
     <div class="flex-auto w-full p-4 pt-0 text-center">
       <div class="transition-all duration-200 ease-nav-brand prose">

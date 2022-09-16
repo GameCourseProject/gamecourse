@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { CourseRoutingModule } from './course-routing.module';
 import { MainComponent } from './main/main.component';
 import { UsersComponent } from './users/users.component';
-import {SettingsComponent} from "./settings/settings/settings.component";
 import {SharedModule} from "../../../../shared.module";
 import {FormsModule} from "@angular/forms";
 import {GlobalComponent} from "./settings/global/global.component";
@@ -28,7 +27,6 @@ import { ProfilingComponent } from './settings/modules/config/personalized-confi
   declarations: [
     MainComponent,
     UsersComponent,
-    SettingsComponent,
     SidebarComponent,
     GlobalComponent,
     RolesComponent,
