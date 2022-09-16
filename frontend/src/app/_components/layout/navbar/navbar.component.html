@@ -1,4 +1,4 @@
-<nav class="navbar fixed w-full flex justify-between bg-primary h-20 z-40 pl-2 pr-3 shadow-lg"
+<nav class="navbar sticky w-full flex justify-between bg-primary h-20 z-40 pl-2 pr-3 shadow-lg"
      [ngStyle]="{'background-color': course?.color ? course.color : ''}">
 
   <!-- Left -->
@@ -86,7 +86,7 @@
 </nav>
 
 <!-- Course Name on mobile -->
-<div *ngIf="isInCourse()" class="lg:hidden fixed top-20 w-full flex flex-col justify-center items-center bg-primary h-10 z-40 pl-5 pr-3"
+<div *ngIf="isInCourse()" class="lg:hidden sticky top-20 w-full flex flex-col justify-center items-center bg-primary h-10 z-40 pl-5 pr-3"
      [ngStyle]="{'background-color': course?.color ? course.color : ''}">
 
   <!-- Course Name -->

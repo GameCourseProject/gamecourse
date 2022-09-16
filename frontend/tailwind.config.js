@@ -3,6 +3,7 @@ const lightThemeColors = require('daisyui/src/colors/themes')['[data-theme=light
 const darkThemeColors = require('daisyui/src/colors/themes')['[data-theme=dark]'];
 
 module.exports = {
+  mode: 'jit',
   content: [
     './src/**/*.{html,ts}',
   ],
@@ -10,6 +11,7 @@ module.exports = {
     require('@tailwindcss/typography'),
     // require('@tailwindcss/forms'),
     require('@tailwindcss/line-clamp'),
+    require('tailwind-scrollbar')({ nocompatible: true }),
     require('daisyui')
   ],
   theme: {

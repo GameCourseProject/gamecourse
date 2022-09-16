@@ -1,13 +1,16 @@
 <app-navbar></app-navbar>
 <app-sidebar></app-sidebar>
 
-<main class="relative h-screen transition-all duration-200 ease-in-out pl-5 lg:pl-[22.75rem] pr-5 lg:pr-15 lg:pt-36 pb-8
-            xl:pl-[23.75] xl:pr-20 2xl:pl-[33.75] 2xl:pr-40 bg-base-200 overflow-y-auto" [ngClass]="isInsideCourse() ? 'pt-36' : 'pt-28'">
+<main class="relative transition-all duration-200 ease-in-out px-5 sm:px-8 md:px-12 lg:pl-[22rem] xl:pl-96 2xl:pl-[34rem]
+      lg:pr-16 xl:pr-24 2xl:pr-60 pt-16 pb-8 bg-base-200 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded
+      scrollbar-thumb-primary hover:scrollbar-thumb-primary-focus scrollbar-track-base-200"
+      [ngClass]="isInsideCourse() ? 'h-[calc(100vh-7.5rem)] lg:h-[calc(100vh-5rem)]' : 'h-[calc(100vh-5rem)]'">
+
   <router-outlet></router-outlet>
 
   <!-- Overlay -->
-  <div id="sidebar-overlay" class="hidden fixed top-0 left-0 h-screen w-screen overflow-hidden bg-black bg-opacity-40
-                                  transition-all z-30" (click)="sidebar.close()"></div>
+  <div id="sidebar-overlay" (click)="sidebar.close()"
+       class="hidden fixed top-0 left-0 h-screen w-screen overflow-hidden bg-black bg-opacity-40 transition-all z-30"></div>
 </main>
 
 <app-autogame-toast *ngIf="isInsideCourse()"></app-autogame-toast>
