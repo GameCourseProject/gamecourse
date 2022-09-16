@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { AdminGuard } from "../../_guards/admin.guard";
-import { TeacherGuard } from "../../_guards/teacher.guard";
+import { DocsGuard } from "../../_guards/docs-guard.service";
 
 import { RestrictedComponent } from "./restricted.component";
 import { AboutComponent } from "./about/about.component";
@@ -41,7 +41,7 @@ const routes: Routes = [
       {
         path: 'docs',
         loadChildren: () => import('./docs/docs.module').then(mod => mod.DocsModule),
-        canActivate: [TeacherGuard]
+        canActivate: [DocsGuard]
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]

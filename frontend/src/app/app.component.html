@@ -2,6 +2,14 @@
   <router-outlet></router-outlet>
 </ng-container>
 
+<ng-container *ngIf="loading">
+  <div class="relative overflow-hidden h-screen bg-base-100">
+    <div class="h-screen flex justify-center items-center">
+      <app-spinner [size]="12"></app-spinner>
+    </div>
+  </div>
+</ng-container>
+
 <!-- Error Modal
 ================================================== -->
 <app-error-modal

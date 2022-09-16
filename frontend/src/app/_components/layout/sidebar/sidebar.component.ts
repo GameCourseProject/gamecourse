@@ -20,7 +20,7 @@ export class SidebarComponent implements OnInit {
   isDocs: boolean;
 
   user: User;
-  isATeacher: boolean;
+  isCourseAdmin: boolean;
 
   course: Course;
   activePages: Page[];
@@ -61,9 +61,7 @@ export class SidebarComponent implements OnInit {
 
   async getLoggedUser(): Promise<void> {
     this.user = await this.api.getLoggedUser().toPromise();
-    // this.user.isAdmin = false; // FIXME: remove
-    this.isATeacher = await this.api.isATeacher(this.user.id).toPromise();
-    // this.isATeacher = false; // FIXME: remove
+    this.isCourseAdmin = await this.api.isATeacher(this.user.id).toPromise() || this.user.isAdmin;
   }
 
 
@@ -166,7 +164,7 @@ export class SidebarComponent implements OnInit {
       const courseID = this.getCourseIDFromURL();
 
       this.course = await this.api.getCourseById(courseID).toPromise();
-      this.activePages = []; // FIXME
+      this.activePages = []; // FIXME: get pages for user
       const isAdminOrTeacher = this.user.isAdmin || await this.api.isTeacher(courseID, this.user.id).toPromise();
 
       this.courseNavigation = buildCourseNavigation(this.course, this.activePages, isAdminOrTeacher);
@@ -176,39 +174,45 @@ export class SidebarComponent implements OnInit {
     function buildCourseNavigation(course: Course, activePages: Page[], isAdminOrTeacher: boolean): Navigation[] {
       const path = '/courses/' + course.id + '/';
 
-      const pages: Navigation[] = [
-        {
-            link: path + 'main',
-            name: 'Main Page',
-            icon: 'feather-home'
-        },
-        {
-          category: 'Pages',
-          children: []
-        }
-      ];
+      let navigation: Navigation[] = [];
 
-      pages[1].children = activePages.map(page => {
+      if (isAdminOrTeacher) {
+        navigation.push(
+          {
+            category: 'Course Pages',
+            children: []
+          }
+        );
+      }
+
+      const pages = activePages.map(page => {
         return {
           link: path + 'pages/' + page.id,
           name: page.name
         };
       });
+      if (isAdminOrTeacher) navigation[0].children = pages;
+      else navigation.concat(pages);
 
       if (isAdminOrTeacher) {
         const fixed: Navigation[] = [
           {
-            link: path + 'users',
-            name: 'Course Users',
-            icon: 'feather-users'
+            category: 'Users',
+            children: [
+              {
+                link: path + 'settings/users',
+                name: 'Course Users',
+                icon: 'feather-users'
+              },
+              {
+                link: path + 'settings/roles',
+                name: 'Roles',
+                icon: 'tabler-id-badge-2'
+              }
+            ]
           },
           {
-            link: path + 'roles',
-            name: 'Roles',
-            icon: 'tabler-id-badge-2'
-          },
-          {
-            category: 'Settings',
+            category: 'Course Operation',
             children: [
               {
                 link: path + 'settings/autogame',
@@ -216,19 +220,24 @@ export class SidebarComponent implements OnInit {
                 icon: 'tabler-prompt'
               },
               {
+                link: path + 'settings/rule-system',
+                name: 'Rule System',
+                icon: 'tabler-clipboard-list'
+              },
+              {
                 link: path + 'settings/modules',
                 name: 'Modules',
                 icon: 'tabler-plug'
-              },
+              }
+            ]
+          },
+          {
+            category: 'User Interface',
+            children: [
               {
                 link: path + 'settings/pages',
                 name: 'Pages',
                 icon: 'feather-layout'
-              },
-              {
-                link: path + 'settings/rules',
-                name: 'Rule System',
-                icon: 'tabler-clipboard-list'
               },
               {
                 link: path + 'settings/themes',
@@ -238,15 +247,15 @@ export class SidebarComponent implements OnInit {
             ]
           },
           {
-            link: path + 'info',
-            name: 'About Course',
+            link: path + 'overview',
+            name: 'Overview',
             icon: 'feather-info'
           }
         ];
-        return pages.concat(fixed);
+        navigation = navigation.concat(fixed);
       }
 
-      return pages;
+      return navigation;
     }
   }
 
@@ -259,6 +268,27 @@ export class SidebarComponent implements OnInit {
     const urlParts = this.router.url.substr(1).split('/');
     if (urlParts.includes('courses') && urlParts.length >= 2) return parseInt(urlParts[1]);
     else return null;
+  }
+
+  showDivider(position: 'top' | 'bottom', index: number, navigation: Navigation[]): boolean {
+    const item = navigation[index];
+
+    if (position === 'top') {
+      if (index === 0) return false;
+      for (let j = 0; j < index; j++) {
+        if (navigation[j].children && navigation[j].children.length === 0)
+          return false;
+      }
+      return item.category && item.children?.length > 0;
+
+    } else {
+      if (index === navigation.length - 1) return false;
+      for (let j = index + 1; j < navigation.length; j++) {
+        if (navigation[j].children && navigation[j].children.length === 0)
+          return false;
+      }
+      return item.category && item.children?.length > 0;
+    }
   }
 }
 

@@ -45,8 +45,8 @@ import { TableComponent } from "./_components/tables/table/table.component";
 import { TableData } from "./_components/tables/table-data/table-data.component";
 import { PaginationComponent } from "./_components/tables/pagination/pagination.component";
 
-// Components: toasts
-import { AutoGameToastComponent } from './_components/toasts/autogame-toast/auto-game-toast.component';
+// Components: spinners
+import { SpinnerComponent } from './_components/spinners/spinner/spinner.component';
 
 // Components: building blocks
 import { BBAnyComponent } from "./_components/building-blocks/any/any.component";
@@ -60,6 +60,7 @@ import { BBChartComponent } from "./_components/building-blocks/chart/chart.comp
 // Components: misc
 import { PageNotFoundComponent } from './_components/misc/page-not-found/page-not-found.component';
 import { NoAccessComponent } from './_components/misc/no-access/no-access.component';
+import { AutoGameToastComponent } from './_components/misc/autogame-toast/auto-game-toast.component';
 
 // Libraries
 import { NgIconsModule } from "@ng-icons/core";
@@ -135,7 +136,7 @@ import {
     TableData,
     PaginationComponent,
 
-    AutoGameToastComponent,
+    SpinnerComponent,
 
     BBAnyComponent,
     BBBlockComponent,
@@ -146,7 +147,8 @@ import {
     BBChartComponent,
 
     PageNotFoundComponent,
-    NoAccessComponent
+    NoAccessComponent,
+    AutoGameToastComponent
   ],
   exports: [
     AsPipe,
@@ -184,7 +186,7 @@ import {
     TableData,
     PaginationComponent,
 
-    AutoGameToastComponent,
+    SpinnerComponent,
 
     BBAnyComponent,
     BBBlockComponent,
@@ -196,6 +198,7 @@ import {
 
     PageNotFoundComponent,
     NoAccessComponent,
+    AutoGameToastComponent
 
     NgIconsModule
   ],
