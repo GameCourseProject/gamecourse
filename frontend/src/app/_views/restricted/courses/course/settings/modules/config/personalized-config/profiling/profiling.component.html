@@ -65,12 +65,12 @@
       <!-- Committed results -->
       <p><b>Profiling Results:</b></p>
       <div style="margin-top: 30px;">
-        <app-datatable
-          [id]="'cluster-table'"
-          [headers]="table.headers"
-          [data]="table.data"
-          [loading]="table.loading">
-        </app-datatable>
+<!--        <app-datatable-->
+<!--          [id]="'cluster-table'"-->
+<!--          [headers]="table.headers"-->
+<!--          [data]="table.data"-->
+<!--          [loading]="table.loading">-->
+<!--        </app-datatable>-->
       </div>
 
       <!-- Editable results -->
@@ -118,15 +118,15 @@
 
 <!-- Predict Nr. Clusters Modal -->
 <ng-container *ngIf="isPredictModalOpen">
-  <app-modal
-    [isModalOpen]="isPredictModalOpen"
-    [id]="'predictor-modal'"
-    [templateRef]="predictModal"
-    (closeBtnClicked)="isPredictModalOpen = false"
-    [actionInProgress]="loading"
-    [innerClickEvents]="false"
-    [classList]="'verification'">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isPredictModalOpen"-->
+<!--    [id]="'predictor-modal'"-->
+<!--    [templateRef]="predictModal"-->
+<!--    (closeBtnClicked)="isPredictModalOpen = false"-->
+<!--    [actionInProgress]="loading"-->
+<!--    [innerClickEvents]="false"-->
+<!--    [classList]="'verification'">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #predictModal>
@@ -147,15 +147,15 @@
 
 <!-- Import Modal -->
 <ng-container *ngIf="isImportModalOpen">
-  <app-modal
-    [isModalOpen]="isImportModalOpen"
-    [id]="'import-item'"
-    [templateRef]="importModal"
-    (closeBtnClicked)="isImportModalOpen = false"
-    [actionInProgress]="loading"
-    [innerClickEvents]="false"
-    [classList]="'verification'">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isImportModalOpen"-->
+<!--    [id]="'import-item'"-->
+<!--    [templateRef]="importModal"-->
+<!--    (closeBtnClicked)="isImportModalOpen = false"-->
+<!--    [actionInProgress]="loading"-->
+<!--    [innerClickEvents]="false"-->
+<!--    [classList]="'verification'">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #importModal>

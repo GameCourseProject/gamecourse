@@ -60,26 +60,26 @@
 
   <div style="margin-top: 30px;">
     <ng-container *ngIf="tables.reports.showing">
-      <app-datatable
-        [id]="'progress-reports-table'"
-        [headers]="tables.reports.headers"
-        [data]="tables.reports.data"
-        [actions]="tables.reports.actions"
-        [loading]="tables.reports.loading"
-        (btnClicked)="doBtnAction('reports', $event.action, $event.row)">
-      </app-datatable>
+<!--      <app-datatable-->
+<!--        [id]="'progress-reports-table'"-->
+<!--        [headers]="tables.reports.headers"-->
+<!--        [data]="tables.reports.data"-->
+<!--        [actions]="tables.reports.actions"-->
+<!--        [loading]="tables.reports.loading"-->
+<!--        (btnClicked)="doBtnAction('reports', $event.action, $event.row)">-->
+<!--      </app-datatable>-->
     </ng-container>
 
     <ng-container *ngIf="tables.studentsReports.showing">
       <button style="margin-bottom: 20px" (click)="this.tables.reports.showing = true; this.tables.studentsReports.showing = false; this.buildReportsTable()">Go Back</button>
-      <app-datatable
-        [id]="'progress-reports-students-table'"
-        [headers]="tables.studentsReports.headers"
-        [data]="tables.studentsReports.data"
-        [actions]="tables.studentsReports.actions"
-        [loading]="tables.studentsReports.loading"
-        (btnClicked)="doBtnAction('studentReports', $event.action, $event.row)">
-      </app-datatable>
+<!--      <app-datatable-->
+<!--        [id]="'progress-reports-students-table'"-->
+<!--        [headers]="tables.studentsReports.headers"-->
+<!--        [data]="tables.studentsReports.data"-->
+<!--        [actions]="tables.studentsReports.actions"-->
+<!--        [loading]="tables.studentsReports.loading"-->
+<!--        (btnClicked)="doBtnAction('studentReports', $event.action, $event.row)">-->
+<!--      </app-datatable>-->
     </ng-container>
   </div>
 </div>
@@ -92,13 +92,13 @@
 
 <!-- Student Progress Report Modal -->
 <ng-container *ngIf="isStudentReportModalOpen">
-  <app-modal
-    [isModalOpen]="isStudentReportModalOpen"
-    [id]="'student-progress-report'"
-    [width]="'800px'"
-    [templateRef]="studentReport"
-    (closeBtnClicked)="isStudentReportModalOpen = false">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isStudentReportModalOpen"-->
+<!--    [id]="'student-progress-report'"-->
+<!--    [width]="'800px'"-->
+<!--    [templateRef]="studentReport"-->
+<!--    (closeBtnClicked)="isStudentReportModalOpen = false">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #studentReport>

@@ -40,22 +40,8 @@ export class AppComponent {
     return AlertType;
   }
 
-
-  /*** --------------------------------------------- ***/
-  /*** ------------------ Errors ------------------- ***/
-  /*** --------------------------------------------- ***/
-
-  hasError(): boolean {
-    return !!ErrorService.error.full;
-  }
-
-  getError(): {message: string, stack: string, full: string} {
-    return ErrorService.error;
-  }
-
-  closeError(): void {
-    if (ErrorService.callback) ErrorService.callback();
-    ErrorService.clear();
+  get ErrorService(): typeof ErrorService {
+    return ErrorService;
   }
 
 }

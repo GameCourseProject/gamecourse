@@ -101,13 +101,13 @@
 
 <!-- Edit Settings Modal -->
 <ng-container *ngIf="isEditSettingsModalOpen">
-  <app-modal
-    [isModalOpen]="isEditSettingsModalOpen"
-    [id]="'edit_part'"
-    [templateRef]="editSettingsModal"
-    (closeBtnClicked)="isEditSettingsModalOpen = false; hasModalOpen = false;"
-    [actionInProgress]="saving">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isEditSettingsModalOpen"-->
+<!--    [id]="'edit_part'"-->
+<!--    [templateRef]="editSettingsModal"-->
+<!--    (closeBtnClicked)="isEditSettingsModalOpen = false; hasModalOpen = false;"-->
+<!--    [actionInProgress]="saving">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #editSettingsModal>
@@ -433,13 +433,13 @@
 
 <!-- Preview Expression Modal -->
 <ng-container *ngIf="isPreviewExpressionModalOpen">
-  <app-modal
-    [isModalOpen]="isPreviewExpressionModalOpen"
-    [id]="'open-preview'"
-    [templateRef]="previewExpressionModal"
-    (closeBtnClicked)="isPreviewExpressionModalOpen = false"
-    [actionInProgress]="saving">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isPreviewExpressionModalOpen"-->
+<!--    [id]="'open-preview'"-->
+<!--    [templateRef]="previewExpressionModal"-->
+<!--    (closeBtnClicked)="isPreviewExpressionModalOpen = false"-->
+<!--    [actionInProgress]="saving">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #previewExpressionModal>
@@ -449,12 +449,12 @@
 
 <!-- Add Part Modal -->
 <ng-container *ngIf="isAddingPartModalOpen">
-  <app-modal
-    [isModalOpen]="isAddingPartModalOpen"
-    [id]="'add_part'"
-    [templateRef]="addPartModal"
-    (closeBtnClicked)="isAddingPartModalOpen = false; partToAdd = null">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isAddingPartModalOpen"-->
+<!--    [id]="'add_part'"-->
+<!--    [templateRef]="addPartModal"-->
+<!--    (closeBtnClicked)="isAddingPartModalOpen = false; partToAdd = null">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #addPartModal>
@@ -519,12 +519,12 @@
 
 <!-- Save View As Template Modal -->
 <ng-container *ngIf="isSavingPartAsTemplate">
-  <app-modal
-    [isModalOpen]="isSavingPartAsTemplate"
-    [id]="'save_as_template'"
-    [templateRef]="saveViewAsTemplateModal"
-    (closeBtnClicked)="isSavingPartAsTemplate = false; viewToSave = null; templateName = null">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isSavingPartAsTemplate"-->
+<!--    [id]="'save_as_template'"-->
+<!--    [templateRef]="saveViewAsTemplateModal"-->
+<!--    (closeBtnClicked)="isSavingPartAsTemplate = false; viewToSave = null; templateName = null">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #saveViewAsTemplateModal>
@@ -555,13 +555,13 @@
 
 
 <!-- Message Modal -->
-<app-modal
-  [isModalOpen]="isMessageModalOpen"
-  [id]="'message-api-box'"
-  [classList]="'verification'"
-  [templateRef]="messageModal"
-  (closeBtnClicked)="isMessageModalOpen = false">
-</app-modal>
+<!--<app-modal-->
+<!--  [isOpen]="isMessageModalOpen"-->
+<!--  [id]="'message-api-box'"-->
+<!--  [classList]="'verification'"-->
+<!--  [templateRef]="messageModal"-->
+<!--  (closeBtnClicked)="isMessageModalOpen = false">-->
+<!--</app-modal>-->
 
 <ng-template #messageModal>
   <div class="message_warning warning">{{messageText}}</div>
@@ -572,13 +572,13 @@
 
 
 <!-- Verification Modal -->
-<app-verification-modal
-  [isModalOpen]="isVerificationModalOpen"
-  [id]="'submit_delete_view'"
-  [text]="verificationText"
-  [positiveBtnText]="'Delete'"
-  (positiveBtnClicked)="deleteView(viewToEdit)"
-  (negativeBtnClicked)="verificationText = null; isVerificationModalOpen = false; hasModalOpen = false;"
-  (closeBtnClicked)="verificationText = null; isVerificationModalOpen = false; hasModalOpen = false;"
->
-</app-verification-modal>
+<!--<app-verification-modal-->
+<!--  [isModalOpen]="isVerificationModalOpen"-->
+<!--  [id]="'submit_delete_view'"-->
+<!--  [text]="verificationText"-->
+<!--  [positiveBtnText]="'Delete'"-->
+<!--  (positiveBtnClicked)="deleteView(viewToEdit)"-->
+<!--  (negativeBtnClicked)="verificationText = null; isVerificationModalOpen = false; hasModalOpen = false;"-->
+<!--  (closeBtnClicked)="verificationText = null; isVerificationModalOpen = false; hasModalOpen = false;"-->
+<!--&gt;-->
+<!--</app-verification-modal>-->

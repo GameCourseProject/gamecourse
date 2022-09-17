@@ -3,22 +3,56 @@
     @apply border-2;
   }
 
-  [data-theme="light"] .btn:not(.btn-outline),
-  [data-theme="dark"] .btn:not(.btn-outline) {
+  [data-theme="light"] .btn-outline:hover,
+  [data-theme="dark"] .btn-outline:hover {
+    @apply bg-neutral border-neutral;
+
+    &.btn-primary {
+      @apply bg-primary border-primary;
+    }
+
+    &.btn-secondary {
+      @apply bg-secondary border-secondary;
+    }
+
+    &.btn-accent {
+      @apply bg-accent border-accent;
+    }
+
+    &.btn-info {
+      @apply bg-info border-info;
+    }
+
+    &.btn-success {
+      @apply bg-success border-success;
+    }
+
+    &.btn-warning {
+      @apply bg-warning border-warning;
+    }
+
+    &.btn-error {
+      @apply bg-error border-error;
+    }
+  }
+}
+
+@layer components {
+  .btn:not(.btn-outline) {
     &.btn-info:hover {
-      @apply bg-info-focus
+      @apply bg-info-focus border-info-focus;
     }
 
     &.btn-success:hover {
-      @apply bg-success-focus
+      @apply bg-success-focus border-success-focus;
     }
 
     &.btn-warning:hover {
-      @apply bg-warning-focus
+      @apply bg-warning-focus border-warning-focus;
     }
 
     &.btn-error:hover {
-      @apply bg-error-focus
+      @apply bg-error-focus border-error-focus;
     }
   }
 }

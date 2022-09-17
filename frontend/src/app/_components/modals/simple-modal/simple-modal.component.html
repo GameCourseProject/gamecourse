@@ -1,0 +1,35 @@
+<app-modal
+  [id]="id"
+  [classList]="classList"
+  [templateRef]="simpleModal"
+
+  [size]="'sm'"
+  [static]="static"
+  [responsive]="responsive"
+
+  [header]="title"
+  [headerMarginBottom]="false"
+  [closeBtnText]="closeBtnText"
+  [closeBtnColor]="closeBtnColor"
+  [extraBtnText]="extraBtnText"
+  [extraBtnColor]="extraBtnColor"
+  [extraBtnOutline]="extraBtnOutline"
+  [submitBtnText]="submitBtnText"
+  [submitBtnColor]="submitBtnColor"
+  [submitBtnOutline]="submitBtnOutline"
+
+  [closeModal]="closeModal"
+  [loading]="loading"
+  [actionInProgress]="actionInProgress"
+
+  (onClose)="onClose.emit()"
+  (closeBtnClicked)="closeBtnClicked.emit()"
+  (submitBtnClicked)="submitBtnClicked.emit()"
+  (extraBtnClicked)="extraBtnClicked.emit()">
+</app-modal>
+
+<ng-template #simpleModal>
+  <div class="prose">
+    <p>{{text}}</p>
+  </div>
+</ng-template>

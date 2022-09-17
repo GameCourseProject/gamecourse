@@ -122,13 +122,13 @@
 
 <!-- New / Edit Page Modal -->
 <ng-container *ngIf="isPageModalOpen">
-  <app-modal
-    [isModalOpen]="isPageModalOpen"
-    [id]="mode === 'add' ? 'new-view' : 'edit-view'"
-    [templateRef]="newPageModal"
-    (closeBtnClicked)="clear(); isPageModalOpen = false;"
-    [actionInProgress]="saving">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isPageModalOpen"-->
+<!--    [id]="mode === 'add' ? 'new-view' : 'edit-view'"-->
+<!--    [templateRef]="newPageModal"-->
+<!--    (closeBtnClicked)="clear(); isPageModalOpen = false;"-->
+<!--    [actionInProgress]="saving">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #newPageModal>
@@ -169,13 +169,13 @@
 
 <!-- New / Edit Template Modal -->
 <ng-container *ngIf="isTemplateModalOpen">
-  <app-modal
-    [isModalOpen]="isTemplateModalOpen"
-    [id]="mode === 'add' ? 'new-view' : 'edit-view'"
-    [templateRef]="newTemplateModal"
-    (closeBtnClicked)="isTemplateModalOpen = false; clear()"
-    [actionInProgress]="saving">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isTemplateModalOpen"-->
+<!--    [id]="mode === 'add' ? 'new-view' : 'edit-view'"-->
+<!--    [templateRef]="newTemplateModal"-->
+<!--    (closeBtnClicked)="isTemplateModalOpen = false; clear()"-->
+<!--    [actionInProgress]="saving">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #newTemplateModal>
@@ -206,30 +206,30 @@
 
 <!-- Delete Verification Modal -->
 <ng-container *ngIf="isDeleteVerificationModalOpen">
-  <app-verification-modal
-    [isModalOpen]="isDeleteVerificationModalOpen"
-    [id]="'delete-view'"
-    [text]="'Are you sure you want to delete this ' + (pageSelected ? 'page' : 'template') + '?'"
-    [target]="(pageSelected ? 'Page' : 'Template') + ': ' + (pageSelected?.name || templateSelected?.name) + ' (id: ' + (pageSelected?.id || templateSelected?.id) + ')'"
-    [positiveBtnText]="'Delete'"
-    (positiveBtnClicked)="pageSelected ? deletePage() : deleteTemplate()"
-    (negativeBtnClicked)="clear(); isDeleteVerificationModalOpen = false"
-    (closeBtnClicked)="clear(); isDeleteVerificationModalOpen = false"
-    [actionInProgress]="saving">
-  </app-verification-modal>
+<!--  <app-verification-modal-->
+<!--    [isModalOpen]="isDeleteVerificationModalOpen"-->
+<!--    [id]="'delete-view'"-->
+<!--    [text]="'Are you sure you want to delete this ' + (pageSelected ? 'page' : 'template') + '?'"-->
+<!--    [target]="(pageSelected ? 'Page' : 'Template') + ': ' + (pageSelected?.name || templateSelected?.name) + ' (id: ' + (pageSelected?.id || templateSelected?.id) + ')'"-->
+<!--    [positiveBtnText]="'Delete'"-->
+<!--    (positiveBtnClicked)="pageSelected ? deletePage() : deleteTemplate()"-->
+<!--    (negativeBtnClicked)="clear(); isDeleteVerificationModalOpen = false"-->
+<!--    (closeBtnClicked)="clear(); isDeleteVerificationModalOpen = false"-->
+<!--    [actionInProgress]="saving">-->
+<!--  </app-verification-modal>-->
 </ng-container>
 
 <!-- Import Modal -->
 <ng-container *ngIf="isImportModalOpen">
-  <app-modal
-    [isModalOpen]="isImportModalOpen"
-    [id]="'import-template'"
-    [templateRef]="importModal"
-    (closeBtnClicked)="isImportModalOpen = false"
-    [actionInProgress]="saving"
-    [innerClickEvents]="false"
-    [classList]="'verification'">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isImportModalOpen"-->
+<!--    [id]="'import-template'"-->
+<!--    [templateRef]="importModal"-->
+<!--    (closeBtnClicked)="isImportModalOpen = false"-->
+<!--    [actionInProgress]="saving"-->
+<!--    [innerClickEvents]="false"-->
+<!--    [classList]="'verification'">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #importModal>

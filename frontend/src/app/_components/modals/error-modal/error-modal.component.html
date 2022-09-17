@@ -1,17 +1,18 @@
 <app-modal
-  [isModalOpen]="isModalOpen"
-  [id]="id"
-  [classList]="'verification ' + classList"
+  [id]="'error-modal'"
   [templateRef]="errorModal"
-  (closeBtnClicked)="isModalOpen = false; closeBtnClicked.emit()"
-  [actionInProgress]="actionInProgress"
-  [innerClickEvents]="innerClickEvents">
+  [size]="'md'"
+  [static]="true"
+  [responsive]="false"
+  [header]="error.message"
+  [headerColor]="'error'"
+  [closeBtnText]="'Close'"
+  [submitBtnText]="'Take screenshot'"
+  [submitBtnColor]="'error'"
+  [submitBtnOutline]="true"
+  (onClose)="onClose.emit()">
 </app-modal>
 
 <ng-template #errorModal>
-  <div class="message_warning warning bold" style="font-size: 15px; color: tomato">{{error.message}}</div>
-  <div class="message_warning warning stack" [innerHTML]="error.stack"></div>
-  <div class="confirmation_btns">
-    <button (click)="isModalOpen = false; closeBtnClicked.emit()">{{negativeBtnText}}</button>
-  </div>
+  <div class="prose break-all" [innerHTML]="error.stack"></div>
 </ng-template>

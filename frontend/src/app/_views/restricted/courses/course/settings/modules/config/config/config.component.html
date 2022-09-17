@@ -151,14 +151,14 @@
 
 <!-- New Item / Edit Item -->
 <ng-container *ngIf="isItemModalOpen">
-  <app-modal
-    [isModalOpen]="isItemModalOpen"
-    [id]="mode === 'add' ? 'new-item' : 'edit-item'"
-    [templateRef]="itemModal"
-    (closeBtnClicked)="isItemModalOpen = false; newItem.list = null; clearObject(newItem.item)"
-    [actionInProgress]="loading"
-    [innerClickEvents]="false">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isItemModalOpen"-->
+<!--    [id]="mode === 'add' ? 'new-item' : 'edit-item'"-->
+<!--    [templateRef]="itemModal"-->
+<!--    (closeBtnClicked)="isItemModalOpen = false; newItem.list = null; clearObject(newItem.item)"-->
+<!--    [actionInProgress]="loading"-->
+<!--    [innerClickEvents]="false">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #itemModal>
@@ -261,30 +261,30 @@
 
 <!-- Delete Verification Modal -->
 <ng-container *ngIf="isDeleteVerificationModalOpen">
-  <app-verification-modal
-    [isModalOpen]="isDeleteVerificationModalOpen"
-    [id]="'delete-verification-' + itemToDelete.item.id"
-    [text]="'Are you sure you want to delete this ' + itemToDelete.list.itemName + '?'"
-    [positiveBtnText]="'Delete'"
-    (positiveBtnClicked)="doActionOnItem(itemToDelete.list.listName, itemToDelete.item, Action.DELETE)"
-    (negativeBtnClicked)="itemToDelete = null; isDeleteVerificationModalOpen = false"
-    (closeBtnClicked)="itemToDelete = null; isDeleteVerificationModalOpen = false"
-    [actionInProgress]="loading">
-  </app-verification-modal>
+<!--  <app-verification-modal-->
+<!--    [isModalOpen]="isDeleteVerificationModalOpen"-->
+<!--    [id]="'delete-verification-' + itemToDelete.item.id"-->
+<!--    [text]="'Are you sure you want to delete this ' + itemToDelete.list.itemName + '?'"-->
+<!--    [positiveBtnText]="'Delete'"-->
+<!--    (positiveBtnClicked)="doActionOnItem(itemToDelete.list.listName, itemToDelete.item, Action.DELETE)"-->
+<!--    (negativeBtnClicked)="itemToDelete = null; isDeleteVerificationModalOpen = false"-->
+<!--    (closeBtnClicked)="itemToDelete = null; isDeleteVerificationModalOpen = false"-->
+<!--    [actionInProgress]="loading">-->
+<!--  </app-verification-modal>-->
 </ng-container>
 
 
 <!-- Import Modal -->
 <ng-container *ngIf="isImportModalOpen">
-  <app-modal
-    [isModalOpen]="isImportModalOpen"
-    [id]="'import-item'"
-    [templateRef]="importModal"
-    (closeBtnClicked)="isImportModalOpen = false; listToAct = null"
-    [actionInProgress]="loading"
-    [innerClickEvents]="false"
-    [classList]="'verification'">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isImportModalOpen"-->
+<!--    [id]="'import-item'"-->
+<!--    [templateRef]="importModal"-->
+<!--    (closeBtnClicked)="isImportModalOpen = false; listToAct = null"-->
+<!--    [actionInProgress]="loading"-->
+<!--    [innerClickEvents]="false"-->
+<!--    [classList]="'verification'">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #importModal>

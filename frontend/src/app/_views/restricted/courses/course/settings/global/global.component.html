@@ -88,14 +88,14 @@
 
 <!-- View DB Modal -->
 <ng-container *ngIf="isViewDBModalOpen">
-  <app-modal
-    [isModalOpen]="isViewDBModalOpen"
-    [id]="'edit-db'"
-    [templateRef]="viewDbModal"
-    (closeBtnClicked)="isViewDBModalOpen = false"
-    [actionInProgress]="saving"
-    [classList]="'verification'">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isViewDBModalOpen"-->
+<!--    [id]="'edit-db'"-->
+<!--    [templateRef]="viewDbModal"-->
+<!--    (closeBtnClicked)="isViewDBModalOpen = false"-->
+<!--    [actionInProgress]="saving"-->
+<!--    [classList]="'verification'">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #viewDbModal>
@@ -111,14 +111,14 @@
 
 
 <!-- Success Modal -->
-<app-modal
-  [isModalOpen]="isSuccessModalOpen"
-  [id]="'message-api-box'"
-  [classList]="'verification'"
-  [templateRef]="successModal"
-  (closeBtnClicked)="isSuccessModalOpen = false"
-  [actionInProgress]="saving">
-</app-modal>
+<!--<app-modal-->
+<!--  [isOpen]="isSuccessModalOpen"-->
+<!--  [id]="'message-api-box'"-->
+<!--  [classList]="'verification'"-->
+<!--  [templateRef]="successModal"-->
+<!--  (closeBtnClicked)="isSuccessModalOpen = false"-->
+<!--  [actionInProgress]="saving">-->
+<!--</app-modal>-->
 
 <ng-template #successModal>
   <div class="message_warning warning">Saved!</div>

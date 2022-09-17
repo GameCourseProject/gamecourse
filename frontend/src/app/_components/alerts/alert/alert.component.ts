@@ -10,6 +10,10 @@ export class AlertComponent implements OnInit {
   @Input() type: AlertType;     // Alert type
   @Input() msg: string;         // Message to display
 
+  get AlertType(): typeof AlertType {
+    return AlertType;
+  }
+
   constructor() { }
 
   ngOnInit(): void {
@@ -20,11 +24,6 @@ export class AlertComponent implements OnInit {
     else if (this.type === AlertType.SUCCESS) return 'feather-check-circle';
     else if (this.type === AlertType.WARNING) return 'feather-alert-triangle';
     else return 'feather-x-circle';
-  }
-
-  hide() {
-    const alert = document.getElementById(this.type + '-alert');
-    alert.classList.add('hidden');
   }
 
 }

@@ -22,12 +22,12 @@
     </div>
 
     <div style="margin-top: 30px;">
-      <app-datatable
-        [id]="'participation-table'"
-        [headers]="tables.participation.headers"
-        [data]="tables.participation.data"
-        [loading]="tables.participation.loading">
-      </app-datatable>
+<!--      <app-datatable-->
+<!--        [id]="'participation-table'"-->
+<!--        [headers]="tables.participation.headers"-->
+<!--        [data]="tables.participation.data"-->
+<!--        [loading]="tables.participation.loading">-->
+<!--      </app-datatable>-->
     </div>
 
     <div class="action-buttons">
@@ -41,12 +41,12 @@
     </div>
 
     <div style="margin-top: 30px;">
-      <app-datatable
-        [id]="'qr-error-table'"
-        [headers]="tables.qrError.headers"
-        [data]="tables.qrError.data"
-        [loading]="tables.qrError.loading">
-      </app-datatable>
+<!--      <app-datatable-->
+<!--        [id]="'qr-error-table'"-->
+<!--        [headers]="tables.qrError.headers"-->
+<!--        [data]="tables.qrError.data"-->
+<!--        [loading]="tables.qrError.loading">-->
+<!--      </app-datatable>-->
     </div>
   </div>
 </div>
@@ -73,14 +73,14 @@
 
 <!-- New Participation Modal -->
 <ng-container *ngIf="isNewParticipationModalOpen">
-  <app-modal
-    [isModalOpen]="isNewParticipationModalOpen"
-    [id]="'new-qr-participation-modal'"
-    [templateRef]="newModal"
-    (closeBtnClicked)="isNewParticipationModalOpen = false; clearObject(newParticipation)"
-    [actionInProgress]="loading"
-    [innerClickEvents]="false">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isNewParticipationModalOpen"-->
+<!--    [id]="'new-qr-participation-modal'"-->
+<!--    [templateRef]="newModal"-->
+<!--    (closeBtnClicked)="isNewParticipationModalOpen = false; clearObject(newParticipation)"-->
+<!--    [actionInProgress]="loading"-->
+<!--    [innerClickEvents]="false">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #newModal>

@@ -129,15 +129,15 @@
 
 <!-- New / Edit Skill Modal -->
 <ng-container *ngIf="isSkillModalOpen">
-  <app-modal
-    [isModalOpen]="isSkillModalOpen"
-    [id]="mode === 'add' ? 'new-skill' : 'edit-skill'"
-    [templateRef]="skillModal"
-    [width]="'calc(100% - 200px)'"
-    (closeBtnClicked)="isSkillModalOpen = false; clearObject(newSkill); selectedDependency1 = null; selectedDependency2 = null; infoSelected = null"
-    [actionInProgress]="saving"
-    [innerClickEvents]="false">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isSkillModalOpen"-->
+<!--    [id]="mode === 'add' ? 'new-skill' : 'edit-skill'"-->
+<!--    [templateRef]="skillModal"-->
+<!--    [width]="'calc(100% - 200px)'"-->
+<!--    (closeBtnClicked)="isSkillModalOpen = false; clearObject(newSkill); selectedDependency1 = null; selectedDependency2 = null; infoSelected = null"-->
+<!--    [actionInProgress]="saving"-->
+<!--    [innerClickEvents]="false">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #skillModal>
@@ -216,30 +216,30 @@
 
 <!-- Delete Verification Modal -->
 <ng-container *ngIf="isDeleteVerificationModalOpen">
-  <app-verification-modal
-    [isModalOpen]="isDeleteVerificationModalOpen"
-    [id]="'delete-verification'"
-    [text]="'Are you sure you want to delete the Skill?'"
-    [target]="'Skill: ' + skillToDelete.name"
-    [positiveBtnText]="'Delete'"
-    (positiveBtnClicked)="deleteSkill()"
-    (negativeBtnClicked)="skillToDelete = null; isDeleteVerificationModalOpen = false"
-    (closeBtnClicked)="isDeleteVerificationModalOpen = false"
-    [actionInProgress]="saving">
-  </app-verification-modal>
+<!--  <app-verification-modal-->
+<!--    [isModalOpen]="isDeleteVerificationModalOpen"-->
+<!--    [id]="'delete-verification'"-->
+<!--    [text]="'Are you sure you want to delete the Skill?'"-->
+<!--    [target]="'Skill: ' + skillToDelete.name"-->
+<!--    [positiveBtnText]="'Delete'"-->
+<!--    (positiveBtnClicked)="deleteSkill()"-->
+<!--    (negativeBtnClicked)="skillToDelete = null; isDeleteVerificationModalOpen = false"-->
+<!--    (closeBtnClicked)="isDeleteVerificationModalOpen = false"-->
+<!--    [actionInProgress]="saving">-->
+<!--  </app-verification-modal>-->
 </ng-container>
 
 
 <!-- Skill Preview Modal -->
 <ng-container *ngIf="isSkillPreviewModalOpen">
-  <app-modal
-    [isModalOpen]="isSkillPreviewModalOpen"
-    [id]="'skill-preview'"
-    [templateRef]="skillPreview"
-    [width]="'calc(100% - 200px)'"
-    (closeBtnClicked)="isSkillPreviewModalOpen = false"
-    [innerClickEvents]="false">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isSkillPreviewModalOpen"-->
+<!--    [id]="'skill-preview'"-->
+<!--    [templateRef]="skillPreview"-->
+<!--    [width]="'calc(100% - 200px)'"-->
+<!--    (closeBtnClicked)="isSkillPreviewModalOpen = false"-->
+<!--    [innerClickEvents]="false">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #skillPreview>

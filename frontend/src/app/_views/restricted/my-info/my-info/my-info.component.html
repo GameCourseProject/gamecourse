@@ -34,13 +34,13 @@
 </div>
 
 <ng-container *ngIf="isEditModalOpen">
-  <app-modal
-    [isModalOpen]="isEditModalOpen"
-    [id]="'edit-info'"
-    [templateRef]="editInfo"
-    (closeBtnClicked)="isEditModalOpen = false; photo.set(originalPhoto)"
-    [actionInProgress]="saving">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isEditModalOpen"-->
+<!--    [id]="'edit-info'"-->
+<!--    [templateRef]="editInfo"-->
+<!--    (closeBtnClicked)="isEditModalOpen = false; photo.set(originalPhoto)"-->
+<!--    [actionInProgress]="saving">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #editInfo>

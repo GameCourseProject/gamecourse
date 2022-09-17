@@ -96,14 +96,14 @@
 
 <!-- New User / Edit Modal -->
 <ng-container *ngIf="isUserModalOpen">
-  <app-modal
-    [isModalOpen]="isUserModalOpen"
-    [id]="mode === 'add' ? 'new-user' : 'edit-user'"
-    [templateRef]="userModal"
-    (closeBtnClicked)="isUserModalOpen = false; clearObject(newUser); photo.set(originalPhoto)"
-    [actionInProgress]="saving"
-    [innerClickEvents]="false">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isUserModalOpen"-->
+<!--    [id]="mode === 'add' ? 'new-user' : 'edit-user'"-->
+<!--    [templateRef]="userModal"-->
+<!--    (closeBtnClicked)="isUserModalOpen = false; clearObject(newUser); photo.set(originalPhoto)"-->
+<!--    [actionInProgress]="saving"-->
+<!--    [innerClickEvents]="false">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #userModal>
@@ -207,31 +207,31 @@
 
 <!-- Delete Verification Modal -->
 <ng-container *ngIf="isDeleteVerificationModalOpen">
-  <app-verification-modal
-    [isModalOpen]="isDeleteVerificationModalOpen"
-    [id]="'delete-verification-' + userToDelete.id"
-    [text]="'Are you sure you want to delete the User?'"
-    [target]="userToDelete.name + ' - ' + userToDelete.studentNumber"
-    [positiveBtnText]="'Delete'"
-    (positiveBtnClicked)="deleteUser(userToDelete)"
-    (negativeBtnClicked)="userToDelete = null; isDeleteVerificationModalOpen = false"
-    (closeBtnClicked)="isDeleteVerificationModalOpen = false"
-    [actionInProgress]="saving">
-  </app-verification-modal>
+<!--  <app-verification-modal-->
+<!--    [isModalOpen]="isDeleteVerificationModalOpen"-->
+<!--    [id]="'delete-verification-' + userToDelete.id"-->
+<!--    [text]="'Are you sure you want to delete the User?'"-->
+<!--    [target]="userToDelete.name + ' - ' + userToDelete.studentNumber"-->
+<!--    [positiveBtnText]="'Delete'"-->
+<!--    (positiveBtnClicked)="deleteUser(userToDelete)"-->
+<!--    (negativeBtnClicked)="userToDelete = null; isDeleteVerificationModalOpen = false"-->
+<!--    (closeBtnClicked)="isDeleteVerificationModalOpen = false"-->
+<!--    [actionInProgress]="saving">-->
+<!--  </app-verification-modal>-->
 </ng-container>
 
 
 <!-- Import Modal -->
 <ng-container *ngIf="isImportModalOpen">
-  <app-modal
-    [isModalOpen]="isImportModalOpen"
-    [id]="'import-user'"
-    [templateRef]="importModal"
-    (closeBtnClicked)="isImportModalOpen = false"
-    [actionInProgress]="saving"
-    [innerClickEvents]="false"
-    [classList]="'verification'">
-  </app-modal>
+<!--  <app-modal-->
+<!--    [isOpen]="isImportModalOpen"-->
+<!--    [id]="'import-user'"-->
+<!--    [templateRef]="importModal"-->
+<!--    (closeBtnClicked)="isImportModalOpen = false"-->
+<!--    [actionInProgress]="saving"-->
+<!--    [innerClickEvents]="false"-->
+<!--    [classList]="'verification'">-->
+<!--  </app-modal>-->
 </ng-container>
 
 <ng-template #importModal>

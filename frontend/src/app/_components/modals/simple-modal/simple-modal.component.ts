@@ -1,23 +1,20 @@
-import { Component, EventEmitter, Input, OnInit, Output, TemplateRef } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Observable } from "rxjs";
 
 @Component({
-  selector: 'app-modal',
-  templateUrl: './modal.component.html'
+  selector: 'app-simple-modal',
+  templateUrl: './simple-modal.component.html'
 })
-export class ModalComponent implements OnInit {
+export class SimpleModalComponent implements OnInit {
 
   @Input() id: string;                            // Modal ID
   @Input() classList?: string;                    // Classes to append
-  @Input() templateRef: TemplateRef<any>;         // Custom template for modal
 
-  @Input() size?: 'sm' | 'md' | 'lg' = 'sm';      // Modal width
   @Input() static?: boolean = false;              // Disable closing when clicked outside
   @Input() responsive?: boolean = true;           // Modal goes bottom on mobile & middle on desktop
 
-  @Input() header?: string;                       // Modal title
-  @Input() headerColor?: string;                  // Modal title color
-  @Input() headerMarginBottom?: boolean = true;   // Modal title margin bottom
+  @Input() title?: string;                        // Modal title
+  @Input() text?: string;                         // Modal text
 
   @Input() closeBtnText?: string = 'Cancel';      // Left button text
   @Input() closeBtnColor?: string;                // Left button color
@@ -37,21 +34,9 @@ export class ModalComponent implements OnInit {
   @Output() submitBtnClicked: EventEmitter<void> = new EventEmitter();
   @Output() extraBtnClicked: EventEmitter<void> = new EventEmitter();
 
-  btnClicked: 'close' | 'extra' | 'submit';
-
   constructor() { }
 
   ngOnInit(): void {
-    if (this.closeModal) {
-      this.closeModal.subscribe(() => {
-        // Force modal closing
-        const toggler = document.getElementById(this.id) as HTMLInputElement;
-        toggler.checked = false;
-
-        // Emit event
-        this.onClose.emit();
-      });
-    }
   }
 
 }
