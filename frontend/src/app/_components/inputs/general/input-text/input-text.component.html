@@ -30,7 +30,7 @@
     <label class="input-group {{InputGroupSize[size]}}">
 
       <!-- Left label -->
-      <span *ngIf="leftLabel">{{leftLabel}}</span>
+      <span *ngIf="leftLabel" class="{{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{leftLabel}}</span>
 
       <input
         type="text"
@@ -50,7 +50,7 @@
       />
 
       <!-- Right label -->
-      <span *ngIf="rightLabel">{{rightLabel}}</span>
+      <span *ngIf="rightLabel" class="{{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{rightLabel}}</span>
 
       <!-- Button -->
       <button *ngIf="btnText || btnIcon" class="btn {{btnIcon ? 'btn-square' : ''}} {{color ? 'btn-' + color : ''}}" (click)="btnClicked.emit()">

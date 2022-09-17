@@ -1,6 +1,6 @@
 @layer components {
   .form-control {
-    .input {
+    .input, .textarea {
       @apply border-2;
     }
 

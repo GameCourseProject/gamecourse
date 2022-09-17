@@ -8,7 +8,7 @@
   <!-- Simple Input -->
   <ng-container *ngIf="!leftLabel && !rightLabel && !btnText && !btnIcon">
     <input
-      type="text"
+      type="number"
       id="{{id}}"
       name="{{id}}"
       class="input input-bordered w-full {{InputSize[size]}} {{color ? 'input-' + color : ''}}"
@@ -29,10 +29,10 @@
     <label class="input-group {{InputGroupSize[size]}}">
 
       <!-- Left label -->
-      <span *ngIf="leftLabel">{{leftLabel}}</span>
+      <span *ngIf="leftLabel" class="{{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{leftLabel}}</span>
 
       <input
-        type="text"
+        type="number"
         id="{{id}}"
         name="{{id}}"
         class="input input-bordered w-full {{color ? 'input-' + color : ''}}"
@@ -48,7 +48,7 @@
       />
 
       <!-- Right label -->
-      <span *ngIf="rightLabel">{{rightLabel}}</span>
+      <span *ngIf="rightLabel" class="{{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{rightLabel}}</span>
 
       <!-- Button -->
       <button *ngIf="btnText || btnIcon" class="btn {{btnIcon ? 'btn-square' : ''}} {{color ? 'btn-' + color : ''}}" (click)="btnClicked.emit()">

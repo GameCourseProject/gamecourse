@@ -1,6 +1,6 @@
 import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {NgForm, NgModel} from '@angular/forms';
-import {InputGroupSize, InputSize } from '../../InputSize';
+import {InputGroupSize, InputSize } from '../../Settings';
 
 @Component({
   selector: 'app-input-number',

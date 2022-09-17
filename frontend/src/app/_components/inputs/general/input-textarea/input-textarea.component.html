@@ -1,0 +1,34 @@
+<div class="form-control w-full {{classList}}">
+
+  <!-- Label -->
+  <label *ngIf="label" class="label">
+    <span class="label-text">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
+  </label>
+
+  <!-- Textarea -->
+  <textarea
+    id="{{id}}"
+    name="{{id}}"
+    class="textarea textarea-bordered w-full {{TextareaSize[size]}} {{color ? 'textarea-' + color : ''}}"
+    placeholder="{{placeholder}}"
+    [(ngModel)]="value"
+    (ngModelChange)="valueChange.emit(value)"
+    [pattern]="pattern"
+    [required]="required"
+    [minlength]="minLength"
+    [maxlength]="maxLength"
+    [disabled]="disabled"
+    #inputTextarea="ngModel"
+    [ngClass]="{'input-error': form && form.submitted && inputTextarea.invalid}">
+  </textarea>
+
+  <!-- Error Messages -->
+  <label *ngIf="form && form.submitted && inputTextarea.invalid" class="label">
+    <span *ngIf="inputTextarea.errors.pattern" class="label-text-alt">{{patternErrorMessage}}</span>
+    <span *ngIf="inputTextarea.errors.required" class="label-text-alt">{{requiredErrorMessage}}</span>
+    <span *ngIf="inputTextarea.errors.minlength" class="label-text-alt">{{minLengthErrorMessage}}</span>
+    <span *ngIf="inputTextarea.errors.maxlength" class="label-text-alt">{{maxLengthErrorMessage}}</span>
+    <span *ngIf="inputTextarea.errors.incorrect" class="label-text-alt">{{incorrectErrorMessage}}</span>
+  </label>
+
+</div>

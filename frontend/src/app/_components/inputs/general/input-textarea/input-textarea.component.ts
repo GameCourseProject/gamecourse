@@ -1,12 +1,13 @@
-import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
-import {NgForm, NgModel} from '@angular/forms';
-import {InputGroupSize, InputSize} from "../../Settings";
+import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {NgForm, NgModel} from "@angular/forms";
+
+import { TextareaSize } from '../../Settings';
 
 @Component({
-  selector: 'app-input-text',
-  templateUrl: './input-text.component.html',
+  selector: 'app-input-textarea',
+  templateUrl: './input-textarea.component.html'
 })
-export class InputTextComponent implements OnInit, AfterViewInit {
+export class InputTextareaComponent implements OnInit {
 
   // Essentials
   @Input() id: string;                                    // Unique ID
@@ -19,13 +20,7 @@ export class InputTextComponent implements OnInit, AfterViewInit {
   @Input() color?: string;                                // Color
   @Input() classList?: string;                            // Classes to add
   @Input() disabled?: boolean;                            // Make it disabled
-
-  @Input() topLabel?: string;                             // Top label text
-  @Input() leftLabel?: string;                            // Text on prepended label
-  @Input() rightLabel?: string;                           // Text on appended label
-
-  @Input() btnText?: string;                              // Text on appended button
-  @Input() btnIcon?: string;                              // Icon on appended button
+  @Input() label?: string;                                // Top label text
 
   // Validity
   @Input() pattern?: string;                              // The pattern to be applied
@@ -43,24 +38,19 @@ export class InputTextComponent implements OnInit, AfterViewInit {
   @Output() valueChange = new EventEmitter<string>();
   @Output() btnClicked = new EventEmitter<void>();
 
-  @ViewChild('inputText', { static: false }) inputText: NgModel;
+  @ViewChild('inputTextarea', { static: false }) inputTextarea: NgModel;
 
-  constructor() {
-  }
+  constructor() { }
 
   ngOnInit(): void {
   }
 
   ngAfterViewInit(): void {
-    if (this.form) this.form.addControl(this.inputText);
+    if (this.form) this.form.addControl(this.inputTextarea);
   }
 
-  get InputSize(): typeof InputSize {
-    return InputSize;
-  }
-
-  get InputGroupSize(): typeof InputGroupSize {
-    return InputGroupSize;
+  get TextareaSize(): typeof TextareaSize {
+    return TextareaSize;
   }
 
 }

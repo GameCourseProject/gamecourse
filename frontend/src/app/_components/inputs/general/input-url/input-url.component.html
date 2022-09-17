@@ -1,0 +1,27 @@
+<app-input-text
+  [id]="id"
+  [form]="form"
+  [(value)]="value"
+  [placeholder]="placeholder"
+
+  [size]="size"
+  [color]="color"
+  [classList]="classList"
+  [disabled]="disabled"
+
+  [topLabel]="topLabel"
+  [leftLabel]="leftLabel"
+
+  [pattern]="pattern"
+  [required]="required"
+  [minLength]="minLength"
+  [maxLength]="maxLength"
+
+  [patternErrorMessage]="patternErrorMessage"
+  [requiredErrorMessage]="requiredErrorMessage"
+  [minLengthErrorMessage]="minLengthErrorMessage"
+  [maxLengthErrorMessage]="maxLengthErrorMessage"
+  [incorrectErrorMessage]="incorrectErrorMessage"
+
+  (valueChange)="valueChange.emit($event)">
+</app-input-text>

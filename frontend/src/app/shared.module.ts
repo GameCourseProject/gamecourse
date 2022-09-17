@@ -29,6 +29,8 @@ import { FilePickerModalComponent } from "./_components/modals/file-picker-modal
 import { InputTextComponent } from "./_components/inputs/general/input-text/input-text.component";
 import { InputNumberComponent } from "./_components/inputs/general/input-number/input-number.component";
 import { InputSearchComponent } from './_components/inputs/general/input-search/input-search.component';
+import { InputUrlComponent } from './_components/inputs/general/input-url/input-url.component';
+import { InputTextareaComponent } from './_components/inputs/general/input-textarea/input-textarea.component';
 import { InputColorComponent } from './_components/inputs/general/input-color/input-color.component';
 import { InputFileComponent } from './_components/inputs/general/input-file/input-file.component';
 import { InputCodeComponent } from './_components/inputs/code/input-code/input-code.component';
@@ -132,6 +134,8 @@ import {
     InputTextComponent,
     InputNumberComponent,
     InputSearchComponent,
+    InputUrlComponent,
+    InputTextareaComponent,
     InputColorComponent,
     InputFileComponent,
     InputCodeComponent,
@@ -186,6 +190,8 @@ import {
     InputTextComponent,
     InputNumberComponent,
     InputSearchComponent,
+    InputUrlComponent,
+    InputTextareaComponent,
     InputColorComponent,
     InputFileComponent,
     InputCodeComponent,
