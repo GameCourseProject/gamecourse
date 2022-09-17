@@ -1,0 +1,15 @@
+@layer components {
+  .form-control {
+    .input {
+      @apply border-2;
+    }
+
+    .label-text {
+      @apply font-semibold text-base;
+    }
+
+    .label-text-alt {
+      @apply text-error font-semibold;
+    }
+  }
+}

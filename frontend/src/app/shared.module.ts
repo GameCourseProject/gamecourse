@@ -28,6 +28,7 @@ import { FilePickerModalComponent } from "./_components/modals/file-picker-modal
 // Components: inputs
 import { InputTextComponent } from "./_components/inputs/general/input-text/input-text.component";
 import { InputNumberComponent } from "./_components/inputs/general/input-number/input-number.component";
+import { InputSearchComponent } from './_components/inputs/general/input-search/input-search.component';
 import { InputColorComponent } from './_components/inputs/general/input-color/input-color.component';
 import { InputFileComponent } from './_components/inputs/general/input-file/input-file.component';
 import { InputCodeComponent } from './_components/inputs/code/input-code/input-code.component';
@@ -130,6 +131,7 @@ import {
 
     InputTextComponent,
     InputNumberComponent,
+    InputSearchComponent,
     InputColorComponent,
     InputFileComponent,
     InputCodeComponent,
@@ -163,59 +165,61 @@ import {
     AutoGameToastComponent
   ],
   exports: [
-      AsPipe,
-      SanitizeHTMLPipe,
+    AsPipe,
+    SanitizeHTMLPipe,
 
-      ClickedOutsideDirective,
-      ViewSelectionDirective,
-      GoToPageDirective,
-      HideViewDirective,
-      ShowViewDirective,
-      ToggleViewDirective,
+    ClickedOutsideDirective,
+    ViewSelectionDirective,
+    GoToPageDirective,
+    HideViewDirective,
+    ShowViewDirective,
+    ToggleViewDirective,
 
-      NavbarComponent,
-      SidebarComponent,
+    NavbarComponent,
+    SidebarComponent,
 
-      ModalComponent,
-      SimpleModalComponent,
-      ErrorModalComponent,
-      FilePickerModalComponent,
+    ModalComponent,
+    SimpleModalComponent,
+    ErrorModalComponent,
+    FilePickerModalComponent,
 
-      InputTextComponent,
-      InputNumberComponent,
-      InputColorComponent,
-      InputFileComponent,
-      InputCodeComponent,
-      InputRichTextComponent,
-      ThemeTogglerComponent,
+    InputTextComponent,
+    InputNumberComponent,
+    InputSearchComponent,
+    InputColorComponent,
+    InputFileComponent,
+    InputCodeComponent,
+    InputRichTextComponent,
+    ThemeTogglerComponent,
 
-      LineChartComponent,
-      BarChartComponent,
-      ProgressChartComponent,
-      RadarChartComponent,
+    LineChartComponent,
+    BarChartComponent,
+    ProgressChartComponent,
+    RadarChartComponent,
 
-      TableComponent,
-      TableData,
-      PaginationComponent,
+    TableComponent,
+    TableData,
+    PaginationComponent,
 
-      AlertComponent,
+    AlertComponent,
 
-      SpinnerComponent,
+    SpinnerComponent,
 
-      BBAnyComponent,
-      BBBlockComponent,
-      BBTextComponent,
-      BBImageComponent,
-      BBHeaderComponent,
-      BBTableComponent,
-      BBChartComponent,
+    BBAnyComponent,
+    BBBlockComponent,
+    BBTextComponent,
+    BBImageComponent,
+    BBHeaderComponent,
+    BBTableComponent,
+    BBChartComponent,
 
-      PageNotFoundComponent,
-      NoAccessComponent,
-      ComingSoonComponent,
-      AutoGameToastComponent,
+    PageNotFoundComponent,
+    NoAccessComponent,
+    ComingSoonComponent,
+    AutoGameToastComponent,
 
-      NgIconsModule
+    NgIconsModule,
+    FormsModule
   ],
   imports: [
     CommonModule,

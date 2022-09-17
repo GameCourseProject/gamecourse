@@ -1,0 +1,16 @@
+<app-input-text
+  [id]="id"
+  [form]="form"
+  [(value)]="value"
+  [placeholder]="placeholder"
+
+  [size]="size"
+  [color]="color"
+  [classList]="classList"
+  [disabled]="disabled"
+
+  [btnIcon]="'feather-search'"
+
+  (valueChange)="value = $event; valueChange.emit($event); search()"
+  (btnClicked)="btnClicked.emit(); search()">
+</app-input-text>

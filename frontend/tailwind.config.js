@@ -6,10 +6,16 @@ module.exports = {
   mode: 'jit',
   content: [
     './src/**/*.{html,ts}',
+    './src/index.html'
+  ],
+  safelist: [
+    {
+      pattern: /(primary|secondary|accent|neutral|info|success|warning|error)/,
+      variants: ['hover'],
+    }
   ],
   plugins: [
     require('@tailwindcss/typography'),
-    // require('@tailwindcss/forms'),
     require('@tailwindcss/line-clamp'),
     require('tailwind-scrollbar')({ nocompatible: true }),
     require('daisyui')

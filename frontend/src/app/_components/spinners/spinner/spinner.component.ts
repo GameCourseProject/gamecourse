@@ -7,10 +7,16 @@ import {Component, Input, OnInit} from '@angular/core';
 })
 export class SpinnerComponent implements OnInit {
 
-  @Input() color?: string = 'primary';    // Color
-  @Input() size?: number = 8;             // Size
+  @Input() color?: string = 'primary';          // Color
+  @Input() size?: 'sm' | 'md' | 'lg' = 'md';    // Size
 
-  @Input() classList?: string;            // Classes to add
+  @Input() classList?: string;                  // Classes to add
+
+  sizes = {
+    sm: 'h-5 w-5',
+    md: 'h-8 w-8',
+    lg: 'h-12 w-12'
+  }
 
   constructor() { }
 

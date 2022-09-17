@@ -1,0 +1,70 @@
+<div class="form-control w-full {{classList}}">
+
+  <!-- Label -->
+  <label *ngIf="topLabel" class="label">
+    <span class="label-text">{{topLabel}} <span *ngIf="required" class="text-secondary">*</span></span>
+  </label>
+
+  <!-- Simple Input -->
+  <ng-container *ngIf="!leftLabel && !rightLabel && !btnText && !btnIcon">
+    <input
+      type="text"
+      id="{{id}}"
+      name="{{id}}"
+      class="input input-bordered w-full {{InputSize[size]}} {{color ? 'input-' + color : ''}}"
+      placeholder="{{placeholder}}"
+      [(ngModel)]="value"
+      (ngModelChange)="valueChange.emit(value)"
+      [required]="required"
+      [min]="minValue"
+      [max]="maxValue"
+      [disabled]="disabled"
+      #inputNumber="ngModel"
+      [ngClass]="{'input-error': form && form.submitted && inputNumber.invalid}"
+    />
+  </ng-container>
+
+  <!-- Group Input -->
+  <ng-container *ngIf="leftLabel || rightLabel || btnText || btnIcon">
+    <label class="input-group {{InputGroupSize[size]}}">
+
+      <!-- Left label -->
+      <span *ngIf="leftLabel">{{leftLabel}}</span>
+
+      <input
+        type="text"
+        id="{{id}}"
+        name="{{id}}"
+        class="input input-bordered w-full {{color ? 'input-' + color : ''}}"
+        placeholder="{{placeholder}}"
+        [(ngModel)]="value"
+        (ngModelChange)="valueChange.emit(value)"
+        [required]="required"
+        [min]="minValue"
+        [max]="maxValue"
+        [disabled]="disabled"
+        #inputNumber="ngModel"
+        [ngClass]="{'input-error': form && form.submitted && inputNumber.invalid}"
+      />
+
+      <!-- Right label -->
+      <span *ngIf="rightLabel">{{rightLabel}}</span>
+
+      <!-- Button -->
+      <button *ngIf="btnText || btnIcon" class="btn {{btnIcon ? 'btn-square' : ''}} {{color ? 'btn-' + color : ''}}" (click)="btnClicked.emit()">
+        <span *ngIf="btnText" class="bg-transparent">{{btnText}}</span>
+        <ng-icon *ngIf="btnIcon" [name]="btnIcon" size="1.5rem"></ng-icon>
+      </button>
+
+    </label>
+  </ng-container>
+
+  <!-- Error Messages -->
+  <label *ngIf="form && form.submitted && inputNumber.invalid" class="label">
+    <span *ngIf="inputNumber.errors.inputNumber" class="label-text-alt">{{requiredErrorMessage}}</span>
+    <span *ngIf="inputNumber.errors.min" class="label-text-alt">{{minValueErrorMessage}}</span>
+    <span *ngIf="inputNumber.errors.max" class="label-text-alt">{{maxValueErrorMessage}}</span>
+    <span *ngIf="inputNumber.errors.inputNumber" class="label-text-alt">{{incorrectErrorMessage}}</span>
+  </label>
+
+</div>

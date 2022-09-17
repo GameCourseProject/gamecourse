@@ -120,6 +120,7 @@ export class Reduce {
 
   private isQueryTrueSearch(item: any): boolean {
     return !this.query ||
+      ((item instanceof String || typeof item === 'string') && Search.onString(item, this.query)) ||
       (item instanceof Course && Search.onCourse(item, this.query)) ||
       ((item instanceof User || item instanceof CourseUser) && Search.onUser(item, this.query)) ||
       (item instanceof Module && Search.onModule(item, this.query)) ||
@@ -149,6 +150,17 @@ export class Reduce {
 export class Search {
 
   private static readonly IGNORED = /[\s,.:;\-_/\\!|+*"']+/g;
+
+  /**
+   * Search on a String.
+   * @class String
+   *
+   * @param str
+   * @param query
+   */
+  public static onString(str: string | String, query: string): boolean {
+    return str && this.search(str.toString(), query);
+  }
 
   /**
    * Search on a Course.

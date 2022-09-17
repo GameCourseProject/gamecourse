@@ -1,12 +1,12 @@
-<label class="swap swap-rotate btn btn-ghost btn-circle">
+<label class="swap swap-rotate btn btn-ghost btn-circle text-primary-content">
 
   <!-- this hidden checkbox controls the state -->
   <input type="checkbox" [checked]="theme === Theme.LIGHT" (click)="toggleTheme()" />
 
   <!-- sun icon -->
-  <ng-icon name="feather-sun" size="1.7rem" class="swap-on text-warning"></ng-icon>
+  <ng-icon name="feather-sun" size="1.7rem" class="swap-on"></ng-icon>
 
   <!-- moon icon -->
-  <ng-icon name="feather-moon" size="1.7rem" class="swap-off text-neutral"></ng-icon>
+  <ng-icon name="feather-moon" size="1.7rem" class="swap-off"></ng-icon>
 
 </label>
