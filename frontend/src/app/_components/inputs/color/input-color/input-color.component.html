@@ -1,0 +1,58 @@
+<div class="form-control w-full {{classList}}">
+
+  <!-- Label -->
+  <label *ngIf="topLabel" class="label">
+    <span class="label-text">{{topLabel}} <span *ngIf="required" class="text-secondary">*</span></span>
+  </label>
+
+  <!-- Group Input -->
+  <label class="input-group {{InputGroupSize[size]}} relative">
+
+    <!-- Left label -->
+    <span *ngIf="leftLabel" class="min-w-fit {{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{leftLabel}}</span>
+
+    <!-- Picker Color Sample -->
+    <div *ngIf="value" class="absolute inset-y-0 left-0 pl-[0.9rem] flex items-center pointer-events-none z-10">
+      <div class="w-4 h-4 !rounded shadow border" [ngStyle]="{backgroundColor: value}"></div>
+    </div>
+
+    <!-- Input -->
+    <input
+      type="text"
+      id="{{id}}"
+      name="{{id}}"
+      class="input input-bordered !rounded-l-md w-full cursor-text {{color ? 'input-' + color : ''}} {{value ? 'pl-9' : ''}}"
+      placeholder="{{placeholder}}"
+      [(ngModel)]="value"
+      (ngModelChange)="pickr.setColor(value); valueChange.emit(value)"
+      [pattern]="pattern"
+      [required]="required"
+      [minlength]="minLength"
+      [maxlength]="maxLength"
+      [disabled]="disabled"
+      #inputColor="ngModel"
+      [ngClass]="{'input-error': form && form.submitted && inputColor.invalid}"
+    />
+
+    <div class="dropdown dropdown-end" (clickedOutside)="this.closePicker()">
+      <!-- Button -->
+      <button type="button" class="btn btn-square !rounded-r-md !rounded-l-none {{color ? 'btn-' + color : ''}}" tabindex="0"
+              (click)="openPicker()">
+        <ng-icon [name]="'tabler-color-swatch'" size="1.5rem"></ng-icon>
+      </button>
+
+      <div id="color-picker" class="dropdown-content p-2 bg-base-100 !rounded-box w-53 shadow mt-1" tabindex="0"></div>
+    </div>
+
+  </label>
+
+  <!-- Error Messages -->
+  <label *ngIf="form && form.submitted && inputColor.invalid" class="label">
+    <span *ngIf="inputColor.errors.pattern" class="label-text-alt">{{patternErrorMessage}}</span>
+    <span *ngIf="inputColor.errors.required" class="label-text-alt">{{requiredErrorMessage}}</span>
+    <span *ngIf="inputColor.errors.minlength" class="label-text-alt">{{minLengthErrorMessage}}</span>
+    <span *ngIf="inputColor.errors.maxlength" class="label-text-alt">{{maxLengthErrorMessage}}</span>
+    <span *ngIf="inputColor.errors.incorrect" class="label-text-alt">{{incorrectErrorMessage}}</span>
+  </label>
+
+</div>

@@ -1,0 +1,18 @@
+@layer components {
+  .overflow-y-auto {
+    @apply sm:scrollbar-thin scrollbar-thumb-rounded;
+  }
+
+  *:not([data-theme="light"]) .overflow-y-auto,
+  *:not([data-theme="dark"]) .overflow-y-auto {
+    @apply scrollbar-thumb-primary;
+  }
+
+  [data-theme="light"] .overflow-y-auto {
+    @apply scrollbar-thumb-gray-400;
+  }
+
+  [data-theme="dark"] .overflow-y-auto {
+    @apply scrollbar-thumb-gray-600;
+  }
+}

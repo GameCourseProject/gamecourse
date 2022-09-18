@@ -33,5 +33,11 @@
         background-color: transparent;
       }
     }
+
+    #color-picker {
+      .pcr-swatches {
+        @apply h-28 overflow-y-auto;
+      }
+    }
   }
 }
