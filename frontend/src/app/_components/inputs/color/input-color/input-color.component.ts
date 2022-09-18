@@ -7,8 +7,7 @@ import Pickr from "@simonwep/pickr";
 
 @Component({
   selector: 'app-input-color',
-  templateUrl: './input-color.component.html',
-  styleUrls: ['./input-color.component.scss']
+  templateUrl: './input-color.component.html'
 })
 export class InputColorComponent implements OnInit, AfterViewInit {
 
@@ -36,11 +35,11 @@ export class InputColorComponent implements OnInit, AfterViewInit {
   @Input() maxLength?: number = 7;                                    // Enforce a maximum length
 
   // Errors
-  @Input() patternErrorMessage?: string = 'Invalid color format';     // Message for pattern error
-  @Input() requiredErrorMessage?: string;                             // Message for required error
-  @Input() minLengthErrorMessage?: string = 'Invalid color format';   // Message for minLength error
-  @Input() maxLengthErrorMessage?: string = 'Invalid color format';   // Message for maxLength error
-  @Input() incorrectErrorMessage?: string;                            // Message for incorrect error
+  @Input() patternErrorMessage?: string = 'Invalid color format. Valid format: #XXXXXX';      // Message for pattern error
+  @Input() requiredErrorMessage?: string = 'Required';                                        // Message for required error
+  @Input() minLengthErrorMessage?: string = 'Invalid color format. Valid format: #XXXXXX';    // Message for minLength error
+  @Input() maxLengthErrorMessage?: string = 'Invalid color format. Valid format: #XXXXXX';    // Message for maxLength error
+  @Input() incorrectErrorMessage?: string;                                                    // Message for incorrect error
 
   @Output() valueChange = new EventEmitter<string>();
   @Output() btnClicked = new EventEmitter<void>();                    // Save button clicked

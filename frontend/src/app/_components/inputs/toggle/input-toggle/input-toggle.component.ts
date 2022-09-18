@@ -25,7 +25,7 @@ export class InputToggleComponent implements OnInit, AfterViewInit {
   @Input() required?: boolean;                            // Make it required
 
   // Errors
-  @Input() requiredErrorMessage?: string;                 // Message for required error
+  @Input() requiredErrorMessage?: string = 'Required';    // Message for required error
 
   @Output() valueChange = new EventEmitter<boolean>();
 

@@ -24,8 +24,25 @@ export class InputSearchComponent implements OnInit {
   @Input() classList?: string;                            // Classes to add
   @Input() disabled?: boolean;                            // Make it disabled
 
+  @Input() topLabel?: string;                             // Top label text
+  @Input() leftLabel?: string;                            // Text on prepended label
+
+  // Validity
+  @Input() pattern?: string;                              // The pattern to be applied
+  @Input() required?: boolean;                            // Make it required
+  @Input() minLength?: number;                            // Enforce a minimum length
+  @Input() maxLength?: number;                            // Enforce a maximum length
+
+  // Errors
+  @Input() patternErrorMessage?: string;                                                                            // Message for pattern error
+  @Input() requiredErrorMessage?: string = 'Required';                                                              // Message for required error
+  @Input() minLengthErrorMessage?: string = 'Query size needs to be greater than or equal to ' + this.minLength;    // Message for minLength error
+  @Input() maxLengthErrorMessage?: string = 'Query size needs to be smaller than or equal to ' + this.maxLength;    // Message for maxLength error
+  @Input() incorrectErrorMessage?: string;                                                                          // Message for incorrect error
+
   @Output() valueChange = new EventEmitter<string>();
   @Output() btnClicked = new EventEmitter<void>();
+
   @Output() onSearch = new EventEmitter<any[]>();
 
   reduce = new Reduce();

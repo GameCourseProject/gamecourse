@@ -9,7 +9,21 @@
   [classList]="classList"
   [disabled]="disabled"
 
+  [topLabel]="topLabel"
+  [leftLabel]="leftLabel"
+
   [btnIcon]="'feather-search'"
+
+  [pattern]="pattern"
+  [required]="required"
+  [minLength]="minLength"
+  [maxLength]="maxLength"
+
+  [patternErrorMessage]="patternErrorMessage"
+  [requiredErrorMessage]="requiredErrorMessage"
+  [minLengthErrorMessage]="minLengthErrorMessage"
+  [maxLengthErrorMessage]="maxLengthErrorMessage"
+  [incorrectErrorMessage]="incorrectErrorMessage"
 
   (valueChange)="value = $event; valueChange.emit($event); search()"
   (btnClicked)="btnClicked.emit(); search()">

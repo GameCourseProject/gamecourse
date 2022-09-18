@@ -1,0 +1,58 @@
+<div class="form-control w-full {{classList}}">
+
+  <!-- Label -->
+  <label *ngIf="topLabel" class="label">
+    <span class="label-text">{{topLabel}} <span *ngIf="required" class="text-secondary">*</span></span>
+  </label>
+
+  <!-- Simple Input -->
+  <ng-container *ngIf="!leftLabel">
+    <input
+      type="date"
+      id="{{id}}"
+      name="{{id}}"
+      class="input input-bordered w-full {{InputSize[size]}} {{color ? 'input-' + color : ''}}"
+      placeholder="{{placeholder}}"
+      [(ngModel)]="value"
+      (ngModelChange)="valueChange.emit(value)"
+      [pattern]="pattern"
+      [required]="required"
+      [disabled]="disabled"
+      #inputDate="ngModel"
+      [ngClass]="{'input-error': form && form.submitted && inputDate.invalid}"
+    />
+  </ng-container>
+
+  <!-- Group Input -->
+  <ng-container *ngIf="leftLabel">
+    <label class="input-group {{InputGroupSize[size]}}">
+
+      <!-- Left label -->
+      <span *ngIf="leftLabel" class="min-w-fit {{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{leftLabel}}</span>
+
+      <input
+        type="date"
+        id="{{id}}"
+        name="{{id}}"
+        class="input input-bordered w-full {{InputSize[size]}} {{color ? 'input-' + color : ''}}"
+        placeholder="{{placeholder}}"
+        [(ngModel)]="value"
+        (ngModelChange)="valueChange.emit(value)"
+        [pattern]="pattern"
+        [required]="required"
+        [disabled]="disabled"
+        #inputDate="ngModel"
+        [ngClass]="{'input-error': form && form.submitted && inputDate.invalid}"
+      />
+
+    </label>
+  </ng-container>
+
+  <!-- Error Messages -->
+  <label *ngIf="form && form.submitted && inputDate.invalid" class="label">
+    <span *ngIf="inputDate.errors.pattern" class="label-text-alt">{{patternErrorMessage}}</span>
+    <span *ngIf="inputDate.errors.required" class="label-text-alt">{{requiredErrorMessage}}</span>
+    <span *ngIf="inputDate.errors.incorrect" class="label-text-alt">{{incorrectErrorMessage}}</span>
+  </label>
+
+</div>

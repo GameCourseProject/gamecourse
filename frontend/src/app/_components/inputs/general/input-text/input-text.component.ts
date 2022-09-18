@@ -34,11 +34,11 @@ export class InputTextComponent implements OnInit, AfterViewInit {
   @Input() maxLength?: number;                            // Enforce a maximum length
 
   // Errors
-  @Input() patternErrorMessage?: string;                  // Message for pattern error
-  @Input() requiredErrorMessage?: string;                 // Message for required error
-  @Input() minLengthErrorMessage?: string;                // Message for minLength error
-  @Input() maxLengthErrorMessage?: string;                // Message for maxLength error
-  @Input() incorrectErrorMessage?: string;                // Message for incorrect error
+  @Input() patternErrorMessage?: string;                                                                              // Message for pattern error
+  @Input() requiredErrorMessage?: string = 'Required';                                                                // Message for required error
+  @Input() minLengthErrorMessage?: string = 'Entry size needs to be greater than or equal to ' + this.minLength;      // Message for minLength error
+  @Input() maxLengthErrorMessage?: string= 'Entry size needs to be smaller than or equal to ' + this.maxLength;       // Message for maxLength error
+  @Input() incorrectErrorMessage?: string;                                                                            // Message for incorrect error
 
   @Output() valueChange = new EventEmitter<string>();
   @Output() btnClicked = new EventEmitter<void>();

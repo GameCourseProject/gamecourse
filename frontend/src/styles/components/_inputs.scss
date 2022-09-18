@@ -40,4 +40,9 @@
       }
     }
   }
+
+  [data-theme="dark"] input[type=date],
+  [data-theme=dark] input[type=time ]{
+    color-scheme: dark;
+  }
 }

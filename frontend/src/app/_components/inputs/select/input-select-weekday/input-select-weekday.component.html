@@ -1,0 +1,25 @@
+<app-input-select
+  [id]="id"
+  [form]="form"
+  [(value)]="value"
+  [options]="weekdays"
+  [placeholder]="placeholder"
+
+  [size]="size"
+  [color]="color"
+  [classList]="classList"
+  [disabled]="disabled"
+
+  [topLabel]="topLabel"
+  [leftLabel]="leftLabel"
+  [rightLabel]="rightLabel"
+
+  [btnText]="btnText"
+  [btnIcon]="btnIcon"
+
+  [required]="required"
+  [requiredErrorMessage]="requiredErrorMessage"
+
+  (valueChange)="valueChange.emit($event)"
+  (btnClicked)="btnClicked.emit($event)">
+</app-input-select>

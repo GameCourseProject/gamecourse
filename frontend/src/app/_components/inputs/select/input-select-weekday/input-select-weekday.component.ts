@@ -1,19 +1,17 @@
-import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
-import {NgForm, NgModel} from "@angular/forms";
-import {InputGroupSize, InputSize } from '../../Settings';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {NgForm} from "@angular/forms";
 
 @Component({
-  selector: 'app-input-select',
-  templateUrl: './input-select.component.html'
+  selector: 'app-input-select-weekday',
+  templateUrl: './input-select-weekday.component.html'
 })
-export class InputSelectComponent implements OnInit, AfterViewInit {
+export class InputSelectWeekdayComponent implements OnInit {
 
   // Essentials
   @Input() id: string;                                    // Unique ID
   @Input() form: NgForm;                                  // Form it's part of
   @Input() value: string;                                 // Where to store the value
-  @Input() options?: {value: any, text: string}[];        // Options to select from
-  @Input() placeholder: string;                           // Message to show by default
+  @Input() placeholder: string = 'Day of the week';       // Message to show by default
 
   // Extras
   @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';       // Size
@@ -34,26 +32,22 @@ export class InputSelectComponent implements OnInit, AfterViewInit {
   // Errors
   @Input() requiredErrorMessage?: string = 'Required';    // Message for required error
 
-  @Output() valueChange = new EventEmitter<any>();
+  @Output() valueChange = new EventEmitter<number>();
   @Output() btnClicked = new EventEmitter<void>();
 
-  @ViewChild('inputSelect', { static: false }) inputSelect: NgModel;
+  weekdays: {value: number, text: string}[] = [
+    {value: 1, text: 'Monday'},
+    {value: 2, text: 'Tuesday'},
+    {value: 3, text: 'Wednesday'},
+    {value: 4, text: 'Thursday'},
+    {value: 5, text: 'Friday'},
+    {value: 6, text: 'Saturday'},
+    {value: 0, text: 'Sunday'},
+  ]
 
   constructor() { }
 
   ngOnInit(): void {
-  }
-
-  ngAfterViewInit(): void {
-    if (this.form) this.form.addControl(this.inputSelect);
-  }
-
-  get InputSize(): typeof InputSize {
-    return InputSize;
-  }
-
-  get InputGroupSize(): typeof InputGroupSize {
-    return InputGroupSize;
   }
 
 }

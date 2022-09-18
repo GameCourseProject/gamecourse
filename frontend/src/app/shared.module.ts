@@ -40,7 +40,11 @@ import { InputCheckboxComponent } from './_components/inputs/checkbox & radio/in
 import { InputRadioComponent } from './_components/inputs/checkbox & radio/input-radio/input-radio.component';
 import { InputToggleComponent } from './_components/inputs/toggle/input-toggle/input-toggle.component';
 import { InputSelectComponent } from './_components/inputs/select/input-select/input-select.component';
-import { ThemeTogglerComponent } from './_components/inputs/theme/theme-toggler/theme-toggler.component';
+import { InputSelectWeekdayComponent } from './_components/inputs/select/input-select-weekday/input-select-weekday.component';
+import { InputDateComponent } from './_components/inputs/date & time/input-date/input-date.component';
+import { InputTimeComponent } from './_components/inputs/date & time/input-time/input-time.component';
+import { InputDatetimeComponent } from './_components/inputs/date & time/input-datetime/input-datetime.component';
+import { ThemeTogglerComponent } from './_components/inputs/misc/theme-toggler/theme-toggler.component';
 
 // Components: charts
 import { LineChartComponent } from "./_components/charts/line-chart/line-chart.component";
@@ -151,6 +155,10 @@ import {
     InputRadioComponent,
     InputToggleComponent,
     InputSelectComponent,
+    InputSelectWeekdayComponent,
+    InputDateComponent,
+    InputTimeComponent,
+    InputDatetimeComponent,
     ThemeTogglerComponent,
 
     LineChartComponent,
@@ -212,6 +220,10 @@ import {
     InputRadioComponent,
     InputToggleComponent,
     InputSelectComponent,
+    InputSelectWeekdayComponent,
+    InputDateComponent,
+    InputTimeComponent,
+    InputDatetimeComponent,
     ThemeTogglerComponent,
 
     LineChartComponent,
