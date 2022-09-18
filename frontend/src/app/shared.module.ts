@@ -38,6 +38,7 @@ import { InputCodeComponent } from './_components/inputs/code/input-code/input-c
 import { InputRichTextComponent } from "./_components/inputs/rich-text/input-rich-text/input-rich-text.component";
 import { InputCheckboxComponent } from './_components/inputs/checkbox & radio/input-checkbox/input-checkbox.component';
 import { InputRadioComponent } from './_components/inputs/checkbox & radio/input-radio/input-radio.component';
+import { InputToggleComponent } from './_components/inputs/toggle/input-toggle/input-toggle.component';
 import { ThemeTogglerComponent } from './_components/inputs/theme/theme-toggler/theme-toggler.component';
 
 // Components: charts
@@ -147,6 +148,7 @@ import {
     InputRichTextComponent,
     InputCheckboxComponent,
     InputRadioComponent,
+    InputToggleComponent,
     ThemeTogglerComponent,
 
     LineChartComponent,
@@ -206,6 +208,7 @@ import {
     InputRichTextComponent,
     InputCheckboxComponent,
     InputRadioComponent,
+    InputToggleComponent,
     ThemeTogglerComponent,
 
     LineChartComponent,

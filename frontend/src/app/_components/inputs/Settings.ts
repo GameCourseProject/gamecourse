@@ -32,3 +32,10 @@ export enum RadioSize {
   md = 'radio-md',
   lg = 'radio-lg'
 }
+
+export enum ToggleSize {
+  xs = 'toggle-xs',
+  sm = 'toggle-sm',
+  md = 'toggle-md',
+  lg = 'toggle-lg'
+}
