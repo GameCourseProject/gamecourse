@@ -31,6 +31,7 @@ import { InputNumberComponent } from "./_components/inputs/general/input-number/
 import { InputSearchComponent } from './_components/inputs/general/input-search/input-search.component';
 import { InputUrlComponent } from './_components/inputs/general/input-url/input-url.component';
 import { InputTextareaComponent } from './_components/inputs/general/input-textarea/input-textarea.component';
+import { InputEmailComponent } from './_components/inputs/personal-info/input-email/input-email.component';
 import { InputColorComponent } from './_components/inputs/general/input-color/input-color.component';
 import { InputFileComponent } from './_components/inputs/general/input-file/input-file.component';
 import { InputCodeComponent } from './_components/inputs/code/input-code/input-code.component';
@@ -137,6 +138,7 @@ import {
     InputSearchComponent,
     InputUrlComponent,
     InputTextareaComponent,
+    InputEmailComponent,
     InputColorComponent,
     InputFileComponent,
     InputCodeComponent,
@@ -193,6 +195,7 @@ import {
     InputSearchComponent,
     InputUrlComponent,
     InputTextareaComponent,
+    InputEmailComponent,
     InputColorComponent,
     InputFileComponent,
     InputCodeComponent,

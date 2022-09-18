@@ -23,5 +23,5 @@
   [maxLengthErrorMessage]="maxLengthErrorMessage"
   [incorrectErrorMessage]="incorrectErrorMessage"
 
-  (valueChange)="valueChange.emit(leftLabel && leftLabel.containsWord('http') ? leftLabel + $event : $event)">
+  (valueChange)="valueChange.emit($event)">
 </app-input-text>
