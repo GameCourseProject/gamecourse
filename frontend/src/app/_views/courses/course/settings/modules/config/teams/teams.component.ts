@@ -346,7 +346,7 @@ export class TeamsComponent implements OnInit {
     }
 
     // Validate inputs
-    if (type === 'team' && this.newTeam && this.newTeam.teamMembers) return (isValid(this.newTeam.teamName) && this.newTeam.teamMembers.length !== 0 ) || (this.newTeam.teamMembers.length !== 0 ) ;
+    //if (type === 'team' && this.newTeam && this.newTeam.teamMembers) return (isValid(this.newTeam.teamName) )  ;
     return true;
   }
 

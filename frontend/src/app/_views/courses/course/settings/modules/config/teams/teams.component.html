@@ -119,16 +119,18 @@
 
     <div class="row_inputs">
       <!-- Team Name -->
-      <!-- <div *ngIf="isTeamNameActive" class="third" > -->
-      <!-- <div class="third" > -->
-
       <div *ngIf="isTeamNameActive" class="third" >
         <input type="text" class="form__input" id="team-name" placeholder="Name" [(ngModel)]="newTeam.teamName" [required]="false">
         <label for="team-name" class="form__label">Name</label>
       </div>
+      <!--
+      <div class="third" >
+        <input type="text" class="form__input" id="team-number" style="width: 200px" placeholder="Number (Optional)" [(ngModel)]="newTeam.teamNumber" [required]="false">
+        <label for="team-number" class="form__label">Number</label>
+      </div>
+      -->
 
       <!-- Select Team Members -->
-
       <div class="sub_title">Select Members: </div>
 
       <div *ngIf="newTeam.teamMembers != null && newTeam.teamMembers.length == nrTeamMembers" class = "info_message"> Team is complete! You'll need to remove existent members to add new ones.</div>
@@ -200,7 +202,7 @@
 <ng-template #importModal>
 
   <div class="warning">Please select a .csv file to be imported</div>
-  <div class="target">The separator must be semicolon <br>The encoding must be UTF-8</div>
+  <div class="target"> The header must be: username;group <br> The separator must be semicolon <br> The encoding must be UTF-8</div>
 
   <app-input-file
     [id]="'import_teams'"

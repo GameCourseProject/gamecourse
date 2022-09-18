@@ -1625,6 +1625,7 @@ export class ApiHttpService {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.TEAMS);
       qs.push('request', 'importTeams');
+      qs.push('courseId', courseID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
