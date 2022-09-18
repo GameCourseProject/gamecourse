@@ -18,3 +18,17 @@ export enum TextareaSize {
   md = 'h-32',
   lg = 'h-48'
 }
+
+export enum CheckboxSize {
+  xs = 'checkbox-xs',
+  sm = 'checkbox-sm',
+  md = 'checkbox-md',
+  lg = 'checkbox-lg'
+}
+
+export enum RadioSize {
+  xs = 'radio-xs',
+  sm = 'radio-sm',
+  md = 'radio-md',
+  lg = 'radio-lg'
+}
