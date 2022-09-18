@@ -1,0 +1,65 @@
+<div class="form-control w-full {{classList}}">
+
+  <!-- Label -->
+  <label *ngIf="topLabel" class="label">
+    <span class="label-text">{{topLabel}} <span *ngIf="required" class="text-secondary">*</span></span>
+  </label>
+
+  <!-- Simple Input -->
+  <ng-container *ngIf="!leftLabel && !rightLabel && !btnText && !btnIcon">
+    <select
+      id="{{id}}"
+      name="{{id}}"
+      class="select select-bordered w-full {{InputSize[size]}} {{color ? 'input-' + color : ''}}"
+      [(ngModel)]="value"
+      (ngModelChange)="valueChange.emit(value)"
+      [required]="required"
+      [disabled]="disabled"
+      #inputSelect="ngModel"
+      [ngClass]="{'select-error': form && form.submitted && inputSelect.invalid}">
+
+      <option disabled selected [value]="undefined">{{placeholder}}</option>
+      <option *ngFor="let option of options" [value]="option.value">{{option.text}}</option>
+    </select>
+  </ng-container>
+
+  <!-- Group Input -->
+  <ng-container *ngIf="leftLabel || rightLabel || btnText || btnIcon">
+    <label class="input-group {{InputGroupSize[size]}}">
+
+      <!-- Left label -->
+      <span *ngIf="leftLabel" class="min-w-fit {{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{leftLabel}}</span>
+
+      <select
+        id="{{id}}"
+        name="{{id}}"
+        class="select select-bordered w-full {{InputSize[size]}} {{color ? 'input-' + color : ''}}"
+        [(ngModel)]="value"
+        (ngModelChange)="valueChange.emit(value)"
+        [required]="required"
+        [disabled]="disabled"
+        #inputSelect="ngModel"
+        [ngClass]="{'select-error': form && form.submitted && inputSelect.invalid}">
+
+        <option disabled selected [value]="undefined">{{placeholder}}</option>
+        <option *ngFor="let option of options" [value]="option.value">{{option.text}}</option>
+      </select>
+
+      <!-- Right label -->
+      <span *ngIf="rightLabel" class="min-w-fit {{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{rightLabel}}</span>
+
+      <!-- Button -->
+      <button *ngIf="btnText || btnIcon" class="btn {{btnIcon ? 'btn-square' : ''}} {{color ? 'btn-' + color : ''}}" (click)="btnClicked.emit()">
+        <span *ngIf="btnText" class="bg-transparent">{{btnText}}</span>
+        <ng-icon *ngIf="btnIcon" [name]="btnIcon" size="1.5rem"></ng-icon>
+      </button>
+
+    </label>
+  </ng-container>
+
+  <!-- Error Messages -->
+  <label *ngIf="form && form.submitted && inputSelect.invalid" class="label">
+    <span *ngIf="inputSelect.errors.required" class="label-text-alt">{{requiredErrorMessage}}</span>
+  </label>
+
+</div>
