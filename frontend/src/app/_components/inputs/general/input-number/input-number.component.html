@@ -29,7 +29,7 @@
     <label class="input-group {{InputGroupSize[size]}}">
 
       <!-- Left label -->
-      <span *ngIf="leftLabel" class="{{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{leftLabel}}</span>
+      <span *ngIf="leftLabel" class="min-w-fit {{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{leftLabel}}</span>
 
       <input
         type="number"
@@ -48,7 +48,7 @@
       />
 
       <!-- Right label -->
-      <span *ngIf="rightLabel" class="{{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{rightLabel}}</span>
+      <span *ngIf="rightLabel" class="min-w-fit {{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{rightLabel}}</span>
 
       <!-- Button -->
       <button *ngIf="btnText || btnIcon" class="btn {{btnIcon ? 'btn-square' : ''}} {{color ? 'btn-' + color : ''}}" (click)="btnClicked.emit()">

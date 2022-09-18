@@ -1,24 +1,53 @@
-<div class="input-wrapper" [ngClass]="classList">
-  <!-- Label -->
-  <span *ngIf="label" class="label">{{label}}</span>
+<div class="form-control w-full {{classList}}">
 
-  <!-- Input -->
-  <input
-    type="file"
-    id="{{id}}"
-    name="{{id}}"
-    [accept]="accept"
-    class="input"
-    [multiple]="multiple"
-    [(ngModel)]="value"
-    (change)="onFilesSelected($event)"
-    [disabled]="disabled"
-    [required]="required"
-    #inputFile="ngModel"
-    [ngClass]="{'is-invalid': form && form.submitted && inputFile.invalid}">
+  <!-- Label -->
+  <label *ngIf="label" class="label">
+    <span class="label-text">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
+  </label>
+
+  <!-- Dropzone -->
+  <div class="dropzone flex justify-center items-center w-full">
+    <label [for]="id" class="flex flex-col justify-center items-center w-full rounded-lg border-2 border-dashed
+           {{color ? 'border-' + color + ' text-' + color : ''}} btn btn-ghost {{color ? 'btn-' + color : ''}}"
+           [ngClass]="{'h-fit': size === 'xs', 'h-40': size === 'sm', 'h-48': size === 'md', 'h-64': size === 'lg',
+           'border-error text-error btn-error': form && form.submitted && inputFile.invalid}">
+
+      <!-- Dropzone Text -->
+      <div class="flex flex-col justify-center items-center pt-5 pb-6">
+        <ng-icon name="tabler-cloud-upload" size="2.5rem" color="fillCurrent"></ng-icon>
+        <p class="mb-2 text-sm"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+        <p class="text-xs">{{getFileTypes()}} (MAX. 300 KB)</p>
+      </div>
+
+      <!-- Hidden input -->
+      <input
+        type="file"
+        id="{{id}}"
+        name="{{id}}"
+        [accept]="accept"
+        class="hidden"
+        [multiple]="multiple"
+        [(ngModel)]="value"
+        (change)="onFilesSelected($event)"
+        [required]="required"
+        [disabled]="disabled"
+        #inputFile="ngModel"
+      />
+
+    </label>
+  </div>
+
+  <!-- Files Selected -->
+  <div *ngIf="files" class="flex flex-wrap items-center w-full mt-3">
+    <button *ngFor="let file of getFiles(); let i = index; let last = last" class="btn btn-sm btn-ghost gap-2 {{!last ? 'mr-2' : ''}}" (click)="removeFile(i)">
+      <ng-icon name="feather-x" class="w-4 h-4 cursor-pointer" color="fillCurrent"></ng-icon>
+      {{file.name}}
+    </button>
+  </div>
 
   <!-- Error Messages -->
-  <div *ngIf="form && form.submitted && inputFile.invalid" class="invalid-feedback d-block">
-    <span *ngIf="inputFile.errors.required">{{requiredErrorMessage}}</span>
-  </div>
+  <label *ngIf="form && form.submitted && inputFile.invalid" class="label">
+    <span *ngIf="inputFile.errors.required" class="label-text-alt">{{requiredErrorMessage}}</span>
+  </label>
+
 </div>

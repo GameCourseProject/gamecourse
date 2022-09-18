@@ -11,5 +11,27 @@
     .label-text-alt {
       @apply text-error font-semibold;
     }
+
+    .dropzone .btn-ghost:hover {
+      &.btn-primary {
+        background-color: hsl(var(--pf, var(--p)) / var(--tw-bg-opacity));
+      }
+
+      &.btn-secondary {
+        background-color: hsl(var(--sf, var(--s)) / var(--tw-bg-opacity));
+      }
+
+      &.btn-accent {
+        background-color: hsl(var(--af, var(--a)) / var(--tw-bg-opacity));
+      }
+
+      &.btn-neutral {
+        background-color: hsl(var(--nf, var(--n)) / var(--tw-bg-opacity));
+      }
+
+      &.btn-info, &.btn-success, &.btn-warning, &.btn-error {
+        background-color: transparent;
+      }
+    }
   }
 }

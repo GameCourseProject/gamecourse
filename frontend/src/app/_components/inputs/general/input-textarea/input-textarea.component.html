@@ -19,7 +19,7 @@
     [maxlength]="maxLength"
     [disabled]="disabled"
     #inputTextarea="ngModel"
-    [ngClass]="{'input-error': form && form.submitted && inputTextarea.invalid}">
+    [ngClass]="{'textarea-error': form && form.submitted && inputTextarea.invalid}">
   </textarea>
 
   <!-- Error Messages -->
