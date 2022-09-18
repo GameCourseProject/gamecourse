@@ -116,6 +116,10 @@ export class InputFileComponent implements OnInit, AfterViewInit, OnChanges {
       dt.items.add(file);
     }
     this.files = dt.files;
+
+    // Set error
+    if (this.required && this.files.length === 0)
+      this.form.controls[this.id].setErrors({'required': true});
   }
 
   get InputSize(): typeof InputSize {
