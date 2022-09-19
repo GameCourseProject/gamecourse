@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
-import {InputGroupSize, InputSize } from '../../Settings';
+import {InputGroupSize, InputSize } from '../../InputSizes';
 
 @Component({
   selector: 'app-input-time',

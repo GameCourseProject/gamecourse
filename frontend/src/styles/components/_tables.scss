@@ -1,0 +1,36 @@
+.dataTables_wrapper {
+  @apply bg-base-200 overflow-x-auto;
+
+  .dataTables_length, .dataTables_filter, .dataTables_info, .dataTables_paginate {
+    @apply py-4 text-xs font-semibold tracking-wide uppercase text-base-content text-opacity-80;
+  }
+
+  .dataTables_length, .dataTables_info {
+    @apply pl-4;
+  }
+
+  .dataTables_filter, .dataTables_paginate {
+    @apply pr-4;
+  }
+
+  .dataTables_length select {
+    @apply mx-1.5 text-sm focus:border-primary focus:outline-none;
+  }
+
+  .dataTables_filter input {
+    @apply ml-1.5 text-sm input input-sm input-bordered border-2;
+  }
+
+  .dataTables_filter input:focus {
+    @apply focus:border-primary focus:outline-none;
+  }
+
+  .dataTables_paginate {
+    @apply px-2 pt-2 pb-4 flex justify-center items-center;
+  }
+
+  .dataTables_paginate .paginate_button.current {
+    @apply btn btn-sm btn-primary text-primary-content hover:text-primary-content #{!important};
+  }
+
+}

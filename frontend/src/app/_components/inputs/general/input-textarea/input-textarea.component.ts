@@ -1,7 +1,7 @@
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
 
-import { TextareaSize } from '../../Settings';
+import { TextareaSize } from '../../InputSizes';
 
 @Component({
   selector: 'app-input-textarea',

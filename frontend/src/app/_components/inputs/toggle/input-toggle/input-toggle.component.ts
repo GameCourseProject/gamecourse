@@ -1,6 +1,6 @@
 import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
-import { ToggleSize } from '../../Settings';
+import { ToggleSize } from '../../InputSizes';
 
 @Component({
   selector: 'app-input-toggle',

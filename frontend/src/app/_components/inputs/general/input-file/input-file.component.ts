@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
 import {AlertService, AlertType} from "../../../../_services/alert.service";
-import {InputGroupSize, InputSize } from '../../Settings';
+import {InputGroupSize, InputSize } from '../../InputSizes';
 
 @Component({
   selector: 'app-input-file',

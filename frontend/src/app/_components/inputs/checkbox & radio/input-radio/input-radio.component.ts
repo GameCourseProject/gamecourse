@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
-import { RadioSize } from '../../Settings';
+import { RadioSize } from '../../InputSizes';
 
 @Component({
   selector: 'app-input-radio',

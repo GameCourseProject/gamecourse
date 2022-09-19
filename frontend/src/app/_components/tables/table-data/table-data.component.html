@@ -1,0 +1,143 @@
+<!-- Type: TEXT -->
+<ng-container *ngIf="type === DataType.TEXT">
+  <p *ngIf="!subtitle" class="prose text-sm {{Align}} {{classList}}">{{text ?? ''}}</p>
+
+  <div *ngIf="subtitle" class="prose text-sm {{Align}} {{classList}}">
+    <h4>{{text ?? ''}}</h4>
+    <p class="opacity-50">{{subtitle ?? ''}}</p>
+  </div>
+</ng-container>
+
+<!-- Type: NUMBER -->
+<ng-container *ngIf="type === DataType.NUMBER">
+  <p class="prose text-sm {{Align}} {{classList}}">{{value ? value.format(valueFormat) : ''}}</p>
+</ng-container>
+
+<!-- Type: DATE -->
+<ng-container *ngIf="type === DataType.DATE">
+  <p class="prose text-sm {{Align}} {{classList}}">{{date ? date.format(dateFormat) : ''}}</p>
+</ng-container>
+
+<!-- Type: TIME -->
+<ng-container *ngIf="type === DataType.TIME">
+  <p class="prose text-sm {{Align}} {{classList}}">{{time ? time.format(timeFormat) : ''}}</p>
+</ng-container>
+
+<!-- Type: DATETIME -->
+<ng-container *ngIf="type === DataType.DATETIME">
+  <p class="prose text-sm {{Align}} {{classList}}">{{datetime ? datetime.format(datetimeFormat) : ''}}</p>
+</ng-container>
+
+<!-- Type: COLOR -->
+<ng-container *ngIf="type === DataType.COLOR">
+  <div class="flex {{Align}} items-center gap-2 {{classList}}">
+    <div class="w-5 h-5 rounded border border-gray-400 shadow-sm {{Align}}" [ngStyle]="{backgroundColor: color}"></div>
+
+    <div *ngIf="colorLabel" class="prose text-sm">
+      <span>{{colorLabel}}</span>
+    </div>
+  </div>
+</ng-container>
+
+<!-- Type: IMAGE -->
+<ng-container *ngIf="type === DataType.IMAGE">
+  <div class="avatar flex {{Align}} items-center">
+    <div class="w-9 {{imgShape === 'round' ? 'rounded-full' : imgShape === 'square' ? 'rounded-xl' : ''}}">
+      <img class="{{classList}}" [src]="imgSrc" alt="" />
+    </div>
+  </div>
+</ng-container>
+
+<!-- Type: PILL -->
+<ng-container *ngIf="type === DataType.PILL">
+  <div class="{{Align}} items-center">
+    <div class="badge badge-sm {{pillColor ? 'badge-' + pillColor : ''}} {{classList}}">{{pillText}}</div>
+  </div>
+</ng-container>
+
+<!-- Type: BUTTON -->
+<ng-container *ngIf="type === DataType.BUTTON">
+  <button class="btn btn-sm btn-wide {{buttonColor ? 'btn-' + buttonColor : ''}} {{classList}}" [ngClass]="{'gap-2': buttonIcon}">
+    <ng-icon *ngIf="buttonIcon" [name]="buttonIcon" size="1.2rem"></ng-icon>
+    {{buttonText}}
+  </button>
+</ng-container>
+
+<!-- Type: AVATAR -->
+<ng-container *ngIf="type === DataType.AVATAR">
+  <div class="{{Align}}">
+
+    <div class="flex items-center space-x-3 {{classList}}">
+      <div class="avatar">
+        <div class="mask mask-circle w-10 h-10">
+          <img [src]="avatarSrc" [alt]="avatarTitle" />
+        </div>
+      </div>
+
+      <div class="prose text-sm">
+        <h4>{{avatarTitle ?? ''}}</h4>
+        <span *ngIf="avatarSubtitle" class="opacity-50">{{avatarSubtitle}}</span>
+      </div>
+    </div>
+
+  </div>
+</ng-container>
+
+<!-- Type: CHECKBOX -->
+<ng-container *ngIf="type === DataType.CHECKBOX">
+  <div class="flex items-center {{Align}}">
+    <app-input-checkbox
+      [id]="checkboxId"
+      [(value)]="checkboxValue"
+      [color]="checkboxColor"
+      [classList]="classList"
+      [disabled]="checkboxDisabled">
+    </app-input-checkbox>
+  </div>
+</ng-container>
+
+<!-- Type: RADIO -->
+<ng-container *ngIf="type === DataType.RADIO">
+  <div class="flex items-center {{Align}}">
+    <app-input-radio
+      [id]="radioId"
+      [group]="radioGroup"
+      [optionValue]="radioOptionValue"
+      [(value)]="radioOptionValue"
+      [color]="radioColor"
+      [classList]="classList"
+      [disabled]="radioDisabled">
+    </app-input-radio>
+  </div>
+</ng-container>
+
+<!-- Type: TOGGLE -->
+<ng-container *ngIf="type === DataType.TOGGLE">
+  <div class="flex items-center {{Align}}">
+    <app-input-toggle
+      [id]="toggleId"
+      [(value)]="toggleValue"
+      [color]="toggleColor"
+      [classList]="classList"
+      [disabled]="toggleDisabled">
+    </app-input-toggle>
+  </div>
+</ng-container>
+
+<!-- Type: ACTIONS -->
+<ng-container *ngIf="type === DataType.ACTIONS">
+  <div class="flex {{Align}} items-center space-x-4 text-sm">
+    <ng-container *ngFor="let action of actions">
+
+      <button *ngIf="action === Action.NEW" type="button" class="btn btn-sm btn-ghost">
+        <ng-icon name="feather-plus-circle" size="1.2rem" class="btn-warning"></ng-icon>
+      </button>
+
+    </ng-container>
+  </div>
+</ng-container>
+
+<!-- Type: CUSTOM -->
+<ng-container *ngIf="type === DataType.CUSTOM">
+  <ng-container [ngTemplateOutlet]="templateRef"></ng-container>
+</ng-container>
