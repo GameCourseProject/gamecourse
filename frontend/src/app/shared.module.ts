@@ -55,7 +55,6 @@ import { RadarChartComponent } from "./_components/charts/radar-chart/radar-char
 // Components: tables
 import { TableComponent } from "./_components/tables/table/table.component";
 import { TableData } from "./_components/tables/table-data/table-data.component";
-import { PaginationComponent } from "./_components/tables/pagination/pagination.component";
 
 // Components: alerts
 import { AlertComponent } from './_components/alerts/alert/alert.component';
@@ -168,7 +167,6 @@ import {
 
     TableComponent,
     TableData,
-    PaginationComponent,
 
     AlertComponent,
 
@@ -233,7 +231,6 @@ import {
 
     TableComponent,
     TableData,
-    PaginationComponent,
 
     AlertComponent,
 

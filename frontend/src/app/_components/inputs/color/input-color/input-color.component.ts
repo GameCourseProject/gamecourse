@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
 
-import { InputGroupSize } from '../../Settings';
+import { InputGroupSize } from '../../InputSizes';
 
 import Pickr from "@simonwep/pickr";
 

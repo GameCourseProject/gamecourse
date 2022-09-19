@@ -1,0 +1,49 @@
+<div class="w-full overflow-hidden rounded-lg shadow-xs border !border-2 border-base-content border-opacity-20 {{classList}}">
+
+  <div class="w-full overflow-x-auto">
+
+    <!-- Table -->
+    <table [id]="id" class="w-full">
+
+      <!-- Table: header -->
+      <thead>
+        <tr class="text-xs font-semibold tracking-wide text-left uppercase text-primary bg-base-200">
+          <th *ngFor="let header of headers" class="whitespace-nowrap px-4 py-3 !border-b-2 !border-b-base-content !border-opacity-20 {{getAlign(header.align)}}">
+            {{header.label}}
+          </th>
+        </tr>
+      </thead>
+
+      <!-- Table: body -->
+      <tbody class="bg-base-100 divide-y">
+        <tr *ngFor="let tr of data; let i = index" class="whitespace-nowrap bg-base-100 hover:bg-base-200">
+          <td table-data *ngFor="let td of tr; let col = index" class="!border-b !border-b-base-content !border-opacity-20 !px-5 !py-4"
+              [type]="td.type"
+              [data]="td.content"
+              (btnClicked)="btnClicked.emit({type: $event, row: i, col: col})"
+              (valueChanged)="valueChanged.emit({value: $event, row: i, col: col})">
+          </td>
+        </tr>
+
+        <!-- Loading -->
+        <tr *ngIf="loading" class="bg-base-100">
+          <td [colSpan]="headers?.length">
+            <app-spinner [classList]="'!w-full h-12'"></app-spinner>
+          </td>
+        </tr>
+      </tbody>
+
+      <!-- Table: footer -->
+      <tfoot *ngIf="hasFooters">
+        <tr class="text-xs font-semibold tracking-wide text-left uppercase text-primary border-b bg-base-200">
+          <th *ngFor="let footer of footers; let i = index" class="whitespace-nowrap px-4 py-3 !border-t !border-t-base-content !border-opacity-20 {{getAlign(headers[i].align)}}">
+            {{footer}}
+          </th>
+        </tr>
+      </tfoot>
+
+    </table>
+
+  </div>
+
+</div>

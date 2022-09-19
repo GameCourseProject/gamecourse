@@ -1,5 +1,5 @@
 interface Number {
-  format(type?: 'money' | 'percent'): string;
+  format(type?: 'default' | 'money' | 'percent'): string;
   countDecimals(): number;
 }
 
