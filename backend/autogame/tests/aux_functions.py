@@ -112,7 +112,7 @@ def get_empty_rules ():
 	rules = []
 	for i in range(12):
 		rules.append(Rule(fpath=path))
-	return rules
+	return rules                         
 def get_rule_empty ():
 	return get_empty_rules()
 # def get_0fields_rules ():

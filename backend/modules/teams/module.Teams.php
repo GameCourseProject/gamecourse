@@ -177,11 +177,12 @@ class Teams extends Module
 
     public function initTemplates()
     {
+        /*
         $courseId = $this->getCourseId();
 
         if (!Views::templateExists($courseId, self::TEAM_LEADERBOARD_TEMPLATE))
             Views::createTemplateFromFile(self::TEAM_LEADERBOARD_TEMPLATE, file_get_contents(__DIR__ . '/teamsLeaderboard.txt'), $courseId, self::ID);
-
+          */
         }
 
     public function initAPIEndpoints()
@@ -556,41 +557,45 @@ class Teams extends Module
         $lines = explode("\n", $fileData);
 
         # DEFAULT:
-        $groupColumnName = "grupo";
+        $groupColumnName = "group";
         $separator = ";"; # - DEFAULT
 
         $pos = strpos($lines[0], $separator);
         if ($pos === false) {
             $separator = ",";
         }
-        
+
         $lines[0] = trim($lines[0]);
         $firstLine = explode(";",$lines[0]);
         $firstLine = array_map('trim', $firstLine);
 
         $usernameIndex = array_search("username", $firstLine);
         $groupNameIndex = array_search($groupColumnName, $firstLine);
-
         $containsColumnNames = true;
+
         if ($usernameIndex === false){
             $containsColumnNames = false;
         }
 
         # $lines[0] = column names
         foreach ($lines as $line) {
+
             if ($containsColumnNames) {
                 $containsColumnNames = false;
                 continue;
             }
             # e.g: line = ist149372;49372;5 - VIL04    (username, group)
             $line = trim($line);
+            
+            if (strpos($line, ";") === false){
+                continue;
+            }
+
             $lineContent = explode($separator, $line);
             $lineContent = array_map('trim', $lineContent);
-
             $username = $lineContent[$usernameIndex];
             $groupNr = $lineContent[$groupNameIndex];
             $group =  $this->getTeamNumberFromFile($groupNr);
-
             $gcUserId = Core::$systemDB->select("auth", ["username" => $username], "game_course_user_id");
             if ($gcUserId != null) {
                 $courseUserId = Core::$systemDB->select("course_user", ["course" => $courseId, "id" => $gcUserId], "id");
@@ -654,7 +659,7 @@ class Teams extends Module
 
             }
             else {
-                echo "User with username = " . $username . " is not a user in this course.";
+                echo "User with id = " . $username . " is not a user in this course.";
             }
 
         }
@@ -684,7 +689,8 @@ class Teams extends Module
     }
 
     public function exportItems(){
-
+        # TODO
+        
     }
 
     /*** ----------------------------------------------- ***/
@@ -797,7 +803,6 @@ class Teams extends Module
         return Core::$systemDB->selectMultiple(self::TABLE_MEMBERS, ["teamId" => $teamId], "*", "memberId");
     }
 
-
     public function getTeamMember($memberId, $courseId)
     {
         $where = ["r.course" => $courseId, "r.name" => "Student", "cu.isActive" => true, "u.id" => $memberId];
@@ -833,6 +838,7 @@ class Teams extends Module
         // "teamNumber" => $team['teamNumber'] || $team['id'],
         $teamData = [
             "teamName" => $team['teamName'],
+            "teamNumber" => $team['teamNumber'],
             "course" => $courseId
         ];
 
@@ -859,6 +865,7 @@ class Teams extends Module
         if(!empty($originalTeam)){
             $teamData = [
                 "teamName" => $team['teamName'],
+                "teamNumber" => $team['teamNumber'],
                 "course" => $courseId
             ];
             Core::$systemDB->update(self::TABLE, $teamData, ["id" => $team["id"]]);
@@ -886,13 +893,135 @@ class Teams extends Module
     /*** ----------------------------------------------- ***/
 
    public function getTeamNumberFromFile($group){
-       // group default = "12 - VIL04"    (groupNumber - classSlot)
+       // group default = "12 - PCML04"    (groupNumber - classSlot)
 
        if (is_numeric($group)) return $group;
        else{
            return strtok($group, '-');
        }
 
+   }
+
+   public function addCourseUsers($courseId){
+       $id1 = Core::$systemDB->insert("game_course_user", [
+           "name" => "User Test 1",
+           "email" => "usertest1@gmail.com",
+           "studentNumber" => "99999",
+           "nickname" => "",
+           "major" => "MEIC-A",
+           "isAdmin" => 0,
+           "isActive" => 0
+       ]);
+       $authId1 = Core::$systemDB->insert("auth", [
+           "game_course_user_id" => $id1,
+           "username" => "ist199999",
+           "authentication_service" => "fenix"
+       ]);
+       $user1 = new CourseUser($id1, $courseId);
+       $user1->addCourseUserToDB();
+
+       $id2 = Core::$systemDB->insert("game_course_user", [
+           "name" => "User Test 2",
+           "email" => "usertest2@gmail.com",
+           "studentNumber" => "99998",
+           "nickname" => "",
+           "major" => "MEIC-A",
+           "isAdmin" => 0,
+           "isActive" => 1
+       ]);
+       $authId2 = Core::$systemDB->insert("auth", [
+           "game_course_user_id" => $id2,
+           "username" => "ist199998",
+           "authentication_service" => "fenix"
+       ]);
+       $user2 = new CourseUser($id2, $courseId);
+       $user2->addCourseUserToDB();
+
+       $id3 = Core::$systemDB->insert("game_course_user", [
+           "name" => "User Test 3",
+           "email" => "usertest3@gmail.com",
+           "studentNumber" => "99997",
+           "nickname" => "",
+           "major" => "MEIC-A",
+           "isAdmin" => 0,
+           "isActive" => 1
+       ]);
+       $authId3 = Core::$systemDB->insert("auth", [
+           "game_course_user_id" => $id3,
+           "username" => "ist199997",
+           "authentication_service" => "fenix"
+       ]);
+       $user3 = new CourseUser($id3, $courseId);
+       $user3->addCourseUserToDB();
+
+       $id4 = Core::$systemDB->insert("game_course_user", [
+           "name" => "User Test 4",
+           "email" => "usertest4@gmail.com",
+           "studentNumber" => "99996",
+           "nickname" => "",
+           "major" => "MEIC-A",
+           "isAdmin" => 0,
+           "isActive" => 1
+       ]);
+       $authId4 = Core::$systemDB->insert("auth", [
+           "game_course_user_id" => $id4,
+           "username" => "ist199996",
+           "authentication_service" => "fenix"
+       ]);
+       $user4 = new CourseUser($id4, $courseId);
+       $user4->addCourseUserToDB();
+
+       $id5 = Core::$systemDB->insert("game_course_user", [
+           "name" => "User Test 5",
+           "email" => "usertest5@gmail.com",
+           "studentNumber" => "99995",
+           "nickname" => "",
+           "major" => "MEIC-A",
+           "isAdmin" => 0,
+           "isActive" => 1
+       ]);
+       $authId5 = Core::$systemDB->insert("auth", [
+           "game_course_user_id" => $id5,
+           "username" => "ist199995",
+           "authentication_service" => "fenix"
+       ]);
+       $user5 = new CourseUser($id5, $courseId);
+       $user5->addCourseUserToDB();
+
+       $id6 = Core::$systemDB->insert("game_course_user", [
+           "name" => "User Test 6",
+           "email" => "usertest6@gmail.com",
+           "studentNumber" => "99994",
+           "nickname" => "",
+           "major" => "MEIC-A",
+           "isAdmin" => 0,
+           "isActive" => 1
+       ]);
+       $authId6 = Core::$systemDB->insert("auth", [
+           "game_course_user_id" => $id6,
+           "username" => "ist199994",
+           "authentication_service" => "fenix"
+       ]);
+       $user6 = new CourseUser($id6, $courseId);
+       $user6->addCourseUserToDB();
+
+       $id7 = Core::$systemDB->insert("game_course_user", [
+           "name" => "User Test 7",
+           "email" => "usertest7@gmail.com",
+           "studentNumber" => "99993",
+           "nickname" => "",
+           "major" => "MEIC-A",
+           "isAdmin" => 0,
+           "isActive" => 1
+       ]);
+       $authId7 = Core::$systemDB->insert("auth", [
+           "game_course_user_id" => $id7,
+           "username" => "ist199993",
+           "authentication_service" => "fenix"
+       ]);
+       $user7 = new CourseUser($id7, $courseId);
+       $user7->addCourseUserToDB();
+       
    }
 
 }

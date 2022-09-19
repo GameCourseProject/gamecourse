@@ -10,7 +10,6 @@ use GameCourse\GoogleHandler;
 use Modules\Badges\Badges;
 use Modules\ClassCheck\ClassCheckModule;
 use Modules\Fenix\Fenix;
-use Modules\Teams\Teams;
 use Modules\GoogleSheets\GoogleSheetsModule;
 use Modules\Moodle\MoodleModule;
 
@@ -95,20 +94,11 @@ $GLOBALS['c_2'] = [];
 global $c_3;
 $GLOBALS['c_3'] = [];
 
-global $t_1;
-$GLOBALS['t_1'] = [];
-global $t_2;
-$GLOBALS['t_2'] = [];
-global $t_3;
-$GLOBALS['t_3'] = [];
-
-
-$GLOBALS['courseInfo'] = testCourse();    /*
+$GLOBALS['courseInfo'] = testCourse();
 $GLOBALS['fenixInfo'] = testFenix();
 $GLOBALS['moodleInfo'] = testMoodle();
 $GLOBALS['classcheckInfo'] = testClassCheck();
-$GLOBALS['googlesheetsInfo'] = testGoogleSheets();   */
-$GLOBALS['teamsInfo'] = testTeamImport($_GET["course"]);
+$GLOBALS['googlesheetsInfo'] = testGoogleSheets();
 
 
 $GLOBALS['dictionaryInfo'] = testDictionary();
@@ -202,7 +192,6 @@ function testDictionary()
 }
 
 testPhotoDownload();
-
 if ($GLOBALS['courseInfo'] == 0) {
     // testUserImport();
     // return "<strong style='color:#F7941D;'>Warning:</strong> If you desire to test the whole script, please specify a course id as an URL parameter: ?course=1 or &course=1.";
@@ -212,7 +201,7 @@ if ($GLOBALS['courseInfo'] == 0) {
 } else if ($GLOBALS['courseInfo'] == 1) {
     $course = $_GET["course"];
     $courseObj = Course::getCourse($course);
-  /*  if ($courseObj->getModule(Fenix::ID)) {
+    if ($courseObj->getModule(Fenix::ID)) {
         testFenixPlugin($course);
     }
     if ($courseObj->getModule(MoodleModule::ID)) {
@@ -223,9 +212,6 @@ if ($GLOBALS['courseInfo'] == 0) {
     }
     if ($courseObj->getModule(GoogleSheetsModule::ID)) {
         testGoogleSheetsPlugin($course);
-    }     */
-    if ($courseObj->getModule(Teams::ID)) {
-        testTeamImport($course);
     }
     //testDictionaryManagement($course);
     //testUserImport();
@@ -1021,98 +1007,248 @@ function importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId
     }
 }
 
-function testTeamImport($course){
 
-    // maybe import users first
-    $teamsCSV = "ist123460, 4 - VIL04\n";
-    $teamsCSV .= "ist145124, 4 - VIL04\n";
-    $teamsCSV .= "ist123456, 5 - VIL06\n";
-    $teamsCSV .= "ist123457, 5 - VIL06\n";
-    $teamsCSV .= "ist123458, 6 - VIL08\n";
-    $teamsCSV .= "ist123459, 5 - VIL06\n";
-
-
-    $gcUserId1 = Core::$systemDB->select("auth", ["username" => "ist123460"], "game_course_user_id");
-    $gcUserId2 = Core::$systemDB->select("auth", ["username" => "ist145124"], "game_course_user_id");
-    $gcUserId3 = Core::$systemDB->select("auth", ["username" => "ist123456"], "game_course_user_id");
-    $gcUserId4 = Core::$systemDB->select("auth", ["username" => "ist123457"], "game_course_user_id");
-    $gcUserId5 = Core::$systemDB->select("auth", ["username" => "ist123458"], "game_course_user_id");
-    $gcUserId6 = Core::$systemDB->select("auth", ["username" => "ist123459"], "game_course_user_id");
-
-    if ($gcUserId1 === null || $gcUserId2 === null ||$gcUserId3 === null || $gcUserId4 === null || $gcUserId5 === null || $gcUserId6 === null ) {
-
-        $GLOBALS['t_1'] = ["warning", "
-        <strong style='color:#F7941D;'>Warning: </strong>To test the teams's import, do the following:
-        <ul>
-        <li>Create a course named 'Course X' and year '2021/2022'.</li>
-        <li>Inside that course, enable teams.</li>
-        <li>Import the following users to the course: <a href=''> Users To Import</a></li>
-        </ul>"];
-
-    } else {
-        $courseUserId1 = Core::$systemDB->select("course_user", ["course" => $course, "id" => $gcUserId1], "id");
-        $courseUserId2 = Core::$systemDB->select("course_user", ["course" => $course, "id" => $gcUserId2], "id");
-        $courseUserId3 = Core::$systemDB->select("course_user", ["course" => $course, "id" => $gcUserId3], "id");
-        $courseUserId4 = Core::$systemDB->select("course_user", ["course" => $course, "id" => $gcUserId4], "id");
-        $courseUserId5 = Core::$systemDB->select("course_user", ["course" => $course, "id" => $gcUserId5], "id");
-        $courseUserId6 = Core::$systemDB->select("course_user", ["course" => $course, "id" => $gcUserId6], "id");
-
-        if ($courseUserId1 === null || $courseUserId2 === null ||$courseUserId3 === null || $courseUserId4 === null || $courseUserId5 === null || $courseUserId6 === null ) {
-            $GLOBALS['t_1'] = ["warning", "
-            <strong style='color:#F7941D;'>Warning: </strong>To test the teams's import, import the following users to the course:  
-                <a href=''> Users To Import</a>
-            </ul>"];
-        } else {
-            Teams::importTeams($teamsCSV,$course, false);
-
-            $member1 = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId1], "*");
-            $member2 = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId2], "*");
-            $member3 = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId3], "*");
-            $member4 = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId4], "*");
-            $member5 = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId5], "*");
-            $member6 = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId6], "*");
-
-            if ($member1 && $member2 && $member3 && $member4 && $member5 && $member6) {
-                // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users imported - created and updated (not replaced).</h3>";
-                $GLOBALS['t_1'] = ["success", "<strong style='color:green'>Success:</strong>  Teams imported - created and updated (not replaced)."];
-                $GLOBALS['success']++;
-            } else {
-                // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Course Users not imported - created and updated (not replaced).</h3>";
-                $GLOBALS['t_1'] = ["fail", "<strong style='color:red'>Fail:</strong> Teams not imported - created and updated (not replaced)."];
-                $GLOBALS['fail']++;
-            }
-
-            $teamsCSV = "ist123460, 4 - VIL04\n";
-            $teamsCSV .= "ist145124, 4 - VIL04\n";
-            $teamsCSV .= "ist123456, 5 - VIL06\n";
-            $teamsCSV .= "ist123457, 5 - VIL06\n";
-            $teamsCSV .= "ist123458, 6 - VIL08\n";
-            $teamsCSV .= "ist123459, 7 - VIL06\n";
-            
-            Teams::importTeams($teamsCSV, $course,true);
-            $updatedTeamId = Core::$systemDB->select("teams", ["teamNumber" => "7"], "id");
-            $updatedMember = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId6, "teamId" => $updatedTeamId], "*");
-
-            if ($updatedMember){
-                $GLOBALS['t_2'] = ["success", "<strong style='color:green'>Success:</strong>  Teams imported - updated (and replaced)."];
-                $GLOBALS['success']++;
-            } else {
-                $GLOBALS['t_2'] = ["fail", "<strong style='color:red'>Fail:</strong> Teams not imported."];
-                $GLOBALS['fail']++;
-            }
-
-        }
-        Core::$systemDB->delete("teams_members", ["memberId" => $gcUserId1]);
-        Core::$systemDB->delete("teams_members", ["memberId" => $gcUserId2]);
-        Core::$systemDB->delete("teams_members", ["memberId" => $gcUserId3]);
-        Core::$systemDB->delete("teams_members", ["memberId" => $gcUserId4]);
-        Core::$systemDB->delete("teams_members", ["memberId" => $gcUserId5]);
-        Core::$systemDB->delete("teams_members", ["memberId" => $gcUserId6]);
-    }
-
-}
 
 /*************************** Auxiliar functions ***************************/
+
+
+
+//Check if users where created/updated
+function checkFenix($fenix, $course)
+{
+    $newUsers = 0;
+    $updatedUsers = 0;
+    $course = new Course($course);
+    for ($line = 1; $line < sizeof($fenix); $line++) {
+        $fields = explode(";", $fenix[$line]);
+        $username = $fields[0];
+        $studentNumber = $fields[1];
+        $studentName = $fields[2];
+        $email = $fields[3];
+        $courseName = $fields[10];
+        $major = "";
+        if (strpos($courseName, 'Alameda')) {
+            $major = "MEIC-A";
+        } else if (strpos($courseName, 'Taguspark')) {
+            $major = "MEIC-T";
+        } else {
+            $endpoint = "degrees?academicTerm=2019/2020";
+            $listOfCourses = Core::getFenixInfo($endpoint);
+            $courseFound = false;
+            foreach ($listOfCourses as $courseFenix) {
+                if ($courseFound) {
+                    break;
+                } else {
+                    if (strpos($courseName, $courseFenix->name)) {
+                        $courseFound = true;
+                        foreach ($courseFenix->campus as $campusfenix) {
+                            $major = $campusfenix->name[0];
+                        }
+                    }
+                }
+            }
+        }
+        if ($studentNumber) {
+            if (!User::getUserByStudentNumber($studentNumber)) {
+                User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", "MEIC-T", 0, 1);
+                $user = User::getUserByStudentNumber($studentNumber);
+                $courseUser = new CourseUser($user->getId(), $course);
+                $courseUser->addCourseUserToDB(2);
+                $newUsers++;
+            } else {
+                $existentUser = User::getUserByStudentNumber($studentNumber);
+                $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", "MEIC-T", 0, 1);
+                $updatedUsers++;
+            }
+        } else {
+            if (!User::getUserByEmail($email)) {
+                User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", "MEIC-T", 0, 1);
+                $user = User::getUserByEmail($email);
+                $courseUser = new CourseUser($user->getId(), $course);
+                $courseUser->addCourseUserToDB(2);
+                $newUsers++;
+            } else {
+                $existentUser = User::getUserByEmail($email);
+                $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", "MEIC-T", 0, 1);
+                $updatedUsers++;
+            }
+        }
+    }
+
+    return [$newUsers, $updatedUsers];
+}
+//moodle plugin
+function setMoodleVars($courseId, $moodleVar)
+{
+    $moodleVars = Core::$systemDB->select(MoodleModule::TABLE_CONFIG, ["course" => $courseId], "*");
+
+    $arrayToDb = [
+        "course" => $courseId,
+        "dbServer" => $moodleVar['dbserver'],
+        "dbUser" => $moodleVar['dbuser'],
+        "dbPass" => $moodleVar['dbpass'],
+        "dbName" => $moodleVar['db'],
+        "dbPort" => $moodleVar["dbport"],
+        "tablesPrefix" => $moodleVar["prefix"],
+        "moodleTime" => $moodleVar["time"],
+        "moodleCourse" => $moodleVar["course"],
+        "moodleUser" => $moodleVar["user"]
+    ];
+    if (empty($moodleVar['dbserver']) || empty($moodleVar['dbuser']) || empty($moodleVar['db'])) {
+        return false;
+    } else {
+        if (empty($moodleVars)) {
+            Core::$systemDB->insert(MoodleModule::TABLE_CONFIG, $arrayToDb);
+        } else {
+            Core::$systemDB->update(MoodleModule::TABLE_CONFIG, $arrayToDb);
+        }
+        return true;
+    }
+}
+
+//classcheck plugin
+function setClassCheckVars($courseId, $classCheck)
+{
+    $classCheckVars = Core::$systemDB->select(ClassCheckModule::TABLE_CONFIG, ["course" => $courseId], "*");
+
+    $arrayToDb = ["course" => $courseId, "tsvCode" => $classCheck['tsvCode']];
+
+    if (empty($classCheck["tsvCode"])) {
+        return false;
+    } else {
+        if (empty($classCheckVars)) {
+            Core::$systemDB->insert(ClassCheckModule::TABLE_CONFIG, $arrayToDb);
+        } else {
+            Core::$systemDB->update(ClassCheckModule::TABLE_CONFIG, $arrayToDb);
+        }
+        return true;
+    }
+}
+
+//google sheets plugin - credentials
+function setGSCredentials($courseId, $gsCredentials)
+{
+    $credentialKey = key($gsCredentials[0]);
+    $credentials = $gsCredentials[0][$credentialKey];
+    $googleSheetCredentialsVars = Core::$systemDB->select(GoogleSheetsModule::TABLE_CONFIG, ["course" => $courseId], "*");
+
+    $uris = "";
+    for ($uri = 0; $uri < sizeof($credentials["redirect_uris"]); $uri++) {
+        $uris .= $credentials["redirect_uris"][$uri];
+        if ($uri != sizeof($credentials["redirect_uris"]) - 1) {
+            $uris .= ";";
+        }
+    }
+
+    $arrayToDb = [
+        "course" => $courseId, "key_" => $credentialKey, "clientId" => $credentials["client_id"], "projectId" => $credentials["project_id"],
+        "authUri" => $credentials["auth_uri"], "tokenUri" => $credentials["token_uri"], "authProvider" => $credentials["auth_provider_x509_cert_url"],
+        "clientSecret" => $credentials["client_secret"], "redirectUris" => $uris
+    ];
+
+    if (empty($credentials)) {
+        return false;
+    } else {
+        if (empty($googleSheetCredentialsVars)) {
+            Core::$systemDB->insert(GoogleSheetsModule::TABLE_CONFIG, $arrayToDb);
+        } else {
+            Core::$systemDB->update(GoogleSheetsModule::TABLE_CONFIG, $arrayToDb);
+        }
+        setCredentials($courseId);
+        return true;
+    }
+}
+function setCredentials($courseId)
+{
+    $credentials = getCredentialsFromDB($courseId);
+    GoogleHandler::setCredentials(json_encode($credentials));
+}
+
+function getCredentialsFromDB($courseId)
+{
+    $credentialDB = Core::$systemDB->select(GoogleSheetsModule::TABLE_CONFIG, ["course" => $courseId], "*");
+
+    $uris = explode(";", $credentialDB["redirectUris"]);
+
+    $arrayKey[$credentialDB['key_']] = array(
+        'client_id' => $credentialDB['clientId'], "project_id" => $credentialDB["projectId"],
+        'auth_uri' => $credentialDB['authUri'], "token_uri" => $credentialDB["tokenUri"], "auth_provider_x509_cert_url" => $credentialDB["authProvider"],
+        'client_secret' => $credentialDB["clientSecret"], "redirect_uris" => $uris
+    );
+    return $arrayKey;
+}
+
+
+function handleToken($courseId)
+{
+    $credentials = getCredentialsFromDB($courseId);
+    $token = getTokenFromDB($courseId);
+    // return GoogleHandler::checkToken($credentials, $token, null, $courseId);
+}
+
+function getTokenFromDB($courseId)
+{
+    $accessExists = Core::$systemDB->select(GoogleSheetsModule::TABLE_CONFIG, ["course" => $courseId], "accessToken");
+    if ($accessExists) {
+        $credentialDB = Core::$systemDB->select(GoogleSheetsModule::TABLE_CONFIG, ["course" => $courseId], "*");
+
+        $arrayToken = array(
+            'access_token' => $credentialDB['accessToken'], "expires_in" => $credentialDB["expiresIn"],
+            'scope' => $credentialDB['scope'], "token_type" => $credentialDB["tokenType"],
+            "created" => $credentialDB["created"], 'refresh_token' => $credentialDB["refreshToken"]
+        );
+        return json_encode($arrayToken);
+    } else {
+        return null;
+    }
+}
+
+//google sheets plugin - vars
+function setGoogleSheetsVars($courseId, $googleSheets)
+{
+    $googleSheetsVars = Core::$systemDB->select(GoogleSheetsModule::TABLE_CONFIG, ["course" => $courseId], "*");
+    $names = "";
+    foreach ($googleSheets["sheetName"] as $name) {
+        if (strlen($name) != 0) {
+            $names .= $name . ";";
+        }
+    }
+
+    if ($names != "" && substr($names, -1) == ";") {
+        $names = substr($names, 0, -1);
+    }
+    $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $names];
+    if (empty($googleSheets["spreadsheetId"])) {
+        return false;
+    } else {
+        if (empty($googleSheetsVars)) {
+            Core::$systemDB->insert(GoogleSheetsModule::TABLE_CONFIG, $arrayToDb);
+        } else {
+            Core::$systemDB->update(GoogleSheetsModule::TABLE_CONFIG, $arrayToDb);
+        }
+        saveTokenToDB($courseId);
+        return true;
+    }
+}
+
+function saveTokenToDB($courseId)
+{
+    $response = handleToken($courseId);
+    $token = $response["access_token"];
+    if ($token) {
+
+        $arrayToDB = array(
+            "course" => $courseId,
+            "accessToken" => $token["access_token"],
+            "expiresIn" => $token["expires_in"],
+            "scope" => $token["scope"],
+            "tokenType" => $token["token_type"],
+            "created" => $token["created"],
+            "refreshToken" => $token["refresh_token"]
+        );
+        Core::$systemDB->update(GoogleSheetsModule::TABLE_CONFIG, $arrayToDB);
+    }
+}
 
 //dictionary
 function argsToJSON($func, $refersToType, $funcLib)
@@ -1230,7 +1366,6 @@ if ($GLOBALS['courseInfo'] == 1) {
 }
 
 //Plugin
-/*
 echo "<tr>";
 if ($GLOBALS['courseInfo'] == 1) {
     if ($GLOBALS["fenixInfo"] == 0) {
@@ -1259,7 +1394,7 @@ if ($GLOBALS['courseInfo'] == 1) {
     }
 } else {
     checkCourseTable("Plugins", 3);
-}  */
+}
 // Dictionary
 if ($GLOBALS['courseInfo'] == 1) {
     if ($GLOBALS['dictionaryInfo'] == 1) {
@@ -1332,7 +1467,6 @@ echo "<tr>";
 echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["u_3"][1] . "</td>";
 echo "</tr>";
 
-
 //Import/Export Course Users
 if ($GLOBALS['courseInfo'] == 1) {
     $info = $GLOBALS["cou_1"][0] . $GLOBALS["cou_2"][0] . $GLOBALS["cou_3"][0];
@@ -1384,29 +1518,6 @@ if ($GLOBALS['courseInfo'] == 1) {
 } else {
     checkCourseTable("Import/Export Courses", 3);
 }
-
-//Import/Export Course Teams
-if ($GLOBALS['courseInfo'] == 1) {
-    $info = $GLOBALS["t_1"][0] . $GLOBALS["t_2"][0];
-    $countedInfo = countInfos($info, 2);
-    echo "<tr>";
-    echo "<td rowspan='2' style='border: 1px solid black; padding: 5px;'>Import/Export Course Teams</td>";
-    echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["t_1"][1] . "</td>";
-
-    echo "<td rowspan='2' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[4] . ";'>" . $countedInfo[2] . "%</br>(" . $countedInfo[1] . "/2)</td>";
-    echo "<td rowspan='2' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[5] . ";'>" . $countedInfo[3] . "%</br>(" . (2 - $countedInfo[0]) . "/2)</td>";
-    echo "</tr>";
-
-    echo "<tr>";
-    echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["t_2"][1] . "</td>";
-    echo "</tr>";
-
-} else {
-    checkCourseTable("Import/Export Course Teams", 2);
-}
-
-
-
 //total
 
 $percentage = ($GLOBALS['success'] / ($GLOBALS['success'] + $GLOBALS['fail'])) * 100;

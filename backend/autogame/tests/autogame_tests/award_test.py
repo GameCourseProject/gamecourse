@@ -59,6 +59,43 @@ class MatchTest (BaseTestClass):
 
 				self.assertIn(el, ca_achievement[student])
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Match tests with every single streak in PCM2122
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+'''
+class TestStreaks (MatchTest):
+
+    def test_01 (self):
+        """ Streak Test - Sage """
+        a = "Sage"
+        self.assertAchievementOutputs(a, awards_ca, awards_ag)
+
+    def test_02 (self):
+        """ Streak Test - Stalker """
+        a = "Stalker"
+        self.assertAchievementOutputs(a, awards_ca, awards_ag)
+
+    def test_03 (self):
+        """ Streak Test - Lab Stalker """
+        a = "Lab Stalker"
+        self.assertAchievementOutputs(a, awards_ca, awards_ag)
+
+    def test_04 (self):
+        """ Streak Test - Practitioner """
+        a = "Practitioner"
+        self.assertAchievementOutputs(a, awards_ca, awards_ag)
+
+    def test_05 (self):
+        """ Streak Test - Constant Gardener """
+        a = "Constant Gardener"
+        self.assertAchievementOutputs(a, awards_ca, awards_ag)
+
+    def test_06 (self):
+        """ Streak Test - Grader """
+        a = "Grader"
+        self.assertAchievementOutputs(a, awards_ca, awards_ag)
+'''
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Match tests with every single badge/achievement in PCM1718
