@@ -6,31 +6,55 @@
   }
 
   .dataTables_length, .dataTables_info {
-    @apply pl-4;
+    @apply sm:pl-4;
   }
 
   .dataTables_filter, .dataTables_paginate {
-    @apply pr-4;
+    @apply sm:pr-4;
+  }
+
+  .dataTables_length select, .dataTables_filter input {
+    @apply text-sm input input-sm input-bordered border-2 focus:border-primary focus:outline-none;
   }
 
   .dataTables_length select {
-    @apply mx-1.5 text-sm focus:border-primary focus:outline-none;
+    @apply mx-1.5;
   }
 
   .dataTables_filter input {
-    @apply ml-1.5 text-sm input input-sm input-bordered border-2;
-  }
-
-  .dataTables_filter input:focus {
-    @apply focus:border-primary focus:outline-none;
+    @apply ml-1.5;
   }
 
   .dataTables_paginate {
     @apply px-2 pt-2 pb-4 flex justify-center items-center;
-  }
 
-  .dataTables_paginate .paginate_button.current {
-    @apply btn btn-sm btn-primary text-primary-content hover:text-primary-content #{!important};
+    .paginate_button {
+      @apply btn btn-sm btn-ghost #{!important};
+    }
+
+    .paginate_button.disabled {
+      @apply text-base-content text-opacity-30 #{!important};
+    }
+
+    .paginate_button, .paginate_button.previous:hover, .paginate_button.next:hover {
+      @apply text-base-content #{!important};
+    }
+
+    .paginate_button.previous:hover, .paginate_button.next:hover {
+      @apply border-none bg-none bg-base-content bg-opacity-20 focus:outline-none #{!important};
+    }
+
+    .paginate_button.current, .paginate_button:not(.previous):not(.next):hover, .paginate_button.current:hover {
+      @apply border border-r-0 bg-none focus:outline-none #{!important};
+    }
+
+    .paginate_button:not(.previous):not(.next):hover {
+      @apply btn-ghost #{!important};
+    }
+
+    .paginate_button.current, .paginate_button.current:hover {
+      @apply btn-primary text-primary-content #{!important};
+    }
   }
 
   .sorting::before,
