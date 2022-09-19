@@ -5,9 +5,9 @@ import { LoginGuard } from "./_guards/login.guard";
 import { RedirectIfLoggedInGuard } from "./_guards/redirect-if-logged-in.guard";
 import { RedirectIfSetupDoneGuard } from "./_guards/redirect-if-setup-done.guard";
 
-import { NoAccessComponent } from "./_components/misc/no-access/no-access.component";
-import { PageNotFoundComponent } from "./_components/misc/page-not-found/page-not-found.component";
-import { ComingSoonComponent } from "./_components/misc/coming-soon/coming-soon.component";
+import { NoAccessComponent } from "./_components/misc/pages/no-access/no-access.component";
+import { PageNotFoundComponent } from "./_components/misc/pages/page-not-found/page-not-found.component";
+import { ComingSoonComponent } from "./_components/misc/pages/coming-soon/coming-soon.component";
 
 const routes: Routes = [
   {

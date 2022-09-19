@@ -6,7 +6,7 @@ import { DocsGuard } from "../../_guards/docs-guard.service";
 
 import { RestrictedComponent } from "./restricted.component";
 import { AboutComponent } from "./about/about.component";
-import { ComingSoonComponent } from "../../_components/misc/coming-soon/coming-soon.component";
+import { ComingSoonComponent } from "../../_components/misc/pages/coming-soon/coming-soon.component";
 
 const routes: Routes = [
   {

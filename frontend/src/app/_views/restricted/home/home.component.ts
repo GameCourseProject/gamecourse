@@ -19,7 +19,7 @@ export class HomeComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     const loggedUser = await this.api.getLoggedUser().toPromise();
-    this.activeCourses = await this.api.getUserCourses(loggedUser.id, true, null).toPromise();
+    this.activeCourses = await this.api.getUserCourses(loggedUser.id, true, true).toPromise();
     this.loading = false;
   }
 

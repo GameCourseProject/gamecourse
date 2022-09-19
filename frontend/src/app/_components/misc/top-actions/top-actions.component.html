@@ -1,0 +1,43 @@
+<div class="relative -left-3 w-[calc(100%+0.75rem)] text-neutral/75 flex items-end justify-between mt-2">
+
+  <!-- Left -->
+  <div class="flex flex-wrap items-center">
+
+    <!-- Actions -->
+    <div class="hidden sm:block">
+      <button *ngFor="let action of leftActions.slice(0, 2)" class="btn btn-sm btn-ghost gap-2"
+        (click)="btnClicked.emit(action.action)">
+
+        <ng-icon *ngIf="action.icon" [name]="action.icon" size="1.5rem" color="fillCurrent"></ng-icon>
+        {{action.action}}
+      </button>
+    </div>
+
+    <!-- More Actions -->
+    <div class="dropdown" [ngClass]="{'hidden': (!mobile && leftActions.length <= 2) || (mobile && leftActions.length === 0)}">
+      <button class="btn btn-sm btn-ghost" tabindex="0">
+        More actions
+        <ng-icon name="tabler-caret-down" size="1rem" color="fillCurrent"></ng-icon>
+      </button>
+
+      <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+        <li *ngFor="let action of (mobile ? leftActions : leftActions.slice(2))">
+          <a (click)="btnClicked.emit(action.action)">
+            <ng-icon *ngIf="action.icon" [name]="action.icon" size="1rem" color="fillCurrent"></ng-icon>
+            {{action.action}}
+          </a>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Right -->
+  <div class="flex flex-wrap items-center gap-2">
+    <button *ngFor="let action of rightActions" class="btn {{buttonColors[action.color]}} gap-2" [ngClass]="{'btn-outline': action.outline}">
+      {{action.action}}
+      <ng-icon *ngIf="action.icon" [name]="action.icon" size="1.2rem" color="fillCurrent"></ng-icon>
+    </button>
+  </div>
+
+</div>

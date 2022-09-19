@@ -47,9 +47,90 @@ export class TableComponent implements OnInit, OnChanges {
   buildDatatable(): void {
     if (this.datatable) this.datatable.destroy();
 
+    const that = this;
+    let opts = this.options ? Object.assign(this.options, this.defaultOptions) : this.defaultOptions;
+
+    // Add footers
     if (this.hasFooters) this.footers = this.headers.map(header => header.label);
 
-    const opts = this.options ? Object.assign(this.options, this.defaultOptions) : this.defaultOptions;
+    // Add column filtering
+    if (this.data.length > 0) {
+      $('#' + this.id + ' thead tr')
+        .clone(true)
+        .addClass('filters')
+        .appendTo('#' + this.id + ' thead');
+
+      opts = Object.assign({
+        orderCellsTop: true,
+        initComplete: function () {
+          const api = this.api();
+
+          // For each column
+          api.columns().eq(0)
+            .each(colIdx => {
+              // Skip types that are not filterable
+              const colType = that.data[0][colIdx].type;
+              if (colType === TableDataType.IMAGE || colType === TableDataType.BUTTON || colType === TableDataType.ACTIONS
+                || colType === TableDataType.CUSTOM) return;
+
+              // Set the header cell to contain the filtering element
+              const cell = $('.filters th').eq($(api.column(colIdx).header()).index());
+              const title = $(cell).text().trim();
+
+              // Get all different values of column
+              let options = [];
+              if (colType === TableDataType.CHECKBOX || colType === TableDataType.RADIO || colType === TableDataType.TOGGLE) {
+                options.push(title);
+                options.push('Not ' + title);
+
+              } else {
+                for (let row of that.data) {
+                  const value = getValue(row[colIdx]);
+                  if (value !== null && value !== undefined && value !== '') options.push(value);
+                }
+                options.sort();
+              }
+              options = [...new Set(options)]; // unique options
+
+              // Add select with options
+              options = options.map(option => '<option value="' + option + '">' + option + '</option>');
+              $(cell).html('<select class="select select-bordered select-sm w-full">' +
+                '<option selected value="undefined">Filter...</option>' + options + '</select>');
+
+              // On every keypress in the select
+              $('select', $('.filters th').eq($(api.column(colIdx).header()).index()))
+                .off('keyup change')
+                .on('change', function (e) {
+                  // Filter column
+                  const regexr = '({search})';
+                  let value = ($(this)[0] as HTMLSelectElement).value;
+                  api.column(colIdx)
+                    .search(
+                      value !== null && value !== undefined && value !== 'undefined' ?
+                        regexr.replace('{search}', '(((' + value + ')))') :
+                        '',
+                      value != '',
+                      value == ''
+                    )
+                    .draw();
+                })
+
+              function getValue(cell: {type: TableDataType, content: any}): string {
+                if (cell.type === TableDataType.TEXT) return cell.content['text'];
+                if (cell.type === TableDataType.NUMBER) return cell.content['value'];
+                if (cell.type === TableDataType.DATE) return cell.content['date']?.format(cell.content['dateFormat'] ?? 'DD/MM/YYYY') ?? null;
+                if (cell.type === TableDataType.TIME) return cell.content['time']?.format(cell.content['timeFormat'] ?? 'HH:mm') ?? null;
+                if (cell.type === TableDataType.DATETIME) return cell.content['datetime']?.format(cell.content['datetimeFormat'] ?? 'DD/MM/YYYY HH:mm') ?? null;
+                if (cell.type === TableDataType.COLOR) return cell.content['color'];
+                if (cell.type === TableDataType.PILL) return cell.content['pillText'];
+                if (cell.type === TableDataType.AVATAR) return cell.content['avatarTitle'];
+                return null;
+              }
+            });
+        },
+      }, opts);
+    }
+
     setTimeout(() => {
       this.datatable = $('#' + this.id).DataTable(opts);
 

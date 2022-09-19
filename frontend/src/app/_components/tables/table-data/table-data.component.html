@@ -10,7 +10,7 @@
 
 <!-- Type: NUMBER -->
 <ng-container *ngIf="type === DataType.NUMBER">
-  <p class="prose text-sm {{Align}} {{classList}}">{{value ? value.format(valueFormat) : ''}}</p>
+  <p class="prose text-sm {{Align}} {{classList}}">{{value !== null && value !== undefined ? value.format(valueFormat) : ''}}</p>
 </ng-container>
 
 <!-- Type: DATE -->

@@ -1,6 +1,10 @@
 .dataTables_wrapper {
   @apply bg-base-200 overflow-x-auto;
 
+  .dataTables_empty {
+    @apply text-error;
+  }
+
   .dataTables_length, .dataTables_filter, .dataTables_info, .dataTables_paginate {
     @apply py-4 text-xs font-semibold tracking-wide uppercase text-base-content text-opacity-80;
   }
@@ -14,7 +18,11 @@
   }
 
   .dataTables_length select, .dataTables_filter input {
-    @apply text-sm input input-sm input-bordered border-2 focus:border-primary focus:outline-none;
+    @apply text-sm input input-sm input-bordered focus:border-primary focus:outline-none;
+
+    &:focus {
+      @apply border-2;
+    }
   }
 
   .dataTables_length select {

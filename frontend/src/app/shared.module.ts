@@ -72,10 +72,13 @@ import { BBTableComponent } from './_components/building-blocks/table/table.comp
 import { BBChartComponent } from "./_components/building-blocks/chart/chart.component";
 
 // Components: misc
-import { PageNotFoundComponent } from './_components/misc/page-not-found/page-not-found.component';
-import { NoAccessComponent } from './_components/misc/no-access/no-access.component';
-import { ComingSoonComponent } from './_components/misc/coming-soon/coming-soon.component';
 import { AutoGameToastComponent } from './_components/misc/autogame-toast/auto-game-toast.component';
+import { HeaderComponent } from './_components/misc/header/header.component';
+import { TopActionsComponent } from './_components/misc/top-actions/top-actions.component';
+
+import { PageNotFoundComponent } from './_components/misc/pages/page-not-found/page-not-found.component';
+import { NoAccessComponent } from './_components/misc/pages/no-access/no-access.component';
+import { ComingSoonComponent } from './_components/misc/pages/coming-soon/coming-soon.component';
 
 // Libraries
 import { NgIconsModule } from "@ng-icons/core";
@@ -92,6 +95,7 @@ import {
   FeatherLogOut,
   FeatherMenu,
   FeatherMoon,
+  FeatherPlusCircle,
   FeatherSearch,
   FeatherSun,
   FeatherUser,
@@ -101,16 +105,19 @@ import {
 } from "@ng-icons/feather-icons";
 
 import {
+  JamDownload,
   JamGoogle,
   JamFacebook,
   JamLinkedin,
-  JamStopSign
+  JamStopSign,
+  JamUpload
 } from "@ng-icons/jam-icons";
 
 import {
   TablerArrowBackUp,
   TablerBarrierBlock,
   TablerBooks,
+  TablerCaretDown,
   TablerClipboardList,
   TablerCloudUpload,
   TablerColorSwatch,
@@ -180,10 +187,12 @@ import {
     BBTableComponent,
     BBChartComponent,
 
+    AutoGameToastComponent,
+    HeaderComponent,
+    TopActionsComponent,
     PageNotFoundComponent,
     NoAccessComponent,
-    ComingSoonComponent,
-    AutoGameToastComponent
+    ComingSoonComponent
   ],
   exports: [
     AsPipe,
@@ -244,10 +253,12 @@ import {
     BBTableComponent,
     BBChartComponent,
 
+    AutoGameToastComponent,
+    HeaderComponent,
+    TopActionsComponent,
     PageNotFoundComponent,
     NoAccessComponent,
     ComingSoonComponent,
-    AutoGameToastComponent,
 
     NgIconsModule,
     FormsModule
@@ -266,6 +277,7 @@ import {
       FeatherLogOut,
       FeatherMenu,
       FeatherMoon,
+      FeatherPlusCircle,
       FeatherSearch,
       FeatherSun,
       FeatherUser,
@@ -273,14 +285,17 @@ import {
       FeatherX,
       FeatherXCircle,
 
+      JamDownload,
       JamGoogle,
       JamFacebook,
       JamLinkedin,
       JamStopSign,
+      JamUpload,
 
       TablerArrowBackUp,
       TablerBarrierBlock,
       TablerBooks,
+      TablerCaretDown,
       TablerClipboardList,
       TablerCloudUpload,
       TablerColorSwatch,
