@@ -334,8 +334,6 @@ def calculate_teams_xp(course, target):
     #cnx.close()
 
 
-
-
 def calculate_xp(course, target):
     # -----------------------------------------------------------
     # Insert current XP values into user_xp table
@@ -347,7 +345,6 @@ def calculate_xp(course, target):
     queries = db.queries
     results = db.results
 
-    logging.exception("entered")
 
     # get max values for each type of award
     query = "SELECT maxReward from skill_tree where course = \"" + str(course) + "\";"
@@ -360,8 +357,6 @@ def calculate_xp(course, target):
     else:
         tree_table = result
 
-    logging.exception("tree table")
-
 
     query = "SELECT maxBonusReward from badges_config where course = \"" + str(course) + "\";"
     result = db.data_broker(query)
@@ -372,8 +367,6 @@ def calculate_xp(course, target):
         results.append(badge_table)
     else:
         badge_table = result
-
-    logging.exception("badge table")
 
 
     query = "SELECT maxBonusReward from streaks_config where course = \"" + str(course) + "\";"
@@ -386,7 +379,6 @@ def calculate_xp(course, target):
     else:
         streak_table = result
 
-    logging.exception("streak table")
 
     if len(tree_table) == 1:
         max_tree_reward = int(tree_table[0][0])
@@ -413,7 +405,6 @@ def calculate_xp(course, target):
     else:
         user_tree_xp = 0
 
-    logging.exception("user tree xp table")
 
     query = "SELECT sum(reward) from award where course=%s and type=%s and user=%s group by user;"
     cursor.execute(query, (course, "streak", target))
@@ -429,7 +420,6 @@ def calculate_xp(course, target):
     else:
         user_streak_xp = 0
 
-    logging.exception("user_streak_xp table")
 
     query = "SELECT sum(reward) from award where course=%s and (type !=%s and type !=%s and type !=%s and type !=%s) and user=%s group by user;"
     cursor.execute(query, (course, "badge", "skill", "streak", "tokens" ,target))
@@ -444,13 +434,11 @@ def calculate_xp(course, target):
     else:
         user_other_xp = 0
 
-    logging.exception("user_other_xp table")
+
     # rewards from badges where isExtra = 1
     query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and isExtra =%s and user=%s;"
     cursor.execute(query, (course, "badge", True, target))
     badge_xp_extra = cursor.fetchall()
-
-    logging.exception("badge_xp_extra table")
 
 
     # if query returns empty set
@@ -479,7 +467,6 @@ def calculate_xp(course, target):
     else:
         user_badge_xp = 0
 
-    logging.exception("user_badge_xp table")
 
     extra = user_streak_xp + user_badge_xp_extra  # streaks are extra
     total_skill_xp = min(user_tree_xp, max_tree_reward)
@@ -491,7 +478,6 @@ def calculate_xp(course, target):
 
     total_xp = total_badge_xp + total_skill_xp + total_other_xp + total_extra_xp
 
-    logging.exception("total_Xp table")
     query = "SELECT id, max(goal) from level where goal <= \"" +  str(total_xp) + "\" and course = \"" + str(course) + "\" group by id order by number desc limit 1;"
     result = db.data_broker(query)
     if not result:
@@ -503,13 +489,10 @@ def calculate_xp(course, target):
         level_table = result
 
     current_level = int(level_table[0][0])
-    logging.exception("currentlevel table")
     query = "UPDATE user_xp set xp= %s, level=%s where course=%s and user=%s;"
     cursor.execute(query, (total_xp, current_level, course, target))
-    logging.exception("query table")
 
     connect.commit()
-    logging.exception("commited")
     #cnx.close()
 
 
