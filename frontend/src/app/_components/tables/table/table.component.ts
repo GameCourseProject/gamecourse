@@ -77,23 +77,24 @@ export class TableComponent implements OnInit, OnChanges {
               const cell = $('.filters th').eq($(api.column(colIdx).header()).index());
               const title = $(cell).text().trim();
 
-              // Get all different values of column
-              let options = [];
+              // Get all different options of column
+              let options = '';
               if (colType === TableDataType.CHECKBOX || colType === TableDataType.RADIO || colType === TableDataType.TOGGLE) {
-                options.push(title);
-                options.push('Not ' + title);
+                options += '<option value="true">' + title + '</option>';
+                options += '<option value="false">Not ' + title + '</option>';
 
               } else {
+                let opts = [];
                 for (let row of that.data) {
                   const value = getValue(row[colIdx]);
-                  if (value !== null && value !== undefined && value !== '') options.push(value);
+                  if (value !== null && value !== undefined && value !== '') opts.push(value);
                 }
-                options.sort();
+                opts = [...new Set(opts)]; // unique options
+                opts.sort();
+                options = opts.map(option => '<option value="' + option + '">' + option + '</option>').join('');
               }
-              options = [...new Set(options)]; // unique options
 
               // Add select with options
-              options = options.map(option => '<option value="' + option + '">' + option + '</option>');
               $(cell).html('<select class="select select-bordered select-sm w-full">' +
                 '<option selected value="undefined">Filter...</option>' + options + '</select>');
 
@@ -109,10 +110,10 @@ export class TableComponent implements OnInit, OnChanges {
                       value !== null && value !== undefined && value !== 'undefined' ?
                         regexr.replace('{search}', '(((' + value + ')))') :
                         '',
-                      value != '',
-                      value == ''
+                      value !== null && value !== undefined && value !== 'undefined',
+                      value === null || value === undefined || value === 'undefined'
                     )
-                    .draw();
+                    .draw()
                 })
 
               function getValue(cell: {type: TableDataType, content: any}): string {
