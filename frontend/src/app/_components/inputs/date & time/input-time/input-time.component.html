@@ -6,47 +6,10 @@
   </label>
 
   <!-- Simple Input -->
-  <ng-container *ngIf="!leftLabel">
-    <input
-      type="time"
-      id="{{id}}"
-      name="{{id}}"
-      class="input input-bordered w-full {{InputSize[size]}} {{color ? 'input-' + color : ''}}"
-      placeholder="{{placeholder}}"
-      [(ngModel)]="value"
-      (ngModelChange)="valueChange.emit(value)"
-      [pattern]="pattern"
-      [required]="required"
-      [disabled]="disabled"
-      #inputTime="ngModel"
-      [ngClass]="{'input-error': form && form.submitted && inputTime.invalid}"
-    />
-  </ng-container>
+  <ng-container *ngIf="!leftLabel" [ngTemplateOutlet]="SIMPLE"></ng-container>
 
   <!-- Group Input -->
-  <ng-container *ngIf="leftLabel">
-    <label class="input-group {{InputGroupSize[size]}}">
-
-      <!-- Left label -->
-      <span *ngIf="leftLabel" class="min-w-fit {{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{leftLabel}}</span>
-
-      <input
-        type="time"
-        id="{{id}}"
-        name="{{id}}"
-        class="input input-bordered w-full {{InputSize[size]}} {{color ? 'input-' + color : ''}}"
-        placeholder="{{placeholder}}"
-        [(ngModel)]="value"
-        (ngModelChange)="valueChange.emit(value)"
-        [pattern]="pattern"
-        [required]="required"
-        [disabled]="disabled"
-        #inputTime="ngModel"
-        [ngClass]="{'input-error': form && form.submitted && inputTime.invalid}"
-      />
-
-    </label>
-  </ng-container>
+  <ng-container *ngIf="leftLabel" [ngTemplateOutlet]="GROUP"></ng-container>
 
   <!-- Error Messages -->
   <label *ngIf="form && form.submitted && inputTime.invalid" class="label">
@@ -56,3 +19,36 @@
   </label>
 
 </div>
+
+<ng-template #TIME>
+  <input
+    type="time"
+    id="{{id}}"
+    name="{{id}}"
+    class="input input-bordered {{InputSize[size]}} {{InputColor[color]}} w-full"
+    placeholder="{{placeholder}}"
+    [(ngModel)]="value"
+    (ngModelChange)="valueChange.emit(value)"
+    [pattern]="pattern"
+    [required]="required"
+    [disabled]="disabled"
+    #inputTime="ngModel"
+    [ngClass]="{'input-error': form && form.submitted && inputTime.invalid}"
+  />
+</ng-template>
+
+
+<!------------------------------------------------>
+<!------------------ VARIATIONS ------------------>
+<!------------------------------------------------>
+
+<ng-template #SIMPLE>
+  <ng-container [ngTemplateOutlet]="TIME"></ng-container>
+</ng-template>
+
+<ng-template #GROUP>
+  <label class="input-group {{InputGroupSize[size]}}">
+    <span *ngIf="leftLabel" class="min-w-fit {{InputGroupLabelColor[color]}}">{{leftLabel}}</span>
+    <ng-container [ngTemplateOutlet]="TIME"></ng-container>
+  </label>
+</ng-template>

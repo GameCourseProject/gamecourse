@@ -10,7 +10,9 @@ import {
   ViewChild
 } from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
+
 import {AlertService, AlertType} from "../../../../_services/alert.service";
+import {InputColor, InputGroupBtnColor, InputGroupLabelColor} from '../../InputColors';
 import {InputGroupSize, InputSize } from '../../InputSizes';
 
 @Component({
@@ -20,25 +22,26 @@ import {InputGroupSize, InputSize } from '../../InputSizes';
 export class InputFileComponent implements OnInit, AfterViewInit, OnChanges {
 
   // Essentials
-  @Input() id: string;                                    // Unique ID
-  @Input() form: NgForm;                                  // Form it's part of
-  @Input() accept?: string;                               // Types of files to accept
-  @Input() multiple?: boolean;                            // Accept multiple files
-  @Input() camera?: boolean;                              // Accept camera input
+  @Input() id: string;                                                // Unique ID
+  @Input() form: NgForm;                                              // Form it's part of
+  @Input() accept?: string;                                           // Types of files to accept
+  @Input() multiple?: boolean;                                        // Accept multiple files
+  @Input() camera?: boolean;                                          // Accept camera input
 
   // Extras
-  @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';       // Size
-  @Input() color?: string;                                // Color
-  @Input() classList?: string;                            // Classes to add
-  @Input() disabled?: boolean;                            // Make it disabled
+  @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';                   // Size
+  @Input() color?: 'ghost' | 'primary' | 'secondary' | 'accent' |     // Color
+    'info' | 'success' | 'warning' | 'error';
+  @Input() classList?: string;                                        // Classes to add
+  @Input() disabled?: boolean;                                        // Make it disabled
 
-  @Input() label?: string;                                // Top label text
+  @Input() label?: string;                                            // Top label text
 
   // Validity
-  @Input() required?: boolean;                            // Make it required
+  @Input() required?: boolean;                                        // Make it required
 
   // Errors
-  @Input() requiredErrorMessage?: string = 'Required';    // Message for required error
+  @Input() requiredErrorMessage?: string = 'Required';                // Message for required error
 
   @Output() valueChange = new EventEmitter<FileList>();
 
@@ -122,12 +125,43 @@ export class InputFileComponent implements OnInit, AfterViewInit, OnChanges {
       this.form.controls[this.id].setErrors({'required': true});
   }
 
+
+  heights = {
+    xs: 'h-fit',
+    sm: 'h-40',
+    md: 'h-48',
+    lg: 'h-64'
+  }
+
+  labelColors = {
+    ghost: '',
+    primary: 'border-primary text-primary',
+    secondary: 'border-secondary text-secondary',
+    accent: 'border-accent text-accent',
+    info: 'border-info text-info',
+    success: 'border-success text-success',
+    warning: 'border-warning text-warning',
+    error: 'border-error text-error'
+  }
+
   get InputSize(): typeof InputSize {
     return InputSize;
   }
 
   get InputGroupSize(): typeof InputGroupSize {
     return InputGroupSize;
+  }
+
+  get InputColor(): typeof InputColor {
+    return InputColor;
+  }
+
+  get InputGroupLabelColor(): typeof InputGroupLabelColor {
+    return InputGroupLabelColor;
+  }
+
+  get InputGroupBtnColor(): typeof InputGroupBtnColor {
+    return InputGroupBtnColor;
   }
 
 }

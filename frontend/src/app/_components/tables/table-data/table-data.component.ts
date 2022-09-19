@@ -11,86 +11,111 @@ import {Moment} from "moment/moment";
 })
 export class TableData implements OnInit {
 
-  @Input() type: TableDataType;                     // Type of table data to render
-  @Input() data: any;                               // Data to render
+  @Input() type: TableDataType;                                 // Type of table data to render
+  @Input() data: any;                                           // Data to render
 
   // General
-  classList?: string;                               // Classes to add
-  align?: 'left' | 'middle' | 'right' = 'middle';    // Alignment in cell
+  classList?: string;                                           // Classes to add
+  align?: 'left' | 'middle' | 'right' = 'middle';               // Alignment in cell
 
   // Type: TEXT
-  text?: string;                                    // Text (either 1 line or 1st line)
-  subtitle?: string;                                // Subtitle (2nd line)
+  text?: string;                                                // Text (either 1 line or 1st line)
+  subtitle?: string;                                            // Subtitle (2nd line)
 
   // Type: NUMBER
-  value?: number;                                   // Number
+  value?: number;                                               // Number
   valueFormat?:
-    'default' | 'money' | 'percent' = 'default';    // Number format
+    'default' | 'money' | 'percent' = 'default';                // Number format
 
   // Type: DATE
-  date?: Moment;                                    // Date
-  dateFormat?: string = 'DD/MM/YYYY';               // Date format
+  date?: Moment;                                                // Date
+  dateFormat?: string = 'DD/MM/YYYY';                           // Date format
 
   // Type: TIME
-  time?: Moment;                                    // Time
-  timeFormat?: string = 'HH:mm';                    // Time format
+  time?: Moment;                                                // Time
+  timeFormat?: string = 'HH:mm';                                // Time format
 
   // Type: DATETIME
-  datetime?: Moment;                                // Datetime
-  datetimeFormat?: string = 'DD/MM/YYYY HH:mm';     // Datetime format
+  datetime?: Moment;                                            // Datetime
+  datetimeFormat?: string = 'DD/MM/YYYY HH:mm';                 // Datetime format
 
   // Type: COLOR
-  color?: string;                                   // Color
-  colorLabel?: string;                              // Label for color
+  color?: string;                                               // Color
+  colorLabel?: string;                                          // Label for color
 
   // Type: IMAGE
-  imgSrc?: string;                                  // Image source
-  imgShape?: 'round' | 'square';                    // Image shape
+  imgSrc?: string;                                              // Image source
+  imgShape?: 'round' | 'square';                                // Image shape
 
   // Type: PILL
-  pillText?: string;                                // Pill text
-  pillColor?: string;                               // Pill color
+  pillText?: string;                                            // Pill text
+  pillColor?: 'ghost' | 'primary' | 'secondary' | 'accent'
+    | 'info' | 'success' | 'warning' | 'error';                 // Pill color
 
   // Type: BUTTON
-  buttonText?: string;                              // Button text
-  buttonColor?: string;                             // Button color
-  buttonIcon?: string;                              // Button icon
+  buttonText?: string;                                          // Button text
+  buttonColor?: 'ghost' | 'primary' | 'secondary' | 'accent'
+    | 'neutral' | 'info' | 'success' | 'warning' | 'error';     // Button color
+  buttonIcon?: string;                                          // Button icon
 
   // Type: AVATAR
-  avatarSrc?: string;                               // Avatar image source
-  avatarTitle?: string;                             // Avatar name (either 1 line or 1st line)
-  avatarSubtitle?: string;                          // Avatar additional text (2nd line)
+  avatarSrc?: string;                                           // Avatar image source
+  avatarTitle?: string;                                         // Avatar name (either 1 line or 1st line)
+  avatarSubtitle?: string;                                      // Avatar additional text (2nd line)
 
   // Type: CHECKBOX
-  checkboxId?: string;                              // Checkbox ID
-  checkboxValue?: boolean;                          // Checkbox value
-  checkboxColor?: string;                           // Checkbox color
-  checkboxDisabled?: boolean;                       // Make checkbox disabled
+  checkboxId?: string;                                          // Checkbox ID
+  checkboxValue?: boolean;                                      // Checkbox value
+  checkboxColor?: 'primary' | 'secondary' | 'accent';           // Checkbox color
+  checkboxDisabled?: boolean;                                   // Make checkbox disabled
 
   // Type: RADIO
-  radioId?: string;                                 // Radio ID
-  radioGroup?: string;                              // Radio group name
-  radioOptionValue?: any;                           // Radio option value
-  radioValue?: any;                                 // Radio value
-  radioColor?: string;                              // Radio color
-  radioDisabled?: boolean;                          // Make radio disabled
+  radioId?: string;                                             // Radio ID
+  radioGroup?: string;                                          // Radio group name
+  radioOptionValue?: any;                                       // Radio option value
+  radioValue?: any;                                             // Radio value
+  radioColor?: 'primary' | 'secondary' | 'accent';              // Radio color
+  radioDisabled?: boolean;                                      // Make radio disabled
 
   // Type: TOOGLE
-  toggleId?: string;                                // Toggle ID
-  toggleValue?: boolean;                            // Toggle value
-  toggleColor?: string;                             // Toggle color
-  toggleDisabled?: boolean;                         // Make toggle disabled
+  toggleId?: string;                                            // Toggle ID
+  toggleValue?: boolean;                                        // Toggle value
+  toggleColor?: 'primary' | 'secondary' | 'accent';             // Toggle color
+  toggleDisabled?: boolean;                                     // Make toggle disabled
 
   // Type: ACTIONS
-  actions?: Action[];                               // Actions
+  actions?: Action[];                                           // Actions
 
   // Type: CUSTOM
-  templateRef?: TemplateRef<any>;                   // Custom template
+  templateRef?: TemplateRef<any>;                               // Custom template
 
   @Output() btnClicked: EventEmitter<Action | 'single'> = new EventEmitter<Action | 'single'>();
   @Output() valueChanged: EventEmitter<any> = new EventEmitter<any>();
 
   constructor() { }
+
+  pills = {
+    ghost: 'badge-ghost',
+    primary: 'badge-primary',
+    secondary: 'badge-secondary',
+    accent: 'badge-accent',
+    info: 'badge-info',
+    success: 'badge-success',
+    warning: 'badge-warning',
+    error: 'badge-error'
+  }
+
+  buttons = {
+    ghost: 'btn-ghost',
+    primary: 'btn-primary',
+    secondary: 'btn-secondary',
+    accent: 'btn-accent',
+    neutral: 'btn-neutral',
+    info: 'btn-info',
+    success: 'btn-success',
+    warning: 'btn-warning',
+    error: 'btn-error'
+  }
 
   ngOnInit(): void {
     this.classList = this.data.classList ?? null;

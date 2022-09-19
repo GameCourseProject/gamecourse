@@ -11,31 +11,3 @@ export enum InputGroupSize {
   md = 'input-group-md',
   lg = 'input-group-lg'
 }
-
-export enum TextareaSize {
-  xs = 'h-10',
-  sm = 'h-20',
-  md = 'h-32',
-  lg = 'h-48'
-}
-
-export enum CheckboxSize {
-  xs = 'checkbox-xs',
-  sm = 'checkbox-sm',
-  md = 'checkbox-md',
-  lg = 'checkbox-lg'
-}
-
-export enum RadioSize {
-  xs = 'radio-xs',
-  sm = 'radio-sm',
-  md = 'radio-md',
-  lg = 'radio-lg'
-}
-
-export enum ToggleSize {
-  xs = 'toggle-xs',
-  sm = 'toggle-sm',
-  md = 'toggle-md',
-  lg = 'toggle-lg'
-}

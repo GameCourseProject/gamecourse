@@ -6,60 +6,10 @@
   </label>
 
   <!-- Simple Input -->
-  <ng-container *ngIf="!leftLabel && !rightLabel && !btnText && !btnIcon">
-    <input
-      type="text"
-      id="{{id}}"
-      name="{{id}}"
-      class="input input-bordered w-full {{InputSize[size]}} {{color ? 'input-' + color : ''}}"
-      placeholder="{{placeholder}}"
-      [(ngModel)]="value"
-      (ngModelChange)="valueChange.emit(value)"
-      [pattern]="pattern"
-      [required]="required"
-      [minlength]="minLength"
-      [maxlength]="maxLength"
-      [disabled]="disabled"
-      #inputText="ngModel"
-      [ngClass]="{'input-error': form && form.submitted && inputText.invalid}"
-    />
-  </ng-container>
+  <ng-container *ngIf="!leftLabel" [ngTemplateOutlet]="SIMPLE"></ng-container>
 
   <!-- Group Input -->
-  <ng-container *ngIf="leftLabel || rightLabel || btnText || btnIcon">
-    <label class="input-group {{InputGroupSize[size]}}">
-
-      <!-- Left label -->
-      <span *ngIf="leftLabel" class="min-w-fit {{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{leftLabel}}</span>
-
-      <input
-        type="text"
-        id="{{id}}"
-        name="{{id}}"
-        class="input input-bordered w-full {{color ? 'input-' + color : ''}}"
-        placeholder="{{placeholder}}"
-        [(ngModel)]="value"
-        (ngModelChange)="valueChange.emit(value)"
-        [pattern]="pattern"
-        [required]="required"
-        [minlength]="minLength"
-        [maxlength]="maxLength"
-        [disabled]="disabled"
-        #inputText="ngModel"
-        [ngClass]="{'input-error': form && form.submitted && inputText.invalid}"
-      />
-
-      <!-- Right label -->
-      <span *ngIf="rightLabel" class="min-w-fit {{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{rightLabel}}</span>
-
-      <!-- Button -->
-      <button *ngIf="btnText || btnIcon" class="btn {{btnIcon ? 'btn-square' : ''}} {{color ? 'btn-' + color : ''}}" (click)="btnClicked.emit()">
-        <span *ngIf="btnText" class="bg-transparent">{{btnText}}</span>
-        <ng-icon *ngIf="btnIcon" [name]="btnIcon" size="1.5rem"></ng-icon>
-      </button>
-
-    </label>
-  </ng-container>
+  <ng-container *ngIf="leftLabel" [ngTemplateOutlet]="GROUP"></ng-container>
 
   <!-- Error Messages -->
   <label *ngIf="form && form.submitted && inputText.invalid" class="label">
@@ -71,3 +21,50 @@
   </label>
 
 </div>
+
+<ng-template #TEXT>
+  <input
+    type="text"
+    id="{{id}}"
+    name="{{id}}"
+    class="input input-bordered {{InputSize[size]}} {{InputColor[color]}} w-full"
+    placeholder="{{placeholder}}"
+    [(ngModel)]="value"
+    (ngModelChange)="valueChange.emit(value)"
+    [pattern]="pattern"
+    [required]="required"
+    [minlength]="minLength"
+    [maxlength]="maxLength"
+    [disabled]="disabled"
+    #inputText="ngModel"
+    [ngClass]="{'input-error': form && form.submitted && inputText.invalid}"
+  />
+</ng-template>
+
+
+<!------------------------------------------------>
+<!------------------ VARIATIONS ------------------>
+<!------------------------------------------------>
+
+<ng-template #SIMPLE>
+  <ng-container [ngTemplateOutlet]="TEXT"></ng-container>
+</ng-template>
+
+<ng-template #GROUP>
+  <label class="input-group {{InputGroupSize[size]}}">
+    <!-- Left label -->
+    <span *ngIf="leftLabel" class="min-w-fit {{InputGroupLabelColor[color]}}">{{leftLabel}}</span>
+
+    <!-- Number -->
+    <ng-container [ngTemplateOutlet]="TEXT"></ng-container>
+
+    <!-- Right label -->
+    <span *ngIf="rightLabel" class="min-w-fit {{InputGroupLabelColor[color]}}">{{rightLabel}}</span>
+
+    <!-- Button -->
+    <button *ngIf="btnText || btnIcon" class="btn {{btnIcon ? 'btn-square' : ''}} {{InputGroupBtnColor[color]}}" (click)="btnClicked.emit()">
+      <span *ngIf="btnText" class="bg-transparent">{{btnText}}</span>
+      <ng-icon *ngIf="btnIcon" [name]="btnIcon" size="1.5rem"></ng-icon>
+    </button>
+  </label>
+</ng-template>

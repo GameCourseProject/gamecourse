@@ -1,41 +1,10 @@
 <div class="form-control w-fit {{classList}}">
 
   <!-- Only Radio -->
-  <ng-container *ngIf="!label">
-    <input
-      type="radio"
-      id="{{id}}"
-      name="{{group}}"
-      [value]="optionValue"
-      class="radio {{RadioSize[size]}} {{color ? 'radio-' + color : ''}}"
-      [(ngModel)]="value"
-      (ngModelChange)="valueChange.emit(value)"
-      [required]="required"
-      [disabled]="disabled"
-      #radio="ngModel"
-      [ngClass]="{'radio-error': form && form.submitted && radio.invalid}"
-    />
-  </ng-container>
+  <ng-container *ngIf="!label" [ngTemplateOutlet]="ONLY_RADIO"></ng-container>
 
   <!-- With Left Label -->
-  <ng-container *ngIf="label">
-    <label class="label cursor-pointer">
-      <span class="label-text mr-3">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
-      <input
-        type="radio"
-        id="{{id}}"
-        name="{{group}}"
-        [value]="optionValue"
-        class="radio {{RadioSize[size]}} {{color ? 'radio-' + color : ''}}"
-        [(ngModel)]="value"
-        (ngModelChange)="valueChange.emit(value)"
-        [required]="required"
-        [disabled]="disabled"
-        #radio="ngModel"
-        [ngClass]="{'radio-error': form && form.submitted && radio.invalid}"
-      />
-    </label>
-  </ng-container>
+  <ng-container *ngIf="label" [ngTemplateOutlet]="WITH_LABEL"></ng-container>
 
   <!-- Error Messages -->
   <label *ngIf="form && form.submitted && radio.invalid" class="label">
@@ -43,3 +12,35 @@
   </label>
 
 </div>
+
+<ng-template #RADIO>
+  <input
+    type="radio"
+    id="{{id}}"
+    name="{{group}}"
+    [value]="optionValue"
+    class="radio {{RadioSize[size]}} {{RadioColor[color]}}"
+    [(ngModel)]="value"
+    (ngModelChange)="valueChange.emit(value)"
+    [required]="required"
+    [disabled]="disabled"
+    #radio="ngModel"
+    [ngClass]="{'radio-error': form && form.submitted && radio.invalid}"
+  />
+</ng-template>
+
+
+<!------------------------------------------------>
+<!------------------ VARIATIONS ------------------>
+<!------------------------------------------------>
+
+<ng-template #ONLY_RADIO>
+  <ng-container [ngTemplateOutlet]="RADIO"></ng-container>
+</ng-template>
+
+<ng-template #WITH_LABEL>
+  <label class="label cursor-pointer">
+    <span class="label-text mr-3">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
+    <ng-container [ngTemplateOutlet]="RADIO"></ng-container>
+  </label>
+</ng-template>

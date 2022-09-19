@@ -9,7 +9,7 @@
   <textarea
     id="{{id}}"
     name="{{id}}"
-    class="textarea textarea-bordered w-full {{TextareaSize[size]}} {{color ? 'textarea-' + color : ''}}"
+    class="textarea textarea-bordered {{TextareaSize[size]}} {{TextareaColor[color]}} w-full"
     placeholder="{{placeholder}}"
     [(ngModel)]="value"
     (ngModelChange)="valueChange.emit(value)"

@@ -1,6 +1,8 @@
 import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {NgForm, NgModel} from '@angular/forms';
-import {InputGroupSize, InputSize} from "../../InputSizes";
+
+import { InputGroupSize, InputSize } from '../../InputSizes';
+import { InputColor, InputGroupBtnColor, InputGroupLabelColor } from "../../InputColors";
 
 @Component({
   selector: 'app-input-text',
@@ -9,36 +11,39 @@ import {InputGroupSize, InputSize} from "../../InputSizes";
 export class InputTextComponent implements OnInit, AfterViewInit {
 
   // Essentials
-  @Input() id: string;                                    // Unique ID
-  @Input() form: NgForm;                                  // Form it's part of
-  @Input() value: string;                                 // Where to store the value
-  @Input() placeholder: string;                           // Message to show by default
+  @Input() id: string;                                                        // Unique ID
+  @Input() form: NgForm;                                                      // Form it's part of
+  @Input() value: string;                                                     // Where to store the value
+  @Input() placeholder: string;                                               // Message to show by default
 
   // Extras
-  @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';       // Size
-  @Input() color?: string;                                // Color
-  @Input() classList?: string;                            // Classes to add
-  @Input() disabled?: boolean;                            // Make it disabled
+  @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';                           // Size
+  @Input() color?: 'ghost' | 'primary' | 'secondary' | 'accent' |             // Color
+    'info' | 'success' | 'warning' | 'error';
+  @Input() classList?: string;                                                // Classes to add
+  @Input() disabled?: boolean;                                                // Make it disabled
 
-  @Input() topLabel?: string;                             // Top label text
-  @Input() leftLabel?: string;                            // Text on prepended label
-  @Input() rightLabel?: string;                           // Text on appended label
+  @Input() topLabel?: string;                                                 // Top label text
+  @Input() leftLabel?: string;                                                // Text on prepended label
+  @Input() rightLabel?: string;                                               // Text on appended label
 
-  @Input() btnText?: string;                              // Text on appended button
-  @Input() btnIcon?: string;                              // Icon on appended button
+  @Input() btnText?: string;                                                  // Text on appended button
+  @Input() btnIcon?: string;                                                  // Icon on appended button
 
   // Validity
-  @Input() pattern?: string;                              // The pattern to be applied
-  @Input() required?: boolean;                            // Make it required
-  @Input() minLength?: number;                            // Enforce a minimum length
-  @Input() maxLength?: number;                            // Enforce a maximum length
+  @Input() pattern?: string;                                                  // The pattern to be applied
+  @Input() required?: boolean;                                                // Make it required
+  @Input() minLength?: number;                                                // Enforce a minimum length
+  @Input() maxLength?: number;                                                // Enforce a maximum length
 
   // Errors
-  @Input() patternErrorMessage?: string;                                                                              // Message for pattern error
-  @Input() requiredErrorMessage?: string = 'Required';                                                                // Message for required error
-  @Input() minLengthErrorMessage?: string = 'Entry size needs to be greater than or equal to ' + this.minLength;      // Message for minLength error
-  @Input() maxLengthErrorMessage?: string= 'Entry size needs to be smaller than or equal to ' + this.maxLength;       // Message for maxLength error
-  @Input() incorrectErrorMessage?: string;                                                                            // Message for incorrect error
+  @Input() patternErrorMessage?: string;                                      // Message for pattern error
+  @Input() requiredErrorMessage?: string = 'Required';                        // Message for required error
+  @Input() minLengthErrorMessage?: string =
+    'Entry size needs to be greater than or equal to ' + this.minLength;      // Message for minLength error
+  @Input() maxLengthErrorMessage?: string=
+    'Entry size needs to be smaller than or equal to ' + this.maxLength;      // Message for maxLength error
+  @Input() incorrectErrorMessage?: string;                                    // Message for incorrect error
 
   @Output() valueChange = new EventEmitter<string>();
   @Output() btnClicked = new EventEmitter<void>();
@@ -61,6 +66,18 @@ export class InputTextComponent implements OnInit, AfterViewInit {
 
   get InputGroupSize(): typeof InputGroupSize {
     return InputGroupSize;
+  }
+
+  get InputColor(): typeof InputColor {
+    return InputColor;
+  }
+
+  get InputGroupLabelColor(): typeof InputGroupLabelColor {
+    return InputGroupLabelColor;
+  }
+
+  get InputGroupBtnColor(): typeof InputGroupBtnColor {
+    return InputGroupBtnColor;
   }
 
 }

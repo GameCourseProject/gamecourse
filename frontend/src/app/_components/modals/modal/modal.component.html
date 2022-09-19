@@ -15,7 +15,7 @@
 
     <!-- Header -->
     <div *ngIf="header" class="prose" [ngClass]="{'mb-6': headerMarginBottom}">
-      <h3 class="{{headerColor ? 'text-' + headerColor : ''}}">{{header}}</h3>
+      <h3 class="{{headerColor ? colors[headerColor].text : ''}}">{{header}}</h3>
     </div>
 
     <!-- Body -->
@@ -33,30 +33,30 @@
     <div class="modal-action">
 
       <!-- Close button (left) -->
-      <label [for]="id" class="btn btn-ghost {{closeBtnColor ? 'btn-' + closeBtnColor : ''}}"
+      <label [for]="id" class="btn btn-ghost {{closeBtnColor ? colors[closeBtnColor].btn : ''}}"
              (click)="btnClicked = 'close'; closeBtnClicked.emit(); this.onClose.emit()">
         {{closeBtnText}}
       </label>
 
       <!-- Extra button (middle) -->
-      <button *ngIf="extraBtnText" class="btn {{extraBtnOutline ? 'btn-outline' : ''}} {{extraBtnColor ? 'btn-' + extraBtnColor : ''}}"
+      <button *ngIf="extraBtnText" class="btn {{extraBtnOutline ? 'btn-outline' : ''}} {{extraBtnColor ? colors[extraBtnColor].btn : ''}}"
               (click)="btnClicked = 'extra'; extraBtnClicked.emit();">
 
         <!-- Spinner -->
         <ng-container *ngIf="actionInProgress && btnClicked == 'extra'">
-          <app-spinner [size]="'sm'" [color]="extraBtnColor + 'content'" [classList]="'mr-3'"></app-spinner>
+          <app-spinner [size]="'sm'" [color]="extraBtnColor" [classList]="'mr-3'"></app-spinner>
         </ng-container>
 
         {{extraBtnText}}
       </button>
 
       <!-- Submit button (right) -->
-      <button *ngIf="submitBtnText" class="btn {{submitBtnOutline ? 'btn-outline' : ''}} {{submitBtnColor ? 'btn-' + submitBtnColor : ''}}"
+      <button *ngIf="submitBtnText" class="btn {{submitBtnOutline ? 'btn-outline' : ''}} {{submitBtnColor ? colors[submitBtnColor].btn : ''}}"
               (click)="btnClicked = 'submit'; submitBtnClicked.emit()">
 
         <!-- Spinner -->
         <ng-container *ngIf="actionInProgress && btnClicked == 'submit'">
-          <app-spinner [size]="'sm'" [color]="submitBtnColor + 'content'" [classList]="'mr-3'"></app-spinner>
+          <app-spinner [size]="'sm'" [color]="submitBtnColor" [classList]="'mr-3'"></app-spinner>
         </ng-container>
 
         {{submitBtnText}}

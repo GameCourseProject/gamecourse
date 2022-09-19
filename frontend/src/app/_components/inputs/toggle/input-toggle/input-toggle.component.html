@@ -1,41 +1,10 @@
 <div class="form-control w-fit {{classList}}">
 
-  <!-- Only Toggle -->
-  <ng-container *ngIf="!label">
-    <input
-      type="checkbox"
-      id="{{id}}"
-      name="{{id}}"
-      class="toggle {{ToggleSize[size]}} {{color ? 'toggle-' + color : ''}}"
-      [(ngModel)]="value"
-      (ngModelChange)="valueChange.emit(value)"
-      [checked]="value"
-      [required]="required"
-      [disabled]="disabled"
-      #toggle="ngModel"
-      [ngClass]="{'toggle-error': form && form.submitted && toggle.invalid}"
-    />
-  </ng-container>
+  <!-- Only Checkbox -->
+  <ng-container *ngIf="!label" [ngTemplateOutlet]="ONLY_TOGGLE"></ng-container>
 
   <!-- With Left Label -->
-  <ng-container *ngIf="label">
-    <label class="label cursor-pointer">
-      <span class="label-text mr-3">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
-      <input
-        type="checkbox"
-        id="{{id}}"
-        name="{{id}}"
-        class="toggle {{ToggleSize[size]}} {{color ? 'toggle-' + color : ''}}"
-        [(ngModel)]="value"
-        (ngModelChange)="valueChange.emit(value)"
-        [checked]="value"
-        [required]="required"
-        [disabled]="disabled"
-        #toggle="ngModel"
-        [ngClass]="{'toggle-error': form && form.submitted && toggle.invalid}"
-      />
-    </label>
-  </ng-container>
+  <ng-container *ngIf="label" [ngTemplateOutlet]="WITH_LABEL"></ng-container>
 
   <!-- Error Messages -->
   <label *ngIf="form && form.submitted && toggle.invalid" class="label">
@@ -43,3 +12,35 @@
   </label>
 
 </div>
+
+<ng-template #TOGGLE>
+  <input
+    type="checkbox"
+    id="{{id}}"
+    name="{{id}}"
+    class="toggle {{ToggleSize[size]}} {{ToggleColor[color]}}"
+    [(ngModel)]="value"
+    (ngModelChange)="valueChange.emit(value)"
+    [checked]="value"
+    [required]="required"
+    [disabled]="disabled"
+    #toggle="ngModel"
+    [ngClass]="{'checkbox-error': form && form.submitted && toggle.invalid}"
+  />
+</ng-template>
+
+
+<!------------------------------------------------>
+<!------------------ VARIATIONS ------------------>
+<!------------------------------------------------>
+
+<ng-template #ONLY_TOGGLE>
+  <ng-container [ngTemplateOutlet]="TOGGLE"></ng-container>
+</ng-template>
+
+<ng-template #WITH_LABEL>
+  <label class="label cursor-pointer">
+    <span class="label-text mr-3">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
+    <ng-container [ngTemplateOutlet]="TOGGLE"></ng-container>
+  </label>
+</ng-template>

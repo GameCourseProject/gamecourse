@@ -1,6 +1,5 @@
 import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
-import { ToggleSize } from '../../InputSizes';
 
 @Component({
   selector: 'app-input-toggle',
@@ -15,7 +14,7 @@ export class InputToggleComponent implements OnInit, AfterViewInit {
 
   // Extras
   @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';       // Size
-  @Input() color?: string;                                // Color
+  @Input() color?: 'primary' | 'secondary' | 'accent';    // Color
   @Input() classList?: string;                            // Classes to add
   @Input() disabled?: boolean;                            // Make it disabled
 
@@ -44,4 +43,21 @@ export class InputToggleComponent implements OnInit, AfterViewInit {
     return ToggleSize;
   }
 
+  get ToggleColor(): typeof ToggleColor {
+    return ToggleColor;
+  }
+
+}
+
+enum ToggleSize {
+  xs = 'toggle-xs',
+  sm = 'toggle-sm',
+  md = 'toggle-md',
+  lg = 'toggle-lg'
+}
+
+enum ToggleColor {
+  primary = 'toggle-primary',
+  secondary = 'toggle-secondary',
+  accent = 'toggle-accent'
 }

@@ -1,6 +1,5 @@
 import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
-import { CheckboxSize } from '../../InputSizes';
 
 @Component({
   selector: 'app-input-checkbox',
@@ -15,7 +14,7 @@ export class InputCheckboxComponent implements OnInit, AfterViewInit {
 
   // Extras
   @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';       // Size
-  @Input() color?: string;                                // Color
+  @Input() color?: 'primary' | 'secondary' | 'accent';    // Color
   @Input() classList?: string;                            // Classes to add
   @Input() disabled?: boolean;                            // Make it disabled
 
@@ -44,4 +43,21 @@ export class InputCheckboxComponent implements OnInit, AfterViewInit {
     return CheckboxSize;
   }
 
+  get CheckboxColor(): typeof CheckboxColor {
+    return CheckboxColor;
+  }
+
+}
+
+enum CheckboxSize {
+  xs = 'checkbox-xs',
+  sm = 'checkbox-sm',
+  md = 'checkbox-md',
+  lg = 'checkbox-lg'
+}
+
+enum CheckboxColor {
+  primary = 'checkbox-primary',
+  secondary = 'checkbox-secondary',
+  accent = 'checkbox-accent'
 }

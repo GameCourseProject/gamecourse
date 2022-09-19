@@ -35,6 +35,10 @@
     }
 
     #color-picker {
+      .pcr-app {
+        @apply w-52;
+      }
+
       .pcr-swatches {
         @apply h-28 overflow-y-auto;
       }

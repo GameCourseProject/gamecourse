@@ -9,10 +9,10 @@
   <label class="input-group {{InputGroupSize[size]}} relative">
 
     <!-- Left label -->
-    <span *ngIf="leftLabel" class="min-w-fit {{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{leftLabel}}</span>
+    <span *ngIf="leftLabel" class="min-w-fit {{InputGroupLabelColor[color]}}">{{leftLabel}}</span>
 
     <!-- Picker Color Sample -->
-    <div *ngIf="value" class="absolute inset-y-0 left-0 pl-[0.9rem] flex items-center pointer-events-none z-10">
+    <div *ngIf="value" class="absolute inset-y-0 left-0 {{!leftLabel ? 'pl-[0.9rem]' : 'pl-[3.5rem]'}} flex items-center pointer-events-none z-10">
       <div class="w-4 h-4 !rounded shadow border" [ngStyle]="{backgroundColor: value}"></div>
     </div>
 
@@ -21,7 +21,7 @@
       type="text"
       id="{{id}}"
       name="{{id}}"
-      class="input input-bordered !rounded-l-md w-full cursor-text {{color ? 'input-' + color : ''}} {{value ? 'pl-9' : ''}}"
+      class="input input-bordered {{InputColor[color]}} {{value ? 'pl-9' : ''}} {{!leftLabel ? '!rounded-l-md' : ''}} w-full cursor-text"
       placeholder="{{placeholder}}"
       [(ngModel)]="value"
       (ngModelChange)="pickr.setColor(value); valueChange.emit(value)"
@@ -36,8 +36,7 @@
 
     <div class="dropdown dropdown-end" (clickedOutside)="this.closePicker()">
       <!-- Button -->
-      <button type="button" class="btn btn-square !rounded-r-md !rounded-l-none {{color ? 'btn-' + color : ''}}" tabindex="0"
-              (click)="openPicker()">
+      <button type="button" class="btn btn-square !rounded-r-md !rounded-l-none {{InputGroupBtnColor[color]}}" tabindex="0" (click)="openPicker()">
         <ng-icon [name]="'tabler-color-swatch'" size="1.5rem"></ng-icon>
       </button>
 

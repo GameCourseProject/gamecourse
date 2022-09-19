@@ -1,12 +1,12 @@
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
-import {InputGroupSize, InputSize } from '../../InputSizes';
+
+import { InputColor, InputGroupLabelColor } from '../../InputColors';
+import { InputGroupSize, InputSize } from '../../InputSizes';
 
 @Component({
   selector: 'app-input-time',
-  templateUrl: './input-time.component.html',
-  styles: [
-  ]
+  templateUrl: './input-time.component.html'
 })
 export class InputTimeComponent implements OnInit {
 
@@ -20,7 +20,8 @@ export class InputTimeComponent implements OnInit {
 
   // Extras
   @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';                                     // Size
-  @Input() color?: string;                                                              // Color
+  @Input() color?: 'ghost' | 'primary' | 'secondary' | 'accent' |                       // Color
+    'info' | 'success' | 'warning' | 'error';
   @Input() classList?: string;                                                          // Classes to add
   @Input() disabled?: boolean;                                                          // Make it disabled
 
@@ -55,6 +56,14 @@ export class InputTimeComponent implements OnInit {
 
   get InputGroupSize(): typeof InputGroupSize {
     return InputGroupSize;
+  }
+
+  get InputColor(): typeof InputColor {
+    return InputColor;
+  }
+
+  get InputGroupLabelColor(): typeof InputGroupLabelColor {
+    return InputGroupLabelColor;
   }
 
 }

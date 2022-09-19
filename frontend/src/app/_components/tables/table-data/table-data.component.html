@@ -51,13 +51,13 @@
 <!-- Type: PILL -->
 <ng-container *ngIf="type === DataType.PILL">
   <div class="{{Align}} items-center">
-    <div class="badge badge-sm {{pillColor ? 'badge-' + pillColor : ''}} {{classList}}">{{pillText}}</div>
+    <div class="badge badge-sm {{pillColor ? pills[pillColor] : ''}} {{classList}}">{{pillText}}</div>
   </div>
 </ng-container>
 
 <!-- Type: BUTTON -->
 <ng-container *ngIf="type === DataType.BUTTON">
-  <button class="btn btn-sm btn-wide {{buttonColor ? 'btn-' + buttonColor : ''}} {{classList}}" [ngClass]="{'gap-2': buttonIcon}">
+  <button class="btn btn-sm btn-wide {{buttonColor ? buttons[buttonColor] : ''}} {{classList}}" [ngClass]="{'gap-2': buttonIcon}">
     <ng-icon *ngIf="buttonIcon" [name]="buttonIcon" size="1.2rem"></ng-icon>
     {{buttonText}}
   </button>

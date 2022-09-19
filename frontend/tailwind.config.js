@@ -8,12 +8,6 @@ module.exports = {
     './src/**/*.{html,ts}',
     './src/index.html'
   ],
-  safelist: [
-    {
-      pattern: /(primary|secondary|accent|neutral|info|success|warning|error)/,
-      variants: ['hover'],
-    }
-  ],
   plugins: [
     require('@tailwindcss/typography'),
     require('@tailwindcss/line-clamp'),

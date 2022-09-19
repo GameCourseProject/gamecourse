@@ -1,6 +1,5 @@
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
-import { RadioSize } from '../../InputSizes';
 
 @Component({
   selector: 'app-input-radio',
@@ -17,7 +16,7 @@ export class InputRadioComponent implements OnInit {
 
   // Extras
   @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';       // Size
-  @Input() color?: string;                                // Color
+  @Input() color?: 'primary' | 'secondary' | 'accent';    // Color
   @Input() classList?: string;                            // Classes to add
   @Input() disabled?: boolean;                            // Make it disable
 
@@ -46,4 +45,21 @@ export class InputRadioComponent implements OnInit {
     return RadioSize;
   }
 
+  get RadioColor(): typeof RadioColor {
+    return RadioColor;
+  }
+
+}
+
+enum RadioSize {
+  xs = 'radio-xs',
+  sm = 'radio-sm',
+  md = 'radio-md',
+  lg = 'radio-lg'
+}
+
+enum RadioColor {
+  primary = 'radio-primary',
+  secondary = 'radio-secondary',
+  accent = 'radio-accent'
 }

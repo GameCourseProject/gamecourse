@@ -8,9 +8,8 @@
   <!-- Dropzone -->
   <div class="dropzone flex justify-center items-center w-full">
     <label [for]="id" class="flex flex-col justify-center items-center w-full rounded-lg border-2 border-dashed
-           {{color ? 'border-' + color + ' text-' + color : ''}} btn btn-ghost {{color ? 'btn-' + color : ''}}"
-           [ngClass]="{'h-fit': size === 'xs', 'h-40': size === 'sm', 'h-48': size === 'md', 'h-64': size === 'lg',
-           'border-error text-error btn-error': form && form.submitted && inputFile.invalid}">
+           {{labelColors[color]}} btn btn-ghost {{InputGroupBtnColor[color]}} {{heights[size]}}"
+           [ngClass]="{'border-error text-error btn-error': form && form.submitted && inputFile.invalid}">
 
       <!-- Dropzone Text -->
       <div class="flex flex-col justify-center items-center pt-5 pb-6">
@@ -20,19 +19,7 @@
       </div>
 
       <!-- Hidden input -->
-      <input
-        type="file"
-        id="{{id}}"
-        name="{{id}}"
-        [accept]="accept"
-        class="hidden"
-        [multiple]="multiple"
-        [(ngModel)]="value"
-        (change)="onFilesSelected($event)"
-        [required]="required"
-        [disabled]="disabled"
-        #inputFile="ngModel"
-      />
+      <ng-container [ngTemplateOutlet]="FILE"></ng-container>
 
     </label>
   </div>
@@ -51,3 +38,19 @@
   </label>
 
 </div>
+
+<ng-template #FILE>
+  <input
+    type="file"
+    id="{{id}}"
+    name="{{id}}"
+    [accept]="accept"
+    class="hidden"
+    [multiple]="multiple"
+    [(ngModel)]="value"
+    (change)="onFilesSelected($event)"
+    [required]="required"
+    [disabled]="disabled"
+    #inputFile="ngModel"
+  />
+</ng-template>

@@ -6,56 +6,10 @@
   </label>
 
   <!-- Simple Input -->
-  <ng-container *ngIf="!leftLabel && !rightLabel && !btnText && !btnIcon">
-    <select
-      id="{{id}}"
-      name="{{id}}"
-      class="select select-bordered w-full {{InputSize[size]}} {{color ? 'input-' + color : ''}}"
-      [(ngModel)]="value"
-      (ngModelChange)="valueChange.emit(value)"
-      [required]="required"
-      [disabled]="disabled"
-      #inputSelect="ngModel"
-      [ngClass]="{'select-error': form && form.submitted && inputSelect.invalid}">
-
-      <option disabled selected [value]="undefined">{{placeholder}}</option>
-      <option *ngFor="let option of options" [value]="option.value">{{option.text}}</option>
-    </select>
-  </ng-container>
+  <ng-container *ngIf="!leftLabel && !rightLabel && !btnText && !btnIcon" [ngTemplateOutlet]="SIMPLE"></ng-container>
 
   <!-- Group Input -->
-  <ng-container *ngIf="leftLabel || rightLabel || btnText || btnIcon">
-    <label class="input-group {{InputGroupSize[size]}}">
-
-      <!-- Left label -->
-      <span *ngIf="leftLabel" class="min-w-fit {{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{leftLabel}}</span>
-
-      <select
-        id="{{id}}"
-        name="{{id}}"
-        class="select select-bordered w-full {{InputSize[size]}} {{color ? 'input-' + color : ''}}"
-        [(ngModel)]="value"
-        (ngModelChange)="valueChange.emit(value)"
-        [required]="required"
-        [disabled]="disabled"
-        #inputSelect="ngModel"
-        [ngClass]="{'select-error': form && form.submitted && inputSelect.invalid}">
-
-        <option disabled selected [value]="undefined">{{placeholder}}</option>
-        <option *ngFor="let option of options" [value]="option.value">{{option.text}}</option>
-      </select>
-
-      <!-- Right label -->
-      <span *ngIf="rightLabel" class="min-w-fit {{color ? 'bg-' + color + ' text-' + color + '-content' : ''}}">{{rightLabel}}</span>
-
-      <!-- Button -->
-      <button *ngIf="btnText || btnIcon" class="btn {{btnIcon ? 'btn-square' : ''}} {{color ? 'btn-' + color : ''}}" (click)="btnClicked.emit()">
-        <span *ngIf="btnText" class="bg-transparent">{{btnText}}</span>
-        <ng-icon *ngIf="btnIcon" [name]="btnIcon" size="1.5rem"></ng-icon>
-      </button>
-
-    </label>
-  </ng-container>
+  <ng-container *ngIf="leftLabel || rightLabel || btnText || btnIcon" [ngTemplateOutlet]="GROUP"></ng-container>
 
   <!-- Error Messages -->
   <label *ngIf="form && form.submitted && inputSelect.invalid" class="label">
@@ -63,3 +17,50 @@
   </label>
 
 </div>
+
+<ng-template #SELECT>
+  <select
+    id="{{id}}"
+    name="{{id}}"
+    class="select select-bordered {{InputSize[size]}} {{InputColor[color]}} w-full"
+    [(ngModel)]="value"
+    (ngModelChange)="valueChange.emit(value)"
+    [required]="required"
+    [disabled]="disabled"
+    #inputSelect="ngModel"
+    [ngClass]="{'select-error': form && form.submitted && inputSelect.invalid, 'rounded-none': leftLabel && (rightLabel || btnText || btnIcon)}">
+
+    <option disabled selected [value]="undefined">{{placeholder}}</option>
+    <option *ngFor="let option of options" [value]="option.value">{{option.text}}</option>
+  </select>
+</ng-template>
+
+
+<!------------------------------------------------>
+<!------------------ VARIATIONS ------------------>
+<!------------------------------------------------>
+
+<ng-template #SIMPLE>
+  <ng-container [ngTemplateOutlet]="SELECT"></ng-container>
+</ng-template>
+
+<ng-template #GROUP>
+  <label class="input-group {{InputGroupSize[size]}}">
+
+    <!-- Left label -->
+    <span *ngIf="leftLabel" class="min-w-fit {{InputGroupLabelColor[color]}}">{{leftLabel}}</span>
+
+    <!-- Select -->
+    <ng-container [ngTemplateOutlet]="SELECT"></ng-container>
+
+    <!-- Right label -->
+    <span *ngIf="rightLabel" class="min-w-fit {{InputGroupLabelColor[color]}}">{{rightLabel}}</span>
+
+    <!-- Button -->
+    <button *ngIf="btnText || btnIcon" class="btn {{btnIcon ? 'btn-square' : ''}} {{InputGroupBtnColor[color]}}" (click)="btnClicked.emit()">
+      <span *ngIf="btnText" class="bg-transparent">{{btnText}}</span>
+      <ng-icon *ngIf="btnIcon" [name]="btnIcon" size="1.5rem"></ng-icon>
+    </button>
+
+  </label>
+</ng-template>
