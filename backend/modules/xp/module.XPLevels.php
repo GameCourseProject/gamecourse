@@ -224,7 +224,7 @@ class XPLevels extends Module
             null,
             true
         );
-
+        // TODO: check why this function is not returning correct level
         //xp.getTeamLevel(team,number,goal) returns level object
         Dictionary::registerFunction(
             self::ID,
@@ -251,6 +251,37 @@ class XPLevels extends Module
             "Returns a level object. The optional parameters can be used to find levels that specify a given combination of conditions:\nuser: The id of a GameCourseUser.\nnumber: The number to which the level corresponds to.\ngoal: The goal required to achieve the target level.",
             'object',
             'level',
+            'library',
+            null,
+            true
+        );
+
+        //xp.getTeamLvl(team) returns the current level of a team
+        Dictionary::registerFunction(
+            self::ID,
+            'getTeamsLvl',
+            function ($team) use ($courseId) {
+                $where = ["course" => $courseId];
+
+                return new ValueNode($this->getTeamLevel($team, $where["course"]));
+            },
+            'Returns the level of a Team.',
+            'integer',
+            null,
+            'library',
+            null,
+            true
+        );
+        //xp.getLvlDescription(level) returns the description of a level
+        Dictionary::registerFunction(
+            self::ID,
+            'getLvlDescription',
+            function ($level) use ($courseId) {
+                return new ValueNode(Core::$systemDB->select(self::TABLE_LEVELS, ["number" => $level, "course" => $courseId], "description"));
+            },
+            'Returns the sum of XP that all Modules provide as reward from a Team.',
+            'string',
+            null,
             'library',
             null,
             true
@@ -679,13 +710,13 @@ class XPLevels extends Module
     }
 
     /**
-     * Returns the current level from team_xp table for the course tea.
+     * Returns the current level from team_xp table for the course team.
      */
     public function getTeamLevel($team, $courseId)
     {
         $teamId = $this->getTeamId($team);
         $level = Core::$systemDB->select(self::TABLE_TEAMS_XP, ["course" => $courseId, "teamId" => $teamId], "level");
-        return Core::$systemDB->select(self::TABLE_LEVELS, ["id" => $level]);
+        return $level ;/*Core::$systemDB->select(self::TABLE_LEVELS, ["id" => $level])*/
     }
 
     public function getLevels($courseId) {

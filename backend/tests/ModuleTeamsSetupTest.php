@@ -6,12 +6,12 @@ require_once 'classes/ClassLoader.class.php';
 
 use GameCourse\Core;
 use GameCourse\Course;
-use Modules\Skills\Skills;
+use Modules\Teams\Teams;
 
 use PHPUnit\Framework\TestCase;
 
 
-class ModuleSkillsSetupTest extends TestCase
+class ModuleTeamsSetupTest extends TestCase
 {
     protected $skills;
 
@@ -20,18 +20,16 @@ class ModuleSkillsSetupTest extends TestCase
     }
 
     protected function setUp():void {
-        $this->skills = new Skills();
+        $this->skills = new Teams();
     }
 
     protected function tearDown():void {
         Core::$systemDB->deleteAll("course");
         Core::$systemDB->executeQuery(
-            "drop table if exists skill_dependency;
-            drop table if exists dependency;
-            drop table if exists skill;
-            drop table if exists award_wildcard;
-            drop table if exists skill_tier;
-            drop table if exists skill_tree;"
+            "drop table if exists teams;
+            drop table if exists teams_members;
+            drop table if exists teams_config;
+            drop table if exists teams_xp;"
         );
     }
 
@@ -46,75 +44,66 @@ class ModuleSkillsSetupTest extends TestCase
     public function testAddTablesSuccess(){
 
         //When
-        $result = $this->skills->addTables(Skills::ID, Skills::TABLE);
+        $result = $this->teams->addTables(Teams::ID, Teams::TABLE_CONFIG);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TREES . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TIERS . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table6 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_WILDCARD . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Teams::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Teams::TABLE_XP . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Teams::TABLE_MEMBERS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Teams::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertTrue($result);
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
         $this->assertCount(1, $table3);
         $this->assertCount(1, $table4);
-        $this->assertCount(1, $table5);
-        $this->assertCount(1, $table6);
     }
 
     public function testAddTablesAlreadyExistsFail(){
         
         //Given
         Core::$systemDB->executeQuery(
-            "create table skill_tree(
-                id 		int unsigned auto_increment primary key,
-                course int unsigned not null,
-                maxReward int unsigned,
+            "create table teams(
+                id          int unsigned auto_increment primary key,
+                course      int unsigned not null,
+                teamNumber  int unsigned,
+                teamName    varchar(70) ,
                 foreign key(course) references course(id) on delete cascade
             );
-            create table skill_tier(
-                id 	int unsigned auto_increment unique,
-                tier varchar(50) not null,
-                seqId int unsigned not null,
-                reward int unsigned not null,
-                treeId int unsigned not null,
-                primary key(treeId,tier),
-                foreign key(treeId) references skill_tree(id) on delete cascade
+            
+            create table teams_members(
+                id          int unsigned auto_increment primary key,
+                teamId      int unsigned not null,
+                memberId    int unsigned not null,
+                foreign key(teamId) references teams(id) on delete cascade,
+                foreign key(memberId) references game_course_user(id) on delete cascade
             );
-            create table skill(
-                id 	int unsigned auto_increment primary key,
-                seqId int unsigned not null,
-                name varchar(50) not null,
-                color varchar(10),
-                page TEXT,
-                tier varchar(50) not null,
-                treeId int unsigned not null,
-                isActive boolean not null default true,
-                foreign key(treeId,tier) references skill_tier(treeId, tier) on delete cascade
-            );"
+            
+            create table teams_xp(
+                course  int unsigned not null,
+                teamId 	    int unsigned not null,
+                xp          int not null,
+                level       int not null,
+                primary key (course,teamId),
+                foreign key(course) references course(id) on delete cascade,
+                foreign key(teamId) references teams(id) on delete cascade
+            );  "
         );
         
         //When
-        $result = $this->skills->addTables(Skills::ID, Skills::TABLE);
+        $result = $this->teams->addTables(Teams::ID, Teams::TABLE);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TREES . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TIERS . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table6 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_WILDCARD . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Teams::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Teams::TABLE_XP . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Teams::TABLE_MEMBERS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Teams::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertFalse($result);
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
         $this->assertCount(1, $table3);
         $this->assertEmpty($table4);
-        $this->assertEmpty($table5);
-        $this->assertEmpty($table6);
     }
 
     public function testSetupDataOnlyCourseSuccess(){

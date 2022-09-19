@@ -1,0 +1,278 @@
+[
+  {
+    "type": "block",
+    "role": "role.Default",
+    "class": "leaderboard",
+    "visibilityType": "visible",
+    "children": [
+      [
+        {
+          "type": "header",
+          "role": "role.Default",
+          "visibilityType": "visible",
+          "image": [
+            {
+              "type": "image",
+              "role": "role.Default",
+              "visibilityType": "visible",
+              "src": "modules/leaderboard/imgs/leaderboard.svg"
+            }
+          ],
+          "title": [
+            {
+              "type": "text",
+              "role": "role.Default",
+              "visibilityType": "visible",
+              "value": "Teams Leaderboard"
+            }
+          ]
+        }
+      ],
+      [
+        {
+          "type": "table",
+          "role": "role.Default",
+          "class": "leaderboard-table",
+          "visibilityType": "visible",
+          "headerRows": [
+            [
+              {
+                "type": "row",
+                "role": "role.Default",
+                "visibilityType": "visible",
+                "children": [
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default",
+                      "visibilityType": "visible",
+                      "value": "#"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default",
+                      "visibilityType": "visible",
+                      "value": "Members"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default",
+                      "visibilityType": "visible",
+                      "value": "Experience"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default",
+                      "visibilityType": "visible",
+                      "value": "Level"
+                    }
+                  ]
+                ]
+              }
+            ]
+          ],
+          "rows": [
+            [
+              {
+                "type": "row",
+                "role": "role.Default",
+                "visibilityType": "visible",
+                "loopData": "{teams.getAllTeams(%course).sort(\"desc, xp.getTeamXP(%item); asc, %item.id\")}",
+                "variables": {
+                  "teamXP": {
+                    "value": "{xp.getTeamXP(%item)}"
+                  },
+                  "leaderboardTeam": {
+                    "value": "{%item}"
+                  }
+                },
+                "events": {
+                  "click": "{actions.goToPage(6, %leaderboardTeam.id)}"
+                },
+                "children": [
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default",
+                      "visibilityType": "visible",
+                      "value": "{%index + 1}"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Default",
+                      "visibilityType": "visible",
+                      "children": [
+
+                        [
+                          {
+                            "type": "table",
+                            "role": "role.Default",
+                            "class": "leaderboard-table",
+                            "visibilityType": "visible",
+                            "headerRows": [
+                             [
+                               {
+                                 "type": "row",
+                                 "role": "role.Default",
+                                 "visibilityType": "visible",
+                                 "children": [
+                                   [
+                                     {
+                                       "type": "text",
+                                       "role": "role.Default",
+                                       "visibilityType": "visible",
+                                       "value": "Photo"
+                                     }
+                                   ],
+                                   [
+                                     {
+                                       "type": "text",
+                                       "role": "role.Default",
+                                       "visibilityType": "visible",
+                                       "value": "Major"
+                                     }
+                                   ],
+                                   [
+                                     {
+                                       "type": "text",
+                                       "role": "role.Default",
+                                       "visibilityType": "visible",
+                                       "value": "Name"
+                                     }
+                                   ]
+                                 ]
+                               }
+                             ]
+                            ],
+                            "rows": [
+                              [
+                                {
+                                  "type": "row",
+                                  "role": "role.Default",
+                                  "visibilityType": "visible",
+                                  "loopData": "{teams.getTeamMembers(%leaderboardTeam.id, %course)}",
+                                  "variables": {
+                                    "teamMember": {
+                                        "value": "{users.getUser(%item.id)}"
+                                    }
+                                  },
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "image",
+                                        "role": "role.Default",
+                                        "class": "leaderboard-img",
+                                        "visibilityType": "visible",
+                                        "src": "{%teamMember.picture}"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "{%teamMember.major}"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "{%teamMember.name}"
+                                      }
+                                    ]
+                                 ]
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Default",
+                      "class": "leaderboard-experience",
+                      "visibilityType": "visible",
+                      "children": [
+                        [
+                          {
+                            "type": "text",
+                            "role": "role.Default",
+                            "visibilityType": "visible",
+                            "value": "{%teamXP} XP"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "chart",
+                            "role": "role.Default",
+                            "visibilityType": "visible",
+                            "variables": {
+                              "user": {
+                                "value": "{%leaderboardTeam.id}"
+                              }
+                            },
+                            "chartType": "line",
+                            "info": {
+                              "provider": "xpEvolution",
+                              "spark": true
+                            }
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Default",
+                      "class": "leaderboard-level",
+                      "visibilityType": "visible",
+                      "variables": {
+                        "level": {
+                          "value": "{xp.getTeamsLvl(%item)}"
+                        }
+                      },
+                      "children": [
+                        [
+                          {
+                            "type": "text",
+                            "role": "role.Default",
+                            "visibilityType": "visible",
+                            "value": "{%level} - {xp.getLvlDescription(%level)}"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "text",
+                            "role": "role.Default",
+                            "class": "leaderboard-level-detailed",
+                            "visibilityType": "conditional",
+                            "visibilityCondition": "{%level < 20}",
+                            "value": "{1000 - (%teamXP % 1000)} for L{%level.int + 1} at {(%level.int + 1) * 1000} XP"
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    ]
+  }
+]

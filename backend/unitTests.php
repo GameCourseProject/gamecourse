@@ -95,11 +95,20 @@ $GLOBALS['c_2'] = [];
 global $c_3;
 $GLOBALS['c_3'] = [];
 
-$GLOBALS['courseInfo'] = testCourse();
+global $t_1;
+$GLOBALS['t_1'] = [];
+global $t_2;
+$GLOBALS['t_2'] = [];
+global $t_3;
+$GLOBALS['t_3'] = [];
+
+
+$GLOBALS['courseInfo'] = testCourse();    /*
 $GLOBALS['fenixInfo'] = testFenix();
 $GLOBALS['moodleInfo'] = testMoodle();
 $GLOBALS['classcheckInfo'] = testClassCheck();
-$GLOBALS['googlesheetsInfo'] = testGoogleSheets();
+$GLOBALS['googlesheetsInfo'] = testGoogleSheets();   */
+$GLOBALS['teamsInfo'] = testTeamImport($_GET["course"]);
 
 
 $GLOBALS['dictionaryInfo'] = testDictionary();
@@ -1015,7 +1024,7 @@ function importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId
 function testTeamImport($course){
 
     // maybe import users first
-    $teamsCSV = "ist190709, 4 - VIL04\n";
+    $teamsCSV = "ist123460, 4 - VIL04\n";
     $teamsCSV .= "ist145124, 4 - VIL04\n";
     $teamsCSV .= "ist123456, 5 - VIL06\n";
     $teamsCSV .= "ist123457, 5 - VIL06\n";
@@ -1023,7 +1032,7 @@ function testTeamImport($course){
     $teamsCSV .= "ist123459, 5 - VIL06\n";
 
 
-    $gcUserId1 = Core::$systemDB->select("auth", ["username" => "ist190709"], "game_course_user_id");
+    $gcUserId1 = Core::$systemDB->select("auth", ["username" => "ist123460"], "game_course_user_id");
     $gcUserId2 = Core::$systemDB->select("auth", ["username" => "ist145124"], "game_course_user_id");
     $gcUserId3 = Core::$systemDB->select("auth", ["username" => "ist123456"], "game_course_user_id");
     $gcUserId4 = Core::$systemDB->select("auth", ["username" => "ist123457"], "game_course_user_id");
@@ -1032,7 +1041,7 @@ function testTeamImport($course){
 
     if ($gcUserId1 === null || $gcUserId2 === null ||$gcUserId3 === null || $gcUserId4 === null || $gcUserId5 === null || $gcUserId6 === null ) {
 
-        $GLOBALS['c_1'] = ["warning", "
+        $GLOBALS['t_1'] = ["warning", "
         <strong style='color:#F7941D;'>Warning: </strong>To test the teams's import, do the following:
         <ul>
         <li>Create a course named 'Course X' and year '2021/2022'.</li>
@@ -1049,12 +1058,12 @@ function testTeamImport($course){
         $courseUserId6 = Core::$systemDB->select("course_user", ["course" => $course, "id" => $gcUserId6], "id");
 
         if ($courseUserId1 === null || $courseUserId2 === null ||$courseUserId3 === null || $courseUserId4 === null || $courseUserId5 === null || $courseUserId6 === null ) {
-            $GLOBALS['c_1'] = ["warning", "
+            $GLOBALS['t_1'] = ["warning", "
             <strong style='color:#F7941D;'>Warning: </strong>To test the teams's import, import the following users to the course:  
                 <a href=''> Users To Import</a>
             </ul>"];
         } else {
-            Teams::importTeams($teamsCSV, false);
+            Teams::importTeams($teamsCSV,$course, false);
 
             $member1 = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId1], "*");
             $member2 = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId2], "*");
@@ -1065,24 +1074,30 @@ function testTeamImport($course){
 
             if ($member1 && $member2 && $member3 && $member4 && $member5 && $member6) {
                 // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users imported - created and updated (not replaced).</h3>";
-                $GLOBALS['cou_2'] = ["success", "<strong style='color:green'>Success:</strong>  Teams imported - created and updated (not replaced)."];
+                $GLOBALS['t_1'] = ["success", "<strong style='color:green'>Success:</strong>  Teams imported - created and updated (not replaced)."];
                 $GLOBALS['success']++;
             } else {
                 // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Course Users not imported - created and updated (not replaced).</h3>";
-                $GLOBALS['cou_2'] = ["fail", "<strong style='color:red'>Fail:</strong> Teams not imported - created and updated (not replaced)."];
+                $GLOBALS['t_1'] = ["fail", "<strong style='color:red'>Fail:</strong> Teams not imported - created and updated (not replaced)."];
                 $GLOBALS['fail']++;
             }
 
+            $teamsCSV = "ist123460, 4 - VIL04\n";
+            $teamsCSV .= "ist145124, 4 - VIL04\n";
+            $teamsCSV .= "ist123456, 5 - VIL06\n";
+            $teamsCSV .= "ist123457, 5 - VIL06\n";
+            $teamsCSV .= "ist123458, 6 - VIL08\n";
             $teamsCSV .= "ist123459, 7 - VIL06\n";
-            Teams::importTeams($teamsCSV, true);
+            
+            Teams::importTeams($teamsCSV, $course,true);
             $updatedTeamId = Core::$systemDB->select("teams", ["teamNumber" => "7"], "id");
             $updatedMember = Core::$systemDB->select("teams_members", ["memberId" => $gcUserId6, "teamId" => $updatedTeamId], "*");
 
             if ($updatedMember){
-                $GLOBALS['cou_3'] = ["success", "<strong style='color:green'>Success:</strong>  Teams imported - updated (and replaced)."];
+                $GLOBALS['t_2'] = ["success", "<strong style='color:green'>Success:</strong>  Teams imported - updated (and replaced)."];
                 $GLOBALS['success']++;
             } else {
-                $GLOBALS['cou_3'] = ["fail", "<strong style='color:red'>Fail:</strong> Teams not imported."];
+                $GLOBALS['t_2'] = ["fail", "<strong style='color:red'>Fail:</strong> Teams not imported."];
                 $GLOBALS['fail']++;
             }
 
@@ -1372,25 +1387,22 @@ if ($GLOBALS['courseInfo'] == 1) {
 
 //Import/Export Course Teams
 if ($GLOBALS['courseInfo'] == 1) {
-    $info = $GLOBALS["cou_1"][0] . $GLOBALS["cou_2"][0] . $GLOBALS["cou_3"][0];
-    $countedInfo = countInfos($info, 3);
+    $info = $GLOBALS["t_1"][0] . $GLOBALS["t_2"][0];
+    $countedInfo = countInfos($info, 2);
     echo "<tr>";
-    echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;'>Import/Export Course Teams</td>";
-    echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["cou_1"][1] . "</td>";
+    echo "<td rowspan='2' style='border: 1px solid black; padding: 5px;'>Import/Export Course Teams</td>";
+    echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["t_1"][1] . "</td>";
 
-    echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[4] . ";'>" . $countedInfo[2] . "%</br>(" . $countedInfo[1] . "/3)</td>";
-    echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[5] . ";'>" . $countedInfo[3] . "%</br>(" . (3 - $countedInfo[0]) . "/3)</td>";
+    echo "<td rowspan='2' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[4] . ";'>" . $countedInfo[2] . "%</br>(" . $countedInfo[1] . "/2)</td>";
+    echo "<td rowspan='2' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[5] . ";'>" . $countedInfo[3] . "%</br>(" . (2 - $countedInfo[0]) . "/2)</td>";
     echo "</tr>";
 
     echo "<tr>";
-    echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["cou_2"][1] . "</td>";
+    echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["t_2"][1] . "</td>";
     echo "</tr>";
 
-    echo "<tr>";
-    echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["cou_3"][1] . "</td>";
-    echo "</tr>";
 } else {
-    checkCourseTable("Import/Export Course Teams", 3);
+    checkCourseTable("Import/Export Course Teams", 2);
 }
 
 

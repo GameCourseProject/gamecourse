@@ -228,7 +228,7 @@ def get_graded_logs(target, minRating, include_skills = False):
     typeof = "streak"
 
     type = "graded post"
-    
+
     if len(ratings) == 0:
         return []
     elif len(ratings) == 1:
@@ -282,6 +282,59 @@ def count_awards(course):
 
     return table[0][0]
 
+def calculate_teams_xp(course, target):
+    # -----------------------------------------------------------
+    # Insert current XP values into teams_xp table
+    # -----------------------------------------------------------
+
+    cursor = db.cursor
+    connect = db.connection
+
+    queries = db.queries
+    results = db.results
+
+    query = "SELECT teamId FROM teams_members where memberId = \"" + str(target) + "\";"
+    cursor.execute(query)
+    table = cursor.fetchall()
+
+    if len(table) == 1:
+        team = table[0][0]
+    else:
+        team = None
+
+    query = "SELECT sum(reward) from award_teams where course=%s and team=%s group by team;"
+    cursor.execute(query, (course,  team))
+    team_xp = cursor.fetchall()
+
+    # if query returns empty set
+    if len(team_xp) > 0:
+        team_xp = int(team_xp[0][0])
+
+    else:
+        team_xp = 0
+
+    query = "SELECT id, max(goal) from level where goal <= \"" +  str(team_xp) + "\" and course = \"" + str(course) + "\" group by id order by number desc limit 1;"
+
+    result = db.data_broker(query)
+    if not result:
+        cursor.execute(query)
+        level_table = cursor.fetchall()
+        queries.append(query)
+        results.append(level_table)
+    else:
+        level_table = result
+
+
+    current_level = int(level_table[0][0])
+
+    query = "UPDATE teams_xp set xp= %s, level=%s where course=%s and teamId=%s;"
+    cursor.execute(query, (team_xp, current_level, course, team))
+
+    connect.commit()
+    #cnx.close()
+
+
+
 
 def calculate_xp(course, target):
     # -----------------------------------------------------------
@@ -294,6 +347,8 @@ def calculate_xp(course, target):
     queries = db.queries
     results = db.results
 
+    logging.exception("entered")
+
     # get max values for each type of award
     query = "SELECT maxReward from skill_tree where course = \"" + str(course) + "\";"
     result = db.data_broker(query)
@@ -305,6 +360,9 @@ def calculate_xp(course, target):
     else:
         tree_table = result
 
+    logging.exception("tree table")
+
+
     query = "SELECT maxBonusReward from badges_config where course = \"" + str(course) + "\";"
     result = db.data_broker(query)
     if not result:
@@ -314,6 +372,9 @@ def calculate_xp(course, target):
         results.append(badge_table)
     else:
         badge_table = result
+
+    logging.exception("badge table")
+
 
     query = "SELECT maxBonusReward from streaks_config where course = \"" + str(course) + "\";"
     result = db.data_broker(query)
@@ -325,6 +386,7 @@ def calculate_xp(course, target):
     else:
         streak_table = result
 
+    logging.exception("streak table")
 
     if len(tree_table) == 1:
         max_tree_reward = int(tree_table[0][0])
@@ -351,6 +413,8 @@ def calculate_xp(course, target):
     else:
         user_tree_xp = 0
 
+    logging.exception("user tree xp table")
+
     query = "SELECT sum(reward) from award where course=%s and type=%s and user=%s group by user;"
     cursor.execute(query, (course, "streak", target))
     streak_xp = cursor.fetchall()
@@ -365,6 +429,7 @@ def calculate_xp(course, target):
     else:
         user_streak_xp = 0
 
+    logging.exception("user_streak_xp table")
 
     query = "SELECT sum(reward) from award where course=%s and (type !=%s and type !=%s and type !=%s and type !=%s) and user=%s group by user;"
     cursor.execute(query, (course, "badge", "skill", "streak", "tokens" ,target))
@@ -379,11 +444,14 @@ def calculate_xp(course, target):
     else:
         user_other_xp = 0
 
-
+    logging.exception("user_other_xp table")
     # rewards from badges where isExtra = 1
     query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and isExtra =%s and user=%s;"
     cursor.execute(query, (course, "badge", True, target))
     badge_xp_extra = cursor.fetchall()
+
+    logging.exception("badge_xp_extra table")
+
 
     # if query returns empty set
     if len(badge_xp_extra) > 0:
@@ -411,6 +479,8 @@ def calculate_xp(course, target):
     else:
         user_badge_xp = 0
 
+    logging.exception("user_badge_xp table")
+
     extra = user_streak_xp + user_badge_xp_extra  # streaks are extra
     total_skill_xp = min(user_tree_xp, max_tree_reward)
     total_other_xp = user_other_xp
@@ -421,7 +491,7 @@ def calculate_xp(course, target):
 
     total_xp = total_badge_xp + total_skill_xp + total_other_xp + total_extra_xp
 
-
+    logging.exception("total_Xp table")
     query = "SELECT id, max(goal) from level where goal <= \"" +  str(total_xp) + "\" and course = \"" + str(course) + "\" group by id order by number desc limit 1;"
     result = db.data_broker(query)
     if not result:
@@ -433,12 +503,13 @@ def calculate_xp(course, target):
         level_table = result
 
     current_level = int(level_table[0][0])
-
+    logging.exception("currentlevel table")
     query = "UPDATE user_xp set xp= %s, level=%s where course=%s and user=%s;"
     cursor.execute(query, (total_xp, current_level, course, target))
-
+    logging.exception("query table")
 
     connect.commit()
+    logging.exception("commited")
     #cnx.close()
 
 
@@ -1318,6 +1389,78 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     #cnx.close()
     return
 
+def get_team(target):
+    # -----------------------------------------------------------
+    # Gets team id from target
+    # -----------------------------------------------------------
+
+    cursor = db.cursor
+    connect = db.connection
+
+    course = config.course
+
+    query = "SELECT teamId FROM teams_members where memberId = \"" + str(target) + "\";"
+    cursor.execute(query)
+    table = cursor.fetchall()
+
+
+    if len(table) == 1:
+        team = table[0][0]
+    elif len(table) == 0:
+        print("ERROR: No student with given id found in teams_members database.")
+        team = None
+    else:
+        print("ERROR: More than one student with the same id in teams_member database.")
+        team = None
+
+    return team
+
+
+
+def award_team_grade(target, item, contributions=None, extra=None):
+    # -----------------------------------------------------------
+    # Writes 'award' table with reward that is not a badge or a
+    # skill. Will not retract effects, but will not award twice
+    # -----------------------------------------------------------
+
+    cursor = db.cursor
+    connect = db.connection
+
+    course = config.course
+
+    if config.test_mode:
+        awards_table = "award_teams_test"
+    else:
+        awards_table = "award_teams"
+
+    if item == "Lab":
+        description = "Lab Grade"
+        typeof = "labs"
+    elif item == "Presentation":
+        description = "Presentation Grade"
+        typeof = "presentation"
+
+    query = "SELECT moduleInstance, reward FROM " + awards_table + " where team = %s AND course = %s AND type=%s AND description = %s;"
+    cursor.execute(query, (target, course, typeof, description))
+    table = cursor.fetchall()
+
+    if item == "Presentation":
+        for line in contributions:
+            grade = int(line.rating)
+            if len(table) == 0:
+                query = "INSERT INTO " + awards_table + " (team, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
+                cursor.execute(query, (target, course, description, typeof, grade))
+                connect.commit()
+                config.award_list.append([str(target), "Grade from " + item, str(grade), ""])
+
+            elif len(table) == 1:
+                query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND team = %s AND type=%s AND description=%s"
+                cursor.execute(query, (grade, course, target, typeof, description))
+                connect.commit()
+
+
+    #cnx.close()
+    return
 
 def award_grade(target, item, contributions=None, extra=None):
     # -----------------------------------------------------------
@@ -1353,6 +1496,7 @@ def award_grade(target, item, contributions=None, extra=None):
     query = "SELECT moduleInstance, reward FROM " + awards_table + " where user = %s AND course = %s AND type=%s AND description = %s;"
     cursor.execute(query, (target, course, typeof, description))
     table = cursor.fetchall()
+
 
 
     if item == "Presentation":
@@ -2343,7 +2487,7 @@ def award_streak(target, streak, to_award, participations, type=None):
         awards_table = "award"
 
 
-   
+
     # gets all awards for this user order by descending date (most recent on top)
     query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description like %s AND type=%s;"
     streak_name = streak + "%"
@@ -2541,6 +2685,8 @@ def consecutive_peergrading(target):
     course = config.course
     query = "select id, timeassigned, expired, ended from mdl_peerforum_time_assigned where component = %s and userid = (select id from mdl_user where username = %s);"
     comp  = 'mod_peerforum'
+    if target is None:
+        return []
     cursor.execute(query, (comp, target.decode()))
     table = cursor.fetchall()
     cnx.close()

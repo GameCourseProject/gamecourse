@@ -8,10 +8,10 @@ import os, sys, config, logging, json
 import mysql.connector
 
 from gamerules.connector.db_connection import Database
-#cnx = connect_to_db()
 db = Database()
-# TODO find a mechanism to test socket before opening dat files, get rid of basic inconsistency
 
+#cnx = connect_to_db()
+# TODO find a mechanism to test socket before opening dat files, get rid of basic inconsistency
 
 # Folder where rule files will be defined
 RULES_FOLDER = "rules"
@@ -243,16 +243,20 @@ if __name__ == "__main__":
             log_end(course, finish_date, students, logfile)
 
 			# calculate new XP value for each student in targets
+
             for el in students.keys():
                 calculate_xp(course, el)
+                calculate_teams_xp(course, el)
 
-            db.close_db()
+
             sys.exit()
 
         except Exception as e:
             logging.error('Connection Refused in autogame_terminate().')
             logging.error(str(e))
             sys.exit()
+        finally:
+            db.close_db()
 
     except Exception as e:
         logging.exception('Exception raised when firing rulesystem.\n\n\n')

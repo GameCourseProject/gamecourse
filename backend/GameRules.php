@@ -272,6 +272,16 @@ class GameRules{
 	    }
 
 	    if ($this->checkServerSocket()) {
+            /*
+            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)
+            $connection =  @socket_connect($socket, $this->host,  $this->port);
+
+            if( $connection ){
+                $out = $this->callAutogame();
+            } else {
+                echo 'OFFLINE: ' . socket_strerror(socket_last_error( $socket ));
+            } */
+
 			if (fsockopen($this->host, $this->port)) {
 	    		$out = $this->callAutogame();
 			}
@@ -280,7 +290,6 @@ class GameRules{
 				$out = $this->startServerSocket();
 			}
 	    }
-
 	    else {
 	    	$out = $this->startServerSocket();
 	    }

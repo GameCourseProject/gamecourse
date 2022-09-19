@@ -54,7 +54,7 @@
                       "type": "text",
                       "role": "role.Default",
                       "visibilityType": "visible",
-                      "value": "Member"
+                      "value": "Members"
                     }
                   ],
                   [
@@ -91,9 +91,6 @@
                   "leaderboardTeam": {
                     "value": "{%item}"
                   }
-                },
-                "events": {
-                  "click": "{actions.goToPage(4, %leaderboardTeam.id)}"
                 },
                 "children": [
                   [
@@ -164,6 +161,9 @@
                                         "value": "{users.getUser(%item.id)}"
                                     }
                                   },
+                                  "events": {
+                                    "click": "{actions.goToPage(6, %teamMember.id)}"
+                                  },
                                   "children": [
                                     [
                                       {
@@ -213,23 +213,6 @@
                             "visibilityType": "visible",
                             "value": "{%teamXP} XP"
                           }
-                        ],
-                        [
-                          {
-                            "type": "chart",
-                            "role": "role.Default",
-                            "visibilityType": "visible",
-                            "variables": {
-                              "user": {
-                                "value": "{%leaderboardTeam.id}"
-                              }
-                            },
-                            "chartType": "line",
-                            "info": {
-                              "provider": "xpEvolution",
-                              "spark": true
-                            }
-                          }
                         ]
                       ]
                     }
@@ -242,7 +225,7 @@
                       "visibilityType": "visible",
                       "variables": {
                         "level": {
-                          "value": "{xp.getLevel(%leaderboardTeam)}"
+                          "value": "{xp.getTeamsLvl(%item)}"
                         }
                       },
                       "children": [
@@ -251,7 +234,7 @@
                             "type": "text",
                             "role": "role.Default",
                             "visibilityType": "visible",
-                            "value": "{%level.number} - {%level.description}"
+                            "value": "{%level} - {xp.getLvlDescription(%level)}"
                           }
                         ],
                         [
@@ -260,8 +243,8 @@
                             "role": "role.Default",
                             "class": "leaderboard-level-detailed",
                             "visibilityType": "conditional",
-                            "visibilityCondition": "{%level.number < 20}",
-                            "value": "{1000 - (%teamXP % 1000)} for L{%level.number.int + 1} at {(%level.number.int + 1) * 1000} XP"
+                            "visibilityCondition": "{%level < 20}",
+                            "value": "{1000 - (%teamXP % 1000)} for L{%level.int + 1} at {(%level.int + 1) * 1000} XP"
                           }
                         ]
                       ]

@@ -81,6 +81,14 @@ def get_username(target):
     return result
 
 @rule_function
+def get_team(target):
+    """
+    Returns the team of a given student
+    """
+    result = connector.get_team(target)
+    return result
+
+@rule_function
 def get_logs(target, type):
     """
     Returns the logs of a target for a specific
@@ -278,6 +286,15 @@ def award_grade(target, item, contributions=None, extra=None):
     returns the output of a skill and writes the award to database
     """
     connector.award_grade(target, item, contributions, extra)
+    # TODO possible upgrade: returning indicators to include these types of prizes as well
+    return
+
+@rule_effect
+def award_team_grade(target, item, contributions=None, extra=None):
+    """
+    returns the output of a grade and writes the award to database
+    """
+    connector.award_team_grade(target, item, contributions, extra)
     # TODO possible upgrade: returning indicators to include these types of prizes as well
     return
 

@@ -38,21 +38,22 @@ def fetch_data ():
         elif len (sys.argv) == 3:
             # target was given
             targets.append(sys.argv[2])
+
     all_xp_evolution = []
     for target in targets:
-        query = "SELECT user, course, description, reward, date, @total:=@total + reward AS total_reward FROM award JOIN (SELECT @total:=0) AS t WHERE course = %s AND user = %s AND type != 'tokens' ORDER BY date ASC;"
+        query = "SELECT user, course, description, type, reward, date, @total:=@total + reward AS total_reward FROM award JOIN (SELECT @total:=0) AS t WHERE course = %s AND user = %s AND type != 'tokens' ORDER BY date ASC;"
         cursor.execute(query, (course, target))
         target_xp_evolution = cursor.fetchall()
-        
+
         for line in target_xp_evolution:
             line_list =  list(line)
             line_list[2] = line_list[2].decode("utf-8")
-
+        
         all_xp_evolution += target_xp_evolution
 
     cnx.close()
     
-    header = ["user", "course", "description", "reward", "date", "total_reward"]
+    header = ["user", "course", "description", "type", "reward", "date", "total_reward"]
 
     return header, all_xp_evolution
 

@@ -177,11 +177,11 @@ class Teams extends Module
 
     public function initTemplates()
     {
-        /*$courseId = $this->getCourseId();
+        $courseId = $this->getCourseId();
 
         if (!Views::templateExists($courseId, self::TEAM_LEADERBOARD_TEMPLATE))
-            Views::createTemplateFromFile(self::TEAM_LEADERBOARD_TEMPLATE, file_get_contents(__DIR__ . '/leaderboard.txt'), $courseId, self::ID);
-        */
+            Views::createTemplateFromFile(self::TEAM_LEADERBOARD_TEMPLATE, file_get_contents(__DIR__ . '/teamsLeaderboard.txt'), $courseId, self::ID);
+
         }
 
     public function initAPIEndpoints()
@@ -568,7 +568,7 @@ class Teams extends Module
         $firstLine = explode(";",$lines[0]);
         $firstLine = array_map('trim', $firstLine);
 
-        $usernameIndex = array_search("Username", $firstLine);
+        $usernameIndex = array_search("username", $firstLine);
         $groupNameIndex = array_search($groupColumnName, $firstLine);
 
         $containsColumnNames = true;
@@ -629,12 +629,26 @@ class Teams extends Module
                 }
                 else {
                     // user already enrolled in a team with id = $teamId.
-
                     if($replace){
+                        if ($teamId != null){
+                            // new team with teamNumber = group already exists
+                            Core::$systemDB->update(self::TABLE_MEMBERS, [
+                                "teamId" => $teamId
+                            ], ["memberId" => $gcUserId]);
+                        }else{
+                            // team with teamNumber = group does not exist
+                            $teamData = [
+                                "teamNumber" => intval($group),
+                                "course" => $courseId
+                            ];
+                            Core::$systemDB->insert(self::TABLE, $teamData);
+                            $newTeamId = Core::$systemDB->getLastId();
+                            Core::$systemDB->update(self::TABLE_MEMBERS, [
+                                "teamId" => $newTeamId
+                            ], ["memberId" => $gcUserId]);
+                            $newTeamsNr++;
+                        }
 
-                        Core::$systemDB->update(self::TABLE_MEMBERS, [
-                        "teamId" => $teamId
-                        ], ["memberId" => $gcUserId]);
                     }
                 }
 
