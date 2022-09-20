@@ -1,99 +1,100 @@
-<nav class="navbar sticky w-full flex justify-between bg-primary h-20 z-40 pl-2 pr-3 shadow-lg"
+<nav class="navbar sticky flex flex-col justify-center w-full bg-primary z-40 pl-2 pr-3 shadow-lg {{!isInCourse() ? 'h-20' : 'h-[7rem] lg:h-20'}}"
      [ngStyle]="{'background-color': course?.color ? course.color : ''}">
-
-  <!-- Left -->
-  <div class="flex justify-start gap-2 lg:ml-72">
-
-    <!-- Hamburger Menu -->
-    <label class="btn btn-ghost btn-circle swap swap-rotate text-primary-content lg:hidden">
-      <!-- this hidden checkbox controls the state -->
-      <input id="sidebar-toggler" type="checkbox" (click)="sidebar.toggle()"/>
-
-      <!-- hamburger icon -->
-      <ng-icon name="feather-menu" size="1.5rem" color="fillCurrent" class="swap-off"></ng-icon>
-
-      <!-- close icon -->
-      <ng-icon name="feather-x" size="1.5rem" color="fillCurrent" class="swap-on"></ng-icon>
-    </label>
-
-  </div>
 
   <div class="flex justify-between w-full">
-    <!-- Middle -->
-    <div>
-      <ng-container *ngIf="course">
-        <!-- Breadcrumbs -->
-        <div class="text-sm text-primary-content text-opacity-50 breadcrumbs pt-0 hidden lg:block">
-          <ul>
-            <li *ngFor="let part of getURLParts()">{{part.capitalize()}}</li>
-          </ul>
-        </div>
+    <!-- Left -->
+    <div class="flex justify-start gap-2 lg:ml-72">
 
-        <!-- Course Name -->
-        <h6 class="mb-0 font-bold text-primary-content hidden lg:block">{{course.name}}</h6>
-      </ng-container>
+      <!-- Hamburger Menu -->
+      <label class="btn btn-ghost btn-circle swap swap-rotate text-primary-content lg:hidden">
+        <!-- this hidden checkbox controls the state -->
+        <input id="sidebar-toggler" type="checkbox" (click)="sidebar.toggle()"/>
 
-      <!-- Course Skeleton -->
-      <ng-container *ngIf="!course && isInCourse()">
-        <div class="hidden lg:block w-40 h-4 bg-indigo-300 opacity-40 rounded-md mt-6 animate-pulse"></div>
-      </ng-container>
+        <!-- hamburger icon -->
+        <ng-icon name="feather-menu" size="1.5rem" color="fillCurrent" class="swap-off"></ng-icon>
+
+        <!-- close icon -->
+        <ng-icon name="feather-x" size="1.5rem" color="fillCurrent" class="swap-on"></ng-icon>
+      </label>
+
     </div>
 
-    <!-- Right -->
-    <div class="flex justify-end items-center gap-1.5">
+    <div class="flex justify-between w-full">
+      <!-- Middle -->
+      <div>
+        <ng-container *ngIf="course">
+          <!-- Breadcrumbs -->
+          <div class="text-sm text-primary-content text-opacity-50 breadcrumbs pt-0 hidden lg:block">
+            <ul>
+              <li *ngFor="let part of getURLParts()">{{part.capitalize()}}</li>
+            </ul>
+          </div>
 
-      <!-- Home -->
-      <div class="btn btn-ghost btn-circle text-primary-content" [routerLink]="'/'">
-        <ng-icon name="feather-home" size="1.7rem" color="fillCurrent"></ng-icon>
+          <!-- Course Name -->
+          <h6 class="mb-0 font-bold text-primary-content hidden lg:block">{{course.name}}</h6>
+        </ng-container>
+
+        <!-- Course Skeleton -->
+        <ng-container *ngIf="!course && isInCourse()">
+          <div class="hidden lg:block w-40 h-4 bg-indigo-300 opacity-40 rounded-md mt-6 animate-pulse"></div>
+        </ng-container>
       </div>
 
-      <!-- Theme Toggler -->
-      <ng-container *ngIf="!isInCourse()">
-        <app-theme-toggler></app-theme-toggler>
-      </ng-container>
+      <!-- Right -->
+      <div class="flex justify-end items-center gap-1.5">
 
-      <ng-container *ngIf="user">
-        <!-- Greet -->
-        <p class="text-white align-middle ml-2">Hey, {{user.nickname || user.name.split(' ')[0] || user.username}}!</p>
-
-        <!-- Avatar -->
-        <div class="dropdown dropdown-end">
-          <label tabindex="0" class="btn btn-ghost btn-circle avatar">
-            <div class="w-10 rounded-full">
-              <img [src]="photo.get()" alt="user profile image" />
-            </div>
-          </label>
-          <ul tabindex="0" class="menu dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-48">
-            <li><a [routerLink]="'/my-info'">
-              <ng-icon name="feather-user" size="1rem" color="fillCurrent"></ng-icon>
-              Profile
-            </a></li>
-            <li><a (click)="logout()">
-              <ng-icon name="feather-log-out" size="1rem" color="fillCurrent"></ng-icon>
-              Logout
-            </a></li>
-          </ul>
+        <!-- Home -->
+        <div class="btn btn-ghost btn-circle text-primary-content" [routerLink]="'/'">
+          <ng-icon name="feather-home" size="1.7rem" color="fillCurrent"></ng-icon>
         </div>
-      </ng-container>
 
-      <!-- User Skeleton -->
-      <ng-container *ngIf="!user">
-        <div class="w-24 h-4 bg-indigo-300 opacity-40 rounded-md animate-pulse"></div>
-        <div class="w-10 h-10 bg-indigo-300 opacity-40 rounded-full animate-pulse"></div>
-      </ng-container>
+        <!-- Theme Toggler -->
+        <ng-container *ngIf="!isInCourse()">
+          <app-theme-toggler></app-theme-toggler>
+        </ng-container>
+
+        <ng-container *ngIf="user">
+          <!-- Greet -->
+          <p class="text-white align-middle ml-2">Hey, {{user.nickname || user.name.split(' ')[0] || user.username}}!</p>
+
+          <!-- Avatar -->
+          <div class="dropdown dropdown-end">
+            <label tabindex="0" class="btn btn-ghost btn-circle avatar">
+              <div class="w-10 rounded-full">
+                <img [src]="photo.get()" alt="user profile image" />
+              </div>
+            </label>
+            <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-base-100 rounded-box w-48 !z-50">
+              <li><a [routerLink]="'/my-info'">
+                <ng-icon name="feather-user" size="1rem" color="fillCurrent"></ng-icon>
+                Profile
+              </a></li>
+              <li><a (click)="logout()">
+                <ng-icon name="feather-log-out" size="1rem" color="fillCurrent"></ng-icon>
+                Logout
+              </a></li>
+            </ul>
+          </div>
+        </ng-container>
+
+        <!-- User Skeleton -->
+        <ng-container *ngIf="!user">
+          <div class="w-24 h-4 bg-indigo-300 opacity-40 rounded-md animate-pulse"></div>
+          <div class="w-10 h-10 bg-indigo-300 opacity-40 rounded-full animate-pulse"></div>
+        </ng-container>
+      </div>
     </div>
   </div>
+
+  <!-- Course Name on mobile -->
+  <div *ngIf="isInCourse()" class="lg:hidden sticky top-20 w-full flex flex-col justify-center items-center h-8 pl-5 pr-3">
+
+    <!-- Course Name -->
+    <h6 *ngIf="course" class="mb-0 font-bold text-white text-center">{{course.name}}</h6>
+
+    <!-- Course Skeleton -->
+    <ng-container *ngIf="!course">
+      <div class="lg:hidden w-40 h-4 bg-indigo-300 opacity-40 rounded-md animate-pulse"></div>
+    </ng-container>
+  </div>
 </nav>
-
-<!-- Course Name on mobile -->
-<div *ngIf="isInCourse()" class="lg:hidden sticky top-20 w-full flex flex-col justify-center items-center bg-primary h-10 z-40 pl-5 pr-3"
-     [ngStyle]="{'background-color': course?.color ? course.color : ''}">
-
-  <!-- Course Name -->
-  <h6 *ngIf="course" class="mb-0 font-bold text-white text-center">{{course.name}}</h6>
-
-  <!-- Course Skeleton -->
-  <ng-container *ngIf="!course">
-    <div class="lg:hidden w-40 h-4 bg-indigo-300 opacity-40 rounded-md animate-pulse"></div>
-  </ng-container>
-</div>
