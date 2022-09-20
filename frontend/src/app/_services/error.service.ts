@@ -28,7 +28,7 @@ export class ErrorService {
   public static set(error: HttpErrorResponse | string): void {
     this.clear();
 
-    if (error instanceof HttpErrorResponse) { // http error
+    if (error instanceof HttpErrorResponse) { // server error
       this.error.full = error.error.text ?? error.error.error;
       let matches = this.error.full.matchAll(/<b>Fatal error<\/b>:(\w|\s)+:(.*) in ((.|\s)+)/g);
       for (const match of matches) { this.error.message = match[2]; }
