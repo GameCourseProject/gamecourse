@@ -1,25 +1,25 @@
 <!-- this hidden checkbox controls the state -->
-<input type="checkbox" [id]="id" class="modal-toggle" />
+<input type="checkbox" [id]="id" [(ngModel)]="isOpen" (ngModelChange)="!isOpen ? onClose.emit() : ''" class="modal-toggle" />
 
 <label [for]="!static ? id : ''" class="modal {{classList}}"
        [ngClass]="{'cursor-pointer': !static, 'modal-bottom sm:modal-middle': responsive}">
 
-  <label class="modal-box relative" [for]="id + '-box'"
-         [ngClass]="{'w-11/12': !responsive, 'max-w-[42rem]': size === 'md', 'max-w-5xl': size === 'lg'}">
+  <label class="modal-box relative overflow-hidden" [for]="id + '-box'"
+         [ngClass]="{'w-11/12': !responsive, '!max-w-[42rem]': size === 'md', '!max-w-5xl': size === 'lg'}">
 
     <!-- Close X button -->
     <label [for]="id" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-           (click)="btnClicked = 'close'; closeBtnClicked.emit(); this.onClose.emit()">
+           (click)="btnClicked = 'close'; closeBtnClicked.emit()">
       <ng-icon name="feather-x" size="1rem"></ng-icon>
     </label>
 
     <!-- Header -->
-    <div *ngIf="header" class="prose" [ngClass]="{'mb-6': headerMarginBottom}">
+    <div *ngIf="header" class="prose px-1" [ngClass]="{'mb-3': headerMarginBottom}">
       <h3 class="{{headerColor ? colors[headerColor].text : ''}}">{{header}}</h3>
     </div>
 
     <!-- Body -->
-    <ng-container>
+    <div class="max-h-[calc(100vh-15rem)] overflow-y-auto p-1">
       <!-- Spinner -->
       <div *ngIf="loading" class="flex justify-center items-center">
         <app-spinner></app-spinner>
@@ -27,14 +27,14 @@
 
       <!-- Custom template -->
       <ng-container *ngIf="!loading" [ngTemplateOutlet]="templateRef"></ng-container>
-    </ng-container>
+    </div>
 
     <!-- Footer -->
-    <div class="modal-action">
+    <div class="modal-action px-1">
 
       <!-- Close button (left) -->
       <label [for]="id" class="btn btn-ghost {{closeBtnColor ? colors[closeBtnColor].btn : ''}}"
-             (click)="btnClicked = 'close'; closeBtnClicked.emit(); this.onClose.emit()">
+             (click)="btnClicked = 'close'; closeBtnClicked.emit()">
         {{closeBtnText}}
       </label>
 
@@ -44,7 +44,7 @@
 
         <!-- Spinner -->
         <ng-container *ngIf="actionInProgress && btnClicked == 'extra'">
-          <app-spinner [size]="'sm'" [color]="extraBtnColor" [classList]="'mr-3'"></app-spinner>
+          <app-spinner [size]="'sm'" [color]="extraBtnOutline ? extraBtnColor : colors[extraBtnColor].btnText" [classList]="'mr-3'"></app-spinner>
         </ng-container>
 
         {{extraBtnText}}
@@ -56,7 +56,7 @@
 
         <!-- Spinner -->
         <ng-container *ngIf="actionInProgress && btnClicked == 'submit'">
-          <app-spinner [size]="'sm'" [color]="submitBtnColor" [classList]="'mr-3'"></app-spinner>
+          <app-spinner [size]="'sm'" [color]="submitBtnOutline ? submitBtnColor : colors[submitBtnColor].btnText" [classList]="'mr-3'"></app-spinner>
         </ng-container>
 
         {{submitBtnText}}

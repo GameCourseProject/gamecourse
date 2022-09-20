@@ -2,11 +2,11 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { SettingsRoutingModule } from './settings-routing.module';
-import {SharedModule} from "../../../shared.module";
+import { SharedModule } from "../../../shared.module";
+
 import { GlobalComponent } from './global/global.component';
 import { ModulesComponent } from './modules/modules.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
-import {FormsModule} from "@angular/forms";
 import { SettingsComponent } from './settings/settings.component';
 
 
@@ -20,8 +20,7 @@ import { SettingsComponent } from './settings/settings.component';
     imports: [
       CommonModule,
       SettingsRoutingModule,
-      SharedModule,
-      FormsModule
+      SharedModule
     ]
 })
 export class SettingsModule { }

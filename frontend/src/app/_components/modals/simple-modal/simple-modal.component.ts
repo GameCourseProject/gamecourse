@@ -30,7 +30,6 @@ export class SimpleModalComponent implements OnInit {
     'neutral' | 'info' | 'success' | 'warning' | 'error';               // Right button color
   @Input() submitBtnOutline?: boolean;                                  // Make right button outline
 
-  @Input() closeModal?: Observable<void>;                               // Close modal on demand
   @Input() loading?: boolean;                                           // Show modal spinner while loading
   @Input() actionInProgress?: boolean;                                  // Show button spinner while action in progress
 

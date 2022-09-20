@@ -1,4 +1,5 @@
 import {Component, EventEmitter, HostListener, Input, OnInit, Output} from '@angular/core';
+import {Action} from "../../../_domain/modules/config/Action";
 
 @Component({
   selector: 'app-top-actions',
@@ -6,8 +7,8 @@ import {Component, EventEmitter, HostListener, Input, OnInit, Output} from '@ang
 })
 export class TopActionsComponent implements OnInit {
 
-  @Input() leftActions?: {action: string, icon?: string}[];   // NOTE: after two actions it goes to 'More actions' dropdown
-  @Input() rightActions?: {action: string, icon?: string, outline?: boolean,
+  @Input() leftActions?: {action: Action | string, icon?: string}[];   // NOTE: after two actions it goes to 'More actions' dropdown
+  @Input() rightActions?: {action: Action | string, icon?: string, outline?: boolean,
     color?: 'ghost' | 'primary' | 'secondary' | 'accent' | 'neutral' | 'info' | 'success' | 'warning' | 'error'}[];
 
   @Output() btnClicked: EventEmitter<string> = new EventEmitter<string>();

@@ -56,11 +56,17 @@ import { RadarChartComponent } from "./_components/charts/radar-chart/radar-char
 import { TableComponent } from "./_components/tables/table/table.component";
 import { TableData } from "./_components/tables/table-data/table-data.component";
 
+// Components: cards
+import { CourseCardComponent } from './_components/cards/course-card/course-card.component';
+
 // Components: alerts
 import { AlertComponent } from './_components/alerts/alert/alert.component';
 
 // Components: spinners
 import { SpinnerComponent } from './_components/spinners/spinner/spinner.component';
+
+// Components: skeletons
+import { CourseSkeletonComponent } from './_components/skeletons/course-skeleton/course-skeleton.component';
 
 // Components: building blocks
 import { BBAnyComponent } from "./_components/building-blocks/any/any.component";
@@ -75,6 +81,7 @@ import { BBChartComponent } from "./_components/building-blocks/chart/chart.comp
 import { AutoGameToastComponent } from './_components/misc/autogame-toast/auto-game-toast.component';
 import { HeaderComponent } from './_components/misc/header/header.component';
 import { TopActionsComponent } from './_components/misc/top-actions/top-actions.component';
+import { LoaderComponent } from './_components/misc/loader/loader.component';
 
 import { PageNotFoundComponent } from './_components/misc/pages/page-not-found/page-not-found.component';
 import { NoAccessComponent } from './_components/misc/pages/no-access/no-access.component';
@@ -106,15 +113,22 @@ import {
 
 import {
   JamDownload,
+  JamEyeF,
   JamGoogle,
   JamFacebook,
+  JamFilesF,
   JamLinkedin,
+  JamPencilF,
   JamStopSign,
+  JamTrashF,
   JamUpload
 } from "@ng-icons/jam-icons";
 
 import {
+  TablerArchive,
   TablerArrowBackUp,
+  TablerArrowNarrowUp,
+  TablerArrowNarrowDown,
   TablerBarrierBlock,
   TablerBooks,
   TablerCaretDown,
@@ -175,9 +189,13 @@ import {
     TableComponent,
     TableData,
 
+    CourseCardComponent,
+
     AlertComponent,
 
     SpinnerComponent,
+
+    CourseSkeletonComponent,
 
     BBAnyComponent,
     BBBlockComponent,
@@ -190,6 +208,7 @@ import {
     AutoGameToastComponent,
     HeaderComponent,
     TopActionsComponent,
+    LoaderComponent,
     PageNotFoundComponent,
     NoAccessComponent,
     ComingSoonComponent
@@ -241,9 +260,13 @@ import {
     TableComponent,
     TableData,
 
+    CourseCardComponent,
+
     AlertComponent,
 
     SpinnerComponent,
+
+    CourseSkeletonComponent,
 
     BBAnyComponent,
     BBBlockComponent,
@@ -256,6 +279,7 @@ import {
     AutoGameToastComponent,
     HeaderComponent,
     TopActionsComponent,
+    LoaderComponent,
     PageNotFoundComponent,
     NoAccessComponent,
     ComingSoonComponent,
@@ -286,13 +310,20 @@ import {
       FeatherXCircle,
 
       JamDownload,
+      JamEyeF,
       JamGoogle,
       JamFacebook,
+      JamFilesF,
       JamLinkedin,
+      JamPencilF,
       JamStopSign,
+      JamTrashF,
       JamUpload,
 
+      TablerArchive,
       TablerArrowBackUp,
+      TablerArrowNarrowUp,
+      TablerArrowNarrowDown,
       TablerBarrierBlock,
       TablerBooks,
       TablerCaretDown,

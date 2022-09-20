@@ -10,7 +10,7 @@ import { InputGroupSize, InputSize } from '../../InputSizes';
 })
 export class InputDatetimeComponent implements OnInit {
 
-  DATETIME_PATTERN = '^(0?[1-9]|[12][0-9]|3[01])\\/(0?[1-9]|1[012])\\/\\d{4}$';
+  DATETIME_PATTERN = '^\\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])T([0-1]?[0-9]|2[0-3]):[0-5][0-9]$';
 
   // Essentials
   @Input() id: string;                                                          // Unique ID

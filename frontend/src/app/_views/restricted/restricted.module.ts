@@ -2,9 +2,10 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { RestrictedRoutingModule } from './restricted-routing.module';
+import { SharedModule } from "../../shared.module";
+
 import { RestrictedComponent } from './restricted.component';
-import {AboutComponent} from "./about/about.component";
-import {SharedModule} from "../../shared.module";
+import { AboutComponent } from "./about/about.component";
 
 
 @NgModule({

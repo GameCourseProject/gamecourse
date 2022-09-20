@@ -7,8 +7,8 @@
 
       <!-- No Active Courses -->
       <div *ngIf="activeCourses?.length == 0" class="flex items-center justify-center gap-2 mt-8">
-        <ng-icon name="feather-info" size="1.5rem" class="text-info"></ng-icon>
-        <h3 class="font-semibold">Oops... No active courses to play yet.</h3>
+        <ng-icon name="feather-info" size="1.3rem" class="text-info"></ng-icon>
+        <h4 class="font-semibold my-0">Oops... No courses to play yet</h4>
       </div>
     </div>
 
@@ -16,43 +16,15 @@
     <div class="flex flex-wrap -m-4 mt-5">
 
       <ng-container *ngIf="!loading">
-        <div *ngFor="let course of activeCourses" class="sm:w-1/2 xl:w-1/3 2xl:w-1/4 w-full p-4" [routerLink]="getRedirectLink(course)">
-
-          <div class="flex relative p-4 btn btn-ghost rounded-2xl shadow-lg bg-base-100 hover:bg-base-100 border-base-200
-          border-2 hover:border-[3px] hover:border-primary hover:border-opacity-60 h-28 lg:min-h-[8rem]">
-            <div class="w-3/12">
-              <div class="flex items-center justify-center w-12 h-12 rounded-full font-bold text-lg bg-base-content bg-opacity-30 text-base-100"
-                   [ngStyle]="{'background-color': course?.color ? course.color : ''}">
-                {{course.name[0]}}
-              </div>
-            </div>
-
-            <div class="w-9/12 prose text-start">
-              <h4 class="normal-case font-semibold text-base-content text-opacity-50 line-clamp-2"
-                  [ngStyle]="{'color': course?.color ? course.color : ''}">{{course.name}}</h4>
-              <p *ngIf="course.year" class="text-sm">{{course.year}}</p>
-            </div>
-          </div>
-
+        <div *ngFor="let course of activeCourses" class="sm:w-1/2 xl:w-1/3 2xl:w-1/4 w-full p-4">
+          <app-course-card [course]="course" [user]="user"></app-course-card>
         </div>
       </ng-container>
 
       <!-- Courses Skeleton -->
       <ng-container *ngIf="loading">
         <div *ngFor="let placeholder of [1, 2, 3, 4, 5]" class="lg:w-1/3 sm:w-1/2 w-full p-4">
-
-          <div class="flex relative p-4 rounded-2xl bg-base-100 border-base-300 border-2">
-            <div class="w-3/12">
-              <div class="w-12 h-12 bg-base-300 opacity-40 rounded-full animate-pulse"></div>
-            </div>
-
-            <div class="w-9/12 text-start">
-              <div class="w-full h-4 bg-base-300 opacity-40 rounded-md animate-pulse"></div>
-              <div class="mt-2 w-24 h-4 bg-base-300 opacity-40 rounded-md animate-pulse"></div>
-              <div class="mt-3 w-20 h-2 bg-base-300 opacity-40 rounded-md animate-pulse"></div>
-            </div>
-          </div>
-
+          <app-course-skeleton></app-course-skeleton>
         </div>
       </ng-container>
 

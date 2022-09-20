@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, OnInit, Output, TemplateRef } from '@angular/core';
-import { Observable } from "rxjs";
 
 @Component({
   selector: 'app-modal',
@@ -31,10 +30,9 @@ export class ModalComponent implements OnInit {
 
   @Input() submitBtnText?: string = 'Submit';                         // Right button text
   @Input() submitBtnColor?: 'primary' | 'secondary' | 'accent' |      // Right button color
-    'neutral' | 'info' | 'success' | 'warning' | 'error';
+    'neutral' | 'info' | 'success' | 'warning' | 'error' = 'primary';
   @Input() submitBtnOutline?: boolean;                                // Make right button outline
 
-  @Input() closeModal?: Observable<void>;                             // Close modal on demand
   @Input() loading?: boolean;                                         // Show modal spinner while loading
   @Input() actionInProgress?: boolean;                                // Show button spinner while action in progress
 
@@ -43,9 +41,12 @@ export class ModalComponent implements OnInit {
   @Output() submitBtnClicked: EventEmitter<void> = new EventEmitter();
   @Output() extraBtnClicked: EventEmitter<void> = new EventEmitter();
 
+  isOpen: boolean;
   btnClicked: 'close' | 'extra' | 'submit';
 
-  colors = {
+  colors: {[key: string]: {text: string, btn: string, btnText: 'primary-content' | 'secondary-content' | 'accent-content' |
+        'neutral-content' | 'info-content' | 'success-content' | 'warning-content' | 'error-content'}} = {
+
     primary: {text: 'text-primary', btn: 'btn-primary', btnText: 'primary-content'},
     secondary: {text: 'text-secondary', btn: 'btn-secondary', btnText: 'secondary-content'},
     accent: {text: 'text-accent', btn: 'btn-accent', btnText: 'accent-content'},
@@ -59,16 +60,6 @@ export class ModalComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    if (this.closeModal) {
-      this.closeModal.subscribe(() => {
-        // Force modal closing
-        const toggler = document.getElementById(this.id) as HTMLInputElement;
-        toggler.checked = false;
-
-        // Emit event
-        this.onClose.emit();
-      });
-    }
   }
 
 }

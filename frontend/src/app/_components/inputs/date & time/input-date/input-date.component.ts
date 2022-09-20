@@ -10,7 +10,7 @@ import {InputColor, InputGroupLabelColor} from "../../InputColors";
 })
 export class InputDateComponent implements OnInit, AfterViewInit {
 
-  DATE_PATTERN = '^(0?[1-9]|[12][0-9]|3[01])\\/(0?[1-9]|1[012])\\/\\d{4}$';
+  DATE_PATTERN = '^\\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])$';
 
   // Essentials
   @Input() id: string;                                                                  // Unique ID

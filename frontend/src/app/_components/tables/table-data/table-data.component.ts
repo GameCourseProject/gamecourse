@@ -87,7 +87,7 @@ export class TableData implements OnInit {
   actions?: Action[];                                           // Actions
 
   // Type: CUSTOM
-  templateRef?: TemplateRef<any>;                               // Custom template
+  html?: string;                                                // Custom HTML
 
   @Output() btnClicked: EventEmitter<Action | 'single'> = new EventEmitter<Action | 'single'>();
   @Output() valueChanged: EventEmitter<any> = new EventEmitter<any>();
@@ -187,7 +187,7 @@ export class TableData implements OnInit {
       this.actions = this.data.actions;
 
     } else if (this.type === TableDataType.CUSTOM) {
-      this.templateRef = this.data.templateRef;
+      this.html = this.data.html;
 
     } else ErrorService.set('Table data type "' + this.type + '" not found.');
   }
@@ -223,5 +223,5 @@ export enum TableDataType {
   RADIO,     // params -> radioId: string, radioGroup: string, radioOptionValue: any, radioValue: any, radioColor?: string, radioDisabled?: boolean
   TOGGLE,    // params -> toggleId: string, toggleValue: boolean, toggleColor?: string, toggleDisabled?: boolean
   ACTIONS,   // params -> actions: Action[]
-  CUSTOM     // params -> templateRef: TemplateRef<any>
+  CUSTOM     // params -> html: string
 }

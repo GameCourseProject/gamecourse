@@ -28,9 +28,11 @@
     [required]="required"
     [disabled]="disabled"
     #inputSelect="ngModel"
-    [ngClass]="{'select-error': form && form.submitted && inputSelect.invalid, 'rounded-none': leftLabel && (rightLabel || btnText || btnIcon)}">
+    [ngClass]="{'select-error': form && form.submitted && inputSelect.invalid,
+    'rounded-none': leftLabel && (rightLabel || btnText || btnIcon),
+    'font-normal text-neutral/60': value === undefined || value === null}">
 
-    <option disabled selected [value]="undefined">{{placeholder}}</option>
+    <option disabled selected [value]="value === null ? null : undefined">{{placeholder}}</option>
     <option *ngFor="let option of options" [value]="option.value">{{option.text}}</option>
   </select>
 </ng-template>

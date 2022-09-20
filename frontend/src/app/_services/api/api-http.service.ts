@@ -12,7 +12,7 @@ import {Course} from "../../_domain/courses/course";
 import {User} from "../../_domain/users/user";
 import {SetupData} from "../../_views/setup/setup/setup.component";
 import {UserData} from "../../_views/restricted/my-info/my-info/my-info.component";
-import {CourseData, ImportCoursesData} from "../../_views/restricted/courses/courses/courses.component";
+import {CourseManageData, ImportCoursesData} from "../../_views/restricted/courses/courses/courses.component";
 import {ImportUsersData} from "../../_views/restricted/users/users/users.component";
 import {Module} from "../../_domain/modules/module";
 import {ImportModulesData} from "../../_views/restricted/settings/modules/modules.component";
@@ -386,16 +386,14 @@ export class ApiHttpService {
 
 
   // Course Manipulation
-  public createCourse(courseData: CourseData): Observable<Course> {
+  public createCourse(courseData: CourseManageData): Observable<Course> {
     const data = {
       name: courseData.name,
       short: courseData.short,
       year: courseData.year,
       color: courseData.color,
-      startDate: courseData.startDate,
-      endDate: courseData.endDate,
-      isActive: courseData.isActive,
-      isVisible: courseData.isVisible
+      startDate: courseData.startDate ? courseData.startDate + ' 00:00:00' : null,
+      endDate: courseData.endDate ? courseData.endDate + ' 23:59:59' : null
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -421,17 +419,15 @@ export class ApiHttpService {
       .pipe( map((res: any) => Course.fromDatabase(res['data'])) );
   }
 
-  public editCourse(courseData: CourseData): Observable<Course> {
+  public editCourse(courseData: CourseManageData): Observable<Course> {
     const data = {
       courseId: courseData.id,
       name: courseData.name,
       short: courseData.short,
       year: courseData.year,
       color: courseData.color,
-      startDate: courseData.startDate,
-      endDate: courseData.endDate,
-      isActive: courseData.isActive,
-      isVisible: courseData.isVisible
+      startDate: courseData.startDate ? courseData.startDate + ' 00:00:00' : null,
+      endDate: courseData.endDate ? courseData.endDate + ' 23:59:59' : null
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -944,9 +940,9 @@ export class ApiHttpService {
   }
 
   // TODO: refactor
-  public exportCourses(courseID: number = null, options = null): Observable<string> {
+  public exportCourses(courses: Course[], options = null): Observable<string> {
     const data = {
-      courseId: courseID,
+      courses: courses.map(course => course.id),
       options: options
     }
 
@@ -957,7 +953,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['courses']) );
+      .pipe( map((res: any) => res['data']) );
   }
 
 

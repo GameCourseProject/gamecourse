@@ -7,11 +7,12 @@ import {Component, Input, OnInit} from '@angular/core';
 })
 export class SpinnerComponent implements OnInit {
 
-  @Input() color?: 'primary' | 'secondary' | 'accent' |                       // Color
-    'neutral' | 'info' | 'success' | 'warning' | 'error' = 'primary';
-  @Input() size?: 'sm' | 'md' | 'lg' = 'md';                                  // Size
+  @Input() color?: 'primary' | 'primary-content' | 'secondary' | 'secondary-content' |        // Color
+    'accent' | 'accent-content' | 'neutral' | 'neutral-content' | 'info' | 'info-content' |
+    'success' | 'success-content' | 'warning' | 'warning-content' | 'error' | 'error-content' = 'primary';
+  @Input() size?: 'sm' | 'md' | 'lg' = 'md';                                                  // Size
 
-  @Input() classList?: string;                                                // Classes to add
+  @Input() classList?: string;                                                                // Classes to add
 
   sizes = {
     sm: 'h-5 w-5',
@@ -21,13 +22,21 @@ export class SpinnerComponent implements OnInit {
 
   colors = {
     primary: 'text-primary',
+    primaryContent: 'text-primary-content',
     secondary: 'text-secondary',
+    secondaryContent: 'text-secondary-content',
     accent: 'text-accent',
+    accentContent: 'text-accent-content',
     neutral: 'text-neutral',
+    neutralContent: 'text-neutral-content',
     info: 'text-info',
+    infoContent: 'text-info-content',
     success: 'text-success',
+    successContent: 'text-success-content',
     warning: 'text-warning',
+    warningContent: 'text-warning-content',
     error: 'text-error',
+    errorContent: 'text-error-content',
   }
 
   constructor() { }

@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+
+import {ApiHttpService} from "../../../_services/api/api-http.service";
 
 import {Course} from "../../../_domain/courses/course";
-import {ApiHttpService} from "../../../_services/api/api-http.service";
+import {User} from "../../../_domain/users/user";
 
 @Component({
   selector: 'app-home',
@@ -11,6 +13,7 @@ export class HomeComponent implements OnInit {
 
   loading = true;
 
+  user: User;
   activeCourses: Course[];
 
   constructor(
@@ -18,21 +21,9 @@ export class HomeComponent implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    const loggedUser = await this.api.getLoggedUser().toPromise();
-    this.activeCourses = await this.api.getUserCourses(loggedUser.id, true, true).toPromise();
+    this.user = await this.api.getLoggedUser().toPromise();
+    this.activeCourses = await this.api.getUserCourses(this.user.id, true, true).toPromise();
     this.loading = false;
-  }
-
-
-  /*** --------------------------------------------- ***/
-  /*** ----------------- Redirect ------------------ ***/
-  /*** --------------------------------------------- ***/
-
-  getRedirectLink(course: Course): string {
-    const link = '/courses/' + course.id;
-    const pageID = course.landingPage; // FIXME: landing page per user role
-    if (pageID) return link + '/pages/' + pageID;
-    else return link;
   }
 
 }

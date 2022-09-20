@@ -7,7 +7,7 @@ import {NgForm} from "@angular/forms";
 })
 export class InputEmailComponent implements OnInit {
 
-  EMAIL_PATTERN = '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$';
+  EMAIL_PATTERN = '^[\\w\\.-]+@([\\w-]+\\.)+[\\w-]{2,4}$';
 
   // Essentials
   @Input() id: string;                                                      // Unique ID

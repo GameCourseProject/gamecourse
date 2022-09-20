@@ -1,4 +1,11 @@
-<div class="prose flex items-center gap-2">
-  <ng-icon *ngIf="icon" [name]="icon" size="2rem" class="text-primary"></ng-icon>
-  <h2 class="mt-0">{{title}}</h2>
+<div class="prose flex items-center gap-2 {{!subHeader ? 'mb-4' : 'mb-3'}} {{classList}}">
+
+  <ng-icon *ngIf="icon" [name]="icon" [size]="!subHeader ? '2rem' : '1.5rem'"
+           class="{{!subHeader ? 'text-primary' : 'text-base-content text-opacity-60'}}"></ng-icon>
+
+  <h2 *ngIf="!subHeader" class="m-0">{{title}}</h2>
+  <h3 *ngIf="subHeader" class="mt-0">{{title}}</h3>
+
+  <app-spinner *ngIf="loading" [classList]="'ml-2'"></app-spinner>
+
 </div>

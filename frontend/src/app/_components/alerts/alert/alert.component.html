@@ -1,7 +1,7 @@
-<div id="{{type}}-alert" class="hidden alert {{alerts[type].alert}} w-[calc(100vw-1rem)] sm:w-96 mb-2 shadow-lg">
+<div id="{{type}}-alert" class="hidden alert {{alerts[type].alert}} w-[calc(100vw-1rem)] sm:w-[26rem] mb-2 shadow-lg">
   <!-- Message -->
-  <div>
-    <ng-icon [name]="alerts[type].icon" size="1.3rem" class="{{alerts[type].text}}"></ng-icon>
+  <div class="items-start">
+    <ng-icon [name]="alerts[type].icon" size="1.3rem" class="{{alerts[type].text}} mt-0.5"></ng-icon>
     <span class="alert-msg">{{msg}}</span>
   </div>
 

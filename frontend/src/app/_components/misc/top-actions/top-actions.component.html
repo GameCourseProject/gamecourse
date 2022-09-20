@@ -9,12 +9,12 @@
         (click)="btnClicked.emit(action.action)">
 
         <ng-icon *ngIf="action.icon" [name]="action.icon" size="1.5rem" color="fillCurrent"></ng-icon>
-        {{action.action}}
+        {{action.action.capitalize()}}
       </button>
     </div>
 
     <!-- More Actions -->
-    <div class="dropdown" [ngClass]="{'hidden': (!mobile && leftActions.length <= 2) || (mobile && leftActions.length === 0)}">
+    <div class="dropdown dropdown-hover" [ngClass]="{'hidden': (!mobile && leftActions.length <= 2) || (mobile && leftActions.length === 0)}">
       <button class="btn btn-sm btn-ghost" tabindex="0">
         More actions
         <ng-icon name="tabler-caret-down" size="1rem" color="fillCurrent"></ng-icon>
@@ -24,7 +24,7 @@
         <li *ngFor="let action of (mobile ? leftActions : leftActions.slice(2))">
           <a (click)="btnClicked.emit(action.action)">
             <ng-icon *ngIf="action.icon" [name]="action.icon" size="1rem" color="fillCurrent"></ng-icon>
-            {{action.action}}
+            {{action.action.capitalize()}}
           </a>
         </li>
       </ul>
@@ -34,8 +34,10 @@
 
   <!-- Right -->
   <div class="flex flex-wrap items-center gap-2">
-    <button *ngFor="let action of rightActions" class="btn {{buttonColors[action.color]}} gap-2" [ngClass]="{'btn-outline': action.outline}">
-      {{action.action}}
+    <button *ngFor="let action of rightActions" class="btn {{buttonColors[action.color]}} gap-2" [ngClass]="{'btn-outline': action.outline}"
+      (click)="btnClicked.emit(action.action)">
+
+      {{action.action.capitalize()}}
       <ng-icon *ngIf="action.icon" [name]="action.icon" size="1.2rem" color="fillCurrent"></ng-icon>
     </button>
   </div>

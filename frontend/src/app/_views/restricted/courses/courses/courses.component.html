@@ -1,283 +1,261 @@
-<div id="wrapper">
-  <!-- conteudo da página -->
-  <div id="content-wrapper" *ngIf="!loading">
+<div class="w-full relative">
 
-    <!-- Sidebar -->
-<!--    <app-sidebar-->
-<!--      [filters]="user.isAdmin ? filters.admin : filters.nonAdmin"-->
-<!--      [orderBy]="user.isAdmin ? orderBy.admin : orderBy.nonAdmin"-->
-<!--      (onSearch)="reduceList($event)"-->
-<!--      (onFilterChange)="reduce.updateFilter($event.filter, $event.state); reduceList()"-->
-<!--      (onOrderChange)="order.active = $event; orderList()">-->
-<!--    </app-sidebar>-->
+  <!-- Header -->
+  <app-header [title]="'Courses'" [icon]="'tabler-books'" [loading]="loading.action"></app-header>
 
-    <!-- Main Content -->
-    <div id="mainContent">
-      <ng-container *ngIf="user.isAdmin" [ngTemplateOutlet]="adminTemplate"></ng-container>
-      <ng-container *ngIf="!user.isAdmin" [ngTemplateOutlet]="nonAdminTemplate"></ng-container>
+  <!-- Admin Template -->
+  <ng-container *ngIf="user?.isAdmin" [ngTemplateOutlet]="ADMIN"></ng-container>
 
-      <div class='success_box'>
-        <div id='action_completed' class='success_msg'></div>
-      </div>
-    </div>
+  <!-- Non-Admin Template -->
+  <ng-container *ngIf="!user?.isAdmin" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
 
-  </div>
-
-  <!-- Loader -->
-  <div *ngIf="loading || loadingAction" id="page-loading">
-    <img src="assets/loader/loader.gif" alt="loader">
-  </div>
 </div>
 
 
 <!-- Admin Template -->
-<ng-template #adminTemplate>
+<ng-template #ADMIN>
 
-  <!-- Action buttons -->
-  <div class="action-buttons ">
-    <div class="icon add_icon" title="New" (click)="mode = 'add'; isCourseModalOpen = true; initColorPicker(); initYearOptions()"></div>
-    <div class="icon import_icon" title="Import" (click)="isImportModalOpen = true"></div>
-    <div class="icon export_icon" title="Export all" (click)="exportCourses()"></div>
-  </div>
-
-  <!-- List size -->
-  <span style="position: absolute; left: 70px; top: 40px">Size: <span>{{reduce.items.length}}</span> course{{reduce.items.length > 1 ? 's' : ''}}</span>
+  <!-- Top Actions -->
+  <app-top-actions
+    [leftActions]="[
+      {action: Action.IMPORT, icon: 'jam-download'},
+      {action: Action.EXPORT, icon: 'jam-upload'}
+    ]"
+    [rightActions]="[{action: 'Create course', icon: 'feather-plus-circle', color: 'primary'}]"
+    (btnClicked)="doAction($event)">
+  </app-top-actions>
 
   <!-- Courses Table -->
-  <div id="allCourses">
-    <div class="data-table">
+  <app-table
+    [id]="'courses'"
+    [classList]="'mt-5'"
+    [headers]="headers"
+    [data]="data"
+    [options]="tableOptions"
+    [loading]="loading.table"
+    (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
+    (valueChanged)="doActionOnTable('value changed', $event.row, $event.col, $event.value)">
+  </app-table>
 
-      <table *ngIf="reduce.items.length > 0" id="courses-table">
-        <!-- Header -->
-        <thead>
-        <tr>
-          <th class="first-column"></th>
-          <th class="name-column">Name</th>
-          <th >Short</th>
-          <th ># Students Enrolled</th>
-          <th >Year</th>
-          <th class="check-column">Active</th>
-          <th class="check-column">Visible</th>
-          <th class="action-column"></th>
-          <th class="action-column"></th>
-          <th class="action-column"></th>
-          <th class="action-column"></th>
-        </tr>
-        </thead>
+  <!-- Loader -->
+  <app-loader [loading]="loading.page"></app-loader>
 
-        <!-- Body -->
-        <tbody>
-        <tr *ngFor="let course of reduce.items">
-          <td class="first-column">
-            <div class="profile-icon">
-              <div class="box" [ngStyle]="{'backgroundColor': course.color}"></div>
-              <div class="frame" [ngStyle]="{'borderColor': isWhite(course.color) ? 'lightgrey' : course.color}" style="border: 1px solid"></div>
-            </div>
-          </td>
-          <td class="name-column" [routerLink]="getRedirectLink(course)" style="cursor: pointer"><span>{{course.name}}</span></td>
-          <td class="ng-binding">{{course.short}}</td>
-          <td class="ng-binding">{{course.nrStudents}}</td>
-          <td class="ng-binding">{{course.year}}</td>
-          <td class="check-column">
-            <label class="switch">
-              <input type="checkbox" [checked]="course.isActive" (change)="toggleActive(course.id)">
-              <span class="slider round"></span>
-            </label>
-          </td>
-          <td class="check-column">
-            <label class="switch">
-              <input type="checkbox" [checked]="course.isVisible" (change)="toggleVisible(course.id)">
-              <span class="slider round"></span>
-            </label>
-          </td>
-          <td class="action-column">
-            <div class="icon duplicate_icon" title="Duplicate" (click)="duplicateCourse(course.id)"></div>
-          </td>
-          <td class="action-column">
-            <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditCourse(course); isCourseModalOpen = true; initColorPicker(); initYearOptions()"></div>
-          </td>
-          <td class="action-column">
-            <div class="icon delete_icon" title="Remove" (click)="courseToDelete = course; isDeleteVerificationModalOpen = true"></div>
-          </td>
-          <td class="action-column">
-            <div class="icon export_icon_no_outline" title="Export all" (click)="exportCourse(course)"></div>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-
-      <div *ngIf="reduce.items.length === 0" class='error_box'>
-        <div id='empty_table' class='error_msg'>No matches found</div>
-      </div>
-
-    </div>
-  </div>
 </ng-template>
 
 
 <!-- Non-Admin Template -->
-<ng-template #nonAdminTemplate>
+<ng-template #NON_ADMIN>
 
-  <div id="myCourses">
+  <!-- Active courses -->
+  <div class="flex flex-wrap -mx-4">
 
-    <!-- Active -->
-    <div class="section">
-      <div class="divider">
-        <div class="title"><span>Active</span></div>
+    <ng-container *ngIf="!loading.page">
+      <div *ngFor="let course of filterCourses(true)" class="sm:w-1/2 xl:w-1/3 2xl:w-1/4 w-full p-4">
+        <app-course-card [course]="course" [user]="user"></app-course-card>
       </div>
+    </ng-container>
 
-      <div class="content" id="active_courses">
-        <div class="card" *ngFor="let course of getNonAdminCourses(true)" [routerLink]="getRedirectLink(course)">
-          <div class="color_box">
-            <div class="box" [ngStyle]="{'background-color': course.color}"></div>
-            <div class="frame frame-course" [ngStyle]="{'border': '1px solid ' + course.color}">
-              <span [ngStyle]="{'color': course.color}">{{course.name}}</span>
-            </div>
-          </div>
-
-          <div class="footer">
-            <div class="course_name">{{course.short || course.name}}</div>
-            <div class="course_year">{{course.year}}</div>
-          </div>
-        </div>
-
-        <div class="error_box">
-          <div id="empty_active" class="error_msg"></div>
-        </div>
-
+    <!-- Courses Skeleton -->
+    <ng-container *ngIf="loading.page">
+      <div *ngFor="let placeholder of [1, 2, 3, 4, 5]" class="lg:w-1/3 sm:w-1/2 w-full p-4">
+        <app-course-skeleton></app-course-skeleton>
       </div>
-    </div>
+    </ng-container>
 
-    <!-- Not Active -->
-    <div class="section">
-      <div class="divider">
-        <div class="title"><span>Not Active</span></div>
+  </div>
+
+  <!-- Inactive courses -->
+  <app-header [subHeader]="true" [title]="'Archive'" [icon]="'tabler-archive'" [classList]="'mt-10'"></app-header>
+  <div class="flex flex-wrap -mx-4">
+
+    <ng-container *ngIf="!loading.page">
+      <div *ngFor="let course of filterCourses(false)" class="sm:w-1/2 xl:w-1/3 2xl:w-1/4 w-full p-4">
+        <app-course-card [course]="course" [user]="user"></app-course-card>
       </div>
+    </ng-container>
 
-      <div class="content" id="not_active_courses">
-        <div class="card" *ngFor="let course of getNonAdminCourses(false)" [routerLink]="getRedirectLink(course)">
-          <div class="color_box">
-            <div class="box" [ngStyle]="{'background-color': course.color}"></div>
-            <div class="frame frame-course" [ngStyle]="{'border': '1px solid ' + course.color}">
-              <span [ngStyle]="{'color': course.color}">{{course.name}}</span>
-            </div>
-          </div>
-
-          <div class="footer">
-            <div class="course_name">{{course.name}}</div>
-            <div class="course_year">{{course.year}}</div>
-          </div>
-        </div>
-
-        <div class="error_box">
-          <div id="empty_notactive" class="error_msg"></div>
-        </div>
+    <!-- Courses Skeleton -->
+    <ng-container *ngIf="loading.page">
+      <div *ngFor="let placeholder of [1, 2, 3, 4, 5]" class="lg:w-1/3 sm:w-1/2 w-full p-4">
+        <app-course-skeleton></app-course-skeleton>
       </div>
-    </div>
+    </ng-container>
+
   </div>
 
 </ng-template>
 
 
-<!-- New Course / Edit Modal -->
-<ng-container *ngIf="isCourseModalOpen">
-<!--  <app-modal-->
-<!--    [isOpen]="isCourseModalOpen"-->
-<!--    [id]="mode === 'add' ? 'new-course' : 'edit-course'"-->
-<!--    [templateRef]="courseModal"-->
-<!--    (closeBtnClicked)="isCourseModalOpen = false; clearObject(newCourse)"-->
-<!--    [actionInProgress]="saving"-->
-<!--    [innerClickEvents]="false">-->
-<!--  </app-modal>-->
-</ng-container>
+<!-- New / Edit Modal -->
+<app-modal *ngIf="mode && courseToManage"
+  [id]="'manage'"
+  [templateRef]="MANAGE"
+  [size]="'md'"
+  [header]="mode?.capitalize() + ' course'"
+  [closeBtnText]="'Discard ' + (mode === 'create' ? 'course' : 'changes')"
+  [submitBtnText]="mode?.capitalize() + ' course'"
+  [actionInProgress]="loading.action"
+  (submitBtnClicked)="f.onSubmit(null); mode === 'create' ? createCourse() : editCourse()"
+  (onClose)="initCourseToManage(); mode = null;">
+</app-modal>
 
-<ng-template #courseModal>
-  <!-- Title -->
-  <div class="title">{{mode === 'add' ? 'New Course:' : 'Edit Course:'}}</div>
+<ng-template #MANAGE>
+  <form #f="ngForm">
+    <!-- Name -->
+    <app-input-text
+      [id]="'course-name'"
+      [form]="f"
+      [(value)]="courseToManage.name"
+      [placeholder]="'Course name'"
+      [topLabel]="'Name'"
+      [pattern]="'^[\\w()&\\s-]+$'"
+      [patternErrorMessage]="'Course name \'' + courseToManage.name + '\' is not allowed. Allowed characters: alphanumeric  _  (  )  -  &'"
+      [required]="true"
+      [maxLength]="100"
+      [maxLengthErrorMessage]="'Course name is too long: maximum of 100 characters'">
+    </app-input-text>
 
-  <div class="content">
-    <div class="inputs">
-
-      <!-- Name -->
-      <div class="name full">
-        <input type="text" class="form__input" id="name" placeholder="Name *" [(ngModel)]="newCourse.name" [required]="true">
-        <label for="name" class="form__label">Name</label>
+    <div class="flex flex-wrap mt-2">
+      <!-- Short -->
+      <div class="w-full sm:w-1/3 sm:pr-2">
+        <app-input-text
+          [id]="'course-short'"
+          [form]="f"
+          [(value)]="courseToManage.short"
+          [placeholder]="'Course acronym'"
+          [topLabel]="'Acronym'"
+          [pattern]="'(?!^\\d+$)^.+$'"
+          [patternErrorMessage]="'Course acronym can\'t be composed of only numbers.'"
+          [maxLength]="20"
+          [maxLengthErrorMessage]="'Course acronym is too long: maximum of 20 characters'">
+        </app-input-text>
       </div>
 
-      <div class="row_inputs">
-        <div class="row" style="justify-content: space-between">
-          <!-- Short -->
-          <div class="short_name half">
-            <input type="text" class="form__input" id="short_name" placeholder="Short Name" [(ngModel)]="newCourse.short">
-            <label for="short_name" class="form__label">Short Name</label>
-          </div>
-
-          <!-- Year -->
-          <div class="year half">
-            <select class="form__input" id="year" placeholder="Year *" [(ngModel)]="newCourse.year" [required]="true">
-              <option disabled [value]="null">Select a year *</option>
-              <option *ngFor="let year of yearsOptions" [label]="year" [value]="year">{{year}}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row">
-          <!-- Color -->
-          <div class="color_picker half">
-            <input type="text" class="form__input pickr" id="new_pickr" placeholder="Color *" [(ngModel)]="newCourse.color" role="button" aria-label="toggle color picker dialog">
-            <label for="new_pickr" class="form__label">Color</label>
-            <div id="color-sample">
-              <div class="box" [ngStyle]="{'backgroundColor': newCourse.color || 'white'}"></div>
-              <div class="frame" [ngStyle]="{'borderColor': isWhite(newCourse.color) ? 'lightgrey' : newCourse.color}"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="row" style="justify-content: space-between">
-          <!-- Start Date -->
-          <div class="start half">
-            <input type="date" class="form__input" id="start_date" placeholder="Start Date *" [(ngModel)]="newCourse.startDate" [required]="true">
-            <label for="start_date" class="form__label">Start Date</label>
-          </div>
-
-          <!-- End Date -->
-          <div class="end half">
-            <input type="date" class="form__input" id="end_date" placeholder="End Date *" [(ngModel)]="newCourse.endDate" [required]="true">
-            <label for="end_date" class="form__label">End Date</label>
-          </div>
-        </div>
+      <!-- Year -->
+      <div class="w-full sm:w-1/3 sm:pr-2">
+        <app-input-select
+          [id]="'course-year'"
+          [form]="f"
+          [(value)]="courseToManage.year"
+          [options]="yearOptions"
+          [placeholder]="'Select an academic year'"
+          [topLabel]="'Academic year'"
+          [required]="true">
+        </app-input-select>
       </div>
 
-      <div class="row">
-        <div class="on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" [(ngModel)]="newCourse.isActive"><span class="slider round"></span></label></div>
-        <div class="on_off"><span>Visible </span><label class="switch"><input id="visible" type="checkbox" [(ngModel)]="newCourse.isVisible"><span class="slider round"></span></label></div>
+      <!-- Color -->
+      <div class="w-full sm:w-1/3">
+        <app-input-color
+          [id]="'course-color'"
+          [form]="f"
+          [(value)]="courseToManage.color"
+          [placeholder]="'Course color'"
+          [topLabel]="'Color'">
+        </app-input-color>
       </div>
     </div>
 
-    <button *ngIf="mode === 'edit'" class="cancel" (click)="isCourseModalOpen = false; clearObject(newCourse)">Cancel</button>
-    <button class="save_btn" [disabled]="!isReadyToSubmit()" (click)="mode === 'add' ? createCourse() : editCourse()">Save</button>
-  </div>
+    <div class="flex flex-wrap mt-2">
+
+      <!-- Start date -->
+      <div class="w-full sm:w-1/2 sm:pr-2">
+        <app-input-date
+          [id]="'course-start'"
+          [form]="f"
+          [(value)]="courseToManage.startDate"
+          [placeholder]="'Course start date'"
+          [topLabel]="'Start date'">
+        </app-input-date>
+      </div>
+
+      <!-- End date -->
+      <div class="w-full sm:w-1/2 sm:pr-2">
+        <app-input-date
+          [id]="'course-end'"
+          [form]="f"
+          [(value)]="courseToManage.endDate"
+          [placeholder]="'Course end date'"
+          [topLabel]="'End date'">
+        </app-input-date>
+      </div>
+
+    </div>
+
+  </form>
+
+<!--  <div class="content">-->
+<!--    <div class="inputs">-->
+
+<!--      &lt;!&ndash; Name &ndash;&gt;-->
+<!--      <div class="name full">-->
+<!--        <input type="text" class="form__input" id="name" placeholder="Name *" [(ngModel)]="courseToManage.name" [required]="true">-->
+<!--        <label for="name" class="form__label">Name</label>-->
+<!--      </div>-->
+
+<!--      <div class="row_inputs">-->
+<!--        <div class="row" style="justify-content: space-between">-->
+<!--          &lt;!&ndash; Short &ndash;&gt;-->
+<!--          <div class="short_name half">-->
+<!--            <input type="text" class="form__input" id="short_name" placeholder="Short Name" [(ngModel)]="courseToManage.short">-->
+<!--            <label for="short_name" class="form__label">Short Name</label>-->
+<!--          </div>-->
+
+<!--          &lt;!&ndash; Year &ndash;&gt;-->
+<!--          <div class="year half">-->
+<!--            <select class="form__input" id="year" placeholder="Year *" [(ngModel)]="courseToManage.year" [required]="true">-->
+<!--              <option disabled [value]="null">Select a year *</option>-->
+<!--              <option *ngFor="let year of yearsOptions" [label]="year" [value]="year">{{year}}</option>-->
+<!--            </select>-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        <div class="row">-->
+<!--          &lt;!&ndash; Color &ndash;&gt;-->
+<!--          <div class="color_picker half">-->
+<!--            <input type="text" class="form__input pickr" id="new_pickr" placeholder="Color *" [(ngModel)]="courseToManage.color" role="button" aria-label="toggle color picker dialog">-->
+<!--            <label for="new_pickr" class="form__label">Color</label>-->
+<!--            <div id="color-sample">-->
+<!--              <div class="box" [ngStyle]="{'backgroundColor': courseToManage.color || 'white'}"></div>-->
+<!--              <div class="frame" [ngStyle]="{'borderColor': isWhite(courseToManage.color) ? 'lightgrey' : courseToManage.color}"></div>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        <div class="row" style="justify-content: space-between">-->
+<!--          &lt;!&ndash; Start Date &ndash;&gt;-->
+<!--          <div class="start half">-->
+<!--            <input type="date" class="form__input" id="start_date" placeholder="Start Date *" [(ngModel)]="courseToManage.startDate" [required]="true">-->
+<!--            <label for="start_date" class="form__label">Start Date</label>-->
+<!--          </div>-->
+
+<!--          &lt;!&ndash; End Date &ndash;&gt;-->
+<!--          <div class="end half">-->
+<!--            <input type="date" class="form__input" id="end_date" placeholder="End Date *" [(ngModel)]="courseToManage.endDate" [required]="true">-->
+<!--            <label for="end_date" class="form__label">End Date</label>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
 </ng-template>
 
 
 <!-- Delete Verification Modal -->
-<ng-container *ngIf="isDeleteVerificationModalOpen">
-<!--  <app-verification-modal-->
-<!--    [isModalOpen]="isDeleteVerificationModalOpen"-->
-<!--    [id]="'delete-verification-' + courseToDelete.id"-->
-<!--    [text]="'Are you sure you want to delete the Course?'"-->
-<!--    [target]="courseToDelete.name"-->
-<!--    [positiveBtnText]="'Delete'"-->
-<!--    (positiveBtnClicked)="deleteCourse(courseToDelete)"-->
-<!--    (negativeBtnClicked)="courseToDelete = null; isDeleteVerificationModalOpen = false"-->
-<!--    (closeBtnClicked)="isDeleteVerificationModalOpen = false"-->
-<!--    [actionInProgress]="saving">-->
-<!--  </app-verification-modal>-->
-</ng-container>
+<app-simple-modal *ngIf="courseToDelete"
+  [id]="'delete-verification'"
+  [title]="'Delete course'"
+  [text]="'Are you sure you want to delete course \'' + courseToDelete?.name + '\'? You won\'t be able to undo this action.'"
+  [submitBtnText]="'Delete'"
+  [submitBtnColor]="'error'"
+  [actionInProgress]="loading.action"
+  (submitBtnClicked)="deleteCourse(courseToDelete)"
+  (onClose)="courseToDelete = null">
+</app-simple-modal>
 
 
 <!-- Import Modal -->
-<ng-container *ngIf="isImportModalOpen">
+<!--<ng-container *ngIf="isImportModalOpen">-->
 <!--  <app-modal-->
 <!--    [isOpen]="isImportModalOpen"-->
 <!--    [id]="'import-course'"-->
@@ -287,7 +265,7 @@
 <!--    [innerClickEvents]="false"-->
 <!--    [classList]="'verification'">-->
 <!--  </app-modal>-->
-</ng-container>
+<!--</ng-container>-->
 
 <ng-template #importModal>
 

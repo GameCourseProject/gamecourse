@@ -1,0 +1,20 @@
+<div class="flex relative p-4 btn btn-ghost rounded-2xl shadow-lg bg-base-100 hover:bg-base-100 border-base-200
+     border-2 hover:border-[3px] hover:border-primary hover:border-opacity-60 h-28 lg:min-h-[8rem]"
+     [routerLink]="getRedirectLink()">
+
+  <!-- Avatar -->
+  <div class="w-3/12">
+    <div class="flex items-center justify-center w-12 h-12 rounded-full font-bold text-lg bg-base-content bg-opacity-30 text-base-100"
+         [ngStyle]="{'background-color': course?.color ? course.color : ''}">
+      {{course.name[0]}}
+    </div>
+  </div>
+
+  <!-- Text -->
+  <div class="w-9/12 prose text-start">
+    <h4 class="normal-case font-semibold text-base-content text-opacity-50 line-clamp-2"
+        [ngStyle]="{'color': course?.color ? course.color : ''}">{{course.name}}</h4>
+    <p *ngIf="course.year" class="text-sm">{{course.year}}</p>
+  </div>
+
+</div>

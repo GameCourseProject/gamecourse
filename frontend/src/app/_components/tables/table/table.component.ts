@@ -45,7 +45,10 @@ export class TableComponent implements OnInit, OnChanges {
   }
 
   buildDatatable(): void {
-    if (this.datatable) this.datatable.destroy();
+    if (this.datatable) {
+      this.datatable.destroy();
+      $('#' + this.id + ' .filters').remove();
+    }
 
     const that = this;
     let opts = this.options ? Object.assign(this.options, this.defaultOptions) : this.defaultOptions;
@@ -68,53 +71,56 @@ export class TableComponent implements OnInit, OnChanges {
           // For each column
           api.columns().eq(0)
             .each(colIdx => {
-              // Skip types that are not filterable
               const colType = that.data[0][colIdx].type;
-              if (colType === TableDataType.IMAGE || colType === TableDataType.BUTTON || colType === TableDataType.ACTIONS
-                || colType === TableDataType.CUSTOM) return;
-
-              // Set the header cell to contain the filtering element
               const cell = $('.filters th').eq($(api.column(colIdx).header()).index());
-              const title = $(cell).text().trim();
 
-              // Get all different options of column
-              let options = '';
-              if (colType === TableDataType.CHECKBOX || colType === TableDataType.RADIO || colType === TableDataType.TOGGLE) {
-                options += '<option value="true">' + title + '</option>';
-                options += '<option value="false">Not ' + title + '</option>';
+              // Skip types that are not filterable
+              if (colType === TableDataType.IMAGE || colType === TableDataType.BUTTON || colType === TableDataType.ACTIONS
+                || colType === TableDataType.CUSTOM) {
+                $(cell).html('');
 
               } else {
-                let opts = [];
-                for (let row of that.data) {
-                  const value = getValue(row[colIdx]);
-                  if (value !== null && value !== undefined && value !== '') opts.push(value);
+                const title = $(cell).text().trim();
+
+                // Get all different options of column
+                let options = '';
+                if (colType === TableDataType.CHECKBOX || colType === TableDataType.RADIO || colType === TableDataType.TOGGLE) {
+                  options += '<option value="true">' + title + '</option>';
+                  options += '<option value="false">Not ' + title + '</option>';
+
+                } else {
+                  let opts = [];
+                  for (let row of that.data) {
+                    const value = getValue(row[colIdx]);
+                    if (value !== null && value !== undefined && value !== '') opts.push(value);
+                  }
+                  opts = [...new Set(opts)]; // unique options
+                  opts.sort();
+                  options = opts.map(option => '<option value="' + option + '">' + option + '</option>').join('');
                 }
-                opts = [...new Set(opts)]; // unique options
-                opts.sort();
-                options = opts.map(option => '<option value="' + option + '">' + option + '</option>').join('');
+
+                // Add select with options
+                $(cell).html('<select class="select select-bordered select-sm w-full">' +
+                  '<option selected value="undefined">Filter...</option>' + options + '</select>');
+
+                // On every keypress in the select
+                $('select', $('.filters th').eq($(api.column(colIdx).header()).index()))
+                  .off('keyup change')
+                  .on('change', function (e) {
+                    // Filter column
+                    const regexr = '({search})';
+                    let value = ($(this)[0] as HTMLSelectElement).value;
+                    api.column(colIdx)
+                      .search(
+                        value !== null && value !== undefined && value !== 'undefined' ?
+                          regexr.replace('{search}', '(((' + value + ')))') :
+                          '',
+                        value !== null && value !== undefined && value !== 'undefined',
+                        value === null || value === undefined || value === 'undefined'
+                      )
+                      .draw()
+                  })
               }
-
-              // Add select with options
-              $(cell).html('<select class="select select-bordered select-sm w-full">' +
-                '<option selected value="undefined">Filter...</option>' + options + '</select>');
-
-              // On every keypress in the select
-              $('select', $('.filters th').eq($(api.column(colIdx).header()).index()))
-                .off('keyup change')
-                .on('change', function (e) {
-                  // Filter column
-                  const regexr = '({search})';
-                  let value = ($(this)[0] as HTMLSelectElement).value;
-                  api.column(colIdx)
-                    .search(
-                      value !== null && value !== undefined && value !== 'undefined' ?
-                        regexr.replace('{search}', '(((' + value + ')))') :
-                        '',
-                      value !== null && value !== undefined && value !== 'undefined',
-                      value === null || value === undefined || value === 'undefined'
-                    )
-                    .draw()
-                })
 
               function getValue(cell: {type: TableDataType, content: any}): string {
                 if (cell.type === TableDataType.TEXT) return cell.content['text'];

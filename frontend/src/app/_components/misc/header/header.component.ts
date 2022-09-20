@@ -9,6 +9,11 @@ export class HeaderComponent implements OnInit {
   @Input() title: string;
   @Input() icon?: string;
 
+  @Input() subHeader?: boolean;
+  @Input() classList?: string;
+
+  @Input() loading?: boolean;
+
   constructor() { }
 
   ngOnInit(): void {

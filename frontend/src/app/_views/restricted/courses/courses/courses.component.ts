@@ -1,75 +1,57 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {NgForm} from "@angular/forms";
+import {Router} from "@angular/router";
 
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
+import {AlertService, AlertType} from "../../../../_services/alert.service";
+import {ModalService} from "../../../../_services/modal.service";
 
 import {Course} from "../../../../_domain/courses/course";
 import {User} from "../../../../_domain/users/user";
-import {Reduce} from "../../../../_utils/lists/reduce";
-import {Order, Sort} from "../../../../_utils/lists/order";
+import {TableDataType} from "../../../../_components/tables/table-data/table-data.component";
+import {Action} from "../../../../_domain/modules/config/Action";
+import {clearEmptyValues} from "../../../../_utils/misc/misc";
 
-import Pickr from "@simonwep/pickr";
-
-import {exists} from "../../../../_utils/misc/misc";
-import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-main',
-  templateUrl: './courses.component.html',
-  styleUrls: ['./courses.component.scss']
+  templateUrl: './courses.component.html'
 })
 export class CoursesComponent implements OnInit {
 
-  loading = true;
-  loadingAction = false;
-  yearsOptions: string[] = [];
+  loading = {
+    page: true,
+    table: true,
+    action: false
+  }
 
   user: User;
   courses: Course[];
 
-  reduce = new Reduce();
-  order = new Order();
+  mode: 'create' | 'edit';
+  courseToManage: CourseManageData = this.initCourseToManage();
+  courseToDelete: Course;
+  @ViewChild('f', { static: false }) f: NgForm;
 
-  filters = {
-    admin: ['Active', 'Inactive', 'Visible', 'Invisible'],
-    nonAdmin: []
-  };
-
-  orderBy = {
-    admin: ['Name', 'Short', '# Students', 'Year'],
-    nonAdmin: ['Name', 'Year']
-  };
+  yearOptions: {value: string, text: string}[] = this.initYearOptions();
 
   importedFile: File;
 
-  isCourseModalOpen: boolean;
-  isDeleteVerificationModalOpen: boolean;
-  isImportModalOpen: boolean;
-  saving: boolean;
-
-  mode: 'add' | 'edit';
-  newCourse: CourseData = {
-    name: null,
-    short: null,
-    year: null,
-    color: null,
-    startDate: null,
-    endDate: null,
-    isActive: null,
-    isVisible: null
-  };
-  courseToEdit: Course;
-  courseToDelete: Course;
-
-  pickr: Pickr;
-
   constructor(
-    private api: ApiHttpService
+    private api: ApiHttpService,
+    private router: Router
   ) { }
 
   async ngOnInit(): Promise<void> {
     await this.getLoggedUser();
     await this.getCourses();
-    this.loading = false;
+    this.loading.page = false;
+
+    if (this.user.isAdmin) this.buildTable();
+  }
+
+  get Action(): typeof Action {
+    return Action;
   }
 
 
@@ -83,39 +65,99 @@ export class CoursesComponent implements OnInit {
 
   async getCourses(): Promise<void> {
     if (this.user.isAdmin) this.courses = await this.api.getCourses().toPromise();
-    else this.courses = await this.api.getUserCourses(this.user.id, null, null).toPromise();
-
-    this.order.active = this.user.isAdmin ? { orderBy: this.orderBy.admin[0], sort: Sort.ASCENDING } : { orderBy: this.orderBy.nonAdmin[0], sort: Sort.ASCENDING };
-    this.reduceList(undefined, this.user.isAdmin ? [...this.filters.admin] : [...this.filters.nonAdmin]);
+    else this.courses = await this.api.getUserCourses(this.user.id, null, true).toPromise();
   }
 
 
   /*** --------------------------------------------- ***/
-  /*** ---------- Search, Filter & Order ----------- ***/
+  /*** ------------------- Table ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  reduceList(query?: string, filters?: string[]): void {
-    this.reduce.searchAndFilter(this.courses, query, filters);
-    this.orderList();
+  headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
+    {label: 'Name (sorting)', align: 'left'},
+    {label: 'Course', align: 'left'},
+    {label: '# Students', align: 'middle'},
+    {label: 'Year', align: 'middle'},
+    {label: 'Start (timestamp sorting)', align: 'middle'},
+    {label: 'Start', align: 'middle'},
+    {label: 'End (timestamp sorting)', align: 'middle'},
+    {label: 'End', align: 'middle'},
+    {label: 'Active', align: 'middle'},
+    {label: 'Visible', align: 'middle'},
+    {label: 'Actions'}
+  ];
+  data: {type: TableDataType, content: any}[][];
+  tableOptions = {
+    order: [[ 3, 'asc' ], [ 0, 'asc' ]], // default order
+    columnDefs: [
+      { orderData: 0,   targets: 1 },
+      { orderData: 4,   targets: 5 },
+      { orderData: 6,   targets: 7 },
+      { orderable: false, targets: [8, 9, 10] }
+    ]
   }
 
-  orderList(): void {
-    switch (this.order.active.orderBy) {
-      case "Name":
-        this.reduce.items.sort((a, b) => Order.byString(a.name, b.name, this.order.active.sort))
-        break;
+  buildTable(): void {
+    this.loading.table = true;
 
-      case "Short":
-        this.reduce.items.sort((a, b) => Order.byString(a.short, b.short, this.order.active.sort))
-        break;
+    const table: { type: TableDataType, content: any }[][] = [];
+    this.courses.forEach(course => {
+      table.push([
+        {type: TableDataType.TEXT, content: {text: course.name}},
+        {type: TableDataType.CUSTOM, content: {html: '<div class="!text-left !text-start !justify-start">' +
+              '<div class="flex items-center space-x-3">' +
+                '<div class="avatar">' +
+                  '<div class="mask mask-circle w-9 h-9 !flex !items-center !justify-center bg-base-content bg-opacity-30" style="background-color: ' + course.color + '">' +
+                    '<span class="text-base-100">' + course.name[0] + '</span>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="prose text-sm">' +
+                  '<h4>' + course.name + '</h4>' +
+                  (course.short ? '<span class="opacity-60">' + course.short + '</span>' : '') +
+                '</div>' +
+              '</div>' +
+            '</div>'}},
+        {type: TableDataType.NUMBER, content: {value: course.nrStudents}},
+        {type: TableDataType.TEXT, content: {text: course.year}},
+        {type: TableDataType.NUMBER, content: {value: course.startDate?.unix()}},
+        {type: TableDataType.DATE, content: {date: course.startDate}},
+        {type: TableDataType.NUMBER, content: {value: course.endDate?.unix()}},
+        {type: TableDataType.DATE, content: {date: course.endDate}},
+        {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: course.isActive}},
+        {type: TableDataType.TOGGLE, content: {toggleId: 'isVisible', toggleValue: course.isVisible}},
+        {type: TableDataType.ACTIONS, content: {actions: [Action.VIEW, Action.DUPLICATE, Action.EDIT, Action.DELETE, Action.EXPORT]}},
+      ]);
+    });
 
-      case "# Students":
-        this.reduce.items.sort((a, b) => Order.byNumber(a.nrStudents, b.nrStudents, this.order.active.sort))
-        break;
+    this.data = table;
+    this.loading.table = false;
+  }
 
-      case "Year":
-        this.reduce.items.sort((a, b) => Order.byString(a.year, b.year, this.order.active.sort))
-        break;
+  doActionOnTable(action: string, row: number, col: number, value?: any): void {
+    const courseToActOn = this.courses[row];
+
+    if (action === 'value changed') {
+      if (col === 8) this.toggleActive(courseToActOn.id);
+      else if (col === 9) this.toggleVisible(courseToActOn.id);
+
+    } else if (action === Action.VIEW) {
+      const redirectLink = this.getRedirectLink(courseToActOn);
+      this.router.navigate([redirectLink]);
+
+    } else if (action === Action.DUPLICATE) {
+      this.duplicateCourse(courseToActOn);
+
+    } else if (action === Action.EDIT) {
+      this.mode = 'edit';
+      this.courseToManage = this.initCourseToManage(courseToActOn);
+      ModalService.openModal('manage');
+
+    } else if (action === Action.DELETE) {
+      this.courseToDelete = courseToActOn;
+      ModalService.openModal('delete-verification');
+
+    } else if (action === Action.EXPORT) {
+      this.exportCourse(courseToActOn);
     }
   }
 
@@ -124,154 +166,125 @@ export class CoursesComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  createCourse(): void {
-    this.loadingAction = true;
+  doAction(action: string) {
+    if (action === Action.IMPORT.capitalize()) {
+      // TODO
 
-    if (this.newCourse.startDate) this.newCourse.startDate += ' 00:00:00';
-    else this.newCourse.startDate = null;
+    } else if (action === Action.EXPORT.capitalize()) {
+      // TODO
 
-    if (this.newCourse.endDate) this.newCourse.endDate += ' 23:59:59';
-    else this.newCourse.endDate = null;
-
-    if (this.newCourse.short?.isEmpty()) this.newCourse.short = null;
-
-    this.api.createCourse(this.newCourse)
-      .pipe( finalize(() => {
-        this.isCourseModalOpen = false;
-        this.clearObject(this.newCourse);
-        this.loadingAction = false;
-      }) )
-      .subscribe(
-        newCourse => {
-          this.courses.push(newCourse);
-          this.reduceList();
-
-          const successBox = $('#action_completed');
-          successBox.empty();
-          successBox.append("New course created");
-          successBox.show().delay(3000).fadeOut();
-        })
+    } else if (action === 'Create course') {
+      this.mode = 'create';
+      this.courseToManage = this.initCourseToManage();
+      ModalService.openModal('manage');
+    }
   }
 
-  duplicateCourse(courseID: number) {
-    this.loadingAction = true;
+  async createCourse(): Promise<void> {
+    if (this.f.valid) {
+      this.loading.action = true;
 
-    this.api.duplicateCourse(courseID)
-      .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(
-        newCourse => {
-          this.courses.push(newCourse);
-          this.reduceList();
+      const newCourse = await this.api.createCourse(clearEmptyValues(this.courseToManage)).toPromise();
+      this.courses.push(newCourse);
+      this.buildTable();
 
-          const successBox = $('#action_completed');
-          successBox.empty();
-          successBox.append("New course created");
-          successBox.show().delay(3000).fadeOut();
-        })
+      this.loading.action = false;
+      ModalService.closeModal('manage');
+      AlertService.showAlert(AlertType.SUCCESS, 'New course created: ' + newCourse.name);
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
-  editCourse(): void {
-    this.loadingAction = true;
-    this.newCourse['id'] = this.courseToEdit.id;
+  async duplicateCourse(course: Course) {
+    this.loading.action = true;
 
-    if (this.newCourse.startDate) this.newCourse.startDate += ' 00:00:00';
-    else this.newCourse.startDate = null;
+    const newCourse = await this.api.duplicateCourse(course.id).toPromise();
+    this.courses.push(newCourse);
+    this.buildTable();
 
-    if (this.newCourse.endDate) this.newCourse.endDate += ' 23:59:59';
-    else this.newCourse.endDate = null;
-
-    if (this.newCourse.short?.isEmpty()) this.newCourse.short = null;
-
-    this.api.editCourse(this.newCourse)
-      .pipe( finalize(() => {
-        this.isCourseModalOpen = false;
-        this.clearObject(this.newCourse);
-        this.loadingAction = false;
-      }) )
-      .subscribe(
-        courseEdited => {
-          const index = this.courses.findIndex(course => course.id === courseEdited.id);
-          this.courses.removeAtIndex(index);
-
-          this.courses.push(courseEdited);
-          this.reduceList();
-
-          const successBox = $('#action_completed');
-          successBox.empty();
-          successBox.append("Course: '"+ this.courseToEdit.name + "' edited");
-          successBox.show().delay(3000).fadeOut();
-        })
+    this.loading.action = false;
+    AlertService.showAlert(AlertType.SUCCESS, 'New course created: ' + newCourse.name);
   }
 
-  deleteCourse(course: Course): void {
-    this.loadingAction = true;
-    this.api.deleteCourse(course.id)
-      .pipe( finalize(() => {
-        this.isDeleteVerificationModalOpen = false;
-        this.loadingAction = false
-      }) )
-      .subscribe(
-        () => {
-          const index = this.courses.findIndex(el => el.id === course.id);
-          this.courses.removeAtIndex(index);
-          this.reduceList();
+  async editCourse(): Promise<void> {
+    if (this.f.valid) {
+      this.loading.action = true;
 
-          const successBox = $('#action_completed');
-          successBox.empty();
-          successBox.append("Course '" + course.name + "' deleted");
-          successBox.show().delay(3000).fadeOut();
-        })
+      const courseEdited = await this.api.editCourse(clearEmptyValues(this.courseToManage)).toPromise();
+      const index = this.courses.findIndex(course => course.id === courseEdited.id);
+      this.courses.removeAtIndex(index);
+      this.courses.push(courseEdited);
+      this.buildTable();
+
+      this.loading.action = false;
+      ModalService.closeModal('manage');
+      AlertService.showAlert(AlertType.SUCCESS, 'Course \'' + courseEdited.name + '\' edited');
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
-  toggleActive(courseID: number) {
-    this.loadingAction = true;
+  async deleteCourse(course: Course): Promise<void> {
+    this.loading.action = true;
+
+    await this.api.deleteCourse(course.id).toPromise();
+    const index = this.courses.findIndex(el => el.id === course.id);
+    this.courses.removeAtIndex(index);
+    this.buildTable();
+
+    this.loading.action = false;
+    ModalService.closeModal('delete-verification');
+    AlertService.showAlert(AlertType.SUCCESS, 'Course \'' + course.name + '\' deleted');
+  }
+
+  async toggleActive(courseID: number) {
+    this.loading.action = true;
 
     const course = this.courses.find(course => course.id === courseID);
     course.isActive = !course.isActive;
 
-    this.api.setCourseActive(course.id, course.isActive)
-      .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(res => {});
+    await this.api.setCourseActive(course.id, course.isActive).toPromise();
+    this.loading.action = false;
   }
 
-  toggleVisible(courseID: number) {
-    this.loadingAction = true;
+  async toggleVisible(courseID: number) {
+    this.loading.action = true;
 
     const course = this.courses.find(course => course.id === courseID);
     course.isVisible = !course.isVisible;
 
-    this.api.setCourseVisible(course.id, course.isVisible)
-      .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(res => {});
+    await this.api.setCourseVisible(course.id, course.isVisible).toPromise();
+    this.loading.action = false;
   }
 
   importCourses(replace: boolean): void {
-    this.loadingAction = true;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const file = reader.result;
-      this.api.importCourses({file, replace})
-        .pipe( finalize(() => {
-          this.isImportModalOpen = false;
-          this.loadingAction = false;
-        }) )
-        .subscribe(
-          async nrCourses => {
-            await this.getCourses();
-            const successBox = $('#action_completed');
-            successBox.empty();
-            successBox.append(nrCourses + " Course" + (nrCourses != 1 ? 's' : '') + " Imported");
-            successBox.show().delay(3000).fadeOut();
-          })
-    }
-    reader.readAsText(this.importedFile);
+    // TODO
+    // this.loading.action = true;
+    //
+    // const reader = new FileReader();
+    // reader.onload = (e) => {
+    //   const file = reader.result;
+    //   this.api.importCourses({file, replace})
+    //     .pipe( finalize(() => {
+    //       // this.isImportModalOpen = false;
+    //       this.loading.action = false;
+    //     }) )
+    //     .subscribe(
+    //       async nrCourses => {
+    //         await this.getCourses();
+    //         const successBox = $('#action_completed');
+    //         successBox.empty();
+    //         successBox.append(nrCourses + " Course" + (nrCourses != 1 ? 's' : '') + " Imported");
+    //         successBox.show().delay(3000).fadeOut();
+    //       })
+    // }
+    // reader.readAsText(this.importedFile);
   }
 
-  exportCourses(): void {
-    // this.saving = true;
+  async exportCourses(courses: Course[]): Promise<void> {
+    // TODO
+    // this.loading.action = true;
     //
-    // this.api.exportCourses(course?.id || null, this.exportOptions[course?.id] || null)
+    // await this.api.exportCourses(courses, this.exportOptions[course?.id] || null)
     //   .pipe( finalize(() => {
     //     this.isExportModalOpen = false;
     //     this.saving = false
@@ -281,8 +294,7 @@ export class CoursesComponent implements OnInit {
     //   )
   }
 
-  exportCourse(course: Course): void
-  {
+  exportCourse(course: Course): void {
      // TODO
   }
 
@@ -291,44 +303,21 @@ export class CoursesComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  isReadyToSubmit() {
-    let isValid = function (text) {
-      return exists(text) && !text.toString().isEmpty();
-    }
-
-    // Validate inputs
-    return isValid(this.newCourse.name) && isValid(this.newCourse.year);
+  initCourseToManage(course?: Course): CourseManageData {
+    const courseData: CourseManageData = {
+      name: course?.name ?? null,
+      short: course?.short ?? null,
+      color: course?.color ?? null,
+      year: course?.year ?? null,
+      startDate: course?.startDate?.format('YYYY-MM-DD') ?? null,
+      endDate: course?.endDate?.format('YYYY-MM-DD') ?? null
+    };
+    if (course) courseData.id = course.id;
+    return courseData;
   }
 
-  initColorPicker(): void {
-    setTimeout(() => {
-      // Simple example, see optional options for more configuration.
-      this.pickr = Pickr.create({
-        el: '#new_pickr',
-        useAsButton: true,
-        default: this.mode === 'add' ? 'white' : this.newCourse.color,
-        theme: 'monolith', // or 'classic', or 'nano',
-        components: {
-          hue: true,
-          interaction: {
-            input: true,
-            save: true
-          }
-        }
-      }).on('init', pickr => {
-        this.newCourse.color = pickr.getSelectedColor().toHEXA().toString(0);
-      }).on('save', color => {
-        this.newCourse.color = color.toHEXA().toString(0);
-        this.pickr.hide();
-      }).on('change', color => {
-        this.newCourse.color = color.toHEXA().toString(0);
-      });
-    }, 0);
-  }
-
-  initYearOptions(): void {
-    if (this.yearsOptions.length != 0) return;
-
+  initYearOptions(): {value: string, text: string}[] {
+    const years = [];
     const now = new Date();
     const currentYear = now.getFullYear();
 
@@ -337,63 +326,50 @@ export class CoursesComponent implements OnInit {
 
     let i = -YEARS_BEFORE;
     while (currentYear + i < currentYear + YEARS_AFTER) {
-      this.yearsOptions.push((currentYear + i) + '-' + (currentYear + i + 1));
+      const year = (currentYear + i) + '-' + (currentYear + i + 1);
+      years.push({value: year, text: year});
       i++;
     }
-  }
 
-  initEditCourse(course: Course): void {
-    this.newCourse = {
-      name: course.name,
-      short: course.short,
-      year: course.year,
-      color: course.color,
-      startDate: course.startDate?.format('YYYY-MM-DD') || null,
-      endDate: course.endDate?.format('YYYY-MM-DD') || null,
-      isActive: course.isActive,
-      isVisible: course.isVisible
-    };
-    this.courseToEdit = course;
-  }
-
-  getNonAdminCourses(isActive: boolean): Course[] {
-    return this.reduce.items.filter(course => course.isActive === isActive);
+    return years;
   }
 
   getRedirectLink(course: Course): string {
     const link = '/courses/' + course.id;
+    if (this.user.isAdmin) return link; // admins go to main page
+
     const pageID = course.landingPage; // FIXME: landing page per user role
     if (pageID) return link + '/pages/' + pageID;
     else return link;
+  }
+
+  filterCourses(active: boolean = null, visible: boolean = null): Course[] {
+    return this.courses.filter(course => {
+      return (active !== null ? course.isActive === active : true) &&
+      (visible !== null ? course.isVisible === visible : true);
+      }
+    );
+  }
+
+  getNonAdminCourses(isActive: boolean): Course[] {
+    return [];
+    // return this.reduce.items.filter(course => course.isActive === isActive);
   }
 
   onFileSelected(files: FileList): void {
     this.importedFile = files.item(0);
   }
 
-  isWhite(color: string): boolean {
-    if (!color) return false;
-    return ['white', '#ffffff', '#fff'].includes(color.toLowerCase());
-  }
-
-  clearObject(obj): void {
-    for (const key of Object.keys(obj)) {
-      obj[key] = null;
-    }
-  }
-
 }
 
-export interface CourseData {
+export interface CourseManageData {
   id?: number,
   name: string,
   short: string,
-  year: string,
   color: string,
+  year: string,
   startDate: string,
-  endDate: string,
-  isActive: boolean,
-  isVisible: boolean
+  endDate: string
 }
 
 export interface ImportCoursesData {

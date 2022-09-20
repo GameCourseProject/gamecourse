@@ -62,7 +62,6 @@ export class InputColorComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     if (this.form) this.form.addControl(this.inputColor);
     setTimeout(() => this.initPicker(), 0);
-    console.log(this.value)
   }
 
   initPicker() {
@@ -118,11 +117,17 @@ export class InputColorComponent implements OnInit, AfterViewInit {
   openPicker() {
     this.show = true;
     this.pickr.show();
+
+    const picker = document.getElementById('color-picker');
+    picker.classList.remove('hidden');
   }
 
   closePicker() {
     this.show = false;
-    this.pickr.hide();
+    this.pickr?.hide();
+
+    const picker = document.getElementById('color-picker');
+    picker.classList.add('hidden');
   }
 
   get InputGroupSize(): typeof InputGroupSize {

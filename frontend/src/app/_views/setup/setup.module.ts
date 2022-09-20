@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { SetupRoutingModule } from './setup-routing.module';
 import { SetupComponent } from './setup/setup.component';
-import {ReactiveFormsModule} from "@angular/forms";
+import { ReactiveFormsModule } from "@angular/forms";
 
 
 @NgModule({
