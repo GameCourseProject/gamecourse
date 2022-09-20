@@ -10,6 +10,8 @@
   [submitBtnText]="'Take screenshot'"
   [submitBtnColor]="'error'"
   [submitBtnOutline]="true"
+  (submitBtnClicked)="takeScreenshot()"
+  [actionInProgress]="loading"
   (onClose)="onClose.emit()">
 </app-modal>
 
