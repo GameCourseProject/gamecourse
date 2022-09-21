@@ -6,6 +6,11 @@ import {ErrorService} from "../../../../../../../_services/error.service";
 import {ActionsToRemove} from "../../../../../../../_domain/virtualcurrency/actionstoremove";
 import {exists} from "../../../../../../../_utils/misc/misc";
 import {Course} from "../../../../../../../_domain/courses/course";
+import {Team} from "../../../../../../../_domain/teams/team";
+import {TeamData} from "../teams/teams.component";
+import {User} from "../../../../../../../_domain/users/user";
+import {ActionsToAward} from "../../../../../../../_domain/virtualcurrency/actionstoadd";
+import {Tier} from "../../../../../../../_domain/skills/tier";
 
 @Component({
   selector: 'app-virtualcurrency',
@@ -22,6 +27,7 @@ export class VirtualcurrencyComponent implements OnInit {
 
   course: Course;
   actionsToRemove: ActionsToRemove[] = [];
+  participationTypes = ["attended lab", "attended lecture", "course emperor", "forum add discussion", "forum add post","forum update post","forum upload post","graded post","hall of fame","initial bonus","lab grade", "lab king","page viewed","participated in focus groups","participated in lecture","peerforum add discussion","peerforum add post","peerforum upload post","peergraded post","popular choice award (presentation)","presentation grade","presentation king","questionnaire resumed","questionnaire submitted","questionnaire viewed","quiz created","quiz grade","quiz king","quiz viewed","replied to questionnaires","resource view","subscribe forum","subscribe peerforum","suggested presentation subject","unsubscribe forum","unsubscribe eerforum","url viewed"];
 
   skillsVars = {
     skillCost: null,
@@ -30,6 +36,28 @@ export class VirtualcurrencyComponent implements OnInit {
     costFormula: null,
     incrementCost: null,
   }
+  newActionToRemove: ActionToRemoveData = {
+    name: "",
+    description: "",
+    type: "",
+    tokens: null,
+  };
+
+  mode: 'add' | 'edit';
+
+  addActions: ActionsToAward[] = [];
+  actionToAwardToEdit: ActionsToAward;
+  actionToAwardToDelete: ActionsToAward;
+
+  isRemoveActionModalOpen: boolean;
+  isDeleteVerificationModalOpen: boolean;
+  isImportModalOpen: boolean;
+  isTestModalOpen: boolean;
+
+  types: [];
+
+
+  saving: boolean;
 
   constructor(
     private api: ApiHttpService,
@@ -92,7 +120,7 @@ export class VirtualcurrencyComponent implements OnInit {
       )
   }
 
-  isReadyToSubmit(): boolean {
+  isSkillVarReadyToSubmit(): boolean {
     return exists(this.skillsVars.skillCost) && /*!this.skillsVars.skillCost.isEmpty() &&*/
       exists(this.skillsVars.wildcardCost) && /*!this.skillsVars.wildcardCost.isEmpty() &&*/
       exists(this.skillsVars.attemptRating) && /*!this.skillsVars.attemptRating.isEmpty() &&*/
@@ -105,6 +133,40 @@ export class VirtualcurrencyComponent implements OnInit {
       this.isSkillModuleEnabled = myBool);
   }
 
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  initItem(type: 'actionToAward', item?: any): void {
+    if (type === 'actionToAward') {
+      this.newActionToRemove = {
+        name: item?.name || "",
+        description: item?.description || "",
+        type: item?.type || "",
+        tokens: item?.tokens || null
+      };
+      if (this.mode === 'edit') this.newActionToRemove.id = item.id;
+      this.actionToAwardToEdit = item;
+    }
+  }
+
+  clearObject(obj): void {
+    for (const key of Object.keys(obj)) {
+      obj[key] = null;
+    }
+  }
+
+  isReadyToSubmit(type: 'actionToAward') {
+    let isValid = function (text) {
+      return exists(text) && !text.toString().isEmpty();
+    }
+
+    // Validate inputs
+    //if (type === 'team' && this.newTeam && this.newTeam.teamMembers) return (isValid(this.newTeam.teamName) )  ;
+    return true;
+  }
+
 }
 
 export interface CurrencySkillsVars {
@@ -113,5 +175,13 @@ export interface CurrencySkillsVars {
   attemptRating: number,
   costFormula: "0" | "1" | "2",
   incrementCost: string,
+}
+
+export interface ActionToRemoveData {
+  id?: number,
+  name: string,
+  description: string,
+  type: string,
+  tokens: number,
 }
 

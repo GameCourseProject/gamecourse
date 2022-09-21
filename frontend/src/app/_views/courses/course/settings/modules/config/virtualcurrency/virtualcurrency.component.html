@@ -1,16 +1,13 @@
-<div class="section tiers-section">
+<div class="section removeAction-section">
   <div class="divider">
-    <div class="title"><span>Actions To Remove Tokens</span></div>
+    <div class="title"><span>Actions To Penalize</span></div>
   </div>
 
-  <div class="tiers content">
-    <!-- to Remove List -->
-    <div id="remove-list">
+  <div class="add content">
+    <div id="add-list">
       <div class="data-table">
 
-        <!-- <table *ngIf="actionsToRemove?.length > 0" id="listing-table">  -->
-
-        <table *ngIf="actionsToRemove.length != 0"  id="listing-table">
+        <table *ngIf="actionsToRemove.length != 0"  id="listing-add-table">
           <!-- Header -->
           <thead>
           <tr>
@@ -30,12 +27,15 @@
           <tbody>
 
           <!-- *ngFor="let toRemove of actionsToRemove"-->
-          <tr >
-            <th>1</th>
-            <th>2</th>
-            <th>3</th>
-            <th>4</th>
-            <th>5</th>
+          <tr *ngFor="let toRemove of actionsToRemove;  let i = index">
+            <td><span>{{toRemove.name}}</span></td>
+            <td><span>{{toRemove.description}}</span></td>
+            <td><span>{{toRemove.type}}</span></td>
+            <td><span>{{toRemove.tokens}}</span></td>
+            <td><span>{{toRemove.isActive}}</span></td>
+            <td class="action-column">
+              <div class="icon duplicate_icon" title="Duplicate" ></div>
+            </td>
             <td class="action-column">
               <div class="icon edit_icon" title="Edit" ></div>
             </td>
@@ -48,7 +48,7 @@
 
         <!--- <div *ngIf="actionsToRemove.length === 0" class='error_box'> -->
         <div *ngIf="actionsToRemove.length === 0" class='error_box'>
-          <div id='empty_table_tiers' class='error_msg'>No tiers found</div>
+          <div id='empty_table_add_actions' class='error_msg'>No actions to remove tokens found</div>
         </div>
 
       </div>
@@ -56,13 +56,72 @@
 
     <!-- Action Buttons -->
     <div class="action-buttons">
-      <div class="icon add_icon" title="New"></div>
+      <div class="icon add_icon" title="New" (click)="mode = 'add'; isRemoveActionModalOpen = true; initItem('actionToAward'); "></div>
       <div class="icon import_icon" title="Import" ></div>
       <div class="icon export_icon" title="Export" ></div>
 
     </div>
   </div>
 </div>
+
+
+<!-- New / Edit Team Modal -->
+<ng-container *ngIf="isRemoveActionModalOpen">
+  <app-modal
+    [isModalOpen]="isRemoveActionModalOpen"
+    [id]="mode === 'add' ? 'new-team' : 'edit-team'"
+    [templateRef]="ActionToRemoveModal"
+    [width]="'calc(100% - 200px)'"
+    (closeBtnClicked)="isRemoveActionModalOpen = false; clearObject(newActionToRemove);"
+    [actionInProgress]="saving"
+    [innerClickEvents]="false">
+  </app-modal>
+</ng-container>
+
+
+<ng-template #ActionToRemoveModal style="width: 200px">
+  <div class="title">{{mode === 'add' ? 'New Action:' : 'Edit Action:'}}</div>
+
+  <div class="content" >
+
+    <div class="inputs">
+
+        <!-- Name -->
+        <div class="third">
+          <input type="text" class="form__input" id="action-name" placeholder="Name" [(ngModel)]="newActionToRemove.name" [required]="true">
+          <label for="action-name" class="form__label">Name</label>
+        </div>
+
+        <!-- Description -->
+        <div class="third">
+          <input type="text" class="form__input" id="action-description" placeholder="Description" [(ngModel)]="newActionToRemove.description" [required]="true">
+          <label for="action-name" class="form__label">Description</label>
+        </div>
+
+
+      <!-- Type -->
+      <div class="third">
+        <select class="form__input" id="action-type" [(ngModel)]="newActionToRemove.type">
+          <option [value]="null" disabled>Select a type</option>
+          <option *ngFor="let type of participationTypes" [value]="type">{{type}}</option>
+        </select>
+      </div>
+
+      <!-- Tokens -->
+      <div class="third">
+        <input type="text" class="form__input" id="action-tokens" placeholder="Tokens" [(ngModel)]="newActionToRemove.tokens" [required]="true">
+        <label for="action-name" class="form__label">Tokens</label>
+      </div>
+
+      <button class="save_btn" [disabled]="!isReadyToSubmit('actionToAward')" >Save</button>
+
+
+    </div>
+
+  </div>
+
+</ng-template>
+
 
 <div  *ngIf="isSkillModuleEnabled" class="section">
   <div class="divider">
@@ -126,7 +185,7 @@
 
 
     <div class="action-buttons">
-      <button id="save-button" class="button" [disabled]="!hasUnsavedChanges || !isReadyToSubmit()" (click)="saveCurrencySkillVars()">Save</button>
+      <button id="save-button" class="button" [disabled]="!hasUnsavedChanges || !isSkillVarReadyToSubmit()" (click)="saveCurrencySkillVars()">Save</button>
     </div>
   </div>
 
@@ -140,3 +199,4 @@
   <img src="assets/loader/loader.gif" alt="loader">
 </div>
 -->
+</div>

@@ -6,6 +6,6 @@ export enum InputType {
   COLOR = 'color',
   DATE = 'date',
   SEARCH = 'search',
-  SELECT = 'select',
+  SELECT_TYPES = 'select_types',
   TOGGLE = 'on_off button'
 }

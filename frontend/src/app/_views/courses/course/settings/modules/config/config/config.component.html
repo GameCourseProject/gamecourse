@@ -249,17 +249,23 @@
   </ng-container>
 
   <!-- Select -->
-  <ng-container *ngIf="type === InputType.SELECT">
+  <ng-container *ngIf="type === InputType.SELECT_TYPES">
     <ng-container *ngIf="style === 'outer'">
       <div class="input-wrapper">
-        <span *ngIf="label" class="label">{{label}}</span>
-        <select id="{{id}}" name="{{id}}" [(ngModel)]="obj[param]" (ngModelChange)="hasUnsavedChanges = true"></select>
-      </div>
+        <div class="third">
+          <select class="form__input" id="action2-type" [(ngModel)]="obj[param]">
+            <option [value]="null" disabled>Select a type</option>
+          </select>
+        </div> </div>
     </ng-container>
 
     <ng-container *ngIf="style === 'inner'">
-      <select id="{{id}}" name="{{id}}" [(ngModel)]="obj[param]" (ngModelChange)="hasUnsavedChanges = true"></select>
-      <label [for]="id" class="form__label">{{label}}</label>
+      <div class="input-wrapper" style="">
+          <select class="input" id="action-type" [(ngModel)]="obj[param]">
+            <option [value]="null" disabled>Select a type</option>
+            <option *ngFor="let type of participationTypes" [value]="type">{{type}}</option>
+          </select>
+      </div>
     </ng-container>
   </ng-container>
 

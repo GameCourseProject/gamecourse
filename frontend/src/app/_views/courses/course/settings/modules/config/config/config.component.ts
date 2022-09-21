@@ -95,6 +95,8 @@ export class ConfigComponent implements OnInit {
   image: ResourceManager;
 
   selectedUsers: User[] = [];
+  participationTypes = ["attended lab", "attended lecture", "course emperor", "forum add discussion", "forum add post","forum update post","forum upload post","graded post","hall of fame","initial bonus","lab grade", "lab king","page viewed","participated in focus groups","participated in lecture","peerforum add discussion","peerforum add post","peerforum upload post","peergraded post","popular choice award (presentation)","presentation grade","presentation king","questionnaire resumed","questionnaire submitted","questionnaire viewed","quiz created","quiz grade","quiz king","quiz viewed","replied to questionnaires","resource view","subscribe forum","subscribe peerforum","suggested presentation subject","unsubscribe forum","unsubscribe eerforum","url viewed"];
+
 
   constructor(
     private api: ApiHttpService,
