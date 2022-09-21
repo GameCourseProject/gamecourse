@@ -21,7 +21,7 @@
           <thead>
           <tr>
             <th class = "index-column">#</th>
-            <th class = "group-column">Fénix Group</th>
+            <th class = "group-column">Team Number</th>
             <th *ngIf="isTeamNameActive" class="team-name-column" >Team</th>
 
             <!--<th>Photo</th> -->
@@ -40,7 +40,6 @@
           <!-- Body -->
           <tbody>
             <tr *ngFor="let team of teams;  let i = index" >
-              <!--<td><span>{{team.id}}</span></td>-->
               <td class = "index-column"><span> {{(i + 1)}}</span></td>
               <td class = "group-column"><span>{{team.teamNumber || "---"}}</span></td>
 
@@ -120,15 +119,16 @@
     <div class="row_inputs">
       <!-- Team Name -->
       <div *ngIf="isTeamNameActive" class="third" >
-        <input type="text" class="form__input" id="team-name" placeholder="Name" [(ngModel)]="newTeam.teamName" [required]="false">
-        <label for="team-name" class="form__label">Name</label>
+        <input type="text" class="form__input" id="team-name" style="width: 400px; float: left"  placeholder="Team Name" [(ngModel)]="newTeam.teamName" [required]="false">
       </div>
 
-      <div class="third" >
-        <input type="text" class="form__input" id="team-number" style="width: 200px" placeholder="Number (Optional)" [(ngModel)]="newTeam.teamNumber" [required]="false">
-        <label for="team-number" class="form__label">Number</label>
+      <div *ngIf="isTeamNameActive" class="third" >
+        <input type="number" class="form__input" id="team-number-m" style="width: 400px; margin-left: 20px" placeholder="Team Number (Optional)" [(ngModel)]="newTeam.teamNumber" [required]="false">
       </div>
 
+      <div *ngIf="!isTeamNameActive" class="third" >
+        <input type="number" class="form__input" id="team-number" style="width: 400px" placeholder="Team Number (Optional)" [(ngModel)]="newTeam.teamNumber" [required]="false">
+      </div>
 
       <!-- Select Team Members -->
       <div class="sub_title">Select Members: </div>
@@ -161,8 +161,6 @@
         <button class="save_btn" [disabled]="!isReadyToSubmit('team')" (click)="mode === 'add' ? createTeam() : editTeam()">Save</button>
 
       </div>
-      <!-- <button class="save_btn" (click)="createTeam()" [disabled]="selectedMembers?.length === 0 ">Save</button> -->
-
 
     </div>
 
@@ -177,7 +175,7 @@
     [isModalOpen]="isDeleteVerificationModalOpen"
     [id]="'delete-verification-' + teamToDelete.id"
     [text]="'Are you sure you want to delete this Team?'"
-    [target]="teamToDelete.id + ' - ' + teamToDelete.teamName"
+    [target]="teamToDelete.id + ' - ' + teamToDelete.teamNumber + ' - ' + teamToDelete.teamName"
     [positiveBtnText]="'Delete'"
     (positiveBtnClicked)="deleteTeam()"
     (negativeBtnClicked)="teamToDelete = null; isDeleteVerificationModalOpen = false"
