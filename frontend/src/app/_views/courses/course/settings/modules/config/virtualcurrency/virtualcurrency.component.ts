@@ -9,7 +9,6 @@ import {Course} from "../../../../../../../_domain/courses/course";
 import {Team} from "../../../../../../../_domain/teams/team";
 import {TeamData} from "../teams/teams.component";
 import {User} from "../../../../../../../_domain/users/user";
-import {ActionsToAward} from "../../../../../../../_domain/virtualcurrency/actionstoadd";
 import {Tier} from "../../../../../../../_domain/skills/tier";
 
 @Component({
@@ -45,9 +44,8 @@ export class VirtualcurrencyComponent implements OnInit {
 
   mode: 'add' | 'edit';
 
-  addActions: ActionsToAward[] = [];
-  actionToAwardToEdit: ActionsToAward;
-  actionToAwardToDelete: ActionsToAward;
+  actionToRemoveToEdit: ActionsToRemove;
+  actionToRemoveToDelete: ActionsToRemove;
 
   isRemoveActionModalOpen: boolean;
   isDeleteVerificationModalOpen: boolean;
@@ -147,7 +145,7 @@ export class VirtualcurrencyComponent implements OnInit {
         tokens: item?.tokens || null
       };
       if (this.mode === 'edit') this.newActionToRemove.id = item.id;
-      this.actionToAwardToEdit = item;
+      this.actionToRemoveToEdit = item;
     }
   }
 
