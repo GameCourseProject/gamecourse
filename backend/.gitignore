@@ -56,6 +56,9 @@ modules/quest/resources/
 
 scripts/results/
 
+streakTests.php
+attempt.php
+
 cache/
 /nbproject/private/
 /setup.done

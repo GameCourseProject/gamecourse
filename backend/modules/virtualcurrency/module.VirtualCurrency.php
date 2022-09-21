@@ -421,7 +421,7 @@ class VirtualCurrency extends Module
         $displayAtributes = [
             ['id' => 'name', 'type' => 'text'],
             ['id' => 'description', 'type' => 'text'],
-            ['id' => 'type', 'type' => 'text'],
+            ['id' => 'type', 'type' => 'select'],
             ['id' => 'tokens', 'type' => 'number'],
             ['id' => 'isActive', 'type' => 'on_off button']
         ];
@@ -434,7 +434,7 @@ class VirtualCurrency extends Module
         $allAtributes = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => ""),
             array('name' => "Description", 'id' => 'description', 'type' => "text", 'options' => ""),
-            array('name' => "Type", 'id' => 'type', 'type' => "text", 'options' => ""),
+            array('name' => "Type", 'id' => 'type', 'type' => "select_types", 'options' => ""),
             array('name' => "Tokens", 'id' => 'tokens', 'type' => "number", 'options' => ""),
             array('name' => "Is Active", 'id' => 'isActive', 'type' => "on_off button", 'options' => "")
         ];
@@ -579,7 +579,8 @@ class VirtualCurrency extends Module
 
         Core::$systemDB->insert(self::TABLE, $actionData);
 
-        // generateActiontoAwardRule
+        // TODO:
+        // generate ActionToAward Rule
     }
 
     public static function editAction($achievement, $courseId)
