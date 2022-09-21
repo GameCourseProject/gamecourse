@@ -11,9 +11,8 @@ import {AuthType} from "../../_domain/auth/auth-type";
 import {Course} from "../../_domain/courses/course";
 import {User} from "../../_domain/users/user";
 import {SetupData} from "../../_views/setup/setup/setup.component";
-import {UserData} from "../../_views/restricted/my-info/my-info/my-info.component";
 import {CourseManageData, ImportCoursesData} from "../../_views/restricted/courses/courses/courses.component";
-import {ImportUsersData} from "../../_views/restricted/users/users/users.component";
+import {ImportUsersData, UserManageData} from "../../_views/restricted/users/users/users.component";
 import {Module} from "../../_domain/modules/module";
 import {ImportModulesData} from "../../_views/restricted/settings/modules/modules.component";
 import {Moment} from "moment/moment";
@@ -196,18 +195,16 @@ export class ApiHttpService {
 
 
   // User Manipulation
-  public createUser(userData: UserData): Observable<User> {
+  public createUser(userData: UserManageData): Observable<User> {
     const data = {
       name: userData.name,
-      studentNumber: userData.studentNumber,
+      studentNumber: userData.studentNr,
       nickname: userData.nickname,
       username: userData.username,
       email: userData.email,
       major: userData.major,
-      isActive: userData.isActive,
-      isAdmin: userData.isAdmin,
-      authService: userData.auth,
-      image: userData.image
+      authService: userData.authService,
+      image: userData.photoBase64
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -220,19 +217,17 @@ export class ApiHttpService {
       .pipe( map((res: any) => User.fromDatabase(res['data'])) );
   }
 
-  public editUser(userData: UserData): Observable<User> {
+  public editUser(userData: UserManageData): Observable<User> {
     const data = {
       userId: userData.id,
       name: userData.name,
-      studentNumber: userData.studentNumber,
+      studentNumber: userData.studentNr,
       nickname: userData.nickname,
       username: userData.username,
       email: userData.email,
       major: userData.major,
-      isActive: userData.isActive,
-      isAdmin: userData.isAdmin,
-      authService: userData.auth,
-      image: userData.image
+      authService: userData.authService,
+      image: userData.photoBase64
     }
 
     const params = (qs: QueryStringParameters) => {

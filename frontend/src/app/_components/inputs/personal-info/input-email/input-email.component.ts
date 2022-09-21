@@ -23,7 +23,7 @@ export class InputEmailComponent implements OnInit {
   @Input() disabled?: boolean;                                              // Make it disabled
 
   @Input() topLabel?: string;                                               // Top label text
-  @Input() leftLabel?: string = 'Email';                                    // Text on prepended label
+  @Input() leftLabel?: string;                                              // Text on prepended label
 
   // Validity
   @Input() pattern?: string = this.EMAIL_PATTERN;                           // The pattern to be applied

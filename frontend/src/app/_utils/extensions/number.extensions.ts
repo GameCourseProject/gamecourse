@@ -1,16 +1,20 @@
 interface Number {
-  format(type?: 'default' | 'money' | 'percent'): string;
+  format(type?: 'none' | 'default' | 'money' | 'percent'): string;
   countDecimals(): number;
 }
 
 /**
  * Formats a number according the type given.
+ * @example (type = none)     123456.789 --> 123456789
  * @example (type = default)  123456.789 --> 123 456,789
  * @example (type = money)    123456.789 --> 123 456,79 €
  * @example (type = percent)  123456.789 --> 123 456,789%
  */
 Number.prototype.format = function (type: string): string {
   switch (type) {
+    case 'none':
+      return this.toString();
+
     case 'money':
       return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(this);
 

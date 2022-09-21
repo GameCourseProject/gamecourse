@@ -1,17 +1,18 @@
-import { Component, OnInit } from '@angular/core';
-import { NavigationEnd, PRIMARY_OUTLET, Router } from "@angular/router";
-import { DomSanitizer } from "@angular/platform-browser";
-import { environment } from "../../../../environments/environment";
-import { of } from "rxjs";
+import {Component, OnInit} from '@angular/core';
+import {NavigationEnd, PRIMARY_OUTLET, Router} from "@angular/router";
+import {DomSanitizer} from "@angular/platform-browser";
+import {environment} from "../../../../environments/environment.prod";
+import {of} from "rxjs";
 
-import { ApiHttpService } from "../../../_services/api/api-http.service";
-import { ApiEndpointsService } from "../../../_services/api/api-endpoints.service";
-import { UpdateService, UpdateType } from "../../../_services/update.service";
-import { SidebarService } from "../../../_services/sidebar.service";
+import {ApiHttpService} from "../../../_services/api/api-http.service";
+import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
+import {ThemingService} from "../../../_services/theming/theming.service";
+import {UpdateService, UpdateType} from "../../../_services/update.service";
+import {SidebarService} from "../../../_services/sidebar.service";
 
-import { User } from "../../../_domain/users/user";
-import { Course } from 'src/app/_domain/courses/course';
-import { ResourceManager } from "../../../_utils/resources/resource-manager";
+import {User} from "../../../_domain/users/user";
+import {Course} from 'src/app/_domain/courses/course';
+import {ResourceManager} from "../../../_utils/resources/resource-manager";
 
 @Component({
   selector: 'app-navbar',
@@ -32,6 +33,7 @@ export class NavbarComponent implements OnInit {
   constructor(
     private api: ApiHttpService,
     public router: Router,
+    private themeService: ThemingService,
     private sanitizer: DomSanitizer,
     private updateManager: UpdateService,
     public sidebar: SidebarService
@@ -70,7 +72,7 @@ export class NavbarComponent implements OnInit {
 
   async getLoggedUser(): Promise<void> {
     this.user = await this.api.getLoggedUser().toPromise();
-    this.photo.set(this.user.photoUrl ?? environment.defaultProfilePicture);
+    this.photo.set(this.user.photoUrl ?? environment.defaultAvatar);
   }
 
 

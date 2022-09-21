@@ -1,80 +1,70 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {NgForm} from "@angular/forms";
+import {Router} from "@angular/router";
 import {DomSanitizer} from "@angular/platform-browser";
 
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
 import {UpdateService, UpdateType} from "../../../../_services/update.service";
+import {ModalService} from "../../../../_services/modal.service";
+import {AlertService, AlertType} from "../../../../_services/alert.service";
+import {ThemingService} from "../../../../_services/theming/theming.service";
+import {ResourceManager} from "../../../../_utils/resources/resource-manager";
 
 import {User} from "../../../../_domain/users/user";
-import {UserData} from "../../my-info/my-info/my-info.component";
 import {AuthType} from "../../../../_domain/auth/auth-type";
-
-import {ResourceManager} from "../../../../_utils/resources/resource-manager";
-import {DownloadManager} from "../../../../_utils/download/download-manager";
-import {Order, Sort} from "../../../../_utils/lists/order";
-import {Reduce} from "../../../../_utils/lists/reduce";
-
-import {exists} from "../../../../_utils/misc/misc";
-import {finalize} from "rxjs/operators";
+import {TableDataType} from "../../../../_components/tables/table-data/table-data.component";
+import {Action} from 'src/app/_domain/modules/config/Action';
+import {clearEmptyValues} from "../../../../_utils/misc/misc";
+import {Theme} from "../../../../_services/theming/themes-available";
+import {environment} from "../../../../../environments/environment.prod";
 
 
 @Component({
   selector: 'app-main',
-  templateUrl: './users.component.html',
-  styleUrls: ['./users.component.scss']
+  templateUrl: './users.component.html'
 })
 export class UsersComponent implements OnInit {
 
-  loading = true;
-  loadingAction = false;
+  loading = {
+    page: true,
+    table: true,
+    action: false
+  }
 
-  loggedUser: User;
+  user: User;
   users: User[];
 
-  reduce = new Reduce();
-  order = new Order();
+  mode: 'add' | 'edit';
+  userToManage: UserManageData = this.initUserToManage();
+  userToDelete: User;
+  @ViewChild('f', { static: false }) f: NgForm;
 
-  filters = ['Admin', 'NonAdmin', 'Active', 'Inactive'];
-  orderBy = ['Name', 'Nickname', 'Student Number', '# Courses', 'Last Login'];
-
-  originalPhoto: string;  // Original photo
-  photoToAdd: File;       // Any photo that comes through the input
-  photo: ResourceManager; // Photo to be displayed
+  authMethods: {value: any, text: string}[] = this.initAuthMethods();
 
   importedFile: File;
 
-  isUserModalOpen: boolean;
-  isDeleteVerificationModalOpen: boolean;
-  isImportModalOpen: boolean;
-  saving: boolean;
-
-  mode: 'add' | 'edit';
-  newUser: UserData = {
-    name: null,
-    nickname: null,
-    studentNumber: null,
-    email: null,
-    major: null,
-    isAdmin: null,
-    isActive: null,
-    auth: null,
-    username: null,
-    image: null
-  };
-  userToEdit: User;
-  userToDelete: User;
-
   constructor(
     private api: ApiHttpService,
+    private router: Router,
+    private themeService: ThemingService,
     private sanitizer: DomSanitizer,
     private updateManager: UpdateService
-  ) {
-    this.photo = new ResourceManager(sanitizer);
-  }
+  ) { }
 
   async ngOnInit(): Promise<void> {
-    this.loggedUser = await this.api.getLoggedUser().toPromise();
+    await this.getLoggedUser();
     await this.getUsers();
-    this.loading = false;
+    this.loading.page = false;
+
+    this.buildTable();
+  }
+
+  get Action(): typeof Action {
+    return Action;
+  }
+
+  get AuthType(): typeof AuthType {
+    return AuthType;
   }
 
 
@@ -82,43 +72,86 @@ export class UsersComponent implements OnInit {
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
 
+  async getLoggedUser(): Promise<void> {
+    this.user = await this.api.getLoggedUser().toPromise();
+  }
+
   async getUsers(): Promise<void> {
     this.users = await this.api.getUsers().toPromise();
-    this.order.active = {orderBy: this.orderBy[0], sort: Sort.ASCENDING};
-    this.reduceList(undefined, [...this.filters]);
   }
 
 
   /*** --------------------------------------------- ***/
-  /*** ---------- Search, Filter & Order ----------- ***/
+  /*** ------------------- Table ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  reduceList(query?: string, filters?: string[]): void {
-    this.reduce.searchAndFilter(this.users, query, filters);
-    this.orderList();
+  headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
+    {label: 'Name (sorting)', align: 'left'},
+    {label: 'User', align: 'left'},
+    {label: 'Student Nr', align: 'middle'},
+    {label: 'Email', align: 'left'},
+    {label: '# Courses', align: 'middle'},
+    {label: 'Last login (timestamp sorting)', align: 'middle'},
+    {label: 'Last login', align: 'middle'},
+    {label: 'Active', align: 'middle'},
+    {label: 'Admin', align: 'middle'},
+    {label: 'Actions'}
+  ];
+  data: {type: TableDataType, content: any}[][];
+  tableOptions = {
+    order: [[ 0, 'asc' ]], // default order
+    columnDefs: [
+      { orderData: 0,   targets: 1 },
+      { orderData: 5,   targets: 6 },
+      { orderable: false, targets: [7, 8, 9] }
+    ]
   }
 
-  orderList(): void {
-    switch (this.order.active.orderBy) {
-      case "Name":
-        this.reduce.items.sort((a, b) => Order.byString(a.name, b.name, this.order.active.sort))
-        break;
+  buildTable(): void {
+    this.loading.table = true;
 
-      case "Nickname":
-        this.reduce.items.sort((a, b) => Order.byString(a.nickname, b.nickname, this.order.active.sort))
-        break;
+    const table: { type: TableDataType, content: any }[][] = [];
+    this.users.forEach(user => {
+      table.push([
+        {type: TableDataType.TEXT, content: {text: user.name}},
+        {type: TableDataType.AVATAR, content: {avatarSrc: user.photoUrl, avatarTitle: user.name, avatarSubtitle: user.major}},
+        {type: TableDataType.NUMBER, content: {value: user.studentNumber, valueFormat: 'none'}},
+        {type: TableDataType.TEXT, content: {text: user.email}},
+        {type: TableDataType.NUMBER, content: {value: user.nrCourses}},
+        {type: TableDataType.NUMBER, content: {value: user.lastLogin?.unix()}},
+        {type: TableDataType.TEXT, content: {text: user.lastLogin?.fromNow() ?? 'Never'}},
+        {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: user.isActive, toggleDisabled: user.id === this.user.id}},
+        {type: TableDataType.TOGGLE, content: {toggleId: 'isAdmin', toggleValue: user.isAdmin, toggleColor: 'secondary', toggleDisabled: user.id === this.user.id}},
+        {type: TableDataType.ACTIONS, content: {actions: [Action.VIEW, Action.EDIT, Action.DELETE, Action.EXPORT]}},
+      ]);
+    });
 
-      case "Student Number":
-        this.reduce.items.sort((a, b) => Order.byNumber(a.studentNumber, b.studentNumber, this.order.active.sort))
-        break;
+    this.data = table;
+    this.loading.table = false;
+  }
 
-      case "# Courses":
-        this.reduce.items.sort((a, b) => Order.byNumber(a.nrCourses, b.nrCourses, this.order.active.sort))
-        break;
+  doActionOnTable(action: string, row: number, col: number, value?: any): void {
+    const userToActOn = this.users[row];
 
-      case "Last Login":
-        this.reduce.items.sort((a, b) => Order.byDate(a.lastLogin, b.lastLogin, this.order.active.sort))
-        break;
+    if (action === 'value changed') {
+      if (col === 7) this.toggleActive(userToActOn.id);
+      else if (col === 8) this.toggleAdmin(userToActOn.id);
+
+    } else if (action === Action.VIEW) {
+      const redirectLink = '/profile/' + userToActOn.id;
+      this.router.navigate([redirectLink]);
+
+    } else if (action === Action.EDIT) {
+      this.mode = 'edit';
+      this.userToManage = this.initUserToManage(userToActOn);
+      ModalService.openModal('manage');
+
+    } else if (action === Action.DELETE) {
+      this.userToDelete = userToActOn;
+      ModalService.openModal('delete-verification');
+
+    } else if (action === Action.EXPORT) {
+      this.exportUsers([userToActOn]);
     }
   }
 
@@ -127,132 +160,128 @@ export class UsersComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  doAction(action: string) {
+    if (action === Action.IMPORT.capitalize()) {
+      // TODO
+
+    } else if (action === Action.EXPORT.capitalize()) {
+      // TODO
+
+    } else if (action === 'Add user') {
+      this.mode = 'add';
+      this.userToManage = this.initUserToManage();
+      ModalService.openModal('manage');
+    }
+  }
+
   async createUser(): Promise<void> {
-    this.loadingAction = true;
+    if (this.f.valid) {
+      this.loading.action = true;
 
-    if (this.photoToAdd)
-      await ResourceManager.getBase64(this.photoToAdd).then(data => this.newUser.image = data);
+      if (this.userToManage.photoToAdd)
+        await ResourceManager.getBase64(this.userToManage.photoToAdd).then(data => this.userToManage.photoBase64 = data);
 
-    this.api.createUser(this.newUser)
-      .pipe( finalize(() => {
-        this.isUserModalOpen = false;
-        this.clearObject(this.newUser);
-        this.loadingAction = false;
-      }) )
-      .subscribe(
-        newUser => {
-          this.users.push(newUser);
-          this.reduceList();
+      const newUser = await this.api.createUser(clearEmptyValues(this.userToManage)).toPromise();
+      this.users.push(newUser);
+      this.buildTable();
 
-          const successBox = $('#action_completed');
-          successBox.empty();
-          successBox.append("New user created");
-          successBox.show().delay(3000).fadeOut();
-        })
+      this.loading.action = false;
+      ModalService.closeModal('manage');
+      this.f.resetForm();
+      AlertService.showAlert(AlertType.SUCCESS, 'New GameCourse user added: ' + newUser.name);
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
   async editUser(): Promise<void> {
-    this.loadingAction = true;
-    this.newUser['id'] = this.userToEdit.id;
+    if (this.f.valid) {
+      this.loading.action = true;
 
-    if (this.photoToAdd)
-      await ResourceManager.getBase64(this.photoToAdd).then(data => this.newUser.image = data);
+      if (this.userToManage.photoToAdd)
+        await ResourceManager.getBase64(this.userToManage.photoToAdd).then(data => this.userToManage.photoBase64 = data);
 
-    this.api.editUser(this.newUser)
-      .pipe( finalize(() => {
-        this.isUserModalOpen = false;
-        this.clearObject(this.newUser);
-        this.loadingAction = false;
-      }) )
-      .subscribe(
-        async userEdited => {
-          const index = this.users.findIndex(user => user.id === userEdited.id);
-          this.users.removeAtIndex(index);
+      const userEdited = await this.api.editUser(clearEmptyValues(this.userToManage)).toPromise();
+      const index = this.users.findIndex(user => user.id === userEdited.id);
+      this.users.removeAtIndex(index);
+      this.users.push(userEdited);
 
-          this.users.push(userEdited);
-          this.reduceList();
+      // Trigger image change
+      if (this.userToManage.photoToAdd)
+        if (this.user.id === userEdited.id) this.updateManager.triggerUpdate(UpdateType.AVATAR);
 
-          const loggedUser = await this.api.getLoggedUser().toPromise();
-          if (loggedUser.id === userEdited.id && this.photoToAdd)
-            this.updateManager.triggerUpdate(UpdateType.AVATAR); // Trigger change on navbar
+      this.buildTable();
 
-          const successBox = $('#action_completed');
-          successBox.empty();
-          successBox.append("User: '" + userEdited.name + "' edited");
-          successBox.show().delay(3000).fadeOut();
-        })
+      this.loading.action = false;
+      ModalService.closeModal('manage');
+      this.f.resetForm();
+      AlertService.showAlert(AlertType.SUCCESS, 'User \'' + userEdited.name + '\' edited');
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
-  deleteUser(user: User): void {
-    this.loadingAction = true;
-    this.api.deleteUser(user.id)
-      .pipe( finalize(() => {
-        this.isDeleteVerificationModalOpen = false;
-        this.loadingAction = false
-      }) )
-      .subscribe(
-        () => {
-          const index = this.users.findIndex(el => el.id === user.id);
-          this.users.removeAtIndex(index);
-          this.reduceList();
+  async deleteUser(user: User): Promise<void> {
+    this.loading.action = true;
 
-          const successBox = $('#action_completed');
-          successBox.empty();
-          successBox.append("User '" + user.name  + ' - ' + user.studentNumber + "' deleted");
-          successBox.show().delay(3000).fadeOut();
-        })
+    await this.api.deleteUser(user.id).toPromise();
+    const index = this.users.findIndex(el => el.id === user.id);
+    this.users.removeAtIndex(index);
+    this.buildTable();
+
+    this.loading.action = false;
+    ModalService.closeModal('delete-verification');
+    AlertService.showAlert(AlertType.SUCCESS, 'User \'' + user.name + ' - ' + user.studentNumber + '\' deleted');
   }
 
-  toggleAdmin(userID: number) {
-    this.loadingAction = true;
-
-    const user = this.users.find(user => user.id === userID);
-    user.isAdmin = !user.isAdmin;
-
-    this.api.setUserAdmin(user.id, user.isAdmin)
-      .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(res => {});
-  }
-
-  toggleActive(userID: number) {
-    this.loadingAction = true;
+  async toggleActive(userID: number) {
+    this.loading.action = true;
 
     const user = this.users.find(user => user.id === userID);
     user.isActive = !user.isActive;
 
-    this.api.setUserActive(user.id, user.isActive)
-      .pipe( finalize(() => this.loadingAction = false) )
-      .subscribe(res => {});
+    await this.api.setUserActive(user.id, user.isActive).toPromise();
+    this.loading.action = false;
+  }
+
+  async toggleAdmin(userID: number) {
+    this.loading.action = true;
+
+    const user = this.users.find(user => user.id === userID);
+    user.isAdmin = !user.isAdmin;
+
+    await this.api.setUserAdmin(user.id, user.isAdmin).toPromise();
+    this.loading.action = false;
   }
 
   importUsers(replace: boolean): void {
-    this.loadingAction = true;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const file = reader.result;
-      this.api.importUsers({file, replace})
-        .pipe( finalize(() => {
-          this.isImportModalOpen = false;
-          this.loadingAction = false;
-        }) )
-        .subscribe(
-          async nrUsers => {
-            await this.getUsers();
-            const successBox = $('#action_completed');
-            successBox.empty();
-            successBox.append(nrUsers + " User" + (nrUsers != 1 ? 's' : '') + " Imported");
-            successBox.show().delay(3000).fadeOut();
-          })
-    }
-    reader.readAsText(this.importedFile);
+    // TODO
+    // this.loadingAction = true;
+    //
+    // const reader = new FileReader();
+    // reader.onload = (e) => {
+    //   const file = reader.result;
+    //   this.api.importUsers({file, replace})
+    //     .pipe( finalize(() => {
+    //       this.isImportModalOpen = false;
+    //       this.loadingAction = false;
+    //     }) )
+    //     .subscribe(
+    //       async nrUsers => {
+    //         await this.getUsers();
+    //         const successBox = $('#action_completed');
+    //         successBox.empty();
+    //         successBox.append(nrUsers + " User" + (nrUsers != 1 ? 's' : '') + " Imported");
+    //         successBox.show().delay(3000).fadeOut();
+    //       })
+    // }
+    // reader.readAsText(this.importedFile);
   }
 
-  exportUsers(): void {
-    this.saving = true;
-    this.api.exportUsers()
-      .pipe( finalize(() => this.saving = false) )
-      .subscribe(contents => DownloadManager.downloadAsCSV('users', contents))
+  async exportUsers(users: User[]): Promise<void> {
+    // TODO
+    // this.saving = true;
+    // this.api.exportUsers()
+    //   .pipe( finalize(() => this.saving = false) )
+    //   .subscribe(contents => DownloadManager.downloadAsCSV('users', contents))
   }
 
 
@@ -260,53 +289,61 @@ export class UsersComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  isReadyToSubmit() {
-    let isValid = function (text) {
-      return exists(text) && !text.toString().isEmpty();
-    }
-
-    // Validate inputs
-    return isValid(this.newUser.name) && isValid(this.newUser.studentNumber) && isValid(this.newUser.email) &&
-      isValid(this.newUser.major) && isValid(this.newUser.auth) && isValid(this.newUser.username);
+  initUserToManage(user?: User): UserManageData {
+    const userData: UserManageData = {
+      name: user?.name ?? null,
+      email: user?.email ?? null,
+      major: user?.major ?? null,
+      nickname: user?.nickname ?? null,
+      studentNr: user?.studentNumber ?? null,
+      username: user?.username ?? null,
+      authService: user?.authMethod ?? null,
+      photoURL: user?.photoUrl,
+      photoToAdd: null,
+      photoBase64: null,
+      photo: new ResourceManager(this.sanitizer)
+    };
+    if (user) userData.id = user.id;
+    if (userData.photoURL) userData.photo.set(userData.photoURL);
+    return userData;
   }
 
-  initEditUser(user: User): void {
-    this.newUser = {
-      name: user.name,
-      nickname: user.nickname,
-      studentNumber: user.studentNumber,
-      email: user.email,
-      major: user.major,
-      isAdmin: user.isAdmin,
-      isActive: user.isActive,
-      auth: user.authMethod,
-      username: user.username,
-      image: null
-    };
-    this.userToEdit = user;
-    this.photo.set(user.photoUrl);
+  initAuthMethods(): {value: any, text: string}[] {
+    return Object.values(AuthType).map(authMethod => {
+      return {value: authMethod, text: authMethod.capitalize()}
+    });
+  }
+
+  get DefaultProfileImg(): string {
+    const theme = this.themeService.getTheme();
+    return theme === Theme.DARK ? environment.userPicture.dark : environment.userPicture.light;
   }
 
   onFileSelected(files: FileList, type: 'image' | 'file'): void {
     if (type === 'image') {
-      this.photoToAdd = files.item(0);
-      this.photo.set(this.photoToAdd);
+      this.userToManage.photoToAdd = files.item(0);
+      this.userToManage.photo.set(this.userToManage.photoToAdd);
 
     } else {
       this.importedFile = files.item(0);
     }
   }
 
-  clearObject(obj): void {
-    for (const key of Object.keys(obj)) {
-      obj[key] = null;
-    }
-  }
+}
 
-  get AuthType(): typeof AuthType {
-    return AuthType;
-  }
-
+export interface UserManageData {
+  id?: number,
+  name: string,
+  email: string,
+  major: string,
+  nickname: string,
+  studentNr: number,
+  username: string,
+  authService: AuthType,
+  photoURL: string;                       // Original photo URL
+  photoToAdd: File;                       // Any photo that comes through the input
+  photoBase64: string | ArrayBuffer;      // Base64 of uploaded photo
+  photo: ResourceManager;                 // Photo to be displayed
 }
 
 export interface ImportUsersData {

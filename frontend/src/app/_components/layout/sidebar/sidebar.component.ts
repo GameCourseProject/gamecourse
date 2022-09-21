@@ -127,7 +127,7 @@ export class SidebarComponent implements OnInit {
       },
       usersPage: {
         link: '/users',
-        name: 'Users',
+        name: 'System Users',
         icon: 'feather-users'
       },
       settings: {

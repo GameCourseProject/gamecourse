@@ -157,7 +157,7 @@ export class CoursesComponent implements OnInit {
       ModalService.openModal('delete-verification');
 
     } else if (action === Action.EXPORT) {
-      this.exportCourse(courseToActOn);
+      this.exportCourses([courseToActOn]);
     }
   }
 
@@ -190,6 +190,7 @@ export class CoursesComponent implements OnInit {
 
       this.loading.action = false;
       ModalService.closeModal('manage');
+      this.f.resetForm();
       AlertService.showAlert(AlertType.SUCCESS, 'New course created: ' + newCourse.name);
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -218,6 +219,7 @@ export class CoursesComponent implements OnInit {
 
       this.loading.action = false;
       ModalService.closeModal('manage');
+      this.f.resetForm();
       AlertService.showAlert(AlertType.SUCCESS, 'Course \'' + courseEdited.name + '\' edited');
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -294,10 +296,6 @@ export class CoursesComponent implements OnInit {
     //   )
   }
 
-  exportCourse(course: Course): void {
-     // TODO
-  }
-
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
@@ -349,11 +347,6 @@ export class CoursesComponent implements OnInit {
       (visible !== null ? course.isVisible === visible : true);
       }
     );
-  }
-
-  getNonAdminCourses(isActive: boolean): Course[] {
-    return [];
-    // return this.reduce.items.filter(course => course.isActive === isActive);
   }
 
   onFileSelected(files: FileList): void {

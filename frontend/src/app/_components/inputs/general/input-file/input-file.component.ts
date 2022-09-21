@@ -102,7 +102,7 @@ export class InputFileComponent implements OnInit, AfterViewInit, OnChanges {
     if (this.accept.containsWord('video/*')) formats = formats.concat(types.video);
     if (this.accept.containsWord('audio/*')) formats = formats.concat(types.audio);
 
-    const singleTypes = this.accept.removeWord('image/*').removeWord('video/*').removeWord('audio/*');
+    const singleTypes = this.accept.removeWord('image/*').removeWord('video/*').removeWord('audio/*').removeWord('capture=camera');
     const parts = singleTypes.split(',').map(part => part.trim().substring(1).toUpperCase()).filter(part => !!part);
     formats = [...new Set(formats.concat(parts))]; // unique formats
     return formats.length >= 2 ? (formats.slice(0, -1).join(', ') + ' or ' + formats.slice(-1)) : formats[0];

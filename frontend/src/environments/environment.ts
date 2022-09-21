@@ -5,7 +5,11 @@
 export const environment = {
   production: false,
   apiEndpoint: 'http://localhost/gamecourse-v2-new/api',
-  defaultProfilePicture : 'assets/imgs/profile-default.png'
+  userPicture: {
+    light: 'assets/imgs/user-light.png',
+    dark: 'assets/imgs/user-dark.png'
+  },
+  defaultAvatar: 'assets/imgs/default-avatar.svg'
 };
 
 /*

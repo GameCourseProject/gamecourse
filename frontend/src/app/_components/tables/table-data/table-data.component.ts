@@ -1,9 +1,15 @@
-import {Component, EventEmitter, Input, OnInit, Output, TemplateRef} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {environment} from "../../../../environments/environment.prod";
+import {Moment} from "moment/moment";
 
 import {ErrorService} from "../../../_services/error.service";
+import {ThemingService} from "../../../_services/theming/theming.service";
 
 import {Action} from "../../../_domain/modules/config/Action";
-import {Moment} from "moment/moment";
+import {Theme} from "../../../_services/theming/themes-available";
+import {ResourceManager} from "../../../_utils/resources/resource-manager";
+import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
+
 
 @Component({
   selector: '[table-data]',
@@ -13,10 +19,10 @@ export class TableData implements OnInit {
 
   @Input() type: TableDataType;                                 // Type of table data to render
   @Input() data: any;                                           // Data to render
+  @Input() align?: 'left' | 'middle' | 'right' = 'middle';      // Alignment in cell
 
   // General
   classList?: string;                                           // Classes to add
-  align?: 'left' | 'middle' | 'right' = 'middle';               // Alignment in cell
 
   // Type: TEXT
   text?: string;                                                // Text (either 1 line or 1st line)
@@ -25,7 +31,7 @@ export class TableData implements OnInit {
   // Type: NUMBER
   value?: number;                                               // Number
   valueFormat?:
-    'default' | 'money' | 'percent' = 'default';                // Number format
+    'none' | 'default' | 'money' | 'percent' = 'default';       // Number format
 
   // Type: DATE
   date?: Moment;                                                // Date
@@ -44,6 +50,7 @@ export class TableData implements OnInit {
   colorLabel?: string;                                          // Label for color
 
   // Type: IMAGE
+  img: ResourceManager;                                         // Triggers image update
   imgSrc?: string;                                              // Image source
   imgShape?: 'round' | 'square';                                // Image shape
 
@@ -59,6 +66,7 @@ export class TableData implements OnInit {
   buttonIcon?: string;                                          // Button icon
 
   // Type: AVATAR
+  avatar: ResourceManager;                                      // Triggers avatar update
   avatarSrc?: string;                                           // Avatar image source
   avatarTitle?: string;                                         // Avatar name (either 1 line or 1st line)
   avatarSubtitle?: string;                                      // Avatar additional text (2nd line)
@@ -92,7 +100,10 @@ export class TableData implements OnInit {
   @Output() btnClicked: EventEmitter<Action | 'single'> = new EventEmitter<Action | 'single'>();
   @Output() valueChanged: EventEmitter<any> = new EventEmitter<any>();
 
-  constructor() { }
+  constructor(
+    private themeService: ThemingService,
+    private sanitizer: DomSanitizer
+  ) { }
 
   pills = {
     ghost: 'badge-ghost',
@@ -119,7 +130,6 @@ export class TableData implements OnInit {
 
   ngOnInit(): void {
     this.classList = this.data.classList ?? null;
-    if (this.data.align) this.align = this.data.align;
 
     if (this.type === TableDataType.TEXT) {
       this.text = this.data.text;
@@ -147,6 +157,8 @@ export class TableData implements OnInit {
 
     } else if (this.type === TableDataType.IMAGE) {
       this.imgSrc = this.data.imgSrc;
+      this.img = new ResourceManager(this.sanitizer);
+      this.img.set(this.imgSrc);
       if (this.data.imgShape) this.imgShape = this.data.imgShape;
 
     } else if (this.type === TableDataType.PILL) {
@@ -160,6 +172,8 @@ export class TableData implements OnInit {
 
     } else if (this.type === TableDataType.AVATAR) {
       this.avatarSrc = this.data.avatarSrc;
+      this.avatar = new ResourceManager(this.sanitizer);
+      this.avatar.set(this.avatarSrc);
       this.avatarTitle = this.data.avatarTitle;
       this.avatarSubtitle = this.data.avatarSubtitle ?? null;
 
@@ -204,6 +218,11 @@ export class TableData implements OnInit {
     if (this.align === 'left') return '!text-left !text-start !justify-start';
     if (this.align === 'right') return '!text-right !text-end !justify-end';
     return '!text-center !text-middle !justify-center';
+  }
+
+  get DefaultProfileImg(): string {
+    const theme = this.themeService.getTheme();
+    return theme === Theme.DARK ? environment.userPicture.dark : environment.userPicture.light;
   }
 
 }
