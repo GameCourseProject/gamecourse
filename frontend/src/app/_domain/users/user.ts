@@ -145,16 +145,16 @@ export class User {
     return new User(
       obj.id,
       obj.name,
-      obj.email,
+      obj.email ?? null,
       obj.major,
       obj.nickname,
       obj.studentNumber,
-      obj.isAdmin,
-      obj.isActive,
+      obj.isAdmin ?? null,
+      obj.isActive ?? null,
       obj.username,
       obj.auth_service as AuthType,
       obj.image,
-      dateFromDatabase(obj.lastLogin),
+      dateFromDatabase(obj.lastLogin) ?? null,
       obj.nrCourses ?? null
     );
   }

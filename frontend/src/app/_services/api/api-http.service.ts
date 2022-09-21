@@ -164,6 +164,19 @@ export class ApiHttpService {
 
 
   // General
+  public getUserById(userID: number): Observable<User> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'getUserById');
+      qs.push('userId', userID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (User.fromDatabase(res['data'])) ));
+  }
+
   public getUsers(isActive?: boolean, isAdmin?: boolean): Observable<User[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.USER);

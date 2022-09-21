@@ -206,8 +206,8 @@ export class UsersComponent implements OnInit {
       this.users.push(userEdited);
 
       // Trigger image change
-      if (this.userToManage.photoToAdd)
-        if (this.user.id === userEdited.id) this.updateManager.triggerUpdate(UpdateType.AVATAR);
+      if (this.userToManage.photoToAdd && this.user.id === userEdited.id)
+        this.updateManager.triggerUpdate(UpdateType.AVATAR);
 
       this.buildTable();
 

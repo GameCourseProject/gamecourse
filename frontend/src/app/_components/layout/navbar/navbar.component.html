@@ -55,17 +55,17 @@
 
         <ng-container *ngIf="user">
           <!-- Greet -->
-          <p class="text-white align-middle ml-2">Hey, {{user.nickname || user.name.split(' ')[0] || user.username}}!</p>
+          <p class="text-white align-middle ml-2">Hey, {{user.nickname?.split(' ')[0] ?? user.name.split(' ')[0] ?? user.username}}!</p>
 
           <!-- Avatar -->
           <div class="dropdown dropdown-end">
             <label tabindex="0" class="btn btn-ghost btn-circle avatar">
               <div class="w-10 rounded-full">
-                <img [src]="photo.get()" alt="user profile image" />
+                <img class="object-cover" [src]="photo.get()" alt="user profile image" />
               </div>
             </label>
             <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-base-100 rounded-box w-48 !z-50">
-              <li><a [routerLink]="'/my-info'">
+              <li><a [routerLink]="'/profile/' + user.id">
                 <ng-icon name="feather-user" size="1rem" color="fillCurrent"></ng-icon>
                 Profile
               </a></li>

@@ -137,7 +137,8 @@ import {
   TablerColorSwatch,
   TablerIdBadge2,
   TablerPlug,
-  TablerPrompt
+  TablerPrompt,
+  TablerSchool
 } from "@ng-icons/tabler-icons";
 
 
@@ -332,7 +333,8 @@ import {
       TablerColorSwatch,
       TablerIdBadge2,
       TablerPlug,
-      TablerPrompt
+      TablerPrompt,
+      TablerSchool
     }),
     DataTablesModule,
     NgApexchartsModule

@@ -109,7 +109,7 @@
       [(value)]="courseToManage.name"
       [placeholder]="'Course name'"
       [topLabel]="'Name'"
-      [pattern]="'^[\\w()&\\s-]+$'"
+      [pattern]="'^[x00-\\xFF\\w()&\\s-]+$'"
       [patternErrorMessage]="'Course name \'' + courseToManage.name + '\' is not allowed. Allowed characters: alphanumeric  _  (  )  -  &'"
       [required]="true"
       [maxLength]="100"

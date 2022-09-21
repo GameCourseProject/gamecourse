@@ -19,7 +19,7 @@ const routes: Routes = [
       },
       {
         path: 'profile/:id',
-        loadChildren: () => import('./my-info/my-info.module').then(mod => mod.MyInfoModule)
+        loadChildren: () => import('./profile/profile.module').then(mod => mod.ProfileModule)
       },
       {
         path: 'courses',
