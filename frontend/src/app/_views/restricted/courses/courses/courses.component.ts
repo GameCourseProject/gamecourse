@@ -167,10 +167,10 @@ export class CoursesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   doAction(action: string) {
-    if (action === Action.IMPORT.capitalize()) {
+    if (action === Action.IMPORT) {
       // TODO
 
-    } else if (action === Action.EXPORT.capitalize()) {
+    } else if (action === Action.EXPORT) {
       // TODO
 
     } else if (action === 'Create course') {
@@ -190,7 +190,6 @@ export class CoursesComponent implements OnInit {
 
       this.loading.action = false;
       ModalService.closeModal('manage');
-      this.f.resetForm();
       AlertService.showAlert(AlertType.SUCCESS, 'New course created: ' + newCourse.name);
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -219,7 +218,6 @@ export class CoursesComponent implements OnInit {
 
       this.loading.action = false;
       ModalService.closeModal('manage');
-      this.f.resetForm();
       AlertService.showAlert(AlertType.SUCCESS, 'Course \'' + courseEdited.name + '\' edited');
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');

@@ -30,6 +30,7 @@ export class ProfileComponent implements OnInit {
 
   loggedUser: User;
   user: User;
+  userPhoto: ResourceManager;
   userToManage: UserManageData;
   @ViewChild('f', { static: false }) f: NgForm;
 
@@ -41,7 +42,9 @@ export class ProfileComponent implements OnInit {
     private sanitizer: DomSanitizer,
     private updateManager: UpdateService,
     private themeService: ThemingService
-  ) { }
+  ) {
+    this.userPhoto = new ResourceManager(sanitizer);
+  }
 
   async ngOnInit(): Promise<void> {
     this.route.parent.params.subscribe(async params => {
@@ -64,6 +67,13 @@ export class ProfileComponent implements OnInit {
   async getUser(userID: number): Promise<void> {
     if (this.loggedUser.id !== userID) this.user = await this.api.getUserById(userID).toPromise();
     else this.user = this.loggedUser;
+
+    this.userPhoto.set(this.user.photoUrl);
+    this.updateManager.update.subscribe(type => { // Whenever updates are received
+      if (type === UpdateType.AVATAR)
+        this.userPhoto.set(this.userToManage.photoURL);
+    });
+
     this.userToManage = this.initUserToManage(this.user);
   }
 

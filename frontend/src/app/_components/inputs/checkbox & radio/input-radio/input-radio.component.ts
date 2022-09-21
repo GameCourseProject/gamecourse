@@ -15,12 +15,13 @@ export class InputRadioComponent implements OnInit {
   @Input() value: any;                                    // Where to store the value
 
   // Extras
-  @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';       // Size
+  @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'sm';       // Size
   @Input() color?: 'primary' | 'secondary' | 'accent';    // Color
   @Input() classList?: string;                            // Classes to add
   @Input() disabled?: boolean;                            // Make it disable
 
   @Input() label?: string;                                // Label text
+  @Input() labelPosition?: 'left' | 'right' = 'left';     // Label position
 
   // Validity
   @Input() required?: boolean;                            // Make it required

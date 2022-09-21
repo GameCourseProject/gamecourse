@@ -30,7 +30,7 @@
       }
 
       &.btn-info, &.btn-success, &.btn-warning, &.btn-error {
-        background-color: transparent;
+        background-color: transparent #{!important};
       }
     }
 

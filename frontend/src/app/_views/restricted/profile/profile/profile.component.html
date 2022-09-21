@@ -13,7 +13,7 @@
           <!-- Profile picture -->
           <div class="absolute top-1/2 h-[9.5rem] flex flex-wrap justify-center w-full">
             <div class="w-[9.5rem] px-3 flex-0">
-              <img class="object-cover mask mask-circle bg-base-100 h-full" [src]="user.photoUrl ?? DefaultProfileImg" [alt]="user?.name + ' profile photo'">
+              <img class="object-cover mask mask-circle bg-base-100 h-full" [src]="userPhoto.get('SafeUrl') ?? DefaultProfileImg" [alt]="user?.name + ' profile photo'">
             </div>
           </div>
         </div>

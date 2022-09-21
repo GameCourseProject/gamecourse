@@ -1,0 +1,31 @@
+<div class="dropdown dropdown-end" clickedoutside (clickedOutside)="closeHelper()">
+  <!-- Info Button -->
+  <label tabindex="0" class="btn btn-circle btn-ghost btn-xs text-info" (click)="openHelper()">
+    <ng-icon name="feather-info" size="1rem" class="text-info"></ng-icon>
+  </label>
+
+  <!-- Dropdown -->
+  <div [id]="id" tabindex="0" class="hidden card compact dropdown-content shadow bg-info rounded-box w-80 overflow-x-auto">
+    <div class="card-body">
+
+      <!-- Requirements -->
+      <ng-container *ngIf="requirements.length > 0">
+        <p class="font-semibold !text-info-content m-0">Requirements:</p>
+        <ul class="m-0">
+          <li *ngFor="let requirement of requirements">{{requirement}}</li>
+        </ul>
+      </ng-container>
+
+      <!-- CSV Table Example -->
+      <ng-container *ngIf="format === '.csv'">
+        <p class="font-semibold !text-info-content mb-0">Format:</p>
+        <table class="my-0">
+          <thead><tr><th *ngFor="let header of csvHeaders">{{header}}</th></tr></thead>
+          <tbody><tr *ngFor="let row of csvRows"><td *ngFor="let data of row">{{data}}</td></tr></tbody>
+        </table>
+      </ng-container>
+
+    </div>
+  </div>
+
+</div>

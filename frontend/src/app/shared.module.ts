@@ -68,6 +68,9 @@ import { SpinnerComponent } from './_components/spinners/spinner/spinner.compone
 // Components: skeletons
 import { CourseSkeletonComponent } from './_components/skeletons/course-skeleton/course-skeleton.component';
 
+// Components: helpers
+import { ImportHelperComponent } from './_components/helpers/import-helper/import-helper.component';
+
 // Components: building blocks
 import { BBAnyComponent } from "./_components/building-blocks/any/any.component";
 import { BBBlockComponent } from './_components/building-blocks/block/block.component';
@@ -198,6 +201,8 @@ import {
 
     CourseSkeletonComponent,
 
+    ImportHelperComponent,
+
     BBAnyComponent,
     BBBlockComponent,
     BBTextComponent,
@@ -268,6 +273,8 @@ import {
     SpinnerComponent,
 
     CourseSkeletonComponent,
+
+    ImportHelperComponent,
 
     BBAnyComponent,
     BBBlockComponent,

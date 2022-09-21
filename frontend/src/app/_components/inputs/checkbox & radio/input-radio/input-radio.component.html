@@ -40,7 +40,8 @@
 
 <ng-template #WITH_LABEL>
   <label class="label cursor-pointer">
-    <span class="label-text mr-3">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
+    <span *ngIf="labelPosition === 'left'" class="label-text mr-3">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
     <ng-container [ngTemplateOutlet]="RADIO"></ng-container>
+    <span *ngIf="labelPosition === 'right'" class="label-text mr-3">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
   </label>
 </ng-template>

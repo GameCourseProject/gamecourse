@@ -41,7 +41,7 @@
    [submitBtnText]="mode?.capitalize() + ' user'"
    [actionInProgress]="loading.action"
    (submitBtnClicked)="f.onSubmit(null); mode === 'add' ? createUser() : editUser()"
-   (onClose)="initUserToManage(); mode = null;">
+   (onClose)="initUserToManage(); mode = null; f.resetForm();">
 </app-modal>
 
 <ng-template #MANAGE>
@@ -189,32 +189,58 @@
 
 
 <!-- Import Modal -->
-<!--<ng-container *ngIf="isImportModalOpen">-->
-<!--  <app-modal-->
-<!--    [isOpen]="isImportModalOpen"-->
-<!--    [id]="'import-user'"-->
-<!--    [templateRef]="importModal"-->
-<!--    (closeBtnClicked)="isImportModalOpen = false"-->
-<!--    [actionInProgress]="saving"-->
-<!--    [innerClickEvents]="false"-->
-<!--    [classList]="'verification'">-->
-<!--  </app-modal>-->
-<!--</ng-container>-->
+<app-modal
+   [id]="'import'"
+   [templateRef]="IMPORT"
+   [header]="'Import users'"
+   [submitBtnText]="'Import'"
+   [actionInProgress]="loading.action"
+   (submitBtnClicked)="fImport.onSubmit(null); importUsers()"
+   (onClose)="fImport.resetForm(); importData = {file: null, replace: true}">
+</app-modal>
 
-<!--<ng-template #importModal>-->
+<ng-template #IMPORT>
+  <div class="prose flex items-center gap-1 mb-3">
+    <p class="mb-0">Upload a .CSV file containing user information</p>
+    <app-import-helper
+      [id]="'import-helper'"
+      [format]="'.csv'"
+      [requirements]="[
+        'The separator must be comma.',
+        'The encoding must be UTF-8.'
+      ]"
+      [csvHeaders]="['name', 'email', 'major', 'nickname', 'studentNumber', 'username', 'auth_service', 'isAdmin', 'isActive']"
+      [csvRows]="[
+        ['John Smith Doe', 'johndoe@email.com', 'MEIC-A', 'John Doe', '12345', 'ist12345', 'fenix', '0', '1'],
+        ['Paula Poe', 'paulapoe@email.com', '', 'Paula', '54321', 'paulapoe@gmail.com', 'google', '1', '0'],
+        ['...', '...', '...', '...', '...', '...', '...', '...', '...']
+      ]">
+    </app-import-helper>
+  </div>
 
-<!--  <div class="warning">Please select a .csv or .txt file to be imported</div>-->
-<!--  <div class="target">The separator must be comma <br>The encoding must be UTF-8</div>-->
-<!--  <app-input-file-->
-<!--    [id]="'import_user'"-->
-<!--    [accept]="'.csv, .txt'"-->
-<!--    [classList]="'config_input'"-->
-<!--    (valueChange)="onFileSelected($event, 'file')">-->
-<!--  </app-input-file>-->
+  <form #fImport="ngForm">
 
-<!--  <div class="confirmation_btns">-->
-<!--    <button (click)="importUsers(true)">Import Users (Replace Duplicates)</button>-->
-<!--    <button (click)="importUsers(false)">Import Users (Ignore Duplicates)</button>-->
-<!--  </div>-->
+    <!-- File -->
+    <app-input-file
+      [id]="'import-file'"
+      [form]="fImport"
+      [accept]="'.csv'"
+      [size]="'sm'"
+      [color]="'primary'"
+      [required]="true"
+      (valueChange)="onFileSelected($event, 'file')">
+    </app-input-file>
 
-<!--</ng-template>-->
+    <!-- Replace -->
+    <app-input-checkbox
+      [id]="'import-replace'"
+      [form]="fImport"
+      [(value)]="importData.replace"
+      [color]="'secondary'"
+      [classList]="'mt-2'"
+      [label]="'Replace duplicates'"
+      [labelPosition]="'right'">
+    </app-input-checkbox>
+
+  </form>
+</ng-template>

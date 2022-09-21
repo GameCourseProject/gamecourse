@@ -28,7 +28,7 @@ export class AlertService {
 
   static showErrorAlert(error: {message: string, stack: string, full: string}) {
     // Show alert
-    this.showAlert(AlertType.ERROR, error.message);
+    this.showAlert(AlertType.ERROR, error.message ?? error.full);
 
     // Show alert button
     if (error.stack) {

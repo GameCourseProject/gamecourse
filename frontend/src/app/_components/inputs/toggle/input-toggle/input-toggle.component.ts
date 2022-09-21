@@ -19,6 +19,7 @@ export class InputToggleComponent implements OnInit, AfterViewInit {
   @Input() disabled?: boolean;                            // Make it disabled
 
   @Input() label?: string;                                // Label text
+  @Input() labelPosition?: 'left' | 'right' = 'left';     // Label position
 
   // Validity
   @Input() required?: boolean;                            // Make it required

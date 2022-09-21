@@ -12,7 +12,7 @@ import {Course} from "../../_domain/courses/course";
 import {User} from "../../_domain/users/user";
 import {SetupData} from "../../_views/setup/setup/setup.component";
 import {CourseManageData, ImportCoursesData} from "../../_views/restricted/courses/courses/courses.component";
-import {ImportUsersData, UserManageData} from "../../_views/restricted/users/users/users.component";
+import {UserManageData} from "../../_views/restricted/users/users/users.component";
 import {Module} from "../../_domain/modules/module";
 import {ImportModulesData} from "../../_views/restricted/settings/modules/modules.component";
 import {Moment} from "moment/moment";
@@ -331,11 +331,9 @@ export class ApiHttpService {
 
 
   // Import/Export
-  public importUsers(importData: ImportUsersData): Observable<number> {
-    const data = {
-      file: importData.file,
-      replace: importData.replace
-    }
+
+  public importUsers(file: string | ArrayBuffer, replace: boolean): Observable<number> {
+    const data = {file, replace};
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.USER);
@@ -347,10 +345,11 @@ export class ApiHttpService {
       .pipe( map((res: any) => parseInt(res['data'])) );
   }
 
-  public exportUsers(): Observable<string> {
+  public exportUsers(userIDs: number[]): Observable<string> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.USER);
       qs.push('request', 'exportUsers');
+      qs.push('userIds', userIDs);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
@@ -691,12 +690,8 @@ export class ApiHttpService {
   }
 
   // TODO: refactor
-  public importCourseUsers(courseID: number, importData: ImportUsersData): Observable<number> {
-    const data = {
-      courseId: courseID,
-      file: importData.file,
-      replace: importData.replace
-    }
+  public importCourseUsers(courseID: number, file: string | ArrayBuffer, replace: boolean): Observable<number> {
+    const data = {courseId: courseID, file, replace};
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);

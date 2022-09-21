@@ -9,6 +9,7 @@ import {ModalService} from "../../../../_services/modal.service";
 import {AlertService, AlertType} from "../../../../_services/alert.service";
 import {ThemingService} from "../../../../_services/theming/theming.service";
 import {ResourceManager} from "../../../../_utils/resources/resource-manager";
+import {DownloadManager} from "../../../../_utils/download/download-manager";
 
 import {User} from "../../../../_domain/users/user";
 import {AuthType} from "../../../../_domain/auth/auth-type";
@@ -41,7 +42,8 @@ export class UsersComponent implements OnInit {
 
   authMethods: {value: any, text: string}[] = this.initAuthMethods();
 
-  importedFile: File;
+  importData: {file: File, replace: boolean} = {file: null, replace: true};
+  @ViewChild('fImport', { static: false }) fImport: NgForm;
 
   constructor(
     private api: ApiHttpService,
@@ -161,11 +163,11 @@ export class UsersComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   doAction(action: string) {
-    if (action === Action.IMPORT.capitalize()) {
-      // TODO
+    if (action === Action.IMPORT) {
+      ModalService.openModal('import');
 
-    } else if (action === Action.EXPORT.capitalize()) {
-      // TODO
+    } else if (action === Action.EXPORT) {
+      this.exportUsers(this.users);
 
     } else if (action === 'Add user') {
       this.mode = 'add';
@@ -187,7 +189,6 @@ export class UsersComponent implements OnInit {
 
       this.loading.action = false;
       ModalService.closeModal('manage');
-      this.f.resetForm();
       AlertService.showAlert(AlertType.SUCCESS, 'New GameCourse user added: ' + newUser.name);
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -213,7 +214,6 @@ export class UsersComponent implements OnInit {
 
       this.loading.action = false;
       ModalService.closeModal('manage');
-      this.f.resetForm();
       AlertService.showAlert(AlertType.SUCCESS, 'User \'' + userEdited.name + '\' edited');
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -252,36 +252,39 @@ export class UsersComponent implements OnInit {
     this.loading.action = false;
   }
 
-  importUsers(replace: boolean): void {
-    // TODO
-    // this.loadingAction = true;
-    //
-    // const reader = new FileReader();
-    // reader.onload = (e) => {
-    //   const file = reader.result;
-    //   this.api.importUsers({file, replace})
-    //     .pipe( finalize(() => {
-    //       this.isImportModalOpen = false;
-    //       this.loadingAction = false;
-    //     }) )
-    //     .subscribe(
-    //       async nrUsers => {
-    //         await this.getUsers();
-    //         const successBox = $('#action_completed');
-    //         successBox.empty();
-    //         successBox.append(nrUsers + " User" + (nrUsers != 1 ? 's' : '') + " Imported");
-    //         successBox.show().delay(3000).fadeOut();
-    //       })
-    // }
-    // reader.readAsText(this.importedFile);
+  importUsers(): void {
+    if (this.fImport.valid) {
+      this.loading.action = true;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const file = reader.result;
+        const nrUsersImported = await this.api.importUsers(file, this.importData.replace).toPromise();
+
+        await this.getUsers();
+        this.buildTable();
+
+        this.loading.action = false;
+        ModalService.closeModal('import');
+        AlertService.showAlert(AlertType.SUCCESS, nrUsersImported + ' user' + (nrUsersImported != 1 ? 's' : '') + ' imported');
+      }
+      reader.readAsText(this.importData.file);
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
   async exportUsers(users: User[]): Promise<void> {
-    // TODO
-    // this.saving = true;
-    // this.api.exportUsers()
-    //   .pipe( finalize(() => this.saving = false) )
-    //   .subscribe(contents => DownloadManager.downloadAsCSV('users', contents))
+    if (users.length === 0)
+      AlertService.showAlert(AlertType.WARNING, 'There are no users to export');
+
+    else {
+      this.loading.action = true;
+
+      const contents = await this.api.exportUsers(users.map(user => user.id)).toPromise();
+      DownloadManager.downloadAsCSV(users.length > 1 ? 'users' : users[0].name, contents);
+
+      this.loading.action = false;
+    }
   }
 
 
@@ -325,7 +328,7 @@ export class UsersComponent implements OnInit {
       this.userToManage.photo.set(this.userToManage.photoToAdd);
 
     } else {
-      this.importedFile = files.item(0);
+      this.importData.file = files.item(0);
     }
   }
 
@@ -344,9 +347,4 @@ export interface UserManageData {
   photoToAdd: File;                       // Any photo that comes through the input
   photoBase64: string | ArrayBuffer;      // Base64 of uploaded photo
   photo: ResourceManager;                 // Photo to be displayed
-}
-
-export interface ImportUsersData {
-  file: string | ArrayBuffer,
-  replace: boolean
 }
