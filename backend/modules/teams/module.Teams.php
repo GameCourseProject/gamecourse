@@ -511,7 +511,7 @@ class Teams extends Module
     public function get_general_inputs(int $courseId): array
     {
         $input = [
-            array('name' => "Number of team members", 'id' => 'nrTeamMembers', 'type' => "number", 'options' => "", 'current_val' => intval($this->getNumberOfTeamMembers($courseId))),
+            array('name' => "Nr of team members", 'id' => 'nrTeamMembers', 'type' => "number", 'options' => "", 'current_val' => intval($this->getNumberOfTeamMembers($courseId))),
             array('name' => "Allow Team Names", 'id' => 'isTeamNameActive', 'type' => "on_off button", 'options' => "", 'current_val' => intval($this->getIsTeamNameActive($courseId)))
         ];
         return $input;
@@ -821,7 +821,20 @@ class Teams extends Module
 
     public function saveNumberOfTeamElements($nr, $courseId)
     {
-        Core::$systemDB->update(self::TABLE_CONFIG, ["nrTeamMembers" => $nr], ["course" => $courseId]);
+        $save = true;
+        $current = $this->getNumberOfTeamMembers($courseId);
+        if ($nr < $current){
+            $biggestTeam = Core::$systemDB->executeQuery("select max(ct) as m from ( SELECT teamId, count(teamId) AS ct FROM teams_members GROUP BY teamId) as t");
+            $returnVal = $biggestTeam->fetch(\PDO::FETCH_ASSOC);
+            if ($returnVal > $nr){
+                $save = false;
+                API::error("There are teams with more elements than the selected new maximum.");
+            }
+        }
+        if ($save){
+            Core::$systemDB->update(self::TABLE_CONFIG, ["nrTeamMembers" => $nr], ["course" => $courseId]);
+        }
+
     }
 
     public function getIsTeamNameActive($courseId)
