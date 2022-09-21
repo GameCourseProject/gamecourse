@@ -8,7 +8,7 @@ CREATE TABLE user(
     email 	                    varchar(60) UNIQUE,
 	major 	                    varchar(8),
 	nickname                    varchar(50),
-	studentNumber               int UNIQUE,
+	studentNumber               int UNIQUE NOT NULL,
     isAdmin                     boolean NOT NULL DEFAULT FALSE,
 	isActive                    boolean NOT NULL DEFAULT TRUE
 );

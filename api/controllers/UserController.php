@@ -130,6 +130,27 @@ class UserController
     /*** --------------------------------------------- ***/
 
     /**
+     * Gets a user by its ID.
+     *
+     * @param int $userId
+     */
+    public function getUserById()
+    {
+        API::requireValues("userId");
+
+        $userId = API::getValue("userId", "int");
+        $user = API::verifyUserExists($userId);
+
+        $loggedUser = Core::getLoggedUser();
+        if ($loggedUser->getId() != $user->getId() && !$loggedUser->isAdmin())
+            $userInfo = $user->getData("name, major, nickname, studentNumber, username, auth_service");
+        else $userInfo = $user->getData();
+        $userInfo["image"] = $user->getImage();
+
+        API::response($userInfo);
+    }
+
+    /**
      * Get users on the system.
      * Option for 'active'.
      *
@@ -198,7 +219,7 @@ class UserController
     public function createUser()
     {
         API::requireAdminPermission();
-        API::requireValues('name', 'authService', 'studentNumber', 'email', 'nickname', 'username', 'major', 'isActive', 'isAdmin', 'image');
+        API::requireValues('name', 'authService', 'studentNumber', 'email', 'nickname', 'username', 'major', 'image');
 
         // Get values
         $name = API::getValue("name");
@@ -208,12 +229,10 @@ class UserController
         $studentNumber = API::getValue("studentNumber", "int");
         $nickname = API::getValue("nickname");
         $major = API::getValue("major");
-        $isAdmin = API::getValue("isAdmin", "bool");
-        $isActive = API::getValue("isActive", "bool");
         $image = API::getValue("image");
 
         // Add new user
-        $user = User::addUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
+        $user = User::addUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, false, true);
         if ($image) $user->setImage($image);
 
         $userInfo = $user->getData();
@@ -228,7 +247,7 @@ class UserController
     public function editUser()
     {
         API::requireAdminPermission();
-        API::requireValues('userId', 'name', 'authService', 'studentNumber', 'email', 'nickname', 'username', 'major', 'isActive', 'isAdmin', 'image');
+        API::requireValues('userId', 'name', 'authService', 'studentNumber', 'email', 'nickname', 'username', 'major', 'image');
 
         $userId = API::getValue("userId", "int");
         $user = API::verifyUserExists($userId);
@@ -241,8 +260,8 @@ class UserController
         $studentNumber = API::getValue("studentNumber", "int");
         $nickname = API::getValue("nickname");
         $major = API::getValue("major");
-        $isAdmin = API::getValue("isAdmin", "bool");
-        $isActive = API::getValue("isActive", "bool");
+        $isAdmin = $user->isAdmin();
+        $isActive = $user->isActive();
         $image = API::getValue("image");
 
         // Edit user

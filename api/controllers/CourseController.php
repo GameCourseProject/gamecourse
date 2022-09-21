@@ -86,7 +86,7 @@ class CourseController
     public function createCourse()
     {
         API::requireAdminPermission();
-        API::requireValues('name', 'short', 'year', 'color', 'startDate', 'endDate', 'isActive', 'isVisible');
+        API::requireValues('name', 'short', 'year', 'color', 'startDate', 'endDate');
 
         // Get values
         $name = API::getValue("name");
@@ -95,11 +95,9 @@ class CourseController
         $color = API::getValue("color");
         $startDate = API::getValue("startDate");
         $endDate = API::getValue("endDate");
-        $isActive = API::getValue("isActive", "bool");
-        $isVisible = API::getValue("isVisible", "bool");
 
         // Add new course
-        $course = Course::addCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
+        $course = Course::addCourse($name, $short, $year, $color, $startDate, $endDate, false, false);
 
         $courseInfo = $course->getData();
         if (Core::getLoggedUser()->isAdmin())
@@ -133,7 +131,7 @@ class CourseController
     public function editCourse()
     {
         API::requireAdminPermission();
-        API::requireValues('courseId', 'name', 'short', 'year', 'color', 'startDate', 'endDate', 'isActive', 'isVisible');
+        API::requireValues('courseId', 'name', 'short', 'year', 'color', 'startDate', 'endDate');
 
         $courseId = API::getValue('courseId', "int");
         $course = API::verifyCourseExists($courseId);
@@ -145,8 +143,8 @@ class CourseController
         $color = API::getValue("color");
         $startDate = API::getValue("startDate");
         $endDate = API::getValue("endDate");
-        $isActive = API::getValue("isActive", "bool");
-        $isVisible = API::getValue("isVisible", "bool");
+        $isActive = $course->isActive();
+        $isVisible = $course->isVisible();
 
         // Edit course
         $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
