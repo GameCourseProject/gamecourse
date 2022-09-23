@@ -136,51 +136,63 @@
   <div class="flex {{Align}} items-center text-sm">
     <ng-container *ngFor="let action of actions">
 
-      <div class="tooltip" data-tip="Copy">
-        <button *ngIf="action === Action.DUPLICATE" type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.DUPLICATE)">
+      <div *ngIf="action === Action.DUPLICATE" class="tooltip" data-tip="Copy">
+        <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.DUPLICATE)">
           <ng-icon name="jam-files-f" size="1.5rem" class="text-primary"></ng-icon>
         </button>
       </div>
 
-      <div class="tooltip" data-tip="Edit">
-        <button *ngIf="action === Action.EDIT" type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.EDIT)">
+      <div *ngIf="action === Action.EDIT" class="tooltip" data-tip="Edit">
+        <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.EDIT)">
           <ng-icon name="jam-pencil-f" size="1.5rem" class="text-warning"></ng-icon>
         </button>
       </div>
 
-      <div class="tooltip" data-tip="Delete">
-        <button *ngIf="action === Action.DELETE" type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.DELETE)">
+      <div *ngIf="action === Action.DELETE" class="tooltip" data-tip="Delete">
+        <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.DELETE)">
           <ng-icon name="jam-trash-f" size="1.5rem" class="text-error"></ng-icon>
         </button>
       </div>
 
-      <div class="tooltip" data-tip="View">
-        <button *ngIf="action === Action.VIEW" type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.VIEW)">
+      <div *ngIf="action === Action.REMOVE" class="tooltip" data-tip="Remove">
+        <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.REMOVE)">
+          <ng-icon name="feather-x" size="1.5rem" class="text-error"></ng-icon>
+        </button>
+      </div>
+
+      <div *ngIf="action === Action.VIEW" class="tooltip" data-tip="View">
+        <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.VIEW)">
           <ng-icon name="jam-eye-f" size="1.5rem" class="text-base-content text-opacity-75"></ng-icon>
         </button>
       </div>
 
-      <div class="tooltip" data-tip="Move up">
-        <button *ngIf="action === Action.MOVE_UP" type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.MOVE_UP)">
+      <div *ngIf="action === Action.MOVE_UP" class="tooltip" data-tip="Move up">
+        <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.MOVE_UP)">
           <ng-icon name="tabler-arrow-narrow-up" size="1.5rem" class="text-base-content text-opacity-75"></ng-icon>
         </button>
       </div>
 
-      <div class="tooltip" data-tip="Move down">
-        <button *ngIf="action === Action.MOVE_DOWN" type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.MOVE_DOWN)">
+      <div *ngIf="action === Action.MOVE_DOWN" class="tooltip" data-tip="Move down">
+        <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.MOVE_DOWN)">
           <ng-icon name="tabler-arrow-narrow-down" size="1.5rem" class="text-base-content text-opacity-75"></ng-icon>
         </button>
       </div>
 
       <div class="tooltip" data-tip="Import">
-        <button *ngIf="action === Action.IMPORT" type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.IMPORT)">
+        <button *ngIf="action  === Action.IMPORT" type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.IMPORT)">
           <ng-icon name="jam-download" size="1.5rem" class="text-base-content text-opacity-75"></ng-icon>
         </button>
       </div>
 
-      <div class="tooltip" data-tip="Export">
-        <button *ngIf="action === Action.EXPORT" type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.EXPORT)">
+      <div *ngIf="action  === Action.EXPORT" class="tooltip" data-tip="Export">
+        <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit(Action.EXPORT)">
           <ng-icon name="jam-upload" size="1.5rem" class="text-base-content text-opacity-75"></ng-icon>
+        </button>
+      </div>
+
+      <div *ngIf="isCustomAction(action)" class="tooltip" [attr.data-tip]="$any(action).action.capitalize()">
+        <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="btnClicked.emit($any(action).action)">
+          <ng-icon name="{{$any(action).icon}}" size="1.5rem" class="{{textColors[$any(action).color]}}"></ng-icon>
         </button>
       </div>
 

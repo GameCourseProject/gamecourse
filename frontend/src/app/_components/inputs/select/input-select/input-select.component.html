@@ -22,17 +22,16 @@
   <select
     id="{{id}}"
     name="{{id}}"
-    class="select select-bordered {{InputSize[size]}} {{InputColor[color]}} w-full"
+    [multiple]="multiple"
+    class="{{size}} {{color}}"
     [(ngModel)]="value"
-    (ngModelChange)="valueChange.emit(value)"
+    (ngModelChange)="valueChange.emit(Value)"
     [required]="required"
     [disabled]="disabled"
     #inputSelect="ngModel"
     [ngClass]="{'select-error': form && form.submitted && inputSelect.invalid,
-    'rounded-none': leftLabel && (rightLabel || btnText || btnIcon),
-    'font-normal text-neutral/60': value === undefined || value === null}">
+    'rounded-none': leftLabel && (rightLabel || btnText || btnIcon)}">
 
-    <option disabled selected [value]="value === null ? null : undefined">{{placeholder}}</option>
     <option *ngFor="let option of options" [value]="option.value">{{option.text}}</option>
   </select>
 </ng-template>
@@ -59,7 +58,7 @@
     <span *ngIf="rightLabel" class="min-w-fit {{InputGroupLabelColor[color]}}">{{rightLabel}}</span>
 
     <!-- Button -->
-    <button *ngIf="btnText || btnIcon" class="btn {{btnIcon ? 'btn-square' : ''}} {{InputGroupBtnColor[color]}}" (click)="btnClicked.emit()">
+    <button type="button" *ngIf="btnText || btnIcon" class="btn {{btnIcon ? 'btn-square' : ''}} {{InputGroupBtnColor[color]}}" (click)="btnClicked.emit(value)">
       <span *ngIf="btnText" class="bg-transparent">{{btnText}}</span>
       <ng-icon *ngIf="btnIcon" [name]="btnIcon" size="1.5rem"></ng-icon>
     </button>

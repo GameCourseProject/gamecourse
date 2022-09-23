@@ -12,8 +12,7 @@ export class InputSearchComponent implements OnInit {
   // Essentials
   @Input() id: string;                                                      // Unique ID
   @Input() form: NgForm;                                                    // Form it's part of
-  @Input() value: string;                                                   // Where to store the value
-  @Input() placeholder: string = 'Search';                                  // Message to show by default
+  @Input() placeholder: string = 'Search...';                               // Message to show by default
   @Input() items: any[];                                                    // Items to search
 
   // Extras
@@ -46,6 +45,7 @@ export class InputSearchComponent implements OnInit {
 
   @Output() onSearch = new EventEmitter<any[]>();
 
+  query: string;
   reduce = new Reduce();
 
   constructor() { }
@@ -54,7 +54,7 @@ export class InputSearchComponent implements OnInit {
   }
 
   search(): void {
-    this.reduce.search(this.items, this.value);
+    this.reduce.search(this.items, this.query);
     this.onSearch.emit(this.reduce.items);
   }
 

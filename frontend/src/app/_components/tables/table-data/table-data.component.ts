@@ -8,7 +8,7 @@ import {ThemingService} from "../../../_services/theming/theming.service";
 import {Action} from "../../../_domain/modules/config/Action";
 import {Theme} from "../../../_services/theming/themes-available";
 import {ResourceManager} from "../../../_utils/resources/resource-manager";
-import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
+import {DomSanitizer} from "@angular/platform-browser";
 
 
 @Component({
@@ -92,7 +92,9 @@ export class TableData implements OnInit {
   toggleDisabled?: boolean;                                     // Make toggle disabled
 
   // Type: ACTIONS
-  actions?: Action[];                                           // Actions
+  actions?: (Action | {action: string, icon: string,           // Actions
+    color: 'ghost' | 'primary' | 'secondary' | 'accent' |
+      'neutral' | 'info' | 'success' | 'warning' | 'error'})[];
 
   // Type: CUSTOM
   html?: string;                                                // Custom HTML
@@ -126,6 +128,18 @@ export class TableData implements OnInit {
     success: 'btn-success',
     warning: 'btn-warning',
     error: 'btn-error'
+  }
+
+  textColors = {
+    ghost: 'text-base-content text-opacity-75',
+    primary: 'text-primary',
+    secondary: 'text-secondary',
+    accent: 'text-accent',
+    neutral: 'text-neutral',
+    info: 'text-info',
+    success: 'text-success',
+    warning: 'text-warning',
+    error: 'text-error'
   }
 
   ngOnInit(): void {
@@ -223,6 +237,10 @@ export class TableData implements OnInit {
   get DefaultProfileImg(): string {
     const theme = this.themeService.getTheme();
     return theme === Theme.DARK ? environment.userPicture.dark : environment.userPicture.light;
+  }
+
+  isCustomAction(action: any): boolean {
+    return action.action && !(action.action in Action);
   }
 
 }

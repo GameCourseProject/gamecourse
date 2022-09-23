@@ -389,11 +389,17 @@ class UserController
 
     /**
      * Export users from the system into a .csv file.
+     *
+     * @param $userIds
      */
     public function exportUsers()
     {
+        API::requireValues("userIds");
+        $userIds = API::getValue("userIds", "array");
+
         API::requireAdminPermission();
-        $csv = User::exportUsers();
+        $csv = User::exportUsers($userIds);
+
         API::response($csv);
     }
 }

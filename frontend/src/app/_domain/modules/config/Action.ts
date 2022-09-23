@@ -2,6 +2,7 @@ export enum Action {
   NEW = 'new',
   EDIT = 'edit',
   DELETE = 'delete',
+  REMOVE = 'remove',
   DUPLICATE = 'duplicate',
   VIEW = 'view',
   MOVE_UP = 'move-up',

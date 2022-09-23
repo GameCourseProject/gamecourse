@@ -11,11 +11,16 @@ export class InputSelectWeekdayComponent implements OnInit {
   @Input() id: string;                                                // Unique ID
   @Input() form: NgForm;                                              // Form it's part of
   @Input() value: string;                                             // Where to store the value
-  @Input() placeholder: string = 'Day of the week';                   // Message to show by default
+  @Input() placeholder: string = 'Select a weekday';                  // Message to show by default
+
+  @Input() multiple?: boolean;                                        // Whether to allow multiple selects
+  @Input() limit?: number;                                            // Multiple selection limit
+  @Input() closeOnSelect?: boolean = true;                            // Whether to close upon selecting a value
+  @Input() hideSelectedOption?: boolean = true;                       // Hide selected options
 
   // Extras
-  @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';                   // Size
-  @Input() color?: 'ghost' | 'primary' | 'secondary' | 'accent' |     // Color
+  @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';                   // Size  FIXME: not working
+  @Input() color?: 'ghost' | 'primary' | 'secondary' | 'accent' |     // Color FIXME: not working
     'info' | 'success' | 'warning' | 'error';
   @Input() classList?: string;                                        // Classes to add
   @Input() disabled?: boolean;                                        // Make it disabled
@@ -33,17 +38,17 @@ export class InputSelectWeekdayComponent implements OnInit {
   // Errors
   @Input() requiredErrorMessage?: string = 'Required';                // Message for required error
 
-  @Output() valueChange = new EventEmitter<number>();
-  @Output() btnClicked = new EventEmitter<void>();
+  @Output() valueChange = new EventEmitter<number[]>();
+  @Output() btnClicked = new EventEmitter<number[]>();
 
-  weekdays: {value: number, text: string}[] = [
-    {value: 1, text: 'Monday'},
-    {value: 2, text: 'Tuesday'},
-    {value: 3, text: 'Wednesday'},
-    {value: 4, text: 'Thursday'},
-    {value: 5, text: 'Friday'},
-    {value: 6, text: 'Saturday'},
-    {value: 0, text: 'Sunday'},
+  weekdays: {value: string, text: string}[] = [
+    {value: 'd-1', text: 'Monday'},
+    {value: 'd-2', text: 'Tuesday'},
+    {value: 'd-3', text: 'Wednesday'},
+    {value: 'd-4', text: 'Thursday'},
+    {value: 'd-5', text: 'Friday'},
+    {value: 'd-6', text: 'Saturday'},
+    {value: 'd-0', text: 'Sunday'},
   ]
 
   constructor() { }

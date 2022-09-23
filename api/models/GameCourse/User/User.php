@@ -607,15 +607,15 @@ class User
     public static function importUsers(string $file, bool $replace = true): int
     {
         return Utils::importFromCSV(self::HEADERS, function ($user, $indexes) use ($replace) {
-            $name = $user[$indexes["name"]];
-            $email = $user[$indexes["email"]];
-            $major = $user[$indexes["major"]];
-            $nickname = $user[$indexes["nickname"]];
-            $studentNumber = self::parse(null, $user[$indexes["studentNumber"]], "studentNumber");
-            $username = $user[$indexes["username"]];
-            $authService = $user[$indexes["auth_service"]];
-            $isAdmin = self::parse(null, $user[$indexes["isAdmin"]], "isAdmin");
-            $isActive = self::parse(null, $user[$indexes["isActive"]], "isActive");
+            $name = Utils::nullify($user[$indexes["name"]]);
+            $email = Utils::nullify($user[$indexes["email"]]);
+            $major = Utils::nullify($user[$indexes["major"]]);
+            $nickname = Utils::nullify($user[$indexes["nickname"]]);
+            $studentNumber = self::parse(null, Utils::nullify($user[$indexes["studentNumber"]]), "studentNumber");
+            $username = Utils::nullify($user[$indexes["username"]]);
+            $authService = Utils::nullify($user[$indexes["auth_service"]]);
+            $isAdmin = self::parse(null, Utils::nullify($user[$indexes["isAdmin"]]), "isAdmin");
+            $isActive = self::parse(null, Utils::nullify($user[$indexes["isActive"]]), "isActive");
 
             $user = self::getUserByUsername($username, $authService) ?? self::getUserByStudentNumber($studentNumber);
             if ($user) {  // user already exists
@@ -633,12 +633,14 @@ class User
     /**
      * Exports users from the system into a .csv file.
      *
+     * @param array $userIds
      * @return string
      */
-    public static function exportUsers(): string
+    public static function exportUsers(array $userIds): string
     {
+        $usersToExport = array_filter(self::getUsers(), function ($user) use ($userIds) { return in_array($user["id"], $userIds); });
         return Utils::exportToCSV(
-            self::getUsers(),
+            $usersToExport,
             function ($user) {
                 return [$user["name"], $user["email"], $user["major"], $user["nickname"], $user["studentNumber"], $user["username"],
                     $user["auth_service"], +$user["isAdmin"], +$user["isActive"]];

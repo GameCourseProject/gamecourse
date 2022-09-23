@@ -3,6 +3,7 @@ namespace Utils;
 
 use Exception;
 use GameCourse\Core\Core;
+use OpenApi\Util;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -1333,6 +1334,26 @@ class UtilsTest extends TestCase
         Utils::trim($params, $values["name"], $values["description"], $values["nickname"]);
 
         $this->assertEquals(["name" => "Name", "description" => "Some description", "nickname" => null], $values);
+    }
+
+
+    // Nullifying
+
+    /**
+     * @test
+     */
+    public function nullifyEmptyValue()
+    {
+        $this->assertNull(Utils::nullify(""));
+        $this->assertNull(Utils::nullify(" "));
+    }
+
+    /**
+     * @test
+     */
+    public function nullifyNonEmptyValue()
+    {
+        $this->assertEquals("abc", Utils::nullify("abc"));
     }
 
 

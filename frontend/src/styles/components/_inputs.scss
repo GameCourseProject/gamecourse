@@ -51,3 +51,85 @@
     color-scheme: dark;
   }
 }
+
+.ss-main {
+  .ss-single-selected, .ss-multi-selected {
+    @apply select select-bordered text-base-content border-2 w-full input-md h-auto #{!important};
+
+    &.ss-open-below {
+      outline: 2px solid hsla(var(--bc) / 0.2);
+      outline-offset: 2px;
+    }
+  }
+
+  .ss-multi-selected {
+    .ss-values {
+      @apply flex flex-wrap items-center text-base-content/75 #{!important};
+
+      .ss-value {
+        @apply badge badge-outline #{!important};
+      }
+    }
+  }
+
+  .ss-arrow, .ss-add {
+    @apply hidden #{!important};
+  }
+
+  .ss-value-text span {
+    @apply pl-0 #{!important};
+  }
+}
+
+.ss-content {
+  &.ss-open {
+    @apply menu menu-compact shadow bg-base-100 text-sm text-base-content rounded-box border-neutral border-opacity-20 #{!important};
+  }
+
+  .ss-option:last-child {
+    @apply rounded-b-xl #{!important};
+  }
+
+  .ss-option:hover {
+    @apply bg-base-300 text-base-content #{!important};
+  }
+
+  .ss-search {
+    input {
+      @apply input input-bordered input-sm focus:shadow-sm #{!important};
+    }
+
+    &.ss-hide {
+      @apply hidden;
+    }
+  }
+}
+
+.ss-disabled {
+  @apply bg-transparent text-neutral/60 font-normal px-0 #{!important};
+
+  &.ss-option{
+    @apply bg-transparent px-3 #{!important};
+
+    &:not(.ss-option-selected) {
+      @apply text-error #{!important};
+    }
+
+    &.ss-option-selected {
+      @apply line-through text-neutral/30 hover:text-neutral/30 #{!important};
+
+      & > * {
+        @apply line-through;
+      }
+    }
+  }
+}
+
+select.select-error + .ss-main .ss-single-selected,
+select.select-error + .ss-main .ss-multi-selected {
+  @apply border-error #{!important};
+}
+
+select:disabled + .ss-main .ss-disabled {
+  @apply px-2 #{!important};
+}

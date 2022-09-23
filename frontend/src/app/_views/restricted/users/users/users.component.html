@@ -41,7 +41,7 @@
    [submitBtnText]="mode?.capitalize() + ' user'"
    [actionInProgress]="loading.action"
    (submitBtnClicked)="f.onSubmit(null); mode === 'add' ? createUser() : editUser()"
-   (onClose)="initUserToManage(); mode = null; f.resetForm();">
+   (onClose)="resetManage()">
 </app-modal>
 
 <ng-template #MANAGE>
@@ -147,6 +147,7 @@
               [(value)]="userToManage.authService"
               [options]="authMethods"
               [placeholder]="'Select an authentication method'"
+              [search]="false"
               [topLabel]="'Authentication method'"
               [required]="true">
             </app-input-select>
@@ -196,7 +197,7 @@
    [submitBtnText]="'Import'"
    [actionInProgress]="loading.action"
    (submitBtnClicked)="fImport.onSubmit(null); importUsers()"
-   (onClose)="fImport.resetForm(); importData = {file: null, replace: true}">
+   (onClose)="resetImport()">
 </app-modal>
 
 <ng-template #IMPORT>

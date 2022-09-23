@@ -96,7 +96,7 @@
   [submitBtnText]="mode?.capitalize() + ' course'"
   [actionInProgress]="loading.action"
   (submitBtnClicked)="f.onSubmit(null); mode === 'create' ? createCourse() : editCourse()"
-  (onClose)="initCourseToManage(); mode = null; f.resetForm();">
+  (onClose)="resetManage()">
 </app-modal>
 
 <ng-template #MANAGE>
@@ -140,6 +140,7 @@
           [(value)]="courseToManage.year"
           [options]="yearOptions"
           [placeholder]="'Select an academic year'"
+          [search]="false"
           [topLabel]="'Academic year'"
           [required]="true">
         </app-input-select>

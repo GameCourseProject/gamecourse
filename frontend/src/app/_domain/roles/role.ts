@@ -3,12 +3,14 @@ export class Role {
   private _name: string;
   private _landingPage: number;
   private _children?: Role[];
+  private _module?: string;
 
-  constructor(id: number, name: string, landingPage: number, children?: Role[]) {
+  constructor(id: number, name: string, landingPage: number, children?: Role[], module?: string) {
     this._id = id;
     this._name = name;
     this._landingPage = landingPage;
     if (children !== undefined) this._children = children;
+    if (module !== undefined) this._module = module;
   }
 
   get id(): number {
@@ -41,6 +43,14 @@ export class Role {
 
   set children(value: Role[]) {
     this._children = value;
+  }
+
+  get module(): string {
+    return this._module;
+  }
+
+  set module(value: string) {
+    this._module = value;
   }
 
   /**
@@ -87,27 +97,13 @@ export class Role {
     } else return 'role.' + role;
   }
 
-  /**
-   * Parses roles hierarchy coming from backend to an appropriate
-   * format with nested roles.
-   *
-   * @param hierarchy
-   * @param allRoles
-   */
-  static parseHierarchy(hierarchy: RoleDatabase[], allRoles: Role[]): Role[] {
-    return hierarchy.map(obj => {
-      const role = allRoles.find(el => el.id === obj.id);
-      if (obj.children) role.children = Role.parseHierarchy(obj.children, allRoles);
-      return role;
-    })
-  }
-
   static fromDatabase(obj: RoleDatabase): Role {
     return new Role(
-      obj.id ?? null,
-      obj.name.startsWith('role.') ? obj.name.substr(5) : obj.name,
-      obj.landingPage ?? null,
-      obj.children ? obj.children.map(child => Role.fromDatabase(child)) : null
+      obj.id,
+      obj.name,
+      obj.landingPage,
+      obj.children ? obj.children.map(child => Role.fromDatabase(child)) : null,
+      obj.module
     );
   }
 }
@@ -115,6 +111,7 @@ export class Role {
 export interface RoleDatabase {
   id: number,
   name: string,
-  landingPage: number
+  landingPage: number,
   children?: RoleDatabase[]
+  module: string,
 }

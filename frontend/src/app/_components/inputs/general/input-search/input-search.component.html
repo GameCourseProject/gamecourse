@@ -1,7 +1,7 @@
 <app-input-text
   [id]="id"
   [form]="form"
-  [(value)]="value"
+  [(value)]="query"
   [placeholder]="placeholder"
 
   [size]="size"
@@ -25,6 +25,6 @@
   [maxLengthErrorMessage]="maxLengthErrorMessage"
   [incorrectErrorMessage]="incorrectErrorMessage"
 
-  (valueChange)="value = $event; valueChange.emit($event); search()"
+  (valueChange)="query = $event; valueChange.emit($event); search()"
   (btnClicked)="btnClicked.emit(); search()">
 </app-input-text>

@@ -44,9 +44,9 @@ import {
 import {ErrorService} from "../error.service";
 import {Router} from "@angular/router";
 import {CourseUser} from "../../_domain/users/course-user";
-import {CourseUserData} from "../../_views/restricted/courses/course/users/users.component";
 import {Action} from "../../_domain/modules/config/Action";
 import {SkillTree} from "../../_domain/modules/config/personalized-config/skills/skill-tree";
+import {CourseUserManageData} from "../../_views/restricted/courses/course/users/users.component";
 
 @Injectable({
   providedIn: 'root'
@@ -354,7 +354,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data'])) );
+      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data'])) );
   }
 
 
@@ -496,6 +496,7 @@ export class ApiHttpService {
 
 
   // Course Users
+
   public getCourseUsers(courseID: number, active?: boolean): Observable<CourseUser[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
@@ -539,18 +540,18 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(obj => User.fromDatabase(obj))) );
   }
 
-  public createCourseUser(courseID: number, courseUserData: CourseUserData): Observable<CourseUser> {
+  public createCourseUser(courseID: number, userData: CourseUserManageData): Observable<CourseUser> {
     const data = {
       courseId: courseID,
-      name: courseUserData.name,
-      studentNumber: courseUserData.studentNumber,
-      nickname: courseUserData.nickname,
-      username: courseUserData.username,
-      email: courseUserData.email,
-      major: courseUserData.major,
-      roles: courseUserData.roles,
-      authService: courseUserData.auth,
-      image: courseUserData.image
+      name: userData.name,
+      studentNumber: userData.studentNr,
+      nickname: userData.nickname,
+      username: userData.username,
+      email: userData.email,
+      major: userData.major,
+      roles: userData.roleNames,
+      authService: userData.authService,
+      image: userData.photoBase64
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -563,11 +564,11 @@ export class ApiHttpService {
       .pipe( map((res: any) => CourseUser.fromDatabase(res['data'])) );
   }
 
-  public addUsersToCourse(courseID: number, users: User[], roleName: string): Observable<CourseUser[]> {
+  public addUsersToCourse(courseID: number, userIDs: number[], roleNames: string[]): Observable<CourseUser[]> {
     const data = {
       courseId: courseID,
-      users: users.map(user => user.id),
-      role: roleName,
+      users: userIDs,
+      roles: roleNames,
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -580,19 +581,19 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(obj => CourseUser.fromDatabase(obj))) );
   }
 
-  public editCourseUser(courseID: number, courseUserData: CourseUserData): Observable<CourseUser> {
+  public editCourseUser(courseID: number, userData: CourseUserManageData): Observable<CourseUser> {
     const data = {
       courseId: courseID,
-      userId: courseUserData.id,
-      name: courseUserData.name,
-      studentNumber: courseUserData.studentNumber,
-      nickname: courseUserData.nickname,
-      username: courseUserData.username,
-      email: courseUserData.email,
-      major: courseUserData.major,
-      roles: courseUserData.roles,
-      authService: courseUserData.auth,
-      image: courseUserData.image
+      userId: userData.id,
+      name: userData.name,
+      studentNumber: userData.studentNr,
+      nickname: userData.nickname,
+      username: userData.username,
+      email: userData.email,
+      major: userData.major,
+      roles: userData.roleNames,
+      authService: userData.authService,
+      image: userData.photoBase64
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -689,7 +690,6 @@ export class ApiHttpService {
       .pipe( map((res: any) => dateFromDatabase(res)));
   }
 
-  // TODO: refactor
   public importCourseUsers(courseID: number, file: string | ArrayBuffer, replace: boolean): Observable<number> {
     const data = {courseId: courseID, file, replace};
 
@@ -700,20 +700,20 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => parseInt(res['data']['nrUsers'])) );
+      .pipe( map((res: any) => parseInt(res['data'])) );
   }
 
-  // TODO: refactor
-  public exportCourseUsers(courseID: number): Observable<string> {
+  public exportCourseUsers(courseID: number, userIDs: number[]): Observable<string> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
       qs.push('request', 'exportCourseUsers');
       qs.push('courseId', courseID);
+      qs.push('userIds', userIDs);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, null, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['courseUsers'])) );
+      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data'])) );
   }
 
 
@@ -1093,8 +1093,8 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
-        if (res['data']['extension'] === '.csv') return {extension: res['data']['extension'], file: 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['file'])};
-        if (res['data']['extension'] === '.txt') return {extension: res['data']['extension'], file: 'data:text/txt;charset=utf-8,' + encodeURIComponent(res['data']['file'])};
+        if (res['data']['extension'] === '.csv') return {extension: res['data']['extension'], file: 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data']['file'])};
+        if (res['data']['extension'] === '.txt') return {extension: res['data']['extension'], file: 'data:text/txt;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data']['file'])};
         return {extension: res['data']['extension'], path: res['data']['path']};
       }));
   }
@@ -1939,35 +1939,35 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => 'data:text;charset=utf-8,' + encodeURIComponent(res['data']['template'])) );
+      .pipe( map((res: any) => 'data:text;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data']['template'])) );
   }
 
 
   // Editor
   // TODO: refactor
-  public getTemplateEditInfo(courseID: number, templateID: number):
-    Observable<{courseRoles: Role[], rolesHierarchy: Role[], templateRoles: string[], templateViewsByAspect: {[key: string]: View},
-                enabledModules: string[]}> {
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
-      qs.push('request', 'getTemplateEditInfo');
-      qs.push('courseId', courseID);
-      qs.push('templateId', templateID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => {
-        const courseRoles: Role[] = (res['data']['courseRoles']).map(obj => Role.fromDatabase(obj));
-        const rolesHierarchy: Role[] = Role.parseHierarchy(res['data']['rolesHierarchy'], courseRoles);
-        const templateRoles = res['data']['templateRoles'];
-        const templateViewsByAspect = objectMap(res['data']['templateViewsByAspect'], (view) => buildView(view));
-        const enabledModules = res['data']['enabledModules'];
-        return {courseRoles, rolesHierarchy, templateRoles, templateViewsByAspect, enabledModules}
-      }) );
-  }
+  // public getTemplateEditInfo(courseID: number, templateID: number):
+  //   Observable<{courseRoles: Role[], rolesHierarchy: Role[], templateRoles: string[], templateViewsByAspect: {[key: string]: View},
+  //               enabledModules: string[]}> {
+  //
+  //   const params = (qs: QueryStringParameters) => {
+  //     qs.push('module', ApiHttpService.VIEWS);
+  //     qs.push('request', 'getTemplateEditInfo');
+  //     qs.push('courseId', courseID);
+  //     qs.push('templateId', templateID);
+  //   };
+  //
+  //   const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+  //
+  //   return this.get(url, ApiHttpService.httpOptions)
+  //     .pipe( map((res: any) => {
+  //       const courseRoles: Role[] = (res['data']['courseRoles']).map(obj => Role.fromDatabase(obj));
+  //       const rolesHierarchy: Role[] = Role.parseHierarchy(res['data']['rolesHierarchy'], courseRoles);
+  //       const templateRoles = res['data']['templateRoles'];
+  //       const templateViewsByAspect = objectMap(res['data']['templateViewsByAspect'], (view) => buildView(view));
+  //       const enabledModules = res['data']['enabledModules'];
+  //       return {courseRoles, rolesHierarchy, templateRoles, templateViewsByAspect, enabledModules}
+  //     }) );
+  // }
 
   // TODO: refactor
   public previewTemplate(courseID: number, templateID: number, viewerRole: string, userRole?: string): Observable<View> {

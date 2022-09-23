@@ -137,8 +137,8 @@ export class CoursesComponent implements OnInit {
     const courseToActOn = this.courses[row];
 
     if (action === 'value changed') {
-      if (col === 8) this.toggleActive(courseToActOn.id);
-      else if (col === 9) this.toggleVisible(courseToActOn.id);
+      if (col === 8) this.toggleActive(courseToActOn);
+      else if (col === 9) this.toggleVisible(courseToActOn);
 
     } else if (action === Action.VIEW) {
       const redirectLink = this.getRedirectLink(courseToActOn);
@@ -190,6 +190,7 @@ export class CoursesComponent implements OnInit {
 
       this.loading.action = false;
       ModalService.closeModal('manage');
+      this.resetManage();
       AlertService.showAlert(AlertType.SUCCESS, 'New course created: ' + newCourse.name);
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -218,6 +219,7 @@ export class CoursesComponent implements OnInit {
 
       this.loading.action = false;
       ModalService.closeModal('manage');
+      this.resetManage();
       AlertService.showAlert(AlertType.SUCCESS, 'Course \'' + courseEdited.name + '\' edited');
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -236,23 +238,21 @@ export class CoursesComponent implements OnInit {
     AlertService.showAlert(AlertType.SUCCESS, 'Course \'' + course.name + '\' deleted');
   }
 
-  async toggleActive(courseID: number) {
+  async toggleActive(course: Course) {
     this.loading.action = true;
 
-    const course = this.courses.find(course => course.id === courseID);
     course.isActive = !course.isActive;
-
     await this.api.setCourseActive(course.id, course.isActive).toPromise();
+
     this.loading.action = false;
   }
 
-  async toggleVisible(courseID: number) {
+  async toggleVisible(course: Course) {
     this.loading.action = true;
 
-    const course = this.courses.find(course => course.id === courseID);
     course.isVisible = !course.isVisible;
-
     await this.api.setCourseVisible(course.id, course.isVisible).toPromise();
+
     this.loading.action = false;
   }
 
@@ -349,6 +349,12 @@ export class CoursesComponent implements OnInit {
 
   onFileSelected(files: FileList): void {
     this.importedFile = files.item(0);
+  }
+
+  resetManage() {
+    this.mode = null;
+    this.initCourseToManage();
+    this.f.resetForm()
   }
 
 }

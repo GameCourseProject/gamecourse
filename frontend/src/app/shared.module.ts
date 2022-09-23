@@ -109,6 +109,8 @@ import {
   FeatherSearch,
   FeatherSun,
   FeatherUser,
+  FeatherUserCheck,
+  FeatherUserPlus,
   FeatherUsers,
   FeatherX,
   FeatherXCircle
@@ -313,6 +315,8 @@ import {
       FeatherSearch,
       FeatherSun,
       FeatherUser,
+      FeatherUserCheck,
+      FeatherUserPlus,
       FeatherUsers,
       FeatherX,
       FeatherXCircle,

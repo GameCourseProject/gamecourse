@@ -6,6 +6,7 @@ use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
 use GameCourse\Role\Role;
+use GameCourse\User\CourseUser;
 use GameCourse\User\User;
 
 /**
@@ -316,20 +317,21 @@ class CourseController
      */
     public function addUsersToCourse()
     {
-        API::requireValues('courseId', 'users', 'role');
+        API::requireValues('courseId', 'users', 'roles');
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
 
         API::requireCourseAdminPermission($course);
 
-        $userIds = API::getValue("users");
-        $roleName = API::getValue("role");
+        $userIds = API::getValue("users", "array");
+        $roleNames = API::getValue("roles", "array");
 
         $courseUsers = [];
         foreach ($userIds as $userId) {
-            $course->addUserToCourse($userId, $roleName);
-            $courseUser = $course->getCourseUserById($userId);
+            $courseUser = $course->addUserToCourse($userId);
+            $courseUser->setRoles($roleNames);
+
             $courseUserInfo = $courseUser->getData();
             $courseUserInfo["image"] = $courseUser->getImage();
             $courseUserInfo["roles"] = $courseUser->getRoles(false);
@@ -501,6 +503,50 @@ class CourseController
         $courseUser = $course->getCourseUserById(Core::getLoggedUser()->getId());
         $courseUser->refreshActivity();
         API::response($courseUser->getLastActivity());
+    }
+
+    /**
+     * Import users into a given course.
+     *
+     * @param int $courseId
+     * @param $file
+     * @param bool $replace
+     * @throws Exception
+     */
+    public function importCourseUsers()
+    {
+        API::requireValues("courseId", "file", "replace");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCourseAdminPermission($course);
+
+        $file = API::getValue("file");
+        $replace = API::getValue("replace", "bool");
+
+        $nrUsersImported = CourseUser::importCourseUsers($courseId, $file, $replace);
+        API::response($nrUsersImported);
+    }
+
+    /**
+     * Export users from a given course into a .csv file.
+     *
+     * @param $courseId
+     * @param $userIds
+     * @throws Exception
+     */
+    public function exportCourseUsers()
+    {
+        API::requireValues("courseId", "userIds");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCourseAdminPermission($course);
+
+        $userIds = API::getValue("userIds", "array");
+        $csv = CourseUser::exportCourseUsers($courseId, $userIds);
+
+        API::response($csv);
     }
 
 

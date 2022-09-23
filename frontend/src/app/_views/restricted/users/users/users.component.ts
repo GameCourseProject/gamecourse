@@ -136,8 +136,8 @@ export class UsersComponent implements OnInit {
     const userToActOn = this.users[row];
 
     if (action === 'value changed') {
-      if (col === 7) this.toggleActive(userToActOn.id);
-      else if (col === 8) this.toggleAdmin(userToActOn.id);
+      if (col === 7) this.toggleActive(userToActOn);
+      else if (col === 8) this.toggleAdmin(userToActOn);
 
     } else if (action === Action.VIEW) {
       const redirectLink = '/profile/' + userToActOn.id;
@@ -189,6 +189,7 @@ export class UsersComponent implements OnInit {
 
       this.loading.action = false;
       ModalService.closeModal('manage');
+      this.resetManage();
       AlertService.showAlert(AlertType.SUCCESS, 'New GameCourse user added: ' + newUser.name);
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -214,6 +215,7 @@ export class UsersComponent implements OnInit {
 
       this.loading.action = false;
       ModalService.closeModal('manage');
+      this.resetManage();
       AlertService.showAlert(AlertType.SUCCESS, 'User \'' + userEdited.name + '\' edited');
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -232,23 +234,21 @@ export class UsersComponent implements OnInit {
     AlertService.showAlert(AlertType.SUCCESS, 'User \'' + user.name + ' - ' + user.studentNumber + '\' deleted');
   }
 
-  async toggleActive(userID: number) {
+  async toggleActive(user: User) {
     this.loading.action = true;
 
-    const user = this.users.find(user => user.id === userID);
     user.isActive = !user.isActive;
-
     await this.api.setUserActive(user.id, user.isActive).toPromise();
+
     this.loading.action = false;
   }
 
-  async toggleAdmin(userID: number) {
+  async toggleAdmin(user: User) {
     this.loading.action = true;
 
-    const user = this.users.find(user => user.id === userID);
     user.isAdmin = !user.isAdmin;
-
     await this.api.setUserAdmin(user.id, user.isAdmin).toPromise();
+
     this.loading.action = false;
   }
 
@@ -266,6 +266,7 @@ export class UsersComponent implements OnInit {
 
         this.loading.action = false;
         ModalService.closeModal('import');
+        this.resetImport();
         AlertService.showAlert(AlertType.SUCCESS, nrUsersImported + ' user' + (nrUsersImported != 1 ? 's' : '') + ' imported');
       }
       reader.readAsText(this.importData.file);
@@ -330,6 +331,17 @@ export class UsersComponent implements OnInit {
     } else {
       this.importData.file = files.item(0);
     }
+  }
+
+  resetManage() {
+    this.mode = null;
+    this.initUserToManage();
+    this.f.resetForm();
+  }
+
+  resetImport() {
+    this.importData = {file: null, replace: true};
+    this.fImport.resetForm();
   }
 
 }

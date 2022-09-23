@@ -601,6 +601,18 @@ class Utils
         }
     }
 
+    /**
+     * Makes a string NULL if it is empty.
+     *
+     * @param string $value
+     * @return string|null
+     */
+    public static function nullify(string $value): ?string
+    {
+        if (empty(trim($value))) return null;
+        return $value;
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Versioning -------------------- ***/

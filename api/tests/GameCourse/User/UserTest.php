@@ -259,7 +259,7 @@ class UserTest extends TestCase
     public function userConstructor()
     {
         $user = new User(123);
-        $this->assertEquals(123, $user->getId());
+        $this->assertSame(123, $user->getId());
     }
 
 
@@ -272,7 +272,7 @@ class UserTest extends TestCase
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
         $id = intval(Core::database()->select(User::TABLE_USER, ["studentNumber" => 123456], "id"));
-        $this->assertEquals($id, $user->getId());
+        $this->assertSame($id, $user->getId());
     }
 
     /**
@@ -283,7 +283,7 @@ class UserTest extends TestCase
     {
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $this->assertEquals("John Smith Doe", $user->getName());
+        $this->assertSame("John Smith Doe", $user->getName());
     }
 
     /**
@@ -294,7 +294,7 @@ class UserTest extends TestCase
     {
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $this->assertEquals("johndoe@email.com", $user->getEmail());
+        $this->assertSame("johndoe@email.com", $user->getEmail());
     }
 
     /**
@@ -305,7 +305,7 @@ class UserTest extends TestCase
     {
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $this->assertEquals("MEIC-A", $user->getMajor());
+        $this->assertSame("MEIC-A", $user->getMajor());
     }
 
     /**
@@ -316,7 +316,7 @@ class UserTest extends TestCase
     {
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $this->assertEquals("John Doe", $user->getNickname());
+        $this->assertSame("John Doe", $user->getNickname());
     }
 
     /**
@@ -327,7 +327,7 @@ class UserTest extends TestCase
     {
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $this->assertEquals(123456, $user->getStudentNumber());
+        $this->assertSame(123456, $user->getStudentNumber());
     }
 
     /**
@@ -338,7 +338,7 @@ class UserTest extends TestCase
     {
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $this->assertEquals("ist123456", $user->getUsername());
+        $this->assertSame("ist123456", $user->getUsername());
     }
 
     /**
@@ -349,7 +349,7 @@ class UserTest extends TestCase
     {
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, false);
-        $this->assertEquals(AuthService::FENIX, $user->getAuthService());
+        $this->assertSame(AuthService::FENIX, $user->getAuthService());
     }
 
     /**
@@ -365,7 +365,7 @@ class UserTest extends TestCase
 
         // Image set
         file_put_contents(USER_DATA_FOLDER . "/" . $user->getId() . "/profile.png", "");
-        $this->assertEquals(API_URL . "/" . $user->getDataFolder(false) . "/profile.png", $user->getImage());
+        $this->assertSame(API_URL . "/" . $user->getDataFolder(false) . "/profile.png", $user->getImage());
     }
 
     /**
@@ -393,7 +393,7 @@ class UserTest extends TestCase
         $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
             654321, "Johanna Doe", "MEIC-A", false, true);
         $user->setLastLogin("2022-03-21 12:00:00");
-        $this->assertEquals("2022-03-21 12:00:00", $user->getLastLogin());
+        $this->assertSame("2022-03-21 12:00:00", $user->getLastLogin());
     }
 
     /**
@@ -513,7 +513,7 @@ class UserTest extends TestCase
         $user = User::addUser("NAME", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $user->setName($name);
-        $this->assertEquals(trim($name), $user->getName());
+        $this->assertSame(trim($name), $user->getName());
     }
 
     /**
@@ -530,7 +530,7 @@ class UserTest extends TestCase
             $this->fail("Exception should have been thrown on 'setUserNameFailure'");
 
         } catch (Exception|TypeError $error) {
-            $this->assertEquals("NAME", $user->getName());
+            $this->assertSame("NAME", $user->getName());
         }
     }
 
@@ -593,7 +593,7 @@ class UserTest extends TestCase
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $user->setStudentNumber(654321);
-        $this->assertEquals(654321, $user->getStudentNumber());
+        $this->assertSame(654321, $user->getStudentNumber());
     }
 
     /**
@@ -605,7 +605,7 @@ class UserTest extends TestCase
         $user = User::addUser("John Smith Doe", "USERNAME", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $user->setUsername("ist123456");
-        $this->assertEquals("ist123456", $user->getUsername());
+        $this->assertSame("ist123456", $user->getUsername());
     }
 
     /**
@@ -618,7 +618,7 @@ class UserTest extends TestCase
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", false, true);
         $user->setAuthService($authService);
-        $this->assertEquals(trim($authService), $user->getAuthService());
+        $this->assertSame(trim($authService), $user->getAuthService());
     }
 
     /**
@@ -635,7 +635,7 @@ class UserTest extends TestCase
             $this->fail("Exception should have been thrown on 'setAuthServiceFailure'.");
 
         } catch (Exception|TypeError $error) {
-            $this->assertEquals(AuthService::FENIX, $user->getAuthService());
+            $this->assertSame(AuthService::FENIX, $user->getAuthService());
         }
     }
 
@@ -999,7 +999,7 @@ class UserTest extends TestCase
             foreach ($users as $i => $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertEquals($user[$key], ${"user".($i+1)}->getData($key));
+                $this->assertSame($user[$key], ${"user".($i+1)}->getData($key));
             }
         }
     }
@@ -1025,7 +1025,7 @@ class UserTest extends TestCase
             foreach ($users as $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertEquals($user[$key], $user2->getData($key));
+                $this->assertSame($user[$key], $user2->getData($key));
             }
         }
     }
@@ -1051,7 +1051,7 @@ class UserTest extends TestCase
             foreach ($users as $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertEquals($user[$key], $user1->getData($key));
+                $this->assertSame($user[$key], $user1->getData($key));
             }
         }
     }
@@ -1074,7 +1074,7 @@ class UserTest extends TestCase
         $keys = ["id", "name", "username", "auth_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
         foreach ($keys as $key) {
             $this->assertArrayHasKey($key, $admins[0]);
-            $this->assertEquals($admins[0][$key], $admin->getData($key));
+            $this->assertSame($admins[0][$key], $admin->getData($key));
         }
     }
 
@@ -1101,7 +1101,7 @@ class UserTest extends TestCase
             foreach ($users as $i => $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertEquals($user[$key], ${"user".($i+1)}->getData($key));
+                $this->assertSame($user[$key], ${"user".($i+1)}->getData($key));
             }
         }
     }
@@ -1126,7 +1126,7 @@ class UserTest extends TestCase
         $keys = ["id", "name", "username", "auth_service", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
         foreach ($keys as $key) {
             $this->assertArrayHasKey($key, $admins[0]);
-            $this->assertEquals($admins[0][$key], $admin->getData($key));
+            $this->assertSame($admins[0][$key], $admin->getData($key));
         }
     }
 
@@ -1477,7 +1477,7 @@ class UserTest extends TestCase
         $user->refreshLastLogin();
 
         $lastLogin = DateTime::createFromFormat("Y-m-d H:i:s", $user->getLastLogin());
-        $this->assertEquals(date("Y-m-d H:i", time()), $lastLogin->format("Y-m-d H:i"));
+        $this->assertSame(date("Y-m-d H:i", time()), $lastLogin->format("Y-m-d H:i"));
     }
 
 
@@ -1664,7 +1664,7 @@ class UserTest extends TestCase
         User::deleteUser($id);
         $users = User::getUsers();
         $this->assertCount(1, $users);
-        $this->assertEquals("Marcus Notø", $users[0]["name"]);
+        $this->assertSame("Marcus Notø", $users[0]["name"]);
         $this->assertFalse(file_exists(USER_DATA_FOLDER . "/" . $id));
     }
 
@@ -1679,7 +1679,7 @@ class UserTest extends TestCase
         User::deleteUser(2);
         $users = User::getUsers();
         $this->assertCount(1, $users);
-        $this->assertEquals("Marcus Notø", $users[0]["name"]);
+        $this->assertSame("Marcus Notø", $users[0]["name"]);
         $this->assertFalse(file_exists(USER_DATA_FOLDER . "/2"));
     }
 
@@ -1753,9 +1753,9 @@ class UserTest extends TestCase
         $this->assertArrayHasKey("name", $file);
         $this->assertArrayHasKey("type", $file);
         $this->assertArrayHasKey("extension", $file);
-        $this->assertEquals("file.txt", $file["name"]);
-        $this->assertEquals("file", $file["type"]);
-        $this->assertEquals(".txt", $file["extension"]);
+        $this->assertSame("file.txt", $file["name"]);
+        $this->assertSame("file", $file["type"]);
+        $this->assertSame(".txt", $file["extension"]);
     }
 
     /**
@@ -1841,7 +1841,7 @@ class UserTest extends TestCase
         $file = "name,email,major,nickname,studentNumber,username,auth_service,isAdmin,isActive\n";
         $file .= "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1\n";
         $file .= "Inês Albano,ines.albano@tecnico.ulisboa.pt,MEIC-A,,87664,ist187664,linkedin,0,1\n";
-        $file .= "Filipe José Zillo Colaço,fijozico@hotmail.com,LEIC-T,,84715,ist426015,google,0,1\n";
+        $file .= "Filipe José Zillo Colaço,fijozico@hotmail.com,,,84715,ist426015,google,0,1\n";
         $file .= "Mariana Wong Brandão,marianawbrandao@icloud.com,MEMec,Mariana Brandão,86893,ist186893,facebook,0,0";
 
         // When
@@ -1852,28 +1852,28 @@ class UserTest extends TestCase
         $this->assertCount(4, $users);
         $this->assertEquals(4, $nrUsersImported);
 
-        $user1 = User::getUserByStudentNumber(100956)->getData();
-        $user2 = User::getUserByStudentNumber(87664)->getData();
-        $user3 = User::getUserByStudentNumber(84715)->getData();
-        $user4 = User::getUserByStudentNumber(86893)->getData();
-
-        $expectedUser1 = ["id" => 1, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
+        $user1 = ["id" => 1, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
-        $expectedUser2 = ["id" => 2, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
-            "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
+        $user2 = ["id" => 2, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
+            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664",
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
-        $expectedUser3 = ["id" => 3, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
-            "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
+        $user3 = ["id" => 3, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => null,
+            "nickname" => null, "studentNumber" => 84715, "username" => "ist426015",
             "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
-        $expectedUser4 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
+        $user4 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
 
-        $this->assertEquals($expectedUser1, $user1);
-        $this->assertEquals($expectedUser2, $user2);
-        $this->assertEquals($expectedUser3, $user3);
-        $this->assertEquals($expectedUser4, $user4);
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($users as $i => $user) {
+                $this->assertCount($nrKeys, array_keys($user));
+                $this->assertArrayHasKey($key, $user);
+                $this->assertSame($user[$key], ${"user".($i+1)}[$key]);
+            }
+        }
     }
 
     /**
@@ -1889,7 +1889,7 @@ class UserTest extends TestCase
         $file = "name,email,major,nickname,studentNumber,username,auth_service,isAdmin,isActive\n";
         $file .= "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1\n";
         $file .= "Inês Albano,ines.albano@tecnico.ulisboa.pt,MEIC-A,,87664,ist187664,linkedin,0,1\n";
-        $file .= "Filipe José Zillo Colaço,fijozico@hotmail.com,LEIC-T,,84715,ist426015,google,0,1\n";
+        $file .= "Filipe José Zillo Colaço,fijozico@hotmail.com,,,84715,ist426015,google,0,1\n";
         $file .= "Mariana Wong Brandão,marianawbrandao@icloud.com,MEMec,Mariana Brandão,86893,ist186893,facebook,0,0";
 
         // When
@@ -1900,28 +1900,28 @@ class UserTest extends TestCase
         $this->assertCount(4, $users);
         $this->assertEquals(3, $nrUsersImported);
 
-        $user0 = User::getUserByStudentNumber(84715)->getData();
-        $user1 = User::getUserByStudentNumber(100956)->getData();
-        $user2 = User::getUserByStudentNumber(87664)->getData();
-        $user3 = User::getUserByStudentNumber(86893)->getData();
-
-        $expectedUser0 = ["id" => 1, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
+        $user0 = ["id" => 1, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false, "lastLogin" => null];
-        $expectedUser1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
+        $user1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
-        $expectedUser2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
-            "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
+        $user2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
+            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664",
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
-        $expectedUser3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
+        $user3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
 
-        $this->assertEquals($expectedUser0, $user0);
-        $this->assertEquals($expectedUser1, $user1);
-        $this->assertEquals($expectedUser2, $user2);
-        $this->assertEquals($expectedUser3, $user3);
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($users as $i => $user) {
+                $this->assertCount($nrKeys, array_keys($user));
+                $this->assertArrayHasKey($key, $user);
+                $this->assertSame($user[$key], ${"user".$i}[$key]);
+            }
+        }
     }
 
     /**
@@ -1937,7 +1937,7 @@ class UserTest extends TestCase
         $file = "name,email,major,nickname,studentNumber,username,auth_service,isAdmin,isActive\n";
         $file .= "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1\n";
         $file .= "Inês Albano,ines.albano@tecnico.ulisboa.pt,MEIC-A,,87664,ist187664,linkedin,0,1\n";
-        $file .= "Filipe José Zillo Colaço,fijozico@hotmail.com,LEIC-T,,84715,ist426015,google,0,1\n";
+        $file .= "Filipe José Zillo Colaço,fijozico@hotmail.com,,,84715,ist426015,google,0,1\n";
         $file .= "Mariana Wong Brandão,marianawbrandao@icloud.com,MEMec,Mariana Brandão,86893,ist186893,facebook,0,0";
 
         // When
@@ -1948,28 +1948,28 @@ class UserTest extends TestCase
         $this->assertCount(4, $users);
         $this->assertEquals(3, $nrUsersImported);
 
-        $user0 = User::getUserByStudentNumber(84715)->getData();
-        $user1 = User::getUserByStudentNumber(100956)->getData();
-        $user2 = User::getUserByStudentNumber(87664)->getData();
-        $user3 = User::getUserByStudentNumber(86893)->getData();
-
-        $expectedUser0 = ["id" => 1, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
-            "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
+        $user0 = ["id" => 1, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => null,
+            "nickname" => null, "studentNumber" => 84715, "username" => "ist426015",
             "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
-        $expectedUser1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
+        $user1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
-        $expectedUser2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
-            "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
+        $user2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
+            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664",
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
-        $expectedUser3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
+        $user3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
 
-        $this->assertEquals($expectedUser0, $user0);
-        $this->assertEquals($expectedUser1, $user1);
-        $this->assertEquals($expectedUser2, $user2);
-        $this->assertEquals($expectedUser3, $user3);
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($users as $i => $user) {
+                $this->assertCount($nrKeys, array_keys($user));
+                $this->assertArrayHasKey($key, $user);
+                $this->assertSame($user[$key], ${"user".$i}[$key]);
+            }
+        }
     }
 
     /**
@@ -1981,7 +1981,7 @@ class UserTest extends TestCase
         // Given
         $file = "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1\n";
         $file .= "Inês Albano,ines.albano@tecnico.ulisboa.pt,MEIC-A,,87664,ist187664,linkedin,0,1\n";
-        $file .= "Filipe José Zillo Colaço,fijozico@hotmail.com,LEIC-T,,84715,ist426015,google,0,1\n";
+        $file .= "Filipe José Zillo Colaço,fijozico@hotmail.com,,,84715,ist426015,google,0,1\n";
         $file .= "Mariana Wong Brandão,marianawbrandao@icloud.com,MEMec,Mariana Brandão,86893,ist186893,facebook,0,0";
 
         // When
@@ -1992,28 +1992,28 @@ class UserTest extends TestCase
         $this->assertCount(4, $users);
         $this->assertEquals(4, $nrUsersImported);
 
-        $user1 = User::getUserByStudentNumber(100956)->getData();
-        $user2 = User::getUserByStudentNumber(87664)->getData();
-        $user3 = User::getUserByStudentNumber(84715)->getData();
-        $user4 = User::getUserByStudentNumber(86893)->getData();
-
-        $expectedUser1 = ["id" => 1, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
+        $user1 = ["id" => 1, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
-        $expectedUser2 = ["id" => 2, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
-            "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
+        $user2 = ["id" => 2, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
+            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664",
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
-        $expectedUser3 = ["id" => 3, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
-            "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
+        $user3 = ["id" => 3, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => null,
+            "nickname" => null, "studentNumber" => 84715, "username" => "ist426015",
             "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
-        $expectedUser4 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
+        $user4 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
 
-        $this->assertEquals($expectedUser1, $user1);
-        $this->assertEquals($expectedUser2, $user2);
-        $this->assertEquals($expectedUser3, $user3);
-        $this->assertEquals($expectedUser4, $user4);
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($users as $i => $user) {
+                $this->assertCount($nrKeys, array_keys($user));
+                $this->assertArrayHasKey($key, $user);
+                $this->assertSame($user[$key], ${"user".($i+1)}[$key]);
+            }
+        }
     }
 
     /**
@@ -2028,7 +2028,7 @@ class UserTest extends TestCase
 
         $file = "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1\n";
         $file .= "Inês Albano,ines.albano@tecnico.ulisboa.pt,MEIC-A,,87664,ist187664,linkedin,0,1\n";
-        $file .= "Filipe José Zillo Colaço,fijozico@hotmail.com,LEIC-T,,84715,ist426015,google,0,1\n";
+        $file .= "Filipe José Zillo Colaço,fijozico@hotmail.com,,,84715,ist426015,google,0,1\n";
         $file .= "Mariana Wong Brandão,marianawbrandao@icloud.com,MEMec,Mariana Brandão,86893,ist186893,facebook,0,0";
 
         // When
@@ -2039,28 +2039,28 @@ class UserTest extends TestCase
         $this->assertCount(4, $users);
         $this->assertEquals(3, $nrUsersImported);
 
-        $user0 = User::getUserByStudentNumber(84715)->getData();
-        $user1 = User::getUserByStudentNumber(100956)->getData();
-        $user2 = User::getUserByStudentNumber(87664)->getData();
-        $user3 = User::getUserByStudentNumber(86893)->getData();
-
-        $expectedUser0 = ["id" => 1, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
-            "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
+        $user0 = ["id" => 1, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => null,
+            "nickname" => null, "studentNumber" => 84715, "username" => "ist426015",
             "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
-        $expectedUser1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
+        $user1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
-        $expectedUser2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
-            "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
+        $user2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
+            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664",
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
-        $expectedUser3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
+        $user3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
 
-        $this->assertEquals($expectedUser0, $user0);
-        $this->assertEquals($expectedUser1, $user1);
-        $this->assertEquals($expectedUser2, $user2);
-        $this->assertEquals($expectedUser3, $user3);
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($users as $i => $user) {
+                $this->assertCount($nrKeys, array_keys($user));
+                $this->assertArrayHasKey($key, $user);
+                $this->assertSame($user[$key], ${"user".$i}[$key]);
+            }
+        }
     }
 
     /**
@@ -2075,7 +2075,7 @@ class UserTest extends TestCase
 
         $file = "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1\n";
         $file .= "Inês Albano,ines.albano@tecnico.ulisboa.pt,MEIC-A,,87664,ist187664,linkedin,0,1\n";
-        $file .= "Filipe José Zillo Colaço,fijozico@hotmail.com,LEIC-T,,84715,ist426015,google,0,1\n";
+        $file .= "Filipe José Zillo Colaço,fijozico@hotmail.com,,,84715,ist426015,google,0,1\n";
         $file .= "Mariana Wong Brandão,marianawbrandao@icloud.com,MEMec,Mariana Brandão,86893,ist186893,facebook,0,0";
 
         // When
@@ -2086,28 +2086,28 @@ class UserTest extends TestCase
         $this->assertCount(4, $users);
         $this->assertEquals(3, $nrUsersImported);
 
-        $user0 = User::getUserByStudentNumber(84715)->getData();
-        $user1 = User::getUserByStudentNumber(100956)->getData();
-        $user2 = User::getUserByStudentNumber(87664)->getData();
-        $user3 = User::getUserByStudentNumber(86893)->getData();
-
-        $expectedUser0 = ["id" => 1, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
+        $user0 = ["id" => 1, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false, "lastLogin" => null];
-        $expectedUser1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
+        $user1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
-        $expectedUser2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
-            "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
+        $user2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
+            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664",
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
-        $expectedUser3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
+        $user3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
 
-        $this->assertEquals($expectedUser0, $user0);
-        $this->assertEquals($expectedUser1, $user1);
-        $this->assertEquals($expectedUser2, $user2);
-        $this->assertEquals($expectedUser3, $user3);
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            foreach ($users as $i => $user) {
+                $this->assertCount($nrKeys, array_keys($user));
+                $this->assertArrayHasKey($key, $user);
+                $this->assertSame($user[$key], ${"user".$i}[$key]);
+            }
+        }
     }
 
     /**
@@ -2170,16 +2170,16 @@ class UserTest extends TestCase
      */
     public function exportUsers()
     {
-        User::addUser("Sabri M'Barki", "ist1100956", AuthService::FENIX, "sabri.m.barki@efrei.net",
-            100956, "Sabri M'Barki", "MEIC-T", true, true);
-        User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
-            1101036, "Marcus Notø", "MEEC", true, false);
-        User::addUser("Inês Albano", "ist187664", AuthService::FENIX, "ines.albano@tecnico.ulisboa.pt",
-            87664, null, "MEIC-A", false, true);
-        User::addUser("Filipe José Zillo Colaço", "ist426015", AuthService::FENIX, "fijozico@hotmail.com",
-            84715, null, "LEIC-T", false, true);
-        User::addUser("Mariana Wong Brandão", "ist186893", AuthService::FENIX, "marianawbrandao@icloud.com",
-            86893, "Mariana Brandão", "MEMec", false, false);
+        $userId1 = User::addUser("Sabri M'Barki", "ist1100956", AuthService::FENIX, "sabri.m.barki@efrei.net",
+            100956, "Sabri M'Barki", "MEIC-T", true, true)->getId();
+        $userId2 = User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
+            1101036, "Marcus Notø", "MEEC", true, false)->getId();
+        $userId3 = User::addUser("Inês Albano", "ist187664", AuthService::FENIX, "ines.albano@tecnico.ulisboa.pt",
+            87664, null, "MEIC-A", false, true)->getId();
+        $userId4 = User::addUser("Filipe José Zillo Colaço", "ist426015", AuthService::FENIX, "fijozico@hotmail.com",
+            84715, null, "LEIC-T", false, true)->getId();
+        $userId5 = User::addUser("Mariana Wong Brandão", "ist186893", AuthService::FENIX, "marianawbrandao@icloud.com",
+            86893, "Mariana Brandão", "MEMec", false, false)->getId();
 
         $expectedFile = "name,email,major,nickname,studentNumber,username,auth_service,isAdmin,isActive\n";
         $expectedFile .= "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1\n";
@@ -2188,7 +2188,7 @@ class UserTest extends TestCase
         $expectedFile .= "Filipe José Zillo Colaço,fijozico@hotmail.com,LEIC-T,,84715,ist426015,fenix,0,1\n";
         $expectedFile .= "Mariana Wong Brandão,marianawbrandao@icloud.com,MEMec,Mariana Brandão,86893,ist186893,fenix,0,0";
 
-        $file = User::exportUsers();
-        $this->assertEquals($expectedFile, $file);
+        $file = User::exportUsers([$userId1, $userId2, $userId3, $userId4, $userId5]);
+        $this->assertSame($expectedFile, $file);
     }
 }

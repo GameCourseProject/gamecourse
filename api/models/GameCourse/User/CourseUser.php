@@ -449,17 +449,17 @@ class CourseUser extends User
             throw new Exception("Course with ID = " . $courseId . " doesn't exist.");
 
         return Utils::importFromCSV(array_merge(parent::HEADERS, self::HEADERS), function ($user, $indexes) use ($course, $replace) {
-            $name = $user[$indexes["name"]];
-            $email = $user[$indexes["email"]];
-            $major = $user[$indexes["major"]];
-            $nickname = $user[$indexes["nickname"]];
-            $studentNumber = $user[$indexes["studentNumber"]];
-            $username = $user[$indexes["username"]];
-            $authService = $user[$indexes["auth_service"]];
-            $isAdmin = $user[$indexes["isAdmin"]];
-            $isActive = $user[$indexes["isActive"]];
-            $isActiveInCourse = $user[$indexes["isActiveInCourse"]];
-            $roles = $user[$indexes["roles"]];
+            $name = Utils::nullify($user[$indexes["name"]]);
+            $email = Utils::nullify($user[$indexes["email"]]);
+            $major = Utils::nullify($user[$indexes["major"]]);
+            $nickname = Utils::nullify($user[$indexes["nickname"]]);
+            $studentNumber = self::parse(null, Utils::nullify($user[$indexes["studentNumber"]]), "studentNumber");
+            $username = Utils::nullify($user[$indexes["username"]]);
+            $authService = Utils::nullify($user[$indexes["auth_service"]]);
+            $isAdmin = self::parse(null, Utils::nullify($user[$indexes["isAdmin"]]), "isAdmin");
+            $isActive = self::parse(null, Utils::nullify($user[$indexes["isActive"]]), "isActive");
+            $isActiveInCourse = self::parse(null, Utils::nullify($user[$indexes["isActiveInCourse"]]), "isActiveInCourse");
+            $roles = Utils::nullify($user[$indexes["roles"]]);
 
             // Add/update user in the system
             $user = self::getUserByUsername($username, $authService) ?? self::getUserByStudentNumber($studentNumber);
@@ -495,20 +495,25 @@ class CourseUser extends User
      * Exports users from a given course into a .csv file.
      *
      * @param int $courseId
+     * @param array $userIds
      * @return string
      * @throws Exception
      */
-    public static function exportCourseUsers(int $courseId): string
+    public static function exportCourseUsers(int $courseId, array $userIds): string
     {
         $course = new Course($courseId);
         if (!$course->exists())
             throw new Exception("Course with ID = " . $courseId . " doesn't exist.");
 
-        return Utils::exportToCSV($course->getCourseUsers(), function ($user) use ($course) {
-            return [$user["name"], $user["email"], $user["major"], $user["nickname"], $user["studentNumber"],
-                $user["username"], $user["auth_service"], +$user["isAdmin"], +$user["isActive"],
-                +$user["isActiveInCourse"], implode(" ", (new CourseUser($user["id"], $course))->getRoles())];
-        }, array_merge(parent::HEADERS, self::HEADERS));
+        $usersToExport = array_filter($course->getCourseUsers(), function ($user) use ($userIds) { return in_array($user["id"], $userIds); });
+        return Utils::exportToCSV(
+            $usersToExport,
+            function ($user) use ($course) {
+                return [$user["name"], $user["email"], $user["major"], $user["nickname"], $user["studentNumber"],
+                    $user["username"], $user["auth_service"], +$user["isAdmin"], +$user["isActive"],
+                    +$user["isActiveInCourse"], implode(" ", (new CourseUser($user["id"], $course))->getRoles())];
+            },
+            array_merge(parent::HEADERS, self::HEADERS));
     }
 
 

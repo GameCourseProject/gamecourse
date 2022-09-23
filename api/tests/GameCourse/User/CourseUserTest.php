@@ -167,7 +167,7 @@ class CourseUserTest extends TestCase
     public function courseUserConstructor()
     {
         $courseUser = new CourseUser($this->loggedUser->getId(), $this->course);
-        $this->assertEquals($this->loggedUser->getId(), $courseUser->getId());
+        $this->assertSame($this->loggedUser->getId(), $courseUser->getId());
         $this->assertEquals($this->course, $courseUser->getCourse());
     }
 
@@ -179,7 +179,7 @@ class CourseUserTest extends TestCase
     public function getId()
     {
         $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
-        $this->assertEquals($this->user->getId(), $courseUser->getId());
+        $this->assertSame($this->user->getId(), $courseUser->getId());
     }
 
     /**
@@ -201,7 +201,7 @@ class CourseUserTest extends TestCase
         $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
         $datetime = date("Y-m-d H:i:s", time());
         $courseUser->setLastActivity($datetime);
-        $this->assertEquals($datetime, $courseUser->getLastActivity());
+        $this->assertSame($datetime, $courseUser->getLastActivity());
     }
 
     /**
@@ -514,7 +514,7 @@ class CourseUserTest extends TestCase
         $courseUser->refreshActivity();
 
         $lastActivity = DateTime::createFromFormat("Y-m-d H:i:s", $courseUser->getLastActivity());
-        $this->assertEquals(date("Y-m-d H:i", time()), $lastActivity->format("Y-m-d H:i"));
+        $this->assertSame(date("Y-m-d H:i", time()), $lastActivity->format("Y-m-d H:i"));
     }
 
     /**
@@ -569,8 +569,8 @@ class CourseUserTest extends TestCase
         $this->assertCount(2, (new Course($courseId))->getCourseUsers());
 
         $courseUser = new CourseUser($userId, new Course($courseId));
-        $this->assertEquals($userId, $courseUser->getId());
-        $this->assertEquals($courseId, $courseUser->getCourse()->getId());
+        $this->assertSame($userId, $courseUser->getId());
+        $this->assertSame($courseId, $courseUser->getCourse()->getId());
         $this->assertTrue($courseUser->exists());
 
         if ($roleName) $this->assertTrue($courseUser->hasRole($roleName));
@@ -629,8 +629,8 @@ class CourseUserTest extends TestCase
         $this->assertCount(2, (new Course($this->course->getId()))->getCourseUsers());
 
         $courseUser = new CourseUser($this->user->getId(), new Course($this->course->getId()));
-        $this->assertEquals($this->user->getId(), $courseUser->getId());
-        $this->assertEquals($this->course->getId(), $courseUser->getCourse()->getId());
+        $this->assertSame($this->user->getId(), $courseUser->getId());
+        $this->assertSame($this->course->getId(), $courseUser->getCourse()->getId());
         $this->assertTrue($courseUser->exists());
     }
 
@@ -889,10 +889,10 @@ class CourseUserTest extends TestCase
         $this->assertContains("StudentA", $rolesNames);
         $this->assertContains("StudentA1", $rolesNames);
         $this->assertContains("StudentB", $rolesNames);
-        $this->assertEquals("StudentA1", $rolesNames[0]);
-        $this->assertEquals("StudentA", $rolesNames[1]);
-        $this->assertEquals("StudentB", $rolesNames[2]);
-        $this->assertEquals("Student", $rolesNames[3]);
+        $this->assertSame("StudentA1", $rolesNames[0]);
+        $this->assertSame("StudentA", $rolesNames[1]);
+        $this->assertSame("StudentB", $rolesNames[2]);
+        $this->assertSame("Student", $rolesNames[3]);
     }
 
     /**
@@ -977,7 +977,7 @@ class CourseUserTest extends TestCase
         $this->assertArrayHasKey("landingPage", $student);
         $this->assertArrayHasKey("module", $student);
         $this->assertArrayHasKey("children", $student);
-        $this->assertEquals("Student", $student["name"]);
+        $this->assertSame("Student", $student["name"]);
         $this->assertCount(2, $student["children"]);
 
         $studentA = $student["children"][0];
@@ -987,7 +987,7 @@ class CourseUserTest extends TestCase
         $this->assertArrayHasKey("landingPage", $studentA);
         $this->assertArrayHasKey("module", $studentA);
         $this->assertArrayHasKey("children", $studentA);
-        $this->assertEquals("StudentA", $studentA["name"]);
+        $this->assertSame("StudentA", $studentA["name"]);
         $this->assertCount(1, $studentA["children"]);
 
         $studentA1 = $studentA["children"][0];
@@ -996,7 +996,7 @@ class CourseUserTest extends TestCase
         $this->assertArrayHasKey("name", $studentA1);
         $this->assertArrayHasKey("landingPage", $studentA1);
         $this->assertArrayHasKey("module", $studentA1);
-        $this->assertEquals("StudentA1", $studentA1["name"]);
+        $this->assertSame("StudentA1", $studentA1["name"]);
 
 
         $studentB = $student["children"][1];
@@ -1005,7 +1005,7 @@ class CourseUserTest extends TestCase
         $this->assertArrayHasKey("name", $studentB);
         $this->assertArrayHasKey("landingPage", $studentB);
         $this->assertArrayHasKey("module", $studentB);
-        $this->assertEquals("StudentB", $studentB["name"]);
+        $this->assertSame("StudentB", $studentB["name"]);
     }
 
     /**
@@ -1893,7 +1893,7 @@ class CourseUserTest extends TestCase
         $expectedFile .= "Filipe José Zillo Colaço,fijozico@hotmail.com,LEIC-T,,84715,ist426015,fenix,0,1,1,Teacher\n";
         $expectedFile .= "Mariana Wong Brandão,marianawbrandao@icloud.com,MEMec,Mariana Brandão,86893,ist186893,fenix,0,0,0,Teacher Student";
 
-        $file = CourseUser::exportCourseUsers($this->course->getId());
+        $file = CourseUser::exportCourseUsers($this->course->getId(), [1, $user1->getId(), $user2->getId(), $user3->getId(), $user4->getId(), $user5->getId()]);
         $this->assertEquals($expectedFile, $file);
     }
 
@@ -1903,6 +1903,6 @@ class CourseUserTest extends TestCase
     public function exportCourseUsersCourseDoesntExist()
     {
         $this->expectException(Exception::class);
-        CourseUser::exportCourseUsers(10);
+        CourseUser::exportCourseUsers(10, [1]);
     }
 }
