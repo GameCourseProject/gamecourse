@@ -375,7 +375,7 @@ export class UsersComponent implements OnInit {
       this.loading.action = true;
 
       const contents = await this.api.exportCourseUsers(this.course.id, users.map(user => user.id)).toPromise();
-      DownloadManager.downloadAsCSV((this.course.short ?? this.course.name) + '-users', contents);
+      DownloadManager.downloadAsCSV((this.course.short ?? this.course.name) + '-' + (users.length === 1 ? users[0].name : 'users'), contents);
 
       this.loading.action = false;
     }
