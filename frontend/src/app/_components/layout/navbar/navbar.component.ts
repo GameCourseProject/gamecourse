@@ -125,7 +125,11 @@ export class NavbarComponent implements OnInit {
 
   getURLParts(full: boolean = false): string[] {
     const segments = this.router.parseUrl(this.router.url).root.children[PRIMARY_OUTLET].segments;
-    return segments.map(segment => segment.path).slice(full ? 0 : 2);
+    return segments.map(segment => segment.path
+      .replaceAll('-', ' ')
+      .split(' ')
+      .map(word => word.capitalize())
+      .join(' ')).slice(full ? 0 : 2);
   }
 
   isInCourse(): boolean {
