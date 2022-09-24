@@ -46,6 +46,7 @@ class CourseController
         $courseUser = $course->getCourseUserById($loggedUser->getId());
 
         $courseInfo = $course->getData();
+        $courseInfo['roleHierarchy'] = $course->getRoles(false, true);
         $courseInfo["folder"] = $course->getDataFolder(false, $courseInfo["name"]);
         if ($loggedUser->isAdmin() || $courseUser->isTeacher())
             $courseInfo["nrStudents"] = count($course->getStudents());

@@ -1,61 +1,97 @@
-<ng-container *ngIf="!loading">
-  <div class="content" id="roles_page">
+<div class="w-full relative">
 
-    <!-- Roles -->
-    <div class="dd" id="roles-config">
-      <div class="header">
-        <span class="role_sections">Roles</span>
-        <span class="page_sections">Landing Page</span>
-      </div>
+  <!-- Header -->
+  <app-header [title]="'Roles'" [icon]="'tabler-id-badge-2'" [loading]="loading.action"></app-header>
 
-      <ng-container
-        [ngTemplateOutlet]="roleList"
-        [ngTemplateOutletContext]="{rolesHierarchy: course.roleHierarchy}">
+  <!-- Roles list -->
+  <div *ngIf="!loading.page" [id]="'roles-list'" class="dd max-w-none ml-10 mt-8">
+    <ng-container
+      [ngTemplateOutlet]="LIST"
+      [ngTemplateOutletContext]="{rolesHierarchy: course.roleHierarchy}">
+    </ng-container>
+
+    <!-- Add button -->
+    <button class="btn btn-wide w-[calc(100%-6rem)] gap-2"
+            (click)="mode = 'add'; roleToManage = initRoleToManage(); ModalService.openModal('manage')">
+      <ng-icon name="feather-plus-circle" size="1.5rem" class="text-neutral-content"></ng-icon>
+      Add role
+    </button>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex items-center justify-end mt-6 sm:mr-[6rem]">
+    <button type="button" class="btn btn-ghost mr-2" (click)="discard()">Discard changes</button>
+    <button type="submit" class="btn btn-primary" (click)="save()">
+
+      <!-- Spinner -->
+      <ng-container *ngIf="loading.action">
+        <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
       </ng-container>
-    </div>
 
-    <!-- Add btn -->
-    <div id="add_role_button_box">
-      <button title="New" (click)="isNewRoleModalOpen = true; newRole.parent = null" class="add_button icon"></button>
-    </div>
-
-    <!-- Action buttons -->
-    <div class="action-buttons">
-      <button id="role-change-button" class="button" [disabled]="!hasChanges" (click)="saveRoles()">Save Changes</button>
-    </div>
+      Update roles
+    </button>
   </div>
 
-  <div class="success_box">
-    <div id="action_completed" class="success_msg"></div>
-  </div>
-</ng-container>
+  <!-- Loader -->
+  <app-loader [loading]="loading.page"></app-loader>
 
-<!-- Loader -->
-<div *ngIf="loading" id="page-loading">
-  <img src="assets/loader/loader.gif" alt="loader">
 </div>
 
-
-<!-- Role List -->
-<ng-template #roleList let-rolesHierarchy='rolesHierarchy'>
+<!-- Roles List -->
+<ng-template #LIST let-rolesHierarchy='rolesHierarchy'>
 
   <ol class="dd-list">
-    <li *ngFor="let role of rolesHierarchy" class="dd-item" [ngClass]="{'dd-nodrag': defaultRoles.includes(role.name)}"
+    <li *ngFor="let role of rolesHierarchy" class="dd-item" [ngClass]="{'dd-nodrag': isDefaultRole(role.name)}"
         [attr.data-name]="role.name">
 
-      <div class="handle icon" [ngClass]="{'dd-handle': !defaultRoles.includes(role.name)}"></div>
-      <div class="dd-content">{{role.name}}</div>
+      <div class="flex items-center mb-3">
 
-      <select class="dd-content" [(ngModel)]="role.landingPage">
-        <option [ngValue]="null" [selected]="role.landingPage === null">Main Page</option>
-        <option *ngFor="let page of activePages" [ngValue]="page.id" [selected]="role.landingPage === page.id">{{page.name}}</option>
-      </select>
+        <div class="flex items-center w-[calc(100%-6rem)]">
+            <!-- Move -->
+            <div *ngIf="!isDefaultRole(role.name)" class="tooltip align-middle absolute -left-10" data-tip="Move">
+              <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative">
+                <ng-icon name="feather-move" size="1.2rem"></ng-icon>
+                <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
+              </button>
+            </div>
 
-      <img class="dd-add icon" (click)="isNewRoleModalOpen = true; newRole.parent = role" src="assets/icons/add_icon_no_outline.svg" title="New">
-      <img class="dd-remove icon" (click)="removeRole(role)" src="assets/icons/delete_icon.svg" title="Remove">
+            <!-- Role -->
+            <div class="dd-content" [ngClass]="{'!border-primary !border-opacity-75 text-primary font-semibold': isDefaultRole(role.name)}">
+              {{role.name}}
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center">
+          <div class="tooltip align-middle" data-tip="Add child"
+               (click)="mode = 'add'; roleToManage = initRoleToManage(null, role); ModalService.openModal('manage')">
+
+            <button class="btn btn-sm btn-ghost btn-circle">
+              <ng-icon name="jam-plus" size="1.5rem"></ng-icon>
+            </button>
+          </div>
+
+          <div *ngIf="!isDefaultRole(role.name)" class="tooltip align-middle" data-tip="Edit"
+               (click)="mode = 'edit'; roleToManage = initRoleToManage(role); ModalService.openModal('manage')">
+
+            <button class="btn btn-sm btn-ghost btn-circle">
+              <ng-icon name="jam-pencil-f" size="1.5rem" class="text-warning"></ng-icon>
+            </button>
+          </div>
+
+          <div *ngIf="!isDefaultRole(role.name)" class="tooltip align-middle" data-tip="Delete"
+            (click)="removeRole(role)">
+
+            <button class="btn btn-sm btn-ghost btn-circle">
+              <ng-icon name="jam-trash-f" size="1.5rem" class="text-error"></ng-icon>
+            </button>
+          </div>
+        </div>
+
+      </div>
 
       <ng-container *ngIf="role.children"
-        [ngTemplateOutlet]="roleList"
+        [ngTemplateOutlet]="LIST"
         [ngTemplateOutletContext]="{rolesHierarchy: role.children}">
       </ng-container>
     </li>
@@ -64,26 +100,45 @@
 </ng-template>
 
 
-<ng-container *ngIf="isNewRoleModalOpen">
-<!--  <app-modal-->
-<!--    [isOpen]="isNewRoleModalOpen"-->
-<!--    [id]="'new-role'"-->
-<!--    [classList]="'little_modal'"-->
-<!--    [templateRef]="newRoleModal"-->
-<!--    (closeBtnClicked)="isNewRoleModalOpen = false; clearObject(newRole)">-->
-<!--  </app-modal>-->
-</ng-container>
+<!-- New / Edit Modal -->
+<app-modal *ngIf="mode && roleToManage"
+   [id]="'manage'"
+   [templateRef]="MANAGE"
+   [header]="mode?.capitalize() + ' role'"
+   [closeBtnText]="'Discard ' + (mode === 'add' ? 'role' : 'changes')"
+   [submitBtnText]="mode?.capitalize() + ' role'"
+   [actionInProgress]="loading.action"
+   (submitBtnClicked)="f.onSubmit(null); mode === 'add' ? addRole() : editRole()"
+   (onClose)="resetManage()">
+</app-modal>
 
-<ng-template #newRoleModal>
-  <div class="title">New Role:</div>
-  <div class="content">
-    <div class="inputs">
-      <div class="name full">
-        <p style="margin-top: 0; color: tomato">Role names cannot be repeated nor have whitespace.</p>
-        <input type="text" class="form__input" id="role_name" placeholder="Name *" [(ngModel)]="newRole.name" [required]="true">
-        <label for="role_name" class="form__label">Name</label>
-      </div>
-    </div>
-    <button class="save_btn" id="submit_role" [disabled]="!isReadyToSubmit()" (click)="addRole()">Continue</button>
-  </div>
+<ng-template #MANAGE>
+  <form #f="ngForm">
+
+    <!-- Name -->
+    <app-input-text
+      [id]="'role-name'"
+      [form]="f"
+      [(value)]="roleToManage.name"
+      [placeholder]="'Role name'"
+      [topLabel]="'Name'"
+      [pattern]="'^[^\\s]+$'"
+      [patternErrorMessage]="'Role name can\'t have white spaces.'"
+      [required]="true"
+      [maxLength]="50"
+      [maxLengthErrorMessage]="'Role name is too long: maximum of 50 characters'">
+    </app-input-text>
+
+    <!-- Landing Page -->
+    <app-input-select *ngIf="activePages.length > 0"
+      [id]="'role-page'"
+      [form]="f"
+      [(value)]="roleToManage.landingPage"
+      [options]="activePages"
+      [placeholder]="'Select a landing page'"
+      [classList]="'mt-3'"
+      [topLabel]="'Landing Page'">
+    </app-input-select>
+
+  </form>
 </ng-template>

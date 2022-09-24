@@ -46,7 +46,7 @@ import {Router} from "@angular/router";
 import {CourseUser} from "../../_domain/users/course-user";
 import {Action} from "../../_domain/modules/config/Action";
 import {SkillTree} from "../../_domain/modules/config/personalized-config/skills/skill-tree";
-import {CourseUserManageData} from "../../_views/restricted/courses/course/users/users.component";
+import {CourseUserManageData} from "../../_views/restricted/courses/course/settings/users/users.component";
 
 @Injectable({
   providedIn: 'root'
@@ -718,6 +718,7 @@ export class ApiHttpService {
 
 
   // Roles
+
   public getDefaultRoles(courseID: number): Observable<string[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);

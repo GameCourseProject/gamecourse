@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { CourseAdminGuard } from "../../../../_guards/course-admin-guard";
 
-import { UsersComponent } from "./users/users.component";
+import { UsersComponent } from "./settings/users/users.component";
 import { GlobalComponent } from "./settings/global/global.component";
 import { RolesComponent } from "./settings/roles/roles.component";
 import { ModulesComponent } from "./settings/modules/modules/modules.component";

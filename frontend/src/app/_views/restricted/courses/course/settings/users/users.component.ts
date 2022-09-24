@@ -4,24 +4,24 @@ import {DomSanitizer} from "@angular/platform-browser";
 import {NgForm} from "@angular/forms";
 import {Subject} from "rxjs";
 
-import {ApiHttpService} from "../../../../../_services/api/api-http.service";
-import {UpdateService, UpdateType} from "../../../../../_services/update.service";
-import {ThemingService} from "../../../../../_services/theming/theming.service";
-import {ModalService} from "../../../../../_services/modal.service";
-import {AlertService, AlertType} from "../../../../../_services/alert.service";
-import {ResourceManager} from "../../../../../_utils/resources/resource-manager";
+import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
+import {UpdateService, UpdateType} from "../../../../../../_services/update.service";
+import {ThemingService} from "../../../../../../_services/theming/theming.service";
+import {ModalService} from "../../../../../../_services/modal.service";
+import {AlertService, AlertType} from "../../../../../../_services/alert.service";
+import {ResourceManager} from "../../../../../../_utils/resources/resource-manager";
 
-import {User} from "../../../../../_domain/users/user";
-import {CourseUser} from "../../../../../_domain/users/course-user";
-import {Course} from "../../../../../_domain/courses/course";
-import {Role} from "../../../../../_domain/roles/role";
+import {User} from "../../../../../../_domain/users/user";
+import {CourseUser} from "../../../../../../_domain/users/course-user";
+import {Course} from "../../../../../../_domain/courses/course";
+import {Role} from "../../../../../../_domain/roles/role";
 import {AuthType} from 'src/app/_domain/auth/auth-type';
 import {Action} from 'src/app/_domain/modules/config/Action';
-import {TableDataType} from "../../../../../_components/tables/table-data/table-data.component";
-import {clearEmptyValues} from "../../../../../_utils/misc/misc";
-import {Theme} from "../../../../../_services/theming/themes-available";
-import {environment} from "../../../../../../environments/environment";
-import {DownloadManager} from "../../../../../_utils/download/download-manager";
+import {TableDataType} from "../../../../../../_components/tables/table-data/table-data.component";
+import {clearEmptyValues} from "../../../../../../_utils/misc/misc";
+import {Theme} from "../../../../../../_services/theming/themes-available";
+import {environment} from "../../../../../../../environments/environment";
+import {DownloadManager} from "../../../../../../_utils/download/download-manager";
 
 @Component({
   selector: 'app-users',
@@ -379,30 +379,6 @@ export class UsersComponent implements OnInit {
 
       this.loading.action = false;
     }
-  }
-
-
-  /*** --------------------------------------------- ***/
-  /*** ---------------- Select Users --------------- ***/
-  /*** --------------------------------------------- ***/
-
-  addUser(user: User): void {
-    // if (!this.selectedUsers) this.selectedUsers = [];
-    //
-    // if (!this.selectedUsers.find(el => el.id === user.id)) {
-    //   this.selectedUsers.push(user);
-    //   const index = this.nonCourseUsers.findIndex(el => el.id === user.id);
-    //   this.nonCourseUsers.removeAtIndex(index);
-    //   this.reduceList('non-course-users');
-    //   this.selectUserQuery = null;
-    // }
-  }
-
-  removeUser(userID: number): void {
-    // const index = this.selectedUsers.findIndex(el => el.id === userID);
-    // this.nonCourseUsers.push(this.selectedUsers[index]);
-    // this.selectedUsers.splice(index, 1);
-    // this.reduceList('non-course-users');
   }
 
 

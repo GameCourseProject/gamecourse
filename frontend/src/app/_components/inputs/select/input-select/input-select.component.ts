@@ -71,14 +71,23 @@ export class InputSelectComponent implements OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (this.multiple && changes.value && !changes.value.firstChange && changes.value.currentValue?.length === 0)
-      this.select.setData(this.options);
+    if (changes.value && !changes.value.firstChange) {
+      if (this.multiple && changes.value.currentValue?.length === 0)
+        this.select.setData(this.options);
+
+      if (!this.multiple && !this.required) {
+        const deselect = $('.ss-deselect')[0];
+        if (this.value === 'undefined') deselect.classList.add('!hidden');
+        else deselect.classList.remove('!hidden');
+      }
+    }
   }
 
   initSelect() {
     const options = {
       select: '#' + this.id,
       addToBody: true,
+      allowDeselect: !this.required,
       searchPlaceholder: 'Search...',
       showSearch: this.search,
       hideSelectedOption: this.hideSelectedOption,
@@ -99,8 +108,15 @@ export class InputSelectComponent implements OnInit {
 
     if (this.placeholder) (options.data as any).unshift({placeholder: true, text: this.placeholder});
     if (this.limit) options['limit'] = this.limit;
+    if (!this.required) options['deselectLabel'] = '<span>❌</span>';
 
     this.select = new SlimSelect(options);
+
+    // Set deselect;
+    if (!this.value) {
+      const deselect = $('.ss-deselect')[0]
+      deselect.classList.add('!hidden');
+    }
   }
 
   get Value(): any {

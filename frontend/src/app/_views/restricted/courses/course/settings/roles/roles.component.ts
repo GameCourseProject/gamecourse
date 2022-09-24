@@ -1,11 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
+import {NgForm} from "@angular/forms";
+
+import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
+import {ModalService} from 'src/app/_services/modal.service';
+import {AlertService, AlertType} from "../../../../../../_services/alert.service";
+
 import {Role} from "../../../../../../_domain/roles/role";
-import {Page} from "../../../../../../_domain/pages & templates/page";
-import {exists} from "../../../../../../_utils/misc/misc";
-import {finalize} from "rxjs/operators";
 import {Course} from "../../../../../../_domain/courses/course";
+
+import * as _ from "lodash";
 
 @Component({
   selector: 'app-roles',
@@ -14,21 +18,22 @@ import {Course} from "../../../../../../_domain/courses/course";
 })
 export class RolesComponent implements OnInit {
 
-  loading: boolean = true;
+  loading = {
+    page: true,
+    list: true,
+    action: false
+  }
+
   course: Course;
-  activePages: Page[];
+  originalRolesHierarchy: Role[];
 
-  defaultRoles: string[];
-  roles: Role[];
+  mode: 'add' | 'edit';
+  roleToManage: RoleManageData = this.initRoleToManage();
+  @ViewChild('f', { static: false }) f: NgForm;
 
-  isNewRoleModalOpen: boolean;
-  newRole: RoleData = {
-    name: null,
-    parent: null,
-    landingPage: null
-  };
-  saving: boolean;
-  hasChanges: boolean;
+  activePages: {value: string, text: string}[];
+  defaultRoleNames: string[];
+  rolesHierarchySmart: {[roleName: string]: {role: Role, parent: Role, children: Role[]}};
 
   constructor(
     private api: ApiHttpService,
@@ -40,10 +45,15 @@ export class RolesComponent implements OnInit {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
       await this.getActivePages(courseID);
-      await this.getDefaultRoles(courseID);
       await this.getRoles(courseID);
-      this.loading = false;
+      this.loading.page = false;
+
+      this.buildList();
     });
+  }
+
+  get ModalService(): typeof ModalService {
+    return ModalService;
   }
 
 
@@ -59,20 +69,31 @@ export class RolesComponent implements OnInit {
     this.activePages = []; // FIXME
   }
 
-  async getDefaultRoles(courseID: number): Promise<void> {
-    this.defaultRoles = await this.api.getDefaultRoles(courseID).toPromise();
+  async getRoles(courseID: number): Promise<void> {
+    this.defaultRoleNames = await this.api.getDefaultRoles(courseID).toPromise();
+    this.originalRolesHierarchy = _.cloneDeep(this.course.roleHierarchy);
+    this.initRolesHierarchySmart();
   }
 
-  async getRoles(courseID: number): Promise<void> {
-    this.roles = await this.api.getRoles(courseID, false).toPromise() as Role[];
+
+  /*** --------------------------------------------- ***/
+  /*** --------------- Nestable List --------------- ***/
+  /*** --------------------------------------------- ***/
+
+  buildList(): void {
     setTimeout(() => {
-      const dd = $('#roles-config');
-      // @ts-ignore
-      dd.nestable({
+      this.loading.list = true;
+
+      const list = $('#roles-list');
+      const options = {
         expandBtnHTML: '',
         collapseBtnHTML: ''
-      });
-      dd.on('change', () => this.hasChanges = true);
+      };
+
+      // @ts-ignore
+      list.nestable(options);
+
+      this.loading.list = false;
     }, 0);
   }
 
@@ -82,72 +103,78 @@ export class RolesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   addRole(): void {
-    const role = new Role(null, this.newRole.name, null, null);
-    this.roles.push(role)
+    if (this.f.valid) {
+      const newRole = new Role(null, this.roleToManage.name, this.roleToManage.landingPage, null);
+      this.rolesHierarchySmart[newRole.name] = {role: newRole, parent: this.roleToManage.parent, children: []};
 
-    if (!this.newRole.parent) {
-      this.course.roleHierarchy.push(role);
+      if (!this.roleToManage.parent) { // no parent
+        this.course.roleHierarchy.push(newRole);
 
-    } else {
-      if (!this.newRole.parent.children) this.newRole.parent.children = [];
-      this.newRole.parent.children.push(role);
-    }
+      } else { // with parent
+        if (!this.roleToManage.parent.children) this.roleToManage.parent.children = [];
+        this.roleToManage.parent.children.push(newRole);
+      }
 
-    this.hasChanges = true;
-    this.isNewRoleModalOpen = false;
-    this.clearObject(this.newRole);
+      ModalService.closeModal('manage');
+      this.resetManage();
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+  }
+
+  editRole() {
+    if (this.f.valid) {
+      this.roleToManage.itself.name = this.roleToManage.name;
+      this.roleToManage.itself.landingPage = this.roleToManage.landingPage;
+
+      ModalService.closeModal('manage');
+      this.resetManage();
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
   removeRole(role: Role): void {
-    if (this.defaultRoles.includes(role.name)) return;
+    if (this.isDefaultRole(role.name)) return;
 
-    // Remove children of role
-    if (role.children)
-      role.children.forEach(child => this.removeRole(child));
-
-    const parent = findParent(this.course.roleHierarchy, role, null);
-
+    const parent = this.rolesHierarchySmart[role.name].parent;
     if (parent) {
       const index = parent.children.findIndex(el => el.name === role.name);
       parent.children.splice(index, 1);
+      this.rolesHierarchySmart[parent.name].children.splice(index, 1);
       if (parent.children.length === 0) parent.children = null;
 
     } else {
       const index = this.course.roleHierarchy.findIndex(el => el.name === role.name);
       this.course.roleHierarchy.removeAtIndex(index);
     }
-
-    const index = this.roles.findIndex(el => el.name === role.name);
-    this.roles.removeAtIndex(index);
-
-    this.hasChanges = true;
-
-    function findParent(roles: Role[], roleToFind: Role, parent: Role): Role {
-      for (const r of roles) {
-        if (r.name === roleToFind.name)
-          return parent;
-        else if (r.children) {
-          const parent = findParent(r.children, roleToFind, r)
-          if (parent) return parent;
-        }
-      }
-      return null;
-    }
+    delete this.rolesHierarchySmart[role.name];
   }
 
-  saveRoles(): void {
-    this.loading = true;
+  discard() {
+    this.course.roleHierarchy = _.cloneDeep(this.originalRolesHierarchy);
+    this.initRolesHierarchySmart();
+  }
+
+  async save(): Promise<void> {
+    this.loading.action = true;
+
+    const list = $('#roles-list');
     // @ts-ignore
-    const hierarchy = $('#roles-config').nestable('serialize');
-    this.api.updateRoles(this.course.id, this.roles, hierarchy)
-      .pipe( finalize(() => this.loading = false) )
-      .subscribe(
-        res => {
-          const successBox = $('#action_completed');
-          successBox.empty();
-          successBox.append("Role hierarchy changed!");
-          successBox.show().delay(3000).fadeOut();
-        })
+    const hierarchy = list.nestable('serialize');
+
+    await this.api.updateRoles(this.course.id, getRoles(hierarchy, []), hierarchy).toPromise();
+    this.originalRolesHierarchy = this.course.roleHierarchy;
+
+    this.loading.action = false;
+    AlertService.showAlert(AlertType.SUCCESS, 'Roles saved');
+
+    function getRoles(hierarchy: Role[], roles: Role[]) {
+      for (const role of hierarchy) {
+        roles.push(role);
+        if (role.children?.length > 0)
+          roles = [...new Set(roles.concat(getRoles(role.children, roles)))]
+      }
+      return roles;
+    }
   }
 
 
@@ -155,27 +182,50 @@ export class RolesComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  isReadyToSubmit() {
-    let isValid = function (text) {
-      return exists(text) && !text.toString().isEmpty() && !/\s/g.test(text);
-    }
-
-    const roleExists = this.roles.find(role => role.name === this.newRole.name);
-
-    // Validate inputs
-    return !roleExists && isValid(this.newRole.name);
+  initRoleToManage(role?: Role, parent?: Role): RoleManageData {
+    const roleData: RoleManageData = {
+      name: role?.name ?? null,
+      landingPage: role?.landingPage ?? null,
+      parent: parent ?? null,
+      itself: role ?? null
+    };
+    if (role) roleData.id = role.id;
+    return roleData;
   }
 
-  clearObject(obj): void {
-    for (const key of Object.keys(obj)) {
-      obj[key] = null;
+  initRolesHierarchySmart() {
+    const that = this;
+    this.rolesHierarchySmart = {};
+    init(this.course.roleHierarchy, null);
+
+    function init(rolesHierarchy: Role[], parent: Role) {
+      for (const role of rolesHierarchy) {
+        that.rolesHierarchySmart[role.name] = {role, parent, children: []};
+        if (parent) that.rolesHierarchySmart[parent.name].children.push(role);
+
+        // Traverse children
+        if (role.children?.length > 0)
+          init(role.children, role);
+      }
     }
+  }
+
+  resetManage() {
+    this.mode = null;
+    this.initRoleToManage();
+    this.f.resetForm();
+  }
+
+  isDefaultRole(roleName): boolean {
+    return this.defaultRoleNames.includes(roleName);
   }
 
 }
 
-export interface RoleData {
+export interface RoleManageData {
+  id?: number,
   name: string,
+  landingPage: number,
   parent: Role,
-  landingPage: number
+  itself: Role
 }

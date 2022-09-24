@@ -72,12 +72,20 @@
     }
   }
 
+  .ss-value-text span {
+    @apply pl-0 #{!important};
+  }
+
+  .placeholder span {
+    @apply h-4 #{!important};
+  }
+
   .ss-arrow, .ss-add {
     @apply hidden #{!important};
   }
 
-  .ss-value-text span {
-    @apply pl-0 #{!important};
+  .ss-deselect {
+    @apply text-xs mr-6 #{!important};
   }
 }
 
@@ -102,6 +110,10 @@
     &.ss-hide {
       @apply hidden;
     }
+  }
+
+  .ss-list {
+    @apply overflow-y-auto #{!important};
   }
 }
 

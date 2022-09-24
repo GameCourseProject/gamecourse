@@ -5,7 +5,7 @@ import { CourseRoutingModule } from './course-routing.module';
 import { SharedModule } from "../../../../shared.module";
 
 import { PageComponent } from './page/page.component';
-import { UsersComponent } from './users/users.component';
+import { UsersComponent } from './settings/users/users.component';
 import { RolesComponent } from "./settings/roles/roles.component";
 import { RulesComponent } from "./settings/rules/rules.component";
 import { MainComponent } from './main/main.component';

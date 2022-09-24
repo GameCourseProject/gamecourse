@@ -134,7 +134,7 @@ export class NavbarComponent implements OnInit {
 
   isInCourse(): boolean {
     const parts = this.getURLParts(true);
-    return parts.includes('courses') && parts.length >= 2;
+    return parts.includes('Courses') && parts.length >= 2;
   }
 
   async isVirtualCurrencyEnabled(): Promise<boolean> {
