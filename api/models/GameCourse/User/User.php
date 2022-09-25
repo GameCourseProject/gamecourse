@@ -62,6 +62,11 @@ class User
         return $this->getData("studentNumber");
     }
 
+    public function getTheme(): ?string
+    {
+        return $this->getData("theme");
+    }
+
     public function getUsername(): string
     {
         return $this->getData("username");
@@ -160,6 +165,14 @@ class User
     public function setStudentNumber(int $studentNumber)
     {
         $this->setData(["studentNumber" => $studentNumber]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setTheme(?string $theme)
+    {
+        $this->setData(["theme" => $theme]);
     }
 
     /**

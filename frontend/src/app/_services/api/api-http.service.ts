@@ -22,7 +22,7 @@ import {Template} from "../../_domain/pages & templates/template";
 import {RoleType} from "../../_domain/roles/role-type";
 import {View} from "../../_domain/views/view";
 import {buildView} from "../../_domain/views/build-view/build-view";
-import {dateFromDatabase, exists, objectMap} from "../../_utils/misc/misc";
+import {dateFromDatabase, exists} from "../../_utils/misc/misc";
 import {
   GeneralInput,
   List
@@ -47,6 +47,7 @@ import {CourseUser} from "../../_domain/users/course-user";
 import {Action} from "../../_domain/modules/config/Action";
 import {SkillTree} from "../../_domain/modules/config/personalized-config/skills/skill-tree";
 import {CourseUserManageData} from "../../_views/restricted/courses/course/settings/users/users.component";
+import { Theme } from '../theming/themes-available';
 
 @Injectable({
   providedIn: 'root'
@@ -1715,6 +1716,32 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']) );
+  }
+
+  public getUserTheme(userID: number): Observable<Theme> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.THEME);
+      qs.push('request', 'getUserTheme');
+      qs.push('userId', userID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'] as Theme) );
+  }
+
+  public setUserTheme(userID: number, theme: Theme): Observable<void> {
+    const data = {userId: userID, theme};
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.THEME);
+      qs.push('request', 'setUserTheme');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
   }
 
 

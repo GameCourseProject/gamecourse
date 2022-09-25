@@ -76,7 +76,7 @@ class DatabaseTest extends TestCase
      */
     public function executeQueryInsert()
     {
-        $query = "INSERT INTO " . User::TABLE_USER . " VALUES (1, 'John Doe', 'johndoe@email.com', 'MEIC-A', '', 123456, false, true);";
+        $query = "INSERT INTO " . User::TABLE_USER . " VALUES (1, 'John Doe', 'johndoe@email.com', 'MEIC-A', '', 123456, null, false, true);";
         Core::database()->executeQuery($query);
         $users = Core::database()->selectMultiple(User::TABLE_USER);
         $this->assertIsArray($users);
@@ -88,7 +88,7 @@ class DatabaseTest extends TestCase
      */
     public function executeQuerySelect()
     {
-        $query = "INSERT INTO " . User::TABLE_USER . " VALUES (1, 'John Doe', 'johndoe@email.com', 'MEIC-A', '', 123456, false, true);";
+        $query = "INSERT INTO " . User::TABLE_USER . " VALUES (1, 'John Doe', 'johndoe@email.com', 'MEIC-A', '', 123456, null, false, true);";
         Core::database()->executeQuery($query);
 
         $query = "SELECT * FROM " . User::TABLE_USER;
@@ -102,7 +102,7 @@ class DatabaseTest extends TestCase
      */
     public function executeQueryDelete()
     {
-        $query = "INSERT INTO " . User::TABLE_USER . " VALUES (1, 'John Doe', 'johndoe@email.com', 'MEIC-A', '', 123456, false, true);";
+        $query = "INSERT INTO " . User::TABLE_USER . " VALUES (1, 'John Doe', 'johndoe@email.com', 'MEIC-A', '', 123456, null, false, true);";
         Core::database()->executeQuery($query);
 
         $query = "DELETE FROM " . User::TABLE_USER . " WHERE 1";
@@ -134,7 +134,7 @@ class DatabaseTest extends TestCase
         Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
         $first = Core::database()->select(User::TABLE_USER);
         $this->assertIsArray($first);
-        $this->assertCount(8, $first);
+        $this->assertCount(9, $first);
         $this->assertArrayHasKey("name", $first);
         $this->assertEquals("John Doe", $first["name"]);
     }
@@ -151,7 +151,7 @@ class DatabaseTest extends TestCase
 
         $first = Core::database()->select(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id", [], "*", "id");
         $this->assertIsArray($first);
-        $this->assertCount(12, $first);
+        $this->assertCount(13, $first);
         $this->assertArrayHasKey("name", $first);
         $this->assertArrayHasKey("username", $first);
         $this->assertEquals("John Doe", $first["name"]);
@@ -167,7 +167,7 @@ class DatabaseTest extends TestCase
         Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
         $first = Core::database()->select(User::TABLE_USER, ["name" => "John Doe"]);
         $this->assertIsArray($first);
-        $this->assertCount(8, $first);
+        $this->assertCount(9, $first);
         $this->assertArrayHasKey("name", $first);
         $this->assertEquals("John Doe", $first["name"]);
     }
@@ -181,7 +181,7 @@ class DatabaseTest extends TestCase
         Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
         $first = Core::database()->select(User::TABLE_USER, ["id" => 1, "name" => "John Doe"]);
         $this->assertIsArray($first);
-        $this->assertCount(8, $first);
+        $this->assertCount(9, $first);
         $this->assertArrayHasKey("name", $first);
         $this->assertEquals("John Doe", $first["name"]);
     }
@@ -242,7 +242,7 @@ class DatabaseTest extends TestCase
         Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
         $first = Core::database()->select(User::TABLE_USER, [], "*", "name");
         $this->assertIsArray($first);
-        $this->assertCount(8, $first);
+        $this->assertCount(9, $first);
         $this->assertArrayHasKey("name", $first);
         $this->assertEquals("Anna Doe", $first["name"]);
     }
@@ -257,7 +257,7 @@ class DatabaseTest extends TestCase
         Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "a"]);
         $first = Core::database()->select(User::TABLE_USER, [], "*", "name, email");
         $this->assertIsArray($first);
-        $this->assertCount(8, $first);
+        $this->assertCount(9, $first);
         $this->assertArrayHasKey("name", $first);
         $this->assertArrayHasKey("email", $first);
         $this->assertEquals("Anna Doe", $first["name"]);
@@ -274,7 +274,7 @@ class DatabaseTest extends TestCase
         Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "b"]);
         $first = Core::database()->select(User::TABLE_USER, [], "*", "name ASC, email DESC");
         $this->assertIsArray($first);
-        $this->assertCount(8, $first);
+        $this->assertCount(9, $first);
         $this->assertArrayHasKey("name", $first);
         $this->assertArrayHasKey("email", $first);
         $this->assertEquals("Anna Doe", $first["name"]);
@@ -291,7 +291,7 @@ class DatabaseTest extends TestCase
         Core::database()->insert(User::TABLE_USER, ["name" => "John Doe", "email" => "c"]);
         $first = Core::database()->select(User::TABLE_USER, [], "*", null, [["name", "Anna Doe"]]);
         $this->assertIsArray($first);
-        $this->assertCount(8, $first);
+        $this->assertCount(9, $first);
         $this->assertArrayHasKey("name", $first);
         $this->assertEquals("John Doe", $first["name"]);
     }
@@ -306,7 +306,7 @@ class DatabaseTest extends TestCase
         Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "a"]);
         $first = Core::database()->select(User::TABLE_USER, [], "*", null, [["name", "John Doe"], ["email", "b"]]);
         $this->assertIsArray($first);
-        $this->assertCount(8, $first);
+        $this->assertCount(9, $first);
         $this->assertArrayHasKey("name", $first);
         $this->assertArrayHasKey("email", $first);
         $this->assertEquals("Anna Doe", $first["name"]);
@@ -323,7 +323,7 @@ class DatabaseTest extends TestCase
         Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "b"]);
         $first = Core::database()->select(User::TABLE_USER, [], "*", null, [], [["id", ">", 1]]);
         $this->assertIsArray($first);
-        $this->assertCount(8, $first);
+        $this->assertCount(9, $first);
         $this->assertArrayHasKey("name", $first);
         $this->assertArrayHasKey("email", $first);
         $this->assertEquals("Anna Doe", $first["name"]);
@@ -340,7 +340,7 @@ class DatabaseTest extends TestCase
         Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe", "email" => "b"]);
         $first = Core::database()->select(User::TABLE_USER, [], "*", null, [], [["id", ">", 1], ["email", "!=", "a"]]);
         $this->assertIsArray($first);
-        $this->assertCount(8, $first);
+        $this->assertCount(9, $first);
         $this->assertArrayHasKey("name", $first);
         $this->assertArrayHasKey("email", $first);
         $this->assertEquals("Anna Doe", $first["name"]);
@@ -356,7 +356,7 @@ class DatabaseTest extends TestCase
         Core::database()->insert(User::TABLE_USER, ["name" => "Anna Doe"]);
         $first = Core::database()->select(User::TABLE_USER, [], "*", null, [], [], ["name" => "%Smith%"]);
         $this->assertIsArray($first);
-        $this->assertCount(8, $first);
+        $this->assertCount(9, $first);
         $this->assertArrayHasKey("name", $first);
         $this->assertEquals("John Smith Doe", $first["name"]);
     }
@@ -374,10 +374,10 @@ class DatabaseTest extends TestCase
         $users = Core::database()->selectMultiple(User::TABLE_USER);
         $this->assertIsArray($users);
         $this->assertCount(2, $users);
-        $this->assertCount(8, $users[0]);
+        $this->assertCount(9, $users[0]);
         $this->assertArrayHasKey("name", $users[0]);
         $this->assertEquals("John Doe", $users[0]["name"]);
-        $this->assertCount(8, $users[1]);
+        $this->assertCount(9, $users[1]);
         $this->assertArrayHasKey("name", $users[1]);
         $this->assertEquals("Anna Doe", $users[1]["name"]);
     }
@@ -395,12 +395,12 @@ class DatabaseTest extends TestCase
         $users = Core::database()->selectMultiple(User::TABLE_USER . " u JOIN " . Auth::TABLE_AUTH . " a on a.user=u.id", [], "*", "id");
         $this->assertIsArray($users);
         $this->assertCount(2, $users);
-        $this->assertCount(12, $users[0]);
+        $this->assertCount(13, $users[0]);
         $this->assertArrayHasKey("name", $users[0]);
         $this->assertArrayHasKey("username", $users[0]);
         $this->assertEquals("John Doe", $users[0]["name"]);
         $this->assertEquals("johndoe", $users[0]["username"]);
-        $this->assertCount(12, $users[1]);
+        $this->assertCount(13, $users[1]);
         $this->assertArrayHasKey("name", $users[1]);
         $this->assertArrayHasKey("username", $users[1]);
         $this->assertEquals("Anna Doe", $users[1]["name"]);
@@ -696,7 +696,7 @@ class DatabaseTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(1, $users);
         $this->assertEquals(["id" => $id, "name" => "John Doe", "email" => null, "major" => null, "nickname" => null,
-            "studentNumber" => null, "isAdmin" => "0", "isActive" => "1"], $users[0]);
+            "studentNumber" => null, "theme" => null, "isAdmin" => "0", "isActive" => "1"], $users[0]);
     }
 
     /**
@@ -709,7 +709,7 @@ class DatabaseTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(1, $users);
         $this->assertEquals(["id" => $id, "name" => "John Doe", "email" => "johndoe@email.com", "major" => null,
-            "nickname" => null, "studentNumber" => null, "isAdmin" => "0", "isActive" => "1"], $users[0]);
+            "nickname" => null, "studentNumber" => null, "theme" => null, "isAdmin" => "0", "isActive" => "1"], $users[0]);
     }
 
     /**

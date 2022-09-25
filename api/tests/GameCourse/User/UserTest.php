@@ -8,6 +8,7 @@ use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Role\Role;
+use GameCourse\Theme\Theme;
 use PDOException;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
@@ -334,6 +335,20 @@ class UserTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function getTheme()
+    {
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, false);
+        $this->assertNull($user->getTheme());
+
+        $user->setTheme(Theme::LIGHT);
+        $this->assertEquals(Theme::LIGHT, $user->getTheme());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function getUserUsername()
     {
         $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
@@ -462,7 +477,8 @@ class UserTest extends TestCase
             123456, "John Doe", "MEIC-A", false, true);
         $this->assertEquals(["id" => intval(Core::database()->select(User::TABLE_USER, ["studentNumber" => 123456], "id")),
             "name" => "John Smith Doe", "username" => "ist123456", "auth_service" => AuthService::FENIX, "email" => "johndoe@email.com",
-            "studentNumber" => 123456, "nickname" => "John Doe", "major" => "MEIC-A", "isAdmin" => false, "isActive" => true, "lastLogin" => null],
+            "studentNumber" => 123456, "nickname" => "John Doe", "major" => "MEIC-A", "isAdmin" => false, "isActive" => true,
+            "lastLogin" => null, "theme" => null],
             $user->getData());
     }
 
@@ -594,6 +610,21 @@ class UserTest extends TestCase
             123456, "John Doe", "MEIC-A", false, true);
         $user->setStudentNumber(654321);
         $this->assertSame(654321, $user->getStudentNumber());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setTheme()
+    {
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, true);
+        $user->setTheme(Theme::LIGHT);
+        $this->assertSame(Theme::LIGHT, $user->getTheme());
+
+        $user->setTheme(null);
+        $this->assertNull($user->getTheme());
     }
 
     /**
@@ -770,7 +801,7 @@ class UserTest extends TestCase
         $user = User::addUser("Ana Gonçalves", "ist100000", AuthService::FENIX, "ana.goncalves@gmail.com",
             10000, "Ana G", "MEIC-A", 0, 0);
         $user->setData($fieldValues);
-        $this->assertEquals($user->getData(), array_merge($fieldValues, ["id" => $user->getId()]));
+        $this->assertEquals($user->getData(), array_merge($fieldValues, ["id" => $user->getId(), "theme" => null]));
     }
 
     /**
@@ -789,7 +820,7 @@ class UserTest extends TestCase
             $user = new User(1);
             $this->assertEquals(["id" => 1, "name" => "Ana Gonçalves", "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@gmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
-                "isAdmin" => false, "isActive" => false, "lastLogin" => null], $user->getData());
+                "isAdmin" => false, "isActive" => false, "lastLogin" => null, "theme" => null], $user->getData());
         }
     }
 
@@ -811,7 +842,7 @@ class UserTest extends TestCase
             $user = new User(2);
             $this->assertEquals(["id" => "2", "name" => "Rita Alves", "username" => "ist200000", "auth_service" => AuthService::FENIX,
                 "email" => "rita.alves@gmail.com", "studentNumber" => 20000, "nickname" => "Rita A.", "major" => "MEIC-A",
-                "isAdmin" => false, "isActive" => false, "lastLogin" => null], $user->getData());
+                "isAdmin" => false, "isActive" => false, "lastLogin" => null, "theme" => null], $user->getData());
         }
     }
 
@@ -833,7 +864,7 @@ class UserTest extends TestCase
             $user = new User(2);
             $this->assertEquals(["id" => "2", "name" => "Rita Alves", "username" => "ist200000", "auth_service" => AuthService::FENIX,
                 "email" => "rita.alves@gmail.com", "studentNumber" => 20000, "nickname" => "Rita A.", "major" => "MEIC-A",
-                "isAdmin" => false, "isActive" => false, "lastLogin" => null], $user->getData());
+                "isAdmin" => false, "isActive" => false, "lastLogin" => null, "theme" => null], $user->getData());
         }
     }
 
@@ -855,7 +886,7 @@ class UserTest extends TestCase
             $user = new User(2);
             $this->assertEquals(["id" => "2", "name" => "Rita Alves", "username" => "ist200000", "auth_service" => AuthService::FENIX,
                 "email" => "rita.alves@gmail.com", "studentNumber" => 20000, "nickname" => "Rita A.", "major" => "MEIC-A",
-                "isAdmin" => false, "isActive" => false, "lastLogin" => null], $user->getData());
+                "isAdmin" => false, "isActive" => false, "lastLogin" => null, "theme" => null], $user->getData());
         }
     }
 
@@ -993,7 +1024,7 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(2, $users);
 
-        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
@@ -1019,7 +1050,7 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(1, $users);
 
-        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $user) {
@@ -1045,7 +1076,7 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(1, $users);
 
-        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $user) {
@@ -1095,7 +1126,7 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(2, $users);
 
-        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "nickname", "major", "isAdmin", "isActive"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
@@ -1493,7 +1524,7 @@ class UserTest extends TestCase
 
         $user = Core::database()->select(User::TABLE_USER, ["id" => $id]);
         $auth = Core::database()->select(Auth::TABLE_AUTH, ["user" => $id]);
-        $userData = array("id" => strval($id), "name" => $name, "email" => $email, "studentNumber" => strval($studentNumber), "nickname" => $nickname, "major" =>  $major, "isAdmin" => +$isAdmin, "isActive" => +$isActive);
+        $userData = array("id" => strval($id), "name" => $name, "email" => $email, "studentNumber" => strval($studentNumber), "theme" => null, "nickname" => $nickname, "major" =>  $major, "isAdmin" => +$isAdmin, "isActive" => +$isActive);
         $authData = array("user" => strval($id), "username" => $username, "auth_service" => $authService, "lastLogin" => null);
         $this->assertEquals($userData, $user);
         $this->assertEquals($authData, $auth);
@@ -1575,7 +1606,7 @@ class UserTest extends TestCase
 
         $user = Core::database()->select(User::TABLE_USER, ["id" => 1]);
         $auth = Core::database()->select(Auth::TABLE_AUTH, ["user" => 1]);
-        $userData = array("id" => "1", "name" => $name, "email" => $email, "studentNumber" => strval($studentNumber), "nickname" => $nickname, "major" =>  $major, "isAdmin" => +$isAdmin, "isActive" => +$isActive);
+        $userData = array("id" => "1", "name" => $name, "email" => $email, "studentNumber" => strval($studentNumber), "theme" => null, "nickname" => $nickname, "major" =>  $major, "isAdmin" => +$isAdmin, "isActive" => +$isActive);
         $authData = array("user" => "1", "username" => $username, "auth_service" => $authService, "lastLogin" => null);
         $this->assertEquals($user, $userData);
         $this->assertEquals($auth, $authData);
@@ -1597,7 +1628,7 @@ class UserTest extends TestCase
             $user = Core::database()->select(User::TABLE_USER, ["studentNumber" => 654321]);
             $auth = Core::database()->select(Auth::TABLE_AUTH, ["username" => "ist654321"]);
             $this->assertEquals(["id" => "1", "name" => "João Carlos Sousa", "email" => "joao@gmail.com", "studentNumber" => 654321,
-                "nickname" => "João Sousa", "major" => "MEIC-A", "isAdmin" => "0", "isActive" => "0"], $user);
+                "theme" => null, "nickname" => "João Sousa", "major" => "MEIC-A", "isAdmin" => "0", "isActive" => "0"], $user);
             $this->assertEquals(["user" => "1", "username" => "ist654321", "auth_service" => AuthService::FENIX, "lastLogin" => null], $auth);
         }
     }
@@ -1853,19 +1884,19 @@ class UserTest extends TestCase
         $this->assertEquals(4, $nrUsersImported);
 
         $user1 = ["id" => 1, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
-            "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
+            "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956", "theme" => null,
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
         $user2 = ["id" => 2, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
-            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664",
+            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664", "theme" => null,
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
         $user3 = ["id" => 3, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => null,
-            "nickname" => null, "studentNumber" => 84715, "username" => "ist426015",
+            "nickname" => null, "studentNumber" => 84715, "username" => "ist426015", "theme" => null,
             "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
         $user4 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
-            "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
+            "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893", "theme" => null,
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
 
-        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
@@ -1901,19 +1932,19 @@ class UserTest extends TestCase
         $this->assertEquals(3, $nrUsersImported);
 
         $user0 = ["id" => 1, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
-            "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
+            "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015", "theme" => null,
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false, "lastLogin" => null];
         $user1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
-            "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
+            "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956", "theme" => null,
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
         $user2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
-            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664",
+            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664", "theme" => null,
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
         $user3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
-            "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
+            "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893", "theme" => null,
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
 
-        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
@@ -1949,19 +1980,19 @@ class UserTest extends TestCase
         $this->assertEquals(3, $nrUsersImported);
 
         $user0 = ["id" => 1, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => null,
-            "nickname" => null, "studentNumber" => 84715, "username" => "ist426015",
+            "nickname" => null, "studentNumber" => 84715, "username" => "ist426015", "theme" => null,
             "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
         $user1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
-            "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
+            "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956", "theme" => null,
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
         $user2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
-            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664",
+            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664", "theme" => null,
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
         $user3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
-            "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
+            "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893", "theme" => null,
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
 
-        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
@@ -1993,19 +2024,19 @@ class UserTest extends TestCase
         $this->assertEquals(4, $nrUsersImported);
 
         $user1 = ["id" => 1, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
-            "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
+            "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956", "theme" => null,
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
         $user2 = ["id" => 2, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
-            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664",
+            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664", "theme" => null,
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
         $user3 = ["id" => 3, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => null,
-            "nickname" => null, "studentNumber" => 84715, "username" => "ist426015",
+            "nickname" => null, "studentNumber" => 84715, "username" => "ist426015", "theme" => null,
             "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
         $user4 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
-            "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
+            "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893", "theme" => null,
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
 
-        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
@@ -2040,19 +2071,19 @@ class UserTest extends TestCase
         $this->assertEquals(3, $nrUsersImported);
 
         $user0 = ["id" => 1, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => null,
-            "nickname" => null, "studentNumber" => 84715, "username" => "ist426015",
+            "nickname" => null, "studentNumber" => 84715, "username" => "ist426015", "theme" => null,
             "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
         $user1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
-            "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
+            "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956", "theme" => null,
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
         $user2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
-            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664",
+            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664", "theme" => null,
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
         $user3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
-            "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
+            "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893", "theme" => null,
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
 
-        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
@@ -2087,19 +2118,19 @@ class UserTest extends TestCase
         $this->assertEquals(3, $nrUsersImported);
 
         $user0 = ["id" => 1, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
-            "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
+            "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015", "theme" => null,
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false, "lastLogin" => null];
         $user1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
-            "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
+            "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956", "theme" => null,
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
         $user2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
-            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664",
+            "nickname" => null, "studentNumber" => 87664, "username" => "ist187664", "theme" => null,
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
         $user3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
-            "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
+            "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893", "theme" => null,
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
 
-        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {

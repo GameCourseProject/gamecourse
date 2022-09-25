@@ -9,6 +9,7 @@ CREATE TABLE user(
 	major 	                    varchar(8),
 	nickname                    varchar(50),
 	studentNumber               int UNIQUE,
+	theme                       ENUM ('light', 'dark') DEFAULT NULL,
     isAdmin                     boolean NOT NULL DEFAULT FALSE,
 	isActive                    boolean NOT NULL DEFAULT TRUE
 );

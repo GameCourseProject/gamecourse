@@ -18,12 +18,12 @@ export class ThemeTogglerComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  toggleTheme(): void {
+  async toggleTheme(): Promise<void> {
     const theme = this.theme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT;
     this.theme = theme;
 
-    this.themeService.saveTheme(theme);
-    this.themeService.apply(theme);
+    await this.themeService.saveTheme(theme);
+    await this.themeService.loadTheme();
   }
 
   get Theme(): typeof Theme {

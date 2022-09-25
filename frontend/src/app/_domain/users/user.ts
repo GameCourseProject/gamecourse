@@ -1,6 +1,7 @@
 import {AuthType} from "../auth/auth-type";
 import {Moment} from "moment";
 import {RoleDatabase} from "../roles/role";
+import {Theme} from "../../_services/theming/themes-available";
 import {dateFromDatabase} from "../../_utils/misc/misc";
 
 export class User {
@@ -10,6 +11,7 @@ export class User {
   private _major: string;
   private _nickname: string;
   private _studentNumber: number;
+  private _theme: Theme;
   private _isAdmin: boolean;
   private _isActive: boolean;
   private _username: string;
@@ -19,7 +21,7 @@ export class User {
   private _nrCourses?: number;
 
   constructor(id: number, name: string, email: string, major: string, nickname: string, studentNumber: number,
-              isAdmin: boolean, isActive: boolean, username: string, authMethod: AuthType, photoUrl: string,
+              theme: Theme, isAdmin: boolean, isActive: boolean, username: string, authMethod: AuthType, photoUrl: string,
               lastLogin: Moment, nrCourses?: number) {
 
     this._id = id;
@@ -28,6 +30,7 @@ export class User {
     this._major = major;
     this._nickname = nickname;
     this._studentNumber = studentNumber;
+    this._theme = theme;
     this._isAdmin = isAdmin;
     this._isActive = isActive;
     this._username = username;
@@ -83,6 +86,14 @@ export class User {
 
   set studentNumber(value: number) {
     this._studentNumber = value;
+  }
+
+  get theme(): Theme {
+    return this._theme;
+  }
+
+  set theme(value: Theme) {
+    this._theme = value;
   }
 
   get isAdmin(): boolean {
@@ -149,6 +160,7 @@ export class User {
       obj.major,
       obj.nickname,
       obj.studentNumber,
+      obj.theme as Theme ?? null,
       obj.isAdmin ?? null,
       obj.isActive ?? null,
       obj.username,
@@ -167,6 +179,7 @@ interface UserDatabase {
   "major": string,
   "nickname": string,
   "studentNumber": number,
+  "theme": string,
   "isAdmin": boolean,
   "isActive": boolean,
   "username": string,

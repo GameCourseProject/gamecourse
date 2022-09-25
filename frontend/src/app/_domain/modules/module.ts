@@ -10,7 +10,7 @@ export class Module {
   private _id: string;
   private _name: string;
   private _description: string;
-  private _icon: string;
+  private _icon: {url: string, svg: string};
   private _type: ModuleType;
   private _version: string;
   private _configurable: boolean;
@@ -22,7 +22,7 @@ export class Module {
 
   static stylesLoaded: Map<number, {state: LoadingState, stylesIds?: string[]}> = new Map<number, {state: LoadingState, stylesIds?: string[]}>();
 
-  constructor(id: string, name: string, description: string, icon: string, type: ModuleType, version: string,
+  constructor(id: string, name: string, description: string, icon: {url: string, svg: string}, type: ModuleType, version: string,
               configurable: boolean, compatibility: {project: boolean, api: boolean}, dependencies?: Module[],
               enabled?: boolean, canChangeState?: boolean, dependencyMode?: DependencyMode) {
 
@@ -64,11 +64,11 @@ export class Module {
     this._description = value;
   }
 
-  get icon(): string {
+  get icon(): {url: string, svg: string} {
     return this._icon;
   }
 
-  set icon(value: string) {
+  set icon(value: {url: string, svg: string}) {
     this._icon = value;
   }
 
@@ -219,7 +219,7 @@ export class Module {
       obj.id,
       obj.name,
       obj.description,
-      obj.icon,
+      {url: obj.icon, svg: obj.iconSVG},
       obj.type as ModuleType,
       obj.version,
       obj.configurable,
@@ -237,6 +237,7 @@ interface ModuleDatabase {
   name: string,
   description: string;
   icon: string;
+  iconSVG: string;
   type: string;
   version: string,
   configurable: boolean;

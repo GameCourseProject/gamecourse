@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import { NavigationCancel, NavigationEnd, NavigationStart, Router } from "@angular/router";
 
 import { ErrorService } from "./_services/error.service";
@@ -14,7 +14,7 @@ import '@extensions/string.extensions';
   selector: 'app-root',
   templateUrl: './app.component.html'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   loading: boolean = true;
 
   constructor(
@@ -30,10 +30,11 @@ export class AppComponent {
       if (event instanceof NavigationEnd || event instanceof NavigationCancel)
         this.loading = false;
     });
+  }
 
+  async ngOnInit() {
     // Apply theming
-    const theme = themeService.getTheme();
-    themeService.apply(theme);
+    await this.themeService.loadTheme();
   }
 
   get AlertType(): typeof AlertType {

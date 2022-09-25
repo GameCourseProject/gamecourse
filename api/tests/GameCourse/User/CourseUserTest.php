@@ -271,7 +271,7 @@ class CourseUserTest extends TestCase
         $this->assertEquals(["id" => 2, "name" => "Johanna Smith Doe", "username" => "ist654321", "auth_service" => AuthService::FENIX,
             "email" => "johannadoe@email.com", "studentNumber" => 654321, "nickname" => "Johanna Doe", "major" => "MEIC-A",
             "isAdmin" => false, "isActive" => true, "course" => 1, "lastActivity" => null, "isActiveInCourse" => true,
-            "lastLogin" => null], $courseUser->getData());
+            "lastLogin" => null, "theme" => null], $courseUser->getData());
     }
 
     /**
@@ -1286,19 +1286,19 @@ class CourseUserTest extends TestCase
         $expectedUser1 = ["id" => 3, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null, "theme" => null];
         $expectedUser2 = ["id" => 4, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null, "theme" => null];
         $expectedUser3 = ["id" => 5, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
             "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
             "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null, "theme" => null];
         $expectedUser4 = ["id" => 6, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null, "theme" => null];
 
         $this->assertEquals($expectedUser1, $user1->getData());
         $this->assertEquals($expectedUser2, $user2->getData());
@@ -1363,19 +1363,19 @@ class CourseUserTest extends TestCase
         $expectedUser0 = ["id" => 3, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
             "auth_service" => AuthService::FENIX, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null, "theme" => null];
         $expectedUser1 = ["id" => 4, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null, "theme" => null];
         $expectedUser2 = ["id" => 5, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null, "theme" => null];
         $expectedUser3 = ["id" => 6, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null, "theme" => null];
 
         $this->assertEquals($expectedUser0, $user0->getData());
         $this->assertEquals($expectedUser1, $user1->getData());
@@ -1440,19 +1440,19 @@ class CourseUserTest extends TestCase
         $expectedUser0 = ["id" => 3, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
             "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
             "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null, "theme" => null];
         $expectedUser1 = ["id" => 4, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null, "theme" => null];
         $expectedUser2 = ["id" => 5, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null, "theme" => null];
         $expectedUser3 = ["id" => 6, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null, "theme" => null];
 
         $this->assertEquals($expectedUser0, $user0->getData());
         $this->assertEquals($expectedUser1, $user1->getData());
@@ -1512,19 +1512,19 @@ class CourseUserTest extends TestCase
         $expectedUser1 = ["id" => 3, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null, "theme" => null];
         $expectedUser2 = ["id" => 4, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null, "theme" => null];
         $expectedUser3 = ["id" => 5, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
             "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
             "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null, "theme" => null];
         $expectedUser4 = ["id" => 6, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null, "theme" => null];
 
         $this->assertEquals($expectedUser1, $user1->getData());
         $this->assertEquals($expectedUser2, $user2->getData());
@@ -1588,19 +1588,19 @@ class CourseUserTest extends TestCase
         $expectedUser0 = ["id" => 3, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => "LEIC-T",
             "nickname" => "", "studentNumber" => 84715, "username" => "ist426015",
             "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null, "theme" => null];
         $expectedUser1 = ["id" => 4, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null, "theme" => null];
         $expectedUser2 = ["id" => 5, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null, "theme" => null];
         $expectedUser3 = ["id" => 6, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null, "theme" => null];
 
         $this->assertEquals($expectedUser0, $user0->getData());
         $this->assertEquals($expectedUser1, $user1->getData());
@@ -1664,19 +1664,19 @@ class CourseUserTest extends TestCase
         $expectedUser0 = ["id" => 3, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
             "auth_service" => AuthService::FENIX, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null, "theme" => null];
         $expectedUser1 = ["id" => 4, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null, "theme" => null];
         $expectedUser2 = ["id" => 5, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => "", "studentNumber" => 87664, "username" => "ist187664",
             "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null, "theme" => null];
         $expectedUser3 = ["id" => 6, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893",
             "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null, "theme" => null];
 
         $this->assertEquals($expectedUser0, $user0->getData());
         $this->assertEquals($expectedUser1, $user1->getData());
@@ -1732,7 +1732,7 @@ class CourseUserTest extends TestCase
         $expectedUser1 = ["id" => 3, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
             "auth_service" => AuthService::FENIX, "isAdmin" => false, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => false, "lastLogin" => null, "theme" => null];
         $this->assertEquals($expectedUser1, $user1->getData());
 
         $user1Roles = $user1->getRoles();
@@ -1768,7 +1768,7 @@ class CourseUserTest extends TestCase
         $expectedUser1 = ["id" => 3, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015",
             "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "course" => $this->course->getId(),
-            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null];
+            "lastActivity" => null, "isActiveInCourse" => true, "lastLogin" => null, "theme" => null];
         $this->assertEquals($expectedUser1, $user1->getData());
 
         $user1Roles = $user1->getRoles();

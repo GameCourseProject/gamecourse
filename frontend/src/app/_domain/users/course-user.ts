@@ -1,6 +1,7 @@
 import {User} from "./user";
 import {Role, RoleDatabase} from "../roles/role";
 import {AuthType} from "../auth/auth-type";
+import {Theme} from "../../_services/theming/themes-available";
 import {Moment} from "moment";
 import {dateFromDatabase} from "../../_utils/misc/misc";
 import {LoadingState} from "../modules/module";
@@ -14,11 +15,11 @@ export class CourseUser extends User {
 
   static activityRefreshState: Map<number, LoadingState> = new Map<number, LoadingState>();
 
-  constructor(id: number, name: string, email: string, major: string, nickname: string, studentNumber: number,
+  constructor(id: number, name: string, email: string, major: string, nickname: string, studentNumber: number, theme: Theme,
               isAdmin: boolean, isActive: boolean, username: string, authMethod: AuthType, photoUrl: string,
               lastLogin: Moment, roles: Role[], lastActivity: Moment, isActiveInCourse: boolean) {
 
-    super(id, name, email, major, nickname, studentNumber, isAdmin, isActive, username, authMethod, photoUrl, lastLogin);
+    super(id, name, email, major, nickname, studentNumber, theme, isAdmin, isActive, username, authMethod, photoUrl, lastLogin);
 
     this._roles = roles;
     this._lastActivity = lastActivity;
@@ -72,6 +73,7 @@ export class CourseUser extends User {
       obj.major,
       obj.nickname,
       obj.studentNumber,
+      obj.theme as Theme ?? null,
       obj.isAdmin,
       obj.isActive,
       obj.username,
@@ -92,6 +94,7 @@ interface CourseUserDatabase {
   "major": string,
   "nickname": string,
   "studentNumber": number,
+  "theme": string,
   "isAdmin": boolean,
   "isActive": boolean,
   "username": string,
