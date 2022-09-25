@@ -98,8 +98,8 @@ export class ModulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   initModuleToManage(module: Module): Module {
-    const moduleToManage = _.cloneDeep(module);
-    moduleToManage.icon = moduleToManage.icon.replace('<svg', '<svg id="' + module.id + '-modal-icon"');
+    const moduleToManage = _.cloneDeep(module) as Module;
+    moduleToManage.icon.svg = moduleToManage.icon.svg.replace('<svg', '<svg id="' + module.id + '-modal-icon"');
     return moduleToManage;
   }
 

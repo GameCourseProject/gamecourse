@@ -128,6 +128,15 @@ class ModuleTest extends TestCase
     /**
      * @test
      */
+    public function getIconSVG()
+    {
+        $module = new XPLevels($this->course);
+        $this->assertEquals(file_get_contents(MODULES_FOLDER . "/" . $module->getId() . "/icon.svg"), $module->getIconSVG());
+    }
+
+    /**
+     * @test
+     */
     public function getType()
     {
         $module = new XPLevels($this->course);

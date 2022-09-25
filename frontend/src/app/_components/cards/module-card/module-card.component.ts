@@ -10,10 +10,11 @@ export class ModuleCardComponent implements OnInit, AfterViewInit {
   @Input() module: Module;
 
   svgIcon: string;
+
   constructor() {}
 
   ngOnInit(): void {
-    this.svgIcon = this.module.icon.replace('<svg', '<svg id="' + this.module.id + '-icon"');
+    this.svgIcon = this.module.icon.svg.replace('<svg', '<svg id="' + this.module.id + '-icon"');
   }
 
   ngAfterViewInit() {

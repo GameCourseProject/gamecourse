@@ -51,6 +51,11 @@ abstract class Module
 
     public function getIcon(): string
     {
+        return API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . $this->id. "/icon.svg";
+    }
+
+    public function getIconSVG(): string
+    {
         return file_get_contents(MODULES_FOLDER . "/" . $this->id . "/icon.svg");
     }
 
@@ -1108,6 +1113,7 @@ abstract class Module
         $module = self::getModuleById($moduleInfo["id"], $course);
         $moduleInfo = array_merge($moduleInfo, $module->getData());
         $moduleInfo["icon"] = $module->getIcon();
+        $moduleInfo["iconSVG"] = $module->getIconSVG();
         if ($dependencies) $moduleInfo["dependencies"] = $module->getDependencies();
         $moduleInfo["configurable"] = $module->isConfigurable();
         $moduleInfo["compatibility"] = [

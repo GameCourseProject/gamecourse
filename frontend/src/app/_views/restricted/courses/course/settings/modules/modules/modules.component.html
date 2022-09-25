@@ -56,7 +56,7 @@
 
   <!-- Header -->
   <div class="flex items-center w-full prose mb-4">
-    <div class="icon mr-3" [innerHTML]="moduleToManage.icon | sanitizeHTML"></div>
+    <div class="icon mr-3" [innerHTML]="moduleToManage.icon.svg | sanitizeHTML"></div>
     <h3 class="font-semibold normal-case text-base-content/75 my-0">{{moduleToManage.name}}</h3>
   </div>
 
