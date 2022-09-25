@@ -212,7 +212,7 @@ class Core
             $username = $_SESSION['username'];
             $user = User::getUserByUsername($username, $_SESSION['type']);
             if ($user) static::$loggedUser = $user;
-            if (!static::$loggedUser->isActive()) self::denyAccess();
+            if (!static::$loggedUser || !static::$loggedUser->isActive()) self::denyAccess();
 
             if (static::$loggedUser) {
                 $_SESSION['user'] = static::$loggedUser->getId();
