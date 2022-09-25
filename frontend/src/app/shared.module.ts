@@ -58,6 +58,7 @@ import { TableData } from "./_components/tables/table-data/table-data.component"
 
 // Components: cards
 import { CourseCardComponent } from './_components/cards/course-card/course-card.component';
+import { ModuleCardComponent } from './_components/cards/module-card/module-card.component';
 
 // Components: alerts
 import { AlertComponent } from './_components/alerts/alert/alert.component';
@@ -198,6 +199,7 @@ import {
     TableData,
 
     CourseCardComponent,
+    ModuleCardComponent,
 
     AlertComponent,
 
@@ -271,6 +273,7 @@ import {
     TableData,
 
     CourseCardComponent,
+    ModuleCardComponent,
 
     AlertComponent,
 

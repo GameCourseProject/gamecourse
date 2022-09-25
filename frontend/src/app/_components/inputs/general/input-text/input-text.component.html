@@ -6,10 +6,10 @@
   </label>
 
   <!-- Simple Input -->
-  <ng-container *ngIf="!leftLabel" [ngTemplateOutlet]="SIMPLE"></ng-container>
+  <ng-container *ngIf="!leftLabel && !rightLabel && !btnText && !btnIcon" [ngTemplateOutlet]="SIMPLE"></ng-container>
 
   <!-- Group Input -->
-  <ng-container *ngIf="leftLabel" [ngTemplateOutlet]="GROUP"></ng-container>
+  <ng-container *ngIf="leftLabel || rightLabel || btnText || btnIcon" [ngTemplateOutlet]="GROUP"></ng-container>
 
   <!-- Error Messages -->
   <label *ngIf="form && form.submitted && inputText.invalid" class="label">

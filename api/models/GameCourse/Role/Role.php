@@ -292,21 +292,21 @@ class Role
         $oldRoles = Role::getCourseRoles($courseId, false);
         foreach ($oldRoles as $oldRole) {
             $exists = !empty(array_filter($roles, function ($role) use ($oldRole) {
-                return $role["id"] && $role["id"] == $oldRole["id"];
+                return isset($role["id"]) && $role["id"] == $oldRole["id"];
             }));
             if (!$exists) self::removeRoleFromCourse($courseId, $oldRole["name"], $oldRole["id"]);
         }
 
         // Update roles
         foreach ($roles as $role) {
-            if ($role["id"]) { // update
+            if (isset($role["id"])) { // update
                 Core::database()->update(self::TABLE_ROLE, [
                     "name" => trim($role["name"]),
                     "landingPage" => $role["landingPage"]
                 ], ["course" => $courseId, "id" => $role["id"]]);
 
             } else { // add
-                self::addRoleToCourse($courseId, $role["name"], null, $role["landingPage"]);
+                self::addRoleToCourse($courseId, $role["name"], null, $role["landingPage"] ?? null);
             }
         }
     }

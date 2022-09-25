@@ -1,0 +1,20 @@
+<div class="flex items-start p-0 relative btn btn-ghost rounded-2xl shadow-lg bg-base-100 hover:bg-base-100
+border-base-200 border-2 hover:border-[3px] hover:border-primary hover:border-opacity-60 h-[9rem]">
+
+  <div class="p-4">
+    <div class="flex items-center w-full prose mb-2">
+      <div class="icon mr-3" [innerHTML]="svgIcon | sanitizeHTML"></div>
+      <h3 class="font-semibold normal-case text-base-content/75 my-0">{{module.name}}</h3>
+    </div>
+
+    <div class="w-full prose">
+      <p class="text-sm text-left normal-case line-clamp-2 font-normal">{{module.description}}</p>
+    </div>
+  </div>
+
+  <div class="absolute -bottom-1 bg-opacity-90 rounded-b-2xl py-0.5 w-full"
+       [ngClass]="{'bg-success text-success-content': module.enabled, 'bg-error text-error-content': !module.enabled}">
+    <span class="!text-sm">{{module.enabled ? 'Enabled' : 'Disabled'}}</span>
+  </div>
+
+</div>

@@ -1,83 +1,77 @@
-<ng-container *ngIf="!loading">
+<div class="w-full relative">
+
+  <!-- Header -->
+  <app-header [title]="'Modules'" [icon]="'tabler-plug'" [loading]="loading.action"></app-header>
+
   <!-- Search -->
-  <div class="search">
-    <input type="text" id="seach_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="reduceList(searchQuery)">
-    <button class="magnifying-glass" id="search-btn" (click)="reduceList(searchQuery)"></button>
-  </div>
+  <app-input-search
+    [id]="'module-search'"
+    [items]="modules"
+    [classList]="'lg:w-1/2 mx-auto'"
+    (onSearch)="filteredModules = $event">
+  </app-input-search>
 
   <!-- Modules -->
-  <div *ngFor="let type of objectKeys(modulesTypes)" [id]="type" class="modules-wrapper">
-    <div class="divider">
-      <div class="title"><span>{{modulesTypes[type]}}</span></div>
-    </div>
+  <div *ngFor="let type of objectKeys(modulesTypes)">
+    <app-header [subHeader]="true" [title]="modulesTypes[type]" [classList]="'mt-10'"></app-header>
 
-    <div *ngIf="reduce.items.length > 0" class="modules">
-      <div *ngFor="let module of filterList(reduce.items, type | as : $any(ModuleType))" class="module_card"
-           (click)="moduleOpen = module; isEnabled = module.enabled; isModuleDetailsModalOpen = true;">
-        <div class="icon" [style.backgroundImage]="'url(' + module.icon +  ')'"></div>
-        <div class="header">{{module.name}}</div>
-        <div class="text">{{module.description}}</div>
-        <div class="status" [ngClass]="{'enable': module.enabled, 'disable': !module.enabled}">
-          {{module.enabled ? 'Enabled' : 'Disabled'}}
-          <div class="background"></div>
+    <div class="flex flex-wrap -mx-4">
+
+      <ng-container *ngIf="!loading.page">
+        <div *ngFor="let module of filterModules(type | as : $any(ModuleType))" class="sm:w-1/2 xl:w-1/3 2xl:w-1/4 w-full p-4">
+          <app-module-card [module]="module" (click)="moduleToManage = initModuleToManage(module); initIcon(); ModuleService.openModal('manage')"></app-module-card>
         </div>
-      </div>
+        <span *ngIf="filterModules(type | as : $any(ModuleType)).length === 0" class="text-error px-4">No modules of type</span>
+      </ng-container>
+
+      <!-- Modules Skeleton -->
+      <ng-container *ngIf="loading.page">
+        <div *ngFor="let placeholder of [1, 2, 3, 4, 5]" class="lg:w-1/3 sm:w-1/2 w-full p-4">
+          <app-course-skeleton></app-course-skeleton>
+        </div>
+      </ng-container>
+
     </div>
   </div>
 
-  <div *ngIf="reduce.items.length === 0" class='error_box'>
-    <div id='empty_search' class='error_msg'>No matches found</div>
-  </div>
-</ng-container>
-
-<!-- Loader -->
-<div *ngIf="loading" id="page-loading">
-  <img src="assets/loader/loader.gif" alt="loader">
 </div>
 
 
-<!-- Module Details Modal -->
-<ng-container *ngIf="isModuleDetailsModalOpen">
-  <app-modal
-    [isModalOpen]="isModuleDetailsModalOpen"
-    [id]="'view-module'"
-    [templateRef]="moduleDetailsModal"
-    (closeBtnClicked)="isModuleDetailsModalOpen = false"
-    [actionInProgress]="saving">
-  </app-modal>
-</ng-container>
+<!-- Module Modal -->
+<app-modal *ngIf="moduleToManage"
+   [id]="'manage'"
+   [templateRef]="MANAGE"
+   [closeBtnText]="'Close'"
+   [extraBtnText]="moduleToManage.configurable ? 'Configure' : null"
+   [extraBtnDisabled]="!moduleToManage.enabled"
+   [submitBtnText]="moduleToManage.enabled ? 'Disable' : 'Enable'"
+   [submitBtnColor]="moduleToManage.enabled ? 'error' : 'success'"
+   [submitBtnDisabled]="!moduleToManage.canChangeState"
+   [actionInProgress]="loading.action"
+   (submitBtnClicked)="toggleEnabled(moduleToManage)"
+   (onClose)="moduleToManage = null">
+</app-modal>
 
-<ng-template #moduleDetailsModal>
+<ng-template #MANAGE>
 
-  <div class="header">
-    <div class="icon" [style.backgroundImage]="'url(' + moduleOpen.icon + ')'"></div>
-    <div class="title">{{moduleOpen.name}}</div>
-    <div class="on_off">
-      <label class="switch" [ngClass]="{'disabled': !moduleOpen.canChangeState}">
-        <input type="checkbox" [checked]="moduleOpen.enabled" [disabled]="!moduleOpen.canChangeState" (change)="isEnabled = !isEnabled">
-        <span class="slider round"></span>
-      </label>
-    </div>
+  <!-- Header -->
+  <div class="flex items-center w-full prose mb-4">
+    <div class="icon mr-3" [innerHTML]="moduleToManage.icon | sanitizeHTML"></div>
+    <h3 class="font-semibold normal-case text-base-content/75 my-0">{{moduleToManage.name}}</h3>
   </div>
 
-  <div class="content">
-    <div class="inputs">
-      <div class="full" id="description">{{moduleOpen.description}}</div>
-      <div class="row">
-        <div>
-          <span class="label">Hard Dependencies: </span>
-          <span *ngFor="let dependency of filterHardDependencies(moduleOpen.dependencies); let last = last" class="details">
-            <span [ngStyle]="{'color': dependency.enabled ? 'green' : 'red'}">{{dependency.name}}</span>
-            <span *ngIf="!last"> | </span>
-          </span>
-        </div>
-      </div>
-      <div class="row">
-        <div><span class="label">Version: </span><span class="details ng-binding">{{moduleOpen.version}}</span></div>
-      </div>
-    </div>
-    <button class="save_btn" [disabled]="isEnabled === moduleOpen.enabled" (click)="toggleEnabled(moduleOpen)">Save</button>
-    <button *ngIf="moduleOpen.configurable && moduleOpen.enabled" class="config_btn" [routerLink]="moduleOpen.id + '/config'">Configure</button>
+  <!-- Description -->
+  <div class="w-full prose mb-7">
+    <p class="text-justify normal-case font-normal">{{moduleToManage.description}}</p>
   </div>
+
+  <!-- Info -->
+  <p><b class="mr-2">Dependencies:</b>
+    <span *ngFor="let dependency of filterHardDependencies(moduleToManage.dependencies); let last = last">
+      <span [ngClass]="{'text-error': !dependency.enabled, 'text-success': dependency.enabled}">{{dependency.name}}</span>
+      <span *ngIf="!last"> | </span>
+    </span>
+  </p>
+  <p class="mt-1.5"><b>Version:</b> {{moduleToManage.version}}</p>
 
 </ng-template>

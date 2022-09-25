@@ -51,7 +51,7 @@ abstract class Module
 
     public function getIcon(): string
     {
-        return API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . $this->id. "/icon.svg";
+        return file_get_contents(MODULES_FOLDER . "/" . $this->id . "/icon.svg");
     }
 
     public function getType(): string

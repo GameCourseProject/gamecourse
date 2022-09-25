@@ -24,11 +24,13 @@ export class SimpleModalComponent implements OnInit {
   @Input() extraBtnColor?: 'primary' | 'secondary' | 'accent' |         // Modal title color
     'neutral' | 'info' | 'success' | 'warning' | 'error';               // Middle button color
   @Input() extraBtnOutline?: boolean;                                   // Make middle button outline
+  @Input() extraBtnDisabled?: boolean;                                // Make it disabled
 
   @Input() submitBtnText?: string = 'Submit';                           // Right button text
   @Input() submitBtnColor?: 'primary' | 'secondary' | 'accent' |        // Modal title color
     'neutral' | 'info' | 'success' | 'warning' | 'error';               // Right button color
   @Input() submitBtnOutline?: boolean;                                  // Make right button outline
+  @Input() submitBtnDisabled?: boolean;                                // Make it disabled
 
   @Input() loading?: boolean;                                           // Show modal spinner while loading
   @Input() actionInProgress?: boolean;                                  // Show button spinner while action in progress

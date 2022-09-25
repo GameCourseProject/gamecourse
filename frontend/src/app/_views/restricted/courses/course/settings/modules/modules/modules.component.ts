@@ -5,11 +5,12 @@ import {ApiHttpService} from "../../../../../../../_services/api/api-http.servic
 
 import {Course} from "../../../../../../../_domain/courses/course";
 import {Module} from "../../../../../../../_domain/modules/module";
-import {Reduce} from "../../../../../../../_utils/lists/reduce";
 import {ModuleType} from "../../../../../../../_domain/modules/ModuleType";
 import {DomSanitizer} from "@angular/platform-browser";
+
+import * as _ from "lodash";
+import { ModalService } from 'src/app/_services/modal.service';
 import {DependencyMode} from "../../../../../../../_domain/modules/DependencyMode";
-import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-modules',
@@ -18,24 +19,23 @@ import {finalize} from "rxjs/operators";
 })
 export class ModulesComponent implements OnInit {
 
-  loading: boolean = true;
+  loading = {
+    page: true,
+    action: false
+  }
 
   course: Course;
 
   modules: Module[];
+  filteredModules: Module[];
+
   modulesTypes: {[key in ModuleType]: string} = {
     GameElement: 'Game Elements',
     DataSource: 'Data Sources',
     Util: 'Tools'
   };
 
-  reduce = new Reduce();
-  searchQuery: string;
-
-  isModuleDetailsModalOpen: boolean;
-  moduleOpen: Module;
-  isEnabled: boolean;
-  saving: boolean;
+  moduleToManage: Module;
 
   constructor(
     private api: ApiHttpService,
@@ -48,8 +48,16 @@ export class ModulesComponent implements OnInit {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
       await this.getModules(courseID);
-      this.loading = false;
+      this.loading.page = false;
     });
+  }
+
+  get ModuleType(): typeof ModuleType {
+    return ModuleType;
+  }
+
+  get ModuleService(): typeof ModalService {
+    return ModalService;
   }
 
 
@@ -64,24 +72,7 @@ export class ModulesComponent implements OnInit {
   async getModules(courseID: number): Promise<void> {
     this.modules = (await this.api.getCourseModules(courseID).toPromise())
       .sort((a, b) => a.name.localeCompare(b.name));
-    this.reduceList();
-  }
-
-
-  /*** --------------------------------------------- ***/
-  /*** -------------- Search & Filter -------------- ***/
-  /*** --------------------------------------------- ***/
-
-  reduceList(query?: string): void {
-    this.reduce.search(this.modules, query);
-  }
-
-  filterList(modules: Module[], type: ModuleType): Module[] {
-    return modules.filter(module => module.type === type);
-  }
-
-  filterHardDependencies(modules: Module[]): Module[] {
-    return modules.filter(module => module.dependencyMode === DependencyMode.HARD);
+    this.filteredModules = this.modules;
   }
 
 
@@ -89,24 +80,16 @@ export class ModulesComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  toggleEnabled(module: Module): void {
-    this.saving = true;
+  async toggleEnabled(module: Module): Promise<void> {
+    this.loading.action = true;
     const isEnabled = !module.enabled;
 
-    this.api.setModuleState(this.course.id, module.id, isEnabled)
-      .pipe( finalize(() => this.saving = false) )
-      .subscribe(
-        async () => {
-          module.enabled = !module.enabled;
-          await this.getModules(this.course.id);
-          Module.reloadStyles(this.course.id, this.sanitizer);
-        },
-        error => {},
-        () => {
-          this.isModuleDetailsModalOpen = false;
-          this.moduleOpen = null;
-        }
-      );
+    await this.api.setModuleState(this.course.id, module.id, isEnabled).toPromise();
+    module.enabled = isEnabled;
+    await this.getModules(this.course.id);
+    Module.reloadStyles(this.course.id, this.sanitizer);
+
+    this.loading.action = false;
   }
 
 
@@ -114,12 +97,30 @@ export class ModulesComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  initModuleToManage(module: Module): Module {
+    const moduleToManage = _.cloneDeep(module);
+    moduleToManage.icon = moduleToManage.icon.replace('<svg', '<svg id="' + module.id + '-modal-icon"');
+    return moduleToManage;
+  }
+
+  initIcon() {
+    setTimeout(() => {
+      const svg = document.getElementById(this.moduleToManage.id + '-modal-icon');
+      svg.style.width = '2.5rem';
+      svg.style.height = '2.5rem';
+    });
+  }
+
   objectKeys(obj: object): string[] {
     return Object.keys(obj);
   }
 
-  get ModuleType(): typeof ModuleType {
-    return ModuleType;
+  filterModules(type: ModuleType): Module[] {
+    return this.filteredModules.filter(module => module.type === type);
+  }
+
+  filterHardDependencies(modules: Module[]): Module[] {
+    return modules.filter(module => module.dependencyMode === DependencyMode.HARD);
   }
 
 }
