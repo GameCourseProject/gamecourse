@@ -960,6 +960,17 @@ class UserTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function getUserByUsernameWithoutAuthService()
+    {
+        $user = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", false, false);
+        $this->assertEquals($user, User::getUserByUsername("ist123456"));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function getUserByUsernameMultipleUsersWithoutAuthService()
     {
         User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",

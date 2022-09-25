@@ -316,7 +316,7 @@ class User
             if ($nrUsersWithUsername > 1)
                 throw new Exception("Cannot get user by username: there's multiple users with username '" . $username . "'.");
 
-            $userId = $nrUsersWithUsername < 1 ? null : intval($userIds[0]);
+            $userId = $nrUsersWithUsername < 1 ? null : intval($userIds[0]["user"]);
 
         } else {
             self::validateAuthService($authService);
