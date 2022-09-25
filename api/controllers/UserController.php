@@ -395,7 +395,7 @@ class UserController
     public function exportUsers()
     {
         API::requireValues("userIds");
-        $userIds = API::getValue("userIds", "array");
+        $userIds = API::getValue("userIds");
 
         API::requireAdminPermission();
         $csv = User::exportUsers($userIds);

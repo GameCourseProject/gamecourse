@@ -325,8 +325,8 @@ class CourseController
 
         API::requireCourseAdminPermission($course);
 
-        $userIds = API::getValue("users", "array");
-        $roleNames = API::getValue("roles", "array");
+        $userIds = API::getValue("users");
+        $roleNames = API::getValue("roles");
 
         $courseUsers = [];
         foreach ($userIds as $userId) {
