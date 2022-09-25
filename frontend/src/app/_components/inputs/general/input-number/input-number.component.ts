@@ -37,10 +37,8 @@ export class InputNumberComponent implements OnInit, AfterViewInit {
 
   // Errors
   @Input() requiredErrorMessage?: string = 'Required';                // Message for required error
-  @Input() minValueErrorMessage?: string =
-    'Value needs to be greater than or equal to ' + this.minValue;    // Message for minLength error
-  @Input() maxValueErrorMessage?: string =
-    'Value needs to be smaller than or equal to ' + this.maxValue;    // Message for maxLength error
+  @Input() minValueErrorMessage?: string;                             // Message for minLength error
+  @Input() maxValueErrorMessage?: string;                             // Message for maxLength error
   @Input() incorrectErrorMessage?: string;                            // Message for incorrect error
 
   @Output() valueChange = new EventEmitter<number>();
@@ -52,6 +50,9 @@ export class InputNumberComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    // Init default min/max value error messages
+    if (!this.minValueErrorMessage) this.minValueErrorMessage = 'Value needs to be greater than or equal to ' + this.minValue;
+    if (!this.maxValueErrorMessage) this.maxValueErrorMessage = 'Value needs to be smaller than or equal to ' + this.maxValue;
   }
 
   ngAfterViewInit(): void {
