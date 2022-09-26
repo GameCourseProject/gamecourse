@@ -252,24 +252,20 @@ export class UsersComponent implements OnInit {
     this.loading.action = false;
   }
 
-  importUsers(): void {
+  async importUsers(): Promise<void> {
     if (this.fImport.valid) {
       this.loading.action = true;
 
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const file = reader.result;
-        const nrUsersImported = await this.api.importUsers(file, this.importData.replace).toPromise();
+      const file = await ResourceManager.getText(this.importData.file);
+      const nrUsersImported = await this.api.importUsers(file, this.importData.replace).toPromise();
 
-        await this.getUsers();
-        this.buildTable();
+      await this.getUsers();
+      this.buildTable();
 
-        this.loading.action = false;
-        ModalService.closeModal('import');
-        this.resetImport();
-        AlertService.showAlert(AlertType.SUCCESS, nrUsersImported + ' user' + (nrUsersImported != 1 ? 's' : '') + ' imported');
-      }
-      reader.readAsText(this.importData.file);
+      this.loading.action = false;
+      ModalService.closeModal('import');
+      this.resetImport();
+      AlertService.showAlert(AlertType.SUCCESS, nrUsersImported + ' user' + (nrUsersImported != 1 ? 's' : '') + ' imported');
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
