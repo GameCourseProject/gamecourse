@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS notifications_progress_report_config(
+CREATE TABLE IF NOT EXISTS progress_report_config(
     course                      int unsigned PRIMARY KEY,
     endDate                     TIMESTAMP NULL DEFAULT NULL,
     periodicityTime             varchar(25) DEFAULT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS notifications_progress_report_config(
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS notifications_progress_report(
+CREATE TABLE IF NOT EXISTS progress_report(
     course                      int unsigned PRIMARY KEY,
     seqNr                       int unsigned NOT NULL,
     reportsSent                 int unsigned DEFAULT 0,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS notifications_progress_report(
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS notifications_progress_report_history(
+CREATE TABLE IF NOT EXISTS progress_report_history(
     course              int unsigned PRIMARY KEY,
     user                int unsigned NOT NULL,
     seqNr               int unsigned NOT NULL,

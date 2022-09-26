@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse\Module\Notifications;
+namespace GameCourse\Module\ProgressReport;
 
 use Exception;
 use GameCourse\AutoGame\AutoGame;
@@ -18,7 +18,7 @@ use Throwable;
  * NOTE: only run tests outside the production environment as
  *       it might change the database and/or important data
  */
-class NotificationsTest extends TestCase
+class ProgressReportTest extends TestCase
 {
     private $course;
     private $module;
@@ -58,16 +58,16 @@ class NotificationsTest extends TestCase
         $this->course->addUserToCourse($user1->getId(), "Student");
         $this->course->addUserToCourse($user2->getId(), "Student", null, false);
 
-        // Enable Notifications module
+        // Enable Progress Report module
         $awards = new Awards($course);
         $awards->setEnabled(true);
 
         $xpLevels = new XPLevels($course);
         $xpLevels->setEnabled(true);
 
-        $notifications = new Notifications($course);
-        $notifications->setEnabled(true);
-        $this->module = $notifications;
+        $progressReport = new ProgressReport($course);
+        $progressReport->setEnabled(true);
+        $this->module = $progressReport;
     }
 
     /**
@@ -118,7 +118,7 @@ class NotificationsTest extends TestCase
         $this->module->init();
 
         // Then
-        $sql = file_get_contents(MODULES_FOLDER . "/" . Notifications::ID . "/sql/create.sql");
+        $sql = file_get_contents(MODULES_FOLDER . "/" . ProgressReport::ID . "/sql/create.sql");
         preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
         $tables = $matches[2];
         foreach ($tables as $table) {
@@ -145,7 +145,7 @@ class NotificationsTest extends TestCase
         $this->module->setEnabled(false);
 
         // Then
-        $sql = file_get_contents(MODULES_FOLDER . "/" . Notifications::ID . "/sql/create.sql");
+        $sql = file_get_contents(MODULES_FOLDER . "/" . ProgressReport::ID . "/sql/create.sql");
         preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
         $tables = $matches[1];
         foreach ($tables as $table) {
@@ -155,7 +155,7 @@ class NotificationsTest extends TestCase
     }
 
 
-    // Progress Report
+    // Config
 
     /**
      * @test
@@ -185,6 +185,8 @@ class NotificationsTest extends TestCase
         $this->assertFalse($config["isEnabled"]);
     }
 
+
+    // Getting report
 
     public function getUserProgressReport()
     {

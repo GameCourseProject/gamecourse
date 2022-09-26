@@ -9,7 +9,7 @@ ini_set('display_errors', '1');
 
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\Notifications\Notifications;
+use GameCourse\Module\ProgressReport\ProgressReport;
 use PHPMailer\PHPMailer\PHPMailer;
 use Utils\CronJob;
 use Utils\Utils;
@@ -23,9 +23,9 @@ require __DIR__ . "/../../../inc/bootstrap.php";
 $courseId = $argv[1];
 $course = Course::getCourseById($courseId);
 
-$notifications = new Notifications($course);
-$info = $notifications->getStaticInfo($courseId);
-$seqNr = Core::database()->select(Notifications::TABLE_NOTIFICATIONS_PROGRESS_REPORT, ["course" => $courseId], "count(*)") + 1;
+$progressReportModule = new ProgressReport($course);
+$info = $progressReportModule->getStaticInfo($courseId);
+$seqNr = Core::database()->select(ProgressReport::TABLE_PROGRESS_REPORT, ["course" => $courseId], "count(*)") + 1;
 
 $subject = $info['courseName'] . " - " . $info['periodicity'] . " Report #" . $seqNr;
 $nrReportsSent = 0;
@@ -42,12 +42,12 @@ foreach ($students as $student) {
     $to = $student["email"];
     $studentId = $student["id"];
 
-    list($report, $totalXP, $currentPeriodXP, $diff, $tLeft, $prediction, $pieChart, $areaChart) = $notifications->getUserProgressReport($studentId, $seqNr, $info);
+    list($report, $totalXP, $currentPeriodXP, $diff, $tLeft, $prediction, $pieChart, $areaChart) = $progressReportModule->getUserProgressReport($studentId, $seqNr, $info);
     $timeLeft = $tLeft;
 
     if (!sendEmail($to, $subject, $report)) $error = true;
     else {
-        Core::database()->insert(Notifications::TABLE_NOTIFICATIONS_PROGRESS_REPORT_HISTORY, [
+        Core::database()->insert(ProgressReport::TABLE_PROGRESS_REPORT_HISTORY, [
             "course" => $courseId, "user" => $studentId, "emailSend" => $to, "seqNr" => $seqNr,
             "totalXP" => $totalXP, "periodXP" => $currentPeriodXP, "diffXP" => $diff,
             "timeLeft" => $timeLeft, "prediction" => $prediction ?? null,
@@ -59,18 +59,18 @@ foreach ($students as $student) {
 
 
 if (!$error) {
-    Core::database()->insert(Notifications::TABLE_NOTIFICATIONS_PROGRESS_REPORT, [
+    Core::database()->insert(ProgressReport::TABLE_PROGRESS_REPORT, [
         "course" => $courseId, "seqNr" => $seqNr, "reportsSent" => $nrReportsSent,
         "periodStart" => $info['startPeriodDate'], "periodEnd" => $info['endPeriodDate']
     ]);
-    logProgressReport($notifications->getLogsPath(), "Progress reports sent successfully.", "SUCCESS");
+    logProgressReport($progressReportModule->getLogsPath(), "Progress reports sent successfully.", "SUCCESS");
 
     if ($timeLeft == 0) {
         CronJob::removeCronJob("ProgressReport", $courseId);
-        logProgressReport($notifications->getLogsPath(), "Last progress report sent. Removed Cron Job.", "SUCCESS");
+        logProgressReport($progressReportModule->getLogsPath(), "Last progress report sent. Removed Cron Job.", "SUCCESS");
     }
 } else {
-    logProgressReport($notifications->getLogsPath(), "Progress reports not sent.");
+    logProgressReport($progressReportModule->getLogsPath(), "Progress reports not sent.");
 }
 
 /**

@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse\Module\Notifications;
+namespace GameCourse\Module\ProgressReport;
 
 use DateTime;
 use Event\Event;
@@ -20,14 +20,14 @@ use Utils\CronJob;
 use Utils\Utils;
 
 /**
- * This is the Notifications module, which serves as a compartimentalized
+ * This is the Progress Report module, which serves as a compartimentalized
  * plugin that adds functionality to the system.
  */
-class Notifications extends Module
+class ProgressReport extends Module
 {
-    const TABLE_NOTIFICATIONS_PROGRESS_REPORT = "notifications_progress_report";
-    const TABLE_NOTIFICATIONS_PROGRESS_REPORT_HISTORY = "notifications_progress_report_history";
-    const TABLE_NOTIFICATIONS_PROGRESS_REPORT_CONFIG = "notifications_progress_report_config";
+    const TABLE_PROGRESS_REPORT = "progress_report";
+    const TABLE_PROGRESS_REPORT_HISTORY = "progress_report_history";
+    const TABLE_PROGRESS_REPORT_CONFIG = "progress_report_config";
 
     public function __construct(?Course $course)
     {
@@ -40,9 +40,9 @@ class Notifications extends Module
     /*** ------------------ Metadata ------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    const ID = "Notifications";  // NOTE: must match the name of the class
-    const NAME = "Notifications";
-    const DESCRIPTION = "Allows email notifications for progress reports.";
+    const ID = "ProgressReport";  // NOTE: must match the name of the class
+    const NAME = "Progress Report";
+    const DESCRIPTION = "Allows to send periodic emails to students with a progress report.";
     const TYPE = ModuleType::UTILITY;
 
     const VERSION = "2.2.0";                                     // Current module version
@@ -70,7 +70,7 @@ class Notifications extends Module
         $this->initDatabase();
 
         // Init config
-        Core::database()->insert(self::TABLE_NOTIFICATIONS_PROGRESS_REPORT_CONFIG, ["course" => $this->course->getId()]);
+        Core::database()->insert(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $this->course->getId()]);
 
         // Init logs file
         file_put_contents($this->getLogsPath(), "");
@@ -91,7 +91,7 @@ class Notifications extends Module
 
     public function copyTo(Course $copyTo)
     {
-        $copiedModule = new Notifications($copyTo);
+        $copiedModule = new ProgressReport($copyTo);
 
         // Copy config
         $config = $this->getProgressReportConfig();
@@ -132,7 +132,7 @@ class Notifications extends Module
 
     public function getProgressReportConfig(): array
     {
-        $config = Core::database()->select(self::TABLE_NOTIFICATIONS_PROGRESS_REPORT_CONFIG, ["course" => $this->course->getId()]);
+        $config = Core::database()->select(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $this->course->getId()]);
         return [
             "endDate" => $config["endDate"],
             "periodicityTime" => $config["periodicityTime"],
@@ -145,7 +145,7 @@ class Notifications extends Module
     public function saveProgressReportConfig(?string $endDate, ?string $periodicityTime, ?int $periodicityHours,
                                              ?int $periodicityDay, ?bool $isEnabled)
     {
-        Core::database()->update(self::TABLE_NOTIFICATIONS_PROGRESS_REPORT_CONFIG, [
+        Core::database()->update(self::TABLE_PROGRESS_REPORT_CONFIG, [
             "endDate" => $endDate,
             "periodicityTime" => $periodicityTime,
             "periodicityHours" => $periodicityHours,
@@ -233,9 +233,9 @@ class Notifications extends Module
         $pieChart = $info['pieChartURL'] . "?data1=" . (count($awardsByType) > 0 ? implode(",", array_values($awardsByType)) : 0) .
             "&labels=" . (count($awardsByType) > 0 ? implode(",", array_map(function ($label) { return ucfirst($label); }, array_keys($awardsByType))) : "No data");
 
-        $isGeneratingReport = Core::database()->select(self::TABLE_NOTIFICATIONS_PROGRESS_REPORT, ["course" => $this->course->getId(), "seqNr" => $seqNr], "count(*)") == 0;
+        $isGeneratingReport = Core::database()->select(self::TABLE_PROGRESS_REPORT, ["course" => $this->course->getId(), "seqNr" => $seqNr], "count(*)") == 0;
         $totalXP = $isGeneratingReport ? (new XPLevels($this->course))->getUserXP($userId) :
-            intval(Core::database()->select(self::TABLE_NOTIFICATIONS_PROGRESS_REPORT_HISTORY, ["course" => $this->course->getId(), "user" => $userId, "seqNr" => $seqNr], "totalXP"));
+            intval(Core::database()->select(self::TABLE_PROGRESS_REPORT_HISTORY, ["course" => $this->course->getId(), "user" => $userId, "seqNr" => $seqNr], "totalXP"));
 
         $currentPeriodXP = array_reduce($awardsCurrentPeriod, function ($carry, $award) {
             $carry += $award["type"] == "tokens" ? 0 : intval($award["reward"]);
@@ -496,7 +496,7 @@ class Notifications extends Module
                                               <p style="font-size: 16px; line-height: 25px;">There are <span style="font-weight: 700; font-size: 20px;">' . $info['timeLeft'] . '</span> ' . ($info['isWeekly'] ? 'weeks' : 'days') . ' left.';
         if ($info['timeLeft'] > 0) {
             $foresightBlock .= ' If you continue with the current rhythm you will achieve
-                            <span style="font-weight: 800; font-size: 16px; color: ' . Notifications::getGradeColor($prediction) . '">' . number_format($prediction, 0, ',', ' ') . ' XP</span>* by the end of the course.</p>
+                            <span style="font-weight: 800; font-size: 16px; color: ' . ProgressReport::getGradeColor($prediction) . '">' . number_format($prediction, 0, ',', ' ') . ' XP</span>* by the end of the course.</p>
                             <p style="font-size: 16px; font-weight: 600; line-height: 25px; margin-top: 10px">';
 
             if ($prediction >= 16000) $foresightBlock .= 'You\'re doing a nice job. Keep it up! 🥳';
@@ -563,7 +563,7 @@ class Notifications extends Module
                                                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                                                       <tr>
                                                         <td style="padding: 0" align="center">
-                                                            <img src="' . $info['imgsPath'] . '/' . Notifications::getAwardImg($award["type"]) . '" style="width: 25px; height: 25px;">
+                                                            <img src="' . $info['imgsPath'] . '/' . ProgressReport::getAwardImg($award["type"]) . '" style="width: 25px; height: 25px;">
                                                         </td>
                                                       </tr>
                                                     </table>
@@ -582,7 +582,7 @@ class Notifications extends Module
                                                       <tr>
                                                         <td style="padding-right: 0px;padding-left: 0px;" align="left">
                                                           <p style="font-weight: 600; font-size: 16px;">' . $award["description"] . '</p>
-                                                          <p style="color: #9e9d9d; font-size: 14px; margin-top: 5px">' . Notifications::awardTypeToDescription($award["type"], $tokensName) . '</p>
+                                                          <p style="color: #9e9d9d; font-size: 14px; margin-top: 5px">' . ProgressReport::awardTypeToDescription($award["type"], $tokensName) . '</p>
                                                         </td>
                                                       </tr>
                                                     </table>
@@ -782,14 +782,14 @@ class Notifications extends Module
             $profilePageId = Core::database()->select(Page::TABLE_PAGE, ["course" => $this->course->getId(), "name" => "Profile"], "id");
         } else $profilePageId = null;
 
-        $imgsPath = API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . Notifications::ID . "/assets";
+        $imgsPath = API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . ProgressReport::ID . "/assets";
 
-        $config = Core::database()->select(self::TABLE_NOTIFICATIONS_PROGRESS_REPORT_CONFIG, ["course" => $this->course->getId()]);
+        $config = Core::database()->select(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $this->course->getId()]);
         $periodicity = $config["periodicityTime"];
         $isWeekly = $periodicity === "Weekly";
 
         if ($seqNr != null) { // get previous report
-            $reportInfo = Core::database()->select(self::TABLE_NOTIFICATIONS_PROGRESS_REPORT, ["course" => $this->course->getId(), "seqNr" => $seqNr]);
+            $reportInfo = Core::database()->select(self::TABLE_PROGRESS_REPORT, ["course" => $this->course->getId(), "seqNr" => $seqNr]);
             $currentDate = $reportInfo['periodEnd'];
 
         } else { // generate new report
@@ -820,7 +820,7 @@ class Notifications extends Module
 
     private static function datediff(DateTime $date1, DateTime $date2, string $type): int
     {
-        if ($date1 > $date2) return Notifications::datediff($date2, $date1, $type);
+        if ($date1 > $date2) return ProgressReport::datediff($date2, $date1, $type);
         return ceil($date1->diff($date2)->days / ($type === "weeks" ? 7 : 1));
     }
 
@@ -871,7 +871,7 @@ class Notifications extends Module
      */
     public function getReports(): array
     {
-        $table = self::TABLE_NOTIFICATIONS_PROGRESS_REPORT;
+        $table = self::TABLE_PROGRESS_REPORT;
         $reports = Core::database()->selectMultiple($table, ["course" => $this->course->getId()]);
         foreach ($reports as &$report) {
             unset($report["course"]);
@@ -889,7 +889,7 @@ class Notifications extends Module
      */
     public function getStudentsWithReport(int $seqNr): array
     {
-        $table = self::TABLE_NOTIFICATIONS_PROGRESS_REPORT_HISTORY . " r JOIN " . User::TABLE_USER . " u on r.user=u.id";
+        $table = self::TABLE_PROGRESS_REPORT_HISTORY . " r JOIN " . User::TABLE_USER . " u on r.user=u.id";
         $reports = Core::database()->selectMultiple($table, ["course" => $this->course->getId(), "seqNr" => $seqNr]);
         foreach ($reports as &$report) {
             unset($report["course"]);

@@ -1,18 +1,16 @@
 import {Component, OnInit} from '@angular/core';
 import {ApiHttpService} from "../../../../../../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
-import {finalize} from "rxjs/operators";
 import {exists} from "../../../../../../../../../_utils/misc/misc";
 import * as moment from 'moment';
-import {TableAction} from "../../../../../../../../../_components/tables/datatable/datatable.component";
 import {User} from "../../../../../../../../../_domain/users/user";
 
 @Component({
-  selector: 'app-notifications',
-  templateUrl: './notifications.component.html',
-  styleUrls: ['./notifications.component.scss']
+  selector: 'app-progress-report',
+  templateUrl: './progress-report.component.html',
+  styleUrls: ['./progress-report.component.scss']
 })
-export class NotificationsComponent implements OnInit {
+export class ProgressReportComponent implements OnInit {
 
   loading: boolean = true;
   hasUnsavedChanges: boolean;
@@ -179,4 +177,10 @@ export interface ProgressReportConfig {
   periodicityHours: number,
   periodicityDay: 0 | 1 | 2 | 3 | 4 | 5 | 6,
   isEnabled: boolean
+}
+
+enum TableAction {
+  VIEW,
+  EDIT,
+  DELETE
 }

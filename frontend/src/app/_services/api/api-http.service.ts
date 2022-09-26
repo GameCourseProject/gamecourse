@@ -37,7 +37,7 @@ import {
 } from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/googlesheets/googlesheets.component";
 import {
   ProgressReportConfig
-} from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/notifications/notifications.component";
+} from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/progress-report/progress-report.component";
 import {
   ProfilingHistory,
   ProfilingNode
@@ -72,7 +72,7 @@ export class ApiHttpService {
 
   static readonly FENIX: string = 'Fenix';
   static readonly GOOGLESHEETS: string = 'GoogleSheets';
-  static readonly NOTIFICATIONS: string = 'Notifications';
+  static readonly PROGRESS_REPORT: string = 'ProgressReport';
   static readonly PROFILING: string = 'Profiling';
   static readonly QR: string = 'QR';
   static readonly SKILLS: string = 'Skills';
@@ -1204,11 +1204,11 @@ export class ApiHttpService {
   }
 
 
-  // Notifications
+  // Progress Report
 
   public getProgressReportConfig(courseID: number): Observable<ProgressReportConfig> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.NOTIFICATIONS);
+      qs.push('module', ApiHttpService.PROGRESS_REPORT);
       qs.push('request', 'getProgressReportConfig');
       qs.push('courseId', courseID);
     };
@@ -1226,7 +1226,7 @@ export class ApiHttpService {
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.NOTIFICATIONS);
+      qs.push('module', ApiHttpService.PROGRESS_REPORT);
       qs.push('request', 'saveProgressReportConfig');
     };
 
@@ -1237,7 +1237,7 @@ export class ApiHttpService {
 
   public getProgressReports(courseID: number): Observable<{seqNr: number, reportsSent: number, periodStart: Moment, periodEnd: Moment, dateSent: Moment}[]> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.NOTIFICATIONS);
+      qs.push('module', ApiHttpService.PROGRESS_REPORT);
       qs.push('request', 'getReports');
       qs.push('courseId', courseID);
     };
@@ -1263,7 +1263,7 @@ export class ApiHttpService {
     emailSend: string, dateSent: Moment}[]> {
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.NOTIFICATIONS);
+      qs.push('module', ApiHttpService.PROGRESS_REPORT);
       qs.push('request', 'getStudentsWithReport');
       qs.push('courseId', courseID);
       qs.push('seqNr', seqNr);
@@ -1292,7 +1292,7 @@ export class ApiHttpService {
 
   public getStudentProgressReport(courseID: number, userID: number, seqNr: number): Observable<string> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.NOTIFICATIONS);
+      qs.push('module', ApiHttpService.PROGRESS_REPORT);
       qs.push('request', 'getStudentProgressReport');
       qs.push('courseId', courseID);
       qs.push('userId', userID);

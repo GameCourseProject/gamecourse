@@ -1,3 +1,0 @@
-DROP TABLE IF EXISTS notifications_progress_report_config;
-DROP TABLE IF EXISTS notifications_progress_report;
-DROP TABLE IF EXISTS notifications_progress_report_history;

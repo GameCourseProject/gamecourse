@@ -44,7 +44,7 @@ export class CacheInterceptor implements HttpInterceptor {
     this.dependencies[ApiHttpService.MODULE] = this.dependencies[ApiHttpService.MODULE].concat([
       ApiHttpService.FENIX,
       ApiHttpService.GOOGLESHEETS,
-      ApiHttpService.NOTIFICATIONS,
+      ApiHttpService.PROGRESS_REPORT,
       ApiHttpService.PROFILING,
       ApiHttpService.QR,
       ApiHttpService.SKILLS,

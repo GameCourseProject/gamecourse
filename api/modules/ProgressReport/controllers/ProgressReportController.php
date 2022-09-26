@@ -1,22 +1,21 @@
 <?php
 namespace API;
 
-use GameCourse\Core\Core;
-use GameCourse\Module\Notifications\Notifications;
+use GameCourse\Module\ProgressReport\ProgressReport;
 
 /**
- * This is the Notifications controller, which holds API endpoints for
- * QR class participation related actions.
+ * This is the Progress Report controller, which holds API endpoints for
+ * progress reports related actions.
  *
  * NOTE: use annotations to automatically generate OpenAPI
  *      documentation for GameCourse's RESTful API
  *
  * @OA\Tag(
- *     name="Notifications",
- *     description="API endpoints for QR class participation"
+ *     name="Progress Report",
+ *     description="API endpoints for progress reports"
  * )
  */
-class NotificationsController
+class ProgressReportController
 {
     /*** --------------------------------------------- ***/
     /*** -------------- Progress Report -------------- ***/
@@ -31,8 +30,8 @@ class NotificationsController
 
         API::requireCourseAdminPermission($course);
 
-        $notifications = new Notifications($course);
-        API::response($notifications->getProgressReportConfig());
+        $progressReportModule = new ProgressReport($course);
+        API::response($progressReportModule->getProgressReportConfig());
     }
 
     public function saveProgressReportConfig()
@@ -45,8 +44,8 @@ class NotificationsController
         API::requireCourseAdminPermission($course);
 
         $progressReport = API::getValue("progressReport");
-        $notifications = new Notifications($course);
-        $notifications->saveProgressReportConfig($progressReport["endDate"], $progressReport["periodicityTime"], $progressReport["periodicityHours"], $progressReport["periodicityDay"], $progressReport["isEnabled"]);
+        $progressReportModule = new ProgressReport($course);
+        $progressReportModule->saveProgressReportConfig($progressReport["endDate"], $progressReport["periodicityTime"], $progressReport["periodicityHours"], $progressReport["periodicityDay"], $progressReport["isEnabled"]);
     }
 
     public function getReports()
@@ -58,8 +57,8 @@ class NotificationsController
 
         API::requireCourseAdminPermission($course);
 
-        $notifications = new Notifications($course);
-        API::response($notifications->getReports());
+        $progressReportModule = new ProgressReport($course);
+        API::response($progressReportModule->getReports());
     }
 
     public function getStudentsWithReport()
@@ -72,8 +71,8 @@ class NotificationsController
         API::requireCourseAdminPermission($course);
 
         $seqNr = API::getValue("seqNr", "int");
-        $notifications = new Notifications($course);
-        API::response($notifications->getStudentsWithReport($seqNr));
+        $progressReportModule = new ProgressReport($course);
+        API::response($progressReportModule->getStudentsWithReport($seqNr));
     }
 
     public function getStudentProgressReport()
@@ -88,7 +87,7 @@ class NotificationsController
         $userId = API::getValue("userId", "int");
         $seqNr = API::getValue("seqNr", "int");
 
-        $notifications = new Notifications($course);
-        API::response($notifications->getUserProgressReport($userId, $seqNr)[0]);
+        $progressReportModule = new ProgressReport($course);
+        API::response($progressReportModule->getUserProgressReport($userId, $seqNr)[0]);
     }
 }
