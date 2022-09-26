@@ -23,7 +23,7 @@ export class InputUrlComponent implements OnInit {
   @Input() disabled?: boolean;                                            // Make it disabled
 
   @Input() topLabel?: string;                                             // Top label text
-  @Input() leftLabel?: string = 'https://';                               // Text on prepended label
+  @Input() leftLabel?: string;                                            // Text on prepended label
 
   @Input() helperText?: string;                                           // Text for helper tooltip
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';          // Helper position
