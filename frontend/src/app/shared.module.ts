@@ -71,6 +71,7 @@ import { CourseSkeletonComponent } from './_components/skeletons/course-skeleton
 
 // Components: helpers
 import { ImportHelperComponent } from './_components/helpers/import-helper/import-helper.component';
+import { SimpleHelperComponent } from './_components/helpers/simple-helper/simple-helper.component';
 
 // Components: building blocks
 import { BBAnyComponent } from "./_components/building-blocks/any/any.component";
@@ -208,6 +209,7 @@ import {
     CourseSkeletonComponent,
 
     ImportHelperComponent,
+    SimpleHelperComponent,
 
     BBAnyComponent,
     BBBlockComponent,
@@ -282,6 +284,7 @@ import {
     CourseSkeletonComponent,
 
     ImportHelperComponent,
+    SimpleHelperComponent,
 
     BBAnyComponent,
     BBBlockComponent,

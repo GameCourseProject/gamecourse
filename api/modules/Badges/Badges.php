@@ -119,12 +119,35 @@ class Badges extends Module
     public function getGeneralInputs(): array
     {
         return [
-            ["id" => "maxExtraCredit", "label" => "Max. Extra Credit", "type" => InputType::NUMBER, "value" => $this->getMaxExtraCredit()],
-            ["id" => "extraOverlay", "label" => "Overlay for extra", "type" => InputType::IMAGE, "value" => null],
-            ["id" => "braggingOverlay", "label" => "Overlay for bragging", "type" => InputType::IMAGE, "value" => null],
-            ["id" => "lvl2Overlay", "label" => "Overlay for level 2", "type" => InputType::IMAGE, "value" => null],
-            ["id" => "lvl3Overlay", "label" => "Overlay for level 3", "type" => InputType::IMAGE, "value" => null],
+            [
+                "name" => "General",
+                "contents" => [
+                    [
+                        "contentType" => "item",
+                        "width" => "1/3",
+                        "type" => InputType::NUMBER,
+                        "id" => "maxExtraCredit",
+                        "value" => $this->getMaxExtraCredit(),
+                        "placeholder" => "Badges max. extra credit",
+                        "options" => [
+                            "topLabel" => "Max. extra credit",
+                            "required" => true,
+                            "minValue" => 0
+                        ],
+                        "helper" => "Maximum extra credit students can earn with badges"
+                    ]
+                ]
+            ],
+            // TODO: badge overlays
         ];
+
+//        return [
+//            ["id" => "maxExtraCredit", "label" => "Max. Extra Credit", "type" => InputType::NUMBER, "value" => $this->getMaxExtraCredit()],
+//            ["id" => "extraOverlay", "label" => "Overlay for extra", "type" => InputType::IMAGE, "value" => null],
+//            ["id" => "braggingOverlay", "label" => "Overlay for bragging", "type" => InputType::IMAGE, "value" => null],
+//            ["id" => "lvl2Overlay", "label" => "Overlay for level 2", "type" => InputType::IMAGE, "value" => null],
+//            ["id" => "lvl3Overlay", "label" => "Overlay for level 3", "type" => InputType::IMAGE, "value" => null],
+//        ];
     }
 
     /**

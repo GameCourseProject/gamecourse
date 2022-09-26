@@ -30,6 +30,9 @@ export class InputNumberComponent implements OnInit, AfterViewInit {
   @Input() btnText?: string;                                          // Text on appended button
   @Input() btnIcon?: string;                                          // Icon on appended button
 
+  @Input() helperText?: string;                                       // Text for helper tooltip
+  @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';      // Helper position
+
   // Validity
   @Input() required?: boolean;                                        // Make it required
   @Input() minValue?: number;                                         // Enforce a minimum value

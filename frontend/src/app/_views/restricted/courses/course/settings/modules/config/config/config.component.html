@@ -1,151 +1,581 @@
+<div class="w-full relative">
+
+  <ng-container *ngIf="!loading.page">
+
+    <!-- Header -->
+    <div class="flex items-center w-full prose mb-4">
+      <div class="icon mr-3" [innerHTML]="module.icon.svg | sanitizeHTML"></div>
+      <h3 class="font-semibold normal-case text-base-content/75 my-0">{{module.name}}</h3>
+    </div>
+
+    <!-- Description -->
+    <div class="w-full max-w-none prose mb-7">
+      <p class="text-justify normal-case font-normal">{{module.description}}</p>
+    </div>
+
+    <!-- General Inputs -->
+    <ng-container [ngTemplateOutlet]="GENERAL_INPUTS"></ng-container>
+
+    <!-- Lists -->
+    <!-- TODO -->
+
+    <!-- Personalized Config -->
+    <!-- TODO -->
+
+  </ng-container>
+
+  <!-- Loader -->
+  <app-loader [loading]="loading.page"></app-loader>
+
+</div>
+
+
+<!-- General Inputs -->
+<ng-template #GENERAL_INPUTS>
+  <div *ngIf="generalInputs?.length > 0">
+    <div *ngFor="let section of unsavedGeneralInputs; let cIdx = index" class="card w-full bg-base-100 shadow-xl" [ngClass]="{'mt-5': cIdx !== 0}">
+      <form #f="ngForm" class="card-body" (ngSubmit)="saveGeneralInputs(section, f)">
+
+        <!-- Section name -->
+        <h2 class="card-title mb-3">{{section.name}}</h2>
+
+        <!-- Section contents -->
+        <ng-container *ngFor="let artifact of section.contents; let i = index">
+          <ng-container
+            [ngTemplateOutlet]="ARTIFACT"
+            [ngTemplateOutletContext]="{artifact, form: f, index: i}">
+          </ng-container>
+        </ng-container>
+
+        <!-- Action buttons -->
+        <div class="flex items-center justify-end mt-4">
+          <button type="button" class="btn btn-ghost mr-2" (click)="discardGeneralInputs(section, f)">Discard changes</button>
+          <button type="submit" class="btn btn-primary">
+
+            <!-- Spinner -->
+            <ng-container *ngIf="loading.form === f && loading.action">
+              <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+            </ng-container>
+
+            Save
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</ng-template>
+
+
+<!-- Artifacts: container or input -->
+<ng-template #ARTIFACT let-artifact='artifact' let-form='form' let-index='index'>
+  <div class="{{artifact.classList}} {{getWidth(artifact.width ?? 'w-full')}} {{getMarginTOP(artifact.contentType === 'item', artifact.width ?? 'w-full', index)}}"
+       [ngClass]="{'px-3': artifact.contentType === 'item', '-mx-3': artifact.contentType === 'container'}">
+
+    <!-- Container -->
+    <ng-container *ngIf="artifact.contentType === 'container'">
+      <ng-container *ngFor="let a of artifact.contents; let i = index">
+        <ng-container
+          [ngTemplateOutlet]="ARTIFACT"
+          [ngTemplateOutletContext]="{artifact: a, form: form, index: i}">
+        </ng-container>
+      </ng-container>
+    </ng-container>
+
+    <!-- Input -->
+    <ng-container *ngIf="artifact.contentType === 'item'">
+
+      <!-- Checkbox -->
+      <ng-container *ngIf="artifact.type === InputType.CHECKBOX">
+        <app-input-checkbox
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [size]="$any(artifact.options.size) ?? null"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [label]="$any(artifact.options.label) ?? null"
+          [labelPosition]="$any(artifact.options.labelPosition) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [required]="$any(artifact.options.required) ?? null">
+        </app-input-checkbox>
+      </ng-container>
+
+      <!-- Radio -->
+      <ng-container *ngIf="artifact.type === InputType.RADIO">
+        <app-input-radio
+          [id]="artifact.id"
+          [group]="$any(artifact.options.group) ?? null"
+          [form]="form"
+          [optionValue]="$any(artifact.options.optionValue) ?? null"
+          [(value)]="artifact.value"
+          [size]="$any(artifact.options.size) ?? null"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [label]="$any(artifact.options.label) ?? null"
+          [labelPosition]="$any(artifact.options.labelPosition) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [required]="$any(artifact.options.required) ?? null">
+        </app-input-radio>
+      </ng-container>
+
+      <!-- Code -->
+      <!-- TODO -->
+
+      <!-- Color -->
+      <ng-container *ngIf="artifact.type === InputType.COLOR">
+        <app-input-color
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [placeholder]="$any(artifact.placeholder) ?? null"
+          [size]="$any(artifact.options.size) ?? null"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [topLabel]="$any(artifact.options.topLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [pattern]="$any(artifact.options.pattern) ?? null"
+          [required]="$any(artifact.options.required) ?? null"
+          [minLength]="$any(artifact.options.minLength) ?? null"
+          [maxLength]="$any(artifact.options.maxLength) ?? null">
+        </app-input-color>
+      </ng-container>
+
+      <!-- Date -->
+      <ng-container *ngIf="artifact.type === InputType.DATE">
+        <app-input-date
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [placeholder]="$any(artifact.placeholder) ?? null"
+          [size]="$any(artifact.options.size) ?? null"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [topLabel]="$any(artifact.options.topLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [pattern]="$any(artifact.options.pattern) ?? null"
+          [required]="$any(artifact.options.required) ?? null">
+        </app-input-date>
+      </ng-container>
+
+      <!-- Time -->
+      <ng-container *ngIf="artifact.type === InputType.TIME">
+        <app-input-time
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [placeholder]="$any(artifact.placeholder) ?? null"
+          [size]="$any(artifact.options.size) ?? null"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [topLabel]="$any(artifact.options.topLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [pattern]="$any(artifact.options.pattern) ?? null"
+          [required]="$any(artifact.options.required) ?? null">
+        </app-input-time>
+      </ng-container>
+
+      <!-- Datetime -->
+      <ng-container *ngIf="artifact.type === InputType.DATETIME">
+        <app-input-datetime
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [placeholder]="$any(artifact.placeholder) ?? null"
+          [size]="$any(artifact.options.size) ?? null"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [topLabel]="$any(artifact.options.topLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [pattern]="$any(artifact.options.pattern) ?? null"
+          [required]="$any(artifact.options.required) ?? null">
+        </app-input-datetime>
+      </ng-container>
+
+      <!-- Text -->
+      <ng-container *ngIf="artifact.type === InputType.TEXT">
+        <app-input-text
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [placeholder]="$any(artifact.placeholder) ?? null"
+          [size]="$any(artifact.options.size) ?? null"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [topLabel]="$any(artifact.options.topLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [rightLabel]="$any(artifact.options.rightLabel) ?? null"
+          [btnText]="$any(artifact.options.btnText) ?? null"
+          [btnIcon]="$any(artifact.options.btnIcon) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [pattern]="$any(artifact.options.pattern) ?? null"
+          [required]="$any(artifact.options.required) ?? null"
+          [minLength]="$any(artifact.options.minLength) ?? null"
+          [maxLength]="$any(artifact.options.maxLength) ?? null">
+        </app-input-text>
+      </ng-container>
+
+      <!-- Textarea -->
+      <ng-container *ngIf="artifact.type === InputType.TEXTAREA">
+        <app-input-textarea
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [placeholder]="$any(artifact.placeholder) ?? null"
+          [size]="$any(artifact.options.size) ?? null"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [label]="$any(artifact.options.label) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [pattern]="$any(artifact.options.pattern) ?? null"
+          [required]="$any(artifact.options.required) ?? null"
+          [minLength]="$any(artifact.options.minLength) ?? null"
+          [maxLength]="$any(artifact.options.maxLength) ?? null">
+        </app-input-textarea>
+      </ng-container>
+
+      <!-- Number -->
+      <ng-container *ngIf="artifact.type === InputType.NUMBER">
+        <app-input-number
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [placeholder]="$any(artifact.placeholder) ?? null"
+          [size]="$any(artifact.options.size) ?? null"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [topLabel]="$any(artifact.options.topLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [rightLabel]="$any(artifact.options.rightLabel) ?? null"
+          [btnText]="$any(artifact.options.btnText) ?? null"
+          [btnIcon]="$any(artifact.options.btnIcon) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [required]="$any(artifact.options.required) ?? null"
+          [minValue]="$any(artifact.options.minValue) ?? null"
+          [maxValue]="$any(artifact.options.maxValue) ?? null">
+        </app-input-number>
+      </ng-container>
+
+      <!-- URL -->
+      <ng-container *ngIf="artifact.type === InputType.URL">
+        <app-input-url
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [placeholder]="$any(artifact.placeholder) ?? null"
+          [size]="$any(artifact.options.size) ?? null"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [topLabel]="$any(artifact.options.topLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [pattern]="$any(artifact.options.pattern) ?? null"
+          [required]="$any(artifact.options.required) ?? null"
+          [minLength]="$any(artifact.options.minLength) ?? null"
+          [maxLength]="$any(artifact.options.maxLength) ?? null">
+        </app-input-url>
+      </ng-container>
+
+      <!-- File FIXME-->
+      <ng-container *ngIf="artifact.type === InputType.FILE">
+<!--        <app-input-file-->
+<!--          [id]="artifact.id"-->
+<!--          [form]="form"-->
+<!--          [(value)]="artifact.value"-->
+<!--          [placeholder]="$any(artifact.placeholder) ?? null"-->
+<!--          [size]="$any(artifact.options.size) ?? null"-->
+<!--          [color]="$any(artifact.options.color) ?? null"-->
+<!--          [classList]="$any(artifact.options.classList) ?? null"-->
+<!--          [disabled]="$any(artifact.options.disabled) ?? null"-->
+<!--          [topLabel]="$any(artifact.options.topLabel) ?? null"-->
+<!--          [leftLabel]="$any(artifact.options.leftLabel) ?? null"-->
+<!--          [rightLabel]="$any(artifact.options.rightLabel) ?? null"-->
+<!--          [btnText]="$any(artifact.options.btnText) ?? null"-->
+<!--          [btnIcon]="$any(artifact.options.btnIcon) ?? null"-->
+<!--          [helperText]="$any(artifact.helper) ?? null"-->
+<!--          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"-->
+<!--          [required]="$any(artifact.options.required) ?? null"-->
+<!--          [minValue]="$any(artifact.options.minValue) ?? null"-->
+<!--          [maxValue]="$any(artifact.options.maxValue) ?? null">-->
+<!--        </app-input-file>-->
+      </ng-container>
+
+      <!-- Markdown -->
+      <!-- TODO -->
+
+      <!-- Email -->
+      <ng-container *ngIf="artifact.type === InputType.EMAIL">
+        <app-input-email
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [placeholder]="$any(artifact.placeholder) ?? null"
+          [size]="$any(artifact.options.size) ?? null"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [topLabel]="$any(artifact.options.topLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [pattern]="$any(artifact.options.pattern) ?? null"
+          [required]="$any(artifact.options.required) ?? null"
+          [minLength]="$any(artifact.options.minLength) ?? null"
+          [maxLength]="$any(artifact.options.maxLength) ?? null">
+        </app-input-email>
+      </ng-container>
+
+      <!-- Select -->
+      <ng-container *ngIf="artifact.type === InputType.SELECT">
+        <app-input-select
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [options]="$any(artifact.options.options) ?? null"
+          [placeholder]="$any(artifact.placeholder) ?? null"
+          [multiple]="$any(artifact.options.multiple) ?? null"
+          [limit]="$any(artifact.options.limit) ?? null"
+          [search]="$any(artifact.options.search) ?? true"
+          [closeOnSelect]="$any(artifact.options.closeOnSelect) ?? true"
+          [hideSelectedOption]="$any(artifact.options.hideSelectedOption) ?? false"
+          [size]="$any(artifact.options.size) ?? null"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [topLabel]="$any(artifact.options.topLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [btnText]="$any(artifact.options.btnText) ?? null"
+          [btnIcon]="$any(artifact.options.btnIcon) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [required]="$any(artifact.options.required) ?? null">
+        </app-input-select>
+      </ng-container>
+
+      <!-- Weekday -->
+      <ng-container *ngIf="artifact.type === InputType.WEEKDAY">
+        <app-input-select-weekday
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [placeholder]="$any(artifact.placeholder) ?? null"
+          [multiple]="$any(artifact.options.multiple) ?? null"
+          [limit]="$any(artifact.options.limit) ?? null"
+          [closeOnSelect]="$any(artifact.options.closeOnSelect) ?? true"
+          [hideSelectedOption]="$any(artifact.options.hideSelectedOption) ?? false"
+          [size]="$any(artifact.options.size) ?? null"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [topLabel]="$any(artifact.options.topLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [btnText]="$any(artifact.options.btnText) ?? null"
+          [btnIcon]="$any(artifact.options.btnIcon) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [required]="$any(artifact.options.required) ?? null">
+        </app-input-select-weekday>
+      </ng-container>
+
+      <!-- Toggle -->
+      <ng-container *ngIf="artifact.type === InputType.TOGGLE">
+        <app-input-toggle
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [size]="$any(artifact.options.size) ?? null"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [label]="$any(artifact.options.label) ?? null"
+          [labelPosition]="$any(artifact.options.labelPosition) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [required]="$any(artifact.options.required) ?? null">
+        </app-input-toggle>
+      </ng-container>
+
+    </ng-container>
+
+  </div>
+</ng-template>
+
+
+
+
+
 <ng-container *ngIf="!loading">
 
-  <!-- Header -->
-  <div class="header">
-    <div id="name">{{module.name}} Configuration</div>
-    <div id="description">{{module.description}}</div>
-  </div>
+<!--  &lt;!&ndash; Header &ndash;&gt;-->
+<!--  <div class="header">-->
+<!--    <div id="name">{{module.name}} Configuration</div>-->
+<!--    <div id="description">{{module.description}}</div>-->
+<!--  </div>-->
 
-  <!-- General Inputs -->
-  <div *ngIf="generalInputs?.length > 0" class="section">
-    <div class="divider">
-      <div class="title"><span>General</span></div>
-    </div>
+<!--  &lt;!&ndash; General Inputs &ndash;&gt;-->
+<!--  <div *ngIf="generalInputs?.length > 0" class="section">-->
+<!--    <div class="divider">-->
+<!--      <div class="title"><span>General</span></div>-->
+<!--    </div>-->
 
-    <div class="multiple_inputs content">
-      <div *ngFor="let input of generalInputs" class="row">
-        <ng-container
-          [ngTemplateOutlet]="INPUT"
-          [ngTemplateOutletContext]="{id: 'value', label: input.label, type: input.type, obj: input, style: 'outer', options: input.options}">
-        </ng-container>
-      </div>
+<!--    <div class="multiple_inputs content">-->
+<!--      <div *ngFor="let input of generalInputs" class="row">-->
+<!--        <ng-container-->
+<!--          [ngTemplateOutlet]="INPUT"-->
+<!--          [ngTemplateOutletContext]="{id: 'value', label: input.label, type: input.type, obj: input, style: 'outer', options: input.options}">-->
+<!--        </ng-container>-->
+<!--      </div>-->
 
-      <div class="action-buttons">
-        <button id="general-inputs-save-button" class="button" [disabled]="!hasUnsavedChanges" (click)="saveGeneralInputs()">Save Changes</button>
-      </div>
-    </div>
-  </div>
+<!--      <div class="action-buttons">-->
+<!--        <button id="general-inputs-save-button" class="button" [disabled]="!hasUnsavedChanges" (click)="saveGeneralInputs()">Save Changes</button>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
 
-  <!-- Lists -->
-  <div *ngIf="lists">
-    <div *ngFor="let list of lists" class="section">
-      <div class="divider">
-        <div class="title"><span>{{list.listName}}</span></div>
-      </div>
+<!--  &lt;!&ndash; Lists &ndash;&gt;-->
+<!--  <div *ngIf="lists">-->
+<!--    <div *ngFor="let list of lists" class="section">-->
+<!--      <div class="divider">-->
+<!--        <div class="title"><span>{{list.listName}}</span></div>-->
+<!--      </div>-->
 
-      <div class="allItems content">
-        <ng-container
-          [ngTemplateOutlet]="LIST"
-          [ngTemplateOutletContext]="{list}">
-        </ng-container>
+<!--      <div class="allItems content">-->
+<!--        <ng-container-->
+<!--          [ngTemplateOutlet]="LIST"-->
+<!--          [ngTemplateOutletContext]="{list}">-->
+<!--        </ng-container>-->
 
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-          <ng-container *ngFor="let action of list.listActions">
-            <div *ngIf="action === Action.NEW" class="icon add_icon" title="New" (click)="mode = 'add'; newItem.list = list; newItem.item = {}; isItemModalOpen = true;"></div>
-            <div *ngIf="action === Action.IMPORT" class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true; listToAct = list"></div>
-            <div *ngIf="action === Action.EXPORT" class="icon export_icon" title="Export All" (click)="exportItems(list)"></div>
-          </ng-container>
-        </div>
-      </div>
+<!--        &lt;!&ndash; Action Buttons &ndash;&gt;-->
+<!--        <div class="action-buttons">-->
+<!--          <ng-container *ngFor="let action of list.listActions">-->
+<!--            <div *ngIf="action === Action.NEW" class="icon add_icon" title="New" (click)="mode = 'add'; newItem.list = list; newItem.item = {}; isItemModalOpen = true;"></div>-->
+<!--            <div *ngIf="action === Action.IMPORT" class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true; listToAct = list"></div>-->
+<!--            <div *ngIf="action === Action.EXPORT" class="icon export_icon" title="Export All" (click)="exportItems(list)"></div>-->
+<!--          </ng-container>-->
+<!--        </div>-->
+<!--      </div>-->
 
-      <div class='success_box'>
-        <div id='action_completed' class='success_msg'></div>
-      </div>
-    </div>
-  </div>
+<!--      <div class='success_box'>-->
+<!--        <div id='action_completed' class='success_msg'></div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
 
-  <!-- Personalized Config -->
-  <div *ngIf="personalizedConfig" class="personalized-config {{module.id}}">
-    <ng-container [ngComponentOutlet]="PersonalizedConfig"></ng-container>
-  </div>
+<!--  &lt;!&ndash; Personalized Config &ndash;&gt;-->
+<!--  <div *ngIf="personalizedConfig" class="personalized-config {{module.id}}">-->
+<!--    <ng-container [ngComponentOutlet]="PersonalizedConfig"></ng-container>-->
+<!--  </div>-->
 
 </ng-container>
 
-<!-- Loader -->
-<div *ngIf="loading || loadingAction" id="page-loading">
-  <img src="assets/loader/loader.gif" alt="loader">
-</div>
+<!--&lt;!&ndash; Loader &ndash;&gt;-->
+<!--<div *ngIf="loading || loadingAction" id="page-loading">-->
+<!--  <img src="assets/loader/loader.gif" alt="loader">-->
+<!--</div>-->
 
 
 <!-- List Template -->
 <ng-template #LIST let-list='list'>
-  <div [id]="'list-' + list.listName">
-    <div class="data-table">
+<!--  <div [id]="'list-' + list.listName">-->
+<!--    <div class="data-table">-->
 
-      <table *ngIf="list.items.length > 0" id="listing-table">
-        <!-- Header -->
-        <thead>
-          <tr>
-            <th *ngFor="let column of list.listInfo; let i = index"
-                [ngClass]="{'check-column': column.type === InputType.TOGGLE}">
-              {{column.label}}
-            </th>
-            <ng-container *ngFor="let action of list.actions">
-              <th *ngIf="showAtLeastOnce(action.scope, list.items.length)" class="action-column"></th>
-            </ng-container>
-          </tr>
-        </thead>
+<!--      <table *ngIf="list.items.length > 0" id="listing-table">-->
+<!--        &lt;!&ndash; Header &ndash;&gt;-->
+<!--        <thead>-->
+<!--          <tr>-->
+<!--            <th *ngFor="let column of list.listInfo; let i = index"-->
+<!--                [ngClass]="{'check-column': column.type === InputType.TOGGLE}">-->
+<!--              {{column.label}}-->
+<!--            </th>-->
+<!--            <ng-container *ngFor="let action of list.actions">-->
+<!--              <th *ngIf="showAtLeastOnce(action.scope, list.items.length)" class="action-column"></th>-->
+<!--            </ng-container>-->
+<!--          </tr>-->
+<!--        </thead>-->
 
-        <!-- Body -->
-        <tbody>
-          <tr *ngFor="let item of list.items; let i = index; let first = first; let last = last; let even = even; let odd = odd">
+<!--        &lt;!&ndash; Body &ndash;&gt;-->
+<!--        <tbody>-->
+<!--          <tr *ngFor="let item of list.items; let i = index; let first = first; let last = last; let even = even; let odd = odd">-->
 
-            <td *ngFor="let column of list.listInfo"
-                [ngClass]="{'check-column': column.type === InputType.TOGGLE}">
+<!--            <td *ngFor="let column of list.listInfo"-->
+<!--                [ngClass]="{'check-column': column.type === InputType.TOGGLE}">-->
 
-              <ng-container *ngIf="column.type === InputType.IMAGE">
-                <img [src]="getImage(item[column.id] || API_ENDPOINT + '/' + 'assets/imgs/no-image.png')" alt="{{list.itemName}} image">
-              </ng-container>
+<!--              <ng-container *ngIf="column.type === InputType.IMAGE">-->
+<!--                <img [src]="getImage(item[column.id] || API_ENDPOINT + '/' + 'assets/imgs/no-image.png')" alt="{{list.itemName}} image">-->
+<!--              </ng-container>-->
 
-              <ng-container *ngIf="column.type === InputType.TOGGLE" class="check-column">
-                <label class="switch">
-                  <input type="checkbox" [(ngModel)]="item[column.id]" (change)="toggleItemParam(list, item)">
-                  <span class="slider round"></span>
-                </label>
-              </ng-container>
+<!--              <ng-container *ngIf="column.type === InputType.TOGGLE" class="check-column">-->
+<!--                <label class="switch">-->
+<!--                  <input type="checkbox" [(ngModel)]="item[column.id]" (change)="toggleItemParam(list, item)">-->
+<!--                  <span class="slider round"></span>-->
+<!--                </label>-->
+<!--              </ng-container>-->
 
-              <ng-container *ngIf="column.type === InputType.COLOR">
-                <div class="color">
-                  <div class="color-sample">
-                    <div class="box" [ngStyle]="{'backgroundColor': item[column.id]}"></div>
-                  </div>
-                  <div *ngIf="column.options['showLabel']">{{item[column.id]}}</div>
-                </div>
-              </ng-container>
+<!--              <ng-container *ngIf="column.type === InputType.COLOR">-->
+<!--                <div class="color">-->
+<!--                  <div class="color-sample">-->
+<!--                    <div class="box" [ngStyle]="{'backgroundColor': item[column.id]}"></div>-->
+<!--                  </div>-->
+<!--                  <div *ngIf="column.options['showLabel']">{{item[column.id]}}</div>-->
+<!--                </div>-->
+<!--              </ng-container>-->
 
-              <ng-container *ngIf="column.type === InputType.DATETIME">
-                <span>{{formatDate(item[column.id], 'DD/MM/YYYY HH:mm:ss')}}</span>
-              </ng-container>
+<!--              <ng-container *ngIf="column.type === InputType.DATETIME">-->
+<!--                <span>{{formatDate(item[column.id], 'DD/MM/YYYY HH:mm:ss')}}</span>-->
+<!--              </ng-container>-->
 
-              <ng-container *ngIf="column.type !== InputType.IMAGE && column.type !== InputType.TOGGLE && column.type !== InputType.COLOR && column.type !== InputType.DATETIME">
-                <span>{{item[column.id]}}</span>
-              </ng-container>
-            </td>
+<!--              <ng-container *ngIf="column.type !== InputType.IMAGE && column.type !== InputType.TOGGLE && column.type !== InputType.COLOR && column.type !== InputType.DATETIME">-->
+<!--                <span>{{item[column.id]}}</span>-->
+<!--              </ng-container>-->
+<!--            </td>-->
 
-            <ng-container *ngFor="let action of list.actions">
-              <td *ngIf="showAtLeastOnce(action.scope, list.items.length)" class="action-column">
-                <ng-container *ngIf="scopeAllows(action.scope, list.items.length, i, first, last, even, odd)">
-                  <div *ngIf="action.action === Action.DUPLICATE" class="icon duplicate_icon" title="Duplicate" (click)="doActionOnItem(list.listName, item, action.action, list.parent ?? null)"></div>
-                  <div *ngIf="action.action === Action.EDIT" class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(list, item, i, first, last, even, odd); isItemModalOpen = true;"></div>
-                  <div *ngIf="action.action === Action.DELETE" class="icon delete_icon" title="Remove" (click)="itemToDelete = {list, item}; isDeleteVerificationModalOpen = true"></div>
-                  <div *ngIf="action.action === Action.VIEW" class="icon preview_icon" title="View" (click)="viewItem(list, item)"></div>
-                  <div *ngIf="action.action === Action.MOVE_UP" class="icon up_icon" title="Move up" (click)="moveItem(list, item, 1)"></div>
-                  <div *ngIf="action.action === Action.MOVE_DOWN" class="icon down_icon" title="Move down" (click)="moveItem(list, item, -1)"></div>
-                  <div *ngIf="action.action === Action.EXPORT" class="icon export_icon_no_outline" title="Export" (click)="exportItems(list, item)"></div>
-                </ng-container>
-              </td>
-            </ng-container>
-          </tr>
-        </tbody>
-      </table>
+<!--            <ng-container *ngFor="let action of list.actions">-->
+<!--              <td *ngIf="showAtLeastOnce(action.scope, list.items.length)" class="action-column">-->
+<!--                <ng-container *ngIf="scopeAllows(action.scope, list.items.length, i, first, last, even, odd)">-->
+<!--                  <div *ngIf="action.action === Action.DUPLICATE" class="icon duplicate_icon" title="Duplicate" (click)="doActionOnItem(list.listName, item, action.action, list.parent ?? null)"></div>-->
+<!--                  <div *ngIf="action.action === Action.EDIT" class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(list, item, i, first, last, even, odd); isItemModalOpen = true;"></div>-->
+<!--                  <div *ngIf="action.action === Action.DELETE" class="icon delete_icon" title="Remove" (click)="itemToDelete = {list, item}; isDeleteVerificationModalOpen = true"></div>-->
+<!--                  <div *ngIf="action.action === Action.VIEW" class="icon preview_icon" title="View" (click)="viewItem(list, item)"></div>-->
+<!--                  <div *ngIf="action.action === Action.MOVE_UP" class="icon up_icon" title="Move up" (click)="moveItem(list, item, 1)"></div>-->
+<!--                  <div *ngIf="action.action === Action.MOVE_DOWN" class="icon down_icon" title="Move down" (click)="moveItem(list, item, -1)"></div>-->
+<!--                  <div *ngIf="action.action === Action.EXPORT" class="icon export_icon_no_outline" title="Export" (click)="exportItems(list, item)"></div>-->
+<!--                </ng-container>-->
+<!--              </td>-->
+<!--            </ng-container>-->
+<!--          </tr>-->
+<!--        </tbody>-->
+<!--      </table>-->
 
-      <div *ngIf="list.items.length === 0" class='error_box'>
-        <div id='empty_table' class='error_msg'>No {{list.itemName}}s found</div>
-      </div>
+<!--      <div *ngIf="list.items.length === 0" class='error_box'>-->
+<!--        <div id='empty_table' class='error_msg'>No {{list.itemName}}s found</div>-->
+<!--      </div>-->
 
-    </div>
-  </div>
+<!--    </div>-->
+<!--  </div>-->
 </ng-template>
 
 
@@ -162,99 +592,99 @@
 </ng-container>
 
 <ng-template #itemModal>
-  <!-- Title -->
-  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} {{newItem.list.itemName}}:</div>
+<!--  &lt;!&ndash; Title &ndash;&gt;-->
+<!--  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} {{newItem.list.itemName}}:</div>-->
 
-  <div class="content">
-    <div id="new_box" class="inputs">
-      <div class="row-inputs">
-        <div class="details full config-item">
-          <div *ngFor="let input of newItem.list[Action.EDIT]"
-               [ngClass]="{'half': input.type !== InputType.IMAGE && input.type !== InputType.TOGGLE, 'full': input.type === InputType.IMAGE, 'on_off': input.type === InputType.TOGGLE}">
+<!--  <div class="content">-->
+<!--    <div id="new_box" class="inputs">-->
+<!--      <div class="row-inputs">-->
+<!--        <div class="details full config-item">-->
+<!--          <div *ngFor="let input of newItem.list[Action.EDIT]"-->
+<!--               [ngClass]="{'half': input.type !== InputType.IMAGE && input.type !== InputType.TOGGLE, 'full': input.type === InputType.IMAGE, 'on_off': input.type === InputType.TOGGLE}">-->
 
-            <ng-container
-              *ngIf="scopeAllows(input.scope, newItem.nrItems, newItem.index, newItem.first, newItem.last, newItem.even, newItem.odd)"
-              [ngTemplateOutlet]="INPUT"
-              [ngTemplateOutletContext]="{id: input.id, label: input.label, type: input.type, obj: newItem.item, style: 'inner', options: input.options}">
-            </ng-container>
-          </div>
-        </div>
-      </div>
-    </div>
+<!--            <ng-container-->
+<!--              *ngIf="scopeAllows(input.scope, newItem.nrItems, newItem.index, newItem.first, newItem.last, newItem.even, newItem.odd)"-->
+<!--              [ngTemplateOutlet]="INPUT"-->
+<!--              [ngTemplateOutletContext]="{id: input.id, label: input.label, type: input.type, obj: newItem.item, style: 'inner', options: input.options}">-->
+<!--            </ng-container>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
 
-    <button class="cancel" (click)="isItemModalOpen = false; newItem.list = null; clearObject(newItem.item)">Cancel</button>
-    <button class="save_btn" [disabled]="!hasUnsavedChanges" (click)="doActionOnItem(newItem.list.listName, newItem.item, mode === 'add' ? Action.NEW : Action.EDIT, newItem.list.parent || null)">Save</button>
-  </div>
+<!--    <button class="cancel" (click)="isItemModalOpen = false; newItem.list = null; clearObject(newItem.item)">Cancel</button>-->
+<!--    <button class="save_btn" [disabled]="!hasUnsavedChanges" (click)="doActionOnItem(newItem.list.listName, newItem.item, mode === 'add' ? Action.NEW : Action.EDIT, newItem.list.parent || null)">Save</button>-->
+<!--  </div>-->
 </ng-template>
 
 
 <!-- Inputs FIXME: create components and an any-input component -->
 <ng-template #INPUT let-id='id' let-label='label' let-type='type' let-obj='obj' let-style='style' let-options='options'>
 
-  <!-- Text -->
-  <ng-container *ngIf="type === InputType.TEXT">
-    <ng-container *ngIf="style === 'outer'">
-      <div class="input-wrapper">
-        <span *ngIf="label" class="label">{{label}}</span>
-        <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
-      </div>
-    </ng-container>
+<!--  &lt;!&ndash; Text &ndash;&gt;-->
+<!--  <ng-container *ngIf="type === InputType.TEXT">-->
+<!--    <ng-container *ngIf="style === 'outer'">-->
+<!--      <div class="input-wrapper">-->
+<!--        <span *ngIf="label" class="label">{{label}}</span>-->
+<!--        <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">-->
+<!--      </div>-->
+<!--    </ng-container>-->
 
-    <ng-container *ngIf="style === 'inner'">
-      <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
-      <label [for]="id" class="form__label">{{label}}</label>
-    </ng-container>
-  </ng-container>
+<!--    <ng-container *ngIf="style === 'inner'">-->
+<!--      <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">-->
+<!--      <label [for]="id" class="form__label">{{label}}</label>-->
+<!--    </ng-container>-->
+<!--  </ng-container>-->
 
-  <!-- Number -->
-  <ng-container *ngIf="type === InputType.NUMBER">
-    <ng-container *ngIf="style === 'outer'">
-      <div class="input-wrapper">
-        <span *ngIf="label" class="label">{{label}}</span>
-        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
-      </div>
-    </ng-container>
+<!--  &lt;!&ndash; Number &ndash;&gt;-->
+<!--  <ng-container *ngIf="type === InputType.NUMBER">-->
+<!--    <ng-container *ngIf="style === 'outer'">-->
+<!--      <div class="input-wrapper">-->
+<!--        <span *ngIf="label" class="label">{{label}}</span>-->
+<!--        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">-->
+<!--      </div>-->
+<!--    </ng-container>-->
 
-    <ng-container *ngIf="style === 'inner'">
-      <div>
-        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">
-        <label [for]="id" class="form__label">{{label}}</label>
-      </div>
-    </ng-container>
-  </ng-container>
+<!--    <ng-container *ngIf="style === 'inner'">-->
+<!--      <div>-->
+<!--        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true">-->
+<!--        <label [for]="id" class="form__label">{{label}}</label>-->
+<!--      </div>-->
+<!--    </ng-container>-->
+<!--  </ng-container>-->
 
-  <!-- Select -->
-  <ng-container *ngIf="type === InputType.SELECT">
-    <select class="form__input" [(ngModel)]="obj[id]">
-      <option [value]="null" disabled>Select {{label}}</option>
-      <option *ngFor="let item of options['items']" [value]="item['id']">{{item['labelParam']}}</option>
-    </select>
-  </ng-container>
+<!--  &lt;!&ndash; Select &ndash;&gt;-->
+<!--  <ng-container *ngIf="type === InputType.SELECT">-->
+<!--    <select class="form__input" [(ngModel)]="obj[id]">-->
+<!--      <option [value]="null" disabled>Select {{label}}</option>-->
+<!--      <option *ngFor="let item of options['items']" [value]="item['id']">{{item['labelParam']}}</option>-->
+<!--    </select>-->
+<!--  </ng-container>-->
 
-  <!-- Toggle -->
-  <ng-container *ngIf="type === InputType.TOGGLE">
-    <div class="input-wrapper toggle">
-      <span *ngIf="label" class="label">{{label}}</span>
-      <label class="switch">
-        <input type="checkbox" id="{{id}}" name="{{id}}" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true" [checked]="obj[id]">
-        <span class="slider round"></span>
-      </label>
-    </div>
-  </ng-container>
+<!--  &lt;!&ndash; Toggle &ndash;&gt;-->
+<!--  <ng-container *ngIf="type === InputType.TOGGLE">-->
+<!--    <div class="input-wrapper toggle">-->
+<!--      <span *ngIf="label" class="label">{{label}}</span>-->
+<!--      <label class="switch">-->
+<!--        <input type="checkbox" id="{{id}}" name="{{id}}" [(ngModel)]="obj[id]" (ngModelChange)="hasUnsavedChanges = true" [checked]="obj[id]">-->
+<!--        <span class="slider round"></span>-->
+<!--      </label>-->
+<!--    </div>-->
+<!--  </ng-container>-->
 
   <!-- Image -->
-  <app-input-file *ngIf="type === InputType.IMAGE"
-      [id]="id"
-      [accept]="'image/*'"
-      [label]="label"
-      (valueChange)="onFileSelected($event, 'image', obj, id)">
-  </app-input-file>
+<!--  <app-input-file *ngIf="type === InputType.IMAGE"-->
+<!--      [id]="id"-->
+<!--      [accept]="'image/*'"-->
+<!--      [label]="label"-->
+<!--      (valueChange)="onFileSelected($event, 'image', obj, id)">-->
+<!--  </app-input-file>-->
 
   <!-- Color -->
-  <app-input-color *ngIf="type === InputType.COLOR"
-      [id]="id"
-      [(value)]="obj[id]">
-  </app-input-color>
+<!--  <app-input-color *ngIf="type === InputType.COLOR"-->
+<!--      [id]="id"-->
+<!--      [(value)]="obj[id]">-->
+<!--  </app-input-color>-->
 
 </ng-template>
 

@@ -1,16 +1,36 @@
 export enum InputType {
-  TEXT = 'text',
-  TEXTAREA = 'textarea',
-  NUMBER = 'number',
+  // Checkbox & Radio
   CHECKBOX = 'checkbox',
   RADIO = 'radio',
-  SELECT = 'select',
-  TOGGLE = 'toggle',
+
+  // Code
+  CODE = 'code',
+
+  // Color
+  COLOR = 'color',
+
+  // Date & Time
   DATE = 'date',
   TIME = 'time',
   DATETIME = 'datetime',
-  IMAGE = 'image',
+
+  // General
+  TEXT = 'text',
+  TEXTAREA = 'textarea',
+  NUMBER = 'number',
+  URL = 'url',
   FILE = 'file',
-  COLOR = 'color',
-  MARKDOWN = 'markdown'
+
+  // Markdown
+  MARKDOWN = 'markdown',
+
+  // Personal info
+  EMAIL = 'email',
+
+  // Select
+  SELECT = 'select',
+  WEEKDAY = 'weekday',
+
+  // Toggle
+  TOGGLE = 'toggle'
 }

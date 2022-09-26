@@ -30,6 +30,9 @@ export class InputColorComponent implements OnInit, AfterViewInit {
   @Input() topLabel?: string;                                         // Top label text
   @Input() leftLabel?: string;                                        // Text on prepended label
 
+  @Input() helperText?: string;                                       // Text for helper tooltip
+  @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';      // Helper position
+
   // Validity
   @Input() pattern?: string = this.COLOR_PATTERN;                     // The pattern to be applied
   @Input() required?: boolean;                                        // Make it required

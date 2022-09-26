@@ -40,6 +40,9 @@ export class InputSelectComponent implements OnInit {
   @Input() btnText?: string;                                                        // Text on appended button
   @Input() btnIcon?: string;                                                        // Icon on appended button
 
+  @Input() helperText?: string;                                                     // Text for helper tooltip
+  @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';                    // Helper position
+
   // Validity
   @Input() required?: boolean;                                                      // Make it required
 

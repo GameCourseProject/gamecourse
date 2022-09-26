@@ -1,7 +1,8 @@
 <div class="form-control w-full {{classList}}">
 
   <!-- Label -->
-  <label *ngIf="label" class="label">
+  <label *ngIf="label" class="label cursor-pointer justify-start gap-2">
+    <app-simple-helper *ngIf="helperText" [text]="helperText" [position]="helperPosition"></app-simple-helper>
     <span class="label-text">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
   </label>
 

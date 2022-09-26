@@ -44,6 +44,7 @@
    [closeBtnText]="'Close'"
    [extraBtnText]="moduleToManage.configurable ? 'Configure' : null"
    [extraBtnDisabled]="!moduleToManage.enabled"
+   (extraBtnClicked)="configure()"
    [submitBtnText]="moduleToManage.enabled ? 'Disable' : 'Enable'"
    [submitBtnColor]="moduleToManage.enabled ? 'error' : 'success'"
    [submitBtnDisabled]="!moduleToManage.canChangeState"

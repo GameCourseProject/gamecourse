@@ -603,13 +603,8 @@ abstract class Module
     }
 
     /**
-     * Gets general inputs to show on configuration page where each
-     * input has:
-     *  - id: unique ID
-     *  - label: label to show
-     *  - type: type of input (check Config/InputType.php for more info)
-     *  - value: current value
-     *  - options?: list of options (check Config/InputType.php for more info)
+     * Gets general inputs to show on configuration page.
+     *
      * @return array
      */
     public function getGeneralInputs(): ?array
@@ -618,7 +613,7 @@ abstract class Module
     }
 
     /**
-     * Updates general inputs.
+     * Updates general inputs in a given section.
      *
      * @param array $inputs
      * @return void

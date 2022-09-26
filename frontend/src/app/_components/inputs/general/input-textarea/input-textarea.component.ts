@@ -21,6 +21,9 @@ export class InputTextareaComponent implements OnInit {
   @Input() disabled?: boolean;                                              // Make it disabled
   @Input() label?: string;                                                  // Top label text
 
+  @Input() helperText?: string;                                             // Text for helper tooltip
+  @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';            // Helper position
+
   // Validity
   @Input() pattern?: string;                                                // The pattern to be applied
   @Input() required?: boolean;                                              // Make it required

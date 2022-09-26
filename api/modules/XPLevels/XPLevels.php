@@ -139,7 +139,25 @@ class XPLevels extends Module
     public function getGeneralInputs(): array
     {
         return [
-            ["id" => "maxExtraCredit", "label" => "Max. Extra Credit", "type" => InputType::NUMBER, "value" => $this->getMaxExtraCredit()],
+            [
+                "name" => "General",
+                "contents" => [
+                    [
+                        "contentType" => "item",
+                        "width" => "1/3",
+                        "type" => InputType::NUMBER,
+                        "id" => "maxExtraCredit",
+                        "value" => $this->getMaxExtraCredit(),
+                        "placeholder" => "Max. extra credit",
+                        "options" => [
+                            "topLabel" => "Total max. extra credit",
+                            "required" => true,
+                            "minValue" => 0
+                        ],
+                        "helper" => "Maximum extra credit students can earn in total"
+                    ]
+                ]
+            ]
         ];
     }
 

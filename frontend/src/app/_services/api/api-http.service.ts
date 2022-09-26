@@ -24,7 +24,8 @@ import {View} from "../../_domain/views/view";
 import {buildView} from "../../_domain/views/build-view/build-view";
 import {dateFromDatabase, exists} from "../../_utils/misc/misc";
 import {
-  GeneralInput,
+  ConfigInputItem,
+  ConfigSection,
   List
 } from "../../_views/restricted/courses/course/settings/modules/config/config/config.component";
 import {Tier} from "../../_domain/modules/config/personalized-config/skills/tier";
@@ -983,7 +984,8 @@ export class ApiHttpService {
 
 
   // Configuration
-  public getModuleConfig(courseID: number, moduleID: string): Observable<{generalInputs: GeneralInput[] | null, lists: List[] | null, personalizedConfig: string | null}> {
+
+  public getModuleConfig(courseID: number, moduleID: string): Observable<{generalInputs: ConfigSection[] | null, lists: List[] | null, personalizedConfig: string | null}> {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
@@ -998,7 +1000,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  public saveModuleConfig(courseID: number, moduleID: string, generalInputs?: GeneralInput[], listingItem?: any,
+  public saveModuleConfig(courseID: number, moduleID: string, generalInputs?: ConfigInputItem[], listingItem?: any,
                           listName?: string, parentID?: number, action?: Action): Observable<void> {
     const data = {
       "courseId": courseID,

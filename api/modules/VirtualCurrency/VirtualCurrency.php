@@ -148,9 +148,60 @@ class VirtualCurrency extends Module
     public function getGeneralInputs(): array
     {
         return [
-            ["id" => "attemptRating", "label" => "Min. Rating for Attempt", "type" => InputType::NUMBER, "value" => $this->getAttemptRating()],
-            ["id" => "wildcardCost", "label" => "Wildcard Initial Cost", "type" => InputType::NUMBER, "value" => $this->getWildcardCost()],
-            ["id" => "skillCost", "label" => "Increment Cost", "type" => InputType::NUMBER, "value" => $this->getSkillCost()]
+            [
+                "name" => Skills::NAME,
+                "contents" => [
+                    [
+                        "contentType" => "container",
+                        "classList" => "flex flex-wrap items-center",
+                        "contents" => [
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::NUMBER,
+                                "id" => "attemptRating",
+                                "value" => $this->getAttemptRating(),
+                                "placeholder" => "Min. grade for attempt",
+                                "options" => [
+                                    "topLabel" => "Min. grade for attempt",
+                                    "required" => true,
+                                    "minValue" => 0,
+                                    "maxValue" => 5
+                                ],
+                                "helper" => "Minimum skill grade to count as an attempt"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::NUMBER,
+                                "id" => "wildcardCost",
+                                "value" => $this->getWildcardCost(),
+                                "placeholder" => "Initial cost for wildcard",
+                                "options" => [
+                                    "topLabel" => "Wildcard initial cost",
+                                    "required" => true,
+                                    "minValue" => 0
+                                ],
+                                "helper" => "Wildcard skills initial currency cost. Afterwards cost will be: #attempts x increment_cost"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::NUMBER,
+                                "id" => "skillCost",
+                                "value" => $this->getSkillCost(),
+                                "placeholder" => "Increment for wildcard cost",
+                                "options" => [
+                                    "topLabel" => "Wildcard increment cost",
+                                    "required" => true,
+                                    "minValue" => 0
+                                ],
+                                "helper" => "Wildcard increment currency cost"
+                            ]
+                        ]
+                    ]
+                ]
+            ]
         ];
     }
 
@@ -169,24 +220,24 @@ class VirtualCurrency extends Module
     public function getLists(): array
     {
         return [
-            [
-                "listName" => "Settings",
-                "itemName" => "virtual currency",
-                "listInfo" => [
-                    ["id" => "name", "label" => "Name", "type" => InputType::TEXT],
-                    ["id" => "image", "label" => "Image", "type" => InputType::IMAGE]
-                ],
-                "items" => [
-                    ["name" => $this->getName(), "image" => $this->getImage()]
-                ],
-                "actions" => [
-                    ["action" => Action::EDIT, "scope" => ActionScope::FIRST]
-                ],
-                Action::EDIT => [
-                    ["id" => "name", "label" => "Name", "type" => InputType::TEXT, "scope" => ActionScope::FIRST],
-                    ["id" => "image", "label" => "Image", "type" => InputType::IMAGE, "scope" => ActionScope::FIRST]
-                ],
-            ]
+//            [
+//                "listName" => "Settings",
+//                "itemName" => "virtual currency",
+//                "listInfo" => [
+//                    ["id" => "name", "label" => "Name", "type" => InputType::TEXT],
+//                    ["id" => "image", "label" => "Image", "type" => InputType::IMAGE]
+//                ],
+//                "items" => [
+//                    ["name" => $this->getName(), "image" => $this->getImage()]
+//                ],
+//                "actions" => [
+//                    ["action" => Action::EDIT, "scope" => ActionScope::FIRST]
+//                ],
+//                Action::EDIT => [
+//                    ["id" => "name", "label" => "Name", "type" => InputType::TEXT, "scope" => ActionScope::FIRST],
+//                    ["id" => "image", "label" => "Image", "type" => InputType::IMAGE, "scope" => ActionScope::FIRST]
+//                ],
+//            ]
         ];
     }
 

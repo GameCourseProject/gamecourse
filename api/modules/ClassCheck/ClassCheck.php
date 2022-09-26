@@ -89,7 +89,23 @@ class ClassCheck extends Module
     public function getGeneralInputs(): array
     {
         return [
-            ["id" => "tsvCode", "label" => "TSV Code", "type" => InputType::TEXT, "value" => $this->getTSVCode()],
+            [
+                "name" => "General",
+                "contents" => [
+                    [
+                        "contentType" => "item",
+                        "width" => "1/2",
+                        "type" => InputType::URL,
+                        "id" => "tsvCode",
+                        "value" => $this->getTSVCode(),
+                        "placeholder" => "TSV code",
+                        "options" => [
+                            "topLabel" => "TSV code"
+                        ],
+                        "helper" => "Classcheck TSV code URL"
+                    ]
+                ]
+            ]
         ];
     }
 

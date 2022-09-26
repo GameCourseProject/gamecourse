@@ -37,6 +37,9 @@ export class InputFileComponent implements OnInit, AfterViewInit, OnChanges {
 
   @Input() label?: string;                                            // Top label text
 
+  @Input() helperText?: string;                                       // Text for helper tooltip
+  @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';      // Helper position
+
   // Validity
   @Input() required?: boolean;                                        // Make it required
 

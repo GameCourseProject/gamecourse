@@ -108,14 +108,132 @@ class Moodle extends Module
     {
         $config = $this->getMoodleConfig();
         return [
-            ["id" => "dbServer", "label" => "DB Server", "type" => InputType::TEXT, "value" => $config["dbServer"]],
-            ["id" => "dbPort", "label" => "DB Port", "type" => InputType::NUMBER, "value" => $config["dbPort"]],
-            ["id" => "dbName", "label" => "DB Name", "type" => InputType::TEXT, "value" => $config["dbName"]],
-            ["id" => "dbUser", "label" => "DB User", "type" => InputType::TEXT, "value" => $config["dbUser"]],
-            ["id" => "dbPass", "label" => "DB Pass", "type" => InputType::TEXT, "value" => $config["dbPass"]],
-            ["id" => "tablesPrefix", "label" => "Tables Prefix", "type" => InputType::TEXT, "value" => $config["tablesPrefix"]],
-            ["id" => "moodleURL", "label" => "Moodle URL", "type" => InputType::TEXT, "value" => $config["moodleURL"]],
-            ["id" => "moodleCourse", "label" => "Moodle Course ID", "type" => InputType::NUMBER, "value" => $config["moodleCourse"]]
+            [
+                "name" => "General",
+                "contents" => [
+                    [
+                        "contentType" => "container",
+                        "classList" => "flex flex-wrap items-center",
+                        "contents" => [
+                            [
+                                "contentType" => "item",
+                                "width" => "1/2",
+                                "type" => InputType::URL,
+                                "id" => "moodleURL",
+                                "value" => $config["moodleURL"],
+                                "placeholder" => "Moodle URL",
+                                "options" => [
+                                    "topLabel" => "Moodle URL",
+                                    "required" => true,
+                                ],
+                                "helper" => "URL of Moodle to get data from"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/2",
+                                "type" => InputType::NUMBER,
+                                "id" => "moodleCourse",
+                                "value" => $config["moodleCourse"],
+                                "placeholder" => "Moodle course ID",
+                                "options" => [
+                                    "topLabel" => "Moodle course ID",
+                                    "required" => true,
+                                ],
+                                "helper" => "Moodle ID of course to get data from"
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                "name" => "Database",
+                "contents" => [
+                    [
+                        "contentType" => "container",
+                        "classList" => "flex flex-wrap items-center",
+                        "contents" => [
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::TEXT,
+                                "id" => "dbServer",
+                                "value" => $config["dbServer"],
+                                "placeholder" => "Database server",
+                                "options" => [
+                                    "topLabel" => "Server",
+                                    "required" => true,
+                                ],
+                                "helper" => "Moodle database server"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::NUMBER,
+                                "id" => "dbPort",
+                                "value" => $config["dbPort"],
+                                "placeholder" => "Database port",
+                                "options" => [
+                                    "topLabel" => "Port",
+                                    "required" => true,
+                                ],
+                                "helper" => "Moodle database port"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::TEXT,
+                                "id" => "dbName",
+                                "value" => $config["dbName"],
+                                "placeholder" => "Database name",
+                                "options" => [
+                                    "topLabel" => "Name",
+                                    "required" => true,
+                                ],
+                                "helper" => "Moodle database name"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::TEXT,
+                                "id" => "dbUser",
+                                "value" => $config["dbUser"],
+                                "placeholder" => "Database user",
+                                "options" => [
+                                    "topLabel" => "User",
+                                    "required" => true,
+                                ],
+                                "helper" => "Moodle database user"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::TEXT,
+                                "id" => "dbPass",
+                                "value" => $config["dbPass"],
+                                "placeholder" => "Database password",
+                                "options" => [
+                                    "topLabel" => "Password",
+                                    "required" => true,
+                                ],
+                                "helper" => "Moodle database password"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::TEXT,
+                                "id" => "tablesPrefix",
+                                "value" => $config["tablesPrefix"],
+                                "placeholder" => "Database tables prefix",
+                                "options" => [
+                                    "topLabel" => "Tables prefix",
+                                    "required" => true,
+                                ],
+                                "helper" => "Moodle database tables prefix"
+                            ]
+                        ]
+                    ]
+                ]
+            ]
         ];
     }
 

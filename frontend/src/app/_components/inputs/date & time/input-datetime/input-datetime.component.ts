@@ -26,7 +26,10 @@ export class InputDatetimeComponent implements OnInit {
   @Input() disabled?: boolean;
 
   @Input() topLabel?: string;                                                   // Top label text
-  @Input() leftLabel?: string;
+  @Input() leftLabel?: string;                                                  // Text on prepended label
+
+  @Input() helperText?: string;                                                 // Text for helper tooltip
+  @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';                // Helper position
 
   // Validity
   @Input() pattern?: string = this.DATETIME_PATTERN;                            // The pattern to be applied

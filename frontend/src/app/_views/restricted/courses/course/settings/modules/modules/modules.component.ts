@@ -1,21 +1,20 @@
 import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
+import {DomSanitizer} from "@angular/platform-browser";
 
 import {ApiHttpService} from "../../../../../../../_services/api/api-http.service";
+import { ModalService } from 'src/app/_services/modal.service';
 
 import {Course} from "../../../../../../../_domain/courses/course";
 import {Module} from "../../../../../../../_domain/modules/module";
 import {ModuleType} from "../../../../../../../_domain/modules/ModuleType";
-import {DomSanitizer} from "@angular/platform-browser";
+import {DependencyMode} from "../../../../../../../_domain/modules/DependencyMode";
 
 import * as _ from "lodash";
-import { ModalService } from 'src/app/_services/modal.service';
-import {DependencyMode} from "../../../../../../../_domain/modules/DependencyMode";
 
 @Component({
   selector: 'app-modules',
-  templateUrl: './modules.component.html',
-  styleUrls: ['./modules.component.scss']
+  templateUrl: './modules.component.html'
 })
 export class ModulesComponent implements OnInit {
 
@@ -39,6 +38,7 @@ export class ModulesComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
+    private router: Router,
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer
   ) { }
@@ -121,6 +121,10 @@ export class ModulesComponent implements OnInit {
 
   filterHardDependencies(modules: Module[]): Module[] {
     return modules.filter(module => module.dependencyMode === DependencyMode.HARD);
+  }
+
+  configure() {
+    this.router.navigate(['modules/' + this.moduleToManage.id + '/config'], {relativeTo: this.route.parent});
   }
 
 }

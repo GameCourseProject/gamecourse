@@ -121,7 +121,25 @@ class Streaks extends Module
     public function getGeneralInputs(): array
     {
         return [
-            ["id" => "maxExtraCredit", "label" => "Max. Extra Credit", "type" => InputType::NUMBER, "value" => $this->getMaxExtraCredit()],
+            [
+                "name" => "General",
+                "contents" => [
+                    [
+                        "contentType" => "item",
+                        "width" => "1/3",
+                        "type" => InputType::NUMBER,
+                        "id" => "maxExtraCredit",
+                        "value" => $this->getMaxExtraCredit(),
+                        "placeholder" => "Streaks max. extra credit",
+                        "options" => [
+                            "topLabel" => "Max. extra credit",
+                            "required" => true,
+                            "minValue" => 0
+                        ],
+                        "helper" => "Maximum extra credit students can earn with streaks"
+                    ]
+                ]
+            ]
         ];
     }
 
