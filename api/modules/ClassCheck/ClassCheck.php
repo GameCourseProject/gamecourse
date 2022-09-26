@@ -93,16 +93,22 @@ class ClassCheck extends Module
                 "name" => "General",
                 "contents" => [
                     [
-                        "contentType" => "item",
-                        "width" => "1/2",
-                        "type" => InputType::URL,
-                        "id" => "tsvCode",
-                        "value" => $this->getTSVCode(),
-                        "placeholder" => "TSV code",
-                        "options" => [
-                            "topLabel" => "TSV code"
-                        ],
-                        "helper" => "Classcheck TSV code URL"
+                        "contentType" => "container",
+                        "classList" => "flex flex-wrap items-center",
+                        "contents" => [
+                            [
+                                "contentType" => "item",
+                                "width" => "1/2",
+                                "type" => InputType::URL,
+                                "id" => "tsvCode",
+                                "value" => $this->getTSVCode(),
+                                "placeholder" => "TSV code",
+                                "options" => [
+                                    "topLabel" => "TSV code"
+                                ],
+                                "helper" => "Classcheck TSV code URL"
+                            ]
+                        ]
                     ]
                 ]
             ]

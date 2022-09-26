@@ -69,7 +69,7 @@
 
 <!-- Artifacts: container or input -->
 <ng-template #ARTIFACT let-artifact='artifact' let-form='form' let-index='index'>
-  <div class="{{artifact.classList}} {{getWidth(artifact.width ?? 'w-full')}} {{getMarginTOP(artifact.contentType === 'item', artifact.width ?? 'w-full', index)}}"
+  <div class="{{artifact.classList}} {{getWidth(artifact.width ?? 'full')}} {{getMarginTOP(artifact.contentType === 'item', artifact.width ?? 'full', index)}}"
        [ngClass]="{'px-3': artifact.contentType === 'item', '-mx-3': artifact.contentType === 'container'}">
 
     <!-- Container -->
@@ -91,14 +91,14 @@
           [id]="artifact.id"
           [form]="form"
           [(value)]="artifact.value"
-          [size]="$any(artifact.options.size) ?? null"
+          [size]="$any(artifact.options.size) ?? 'sm'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"
           [disabled]="$any(artifact.options.disabled) ?? null"
           [label]="$any(artifact.options.label) ?? null"
-          [labelPosition]="$any(artifact.options.labelPosition) ?? null"
+          [labelPosition]="$any(artifact.options.labelPosition) ?? 'left'"
           [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
           [required]="$any(artifact.options.required) ?? null">
         </app-input-checkbox>
       </ng-container>
@@ -111,14 +111,14 @@
           [form]="form"
           [optionValue]="$any(artifact.options.optionValue) ?? null"
           [(value)]="artifact.value"
-          [size]="$any(artifact.options.size) ?? null"
+          [size]="$any(artifact.options.size) ?? 'sm'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"
           [disabled]="$any(artifact.options.disabled) ?? null"
           [label]="$any(artifact.options.label) ?? null"
-          [labelPosition]="$any(artifact.options.labelPosition) ?? null"
+          [labelPosition]="$any(artifact.options.labelPosition) ?? 'left'"
           [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
           [required]="$any(artifact.options.required) ?? null">
         </app-input-radio>
       </ng-container>
@@ -133,18 +133,15 @@
           [form]="form"
           [(value)]="artifact.value"
           [placeholder]="$any(artifact.placeholder) ?? null"
-          [size]="$any(artifact.options.size) ?? null"
+          [size]="$any(artifact.options.size) ?? 'md'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"
           [disabled]="$any(artifact.options.disabled) ?? null"
           [topLabel]="$any(artifact.options.topLabel) ?? null"
           [leftLabel]="$any(artifact.options.leftLabel) ?? null"
           [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
-          [pattern]="$any(artifact.options.pattern) ?? null"
-          [required]="$any(artifact.options.required) ?? null"
-          [minLength]="$any(artifact.options.minLength) ?? null"
-          [maxLength]="$any(artifact.options.maxLength) ?? null">
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
+          [required]="$any(artifact.options.required) ?? null">
         </app-input-color>
       </ng-container>
 
@@ -154,16 +151,14 @@
           [id]="artifact.id"
           [form]="form"
           [(value)]="artifact.value"
-          [placeholder]="$any(artifact.placeholder) ?? null"
-          [size]="$any(artifact.options.size) ?? null"
+          [size]="$any(artifact.options.size) ?? 'md'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"
           [disabled]="$any(artifact.options.disabled) ?? null"
           [topLabel]="$any(artifact.options.topLabel) ?? null"
           [leftLabel]="$any(artifact.options.leftLabel) ?? null"
           [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
-          [pattern]="$any(artifact.options.pattern) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
           [required]="$any(artifact.options.required) ?? null">
         </app-input-date>
       </ng-container>
@@ -174,16 +169,14 @@
           [id]="artifact.id"
           [form]="form"
           [(value)]="artifact.value"
-          [placeholder]="$any(artifact.placeholder) ?? null"
-          [size]="$any(artifact.options.size) ?? null"
+          [size]="$any(artifact.options.size) ?? 'md'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"
           [disabled]="$any(artifact.options.disabled) ?? null"
           [topLabel]="$any(artifact.options.topLabel) ?? null"
           [leftLabel]="$any(artifact.options.leftLabel) ?? null"
           [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
-          [pattern]="$any(artifact.options.pattern) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
           [required]="$any(artifact.options.required) ?? null">
         </app-input-time>
       </ng-container>
@@ -194,16 +187,14 @@
           [id]="artifact.id"
           [form]="form"
           [(value)]="artifact.value"
-          [placeholder]="$any(artifact.placeholder) ?? null"
-          [size]="$any(artifact.options.size) ?? null"
+          [size]="$any(artifact.options.size) ?? 'md'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"
           [disabled]="$any(artifact.options.disabled) ?? null"
           [topLabel]="$any(artifact.options.topLabel) ?? null"
           [leftLabel]="$any(artifact.options.leftLabel) ?? null"
           [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
-          [pattern]="$any(artifact.options.pattern) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
           [required]="$any(artifact.options.required) ?? null">
         </app-input-datetime>
       </ng-container>
@@ -215,7 +206,7 @@
           [form]="form"
           [(value)]="artifact.value"
           [placeholder]="$any(artifact.placeholder) ?? null"
-          [size]="$any(artifact.options.size) ?? null"
+          [size]="$any(artifact.options.size) ?? 'md'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"
           [disabled]="$any(artifact.options.disabled) ?? null"
@@ -225,7 +216,7 @@
           [btnText]="$any(artifact.options.btnText) ?? null"
           [btnIcon]="$any(artifact.options.btnIcon) ?? null"
           [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
           [pattern]="$any(artifact.options.pattern) ?? null"
           [required]="$any(artifact.options.required) ?? null"
           [minLength]="$any(artifact.options.minLength) ?? null"
@@ -240,13 +231,13 @@
           [form]="form"
           [(value)]="artifact.value"
           [placeholder]="$any(artifact.placeholder) ?? null"
-          [size]="$any(artifact.options.size) ?? null"
+          [size]="$any(artifact.options.size) ?? 'md'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"
           [disabled]="$any(artifact.options.disabled) ?? null"
           [label]="$any(artifact.options.label) ?? null"
           [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
           [pattern]="$any(artifact.options.pattern) ?? null"
           [required]="$any(artifact.options.required) ?? null"
           [minLength]="$any(artifact.options.minLength) ?? null"
@@ -261,7 +252,7 @@
           [form]="form"
           [(value)]="artifact.value"
           [placeholder]="$any(artifact.placeholder) ?? null"
-          [size]="$any(artifact.options.size) ?? null"
+          [size]="$any(artifact.options.size) ?? 'md'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"
           [disabled]="$any(artifact.options.disabled) ?? null"
@@ -271,7 +262,7 @@
           [btnText]="$any(artifact.options.btnText) ?? null"
           [btnIcon]="$any(artifact.options.btnIcon) ?? null"
           [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
           [required]="$any(artifact.options.required) ?? null"
           [minValue]="$any(artifact.options.minValue) ?? null"
           [maxValue]="$any(artifact.options.maxValue) ?? null">
@@ -284,16 +275,15 @@
           [id]="artifact.id"
           [form]="form"
           [(value)]="artifact.value"
-          [placeholder]="$any(artifact.placeholder) ?? null"
-          [size]="$any(artifact.options.size) ?? null"
+          [placeholder]="$any(artifact.placeholder) ?? 'www.website.com'"
+          [size]="$any(artifact.options.size) ?? 'md'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"
           [disabled]="$any(artifact.options.disabled) ?? null"
           [topLabel]="$any(artifact.options.topLabel) ?? null"
-          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? 'https://'"
           [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
-          [pattern]="$any(artifact.options.pattern) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
           [required]="$any(artifact.options.required) ?? null"
           [minLength]="$any(artifact.options.minLength) ?? null"
           [maxLength]="$any(artifact.options.maxLength) ?? null">
@@ -317,7 +307,7 @@
 <!--          [btnText]="$any(artifact.options.btnText) ?? null"-->
 <!--          [btnIcon]="$any(artifact.options.btnIcon) ?? null"-->
 <!--          [helperText]="$any(artifact.helper) ?? null"-->
-<!--          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"-->
+<!--          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"-->
 <!--          [required]="$any(artifact.options.required) ?? null"-->
 <!--          [minValue]="$any(artifact.options.minValue) ?? null"-->
 <!--          [maxValue]="$any(artifact.options.maxValue) ?? null">-->
@@ -333,16 +323,15 @@
           [id]="artifact.id"
           [form]="form"
           [(value)]="artifact.value"
-          [placeholder]="$any(artifact.placeholder) ?? null"
-          [size]="$any(artifact.options.size) ?? null"
+          [placeholder]="$any(artifact.placeholder) ?? 'email@example.com'"
+          [size]="$any(artifact.options.size) ?? 'md'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"
           [disabled]="$any(artifact.options.disabled) ?? null"
           [topLabel]="$any(artifact.options.topLabel) ?? null"
           [leftLabel]="$any(artifact.options.leftLabel) ?? null"
           [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
-          [pattern]="$any(artifact.options.pattern) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
           [required]="$any(artifact.options.required) ?? null"
           [minLength]="$any(artifact.options.minLength) ?? null"
           [maxLength]="$any(artifact.options.maxLength) ?? null">
@@ -362,7 +351,7 @@
           [search]="$any(artifact.options.search) ?? true"
           [closeOnSelect]="$any(artifact.options.closeOnSelect) ?? true"
           [hideSelectedOption]="$any(artifact.options.hideSelectedOption) ?? false"
-          [size]="$any(artifact.options.size) ?? null"
+          [size]="$any(artifact.options.size) ?? 'md'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"
           [disabled]="$any(artifact.options.disabled) ?? null"
@@ -371,7 +360,7 @@
           [btnText]="$any(artifact.options.btnText) ?? null"
           [btnIcon]="$any(artifact.options.btnIcon) ?? null"
           [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
           [required]="$any(artifact.options.required) ?? null">
         </app-input-select>
       </ng-container>
@@ -382,12 +371,12 @@
           [id]="artifact.id"
           [form]="form"
           [(value)]="artifact.value"
-          [placeholder]="$any(artifact.placeholder) ?? null"
+          [placeholder]="$any(artifact.placeholder) ?? 'Select a weekday'"
           [multiple]="$any(artifact.options.multiple) ?? null"
           [limit]="$any(artifact.options.limit) ?? null"
           [closeOnSelect]="$any(artifact.options.closeOnSelect) ?? true"
-          [hideSelectedOption]="$any(artifact.options.hideSelectedOption) ?? false"
-          [size]="$any(artifact.options.size) ?? null"
+          [hideSelectedOption]="$any(artifact.options.hideSelectedOption) ?? true"
+          [size]="$any(artifact.options.size) ?? 'md'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"
           [disabled]="$any(artifact.options.disabled) ?? null"
@@ -396,7 +385,7 @@
           [btnText]="$any(artifact.options.btnText) ?? null"
           [btnIcon]="$any(artifact.options.btnIcon) ?? null"
           [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
           [required]="$any(artifact.options.required) ?? null">
         </app-input-select-weekday>
       </ng-container>
@@ -407,14 +396,14 @@
           [id]="artifact.id"
           [form]="form"
           [(value)]="artifact.value"
-          [size]="$any(artifact.options.size) ?? null"
+          [size]="$any(artifact.options.size) ?? 'md'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"
           [disabled]="$any(artifact.options.disabled) ?? null"
           [label]="$any(artifact.options.label) ?? null"
-          [labelPosition]="$any(artifact.options.labelPosition) ?? null"
+          [labelPosition]="$any(artifact.options.labelPosition) ?? 'left'"
           [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'w-full', index)"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
           [required]="$any(artifact.options.required) ?? null">
         </app-input-toggle>
       </ng-container>

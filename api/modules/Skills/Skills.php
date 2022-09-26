@@ -124,18 +124,24 @@ class Skills extends Module
                 "name" => "General",
                 "contents" => [
                     [
-                        "contentType" => "item",
-                        "width" => "1/3",
-                        "type" => InputType::NUMBER,
-                        "id" => "maxExtraCredit",
-                        "value" => $this->getMaxExtraCredit(),
-                        "placeholder" => "Skills max. extra credit",
-                        "options" => [
-                            "topLabel" => "Max. extra credit",
-                            "required" => true,
-                            "minValue" => 0
-                        ],
-                        "helper" => "Maximum extra credit students can earn with skills"
+                        "contentType" => "container",
+                        "classList" => "flex flex-wrap items-center",
+                        "contents" => [
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::NUMBER,
+                                "id" => "maxExtraCredit",
+                                "value" => $this->getMaxExtraCredit(),
+                                "placeholder" => "Skills max. extra credit",
+                                "options" => [
+                                    "topLabel" => "Max. extra credit",
+                                    "required" => true,
+                                    "minValue" => 0
+                                ],
+                                "helper" => "Maximum extra credit students can earn with skills"
+                            ]
+                        ]
                     ]
                 ]
             ],
