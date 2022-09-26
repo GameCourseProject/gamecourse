@@ -88,6 +88,7 @@ class API
             $value = static::$values[$key];
             if ($type == "bool") return filter_var($value, FILTER_VALIDATE_BOOLEAN);
             elseif ($type == "int") return intval($value);
+            else if ($type == "array" && is_string($value)) return explode(",", $value);
             return $value;
 
         } else return null;

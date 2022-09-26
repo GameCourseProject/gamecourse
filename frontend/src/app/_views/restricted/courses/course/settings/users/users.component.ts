@@ -171,6 +171,7 @@ export class UsersComponent implements OnInit {
   tableOptions = {
     order: [[ 0, 'asc' ], [ 3, 'asc' ]], // default order
     columnDefs: [
+      { type: 'natural', targets: [0, 1, 2, 3, 4, 5, 6] },
       { orderData: 0,   targets: 1 },
       { orderData: 5,   targets: 6 },
       { orderable: false, targets: [2, 7, 8] }
@@ -491,7 +492,7 @@ export class UsersComponent implements OnInit {
 
   resetManage() {
     this.mode = null;
-    this.initUserToManage();
+    this.userToManage = this.initUserToManage();
     this.f.resetForm();
   }
 

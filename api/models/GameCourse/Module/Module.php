@@ -669,10 +669,10 @@ abstract class Module
      * Exports items from a specific list into a .csv file.
      *
      * @param string $listName
-     * @param int|null $itemId
+     * @param array $items
      * @return array|null
      */
-    public function exportListingItems(string $listName, int $itemId = null): ?array
+    public function exportListingItems(string $listName, array $items): ?array
     {
         return null;
     }

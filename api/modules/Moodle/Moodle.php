@@ -125,6 +125,7 @@ class Moodle extends Module
                                 "options" => [
                                     "topLabel" => "Moodle URL",
                                     "required" => true,
+                                    "maxLength" => 100
                                 ],
                                 "helper" => "URL of Moodle to get data from"
                             ],
@@ -162,6 +163,7 @@ class Moodle extends Module
                                 "options" => [
                                     "topLabel" => "Server",
                                     "required" => true,
+                                    "maxLength" => 100
                                 ],
                                 "helper" => "Moodle database server"
                             ],
@@ -188,6 +190,7 @@ class Moodle extends Module
                                 "options" => [
                                     "topLabel" => "Name",
                                     "required" => true,
+                                    "maxLength" => 50
                                 ],
                                 "helper" => "Moodle database name"
                             ],
@@ -201,6 +204,7 @@ class Moodle extends Module
                                 "options" => [
                                     "topLabel" => "User",
                                     "required" => true,
+                                    "maxLength" => 25
                                 ],
                                 "helper" => "Moodle database user"
                             ],
@@ -214,6 +218,7 @@ class Moodle extends Module
                                 "options" => [
                                     "topLabel" => "Password",
                                     "required" => true,
+                                    "maxLength" => 50
                                 ],
                                 "helper" => "Moodle database password"
                             ],
@@ -227,6 +232,7 @@ class Moodle extends Module
                                 "options" => [
                                     "topLabel" => "Tables prefix",
                                     "required" => true,
+                                    "maxLength" => 25
                                 ],
                                 "helper" => "Moodle database tables prefix"
                             ]
@@ -248,8 +254,15 @@ class Moodle extends Module
         }
         $inputs = $inpts;
 
-        $this->saveMoodleConfig($inputs["dbServer"], $inputs["dbUser"], $inputs["dbPass"], $inputs["dbName"],
-            $inputs["dbPort"], $inputs["tablesPrefix"],  $inputs["moodleURL"], $inputs["moodleCourse"]);
+        if (isset($inputs["moodleURL"]) || isset($inputs["moodleCourse"])) {
+            Core::database()->update(self::TABLE_MOODLE_CONFIG, [
+                "moodleURL" => $inputs["moodleURL"],
+                "moodleCourse" => $inputs["moodleCourse"],
+            ], ["course" => $this->getCourse()->getId()]);
+        }
+
+        if (isset($inputs["dbServer"]) || isset($inputs["dbUser"]) || isset($inputs["dbPass"]) || isset($inputs["dbName"]) || isset($inputs["dbPort"]) || isset($inputs["tablesPrefix"]))
+            $this->saveMoodleConfig($inputs["dbServer"], $inputs["dbUser"], $inputs["dbPass"], $inputs["dbName"], $inputs["dbPort"], $inputs["tablesPrefix"]);
     }
 
     public function getLists(): array
@@ -298,8 +311,7 @@ class Moodle extends Module
     /**
      * @throws Exception
      */
-    public function saveMoodleConfig(string $dbServer, string $dbUser, ?string $dbPass, string $dbName, int $dbPort,
-                                     string $tablesPrefix, string $moodleURL, ?int $moodleCourse)
+    public function saveMoodleConfig(string $dbServer, string $dbUser, ?string $dbPass, string $dbName, int $dbPort, string $tablesPrefix)
     {
         // Check connection to Moodle database
         if (!self::canConnect($dbServer, $dbUser, $dbPass, $dbName, $dbPort))
@@ -312,8 +324,6 @@ class Moodle extends Module
             "dbName" => $dbName,
             "dbPort" => $dbPort,
             "tablesPrefix" => $tablesPrefix,
-            "moodleURL" => $moodleURL,
-            "moodleCourse" => $moodleCourse,
         ], ["course" => $this->getCourse()->getId()]);
     }
 

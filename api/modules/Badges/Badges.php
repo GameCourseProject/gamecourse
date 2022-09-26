@@ -280,9 +280,9 @@ class Badges extends Module
     /**
      * @throws Exception
      */
-    public function exportListingItems(string $listName, int $itemId = null): ?array
+    public function exportListingItems(string $listName, array $items): ?array
     {
-        if ($listName == "Badges") return Badge::exportBadges($this->course->getId());
+        if ($listName == "Badges") return Badge::exportBadges($this->course->getId(), $items);
         return null;
     }
 

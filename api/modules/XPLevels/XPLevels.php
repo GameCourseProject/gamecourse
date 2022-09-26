@@ -10,6 +10,7 @@ use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Badges\Badges;
 use GameCourse\Module\Config\Action;
 use GameCourse\Module\Config\ActionScope;
+use GameCourse\Module\Config\DataType;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
@@ -179,31 +180,127 @@ class XPLevels extends Module
 
     public function getLists(): array
     {
+        $levels = Level::getLevels($this->course->getId());
         return [
             [
-                "listName" => "Levels",
+                "name" => "Levels",
                 "itemName" => "level",
-                "listActions" => [
-                    Action::NEW,
-                    Action::IMPORT,
-                    Action::EXPORT
+                "topActions" => [
+                    "left" => [
+                        ["action" => Action::IMPORT, "icon" => "jam-download"],
+                        ["action" => Action::EXPORT, "icon" => "jam-upload"]
+                    ],
+                    "right" => [
+                        ["action" => Action::NEW, "icon" => "feather-plus-circle", "color" => "primary"]
+                    ]
                 ],
-                "listInfo" => [
-                    ["id" => "number", "label" => "Level", "type" => InputType::NUMBER],
-                    ["id" => "description", "label" => "Title", "type" => InputType::TEXT],
-                    ["id" => "minXP", "label" => "Minimum XP", "type" => InputType::NUMBER]
+                "headers" => [
+                    ["label" => "Level", "align" => "middle"],
+                    ["label" => "Description", "align" => "middle"],
+                    ["label" => "Minimim XP", "align" => "middle"]
                 ],
-                "items" => Level::getLevels($this->course->getId()),
+                "data" => array_map(function ($level) {
+                    return [
+                        ["type" => DataType::NUMBER, "content" => ["value" => $level["number"], "valueFormat" => "none"]],
+                        ["type" => DataType::TEXT, "content" => ["text" => $level["description"]]],
+                        ["type" => DataType::NUMBER, "content" => ["value" => $level["minXP"], "valueFormat" => "default"]]
+                    ];
+                }, $levels),
                 "actions" => [
                     ["action" => Action::EDIT, "scope" => ActionScope::ALL],
-                    ["action" => Action::DELETE, "scope" => ActionScope::ALL_BUT_FIRST]
+                    ["action" => Action::DELETE, "scope" => ActionScope::ALL_BUT_FIRST],
+                    ["action" => Action::EXPORT, "scope" => ActionScope::ALL]
+                ],
+                "options" => [
+                    "order" => [[0, "asc"]],
+                    "columnDefs" => [
+                        ["type" => "natural", "targets" => [0, 1, 2]],
+                        ["orderable" => false, "targets" => [3]]
+                    ]
+                ],
+                "items" => $levels,
+                Action::NEW => [
+                    "modalSize" => "md",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "id" => "description",
+                                    "placeholder" => "Level description",
+                                    "options" => [
+                                        "topLabel" => "Description",
+                                        "maxLength" => 50
+                                    ],
+                                    "helper" => "Description for level"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "minXP",
+                                    "placeholder" => "Level minimum XP",
+                                    "options" => [
+                                        "topLabel" => "Minimum XP",
+                                        "required" => true,
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Minimum XP to be in the level"
+                                ]
+                            ]
+                        ]
+                    ]
                 ],
                 Action::EDIT => [
-                    ["id" => "description", "label" => "Title", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
-                    ["id" => "minXP", "label" => "Minimum XP", "type" => InputType::NUMBER, "scope" => ActionScope::ALL_BUT_FIRST]
+                    "modalSize" => "md",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "description",
+                                    "placeholder" => "Level description",
+                                    "options" => [
+                                        "topLabel" => "Description",
+                                        "maxLength" => 50
+                                    ],
+                                    "helper" => "Description for level"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL_BUT_FIRST,
+                                    "id" => "minXP",
+                                    "placeholder" => "Level minimum XP",
+                                    "options" => [
+                                        "topLabel" => "Minimum XP",
+                                        "required" => true,
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Minimum XP to be in the level"
+                                ]
+                            ]
+                        ]
+                    ]
                 ],
                 Action::IMPORT => [
-                    "extensions" => [".csv", ".txt"]
+                    "extensions" => [".csv", ".txt"],
+                    "csvHeaders" => Level::HEADERS,
+                    "csvRows" => [
+                        ["AWOL", "0"],
+                        ["Level 1", "1000"],
+                        ["...", "..."]
+                    ]
                 ]
             ]
         ];
@@ -233,9 +330,9 @@ class XPLevels extends Module
         return null;
     }
 
-    public function exportListingItems(string $listName, int $itemId = null): ?array
+    public function exportListingItems(string $listName, array $items): ?array
     {
-        if ($listName == "Levels") return Level::exportLevels($this->course->getId());
+        if ($listName == "Levels") return Level::exportLevels($this->course->getId(), $items);
         return null;
     }
 

@@ -92,9 +92,10 @@ export class TableData implements OnInit {
   toggleDisabled?: boolean;                                     // Make toggle disabled
 
   // Type: ACTIONS
-  actions?: (Action | {action: string, icon: string,           // Actions
-    color: 'ghost' | 'primary' | 'secondary' | 'accent' |
-      'neutral' | 'info' | 'success' | 'warning' | 'error'})[];
+  actions?: (Action | {action: Action | string, icon?: string,           // Actions
+    color?: 'ghost' | 'primary' | 'secondary' | 'accent' |
+      'neutral' | 'info' | 'success' | 'warning' | 'error',
+    disabled?: boolean})[];
 
   // Type: CUSTOM
   html?: string;                                                // Custom HTML
@@ -240,25 +241,25 @@ export class TableData implements OnInit {
   }
 
   isCustomAction(action: any): boolean {
-    return action.action && !(action.action in Action);
+    return action.action && !Object.values(Action).includes(action.action);
   }
 
 }
 
 export enum TableDataType {
-  TEXT,       // params -> text: string, subtitle?: string
-  NUMBER,     // params -> value: number, valueFormat?: default | money | percent
-  DATE,       // params -> date: Moment, dateFormat?: string
-  TIME,       // params -> time: Moment, timeFormat?: string
-  DATETIME,   // params -> datetime: Moment, datetimeFormat?: string
-  COLOR,      // params -> color: string, colorLabel?: string
-  IMAGE,      // params -> imgSrc: string, imgShape?: round | square
-  PILL,       // params -> pillText: string, pillColor?: string
-  BUTTON,     // params -> buttonText: string, buttonColor?: string, buttonIcon?: string
-  AVATAR,     // params -> avatarSrc: string, avatarTitle: string, avatarSubtitle?: string
-  CHECKBOX,  // params -> checkboxId: string, checkboxValue: boolean, checkboxColor?: string, checkboxDisabled?: boolean
-  RADIO,     // params -> radioId: string, radioGroup: string, radioOptionValue: any, radioValue: any, radioColor?: string, radioDisabled?: boolean
-  TOGGLE,    // params -> toggleId: string, toggleValue: boolean, toggleColor?: string, toggleDisabled?: boolean
-  ACTIONS,   // params -> actions: Action[]
-  CUSTOM     // params -> html: string
+  TEXT = 'text',            // params -> text: string, subtitle?: string
+  NUMBER = 'number',        // params -> value: number, valueFormat?: default | money | percent
+  DATE = 'date',            // params -> date: Moment, dateFormat?: string
+  TIME = 'time',            // params -> time: Moment, timeFormat?: string
+  DATETIME = 'datetime',    // params -> datetime: Moment, datetimeFormat?: string
+  COLOR = 'color',          // params -> color: string, colorLabel?: string
+  IMAGE = 'image',          // params -> imgSrc: string, imgShape?: round | square
+  PILL = 'pill',            // params -> pillText: string, pillColor?: string
+  BUTTON = 'button',        // params -> buttonText: string, buttonColor?: string, buttonIcon?: string
+  AVATAR = 'avatar',        // params -> avatarSrc: string, avatarTitle: string, avatarSubtitle?: string
+  CHECKBOX = 'checkbox',    // params -> checkboxId: string, checkboxValue: boolean, checkboxColor?: string, checkboxDisabled?: boolean
+  RADIO = 'radio',          // params -> radioId: string, radioGroup: string, radioOptionValue: any, radioValue: any, radioColor?: string, radioDisabled?: boolean
+  TOGGLE = 'toggle',        // params -> toggleId: string, toggleValue: boolean, toggleColor?: string, toggleDisabled?: boolean
+  ACTIONS = 'actions',      // params -> actions: (Action|{action: Action, icon?: string, color?: string, disabled?: boolean})[]
+  CUSTOM = 'custom'         // params -> html: string
 }

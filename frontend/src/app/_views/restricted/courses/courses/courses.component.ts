@@ -90,6 +90,7 @@ export class CoursesComponent implements OnInit {
   tableOptions = {
     order: [[ 3, 'asc' ], [ 0, 'asc' ]], // default order
     columnDefs: [
+      { type: 'natural', targets: [0, 1, 2, 3, 4, 5, 6, 7] },
       { orderData: 0,   targets: 1 },
       { orderData: 4,   targets: 5 },
       { orderData: 6,   targets: 7 },
@@ -353,7 +354,7 @@ export class CoursesComponent implements OnInit {
 
   resetManage() {
     this.mode = null;
-    this.initCourseToManage();
+    this.courseToManage = this.initCourseToManage();
     this.f.resetForm()
   }
 

@@ -1000,7 +1000,7 @@ export class ApiHttpService {
   }
 
   public saveModuleConfig(courseID: number, moduleID: string, generalInputs?: ConfigInputItem[], listingItem?: any,
-                          listName?: string, parentID?: number, action?: Action): Observable<void> {
+                          listName?: string, action?: Action): Observable<void> {
     const data = {
       "courseId": courseID,
       "moduleId": moduleID,
@@ -1008,7 +1008,6 @@ export class ApiHttpService {
 
     if (generalInputs) data['generalInputs'] = generalInputs;
     if (listingItem) {
-      if (parentID) listingItem.parent = parentID;
       data['listingItem'] = listingItem;
       data['listName'] = listName;
       data['action'] = action;
@@ -1083,14 +1082,14 @@ export class ApiHttpService {
       .pipe( map((res: any) => parseInt(res['data'])) );
   }
 
-  public exportModuleItems(courseID: number, moduleID: string, listName: string, itemID?: number): Observable<{extension: string, file?: string, path?: string}> {
+  public exportModuleItems(courseID: number, moduleID: string, listName: string, items?: number[]): Observable<{extension: string, file?: string, path?: string}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
       qs.push('request', 'exportItems');
       qs.push('courseId', courseID);
       qs.push('moduleId', moduleID);
       qs.push('listName', listName);
-      if (itemID !== undefined) qs.push('itemId', itemID);
+      qs.push('items', items);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

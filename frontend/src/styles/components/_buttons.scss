@@ -58,6 +58,16 @@
 }
 
 @layer components {
+  .btn-ghost:disabled {
+    @apply bg-transparent text-base-content/20;
+
+    > * {
+      @apply text-base-content/20;
+    }
+  }
+}
+
+@layer components {
   .btn-fenix {
     @apply text-white bg-fenix border-fenix;
 
