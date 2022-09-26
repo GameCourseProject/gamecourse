@@ -70,7 +70,6 @@ export class ApiHttpService {
   static readonly VIEWS: string = 'Views';
   // NOTE: insert here new controllers & update cache dependencies
 
-  static readonly FENIX: string = 'Fenix';
   static readonly GOOGLESHEETS: string = 'GoogleSheets';
   static readonly PROGRESS_REPORT: string = 'ProgressReport';
   static readonly PROFILING: string = 'Profiling';
@@ -1132,25 +1131,6 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, null, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['file']) );
-  }
-
-
-  // Fenix
-
-  public importFenixStudents(courseID: number, file: string | ArrayBuffer): Observable<number> {
-    const data = {
-      courseId: courseID,
-      file
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.FENIX);
-      qs.push('request', 'importFenixStudents');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => parseInt(res['data'])) );
   }
 
 

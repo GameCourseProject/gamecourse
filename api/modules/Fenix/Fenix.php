@@ -4,6 +4,7 @@ namespace GameCourse\Module\Fenix;
 use Exception;
 use GameCourse\Core\AuthService;
 use GameCourse\Course\Course;
+use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\User\CourseUser;
@@ -71,9 +72,48 @@ class Fenix extends Module
         return true;
     }
 
-    public function getPersonalizedConfig(): ?string
+    public function getGeneralInputs(): array
     {
-        return $this->id;
+        return [
+            [
+                "name" => "Import students",
+                "btnText" => "Import",
+                "successMsg" => "Students imported into course successfully",
+                "contents" => [
+                    [
+                        "contentType" => "container",
+                        "classList" => "flex flex-wrap items-center",
+                        "contents" => [
+                            [
+                                "contentType" => "item",
+                                "width" => "full",
+                                "type" => InputType::FILE,
+                                "id" => "studentsFile",
+                                "value" => null,
+                                "options" => [
+                                    "accept" => ".csv",
+                                    "size" => "sm",
+                                    "color" => "primary",
+                                    "label" => "Upload file",
+                                    "required" => true
+                                ],
+                                "helper" => "File with students got from Fénix"
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function saveGeneralInputs(array $inputs)
+    {
+        foreach ($inputs as $input) {
+            if ($input["id"] == "studentsFile") $this->importFenixStudents($input["value"]);
+        }
     }
 
 

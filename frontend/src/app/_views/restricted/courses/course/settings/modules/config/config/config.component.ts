@@ -14,7 +14,6 @@ import {Action, ActionScope, scopeAllows, showAtLeastOnce} from 'src/app/_domain
 import {DownloadManager} from "../../../../../../../../_utils/download/download-manager";
 import {SkillsComponent} from "../personalized-config/skills/skills.component";
 import {QrComponent} from "../personalized-config/qr/qr.component";
-import {FenixComponent} from "../personalized-config/fenix/fenix.component";
 import {GooglesheetsComponent} from "../personalized-config/googlesheets/googlesheets.component";
 import {ProgressReportComponent} from "../personalized-config/progress-report/progress-report.component";
 import {ProfilingComponent} from "../personalized-config/profiling/profiling.component";
@@ -44,7 +43,7 @@ export class ConfigComponent implements OnInit {
   lists: List[];
   personalizedConfig: string;
 
-  importedFile: File;
+
 
   isItemModalOpen: boolean;
   isDeleteVerificationModalOpen: boolean;
@@ -139,7 +138,7 @@ export class ConfigComponent implements OnInit {
 
       this.loading.action = false;
       this.loading.form = null;
-      AlertService.showAlert(AlertType.SUCCESS, 'Changed saved successfully');
+      AlertService.showAlert(AlertType.SUCCESS, section.successMsg ?? 'Changes saved successfully');
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
 
@@ -246,7 +245,6 @@ export class ConfigComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   get PersonalizedConfig() {
-    if (this.personalizedConfig === ApiHttpService.FENIX) return FenixComponent;
     if (this.personalizedConfig === ApiHttpService.GOOGLESHEETS) return GooglesheetsComponent;
     if (this.personalizedConfig === ApiHttpService.PROGRESS_REPORT) return ProgressReportComponent;
     if (this.personalizedConfig === ApiHttpService.PROFILING) return ProfilingComponent;
@@ -266,6 +264,12 @@ export class ConfigComponent implements OnInit {
       svg.style.width = '2.5rem';
       svg.style.height = '2.5rem';
     }, 0);
+  }
+
+  async onFileSelected(files: FileList, artifact?: ConfigInputItem, item?: any, param?: string): Promise<void> {
+    // FIXME: only allowing CSV and images
+    if (artifact) await ResourceManager.getText(files.item(0)).then(data => artifact.value = data);
+    else await ResourceManager.getBase64(files.item(0)).then(data => item[param] = data);
   }
 
 
@@ -349,15 +353,6 @@ export class ConfigComponent implements OnInit {
     return showAtLeastOnce(scope, nrItems);
   }
 
-  async onFileSelected(files: FileList, type: 'image' | 'file', item?: any, param?: string): Promise<void> {
-    if (type === 'image') {
-      await ResourceManager.getBase64(files.item(0)).then(data => item[param] = data);
-      this.image.set(files.item(0));
-
-    } else this.importedFile = files.item(0);
-    // this.hasUnsavedChanges = true;
-  }
-
   getImage(path: string): SafeUrl {
     this.image.set(path);
     return this.image.get();
@@ -378,6 +373,8 @@ export class ConfigComponent implements OnInit {
 
 export interface ConfigSection {
   name: string,
+  btnText?: string,
+  successMsg?: string,
   contents: (ConfigInputContainer|ConfigInputItem)[]
 }
 

@@ -57,7 +57,7 @@
               <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
             </ng-container>
 
-            Save
+            {{section.btnText ?? 'Save'}}
           </button>
         </div>
 
@@ -290,28 +290,24 @@
         </app-input-url>
       </ng-container>
 
-      <!-- File FIXME-->
+      <!-- File-->
       <ng-container *ngIf="artifact.type === InputType.FILE">
-<!--        <app-input-file-->
-<!--          [id]="artifact.id"-->
-<!--          [form]="form"-->
-<!--          [(value)]="artifact.value"-->
-<!--          [placeholder]="$any(artifact.placeholder) ?? null"-->
-<!--          [size]="$any(artifact.options.size) ?? null"-->
-<!--          [color]="$any(artifact.options.color) ?? null"-->
-<!--          [classList]="$any(artifact.options.classList) ?? null"-->
-<!--          [disabled]="$any(artifact.options.disabled) ?? null"-->
-<!--          [topLabel]="$any(artifact.options.topLabel) ?? null"-->
-<!--          [leftLabel]="$any(artifact.options.leftLabel) ?? null"-->
-<!--          [rightLabel]="$any(artifact.options.rightLabel) ?? null"-->
-<!--          [btnText]="$any(artifact.options.btnText) ?? null"-->
-<!--          [btnIcon]="$any(artifact.options.btnIcon) ?? null"-->
-<!--          [helperText]="$any(artifact.helper) ?? null"-->
-<!--          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"-->
-<!--          [required]="$any(artifact.options.required) ?? null"-->
-<!--          [minValue]="$any(artifact.options.minValue) ?? null"-->
-<!--          [maxValue]="$any(artifact.options.maxValue) ?? null">-->
-<!--        </app-input-file>-->
+        <app-input-file
+          [id]="artifact.id"
+          [form]="form"
+          [accept]="$any(artifact.options.accept) ?? null"
+          [multiple]="$any(artifact.options.multiple) ?? null"
+          [camera]="$any(artifact.options.camera) ?? null"
+          [size]="$any(artifact.options.size) ?? 'md'"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? null"
+          [label]="$any(artifact.options.label) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
+          [required]="$any(artifact.options.required) ?? null"
+          (valueChange)="onFileSelected($event, artifact)">
+        </app-input-file>
       </ng-container>
 
       <!-- Markdown -->
@@ -708,19 +704,19 @@
 
 <ng-template #importModal>
 
-  <div class="warning">Please select a {{listToAct[Action.IMPORT].extensions.length === 1 ? listToAct[Action.IMPORT].extensions[0] + " " : ""}}file to be imported.
-                       {{listToAct[Action.IMPORT].extensions.length > 1 ? "Supported file types: " + listToAct[Action.IMPORT].extensions : ""}}</div>
-  <div class="target">The separator must be comma <br>The encoding must be UTF-8</div>
-  <app-input-file
-    [id]="'import_item'"
-    [accept]="listToAct[Action.IMPORT].extensions.toString()"
-    [classList]="'config_input'"
-    (valueChange)="onFileSelected($event, 'file')">
-  </app-input-file>
+<!--  <div class="warning">Please select a {{listToAct[Action.IMPORT].extensions.length === 1 ? listToAct[Action.IMPORT].extensions[0] + " " : ""}}file to be imported.-->
+<!--                       {{listToAct[Action.IMPORT].extensions.length > 1 ? "Supported file types: " + listToAct[Action.IMPORT].extensions : ""}}</div>-->
+<!--  <div class="target">The separator must be comma <br>The encoding must be UTF-8</div>-->
+<!--  <app-input-file-->
+<!--    [id]="'import_item'"-->
+<!--    [accept]="listToAct[Action.IMPORT].extensions.toString()"-->
+<!--    [classList]="'config_input'"-->
+<!--    (valueChange)="onFileSelected($event, 'file')">-->
+<!--  </app-input-file>-->
 
-  <div class="confirmation_btns">
-    <button (click)="importItems(true)">Import {{listToAct.itemName}}s (Replace Duplicates)</button>
-    <button (click)="importItems(false)">Import {{listToAct.itemName}}s (Ignore Duplicates)</button>
-  </div>
+<!--  <div class="confirmation_btns">-->
+<!--    <button (click)="importItems(true)">Import {{listToAct.itemName}}s (Replace Duplicates)</button>-->
+<!--    <button (click)="importItems(false)">Import {{listToAct.itemName}}s (Ignore Duplicates)</button>-->
+<!--  </div>-->
 
 </ng-template>

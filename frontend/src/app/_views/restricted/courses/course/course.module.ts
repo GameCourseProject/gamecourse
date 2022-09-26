@@ -15,7 +15,6 @@ import { GlobalComponent } from "./settings/global/global.component";
 
 import { ModulesComponent } from "./settings/modules/modules/modules.component";
 import { ConfigComponent } from './settings/modules/config/config/config.component';
-import { FenixComponent } from './settings/modules/config/personalized-config/fenix/fenix.component';
 import { SkillsComponent } from './settings/modules/config/personalized-config/skills/skills.component';
 import { GooglesheetsComponent } from './settings/modules/config/personalized-config/googlesheets/googlesheets.component';
 import { QrComponent } from './settings/modules/config/personalized-config/qr/qr.component';
@@ -35,7 +34,6 @@ import { ProfilingComponent } from './settings/modules/config/personalized-confi
     ViewsEditorComponent,
     PageComponent,
     ConfigComponent,
-    FenixComponent,
     SkillsComponent,
     GooglesheetsComponent,
     QrComponent,
