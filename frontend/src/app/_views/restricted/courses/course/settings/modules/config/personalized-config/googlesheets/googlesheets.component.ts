@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-import {ApiHttpService} from "../../../../../../../../../_services/api/api-http.service";
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
-import {exists} from "../../../../../../../../../_utils/misc/misc";
+import {NgForm} from "@angular/forms";
+
+import {ApiHttpService} from "../../../../../../../../../_services/api/api-http.service";
+import {AlertService, AlertType} from "../../../../../../../../../_services/alert.service";
 
 @Component({
   selector: 'app-googlesheets',
@@ -10,17 +12,21 @@ import {exists} from "../../../../../../../../../_utils/misc/misc";
 })
 export class GooglesheetsComponent implements OnInit {
 
-  loading: boolean = true;
-
-  canAuthenticate: boolean;
-  hasUnsavedChanges: boolean;
+  loading = {
+    page: true,
+    auth: false,
+    action: false
+  }
 
   courseID: number;
 
+  credentials: Credentials;
+  canAuthenticate: boolean;
+  @ViewChild('fAuth', { static: false }) fAuth: NgForm;
+
   spreadsheetID: string;
   sheets: {name: string, owner: string}[];
-
-  credentials: Credentials;
+  @ViewChild('fSheets', { static: false }) fSheets: NgForm;
 
   constructor(
     private api: ApiHttpService,
@@ -31,7 +37,7 @@ export class GooglesheetsComponent implements OnInit {
     this.route.parent.params.subscribe(async params => {
       this.courseID = parseInt(params.id);
       await this.getConfig();
-      this.loading = false;
+      this.loading.page = false;
     });
   }
 
@@ -55,23 +61,40 @@ export class GooglesheetsComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async authenticate() {
-    this.loading = true;
+    if (this.fAuth.valid) {
+      this.loading.auth = true;
 
-    const authURL = await this.api.authenticateGoogleSheets(this.courseID, this.credentials).toPromise();
-    const width = 550;
-    const height = 650;
-    const top = (window.screen.availHeight + (window.screen.availHeight / 2)) - (height / 2);
-    const left = (window.screen.availWidth + (window.screen.availWidth / 2)) - (width / 2);
-    window.open(authURL, 'Authenticate', 'toolbar=no, location=no, directories=no, status=no, menubar=no, ' +
-      'scrollbars=no, resizable=no, copyhistory=no, width=' + width + ', height=' + height + ', top=' + top + ', left=' + left);
+      const authURL = await this.api.authenticateGoogleSheets(this.courseID, this.credentials).toPromise();
+      const width = 550;
+      const height = 650;
+      const top = (window.screen.availHeight + (window.screen.availHeight / 2)) - (height / 2);
+      const left = (window.screen.availWidth + (window.screen.availWidth / 2)) - (width / 2);
+      window.open(authURL, 'Authenticate', 'toolbar=no, location=no, directories=no, status=no, menubar=no, ' +
+        'scrollbars=no, resizable=no, copyhistory=no, width=' + width + ', height=' + height + ', top=' + top + ', left=' + left);
 
-    this.loading = false;
+      this.loading.auth = false;
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+  }
+
+  async discardChanges() {
+    this.loading.action = true;
+
+    this.fSheets.resetForm();
+    await this.getConfig();
+
+    this.loading.action = true;
   }
 
   async saveConfig() {
-    this.loading = true;
-    await this.api.setGoogleSheetsConfig(this.courseID, this.spreadsheetID, this.sheets.map(sheet => sheet.name), this.sheets.map(sheet => sheet.owner)).toPromise();
-    this.loading = false;
+    if (this.fSheets.valid) {
+      this.loading.action = true;
+
+      await this.api.setGoogleSheetsConfig(this.courseID, this.spreadsheetID, this.sheets.map(sheet => sheet.name), this.sheets.map(sheet => sheet.owner)).toPromise();
+
+      this.loading.action = false;
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
   addSheet() {
@@ -96,11 +119,6 @@ export class GooglesheetsComponent implements OnInit {
       this.canAuthenticate = true;
     }
     reader.readAsText(credentialsFile);
-  }
-
-  isReadyToSubmit(): boolean {
-    return exists(this.spreadsheetID) && !this.spreadsheetID.isEmpty()
-      && this.sheets.length > 0;
   }
 }
 

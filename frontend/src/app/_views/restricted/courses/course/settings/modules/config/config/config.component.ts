@@ -1,26 +1,28 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
+import {NgForm} from "@angular/forms";
 
 import {ApiHttpService} from "../../../../../../../../_services/api/api-http.service";
+import {AlertService, AlertType} from "../../../../../../../../_services/alert.service";
+import {ErrorService} from "../../../../../../../../_services/error.service";
+import {ModalService} from "../../../../../../../../_services/modal.service";
 import {ResourceManager} from "../../../../../../../../_utils/resources/resource-manager";
+import {DownloadManager} from "../../../../../../../../_utils/download/download-manager";
 
+import {Course} from "../../../../../../../../_domain/courses/course";
 import {Module} from "../../../../../../../../_domain/modules/module";
 import {InputType} from "../../../../../../../../_components/inputs/InputType";
 import {Action, ActionScope, scopeAllows} from 'src/app/_domain/modules/config/Action';
+import {TableDataType} from "../../../../../../../../_components/tables/table-data/table-data.component";
 import {SkillsComponent} from "../personalized-config/skills/skills.component";
 import {QrComponent} from "../personalized-config/qr/qr.component";
 import {GooglesheetsComponent} from "../personalized-config/googlesheets/googlesheets.component";
 import {ProgressReportComponent} from "../personalized-config/progress-report/progress-report.component";
 import {ProfilingComponent} from "../personalized-config/profiling/profiling.component";
-import {NgForm} from "@angular/forms";
+import {dateFromDatabase} from "../../../../../../../../_utils/misc/misc";
 
 import * as _ from "lodash";
-import {AlertService, AlertType} from "../../../../../../../../_services/alert.service";
-import {TableDataType} from "../../../../../../../../_components/tables/table-data/table-data.component";
-import {ModalService} from "../../../../../../../../_services/modal.service";
-import {DownloadManager} from "../../../../../../../../_utils/download/download-manager";
-import {Course} from "../../../../../../../../_domain/courses/course";
-import {dateFromDatabase} from "../../../../../../../../_utils/misc/misc";
+
 
 @Component({
   selector: 'app-config',
@@ -324,9 +326,7 @@ export class ConfigComponent implements OnInit {
   }
 
 
-  /*** --------------------------------------------- ***/
-  /*** ------------ Personalized Config ------------ ***/
-  /*** --------------------------------------------- ***/
+  // PERSONALIZED CONFIG
 
   get PersonalizedConfig() {
     if (this.personalizedConfig === ApiHttpService.GOOGLESHEETS) return GooglesheetsComponent;
@@ -334,7 +334,9 @@ export class ConfigComponent implements OnInit {
     if (this.personalizedConfig === ApiHttpService.PROFILING) return ProfilingComponent;
     if (this.personalizedConfig === ApiHttpService.SKILLS) return SkillsComponent;
     if (this.personalizedConfig === ApiHttpService.QR) return QrComponent;
-    else throw Error("Personalized config for module '" + this.module.id + "' not found.");
+
+    ErrorService.set("Personalized config for module '" + this.module.id + "' not found.");
+    return null;
   }
 
 
