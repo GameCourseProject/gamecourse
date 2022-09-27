@@ -70,9 +70,13 @@
     font-size: 1rem !important;
   }
 
-  .sorting_disabled::before,
-  .sorting_disabled::after {
-    display: none !important;
+  .sorting_disabled {
+    padding-right: 10px !important;
+
+    &::before,
+    &::after {
+      display: none !important;
+    }
   }
 
 }

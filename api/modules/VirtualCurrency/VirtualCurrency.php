@@ -10,6 +10,7 @@ use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\Config\Action;
 use GameCourse\Module\Config\ActionScope;
+use GameCourse\Module\Config\DataType;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
@@ -219,25 +220,80 @@ class VirtualCurrency extends Module
 
     public function getLists(): array
     {
+        $name = $this->getName();
+        $img = $this->getImage();
+
         return [
-//            [
-//                "listName" => "Settings",
-//                "itemName" => "virtual currency",
-//                "listInfo" => [
-//                    ["id" => "name", "label" => "Name", "type" => InputType::TEXT],
-//                    ["id" => "image", "label" => "Image", "type" => InputType::IMAGE]
-//                ],
-//                "items" => [
-//                    ["name" => $this->getName(), "image" => $this->getImage()]
-//                ],
-//                "actions" => [
-//                    ["action" => Action::EDIT, "scope" => ActionScope::FIRST]
-//                ],
-//                Action::EDIT => [
-//                    ["id" => "name", "label" => "Name", "type" => InputType::TEXT, "scope" => ActionScope::FIRST],
-//                    ["id" => "image", "label" => "Image", "type" => InputType::IMAGE, "scope" => ActionScope::FIRST]
-//                ],
-//            ]
+            [
+                "name" => "Settings",
+                "itemName" => "settings",
+                "headers" => [
+                    ["label" => "Name", "align" => "middle"],
+                    ["label" => "Image", "align" => "middle"]
+                ],
+                "data" => [
+                    [
+                        ["type" => DataType::TEXT, "content" => ["text" => $name]],
+                        ["type" => DataType::IMAGE, "content" => ["imgSrc" => $img, "imgShape" => "round"]]
+                    ]
+                ],
+                "actions" => [
+                    ["action" => Action::EDIT, "scope" => ActionScope::ALL]
+                ],
+                "options" => [
+                    "searching" => false,
+                    "lengthChange" => false,
+                    "paging" => false,
+                    "info" => false,
+                    "hasColumnFiltering" => false,
+                    "hasFooters" => false,
+                    "columnDefs" => [
+                        ["orderable" => false, "targets" => [0, 1, 2]]
+                    ]
+                ],
+                "items" => [
+                    ["name" => $name, "image" => $img]
+                ],
+                Action::EDIT => [
+                    "modalSize" => "md",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "name",
+                                    "placeholder" => "Virtual currency name",
+                                    "options" => [
+                                        "topLabel" => "Name",
+                                        "required" => true,
+                                        "maxLength" => 50
+                                    ],
+                                    "helper" => "Display name for virtual currency"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::FILE,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "image",
+                                    "options" => [
+                                        "accept" => ".svg, .png, .jpg, .jpeg",
+                                        "size" => "xs",
+                                        "color" => "primary",
+                                        "label" => "Image"
+                                    ],
+                                    "helper" => "Image to represent virtual currency"
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
         ];
     }
 

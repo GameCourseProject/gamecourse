@@ -163,16 +163,16 @@
 
 <ng-template #IMPORT>
   <div class="prose flex items-center gap-1 mb-3">
-    <p class="mb-0">Upload a {{itemToManage.list[Action.IMPORT].extensions[0].toUpperCase()}} file containing {{itemToManage.list.itemName}} information</p>
+    <p class="mb-0">Upload a {{itemToManage.list[Action.IMPORT]?.extensions[0].toUpperCase()}} file containing {{itemToManage.list.itemName}} information</p>
     <app-import-helper
       [id]="'import-helper'"
-      [format]="$any(itemToManage.list[Action.IMPORT].extensions[0])"
-      [requirements]="itemToManage.list[Action.IMPORT].extensions[0] === '.csv' ? [
+      [format]="$any(itemToManage.list[Action.IMPORT]?.extensions[0])"
+      [requirements]="itemToManage.list[Action.IMPORT]?.extensions[0] === '.csv' ? [
         'The separator must be comma.',
         'The encoding must be UTF-8.'
       ] : []"
-      [csvHeaders]="itemToManage.list[Action.IMPORT].csvHeaders"
-      [csvRows]="itemToManage.list[Action.IMPORT].csvRows">
+      [csvHeaders]="itemToManage.list[Action.IMPORT]?.csvHeaders"
+      [csvRows]="itemToManage.list[Action.IMPORT]?.csvRows">
     </app-import-helper>
   </div>
 
@@ -182,7 +182,7 @@
     <app-input-file
       [id]="'import-file'"
       [form]="fImport"
-      [accept]="itemToManage.list[Action.IMPORT].extensions.join(', ')"
+      [accept]="itemToManage.list[Action.IMPORT]?.extensions.join(', ')"
       [size]="'sm'"
       [color]="'primary'"
       [required]="true"
