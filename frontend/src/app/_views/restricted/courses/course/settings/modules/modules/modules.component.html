@@ -67,13 +67,32 @@
   </div>
 
   <!-- Info -->
-  <p><b class="mr-2">Dependencies:</b>
-    <span *ngFor="let dependency of filterHardDependencies(moduleToManage.dependencies); let last = last">
+  <div class="prose text-justify">
+    <p class="mb-1"><b class="mr-2">Dependencies:</b>
+      <span *ngFor="let dependency of filterHardDependencies(moduleToManage.dependencies); let last = last">
       <span [ngClass]="{'text-error': !dependency.enabled, 'text-success': dependency.enabled}">{{dependency.name}}</span>
       <span *ngIf="!last"> | </span>
     </span>
-  </p>
-  <p class="mt-1.5"><b>Version:</b> {{moduleToManage.version}}</p>
+    </p>
+    <p class="mt-0 mb-1"><b class="mr-2">Dependants:</b>
+      <span *ngFor="let dependant of filterHardDependencies(moduleToManage.dependants); let last = last">
+      <span [ngClass]="{'text-error': !dependant.enabled, 'text-success': dependant.enabled}">{{dependant.name}}</span>
+      <span *ngIf="!last"> | </span>
+    </span>
+    </p>
+    <p class="mt-0"><b>Version:</b> {{moduleToManage.version}}</p>
+  </div>
+
+  <!-- Helper -->
+  <div *ngIf="showHelper()" class="alert text-sm shadow mt-7">
+    <div class="flex items-start">
+      <ng-icon name="feather-info" size="1.1rem" class="text-info mt-0.5"></ng-icon>
+      <div>
+        <h3 class="font-bold">Before {{!moduleToManage.enabled ? 'enabling' : 'disabling'}}</h3>
+        <span>{{!moduleToManage.enabled ? 'Enable' : 'Disable'}} all {{moduleToManage.name}} {{!moduleToManage.enabled ? 'dependencies' : 'dependants'}} first</span>
+      </div>
+    </div>
+  </div>
 
 </ng-template>
 

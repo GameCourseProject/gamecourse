@@ -16,6 +16,7 @@ export class Module {
   private _configurable: boolean;
   private _compatibility: {project: boolean, api: boolean};
   private _dependencies?: Module[];
+  private _dependants?: Module[];
   private _enabled?: boolean;
   private _canChangeState?: boolean;
   private _dependencyMode?: DependencyMode;
@@ -23,7 +24,7 @@ export class Module {
   static stylesLoaded: Map<number, {state: LoadingState, stylesIds?: string[]}> = new Map<number, {state: LoadingState, stylesIds?: string[]}>();
 
   constructor(id: string, name: string, description: string, icon: {url: string, svg: string}, type: ModuleType, version: string,
-              configurable: boolean, compatibility: {project: boolean, api: boolean}, dependencies?: Module[],
+              configurable: boolean, compatibility: {project: boolean, api: boolean}, dependencies?: Module[], dependants?: Module[],
               enabled?: boolean, canChangeState?: boolean, dependencyMode?: DependencyMode) {
 
     this._id = id;
@@ -35,6 +36,7 @@ export class Module {
     this._configurable = configurable;
     this._compatibility = compatibility;
     if (exists(dependencies)) this._dependencies = dependencies;
+    if (exists(dependants)) this._dependants = dependants;
     if (exists(enabled)) this._enabled = enabled;
     if (exists(canChangeState)) this._canChangeState = canChangeState;
     if (exists(dependencyMode)) this._dependencyMode = dependencyMode;
@@ -110,6 +112,14 @@ export class Module {
 
   set dependencies(value: Module[]) {
     this._dependencies = value;
+  }
+
+  get dependants(): Module[] {
+    return this._dependants;
+  }
+
+  set dependants(value: Module[]) {
+    this._dependants = value;
   }
 
   get enabled(): boolean {
@@ -225,6 +235,7 @@ export class Module {
       obj.configurable,
       obj.compatibility,
       obj.dependencies ? obj.dependencies.map(dep => Module.fromDatabase(dep)) : null,
+      obj.dependants ? obj.dependants.map(dep => Module.fromDatabase(dep)) : null,
       obj.isEnabled ?? null,
       obj.canChangeState ?? null,
       obj.mode as DependencyMode ?? null
@@ -243,6 +254,7 @@ interface ModuleDatabase {
   configurable: boolean;
   compatibility: {project: boolean, api: boolean},
   dependencies?: ModuleDatabase[],
+  dependants?: ModuleDatabase[],
   isEnabled?: boolean;
   canChangeState?: boolean;
   mode?: DependencyMode;

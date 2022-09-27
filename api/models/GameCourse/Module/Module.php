@@ -386,7 +386,7 @@ abstract class Module
         $dependants = Core::database()->selectMultiple(self::TABLE_MODULE_DEPENDENCY, $where, $field, "id");
         if ($IDsOnly) return array_column($dependants, "id");
         foreach ($dependants as &$dependantInfo) {
-            $dependantInfo = self::getExtraInfo($dependantInfo, $this->course);
+            $dependantInfo = self::getExtraInfo($dependantInfo, $this->course, false);
             $dependantInfo = self:: parse($dependantInfo);
         }
         return $dependants;
@@ -1109,7 +1109,10 @@ abstract class Module
         $moduleInfo = array_merge($moduleInfo, $module->getData());
         $moduleInfo["icon"] = $module->getIcon();
         $moduleInfo["iconSVG"] = $module->getIconSVG();
-        if ($dependencies) $moduleInfo["dependencies"] = $module->getDependencies();
+        if ($dependencies) {
+            $moduleInfo["dependencies"] = $module->getDependencies();
+            $moduleInfo["dependants"] = $module->getDependants();
+        }
         $moduleInfo["configurable"] = $module->isConfigurable();
         $moduleInfo["compatibility"] = [
             "project" => Utils::compareVersions(PROJECT_VERSION, $moduleInfo["minProjectVersion"]) >= 0 &&

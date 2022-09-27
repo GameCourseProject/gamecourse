@@ -123,6 +123,20 @@ export class ModulesComponent implements OnInit {
     return modules.filter(module => module.dependencyMode === DependencyMode.HARD);
   }
 
+  showHelper(): boolean {
+    if (this.moduleToManage.enabled) {
+      for (const dependant of this.filterHardDependencies(this.moduleToManage.dependants)) {
+        if (dependant.enabled) return true;
+      }
+
+    } else {
+      for (const dependency of this.filterHardDependencies(this.moduleToManage.dependencies)) {
+        if (!dependency.enabled) return true;
+      }
+    }
+    return false;
+  }
+
   configure() {
     this.router.navigate(['modules/' + this.moduleToManage.id + '/config'], {relativeTo: this.route.parent});
   }
