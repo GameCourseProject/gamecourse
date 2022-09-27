@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS streak(
 	name                        varchar(50) NOT NULL,
 	description                 varchar(150) NOT NULL,
     color                       varchar(7),
-    count                       int unsigned NOT NULL,
+    count                       int unsigned NOT NULL DEFAULT 1,
     periodicity                 int unsigned DEFAULT NULL,
     periodicityTime             varchar(25) DEFAULT NULL,
     reward                      int unsigned NOT NULL,

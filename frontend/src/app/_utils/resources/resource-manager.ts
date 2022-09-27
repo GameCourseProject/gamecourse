@@ -22,7 +22,8 @@ export class ResourceManager {
   public get(format: 'SafeUrl' | 'URL' = 'SafeUrl'): SafeUrl | string {
     if (!this.url) return null;
 
-    const safeURL = this.sanitize(this.url + (this.timestamp ? '?' + this.timestamp : ''));
+    const addTimestamp = !this.url.startsWith('data:');
+    const safeURL = this.sanitize(this.url + (addTimestamp ? (this.timestamp ? '?' + this.timestamp : '') : ''));
     return format === 'SafeUrl' ? safeURL : this.sanitizer.sanitize(SecurityContext.URL, safeURL);
   }
 

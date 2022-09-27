@@ -97,7 +97,7 @@ class Streak
 
     public function getImage(): string
     {
-        $img = file_get_contents(self::FULL_IMAGE);
+        $img = file_get_contents(self::EMPTY_IMAGE);
 
         // Change image color
         $color = $this->getColor();
@@ -765,7 +765,65 @@ class Streak
     /*** ------------------ Import/Export ------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    // TODO
+    /**
+     * Imports streaks into a given course from a .csv file.
+     * Returns the nr. of streaks imported.
+     *
+     * @param int $courseId
+     * @param string $file
+     * @param bool $replace
+     * @return int
+     * @throws Exception
+     */
+    public static function importStreaks(int $courseId, string $file, bool $replace = true): int
+    {
+        return Utils::importFromCSV(self::HEADERS, function ($streak, $indexes) use ($courseId, $replace) {
+            $name = Utils::nullify($streak[$indexes["name"]]);
+            $description = Utils::nullify($streak[$indexes["description"]]);
+            $color = Utils::nullify($streak[$indexes["color"]]);
+            $count = self::parse(null, $streak[$indexes["count"]], "count");
+            $periodicity = self::parse(null, $streak[$indexes["periodicity"]], "periodicity");
+            $periodicityTime = Utils::nullify($streak[$indexes["periodicityTime"]]);
+            $reward = self::parse(null, $streak[$indexes["reward"]], "reward");
+            $tokens = self::parse(null, $streak[$indexes["tokens"]], "tokens");
+            $isRepeatable = self::parse(null, $streak[$indexes["isRepeatable"]], "isRepeatable");
+            $isCount = self::parse(null, $streak[$indexes["isCount"]], "isCount");
+            $isPeriodic = self::parse(null, $streak[$indexes["isPeriodic"]], "isPeriodic");
+            $isAtMost = self::parse(null, $streak[$indexes["isAtMost"]], "isAtMost");
+            $isExtra = self::parse(null, $streak[$indexes["isExtra"]], "isExtra");
+            $isActive = self::parse(null, $streak[$indexes["isActive"]], "isActive");
+
+            $streak = self::getStreakByName($courseId, $name);
+            if ($streak) {  // streak already exists
+                if ($replace)  // replace
+                    $streak->editStreak($name, $description, $color, $count, $periodicity, $periodicityTime, $reward,
+                        $tokens, $isRepeatable, $isCount, $isPeriodic, $isAtMost, $isExtra, $isActive);
+
+            } else {  // streak doesn't exist
+                Streak::addStreak($courseId, $name, $description, $color, $count, $periodicity, $periodicityTime, $reward,
+                    $tokens, $isRepeatable, $isCount, $isPeriodic, $isAtMost, $isExtra);
+                return 1;
+            }
+            return 0;
+        }, $file);
+    }
+
+    /**
+     * Exports streaks from a given course into a .csv file.
+     *
+     * @param int $courseId
+     * @param array $streakIds
+     * @return array
+     */
+    public static function exportStreaks(int $courseId, array $streakIds): array
+    {
+        $streaksToExport = array_values(array_filter(self::getStreaks($courseId), function ($streak) use ($streakIds) { return in_array($streak["id"], $streakIds); }));
+        return ["extension" => ".csv", "file" => Utils::exportToCSV($streaksToExport, function ($streak) {
+            return [$streak["name"], $streak["description"], $streak["color"], $streak["count"], $streak["periodicity"],
+                $streak["periodicityTime"], $streak["reward"], $streak["tokens"], $streak["isRepeatable"], $streak["isCount"],
+                $streak["isPeriodic"], $streak["isAtMost"], $streak["isExtra"], $streak["isActive"]];
+        }, self::HEADERS)];
+    }
 
 
     /*** ---------------------------------------------------- ***/

@@ -43,7 +43,7 @@
 <ng-container *ngIf="type === DataType.IMAGE">
   <div class="avatar flex {{Align}} items-center">
     <div class="w-9 {{imgShape === 'round' ? 'rounded-full' : imgShape === 'square' ? 'rounded-xl' : ''}}">
-      <img class="object-cover {{classList}}" [src]="img?.get('URL')" alt="" />
+      <img class="object-cover {{classList}}" [src]="img?.get('SafeUrl')" alt="" />
     </div>
   </div>
 </ng-container>
@@ -71,7 +71,7 @@
     <div class="flex items-center space-x-3 {{classList}}">
       <div class="avatar">
         <div class="mask mask-circle w-9 h-9">
-          <img class="object-cover" [src]="avatar?.get('URL') ?? DefaultProfileImg" [alt]="avatarTitle" />
+          <img class="object-cover" [src]="avatar?.get('SafeUrl') ?? DefaultProfileImg" [alt]="avatarTitle" />
         </div>
       </div>
 

@@ -8,6 +8,7 @@ use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Config\Action;
 use GameCourse\Module\Config\ActionScope;
+use GameCourse\Module\Config\DataType;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
@@ -164,50 +165,400 @@ class Streaks extends Module
      */
     public function getLists(): array
     {
+        $streaks = Streak::getStreaks($this->course->getId());
         $lists = [
             [
-                "listName" => "Streaks",
+                "name" => "Streaks",
                 "itemName" => "streak",
-                "listActions" => [
-                    Action::NEW,
-                    Action::IMPORT,
-                    Action::EXPORT
+                "topActions" => [
+                    "left" => [
+                        ["action" => Action::IMPORT, "icon" => "jam-download"],
+                        ["action" => Action::EXPORT, "icon" => "jam-upload"]
+                    ],
+                    "right" => [
+                        ["action" => Action::NEW, "icon" => "feather-plus-circle", "color" => "primary"]
+                    ]
                 ],
-                "listInfo" => [
-                    ["id" => "name", "label" => "Name", "type" => InputType::TEXT],
-                    ["id" => "description", "label" => "Description", "type" => InputType::TEXT],
-                    ["id" => "color", "label" => "Color", "type" => InputType::COLOR, "options" => ["showLabel" => true]],
-                    ["id" => "count", "label" => "Count", "type" => InputType::NUMBER],
-                    ["id" => "reward", "label" => "XP", "type" => InputType::NUMBER],
-                    ["id" => "isExtra", "label" => "Extra Credit", "type" => InputType::TOGGLE],
-                    ["id" => "isActive", "label" => "Active", "type" => InputType::TOGGLE]
+                "headers" => [
+                    ["label" => "Name (sorting)", "align" => "left"],
+                    ["label" => "Streak", "align" => "left"],
+                    ["label" => "Description", "align" => "left"],
+                    ["label" => "Count", "align" => "middle"],
+                    ["label" => "Reward (XP)", "align" => "middle"],
+                    ["label" => "Extra", "align" => "middle"],
+                    ["label" => "Active", "align" => "middle"]
                 ],
-                "items" => Streak::getStreaks($this->course->getId()),
+                "data" => array_map(function ($streak) {
+                    return [
+                        ["type" => DataType::TEXT, "content" => ["text" => $streak["name"]]],
+                        ["type" => DataType::AVATAR, "content" => ["avatarSrc" => $streak["image"], "avatarTitle" => $streak["name"]]],
+                        ["type" => DataType::TEXT, "content" => ["text" => $streak["description"]]],
+                        ["type" => DataType::NUMBER, "content" => ["value" => $streak["count"], "valueFormat" => "none"]],
+                        ["type" => DataType::NUMBER, "content" => ["value" => $streak["reward"], "valueFormat" => "default"]],
+                        ["type" => DataType::TOGGLE, "content" => ["toggleId" => "isExtra", "toggleValue" => $streak["isExtra"]]],
+                        ["type" => DataType::TOGGLE, "content" => ["toggleId" => "isActive", "toggleValue" => $streak["isActive"]]]
+                    ];
+                }, $streaks),
                 "actions" => [
                     ["action" => Action::DUPLICATE, "scope" => ActionScope::ALL],
                     ["action" => Action::EDIT, "scope" => ActionScope::ALL],
                     ["action" => Action::DELETE, "scope" => ActionScope::ALL],
                     ["action" => Action::EXPORT, "scope" => ActionScope::ALL]
                 ],
-                Action::EDIT => [
-                    ["id" => "name", "label" => "Name", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
-                    ["id" => "description", "label" => "Description", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
-                    ["id" => "color", "label" => "Color", "type" => InputType::COLOR, "scope" => ActionScope::ALL, "options" => ["showLabel" => true]],
-                    ["id" => "count", "label" => "Count", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
-                    ["id" => "reward", "label" => "Reward (XP)", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
-                    ["id" => "isRepeatable", "label" => "is Repeatable", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],
-                    ["id" => "isPeriodic", "label" => "is Periodic", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],
-                    ["id" => "isCount", "label" => "is Count", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],
-                    ["id" => "isAtMost", "label" => "is At Most", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],
-                    ["id" => "periodicity", "label" => "Periodicity", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
-                    ["id" => "periodicityTime", "label" => "Periodicity Time", "type" => InputType::SELECT, "scope" => ActionScope::ALL, "options" => [
-                        "items" => [
-                            ["id" => "days", "labelParam" => "Days"]
+                "options" => [
+                    "order" => [[0, "asc"]],
+                    "columnDefs" => [
+                        ["type" => "natural", "targets" => [0, 1, 2, 3, 4]],
+                        ["orderData" => 0, "targets" => 1],
+                        ["orderable" => false, "targets" => [5, 6]]
+                    ]
+                ],
+                "items" => $streaks,
+                Action::NEW => [
+                    "modalSize" => "md",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "id" => "name",
+                                    "placeholder" => "Streak name",
+                                    "options" => [
+                                        "topLabel" => "Name",
+                                        "required" => true,
+                                        "pattern" => "^[x00-\\xFF\\w()&\\s-]+$",
+                                        "patternErrorMessage" => "Streak name is not allowed. Allowed characters: alphanumeric  _  (  )  -  &",
+                                        "maxLength" => 50
+                                    ],
+                                    "helper" => "Name for streak"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::COLOR,
+                                    "id" => "color",
+                                    "placeholder" => "Streak color",
+                                    "options" => [
+                                        "topLabel" => "Color"
+                                    ],
+                                    "helper" => "Color for streak"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "full",
+                                    "type" => InputType::TEXT,
+                                    "id" => "description",
+                                    "placeholder" => "Streak description",
+                                    "options" => [
+                                        "topLabel" => "Description",
+                                        "required" => true,
+                                        "pattern" => "(?!^\\d+$)^.+$",
+                                        "patternErrorMessage" => "Streak description can't be composed of only numbers",
+                                        "maxLength" => 150
+                                    ],
+                                    "helper" => "Description of how to earn the streak"
+                                ]
+                            ],
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-5",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "count",
+                                    "placeholder" => "Streak number of steps",
+                                    "options" => [
+                                        "topLabel" => "Steps",
+                                        "required" => true,
+                                        "minValue" => 1
+                                    ],
+                                    "helper" => "Number of steps until earning the streak"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "reward",
+                                    "placeholder" => "Streak reward",
+                                    "options" => [
+                                        "topLabel" => "Reward (XP)",
+                                        "required" => true,
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "XP reward to be given when earning the streak"
+                                ]
+                            ]
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-10",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TOGGLE,
+                                    "id" => "isCount",
+                                    "options" => [
+                                        "label" => "Based on counts"
+                                    ],
+                                    "helper" => "Whether streak's steps are based on counting ocurrences of some type"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TOGGLE,
+                                    "id" => "isPeriodic",
+                                    "options" => [
+                                        "label" => "Based on time"
+                                    ],
+                                    "helper" => "Whether streak's steps are based on ocurrences within a certain time period"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TOGGLE,
+                                    "id" => "isAtMost",
+                                    "options" => [
+                                        "label" => "IsAtMost"
+                                    ],
+                                    "helper" => "TODO"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TOGGLE,
+                                    "id" => "isRepeatable",
+                                    "options" => [
+                                        "label" => "Repeatable"
+                                    ],
+                                    "helper" => "Whether streak resets once its reached"
+                                ]
+                            ]
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-3",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "periodicity",
+                                    "placeholder" => "Time period value",
+                                    "options" => [
+                                        "topLabel" => "Time period value",
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Time period value for time based streaks"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::SELECT,
+                                    "id" => "periodicityTime",
+                                    "placeholder" => "Time period",
+                                    "options" => [
+                                        "options" => [
+                                            ["value" => "days", "text" => "Days"]
+                                        ],
+                                        "search" => false,
+                                        "topLabel" => "Time period",
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Time period for time based streaks"
+                                ],
+                            ]
                         ]
-                    ]],
+                    ]
+                ],
+                Action::EDIT => [
+                    "modalSize" => "md",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "name",
+                                    "placeholder" => "Streak name",
+                                    "options" => [
+                                        "topLabel" => "Name",
+                                        "required" => true,
+                                        "pattern" => "^[x00-\\xFF\\w()&\\s-]+$",
+                                        "patternErrorMessage" => "Streak name is not allowed. Allowed characters: alphanumeric  _  (  )  -  &",
+                                        "maxLength" => 50
+                                    ],
+                                    "helper" => "Name for streak"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::COLOR,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "color",
+                                    "placeholder" => "Streak color",
+                                    "options" => [
+                                        "topLabel" => "Color"
+                                    ],
+                                    "helper" => "Color for streak"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "full",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "description",
+                                    "placeholder" => "Streak description",
+                                    "options" => [
+                                        "topLabel" => "Description",
+                                        "required" => true,
+                                        "pattern" => "(?!^\\d+$)^.+$",
+                                        "patternErrorMessage" => "Streak description can't be composed of only numbers",
+                                        "maxLength" => 150
+                                    ],
+                                    "helper" => "Description of how to earn the streak"
+                                ]
+                            ],
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-5",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "count",
+                                    "placeholder" => "Streak number of steps",
+                                    "options" => [
+                                        "topLabel" => "Steps",
+                                        "required" => true,
+                                        "minValue" => 1
+                                    ],
+                                    "helper" => "Number of steps until earning the streak"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "reward",
+                                    "placeholder" => "Streak reward",
+                                    "options" => [
+                                        "topLabel" => "Reward (XP)",
+                                        "required" => true,
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "XP reward to be given when earning the streak"
+                                ]
+                            ]
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-10",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TOGGLE,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "isCount",
+                                    "options" => [
+                                        "label" => "Based on counts"
+                                    ],
+                                    "helper" => "Whether streak's steps are based on counting ocurrences of some type"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TOGGLE,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "isPeriodic",
+                                    "options" => [
+                                        "label" => "Based on time"
+                                    ],
+                                    "helper" => "Whether streak's steps are based on ocurrences within a certain time period"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TOGGLE,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "isAtMost",
+                                    "options" => [
+                                        "label" => "IsAtMost"
+                                    ],
+                                    "helper" => "TODO"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TOGGLE,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "isRepeatable",
+                                    "options" => [
+                                        "label" => "Repeatable"
+                                    ],
+                                    "helper" => "Whether streak resets once its reached"
+                                ]
+                            ]
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-3",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "periodicity",
+                                    "placeholder" => "Time period value",
+                                    "options" => [
+                                        "topLabel" => "Time period value",
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Time period value for time based streaks"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::SELECT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "periodicityTime",
+                                    "placeholder" => "Time period",
+                                    "options" => [
+                                        "options" => [
+                                            ["value" => "days", "text" => "Days"]
+                                        ],
+                                        "search" => false,
+                                        "topLabel" => "Time period",
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Time period for time based streaks"
+                                ],
+                            ]
+                        ]
+                    ]
                 ],
                 Action::IMPORT => [
-                    "extensions" => [".zip"]
+                    "extensions" => [".csv", ".txt"],
+                    "csvHeaders" => Streak::HEADERS,
+                    "csvRows" => [
+                        ["Sage", "Get three consecutive maximum grades in quizzes", "#00A2FF", "3", "", "", "50", "100", "1", "1", "0", "0", "0", "1"],
+                        ["Constant Gardener", "Do five skills with no more than five days between them", "#36987B", "5", "5", "days", "150", "100", "1", "0", "1", "1", "1", "1"],
+                        ["...", "...", "...", "...", "...", "...", "...", "...", "...", "...", "...", "...", "...", "..."]
+                    ]
                 ]
             ]
         ];
@@ -216,12 +567,60 @@ class Streaks extends Module
         $virtualCurrencyModule = $this->course->getModuleById(VirtualCurrency::ID);
         if ($virtualCurrencyModule && $virtualCurrencyModule->isEnabled()) {
             $VCName = $virtualCurrencyModule->getName();
-            array_splice($lists[0]["listInfo"], 5, 0, [
-                ["id" => "tokens", "label" => $VCName, "type" => InputType::NUMBER]
+
+            array_splice($lists[0]["headers"], 5, 0, [
+                ["label" => "Reward (" . $VCName . ")", "align" => "middle"],
             ]);
-            array_splice($lists[0][Action::EDIT], 5, 0, [
-                ["id" => "tokens", "label" => "Reward ($VCName)", "type" => InputType::NUMBER, "scope" => ActionScope::ALL]
+
+            array_splice($lists[0]["options"]["columnDefs"][0]["targets"], 5, 0, 5);
+            $lists[0]["options"]["columnDefs"][2]["targets"] = array_map(function ($target) {
+                return $target + 1;
+            }, $lists[0]["options"]["columnDefs"][2]["targets"]);
+
+            $lists[0]["data"] = array_map(function (&$row, $index) use ($streaks) {
+                array_splice($row, 5, 0, [
+                    ["type" => DataType::NUMBER, "content" => ["value" => $streaks[$index]["tokens"], "valueFormat" => "default"]],
+                ]);
+                return $row;
+            }, $lists[0]["data"], array_keys($lists[0]["data"]));
+
+            array_splice($lists[0][Action::NEW]["contents"][1]["contents"], 2, 0, [
+                [
+                    "contentType" => "item",
+                    "width" => "1/3",
+                    "type" => InputType::NUMBER,
+                    "id" => "tokens",
+                    "placeholder" => "Streak reward",
+                    "options" => [
+                        "topLabel" => "Reward (" . $VCName . ")",
+                        "minValue" => 0
+                    ],
+                    "helper" => $VCName . " reward to be given when earning the streak"
+                ]
             ]);
+            $lists[0][Action::NEW]["contents"][1]["contents"] = array_map(function ($item) {
+                $item["width"] = "1/3";
+                return $item;
+            }, $lists[0][Action::NEW]["contents"][1]["contents"]);
+
+            array_splice($lists[0][Action::EDIT]["contents"][1]["contents"], 2, 0, [
+                [
+                    "contentType" => "item",
+                    "width" => "1/3",
+                    "type" => InputType::NUMBER,
+                    "id" => "tokens",
+                    "placeholder" => "Streak reward",
+                    "options" => [
+                        "topLabel" => "Reward (" . $VCName . ")",
+                        "minValue" => 0
+                    ],
+                    "helper" => $VCName . " reward to be given when earning the streak"
+                ]
+            ]);
+            $lists[0][Action::NEW]["contents"][1]["contents"] = array_map(function ($item) {
+                $item["width"] = "1/3";
+                return $item;
+            }, $lists[0][Action::EDIT]["contents"][1]["contents"]);
         }
 
         return $lists;
@@ -274,9 +673,9 @@ class Streaks extends Module
     /**
      * @throws Exception
      */
-    public function exportListingItems(string $listName, int $itemId = null): ?array
+    public function exportListingItems(string $listName, array $items): ?array
     {
-        if ($listName == "Streaks") return Streak::exportStreaks($this->course->getId());
+        if ($listName == "Streaks") return Streak::exportStreaks($this->course->getId(), $items);
         return null;
     }
 
