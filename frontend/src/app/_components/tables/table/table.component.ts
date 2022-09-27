@@ -13,10 +13,12 @@ export class TableComponent implements OnInit, OnChanges {
 
   @Input() headers: {label: string, align?: 'left' | 'middle' | 'right'}[];
   @Input() footers: string[];
+
+  @Input() hasColumnFiltering: boolean = true;
   @Input() hasFooters: boolean = true;
 
   @Input() data: {type: TableDataType, content: any}[][];
-  @Input() options: any;
+  @Input() options?: any;
 
   @Input() loading: boolean;
 
@@ -50,95 +52,101 @@ export class TableComponent implements OnInit, OnChanges {
       $('#' + this.id + ' .filters').remove();
     }
 
-    const that = this;
+    // Set options
+    if (!this.options) this.options = {};
     let opts = this.options ? Object.assign(this.options, this.defaultOptions) : this.defaultOptions;
 
     // Add footers
     if (this.hasFooters) this.footers = this.headers.map(header => header.label);
 
+    const that = this;
     setTimeout(() => {
       // Add column filtering
-      if (this.data.length > 0) {
-        $('#' + this.id + ' thead tr')
-          .clone(true)
-          .addClass('filters')
-          .appendTo('#' + this.id + ' thead');
+      if (this.hasColumnFiltering) {
+        if (this.data.length > 0) {
+          $('#' + this.id + ' thead tr')
+            .clone(true)
+            .addClass('filters')
+            .appendTo('#' + this.id + ' thead');
 
-        opts = Object.assign({
-          orderCellsTop: true,
-          initComplete: function () {
-            const api = this.api();
+          opts = Object.assign({
+            orderCellsTop: true,
+            initComplete: function () {
+              const api = this.api();
 
-            // For each column
-            api.columns().eq(0)
-              .each(colIdx => {
-                const colType = that.data[0][colIdx].type;
-                const cell = $('.filters th').eq($(api.column(colIdx).header()).index());
+              // For each column
+              api.columns().eq(0)
+                .each(colIdx => {
+                  const colType = that.data[0][colIdx].type;
+                  const cell = $('.filters th').eq($(api.column(colIdx).header()).index());
 
-                // Skip types that are not filterable
-                if (colType === TableDataType.IMAGE || colType === TableDataType.BUTTON || colType === TableDataType.ACTIONS
-                  || colType === TableDataType.CUSTOM) {
-                  $(cell).html('');
-
-                } else {
-                  const title = $(cell).text().trim();
-
-                  // Get all different options of column
-                  let options = '';
-                  if (colType === TableDataType.CHECKBOX || colType === TableDataType.RADIO || colType === TableDataType.TOGGLE) {
-                    options += '<option value="true">' + title + '</option>';
-                    options += '<option value="false">Not ' + title + '</option>';
+                  // Skip types that are not filterable
+                  if (colType === TableDataType.IMAGE || colType === TableDataType.BUTTON || colType === TableDataType.ACTIONS
+                    || colType === TableDataType.CUSTOM) {
+                    $(cell).html('');
 
                   } else {
-                    let opts = [];
-                    for (let row of that.data) {
-                      const value = getValue(row[colIdx]);
-                      if (value !== null && value !== undefined && value !== '') opts.push(value);
+                    const title = $(cell).text().trim();
+
+                    // Get all different options of column
+                    let options = '';
+                    if (colType === TableDataType.CHECKBOX || colType === TableDataType.RADIO || colType === TableDataType.TOGGLE) {
+                      options += '<option value="true">' + title + '</option>';
+                      options += '<option value="false">Not ' + title + '</option>';
+
+                    } else {
+                      let opts = [];
+                      for (let row of that.data) {
+                        const value = getValue(row[colIdx]);
+                        if (value !== null && value !== undefined && value !== '') opts.push(value);
+                      }
+                      opts = [...new Set(opts)]; // unique options
+                      opts.sort();
+                      options = opts.map(option => '<option value="' + option + '">' + option + '</option>').join('');
                     }
-                    opts = [...new Set(opts)]; // unique options
-                    opts.sort();
-                    options = opts.map(option => '<option value="' + option + '">' + option + '</option>').join('');
+
+                    // Add select with options
+                    $(cell).html('<select class="select select-bordered select-sm w-full">' +
+                      '<option selected value="undefined">Filter...</option>' + options + '</select>');
+
+                    // On every keypress in the select
+                    $('select', $('.filters th').eq($(api.column(colIdx).header()).index()))
+                      .off('keyup change')
+                      .on('change', function (e) {
+                        // Filter column
+                        const regexr = '({search})';
+                        let value = ($(this)[0] as HTMLSelectElement).value;
+                        api.column(colIdx)
+                          .search(
+                            value !== null && value !== undefined && value !== 'undefined' ?
+                              regexr.replace('{search}', '(((' + value + ')))') :
+                              '',
+                            value !== null && value !== undefined && value !== 'undefined',
+                            value === null || value === undefined || value === 'undefined'
+                          )
+                          .draw()
+                      })
                   }
 
-                  // Add select with options
-                  $(cell).html('<select class="select select-bordered select-sm w-full">' +
-                    '<option selected value="undefined">Filter...</option>' + options + '</select>');
-
-                  // On every keypress in the select
-                  $('select', $('.filters th').eq($(api.column(colIdx).header()).index()))
-                    .off('keyup change')
-                    .on('change', function (e) {
-                      // Filter column
-                      const regexr = '({search})';
-                      let value = ($(this)[0] as HTMLSelectElement).value;
-                      api.column(colIdx)
-                        .search(
-                          value !== null && value !== undefined && value !== 'undefined' ?
-                            regexr.replace('{search}', '(((' + value + ')))') :
-                            '',
-                          value !== null && value !== undefined && value !== 'undefined',
-                          value === null || value === undefined || value === 'undefined'
-                        )
-                        .draw()
-                    })
-                }
-
-                function getValue(cell: {type: TableDataType, content: any}): string {
-                  if (cell.type === TableDataType.TEXT) return cell.content['text'];
-                  if (cell.type === TableDataType.NUMBER) return cell.content['value'];
-                  if (cell.type === TableDataType.DATE) return cell.content['date']?.format(cell.content['dateFormat'] ?? 'DD/MM/YYYY') ?? null;
-                  if (cell.type === TableDataType.TIME) return cell.content['time']?.format(cell.content['timeFormat'] ?? 'HH:mm') ?? null;
-                  if (cell.type === TableDataType.DATETIME) return cell.content['datetime']?.format(cell.content['datetimeFormat'] ?? 'DD/MM/YYYY HH:mm') ?? null;
-                  if (cell.type === TableDataType.COLOR) return cell.content['color'];
-                  if (cell.type === TableDataType.PILL) return cell.content['pillText'];
-                  if (cell.type === TableDataType.AVATAR) return cell.content['avatarTitle'];
-                  return null;
-                }
-              });
-          },
-        }, opts);
+                  function getValue(cell: {type: TableDataType, content: any}): string {
+                    if (cell.type === TableDataType.TEXT) return cell.content['text'];
+                    if (cell.type === TableDataType.NUMBER) return cell.content['value'];
+                    if (cell.type === TableDataType.DATE) return cell.content['date']?.format(cell.content['dateFormat'] ?? 'DD/MM/YYYY') ?? null;
+                    if (cell.type === TableDataType.TIME) return cell.content['time']?.format(cell.content['timeFormat'] ?? 'HH:mm') ?? null;
+                    if (cell.type === TableDataType.DATETIME) return cell.content['datetime']?.format(cell.content['datetimeFormat'] ?? 'DD/MM/YYYY HH:mm') ?? null;
+                    if (cell.type === TableDataType.COLOR) return cell.content['color'];
+                    if (cell.type === TableDataType.PILL) return cell.content['pillText'];
+                    if (cell.type === TableDataType.AVATAR) return cell.content['avatarTitle'];
+                    return null;
+                  }
+                });
+            },
+          }, opts);
+        }
       }
-        this.datatable = $('#' + this.id).DataTable(opts);
+
+      // Create datatable
+      this.datatable = $('#' + this.id).DataTable(opts);
 
       // Hide sorting columns
       if (opts.hasOwnProperty('columnDefs')) {

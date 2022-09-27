@@ -20,6 +20,7 @@ import {TableDataType} from "../../../../../../../../_components/tables/table-da
 import {ModalService} from "../../../../../../../../_services/modal.service";
 import {DownloadManager} from "../../../../../../../../_utils/download/download-manager";
 import {Course} from "../../../../../../../../_domain/courses/course";
+import {dateFromDatabase} from "../../../../../../../../_utils/misc/misc";
 
 @Component({
   selector: 'app-config',
@@ -101,10 +102,12 @@ export class ConfigComponent implements OnInit {
       list.loading = {table: true, action: false};
 
       // Update top actions
-      list.topActions.right = list.topActions.right.map(action => {
-        if (action.action === Action.NEW) action.action = "Create " + list.itemName;
-        return action;
-      });
+      if (list.topActions) {
+        list.topActions.right = list.topActions.right.map(action => {
+          if (action.action === Action.NEW) action.action = "Create " + list.itemName;
+          return action;
+        });
+      }
 
       // Add actions to table
       if (list.actions?.length > 0 && list.headers[list.headers.length - 1].label !== 'Actions') {
@@ -118,8 +121,18 @@ export class ConfigComponent implements OnInit {
           })}});
           return row;
         });
+        if (!list.options) list.options = {};
         if (!list.options.hasOwnProperty('columnDefs')) list.options['columnDefs'] = [];
         list.options['columnDefs'].push({orderable: false, targets: list.headers.length - 1});
+      }
+
+      // Parse dates
+      for (let row of list.data) {
+        for (let cell of row) {
+          if (cell.type === TableDataType.DATE) cell.content['date'] = dateFromDatabase(cell.content['date']);
+          if (cell.type === TableDataType.TIME) cell.content['time'] = dateFromDatabase(cell.content['time']);
+          if (cell.type === TableDataType.DATETIME) cell.content['datetime'] = dateFromDatabase(cell.content['datetime']);
+        }
       }
 
       list.loading.table = false;
@@ -519,7 +532,7 @@ export type List = {
     table: boolean,
     action: boolean
   }
-  items: any[],
+  items?: any[],
   [Action.NEW]?: {modalSize?: 'sm' | 'md' | 'lg', contents: (ConfigInputContainer|ConfigInputItem)[]},
   [Action.EDIT]?: {modalSize?: 'sm' | 'md' | 'lg', contents: (ConfigInputContainer|ConfigInputItem)[]},
   [Action.IMPORT]?: {extensions: string[], csvHeaders?: string[], csvRows?: string[][]}

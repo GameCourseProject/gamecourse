@@ -15,17 +15,17 @@
 
 <!-- Type: DATE -->
 <ng-container *ngIf="type === DataType.DATE">
-  <p class="prose text-sm {{Align}} {{classList}}">{{date ? date.format(dateFormat) : ''}}</p>
+  <p class="prose text-sm {{Align}} {{classList}}">{{date ? date.format(dateFormat) : 'Never'}}</p>
 </ng-container>
 
 <!-- Type: TIME -->
 <ng-container *ngIf="type === DataType.TIME">
-  <p class="prose text-sm {{Align}} {{classList}}">{{time ? time.format(timeFormat) : ''}}</p>
+  <p class="prose text-sm {{Align}} {{classList}}">{{time ? time.format(timeFormat) : 'Never'}}</p>
 </ng-container>
 
 <!-- Type: DATETIME -->
 <ng-container *ngIf="type === DataType.DATETIME">
-  <p class="prose text-sm {{Align}} {{classList}}">{{datetime ? datetime.format(datetimeFormat) : ''}}</p>
+  <p class="prose text-sm {{Align}} {{classList}}">{{datetime ? datetime.format(datetimeFormat) : 'Never'}}</p>
 </ng-container>
 
 <!-- Type: COLOR -->

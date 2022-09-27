@@ -84,7 +84,7 @@
       </div>
 
       <!-- Top Actions -->
-      <app-top-actions
+      <app-top-actions *ngIf="list.topActions"
         [leftActions]="list.topActions.left"
         [rightActions]="list.topActions.right"
         (btnClicked)="doAction(list, $event)">
@@ -95,6 +95,8 @@
         [id]="'list-' + list.name"
         [classList]="'mt-5'"
         [headers]="list.headers"
+        [hasColumnFiltering]="list.options['hasColumnFiltering'] ?? true"
+        [hasFooters]="list.options['hasFooters'] ?? true"
         [data]="list.data"
         [options]="list.options"
         [loading]="list.loading.table"

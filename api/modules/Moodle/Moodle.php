@@ -6,6 +6,7 @@ use Exception;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Config\DataType;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
@@ -269,20 +270,29 @@ class Moodle extends Module
     {
         return [
             [
-                "listName" => "Status",
+                "name" => "Status",
                 "itemName" => "status",
-                "listInfo" => [
-                    ["id" => "startedRunning", "label" => "Started Running", "type" => InputType::DATETIME],
-                    ["id" => "finishedRunning", "label" => "Finished Running", "type" => InputType::DATETIME],
-                    ["id" => "isRunning", "label" => "Is Running", "type" => InputType::COLOR, "options" => ["showLabel" => false]],
-                    ["id" => "checkpoint", "label" => "Checkpoint", "type" => InputType::DATETIME]
+                "headers" => [
+                    ["label" => "Started importing data", "align" => "middle"],
+                    ["label" => "Finished importing data", "align" => "middle"],
+                    ["label" => "Now", "align" => "middle"]
                 ],
-                "items" => [
+                "data" => [
                     [
-                        "startedRunning" => $this->getStartedRunning(),
-                        "finishedRunning" => $this->getFinishedRunning(),
-                        "isRunning" => $this->isRunning() ? "green" : "tomato",
-                        "checkpoint" => $this->getCheckpoint(),
+                        ["type" => DataType::DATETIME, "content" => ["datetime" => $this->getStartedRunning()]],
+                        ["type" => DataType::DATETIME, "content" => ["datetime" => $this->getFinishedRunning()]],
+                        ["type" => DataType::COLOR, "content" => ["color" => $this->isRunning() ? "#36D399" : "#EF6060", "colorLabel" => $this->isRunning() ? "Importing" : "Not importing"]]
+                    ]
+                ],
+                "options" => [
+                    "searching" => false,
+                    "lengthChange" => false,
+                    "paging" => false,
+                    "info" => false,
+                    "hasColumnFiltering" => false,
+                    "hasFooters" => false,
+                    "columnDefs" => [
+                        ["orderable" => false, "targets" => [0, 1, 2]]
                     ]
                 ]
             ]
