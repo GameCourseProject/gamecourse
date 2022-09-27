@@ -30,7 +30,7 @@ class Fenix extends Module
     const ID = "Fenix";  // NOTE: must match the name of the class
     const NAME = "Fénix";
     const DESCRIPTION = "Allows Fénix students to be imported into the course.";
-    const TYPE = ModuleType::DATA_SOURCE;
+    const TYPE = ModuleType::UTILITY;
 
     const VERSION = "2.2.0";                                     // Current module version
     const PROJECT_VERSION = ["min" => "2.2", "max" => null];     // Min/max versions of project for module to work

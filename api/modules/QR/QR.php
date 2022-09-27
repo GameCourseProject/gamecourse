@@ -36,7 +36,7 @@ class QR extends Module
     const ID = "QR";  // NOTE: must match the name of the class
     const NAME = "QR";
     const DESCRIPTION = "Generates a QR code to be used for student participation in class.";
-    const TYPE = ModuleType::DATA_SOURCE;
+    const TYPE = ModuleType::UTILITY;
 
     const VERSION = "2.2.0";                                     // Current module version
     const PROJECT_VERSION = ["min" => "2.2", "max" => null];     // Min/max versions of project for module to work
