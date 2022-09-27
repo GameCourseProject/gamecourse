@@ -104,7 +104,8 @@ class ClassCheck extends Module
                                 "value" => $this->getTSVCode(),
                                 "placeholder" => "TSV code",
                                 "options" => [
-                                    "topLabel" => "TSV code"
+                                    "topLabel" => "TSV code",
+                                    "maxLength" => 200
                                 ],
                                 "helper" => "Classcheck TSV code URL"
                             ]

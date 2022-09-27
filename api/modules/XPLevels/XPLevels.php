@@ -214,8 +214,7 @@ class XPLevels extends Module
                 "options" => [
                     "order" => [[0, "asc"]],
                     "columnDefs" => [
-                        ["type" => "natural", "targets" => [0, 1, 2]],
-                        ["orderable" => false, "targets" => [3]]
+                        ["type" => "natural", "targets" => [0, 1, 2]]
                     ]
                 ],
                 "items" => $levels,

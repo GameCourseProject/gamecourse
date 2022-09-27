@@ -8,6 +8,7 @@ use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Config\Action;
 use GameCourse\Module\Config\ActionScope;
+use GameCourse\Module\Config\DataType;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
@@ -168,47 +169,513 @@ class Badges extends Module
 
     public function getLists(): array
     {
+        $badges = Badge::getBadges($this->course->getId());
         return [
             [
-                "listName" => "Badges",
+                "name" => "Badges",
                 "itemName" => "badge",
-                "listActions" => [
-                    Action::NEW,
-                    Action::IMPORT,
-                    Action::EXPORT
+                "topActions" => [
+                    "left" => [
+                        ["action" => Action::IMPORT, "icon" => "jam-download"],
+                        ["action" => Action::EXPORT, "icon" => "jam-upload"]
+                    ],
+                    "right" => [
+                        ["action" => Action::NEW, "icon" => "feather-plus-circle", "color" => "primary"]
+                    ]
                 ],
-                "listInfo" => [
-                    ["id" => "name", "label" => "Name", "type" => InputType::TEXT],
-                    ["id" => "description", "label" => "Description", "type" => InputType::TEXT],
-                    ["id" => "image", "label" => "Image", "type" => InputType::IMAGE],
-                    ["id" => "nrLevels", "label" => "# Levels", "type" => InputType::NUMBER],
-                    ["id" => "isBragging", "label" => "Bragging", "type" => InputType::TOGGLE],
-                    ["id" => "isExtra", "label" => "Extra Credit", "type" => InputType::TOGGLE],
-                    ["id" => "isActive", "label" => "Active", "type" => InputType::TOGGLE]
+                "headers" => [
+                    ["label" => "Name (sorting)", "align" => "left"],
+                    ["label" => "Badge", "align" => "left"],
+                    ["label" => "Description", "align" => "left"],
+                    ["label" => "# Levels", "align" => "middle"],
+                    ["label" => "Bragging", "align" => "middle"],
+                    ["label" => "Extra", "align" => "middle"],
+                    ["label" => "Active", "align" => "middle"]
                 ],
-                "items" => Badge::getBadges($this->course->getId()),
+                "data" => array_map(function ($badge) {
+                    return [
+                        ["type" => DataType::TEXT, "content" => ["text" => $badge["name"]]],
+                        ["type" => DataType::AVATAR, "content" => ["avatarSrc" => $badge["image"], "avatarTitle" => $badge["name"]]],
+                        ["type" => DataType::TEXT, "content" => ["text" => $badge["description"]]],
+                        ["type" => DataType::NUMBER, "content" => ["value" => $badge["nrLevels"], "valueFormat" => "none"]],
+                        ["type" => DataType::TOGGLE, "content" => ["toggleId" => "isBragging", "toggleValue" => $badge["isBragging"]]],
+                        ["type" => DataType::TOGGLE, "content" => ["toggleId" => "isExtra", "toggleValue" => $badge["isExtra"]]],
+                        ["type" => DataType::TOGGLE, "content" => ["toggleId" => "isActive", "toggleValue" => $badge["isActive"]]]
+                    ];
+                }, $badges),
                 "actions" => [
                     ["action" => Action::DUPLICATE, "scope" => ActionScope::ALL],
                     ["action" => Action::EDIT, "scope" => ActionScope::ALL],
                     ["action" => Action::DELETE, "scope" => ActionScope::ALL],
                     ["action" => Action::EXPORT, "scope" => ActionScope::ALL]
                 ],
-                Action::EDIT => [ // NOTE: limit of 3 levels
-                    ["id" => "name", "label" => "Name", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
-                    ["id" => "description", "label" => "Description", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
-                    ["id" => "desc1", "label" => "Level 1", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
-                    ["id" => "reward1", "label" => "Reward 1 (XP)", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
-                    ["id" => "desc2", "label" => "Level 2", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
-                    ["id" => "reward2", "label" => "Reward 2 (XP)", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
-                    ["id" => "desc3", "label" => "Level 3", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
-                    ["id" => "reward3", "label" => "Reward 3 (XP)", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
-                    ["id" => "isCount", "label" => "is Count", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],
-                    ["id" => "isPost", "label" => "is Post", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],
-                    ["id" => "isPoint", "label" => "is Point", "type" => InputType::TOGGLE, "scope" => ActionScope::ALL],
-                    ["id" => "goal1", "label" => "Goal level 1", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
-                    ["id" => "goal2", "label" => "Goal level 2", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
-                    ["id" => "goal3", "label" => "Goal level 3", "type" => InputType::NUMBER, "scope" => ActionScope::ALL],
-                    ["id" => "image", "label" => "Image", "type" => InputType::IMAGE, "scope" => ActionScope::ALL]
+                "options" => [
+                    "order" => [[0, "asc"]],
+                    "columnDefs" => [
+                        ["type" => "natural", "targets" => [0, 1, 2, 3]],
+                        ["orderData" => 0, "targets" => 1],
+                        ["orderable" => false, "targets" => [4, 5, 6]]
+                    ]
+                ],
+                "items" => $badges,
+                Action::NEW => [
+                    "modalSize" => "lg",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "id" => "name",
+                                    "placeholder" => "Badge name",
+                                    "options" => [
+                                        "topLabel" => "Name",
+                                        "required" => true,
+                                        "pattern" => "^[x00-\\xFF\\w()&\\s-]+$",
+                                        "patternErrorMessage" => "Badge name is not allowed. Allowed characters: alphanumeric  _  (  )  -  &",
+                                        "maxLength" => 50
+                                    ],
+                                    "helper" => "Name for badge"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "id" => "description",
+                                    "placeholder" => "Badge description",
+                                    "options" => [
+                                        "topLabel" => "Description",
+                                        "required" => true,
+                                        "pattern" => "(?!^\\d+$)^.+$",
+                                        "patternErrorMessage" => "Badge description can't be composed of only numbers",
+                                        "maxLength" => 150
+                                    ],
+                                    "helper" => "Description of how to earn the badge"
+                                ]
+                            ],
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-3",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "full",
+                                    "type" => InputType::FILE,
+                                    "id" => "image",
+                                    "options" => [
+                                        "accept" => ".svg, .png, .jpg, .jpeg",
+                                        "size" => "xs",
+                                        "color" => "primary",
+                                        "label" => "Image"
+                                    ],
+                                    "helper" => "Image to reperesent badge"
+                                ]
+                            ]
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-5",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::TOGGLE,
+                                    "id" => "isCount",
+                                    "options" => [
+                                        "label" => "Based on counts"
+                                    ],
+                                    "helper" => "Whether badge is earned by counting ocurrences of some type"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::TOGGLE,
+                                    "id" => "isPoint",
+                                    "options" => [
+                                        "label" => "Based on points"
+                                    ],
+                                    "helper" => "Whether badge is earned by earning a certain amount of points"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::TOGGLE,
+                                    "id" => "isPost",
+                                    "options" => [
+                                        "label" => "Linkable"
+                                    ],
+                                    "helper" => "Whether badge ocurrences refer to a URL link"
+                                ]
+                            ]
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-10",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::TEXT,
+                                    "id" => "desc1",
+                                    "placeholder" => "Description of level 1",
+                                    "options" => [
+                                        "color" => "primary",
+                                        "topLabel" => "Level 1",
+                                        "required" => true,
+                                        "maxLength" => 100
+                                    ],
+                                    "helper" => "Description of how to reach badge level 1"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "reward1",
+                                    "placeholder" => "Reward of level 1",
+                                    "options" => [
+                                        "color" => "primary",
+                                        "topLabel" => "Reward (XP)",
+                                        "required" => true,
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Reward to be given when reaching badge level 1"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "goal1",
+                                    "placeholder" => "Goal for level 1",
+                                    "options" => [
+                                        "color" => "primary",
+                                        "topLabel" => "Goal",
+                                        "required" => true,
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Number of ocurrences/points to earned to reach level 1"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::TEXT,
+                                    "id" => "desc2",
+                                    "placeholder" => "Description of level 2",
+                                    "options" => [
+                                        "color" => "secondary",
+                                        "topLabel" => "Level 2",
+                                        "maxLength" => 100
+                                    ],
+                                    "helper" => "Description of how to reach badge level 2"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "reward2",
+                                    "placeholder" => "Reward of level 2",
+                                    "options" => [
+                                        "color" => "secondary",
+                                        "topLabel" => "Reward (XP)",
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Reward to be given when reaching badge level 2"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "goal2",
+                                    "placeholder" => "Goal for level 2",
+                                    "options" => [
+                                        "color" => "secondary",
+                                        "topLabel" => "Goal",
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Number of ocurrences/points to earned to reach level 2"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::TEXT,
+                                    "id" => "desc3",
+                                    "placeholder" => "Description of level 3",
+                                    "options" => [
+                                        "color" => "accent",
+                                        "topLabel" => "Level 3",
+                                        "maxLength" => 100
+                                    ],
+                                    "helper" => "Description of how to reach badge level 3"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "reward3",
+                                    "placeholder" => "Reward of level 3",
+                                    "options" => [
+                                        "color" => "accent",
+                                        "topLabel" => "Reward (XP)",
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Reward to be given when reaching badge level 3"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "goal3",
+                                    "placeholder" => "Goal for level 3",
+                                    "options" => [
+                                        "color" => "accent",
+                                        "topLabel" => "Goal",
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Number of ocurrences/points to earned to reach level 3"
+                                ] // NOTE: limit of 3 levels
+                            ]
+                        ]
+                    ]
+                ],
+                Action::EDIT => [
+                    "modalSize" => "lg",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "name",
+                                    "placeholder" => "Badge name",
+                                    "options" => [
+                                        "topLabel" => "Name",
+                                        "required" => true,
+                                        "pattern" => "^[x00-\\xFF\\w()&\\s-]+$",
+                                        "patternErrorMessage" => "Badge name is not allowed. Allowed characters: alphanumeric  _  (  )  -  &",
+                                        "maxLength" => 50
+                                    ],
+                                    "helper" => "Name for badge"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "description",
+                                    "placeholder" => "Badge description",
+                                    "options" => [
+                                        "topLabel" => "Description",
+                                        "required" => true,
+                                        "pattern" => "(?!^\\d+$)^.+$",
+                                        "patternErrorMessage" => "Badge description can't be composed of only numbers",
+                                        "maxLength" => 150
+                                    ],
+                                    "helper" => "Description of how to earn the badge"
+                                ]
+                            ],
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-3",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "full",
+                                    "type" => InputType::FILE,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "image",
+                                    "options" => [
+                                        "accept" => ".svg, .png, .jpg, .jpeg",
+                                        "size" => "xs",
+                                        "color" => "primary",
+                                        "label" => "Image"
+                                    ],
+                                    "helper" => "Image to reperesent badge"
+                                ]
+                            ]
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-5",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::TOGGLE,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "isCount",
+                                    "options" => [
+                                        "label" => "Based on counts"
+                                    ],
+                                    "helper" => "Whether badge is earned by counting ocurrences of some type"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::TOGGLE,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "isPoint",
+                                    "options" => [
+                                        "label" => "Based on points"
+                                    ],
+                                    "helper" => "Whether badge is earned by earning a certain amount of points"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::TOGGLE,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "isPost",
+                                    "options" => [
+                                        "label" => "Linkable"
+                                    ],
+                                    "helper" => "Whether badge ocurrences refer to a URL link"
+                                ]
+                            ]
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-10",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "desc1",
+                                    "placeholder" => "Description of level 1",
+                                    "options" => [
+                                        "color" => "primary",
+                                        "topLabel" => "Level 1",
+                                        "required" => true,
+                                        "maxLength" => 100
+                                    ],
+                                    "helper" => "Description of how to reach badge level 1"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "reward1",
+                                    "placeholder" => "Reward of level 1",
+                                    "options" => [
+                                        "color" => "primary",
+                                        "topLabel" => "Reward (XP)",
+                                        "required" => true,
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Reward to be given when reaching badge level 1"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "goal1",
+                                    "placeholder" => "Goal for level 1",
+                                    "options" => [
+                                        "color" => "primary",
+                                        "topLabel" => "Goal",
+                                        "required" => true,
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Number of ocurrences/points to earned to reach level 1"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "desc2",
+                                    "placeholder" => "Description of level 2",
+                                    "options" => [
+                                        "color" => "secondary",
+                                        "topLabel" => "Level 2",
+                                        "maxLength" => 100
+                                    ],
+                                    "helper" => "Description of how to reach badge level 2"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "reward2",
+                                    "placeholder" => "Reward of level 2",
+                                    "options" => [
+                                        "color" => "secondary",
+                                        "topLabel" => "Reward (XP)",
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Reward to be given when reaching badge level 2"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "goal2",
+                                    "placeholder" => "Goal for level 2",
+                                    "options" => [
+                                        "color" => "secondary",
+                                        "topLabel" => "Goal",
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Number of ocurrences/points to earned to reach level 2"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "desc3",
+                                    "placeholder" => "Description of level 3",
+                                    "options" => [
+                                        "color" => "accent",
+                                        "topLabel" => "Level 3",
+                                        "maxLength" => 100
+                                    ],
+                                    "helper" => "Description of how to reach badge level 3"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "reward3",
+                                    "placeholder" => "Reward of level 3",
+                                    "options" => [
+                                        "color" => "accent",
+                                        "topLabel" => "Reward (XP)",
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Reward to be given when reaching badge level 3"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "goal3",
+                                    "placeholder" => "Goal for level 3",
+                                    "options" => [
+                                        "color" => "accent",
+                                        "topLabel" => "Goal",
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Number of ocurrences/points to earned to reach level 3"
+                                ] // NOTE: limit of 3 levels
+                            ]
+                        ]
+                    ]
                 ],
                 Action::IMPORT => [
                     "extensions" => [".zip"]

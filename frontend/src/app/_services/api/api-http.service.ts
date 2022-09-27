@@ -111,6 +111,25 @@ export class ApiHttpService {
   }
 
 
+  /*** --------------------------------------------- ***/
+  /*** -------------------- Core ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  public cleanAfterDownloading(path: string, courseID?: number): Observable<void> {
+    const data = { path }
+    if (courseID) data['courseId'] = courseID;
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.CORE);
+      qs.push('request', 'cleanAfterDownloading');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+
 
   /*** --------------------------------------------- ***/
   /*** -------------- Authentication --------------- ***/

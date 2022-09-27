@@ -1,3 +1,6 @@
+import {ApiHttpService} from "../../_services/api/api-http.service";
+import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
+
 /**
  * This class has utility functions used to download various
  * types of files.
@@ -12,14 +15,10 @@ export class DownloadManager {
     this.downloadHelper(filename, contents, DownloadTypes.CSV);
   }
 
-  public static downloadAsZip(filename: string, path: string): void {
-    if (path.substr(path.length - 1) !== '/')
-      path = path + '/';
-
-    const zip = path + filename;
-    location.replace(zip);
-
-    // FIXME: should delete temporary zip file in server
+  public static async downloadAsZip(path: string, api: ApiHttpService, courseID?: number): Promise<void> {
+    location.replace(path);
+    const cleanPath = path.replace(ApiEndpointsService.API_ENDPOINT, '');
+    await api.cleanAfterDownloading(cleanPath, courseID).toPromise();
   }
 
   private static downloadHelper(filename: string, contents: string, type: DownloadTypes) {

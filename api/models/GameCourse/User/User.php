@@ -651,7 +651,7 @@ class User
      */
     public static function exportUsers(array $userIds): string
     {
-        $usersToExport = array_filter(self::getUsers(), function ($user) use ($userIds) { return in_array($user["id"], $userIds); });
+        $usersToExport = array_values(array_filter(self::getUsers(), function ($user) use ($userIds) { return in_array($user["id"], $userIds); }));
         return Utils::exportToCSV(
             $usersToExport,
             function ($user) {

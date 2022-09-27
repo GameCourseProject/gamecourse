@@ -121,7 +121,7 @@ class ModuleController
      */
     public function exportItems()
     {
-        API::requireValues("courseId", "moduleId", "listName");
+        API::requireValues("courseId", "moduleId", "listName", "items");
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -132,8 +132,8 @@ class ModuleController
         $module = API::verifyModuleExists($moduleId, $course);
 
         $listName = API::getValue("listName");
-        $itemId = API::getValue("itemId");
+        $items = API::getValue("items", "array");
 
-        API::response( $module->exportListingItems($listName, $itemId));
+        API::response($module->exportListingItems($listName, $items));
     }
 }

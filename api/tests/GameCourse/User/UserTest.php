@@ -2210,7 +2210,7 @@ class UserTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function exportUsers()
+    public function exportAllUsers()
     {
         $userId1 = User::addUser("Sabri M'Barki", "ist1100956", AuthService::FENIX, "sabri.m.barki@efrei.net",
             100956, "Sabri M'Barki", "MEIC-T", true, true)->getId();
@@ -2231,6 +2231,31 @@ class UserTest extends TestCase
         $expectedFile .= "Mariana Wong Brandão,marianawbrandao@icloud.com,MEMec,Mariana Brandão,86893,ist186893,fenix,0,0";
 
         $file = User::exportUsers([$userId1, $userId2, $userId3, $userId4, $userId5]);
+        $this->assertSame($expectedFile, $file);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function exportSomeUsers()
+    {
+        $userId1 = User::addUser("Sabri M'Barki", "ist1100956", AuthService::FENIX, "sabri.m.barki@efrei.net",
+            100956, "Sabri M'Barki", "MEIC-T", true, true)->getId();
+        $userId2 = User::addUser("Marcus Notø", "ist1101036", AuthService::FENIX, "marcus.n.hansen@gmail.com",
+            1101036, "Marcus Notø", "MEEC", true, false)->getId();
+        $userId3 = User::addUser("Inês Albano", "ist187664", AuthService::FENIX, "ines.albano@tecnico.ulisboa.pt",
+            87664, null, "MEIC-A", false, true)->getId();
+        $userId4 = User::addUser("Filipe José Zillo Colaço", "ist426015", AuthService::FENIX, "fijozico@hotmail.com",
+            84715, null, "LEIC-T", false, true)->getId();
+        $userId5 = User::addUser("Mariana Wong Brandão", "ist186893", AuthService::FENIX, "marianawbrandao@icloud.com",
+            86893, "Mariana Brandão", "MEMec", false, false)->getId();
+
+        $expectedFile = "name,email,major,nickname,studentNumber,username,auth_service,isAdmin,isActive\n";
+        $expectedFile .= "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1\n";
+        $expectedFile .= "Filipe José Zillo Colaço,fijozico@hotmail.com,LEIC-T,,84715,ist426015,fenix,0,1";
+
+        $file = User::exportUsers([$userId1, $userId4]);
         $this->assertSame($expectedFile, $file);
     }
 }

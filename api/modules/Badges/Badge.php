@@ -732,10 +732,7 @@ class Badge
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Imports badges into a given course from a .zip file containing
-     * a .csv file with all badges information, a .csv file with
-     * badges levels information and a folder with all badges images.
-     *
+     * Imports badges into a given course from a .zip file.
      * Returns the nr. of badges imported.
      *
      * @param int $courseId
@@ -752,7 +749,7 @@ class Badge
 
         // Extract contents
         $zipPath = $tempFolder . "/badges.zip";
-        file_put_contents($zipPath, $contents);
+        Utils::uploadFile($tempFolder, $contents, "badges.zip");
         $zip = new ZipArchive();
         if (!$zip->open($zipPath)) throw new Exception("Failed to create zip archive.");
         $zip->extractTo($tempFolder);
@@ -762,8 +759,9 @@ class Badge
         // Get badges images
         $images = [];
         foreach (Utils::getDirectoryContents($tempFolder . "/images") as $file) {
-            if ($file["type"] != "file") throw new Exception("Badge image for '" . $file["name"] . "' is not a file.");
-            $images[$file["name"]] = $tempFolder . "/images/" . $file["name"] . $file["extension"];
+            $fileName = explode(".", $file["name"])[0];
+            if ($file["type"] != "file") throw new Exception("Badge image for '" . $fileName . "' is not a file.");
+            $images[$fileName] = $tempFolder . "/images/" . $file["name"];
         }
 
         // Import badges levels
@@ -782,8 +780,8 @@ class Badge
         // Import badges
         $file = file_get_contents($tempFolder . "/badges.csv");
         $nrBadgesImported = Utils::importFromCSV(self::HEADERS, function ($badge, $indexes) use ($courseId, $replace, $levels, $images) {
-            $name = $badge[$indexes["name"]];
-            $description = $badge[$indexes["description"]];
+            $name = Utils::nullify($badge[$indexes["name"]]);
+            $description = Utils::nullify($badge[$indexes["description"]]);
             $isExtra = self::parse(null, $badge[$indexes["isExtra"]], "isExtra");
             $isBragging = self::parse(null, $badge[$indexes["isBragging"]], "isBragging");
             $isCount = self::parse(null, $badge[$indexes["isCount"]], "isCount");
@@ -818,25 +816,28 @@ class Badge
      * Exports badges to a .zip file.
      *
      * @param int $courseId
+     * @param array $badgeIds
      * @return array
      * @throws Exception
      */
-    public static function exportBadges(int $courseId): array
+    public static function exportBadges(int $courseId, array $badgeIds): array
     {
+        $course = new Course($courseId);
+
         // Create a temporary folder to work with
         $tempFolder = ROOT_PATH . "temp/" . time();
         mkdir($tempFolder, 0777, true);
 
         // Create zip archive to store badges' info
         // NOTE: This zip will be automatically deleted after download is complete
-        $zipPath = $tempFolder . "/badges.zip";
+        $zipPath = $tempFolder . "/" . ($course->getShort() ?? $course->getName()) . "-badges.zip";
         $zip = new ZipArchive();
         if (!$zip->open($zipPath, ZipArchive::CREATE))
             throw new Exception("Failed to create zip archive.");
 
         // Add badges .csv file
-        $badges = self::getBadges($courseId);
-        $zip->addFromString("badges.csv", Utils::exportToCSV($badges, function ($badge) {
+        $badgesToExport = array_values(array_filter(self::getBadges($courseId), function ($badge) use ($badgeIds) { return in_array($badge["id"], $badgeIds); }));
+        $zip->addFromString("badges.csv", Utils::exportToCSV($badgesToExport, function ($badge) {
             return [$badge["name"], $badge["description"], $badge["nrLevels"], +$badge["isExtra"], +$badge["isBragging"],
                 +$badge["isCount"], +$badge["isPost"], +$badge["isPoint"], +$badge["isActive"]];
         }, self::HEADERS));
@@ -845,15 +846,17 @@ class Badge
         $zip->addEmptyDir("images");
 
         $levels = [];
-        foreach ($badges as $badgeInfo) {
+        foreach ($badgesToExport as $badgeInfo) {
             $badge = self::getBadgeById($badgeInfo["id"]);
             $badgeLevels = $badge->getLevels();
             foreach ($badgeLevels as &$level) { $level["badge_name"] = $badgeInfo["name"]; }
             $levels = array_merge($levels, $badgeLevels);
 
             // Export image
-            if ($badgeInfo["image"] && !self::isDefaultImage($badgeInfo["image"]))
-                $zip->addFile($badgeInfo["image"], "images/" . $badgeInfo["name"] . ".png");
+            if ($badgeInfo["image"] && !self::isDefaultImage($badgeInfo["image"])) {
+                $imagePath = str_replace(API_URL . "/", ROOT_PATH, $badgeInfo["image"]);
+                $zip->addFile($imagePath, "images/" . $badgeInfo["name"] . ".png");
+            }
         }
 
         // Add levels .csv file
@@ -862,7 +865,7 @@ class Badge
         }, self::LEVEL_HEADERS));
 
         $zip->close();
-        return ["extension" => ".zip", "path" => $zipPath];
+        return ["extension" => ".zip", "path" => str_replace(ROOT_PATH, API_URL . "/", $zipPath)];
     }
 
 

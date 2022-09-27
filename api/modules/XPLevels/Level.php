@@ -387,7 +387,7 @@ class Level
     public static function importLevels(int $courseId, string $file, bool $replace = true): int
     {
         return Utils::importFromCSV(self::HEADERS, function ($level, $indexes) use ($courseId, $replace) {
-            $description = $level[$indexes["title"]];
+            $description = Utils::nullify($level[$indexes["title"]]);
             $minXP = self::parse(null, $level[$indexes["minimum XP"]], "minXP");
 
             $level = self::getLevelByMinXP($courseId, $minXP);
@@ -407,11 +407,13 @@ class Level
      * Exports levels from a given course into a .csv file.
      *
      * @param int $courseId
+     * @param array $levelIds
      * @return array
      */
-    public static function exportLevels(int $courseId): array
+    public static function exportLevels(int $courseId, array $levelIds): array
     {
-        return ["extension" => ".csv", "file" => Utils::exportToCSV(self::getLevels($courseId), function ($level) {
+        $levelsToExport = array_values(array_filter(self::getLevels($courseId), function ($level) use ($levelIds) { return in_array($level["id"], $levelIds); }));
+        return ["extension" => ".csv", "file" => Utils::exportToCSV($levelsToExport, function ($level) {
             return [$level["description"], $level["minXP"]];
         }, self::HEADERS)];
     }

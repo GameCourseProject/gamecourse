@@ -505,7 +505,7 @@ class CourseUser extends User
         if (!$course->exists())
             throw new Exception("Course with ID = " . $courseId . " doesn't exist.");
 
-        $usersToExport = array_filter($course->getCourseUsers(), function ($user) use ($userIds) { return in_array($user["id"], $userIds); });
+        $usersToExport = array_values(array_filter($course->getCourseUsers(), function ($user) use ($userIds) { return in_array($user["id"], $userIds); }));
         return Utils::exportToCSV(
             $usersToExport,
             function ($user) use ($course) {

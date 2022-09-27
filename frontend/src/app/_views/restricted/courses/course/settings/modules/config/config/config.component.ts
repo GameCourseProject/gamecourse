@@ -28,9 +28,7 @@ import {Course} from "../../../../../../../../_domain/courses/course";
 export class ConfigComponent implements OnInit {
 
   loading = {
-    page: true,
-    action: false,
-    form: null
+    page: true
   }
 
   course: Course;
@@ -41,7 +39,7 @@ export class ConfigComponent implements OnInit {
   lists: List[];
   personalizedConfig: string;
 
-  mode: 'create' | 'edit' | 'delete';
+  mode: 'create' | 'duplicate' | 'edit' | 'delete';
   itemToManage: ItemManageData;
   @ViewChild('fManage', { static: false }) fManage: NgForm;
 
@@ -100,11 +98,15 @@ export class ConfigComponent implements OnInit {
 
     // Lists
     this.lists = config.lists.map(list => {
+      list.loading = {table: true, action: false};
+
+      // Update top actions
       list.topActions.right = list.topActions.right.map(action => {
         if (action.action === Action.NEW) action.action = "Create " + list.itemName;
         return action;
       });
 
+      // Add actions to table
       if (list.actions?.length > 0 && list.headers[list.headers.length - 1].label !== 'Actions') {
         const nrItems = list.data.length;
         list.headers.push({label: 'Actions'});
@@ -116,8 +118,11 @@ export class ConfigComponent implements OnInit {
           })}});
           return row;
         });
+        if (!list.options.hasOwnProperty('columnDefs')) list.options['columnDefs'] = [];
+        list.options['columnDefs'].push({orderable: false, targets: list.headers.length - 1});
       }
 
+      list.loading.table = false;
       return list;
     });
 
@@ -134,8 +139,7 @@ export class ConfigComponent implements OnInit {
 
   async saveGeneralInputs(section: ConfigSection, form: NgForm) {
     if (form.valid) {
-      this.loading.form = form;
-      this.loading.action = true;
+      section.loading = true;
 
       // Get section inputs
       const inputs = getInputs(section.contents, []);
@@ -143,8 +147,7 @@ export class ConfigComponent implements OnInit {
       const index = this.unsavedGeneralInputs.findIndex(s => s.name === section.name);
       this.generalInputs[index].contents = _.cloneDeep(section.contents);
 
-      this.loading.action = false;
-      this.loading.form = null;
+      section.loading = false;
       AlertService.showAlert(AlertType.SUCCESS, section.successMsg ?? 'Changes saved successfully');
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -193,20 +196,24 @@ export class ConfigComponent implements OnInit {
 
       } else {
         if (this.fImport.valid) {
-          this.loading.action = true;
+          list.loading.action = true;
 
           try {
-            const file = await ResourceManager.getText(this.importData.file); // FIXME: only allowing CSV
+            const extensions = list[Action.IMPORT].extensions;
+            const file = extensions.includes('.csv') || extensions.includes('.txt') ?
+              await ResourceManager.getText(this.importData.file) :
+              await ResourceManager.getBase64(this.importData.file);
+
             const nrItemsImported = await this.api.importModuleItems(this.course.id, this.module.id, list.name, file, this.importData.replace).toPromise();
             await this.getModuleConfig(this.module.id);
 
-            this.loading.action = false;
+            list.loading.action = false;
             ModalService.closeModal('import');
             this.resetImport();
             AlertService.showAlert(AlertType.SUCCESS, nrItemsImported + ' ' + list.itemName + (nrItemsImported != 1 ? 's' : '') + ' imported');
 
           } catch (error) {
-            this.loading.action = false;
+            list.loading.action = false;
           }
 
         } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -220,42 +227,57 @@ export class ConfigComponent implements OnInit {
       this.itemToManage = this.initItemToManage(list);
       ModalService.openModal('manage');
 
-    } else if (action === Action.NEW || action === Action.EDIT || action === Action.DELETE) {
-      if (this.fManage.valid) {
-        this.loading.action = true;
-
-        try {
-          await this.api.saveModuleConfig(this.course.id, this.module.id, null, this.getItemToManage(), list.name, action).toPromise();
-          await this.getModuleConfig(this.module.id);
-
-          this.loading.action = false;
-          ModalService.closeModal('manage');
-          this.resetManage();
-
-          let successMsg = "";
-          if (action === Action.NEW) successMsg = 'New ' + list.itemName + ' created';
-          else if (action === Action.EDIT) successMsg = list.itemName.capitalize() + ' edited';
-          else if (action === Action.DELETE) successMsg = list.itemName.capitalize() + ' deleted';
-          AlertService.showAlert(AlertType.SUCCESS, successMsg);
-
-        } catch (error) {
-          this.loading.action = false;
+    } else if (action === Action.NEW || action === Action.DUPLICATE || action === Action.EDIT || action === Action.DELETE) {
+      if (action !== Action.DUPLICATE && action !== Action.DELETE)
+        if (!this.fManage.valid) {
+          AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+          return;
         }
 
-      } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+      list.loading.action = true;
+
+      try {
+        await this.api.saveModuleConfig(this.course.id, this.module.id, null, this.getItemToManage(), list.name, action).toPromise();
+        await this.getModuleConfig(this.module.id);
+
+        list.loading.action = false;
+        ModalService.closeModal('manage');
+        this.resetManage();
+
+        let successMsg = "";
+        if (action === Action.NEW || action === Action.DUPLICATE) successMsg = 'New ' + list.itemName + ' created';
+        else if (action === Action.EDIT) successMsg = list.itemName.capitalize() + ' edited';
+        else if (action === Action.DELETE) successMsg = list.itemName.capitalize() + ' deleted';
+        AlertService.showAlert(AlertType.SUCCESS, successMsg);
+
+      } catch (error) {
+        list.loading.action = false;
+      }
     }
   }
 
-  doActionOnTable(list: List, action: string, row: number, col: number, value?: any): void {
+  async doActionOnTable(list: List, action: string, row: number, col: number, value?: any): Promise<void> {
     const itemToActOn = list.items[row];
 
-    if (action === 'value changed') { // TODO
-      // if (col === 7) this.toggleActive(userToActOn);
-      // else if (col === 8) this.toggleAdmin(userToActOn);
+    if (action === 'value changed') {
+      list.loading.action = true;
+
+      const param = list.data[row][col].content['toggleId'];
+      this.itemToManage = this.initItemToManage(list, itemToActOn, row);
+      this.itemToManage.item[param] = value;
+
+      await this.api.saveModuleConfig(this.course.id, this.module.id, null, this.itemToManage.item, list.name, Action.EDIT).toPromise();
+
+      list.loading.action = false;
 
     } else if (action === Action.VIEW) { // TODO
       // const redirectLink = '/profile/' + userToActOn.id;
       // this.router.navigate([redirectLink]);
+
+    } else if (action === Action.DUPLICATE) {
+      this.mode = 'duplicate';
+      this.itemToManage = this.initItemToManage(list, itemToActOn, row);
+      this.doAction(list, Action.DUPLICATE);
 
     } else if (action === Action.EDIT) {
       this.mode = 'edit';
@@ -272,30 +294,19 @@ export class ConfigComponent implements OnInit {
     }
   }
 
-  toggleItemParam(list: List, item: any) { // TODO
-    // this.loadingAction = true;
-    // this.doActionOnItem(list.listName, item, Action.EDIT, list.parent ?? null);
-  }
-
-  moveItem(list: List, item: any, dir: number) { // TODO
-    // this.doActionOnItem(list.listName, item, dir > 0 ? Action.MOVE_UP : Action.MOVE_DOWN, list.parent);
-  }
-
-  viewItem(list: List, item: any) {
-    // TODO
-  }
-
   async exportItems(list: List, items: any[]): Promise<void> {
     if (items.length === 0)
       AlertService.showAlert(AlertType.WARNING, 'There are no ' + list.itemName + 's to export');
 
     else {
-      this.loading.action = true;
+      list.loading.action = true;
 
       const contents = await this.api.exportModuleItems(this.course.id, this.module.id, list.name, items.map(item => item.id)).toPromise();
-      if (contents.extension === '.csv') DownloadManager.downloadAsCSV((this.course.short ?? this.course.name) + '-' + list.itemName + "s", contents.file);
 
-      this.loading.action = false;
+      if (contents.extension === '.csv') DownloadManager.downloadAsCSV((this.course.short ?? this.course.name) + '-' + list.itemName + "s", contents.file);
+      else if (contents.extension === '.zip') DownloadManager.downloadAsZip(contents.path, this.api, this.course.id);
+
+      list.loading.action = false;
     }
   }
 
@@ -326,9 +337,11 @@ export class ConfigComponent implements OnInit {
     }, 0);
   }
 
-  async onFileSelected(files: FileList, artifact: ConfigInputItem): Promise<void> {
-    // FIXME: not working with images
-    await ResourceManager.getText(files.item(0)).then(data => artifact.value = data);
+  async onFileSelected(files: FileList, artifact: ConfigInputItem, accept: string): Promise<void> {
+    // FIXME: should be more general than this (create input-image component)
+    const isImage = accept.containsWord('image') || accept.containsWord('svg') || accept.containsWord('png') || accept.containsWord('jpg');
+    if (isImage) await ResourceManager.getBase64(files.item(0)).then(data => artifact.value = data);
+    else await ResourceManager.getText(files.item(0)).then(data => artifact.value = data);
   }
 
   scopeAllows(scope: ActionScope): boolean {
@@ -356,6 +369,7 @@ export class ConfigComponent implements OnInit {
 
   getMarginTOP(item: boolean, width: 'full' | '1/2' | '1/3' | '1/4', index: number): string {
     if (!item) return '';
+
     if (width === '1/2') return (index !== 0 ? 'mt-3' : '') + (index > 1 ? ' sm:mt-3' : ' sm:mt-0');
     if (width === '1/3') return (index !== 0 ? 'mt-3' : '') + (index > 1 ? ' sm:mt-3' : ' sm:mt-0') + (index > 2 ? ' lg:mt-3' : ' lg:mt-0');
     if (width === '1/4') return (index !== 0 ? 'mt-3' : '') + (index > 1 ? ' sm:mt-3' : ' sm:mt-0') + (index > 2 ? ' md:mt-3' : ' md:mt-0') + (index > 3 ? ' lg:mt-3' : ' lg:mt-0');
@@ -433,7 +447,7 @@ export class ConfigComponent implements OnInit {
     function initValues(contents: (ConfigInputContainer|ConfigInputItem)[], item: any): any {
       for (const artifact of contents) {
         if (artifact.contentType === 'item') artifact.value = item[artifact.id];
-        else item = initValues(artifact.contents, item);
+        else initValues(artifact.contents, item);
       }
     }
   }
@@ -446,7 +460,7 @@ export class ConfigComponent implements OnInit {
       for (const artifact of contents) {
         if (artifact.contentType === 'item')
           item[artifact.id] = artifact.value;
-        else item = getItem(artifact.contents, item);
+        else getItem(artifact.contents, item);
       }
     }
   }
@@ -468,7 +482,8 @@ export interface ConfigSection {
   name: string,
   btnText?: string,
   successMsg?: string,
-  contents: (ConfigInputContainer|ConfigInputItem)[]
+  contents: (ConfigInputContainer|ConfigInputItem)[],
+  loading: boolean
 }
 
 export interface ConfigInputContainer {
@@ -500,7 +515,10 @@ export type List = {
   actions?: {action: Action | string, scope: ActionScope, icon?: string, color?: 'ghost' | 'primary' | 'secondary' |
       'accent' | 'neutral' | 'info' | 'success' | 'warning' | 'error', disabled?: boolean}[],
   options?: any,
-  loading: boolean,
+  loading: {
+    table: boolean,
+    action: boolean
+  }
   items: any[],
   [Action.NEW]?: {modalSize?: 'sm' | 'md' | 'lg', contents: (ConfigInputContainer|ConfigInputItem)[]},
   [Action.EDIT]?: {modalSize?: 'sm' | 'md' | 'lg', contents: (ConfigInputContainer|ConfigInputItem)[]},

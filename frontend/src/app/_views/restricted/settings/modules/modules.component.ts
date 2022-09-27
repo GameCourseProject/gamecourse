@@ -79,11 +79,11 @@ export class ModulesComponent implements OnInit {
 
   public exportModules(): void {
     // FIXME: not working
-    this.loading = true;
-    this.api.exportModules()
-      .pipe( finalize(() => this.loading = false) )
-      .subscribe(zip => DownloadManager.downloadAsZip(zip, ApiEndpointsService.API_ENDPOINT),
-      )
+    // this.loading = true;
+    // this.api.exportModules()
+    //   .pipe( finalize(() => this.loading = false) )
+    //   .subscribe(zip => DownloadManager.downloadAsZip(zip, ApiEndpointsService.API_ENDPOINT),
+    //   )
   }
 
 

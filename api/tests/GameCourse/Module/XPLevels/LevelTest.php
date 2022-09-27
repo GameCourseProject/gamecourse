@@ -1009,7 +1009,7 @@ class LevelTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function exportLevels()
+    public function exportAllLevels()
     {
         Level::addLevel($this->courseId, 1000, "Level 1");
         Level::addLevel($this->courseId, 2000, "Level 2");
@@ -1019,7 +1019,25 @@ class LevelTest extends TestCase
         $expectedFile .= "Level 1,1000\n";
         $expectedFile .= "Level 2,2000";
 
-        $export = Level::exportLevels($this->courseId);
+        $export = Level::exportLevels($this->courseId, [1, 2, 3]);
+        $this->assertEquals(".csv", $export["extension"]);
+        $this->assertEquals($expectedFile, $export["file"]);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function exportSomeLevels()
+    {
+        Level::addLevel($this->courseId, 1000, "Level 1");
+        Level::addLevel($this->courseId, 2000, "Level 2");
+
+        $expectedFile = "title,minimum XP\n";
+        $expectedFile .= "Level 1,1000\n";
+        $expectedFile .= "Level 2,2000";
+
+        $export = Level::exportLevels($this->courseId, [2, 3]);
         $this->assertEquals(".csv", $export["extension"]);
         $this->assertEquals($expectedFile, $export["file"]);
     }

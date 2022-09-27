@@ -901,6 +901,7 @@ class UtilsTest extends TestCase
 
         // Then
         $this->assertTrue(file_exists(ROOT_PATH . "tests/Utils/dir1"));
+        $this->assertFalse(file_exists(ROOT_PATH . "tests/Utils/dir1/dir11"));
 
         // Clean up
         Utils::deleteDirectory(ROOT_PATH . "tests/Utils/dir1");
