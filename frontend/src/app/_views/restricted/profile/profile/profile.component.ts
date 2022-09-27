@@ -93,8 +93,10 @@ export class ProfileComponent implements OnInit {
       this.user = userEdited;
 
       // Trigger image change
-      if (this.userToManage.photoToAdd && this.user.id === userEdited.id)
+      if (this.userToManage.photoToAdd && this.user.id === userEdited.id) {
+        this.userPhoto.set(userEdited.photoUrl);
         this.updateManager.triggerUpdate(UpdateType.AVATAR);
+      }
 
       this.loading.action = false;
       AlertService.showAlert(AlertType.SUCCESS, 'Profile edited successfully');
