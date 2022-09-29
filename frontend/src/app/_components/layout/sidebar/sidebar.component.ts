@@ -225,7 +225,7 @@ export class SidebarComponent implements OnInit {
               },
               {
                 link: path + 'settings/rule-system',
-                name: 'Rule System',
+                name: 'Rule Editor',
                 icon: 'tabler-clipboard-list'
               },
               {
