@@ -2,16 +2,15 @@
               transition-transform duration-200 -translate-x-full bg-base-100 border-0 z-50 lg:ml-6 rounded-tr-2xl lg:rounded-2xl
               lg:left-0 lg:translate-x-0 shadow-xl lg:h-auto bottom-0 pb-4">
 
-  <div>
-    <!-- Logo -->
-    <div class="h-25 px-6 py-6 pb-3">
-      <a [routerLink]="'/'">
-        <img class="max-h-full" src="assets/logo/logo_horz.png" alt="">
-      </a>
-    </div>
+  <!-- Logo -->
+  <div class="h-25 px-6 py-6 pb-3">
+    <a [routerLink]="'/'">
+      <img class="max-h-full" src="assets/logo/logo_horz.png" alt="">
+    </a>
+  </div>
 
-    <!-- Navigation -->
-    <ul *ngIf="navigation?.length > 0" class="menu bg-base-100 p-2 rounded-box overflow-y-auto">
+  <!-- Navigation -->
+  <ul *ngIf="navigation?.length > 0" class="menu bg-base-100 p-2 rounded-box w-full overflow-y-auto">
       <ng-container *ngFor="let nav of navigation; let i = index">
 
         <!-- Category -->
@@ -36,10 +35,9 @@
 
       </ng-container>
     </ul>
-  </div>
 
   <!-- Docs -->
-  <div *ngIf="isCourseAdmin" class="relative flex flex-col min-w-0 break-words bg-transparent border-0 shadow-none rounded-2xl bg-clip-border mx-3">
+  <div *ngIf="isCourseAdmin" class="relative flex flex-col min-w-0 break-words bg-transparent border-0 shadow-none rounded-2xl bg-clip-border mx-3 mt-4">
     <img class="w-1/2 mx-auto" src="https://demos.creative-tim.com/argon-dashboard-tailwind/assets/img/illustrations/icon-documentation.svg" alt="docs illustration">
     <div class="flex-auto w-full p-4 pt-0 text-center">
       <div class="transition-all duration-200 ease-nav-brand prose">
