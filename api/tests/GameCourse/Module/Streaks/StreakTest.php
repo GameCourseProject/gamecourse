@@ -355,8 +355,8 @@ class StreakTest extends TestCase
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
             null, null, 100, null, false, true, false,
             false, false);
-        $this->assertEquals("<svg width=\"29\" height=\"33\" viewBox=\"0 0 29 33\" fill=\"#999999\" xmlns=\"http://www.w3.org/2000/svg\">
-<path d=\"M20.4351 3.36749C19.1215 4.57763 17.9354 5.84985 16.8844 7.12771C15.1628 4.77326 13.0281 2.38496 10.6104 0.157166C4.40458 5.87368 0 13.322 0 17.814C0 25.7927 6.33403 32.2604 14.1472 32.2604C21.9604 32.2604 28.2944 25.7927 28.2944 17.814C28.2944 14.4738 25.0115 7.58481 20.4351 3.36749Z\"/>
+        $this->assertEquals("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"currentColor\">
+    <path fill-rule=\"evenodd\" d=\"M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177A7.547 7.547 0 016.648 6.61a.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 011.925-3.545 3.75 3.75 0 013.255 3.717z\" clip-rule=\"evenodd\" />
 </svg>", base64_decode(preg_replace('/^data:.*\/.*?;base64,/i', '', $streak->getImage())));
     }
 

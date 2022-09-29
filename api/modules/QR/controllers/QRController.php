@@ -24,6 +24,24 @@ class QRController
     /*** --------------------------------------------- ***/
 
     /**
+     * Gets all unused QR codes.
+     *
+     * @throws Exception
+     */
+    public function getUnusedQRCodes()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $QRModule = new QR($course);
+        API::response($QRModule->getUnusedQRCodes());
+    }
+
+    /**
      * Gets all in-class participations.
      *
      * @throws Exception
@@ -94,11 +112,31 @@ class QRController
     }
 
     /**
-     * Submits a class participation for a given user.
+     * Deletes a given QR code.
      *
      * @throws Exception
      */
-    public function submitQRParticipation()
+    public function deleteQRCode()
+    {
+        API::requireValues("courseId", "key");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $qrKey = API::getValue("key");
+
+        $QRModule = new QR($course);
+        $QRModule->deleteQRCode($qrKey);
+    }
+
+    /**
+     * Adds a class participation for a given user.
+     *
+     * @throws Exception
+     */
+    public function addQRParticipation()
     {
         API::requireValues("courseId", "userId", "lectureNr", "typeOfClass");
 
@@ -114,6 +152,48 @@ class QRController
         $typeOfClass = API::getValue("typeOfClass");
 
         $QRModule = new QR($course);
-        $QRModule->submitQRParticipation($userId, $lectureNr, $typeOfClass, $qrKey);
+        $QRModule->addQRParticipation($userId, $lectureNr, $typeOfClass, $qrKey);
+    }
+
+    /**
+     * Edits a class participation.
+     *
+     * @throws Exception
+     */
+    public function editQRParticipation()
+    {
+        API::requireValues("courseId", "key", "lectureNr", "typeOfClass");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $qrKey = API::getValue("key");
+        $lectureNr = API::getValue("lectureNr", "int");
+        $typeOfClass = API::getValue("typeOfClass");
+
+        $QRModule = new QR($course);
+        $QRModule->editQRParticipation($qrKey, $lectureNr, $typeOfClass);
+    }
+
+    /**
+     * Deletes a class participation.
+     *
+     * @throws Exception
+     */
+    public function deleteQRParticipation()
+    {
+        API::requireValues("courseId", "key");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $qrKey = API::getValue("key");
+
+        $QRModule = new QR($course);
+        $QRModule->deleteQRParticipation($qrKey);
     }
 }

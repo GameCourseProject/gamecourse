@@ -8,6 +8,7 @@ use GameCourse\Course\Course;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
+use Mockery;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
@@ -147,8 +148,8 @@ class QRTest extends TestCase
     {
         // Given
         $student = new CourseUser($this->course->getStudents(true)[0]["id"], $this->course);
-        $this->module->submitQRParticipation($student->getId(), 1, ClassType::LECTURE);
-        $this->module->submitQRParticipation($student->getId(), 2, ClassType::LECTURE);
+        $this->module->addQRParticipation($student->getId(), 1, ClassType::LECTURE);
+        $this->module->addQRParticipation($student->getId(), 2, ClassType::LECTURE);
 
         // When
         $participations = $this->module->getQRParticipations();
@@ -157,7 +158,7 @@ class QRTest extends TestCase
         $this->assertIsArray($participations);
         $this->assertCount(2, $participations);
 
-        $keys = ["qrkey", "user", "classNumber", "classType", "date"];
+        $keys = ["qrkey", "qrcode", "qrURL", "user", "classNumber", "classType", "date", "id"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($participations as $participation) {
@@ -185,9 +186,9 @@ class QRTest extends TestCase
         $student1 = new CourseUser($this->course->getStudents()[0]["id"], $this->course);
         $student2 = new CourseUser($this->course->getStudents()[1]["id"], $this->course);
 
-        $this->module->submitQRParticipation($student1->getId(), 1, ClassType::LECTURE);
-        $this->module->submitQRParticipation($student1->getId(), 2, ClassType::LECTURE);
-        $this->module->submitQRParticipation($student2->getId(), 2, ClassType::LECTURE);
+        $this->module->addQRParticipation($student1->getId(), 1, ClassType::LECTURE);
+        $this->module->addQRParticipation($student1->getId(), 2, ClassType::LECTURE);
+        $this->module->addQRParticipation($student2->getId(), 2, ClassType::LECTURE);
 
         // When
         $userParticipations = $this->module->getUserQRParticipations($student1->getId());
@@ -196,7 +197,7 @@ class QRTest extends TestCase
         $this->assertIsArray($userParticipations);
         $this->assertCount(2, $userParticipations);
 
-        $keys = ["qrkey", "classNumber", "classType", "date"];
+        $keys = ["qrkey", "qrcode", "qrURL", "classNumber", "classType", "date", "id"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($userParticipations as $participation) {
@@ -211,12 +212,128 @@ class QRTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function addQRParticipation()
+    {
+        // Given
+        $student = new CourseUser($this->course->getStudents(true)[0]["id"], $this->course);
+
+        // When
+        $this->module->addQRParticipation($student->getId(), 1, ClassType::LECTURE);
+
+        // Then
+        $this->assertCount(1, $this->module->getUserQRParticipations($student->getId()));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function addQRParticipationWithQRKey()
+    {
+        // Given
+        $student = new CourseUser($this->course->getStudents(true)[0]["id"], $this->course);
+        $QRCode = $this->module->generateQRCodes(1)[0];
+
+        // When
+        $this->module->addQRParticipation($student->getId(), 1, ClassType::LECTURE, $QRCode["key"]);
+
+        // Then
+        $this->assertCount(1, $this->module->getUserQRParticipations($student->getId()));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function addQRParticipationQRCodeNotRegistered()
+    {
+        // Given
+        $student = new CourseUser($this->course->getStudents(true)[0]["id"], $this->course);
+
+        try {
+            $this->module->addQRParticipation($student->getId(), 1, ClassType::LECTURE, 1);
+            $this->fail("Exception should have been thrown on 'submitParticipationQRCodeNotRegistered'");
+
+        } catch (Exception $e) {
+            $this->assertEmpty($this->module->getUserQRParticipations($student->getId()));
+            $this->assertCount(1, $this->module->getUserQRErrors($student->getId()));
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function addQRParticipationQRCodeAlreadyRedeemed()
+    {
+        // Given
+        $student = new CourseUser($this->course->getStudents(true)[0]["id"], $this->course);
+        $QRCode = $this->module->generateQRCodes()[0];
+        $this->module->addQRParticipation($student->getId(), 1, ClassType::LECTURE, $QRCode["key"]);
+
+        try {
+            $this->module->addQRParticipation($student->getId(), 1, ClassType::LECTURE, $QRCode["key"]);
+            $this->fail("Exception should have been thrown on 'submitParticipationQRCodeAlreadyRedeemed'");
+
+        } catch (Exception $e) {
+            $this->assertCount(1, $this->module->getUserQRParticipations($student->getId()));
+            $this->assertCount(1, $this->module->getUserQRErrors($student->getId()));
+        }
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function editQRParticipation()
+    {
+        // Given
+        $student = new CourseUser($this->course->getStudents(true)[0]["id"], $this->course);
+        $QRCode = $this->module->generateQRCodes()[0];
+        $this->module->addQRParticipation($student->getId(), 1, ClassType::LECTURE, $QRCode["key"]);
+
+        // When
+        $this->module->editQRParticipation($QRCode["key"], 2, ClassType::INVITED_LECTURE);
+
+        // Then
+        $userParticipations = $this->module->getUserQRParticipations($student->getId());
+        $this->assertCount(1, $userParticipations);
+        $this->assertEquals(2, $userParticipations[0]["classNumber"]);
+        $this->assertEquals(ClassType::INVITED_LECTURE, $userParticipations[0]["classType"]);
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function deleteQRParticipation()
+    {
+        // Given
+        $student = new CourseUser($this->course->getStudents(true)[0]["id"], $this->course);
+        $QRCode = $this->module->generateQRCodes()[0];
+        $this->module->addQRParticipation($student->getId(), 1, ClassType::LECTURE, $QRCode["key"]);
+
+        // When
+        $this->module->deleteQRParticipation($QRCode["key"]);
+
+        // Then
+        $userParticipations = $this->module->getUserQRParticipations($student->getId());
+        $this->assertEmpty($userParticipations);
+    }
+
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function getQRErrors()
     {
         // Given
         $student = new CourseUser($this->course->getStudents(true)[0]["id"], $this->course);
         try {
-            $this->module->submitQRParticipation($student->getId(), 1, ClassType::LECTURE, 1);
+            $this->module->addQRParticipation($student->getId(), 1, ClassType::LECTURE, 1);
 
         } catch (Exception $e) {
             // When
@@ -256,11 +373,11 @@ class QRTest extends TestCase
         $student2 = new CourseUser($this->course->getStudents()[1]["id"], $this->course);
 
         try {
-            $this->module->submitQRParticipation($student1->getId(), 1, ClassType::LECTURE, 1);
+            $this->module->addQRParticipation($student1->getId(), 1, ClassType::LECTURE, 1);
 
         } catch (Exception $e) {
             try {
-                $this->module->submitQRParticipation($student2->getId(), 2, ClassType::LECTURE, 1);
+                $this->module->addQRParticipation($student2->getId(), 2, ClassType::LECTURE, 1);
 
             } catch (Exception $e) {
                 // When
@@ -314,79 +431,5 @@ class QRTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->module->generateQRCodes(-1);
-    }
-
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function submitParticipation()
-    {
-        // Given
-        $student = new CourseUser($this->course->getStudents(true)[0]["id"], $this->course);
-
-        // When
-        $this->module->submitQRParticipation($student->getId(), 1, ClassType::LECTURE);
-
-        // Then
-        $this->assertCount(1, $this->module->getUserQRParticipations($student->getId()));
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function submitParticipationWithQRKey()
-    {
-        // Given
-        $student = new CourseUser($this->course->getStudents(true)[0]["id"], $this->course);
-        $QRCode = $this->module->generateQRCodes(1)[0];
-
-        // When
-        $this->module->submitQRParticipation($student->getId(), 1, ClassType::LECTURE, $QRCode["key"]);
-
-        // Then
-        $this->assertCount(1, $this->module->getUserQRParticipations($student->getId()));
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function submitParticipationQRCodeNotRegistered()
-    {
-        // Given
-        $student = new CourseUser($this->course->getStudents(true)[0]["id"], $this->course);
-
-        try {
-            $this->module->submitQRParticipation($student->getId(), 1, ClassType::LECTURE, 1);
-            $this->fail("Exception should have been thrown on 'submitParticipationQRCodeNotRegistered'");
-
-        } catch (Exception $e) {
-            $this->assertEmpty($this->module->getUserQRParticipations($student->getId()));
-            $this->assertCount(1, $this->module->getUserQRErrors($student->getId()));
-        }
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function submitParticipationQRCodeAlreadyRedeemed()
-    {
-        // Given
-        $student = new CourseUser($this->course->getStudents(true)[0]["id"], $this->course);
-        $QRCode = $this->module->generateQRCodes()[0];
-        $this->module->submitQRParticipation($student->getId(), 1, ClassType::LECTURE, $QRCode["key"]);
-
-        try {
-            $this->module->submitQRParticipation($student->getId(), 1, ClassType::LECTURE, $QRCode["key"]);
-            $this->fail("Exception should have been thrown on 'submitParticipationQRCodeAlreadyRedeemed'");
-
-        } catch (Exception $e) {
-            $this->assertCount(1, $this->module->getUserQRParticipations($student->getId()));
-            $this->assertCount(1, $this->module->getUserQRErrors($student->getId()));
-        }
     }
 }

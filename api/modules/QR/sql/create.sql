@@ -1,5 +1,7 @@
 CREATE TABLE IF NOT EXISTS qr_code(
     qrkey                       varchar(50) PRIMARY KEY,
+    qrcode                      TEXT NOT NULL,
+    qrURL                       TEXT NOT NULL,
     course                      int unsigned NOT NULL,
     user                        int unsigned DEFAULT NULL,
     classNumber                 int unsigned DEFAULT NULL,
