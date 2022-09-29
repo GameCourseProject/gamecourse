@@ -49,6 +49,10 @@ import {Action} from "../../_domain/modules/config/Action";
 import {SkillTree} from "../../_domain/modules/config/personalized-config/skills/skill-tree";
 import {CourseUserManageData} from "../../_views/restricted/courses/course/settings/users/users.component";
 import { Theme } from '../theming/themes-available';
+import {
+  QRCode,
+  QRParticipation
+} from 'src/app/_views/restricted/courses/course/settings/modules/config/personalized-config/qr/qr.component';
 
 @Injectable({
   providedIn: 'root'
@@ -1152,7 +1156,7 @@ export class ApiHttpService {
   }
 
 
-  // GoogleSheets
+  // Google Sheets
 
   public getGoogleSheetsConfig(courseID: number): Observable<GoogleSheetsConfig> {
     const params = (qs: QueryStringParameters) => {
@@ -1474,7 +1478,20 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  public getClassParticipations(courseID: number): Observable<{qrKey: string, user: User, classNr: number, classType: string, date: Moment}[]> {
+  public getUnusedQRCodes(courseID: number): Observable<QRCode[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.QR);
+      qs.push('request', 'getUnusedQRCodes');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public getClassParticipations(courseID: number): Observable<QRParticipation[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.QR);
       qs.push('request', 'getClassParticipations');
@@ -1485,9 +1502,10 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
-        const participations: {qrKey: string, user: User, classNr: number, classType: string, date: Moment}[] = [];
+        const participations: QRParticipation[] = [];
         for (const participation of res['data']) {
           participations.push({
+            id: participation.id,
             qrKey: participation.qrkey,
             user: User.fromDatabase(participation.user),
             classNr: participation.classNumber,
@@ -1540,7 +1558,23 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  public submitQRParticipation(courseID: number, userID: number, lectureNr: number, typeOfClass: string, key: string = null): Observable<void> {
+  public deleteQRCode(courseID: number, key: string): Observable<void> {
+    const data = {
+      courseId: courseID,
+      key
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.QR);
+      qs.push('request', 'deleteQRCode');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public addQRParticipation(courseID: number, userID: number, lectureNr: number, typeOfClass: string, key: string = null): Observable<void> {
     const data = {
       courseId: courseID,
       userId: userID,
@@ -1551,7 +1585,41 @@ export class ApiHttpService {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.QR);
-      qs.push('request', 'submitQRParticipation');
+      qs.push('request', 'addQRParticipation');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public editQRParticipation(courseID: number, key: string, lectureNr: number, typeOfClass: string): Observable<void> {
+    const data = {
+      courseId: courseID,
+      key,
+      lectureNr,
+      typeOfClass,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.QR);
+      qs.push('request', 'editQRParticipation');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteQRParticipation(courseID: number, key: string): Observable<void> {
+    const data = {
+      courseId: courseID,
+      key
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.QR);
+      qs.push('request', 'deleteQRParticipation');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

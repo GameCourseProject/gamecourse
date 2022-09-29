@@ -7,8 +7,7 @@ import {AlertService, AlertType} from "../../../../../../../../../_services/aler
 
 @Component({
   selector: 'app-googlesheets',
-  templateUrl: './googlesheets.component.html',
-  styleUrls: ['./googlesheets.component.scss']
+  templateUrl: './googlesheets.component.html'
 })
 export class GooglesheetsComponent implements OnInit {
 
@@ -64,15 +63,20 @@ export class GooglesheetsComponent implements OnInit {
     if (this.fAuth.valid) {
       this.loading.auth = true;
 
-      const authURL = await this.api.authenticateGoogleSheets(this.courseID, this.credentials).toPromise();
-      const width = 550;
-      const height = 650;
-      const top = (window.screen.availHeight + (window.screen.availHeight / 2)) - (height / 2);
-      const left = (window.screen.availWidth + (window.screen.availWidth / 2)) - (width / 2);
-      window.open(authURL, 'Authenticate', 'toolbar=no, location=no, directories=no, status=no, menubar=no, ' +
-        'scrollbars=no, resizable=no, copyhistory=no, width=' + width + ', height=' + height + ', top=' + top + ', left=' + left);
+      try {
+        const authURL = await this.api.authenticateGoogleSheets(this.courseID, this.credentials).toPromise();
+        const width = 550;
+        const height = 650;
+        const top = (window.screen.availHeight + (window.screen.availHeight / 2)) - (height / 2);
+        const left = (window.screen.availWidth + (window.screen.availWidth / 2)) - (width / 2);
+        window.open(authURL, 'Authenticate', 'toolbar=no, location=no, directories=no, status=no, menubar=no, ' +
+          'scrollbars=no, resizable=no, copyhistory=no, width=' + width + ', height=' + height + ', top=' + top + ', left=' + left);
 
-      this.loading.auth = false;
+        this.loading.auth = false;
+
+      } catch (error) {
+        this.loading.auth = false;
+      }
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
@@ -90,9 +94,13 @@ export class GooglesheetsComponent implements OnInit {
     if (this.fSheets.valid) {
       this.loading.action = true;
 
-      await this.api.setGoogleSheetsConfig(this.courseID, this.spreadsheetID, this.sheets.map(sheet => sheet.name), this.sheets.map(sheet => sheet.owner)).toPromise();
+      try {
+        await this.api.setGoogleSheetsConfig(this.courseID, this.spreadsheetID, this.sheets.map(sheet => sheet.name), this.sheets.map(sheet => sheet.owner)).toPromise();
+        this.loading.action = false;
 
-      this.loading.action = false;
+      } catch (error) {
+        this.loading.action = false;
+      }
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }

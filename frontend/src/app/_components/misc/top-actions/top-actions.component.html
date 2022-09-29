@@ -1,7 +1,10 @@
-<div class="relative -left-3 w-[calc(100%+0.75rem)] text-neutral/75 flex items-end justify-between mt-2">
+<div class="relative -left-3 w-[calc(100%+0.75rem)] text-neutral/75 flex items-end mt-2"
+     [ngClass]="{'justify-between': leftActions?.length > 0 && rightActions?.length > 0,
+                 'justify-end': !leftActions || leftActions.length === 0,
+                 'justify-start': !rightActions || rightActions.length === 0}">
 
   <!-- Left -->
-  <div class="flex flex-wrap items-center">
+  <div *ngIf="leftActions?.length > 0" class="flex flex-wrap items-center">
 
     <!-- Actions -->
     <div class="hidden sm:block">
@@ -33,7 +36,7 @@
   </div>
 
   <!-- Right -->
-  <div class="flex flex-wrap items-center gap-2">
+  <div *ngIf="rightActions?.length > 0" class="flex flex-wrap items-center gap-2">
     <button *ngFor="let action of rightActions" class="btn {{buttonColors[action.color]}} gap-2" [ngClass]="{'btn-outline': action.outline}"
       (click)="btnClicked.emit(action.action)">
 

@@ -100,7 +100,7 @@ export class ConfigComponent implements OnInit {
     this.unsavedGeneralInputs = _.cloneDeep(this.generalInputs);
 
     // Lists
-    this.lists = config.lists.map(list => {
+    this.lists = config.lists?.map(list => {
       list.loading = {table: true, action: false};
 
       // Update top actions

@@ -6,13 +6,14 @@ use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Config\DataType;
+use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GoogleHandler;
 use Throwable;
 
 /**
- * This is the GoogleSheets module, which serves as a compartimentalized
+ * This is the Google Sheets module, which serves as a compartimentalized
  * plugin that adds functionality to the system.
  */
 class GoogleSheets extends Module

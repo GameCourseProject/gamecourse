@@ -1,118 +1,203 @@
-<div *ngIf="!qrCodes">
-  <div class="section generator" style="margin-bottom: 70px">
-    <div class="divider">
-      <div class="title"><span>QR Code Generator</span></div>
+<!-- QR codes generation -->
+<div class="card w-full bg-base-100 shadow-xl">
+  <form #fGenerate="ngForm" class="card-body" (ngSubmit)="generateQRCodes()">
+
+    <!-- Header -->
+    <div class="flex items-center mb-3">
+      <h2 class="card-title mb-0">QR code generator</h2>
+      <app-spinner *ngIf="loading.generator" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
     </div>
 
-    <div class="content">
-      <div class="input-wrapper" style="max-width: 250px">
-        <span class="label">How many QR codes?</span>
-        <input type="number" id="qr-quantity" name="qr-quantity" class="input" [(ngModel)]="quantity">
-      </div>
-
-      <div class="action-buttons">
-        <button id="generate-button" class="button" [disabled]="!quantity" (click)="generateQRCodes()">Generate</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="section participation">
-    <div class="divider">
-      <div class="title"><span>Participation List</span></div>
-    </div>
-
-    <div style="margin-top: 30px;">
-<!--      <app-datatable-->
-<!--        [id]="'participation-table'"-->
-<!--        [headers]="tables.participation.headers"-->
-<!--        [data]="tables.participation.data"-->
-<!--        [loading]="tables.participation.loading">-->
-<!--      </app-datatable>-->
+    <!-- Input number -->
+    <div class="w-full md:w-1/2">
+      <app-input-number
+        [id]="'qr-quantity'"
+        [form]="fGenerate"
+        [(value)]="quantity"
+        [placeholder]="'Number of QR codes to generate'"
+        [color]="'primary'"
+        [topLabel]="'How many QR codes to generate?'"
+        [btnText]="'Generate'"
+        [helperText]="'Number of unique QR codes to generate'"
+        [helperPosition]="'right'"
+        [required]="true"
+        [minValue]="0">
+      </app-input-number>
     </div>
 
-    <div class="action-buttons">
-      <div class="icon add_icon" title="New" (click)="getExtraInfo(); isNewParticipationModalOpen = true"></div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="divider">
-      <div class="title"><span>Failed Attempts</span></div>
+    <!-- Available QR codes Table -->
+    <div class="prose mt-5 mb-2">
+      <h4>Available QR codes</h4>
     </div>
 
-    <div style="margin-top: 30px;">
-<!--      <app-datatable-->
-<!--        [id]="'qr-error-table'"-->
-<!--        [headers]="tables.qrError.headers"-->
-<!--        [data]="tables.qrError.data"-->
-<!--        [loading]="tables.qrError.loading">-->
-<!--      </app-datatable>-->
-    </div>
-  </div>
-</div>
+    <app-table
+      [id]="'available-codes'"
+      [headers]="tables.qrAvailable.headers"
+      [hasColumnFiltering]="false"
+      [data]="tables.qrAvailable.data"
+      [options]="tables.qrAvailable.tableOptions"
+      [loading]="tables.qrAvailable.loading"
+      (btnClicked)="doActionOnTable('available', $event.type, $event.row, $event.col)">
+    </app-table>
 
-<div *ngIf="qrCodes">
-  <div class="qr-codes-btns">
-    <button id="back-button" class="button" style="margin-right: 10px" (click)="qrCodes = null; quantity = null">Go back</button>
-    <button id="print-button" class="button" style="background-color: tomato" (click)="printQRCodes()">Print</button>
-  </div>
-
-  <div class="qr-codes" id="print-qr-codes">
-    <div *ngFor="let QR of qrCodes" class="code">
-      <img [src]="QR.qr" alt="{{QR.url}}">
-      <a href="{{QR.url}}" target="_blank">{{QR.url}}</a>
-    </div>
-  </div>
-</div>
-
-<!-- Loader -->
-<div *ngIf="loading" id="page-loading">
-  <img src="../../../../../../../../../../assets/loader/loader.gif" alt="loader">
+  </form>
 </div>
 
 
-<!-- New Participation Modal -->
-<ng-container *ngIf="isNewParticipationModalOpen">
-<!--  <app-modal-->
-<!--    [isOpen]="isNewParticipationModalOpen"-->
-<!--    [id]="'new-qr-participation-modal'"-->
-<!--    [templateRef]="newModal"-->
-<!--    (closeBtnClicked)="isNewParticipationModalOpen = false; clearObject(newParticipation)"-->
-<!--    [actionInProgress]="loading"-->
-<!--    [innerClickEvents]="false">-->
-<!--  </app-modal>-->
-</ng-container>
+<!-- QR Codes Modal -->
+<app-modal *ngIf="qrCodes"
+   [id]="'qr-codes'"
+   [templateRef]="QR_CODES"
+   [size]="tables.qrAvailable.viewingQRCode ? 'sm' : 'lg'"
+   [header]="tables.qrAvailable.viewingQRCode ? 'Viewing QR code' : (qrCodes.length + ' QR code' + (qrCodes.length !== 1 ? 's' : '') + ' cenerated')"
+   [closeBtnText]="'Close'"
+   [submitBtnText]="'Print'"
+   [submitBtnColor]="'secondary'"
+   [actionInProgress]="loading.printer"
+   (submitBtnClicked)="printQRCodes()"
+   (onClose)="qrCodes = null; tables.qrAvailable.viewingQRCode = false">
+</app-modal>
 
-<ng-template #newModal>
-  <!-- Title -->
-  <div class="title">New Participation:</div>
-
-  <div *ngIf="students && typesOfClass" class="content multiple_inputs">
-    <div class="row">
-      <!-- Student -->
-      <select class="form__input" id="student-id" [(ngModel)]="newParticipation.studentId">
-        <option disabled [value]="null">Select a student</option>
-        <option *ngFor="let student of students" [label]="student.nickname ?? student.name" [value]="student.id">{{student.nickname ?? student.name}}</option>
-      </select>
+<ng-template #QR_CODES>
+  <div class="flex flex-wrap" [ngClass]="{'justify-center': tables.qrAvailable.viewingQRCode}">
+    <div *ngFor="let QR of qrCodes" class="code flex flex-col items-center w-full sm:w-1/2 md:w-1/3 xl:w-1/4 p-2">
+      <img [src]="QR.qr" alt="{{QR.url}}" [ngClass]="{'h-40 w-40 max-w-none': tables.qrAvailable.viewingQRCode}">
+      <a class="link" href="{{QR.url}}" target="_blank">{{QR.url}}</a>
     </div>
-
-    <div class="row">
-      <!-- Lecture Nr. -->
-      <div>
-        <input type="number" id="lecture-nr" name="lecture-nr" placeholder="Lecture number" class="form__input" [(ngModel)]="newParticipation.lectureNr">
-        <label [for]="'lecture-nr'" class="form__label">Lecture Nr.</label>
-      </div>
-
-      <!-- Class Type -->
-      <select class="form__input" id="type-of-class" [(ngModel)]="newParticipation.typeOfClass">
-        <option disabled [value]="null">Select a type of class</option>
-        <option *ngFor="let type of typesOfClass" [label]="type" [value]="type">{{type}}</option>
-      </select>
-    </div>
-  </div>
-
-  <div *ngIf="students && typesOfClass" class="action_buttons" style="display: flex; justify-content: flex-end">
-    <button class="cancel" (click)="isNewParticipationModalOpen = false; clearObject(newParticipation)">Cancel</button>
-    <button class="save_btn" style="position: relative; margin-left: 15px" [disabled]="!isReadyToSubmit()" (click)="submitNewParticipation()">Save</button>
   </div>
 </ng-template>
+
+
+<!-- Student participation -->
+<div class="card w-full bg-base-100 shadow-xl mt-5">
+  <div class="card-body">
+
+    <!-- Header -->
+    <div class="flex items-center mb-3">
+      <h2 class="card-title mb-0">Student participation in class</h2>
+      <app-spinner *ngIf="loading.action.qrUsed" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+    </div>
+
+    <!-- Top Actions -->
+    <app-top-actions
+      [rightActions]="[{action: 'Add participation', icon: 'feather-plus-circle', color: 'primary'}]"
+      (btnClicked)="doAction('used', $event)">
+    </app-top-actions>
+
+    <!-- QR Used Table -->
+    <app-table
+      [id]="'class-participations'"
+      [classList]="'mt-3'"
+      [headers]="tables.qrUsed.headers"
+      [data]="tables.qrUsed.data"
+      [options]="tables.qrUsed.tableOptions"
+      [loading]="tables.qrUsed.loading"
+      (btnClicked)="doActionOnTable('used', $event.type, $event.row, $event.col)">
+    </app-table>
+
+  </div>
+</div>
+
+<!-- New / Edit Participation Modal -->
+<app-modal *ngIf="tables.qrUsed.mode && tables.qrUsed.participationToManage"
+   [id]="'participation-manage'"
+   [templateRef]="PARTICIPATION_MANAGE"
+   [size]="'sm'"
+   [header]="tables.qrUsed.mode?.capitalize() + ' participation'"
+   [closeBtnText]="'Discard ' + (tables.qrUsed.mode === 'add' ? 'participation' : 'changes')"
+   [submitBtnText]="tables.qrUsed.mode?.capitalize() + ' participation'"
+   [loading]="loading.extraInfo"
+   [actionInProgress]="loading.action.qrUsed"
+   (submitBtnClicked)="f.onSubmit(null); tables.qrUsed.mode === 'add' ? addParticipation() : editParticipation()"
+   (onClose)="resetParticipationManage()">
+</app-modal>
+
+<ng-template #PARTICIPATION_MANAGE>
+  <form #f="ngForm">
+
+    <div class="flex flex-wrap">
+
+      <!-- Students -->
+      <div *ngIf="tables.qrUsed.mode === 'add'" class="w-full">
+        <app-input-select
+          [id]="'students'"
+          [form]="f"
+          [(value)]="tables.qrUsed.participationToManage.userId"
+          [options]="students"
+          [placeholder]="'Select a student'"
+          [topLabel]="'Student'"
+          [required]="true">
+        </app-input-select>
+      </div>
+
+      <div class="flex flex-wrap w-full" [ngClass]="{'mt-3': tables.qrUsed.mode === 'add'}">
+
+        <!-- Class Type -->
+        <div class="w-full sm:w-1/2 sm:pr-3">
+          <app-input-select
+            [id]="'class-type'"
+            [form]="f"
+            [(value)]="tables.qrUsed.participationToManage.classType"
+            [options]="typesOfClass"
+            [placeholder]="'Select a class type'"
+            [search]="false"
+            [topLabel]="'Class type'"
+            [required]="true">
+          </app-input-select>
+        </div>
+
+        <!-- Class Number -->
+        <div class="w-full sm:w-1/2 mt-3 sm:mt-0">
+          <app-input-number
+            [id]="'class-number'"
+            [form]="f"
+            [(value)]="tables.qrUsed.participationToManage.classNr"
+            [placeholder]="'Class number'"
+            [topLabel]="'Class number'"
+            [required]="true"
+            [minValue]="0">
+          </app-input-number>
+        </div>
+
+      </div>
+
+    </div>
+
+  </form>
+</ng-template>
+
+
+<!-- Delete Verification Modal -->
+<app-simple-modal *ngIf="tables.qrUsed.participationToDelete || tables.qrAvailable.qrCodeToDelete"
+  [id]="'delete-verification'"
+  [title]="'Delete ' + (tables.qrUsed.participationToDelete ? 'participation' : 'QR code')"
+  [text]="'Are you sure you want to delete this ' + (tables.qrUsed.participationToDelete ? 'participation' : 'QR code') + '? You won\'t be able to undo this action.'"
+  [submitBtnText]="'Delete'"
+  [submitBtnColor]="'error'"
+  [actionInProgress]="tables.qrUsed.participationToDelete ? loading.action.qrUsed : loading.action.qrAvailable"
+  (submitBtnClicked)="tables.qrUsed.participationToDelete ? deleteParticipation(tables.qrUsed.participationToDelete.qrKey) : deleteQrCode(tables.qrAvailable.qrCodeToDelete)"
+  (onClose)="tables.qrUsed.participationToDelete = null; tables.qrAvailable.qrCodeToDelete = null">
+</app-simple-modal>
+
+
+<!-- QR code errors -->
+<div class="card w-full bg-base-100 shadow-xl mt-5">
+  <div class="card-body">
+
+    <!-- Header -->
+    <div class="flex items-center mb-3">
+      <h2 class="card-title mb-0">Failed attempts</h2>
+      <app-spinner *ngIf="loading.action.qrUsed" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+    </div>
+
+    <!-- QR Errors Table -->
+    <app-table
+      [id]="'participation-errors'"
+      [headers]="tables.qrError.headers"
+      [data]="tables.qrError.data"
+      [options]="tables.qrError.tableOptions"
+      [loading]="tables.qrError.loading">
+    </app-table>
+
+  </div>
+</div>

@@ -8,6 +8,7 @@ use GameCourse\Course\Course;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\User\User;
+use QRcode;
 
 require __DIR__ . "/lib/phpqrcode.php";
 
@@ -35,7 +36,7 @@ class QR extends Module
 
     const ID = "QR";  // NOTE: must match the name of the class
     const NAME = "QR";
-    const DESCRIPTION = "Generates a QR code to be used for student participation in class.";
+    const DESCRIPTION = "Generates QR codes to be used for student participation in class.";
     const TYPE = ModuleType::UTILITY;
 
     const VERSION = "2.2.0";                                     // Current module version
@@ -91,6 +92,29 @@ class QR extends Module
     /*** --------- QR Codes --------- ***/
 
     /**
+     * Gets QR codes that haven't been used yet.
+     *
+     * @return array
+     */
+    public function getUnusedQRCodes(): array
+    {
+        $qrCodes = Core::database()->selectMultiple(self::TABLE_QR_CODE, ["course" => $this->getCourse()->getId(), "user" => null], "qrkey, qrcode, qrURL");
+        return $qrCodes;
+    }
+
+    /**
+     * Deletes a given QR code.
+     *
+     * @param string $qrKey
+     * @return void
+     */
+    public function deleteQRCode(string $qrKey)
+    {
+        Core::database()->delete(self::TABLE_QR_CODE, ["qrkey" => $qrKey]);
+    }
+
+
+    /**
      * Gets all in-class participations.
      *
      * @return array
@@ -98,7 +122,7 @@ class QR extends Module
     public function getQRParticipations(): array
     {
         $table = self::TABLE_QR_CODE . " qr JOIN " . AutoGame::TABLE_PARTICIPATION . " p on qr.participation=p.id";
-        $participations = Core::database()->selectMultiple($table, ["qr.course" => $this->course->getId()], "qr.*, p.date");
+        $participations = Core::database()->selectMultiple($table, ["qr.course" => $this->course->getId()], "qr.*, p.id, p.date");
         foreach ($participations as &$participation) {
             unset($participation["course"]);
             unset($participation["participation"]);
@@ -117,7 +141,7 @@ class QR extends Module
     public function getUserQRParticipations(int $userId): array
     {
         $table = self::TABLE_QR_CODE . " qr JOIN " . AutoGame::TABLE_PARTICIPATION . " p on qr.participation=p.id";
-        $participations = Core::database()->selectMultiple($table, ["qr.course" => $this->course->getId(), "qr.user" => $userId], "qr.*, p.date");
+        $participations = Core::database()->selectMultiple($table, ["qr.course" => $this->course->getId(), "qr.user" => $userId], "qr.*, p.id, p.date");
         foreach ($participations as &$participation) {
             unset($participation["course"]);
             unset($participation["user"]);
@@ -125,6 +149,85 @@ class QR extends Module
             $participation["classNumber"] = intval($participation["classNumber"]);
         }
         return $participations;
+    }
+
+    /**
+     * Adds a class participation for a given user.
+     * If no QR key is passed, it will generate a new QR code to link.
+     *
+     * @param int $userId
+     * @param int $classNumber
+     * @param string $classType
+     * @param string|null $qrKey
+     * @return void
+     * @throws Exception
+     */
+    public function addQRParticipation(int $userId, int $classNumber, string $classType, string $qrKey = null)
+    {
+        if (is_null($qrKey)) {
+            // Generate a QR code
+            $QRCode = $this->generateQRCodes()[0];
+            $qrKey = $QRCode["key"];
+        }
+
+        if (!$this->QRExists($qrKey)) { // QR code is not registered
+            Core::database()->insert(self::TABLE_QR_ERROR, [
+                "course" => $this->course->getId(),
+                "user" => $userId,
+                "qrkey" => $qrKey,
+                "msg" => "QR code not registered"
+            ]);
+            throw new Exception("Participation not submitted: this QR code is not registered on the system.");
+        }
+
+        if ($this->QRHasBeenUsed($qrKey)) { // QR code has already been used
+            Core::database()->insert(self::TABLE_QR_ERROR, [
+                "course" => $this->course->getId(),
+                "user" => $userId,
+                "qrkey" => $qrKey,
+                "msg" => "QR code has already been redeemed"
+            ]);
+            throw new Exception("Participation not submitted: this QR code has already been redeemed.");
+        }
+
+        // Add participation
+        $id = AutoGame::addParticipation($this->course->getId(), $userId, strval($classNumber), "participated in lecture", $this->id);
+        Core::database()->update(self::TABLE_QR_CODE,
+            ["user" => $userId, "classNumber" => $classNumber, "classType" => $classType, "participation" => $id],
+            ["qrkey" => $qrKey]
+        );
+    }
+
+    /**
+     * Edits a class participation.
+     *
+     * @param int $classNumber
+     * @param string $classType
+     * @param string|null $qrKey
+     * @return void
+     * @throws Exception
+     */
+    public function editQRParticipation(string $qrKey, int $classNumber, string $classType)
+    {
+        $id = intval(Core::database()->select(self::TABLE_QR_CODE, ["qrkey" => $qrKey], "participation"));
+        AutoGame::updateParticipation($id, strval($classNumber), "participated in lecture", date("Y-m-d H:i:s", time()), $this->id);
+        Core::database()->update(self::TABLE_QR_CODE, [
+            "classNumber" => $classNumber,
+            "classType" => $classType
+        ], ["qrkey" => $qrKey, "participation" => $id]);
+    }
+
+    /**
+     * Deletes a given class participation.
+     *
+     * @param string $qrKey
+     * @return void
+     */
+    public function deleteQRParticipation(string $qrKey)
+    {
+        $id = intval(Core::database()->select(self::TABLE_QR_CODE, ["qrkey" => $qrKey], "participation"));
+        AutoGame::removeParticipation($id);
+        Core::database()->delete(self::TABLE_QR_CODE, ["qrkey" => $qrKey]);
     }
 
 
@@ -186,63 +289,17 @@ class QR extends Module
             $tinyUrl = $this->getTinyURL($url);
 
             // Generate QR Code with URL
-            \QRcode::png($url, __DIR__ . self::QR_FILE);
+            QRcode::png($url, __DIR__ . self::QR_FILE);
             $data = file_get_contents(__DIR__ . self::QR_FILE);
             $base64 = "data:image/png;base64," . base64_encode($data);
             $QRCodes[] = ["key" => $key, "qr" => $base64, "url" => $tinyUrl];
 
             // Insert in database
-            Core::database()->insert(self::TABLE_QR_CODE, ["qrkey" => $key, "course" => $courseId]);
+            Core::database()->insert(self::TABLE_QR_CODE, ["qrkey" => $key, "qrcode" => $base64, "qrURL" => $tinyUrl, "course" => $courseId]);
         }
 
         unlink(__DIR__ . self::QR_FILE);
         return $QRCodes;
-    }
-
-    /**
-     * Submits a class participation for a given user.
-     *
-     * @param int $userId
-     * @param int $classNumber
-     * @param string $classType
-     * @param string|null $qrKey
-     * @return void
-     * @throws Exception
-     */
-    public function submitQRParticipation(int $userId, int $classNumber, string $classType, string $qrKey = null)
-    {
-        if (is_null($qrKey)) {
-            // Generate a QR code
-            $QRCode = $this->generateQRCodes()[0];
-            $qrKey = $QRCode["key"];
-        }
-
-        if (!$this->QRExists($qrKey)) { // QR code is not registered
-            Core::database()->insert(self::TABLE_QR_ERROR, [
-                "course" => $this->course->getId(),
-                "user" => $userId,
-                "qrkey" => $qrKey,
-                "msg" => "QR code not registered"
-            ]);
-            throw new Exception("Participation not submitted: this QR code is not registered on the system.");
-        }
-
-        if ($this->QRHasBeenUsed($qrKey)) { // QR code has already been used
-            Core::database()->insert(self::TABLE_QR_ERROR, [
-                "course" => $this->course->getId(),
-                "user" => $userId,
-                "qrkey" => $qrKey,
-                "msg" => "QR code has already been redeemed"
-            ]);
-            throw new Exception("Participation not submitted: this QR code has already been redeemed.");
-        }
-
-        // Submit participation
-        $id = AutoGame::addParticipation($this->course->getId(), $userId, strval($classNumber), "participated in lecture", $this->id);
-        Core::database()->update(self::TABLE_QR_CODE,
-            ["user" => $userId, "classNumber" => $classNumber, "classType" => $classType, "participation" => $id],
-            ["qrkey" => $qrKey]
-        );
     }
 
 

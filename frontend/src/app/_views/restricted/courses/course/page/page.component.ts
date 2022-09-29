@@ -91,7 +91,7 @@ export class PageComponent implements OnInit {
     this.loading = true;
 
     const loggedUser = await this.api.getLoggedUser().toPromise();
-    await this.api.submitQRParticipation(this.course.id, loggedUser.id, this.lectureNr, this.typeOfClass, this.participationKey).toPromise();
+    await this.api.addQRParticipation(this.course.id, loggedUser.id, this.lectureNr, this.typeOfClass, this.participationKey).toPromise();
 
     const successBox = $('.success_msg');
     successBox.empty();

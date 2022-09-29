@@ -78,7 +78,7 @@ export class TableComponent implements OnInit, OnChanges {
               api.columns().eq(0)
                 .each(colIdx => {
                   const colType = that.data[0][colIdx].type;
-                  const cell = $('.filters th').eq($(api.column(colIdx).header()).index());
+                  const cell = $('#' + that.id + ' .filters th').eq($(api.column(colIdx).header()).index());
 
                   // Skip types that are not filterable
                   if (colType === TableDataType.IMAGE || colType === TableDataType.BUTTON || colType === TableDataType.ACTIONS
