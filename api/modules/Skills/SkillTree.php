@@ -351,26 +351,42 @@ class SkillTree
      * Exports skill trees to a .zip file.
      *
      * @param int $courseId
+     * @param array $skillTreeIds
      * @return array
      * @throws Exception
      */
-    public static function exportSkillTrees(int $courseId): array
+    public static function exportSkillTrees(int $courseId, array $skillTreeIds): array
     {
+        $course = new Course($courseId);
+
         // Create a temporary folder to work with
         $tempFolder = ROOT_PATH . "temp/" . time();
         mkdir($tempFolder, 0777, true);
 
         // Create zip archive to store skill trees' info
         // NOTE: This zip will be automatically deleted after download is complete
-        $zipPath = $tempFolder . "/skillTrees.zip";
+        $zipPath = $tempFolder . "/" . ($course->getShort() ?? $course->getName()) . "-skillTrees.zip";
         $zip = new ZipArchive();
         if (!$zip->open($zipPath, ZipArchive::CREATE))
             throw new Exception("Failed to create zip archive.");
 
-        // TODO: export
+        // Add skill trees .csv file
+        $skillTreesToExport = array_values(array_filter(self::getSkillTrees($courseId), function ($skillTree) use ($skillTreeIds) { return in_array($skillTree["id"], $skillTreeIds); }));
+        $zip->addFromString("skillTrees.csv", Utils::exportToCSV($skillTreesToExport, function ($skillTree) {
+            return [$skillTree["name"], $skillTree["maxReward"]];
+        }, self::HEADERS));
+
+        // Add each skill tree tiers & skills
+        foreach ($skillTreesToExport as $st) {
+            $skillTree = new SkillTree($st["id"]);
+
+            // Add tiers .csv file
+            $tiers = $skillTree->getTiers();
+            // TODO
+        }
 
         $zip->close();
-        return ["extension" => ".zip", "path" => $zipPath];
+        return ["extension" => ".zip", "path" => str_replace(ROOT_PATH, API_URL . "/", $zipPath)];
     }
 
 

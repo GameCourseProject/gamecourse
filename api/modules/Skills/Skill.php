@@ -8,6 +8,7 @@ use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\XPLevels\XPLevels;
 use Utils\Utils;
+use ZipArchive;
 
 /**
  * This is the Skill model, which implements the necessary methods
@@ -1192,7 +1193,57 @@ class Skill
     /*** ------------------ Import/Export ------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    // TODO
+    // TODO: import
+
+    /**
+     * Exports skills to a .zip file.
+     *
+     * @param int $courseId
+     * @param array $skillIds
+     * @return array
+     * @throws Exception
+     */
+    public static function exportSkills(int $courseId, array $skillIds): array
+    {
+        $course = new Course($courseId);
+
+        // Create a temporary folder to work with
+        $tempFolder = ROOT_PATH . "temp/" . time();
+        mkdir($tempFolder, 0777, true);
+
+        // Create zip archive to store badges' info
+        // NOTE: This zip will be automatically deleted after download is complete
+        $zipPath = $tempFolder . "/" . ($course->getShort() ?? $course->getName()) . "-skills.zip";
+        $zip = new ZipArchive();
+        if (!$zip->open($zipPath, ZipArchive::CREATE))
+            throw new Exception("Failed to create zip archive.");
+
+        // Add skills .csv file
+        $skillsToExport = array_values(array_filter(self::getSkills($courseId), function ($skill) use ($skillIds) { return in_array($skill["id"], $skillIds); }));
+        $zip->addFromString("skills.csv", Utils::exportToCSV($skillsToExport, function ($skill) {
+            return [$skill["name"], $skill["color"], $skill["page"], +$skill["isCollab"], +$skill["isExtra"], +$skill["isActive"], $skill["position"]];
+        }, self::HEADERS));
+
+        // Add each skill resources to a folder
+        foreach ($skillsToExport as $skillInfo) {
+            $skill = self::getSkillById($skillInfo["id"]);
+            $skillFolder = $skill->getDataFolder(true, $skillInfo["name"]);
+
+            // Create folder
+            $skillFolderName = Utils::getDirectoryName($skillFolder);
+            $zip->addEmptyDir($skillFolderName);
+
+            // Export resources
+            foreach (Utils::getDirectoryContents($skillFolder) as $file) {
+                $file = $file["name"] . "." . $file["extension"];
+                $filePath = $skillFolder . "/" . $file;
+                $zip->addFile($filePath, $skillFolderName . "/" . $file);
+            }
+        }
+
+        $zip->close();
+        return ["extension" => ".zip", "path" => str_replace(ROOT_PATH, API_URL . "/", $zipPath)];
+    }
 
 
     /*** ---------------------------------------------------- ***/

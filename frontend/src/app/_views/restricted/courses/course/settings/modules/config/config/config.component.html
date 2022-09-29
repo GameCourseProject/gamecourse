@@ -94,7 +94,7 @@
 
       <!-- Table -->
       <app-table
-        [id]="'list-' + list.name"
+        [id]="'list-' + list.name.replace(' ', '-')"
         [classList]="'mt-5'"
         [headers]="list.headers"
         [hasColumnFiltering]="list.options['hasColumnFiltering'] ?? true"

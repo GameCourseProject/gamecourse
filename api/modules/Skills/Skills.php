@@ -7,6 +7,7 @@ use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Config\Action;
 use GameCourse\Module\Config\ActionScope;
+use GameCourse\Module\Config\DataType;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
@@ -161,72 +162,120 @@ class Skills extends Module
     public function getLists(): array
     {
         $skillsTrees = SkillTree::getSkillTrees($this->course->getId());
-        $lists = [[ // Skill Trees
-            "listName" => "Skill Trees",
-            "itemName" => "skill tree",
-            "listActions" => [
-                Action::NEW,
-                Action::IMPORT,
-                Action::EXPORT
-            ],
-            "listInfo" => [
-                ["id" => "name", "label" => "Name", "type" => InputType::TEXT],
-                ["id" => "maxReward", "label" => "Max. Reward", "type" => InputType::NUMBER]
-            ],
-            "items" => $skillsTrees,
-            "actions" => [
-                ["action" => Action::VIEW, "scope" => ActionScope::ALL],
-                ["action" => Action::EDIT, "scope" => ActionScope::ALL],
-                ["action" => Action::DELETE, "scope" => ActionScope::ALL],
-                ["action" => Action::EXPORT, "scope" => ActionScope::ALL]
-            ],
-            Action::EDIT => [
-                ["id" => "name", "label" => "Name", "type" => InputType::TEXT, "scope" => ActionScope::ALL],
-                ["id" => "maxReward", "label" => "Max. Reward", "type" => InputType::NUMBER, "scope" => ActionScope::ALL]
-            ],
-            Action::IMPORT => [
-                "extensions" => [".zip"]
-            ]
-        ]];
-
-        foreach ($skillsTrees as $i => $skillTree) {
-            $getListName = function (string $name) use ($skillsTrees, $skillTree, $i) {
-                return (count($skillsTrees) > 1 ? (($skillTree["name"] ? $skillTree["name"] : ("Skill Tree #" . ($i + 1))) . " - ") : "") . $name;
-            };
-
-            $lists[] = [ // Tiers
-                "listName" => $getListName("Tiers"),
-                "itemName" => "tier",
-                "parent" => $skillTree["id"],
-                "listActions" => [
-                    Action::NEW,
-                    Action::IMPORT,
-                    Action::EXPORT
+        return [
+            [
+                "name" => "Skill Trees",
+                "itemName" => "skill tree",
+                "topActions" => [
+                    "left" => [
+                        ["action" => Action::IMPORT, "icon" => "jam-download"],
+                        ["action" => Action::EXPORT, "icon" => "jam-upload"]
+                    ],
+                    "right" => [
+                        ["action" => Action::NEW, "icon" => "feather-plus-circle", "color" => "primary"]
+                    ]
                 ],
-                "listInfo" => [
-                    ["id" => "name", "label" => "Name", "type" => InputType::TEXT],
-                    ["id" => "reward", "label" => "Reward", "type" => InputType::NUMBER],
-                    ["id" => "isActive", "label" => "Active", "type" => InputType::TOGGLE]
+                "headers" => [
+                    ["label" => "Name", "align" => "middle"],
+                    ["label" => "Max. Reward", "align" => "middle"]
                 ],
-                "items" => Tier::getTiersOfSkillTree($skillTree["id"]),
+                "data" => array_map(function ($skillTree) {
+                    return [
+                        ["type" => DataType::TEXT, "content" => ["text" => $skillTree["name"]]],
+                        ["type" => DataType::NUMBER, "content" => ["value" => $skillTree["maxReward"], "valueFormat" => "default"]]
+                    ];
+                }, $skillsTrees),
                 "actions" => [
                     ["action" => Action::EDIT, "scope" => ActionScope::ALL],
-                    ["action" => Action::DELETE, "scope" => ActionScope::ALL_BUT_LAST],
-                    ["action" => Action::MOVE_UP, "scope" => ActionScope::ALL_BUT_FIRST_AND_LAST],
-                    ["action" => Action::MOVE_DOWN, "scope" => ActionScope::ALL_BUT_TWO_LAST],
-                    ["action" => Action::EXPORT, "scope" => ActionScope::ALL_BUT_LAST]
+                    ["action" => Action::DELETE, "scope" => ActionScope::ALL],
+                    ["action" => Action::EXPORT, "scope" => ActionScope::ALL]
+                ],
+                "options" => [
+                    "order" => [[0, "asc"]],
+                    "columnDefs" => [
+                        ["type" => "natural", "targets" => [0, 1]]
+                    ]
+                ],
+                "items" => $skillsTrees,
+                Action::NEW => [
+                    "modalSize" => "md",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "id" => "name",
+                                    "placeholder" => "Skill tree name",
+                                    "options" => [
+                                        "topLabel" => "Name",
+                                        "maxLength" => 50
+                                    ],
+                                    "helper" => "Name for skill tree"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "maxReward",
+                                    "placeholder" => "Skill tree maximum reward",
+                                    "options" => [
+                                        "topLabel" => "Max. reward",
+                                        "required" => true,
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Maximum total reward that can be earned with skill tree"
+                                ]
+                            ]
+                        ]
+                    ]
                 ],
                 Action::EDIT => [
-                    ["id" => "name", "label" => "Name", "type" => InputType::TEXT, "scope" => ActionScope::ALL_BUT_LAST],
-                    ["id" => "reward", "label" => "Reward", "type" => InputType::NUMBER, "scope" => ActionScope::ALL]
+                    "modalSize" => "md",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "name",
+                                    "placeholder" => "Skill tree name",
+                                    "options" => [
+                                        "topLabel" => "Name",
+                                        "maxLength" => 50
+                                    ],
+                                    "helper" => "Name for skill tree"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "maxReward",
+                                    "placeholder" => "Skill tree maximum reward",
+                                    "options" => [
+                                        "topLabel" => "Max. reward",
+                                        "required" => true,
+                                        "minValue" => 0
+                                    ],
+                                    "helper" => "Maximum total reward that can be earned with skill tree"
+                                ]
+                            ]
+                        ]
+                    ]
                 ],
                 Action::IMPORT => [
-                    "extensions" => [".zip"]
-                ]
-            ];
-        }
-
-        return $lists;
+                "extensions" => [".zip"]
+            ]
+            ]
+        ];
     }
 
     /**

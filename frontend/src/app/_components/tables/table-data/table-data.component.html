@@ -136,61 +136,61 @@
   <div class="flex {{Align}} items-center text-sm">
     <ng-container *ngFor="let action of actions">
 
-      <div *ngIf="action === Action.DUPLICATE || $any(action).action === Action.DUPLICATE" class="tooltip" data-tip="Copy">
+      <div *ngIf="action === Action.DUPLICATE || $any(action).action === Action.DUPLICATE" class="tooltip" data-tip="Copy" [ngClass]="{'cursor-not-allowed': $any(action).disabled}">
         <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" [disabled]="$any(action).disabled" (click)="btnClicked.emit(Action.DUPLICATE)">
           <ng-icon name="jam-files-f" size="1.5rem" class="text-primary"></ng-icon>
         </button>
       </div>
 
-      <div *ngIf="action === Action.EDIT || $any(action).action === Action.EDIT" class="tooltip" data-tip="Edit">
+      <div *ngIf="action === Action.EDIT || $any(action).action === Action.EDIT" class="tooltip" data-tip="Edit" [ngClass]="{'cursor-not-allowed': $any(action).disabled}">
         <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" [disabled]="$any(action).disabled" (click)="btnClicked.emit(Action.EDIT)">
           <ng-icon name="jam-pencil-f" size="1.5rem" class="text-warning"></ng-icon>
         </button>
       </div>
 
-      <div *ngIf="action === Action.DELETE || $any(action).action === Action.DELETE" class="tooltip" data-tip="Delete">
+      <div *ngIf="action === Action.DELETE || $any(action).action === Action.DELETE" class="tooltip" data-tip="Delete" [ngClass]="{'cursor-not-allowed': $any(action).disabled}">
         <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" [disabled]="$any(action).disabled" (click)="btnClicked.emit(Action.DELETE)">
           <ng-icon name="jam-trash-f" size="1.5rem" class="text-error"></ng-icon>
         </button>
       </div>
 
-      <div *ngIf="action === Action.REMOVE || $any(action).action === Action.REMOVE" class="tooltip" data-tip="Remove">
+      <div *ngIf="action === Action.REMOVE || $any(action).action === Action.REMOVE" class="tooltip" data-tip="Remove" [ngClass]="{'cursor-not-allowed': $any(action).disabled}">
         <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" [disabled]="$any(action).disabled" (click)="btnClicked.emit(Action.REMOVE)">
           <ng-icon name="feather-x" size="1.5rem" class="text-error"></ng-icon>
         </button>
       </div>
 
-      <div *ngIf="action === Action.VIEW || $any(action).action === Action.VIEW" class="tooltip" data-tip="View">
+      <div *ngIf="action === Action.VIEW || $any(action).action === Action.VIEW" class="tooltip" data-tip="View" [ngClass]="{'cursor-not-allowed': $any(action).disabled}">
         <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" [disabled]="$any(action).disabled" (click)="btnClicked.emit(Action.VIEW)">
           <ng-icon name="jam-eye-f" size="1.5rem" class="text-base-content text-opacity-75"></ng-icon>
         </button>
       </div>
 
-      <div *ngIf="action === Action.MOVE_UP || $any(action).action === Action.MOVE_UP" class="tooltip" data-tip="Move up">
+      <div *ngIf="action === Action.MOVE_UP || $any(action).action === Action.MOVE_UP" class="tooltip" data-tip="Move up" [ngClass]="{'cursor-not-allowed': $any(action).disabled}">
         <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" [disabled]="$any(action).disabled" (click)="btnClicked.emit(Action.MOVE_UP)">
           <ng-icon name="tabler-arrow-narrow-up" size="1.5rem" class="text-base-content text-opacity-75"></ng-icon>
         </button>
       </div>
 
-      <div *ngIf="action === Action.MOVE_DOWN || $any(action).action === Action.MOVE_DOWN" class="tooltip" data-tip="Move down">
+      <div *ngIf="action === Action.MOVE_DOWN || $any(action).action === Action.MOVE_DOWN" class="tooltip" data-tip="Move down" [ngClass]="{'cursor-not-allowed': $any(action).disabled}">
         <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" [disabled]="$any(action).disabled" (click)="btnClicked.emit(Action.MOVE_DOWN)">
           <ng-icon name="tabler-arrow-narrow-down" size="1.5rem" class="text-base-content text-opacity-75"></ng-icon>
         </button>
       </div>
 
-      <div *ngIf="action  === Action.IMPORT || $any(action).action === Action.IMPORT" class="tooltip" data-tip="Import">
+      <div *ngIf="action  === Action.IMPORT || $any(action).action === Action.IMPORT" class="tooltip" data-tip="Import" [ngClass]="{'cursor-not-allowed': $any(action).disabled}">
         <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" [disabled]="$any(action).disabled" (click)="btnClicked.emit(Action.IMPORT)">
           <ng-icon name="jam-download" size="1.5rem" class="text-base-content text-opacity-75"></ng-icon>
         </button>
       </div>
 
-      <div *ngIf="action  === Action.EXPORT || $any(action).action === Action.EXPORT" class="tooltip" data-tip="Export">
+      <div *ngIf="action  === Action.EXPORT || $any(action).action === Action.EXPORT" class="tooltip" data-tip="Export" [ngClass]="{'cursor-not-allowed': $any(action).disabled}">
         <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" [disabled]="$any(action).disabled" (click)="btnClicked.emit(Action.EXPORT)">
           <ng-icon name="jam-upload" size="1.5rem" class="text-base-content text-opacity-75"></ng-icon>
         </button>
       </div>
 
-      <div *ngIf="isCustomAction(action)" class="tooltip" [attr.data-tip]="$any(action).action.capitalize()">
+      <div *ngIf="isCustomAction(action)" class="tooltip" [attr.data-tip]="$any(action).action.capitalize()" [ngClass]="{'cursor-not-allowed': $any(action).disabled}">
         <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" [disabled]="$any(action).disabled" (click)="btnClicked.emit($any(action).action)">
           <ng-icon name="{{$any(action).icon}}" size="1.5rem" class="{{textColors[$any(action).color]}}"></ng-icon>
         </button>

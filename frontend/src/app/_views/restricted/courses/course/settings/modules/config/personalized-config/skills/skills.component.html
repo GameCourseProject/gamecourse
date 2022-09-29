@@ -1,247 +1,379 @@
-<ng-container *ngFor="let info of getSkillTreeInfo()">
-  <!-- Skills -->
-  <div *ngIf="info.tiers?.length > 0" class="section skills-section">
-    <div class="divider">
-      <div class="title"><span>Skills</span></div>
+<!-- Tabs -->
+<div *ngIf="!loading.page && skillTrees?.length > 1" class="tabs tabs-boxed w-full justify-center mt-10 mb-5">
+  <a *ngFor="let info of skillTreesInfo; let i = index" class="tab tab-lg" [ngClass]="{'tab-active': info.skillTreeId === skillTreeInView?.id}"
+    (click)="skillTreeInView = skillTrees[i]">
+    {{this.skillTrees[i].name ?? ('Skill Tree #' + (i+1))}}
+  </a>
+</div>
+
+<!-- Tiers -->
+<div *ngIf="skillTreeInView" class="card w-full bg-base-100 shadow-xl">
+  <div class="card-body">
+
+    <!-- Header -->
+    <div class="flex items-center mb-3">
+      <h2 class="card-title mb-0">Tiers</h2>
+        <app-spinner *ngIf="getSkillTreeInfo(skillTreeInView.id).loading.tiers" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
     </div>
 
-    <div class="skills content">
+    <!-- Top Actions -->
+    <app-top-actions
+      [leftActions]="[
+        {action: Action.IMPORT, icon: 'jam-download'},
+        {action: Action.EXPORT, icon: 'jam-upload'}
+      ]"
+      [rightActions]="[{action: 'Add tier', icon: 'feather-plus-circle', color: 'primary'}]"
+      (btnClicked)="doAction('tiers', $event)">
+    </app-top-actions>
 
-      <!-- Skills List -->
-      <div id="skills-list">
-        <div class="data-table">
+    <!-- Tiers Table -->
+    <app-table
+      [id]="skillTreeInView.id + '-tiers'"
+      [classList]="'mt-5'"
+      [headers]="tablesInfo.tiers.headers"
+      [hasColumnFiltering]="false"
+      [hasFooters]="false"
+      [data]="getSkillTreeInfo(skillTreeInView.id).data.tiers"
+      [options]="tablesInfo.tiers.tableOptions"
+      [loading]="loading.page"
+      (btnClicked)="doActionOnTable('tiers', $event.type, $event.row, $event.col)">
+    </app-table>
 
-          <table *ngIf="info.skills?.length > 0" id="listing-table-skills">
-            <!-- Header -->
-            <thead>
-            <tr>
-              <th>Tier</th>
-              <th>Name</th>
-              <th>Dependencies</th>
-              <th>Color</th>
-              <th>XP</th>
-              <th class="check-column">Collab</th>
-              <th class="check-column">Extra</th>
-              <th class="check-column">Active</th>
-              <th class="action-column"></th>
-              <th class="action-column"></th>
-              <th class="action-column"></th>
-              <th class="action-column"></th>
-              <th class="action-column"></th>
-            </tr>
-            </thead>
+  </div>
+</div>
 
-            <!-- Body -->
-            <tbody>
-            <tr *ngFor="let skill of info.skills">
-              <td><span>{{getTier(skill.tierID).name}}</span></td>
-              <td><span>{{skill.name}}</span></td>
-              <td><span>{{getDependenciesText(skill.dependencies)}}</span></td>
-              <td>
-                <div class="color">
-                  <div class="color-sample">
-                    <div class="box" [ngStyle]="{'backgroundColor': skill.color}"></div>
-                  </div>
-                  <div>{{skill.color}}</div>
-                </div>
-              </td>
-              <td><span>{{getTier(skill.tierID).reward}}</span></td>
-              <td class="check-column">
-                <label class="switch">
-                  <input type="checkbox" [checked]="skill.isCollab" (change)="toggleSkill(skill.id, 'isCollab')">
-                  <span class="slider round"></span>
-                </label>
-              </td>
-              <td class="check-column">
-                <label class="switch">
-                  <input type="checkbox" [checked]="skill.isExtra" (change)="toggleSkill(skill.id, 'isExtra')">
-                  <span class="slider round"></span>
-                </label>
-              </td>
-              <td class="check-column">
-                <label class="switch">
-                  <input type="checkbox" [checked]="skill.isActive" (change)="toggleSkill(skill.id, 'isActive')">
-                  <span class="slider round"></span>
-                </label>
-              </td>
-              <td class="action-column">
-                <div *ngIf="skill.page" class="icon preview_icon" title="Preview" (click)="goToSkillPage(skill.id)"></div>
-              </td>
-              <td class="action-column">
-                <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; infoSelected = info; initEditSkill(skill); isSkillModalOpen = true; initTextEditor()"></div>
-              </td>
-              <td class="action-column">
-                <div class="icon delete_icon" title="Remove" (click)="infoSelected = info; skillToDelete = skill; isDeleteVerificationModalOpen = true"></div>
-              </td>
-              <td class="action-column">
-                <div *ngIf="skill.position != 0" class="icon up_icon" title="Move up" (click)="moveSkill(skill, 1)"></div>
-              </td>
-              <td class="action-column">
-                <div *ngIf="skill.position != getSkillsOfTier(skill.tierID).length - 1" class="icon down_icon" title="Move down" (click)="moveSkill(skill, -1)"></div>
-              </td>
-            </tr>
-            </tbody>
-          </table>
+<!-- Skills -->
+<div *ngIf="skillTreeInView" class="card w-full bg-base-100 shadow-xl mt-5">
+    <div class="card-body">
 
-          <div *ngIf="info.skills.length === 0" class='error_box'>
-            <div id='empty_table_skills' class='error_msg'>No skills found</div>
-          </div>
-
-        </div>
+      <!-- Header -->
+      <div class="flex items-center mb-3">
+        <h2 class="card-title mb-0">Skills</h2>
+        <app-spinner *ngIf="getSkillTreeInfo(skillTreeInView.id).loading.skills" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <div class="icon add_icon" title="New" (click)="mode = 'add'; isSkillModalOpen = true; infoSelected = info; initTextEditor()"></div>
-        <div class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true"></div>
-        <div class="icon export_icon" title="Export All" (click)="exportAllSkills()"></div>
-      </div>
+      <!-- Top Actions -->
+      <app-top-actions
+        [leftActions]="[
+          {action: Action.IMPORT, icon: 'jam-download'},
+          {action: Action.EXPORT, icon: 'jam-upload'}
+        ]"
+        [rightActions]="[{action: 'Create skill', icon: 'feather-plus-circle', color: 'primary'}]"
+        (btnClicked)="doAction('skills', $event)">
+      </app-top-actions>
+
+      <!-- Skills Table -->
+      <app-table
+        [id]="skillTreeInView.id + '-skills'"
+        [classList]="'mt-5'"
+        [headers]="tablesInfo.skills.headers"
+        [data]="getSkillTreeInfo(skillTreeInView.id).data.skills"
+        [options]="tablesInfo.skills.tableOptions"
+        [loading]="loading.page"
+        (btnClicked)="doActionOnTable('skills', $event.type, $event.row, $event.col)">
+      </app-table>
+
     </div>
   </div>
 
-  <!-- Skill Tree -->
-  <div *ngIf="info.tiers?.length > 0 && info.skills?.length > 0" class="section skills-tree-section">
-    <div class="divider">
-      <div class="title"><span>Skill Tree</span></div>
+<!-- Skill Tree Preview -->
+<div *ngIf="skillTreeInView"  class="card w-full bg-base-100 shadow-xl mt-5">
+  <div class="card-body overflow-x-auto">
+
+    <!-- Header -->
+    <div class="flex items-center mb-3">
+      <h2 class="card-title mb-0">Preview</h2>
     </div>
 
-    <div class="content">
-      <div class="row">
-        <div class="row" style="float: left; width: 100%">
-          <div *ngFor="let tier of info.tiers" class="block tier column" style="float: left" [ngStyle]="{'width': 100 / info.tiers.length + '%'}">
-            {{tier.name}}: {{tier.reward}} XP
-            <div *ngFor="let skill of filterSkillsByTier(info.skills, tier.id)" class="block skill" style="color: #ffffff; width: 60px; height:60px"
-                 [ngStyle]="{'backgroundColor': skill.color}">
-              <span style="font-size: 80%; overflow-wrap:anywhere;">{{skill.name}}</span>
+    <!-- Skill Tree -->
+    <div class="flex flex-col w-full lg:flex-row">
+      <ng-container *ngFor="let tier of getSkillTreeInfo(skillTreeInView.id).tiers; let first = first">
+        <!-- Divider -->
+        <div *ngIf="!first" class="divider lg:divider-horizontal"></div>
+
+        <!-- Tier -->
+        <div class="grid flex-grow h-fit p-2 place-items-center">
+          <span class="text-center text-primary font-semibold text-[1.1rem] mb-2">{{tier.name}}: {{tier.reward}} XP</span>
+
+          <!-- Skill -->
+          <div class="flex flex-wrap flex-row justify-center items-start lg:items-center w-full lg:flex-col">
+            <div *ngFor="let skill of filterSkillsByTier(getSkillTreeInfo(skillTreeInView.id).skills, tier.id)" class="flex flex-col justify-center m-2">
+
+              <!-- Skill box -->
+              <div class="flex justify-center">
+                <div class="w-24 h-24 p-2 rounded-lg hover:cursor-pointer hover:outline hover:outline-offset-2"
+                     [ngStyle]="{'background-color': skill.color, 'outline-color': skill.color}" (click)="goToSkillPage(skill)">
+                  <span class="text-white font-semibold text-[0.9rem] line-clamp-2">{{skill.name}}</span>
+                </div>
+              </div>
+
+              <!-- Skill dependencies -->
+              <div *ngIf="skill.dependencies.length > 0" class="mt-1 lg:mb-5">
+                <p *ngFor="let combo of skill.dependencies" class="prose text-sm text-center">{{getComboText(combo)}}</p>
+              </div>
+
             </div>
           </div>
+
         </div>
-      </div>
+
+      </ng-container>
     </div>
+
   </div>
-</ng-container>
+</div>
 
 <!-- Loader -->
-<div *ngIf="loading" id="page-loading">
-  <img src="../../../../../../../../../../assets/loader/loader.gif" alt="loader">
+<div class="w-full flex justify-center">
+  <app-spinner *ngIf="loading.page" [size]="'md'" [color]="'primary'"></app-spinner>
 </div>
 
 
-<!-- New / Edit Skill Modal -->
-<ng-container *ngIf="isSkillModalOpen">
-<!--  <app-modal-->
-<!--    [isOpen]="isSkillModalOpen"-->
-<!--    [id]="mode === 'add' ? 'new-skill' : 'edit-skill'"-->
-<!--    [templateRef]="skillModal"-->
-<!--    [width]="'calc(100% - 200px)'"-->
-<!--    (closeBtnClicked)="isSkillModalOpen = false; clearObject(newSkill); selectedDependency1 = null; selectedDependency2 = null; infoSelected = null"-->
-<!--    [actionInProgress]="saving"-->
-<!--    [innerClickEvents]="false">-->
-<!--  </app-modal>-->
-</ng-container>
 
-<ng-template #skillModal>
-  <!-- Title -->
-  <div class="title">{{mode === 'add' ? 'New Skill:' : 'Edit Skill:'}}</div>
+<!--<ng-container *ngFor="let info of getSkillTreeInfo()">-->
+<!--  &lt;!&ndash; Skills &ndash;&gt;-->
+<!--  <div *ngIf="info.tiers?.length > 0" class="section skills-section">-->
+<!--    <div class="divider">-->
+<!--      <div class="title"><span>Skills</span></div>-->
+<!--    </div>-->
 
-  <div class="content">
-    <div class="inputs">
+<!--    <div class="skills content">-->
 
-      <div class="row_inputs">
-        <!-- Tier -->
-        <div class="third">
-          <select class="form__input" id="skill-tier" [(ngModel)]="newSkill.tierID">
-            <option [value]="null" disabled>Select a Tier</option>
-            <option *ngFor="let tier of infoSelected.tiers" [value]="tier.id">{{tier.name}}</option>
-          </select>
-        </div>
+<!--      &lt;!&ndash; Skills List &ndash;&gt;-->
+<!--      <div id="skills-list">-->
+<!--        <div class="data-table">-->
 
-        <!-- Name -->
-        <div class="third">
-          <input type="text" class="form__input" id="skill-name" placeholder="Name" [(ngModel)]="newSkill.name" [required]="true">
-          <label for="skill-name" class="form__label">Name</label>
-        </div>
+<!--          <table *ngIf="info.skills?.length > 0" id="listing-table-skills">-->
+<!--            &lt;!&ndash; Header &ndash;&gt;-->
+<!--            <thead>-->
+<!--            <tr>-->
+<!--              <th>Tier</th>-->
+<!--              <th>Name</th>-->
+<!--              <th>Dependencies</th>-->
+<!--              <th>Color</th>-->
+<!--              <th>XP</th>-->
+<!--              <th class="check-column">Collab</th>-->
+<!--              <th class="check-column">Extra</th>-->
+<!--              <th class="check-column">Active</th>-->
+<!--              <th class="action-column"></th>-->
+<!--              <th class="action-column"></th>-->
+<!--              <th class="action-column"></th>-->
+<!--              <th class="action-column"></th>-->
+<!--              <th class="action-column"></th>-->
+<!--            </tr>-->
+<!--            </thead>-->
 
-        <!-- Color -->
-        <app-input-color
-          [id]="'color-picker'"
-          [(value)]="newSkill.color">
-        </app-input-color>
-      </div>
+<!--            &lt;!&ndash; Body &ndash;&gt;-->
+<!--            <tbody>-->
+<!--            <tr *ngFor="let skill of info.skills">-->
+<!--              <td><span>{{getTier(skill.tierID).name}}</span></td>-->
+<!--              <td><span>{{skill.name}}</span></td>-->
+<!--              <td><span>{{getDependenciesText(skill.dependencies)}}</span></td>-->
+<!--              <td>-->
+<!--                <div class="color">-->
+<!--                  <div class="color-sample">-->
+<!--                    <div class="box" [ngStyle]="{'backgroundColor': skill.color}"></div>-->
+<!--                  </div>-->
+<!--                  <div>{{skill.color}}</div>-->
+<!--                </div>-->
+<!--              </td>-->
+<!--              <td><span>{{getTier(skill.tierID).reward}}</span></td>-->
+<!--              <td class="check-column">-->
+<!--                <label class="switch">-->
+<!--                  <input type="checkbox" [checked]="skill.isCollab" (change)="toggleSkill(skill.id, 'isCollab')">-->
+<!--                  <span class="slider round"></span>-->
+<!--                </label>-->
+<!--              </td>-->
+<!--              <td class="check-column">-->
+<!--                <label class="switch">-->
+<!--                  <input type="checkbox" [checked]="skill.isExtra" (change)="toggleSkill(skill.id, 'isExtra')">-->
+<!--                  <span class="slider round"></span>-->
+<!--                </label>-->
+<!--              </td>-->
+<!--              <td class="check-column">-->
+<!--                <label class="switch">-->
+<!--                  <input type="checkbox" [checked]="skill.isActive" (change)="toggleSkill(skill.id, 'isActive')">-->
+<!--                  <span class="slider round"></span>-->
+<!--                </label>-->
+<!--              </td>-->
+<!--              <td class="action-column">-->
+<!--                <div *ngIf="skill.page" class="icon preview_icon" title="Preview" (click)="goToSkillPage(skill.id)"></div>-->
+<!--              </td>-->
+<!--              <td class="action-column">-->
+<!--                <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; infoSelected = info; initEditSkill(skill); isSkillModalOpen = true; initTextEditor()"></div>-->
+<!--              </td>-->
+<!--              <td class="action-column">-->
+<!--                <div class="icon delete_icon" title="Remove" (click)="infoSelected = info; skillToDelete = skill; isDeleteVerificationModalOpen = true"></div>-->
+<!--              </td>-->
+<!--              <td class="action-column">-->
+<!--                <div *ngIf="skill.position != 0" class="icon up_icon" title="Move up" (click)="moveSkill(skill, 1)"></div>-->
+<!--              </td>-->
+<!--              <td class="action-column">-->
+<!--                <div *ngIf="skill.position != getSkillsOfTier(skill.tierID).length - 1" class="icon down_icon" title="Move down" (click)="moveSkill(skill, -1)"></div>-->
+<!--              </td>-->
+<!--            </tr>-->
+<!--            </tbody>-->
+<!--          </table>-->
 
-      <ng-container *ngIf="newSkill.tierID && !getTier(newSkill.tierID).isWildcard() && getTier(newSkill.tierID).position > 0">
-        <!-- Add dependencies -->
-        <div [id]="'add_dependencies'" class="full">
-          <span style="margin-right: 30px; white-space: nowrap">New Dependency: </span>
-          <select [id]="'skill1'" class="form__input" name="skill1" style="margin-bottom: 0; margin-right: 30px" [(ngModel)]="selectedDependency1">
-            <option [value]="null" disabled selected>Select Skill 1</option>
-            <option *ngFor="let skill of filterSkillsForDependencies(mode === 'add' ? null : skillToEdit.id, getTier(newSkill.tierID))" [ngValue]="skill">{{skill.name}}</option>
-          </select>
-          <select [id]="'skill2'" class="form__input" name="skill2" style="margin-bottom: 0; margin-right: 20px" [(ngModel)]="selectedDependency2">
-            <option [value]="null" disabled selected>Select Skill 2</option>
-            <option *ngFor="let skill of filterSkillsForDependencies(mode === 'add' ? null : skillToEdit.id, getTier(newSkill.tierID))" [ngValue]="skill">{{skill.name}}</option>
-          </select>
-          <button (click)="addSkillDependency(selectedDependency1, selectedDependency2)">Add</button>
-        </div>
+<!--          <div *ngIf="info.skills.length === 0" class='error_box'>-->
+<!--            <div id='empty_table_skills' class='error_msg'>No skills found</div>-->
+<!--          </div>-->
 
-        <!-- Dependencies list -->
-        <div class="full" style="margin-bottom: 30px">
-          <span style="margin-right: 10px;">Dependencies: </span>
-          <ng-container *ngFor="let combo of newSkill.dependencies">
-            <div (click)="removeSkillDependency(combo)" class="role_tag">{{getComboText(combo)}}</div>
-          </ng-container>
-        </div>
-      </ng-container>
+<!--        </div>-->
+<!--      </div>-->
 
-      <div id="editor" style="height: 400px">
-        <app-input-rich-text
-          [id]="'skill-description'"
-          [placeholder]="'Add the skill page here...'"
-          [container]="'editor'"
-          [courseFolder]="courseFolder"
-          [whereToStore]="'skills/' + (newSkill.name ? newSkill.name.swapNonENChars().noWhiteSpace('_') : '')"
-          [init]="newSkill.page"
-          [canInit]="skillModalRendered"
-          (valueChange)="newSkill.page = $event">
-        </app-input-rich-text>
-      </div>
-    </div>
+<!--      &lt;!&ndash; Action Buttons &ndash;&gt;-->
+<!--      <div class="action-buttons">-->
+<!--        <div class="icon add_icon" title="New" (click)="mode = 'add'; isSkillModalOpen = true; infoSelected = info; initTextEditor()"></div>-->
+<!--        <div class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true"></div>-->
+<!--        <div class="icon export_icon" title="Export All" (click)="exportAllSkills()"></div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
 
-    <button *ngIf="mode === 'edit'" class="cancel" (click)="isSkillModalOpen = false; clearObject(newSkill); selectedDependency1 = null; selectedDependency2 = null; infoSelected = null;">Cancel</button>
-    <button class="save_btn" [disabled]="!isReadyToSubmit()" (click)="mode === 'add' ? createSkill() : editSkill()">Save</button>
-    <button class="preview_btn" (click)="isSkillPreviewModalOpen = true">Preview</button>
-  </div>
-</ng-template>
+<!--  &lt;!&ndash; Skill Tree &ndash;&gt;-->
+<!--  <div *ngIf="info.tiers?.length > 0 && info.skills?.length > 0" class="section skills-tree-section">-->
+<!--    <div class="divider">-->
+<!--      <div class="title"><span>Skill Tree</span></div>-->
+<!--    </div>-->
 
+<!--    <div class="content">-->
+<!--      <div class="row">-->
+<!--        <div class="row" style="float: left; width: 100%">-->
+<!--          <div *ngFor="let tier of info.tiers" class="block tier column" style="float: left" [ngStyle]="{'width': 100 / info.tiers.length + '%'}">-->
+<!--            {{tier.name}}: {{tier.reward}} XP-->
+<!--            <div *ngFor="let skill of filterSkillsByTier(info.skills, tier.id)" class="block skill" style="color: #ffffff; width: 60px; height:60px"-->
+<!--                 [ngStyle]="{'backgroundColor': skill.color}">-->
+<!--              <span style="font-size: 80%; overflow-wrap:anywhere;">{{skill.name}}</span>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</ng-container>-->
 
-<!-- Delete Verification Modal -->
-<ng-container *ngIf="isDeleteVerificationModalOpen">
-<!--  <app-verification-modal-->
-<!--    [isModalOpen]="isDeleteVerificationModalOpen"-->
-<!--    [id]="'delete-verification'"-->
-<!--    [text]="'Are you sure you want to delete the Skill?'"-->
-<!--    [target]="'Skill: ' + skillToDelete.name"-->
-<!--    [positiveBtnText]="'Delete'"-->
-<!--    (positiveBtnClicked)="deleteSkill()"-->
-<!--    (negativeBtnClicked)="skillToDelete = null; isDeleteVerificationModalOpen = false"-->
-<!--    (closeBtnClicked)="isDeleteVerificationModalOpen = false"-->
-<!--    [actionInProgress]="saving">-->
-<!--  </app-verification-modal>-->
-</ng-container>
+<!--&lt;!&ndash; Loader &ndash;&gt;-->
+<!--<div *ngIf="loading" id="page-loading">-->
+<!--  <img src="../../../../../../../../../../assets/loader/loader.gif" alt="loader">-->
+<!--</div>-->
 
 
-<!-- Skill Preview Modal -->
-<ng-container *ngIf="isSkillPreviewModalOpen">
-<!--  <app-modal-->
-<!--    [isOpen]="isSkillPreviewModalOpen"-->
-<!--    [id]="'skill-preview'"-->
-<!--    [templateRef]="skillPreview"-->
-<!--    [width]="'calc(100% - 200px)'"-->
-<!--    (closeBtnClicked)="isSkillPreviewModalOpen = false"-->
-<!--    [innerClickEvents]="false">-->
-<!--  </app-modal>-->
-</ng-container>
+<!--&lt;!&ndash; New / Edit Skill Modal &ndash;&gt;-->
+<!--<ng-container *ngIf="isSkillModalOpen">-->
+<!--&lt;!&ndash;  <app-modal&ndash;&gt;-->
+<!--&lt;!&ndash;    [isOpen]="isSkillModalOpen"&ndash;&gt;-->
+<!--&lt;!&ndash;    [id]="mode === 'add' ? 'new-skill' : 'edit-skill'"&ndash;&gt;-->
+<!--&lt;!&ndash;    [templateRef]="skillModal"&ndash;&gt;-->
+<!--&lt;!&ndash;    [width]="'calc(100% - 200px)'"&ndash;&gt;-->
+<!--&lt;!&ndash;    (closeBtnClicked)="isSkillModalOpen = false; clearObject(newSkill); selectedDependency1 = null; selectedDependency2 = null; infoSelected = null"&ndash;&gt;-->
+<!--&lt;!&ndash;    [actionInProgress]="saving"&ndash;&gt;-->
+<!--&lt;!&ndash;    [innerClickEvents]="false">&ndash;&gt;-->
+<!--&lt;!&ndash;  </app-modal>&ndash;&gt;-->
+<!--</ng-container>-->
 
-<ng-template #skillPreview>
-  <div [innerHTML]="newSkill.page"></div>
-</ng-template>
+<!--<ng-template #skillModal>-->
+<!--  &lt;!&ndash; Title &ndash;&gt;-->
+<!--  <div class="title">{{mode === 'add' ? 'New Skill:' : 'Edit Skill:'}}</div>-->
+
+<!--  <div class="content">-->
+<!--    <div class="inputs">-->
+
+<!--      <div class="row_inputs">-->
+<!--        &lt;!&ndash; Tier &ndash;&gt;-->
+<!--        <div class="third">-->
+<!--          <select class="form__input" id="skill-tier" [(ngModel)]="newSkill.tierID">-->
+<!--            <option [value]="null" disabled>Select a Tier</option>-->
+<!--            <option *ngFor="let tier of infoSelected.tiers" [value]="tier.id">{{tier.name}}</option>-->
+<!--          </select>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Name &ndash;&gt;-->
+<!--        <div class="third">-->
+<!--          <input type="text" class="form__input" id="skill-name" placeholder="Name" [(ngModel)]="newSkill.name" [required]="true">-->
+<!--          <label for="skill-name" class="form__label">Name</label>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Color &ndash;&gt;-->
+<!--        <app-input-color-->
+<!--          [id]="'color-picker'"-->
+<!--          [(value)]="newSkill.color">-->
+<!--        </app-input-color>-->
+<!--      </div>-->
+
+<!--      <ng-container *ngIf="newSkill.tierID && !getTier(newSkill.tierID).isWildcard() && getTier(newSkill.tierID).position > 0">-->
+<!--        &lt;!&ndash; Add dependencies &ndash;&gt;-->
+<!--        <div [id]="'add_dependencies'" class="full">-->
+<!--          <span style="margin-right: 30px; white-space: nowrap">New Dependency: </span>-->
+<!--          <select [id]="'skill1'" class="form__input" name="skill1" style="margin-bottom: 0; margin-right: 30px" [(ngModel)]="selectedDependency1">-->
+<!--            <option [value]="null" disabled selected>Select Skill 1</option>-->
+<!--            <option *ngFor="let skill of filterSkillsForDependencies(mode === 'add' ? null : skillToEdit.id, getTier(newSkill.tierID))" [ngValue]="skill">{{skill.name}}</option>-->
+<!--          </select>-->
+<!--          <select [id]="'skill2'" class="form__input" name="skill2" style="margin-bottom: 0; margin-right: 20px" [(ngModel)]="selectedDependency2">-->
+<!--            <option [value]="null" disabled selected>Select Skill 2</option>-->
+<!--            <option *ngFor="let skill of filterSkillsForDependencies(mode === 'add' ? null : skillToEdit.id, getTier(newSkill.tierID))" [ngValue]="skill">{{skill.name}}</option>-->
+<!--          </select>-->
+<!--          <button (click)="addSkillDependency(selectedDependency1, selectedDependency2)">Add</button>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Dependencies list &ndash;&gt;-->
+<!--        <div class="full" style="margin-bottom: 30px">-->
+<!--          <span style="margin-right: 10px;">Dependencies: </span>-->
+<!--          <ng-container *ngFor="let combo of newSkill.dependencies">-->
+<!--            <div (click)="removeSkillDependency(combo)" class="role_tag">{{getComboText(combo)}}</div>-->
+<!--          </ng-container>-->
+<!--        </div>-->
+<!--      </ng-container>-->
+
+<!--      <div id="editor" style="height: 400px">-->
+<!--        <app-input-rich-text-->
+<!--          [id]="'skill-description'"-->
+<!--          [placeholder]="'Add the skill page here...'"-->
+<!--          [container]="'editor'"-->
+<!--          [courseFolder]="courseFolder"-->
+<!--          [whereToStore]="'skills/' + (newSkill.name ? newSkill.name.swapNonENChars().noWhiteSpace('_') : '')"-->
+<!--          [init]="newSkill.page"-->
+<!--          [canInit]="skillModalRendered"-->
+<!--          (valueChange)="newSkill.page = $event">-->
+<!--        </app-input-rich-text>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--    <button *ngIf="mode === 'edit'" class="cancel" (click)="isSkillModalOpen = false; clearObject(newSkill); selectedDependency1 = null; selectedDependency2 = null; infoSelected = null;">Cancel</button>-->
+<!--    <button class="save_btn" [disabled]="!isReadyToSubmit()" (click)="mode === 'add' ? createSkill() : editSkill()">Save</button>-->
+<!--    <button class="preview_btn" (click)="isSkillPreviewModalOpen = true">Preview</button>-->
+<!--  </div>-->
+<!--</ng-template>-->
+
+
+<!--&lt;!&ndash; Delete Verification Modal &ndash;&gt;-->
+<!--<ng-container *ngIf="isDeleteVerificationModalOpen">-->
+<!--&lt;!&ndash;  <app-verification-modal&ndash;&gt;-->
+<!--&lt;!&ndash;    [isModalOpen]="isDeleteVerificationModalOpen"&ndash;&gt;-->
+<!--&lt;!&ndash;    [id]="'delete-verification'"&ndash;&gt;-->
+<!--&lt;!&ndash;    [text]="'Are you sure you want to delete the Skill?'"&ndash;&gt;-->
+<!--&lt;!&ndash;    [target]="'Skill: ' + skillToDelete.name"&ndash;&gt;-->
+<!--&lt;!&ndash;    [positiveBtnText]="'Delete'"&ndash;&gt;-->
+<!--&lt;!&ndash;    (positiveBtnClicked)="deleteSkill()"&ndash;&gt;-->
+<!--&lt;!&ndash;    (negativeBtnClicked)="skillToDelete = null; isDeleteVerificationModalOpen = false"&ndash;&gt;-->
+<!--&lt;!&ndash;    (closeBtnClicked)="isDeleteVerificationModalOpen = false"&ndash;&gt;-->
+<!--&lt;!&ndash;    [actionInProgress]="saving">&ndash;&gt;-->
+<!--&lt;!&ndash;  </app-verification-modal>&ndash;&gt;-->
+<!--</ng-container>-->
+
+
+<!--&lt;!&ndash; Skill Preview Modal &ndash;&gt;-->
+<!--<ng-container *ngIf="isSkillPreviewModalOpen">-->
+<!--&lt;!&ndash;  <app-modal&ndash;&gt;-->
+<!--&lt;!&ndash;    [isOpen]="isSkillPreviewModalOpen"&ndash;&gt;-->
+<!--&lt;!&ndash;    [id]="'skill-preview'"&ndash;&gt;-->
+<!--&lt;!&ndash;    [templateRef]="skillPreview"&ndash;&gt;-->
+<!--&lt;!&ndash;    [width]="'calc(100% - 200px)'"&ndash;&gt;-->
+<!--&lt;!&ndash;    (closeBtnClicked)="isSkillPreviewModalOpen = false"&ndash;&gt;-->
+<!--&lt;!&ndash;    [innerClickEvents]="false">&ndash;&gt;-->
+<!--&lt;!&ndash;  </app-modal>&ndash;&gt;-->
+<!--</ng-container>-->
+
+<!--<ng-template #skillPreview>-->
+<!--  <div [innerHTML]="newSkill.page"></div>-->
+<!--</ng-template>-->

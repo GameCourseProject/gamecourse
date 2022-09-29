@@ -110,7 +110,7 @@ export class TableComponent implements OnInit, OnChanges {
                       '<option selected value="undefined">Filter...</option>' + options + '</select>');
 
                     // On every keypress in the select
-                    $('select', $('.filters th').eq($(api.column(colIdx).header()).index()))
+                    $('select', $('#' + that.id + ' .filters th').eq($(api.column(colIdx).header()).index()))
                       .off('keyup change')
                       .on('change', function (e) {
                         // Filter column
