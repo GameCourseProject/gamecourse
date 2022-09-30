@@ -1,11 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ApiHttpService} from "../../../../../../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
 import {finalize} from "rxjs/operators";
 
 import * as Highcharts from 'highcharts';
-import {Moment} from "moment";
 import * as moment from "moment";
+import {Moment} from "moment";
+import {TableDataType} from "../../../../../../../../../_components/tables/table-data/table-data.component";
+import {dateFromDatabase} from "../../../../../../../../../_utils/misc/misc";
+import {User} from "../../../../../../../../../_domain/users/user";
+
 declare var require: any;
 let Sankey = require('highcharts/modules/sankey');
 let Export = require('highcharts/modules/exporting');
@@ -41,17 +45,19 @@ export class ProfilingComponent implements OnInit {
 
   history: ProfilingHistory[];
   nodes: ProfilingNode[];
-  data: string|number[][];
+  data: (string|number)[][];
   days: string[];
 
   table: {
     loading: boolean,
-    headers: string[],
-    data: string[][]
+    headers: {label: string, align?: 'left' | 'middle' | 'right'}[],
+    data: {type: TableDataType, content: any}[][],
+    options: any
   } = {
     loading: true,
     headers: null,
-    data: null
+    data: null,
+    options: null
   }
 
   isPredictModalOpen: boolean;
@@ -64,6 +70,8 @@ export class ProfilingComponent implements OnInit {
   isImportModalOpen: boolean;
   importedFile: File;
 
+  students: {[userID: number]: User} = {};
+
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute
@@ -72,11 +80,16 @@ export class ProfilingComponent implements OnInit {
   ngOnInit(): void {
     this.route.parent.params.subscribe(async params => {
       this.courseID = parseInt(params.id);
+      await this.getStudents();
       await this.getHistory();
       await this.getLastRun();
       await this.getSavedClusters();
       this.loading = false;
     });
+  }
+
+  get TableDataType(): typeof TableDataType {
+    return TableDataType;
   }
 
   async getHistory() {
@@ -86,6 +99,13 @@ export class ProfilingComponent implements OnInit {
     this.data = res.data;
     this.days = res.days.length > 0 ? res.days : ["Current"];
     if (this.data.length > 0) this.buildChart();
+  }
+
+  async getStudents() {
+    let students = await this.api.getCourseUsersWithRole(this.courseID, "Student").toPromise();
+    for (const student of students) {
+      this.students[student.id] = student;
+    }
   }
 
   async getLastRun() {
@@ -190,43 +210,65 @@ export class ProfilingComponent implements OnInit {
   }
 
   buildChart() {
-    // @ts-ignore
-    Highcharts.chart('overview', {
-      chart: {
-        marginRight: 40
-      },
-      title: {
-        text: ""
-      },
-      series: [{
-        keys: ["from", "to", "weight"],
-        nodes: this.nodes,
-        data: this.data,
-        type: "sankey",
-        name: "Cluster History",
-        dataLabels: {
-          style: {
-            color: "#1a1a1a",
-            textOutline: false
+    setTimeout(() => {
+      // @ts-ignore
+      Highcharts.chart('overview', {
+        chart: {
+          marginRight: 40
+        },
+        title: {
+          text: ""
+        },
+        series: [{
+          keys: ["from", "to", "weight"],
+          nodes: this.nodes,
+          data: this.data,
+          type: "sankey",
+          name: "Cluster History",
+          dataLabels: {
+            style: {
+              color: "#1a1a1a",
+              textOutline: false
+            }
           }
-        }
-      }]
-    });
+        }]
+      });
+    }, 0);
   }
 
   buildResultsTable() {
     this.table.loading = true;
 
-    this.table.headers = ['Student'];
+    this.table.headers = [
+      {label: 'Name (sorting)', align: 'left'},
+      {label: 'Student', align: 'left'},
+      {label: 'Student Nr', align: 'middle'}
+    ];
+    this.table.options = {
+      order: [[ 0, 'asc' ]], // default order,
+      columnDefs: [
+        { type: 'natural', targets: [0, 1, 2] },
+        { orderData: 0,   targets: 1 }
+      ]
+    };
+
+    let i = 0;
     for (const day of this.days) {
-      this.table.headers.push(day);
+      this.table.headers.push({label: day === 'Current' ? day : dateFromDatabase(day).format('DD/MM/YYYY HH:mm:ss'), align: 'middle'});
+      this.table.options.columnDefs[0].targets.push(i+3);
+      i++;
     }
 
     if (!this.table.data) this.table.data = [];
     for (const studentHistory of this.history) {
-      const data = [studentHistory.name];
+      const student: User = this.students[studentHistory.id];
+      const data: { type: TableDataType, content: any }[] = [
+        {type: TableDataType.TEXT, content: {text: student.nickname ?? student.name}},
+        {type: TableDataType.AVATAR, content: {avatarSrc: student.photoUrl, avatarTitle: student.nickname ?? student.name, avatarSubtitle: student.major}},
+        {type: TableDataType.NUMBER, content: {value: student.studentNumber, valueFormat: 'none'}},
+      ];
       for (const day of this.days) {
-        data.push(studentHistory[day]);
+        data.push({type: TableDataType.TEXT, content: {text: studentHistory[day]}});
       }
       this.table.data.push(data);
     }

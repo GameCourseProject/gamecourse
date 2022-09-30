@@ -1310,7 +1310,7 @@ export class ApiHttpService {
 
   // Profiling
 
-  public getHistory(courseID: number): Observable<{days: string[], history: ProfilingHistory[], nodes: ProfilingNode[], data: string|number[][]}> {
+  public getHistory(courseID: number): Observable<{days: string[], history: ProfilingHistory[], nodes: ProfilingNode[], data: (string|number)[][]}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PROFILING);
       qs.push('request', 'getHistory');

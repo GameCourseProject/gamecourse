@@ -113,7 +113,7 @@ export class QrComponent implements OnInit {
       loading: true,
       headers: [
         {label: 'Name (sorting)', align: 'left'},
-        {label: 'User', align: 'left'},
+        {label: 'Student', align: 'left'},
         {label: 'Student Nr', align: 'middle'},
         {label: 'Error', align: 'middle'},
         {label: 'Date (timestamp sorting)', align: 'middle'},
