@@ -9,23 +9,12 @@
       {action: Action.IMPORT, icon: 'jam-download'},
       {action: Action.EXPORT, icon: 'jam-upload'}
     ]"
-    [rightActions]="[{action: 'Add user', icon: 'feather-plus-circle', color: 'primary'}]"
+    [rightActions]="[{action: 'Add user', icon: 'feather-plus-circle', color: 'primary', dropdown: [
+      {action: 'Create new user', icon: 'feather-user-plus'},
+      {action: 'Select existing user', icon: 'feather-user-check'}
+    ]}]"
     (btnClicked)="doAction($event)">
   </app-top-actions>
-
-  <!-- Add User Options -->
-  <div [id]="'add-user-options'" class="dropdown dropdown-hover absolute right-56 mt-2">
-    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-56" (click)="hideAddUserOptions()">
-      <li><a (click)="mode = 'add'; userToManage = initUserToManage(); ModalService.openModal('manage'); !roleNames && getCourseRolesNames(course.id)">
-        <ng-icon name="feather-user-plus" size="1rem" color="fillCurrent"></ng-icon>
-        Create new user
-      </a></li>
-      <li><a (click)="mode = 'select'; selection = initSelect(); ModalService.openModal('select'); !roleNames && getCourseRolesNames(course.id); getUsersNotInCourse(course.id)">
-        <ng-icon name="feather-user-check" size="1rem" color="fillCurrent"></ng-icon>
-        Select existing user
-      </a></li>
-    </ul>
-  </div>
 
   <!-- Users Table -->
   <app-table

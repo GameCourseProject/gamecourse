@@ -10,6 +10,7 @@ import {ThemingService} from "../../../../../../_services/theming/theming.servic
 import {ModalService} from "../../../../../../_services/modal.service";
 import {AlertService, AlertType} from "../../../../../../_services/alert.service";
 import {ResourceManager} from "../../../../../../_utils/resources/resource-manager";
+import {DownloadManager} from "../../../../../../_utils/download/download-manager";
 
 import {User} from "../../../../../../_domain/users/user";
 import {CourseUser} from "../../../../../../_domain/users/course-user";
@@ -18,10 +19,9 @@ import {Role} from "../../../../../../_domain/roles/role";
 import {AuthType} from 'src/app/_domain/auth/auth-type';
 import {Action} from 'src/app/_domain/modules/config/Action';
 import {TableDataType} from "../../../../../../_components/tables/table-data/table-data.component";
-import {clearEmptyValues} from "../../../../../../_utils/misc/misc";
 import {Theme} from "../../../../../../_services/theming/themes-available";
+import {clearEmptyValues} from "../../../../../../_utils/misc/misc";
 import {environment} from "../../../../../../../environments/environment";
-import {DownloadManager} from "../../../../../../_utils/download/download-manager";
 
 @Component({
   selector: 'app-users',
@@ -250,8 +250,18 @@ export class UsersComponent implements OnInit {
     } else if (action === Action.EXPORT) {
       this.exportUsers(this.courseUsers);
 
-    } else if (action === 'Add user') {
-      this.showAddUserOptions();
+    } else if (action === 'Create new user') {
+      this.mode = 'add';
+      this.userToManage = this.initUserToManage();
+      ModalService.openModal('manage');
+      if (!this.roleNames) this.getCourseRolesNames(this.course.id);
+
+    } else if (action === 'Select existing user') {
+      this.mode = 'select';
+      this.selection = this.initSelect();
+      ModalService.openModal('select');
+      if (!this.roleNames) this.getCourseRolesNames(this.course.id);
+      if (!this.nonCourseUsers) this.getUsersNotInCourse(this.course.id);
     }
   }
 
@@ -478,16 +488,6 @@ export class UsersComponent implements OnInit {
     } else {
       this.importData.file = files.item(0);
     }
-  }
-
-  showAddUserOptions() {
-    const options = document.getElementById('add-user-options');
-    options.classList.add('dropdown-open');
-  }
-
-  hideAddUserOptions() {
-    const options = document.getElementById('add-user-options');
-    options.classList.remove('dropdown-open');
   }
 
   resetManage() {

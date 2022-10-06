@@ -37,12 +37,32 @@
 
   <!-- Right -->
   <div *ngIf="rightActions?.length > 0" class="flex flex-wrap items-center gap-2">
-    <button *ngFor="let action of rightActions" class="btn {{buttonColors[action.color]}} gap-2" [ngClass]="{'btn-outline': action.outline}"
-      (click)="btnClicked.emit(action.action)">
+    <ng-container *ngFor="let action of rightActions">
 
-      {{action.action.capitalize()}}
-      <ng-icon *ngIf="action.icon" [name]="action.icon" size="1.2rem" color="fillCurrent"></ng-icon>
-    </button>
+      <!-- Simple button -->
+      <button *ngIf="!action.dropdown" class="btn {{buttonColors[action.color]}} gap-2"
+              [ngClass]="{'btn-outline': action.outline}" (click)="btnClicked.emit(action.action)">
+
+        {{action.action.capitalize()}}
+        <ng-icon *ngIf="action.icon" [name]="action.icon" size="1.2rem" color="fillCurrent"></ng-icon>
+      </button>
+
+      <!-- Button w/ dropdown -->
+      <div *ngIf="action.dropdown" class="dropdown dropdown-hover dropdown-end">
+        <label tabindex="0" class="btn {{buttonColors[action.color]}} gap-2 m-1" [ngClass]="{'btn-outline': action.outline}">
+          {{action.action.capitalize()}}
+          <ng-icon *ngIf="action.icon" [name]="action.icon" size="1.2rem" color="fillCurrent"></ng-icon>
+        </label>
+
+        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box min-w-max">
+          <li *ngFor="let item of action.dropdown" (click)="btnClicked.emit(item.action)"><a>
+            <ng-icon *ngIf="item.icon" [name]="item.icon" size="1rem" color="fillCurrent"></ng-icon>
+            {{item.action.capitalize()}}
+          </a></li>
+        </ul>
+      </div>
+
+    </ng-container>
   </div>
 
 </div>
