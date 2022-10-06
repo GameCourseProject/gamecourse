@@ -302,7 +302,7 @@ class Role
             if (isset($role["id"])) { // update
                 Core::database()->update(self::TABLE_ROLE, [
                     "name" => trim($role["name"]),
-                    "landingPage" => $role["landingPage"]
+                    "landingPage" => $role["landingPage"] ?? null
                 ], ["course" => $courseId, "id" => $role["id"]]);
 
             } else { // add

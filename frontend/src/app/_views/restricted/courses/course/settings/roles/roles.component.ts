@@ -169,7 +169,14 @@ export class RolesComponent implements OnInit {
 
     function getRoles(hierarchy: Role[], roles: Role[]) {
       for (const role of hierarchy) {
-        roles.push(role);
+        role['landingPage'] = role['landingpage'];
+        delete role['landingpage'];
+
+        const copiedRole = _.cloneDeep(role);
+        delete role['id'];
+        delete role['landingPage'];
+
+        roles.push(copiedRole);
         if (role.children?.length > 0)
           roles = [...new Set(roles.concat(getRoles(role.children, roles)))]
       }

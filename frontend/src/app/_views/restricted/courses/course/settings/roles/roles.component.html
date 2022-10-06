@@ -42,7 +42,7 @@
 
   <ol class="dd-list">
     <li *ngFor="let role of rolesHierarchy" class="dd-item" [ngClass]="{'dd-nodrag': isDefaultRole(role.name)}"
-        [attr.data-name]="role.name">
+        [attr.data-id]="role.id ?? null" [attr.data-name]="role.name" [attr.data-landingpage]="role.landingPage ?? null">
 
       <div class="flex items-center mb-3">
 
@@ -123,7 +123,7 @@
       [placeholder]="'Role name'"
       [topLabel]="'Name'"
       [pattern]="'^[^\\s]+$'"
-      [patternErrorMessage]="'Role name can\'t have white spaces.'"
+      [patternErrorMessage]="'Role name can\'t have white spaces'"
       [required]="true"
       [maxLength]="50"
       [maxLengthErrorMessage]="'Role name is too long: maximum of 50 characters'">

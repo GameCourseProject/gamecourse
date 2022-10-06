@@ -580,22 +580,27 @@ class RoleTest extends TestCase
     public function updateCourseRoles()
     {
         // Given
+        $studentRoleId = Role::getRoleId("Student", $this->course->getId());
+        $studentARoleId = Role::getRoleId("StudentA", $this->course->getId());
         $roles = [
-            ["id" => Role::getRoleId("StudentA", $this->course->getId()), "name" => "StudentAAA", "landingPage" => null],
-            ["id" => Role::getRoleId("Student", $this->course->getId()), "name" => "Student", "landingPage" => null],
-            ["id" => null, "name" => "NewRole", "landingPage" => null]
+            ["id" => $studentARoleId, "name" => "StudentAAA", "landingPage" => null],
+            ["id" => $studentRoleId, "name" => "Student"],
+            ["name" => "NewRole"]
         ];
 
         // When
         Role::updateCourseRoles($this->course->getId(), $roles);
 
         // Then
-        $rolesNames = Role::getCourseRoles($this->course->getId());
-        $this->assertIsArray($rolesNames);
-        $this->assertCount(3, $rolesNames);
-        $this->assertContains("StudentAAA", $rolesNames);
-        $this->assertContains("Student", $rolesNames);
-        $this->assertContains("NewRole", $rolesNames);
+        $roles = Role::getCourseRoles($this->course->getId(), false);
+        $this->assertIsArray($roles);
+        $this->assertCount(3, $roles);
+        foreach ($roles as $role) {
+            if ($role["id"] === $studentRoleId) $this->assertEquals("Student", $role["name"]);
+            else if ($role["id"] === $studentARoleId) $this->assertEquals("StudentAAA", $role["name"]);
+            else $this->assertEquals("NewRole", $role["name"]);
+            $this->assertNull($role["landingPage"]);
+        }
 
         $aspects = Aspect::getAspects($this->course->getId());
         $this->assertIsArray($aspects);
@@ -607,7 +612,7 @@ class RoleTest extends TestCase
      */
     public function updateCourseRolesFailure()
     {
-        $roles = [["id" => null, "name" => "New Role", "landingPage" => null]];
+        $roles = [["name" => "New Role"]];
         $this->expectException(Exception::class);
         Role::updateCourseRoles($this->course->getId(), $roles);
     }
