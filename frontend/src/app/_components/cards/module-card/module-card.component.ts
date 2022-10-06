@@ -19,8 +19,8 @@ export class ModuleCardComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     const svg = document.getElementById(this.module.id + '-icon');
-    svg.style.width = '2.5rem';
-    svg.style.height = '2.5rem';
+    svg.style.width = '2rem';
+    svg.style.height = '2rem';
   }
 
 }

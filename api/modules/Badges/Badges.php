@@ -356,7 +356,7 @@ class Badges extends Module
                                         "required" => true,
                                         "minValue" => 0
                                     ],
-                                    "helper" => "Number of ocurrences/points to earned to reach level 1"
+                                    "helper" => "Number of ocurrences/points to reach level 1"
                                 ],
                                 [
                                     "contentType" => "item",
@@ -395,7 +395,7 @@ class Badges extends Module
                                         "topLabel" => "Goal",
                                         "minValue" => 0
                                     ],
-                                    "helper" => "Number of ocurrences/points to earned to reach level 2"
+                                    "helper" => "Number of ocurrences/points to reach level 2"
                                 ],
                                 [
                                     "contentType" => "item",
@@ -434,7 +434,7 @@ class Badges extends Module
                                         "topLabel" => "Goal",
                                         "minValue" => 0
                                     ],
-                                    "helper" => "Number of ocurrences/points to earned to reach level 3"
+                                    "helper" => "Number of ocurrences/points to reach level 3"
                                 ] // NOTE: limit of 3 levels
                             ]
                         ]

@@ -617,7 +617,7 @@ class Streaks extends Module
                     "helper" => $VCName . " reward to be given when earning the streak"
                 ]
             ]);
-            $lists[0][Action::NEW]["contents"][1]["contents"] = array_map(function ($item) {
+            $lists[0][Action::EDIT]["contents"][1]["contents"] = array_map(function ($item) {
                 $item["width"] = "1/3";
                 return $item;
             }, $lists[0][Action::EDIT]["contents"][1]["contents"]);
