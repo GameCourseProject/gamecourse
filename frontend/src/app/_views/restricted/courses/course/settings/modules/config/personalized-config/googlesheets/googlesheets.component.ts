@@ -14,7 +14,8 @@ export class GooglesheetsComponent implements OnInit {
   loading = {
     page: true,
     auth: false,
-    action: false
+    action: false,
+    users: false
   }
 
   courseID: number;
@@ -25,6 +26,7 @@ export class GooglesheetsComponent implements OnInit {
 
   spreadsheetID: string;
   sheets: {name: string, owner: string}[];
+  users: {value: string, text: string}[];
   @ViewChild('fSheets', { static: false }) fSheets: NgForm;
 
   constructor(
@@ -52,6 +54,17 @@ export class GooglesheetsComponent implements OnInit {
     for (let i = 0; i < config.sheetNames.length; i++) {
       this.sheets.push({name: config.sheetNames[i], owner: config.ownerNames[i]});
     }
+  }
+
+  async getUsers(): Promise<void> {
+    this.loading.users = true;
+
+    const users = (await this.api.getUsers().toPromise()).sort((a, b) => a.name.localeCompare(b.name));
+    this.users = users.map(user => {
+      return {value: user.username, text: user.nickname ?? user.name};
+    });
+
+    this.loading.users = false;
   }
 
 
@@ -105,7 +118,8 @@ export class GooglesheetsComponent implements OnInit {
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
-  addSheet() {
+  async addSheet() {
+    if (!this.users) await this.getUsers();
     this.sheets.push({name: '', owner: ''});
   }
 

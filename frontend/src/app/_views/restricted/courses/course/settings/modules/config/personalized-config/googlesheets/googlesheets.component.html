@@ -45,7 +45,7 @@
     <!-- Header -->
     <div class="flex items-center mb-3">
       <h2 class="card-title mb-0">General</h2>
-      <app-spinner *ngIf="loading.action" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+      <app-spinner *ngIf="loading.action || loading.users" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
     </div>
 
     <!-- Spreadsheet ID -->
@@ -75,6 +75,7 @@
           [(value)]="sheets[i].name"
           [placeholder]="'Sheet name'"
           [topLabel]="'Name'"
+          [required]="true"
           [helperText]="'Sheet name found at the bottom of the spreadsheet'"
           [helperPosition]="'right'">
         </app-input-text>
@@ -82,15 +83,17 @@
 
       <!-- Sheet owner -->
       <div class="w-full w-1/2 px-1.5">
-        <app-input-text
+        <app-input-select
           [id]="'sheet-owner-' + i"
           [form]="fSheets"
           [(value)]="sheets[i].owner"
-          [placeholder]="'Sheet owner username'"
+          [options]="users"
+          [placeholder]="'Select a sheet owner'"
           [topLabel]="'Owner'"
-          [helperText]="'GameCourse username of who inputs data into the sheet'"
+          [required]="true"
+          [helperText]="'GameCourse user who inputs data into the sheet'"
           [helperPosition]="'left'">
-        </app-input-text>
+        </app-input-select>
       </div>
 
       <div class="tooltip absolute -right-[2.5rem] top-[3.1rem]" data-tip="Remove">
