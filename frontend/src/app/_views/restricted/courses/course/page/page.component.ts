@@ -49,7 +49,7 @@ export class PageComponent implements OnInit {
       this.route.params.subscribe(async params => {
         if (this.router.url.includes('skills')) { // Skill page
           this.skill = await this.api.getSkillById(params.id).toPromise();
-          this.isPreview = !!params.preview;
+          this.isPreview = this.router.url.includes('preview');
 
         } else if (this.router.url.includes('participation')) { // QR participation
           this.participationKey = params.key;
@@ -79,7 +79,7 @@ export class PageComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   closePreview() {
-    this.router.navigate(['./settings/modules/skills/config'], {relativeTo: this.route.parent});
+    history.back();
   }
 
 

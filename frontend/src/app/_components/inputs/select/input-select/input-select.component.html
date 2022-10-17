@@ -31,9 +31,7 @@
     [disabled]="disabled"
     #inputSelect="ngModel"
     [ngClass]="{'select-error': form && form.submitted && inputSelect.invalid,
-    'rounded-none': leftLabel && (rightLabel || btnText || btnIcon)}">
-
-    <option *ngFor="let option of options" [value]="option.value">{{option.text}}</option>
+    'rounded-r': leftLabel, 'rounded-l': rightLabel || btnText || btnIcon}">
   </select>
 </ng-template>
 
@@ -59,7 +57,7 @@
     <span *ngIf="rightLabel" class="min-w-fit {{InputGroupLabelColor[color]}}">{{rightLabel}}</span>
 
     <!-- Button -->
-    <button type="button" *ngIf="btnText || btnIcon" class="btn {{btnIcon ? 'btn-square' : ''}} {{InputGroupBtnColor[color]}}" (click)="btnClicked.emit(value)">
+    <button type="button" *ngIf="btnText || btnIcon" class="h-auto btn {{btnIcon ? 'btn-square' : ''}} {{InputGroupBtnColor[color]}}" (click)="btnClicked.emit(value)">
       <span *ngIf="btnText" class="bg-transparent">{{btnText}}</span>
       <ng-icon *ngIf="btnIcon" [name]="btnIcon" size="1.5rem"></ng-icon>
     </button>

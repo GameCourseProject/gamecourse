@@ -17,7 +17,9 @@ export class InputSelectComponent implements OnInit {
   @Input() id: string;                                                              // Unique ID
   @Input() form: NgForm;                                                            // Form it's part of
   @Input() value: any;                                                              // Where to store the value
-  @Input() options?: {value: string, text: string, innerHTML?: string}[];           // Options to select from
+  @Input() options?: ({value: string, text: string, innerHTML?: string} |           // Options to select from
+                      {label: string, options: {value: string, text: string, innerHTML?: string}[]}
+                     )[];
   @Input() placeholder: string;                                                     // Message to show by default
 
   @Input() multiple?: boolean;                                                      // Whether to allow multiple selects
@@ -111,14 +113,14 @@ export class InputSelectComponent implements OnInit {
 
     if (this.placeholder) (options.data as any).unshift({placeholder: true, text: this.placeholder});
     if (this.limit) options['limit'] = this.limit;
-    if (!this.required) options['deselectLabel'] = '<span>❌</span>';
+    if (!this.multiple && !this.required) options['deselectLabel'] = '<span>❌</span>';
 
     this.select = new SlimSelect(options);
 
     // Set deselect;
     if (!this.value) {
       const deselect = $('.ss-deselect')[0]
-      deselect.classList.add('!hidden');
+      if (deselect) deselect.classList.add('!hidden');
     }
   }
 

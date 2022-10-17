@@ -66,6 +66,70 @@ class SkillsController
         API::response(Tier::getTiersOfSkillTree($skillTreeId, $active));
     }
 
+    /**
+     * @throws Exception
+     */
+    public function createTier()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        API::requireValues("skillTreeId", "name", "reward");
+
+        // Get values
+        $skillTreeId = API::getValue("skillTreeId", "int");
+        $name = API::getValue("name");
+        $reward = API::getValue("reward", "int");
+
+        // Add new tier
+        Tier::addTier($skillTreeId, $name, $reward);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function editTier()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        API::requireValues("tierId", "name", "reward", "position", "isActive");
+
+        // Get values
+        $tierId = API::getValue("tierId", "int");
+        $name = API::getValue("name");
+        $reward = API::getValue("reward", "int");
+        $position = API::getValue("position", "int");
+        $isActive = API::getValue("isActive", "bool");
+
+        // Edit skill
+        $tier = Tier::getTierById($tierId);
+        $tier->editTier($name, $reward, $position, $isActive);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function deleteTier()
+    {
+        API::requireValues("courseId", "tierId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        $tierId = API::getValue("tierId", "int");
+
+        // Delete tier
+        Tier::deleteTier($tierId);
+    }
+
 
     /*** --------------------------------------------- ***/
     /*** ------------------- Skills ------------------ ***/
@@ -128,19 +192,17 @@ class SkillsController
         $course = API::verifyCourseExists($courseId);
 
         API::requireCourseAdminPermission($course);
-        API::requireValues('tierId', 'name', 'isCollab', 'isExtra', 'dependencies');
+        API::requireValues('tierId', 'name', 'dependencies');
 
         // Get values
         $tierId = API::getValue("tierId", "int");
         $name = API::getValue("name");
         $color = API::getValue("color");
         $page = API::getValue("page");
-        $isCollab = API::getValue("isCollab", "bool");
-        $isExtra = API::getValue("isExtra", "bool");
         $dependencies = API::getValue("dependencies");
 
         // Add new skill
-        Skill::addSkill($tierId, $name, $color, $page, $isCollab, $isExtra, $dependencies);
+        Skill::addSkill($tierId, $name, $color, $page, false, false, $dependencies);
     }
 
     /**

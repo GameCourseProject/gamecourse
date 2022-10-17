@@ -1,5 +1,6 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
+import {NgForm} from "@angular/forms";
 
 import {ApiHttpService} from "../../../../../../../../../_services/api/api-http.service";
 
@@ -8,6 +9,11 @@ import {Tier} from "../../../../../../../../../_domain/modules/config/personaliz
 import {Skill} from "../../../../../../../../../_domain/modules/config/personalized-config/skills/skill";
 import {Action, ActionScope, scopeAllows} from 'src/app/_domain/modules/config/Action';
 import {TableDataType} from "../../../../../../../../../_components/tables/table-data/table-data.component";
+import {clearEmptyValues} from "../../../../../../../../../_utils/misc/misc";
+import {ModalService} from "../../../../../../../../../_services/modal.service";
+import {AlertService, AlertType} from "../../../../../../../../../_services/alert.service";
+
+import * as _ from 'lodash';
 
 @Component({
   selector: 'app-skills',
@@ -32,30 +38,18 @@ export class SkillsComponent implements OnInit {
   }[] = [];
   skillTreeInView: SkillTree;
 
-  // mode: 'add' | 'edit';
-  // newSkill: SkillData = {
-  //   tierID: null,
-  //   name: null,
-  //   isCollab: null,
-  //   isExtra: null,
-  //   isActive: null,
-  //   position: null,
-  //   dependencies: []
-  // };
-  // skillToEdit: Skill;
-  // skillToDelete: Skill;
-  // infoSelected: {tiers: Tier[], skills: Skill[]};
-  //
-  // isSkillModalOpen: boolean;
-  // skillModalRendered: Subject<void> = new Subject<void>();
-  // isDeleteVerificationModalOpen: boolean;
-  // isImportModalOpen: boolean;
-  // isSkillPreviewModalOpen: boolean;
-  // saving: boolean;
-  //
-  // // FIXME: allow more than two dependencies (backend can already handle it)
-  // selectedDependency1: Skill = null;
-  // selectedDependency2: Skill = null;
+  tierMode: 'create' | 'edit';
+  tierToManage: TierManageData = this.initTierToManage();
+  tierToDelete: Tier;
+  @ViewChild('fTier', { static: false }) fTier: NgForm;
+
+  skillMode: 'create' | 'edit';
+  skillToManage: SkillManageData = this.initSkillToManage();
+  skillToDelete: Skill;
+  @ViewChild('fSkill', { static: false }) fSkill: NgForm;
+
+  dependency: string[];
+  @ViewChild('fDependency', { static: false }) fDependency: NgForm;
 
   constructor(
     private api: ApiHttpService,
@@ -82,8 +76,10 @@ export class SkillsComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async initSkillTreesInfo(courseID: number) {
+    this.skillTreesInfo = [];
     this.skillTrees = await this.api.getSkillTrees(courseID).toPromise();
     for (const skillTree of this.skillTrees) {
+      // Get info
       const tiers = await this.api.getTiersOfSkillTree(skillTree.id, null).toPromise();
       const skills = await this.api.getSkillsOfSkillTree(skillTree.id, null, null, null).toPromise();
       this.skillTreesInfo.push({skillTreeId: skillTree.id, loading: {tiers: false, skills: false}, data: {tiers: [], skills: []}, tiers, skills});
@@ -124,14 +120,10 @@ export class SkillsComponent implements OnInit {
       ],
       tableOptions: {
         order: [[ 0, 'asc' ]], // default order,
-        searching: false,
-        lengthChange: false,
-        paging: false,
-        info: false,
         columnDefs: [
           { orderData: 0,   targets: 1 },
           { visible: false, target: 0 },
-          { orderable: false, targets: [1, 2, 3, 4] }
+          { orderable: false, targets: [0, 1, 2, 3, 4] }
         ]
       }
     },
@@ -142,7 +134,7 @@ export class SkillsComponent implements OnInit {
         {label: 'Skill Position (sorting)', align: 'middle'},
         {label: 'Name', align: 'middle'},
         {label: 'Dependencies', align: 'middle'},
-        {label: 'Color', align: 'middle'},
+        {label: 'Color', align: 'left'},
         {label: 'Reward (XP)', align: 'middle'},
         {label: 'Collab', align: 'middle'},
         {label: 'Extra', align: 'middle'},
@@ -196,6 +188,7 @@ export class SkillsComponent implements OnInit {
 
     const table: { type: TableDataType, content: any }[][] = [];
     this.getSkillTreeInfo(skillTreeId).skills.forEach(skill => {
+      const nrSkillsInTier = this.getSkillTreeInfo(skillTreeId).skills.filter(s => s.tierID === skill.tierID).length;
       table.push([
         {type: TableDataType.NUMBER, content: {value: tiers[skill.tierID].position}},
         {type: TableDataType.TEXT, content: {text: tiers[skill.tierID].name}},
@@ -207,7 +200,14 @@ export class SkillsComponent implements OnInit {
         {type: TableDataType.TOGGLE, content: {toggleId: 'isCollab', toggleValue: skill.isCollab}},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isExtra', toggleValue: skill.isExtra}},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: skill.isActive}},
-        {type: TableDataType.ACTIONS, content: {actions: [Action.VIEW, Action.DUPLICATE, Action.EDIT, Action.DELETE, Action.MOVE_UP, Action.MOVE_DOWN, Action.EXPORT]}}
+        {type: TableDataType.ACTIONS, content: {actions: [
+          {action: Action.VIEW, disabled: !skill.page},
+          Action.EDIT,
+          Action.DELETE,
+          {action: Action.MOVE_UP, disabled: !scopeAllows(ActionScope.ALL_BUT_FIRST, nrSkillsInTier, skill.position)},
+          {action: Action.MOVE_DOWN, disabled: !scopeAllows(ActionScope.ALL_BUT_LAST, nrSkillsInTier, skill.position)},
+          Action.EXPORT
+        ]}}
       ]);
     });
 
@@ -215,35 +215,83 @@ export class SkillsComponent implements OnInit {
     this.getSkillTreeInfo(skillTreeId).loading.skills = false;
   }
 
-  doAction(table: 'tiers' | 'skills', action: string) {
-    // if (table === 'used' && action === 'Add participation') {
-    //   this.tables.qrUsed.mode = 'add';
-    //   this.tables.qrUsed.participationToManage = this.initParticipationToManage();
-    //   ModalService.openModal('participation-manage');
-    //   await this.getExtraInfo();
-    // }
-  }
+  async doActionOnTable(table: 'tiers' | 'skills', action: string, row: number, col: number, value?: any): Promise<void> {
+    if (table === 'tiers') { // TIERS
+      const tierToActOn = this.getSkillTreeInfo(this.skillTreeInView.id).tiers[row];
 
-  doActionOnTable(table: 'tiers' | 'skills', action: string, row: number, col: number, value?: any): void {
-    if (action === 'value changed') {
-      // if (col === 7) this.toggleActive(userToActOn);
-      // else if (col === 8) this.toggleAdmin(userToActOn);
+      if (action === 'value changed') {
+        this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = true;
 
-    } else if (table === 'skills' && action === Action.VIEW) {
+        tierToActOn.isActive = value;
+        await this.api.editTier(this.courseID, clearEmptyValues(tierToActOn)).toPromise();
+
+        if (!tierToActOn.isActive) {
+          this.getSkillTreeInfo(this.skillTreeInView.id).skills = await this.api.getSkillsOfSkillTree(this.skillTreeInView.id, null, null, null).toPromise();
+          this.buildSkillsTable(this.skillTreeInView.id);
+        }
+
+        this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = false;
+
+      } else if (action === Action.EDIT) {
+        this.tierMode = 'edit';
+        this.tierToManage = this.initTierToManage(tierToActOn);
+        ModalService.openModal('tier-manage');
+
+      } else if (action === Action.DELETE) {
+        this.tierToDelete = tierToActOn;
+        ModalService.openModal('tier-delete-verification');
+
+      } else if (action === Action.MOVE_UP || action === Action.MOVE_DOWN) {
+        this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = true;
+
+        tierToActOn.position += action === Action.MOVE_UP ? -1 : 1;
+        await this.api.editTier(this.courseID, clearEmptyValues(tierToActOn)).toPromise();
+        this.getSkillTreeInfo(this.skillTreeInView.id).tiers = await this.api.getTiersOfSkillTree(this.skillTreeInView.id, null).toPromise();
+        this.buildTiersTable(this.skillTreeInView.id);
+
+        this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = false;
+      }
+
+    } else if (table === 'skills') { // SKILLS
       const skillToActOn = this.getSkillTreeInfo(this.skillTreeInView.id).skills[row];
-      this.goToSkillPage(skillToActOn);
 
-    } else if (action === Action.EDIT) {
-      // this.mode = 'edit';
-      // this.userToManage = this.initUserToManage(userToActOn);
-      // ModalService.openModal('manage');
+      if (action === 'value changed') {
+        this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = true;
 
-    } else if (action === Action.DELETE) {
-      // this.userToDelete = userToActOn;
-      // ModalService.openModal('delete-verification');
+        if (col === 7) skillToActOn.isCollab = value;
+        else if (col === 8) skillToActOn.isExtra = value;
+        else if (col === 9) skillToActOn.isActive = value;
 
-    } else if (action === Action.EXPORT) {
-      // this.exportUsers([userToActOn]);
+        await this.api.editSkill(this.courseID, clearEmptyValues(skillToActOn)).toPromise();
+
+        this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = false;
+
+      } else if (table === 'skills' && action === Action.VIEW) {
+        const skillToActOn = this.getSkillTreeInfo(this.skillTreeInView.id).skills[row];
+        this.goToSkillPage(skillToActOn);
+
+      } else if (action === Action.EDIT) {
+        this.skillMode = 'edit';
+        this.skillToManage = this.initSkillToManage(skillToActOn);
+        ModalService.openModal('skill-manage');
+
+      } else if (action === Action.DELETE) {
+        this.skillToDelete = skillToActOn;
+        ModalService.openModal('skill-delete-verification');
+
+      } else if (action === Action.MOVE_UP || action === Action.MOVE_DOWN) {
+        this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = true;
+
+        skillToActOn.position += action === Action.MOVE_UP ? -1 : 1;
+        await this.api.editSkill(this.courseID, clearEmptyValues(skillToActOn)).toPromise();
+        this.getSkillTreeInfo(this.skillTreeInView.id).skills = await this.api.getSkillsOfSkillTree(this.skillTreeInView.id, null, null, null).toPromise();
+        this.buildSkillsTable(this.skillTreeInView.id);
+
+        this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = false;
+
+      } else if (action === Action.EXPORT) {
+        // this.exportUsers([userToActOn]);
+      }
     }
   }
 
@@ -252,48 +300,137 @@ export class SkillsComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  createSkill(): void {
-    // this.loading = true;
-    // this.api.createSkill(this.courseID, this.newSkill)
-    //   .pipe( finalize(() => {
-    //     this.isSkillModalOpen = false;
-    //     this.clearObject(this.newSkill);
-    //     this.selectedDependency1 = null;
-    //     this.selectedDependency2 = null;
-    //     this.infoSelected = null;
-    //     this.loading = false;
-    //   }) )
-    //   .subscribe(async () => await this.getSkillTreesInfo(this.courseID))
+  doAction(table: 'tiers' | 'skills', action: string) {
+    if (table === 'tiers') { // TIERS
+      if (action === Action.IMPORT) {
+        ModalService.openModal('tier-import');
+
+      } else if (action === Action.EXPORT) {
+        // this.exportTiers(this.getSkillTreeInfo(this.skillTreeInView.id).tiers);
+
+      } else if (action === 'Create tier') {
+        this.tierMode = 'create';
+        this.tierToManage = this.initTierToManage();
+        ModalService.openModal('tier-manage');
+      }
+
+    } else if (table === 'skills') { // SKILLS
+      if (action === Action.IMPORT) {
+        ModalService.openModal('skill-import');
+
+      } else if (action === Action.EXPORT) {
+        // this.exportSkills(this.getSkillTreeInfo(this.skillTreeInView.id).skills);
+
+      } else if (action === 'Create skill') {
+        this.skillMode = 'create';
+        this.skillToManage = this.initSkillToManage();
+        ModalService.openModal('skill-manage');
+      }
+    }
   }
 
-  editSkill(): void {
-    // this.loading = true;
-    // this.newSkill['id'] = this.skillToEdit.id;
-    //
-    // this.api.editSkill(this.courseID, this.newSkill)
-    //   .pipe( finalize(() => {
-    //     this.isSkillModalOpen = false;
-    //     this.clearObject(this.newSkill);
-    //     this.selectedDependency1 = null;
-    //     this.selectedDependency2 = null;
-    //     this.skillToEdit = null;
-    //     this.infoSelected = null;
-    //     this.loading = false;
-    //   }) )
-    //   .subscribe(async () => await this.getSkillTreesInfo(this.courseID))
+
+  // TIERS
+
+  async createTier(): Promise<void> {
+    if (this.fTier.valid) {
+      this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = true;
+
+      await this.api.createTier(this.courseID, this.skillTreeInView.id, clearEmptyValues(this.tierToManage)).toPromise();
+      this.getSkillTreeInfo(this.skillTreeInView.id).tiers = await this.api.getTiersOfSkillTree(this.skillTreeInView.id, null).toPromise();
+      this.buildTiersTable(this.skillTreeInView.id);
+
+      this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = false;
+      ModalService.closeModal('tier-manage');
+      AlertService.showAlert(AlertType.SUCCESS, 'New tier added: ' + this.tierToManage.name);
+      this.resetTierToManage();
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
-  deleteSkill(): void {
-    // this.loading = true;
-    // this.api.deleteSkill(this.courseID, this.skillToDelete.id)
-    //   .pipe( finalize(() => {
-    //     this.isDeleteVerificationModalOpen = false;
-    //     this.clearObject(this.newSkill);
-    //     this.skillToDelete = null;
-    //     this.infoSelected = null;
-    //     this.loading = false;
-    //   }) )
-    //   .subscribe(async () => await this.getSkillTreesInfo(this.courseID))
+  async editTier(): Promise<void> {
+    if (this.fTier.valid) {
+      this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = true;
+
+      const tierToEdit = this.getSkillTreeInfo(this.skillTreeInView.id).tiers.find(el => el.id === this.tierToManage.id);
+      tierToEdit.name = this.tierToManage.name;
+      tierToEdit.reward = this.tierToManage.reward;
+      await this.api.editTier(this.courseID, clearEmptyValues(tierToEdit)).toPromise();
+      this.getSkillTreeInfo(this.skillTreeInView.id).tiers = await this.api.getTiersOfSkillTree(this.skillTreeInView.id, null).toPromise();
+      this.buildTiersTable(this.skillTreeInView.id);
+
+      this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = false;
+      ModalService.closeModal('tier-manage');
+      AlertService.showAlert(AlertType.SUCCESS, 'Tier \'' + this.tierToManage.name + '\' edited');
+      this.resetTierToManage();
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+  }
+
+  async deleteTier(tier: Tier): Promise<void> {
+    this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = true;
+
+    await this.api.deleteTier(this.courseID, tier.id).toPromise();
+    this.getSkillTreeInfo(this.skillTreeInView.id).tiers = await this.api.getTiersOfSkillTree(this.skillTreeInView.id, null).toPromise();
+    this.buildTiersTable(this.skillTreeInView.id);
+
+    this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = false;
+    ModalService.closeModal('tier-delete-verification');
+    AlertService.showAlert(AlertType.SUCCESS, 'Tier \'' + tier.name + '\' deleted');
+  }
+
+
+  // SKILLS
+
+  async createSkill(): Promise<void> {
+    if (this.fSkill.valid) {
+      this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = true;
+
+      await this.api.createSkill(this.courseID, clearEmptyValues(this.skillToManage)).toPromise();
+      this.getSkillTreeInfo(this.skillTreeInView.id).skills = await this.api.getSkillsOfSkillTree(this.skillTreeInView.id, null, null, null).toPromise();
+      this.buildSkillsTable(this.skillTreeInView.id);
+
+      this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = false;
+      ModalService.closeModal('skill-manage');
+      AlertService.showAlert(AlertType.SUCCESS, 'New skill added: ' + this.skillToManage.name);
+      this.resetSkillToManage();
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+  }
+
+  async editSkill(): Promise<void> {
+    if (this.fSkill.valid) {
+      this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = true;
+
+      const skillToEdit = this.getSkillTreeInfo(this.skillTreeInView.id).skills.find(el => el.id === this.skillToManage.id);
+      skillToEdit.tierID = parseInt(this.skillToManage.tierID.substring(3));
+      skillToEdit.name = this.skillToManage.name;
+      skillToEdit.color = this.skillToManage.color;
+      skillToEdit.dependencies = this.skillToManage.dependencies;
+      skillToEdit.page = this.skillToManage.page;
+
+      await this.api.editSkill(this.courseID, clearEmptyValues(skillToEdit)).toPromise();
+      this.getSkillTreeInfo(this.skillTreeInView.id).skills = await this.api.getSkillsOfSkillTree(this.skillTreeInView.id, null, null, null).toPromise();
+      this.buildSkillsTable(this.skillTreeInView.id);
+
+      this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = false;
+      ModalService.closeModal('skill-manage');
+      AlertService.showAlert(AlertType.SUCCESS, 'Skill \'' + this.skillToManage.name + '\' edited');
+      this.resetSkillToManage();
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+  }
+
+  async deleteSkill(skill: Skill): Promise<void> {
+    this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = true;
+
+    await this.api.deleteSkill(this.courseID, skill.id).toPromise();
+    this.getSkillTreeInfo(this.skillTreeInView.id).skills = await this.api.getSkillsOfSkillTree(this.skillTreeInView.id, null, null, null).toPromise();
+    this.buildSkillsTable(this.skillTreeInView.id);
+
+    this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = false;
+    ModalService.closeModal('skill-delete-verification');
+    AlertService.showAlert(AlertType.SUCCESS, 'Skill \'' + skill.name + '\' deleted');
   }
 
   toggleSkill(skillId: number, param: string) {
@@ -335,22 +472,6 @@ export class SkillsComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  initEditSkill(skill: Skill): void {
-    // this.newSkill = {
-    //   tierID: skill.tierID,
-    //   name: skill.name,
-    //   color: skill.color,
-    //   page: skill.page,
-    //   isCollab: skill.isCollab,
-    //   isExtra: skill.isExtra,
-    //   isActive: skill.isActive,
-    //   position: skill.position,
-    //   ruleID: skill.ruleID,
-    //   dependencies: skill.dependencies
-    // };
-    // this.skillToEdit = skill;
-  }
-
   getSkillTreeInfo(skillTreeId: number): {
     skillTreeId: number,
     loading: {tiers: boolean, skills: boolean},
@@ -362,52 +483,100 @@ export class SkillsComponent implements OnInit {
     return this.skillTreesInfo[index];
   }
 
-  getTier(tierId: number): Tier {
-    return null;
-    // for (const info of this.getSkillTreeInfo()) {
-    //   for (const tier of info.tiers) {
-    //     if (tier.id == tierId) return tier;
-    //   }
-    // }
-    // return null;
+
+  // TIERS
+
+  initTierToManage(tier?: Tier): TierManageData {
+    const tierData: TierManageData = {
+      name: tier?.name ?? null,
+      reward: tier?.reward ?? null
+    };
+    if (tier) tierData.id = tier.id;
+    return tierData;
   }
 
-  getWildcardTier(tiers: Tier[]): Tier {
-    let wildcardTier: Tier = null;
-    for (const tier of tiers) {
-      if (tier.isWildcard()) wildcardTier = tier;
+  resetTierToManage() {
+    this.tierMode = null;
+    this.tierToManage = this.initTierToManage();
+    this.fTier.resetForm();
+  }
+
+
+  // SKILLS
+
+  initSkillToManage(skill?: Skill): SkillManageData {
+    const skillData: SkillManageData = {
+      tierID: skill?.tierID ? 'id-' + skill.tierID : null,
+      name: skill?.name ?? null,
+      color: skill?.color ?? null,
+      page: skill?.page ?? null,
+      dependencies: skill?.dependencies ? _.cloneDeep(skill.dependencies) : []
+    };
+    if (skill) {
+      skillData.id = skill.id;
+      skillData.ruleID = skill.ruleID;
     }
-    return wildcardTier;
+    return skillData;
   }
 
-  getSkill(skillId: number): Skill {
-    return null;
-    // for (const info of this.getSkillTreeInfo()) {
-    //   for (const skill of info.skills) {
-    //     if (skill.id == skillId) return skill;
-    //   }
-    // }
-    // return null;
+  resetSkillToManage() {
+    this.skillMode = null;
+    this.skillToManage = this.initSkillToManage();
+    this.fSkill.resetForm();
   }
 
-  getSkillsOfTier(tierId: number): Skill[] {
-    return [];
-    // const skills = [];
-    // for (const info of this.getSkillTreeInfo()) {
-    //   for (const skill of info.skills) {
-    //     if (skill.tierID === tierId) skills.push(skill);
-    //   }
-    // }
-    // return skills;
+  getTierOptions(): {value: string, text: string}[] {
+    return this.getSkillTreeInfo(this.skillTreeInView.id).tiers.map(tier => {
+      return {value: 'id-' + tier.id, text: tier.name};
+    });
   }
 
-  getDependenciesText(dependencies: Skill[][]): string {
-    let str = '';
-    for (let i = 0; i < dependencies.length; i++) {
-      const dependency = dependencies[i];
-      str += this.getComboText(dependency) + (i != dependencies.length - 1 ? ' | ' : '');
+  getDependencyOptions(): ({value: string, text: string, innerHTML: string} | {label: string, options: {value: string, text: string}[]})[] {
+    const skillTreeInfo = this.getSkillTreeInfo(this.skillTreeInView.id);
+    const options: ({value: string, text: string, innerHTML: string} | {label: string, options: {value: string, text: string}[]})[] = [];
+
+    const skillTier = skillTreeInfo.tiers.find(tier => tier.id === parseInt(this.skillToManage.tierID.substring(3)));
+    skillTreeInfo.tiers.forEach(tier => {
+      if (!tier.isWildcard() && tier.position < skillTier.position) {
+        const tierSkills = skillTreeInfo.skills.filter(skill => skill.tierID === tier.id);
+        const tierOptions = tierSkills.map(skill => {
+          return {value: 'id-' + skill.id, text: skill.name};
+        });
+        options.push({label: tier.name, options: tierOptions});
+      }
+    });
+
+    if (addWildcardOption(skillTreeInfo.tiers, skillTreeInfo.skills))
+      options.unshift({value: 'id-0', text: Tier.WILDCARD, innerHTML: '<span class="text-secondary">' + Tier.WILDCARD + '</span>'})
+
+    return options;
+
+    function addWildcardOption(tiers: Tier[], skills: Skill[]): boolean {
+      const wildcardTier: Tier = tiers.find(tier => tier.isWildcard());
+      if (!wildcardTier.isActive) return false;
+      return skills.filter(skill => skill.tierID === wildcardTier.id && skill.isActive).length > 0;
     }
-    return str;
+  }
+
+  addDependency() {
+    if (this.fDependency.valid) {
+      const dep = getDependency(this.dependency, this.getSkillTreeInfo(this.skillTreeInView.id).skills);
+      this.skillToManage.dependencies.push(dep);
+      this.fDependency.resetForm();
+
+    } else AlertService.showAlert(AlertType.ERROR, 'No skills selected for dependency');
+
+    function getDependency(dependency: string[], skills: Skill[]): Skill[] {
+      return dependency.map(value => {
+        const skillID = parseInt(value.substring(3));
+        if (skillID !== 0) return skills.find(skill => skill.id === skillID);
+        else return new Skill(0, 0, Tier.WILDCARD, false, false, false, 0, 0, []);
+      })
+    }
+  }
+
+  removeDependency(index: number) {
+    this.skillToManage.dependencies.splice(index, 1);
   }
 
   getComboText(combo: Skill[]): string {
@@ -419,38 +588,14 @@ export class SkillsComponent implements OnInit {
     return str;
   }
 
-  filterSkillsForDependencies(skillID: number, tier: Tier): Skill[] {
-    return []; // FIXME
-    // const filteredSkills = this.infoSelected.skills
-    //   .filter(skill => skill.id !== skillID && skill.isActive &&
-    //     this.getTier(skill.tierID).position === tier.position - 1)
-    //   .sort((a, b) => a.name.localeCompare(b.name));
-    //
-    //   if (addWildcardOption(this.infoSelected.tiers, this.infoSelected.skills))
-    //     filteredSkills.push(Skill.getWildcard(this.getWildcardTier(this.infoSelected.tiers).id));
-    //
-    //   return filteredSkills;
-    //
-    //   function addWildcardOption(tiers: Tier[], skills: Skill[]): boolean {
-    //     let wildcardTier: Tier = null;
-    //     for (const tier of tiers) {
-    //       if (tier.isWildcard()) wildcardTier = tier;
-    //     }
-    //     if (!wildcardTier.isActive) return false;
-    //
-    //     let hasWildcardSkill = false;
-    //     for (const skill of skills) {
-    //       if (skill.tierID === wildcardTier.id) {
-    //         hasWildcardSkill = true;
-    //         break;
-    //       }
-    //     }
-    //     return hasWildcardSkill;
-    //   }
-    }
-
   filterSkillsByTier(skills: Skill[], tierID: number): Skill[] {
     return skills.filter(skill => skill.tierID === tierID && skill.isActive);
+  }
+
+  showDependencies(): boolean {
+    const skillTier = this.getSkillTreeInfo(this.skillTreeInView.id).tiers.find(tier => tier.id === parseInt(this.skillToManage.tierID.substring(3)));
+    if (skillTier.position === 0 || skillTier.isWildcard()) return false;
+    return true;
   }
 
   initTextEditor() {
@@ -459,21 +604,23 @@ export class SkillsComponent implements OnInit {
   }
 
   goToSkillPage(skill: Skill) {
-    this.router.navigate(['./skills', skill.id, true], {relativeTo: this.route.parent.parent})
+    this.router.navigate(['./skills', skill.id, 'preview'], {relativeTo: this.route.parent.parent})
   }
 
 }
 
-export interface SkillData {
+export interface TierManageData {
   id?: number,
-  tierID: number,
   name: string,
-  color?: string,
-  page?: string,
-  isCollab: boolean,
-  isExtra: boolean,
-  isActive: boolean,
-  position: number,
+  reward: number
+}
+
+export interface SkillManageData {
+  id?: number,
   ruleID?: number,
+  tierID: string,
+  name: string,
+  color: string,
+  page: string,
   dependencies: Skill[][]
 }

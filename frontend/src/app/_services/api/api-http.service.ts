@@ -29,7 +29,10 @@ import {
   List
 } from "../../_views/restricted/courses/course/settings/modules/config/config/config.component";
 import {Tier} from "../../_domain/modules/config/personalized-config/skills/tier";
-import {SkillData} from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/skills/skills.component";
+import {
+  TierManageData,
+  SkillManageData
+} from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/skills/skills.component";
 import {Skill} from "../../_domain/modules/config/personalized-config/skills/skill";
 import {ContentItem} from "../../_components/modals/file-picker-modal/file-picker-modal.component";
 import {
@@ -1673,6 +1676,60 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(obj => Skill.fromDatabase(obj))) );
   }
 
+  public createTier(courseID: number, skillTreeID: number, tierData: TierManageData): Observable<void> {
+    const data = {
+      courseId: courseID,
+      skillTreeId: skillTreeID,
+      name: tierData.name,
+      reward: tierData.reward
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'createTier');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public editTier(courseID: number, tier: Tier): Observable<void> {
+    const data = {
+      courseId: courseID,
+      tierId: tier.id,
+      name: tier.name,
+      reward: tier.reward,
+      position: tier.position,
+      isActive: tier.isActive
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'editTier');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteTier(courseID: number, tierID: number): Observable<void> {
+    const data = {
+      courseId: courseID,
+      tierId: tierID
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'deleteTier');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
   public getSkillById(skillID: number): Observable<Skill> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.SKILLS);
@@ -1686,16 +1743,14 @@ export class ApiHttpService {
       .pipe( map((res: any) => Skill.fromDatabase(res['data'])) );
   }
 
-  public createSkill(courseID: number, skill: SkillData): Observable<void> {
+  public createSkill(courseID: number, skillData: SkillManageData): Observable<void> {
     const data = {
       courseId: courseID,
-      tierId: skill.tierID,
-      name: skill.name,
-      color: skill.color,
-      page: skill.page,
-      isCollab: skill.isCollab,
-      isExtra: skill.isExtra,
-      dependencies: skill.dependencies? skill.dependencies.map(combo => combo.map(skill => skill.id)) : []
+      tierId: parseInt(skillData.tierID.substring(3)),
+      name: skillData.name,
+      color: skillData.color ?? null,
+      page: skillData.page ?? null,
+      dependencies: skillData.dependencies.map(combo => combo.map(skill => skill.id))
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -1708,7 +1763,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public editSkill(courseID: number, skill: SkillData): Observable<void> {
+  public editSkill(courseID: number, skill: Skill): Observable<void> {
     const data = {
       courseId: courseID,
       skillId: skill.id,

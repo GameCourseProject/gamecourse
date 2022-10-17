@@ -1,18 +1,23 @@
+<!-- Render page -->
 <div *ngIf="pageView" class="page">
   <bb-any [view]="pageView"></bb-any>
 </div>
 
+<!-- Skill page -->
 <div *ngIf="skill" class="page skill-page">
-  <button *ngIf="isPreview" (click)="closePreview()" style="float: right">Close<br> Preview</button>
-
-  <div class="header">
-    <img [src]="ApiEndpointsService.API_ENDPOINT + '/modules/skills/icon.svg'">
-    <span class="ng-binding">Skill - {{skill.name}}</span>
+  <!-- Close preview btn -->
+  <div *ngIf="isPreview" class="tooltip float-right" data-tip="Close preview">
+    <button class="btn btn-sm btn-circle btn-outline btn-error" (click)="closePreview()">
+      <ng-icon name="feather-x" size="1.2rem"></ng-icon>
+    </button>
   </div>
 
+  <!-- Page -->
+  <app-header [title]="skill.name"></app-header>
   <div [innerHTML]="skill.page | sanitizeHTML"></div>
 </div>
 
+<!-- QR participation page -->
 <div *ngIf="participationKey" class="page participation-page">
   <h1>In-class participation</h1>
   <h4 *ngIf="course">{{course.name}} - {{course.year}}</h4>

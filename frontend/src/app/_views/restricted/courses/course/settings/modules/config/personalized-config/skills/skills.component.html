@@ -22,7 +22,7 @@
         {action: Action.IMPORT, icon: 'jam-download'},
         {action: Action.EXPORT, icon: 'jam-upload'}
       ]"
-      [rightActions]="[{action: 'Add tier', icon: 'feather-plus-circle', color: 'primary'}]"
+      [rightActions]="[{action: 'Create tier', icon: 'feather-plus-circle', color: 'primary'}]"
       (btnClicked)="doAction('tiers', $event)">
     </app-top-actions>
 
@@ -31,15 +31,75 @@
       [id]="skillTreeInView.id + '-tiers'"
       [classList]="'mt-5'"
       [headers]="tablesInfo.tiers.headers"
-      [hasColumnFiltering]="false"
-      [hasFooters]="false"
       [data]="getSkillTreeInfo(skillTreeInView.id).data.tiers"
       [options]="tablesInfo.tiers.tableOptions"
       [loading]="loading.page"
-      (btnClicked)="doActionOnTable('tiers', $event.type, $event.row, $event.col)">
+      (btnClicked)="doActionOnTable('tiers', $event.type, $event.row, $event.col)"
+      (valueChanged)="doActionOnTable('tiers', 'value changed', $event.row, $event.col, $event.value)">
     </app-table>
 
   </div>
+
+  <!-- New / Edit Modal -->
+  <app-modal *ngIf="tierMode && tierToManage"
+     [id]="'tier-manage'"
+     [templateRef]="TIER_MANAGE"
+     [header]="tierMode?.capitalize() + ' tier'"
+     [closeBtnText]="'Discard ' + (tierMode === 'create' ? 'tier' : 'changes')"
+     [submitBtnText]="tierMode?.capitalize() + ' tier'"
+     [actionInProgress]="getSkillTreeInfo(skillTreeInView.id).loading.tiers"
+     (submitBtnClicked)="fTier.onSubmit(null); tierMode === 'create' ? createTier() : editTier()"
+     (onClose)="resetTierToManage()">
+  </app-modal>
+
+  <ng-template #TIER_MANAGE>
+    <form #fTier="ngForm">
+
+      <div class="flex flex-wrap">
+
+        <!-- Name -->
+        <div class="w-full sm:w-1/2 sm:pr-3">
+          <app-input-text
+            [id]="'tier-name'"
+            [form]="fTier"
+            [(value)]="tierToManage.name"
+            [placeholder]="'Tier name'"
+            [topLabel]="'Name'"
+            [required]="true"
+            [maxLength]="50"
+            [maxLengthErrorMessage]="'Tier name is too long: maximum of 50 characters'">
+          </app-input-text>
+        </div>
+
+        <!-- Reward -->
+        <div class="w-full sm:w-1/2 mt-3 sm:mt-0">
+          <app-input-number
+            [id]="'tier-reward'"
+            [form]="fTier"
+            [(value)]="tierToManage.reward"
+            [placeholder]="'Tier reward'"
+            [topLabel]="'Reward (XP)'"
+            [required]="true"
+            [minValue]="0">
+          </app-input-number>
+        </div>
+
+      </div>
+
+    </form>
+  </ng-template>
+
+  <!-- Delete Verification Modal -->
+  <app-simple-modal *ngIf="tierToDelete"
+    [id]="'tier-delete-verification'"
+    [title]="'Delete tier'"
+    [text]="'Are you sure you want to delete tier \'' + tierToDelete?.name + '\'? You won\'t be able to undo this action.'"
+    [submitBtnText]="'Delete'"
+    [submitBtnColor]="'error'"
+    [actionInProgress]="getSkillTreeInfo(skillTreeInView.id).loading.tiers"
+    (submitBtnClicked)="deleteTier(tierToDelete)"
+    (onClose)="tierToDelete = null">
+  </app-simple-modal>
 </div>
 
 <!-- Skills -->
@@ -70,11 +130,125 @@
         [data]="getSkillTreeInfo(skillTreeInView.id).data.skills"
         [options]="tablesInfo.skills.tableOptions"
         [loading]="loading.page"
-        (btnClicked)="doActionOnTable('skills', $event.type, $event.row, $event.col)">
+        (btnClicked)="doActionOnTable('skills', $event.type, $event.row, $event.col)"
+        (valueChanged)="doActionOnTable('skills', 'value changed', $event.row, $event.col, $event.value)">
       </app-table>
 
     </div>
-  </div>
+
+  <!-- New / Edit Modal -->
+  <app-modal *ngIf="skillMode && skillToManage"
+     [id]="'skill-manage'"
+     [templateRef]="SKILL_MANAGE"
+     [size]="'lg'"
+     [header]="skillMode?.capitalize() + ' skill'"
+     [closeBtnText]="'Discard ' + (skillMode === 'create' ? 'skill' : 'changes')"
+     [extraBtnText]="'Preview'"
+     [extraBtnColor]="'secondary'"
+     [extraBtnOutline]="true"
+     [extraBtnDisabled]="!skillToManage.page"
+     [submitBtnText]="skillMode?.capitalize() + ' skill'"
+     [actionInProgress]="getSkillTreeInfo(skillTreeInView.id).loading.skills"
+     (submitBtnClicked)="fSkill.onSubmit(null); skillMode === 'create' ? createSkill() : editSkill()"
+     (onClose)="resetSkillToManage()">
+  </app-modal>
+
+  <ng-template #SKILL_MANAGE>
+    <form #fSkill="ngForm">
+
+      <div class="flex flex-wrap">
+
+        <!-- Tier -->
+        <div class="w-full sm:w-1/3 sm:pr-3">
+          <app-input-select
+            [id]="'skill-tier'"
+            [form]="fSkill"
+            [(value)]="skillToManage.tierID"
+            [options]="getTierOptions()"
+            [placeholder]="'Select a tier'"
+            [topLabel]="'Tier'"
+            [required]="true">
+          </app-input-select>
+        </div>
+
+        <!-- Name -->
+        <div class="w-full sm:w-1/3 sm:pr-3 mt-3 sm:mt-0">
+          <app-input-text
+            [id]="'skill-name'"
+            [form]="fSkill"
+            [(value)]="skillToManage.name"
+            [placeholder]="'Skill name'"
+            [topLabel]="'Name'"
+            [required]="true">
+          </app-input-text>
+        </div>
+
+        <!-- Color -->
+        <div class="w-full sm:w-1/3 mt-3 sm:mt-0">
+          <app-input-color
+            [id]="'skill-color'"
+            [form]="fSkill"
+            [(value)]="skillToManage.color"
+            [placeholder]="'Skill color'"
+            [topLabel]="'Color'">
+          </app-input-color>
+        </div>
+
+      </div>
+
+      <div *ngIf="skillToManage.tierID && showDependencies()">
+        <div class="prose mt-5"><h4>Dependencies</h4></div>
+
+        <div class="flex flex-wrap-reverse sm:flex-wrap mt-3">
+          <!-- Dependencies -->
+          <div class="w-full sm:w-1/2 sm:pr-2.5 mt-3 sm:mt-0">
+            <div *ngFor="let dep of skillToManage.dependencies; let i = index" class="prose flex items-center">
+              <div class="tooltip tooltip-right" data-tip="Remove">
+                <button type="button" class="btn btn-sm btn-ghost btn-circle h-8 w-8" (click)="removeDependency(i)">
+                  <ng-icon name="feather-x" size="1.3rem" class="text-error"></ng-icon>
+                </button>
+              </div>
+              {{getComboText(dep)}}
+            </div>
+            <span *ngIf="skillToManage.dependencies.length === 0" class="italic text-sm text-info">No dependencies added</span>
+          </div>
+
+          <!-- Add dependency -->
+          <div class="w-full sm:w-1/2 sm:pl-2.5">
+            <form #fDependency="ngForm">
+              <app-input-select
+                [id]="'skill-dependencies'"
+                [form]="fDependency"
+                [(value)]="dependency"
+                [options]="getDependencyOptions()"
+                [placeholder]="'Select skills for dependency'"
+                [multiple]="true"
+                [closeOnSelect]="false"
+                [btnText]="'Add'"
+                [required]="true"
+                (valueChange)="dependency = $event ?? []"
+                (btnClicked)="addDependency()">
+              </app-input-select>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </ng-template>
+
+  <!-- Delete Verification Modal -->
+  <app-simple-modal *ngIf="skillToDelete"
+    [id]="'skill-delete-verification'"
+    [title]="'Delete skill'"
+    [text]="'Are you sure you want to delete skill \'' + skillToDelete?.name + '\'? You won\'t be able to undo this action.'"
+    [submitBtnText]="'Delete'"
+    [submitBtnColor]="'error'"
+    [actionInProgress]="getSkillTreeInfo(skillTreeInView.id).loading.skills"
+    (submitBtnClicked)="deleteSkill(skillToDelete)"
+    (onClose)="skillToDelete = null">
+  </app-simple-modal>
+</div>
 
 <!-- Skill Tree Preview -->
 <div *ngIf="skillTreeInView"  class="card w-full bg-base-100 shadow-xl mt-5">
@@ -93,7 +267,7 @@
 
         <!-- Tier -->
         <div class="grid flex-grow h-fit p-2 place-items-center">
-          <span class="text-center text-primary font-semibold text-[1.1rem] mb-2">{{tier.name}}: {{tier.reward}} XP</span>
+          <span class="text-center text-primary font-semibold mb-2">{{tier.name}}: {{tier.reward}} XP</span>
 
           <!-- Skill -->
           <div class="flex flex-wrap flex-row justify-center items-start lg:items-center w-full lg:flex-col">
@@ -101,15 +275,15 @@
 
               <!-- Skill box -->
               <div class="flex justify-center">
-                <div class="w-24 h-24 p-2 rounded-lg hover:cursor-pointer hover:outline hover:outline-offset-2"
+                <div class="w-20 h-20 p-2 rounded-lg hover:cursor-pointer hover:outline hover:outline-offset-2"
                      [ngStyle]="{'background-color': skill.color, 'outline-color': skill.color}" (click)="goToSkillPage(skill)">
-                  <span class="text-white font-semibold text-[0.9rem] line-clamp-2">{{skill.name}}</span>
+                  <span class="text-white font-semibold text-xs line-clamp-2">{{skill.name}}</span>
                 </div>
               </div>
 
               <!-- Skill dependencies -->
               <div *ngIf="skill.dependencies.length > 0" class="mt-1 lg:mb-5">
-                <p *ngFor="let combo of skill.dependencies" class="prose text-sm text-center">{{getComboText(combo)}}</p>
+                <p *ngFor="let combo of skill.dependencies; let last = last" class="prose text-xs text-center" [ngClass]="{'mb-0.5': !last}">{{getComboText(combo)}}</p>
               </div>
 
             </div>

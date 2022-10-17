@@ -76,7 +76,7 @@ const routes: Routes = [
     component: PageComponent
   },
   {
-    path: 'skills/:id/:preview',
+    path: 'skills/:id/preview',
     component: PageComponent,
     canActivate: [CourseAdminGuard]
   },

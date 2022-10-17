@@ -290,14 +290,6 @@ class Skills extends Module
                 $skillTree = new SkillTree($item["id"]);
                 $skillTree->editSkillTree($item["name"], $item["maxReward"]);
             } elseif ($action == Action::DELETE) SkillTree::deleteSkillTree($item["id"]);
-
-        } else if (Utils::strEndsWith($listName, "Tiers")) {    // Tiers
-            if ($action == Action::NEW) Tier::addTier($item["parent"], $item["name"], $item["reward"]);
-            elseif ($action == Action::EDIT || $action == Action::MOVE_UP || $action == Action::MOVE_DOWN) {
-                $tier = new Tier($item["id"]);
-                $position = $item["position"] + ($action == Action::EDIT ? 0 : ($action == Action::MOVE_UP ? -1 : 1));
-                $tier->editTier($item["name"], $item["reward"], $position, $item["isActive"]);
-            } elseif ($action == Action::DELETE) Tier::deleteTier($item["id"]);
         }
     }
 

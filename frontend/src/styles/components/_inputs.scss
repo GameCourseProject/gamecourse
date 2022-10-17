@@ -72,6 +72,14 @@
     }
   }
 
+  .ss-value-text, .ss-value-delete {
+    @apply bg-transparent px-0 #{!important};
+
+    & > * {
+      @apply bg-transparent px-0 #{!important};
+    }
+  }
+
   .ss-value-text span {
     @apply pl-0 #{!important};
   }
@@ -86,6 +94,20 @@
 
   .ss-deselect {
     @apply text-xs mr-6 #{!important};
+  }
+
+  &.rounded-r {
+    .ss-single-selected, .ss-multi-selected {
+      border-bottom-left-radius: 0 !important;
+      border-top-left-radius: 0 !important;
+    }
+  }
+
+  &.rounded-l {
+    .ss-single-selected, .ss-multi-selected {
+      border-bottom-right-radius: 0 !important;
+      border-top-right-radius: 0 !important;
+    }
   }
 }
 
