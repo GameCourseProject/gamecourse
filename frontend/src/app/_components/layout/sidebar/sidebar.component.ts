@@ -196,7 +196,7 @@ export class SidebarComponent implements OnInit {
         };
       });
       if (isAdminOrTeacher) navigation[0].children = pages;
-      else navigation.concat(pages);
+      else navigation = navigation.concat(pages);
 
       if (isAdminOrTeacher) {
         const fixed: Navigation[] = [
