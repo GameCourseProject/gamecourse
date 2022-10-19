@@ -1,0 +1,7 @@
+rule: Book Master
+# Read class slides
+# lvl.1: read slides for 50% of lectures
+# lvl.2: read slides for 75% of lectures
+# lvl.3: read all lectures slides
+	when:
+	then:

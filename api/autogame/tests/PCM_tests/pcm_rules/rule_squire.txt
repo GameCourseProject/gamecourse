@@ -1,0 +1,14 @@
+rule: Squire
+# Help your colleagues by writing tutorials of your tree challenges
+# lvl.1: get four points
+# lvl.2: get ten points
+# lvl.3: get sixteen points
+	when:
+		# get all student logs from "tutorials"
+		result = filter_grades(facts,target,"Tutorials",forum="Participation Forum",max_repeats=None)
+		logs, list_points, total_points = result
+		# compute lvl achieved
+		lvl = compute_lvl(total_points,4,10,16)
+		lvl > 0
+	then:
+		award_achievement("Squire",lvl,target,logs,total_points)

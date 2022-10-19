@@ -1,0 +1,3 @@
+rule: R14
+	then:
+		GC.getBadges(target,"RuleMaster",3)

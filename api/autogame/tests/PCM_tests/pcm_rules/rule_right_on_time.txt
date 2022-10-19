@@ -1,0 +1,20 @@
+rule: Right on Time
+# Don't be late for class!
+# lvl.1: be on time for 50% of lectures
+# lvl.2: be on time for 75% of lectures
+# lvl.3: always be there on time
+	when:
+		logs = filter_logs(facts,target,"attended lecture")
+		attendences = len(logs)
+		# get total number of Alameda lectures
+		alameda = METADATA["all_lectures_alameda"] + METADATA["invited_alameda"]
+		# get total number of Tagus lectures
+		tagus = METADATA["all_lectures_tagus"] + METADATA["invited_tagus"]
+		# compute total based on the campus of the student
+		total = alameda if targets[target].campus == "A" else tagus
+		#      lvl.1           lvl.2            lvl.3
+		lvls = int(total*0.5), int(total*0.75), total
+		lvl = compute_lvl(attendences,lvls)
+		lvl > 0
+	then:
+		award_achievement("Right on Time",lvl,target,logs,attendences)

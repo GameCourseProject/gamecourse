@@ -1,0 +1,11 @@
+rule: Lab King
+# Attend the labs, be the best
+# 	lvl.1: have the highest grade in the labs
+
+	when:
+		logs = GC.participations.getAllParticipations(target, "lab king")
+		nlogs = len(logs)
+		lvl = compute_lvl(nlogs, 1)
+
+	then:
+		award_badge(target, "Lab King", lvl, logs)

@@ -1,0 +1,25 @@
+1;reMIDI;;#f4b300;100
+1;eBook;;#78ba00;100
+1;Course Logo;;#2773ed;100
+1;Zombies and Monsters;;#ae113e;100
+1;Alien Invasion;;#599be5;100
+1;Reporter;;#c1004f;100
+1;Text Art;;#7200ad;100
+1;3D GIF;;#91d100;100
+2;Podcast;eBook+reMIDI;#4617b5;400
+2;Course Image;Course Logo+eBook;#006ac0;400
+2;Publicist;Course Logo+Alien Invasion|Course Logo+Zombies and Monsters;#008387;400
+2;reTrailer;reMIDI+Reporter;#189900;400
+2;Movie Poster;Alien Invasion+Course Logo;#00c140;400
+2;Living Page;Text Art+Zombies and Monsters|Text Art+Alien Invasion;#e66b1b;400
+2;Looping GIF;Reporter+3D GIF;#00a8a8;400
+2;Movie Barcodes;Reporter+3D GIF;#ff76bc;400
+3;Fake Speech;reTrailer+Podcast|Movie Barcodes+Movie Poster;#ff2e13;700
+3;Fake News;reTrailer+Publicist;#ff1d77;700
+3;Cartoonist;Podcast+Living Page;#aa3fff;700
+3;Kinectic;Course Image+Podcast|Looping GIF+Course Image;#20aeff;700
+3;Illuminator;Movie Poster+Living Page;#b11d01;700
+3;Stop Motion;Looping GIF+Publicist;#78ba00;700
+4;Lip Sync;Fake Speech+Cartoonist|Fake News+Stop Motion;#00a8a8;900
+4;Illustrator;Cartoonist+Illuminator|Kinectic+Stop Motion;#91d100;900
+4;Director;Fake News+Kinectic|Fake Speech+Illuminator;#ff76bc;900

@@ -1,0 +1,7 @@
+rule: Lab King
+# Attend the labs, be the best
+# lvl.1: Have the highest grade in the labs
+	when:
+		check_existance(facts,target,"lab king")
+	then:
+		award_achievement("Lab King",1,target,None,False)

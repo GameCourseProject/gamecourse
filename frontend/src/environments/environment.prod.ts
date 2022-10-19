@@ -1,6 +1,8 @@
+import { config } from "./config";
+
 export const environment = {
   production: true,
-  apiEndpoint: 'https://pcm.rnl.tecnico.ulisboa.pt/gamecourse/api',
+  apiEndpoint: config.API_URL,
   userPicture: {
     light: 'assets/imgs/user-light.png',
     dark: 'assets/imgs/user-dark.png'

@@ -1,0 +1,19 @@
+rule: Quiz Master
+# Excel at the quizzes
+# 	lvl.1: top grade in four quizzes
+# 	lvl.2: top grade in six quizzes
+# 	lvl.3: top grade in eight quizzes
+
+	when:
+		max_grade = METADATA["quiz_max_grade"]
+		logs = GC.participations.getParticipations(target, "quiz grade", max_grade)
+
+		# patch: filters the ninth quiz to match old results
+		# however this is a patch that should be fixed in following years
+		# by creating a new rule that has the right effects
+		flogs = filter_quiz(logs)
+
+		nlogs = len(flogs)
+		lvl = compute_lvl(nlogs, 4, 6, 8)
+	then:
+		award_badge(target, "Quiz Master", lvl, logs)

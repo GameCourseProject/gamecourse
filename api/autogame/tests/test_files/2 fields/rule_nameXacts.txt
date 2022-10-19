@@ -1,0 +1,20 @@
+
+
+rule: my oh my
+
+
+then:
+
+1+2
+
+rule: another one ...
+	then:
+		a = "a"
+		b = "baba"
+		a in b
+
+		rule: __init__
+	then:
+		1 * 4 # rule:
+		f = 3 < 4
+		f is True and not False

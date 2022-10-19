@@ -1,0 +1,16 @@
+rule: Quiz Master
+# Excel at the quizzes
+# lvl.1: top grade in four quizzes
+# lvl.2: top grade in six quizzes
+# lvl.3: top grade in eight quizzes
+	when:
+		# get all graded quizzes from the student
+		MAX_GRADE = str(METADATA["quiz_max_grade"])
+		logs = filter_logs(facts,target,action="quiz grade",xp=MAX_GRADE)
+		# compute the number of top graded quizzes
+		top_graded_quizzes = len(logs)
+		# compute lvl achieved based on the number of top graded quizzes
+		lvl = compute_lvl(top_graded_quizzes,4,6,8)
+		lvl > 0
+	then:
+		award_achievement("Quiz Master",lvl,target,logs,top_graded_quizzes)

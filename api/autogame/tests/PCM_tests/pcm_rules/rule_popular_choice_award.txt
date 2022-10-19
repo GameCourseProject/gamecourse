@@ -1,0 +1,19 @@
+rule: Popular Choice Award
+# Have the most liked multimedia presentation
+# lvl.1: be the third most liked
+# lvl.2: be the second most liked
+# lvl.3: be the most liked!
+	when:
+		# get all graded lab logs from the target student
+		tag = "popular choice award (presentation)"
+		logs = filter_logs(facts,target,action=tag)
+		# compute the number of logs
+		nlogs = len(logs)
+		# only students that have at least one popular choice award log are
+		# eligible for this achievement
+		nlogs > 0
+	then:
+		position = int(logs[0].info)
+		lvl_value = max(4-position,1)
+		lvl = compute_lvl(lvl_value,1,2,3)
+		award_achievement("Popular Choice Award",lvl,target,None,False)

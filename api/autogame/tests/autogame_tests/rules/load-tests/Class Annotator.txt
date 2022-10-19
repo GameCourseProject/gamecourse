@@ -1,0 +1,12 @@
+rule: Class Annotator
+# Find related resources, more information, about class subjects
+# 	lvl.1: get four points
+# 	lvl.2: get eight points
+# 	lvl.3: get twelve points
+
+	when:
+		logs = GC.participations.getForumParticipations(target, "Participation", "Class Annotator")
+		points = compute_rating(logs)
+		lvl = compute_lvl(points, 4, 8, 12)
+	then:
+		award_badge(target, "Class Annotator", lvl, logs)

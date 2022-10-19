@@ -1,0 +1,10 @@
+rule: Cinemagraph
+
+	when:
+		rule_unlocked("Looping GIF", target)
+		rule_unlocked("Reporter", target)
+		logs = GC.participations.getSkillParticipations(target, "Cinemagraph")
+		rating = get_rating(logs)
+		rating >= 3
+	then:
+		award_skill(target, "Cinemagraph", rating, logs)

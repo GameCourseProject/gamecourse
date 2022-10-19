@@ -1,0 +1,3 @@
+rule: R4
+then:
+	award_achievement("Lab Lover",3,target,facts[target])

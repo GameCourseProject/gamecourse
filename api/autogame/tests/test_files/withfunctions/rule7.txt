@@ -1,0 +1,8 @@
+rule: R7
+>> test_rule_system.TestFire.test_15
+>> test if target that no longer activates any rule of the rulesystem
+>> still belongs in the targets of the rulesystem
+	WHEN:
+		f(this)
+	THEN:
+		transform("success")

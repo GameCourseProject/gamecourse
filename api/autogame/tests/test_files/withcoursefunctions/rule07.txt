@@ -1,0 +1,9 @@
+rule: R7_1
+then:
+	award_achievement("Golden Star",3,target,[target],"R7-1") # XP = 100 * 3
+	transform("ignore") # this is just to test the function
+
+rule: R7_2
+then:
+	transform("ignore")
+	award_achievement("Replier Extraordinaire",1,target,[target],"R7-2") # XP = 50 * 1

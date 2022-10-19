@@ -1,0 +1,7 @@
+rule: R1
+this function is used as a test in "test_rule_system.py": TestFire.test_07
+to test if the rulesystem allows the use of custom functions, in this case
+'somatorio' is not an allowed builtin function so it must be imported into
+the system
+	when:
+		somatorio(range(30)) == sum(range(30))

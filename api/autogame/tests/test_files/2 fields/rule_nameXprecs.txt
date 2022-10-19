@@ -1,0 +1,34 @@
+
+rule: Class Annotator
+	when:
+		contributions = 8
+		contributions > 8
+		contributions < 10
+
+
+		rule: oppsidussi
+	when:
+	i=0
+	j=10+i
+	j**i
+
+		s = "miscellaneous"
+
+		len(s) > j
+
+
+
+
+
+
+
+
+True
+rule: whaaaaaaaaaaaaaaaaaaaaaaaaat???
+	when:
+		1
+		2
+		3
+		a = 1
+		a > 0
+		a = -1

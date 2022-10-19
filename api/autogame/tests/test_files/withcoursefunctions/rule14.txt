@@ -1,0 +1,3 @@
+rule: R14
+	then:
+		award_treeskill("Podcast",target,facts[target])

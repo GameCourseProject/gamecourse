@@ -1,0 +1,11 @@
+rule: Director
+
+	when:
+		opt_1 = rule_unlocked("Stop Motion", target) and rule_unlocked("reTrailer", target)
+		opt_2 = rule_unlocked("Foley", target) and	rule_unlocked("Kinetic", target)
+		opt_1 or opt_2
+		logs = GC.participations.getSkillParticipations(target, "Director")
+		rating = get_rating(logs)
+		rating >= 3
+	then:
+		award_skill(target, "Director", rating, logs)

@@ -1,0 +1,8 @@
+rule: R4
+>> test_rule_file.TestFire.test_10
+>> Test if rule outputs are correctly produced
+	then:
+		student = this
+		students = targets
+		logs = facts
+		f(student,students,logs)

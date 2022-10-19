@@ -1,0 +1,3 @@
+rule: R11
+then:
+	award_grade_aux("Random",target,facts[target],50)

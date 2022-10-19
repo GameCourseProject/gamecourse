@@ -1,0 +1,19 @@
+# Test prerequisite effects
+
+rule: R13-0
+	when:
+		effect_unlocked("R13-1",target)
+	then:
+		transform("R13-0")
+
+rule: R13-1
+	when:
+		target is not None
+	then:
+		transform("R13-1")
+
+rule: R13-2
+	when:
+		effect_unlocked("R13-1")
+	then:
+		transform("R13-2")

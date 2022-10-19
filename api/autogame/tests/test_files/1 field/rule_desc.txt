@@ -1,0 +1,26 @@
+# Test file to parse rule definitions with just the description
+rule:
+valid description with ascii chars
+	rule:
+		E quando Carlos Eduardo
+		pousou o olhar em Maria Eduarda,
+		nunca mais foi o mesmo ...
+
+rule:
+	à
+	è
+	ì # when: when:
+	ò # rule: then:
+	ù # then:
+
+	áéíóú # when:
+
+	äëïöü  ãõ âêîôû ç
+	ÁÉÍÓÚ ÀÈÌÒÙ ÄËÏÖÜ ÃÕ ÂÊÎÔÛ Ç
+
+rule:
+,.-_:;ºª+*?=/&$!€|
+1234567890
+
+rule:
+{[("''«»")]}

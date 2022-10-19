@@ -1,0 +1,11 @@
+rule: Initial Bonus
+# Attributed to everyone in the beginning of course
+
+	when:
+		bonus = METADATA["initial_bonus"]
+		logs = GC.participations.getAllParticipations(target, "initial bonus")
+		nlogs = len(logs)
+		nlogs == 1
+
+	then:
+        award_prize(target, "Initial Bonus", bonus)

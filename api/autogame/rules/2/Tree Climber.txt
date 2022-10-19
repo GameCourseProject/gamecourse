@@ -1,0 +1,31 @@
+rule: Tree Climber
+# Reach higher levels of the skill tree
+# lvl.1: reach level two
+# lvl.2: reach level three
+# lvl.3: reach level four
+
+	when:
+        # figure out how to get the participations for this rule; or write a different function using award table
+
+	lvl_3 = rule_unlocked("Audio Visualizer", target) or rule_unlocked("Director", target)
+
+        lvl_2_a = rule_unlocked("Animated Publicist", target) or rule_unlocked("Cartoonist", target)
+        lvl_2_b = rule_unlocked("Foley", target) or rule_unlocked("Kinetic", target)
+        lvl_2_c = rule_unlocked("Music Mashup", target) or rule_unlocked("Scene Reshooting", target)
+        lvl_2_d = rule_unlocked("Stop Motion", target)
+        lvl_2 = lvl_2_a or lvl_2_b or lvl_2_c or lvl_2_d
+
+        lvl_1_a = rule_unlocked("Alien Invasions", target) or rule_unlocked("Cinemagraph", target)
+        lvl_1_b = rule_unlocked("Course Image", target) or rule_unlocked("Doppelganger", target)
+        lvl_1_c = rule_unlocked("Flawless Duet", target) or rule_unlocked("Negative Space", target)
+        lvl_1_d = rule_unlocked("Publicist", target) or rule_unlocked("reMIDI", target)
+        lvl_1 = lvl_1_a or lvl_1_b or lvl_1_c or lvl_1_d
+
+        lvl = 0
+        lvl = 1 if lvl_1 else 0
+        lvl = 2 if lvl_2 else max(lvl, 0)
+        lvl = 3 if lvl_3 else max(lvl, 0)
+        lvl > 0
+
+	then:
+		award_badge(target, "Tree Climber", lvl)

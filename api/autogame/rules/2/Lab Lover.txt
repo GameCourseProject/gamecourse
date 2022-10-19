@@ -1,0 +1,15 @@
+rule: Lab Lover
+# Show up for labs!
+# 	lvl.1: be there for 50% of labs
+# 	lvl.2: be there for 75% of labs
+# 	lvl.3: be there for all of the labs
+
+	when:
+		lectures = METADATA["all_labs"]
+		logs = GC.participations.getAllParticipations(target, "attended lab")
+		attendances = len(logs)
+
+		# Compute the level of the badge that the student deserves
+		lvl = compute_lvl(attendances, 0.5 * lectures, 0.75 * lectures, lectures)
+	then:
+		award_badge(target, "Lab Lover", lvl, logs)

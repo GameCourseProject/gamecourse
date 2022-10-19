@@ -1,0 +1,5 @@
+rule: R16
+	when:
+		not effect_unlocked("R16")
+	then:
+		transform("R16")

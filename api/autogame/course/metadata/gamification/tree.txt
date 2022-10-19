@@ -1,0 +1,19 @@
+1;Course Logo;;#2773ed;150
+1;Alien Invasion;;#599be5;150
+1;Reporter;;#c1004f;150
+1;Podcast;;#4617b5;150
+1;Movie Poster;;#00c140;150
+1;Movie Barcodes;;#ff76bc;150
+2;Course Image;Course Logo+Alien Invasion;#006ac0;400
+2;Publicist;Course Logo+Movie Poster;#008387;400
+2;MapMaker;Movie Barcodes+Alien Invasion;#b11d01;400
+2;Looping GIF;Movie Poster+Reporter;#00a8a8;400
+2;UNIMation;Reporter+Podcast;#7200ad;400
+2;Pixel Art;Podcast+Movie Barcodes;#ae113e;400
+3;Fake Speech;UNIMation+Publicist;#ff2e13;750
+3;Cartoonist;Looping GIF+Pixel Art;#aa3fff;750
+3;Kinetic;MapMaker+Course Image|Looping GIF+UNIMation;#20aeff;750
+3;reTrailer;Publicist+Looping GIF;#189900;750
+3;Stop Motion;MapMaker+Pixel Art;#78ba00;750
+4;Lip Sync;Fake Speech+Cartoonist|Fake Speech+Kinetic;#00a8a8;1150
+4;Director;Stop Motion+reTrailer|Stop Motion+Kinetic;#ff76bc;1150

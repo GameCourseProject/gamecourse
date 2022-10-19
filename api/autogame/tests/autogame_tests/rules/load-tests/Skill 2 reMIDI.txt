@@ -1,0 +1,11 @@
+rule: reMIDI
+
+	when:
+		rule_unlocked("Album Cover", target)
+		rule_unlocked("Audiobook", target)
+
+		logs = GC.participations.getSkillParticipations(target, "reMIDI")
+		rating = get_rating(logs)
+		rating >= 3
+	then:
+		award_skill(target, "reMIDI", rating, logs)

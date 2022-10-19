@@ -1,0 +1,6 @@
+rule: # precs and actions
+	when:
+		x = 909.0
+		not isinstance(x, int)
+	then:
+		isinstance(x,float)

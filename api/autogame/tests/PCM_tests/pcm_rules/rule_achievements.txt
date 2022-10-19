@@ -1,0 +1,12 @@
+rule: Proficient Tool User
+# Get creative with gimp, inkscape and the other tools
+# 	lvl.1: get four points
+# 	lvl.2: get eight points
+# 	lvl.3: get fourteen points
+	when:
+		criteria = "Proficient Tool User"
+		logs, count, total = filter_grades(facts,target,criteria)
+		lvl = 3 if total >= 14 else 2 if total >= 8 else 1 if total >= 4 else 0
+		lvl > 0
+	then:
+		award_achievement("Proficient Tool User",lvl,target,logs,count)

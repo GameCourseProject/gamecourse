@@ -1,0 +1,24 @@
+
+# this is gonna be fun!
+
+rule : # no name
+	# description doesn't start here
+		# this is just for show!
+this nameless rules
+	isn't exactly
+		useful
+but is good for testing
+# when:
+	when:
+		number = 123
+		# rule
+		number > 0
+		# then:
+		number = -23
+		# just for show
+		isinstance(number, int)
+		"rule:"
+		"then:"
+rule:
+my my # my my
+when: True

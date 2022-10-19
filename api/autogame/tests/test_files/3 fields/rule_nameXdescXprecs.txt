@@ -1,0 +1,50 @@
+rule: Attack on Titan
+After his hometown is destroyed and his mother is killed,
+young Eren Yeager vows to cleanse the earth of the giant
+humanoid Titans that have brought humanity to the brink of
+extinction.
+	when:
+		eren = "titan"
+		eren == "titan"
+		eren = "human"
+		eren == "human"
+
+
+		rule	:	with 	tabulation
+	this 	rule		makes my
+
+	eyes hurt
+
+
+
+
+
+
+
+					a little!!
+
+
+		when,: this is finnished
+		I will
+		rule,: the world!
+
+
+	when :
+
+		my_work   = 		"finished"
+		my_work == 		"finished" ==	 True
+
+			my_feelings =		 "joy"
+
+
+		rule : Bring on the Titans! # \m/ \m/
+	it's about # comment
+	time they air
+
+	season 3 of Attack on Titan
+	# when:
+	when:
+		season_3 = True # but it takes a while...
+		happening = True # 2 months to go!
+		excitement = season_3 == happening and "very high"
+		303 >= len(excitement)**(season_3+happening)

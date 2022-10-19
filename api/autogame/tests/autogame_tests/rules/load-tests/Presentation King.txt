@@ -1,0 +1,13 @@
+rule: Presentation King
+# Present your thing, be the best
+# 	lvl.1: Have the highest grade in the presentations
+
+	when:
+		logs = GC.participations.getAllParticipations(target, "presentation king")
+		nlogs = len(logs)
+
+		# Compute the level of the badge that the student deserves
+		lvl = compute_lvl(nlogs, 1)
+
+	then:
+		award_badge(target, "Presentation King", lvl, logs)

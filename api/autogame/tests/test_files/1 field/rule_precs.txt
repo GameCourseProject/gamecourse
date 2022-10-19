@@ -1,0 +1,47 @@
+
+	# Test file to parse rule definitions with just the preconditions
+
+rule:
+when: # show me the numbers
+	1234567890
+	.0123456789
+	767
+	0xabcdef
+	-2
+	"what?"
+	True
+	False
+	[1,2,3]
+	(True, False)
+	{"a":0,"j":1,"m":-1}
+
+rule:
+	when: # but can you do this
+		a = 2 # variable declaration and assignment
+		b = a # variable declaration and assignment
+		c = b # variable declaration and assignment
+		a # precondition #01
+		b # precondition #02
+		c # precondition #03
+
+rule:
+	when: # I don't like where this is going
+		a = 2
+		((a + a) * a) - a / a % a ** (a // a)
+		b = True
+		b == 1 != False != True >= False <= b > 0 < 1
+		1 and a or b
+		a += b
+		b -= a + 1
+		a *= a
+		a /= b
+		a %= a
+		a **= a
+		a //= a
+		a = 0
+		b = 1
+		~ a & b | b ^ a << a >> a
+		c = ["string",1,False, {a:b}, (a,b), [a,b]]
+		a in c
+		b not in c
+		type(c) is list

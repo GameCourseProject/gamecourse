@@ -1,0 +1,19 @@
+rule: Lab Master
+# Excel at the labs
+# 	lvl.1: top grade in four graded classes
+# 	lvl.2: top grade in six graded classes
+# 	lvl.3: top grade in all graded classes
+
+	when:
+		tier_1 = METADATA["lab_excellence_threshold_1"]
+		tier_2 = METADATA["lab_excellence_threshold_2"]
+
+		logs = GC.participations.getParticipations(target, "lab grade")
+		flogs = filter_excellence(logs,[tier_1, tier_2],[5,5])
+		nlogs = len(flogs)
+
+		labs = METADATA["all_labs"]
+		lvl = compute_lvl(nlogs,4,6,labs)
+
+	then:
+		award_badge(target, "Lab Master", lvl, flogs)

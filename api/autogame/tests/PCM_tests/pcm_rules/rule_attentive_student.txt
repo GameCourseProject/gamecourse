@@ -1,0 +1,14 @@
+rule: Attentive Student
+# Find relevant bugs in class materials
+# lvl.1: get four points
+# lvl.2: get eight points
+# lvl.3: get twelve points
+	when:
+		# get all logs from student from "Bugs Forum"
+		result = filter_grades(facts,target,forum="Bugs Forum",max_repeats=None)
+		logs, list_points, total_points = result
+		# compute level achieved ...
+		lvl = compute_lvl(total_points,4,8,12)
+		lvl > 0
+	then:
+		award_achievement("Attentive Student",lvl,target,logs,total_points)
