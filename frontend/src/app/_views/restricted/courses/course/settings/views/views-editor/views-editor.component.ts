@@ -171,25 +171,25 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   getTemplateEditInfo(template: Template): void {
-    this.loading = true;
-    this.api.getTemplateEditInfo(this.courseID, template.id)
-      .pipe( finalize(() => this.loading = false) )
-      .subscribe(
-        data => {
-          this.courseRoles = data.courseRoles;
-          this.rolesHierarchy = data.rolesHierarchy;
-          this.viewsByAspects = data.templateViewsByAspect;
-          this.templateRoles = Template.parseRoles(data.templateRoles, template.roleType);
-          this.enabledModules = data.enabledModules;
-
-          // Set selected roles
-          this.selectedViewerRole = this.templateRoles.length !== 0 ? this.templateRoles[0].viewerRole.name : 'Default';
-          if (template.roleType == RoleTypeId.ROLE_INTERACTION)
-            this.selectedUserRole = this.templateRoles.length !== 0 ? this.templateRoles[0].userRole.name : 'Default';
-
-          // Set view to show
-          this.changeViewToShow();
-        })
+    // this.loading = true;
+    // this.api.getTemplateEditInfo(this.courseID, template.id)
+    //   .pipe( finalize(() => this.loading = false) )
+    //   .subscribe(
+    //     data => {
+    //       this.courseRoles = data.courseRoles;
+    //       this.rolesHierarchy = data.rolesHierarchy;
+    //       this.viewsByAspects = data.templateViewsByAspect;
+    //       this.templateRoles = Template.parseRoles(data.templateRoles, template.roleType);
+    //       this.enabledModules = data.enabledModules;
+    //
+    //       // Set selected roles
+    //       this.selectedViewerRole = this.templateRoles.length !== 0 ? this.templateRoles[0].viewerRole.name : 'Default';
+    //       if (template.roleType == RoleTypeId.ROLE_INTERACTION)
+    //         this.selectedUserRole = this.templateRoles.length !== 0 ? this.templateRoles[0].userRole.name : 'Default';
+    //
+    //       // Set view to show
+    //       this.changeViewToShow();
+    //     })
   }
 
 
@@ -390,9 +390,9 @@ export class ViewsEditorComponent implements OnInit {
         this.useByRef = !!this.useByRef;
 
         let templateViewsByAspects: {[p: string]: View};
-        await this.api.getTemplateEditInfo(this.courseID, this.templateToAdd).toPromise()
-          .then(res => templateViewsByAspects = res.templateViewsByAspect)
-          .finally(() => this.loading = false);
+        // await this.api.getTemplateEditInfo(this.courseID, this.templateToAdd).toPromise()
+        //   .then(res => templateViewsByAspects = res.templateViewsByAspect)
+        //   .finally(() => this.loading = false);
 
         if (!this.useByRef) {
           // Change view IDs
