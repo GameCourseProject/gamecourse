@@ -171,7 +171,7 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   getTemplateEditInfo(template: Template): void {
-    // this.loading = true;
+    this.loading = true;
     // this.api.getTemplateEditInfo(this.courseID, template.id)
     //   .pipe( finalize(() => this.loading = false) )
     //   .subscribe(
