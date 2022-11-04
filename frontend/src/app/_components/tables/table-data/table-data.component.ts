@@ -92,13 +92,14 @@ export class TableData implements OnInit {
   toggleDisabled?: boolean;                                     // Make toggle disabled
 
   // Type: ACTIONS
-  actions?: (Action | {action: Action | string, icon?: string,           // Actions
+  actions?: (Action | {action: Action | string, icon?: string,  // Actions
     color?: 'ghost' | 'primary' | 'secondary' | 'accent' |
       'neutral' | 'info' | 'success' | 'warning' | 'error',
     disabled?: boolean})[];
 
   // Type: CUSTOM
   html?: string;                                                // Custom HTML
+  searchBy?: string;                                            // Search term
 
   @Output() btnClicked: EventEmitter<Action | 'single'> = new EventEmitter<Action | 'single'>();
   @Output() valueChanged: EventEmitter<any> = new EventEmitter<any>();
@@ -261,5 +262,22 @@ export enum TableDataType {
   RADIO = 'radio',          // params -> radioId: string, radioGroup: string, radioOptionValue: any, radioValue: any, radioColor?: string, radioDisabled?: boolean
   TOGGLE = 'toggle',        // params -> toggleId: string, toggleValue: boolean, toggleColor?: string, toggleDisabled?: boolean
   ACTIONS = 'actions',      // params -> actions: (Action|{action: Action, icon?: string, color?: string, disabled?: boolean})[]
-  CUSTOM = 'custom'         // params -> html: string
+  CUSTOM = 'custom'         // params -> html: string, searchBy: string
+}
+
+export function getValue(data: {type: TableDataType, content: any}): string {
+  if (data.type === TableDataType.TEXT) return data.content['text'];
+  if (data.type === TableDataType.NUMBER) return data.content['value'];
+  if (data.type === TableDataType.DATE) return data.content['date']?.format(data.content['dateFormat'] ?? 'DD/MM/YYYY') ?? null;
+  if (data.type === TableDataType.TIME) return data.content['time']?.format(data.content['timeFormat'] ?? 'HH:mm') ?? null;
+  if (data.type === TableDataType.DATETIME) return data.content['datetime']?.format(data.content['datetimeFormat'] ?? 'DD/MM/YYYY HH:mm') ?? null;
+  if (data.type === TableDataType.COLOR) return data.content['color'];
+  if (data.type === TableDataType.PILL) return data.content['pillText'];
+  if (data.type === TableDataType.AVATAR) return data.content['avatarTitle'];
+  return null;
+}
+
+export function isFilterable(type: TableDataType): boolean {
+  return type !== TableDataType.IMAGE && type !== TableDataType.BUTTON && type !== TableDataType.ACTIONS &&
+    type !== TableDataType.CUSTOM;
 }

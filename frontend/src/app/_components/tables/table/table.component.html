@@ -16,16 +16,6 @@
 
       <!-- Table: body -->
       <tbody class="bg-base-100 divide-y">
-        <tr *ngFor="let tr of data; let i = index" class="whitespace-nowrap bg-base-100 hover:bg-base-200">
-          <td table-data *ngFor="let td of tr; let col = index" class="!border-b !border-b-base-content !border-opacity-20"
-              [type]="td.type"
-              [data]="td.content"
-              [align]="headers[col].align"
-              (btnClicked)="btnClicked.emit({type: $event, row: i, col: col})"
-              (valueChanged)="valueChanged.emit({value: $event, row: i, col: col})">
-          </td>
-        </tr>
-
         <!-- Loading -->
         <tr *ngIf="loading" class="bg-base-100">
           <td [colSpan]="headers?.length">

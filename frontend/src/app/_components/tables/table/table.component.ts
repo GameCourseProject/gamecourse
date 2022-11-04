@@ -1,6 +1,18 @@
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
-import {TableDataType} from "../table-data/table-data.component";
+import {
+  Component,
+  ComponentRef,
+  EmbeddedViewRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewContainerRef
+} from '@angular/core';
+import {getValue, isFilterable, TableData, TableDataType} from "../table-data/table-data.component";
 import {Action} from "../../../_domain/modules/config/Action";
+import * as _ from 'lodash';
 
 @Component({
   selector: 'app-table',
@@ -27,6 +39,7 @@ export class TableComponent implements OnInit, OnChanges {
 
   datatable: DataTables.Api;
   defaultOptions = {
+    deferRender: true,
     language: {
       info: 'Showing _START_-_END_ of _TOTAL_',
       paginate: {
@@ -34,9 +47,47 @@ export class TableComponent implements OnInit, OnChanges {
         previous: '<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>'
       }
     },
+    createdRow: (row, data, dataIndex) => {
+      row.classList = 'whitespace-nowrap bg-base-100 hover:bg-base-200';
+    },
+    columnDefs: [
+      {
+        targets: '_all',
+        render: (data, type, row, meta) => { // Render cell with info for sorting, searching and filtering
+          let value = '';
+          if (data.type === TableDataType.TEXT) value = data.content['text'];
+          else if (data.type === TableDataType.NUMBER) value = data.content['value']?.toString() ?? '';
+          else if (data.type === TableDataType.DATE) value = data.content['date']?.format(data.content['dateFormat'] ?? 'DD/MM/YYYY') ?? 'Never';
+          else if (data.type === TableDataType.TIME) value = data.content['time']?.format(data.content['timeFormat'] ?? 'HH:mm') ?? 'Never';
+          else if (data.type === TableDataType.DATETIME) value = data.content['datetime']?.format(data.content['datetimeFormat'] ?? 'DD/MM/YYYY HH:mm') ?? 'Never';
+          else if (data.type === TableDataType.COLOR) value = data.content['color'];
+          else if (data.type === TableDataType.PILL) value = data.content['pillText'];
+          else if (data.type === TableDataType.AVATAR) value = data.content['avatarTitle'] + (' ' + data.content['avatarSubtitle'] ?? '');
+          else if (data.type === TableDataType.CHECKBOX) value = data.content['checkboxValue'].toString();
+          else if (data.type === TableDataType.RADIO) value = data.content['radioValue'].toString();
+          else if (data.type === TableDataType.TOGGLE) value = data.content['toggleValue'].toString();
+          else if (data.type === TableDataType.CUSTOM) value = data.content['searchBy'] ?? '';
+          return value.swapNonENChars();
+        },
+        createdCell: (td, cellData, rowData, rowIdx, colIdx) => { // Creating each cell according to its type
+          td.innerHTML = '';
+
+          const componentRef: ComponentRef<TableData> = this.viewContainerRef.createComponent(TableData);
+          componentRef.instance.type = cellData.type;
+          componentRef.instance.data = cellData.content;
+          componentRef.instance.align = this.headers[colIdx].align;
+          componentRef.instance.btnClicked.subscribe((event) => this.btnClicked.emit({type: event, row: rowIdx, col: colIdx}));
+          componentRef.instance.valueChanged.subscribe((event) => this.valueChanged.emit({value: event, row: rowIdx, col: colIdx}));
+          td.classList = '!border-b !border-b-base-content !border-opacity-20';
+
+          const domElement = (componentRef.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement;
+          td.appendChild(domElement);
+        }
+      }
+    ]
   };
 
-  constructor() { }
+  constructor(private viewContainerRef: ViewContainerRef) { }
 
   ngOnInit(): void {
   }
@@ -47,14 +98,17 @@ export class TableComponent implements OnInit, OnChanges {
   }
 
   buildDatatable(): void {
+    // Reset table
     if (this.datatable) {
       this.datatable.destroy();
       $('#' + this.id + ' .filters').remove();
     }
 
     // Set options
-    if (!this.options) this.options = {};
-    let opts = this.options ? Object.assign(this.options, this.defaultOptions) : this.defaultOptions;
+    let opts = _.merge(this.options ?? {}, this.defaultOptions);
+
+    // Set data
+    opts['data'] = this.data;
 
     // Add footers
     if (this.hasFooters) this.footers = this.headers.map(header => header.label);
@@ -62,14 +116,14 @@ export class TableComponent implements OnInit, OnChanges {
     const that = this;
     setTimeout(() => {
       // Add column filtering
-      if (this.hasColumnFiltering) {
-        if (this.data.length > 0) {
-          $('#' + this.id + ' thead tr')
-            .clone(true)
-            .addClass('filters')
-            .appendTo('#' + this.id + ' thead');
+      if (this.hasColumnFiltering && this.data.length > 0) {
+        // Create filters header
+        $('#' + this.id + ' thead tr')
+          .clone(true)
+          .addClass('filters')
+          .appendTo('#' + this.id + ' thead');
 
-          opts = Object.assign({
+        opts = _.merge({
             orderCellsTop: true,
             initComplete: function () {
               const api = this.api();
@@ -78,15 +132,14 @@ export class TableComponent implements OnInit, OnChanges {
               api.columns().eq(0)
                 .each(colIdx => {
                   const colType = that.data[0][colIdx].type;
-                  const cell = $('#' + that.id + ' .filters th').eq($(api.column(colIdx).header()).index());
+                  const filterCell = $('#' + that.id + ' .filters th').eq($(api.column(colIdx).header()).index());
 
                   // Skip types that are not filterable
-                  if (colType === TableDataType.IMAGE || colType === TableDataType.BUTTON || colType === TableDataType.ACTIONS
-                    || colType === TableDataType.CUSTOM) {
-                    $(cell).html('');
+                  if (!isFilterable(colType)) {
+                    $(filterCell).html('');
 
                   } else {
-                    const title = $(cell).text().trim();
+                    const title = $(filterCell).text().trim();
 
                     // Get all different options of column
                     let options = '';
@@ -98,24 +151,27 @@ export class TableComponent implements OnInit, OnChanges {
                       let opts = [];
                       for (let row of that.data) {
                         const value = getValue(row[colIdx]);
-                        if (value !== null && value !== undefined && value !== '') opts.push(value);
+                        if (value) opts.push(value);
                       }
                       opts = [...new Set(opts)]; // unique options
-                      opts.sort();
+                      opts.sort((a, b) => {
+                        if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
+                        return a - b;
+                      })
                       options = opts.map(option => '<option value="' + option + '">' + option + '</option>').join('');
                     }
 
                     // Add select with options
-                    $(cell).html('<select class="select select-bordered select-sm w-full">' +
+                    $(filterCell).html('<select class="select select-bordered select-sm w-full">' +
                       '<option selected value="undefined">Filter...</option>' + options + '</select>');
 
                     // On every keypress in the select
-                    $('select', $('#' + that.id + ' .filters th').eq($(api.column(colIdx).header()).index()))
+                    $('select', filterCell)
                       .off('keyup change')
                       .on('change', function (e) {
                         // Filter column
-                        const regexr = '({search})';
-                        let value = ($(this)[0] as HTMLSelectElement).value;
+                        const regexr = colType === TableDataType.NUMBER ? '(^{search}$)' : '({search})';
+                        const value = ($(this)[0] as HTMLSelectElement).value.swapNonENChars();
                         api.column(colIdx)
                           .search(
                             value !== null && value !== undefined && value !== 'undefined' ?
@@ -127,34 +183,27 @@ export class TableComponent implements OnInit, OnChanges {
                           .draw()
                       })
                   }
-
-                  function getValue(cell: {type: TableDataType, content: any}): string {
-                    if (cell.type === TableDataType.TEXT) return cell.content['text'];
-                    if (cell.type === TableDataType.NUMBER) return cell.content['value'];
-                    if (cell.type === TableDataType.DATE) return cell.content['date']?.format(cell.content['dateFormat'] ?? 'DD/MM/YYYY') ?? null;
-                    if (cell.type === TableDataType.TIME) return cell.content['time']?.format(cell.content['timeFormat'] ?? 'HH:mm') ?? null;
-                    if (cell.type === TableDataType.DATETIME) return cell.content['datetime']?.format(cell.content['datetimeFormat'] ?? 'DD/MM/YYYY HH:mm') ?? null;
-                    if (cell.type === TableDataType.COLOR) return cell.content['color'];
-                    if (cell.type === TableDataType.PILL) return cell.content['pillText'];
-                    if (cell.type === TableDataType.AVATAR) return cell.content['avatarTitle'];
-                    return null;
-                  }
                 });
             },
           }, opts);
-        }
       }
 
       // Create datatable
       this.datatable = $('#' + this.id).DataTable(opts);
 
       // Hide sorting columns
-      if (opts.hasOwnProperty('columnDefs')) {
-        opts['columnDefs'].forEach(option => {
-          if (option.hasOwnProperty('orderData') && option.hasOwnProperty('targets'))
-            this.datatable.column(option['orderData']).visible(false, false);
-        });
-      }
+      opts['columnDefs'].forEach(option => {
+        if (option.hasOwnProperty('orderData') && option.hasOwnProperty('targets'))
+          this.datatable.column(option['orderData']).visible(false, false);
+      });
+
+      // Custom search
+      $('#' + this.id + '_filter input')
+        .unbind()
+        .on('input', function (event) {
+          let value = ($(this)[0] as HTMLInputElement).value.swapNonENChars();
+          that.datatable.search(value).draw();
+        })
     }, 0);
   }
 
