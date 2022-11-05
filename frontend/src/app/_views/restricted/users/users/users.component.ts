@@ -88,7 +88,6 @@ export class UsersComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
-    {label: 'Name (sorting)', align: 'left'},
     {label: 'User', align: 'left'},
     {label: 'Student Nr', align: 'middle'},
     {label: 'Email', align: 'left'},
@@ -103,20 +102,19 @@ export class UsersComponent implements OnInit {
   tableOptions = {
     order: [[ 0, 'asc' ]], // default order
     columnDefs: [
-      { type: 'natural', targets: [0, 1, 2, 3, 4, 5, 6] },
-      { orderData: 0,   targets: 1 },
-      { orderData: 5,   targets: 6 },
-      { orderable: false, targets: [7, 8, 9] }
+      { type: 'natural', targets: [0, 1, 2, 3, 4, 5] },
+      { orderData: 4,   targets: 5 },
+      { searchable: false, targets: [4, 6, 7, 8] },
+      { orderable: false, targets: [6, 7, 8] }
     ]
   }
 
   buildTable(): void {
     this.loading.table = true;
 
-    const table: { type: TableDataType, content: any }[][] = [];
+    let table: { type: TableDataType, content: any }[][] = [];
     this.users.forEach(user => {
       table.push([
-        {type: TableDataType.TEXT, content: {text: user.name}},
         {type: TableDataType.AVATAR, content: {avatarSrc: user.photoUrl, avatarTitle: user.name, avatarSubtitle: user.major}},
         {type: TableDataType.NUMBER, content: {value: user.studentNumber, valueFormat: 'none'}},
         {type: TableDataType.TEXT, content: {text: user.email}},

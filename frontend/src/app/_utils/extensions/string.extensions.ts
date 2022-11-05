@@ -72,33 +72,31 @@ String.prototype.removeWord = function(word: string): string {
  * @return string
  */
 String.prototype.swapNonENChars = function(): string {
-  return this.replace(/[ãáâàåä]/u, 'a')
-    .replace(/[ÃÁÂÀÅÄ]/u, 'A')
+  return this.replaceAll(/[ãáâàåä]/ug, 'a')
+    .replaceAll(/[ÃÁÂÀÅÄ]/ug, 'A')
 
-    .replace(/[óôõòøö]/u, 'o')
-    .replace(/[ÓÔÕÒØÖ]/u, 'O')
+    .replaceAll(/[óôõòøö]/ug, 'o')
+    .replaceAll(/[ÓÔÕÒØÖ]/ug, 'O')
 
-    .replace(/ç/u, 'c')
-    .replace(/Ç/u, 'C')
+    .replaceAll(/ç/ug, 'c')
+    .replaceAll(/Ç/ug, 'C')
 
-    .replace(/[éêè]/u, 'e')
-    .replace(/[ÉÊÈ]/u, 'E')
+    .replaceAll(/[éêè]/ug, 'e')
+    .replaceAll(/[ÉÊÈ]/ug, 'E')
 
-    .replace(/[íì]/u, 'i')
-    .replace(/[ÍÌ]/u, 'I')
+    .replaceAll(/[íì]/ug, 'i')
+    .replaceAll(/[ÍÌ]/ug, 'I')
 
-    .replace(/[úùüû]/u, 'u')
-    .replace(/[ÚÙÜÛ]/u, 'U')
+    .replaceAll(/[úùüû]/ug, 'u')
+    .replaceAll(/[ÚÙÜÛ]/ug, 'U')
 
-    .replace(/ñ/u, 'n')
-    .replace(/Ñ/u, 'N')
+    .replaceAll(/ñ/ug, 'n')
+    .replaceAll(/Ñ/ug, 'N')
 
-    .replace(/ß/u, 'b')
+    .replaceAll(/ß/ug, 'b')
 
-    .replace(/æ/u, 'ae')
-    .replace(/Æ/u, 'AE')
-
-    .replace(/[^a-zA-Z\d_ ]/, '');
+    .replaceAll(/æ/ug, 'ae')
+    .replaceAll(/Æ/ug, 'AE')
 }
 
 /**

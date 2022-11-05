@@ -122,7 +122,6 @@ export class SkillsComponent implements OnInit {
         order: [[ 0, 'asc' ]], // default order,
         columnDefs: [
           { orderData: 0,   targets: 1 },
-          { visible: false, target: 0 },
           { orderable: false, targets: [0, 1, 2, 3, 4] }
         ]
       }
@@ -130,11 +129,9 @@ export class SkillsComponent implements OnInit {
     skills: {
       headers: [
         {label: 'Tier Position (sorting)', align: 'middle'},
-        {label: 'Tier', align: 'middle'},
         {label: 'Skill Position (sorting)', align: 'middle'},
-        {label: 'Name', align: 'middle'},
+        {label: 'Skill', align: 'left'},
         {label: 'Dependencies', align: 'middle'},
-        {label: 'Color', align: 'left'},
         {label: 'Reward (XP)', align: 'middle'},
         {label: 'Collab', align: 'middle'},
         {label: 'Extra', align: 'middle'},
@@ -142,12 +139,11 @@ export class SkillsComponent implements OnInit {
         {label: 'Actions'}
       ],
       tableOptions: {
-        order: [[ 0, 'asc' ], [ 2, 'asc' ]], // default order,
+        order: [[ 0, 'asc' ], [ 1, 'asc' ]], // default order,
         columnDefs: [
-          { orderData: 0,   targets: 1 },
-          { orderData: 2,   targets: 3 },
-          { visible: false, targets: [0, 2] },
-          { orderable: false, targets: [1, 3, 4, 5, 6, 7, 8, 9, 10] }
+          { orderData: 0, targets: 2 },
+          { orderData: 1, targets: 2 },
+          { orderable: false, targets: [0, 1, 2, 3, 4, 5, 6, 7, 8] }
         ]
       }
     }
@@ -161,7 +157,7 @@ export class SkillsComponent implements OnInit {
     this.getSkillTreeInfo(skillTreeId).tiers.forEach((tier, index) => {
       table.push([
         {type: TableDataType.NUMBER, content: {value: tier.position}},
-        {type: TableDataType.TEXT, content: {text: tier.name}},
+        {type: TableDataType.TEXT, content: {text: tier.name, classList: 'font-semibold'}},
         {type: TableDataType.NUMBER, content: {value: tier.reward}},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: tier.isActive}},
         {type: TableDataType.ACTIONS, content: {actions: [
@@ -191,11 +187,22 @@ export class SkillsComponent implements OnInit {
       const nrSkillsInTier = this.getSkillTreeInfo(skillTreeId).skills.filter(s => s.tierID === skill.tierID).length;
       table.push([
         {type: TableDataType.NUMBER, content: {value: tiers[skill.tierID].position}},
-        {type: TableDataType.TEXT, content: {text: tiers[skill.tierID].name}},
         {type: TableDataType.NUMBER, content: {value: skill.position}},
-        {type: TableDataType.TEXT, content: {text: skill.name}},
-        {type: TableDataType.CUSTOM, content: {html: skill.dependencies.map(dep => '<p class="prose text-sm text-center">' + this.getComboText(dep) + '</p>').join('')}},
-        {type: TableDataType.COLOR, content: {color: skill.color, colorLabel: skill.color}},
+        {type: TableDataType.CUSTOM, content: {html: '<div class="!text-left !text-start !justify-start">' +
+              '<div class="flex items-center space-x-3">' +
+              '<div class="avatar">' +
+              '<div class="mask mask-circle w-9 h-9 !flex !items-center !justify-center bg-base-content bg-opacity-30" style="background-color: ' + skill.color + '">' +
+              '<span class="text-base-100">' + skill.name[0] + '</span>' +
+              '</div>' +
+              '</div>' +
+              '<div class="prose text-sm">' +
+              '<h4>' + skill.name + '</h4>' +
+              '<span class="opacity-60">Tier: ' + tiers[skill.tierID].name + '</span>' +
+              '</div>' +
+              '</div>' +
+              '</div>', searchBy: skill.name + ' ' + tiers[skill.tierID].name}},
+        {type: TableDataType.CUSTOM, content: {html: skill.dependencies.map(dep => '<p class="prose text-sm text-center">' + this.getComboText(dep) + '</p>').join(''),
+            searchBy: skill.dependencies.map(dep => dep.map(s => s.name).join(' ')).join(' ')}},
         {type: TableDataType.NUMBER, content: {value: tiers[skill.tierID].reward, valueFormat: 'default'}},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isCollab', toggleValue: skill.isCollab}},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isExtra', toggleValue: skill.isExtra}},

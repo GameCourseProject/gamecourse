@@ -157,7 +157,6 @@ export class UsersComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
-    {label: 'Name (sorting)', align: 'left'},
     {label: 'User', align: 'left'},
     {label: 'Roles', align: 'left'},
     {label: 'Student Nr', align: 'middle'},
@@ -169,12 +168,12 @@ export class UsersComponent implements OnInit {
   ];
   data: {type: TableDataType, content: any}[][];
   tableOptions = {
-    order: [[ 0, 'asc' ], [ 3, 'asc' ]], // default order
+    order: [[ 0, 'asc' ], [ 2, 'asc' ]], // default order
     columnDefs: [
-      { type: 'natural', targets: [0, 1, 2, 3, 4, 5, 6] },
-      { orderData: 0,   targets: 1 },
-      { orderData: 5,   targets: 6 },
-      { orderable: false, targets: [2, 7, 8] }
+      { type: 'natural', targets: [0, 1, 2, 3, 4, 5] },
+      { orderData: 4,   targets: 5 },
+      { searchable: false, targets: [4, 6, 7]},
+      { orderable: false, targets: [1, 6, 7] }
     ]
   }
 
@@ -184,13 +183,12 @@ export class UsersComponent implements OnInit {
     const table: { type: TableDataType, content: any }[][] = [];
     this.courseUsers.forEach(user => {
       table.push([
-        {type: TableDataType.TEXT, content: {text: user.nickname ?? user.name}},
-        {type: TableDataType.AVATAR, content: {avatarSrc: user.photoUrl, avatarTitle: user.nickname ?? user.name, avatarSubtitle: user.major}},
+        {type: TableDataType.AVATAR, content: {avatarSrc: user.photoUrl, avatarTitle: user.name, avatarSubtitle: user.major}},
         {type: TableDataType.CUSTOM, content: {html: '<div class="flex flex-col gap-2">' +
               user.roles
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .map(role => '<div class="badge badge-outline badge-primary">' + role.name + '</div>').join('') +
-              '</div>'
+              '</div>', searchBy: user.roles.map(role => role.name).join(' ')
         }},
         {type: TableDataType.NUMBER, content: {value: user.studentNumber, valueFormat: 'none'}},
         {type: TableDataType.TEXT, content: {text: user.major}},

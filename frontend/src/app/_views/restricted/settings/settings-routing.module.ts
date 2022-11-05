@@ -2,12 +2,12 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import {GlobalComponent} from "./global/global.component";
 import {ModulesComponent} from "./modules/modules.component";
-import {SettingsComponent} from "./settings/settings.component";
+import {ComingSoonComponent} from "../../../_components/misc/pages/coming-soon/coming-soon.component";
 
 const routes: Routes = [
   {
     path: '',
-    component: SettingsComponent,
+    component: ComingSoonComponent,
     children: [
       {
         path: 'modules',

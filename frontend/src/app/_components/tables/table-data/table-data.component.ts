@@ -266,18 +266,25 @@ export enum TableDataType {
 }
 
 export function getValue(data: {type: TableDataType, content: any}): string {
-  if (data.type === TableDataType.TEXT) return data.content['text'];
-  if (data.type === TableDataType.NUMBER) return data.content['value'];
-  if (data.type === TableDataType.DATE) return data.content['date']?.format(data.content['dateFormat'] ?? 'DD/MM/YYYY') ?? null;
-  if (data.type === TableDataType.TIME) return data.content['time']?.format(data.content['timeFormat'] ?? 'HH:mm') ?? null;
-  if (data.type === TableDataType.DATETIME) return data.content['datetime']?.format(data.content['datetimeFormat'] ?? 'DD/MM/YYYY HH:mm') ?? null;
-  if (data.type === TableDataType.COLOR) return data.content['color'];
-  if (data.type === TableDataType.PILL) return data.content['pillText'];
-  if (data.type === TableDataType.AVATAR) return data.content['avatarTitle'];
-  return null;
+  if (data.type === TableDataType.TEXT) return data.content['text'] ?? '';
+  else if (data.type === TableDataType.NUMBER) return data.content['value']?.toString() ?? '';
+  else if (data.type === TableDataType.DATE) return data.content['date']?.format(data.content['dateFormat'] ?? 'DD/MM/YYYY') ?? 'Never';
+  else if (data.type === TableDataType.TIME) return data.content['time']?.format(data.content['timeFormat'] ?? 'HH:mm') ?? 'Never';
+  else if (data.type === TableDataType.DATETIME) return data.content['datetime']?.format(data.content['datetimeFormat'] ?? 'DD/MM/YYYY HH:mm') ?? 'Never';
+  else if (data.type === TableDataType.COLOR) return data.content['color'] ?? '';
+  else if (data.type === TableDataType.PILL) return data.content['pillText'] ?? '';
+  else if (data.type === TableDataType.AVATAR) return data.content['avatarTitle'] + (' ' + data.content['avatarSubtitle'] ?? '');
+  else if (data.type === TableDataType.CHECKBOX) return data.content['checkboxValue'].toString();
+  else if (data.type === TableDataType.RADIO) return data.content['radioValue'].toString();
+  else if (data.type === TableDataType.TOGGLE) return data.content['toggleValue'].toString();
+  else if (data.type === TableDataType.CUSTOM) return data.content['searchBy'] ?? '';
+  return '';
 }
 
 export function isFilterable(type: TableDataType): boolean {
-  return type !== TableDataType.IMAGE && type !== TableDataType.BUTTON && type !== TableDataType.ACTIONS &&
-    type !== TableDataType.CUSTOM;
+  return type !== TableDataType.IMAGE && type !== TableDataType.BUTTON && type !== TableDataType.ACTIONS;
+}
+
+export function isSelectable(type: TableDataType): boolean {
+  return type === TableDataType.CHECKBOX || type === TableDataType.RADIO || type === TableDataType.TOGGLE;
 }

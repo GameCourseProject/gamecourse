@@ -59,10 +59,10 @@
 
 @layer components {
   .btn-ghost:disabled {
-    @apply bg-transparent text-base-content/20;
+    @apply bg-transparent text-base-300;
 
     > * {
-      @apply text-base-content/20;
+      @apply text-base-300;
     }
   }
 }

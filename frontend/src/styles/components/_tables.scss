@@ -17,12 +17,17 @@
     @apply sm:pr-4;
   }
 
-  .dataTables_length select, .dataTables_filter input {
-    @apply text-sm input input-sm input-bordered focus:border-primary focus:outline-none;
+  .dataTables_filter input, .filters input {
+    @apply input input-bordered input-sm focus:input-primary #{!important};
 
-    &:focus {
-      @apply border-2;
+    &::-webkit-input-placeholder, &::placeholder {
+      @apply text-neutral/75 font-semibold;
     }
+  }
+
+  .dataTables_length select, .filters select {
+    @apply select select-bordered select-sm focus:select-primary #{!important};
+    padding: unset;
   }
 
   .dataTables_length select {
@@ -31,6 +36,10 @@
 
   .dataTables_filter input {
     @apply ml-1.5;
+  }
+
+  .filters select, .filters input {
+    @apply w-full min-w-[6rem];
   }
 
   .dataTables_paginate {

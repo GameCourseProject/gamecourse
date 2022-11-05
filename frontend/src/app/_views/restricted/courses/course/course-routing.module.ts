@@ -12,6 +12,7 @@ import { ViewsComponent } from "./settings/views/views/views.component";
 import { ViewsEditorComponent } from "./settings/views/views-editor/views-editor.component";
 import { PageComponent } from "./page/page.component";
 import { ConfigComponent } from "./settings/modules/config/config/config.component";
+import {ComingSoonComponent} from "../../../../_components/misc/pages/coming-soon/coming-soon.component";
 
 const routes: Routes = [
   {
@@ -38,11 +39,11 @@ const routes: Routes = [
       },
       {
         path: 'autogame',
-        // component: AutoGameComponent
+        component: ComingSoonComponent
       },
       {
         path: 'rule-system',
-        component: RulesComponent
+        component: ComingSoonComponent
       },
       {
         path: 'modules',
@@ -54,7 +55,7 @@ const routes: Routes = [
       },
       {
         path: 'pages',
-        component: ViewsComponent,
+        component: ComingSoonComponent,
       },
       {
         path: 'pages/templates/:id/editor',
@@ -62,13 +63,13 @@ const routes: Routes = [
       },
       {
         path: 'themes',
-        component: GlobalComponent
+        component: ComingSoonComponent
       }
     ]
   },
   {
     path: 'overview',
-    component: GlobalComponent,
+    component: ComingSoonComponent,
     canActivate: [CourseAdminGuard]
   },
   {

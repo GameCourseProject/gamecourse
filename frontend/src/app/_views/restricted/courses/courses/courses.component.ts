@@ -74,7 +74,6 @@ export class CoursesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
-    {label: 'Name (sorting)', align: 'left'},
     {label: 'Course', align: 'left'},
     {label: '# Students', align: 'middle'},
     {label: 'Year', align: 'middle'},
@@ -88,13 +87,13 @@ export class CoursesComponent implements OnInit {
   ];
   data: {type: TableDataType, content: any}[][];
   tableOptions = {
-    order: [[ 3, 'asc' ], [ 0, 'asc' ]], // default order
+    order: [[ 2, 'asc' ], [ 0, 'asc' ]], // default order
     columnDefs: [
-      { type: 'natural', targets: [0, 1, 2, 3, 4, 5, 6, 7] },
-      { orderData: 0,   targets: 1 },
-      { orderData: 4,   targets: 5 },
-      { orderData: 6,   targets: 7 },
-      { orderable: false, targets: [8, 9, 10] }
+      { type: 'natural', targets: [0, 1, 2, 3, 4, 5, 6] },
+      { orderData: 3,   targets: 4 },
+      { orderData: 5,   targets: 6 },
+      { searchable: false, targets: [3, 5, 7, 8, 9]},
+      { orderable: false, targets: [7, 8, 9] }
     ]
   }
 
@@ -104,7 +103,6 @@ export class CoursesComponent implements OnInit {
     const table: { type: TableDataType, content: any }[][] = [];
     this.courses.forEach(course => {
       table.push([
-        {type: TableDataType.TEXT, content: {text: course.name}},
         {type: TableDataType.CUSTOM, content: {html: '<div class="!text-left !text-start !justify-start">' +
               '<div class="flex items-center space-x-3">' +
                 '<div class="avatar">' +
@@ -117,7 +115,7 @@ export class CoursesComponent implements OnInit {
                   (course.short ? '<span class="opacity-60">' + course.short + '</span>' : '') +
                 '</div>' +
               '</div>' +
-            '</div>'}},
+            '</div>', searchBy: course.name + ' ' + course.short}},
         {type: TableDataType.NUMBER, content: {value: course.nrStudents}},
         {type: TableDataType.TEXT, content: {text: course.year}},
         {type: TableDataType.NUMBER, content: {value: course.startDate?.unix()}},

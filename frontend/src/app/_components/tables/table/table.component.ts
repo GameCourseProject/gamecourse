@@ -10,7 +10,7 @@ import {
   SimpleChanges,
   ViewContainerRef
 } from '@angular/core';
-import {getValue, isFilterable, TableData, TableDataType} from "../table-data/table-data.component";
+import {getValue, isFilterable, isSelectable, TableData, TableDataType} from "../table-data/table-data.component";
 import {Action} from "../../../_domain/modules/config/Action";
 import * as _ from 'lodash';
 
@@ -24,10 +24,11 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() classList: string;
 
   @Input() headers: {label: string, align?: 'left' | 'middle' | 'right'}[];
-  @Input() footers: string[];
+  @Input() footers?: string[];
 
-  @Input() hasColumnFiltering: boolean = true;
-  @Input() hasFooters: boolean = true;
+  @Input() hasColumnFiltering?: boolean = true;
+  @Input() hasFooters?: boolean = true;
+  @Input() lang?: 'EN' | 'PT' = 'EN';
 
   @Input() data: {type: TableDataType, content: any}[][];
   @Input() options?: any;
@@ -41,7 +42,6 @@ export class TableComponent implements OnInit, OnChanges {
   defaultOptions = {
     deferRender: true,
     language: {
-      info: 'Showing _START_-_END_ of _TOTAL_',
       paginate: {
         next: '<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>',
         previous: '<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>'
@@ -54,20 +54,7 @@ export class TableComponent implements OnInit, OnChanges {
       {
         targets: '_all',
         render: (data, type, row, meta) => { // Render cell with info for sorting, searching and filtering
-          let value = '';
-          if (data.type === TableDataType.TEXT) value = data.content['text'];
-          else if (data.type === TableDataType.NUMBER) value = data.content['value']?.toString() ?? '';
-          else if (data.type === TableDataType.DATE) value = data.content['date']?.format(data.content['dateFormat'] ?? 'DD/MM/YYYY') ?? 'Never';
-          else if (data.type === TableDataType.TIME) value = data.content['time']?.format(data.content['timeFormat'] ?? 'HH:mm') ?? 'Never';
-          else if (data.type === TableDataType.DATETIME) value = data.content['datetime']?.format(data.content['datetimeFormat'] ?? 'DD/MM/YYYY HH:mm') ?? 'Never';
-          else if (data.type === TableDataType.COLOR) value = data.content['color'];
-          else if (data.type === TableDataType.PILL) value = data.content['pillText'];
-          else if (data.type === TableDataType.AVATAR) value = data.content['avatarTitle'] + (' ' + data.content['avatarSubtitle'] ?? '');
-          else if (data.type === TableDataType.CHECKBOX) value = data.content['checkboxValue'].toString();
-          else if (data.type === TableDataType.RADIO) value = data.content['radioValue'].toString();
-          else if (data.type === TableDataType.TOGGLE) value = data.content['toggleValue'].toString();
-          else if (data.type === TableDataType.CUSTOM) value = data.content['searchBy'] ?? '';
-          return value.swapNonENChars();
+          return getValue(data).swapNonENChars();
         },
         createdCell: (td, cellData, rowData, rowIdx, colIdx) => { // Creating each cell according to its type
           td.innerHTML = '';
@@ -110,6 +97,17 @@ export class TableComponent implements OnInit, OnChanges {
     // Set data
     opts['data'] = this.data;
 
+    // Set language
+    opts['language'] = _.merge(opts['language'], {
+      emptyTable: this.lang === 'EN' ? 'No data available' : 'Sem dados',
+      info: this.lang === 'EN' ? 'Showing _START_-_END_ of _TOTAL_ entries' : 'A mostrar _START_-_END_ de _TOTAL_ entradas',
+      infoEmpty: this.lang === 'EN' ? '' : '',
+      infoFiltered: this.lang === 'EN' ? '(filtered from _MAX_ total entries)' : '(filtrado de _MAX_ entradas no total)',
+      lengthMenu: this.lang === 'EN' ? 'Show _MENU_ entries' : 'Mostrar _MENU_ entradas',
+      search: this.lang === 'EN' ? 'Search:' : 'Procurar:',
+      zeroRecords: this.lang === 'EN' ? 'No matching records found' : 'Nenhum dado encontrado',
+    });
+
     // Add footers
     if (this.hasFooters) this.footers = this.headers.map(header => header.label);
 
@@ -131,57 +129,60 @@ export class TableComponent implements OnInit, OnChanges {
               // For each column
               api.columns().eq(0)
                 .each(colIdx => {
+                  // Skip invisible columns
+                  if (!isVisible(colIdx)) return;
+
                   const colType = that.data[0][colIdx].type;
                   const filterCell = $('#' + that.id + ' .filters th').eq($(api.column(colIdx).header()).index());
 
+                  // Clear cell
+                  filterCell.html('');
+
                   // Skip types that are not filterable
-                  if (!isFilterable(colType)) {
-                    $(filterCell).html('');
+                  if (isFilterable(colType)) {
+                    if (isSelectable(colType)) {
+                      // Get all different options of column
+                      const title = that.headers[colIdx].label;
+                      const options = '<option value="true">' + title + '</option><option value="false">Not ' + title + '</option>';
 
-                  } else {
-                    const title = $(filterCell).text().trim();
-
-                    // Get all different options of column
-                    let options = '';
-                    if (colType === TableDataType.CHECKBOX || colType === TableDataType.RADIO || colType === TableDataType.TOGGLE) {
-                      options += '<option value="true">' + title + '</option>';
-                      options += '<option value="false">Not ' + title + '</option>';
+                      // Add select with options
+                      filterCell.html('<select>' +
+                        '<option selected value="undefined">' + (that.lang === 'EN' ? 'Filter' : 'Filtrar') + '...</option>' + options + '</select>');
 
                     } else {
-                      let opts = [];
-                      for (let row of that.data) {
-                        const value = getValue(row[colIdx]);
-                        if (value) opts.push(value);
-                      }
-                      opts = [...new Set(opts)]; // unique options
-                      opts.sort((a, b) => {
-                        if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
-                        return a - b;
-                      })
-                      options = opts.map(option => '<option value="' + option + '">' + option + '</option>').join('');
+                      // Add search input
+                      filterCell.html('<input type="search" placeholder="' + (that.lang === 'EN' ? 'Filter' : 'Filtrar') + '...">');
                     }
 
-                    // Add select with options
-                    $(filterCell).html('<select class="select select-bordered select-sm w-full">' +
-                      '<option selected value="undefined">Filter...</option>' + options + '</select>');
+                    // On every filtering
+                    $('input', filterCell)
+                      .on('keyup change', filter)
 
-                    // On every keypress in the select
                     $('select', filterCell)
                       .off('keyup change')
-                      .on('change', function (e) {
-                        // Filter column
-                        const regexr = colType === TableDataType.NUMBER ? '(^{search}$)' : '({search})';
-                        const value = ($(this)[0] as HTMLSelectElement).value.swapNonENChars();
-                        api.column(colIdx)
-                          .search(
-                            value !== null && value !== undefined && value !== 'undefined' ?
-                              regexr.replace('{search}', '(((' + value + ')))') :
-                              '',
-                            value !== null && value !== undefined && value !== 'undefined',
-                            value === null || value === undefined || value === 'undefined'
-                          )
-                          .draw()
-                      })
+                      .on('change', filter)
+                  }
+
+                  function filter() {
+                    const regex = colType === TableDataType.NUMBER ? '(^{search}$)' : '({search})';
+                    const value = ($(this)[0] as (HTMLInputElement | HTMLSelectElement)).value.swapNonENChars();
+                    api.column(colIdx)
+                      .search(
+                        value !== null && value !== undefined && value !== 'undefined' && value !== '' ?
+                          regex.replace('{search}', '(((' + value + ')))') :
+                          '',
+                        value !== null && value !== undefined && value !== 'undefined' && value !== '',
+                        value === null || value === undefined || value === 'undefined' || value !== ''
+                      )
+                      .draw()
+                  }
+
+                  function isVisible(col: number): boolean {
+                    for (const option of opts['columnDefs']) {
+                      if (option.hasOwnProperty('orderData') && option['orderData'] === col && option.hasOwnProperty('targets'))
+                        return false;
+                    }
+                    return true;
                   }
                 });
             },
