@@ -184,9 +184,7 @@ class Badges extends Module
                     ]
                 ],
                 "headers" => [
-                    ["label" => "Name (sorting)", "align" => "left"],
                     ["label" => "Badge", "align" => "left"],
-                    ["label" => "Description", "align" => "left"],
                     ["label" => "# Levels", "align" => "middle"],
                     ["label" => "Bragging", "align" => "middle"],
                     ["label" => "Extra", "align" => "middle"],
@@ -194,9 +192,7 @@ class Badges extends Module
                 ],
                 "data" => array_map(function ($badge) {
                     return [
-                        ["type" => DataType::TEXT, "content" => ["text" => $badge["name"]]],
-                        ["type" => DataType::AVATAR, "content" => ["avatarSrc" => $badge["image"], "avatarTitle" => $badge["name"]]],
-                        ["type" => DataType::TEXT, "content" => ["text" => $badge["description"]]],
+                        ["type" => DataType::AVATAR, "content" => ["avatarSrc" => $badge["image"], "avatarTitle" => $badge["name"], "avatarSubtitle" => $badge["description"]]],
                         ["type" => DataType::NUMBER, "content" => ["value" => $badge["nrLevels"], "valueFormat" => "none"]],
                         ["type" => DataType::TOGGLE, "content" => ["toggleId" => "isBragging", "toggleValue" => $badge["isBragging"]]],
                         ["type" => DataType::TOGGLE, "content" => ["toggleId" => "isExtra", "toggleValue" => $badge["isExtra"]]],
@@ -212,9 +208,9 @@ class Badges extends Module
                 "options" => [
                     "order" => [[0, "asc"]],
                     "columnDefs" => [
-                        ["type" => "natural", "targets" => [0, 1, 2, 3]],
-                        ["orderData" => 0, "targets" => 1],
-                        ["orderable" => false, "targets" => [4, 5, 6]]
+                        ["type" => "natural", "targets" => [0, 1]],
+                        ["searchable" => false, "targets" => [2, 3, 4]],
+                        ["orderable" => false, "targets" => [2, 3, 4]]
                     ]
                 ],
                 "items" => $badges,

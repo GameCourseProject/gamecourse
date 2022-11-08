@@ -180,19 +180,15 @@ class Streaks extends Module
                     ]
                 ],
                 "headers" => [
-                    ["label" => "Name (sorting)", "align" => "left"],
                     ["label" => "Streak", "align" => "left"],
-                    ["label" => "Description", "align" => "left"],
-                    ["label" => "Count", "align" => "middle"],
+                    ["label" => "# Steps", "align" => "middle"],
                     ["label" => "Reward (XP)", "align" => "middle"],
                     ["label" => "Extra", "align" => "middle"],
                     ["label" => "Active", "align" => "middle"]
                 ],
                 "data" => array_map(function ($streak) {
                     return [
-                        ["type" => DataType::TEXT, "content" => ["text" => $streak["name"]]],
-                        ["type" => DataType::AVATAR, "content" => ["avatarSrc" => $streak["image"], "avatarTitle" => $streak["name"]]],
-                        ["type" => DataType::TEXT, "content" => ["text" => $streak["description"]]],
+                        ["type" => DataType::AVATAR, "content" => ["avatarSrc" => $streak["image"], "avatarTitle" => $streak["name"], "avatarSubtitle" => $streak["description"]]],
                         ["type" => DataType::NUMBER, "content" => ["value" => $streak["count"], "valueFormat" => "none"]],
                         ["type" => DataType::NUMBER, "content" => ["value" => $streak["reward"], "valueFormat" => "default"]],
                         ["type" => DataType::TOGGLE, "content" => ["toggleId" => "isExtra", "toggleValue" => $streak["isExtra"]]],
@@ -208,9 +204,9 @@ class Streaks extends Module
                 "options" => [
                     "order" => [[0, "asc"]],
                     "columnDefs" => [
-                        ["type" => "natural", "targets" => [0, 1, 2, 3, 4]],
-                        ["orderData" => 0, "targets" => 1],
-                        ["orderable" => false, "targets" => [5, 6]]
+                        ["type" => "natural", "targets" => [0, 1, 2]],
+                        ["searchable" => false, "targets" => [3, 4]],
+                        ["orderable" => false, "targets" => [3, 4]]
                     ]
                 ],
                 "items" => $streaks,
@@ -568,17 +564,17 @@ class Streaks extends Module
         if ($virtualCurrencyModule && $virtualCurrencyModule->isEnabled()) {
             $VCName = $virtualCurrencyModule->getName();
 
-            array_splice($lists[0]["headers"], 5, 0, [
+            array_splice($lists[0]["headers"], 3, 0, [
                 ["label" => "Reward (" . $VCName . ")", "align" => "middle"],
             ]);
 
-            array_splice($lists[0]["options"]["columnDefs"][0]["targets"], 5, 0, 5);
+            array_splice($lists[0]["options"]["columnDefs"][0]["targets"], 3, 0, 3);
             $lists[0]["options"]["columnDefs"][2]["targets"] = array_map(function ($target) {
                 return $target + 1;
             }, $lists[0]["options"]["columnDefs"][2]["targets"]);
 
             $lists[0]["data"] = array_map(function (&$row, $index) use ($streaks) {
-                array_splice($row, 5, 0, [
+                array_splice($row, 3, 0, [
                     ["type" => DataType::NUMBER, "content" => ["value" => $streaks[$index]["tokens"], "valueFormat" => "default"]],
                 ]);
                 return $row;

@@ -181,7 +181,7 @@ class Skills extends Module
                 ],
                 "data" => array_map(function ($skillTree) {
                     return [
-                        ["type" => DataType::TEXT, "content" => ["text" => $skillTree["name"]]],
+                        ["type" => DataType::TEXT, "content" => ["text" => $skillTree["name"], "classList" => "font-semibold"]],
                         ["type" => DataType::NUMBER, "content" => ["value" => $skillTree["maxReward"], "valueFormat" => "default"]]
                     ];
                 }, $skillsTrees),
