@@ -101,7 +101,7 @@ export class UsersComponent implements OnInit {
   }
 
   async getCourseUsers(courseID: number): Promise<void> {
-    this.courseUsers = await this.api.getCourseUsers(courseID).toPromise();
+    this.courseUsers = (await this.api.getCourseUsers(courseID).toPromise()).sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async getCourseRolesNames(courseID: number): Promise<void> {
@@ -122,7 +122,7 @@ export class UsersComponent implements OnInit {
       });
 
       this.loading.roles = false;
-    });
+    }, 0);
 
     function getRolesByHierarchy(rolesHierarchy: Role[], roles: {name: string, depth: number}[], parent: Role, depth: number): {name: string, depth: number}[] {
       for (const role of rolesHierarchy) {
@@ -142,7 +142,7 @@ export class UsersComponent implements OnInit {
   async getUsersNotInCourse(courseID: number): Promise<void> {
     this.loading.nonCourseUsers = true;
 
-    const nonCourseUsers = await this.api.getUsersNotInCourse(courseID, true).toPromise();
+    const nonCourseUsers = (await this.api.getUsersNotInCourse(courseID, true).toPromise()).sort((a, b) => a.name.localeCompare(b.name));
     this.nonCourseUsers = nonCourseUsers.map(user => {
       return {value: 'id-' + user.id, text: user.name};
     });
@@ -225,6 +225,7 @@ export class UsersComponent implements OnInit {
     } else if (action === Action.EDIT) {
       this.mode = 'edit';
       this.userToManage = this.initUserToManage(userToActOn);
+      if (!this.roleNames) this.getCourseRolesNames(this.course.id);
       ModalService.openModal('manage');
 
     } else if (action === Action.REMOVE) {

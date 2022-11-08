@@ -97,7 +97,18 @@ export class InputSelectComponent implements OnInit {
       showSearch: this.search,
       hideSelectedOption: this.hideSelectedOption,
       closeOnSelect: this.closeOnSelect,
-      data: JSON.parse(JSON.stringify(this.options)) // NOTE: deep clone of options; needed to reset initial value
+      data: JSON.parse(JSON.stringify(this.options)), // NOTE: deep clone of options; needed to reset initial value
+      searchFilter: (option, search) => option.text.toFlat().includes(search.toFlat()),
+      onChange: info => { // Clear search on item selected
+        // Find select ID
+        const cls = this.select.slim.container.classList.toString();
+        const matches = cls.match(/ss-(\d+)/g);
+        const selectID = matches[0].substring(3);
+
+        // Clear search input
+        const searchInput = $('.ss-' + selectID + ' input[type=search]');
+        searchInput.val(null);
+      }
     }
 
     // Set initial value

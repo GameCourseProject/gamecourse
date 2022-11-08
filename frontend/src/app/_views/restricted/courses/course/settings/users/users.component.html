@@ -42,7 +42,7 @@
    [header]="mode?.capitalize() + ' user'"
    [closeBtnText]="'Discard ' + (mode === 'add' ? 'user' : 'changes')"
    [submitBtnText]="mode?.capitalize() + ' user'"
-   [loading]="mode === 'add' ? loading.roles : false"
+   [loading]="loading.roles"
    [actionInProgress]="loading.action"
    (submitBtnClicked)="f.onSubmit(null); mode === 'add' ? createUser() : editUser()"
    (onClose)="resetManage()">
@@ -173,22 +173,20 @@
         </div>
 
         <!-- Roles -->
-        <div *ngIf="mode === 'add'">
-          <app-input-select
-            [id]="'user-roles'"
-            [form]="f"
-            [(value)]="userToManage.roleNames"
-            [options]="roleNames"
-            [placeholder]="'Select roles for user'"
-            [multiple]="true"
-            [closeOnSelect]="false"
-            [classList]="'mt-3'"
-            [topLabel]="'Roles'"
-            [required]="true"
-            (valueChange)="userToManage.roleNames = $event ?? []; updateRoles(userToManage.roleNames)"
-            [setData]="setRoles">
-          </app-input-select>
-        </div>
+        <app-input-select
+          [id]="'user-role'"
+          [form]="f"
+          [(value)]="userToManage.roleNames"
+          [options]="roleNames"
+          [placeholder]="'Select roles for user'"
+          [multiple]="true"
+          [closeOnSelect]="false"
+          [classList]="'mt-3'"
+          [topLabel]="'Roles'"
+          [required]="true"
+          (valueChange)="userToManage.roleNames = $event ?? []; updateRoles(userToManage.roleNames)"
+          [setData]="setRoles">
+        </app-input-select>
 
       </div>
 
@@ -264,7 +262,7 @@
   <form #f="ngForm" *ngIf="mode === 'roles'">
 
     <app-input-select
-      [id]="'user-roles'"
+      [id]="'manage-user-roles'"
       [form]="f"
       [(value)]="userToManage.roleNames"
       [options]="roleNames"
