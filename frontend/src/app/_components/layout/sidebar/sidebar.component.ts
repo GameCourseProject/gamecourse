@@ -9,6 +9,10 @@ import { User } from "../../../_domain/users/user";
 import { Course } from "../../../_domain/courses/course";
 import { Page } from "../../../_domain/pages & templates/page";
 
+import {Theme} from "../../../_services/theming/themes-available";
+import {ThemingService} from "../../../_services/theming/theming.service";
+import {environment} from "../../../../environments/environment";
+
 @Component({
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html'
@@ -32,7 +36,9 @@ export class SidebarComponent implements OnInit {
     private api: ApiHttpService,
     private router: Router,
     private updateManager: UpdateService,
-    public sidebar: SidebarService
+    public sidebar: SidebarService,
+
+    private themeService: ThemingService
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -267,6 +273,11 @@ export class SidebarComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  get DefaultLogoImg(): string {
+    const theme = this.themeService.getTheme();
+    return theme === Theme.DARK ? environment.logoPicture.dark : environment.logoPicture.light;
+  }
 
   getCourseIDFromURL(): number {
     const urlParts = this.router.url.substr(1).split('/');

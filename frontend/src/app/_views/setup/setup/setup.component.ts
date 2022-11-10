@@ -4,6 +4,11 @@ import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {Router} from "@angular/router";
 import {finalize} from "rxjs/operators";
 
+import {Theme} from "../../../_services/theming/themes-available";
+import {ThemingService} from "../../../_services/theming/theming.service";
+import {environment} from "../../../../environments/environment";
+
+
 @Component({
   selector: 'app-setup',
   templateUrl: './setup.component.html',
@@ -17,7 +22,9 @@ export class SetupComponent implements OnInit {
   constructor(
     private api: ApiHttpService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+
+    private themeService: ThemingService
   ) { }
 
   ngOnInit(): void {
@@ -38,6 +45,11 @@ export class SetupComponent implements OnInit {
             if (setupDone) this.router.navigate(['']);
         });
     }
+  }
+
+  get DefaultLogoImg(): string {
+    const theme = this.themeService.getTheme();
+    return theme === Theme.DARK ? environment.logoPicture.dark : environment.logoPicture.light;
   }
 }
 
