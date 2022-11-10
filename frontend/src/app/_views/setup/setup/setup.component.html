@@ -1,5 +1,12 @@
 <div class="container">
-  <div class="big-title">GameCourse</div>
+  <!-- Logo -->
+  <div class="px-6 py-6 pb-3">
+    <a [routerLink]="'/'">
+      <img class="max-h-full"
+           [src]="DefaultLogoImg"
+           alt="">
+    </a>
+  </div>
 
   <form class="middle-box" [formGroup]="form" (submit)="onSubmit()">
     <div class="header">First time setup!</div>

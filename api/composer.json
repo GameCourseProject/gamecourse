@@ -1,6 +1,6 @@
 {
   "require": {
-    "php": "=7.3.9",
+    "php": "=7.3.21",
     "ext-pdo": "*",
     "ext-json": "*",
     "ext-zip": "*",

@@ -57,7 +57,9 @@
         <!-- Profile picture -->
         <h4 class="font-semibold mb-2">Profile picture</h4>
         <div class="flex items-center justify-center">
-          <img class="mask mask-circle object-cover h-40 w-40" [src]="userToManage.photo?.get('SafeUrl') ?? DefaultProfileImg" [alt]="userToManage.name + ' profile photo'" />
+          <img class="mask mask-circle object-cover h-40 w-40"
+               [src]="userToManage.photo?.get('SafeUrl') ?? DefaultProfileImg"
+               [alt]="userToManage.name + ' profile photo'" />
         </div>
 
         <!-- Upload profile picture -->

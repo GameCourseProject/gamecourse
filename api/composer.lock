@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5db003c37f50b39582e04834b2edb329",
+    "content-hash": "f05f18f57b2e2e720924b78dec8ef1d0",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -352,16 +352,16 @@
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.268.0",
+            "version": "v0.272.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-api-php-client-services.git",
-                "reference": "af3e1549ae62ed93ba94a57c5c3d65750b0b0ccf"
+                "reference": "52b494231f6b531983d12aefac057d0eeec2861c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/af3e1549ae62ed93ba94a57c5c3d65750b0b0ccf",
-                "reference": "af3e1549ae62ed93ba94a57c5c3d65750b0b0ccf",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/52b494231f6b531983d12aefac057d0eeec2861c",
+                "reference": "52b494231f6b531983d12aefac057d0eeec2861c",
                 "shasum": ""
             },
             "require": {
@@ -390,9 +390,9 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/google-api-php-client-services/issues",
-                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.268.0"
+                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.272.0"
             },
-            "time": "2022-09-24T01:34:14+00:00"
+            "time": "2022-10-21T01:18:13+00:00"
         },
         {
             "name": "google/auth",
@@ -666,16 +666,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "2.4.1",
+            "version": "2.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "69568e4293f4fa993f3b0e51c9723e1e17c41379"
+                "reference": "67c26b443f348a51926030c83481b85718457d3d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/69568e4293f4fa993f3b0e51c9723e1e17c41379",
-                "reference": "69568e4293f4fa993f3b0e51c9723e1e17c41379",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/67c26b443f348a51926030c83481b85718457d3d",
+                "reference": "67c26b443f348a51926030c83481b85718457d3d",
                 "shasum": ""
             },
             "require": {
@@ -765,7 +765,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/2.4.1"
+                "source": "https://github.com/guzzle/psr7/tree/2.4.3"
             },
             "funding": [
                 {
@@ -781,7 +781,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-08-28T14:45:39+00:00"
+            "time": "2022-10-26T14:07:24+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -1004,16 +1004,16 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "3.0.16",
+            "version": "3.0.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "7181378909ed8890be4db53d289faac5b77f8b05"
+                "reference": "dbc2307d5c69aeb22db136c52e91130d7f2ca761"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/7181378909ed8890be4db53d289faac5b77f8b05",
-                "reference": "7181378909ed8890be4db53d289faac5b77f8b05",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/dbc2307d5c69aeb22db136c52e91130d7f2ca761",
+                "reference": "dbc2307d5c69aeb22db136c52e91130d7f2ca761",
                 "shasum": ""
             },
             "require": {
@@ -1094,7 +1094,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpseclib/phpseclib/issues",
-                "source": "https://github.com/phpseclib/phpseclib/tree/3.0.16"
+                "source": "https://github.com/phpseclib/phpseclib/tree/3.0.17"
             },
             "funding": [
                 {
@@ -1110,7 +1110,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-09-05T18:03:08+00:00"
+            "time": "2022-10-24T10:51:50+00:00"
         },
         {
             "name": "psr/cache",
@@ -1765,16 +1765,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v5.4.12",
+            "version": "v5.4.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "7a3aa21ac8ab1a96cc6de5bbcab4bc9fc943b18c"
+                "reference": "e83fe9a72011f07c662da46a05603d66deeeb487"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/7a3aa21ac8ab1a96cc6de5bbcab4bc9fc943b18c",
-                "reference": "7a3aa21ac8ab1a96cc6de5bbcab4bc9fc943b18c",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/e83fe9a72011f07c662da46a05603d66deeeb487",
+                "reference": "e83fe9a72011f07c662da46a05603d66deeeb487",
                 "shasum": ""
             },
             "require": {
@@ -1820,7 +1820,7 @@
             "description": "Loads and dumps YAML files",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/yaml/tree/v5.4.12"
+                "source": "https://github.com/symfony/yaml/tree/v5.4.14"
             },
             "funding": [
                 {
@@ -1836,20 +1836,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-08-02T15:52:22+00:00"
+            "time": "2022-10-03T15:15:50+00:00"
         },
         {
             "name": "zircote/swagger-php",
-            "version": "4.4.9",
+            "version": "4.4.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zircote/swagger-php.git",
-                "reference": "0c1cdd31e8cfeb7116c54696aafdab9c778070fd"
+                "reference": "795be27b3b3bacc8353350cacc663ac5cbcd05cc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zircote/swagger-php/zipball/0c1cdd31e8cfeb7116c54696aafdab9c778070fd",
-                "reference": "0c1cdd31e8cfeb7116c54696aafdab9c778070fd",
+                "url": "https://api.github.com/repos/zircote/swagger-php/zipball/795be27b3b3bacc8353350cacc663ac5cbcd05cc",
+                "reference": "795be27b3b3bacc8353350cacc663ac5cbcd05cc",
                 "shasum": ""
             },
             "require": {
@@ -1911,9 +1911,9 @@
             ],
             "support": {
                 "issues": "https://github.com/zircote/swagger-php/issues",
-                "source": "https://github.com/zircote/swagger-php/tree/4.4.9"
+                "source": "https://github.com/zircote/swagger-php/tree/4.4.10"
             },
-            "time": "2022-09-11T20:51:43+00:00"
+            "time": "2022-10-19T02:28:50+00:00"
         }
     ],
     "packages-dev": [
@@ -2044,12 +2044,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/mockery/mockery.git",
-                "reference": "e92dcc83d5a51851baf5f5591d32cb2b16e3684e"
+                "reference": "3c3ca93df1752eb33ea9cfa9481c974e650b604c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mockery/mockery/zipball/e92dcc83d5a51851baf5f5591d32cb2b16e3684e",
-                "reference": "e92dcc83d5a51851baf5f5591d32cb2b16e3684e",
+                "url": "https://api.github.com/repos/mockery/mockery/zipball/3c3ca93df1752eb33ea9cfa9481c974e650b604c",
+                "reference": "3c3ca93df1752eb33ea9cfa9481c974e650b604c",
                 "shasum": ""
             },
             "require": {
@@ -2107,9 +2107,9 @@
             ],
             "support": {
                 "issues": "https://github.com/mockery/mockery/issues",
-                "source": "https://github.com/mockery/mockery/tree/1.5.1"
+                "source": "https://github.com/mockery/mockery/tree/master"
             },
-            "time": "2022-09-07T15:32:08+00:00"
+            "time": "2022-10-25T11:11:14+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -4184,7 +4184,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "=7.3.9",
+        "php": "=7.3.21",
         "ext-pdo": "*",
         "ext-json": "*",
         "ext-zip": "*",
