@@ -1,42 +1,93 @@
-<div class="container">
+<div class="bg-base-300 min-h-screen">
   <!-- Logo -->
-  <div class="px-6 py-6 pb-3">
-    <a [routerLink]="'/'">
-      <img class="max-h-full"
-           [src]="DefaultLogoImg"
+  <div class="flex justify-center">
+      <img class="w-96 pt-9 pb-6"
+           [src]="'assets/logo/logo_horz_dark.png'"
            alt="">
-    </a>
   </div>
 
-  <form class="middle-box" [formGroup]="form" (submit)="onSubmit()">
-    <div class="header">First time setup!</div>
+  <div class="flex justify-center mt-1 text-base-content">
+    <div class="block p-6 rounded-lg shadow-lg bg-base-100">
+      <div class="pb-3 border-b border-gray-300 ">
+        <h2 class="text-xl"><strong>First time setup!</strong></h2>
+        <p class="text-sm">Create a course!</p>
+      </div>
 
-    <div class="content">
-      <h2>Create a course!</h2>
+      <div class="float-right">
+        <!-- Theme Toggler
+          <app-theme-toggler></app-theme-toggler>-->
+      </div>
 
-      <!-- Course Name -->
-      <label for="course-name" class="label">Course Name</label>
-      <input type="text" id="course-name" class="input-text" [formControlName]="'courseName'" placeholder="(ex: PCM 2015/2016)" [required]="true"><br>
+      <form #f="ngForm">
+        <div class="flex flex-wrap mt-3">
+          <div class="w-full sm:w-1/2 sm:pr-3">
+            <app-input-text
+              [id] = "'courseName'"
+              [form] = "f"
+              [(value)]="courseName"
+              [placeholder]="'ex: PCM 2021-2022'"
+              [topLabel]="'Course Name'"
+              [required]="true"
+              [pattern]="'^[x00-\\xFF\\w()&\\s-]+$'"
+              [patternErrorMessage]="'Course name \'' + courseName + '\' is not allowed. Allowed characters: alphanumeric  _  (  )  -  &'"
+              [maxLength]="100"
+              [maxLengthErrorMessage]="'Course name is too long: maximum of 100 characters'"
+            ></app-input-text>
+            <app-input-text
+              [id] = "'courseColor'"
+              [form] = "f"
+              [(value)]="courseColor"
+              [placeholder]="'ex: #ffffff'"
+              [topLabel]="'Course Color'"
+              [required]="true"
+              [pattern]="''"
+              [patternErrorMessage]=""
+              [maxLength]="7"
+              [maxLengthErrorMessage]=""
+            ></app-input-text>
+          </div>
+          <div class="w-full sm:w-1/2 sm:pr-3">
+            <app-input-number
+              [id] = "'teacherId'"
+              [form] = "f"
+              [(value)]="teacherId"
+              [placeholder]="'ex: 123456'"
+              [topLabel]="'Teacher ID'"
+              [required]="true"
+              [minValue]="0"
+              [maxValue]="999999"
+              [minValueErrorMessage]="'ID number must be between 0 and 999999.'"
+              [maxValueErrorMessage]="'ID number must be between 0 and 999999.'"
+            ></app-input-number>
 
-      <!-- Course Color -->
-      <label for="course-color" class="label">Course Color</label>
-      <input type="text" id="course-color" class="input-text" [formControlName]="'courseColor'" placeholder="(ex: #ffffff)" [required]="true"><br>
+            <app-input-text
+              [id] = "'teacherUsername'"
+              [form] = "f"
+              [(value)]="teacherUsername"
+              [placeholder]="'ex: ist112345'"
+              [topLabel]="'Teacher Username'"
+              [required]="true"
+              [pattern]="''"
+              [patternErrorMessage]=""
+              [maxLength]="9"
+              [maxLengthErrorMessage]=""
+            ></app-input-text>
+          </div>
+        </div>
 
-      <!-- Teacher ID -->
-      <label for="teacher-id" class="label">Teacher IST ID</label>
-      <input type="number" id="teacher-id" class="input-number" [formControlName]="'teacherId'" placeholder="(ex: 12345)" min="0" max="999999" [required]="true"><br>
-
-      <!-- Teacher Username -->
-      <label for="teacher-username" class="label">Teacher Username</label>
-      <input type="text" id="teacher-username" class="input-text" [formControlName]="'teacherUsername'" placeholder="(ex: ist112345)" [required]="true"><br>
+        <button type="submit"
+                class="btn btn-primary mt-4"
+                (click) = "submit()">
+          <ng-container *ngIf="actionInProgress">
+            <app-spinner
+              [color] = "'primary-content'"
+              [size]="'sm'"
+              [classList]="'mr-3'"
+            >
+            </app-spinner>
+          </ng-container>
+          Done!</button>
+      </form>
     </div>
-
-    <div class="footer"><input type="submit" class="button big" value="Finish!"></div>
-  </form>
-
-  <!-- Loader -->
-  <div *ngIf="loading" id="page-loading">
-    <img src="assets/loader/loader.gif">
   </div>
-
 </div>

@@ -97,12 +97,12 @@ export class ApiHttpService {
   /*** ------------------- Setup ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  public doSetup(data: SetupData): Observable<boolean> {
+  public doSetup(courseName: string, courseColor: string, teacherId: number, teacherUsername: string): Observable<boolean> {
     const formData = new FormData();
-    formData.append('course-name', data.courseName);
-    formData.append('course-color', data.courseColor);
-    formData.append('teacher-id', data.teacherId.toString());
-    formData.append('teacher-username', data.teacherUsername);
+    formData.append('course-name', courseName);
+    formData.append('course-color', courseColor);
+    formData.append('teacher-id', teacherId.toString());
+    formData.append('teacher-username', teacherUsername);
 
     const url = this.apiEndpoint.createUrl('setup/setup.php');
 
