@@ -7,6 +7,7 @@ import {finalize, map} from "rxjs/operators";
 import {ThemingService} from "../../../_services/theming/theming.service";
 import {Theme} from "../../../_services/theming/themes-available";
 import {AuthType} from "../../../_domain/auth/auth-type";
+import {environment} from "../../../../environments/environment";
 
 @Component({
   selector: 'app-setup',
@@ -22,7 +23,6 @@ export class SetupComponent implements OnInit {
   teacherId: number;
   teacherUsername: string;
 
-  theme: Theme;
 
   @ViewChild('f', { static: false }) f:NgForm;
 
@@ -30,7 +30,7 @@ export class SetupComponent implements OnInit {
     private api: ApiHttpService,
     private router: Router,
     public themeService: ThemingService
-  ) { this.theme = themeService.getTheme()}
+  ) {}
 
   ngOnInit(): void {
   }
@@ -44,6 +44,16 @@ export class SetupComponent implements OnInit {
           if (setupDone) this.router.navigate(['/']);
         });
     }
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  get DefaultLogoImg(): string {
+    const theme = this.themeService.getTheme();
+    return theme === Theme.DARK ? environment.logoPicture.dark : environment.logoPicture.light;
   }
 }
 

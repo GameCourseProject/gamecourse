@@ -2,7 +2,7 @@
   <!-- Logo -->
   <div class="flex justify-center">
       <img class="w-96 pt-9 pb-6"
-           [src]="'assets/logo/logo_horz_dark.png'"
+           [src]="DefaultLogoImg"
            alt="">
   </div>
 
@@ -13,27 +13,25 @@
         <p class="text-sm">Create a course!</p>
       </div>
 
-      <div class="float-right">
-        <!-- Theme Toggler
-          <app-theme-toggler></app-theme-toggler>-->
-      </div>
-
       <form #f="ngForm">
         <div class="flex flex-wrap mt-3">
           <div class="w-full sm:w-1/2 sm:pr-3">
-            <app-input-text
-              [id] = "'courseName'"
-              [form] = "f"
-              [(value)]="courseName"
-              [placeholder]="'ex: PCM 2021-2022'"
-              [topLabel]="'Course Name'"
-              [required]="true"
-              [pattern]="'^[x00-\\xFF\\w()&\\s-]+$'"
-              [patternErrorMessage]="'Course name \'' + courseName + '\' is not allowed. Allowed characters: alphanumeric  _  (  )  -  &'"
-              [maxLength]="100"
-              [maxLengthErrorMessage]="'Course name is too long: maximum of 100 characters'"
-            ></app-input-text>
-            <app-input-text
+            <div class="mb-3 mr-2">
+              <app-input-text
+                [id] = "'courseName'"
+                [form] = "f"
+                [(value)]="courseName"
+                [placeholder]="'ex: PCM 2021-2022'"
+                [topLabel]="'Course Name'"
+                [required]="true"
+                [pattern]="'^[x00-\\xFF\\w()&\\s-]+$'"
+                [patternErrorMessage]="'Course name \'' + courseName + '\' is not allowed. Allowed characters: alphanumeric  _  (  )  -  &'"
+                [maxLength]="100"
+                [maxLengthErrorMessage]="'Course name is too long: maximum of 100 characters'"
+              ></app-input-text>
+            </div>
+            <div class="mb-3 mr-2">
+              <app-input-text
               [id] = "'courseColor'"
               [form] = "f"
               [(value)]="courseColor"
@@ -44,10 +42,12 @@
               [patternErrorMessage]=""
               [maxLength]="7"
               [maxLengthErrorMessage]=""
-            ></app-input-text>
+              ></app-input-text>
+            </div>
           </div>
           <div class="w-full sm:w-1/2 sm:pr-3">
-            <app-input-number
+            <div class="mb-3 ml-2">
+              <app-input-number
               [id] = "'teacherId'"
               [form] = "f"
               [(value)]="teacherId"
@@ -59,8 +59,9 @@
               [minValueErrorMessage]="'ID number must be between 0 and 999999.'"
               [maxValueErrorMessage]="'ID number must be between 0 and 999999.'"
             ></app-input-number>
-
-            <app-input-text
+            </div>
+            <div class="mb-3 ml-2">
+              <app-input-text
               [id] = "'teacherUsername'"
               [form] = "f"
               [(value)]="teacherUsername"
@@ -72,11 +73,12 @@
               [maxLength]="9"
               [maxLengthErrorMessage]=""
             ></app-input-text>
+            </div>
           </div>
         </div>
 
         <button type="submit"
-                class="btn btn-primary mt-4"
+                class="btn btn-primary mt-4 float-right mr-3"
                 (click) = "submit()">
           <ng-container *ngIf="actionInProgress">
             <app-spinner
