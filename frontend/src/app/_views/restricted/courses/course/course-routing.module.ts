@@ -43,7 +43,7 @@ const routes: Routes = [
       },
       {
         path: 'rule-system',
-        component: ComingSoonComponent
+        component: RulesComponent
       },
       {
         path: 'modules',

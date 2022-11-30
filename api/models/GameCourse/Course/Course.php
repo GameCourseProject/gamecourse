@@ -5,6 +5,8 @@ use Event\Event;
 use Event\EventType;
 use Exception;
 use GameCourse\AutoGame\AutoGame;
+use GameCourse\AutoGame\RuleSystem\CourseRule;
+use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\Core\Auth;
 use GameCourse\Core\Core;
@@ -563,6 +565,40 @@ class Course
         return !empty($this->getData("id"));
     }
 
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------- Course Rules ------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets course rules.
+     * Option for 'active'.
+     *
+     * @param bool|null $active
+     * @return array
+     */
+    public function getCourseRules(?bool $active = null): array
+    {
+        $table = Rule::TABLE_RULE . " r JOIN " . Course::TABLE_COURSE . " c on r.course=c.name "; // not sure
+        $where = ["r.course" => $this->id];
+        if ($active !== null) $where["r.isActive"] = $active;
+        $courseRules =  Core::database()->selectMultiple($table, $where,"r.*","r.id");
+        foreach ($courseRules as &$courseRule) {
+            $courseRule = CourseRule::parse($courseRule);
+        }
+        return $courseRules;
+    }
+
+    /**
+     * Gets a course user by its ID.
+     * Returns null if course user doesn't exist.
+     *
+     * @param int $ruleId
+     * @return CourseRule|null
+     */
+    public function getCourseRuleById(int $ruleId): ?CourseRule
+    {
+        return CourseRule::getCourseRuleById($ruleId, $this);
+    }
 
     /*** ---------------------------------------------------- ***/
     /*** ------------------- Course Users ------------------- ***/

@@ -1,7 +1,7 @@
 <ng-container *ngIf="!loading">
   <!-- Search -->
   <div class="search">
-    <input type="text" id="seach_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="reduceList(searchQuery)">
+    <input type="text" id="search_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="reduceList(searchQuery)">
     <button class="magnifying-glass" id="search-btn" (click)="reduceList(searchQuery)"></button>
   </div>
 

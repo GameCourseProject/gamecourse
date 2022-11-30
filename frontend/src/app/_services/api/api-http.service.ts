@@ -56,6 +56,9 @@ import {
   QRCode,
   QRParticipation
 } from 'src/app/_views/restricted/courses/course/settings/modules/config/personalized-config/qr/qr.component';
+import {Rule} from "../../_domain/rules/rule";
+import {CourseRule} from "../../_domain/rules/course-rule";
+import {CourseRuleManageData} from "../../_views/restricted/courses/course/settings/rules/rules.component";
 
 @Injectable({
   providedIn: 'root'
@@ -75,6 +78,7 @@ export class ApiHttpService {
   static readonly THEME: string = 'Theme';
   static readonly USER: string = 'User';
   static readonly VIEWS: string = 'Views';
+  static readonly RULE: string = 'Rule';
   // NOTE: insert here new controllers & update cache dependencies
 
   static readonly GOOGLESHEETS: string = 'GoogleSheets';
@@ -1007,6 +1011,93 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
   }
 
+  // Rules
+  // TODO: refactor
+  public getRules(): Observable<Rule[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('rule', ApiHttpService.RULE);
+      qs.push('request', 'getRules');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(rule => Rule.fromDatabase(rule))) );
+  }
+
+  public getCourseRules(courseID: number, active?: boolean): Observable<CourseRule[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getCourseRules');
+      qs.push('courseId', courseID);
+      if (active !== undefined) qs.push('active', active);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => CourseRule.fromDatabase(obj))) );
+  }
+
+  public setCourseRuleActive(courseID: number, ruleID: number, isActive: boolean): Observable<void> {
+    const data = {
+      "courseId": courseID,
+      "ruleId": ruleID,
+      "isActive": isActive
+    }
+
+    // not sure
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'setCourseUserActive');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public importCourseRules(courseID: number, file: string | ArrayBuffer, replace: boolean): Observable<number> {
+    const data = {courseId: courseID, file, replace};
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'importCourseRules');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => parseInt(res['data'])) );
+  }
+
+  public exportCourseRules(courseID: number, rulesIDs: number[]): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'exportCourseRules');
+      qs.push('courseId', courseID);
+      qs.push('rulesIds', rulesIDs);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, null, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data'])) );
+  }
+
+  public createCourseRule(courseID: number, ruleData: CourseRuleManageData): Observable<CourseRule> {
+    const data = {
+      courseId: courseID,
+      name: ruleData.name
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'createCourseRule');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => CourseRule.fromDatabase(res['data'])) );
+  }
 
   // Configuration
 
