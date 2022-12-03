@@ -1,8 +1,8 @@
 <?php
 /**
  * This is the AutoGame script, which imports new data from
- * enabled data sources into the system and, in case there's
- * new information, runs AutoGame.
+ * enabled data sources into the system automatically and,
+ * in case there's new information, runs AutoGame.
  */
 
 error_reporting(E_ALL);
