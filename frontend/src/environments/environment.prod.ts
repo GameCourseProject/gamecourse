@@ -7,5 +7,9 @@ export const environment = {
     light: 'assets/imgs/user-light.png',
     dark: 'assets/imgs/user-dark.png'
   },
+  logoPicture: {
+    light : 'assets/logo/logo_horz.png',
+    dark : 'assets/logo/logo_horz_dark.png'
+  },
   defaultAvatar: 'assets/imgs/default-avatar.svg'
 };
