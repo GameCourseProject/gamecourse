@@ -127,7 +127,7 @@ abstract class AutoGame
      */
     private static function setIsRunning(int $courseId, bool $isRunning, bool $onlyStatus = false)
     {
-        $where = ["isRunning" => $isRunning];
+        $where = ["isRunning" => +$isRunning];
         if (!$onlyStatus) $where[$isRunning ? "startedRunning" : "finishedRunning"] = date("Y-m-d H:i:s", time());
         Core::database()->update(self::TABLE_AUTOGAME, $where, ["course" => $courseId]);
     }
