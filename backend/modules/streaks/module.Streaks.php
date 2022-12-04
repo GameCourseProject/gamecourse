@@ -521,21 +521,21 @@ class Streaks extends Module
     public function get_listing_items(int $courseId): array
     {
 
-        $header = ['Name', 'Description', 'Count', 'Reward', 'Tokens', 'Color', 'is Repeatable', 'is Periodic', 'is Count', 'is At Most', 'Periodicity', 'Periodicity Time', 'Active'];
+        $header = ['Name', 'Description', 'Count', 'XP', 'Tokens', 'Color', 'Repeatable', 'Periodic', 'Count', 'At Most', 'Periodicity', 'Periodicity Time' ];
         $displayAtributes = [
             ['id' => 'name', 'type' => 'text'],
             ['id' => 'description', 'type' => 'text'],
             ['id' => 'count', 'type' => 'number'],
             ['id' => 'reward', 'type' => 'number'],
             ['id' => 'tokens', 'type' => 'number'],
-            ['id' => 'color', 'type' => 'text'],
+            ['id' => 'color', 'type' => 'color'],
             ['id' => 'isRepeatable', 'type' => 'on_off button'],
             ['id' => 'isPeriodic', 'type' => 'on_off button'],
             ['id' => 'isCount', 'type' => 'on_off button'],
             ['id' => 'isAtMost', 'type' => 'on_off button'],
             ['id' => 'periodicity', 'type' => 'number'],
-            ['id' => 'periodicityTime', 'type' => 'text'],
-            ['id' => 'isActive', 'type' => 'on_off button']
+            ['id' => 'periodicityTime', 'type' => 'select_time']
+            //['id' => 'isActive', 'type' => 'on_off button']
         ];
         $actions = ['duplicate', 'edit', 'delete', 'export'];
 
@@ -546,16 +546,17 @@ class Streaks extends Module
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => ""),
             array('name' => "Description", 'id' => 'description', 'type' => "text", 'options' => ""),
             array('name' => "Accomplishments Count", 'id' => 'count', 'type' => "number", 'options' => ""),
-            array('name' => "Reward", 'id' => 'reward', 'type' => "number", 'options' => ""),
+            array('name' => "XP Reward", 'id' => 'reward', 'type' => "number", 'options' => ""),
             array('name' => "Tokens", 'id' => 'tokens', 'type' => "number", 'options' => ""),
-            array('name' => "Color", 'id' => 'color', 'type' => "color", 'options' => "", 'current_val' => ""),
+            array('name' => "Color", 'id' => 'color', 'type' => "color_picker", 'options' => ""),
             array('name' => "Is Repeatable", 'id' => 'isRepeatable', 'type' => "on_off button", 'options' => ""),
             array('name' => "Is Periodic", 'id' => 'isPeriodic', 'type' => "on_off button", 'options' => ""),
             array('name' => "Is Count", 'id' => 'isCount', 'type' => "on_off button", 'options' => ""),
             array('name' => "Is At Most", 'id' => 'isAtMost', 'type' => "on_off button", 'options' => ""),
             array('name' => "Periodicity", 'id' => 'periodicity', 'type' => "number", 'options' => ""),
-            array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "text", 'options' => ""),
-            array('name' => "Is Active", 'id' => 'isActive', 'type' => "on_off button", 'options' => "")
+            array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "select_time", 'options' => "")
+            //array('name' => "Color", 'id' => 'color', 'type' => "color_picker", 'options' => ""),
+            //array('name' => "Is Active", 'id' => 'isActive', 'type' => "on_off button", 'options' => "")
         ];
         return array('listName' => 'Streaks', 'itemName' => 'streak', 'header' => $header, 'displayAttributes' => $displayAtributes, 'actions' => $actions, 'items' => $items, 'allAttributes' => $allAtributes);
     }
@@ -625,7 +626,6 @@ class Streaks extends Module
                     "tokens" => intval($item[array_search("tokens", $headers)]),
                     "image" => $item[array_search("image", $headers)]
                 ];
-
 
                 if ($itemId && $replace) { // replace item
                     $streakData["id"] = $itemId;
@@ -759,7 +759,7 @@ class Streaks extends Module
             "isCount" => ($achievement['isCount']) ? 1 : 0,
             "isPeriodic" => ($achievement['isPeriodic']) ? 1 : 0,
             "isAtMost" => ($achievement['isAtMost']) ? 1 : 0,
-            "isActive" => ($achievement['isActive']) ? 1 : 0,
+            "isActive" =>  0,
             "image" => array_key_exists("image", $achievement) ? $achievement['image'] : null
         ];
 
@@ -800,7 +800,6 @@ class Streaks extends Module
         if ($originalName != $achievement["name"])
             $streak->editStreakRuleName($course, $originalName, $achievement['name']);
 
-
     }
 
     public function deleteStreak($streak, $courseId)
@@ -808,7 +807,7 @@ class Streaks extends Module
         Core::$systemDB->delete(self::TABLE, ["id" => $streak['id']]);
 
         $course = Course::getCourse($courseId, false);
-        $this->deleteGeneratedRule($course, Core::$systemDB->select(self::TABLE, ["id" => $streak['id']], "name")) ;
+        #$this->deleteGeneratedRule($course, Core::$systemDB->select(self::TABLE, ["id" => $streak['id']], "name")) ;
     }
 
     public function toggleItemParam(int $itemId, string $param)
@@ -816,8 +815,6 @@ class Streaks extends Module
         $state = Core::$systemDB->select(self::TABLE, ["id" => $itemId], $param);
         Core::$systemDB->update(self::TABLE, [$param => $state ? 0 : 1], ["id" => $itemId]);
     }
-
-
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Rules -------------------- ***/
@@ -876,7 +873,7 @@ class Streaks extends Module
 ModuleLoader::registerModule(array(
     'id' => Streaks::ID,
     'name' => 'Streaks',
-    'description' => 'Enables Streaks and xp points that can be atributed to a student in certain conditions.',
+    'description' => 'Enables Streaks that can be atributed to a student in certain conditions.',
     'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),

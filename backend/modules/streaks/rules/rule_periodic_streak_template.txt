@@ -1,5 +1,4 @@
 rule: <streak-name>
-# TODO:
 # Replace all <..> with the respective value.
 
 	when:
@@ -11,12 +10,12 @@ rule: <streak-name>
         
         logs = get_logs(target, "<participation-type>")
 
-        get_periodic_logs(target, "<streak-name>", logs)
+        check_periodicity(target, "<streak-name>", logs)
         to_award, participations = awards_to_give(target, "<streak-name>")
         to_award > 0
 
 	then:
 		award_streak(target, "<streak-name>", to_award, participations, "<participation-type>")
-		# Virtual currency enabled?
+		# Virtual currency enabled? Uncomment code below : Delete 
 		# award_tokens_type(target, "streak", "<streak-name>", to_award)
 

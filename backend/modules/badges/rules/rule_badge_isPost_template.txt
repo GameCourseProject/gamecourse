@@ -1,5 +1,4 @@
 rule: <badge-name>
-# TODO:
 # Replace all <..> with the respective value.
 
 	when:
@@ -8,9 +7,10 @@ rule: <badge-name>
 	    # CHANGE IT if that's not the correct function to use in this rule
 
 		logs = GC.participations.getForumParticipations(target, "<forum-name>", "<thread-name>", "<rating>")
-
 		nlogs = len(logs)
 		lvl = compute_lvl(nlogs, <lvs-count>)
 
 	then:
 		award_badge(target, "<badge-name>", lvl, logs)
+
+

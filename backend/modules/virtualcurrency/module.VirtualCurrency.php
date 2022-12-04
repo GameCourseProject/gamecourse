@@ -386,7 +386,7 @@ class VirtualCurrency extends Module
     {
         $currencyName = $generalInputs["name"];
         $this->saveCurrencyName($currencyName, $courseId);
-
+        /*
         $skillCost = $generalInputs["skillcost"];
         if ($skillCost != "") {
             $this->saveSkillCost( $skillCost, $courseId);
@@ -404,7 +404,7 @@ class VirtualCurrency extends Module
 
         $incrementCost = $generalInputs["incrementcost"];
         $this->saveIncrementCost($incrementCost, $courseId);
-
+        */
         $tokensToXPRatio = $generalInputs["tokenstoxp"];
         $this->saveTokensToXP($tokensToXPRatio, $courseId);
 
@@ -426,7 +426,6 @@ class VirtualCurrency extends Module
             ['id' => 'isActive', 'type' => 'on_off button']
         ];
         $actions = ['duplicate', 'edit', 'delete', 'export'];
-        $actions = ['duplicate', 'edit', 'delete', 'export'];
 
         $items = $this->getActionsToAward($courseId);
 
@@ -438,7 +437,7 @@ class VirtualCurrency extends Module
             array('name' => "Tokens", 'id' => 'tokens', 'type' => "number", 'options' => ""),
             array('name' => "Is Active", 'id' => 'isActive', 'type' => "on_off button", 'options' => "")
         ];
-        return array('listName' => 'Actions to Award', 'itemName' => 'action', 'header' => $header, 'displayAttributes' => $displayAtributes, 'actions' => $actions, 'items' => $items, 'allAttributes' => $allAtributes);
+        return array('listName' => 'Participations to Award', 'itemName' => 'action', 'header' => $header, 'displayAttributes' => $displayAtributes, 'actions' => $actions, 'items' => $items, 'allAttributes' => $allAtributes);
     }
     public function save_listing_item(string $actiontype, array $listingItem, int $courseId)
     {
@@ -573,7 +572,6 @@ class VirtualCurrency extends Module
             "description" => $achievement['description'],
             "type" => $achievement['type'],
             "tokens" => $achievement['tokens'],
-            "isActive" => ($achievement['isActive']) ? 1 : 0,
 
         ];
 
@@ -653,6 +651,12 @@ class VirtualCurrency extends Module
         } else {
             Core::$systemDB->update(self::TABLE_CONFIG, $arrayToDb, ["course" => $courseId]);
         }
+    }
+
+    public function toggleItemParam(int $itemId, string $param)
+    {
+        $state = Core::$systemDB->select(self::TABLE, ["id" => $itemId], $param);
+        Core::$systemDB->update(self::TABLE, [$param => $state ? 0 : 1], ["id" => $itemId]);
     }
 
 

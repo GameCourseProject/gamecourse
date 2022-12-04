@@ -24,7 +24,7 @@ def is_rule_unlocked(name,target=None):
         from ..namespace import target as t
         target = t
     try:
-        rules = rs.__data__.target_data.target_rules(target)
+        rules = rs.__data__.target_data.(target)
     except Exception:
         return False
     else:
@@ -448,11 +448,11 @@ def get_consecutive_logs(target, streak, type):
     return
 
 @rule_effect
-def get_periodic_logs(target, streak_name, contributions):
+def get_periodic_logs(target, streak_name, contributions, participationType=None):
     """
     Checks periodic logs - checks periodicity 
     """
-    connector.get_periodic_logs(target, streak_name, contributions)
+    connector.get_periodic_logs(target, streak_name, contributions, participationType)
     return
 
 

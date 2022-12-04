@@ -694,7 +694,7 @@ class Skills extends Module
         //skillTrees.wildcardAvailable(tierName,user)
         Dictionary::registerFunction(
             'skillTrees',
-            'wildcardAvailable',
+            '>wildcardAvailable',
             function ($skill, $tier, $user) use ($courseId) {
                 return Dictionary::createNode($this->getAvailableWildcards($skill, $tier, $user, $courseId), "skillTrees", "object");
             },
@@ -2035,7 +2035,6 @@ class Skills extends Module
 
     public function editSkillRuleDependencies(int $courseId, string $skillName, array $newDependencies, bool $hasWildcard, bool $hadWildcard)
     {
-        // TODO: edit rule based on changes; only change the necessary
         $rs = new RuleSystem(Course::getCourse($courseId));
         $filename = $rs->getFilename(self::ID);
         $rs->changeSkillDependencies($filename, $skillName, $newDependencies, $hasWildcard, $hadWildcard);
@@ -2044,7 +2043,6 @@ class Skills extends Module
 
     public function debuggerzito(int $courseId, string $skillName, string $toPrint)
     {
-        // TODO: edit rule based on changes; only change the necessary
         $rs = new RuleSystem(Course::getCourse($courseId));
         $filename = $rs->getFilename(self::ID);
         $rs->debugger($filename, $skillName, $toPrint);

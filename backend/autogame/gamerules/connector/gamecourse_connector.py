@@ -176,8 +176,8 @@ def get_logs(target, type):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = db.queries
+    #results = db.results
 
     course = config.course
     typeof = "streak"
@@ -192,13 +192,13 @@ def get_logs(target, type):
     return table_participations
 
 
-def get_graded_skill_logs(target, ratings):
+def get_graded_skill_logs(target, ratings, skill = None):
 
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = db.queries
+    #results = db.results
 
     course = config.course
     typeof = "streak"
@@ -208,10 +208,18 @@ def get_graded_skill_logs(target, ratings):
     if len(ratings) == 0:
         return []
     elif len(ratings) == 1 :
-        query = "SELECT id, date, post, description, rating, type FROM participation WHERE user = %s AND course = %s AND type = %s AND description LIKE 'Skill Tree%' AND rating = %s;"
+        if skill != None:
+            des =  'Skill Tree: ' + str(skill)
+            query = "SELECT id, date, post, description, rating, type FROM participation WHERE user = %s AND course = %s AND type = %s AND description = \"" +  str(des) + "\"  AND rating = %s;"
+        else:
+            query = "SELECT id, date, post, description, rating, type FROM participation WHERE user = %s AND course = %s AND type = %s AND description LIKE 'Skill Tree%' AND rating = %s;"
     else:
         ratings.sort()
-        query = "SELECT id, date, post, description, rating, type FROM participation WHERE user = %s AND course = %s AND type = %s AND description LIKE 'Skill Tree%' AND rating > %s;"
+        if skill != None:
+            des =  'Skill Tree: ' + str(skill)
+            query = "SELECT id, date, post, description, rating, type FROM participation WHERE user = %s AND course = %s AND type = %s AND description = \"" +  str(des) + "\" AND rating > %s;"
+        else:
+            query = "SELECT id, date, post, description, rating, type FROM participation WHERE user = %s AND course = %s AND type = %s AND description LIKE 'Skill Tree%' AND rating > %s;"
 
     cursor.execute(query, (target, course, type, str(ratings[0])))
     table_participations = cursor.fetchall()
@@ -224,8 +232,8 @@ def get_graded_logs(target, minRating, include_skills = False):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = db.queries
+    #results = db.results
 
     course = config.course
     typeof = "streak"
@@ -276,8 +284,8 @@ def calculate_teams_xp(course, target):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = db.queries
+    #results = db.results
 
     query = "SELECT teamId FROM teams_members where memberId = \"" + str(target) + "\";"
     cursor.execute(query)
@@ -301,12 +309,11 @@ def calculate_teams_xp(course, target):
 
     query = "SELECT id, max(goal) from level where goal <= \"" +  str(team_xp) + "\" and course = \"" + str(course) + "\" group by id order by number desc limit 1;"
 
-    result = db.data_broker(query)
+    result = db.course_data_broker(course, query)
     if not result:
         cursor.execute(query)
         level_table = cursor.fetchall()
-        queries.append(query)
-        results.append(level_table)
+        db.data_broker_add(db.course_dict, course, query, level_table)
     else:
         level_table = result
 
@@ -328,40 +335,37 @@ def calculate_xp(course, target):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = db.queries
+    #results = db.results
 
+    dict = db.course_dict
 
     # get max values for each type of award
     query = "SELECT maxReward from skill_tree where course = \"" + str(course) + "\";"
-    result = db.data_broker(query)
+    result = db.course_data_broker(course, query)
     if not result:
         cursor.execute(query)
         tree_table = cursor.fetchall()
-        queries.append(query)
-        results.append(tree_table)
+        db.data_broker_add(db.course_dict, course, query, tree_table)
     else:
         tree_table = result
 
-
     query = "SELECT maxBonusReward from badges_config where course = \"" + str(course) + "\";"
-    result = db.data_broker(query)
+    result = db.course_data_broker(course, query)
     if not result:
         cursor.execute(query)
         badge_table = cursor.fetchall()
-        queries.append(query)
-        results.append(badge_table)
+        db.data_broker_add(db.course_dict, course, query, badge_table)
     else:
         badge_table = result
 
 
     query = "SELECT maxBonusReward from streaks_config where course = \"" + str(course) + "\";"
-    result = db.data_broker(query)
+    result = db.course_data_broker(course, query)
     if not result:
         cursor.execute(query)
         streak_table = cursor.fetchall()
-        queries.append(query)
-        results.append(streak_table)
+        db.data_broker_add(db.course_dict, course, query, streak_table)
     else:
         streak_table = result
 
@@ -375,8 +379,8 @@ def calculate_xp(course, target):
     if len(streak_table) == 1:
         max_streak_bonus_reward = int(streak_table[0][0])
 
-    # get atributed xp so far
 
+    # get atributed xp so far
     query = "SELECT sum(reward) from award where course=%s and type=%s and user=%s group by user;"
     cursor.execute(query, (course, "skill", target))
     tree_xp = cursor.fetchall()
@@ -465,12 +469,11 @@ def calculate_xp(course, target):
     total_xp = total_badge_xp + total_skill_xp + total_other_xp + total_extra_xp
 
     query = "SELECT id, max(goal) from level where goal <= \"" +  str(total_xp) + "\" and course = \"" + str(course) + "\" group by id order by number desc limit 1;"
-    result = db.data_broker(query)
+    result = db.course_data_broker(course, query)
     if not result:
         cursor.execute(query)
         level_table = cursor.fetchall()
-        queries.append(query)
-        results.append(level_table)
+        db.data_broker_add(db.course_dict, course, query, level_table)
     else:
         level_table = result
 
@@ -592,9 +595,10 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = db.queries
+    #results = db.results
 
+    dict = db.course_dict
     course = config.course
     typeof = "badge"
 
@@ -612,12 +616,11 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
     # get badge info
     query = "SELECT badge_level.number, badge_level.badgeId, badge_level.reward, badge.isActive from badge_level left join badge on badge.id = badge_level.badgeId where badge.course = \"" + course + "\" and badge.name = \"" + badge + "\" order by number;"
-    result = db.data_broker(query)
+    result = db.course_data_broker(course, query)
     if not result:
         cursor.execute(query)
         table_badge = cursor.fetchall()
-        queries.append(query)
-        results.append(table_badge)
+        db.data_broker_add(db.course_dict, course, query, table_table)
     else:
         table_badge = result
 
@@ -741,8 +744,8 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = db.queries
+    #results = db.results
 
     course = config.course
     typeof = "skill"
@@ -756,12 +759,11 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
         if use_wildcard != False and wildcard_tier != None:
             # get wildcard tier information
             query = "select t.id from skill_tier t left join skill_tree s on t.treeId=s.id where tier = \"" + wildcard_tier + "\" and course = \"" + course + "\";"
-            result = db.data_broker(query)
+            result = db.course_data_broker(course, query)
             if not result:
                 cursor.execute(query)
                 table_tier = cursor.fetchall()
-                queries.append(query)
-                results.append(table_tier)
+                db.data_broker_add(db.course_dict, course, query, table_tier)
             else:
                 table_tier = result
 
@@ -769,14 +771,13 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
             if len(table_tier) == 1:
                 tier_id = table_tier[0][0]
 
-
+        # get skill information
         query = "SELECT s.id, reward, s.tier, s.isActive FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = \""+ skill +"\" and course = \""+ course +"\";"
-        result = db.data_broker(query)
+        result = db.course_data_broker(course, query)
         if not result:
             cursor.execute(query)
             table_skill = cursor.fetchall()
-            queries.append(query)
-            results.append(table_skill)
+            db.data_broker_add(db.course_dict, course, query, table_skill)
         else:
             table_skill = result
 
@@ -851,8 +852,8 @@ def award_prize(target, reward_name, xp, contributions=None):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = db.queries
+    #results = db.results
 
     course = config.course
     typeof = "bonus"
@@ -891,7 +892,9 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
 
     cursor = db.cursor
     connect = db.connection
-
+    
+    #queries = db.queries
+    #results = db.results
 
     course = config.course
     typeof = "tokens"
@@ -899,10 +902,21 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
     if tokens != None:
         reward = int(tokens)
     else:
-        query = "SELECT tokens FROM virtual_currency_to_award WHERE course = %s AND name = %s;"
-        cursor.execute(query, (course, reward_name))
-        table_currency = cursor.fetchall()
+        query = "SELECT tokens FROM virtual_currency_to_award WHERE course = \"" +  str(course) + "\" AND name = \"" +  str(reward_name) + "\";"
+        #cursor.execute(query, (course, reward_name))
+        #table_currency = cursor.fetchall()
+        result = db.course_data_broker(course, query)
+        if not result:
+            cursor.execute(query)
+            table_currency = cursor.fetchall()
+            db.data_broker_add(db.course_dict, course, query, table_currency)
+            #queries.append(query)
+            #results.append(level_table)
+        else:
+            table_currency = result
+
         reward = table_currency[0][0]
+
 
     if config.test_mode:
         awards_table = "award_test"
@@ -990,20 +1004,19 @@ def award_tokens_type(target, type, element_name, to_award):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = db.queries
+    #results = db.results
 
     course = config.course
     typeof = "tokens"
 
     if type == "streak":
         query = "SELECT tokens FROM streak where course = \"" + course + "\" AND name = \"" + element_name + "\";"
-        result = db.data_broker(query)
+        result = db.course_data_broker(course, query)
         if not result:
             cursor.execute(query)
             table_reward = cursor.fetchall()
-            queries.append(query)
-            results.append(table_reward)
+            db.data_broker_add(db.course_dict, course, query, table_reward)
         else:
             table_reward = result
         reward = int(table_reward[0][0])
@@ -1062,18 +1075,17 @@ def get_valid_attempts(target, skill):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    ##queries = db.queries
+    #results = db.results
 
     course = config.course
 
     query = "SELECT attemptRating FROM virtual_currency_config where course = \"" + course + "\";"
-    result = db.data_broker(query)
+    result = db.course_data_broker(course, query)
     if not result:
         cursor.execute(query)
         table_currency = cursor.fetchall()
-        queries.append(query)
-        results.append(table_currency)
+        db.data_broker_add(db.course_dict, course, query, table_currency)
     else:
         table_currency = result
 
@@ -1095,8 +1107,8 @@ def get_new_total(target, validAttempts, rating):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = #
+    #results = db.results
 
     course = config.course
 
@@ -1106,12 +1118,12 @@ def get_new_total(target, validAttempts, rating):
     currentTokens = table_tokens[0][0]
 
     query = "SELECT skillCost, wildcardCost, attemptRating, costFormula, incrementCost FROM virtual_currency_config where course = \"" + course + "\";"
-    result = db.data_broker(query)
+    result = db.course_data_broker(course, query)
     if not result:
         cursor.execute(query)
         table_tokens = cursor.fetchall()
-        queries.append(query)
-        results.append(table_tokens)
+        db.data_broker_add(db.course_dict, course, query, table_tokens)
+
     else:
         table_tokens = result
 
@@ -1168,20 +1180,14 @@ def update_wallet(target, newTotal, removed, contributions=None):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    ##queries = db.queries
+    #results = db.results
 
     course = config.course
 
     query = "SELECT award FROM award_participation LEFT JOIN award ON award_participation.award = award.id where user = \""+ str(target) +"\" AND course = \""+ course +"\" AND participation = \""+ str(contributions[0].log_id) +"\";"
-    result = db.data_broker(query)
-    if not result:
-        cursor.execute(query)
-        table_awarded = cursor.fetchall()
-        queries.append(query)
-        results.append(table_awarded)
-    else:
-        table_awarded = result
+    cursor.execute(query)
+    table_awarded = cursor.fetchall()
 
     awarded = len(table_awarded)
 
@@ -1190,15 +1196,9 @@ def update_wallet(target, newTotal, removed, contributions=None):
         return
 
     query = "SELECT * FROM remove_tokens_participation where user = \""+ str(target) +"\" AND course = \""+ course +"\" AND participation = \""+ str(contributions[0].log_id) +"\" ;"
-    result = db.data_broker(query)
-    if not result:
-        cursor.execute(query)
-        table_removed = cursor.fetchall()
-        queries.append(query)
-        results.append(table_removed)
-    else:
-        table_removed = result
-
+    cursor.execute(query)
+    table_removed = cursor.fetchall()
+    
     alreadyRemoved = len(table_removed)
 
     if alreadyRemoved == 1:
@@ -1225,8 +1225,8 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = #
+    #results = db.results
 
     course = config.course
     typeof = "tokens"
@@ -1242,12 +1242,11 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     currentTokens = table_tokens[0][0]
 
     query = "SELECT skillCost, wildcardCost, attemptRating, costFormula, incrementCost FROM virtual_currency_config where course = \"" + course + "\";"
-    result = db.data_broker(query)
+    result = db.course_data_broker(course, query)
     if not result:
         cursor.execute(query)
         table_tokens = cursor.fetchall()
-        queries.append(query)
-        results.append(table_tokens)
+        db.data_broker_add(db.course_dict, course, query, table_tokens)
     else:
         table_tokens = result
 
@@ -1284,12 +1283,11 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     elif contributions != None and skillName != None:
 
         query = "SELECT s.id, s.tier FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = \""+ skillName +"\" and course = \""+ course +"\";"
-        result = db.data_broker(query)
+        result = db.course_data_broker(course, query)
         if not result:
             cursor.execute(query)
             table_skill = cursor.fetchall()
-            queries.append(query)
-            results.append(table_skill)
+            db.data_broker_add(db.course_dict, course, query, table_skill)
         else:
             table_skill = result
 
@@ -1784,8 +1782,8 @@ def get_consecutive_peergrading_logs(target, streak, contributions):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = db.queries
+    #results = db.results
 
     course = config.course
     typeof = "streak"
@@ -1797,12 +1795,12 @@ def get_consecutive_peergrading_logs(target, streak, contributions):
 
         # get streak info
         query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost, isActive from streak where course = \"" + course + "\" and name = \"" + streak + "\";"
-        result = db.data_broker(query)
+        result = db.course_data_broker(course, query)
         if not result:
             cursor.execute(query)
             table_streak = cursor.fetchall()
-            queries.append(query)
-            results.append(table_streak)
+            db.data_broker_add(db.course_dict, course, query, table_streak)
+
         else:
             table_streak = result
 
@@ -1833,8 +1831,8 @@ def get_consecutive_rating_logs(target, streak, type, rating, only_skill_posts):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = db.queries
+    #results = db.results
 
     course = config.course
     typeof = "streak"
@@ -1860,12 +1858,11 @@ def get_consecutive_rating_logs(target, streak, type, rating, only_skill_posts):
 
     # get streak info
     query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost, isActive from streak where course = \"" + course + "\" and name = \"" + streak + "\";"
-    result = db.data_broker(query)
+    result = db.course_data_broker(course, query)
     if not result:
         cursor.execute(query)
         table_streak = cursor.fetchall()
-        queries.append(query)
-        results.append(table_streak)
+        db.data_broker_add(db.course_dict, course, query, table_streak)
     else:
         table_streak = result
 
@@ -1896,8 +1893,8 @@ def get_consecutive_logs(target, streak, type):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = db.queries
+    #results = db.results
 
     course = config.course
     typeof = "streak"
@@ -1918,12 +1915,11 @@ def get_consecutive_logs(target, streak, type):
 
     # get streak info
     query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost, isActive from streak where course = \"" + course + "\" and name = \"" + streak + "\";"
-    result = db.data_broker(query)
+    result = db.course_data_broker(course, query)
     if not result:
         cursor.execute(query)
         table_streak = cursor.fetchall()
-        queries.append(query)
-        results.append(table_streak)
+        db.data_broker_add(db.course_dict, course, query, table_streak)
     else:
         table_streak = result
 
@@ -2085,8 +2081,8 @@ def get_periodic_logs(target, streak_name, contributions, participationType = No
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = db.queries
+    #results = db.results
 
     course = config.course
     typeof = "streak"
@@ -2096,14 +2092,14 @@ def get_periodic_logs(target, streak_name, contributions, participationType = No
 
     # get streak info
     query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost, isActive from streak where course = \"" + course + "\" and name = \"" + streak_name + "\";"
-    result = db.data_broker(query)
+    result = db.course_data_broker(course, query)
     if not result:
         cursor.execute(query)
         table_streak = cursor.fetchall()
-        queries.append(query)
-        results.append(table_streak)
+        db.data_broker_add(db.course_dict, course, query, table_streak)
     else:
         table_streak = result
+        
 
     if not config.test_mode:
         streakid, isCount, isPeriodic, isAtMost  = table_streak[0][0], table_streak[0][6], table_streak[0][7], table_streak[0][8]
@@ -2477,8 +2473,8 @@ def awards_to_give(target, streak_name):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    #queries = db.queries
+    #results = db.results
 
     course = config.course
 
@@ -2486,26 +2482,21 @@ def awards_to_give(target, streak_name):
 
     # get streak info
     query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost, isActive from streak where course = \"" + course + "\" and name = \"" + streak_name + "\";"
-    result = db.data_broker(query)
+    result = db.course_data_broker(course, query)
     if not result:
         cursor.execute(query)
         table_streak = cursor.fetchall()
-        queries.append(query)
-        results.append(table_streak)
+        db.data_broker_add(db.course_dict, course, query, table_streak)
+
     else:
         table_streak = result
+
 
     streak_id, streak_count, isRepeatable = table_streak[0][0], table_streak[0][3], table_streak[0][5]
 
     query = "SELECT participationId, isValid FROM streak_participations WHERE user = \"" + str(target) + "\" AND course = \"" + str(course) + "\" AND streakId= \"" + str(streak_id) + "\" ;"
-    result = db.data_broker(query)
-    if not result:
-        cursor.execute(query)
-        table_all_participations = cursor.fetchall()
-        queries.append(query)
-        results.append(table_all_participations)
-    else:
-        table_all_participations = result
+    cursor.execute(query)
+    table_all_participations = cursor.fetchall()
 
     total = len(table_all_participations)
     awards = 0
@@ -2542,8 +2533,8 @@ def award_streak(target, streak, to_award, participations, type=None):
     cursor = db.cursor
     connect = db.connection
 
-    queries = db.queries
-    results = db.results
+    ##queries = db.queries
+    #results = db.results
 
     course = config.course
     typeof = "streak"
@@ -2568,12 +2559,12 @@ def award_streak(target, streak, to_award, participations, type=None):
 
     # get streak info
     query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost, isActive from streak where course = \"" + course + "\" and name = \"" + streak + "\";"
-    result = db.data_broker(query)
+    result = db.course_data_broker(course, query)
     if not result:
         cursor.execute(query)
         table_streak = cursor.fetchall()
-        queries.append(query)
-        results.append(table_streak)
+        db.data_broker_add(db.course_dict, course, query, table_streak)
+
     else:
         table_streak = result
 
@@ -2589,7 +2580,6 @@ def award_streak(target, streak, to_award, participations, type=None):
 
         isRepeatable = table_streak[0][5]
         streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
-
 
         if not isRepeatable:
             description = streak
@@ -2681,17 +2671,16 @@ def get_campus(target):
     cursor = db.cursor
     connect = db.connection
 
-    queries =  db.queries
-    results = db.results
+    #queries =  #
+    #results = db.results
 
     course = config.course
     query = "select major from course_user left join game_course_user on course_user.id=game_course_user.id where course = \"" + course + "\" and course_user.id = \"" + str(target) + "\";"
-    result = db.data_broker(query)
+    result = db.student_data_broker(target, query)
     if not result:
         cursor.execute(query)
         table = cursor.fetchall()
-        queries.append(query)
-        results.append(table)
+        db.student_dict[target][query] = table
     else:
         table = result
 
@@ -2774,21 +2763,15 @@ def rule_unlocked(name, target):
     cursor = db.cursor
     connect = db.connection
 
-    queries =  db.queries
-    results = db.results
+    #queries =  db.queries
+    #results = db.results
 
     course = config.course
 
     #query = "SELECT description FROM award WHERE user = %s AND course = %s AND description = %s AND type = 'skill'; "
     query = "SELECT description FROM award WHERE user = \"" + str(target) + "\" AND course = \"" + str(course) + "\" AND description = \"" + name + "\" AND type = 'skill'; "
-    result = db.data_broker(query)
-    if not result:
-        cursor.execute(query)
-        table = cursor.fetchall()
-        queries.append(query)
-        results.append(table)
-    else:
-        table = result
+    cursor.execute(query)
+    table = cursor.fetchall()
 
     #cnx.close()
 

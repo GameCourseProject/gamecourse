@@ -402,10 +402,10 @@ def get_consecutive_logs(target, streak, type):
     return
 
 @rule_effect
-def get_periodic_logs(target, streak_name, contributions):
+def get_periodic_logs(target, streak_name, contributions, participationType=None):
     """
     Checks periodic logs - checks periodicity
     """
-    connector.get_periodic_logs(target, streak_name, contributions)
+    connector.get_periodic_logs(target, streak_name, contributions, participationType)
     return
 

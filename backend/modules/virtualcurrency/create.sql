@@ -24,12 +24,12 @@ create table teams_wallet(
     course      int unsigned not null,
     teamId 	    int unsigned,
     tokens          int not null,
-    primary key(user, course),
+    primary key(teamId, course),
     foreign key(course) references course(id) on delete cascade,
     foreign key(teamId) references teams(teamId) on delete cascade
 );
 
-create table remove_tokens_participation(
+create table removed_tokens_participation(
     course          int unsigned not null,
     user            int unsigned not null,
     participation   int unsigned,

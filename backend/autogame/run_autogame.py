@@ -216,7 +216,6 @@ if __name__ == "__main__":
 		# get targets
         students = get_targets(course, last_activity, all_targets)
 
-
 	# Clear badge progression before calculating again
     for el in students.keys():
         clear_badge_progression(el)
@@ -234,7 +233,6 @@ if __name__ == "__main__":
 
     try:
         rs_output = rs.fire(students,logs,scope)
-
         try:
             timestamp = datetime.now()
             finish_date = timestamp.strftime("%Y/%m/%d %H:%M:%S")
@@ -243,14 +241,10 @@ if __name__ == "__main__":
             log_end(course, finish_date, students, logfile)
 
 			# calculate new XP value for each student in targets
-
             for el in students.keys():
                 calculate_xp(course, el)
                 calculate_teams_xp(course, el)
-
-
             sys.exit()
-
         except Exception as e:
             logging.error('Connection Refused in autogame_terminate().')
             logging.error(str(e))
@@ -261,3 +255,8 @@ if __name__ == "__main__":
     except Exception as e:
         logging.exception('Exception raised when firing rulesystem.\n\n\n')
         sys.exit()
+
+
+
+
+

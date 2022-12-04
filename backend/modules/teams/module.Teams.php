@@ -299,6 +299,48 @@ class Teams extends Module
 
             API::response(array('userList' => $usersInfo));
         });
+
+        //getMembersofTeam
+        /**
+         * Gets all non team members.
+         *
+         * @param int $courseId
+         */
+        API::registerFunction(self::ID, 'getMembersofTeam', function () {
+
+            API::requireCourseAdminPermission();
+            API::requireValues('courseId', 'teamId');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+            $teamId = API::getValue('teamId');
+
+            $users = $this->getTeamMembers($teamId);
+
+            $usersInfo = [];
+
+            // For security reasons, we only send what is needed
+            foreach ($users as $userData) {
+                $id = $userData['memberId'];
+                $user = new CourseUser($id, $course);
+                $usersInfo[] = array(
+                    'id' => $id,
+                    'name' => $user->getName(),
+                    'nickname' => $user->getNickname(),
+                    'studentNumber' => $user->getStudentNumber(),
+                    'roles' => $user->getRolesNames(),
+                    'major' => $user->getMajor(),
+                    'email' => $user->getEmail(),
+                    'lastLogin' => $user->getLastLogin(),
+                    'username' => $user->getUsername(),
+                    'authenticationService' => User::getUserAuthenticationService($user->getUsername()),
+                    'isActive' => $user->isActive(),
+                    'hasImage' => User::hasImage($user->getUsername())
+                );
+            }
+
+            API::response(array('membersTeamList' => $usersInfo));
+        });
         
         /**
          * Creates a new team in the course.
@@ -407,7 +449,6 @@ class Teams extends Module
             API::response(array('content' => $content));
         });
 
-        
     }
 
     public function setupResources() {
@@ -757,6 +798,7 @@ class Teams extends Module
             $type = "object";
         }
         return Dictionary::createNode($teamArray, self::ID, $type);
+        return Dictionary::createNode($teamArray, self::ID, $type);
     }
 
     public function getAllUsersInTeams($courseId, $role, $active = true){
@@ -857,7 +899,6 @@ class Teams extends Module
 
         Core::$systemDB->insert(self::TABLE, $teamData);
         $teamId = Core::$systemDB->getLastId();
-
         if ($team['members'] != "") {
             // eg.: $team['members] = "120 | 125 | 130"
             $members = explode("|", str_replace(" | ", "|", $team["members"]));
@@ -900,6 +941,7 @@ class Teams extends Module
     {
         Core::$systemDB->delete(self::TABLE, ["id" => $teamId]);
     }
+
 
     /*** ----------------------------------------------- ***/
     /*** ------------------- Helpers ------------------- ***/

@@ -5,3 +5,5 @@ rule: Initial Bonus
 		bonus = METADATA["initial_bonus"]
 	then:
         award_prize(target, "Initial Bonus", bonus)
+
+        
