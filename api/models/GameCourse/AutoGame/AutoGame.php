@@ -144,6 +144,22 @@ abstract class AutoGame
     }
 
     /**
+     * Checks whether AutoGame is stuck running (in the database)
+     * due to an error being thrown.
+     *
+     * When errors are thrown during the execution of AutoGame,
+     * the log file ends without a proper separator.
+     *
+     * @param int $courdeId
+     * @return bool
+     */
+    private static function isStuck(int $courdeId): bool
+    {
+        $logs = self::getLogs($courdeId);
+        return !substr(trim($logs), -strlen(self::SEPARATOR)) == self::SEPARATOR;
+    }
+
+    /**
      * Runs AutoGame for a given course.
      * Option for targets to run and whether to run on test mode.
      *
@@ -161,8 +177,13 @@ abstract class AutoGame
         }
 
         if (self::isRunning($courseId)) {
-            self::log($courseId, "AutoGame is already running.", "WARNING");
-            return;
+            if (self::isStuck($courseId)) {
+                self::setIsRunning($courseId, false, true);
+
+            } else {
+                self::log($courseId, "AutoGame is already running.", "WARNING");
+                return;
+            }
         }
 
         if (self::isSocketOpen()) {
@@ -307,6 +328,8 @@ abstract class AutoGame
     /*** ---------------------- Logging --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    const SEPARATOR = "================================================================================";
+
     /**
      * Gets AutoGame logs for a given course.
      *
@@ -329,7 +352,7 @@ abstract class AutoGame
      */
     public static function log(int $courseId, string $message, string $type = "ERROR")
     {
-        $sep = "================================================================================";
+        $sep = self::SEPARATOR;
         $header = "[" . date("Y/m/d H:i:s") . "] [$type] : ";
         $error = "\n$sep\n$header$message\n$sep\n\n";
 
