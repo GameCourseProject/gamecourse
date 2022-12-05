@@ -149,6 +149,7 @@
                 </div>
               </ng-container>
 
+
               <ng-container *ngIf="param.type !== InputType.IMAGE && param.type !== InputType.TOGGLE && param.type !== InputType.COLOR">
                 <span>{{item[param.id]}}</span>
               </ng-container>
@@ -269,6 +270,31 @@
     </ng-container>
   </ng-container>
 
+  <!-- Select -->
+  <ng-container *ngIf="type === InputType.SELECT_TIME">
+    <ng-container *ngIf="style === 'outer'">
+      <div class="input-wrapper">
+        <div class="third">
+          <select class="form__input" id="time2-type" [(ngModel)]="obj[param]">
+            <option [value]="null" disabled>Select a type</option>
+          </select>
+        </div> </div>
+    </ng-container>
+
+    <ng-container *ngIf="style === 'inner'">
+      <div class="input-wrapper" style="">
+        <select class="input" id="time-type" [(ngModel)]="obj[param]">
+          <option value="null"  class="label" disabled>Select a periodicity time</option>
+          <option value="minutes">Minutes</option>
+          <option value="hours">Hours</option>
+          <option value="days">Days</option>
+          <option value="weeks_">Weeks</option>
+
+        </select>
+      </div>
+    </ng-container>
+  </ng-container>
+
   <!-- Image -->
   <app-input-file *ngIf="type === InputType.IMAGE"
       [id]="id"
@@ -276,6 +302,24 @@
       [label]="label"
       (valueChange)="onFileSelected($event)">
   </app-input-file>
+
+
+  <ng-container *ngIf="type === InputType.COLOR_PICKER">
+    <ng-container *ngIf="style === 'inner'">
+      <div class="color_picker">
+        <input type="text" class="form__input pickr" id="clr_pickr" placeholder="Color" [(ngModel)]="obj.color" role="button" aria-label="toggle color picker dialog">
+        <label for="clr_pickr" class="form__label">Color</label>
+        <div id="color-sample">
+          <div class="box" [ngStyle]="{'backgroundColor': obj.color || 'white'}"></div>
+          <div class="frame" [ngStyle]="{'borderColor': isWhite(obj.color) ? 'lightgrey' : obj.color}"></div>
+
+        </div>
+      </div>
+
+    </ng-container>
+
+
+  </ng-container>
 
   <!-- Toggle -->
   <ng-container *ngIf="type === InputType.TOGGLE">

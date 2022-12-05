@@ -1,6 +1,6 @@
 <div class="section removeAction-section">
   <div class="divider">
-    <div class="title"><span>Actions To Penalize</span></div>
+    <div class="title"><span>Participations To Penalize</span></div>
   </div>
 
   <div class="add content">
@@ -48,11 +48,11 @@
 
         <!--- <div *ngIf="actionsToRemove.length === 0" class='error_box'> -->
         <div *ngIf="actionsToRemove.length === 0" class='error_box'>
-          <div id='empty_table_add_actions' class='error_msg'>No actions to remove tokens found</div>
+          <div id='empty_table_add_actions' class='error_msg'>No participations to remove tokens found</div>
         </div>
 
       </div>
-    </div>
+    </div>r
 
     <!-- Action Buttons -->
     <div class="action-buttons">
@@ -174,7 +174,8 @@
             <span class="label">Increment Formula</span>
 
             <select id="increment-formula" class="input" style="margin-right: 30px" [(ngModel)]="skillsVars.costFormula" (ngModelChange)="hasUnsavedChanges = true">
-              <option [ngValue]="0"> Case 0 - SUB: incrementCost </option>
+              <option [value]="null" disabled selected >Select a formula</option>
+              <option [ngValue]="0"> Case 0 - ADD: incrementCost </option>
               <option [ngValue]="1"> Case 1 - MUL: incrementCost * validAttempts </option>
               <option [ngValue]="2"> Case 2 - POW: incrementCost * pow(2, validAttempts - n)</option>
             </select>

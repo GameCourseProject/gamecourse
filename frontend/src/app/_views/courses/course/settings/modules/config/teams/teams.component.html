@@ -59,10 +59,6 @@
 
                 </tr>
               </table>
-              <!--
-              <td><span>{{team.xp}}</span></td>
-              <td><span>{{team.level}}</span></td>
-              -->
               <td class = "blank">  </td>
               <td class="action-column" style="right: 0px">
                 <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initItem('team', team); isTeamModalOpen = true;"></div>
@@ -132,7 +128,11 @@
 
       <!-- Select Team Members -->
       <div class="sub_title">Select Members: </div>
-
+      <!--
+      <div class="sub_title" *ngFor="let user of teamMembers" >
+        {{user.id + '-' + user.name + '-' + user.studentNumber }}
+      </div>
+      -->
       <div *ngIf="newTeam.teamMembers != null && newTeam.teamMembers.length == nrTeamMembers" class = "info_message"> Team is complete! You'll need to remove existent members to add new ones.</div>
       <div class="content">
         <div id="new_box" class="inputs">
@@ -143,17 +143,16 @@
                  (click)="removeMember(user)">
               {{user.name}}
             </div>
-            <input id="select_system_user" type="text" placeholder="Search..">
+            <input id="select_system_user" type="text" placeholder="Search.." [(ngModel)]="selectMemberQuery" (ngModelChange)="reduceListNonUsers($event)">
           </div>
 
           <!-- Users -->
           <div class="select_box" id="system_users">
-            <div *ngFor="let user of allNonMembers" class="line">
+            <div *ngFor="let user of reduceNonMembers.items" class="line">
               <div>{{user.name + ' - ' + user.studentNumber}}</div>
               <div *ngIf="newTeam.teamMembers == null || newTeam.teamMembers.length < nrTeamMembers " class="add_icon_no_outline icon" (click)="addTeamMember(user)"></div>
             </div>
           </div>
-
 
         </div>
         <div> Save Team </div>

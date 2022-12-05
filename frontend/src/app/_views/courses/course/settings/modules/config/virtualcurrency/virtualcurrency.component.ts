@@ -26,7 +26,7 @@ export class VirtualcurrencyComponent implements OnInit {
 
   course: Course;
   actionsToRemove: ActionsToRemove[] = [];
-  participationTypes = ["attended lab", "attended lecture", "course emperor", "forum add discussion", "forum add post","forum update post","forum upload post","graded post","hall of fame","initial bonus","lab grade", "lab king","page viewed","participated in focus groups","participated in lecture","peerforum add discussion","peerforum add post","peerforum upload post","peergraded post","popular choice award (presentation)","presentation grade","presentation king","questionnaire resumed","questionnaire submitted","questionnaire viewed","quiz created","quiz grade","quiz king","quiz viewed","replied to questionnaires","resource view","subscribe forum","subscribe peerforum","suggested presentation subject","unsubscribe forum","unsubscribe eerforum","url viewed"];
+  participationTypes = ["attended lab", "attended lecture", "course emperor", "forum add discussion", "forum add post","forum update post","forum upload post","graded post","hall of fame","initial bonus","lab grade", "lab king","page viewed","participated in focus groups","participated in lecture","peerforum add discussion","peerforum add post","peerforum upload post","peergraded post","popular choice award (presentation)","presentation grade","presentation king","questionnaire resumed","questionnaire submitted","questionnaire viewed","quiz created","quiz grade","quiz king","quiz viewed","replied to questionnaires","resource view","subscribe forum","subscribe peerforum","suggested presentation subject","unsubscribe forum","unsubscribe peerforum","url viewed"];
 
   skillsVars = {
     skillCost: null,
@@ -53,7 +53,6 @@ export class VirtualcurrencyComponent implements OnInit {
   isTestModalOpen: boolean;
 
   types: [];
-
 
   saving: boolean;
 
@@ -107,7 +106,6 @@ export class VirtualcurrencyComponent implements OnInit {
       attemptRating: this.skillsVars.attemptRating,
       costFormula: this.skillsVars.costFormula,
       incrementCost: this.skillsVars.incrementCost
-
     }
 
     this.api.setCurrencySkillVars(this.courseID, currSkillsVars)
