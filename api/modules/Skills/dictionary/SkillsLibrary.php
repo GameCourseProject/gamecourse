@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\Views\Dictionary;
 
+use Exception;
 use GameCourse\Course\Course;
 use GameCourse\Module\Skills\Skills;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
@@ -47,14 +48,14 @@ class SkillsLibrary extends Library
      * @example %user.hasWildcardAvailable(<skillTreeID>) --> true
      * @example %user.hasWildcardAvailable(<skillTreeID>) --> false
      *
+     * @param bool $mockData
+     * @param Course $course
      * @param array $user
      * @param int $skillTreeId
-     * @param Course $course
-     * @param bool $mockData
      * @return ValueNode
-     *
+     * @throws Exception
      */
-    public function hasWildcardAvailable(array $user, int $skillTreeId, Course $course, bool $mockData): ValueNode
+    public function hasWildcardAvailable(bool $mockData, Course $course, array $user, int $skillTreeId): ValueNode
     {
         if ($mockData) return new ValueNode(false);
 

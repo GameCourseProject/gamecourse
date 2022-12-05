@@ -10,6 +10,6 @@ rule: Golden Star
 
 		# Compute the level of the badge that the student deserves
 		lvl = compute_lvl(nlogs, 1,2,3)
-
+		
 	then:
 		award_badge(target, "Golden Star", lvl, logs)

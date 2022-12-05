@@ -150,10 +150,10 @@ def read_tree (path=None):
 
 def read_logs (students, path=None):
 	logs = {}
-
+	
 	# read Moodle Logs
 	# logs = read_moodle_logs(students,logs)
-
+	
 	# read Moodle Post Ratings
 	# logs = read_ratings_logs(students,logs)
 	# logs = read_ratings_logs(students,logs,True)
@@ -282,7 +282,7 @@ def read_ratings_logs(students, logs=None, peer=False):
 			url = MOODLEBASEURL + ("peerforum/" if peer else "forum/") + url
 			ts = time.strptime(ts.strip(),"%d %B %Y, %H:%M %p")
 			ts = time.mktime(ts)
-
+			
 			s = cfuncs.find_student(name,students)
 			if s:
 				info = forum, thread
@@ -325,7 +325,7 @@ def read_moodle_votes_local(students, logs=None, peer=False):
 				url = MOODLEBASEURL + ("peerforum/" if peer else "forum/") + url
 				ts = time.strptime(ts.strip(),"%d %B %Y, %H:%M %p")
 				ts = time.mktime(ts)
-
+				
 				s = cfuncs.find_student(name,students)
 				if s:
 					info = forum, thread
@@ -349,8 +349,8 @@ def read_QR_logs(students, logs=None):
 	#f = urllib.request.urlopen(QRURL)
 	#result = f.read()
 	#result.split("\n")
-
-
+	
+	
 	with codecs.open(QR_FPATH,"r") as file:
 		for l in file.readlines():
 			num, name, campus, action, info = l.strip().split(";")
@@ -398,7 +398,7 @@ def read_PCMSpreadsheet_logs_from_csv (logs=None, path=None):
 			#name = name.encode("latin1")
 			#action = action.encode("latin1")
 			xp = 0 if xp == "" else int(xp)
-
+			
 			# encoding fix
 			#info = "" if info == "" else info.encode("latin1")
 			# store data
@@ -408,7 +408,7 @@ def read_PCMSpreadsheet_logs_from_csv (logs=None, path=None):
 			logs[num] = student_logs # update structure
 	return logs
 	"""
-
+	
 	if logs is None: logs = {}
 	if path is None: path = PCMSPREADSHEET_FPATH
 
@@ -451,7 +451,7 @@ def read_quiz_grades (students, logs=None):
 
 	with open(QUIZGRADES_FPATH, "r") as file:
 		query_results = file.readlines()
-
+		
 		# For each 'line' of the 'results' (except the heading, line: 0)
 		for l in query_results[1:] :
 			if len(l.strip()) > 0 : # If the line is non-empty
@@ -464,7 +464,7 @@ def read_quiz_grades (students, logs=None):
 					print(l + "\n")
 					ignored_lines += 1
 					continue
-
+				
 				ts, course, quiz, name, grade, url = result
 				# format timestamp
 				ts = time.mktime(time.strptime(ts.strip(), "%d %B %Y, %H:%M %p"))
@@ -474,7 +474,7 @@ def read_quiz_grades (students, logs=None):
 				# Check if the student exists (is valid)
 				if not s :
 					# print "Invalid student: " + name
-					# If the student doesn't exist add it to the
+					# If the student doesn't exist add it to the 
 					# unrecognized student list
 					if not name in unrec_students:
 						unrec_students.append(name)

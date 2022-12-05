@@ -67,10 +67,10 @@ class StudentData:
 			return self.__students__ == other.__students__
 		except AttributeError:
 			return False
-
+	
 	def __ne__(self,other):
 		return not self == other
-
+	
 	def __repr__(self):
 		m = "StudentData(["
 		for s in self.students():

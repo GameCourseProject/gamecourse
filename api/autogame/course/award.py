@@ -23,7 +23,7 @@ class Award:
 			self.timestamp = time.time()
 		# how was this obtained? (lecture num, url, etc)
 		self.info = info
-
+	
 	def __str__(self):
 		m = "%s;%s;%s;" % (self.timestamp, self.student, self.achievement)
 		m+= str(self.level) if self.badge else str(self.xp)

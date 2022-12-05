@@ -24,7 +24,7 @@ class TestParseBlockBase (TestBlock):
 		self.assertIsInstance(result[0],Block)
 		self.assertParsedBlock(result[0],block.stmts(),block.file(),block.line())
 		# a positionsan index to a string which must be a non-negative int
-		# lesser or equals than the length of the text
+		# lesser or equals than the length of the text 
 		self.assertIsInstance(result[1],int)
 		self.assertGreaterEqual(result[1],0)
 		self.assertLessEqual(result[1],len(text))

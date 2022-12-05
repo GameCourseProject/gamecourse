@@ -6,7 +6,7 @@ valid description with ascii chars
 		pousou o olhar em Maria Eduarda,
 		nunca mais foi o mesmo ...
 
-rule:
+rule:  			
 	à
 	è
 	ì # when: when:

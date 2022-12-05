@@ -6,6 +6,6 @@ rule: Initial Bonus
 		logs = GC.participations.getAllParticipations(target, "initial bonus")
 		nlogs = len(logs)
 		nlogs == 1
-
+		
 	then:
         award_prize(target, "Initial Bonus", bonus)

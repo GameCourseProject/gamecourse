@@ -1,11 +1,11 @@
 rule: Scene Reshooting
 
 	when:
-
+	
 		skill1 = rule_unlocked("Doppelganger", target)
 		skill2 = rule_unlocked("Cinemagraph", target)
 		wildcard = GC.skillTrees.wildcardAvailable("Scene Reshooting","Wildcard", target)
-
+		
 		skill_based = skill1 and skill2
 		cond2 = skill1 and wildcard
 		cond3 = skill2 and wildcard
@@ -14,7 +14,7 @@ rule: Scene Reshooting
 		use_wildcard = False
 
 		use_wildcard = False if skill_based else True
-
+	
 		logs = GC.participations.getSkillParticipations(target, "Scene Reshooting")
 		rating = get_rating(logs)
 		rating >= 3

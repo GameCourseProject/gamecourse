@@ -21,40 +21,40 @@ class PCMSpreadsheetParser:
 		self._Authorize()
 		self.curr_key = ''
 		self.curr_wksht_id = ''
-
+	
 	def _Authorize(self):
 		token = None
 
 		if not(os.path.exists(AUTHENTICATION_FPATH)):
-
+			
 			print("authentication file wasn't found in:", AUTHENTICATION_FPATH)
 			print("creating a new authentication file in the same location")
 			print("generating a new token ... ")
-
+			
 			token = gdata.gauth.OAuth2Token(
 				client_id=CLIENT_ID,
-				client_secret=CLIENT_SECRET,
+				client_secret=CLIENT_SECRET, 
 				scope=SCOPE,
 				user_agent=application_name);
 
 			print("DONE!")
 			print("authorize token url ... ")
-
+			
 			url = token.generate_authorize_url()
-
+			
 			print("DONE!")
 			print('Use this url to authorize the application: \n')
 			print(url)
-
+			
 			code = input('What is the verification code? ').strip()
-
+			
 			print("getting access token ... ")
 
 			token.get_access_token(code)
 
 			print("DONE!")
 			print("saving token to authentication file:", AUTHENTICATION_FPATH)
-
+			
 			with open(AUTHENTICATION_FPATH, 'w') as file:
 				file.write(token.refresh_token + '\n')
 				file.write(token.access_token + '\n')
@@ -64,18 +64,18 @@ class PCMSpreadsheetParser:
 			with open(AUTHENTICATION_FPATH, 'r') as file:
 				refresh_token = file.readline().strip()
 				access_token = file.readline().strip()
-
+					
 			token = gdata.gauth.OAuth2Token(
 				client_id=CLIENT_ID,
-				client_secret=CLIENT_SECRET,
+				client_secret=CLIENT_SECRET, 
 				scope=SCOPE,
 				user_agent=application_name,
 				refresh_token=refresh_token,
 				access_token=access_token)
-
+						
 		self.gd_client = gdata.spreadsheets.client.SpreadsheetsClient()
 		token.authorize(self.gd_client)
-
+	
 	def _FindSpreadsheet(self):
 		# Find the spreadsheet
 		feed = self.gd_client.GetSpreadsheets()
@@ -86,7 +86,7 @@ class PCMSpreadsheetParser:
 		id_parts = entry.id.text.split('/')
 		self.curr_key = id_parts[len(id_parts) - 1]
 #		print self.curr_key
-
+	
 	def _FindWorksheet(self, name):
 		# Get the list of worksheets
 		feed = self.gd_client.GetWorksheets(self.curr_key)

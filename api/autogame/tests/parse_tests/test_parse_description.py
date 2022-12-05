@@ -64,7 +64,7 @@ class TestParseDescription (unittest.TestCase):
 		p = len(f)
 		l = f.count("\n") + 1
 		test_parse_description_aux(self,d,f,p,l)
-
+	
 	def test_parse_description_013(self):
 		d = """This is the valid part of a description.
 		As one can see, multiple sentences are allowed.
@@ -78,7 +78,7 @@ class TestParseDescription (unittest.TestCase):
 		p = len(d)
 		l = d.count("\n") + 1
 		test_parse_description_aux(self,d,f,p,l)
-
+	
 	def test_parse_description_014 (self):
 		d = "start\n then"
 		f = d
@@ -89,7 +89,7 @@ class TestParseDescription (unittest.TestCase):
 		p = len(d)
 		l = f.count("\n") + 1
 		test_parse_description_aux(self,d,f,p,l)
-
+	
 	def test_parse_description_015 (self):
 		d = """
 		 	\t\r\f\v\n

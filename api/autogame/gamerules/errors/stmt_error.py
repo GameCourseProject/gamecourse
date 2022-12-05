@@ -22,6 +22,6 @@ class StatementError(Exception):
 		if self.val:
 			msg += ": " + str(self.val)
 		return msg
-
+	
 	def __repr__(self):
 		return str(self)

@@ -9,7 +9,7 @@ from context import Rule, Output, Effect
 # Main Class - TestPathData
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestTargetData (BaseTestClass):
-
+	
 	def assertAdd(self,target,rule,output,output_data=None):
 		""" Asserts if the method TargetData.add(target,rule,output) is valid
 		for the given arguments """
@@ -124,7 +124,7 @@ class TestAdd(TestTargetData):
 # remove: tests that verify if certain element is successfully removed
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestRemove(TestTargetData):
-
+	
 	@classmethod
 	def setUpClass(cls):
 		cls.tro = {}
@@ -252,10 +252,10 @@ class TestPredicates(TestTargetData):
 		self.assertTrue(td.rule_exists(rule))
 
 	def test_02 (self):
-		""" test target_exists(target): add a target to the system and check for
+		""" test target_exists(target): add a target to the system and check for 
 		its existance
 		"""
-		target = "MyTarget"
+		target = "MyTarget" 
 		td = TargetData()
 		self.assertFalse(td.target_exists(target))
 		td.add(target,Rule("MyRule"),Output([Effect(1)]))

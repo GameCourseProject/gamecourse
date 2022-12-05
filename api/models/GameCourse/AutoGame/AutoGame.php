@@ -344,22 +344,37 @@ abstract class AutoGame
 
     /**
      * Gets all participations of a given course.
-     * Option for a specific user and/or source and/or type.
+     * Option for a specific user, type, rating, evaluator and/or
+     * source, as well as an initial and/or end date.
      *
      * @param int $courseId
      * @param int|null $userId
-     * @param string|null $source
      * @param string|null $type
+     * @param int|null $rating
+     * @param int|null $evaluatorId
+     * @param string|null $startDate
+     * @param string|null $endDate
+     * @param string|null $source
      * @return array
      */
-    public static function getParticipations(int $courseId, int $userId = null, string $source = null, string $type = null): array
+    public static function getParticipations(int $courseId, int $userId = null, string $type = null, int $rating = null,
+                                             int $evaluatorId = null, string $startDate = null, string $endDate = null,
+                                             string $source = null): array
     {
         $table = self::TABLE_PARTICIPATION;
+
         $where = ["course" => $courseId];
         if (!is_null($userId)) $where["user"] = $userId;
-        if (!is_null($source)) $where["source"] = $source;
         if (!is_null($type)) $where["type"] = $type;
-        $participations = Core::database()->selectMultiple($table, $where, "*", "date DESC");
+        if (!is_null($rating)) $where["rating"] = $rating;
+        if (!is_null($evaluatorId)) $where["evaluator"] = $evaluatorId;
+        if (!is_null($source)) $where["source"] = $source;
+
+        $whereCompare = [];
+        if (!is_null($startDate)) $whereCompare[] = ["date", ">=", $startDate];
+        if (!is_null($endDate)) $whereCompare[] = ["date", "<=", $endDate];
+
+        $participations = Core::database()->selectMultiple($table, $where, "*", "date DESC", [], $whereCompare);
 
         // Parse
         foreach ($participations as &$participation) {

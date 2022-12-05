@@ -47,7 +47,7 @@ def award_grade_aux(description, student, contributions, xp=None, info=None):
 	awards = []
 	indicators = {}
 	lvl = 0
-
+	
 	# contributions can either be a collection of contributions that are
 	# relevant for the grade or an integer corresponding to the amount
 	# of awards to be awarded with a certain XP
@@ -84,7 +84,7 @@ def award_grade_aux(description, student, contributions, xp=None, info=None):
 				awards.append(Award(student,description,lvl,xp,False,
 					info=c.info if c.info else ""))
 	awards = {student: awards}
-
+	
 	return Prize(awards, indicators)
 
 @rule_effect
@@ -101,5 +101,5 @@ def award_treeskill (skill, student, contributions=None):
 	for c in contributions:
 		if skill in c.info[1]:
 			indicators[student] = {skill: (int(c.xp), [c])}
-
+	
 	return Prize(awards, indicators)

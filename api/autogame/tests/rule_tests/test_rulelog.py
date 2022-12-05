@@ -35,7 +35,7 @@ class TestRuleLog(BaseTestClass):
 		self.assertEqual(log1,log2)
 		self.assertTrue(log1 == log2)
 		self.assertFalse(log1 != log2)
-
+	
 	def assertNotEq(self,log1,log2):
 		""" asserts if two rulelogs with certain arguments are Equal """
 		self.assertNotEqual(log1,log2)
@@ -46,14 +46,14 @@ class TestRuleLog(BaseTestClass):
 # RuleLog(val) --> RuleLog
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestCreation(TestRuleLog):
-
+	
 	def test_01(self):
 		""" create a rule log with some default arguments """
 		rule = Rule()
 		target = 'student1'
 		output = Output([Effect(i) for i in range(1,21)])
 		self.assertCreation(rule,target,output)
-
+	
 	def test_02(self):
 		""" test rule creation with invalid rule values """
 		target = {'student':73844}
@@ -64,7 +64,7 @@ class TestCreation(TestRuleLog):
 		self.assertCreationRaises(TypeError,output,target,output)
 		self.assertCreationRaises(TypeError,target,target,output)
 		self.assertCreationRaises(TypeError,ValueError,target,output)
-
+	
 	def test_03(self):
 		""" test rule creation with invalid output values """
 		rule = Rule()
@@ -74,7 +74,7 @@ class TestCreation(TestRuleLog):
 		self.assertCreationRaises(TypeError,rule,target,'not valid')
 		self.assertCreationRaises(TypeError,rule,target,rule)
 		self.assertCreationRaises(TypeError,rule,target,target)
-
+	
 	def test_04(self):
 		""" test rule creation with invalid time values """
 		rule = Rule()

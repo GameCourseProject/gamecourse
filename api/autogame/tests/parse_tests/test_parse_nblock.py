@@ -13,7 +13,7 @@ from .test_parse_block import TestParseBlockBase
 ### Parse Named Block Tests
 ### %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ###
 class TestParseNamedBlockBase (TestParseBlockBase):
-
+	
 	def assertParseNamedBlock(self, stmts, name, text, endkey='',
 		pos_start=0, line_start=1, pos_end=None, line_end=None, fpath=None):
 		""" test 'parse_named_block' function with the given inputs """
@@ -80,7 +80,7 @@ class TestParseNamedBlock (TestParseNamedBlockBase):
 	# 	expected = (block, pos, line)
 	# 	self.assertEqual(parser.parse_named_block(name,text),expected)
 	# 	assert_block(self,expected[0],[s1,s2],"")
-
+	
 	# def test_parse_named_block_004(self):
 	# 	name = "(myblock)"
 	# 	decls = "x = f(10.0,-30,047,0xff)\ny = g(x)+h(x**2)"
@@ -97,7 +97,7 @@ class TestParseNamedBlock (TestParseNamedBlockBase):
 	# 	expected = (block, pos, line)
 	# 	self.assertEqual(parser.parse_named_block(name,text),expected)
 	# 	assert_block(self,expected[0],[s1,s2,s3],"")
-
+	
 	# def test_parse_named_block_005(self):
 	# 	n,t,p,s,f,l,result = get_parse_nblock_iargs()
 	# 	stmts = []
@@ -105,7 +105,7 @@ class TestParseNamedBlock (TestParseNamedBlockBase):
 	# 		stmts.append(i)
 	# 	self.assertEqual(parser.parse_named_block(n,t,p,s,f,l),result)
 	# 	assert_block(self,result[0],stmts,f)
-
+	
 	# def test_parse_named_block_006(self):
 	# 	n = "then"
 	# 	t = "then: x+y"
@@ -139,52 +139,52 @@ class TestParseNamedBlock (TestParseNamedBlockBase):
 		n,t,p,s,f,l,result = get_parse_nblock_iargs(4)
 		msg = "parse_block:: Invalid \'pos\' arg, expected"
 		msg += "<type \'Int\' or \'int\'> received " + str(type(-5.8))
-		test_parse_nblock_raises(self,n,t,-5.8,f,l,msg)
+		test_parse_nblock_raises(self,n,t,-5.8,f,l,msg)		
 
 	def test_parse_named_block_i005(self):
 		n,t,p,s,f,l,result = get_parse_nblock_iargs(5)
 		msg = "parse_block:: Invalid \'fpath\' arg, expected"
 		msg += "<type \'str\'> received " + str(type(None))
-		test_parse_nblock_raises(self,n,t,p,None,l,msg)
+		test_parse_nblock_raises(self,n,t,p,None,l,msg)		
 
 	def test_parse_named_block_i006(self):
 		n,t,p,s,f,l,result = get_parse_nblock_iargs(6)
 		msg = "parse_block:: Invalid \'line\' arg, expected"
 		msg += "<type \'str\'> received " + str(type(None))
-		test_parse_nblock_raises(self,n,t,p,f,None,msg)
+		test_parse_nblock_raises(self,n,t,p,f,None,msg)		
 
 	def test_parse_named_block_i007(self):
 		n,t,p,s,f,l,result = get_parse_nblock_iargs(7)
 		msg = "parse_block:: Invalid \'line\' arg, expected"
 		msg += "<type \'str\'> received " + str(type(10.1))
-		test_parse_nblock_raises(self,n,t,p,f,10.1,msg)
+		test_parse_nblock_raises(self,n,t,p,f,10.1,msg)		
 
 	def test_parse_named_block_i008(self):
 		n,t,p,s,f,l,result = get_parse_nblock_iargs(8)
 		msg = "parse_block:: size of \'text\' can't be less than size of"
 		msg += " \'name\'"
-		test_parse_nblock_raises(self,n,"",p,f,l,msg)
+		test_parse_nblock_raises(self,n,"",p,f,l,msg)		
 
 	def test_parse_named_block_i009(self):
 		n,t,p,s,f,l,result = get_parse_nblock_iargs(9)
 		msg = "parse_block:: Name of block can't be empty"
-		test_parse_nblock_raises(self,"",t,p,f,l,msg)
+		test_parse_nblock_raises(self,"",t,p,f,l,msg)		
 
 	def test_parse_named_block_i010(self):
 		n,t,p,s,f,l,result = get_parse_nblock_iargs(10)
 		msg = "parse_block:: size of \'text\' can't be less than size of"
 		msg += " \'name\'"
-		test_parse_nblock_raises(self,n,"a",p,f,l,msg)
+		test_parse_nblock_raises(self,n,"a",p,f,l,msg)		
 
 	def test_parse_named_block_i011(self):
 		n,t,p,s,f,l,result = get_parse_nblock_iargs(11)
 		msg = "parse_block:: \'pos\' can't be a negative number"
-		test_parse_nblock_raises(self,n,t,-1,f,l,msg)
+		test_parse_nblock_raises(self,n,t,-1,f,l,msg)		
 
 	def test_parse_named_block_i012(self):
 		n,t,p,s,f,l,result = get_parse_nblock_iargs(12)
 		msg = "parse_block:: \'pos\' can't be equal or bigger than size of text"
-		test_parse_nblock_raises(self,n,t,len(t),f,l,msg)
+		test_parse_nblock_raises(self,n,t,len(t),f,l,msg)		
 
 	def test_parse_named_block_i013(self):
 		n,t,p,s,f,l,result = get_parse_nblock_iargs(13)

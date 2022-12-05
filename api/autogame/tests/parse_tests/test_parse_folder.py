@@ -11,7 +11,7 @@ from .test_parse_file import TestParseFileBase
 ### Parse List File
 ### %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ###
 class TestParseFolderBase(TestParseFileBase):
-
+	
 	def assertParseFolder(self, folder):
 		from context import testfiles_path
 		from os.path import join

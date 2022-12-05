@@ -1,7 +1,7 @@
 
 	# Test file to parse rule definitions with just the preconditions
 
-rule:
+rule: 
 when: # show me the numbers
 	1234567890
 	.0123456789

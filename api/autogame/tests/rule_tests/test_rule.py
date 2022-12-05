@@ -136,22 +136,22 @@ class TestCreation(TestRule):
 		p = ['a=1','b=2','a+b>0']
 		a = ['a=a*10','b=b**4','a-b']
 		self.assertCreation('Magic Rule','makes magic come true',p,a,'f1.txt',7)
-
+	
 	def test_v04 (self):
 		""" create a rule with a generic Block as preconditions """
 		b = Block()
 		self.assertRule(Rule(precs=b),'','',Preconditions(),Actions(),'',1)
-
+	
 	def test_v05 (self):
 		""" create a rule with an Actions Block as preconditions """
 		b = Actions()
 		self.assertRule(Rule(precs=b),'','',Preconditions(),Actions(),'',1)
-
+	
 	def test_v06 (self):
 		""" create a rule with a generic Block as actions """
 		b = Block()
 		self.assertRule(Rule(acts=b),'','',Preconditions(),Actions(),'',1)
-
+	
 	def test_v07 (self):
 		""" create a rule with an Actions Block as actions """
 		b = Preconditions()
@@ -228,11 +228,11 @@ class TestCreation(TestRule):
 # >		- they have the same line
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestComparison(TestRule):
-
+	
 	def test_t01 (self):
 		""" test rule comparison with two equal rules (default values) """
 		self.assertEqualRules(Rule(),Rule())
-
+	
 	def test_t02 (self):
 		""" test rule comparison with two equal rules (customized values) """
 		n = 'rule name'
@@ -285,7 +285,7 @@ class TestComparison(TestRule):
 # Rule.actions(), Rule.acts()
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestGetters (TestRule):
-
+	
 	def test_name (self):
 		name = "The Amazing Spiderman"
 		rule = Rule(name)
@@ -434,3 +434,7 @@ class TestFire(TestRule):
 		precs = ["this == target","this in targets"]
 		scope = {"targets":["s1","s2"]}
 		self.assertFire("s1",precs=precs,scope=scope)
+
+
+
+

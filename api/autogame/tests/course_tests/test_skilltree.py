@@ -35,7 +35,7 @@ class TestPreCondtion (TestSkillTree):
 	def test_00 (self):
 		""" test creation with empty preconditions """
 		self.assertCreationPreCondition([])
-
+	
 	def test_01 (self):
 		""" creation of preconditions """
 		requirements = "eBook+reMIDI"

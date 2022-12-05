@@ -10,12 +10,12 @@ import unittest
 # Abstract Class to define functions
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestValidate (unittest.TestCase):
-
+	
 	def assertIsAssignmentTrue(self,stmt):
 		fpath = "C:\\test\\validate\\isassignment\\true\\stmt.txt"
 		line = 412
 		self.assertTrue(validate.isassignment(stmt,line,fpath))
-
+	
 	def assertIsAssignmentFalse(self,stmt):
 		fpath = "C:\\test\\validate\\isassignment\\true\\stmt.txt"
 		line = 412
@@ -50,18 +50,18 @@ class TestIsAssignment(TestValidate):
 		msg = "missing right value"
 		offset = len(stmt)+1
 		self.assertIsAssignmentRaises(stmt,msg,offset)
-
+	
 	def test_04 (self):
 		self.assertIsAssignmentTrue("a+= 1")
-
+	
 	def test_05 (self):
 		self.assertIsAssignmentFalse("a + 1")
-
+	
 	def test_06 (self):
 		self.assertIsAssignmentFalse("a >= 1")
-
+	
 	def test_07 (self):
 		self.assertIsAssignmentFalse("a == 1")
-
+	
 	def test_08 (self):
 		self.assertIsAssignmentFalse("myfunc(arg=1)")

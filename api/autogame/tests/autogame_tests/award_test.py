@@ -33,12 +33,12 @@ awards_ca, awards_ag = cdata.read_awards_file()
 # Base class
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class MatchTest (BaseTestClass):
-
+	
 	def assertAchievementOutputs(self, achievement, ca_out, ag_out):
-
+		
 		ca_achievement = ca_out[achievement]
 		ag_achievement = ag_out[achievement]
-
+	
 		# check if nr of students is the same
 		self.assertEqual(len(ca_achievement.keys()), len(ag_achievement.keys()))
 
@@ -50,7 +50,7 @@ class MatchTest (BaseTestClass):
 
 			# check if student key is also in autogame results
 			self.assertIn(student, ag_achievement.keys())
-
+			
 			for el in ca_achievement[student]:
 				self.assertIn(el, ag_achievement[student])
 
@@ -59,6 +59,43 @@ class MatchTest (BaseTestClass):
 
 				self.assertIn(el, ca_achievement[student])
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Match tests with every single streak in PCM2122
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+'''
+class TestStreaks (MatchTest):
+
+    def test_01 (self):
+        """ Streak Test - Sage """
+        a = "Sage"
+        self.assertAchievementOutputs(a, awards_ca, awards_ag)
+
+    def test_02 (self):
+        """ Streak Test - Stalker """
+        a = "Stalker"
+        self.assertAchievementOutputs(a, awards_ca, awards_ag)
+
+    def test_03 (self):
+        """ Streak Test - Lab Stalker """
+        a = "Lab Stalker"
+        self.assertAchievementOutputs(a, awards_ca, awards_ag)
+
+    def test_04 (self):
+        """ Streak Test - Practitioner """
+        a = "Practitioner"
+        self.assertAchievementOutputs(a, awards_ca, awards_ag)
+
+    def test_05 (self):
+        """ Streak Test - Constant Gardener """
+        a = "Constant Gardener"
+        self.assertAchievementOutputs(a, awards_ca, awards_ag)
+
+    def test_06 (self):
+        """ Streak Test - Grader """
+        a = "Grader"
+        self.assertAchievementOutputs(a, awards_ca, awards_ag)
+'''
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Match tests with every single badge/achievement in PCM1718

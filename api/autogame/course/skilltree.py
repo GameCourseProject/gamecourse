@@ -54,16 +54,16 @@ class TreeAward:
 # some TreeAward to be unlocked.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class PreCondition:
-
+	
 	def __init__(self,nodes):
 		self.nodes=nodes
-
+	
 	def __str__(self):
 		return "PC(%s)" % (self.nodes)
-
+	
 	def __repr__(self):
 		return str(self)
-
+	
 	def Printable(self):
 		"""
 		Returns a string with all the nodes of the precondition
@@ -73,7 +73,7 @@ class PreCondition:
 		if self.nodes:
 			tmp=" + ".join(self.nodes)
 		return tmp
-
+	
 	def Satisfied(self,prevnodes):
 		""" PREDICATE:
 		>>> returns TRUE if all the nodes of the nodes PreCondition can be found

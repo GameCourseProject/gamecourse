@@ -54,8 +54,8 @@ class TestParseActionsBase (TestParseNamedBlockBase):
 # >>> if 'then' followed by ':' is the next thing in the text starting in the
 # >>> given position, it will parse a preconditions block from that position
 # >>> and stop parsing when the EoF is reached or if 'rule' keyword is found
-# >>> returns an ActionsBlock (with all the statements parsed till the stop
-# >>> condition is met), the position in the text were the parse_block stopped
+# >>> returns an ActionsBlock (with all the statements parsed till the stop 
+# >>> condition is met), the position in the text were the parse_block stopped 
 # >>> and the actual line number that is being parsed in the text
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestParseActions (TestParseActionsBase):
@@ -108,7 +108,7 @@ class TestParseActions (TestParseActionsBase):
 	# 	f = "some_file.txt"
 	# 	b = Block([],f)
 	# 	t = "then:\n"
-
+		
 	# 	l = 1 + t.count("\n")
 	# 	s = Statement("a = \"something\"",f,l)
 	# 	b.add_stmt(s)
@@ -124,7 +124,7 @@ class TestParseActions (TestParseActionsBase):
 	# 	# Assertion
 	# 	self.assertEqual(parser.parse_actions(text=t),expected)
 	# 	assert_block(self,expected[0],stmts,f)
-
+	
 	# def test_parse_actions_003(self):
 	# 	# Input
 	# 	f = "some_file.txt"
@@ -161,7 +161,7 @@ class TestParseActions (TestParseActionsBase):
 	# 	# Assertion
 	# 	self.assertEqual(parser.parse_actions(text=t),expected)
 	# 	assert_block(self,expected[0],stmts,f)
-
+	
 	# def test_parse_actions_004(self):
 	# 	# Input
 	# 	f = "some_file.txt"
@@ -189,7 +189,7 @@ class TestParseActions (TestParseActionsBase):
 	# 	# Assertion
 	# 	self.assertEqual(parser.parse_actions(text=t),expected)
 	# 	assert_block(self,expected[0],stmts,f)
-
+	
 	# def test_parse_actions_005(self):
 	# 	# Input
 	# 	f = "some_file.txt"
@@ -209,7 +209,7 @@ class TestParseActions (TestParseActionsBase):
 	# 	# Assertion
 	# 	self.assertEqual(parser.parse_actions(text=t),expected)
 	# 	assert_block(self,expected[0],stmts,f)
-
+	
 	# def test_parse_actions_006(self):
 	# 	# Input
 	# 	f = "some_file.txt"

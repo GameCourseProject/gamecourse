@@ -35,7 +35,7 @@ LOGS = db.get_logs()
 # Base class
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class MatchTest (BaseTestClass):
-
+	
 	def assertAchievementOutputs(self, achievement, rs_out, ca_out):
 		# filter and transform CourseAchievements output
 		ca_awards, ca_indicators = ca_out
@@ -114,8 +114,8 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 01\n", rs_output)
-
-
+		
+	
 	def test_02 (self):
 		""" Match Test - Apprentice """
 		logs = dict(LOGS)
@@ -125,7 +125,7 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 02\n", rs_output)
-
+	
 	def test_03 (self):
 		""" Match Test - Artist """
 		logs = dict(LOGS)
@@ -135,7 +135,7 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 03\n", rs_output)
-
+	
 	def test_04 (self):
 		""" Match Test - Attentive Student """
 		logs = dict(LOGS)
@@ -155,8 +155,8 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 05\n", rs_output)
-
-
+		
+	
 	def test_06 (self):
 		""" Match Test - Class Annotator """
 		logs = dict(LOGS)
@@ -166,8 +166,8 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 06\n", rs_output)
-
-
+		
+	
 	def test_07 (self):
 		""" Match Test - Course Emperor """
 		logs = dict(LOGS)
@@ -177,7 +177,7 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 07\n", rs_output)
-
+	
 	def test_08 (self):
 		""" Match Test - Golden Star """
 		logs = dict(LOGS)
@@ -187,7 +187,7 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 08\n", rs_output)
-
+		
 	def test_09 (self):
 		""" Match Test - Hall of Fame """
 		logs = dict(LOGS)
@@ -197,8 +197,8 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 09\n", rs_output)
-
-
+		
+	
 	# test 10 no longer used
 	"""
 	def test_10 (self):
@@ -216,7 +216,7 @@ class TestAchievements (MatchTest):
 		# match the outputs
 		self.assertAchievementOutputs(a,rs_output,ca_output)
 	"""
-
+	
 	def test_11 (self):
 		""" Match Test - Lab King """
 		logs = dict(LOGS)
@@ -226,8 +226,8 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 11\n", rs_output)
-
-
+		
+	
 	def test_12 (self):
 		""" Match Test - Lab Lover """
 		logs = dict(LOGS)
@@ -237,8 +237,8 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 12\n", rs_output)
-
-
+		
+	
 	def test_13 (self):
 		""" Match Test - Lab Master """
 		logs = dict(LOGS)
@@ -248,8 +248,8 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 13\n", rs_output)
-
-
+		
+	
 	def test_14 (self):
 		""" Match Test - Popular Choice Award """
 		logs = dict(LOGS)
@@ -259,7 +259,7 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 14\n", rs_output)
-
+		
 
 	def test_15 (self):
 		""" Match Test - Post Master """
@@ -270,7 +270,7 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 15\n", rs_output)
-
+		
 
 	def test_16 (self):
 		""" Match Test - Presentation King """
@@ -281,9 +281,9 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 16\n", rs_output)
+		
 
-
-	# test 17 no longer used
+	# test 17 no longer used 
 	"""
 	def test_17 (self):
 		# Match Test - Presentation Zen Master
@@ -310,7 +310,7 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 18\n", rs_output)
-
+		
 
 	def test_19 (self):
 		""" Match Test - Quiz Master """
@@ -321,7 +321,7 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 19\n", rs_output)
-
+		
 
 	def test_20 (self):
 		""" Match Test - Replier Extraordinaire """
@@ -332,7 +332,7 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 20\n", rs_output)
-
+		
 
 	def test_21 (self):
 		""" Match Test - Right on Time """
@@ -343,7 +343,7 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 21\n", rs_output)
-
+		
 
 	def test_22 (self):
 		""" Match Test - Squire """
@@ -376,7 +376,7 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 24\n", rs_output)
-
+		
 
 	def test_25 (self):
 		""" Match Test - Wild Imagination """
@@ -387,7 +387,7 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 25\n", rs_output)
-
+		
 
 
 	# new tests: 2019/2020
@@ -402,7 +402,7 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 26\n", rs_output)
-
+		
 
 	def test_27 (self):
 		""" Match Test - Focused """
@@ -413,7 +413,7 @@ class TestAchievements (MatchTest):
 		rs = RuleSystem(path,AUTOSAVE)
 		rs_output = rs.fire(STUDENTS,logs,scope)
 		print(">>> Test 27\n", rs_output)
-
+		
 
 
 

@@ -17,7 +17,7 @@ class RuleSystem:
 
 	def path(self):
 		return self.__data__.active_path
-
+	
 	def rules(self):
 		return self.__data__.rules
 

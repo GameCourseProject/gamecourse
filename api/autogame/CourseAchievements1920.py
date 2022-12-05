@@ -49,7 +49,7 @@ METADATA = { "all_lectures_alameda": 22,  #excl. invited lectures
              "invited_tagus": 0,
              "all_labs": 10,
              "lab_max_grade": 450,
-             "lab_excellence_threshold": 400,
+             "lab_excellence_threshold": 400, 
              "quiz_max_grade": 750,
              "initial_bonus": 500,
              "max_xp": 20000,
@@ -244,15 +244,15 @@ class LogLine:
 
     def __eq__(self,other):
         return self.num==other.num and self.name==other.name and self.action==other.action and self.info==other.info
-
+        
     def __repr__(self):
             preinfo = self.info
 
             if type(self.info)==tuple:
-                ul = "("+codecs.decode(self.info[0],"latin1")+", "+codecs.decode(self.info[1],"latin1")+")"
+                ul = "("+codecs.decode(self.info[0],"latin1")+", "+codecs.decode(self.info[1],"latin1")+")"                
             elif type(self.info)==str:
                 #ul = codecs.decode(self.info,"latin1")
-                ul = self.info.decode("latin1")
+                ul = self.info.decode("latin1")                
             else:
                 ul = self.info
             #ul = unicode(ul)
@@ -271,10 +271,10 @@ class LogLine:
         #return "LogLine(%s, %s,%s,%s,%s,%s)" % (self.num, self.timestamp, self.action, self.xp, self.info, self.url)
         #try:
             if type(self.info)==tuple:
-                ul = "("+codecs.decode(self.info[0],"latin1")+", "+codecs.decode(self.info[1],"latin1")+")"
+                ul = "("+codecs.decode(self.info[0],"latin1")+", "+codecs.decode(self.info[1],"latin1")+")"                
             elif type(self.info)==str:
                 #ul = codecs.decode(self.info,"latin1")
-                ul = self.info.decode("latin1")
+                ul = self.info.decode("latin1")                
             else:
                 ul = self.info
             ul = unicode(ul)
@@ -315,8 +315,8 @@ def BookMaster(logs, student):
     for i in range(1,METADATA["all_lectures"]+10):
         lecture_names.append("Lecture "+str(i)+" Slides")
         lecture_names.append("Lecture "+str(i)+" - Slides")
-        lecture_names.append("Lecture "+str(i)+"&"+str(i+1)+" Slides")
-        lecture_names.append("Lecture "+str(i)+"&"+str(i+1)+" - Slides")
+        lecture_names.append("Lecture "+str(i)+"&"+str(i+1)+" Slides")         
+        lecture_names.append("Lecture "+str(i)+"&"+str(i+1)+" - Slides") 
     total=0
     views=[]
     for n in lecture_names:
@@ -580,14 +580,14 @@ def TreeClimber(logs,student):
     tree = read_tree()
 
     tree_awards, vals, totals=FilterGrades(logs,student,forum="Skill Tree")
-
+    
     maxlevel = 0
     for ta in tree_awards:
         for l in tree:
             if l.name in ta.info[1] and l.Satisfied([a.info[1] for a in tree_awards]):
                 if l.level>maxlevel:
                     maxlevel = l.level
-    return max(0,maxlevel-1), totals, tree_awards
+    return max(0,maxlevel-1), totals, tree_awards 
 
 
 
@@ -888,16 +888,16 @@ class PCMSpreadsheetParser:
     if not(os.path.exists(auth_file)):
       token = gdata.gauth.OAuth2Token(
         client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
+        client_secret=CLIENT_SECRET, 
         scope=SCOPE,
         user_agent=application_name);
-
+      
       url = token.generate_authorize_url()
       print 'Use this url to authorize the application: \n'
       print url;
       code = raw_input('What is the verification code? ').strip()
       token.get_access_token(code)
-
+      
       with open(auth_file, 'w') as file:
         file.write(token.refresh_token + '\n')
         file.write(token.access_token + '\n')
@@ -907,15 +907,15 @@ class PCMSpreadsheetParser:
       with open(auth_file, 'r') as file:
         refresh_token = file.readline().strip()
         access_token = file.readline().strip()
-
+          
       token = gdata.gauth.OAuth2Token(
         client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
+        client_secret=CLIENT_SECRET, 
         scope=SCOPE,
         user_agent=application_name,
         refresh_token=refresh_token,
         access_token=access_token);
-
+            
     self.gd_client = gdata.spreadsheets.client.SpreadsheetsClient()
     token.authorize(self.gd_client)
   def _FindSpreadsheet(self):
@@ -928,7 +928,7 @@ class PCMSpreadsheetParser:
     id_parts = entry.id.text.split('/')
     self.curr_key = id_parts[len(id_parts) - 1]
 #    print self.curr_key
-
+  
   def _FindWorksheet(self, name):
     # Get the list of worksheets
     feed = self.gd_client.GetWorksheets(self.curr_key)
@@ -1004,7 +1004,7 @@ def read_attendance_logs():
         else:
           print "Repeated Attendance!",line
     return res
-
+  
 
 
 def read_ratings_logs(students, peer=False):
@@ -1210,7 +1210,7 @@ def read_quiz_grades (students):
 			studentname = unicode(studentname, "utf8")			# Because that is what we get from the logs "now" (15/02/2018)
 			timestamp = time.mktime(time.strptime(timestamp.strip(), "%d %B %Y, %H:%M %p"))
 			s = find_student(studentname, students)
-
+			
 			# Check if the student exists (is valid)
 			if not s :
 				print ("Invalid student: " + studentname)
@@ -1222,7 +1222,7 @@ def read_quiz_grades (students):
 				action = "quiz grade"
                                 grade = int(round(float(grade),0))
                                 if not "dry run" in quiz.lower():
-                                    if not "quiz 9" in quiz.lower():
+                                    if not "quiz 9" in quiz.lower():    
     			                loglines = loglines + [LogLine(s.num, studentname, timestamp, action, str(grade), quiz, quizurl)]
 
 	# End of For-Loop
@@ -1235,7 +1235,7 @@ def read_quiz_grades (students):
 		print "Could not parse %s lines (see above)" % ignored_lines
 	return loglines
 
-
+      
 
 def read_log_files(students):
     print 'Reading logfiles from \"'+LOGFILEURL+'"'
@@ -1310,9 +1310,9 @@ def read_bad_attendances():
     students = students.split(",")
     res[num] = [x.strip() for x in students]
   return res
+  
 
-
-
+  
 def find_student(name,students):
     for s in students:
         if s.name==name:
@@ -3127,7 +3127,7 @@ import pprint
 
 def satisfied_tree(students,logs,tree, indicators):
     global _debug
-
+    
     won = {}
     unlocked = {}
     achieved={}
@@ -3157,7 +3157,7 @@ def satisfied_tree(students,logs,tree, indicators):
                 else:
 #                    pass
                     print "Locked Tree Attempt",ta.name,"from",student.name
-
+                          
             else:
                 if ta.Satisfied(tree_awards):
                     res.append(ta.name)
@@ -3278,7 +3278,7 @@ def export_loglines(lines):
             print "*",
   f.close()
 
-
+  
 def save_tree_won(won):
     f = open("tree_won.txt","w")
     for w in won.keys():
@@ -3309,7 +3309,7 @@ def print_award_stats(awards):
     for k in kk:
       print("%d Skills - %d " % (k, len(counts[k])))
 
-
+    
 def main():
     tree = read_tree()
     students = read_student_list()

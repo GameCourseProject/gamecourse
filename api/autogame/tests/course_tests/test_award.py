@@ -45,11 +45,11 @@ class TestAward(BaseTestClass):
 # Creation tests (__init__)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestCreation(TestAward):
-
+	
 	def test_01 (self):
 		""" test valid award creation """
 		self.assertCreation("s1","a2",2,234,True,time.time(),"aot")
-
+	
 	def test_02 (self):
 		""" test valid award creation """
 		self.assertCreation("33","r2d2",9995262623,-50,False)
@@ -58,7 +58,7 @@ class TestCreation(TestAward):
 # Comparison tests (__eq__, __ne__, __lt__, __le__, __gt__, __ge__)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestCompare(TestAward):
-
+	
 	def test_01 (self):
 		""" test comparison between two equal awards
 		(all attributes are the same)
@@ -68,7 +68,7 @@ class TestCompare(TestAward):
 		a1 = Award(student,achievement,lvl,xp,hasbadge,timestamp,info)
 		a2 = Award(student,achievement,lvl,xp,hasbadge,timestamp,info)
 		self.assertEQ(a1,a2,2)
-
+	
 	def test_02 (self):
 		""" test comparison between two equal awards
 		(different time)
@@ -78,7 +78,7 @@ class TestCompare(TestAward):
 		a1 = Award(student,achievement,lvl,xp,hasbadge,timestamp,info)
 		a2 = Award(student,achievement,lvl,xp,hasbadge,time.time(),info)
 		self.assertEQ(a1,a2,2)
-
+	
 	def test_03 (self):
 		""" test comparison between two equal awards
 		(different info)
@@ -88,7 +88,7 @@ class TestCompare(TestAward):
 		a1 = Award(student,achievement,lvl,xp,hasbadge,timestamp,info)
 		a2 = Award(student,achievement,lvl,xp,hasbadge,timestamp,"did nothing")
 		self.assertEQ(a1,a2,2)
-
+	
 	def test_04 (self):
 		""" test comparison between two diff awards
 		(different badge value)
@@ -98,7 +98,7 @@ class TestCompare(TestAward):
 		a1 = Award(student,achievement,lvl,xp,hasbadge,timestamp,info)
 		a2 = Award(student,achievement,lvl,xp,False,timestamp,info)
 		self.assertNE(a1,a2)
-
+	
 	def test_05 (self):
 		""" test comparison between two diff awards
 		(different info, same badge value (False))
@@ -108,7 +108,7 @@ class TestCompare(TestAward):
 		a1 = Award(student,achievement,lvl,xp,False,timestamp,info)
 		a2 = Award(student,achievement,lvl,xp,False,timestamp,"save McDonalds")
 		self.assertNE(a1,a2)
-
+	
 	def test_06 (self):
 		""" test comparison between two equal awards
 		(different xp)
@@ -118,7 +118,7 @@ class TestCompare(TestAward):
 		a1 = Award(student,achievement,lvl,xp,hasbadge,timestamp,info)
 		a2 = Award(student,achievement,lvl,9500,hasbadge,timestamp,info)
 		self.assertEQ(a1,a2,1)
-
+	
 	def test_07 (self):
 		""" test comparison between an award and another object with the same
 		attributes and values
@@ -132,7 +132,7 @@ class TestCompare(TestAward):
 		a1 = Award(student,achievement,lvl,xp,hasbadge,timestamp,info)
 		a2 = Award2(student,achievement,lvl,xp,hasbadge,timestamp,info)
 		self.assertEQ(a1,a2,2)
-
+	
 	def test_08 (self):
 		""" test comparison between an award and another object with different
 		attributes
@@ -142,7 +142,7 @@ class TestCompare(TestAward):
 		a1 = Award(student,achievement,lvl,xp,hasbadge,timestamp,info)
 		a2 = "Award(student,achievement,lvl,xp,hasbadge,timestamp,info)"
 		self.assertNE(a1,a2)
-
+	
 	def test_09 (self):
 		""" test comparison between an award and another object with same
 		attributes but with different values

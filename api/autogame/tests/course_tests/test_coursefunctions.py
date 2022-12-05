@@ -58,7 +58,7 @@ class TestCourseFunctions(BaseTestClass):
 			i = {student: {achievement: indicators}}
 			prizes.append(Prize(a,i))
 		return prizes
-
+		
 	def gen_logs(self, num, forum, thread):
 		class Log:
 			def __init__(self,xp,info):
@@ -206,7 +206,7 @@ class TestSatisfiedSkill(TestCourseFunctions):
 		logs += self.gen_logs(1,"skill_tree","Reporter")
 		logs += self.gen_logs(1,"skill_tree","Album Cover")
 		logs += self.gen_logs(1,"skill_tree","Movie Poster")
-
+		
 		self.assertTrue(cfuncs.satisfied_skill("reTrailer",logs))
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

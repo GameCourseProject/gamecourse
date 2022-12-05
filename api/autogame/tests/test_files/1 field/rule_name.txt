@@ -2,7 +2,7 @@ rule :	simple ascii 	name # very interesting name
 # don't blow up! don't blow up! don't blow up!
 rule :  àèìòù áéíóú ãõ âêîôû äëïöü ç
 rule :  ÀÈÌÒÙ ÁÉÍÓÚ ÃÕ ÂÊÎÔÛ ÄËÏÖÜ Ç
-
+	
 	rule: ,;.:-_?!
 	rule :::::::::::
 	rule :@£€§"\|/%&+*

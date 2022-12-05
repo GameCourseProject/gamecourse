@@ -10,11 +10,11 @@ rule: Right on Time
 
 		logs = GC.participations.getAllParticipations(target, "attended lecture")
 		attendances = len(logs)
-
+		
 		campus = get_campus(target)
 		lectures = lectures_alameda if campus == 'A' else lectures_tagus
 
 		lvl = compute_lvl(attendances, int(0.5 * lectures), int(0.75 * lectures), lectures)
-
+		
 	then:
 		award_badge(target, "Right on Time", lvl, logs)

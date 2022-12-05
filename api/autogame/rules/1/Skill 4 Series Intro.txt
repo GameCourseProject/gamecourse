@@ -2,7 +2,7 @@ rule: Series Intro
 
 	when:
 		rule_unlocked("Cartoonist", target)
-		rule_unlocked("Stop Motion", target) or rule_unlocked("Fake Speech", target)
+		rule_unlocked("Stop Motion", target) or rule_unlocked("Fake Speech", target) 
 		logs = GC.participations.getSkillParticipations(target, "Series Intro")
 		rating = get_rating(logs)
 		rating >= 3

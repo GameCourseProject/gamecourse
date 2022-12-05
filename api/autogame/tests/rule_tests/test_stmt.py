@@ -11,7 +11,7 @@ import unittest
 # TestStatement abstract class
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestStatementNode (unittest.TestCase):
-
+	
 	def assertStatement(self, stmt, text=None, filepath=None, line=None):
 		self.assertIsInstance(stmt,Statement)
 		self.assertEqual(type(stmt.code()).__name__,'code')
@@ -209,7 +209,7 @@ class TestCreation(TestStatementNode):
 	def test_creation_v03 (self):
 		text = "tuple < str < long < list < int < dict"
 		self.assertCreation(text,None,2432)
-
+		
 	def test_creation_v04 (self):
 		text = "tomorrow_land = 0<10<=10>=9>3==3!=5"
 		self.assertCreation(text,None,2432)
@@ -327,7 +327,7 @@ class TestEquals(TestStatementNode):
 # Statement Getters:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Statement.statement(), Statement.text()
-# Statement.fpath(), Statement.filepath(), Statement.file_path(), ...
+# Statement.fpath(), Statement.filepath(), Statement.file_path(), ... 
 # ... Statement.path(), Statement.location()
 # Statement.line()
 # Statement.type()

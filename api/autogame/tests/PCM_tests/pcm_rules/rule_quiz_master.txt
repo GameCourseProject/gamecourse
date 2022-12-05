@@ -9,7 +9,7 @@ rule: Quiz Master
 		logs = filter_logs(facts,target,action="quiz grade",xp=MAX_GRADE)
 		# compute the number of top graded quizzes
 		top_graded_quizzes = len(logs)
-		# compute lvl achieved based on the number of top graded quizzes
+		# compute lvl achieved based on the number of top graded quizzes 
 		lvl = compute_lvl(top_graded_quizzes,4,6,8)
 		lvl > 0
 	then:

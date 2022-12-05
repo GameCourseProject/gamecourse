@@ -95,7 +95,7 @@ class TestRuleSystem(TestBaseNode):
 # RuleSystem.load(path)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestLoad(TestRuleSystem):
-
+	
 	def test_00 (self):
 		""" test parse file with empty rule definitions """
 		self.assertLoad('0 fields','empty')
@@ -107,7 +107,7 @@ class TestLoad(TestRuleSystem):
 	def test_02 (self):
 		""" test parse file with rule that have just the description """
 		self.assertLoad('1 field','desc')
-
+		
 	def test_03 (self):
 		""" test parse file with rule that have just the preconditions """
 		self.assertLoad('1 field','precs')
@@ -207,6 +207,13 @@ class TestLoad(TestRuleSystem):
 		""" test rule_system.load() with an invalid path """
 		from context import PathError
 		self.assertRaises(PathError,RuleSystem(autosave=False).load,'C:\\invalid\\path')
+
+	def test_s01 (self):
+	    """ test load a folder with files that only contain streak related rules
+	    with all fields initialized
+        """
+        self.assertLoad('streaks')
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RuleSystem.fire(path)
@@ -426,7 +433,7 @@ class TestFire2 (TestRuleSystem):
 			x = xp[i] if isinstance(xp,(tuple,list)) else xp
 			awards.append(Award(s,a,i+1,x,True,0,info))
 		return {student: awards}
-
+		
 	def gen_gradelogs(self, num, xp=None, info=None):
 		class Log:
 			def __init__(self,xp,info):
@@ -717,7 +724,7 @@ class TestFire2 (TestRuleSystem):
 	def test_45 (self):
 		""" using satisfied_skill and award_treeskill test if a student with
 		contributions for "Pixel Art" and no contributions for one of its
-		prequisites, is NOT awarded
+		prequisites, is NOT awarded 
 		In the 19/20 skill tree: Pixel Art = Podcast + Course Logo """
 		path = os.path.join(tp,"withcoursefunctions","rule16.txt")
 		logs = self.gen_gradelogs(1,3,("Skill Tree","Podcast"))
@@ -729,7 +736,7 @@ class TestFire2 (TestRuleSystem):
 	def test_46 (self):
 		""" using satisfied_skill and award_treeskill test if a student with
 		contributions for "Pixel Art" and no contributions for one of its
-		prequisites, is NOT awarded
+		prequisites, is NOT awarded 
 		In the 19/20 skill tree: Pixel Art = Podcast + Course Logo """
 		path = os.path.join(tp,"withcoursefunctions","rule16.txt")
 		logs = self.gen_gradelogs(1,3,("Skill Tree","Course Logo"))
@@ -755,3 +762,91 @@ class TestFire2 (TestRuleSystem):
 		for k in p.awards: awards += p.awards[k]
 		expected = awards, indicators
 		self.assertEqual(cfuncs.transform_rulesystem_output(output),expected)
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# This section is merely for convenience. This is just the continuation of
+# TestFire class, but these unittests will be validating streak-related functions.
+# This way we can run solely these specific tests without running the others
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class TestStreakFire (TestRuleSystem):
+
+	def test_s1 (self):
+		""" test award_streak function: test if the function outputs a
+		prize with the correct awards and indicators
+		"""
+		path = os.path.join(tp,"streaks","rule_01.txt")
+		targets = ["s1"]
+		indicators = {"s1":{"Ackerman":"contributions?"}}
+		p = Prize({"s1":[Award("s1","Ackerman",1,0,True,0,None)]},indicators)
+		expected = {"s1":{"Streak R1":[p]}}
+		self.assertFire(path,targets,expected=expected)
+
+    def test_grader (self):
+        """ test award_streak function for specific rule with specific precs:
+        test if the function outputs a prize with the correct awards and
+        indicators
+        """
+        path = os.path.join(tp,"streaks","rule_grader_extraordinaire.txt")
+        targets = ["s1"]
+        indicators = {"s1":{"Grader Extraordinaire":"contributions?"}}
+        p = Prize({"s1":[Award("s1","Grader Extraordinaire",1,0,True,0,None)]},indicators)
+        expected = {"s1":{"Grader Extraordinaire":[p]}}
+        self.assertFire(path,targets,expected=expected)
+
+    def test_constant_gardener (self):
+        """ test award_streak function for specific rule with specific precs:
+        prize with the correct awards and indicators
+        """
+        path = os.path.join(tp,"streaks","rule_constant_gardener.txt")
+        targets = ["s1"]
+        indicators = {"s1":{"Constant Gardener":"contributions?"}}
+        p = Prize({"s1":[Award("s1","Constant Gardener",1,0,True,0,None)]},indicators)
+        expected = {"s1":{"Constant Gardener":[p]}}
+        self.assertFire(path,targets,expected=expected)
+
+    def test_practitioner (self):
+        """ test award_streak function for specific rule with specific precs:
+        prize with the correct awards and indicators
+        """
+        path = os.path.join(tp,"streaks","rule_practitioner.txt")
+        targets = ["s1"]
+        indicators = {"s1":{"Practitioner":"contributions?"}}
+        p = Prize({"s1":[Award("s1","Practitioner",1,0,True,0,None)]},indicators)
+        expected = {"s1":{"Practitioner":[p]}}
+        self.assertFire(path,targets,expected=expected)
+
+    def test_sage (self):
+        """ test award_streak function for specific rule with specific precs:
+        prize with the correct awards and indicators
+        """
+        path = os.path.join(tp,"streaks","rule_sage.txt")
+        targets = ["s1"]
+        indicators = {"s1":{"Sage":"contributions?"}}
+        p = Prize({"s1":[Award("s1","Sage",1,0,True,0,None)]},indicators)
+        expected = {"s1":{"Sage":[p]}}
+        self.assertFire(path,targets,expected=expected)
+
+    def test_superlative_artist (self):
+        """ test award_streak function for specific rule with specific precs:
+        prize with the correct awards and indicators
+        """
+        path = os.path.join(tp,"streaks","rule_superlative_artist.txt")
+        targets = ["s1"]
+        indicators = {"s1":{"Superlative Artist":"contributions?"}}
+        p = Prize({"s1":[Award("s1","Superlative Artist",1,0,True,0,None)]},indicators)
+        expected = {"s1":{"Superlative Artist":[p]}}
+        self.assertFire(path,targets,expected=expected)
+
+
+
+
+
+
+
+
+
+
+
+
+

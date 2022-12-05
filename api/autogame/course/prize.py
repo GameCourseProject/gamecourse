@@ -66,7 +66,7 @@ class Prize:
 
 		for s in prize.indicators:
 			if s not in self.indicators:
-				# if the student doesn't exist --> update
+				# if the student doesn't exist --> update 
 				self.indicators[s] = prize.indicators[s]
 				continue
 			for a in prize.indicators[s]:
@@ -81,7 +81,7 @@ class Prize:
 				# to be joined, so we can just skip to the next achievement
 
 				# TODO: Check if this count1 == False works
-
+				
 				if count1 is False:
 					continue
 				# if count2 is False it's the same scenario but for this prize

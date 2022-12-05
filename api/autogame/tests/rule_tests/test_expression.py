@@ -78,7 +78,7 @@ class TestExpression(unittest.TestCase):
 # Expression.validate(self) -> Validates the Expression Node
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class Creation(TestExpression):
-
+	
 	def test_00 (self):
 		t = "callable(1,2,3) + (lambda x: x**x)(2)"
 		self.assertCreation(t)
@@ -86,17 +86,17 @@ class Creation(TestExpression):
 	def test_01 (self):
 		self.assertCreation("33 + 4","my_file.txt",43)
 
-
+	
 	def test_02 (self):
 		f = "C:\\rules\\pcm2018.txt"
 		error_msg = "SyntaxError: invalid syntax"
 		self.assertCreationError(error_msg,"a = 4",f,3,3)
-
+	
 	def test_03 (self):
 		f = "C:\\rules\\pcm2018.txt"
 		error_msg = "SyntaxError: invalid syntax"
 		self.assertCreationError(error_msg,"a += 4",f,24,3)
-
+	
 	def test_04 (self):
 		error_msg = "SyntaxError: invalid syntax"
 		self.assertCreationError(error_msg,"a -= 4",offset=3)
@@ -104,7 +104,7 @@ class Creation(TestExpression):
 	def test_05 (self):
 		error_msg = "SyntaxError: invalid syntax"
 		self.assertCreationError(error_msg,"a *= 4",offset=3)
-
+	
 	def test_06 (self):
 		error_msg = "SyntaxError: unexpected EOF while parsing"
 		f = "C:\\rules\\1933.txt"

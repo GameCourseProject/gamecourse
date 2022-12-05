@@ -11,7 +11,7 @@ class Human:
 		self.intelligence = intelligence
 		self.strength = strength
 		self.speed = speed
-
+	
 	def __repr__(self):
 		msg = type(self).__name__ + "<name: " + self.name + ", gender" + gender
 		msg+= ", strength: {}, intelligence: {}, speed: {}"

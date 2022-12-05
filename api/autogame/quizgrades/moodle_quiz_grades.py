@@ -34,13 +34,13 @@ def read_moodle_quiz_grades (students, course, url) :
 	Query Moodle database and retrieve all quiz grades of
 	students enrolled in the input course
 	"""
-
+	
 	# Return values:
 	loglines = []			# List of LogLines containing regarding quiz grades
 	nlines = 0				# Number of quiz grades obtained
 	ignored_lines = 0		# Sometimes a quiz grade may be discarded (hope not!)
 	unrec_students = []		# Some students may be invalid
-
+	
 	print ('\nReading quiz grades from course: ' + course)
 	print ('PHP script URL: ' + url + '\n')
 
@@ -74,7 +74,7 @@ def read_moodle_quiz_grades (students, course, url) :
 			studentname = str(studentname)
 			timestamp = mktime(strptime(timestamp.strip(), "%d %B %Y, %H:%M %p"))
 			s = find_student(studentname, students)
-
+			
 			# Check if the student exists (is valid)
 			if not s :
 				print ("Invalid student: " + studentname)

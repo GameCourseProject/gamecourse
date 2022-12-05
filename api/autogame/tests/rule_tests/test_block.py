@@ -98,7 +98,7 @@ class TestBlock(TestBaseNode):
 		else:
 			block = Block(stmts,filepath,line)
 		return block
-
+	
 	def get_testfilespath (self):
 		""" return the path to test files directory """
 		from context import testfiles_path
@@ -175,7 +175,7 @@ class TestCreation(TestBlock):
 	def test_v05 (self):
 		""" test block creation with stmts, line """
 		self.assertCreation(stmts=self.generateStatements(4,start=3),line=3)
-
+	
 	def test_v06 (self):
 		""" test block creation with filepath and line """
 		self.assertCreation(fpath=self.get_testfilespath(),line=33)
@@ -219,7 +219,7 @@ class TestEquals(TestBlock):
 		self.assertNotEqualBlocks(Block(line=2),Block(line=303))
 
 	def test_t01 (self):
-		""" test if two empty blocks with same file and line are equal """
+		""" test if two empty blocks with same file and line are equal """ 
 		self.assertEqualBlocks(Block(),Block())
 
 	def test_t02 (self):
@@ -276,11 +276,11 @@ class TestAddStatement(TestBlock):
 		self.assertAddStmtRaises('TypeError',[Statement('a = 0')])
 		self.assertAddStmtRaises('TypeError',-32.2)
 		self.assertAddStmtRaises('TypeError',None)
-
+	
 	def test_i02 (self):
 		""" test add stmt with a different file than the block """
 		self.assertAddStmtRaises('ValueError',Statement(fpath='diff'))
-
+	
 	def test_i03 (self):
 		""" test add stmt with a lower line than the block """
 		self.assertAddStmtRaises('ValueError',Statement(line=32))
@@ -305,15 +305,15 @@ class TestAddStmts(TestBlock):
 		self.assertAddStmtsRaises('TypeError',Statement('a = 0'))
 		self.assertAddStmtsRaises('TypeError',-32.2)
 		self.assertAddStmtsRaises('TypeError',None)
-
+	
 	def test_i02 (self):
 		""" test add stmts with a different file than the block """
 		self.assertAddStmtsRaises('ValueError',[Statement(line=999999)])
-
+	
 	def test_i03 (self):
 		""" test add stmts with a lower line than the block """
 		self.assertAddStmtsRaises('ValueError',[Statement(line=32)])
-
+	
 	def test_v01 (self):
 		""" test add valid stmts """
 		s1 = Statement('1'); s2 = Statement('2')
@@ -326,7 +326,7 @@ class TestAddStmts(TestBlock):
 # Block.fire(scope)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestFire(TestBlock):
-
+	
 	def test_i01 (self):
 		""" test block.fire() with invalid arg """
 		self.assertFireRaises('TypeError','error')

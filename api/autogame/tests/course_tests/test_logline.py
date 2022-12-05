@@ -44,9 +44,9 @@ class TestLogLine(BaseTestClass):
 # Creation tests (__init__)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestCreation(TestLogLine):
-
+	
 	def test_01 (self):
 		""" test valid LogLine creation """
-
+		
 		self.assertCreation(12345,"82433", 1, "Hello World","add post",
 			300, "https://www.youtube.com/watch?v=hCuMWrfXG4E", "2020-11-17 21:06:03", 4, 6)

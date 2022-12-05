@@ -43,7 +43,7 @@ class TestStudentData(TestStudent):
 		self.assertEqual(len(sd.students()),len(students))
 		for s in students:
 			self.assertEqual(sd[s.num],s)
-
+	
 	def assertCreationRaises(self,error,students):
 		with self.assertRaises(error):
 			StudentData(students)
@@ -72,7 +72,7 @@ class TestStudentData(TestStudent):
 # Creation tests (__init__)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestCreation(TestStudentData):
-
+	
 	@classmethod
 	def setUpClass(cls):
 		cls.students = []
@@ -99,7 +99,7 @@ class TestCreation(TestStudentData):
 # Comparison tests (__eq__, __ne__, __lt__, __le__, __gt__, __ge__)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestCompare(TestStudentData):
-
+	
 	@classmethod
 	def setUpClass(cls):
 		cls.students1 = []
@@ -116,33 +116,33 @@ class TestCompare(TestStudentData):
 			email = "__%s@email.com" % name
 			campus = "A" if num % 2 == 1 else "T"
 			cls.students3.append(Student(num,name,email,campus))
-
+	
 	def test_01 (self):
 		""" test two StudentData objects created with the same students """
 		self.assertEQ(StudentData(self.students1),StudentData(self.students1))
-
+	
 	def test_02 (self):
 		""" test two StudentData objects created with the diff students """
 		self.assertNE(StudentData(self.students1),StudentData(self.students2))
-
+	
 	def test_03 (self):
 		""" test two StudentData objects created with the eq students """
 		self.assertEQ(StudentData(self.students1),StudentData(self.students3))
-
+	
 	def test_04 (self):
 		""" test two StudentData objects created with the same students
 		but one has one more student than the other
 		"""
 		s = self.students1 + [self.students1[0]]
 		self.assertNE(StudentData(self.students1),StudentData(s))
-
+	
 	def test_05 (self):
 		""" test two StudentData objects created with the same students
 		except for the last one that is a different student
 		"""
 		s = self.students1[:-1] + [Student(432,"ss","ss@ss","F")]
 		self.assertNE(StudentData(self.students1),StudentData(s))
-
+	
 	def test_06 (self):
 		""" test two StudentData objects created with the same students except
 		for the last one that is not a student but also has a num and name
@@ -154,7 +154,7 @@ class TestCompare(TestStudentData):
 		s = self.students1[:-1]
 		s.append(S(self.students1[-1].num,self.students1[-1].name))
 		self.assertEQ(StudentData(self.students1),StudentData(s))
-
+	
 	def test_07 (self):
 		""" test a StudentData obj agains an object that is not a StudentData """
 		self.assertNE(StudentData([]),None)
@@ -173,7 +173,7 @@ class TestCompare(TestStudentData):
 # Add (add_student, add_students)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestAdd(TestStudentData):
-
+	
 	@classmethod
 	def setUpClass(cls):
 		cls.students1 = []
