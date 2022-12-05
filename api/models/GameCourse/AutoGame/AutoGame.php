@@ -161,7 +161,7 @@ abstract class AutoGame
         }
 
         if (self::isRunning($courseId)) {
-            self::log($courseId, "AutoGame is already running.");
+            self::log($courseId, "AutoGame is already running.", "WARNING");
             return;
         }
 
@@ -227,7 +227,7 @@ abstract class AutoGame
             $address = "tcp://" . self::$host . ":" . self::$port;
             $socket = stream_socket_server($address, $errorCode, $errorMsg);
             if (!$socket) {
-                self::log($courseId, "Could not create socket.");
+                self::log($courseId, "Could not create socket.\n\n$errorMsg");
                 return;
             }
 
@@ -279,7 +279,7 @@ abstract class AutoGame
             }
 
         } catch (Throwable $e) {
-            self::log($courseId, "Caught an error on startSocket().");
+            self::log($courseId, "Caught an error on startSocket().\n\n" . $e->getMessage());
 
         } finally {
             if (isset($connection)) fclose($connection);
@@ -329,12 +329,12 @@ abstract class AutoGame
      */
     public static function log(int $courseId, string $message, string $type = "ERROR")
     {
-        $sep = "\n================================================================================\n";
-        $date = "[" . date("Y/m/d H:i:s") . "] : php : " . $type . " \n\n";
-        $error = "\n\n================================================================================\n\n";
+        $sep = "================================================================================";
+        $header = "[" . date("Y/m/d H:i:s") . "] [$type] : ";
+        $error = "\n$sep\n$header$message\n$sep\n\n";
 
         $logsFile = LOGS_FOLDER . "/autogame_" . $courseId . ".txt";
-        file_put_contents($logsFile, $sep . $date . $message . $error, FILE_APPEND);
+        file_put_contents($logsFile, $error, FILE_APPEND);
     }
 
 
