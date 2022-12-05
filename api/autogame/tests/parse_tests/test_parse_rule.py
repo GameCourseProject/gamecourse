@@ -13,7 +13,7 @@ from rule_tests.test_rule import TestRule
 ### Parse Rule Tests
 ### %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ###
 class TestParseRuleBase(TestRule):
-
+	
 	def assertParseRule(self, text=None, pos=0, fpath=None, line=1,
 		name=None, desc=None, precs=None, acts=None,
 		after=None, pos_end=None, line_end=None):
@@ -67,7 +67,7 @@ class TestParseRuleBase(TestRule):
 
 	def generateBlock(self, stmts, name, fpath, line):
 		""" generate a named block text and block node based on stmts
-		(as string) from the given fpath starting in the given line
+		(as string) from the given fpath starting in the given line 
 		"""
 		text = "\n\t%s:" % name
 		line += 1
@@ -83,7 +83,7 @@ class TestParseRuleBase(TestRule):
 
 	def generatePreconditions(self, stmts, fpath, line):
 		""" generate a preconditions text and preconditions node based on stmts
-		(as string) from the given fpath starting in the given line
+		(as string) from the given fpath starting in the given line 
 		"""
 		block, text = self.generateBlock(stmts,'when',fpath,line)
 		from context import Preconditions
@@ -91,7 +91,7 @@ class TestParseRuleBase(TestRule):
 
 	def generateActions(self, stmts, fpath, line):
 		""" generate an actions text and actions node based on stmts
-		(as string) from the given fpath starting in the given line
+		(as string) from the given fpath starting in the given line 
 		"""
 		block, text = self.generateBlock(stmts,'then',fpath,line)
 		from context import Actions

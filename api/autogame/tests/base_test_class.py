@@ -11,7 +11,7 @@ import os
 # that will aid test writting
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class BaseTestClass(unittest.TestCase):
-
+	
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	# GAMERULES Assert Functions
@@ -33,7 +33,7 @@ class BaseTestClass(unittest.TestCase):
 			self.assertEqual(node.file(),fpath)
 		if ignore_line is False:
 			self.assertEqual(node.line(),line)
-
+	
 	def assertBlock(self, block, stmts, fpath, line,
 		ignore_fpath=False,ignore_line=False):
 		from context import Block, Statement
@@ -61,7 +61,7 @@ class BaseTestClass(unittest.TestCase):
 		self.assertIsInstance(dm,DataManager)
 		self.assertIsInstance(dm.rules,(type(None),list))
 		self.assertPathData(dm.paths)
-
+	
 	def assertFPaths(self, fp, expected=None):
 		from context import FPaths
 		self.assertIsInstance(fp,FPaths)
@@ -87,7 +87,7 @@ class BaseTestClass(unittest.TestCase):
 		self.assertIsInstance(result,list)
 		self.assertIsInstance(expected,list)
 		self.assertEqual(len(result),len(expected))
-
+		
 		for i in range(len(result)):
 			rule1 = result[i]
 			rule2 = expected[i]
@@ -98,8 +98,8 @@ class BaseTestClass(unittest.TestCase):
 			f = rule2.file()
 			l = rule2.line()
 			self.assertRule(rule1,n,d,p,a,f,l,ignore_fpath,ignore_line)
-
-
+	
+	
 	def assertModuleFunctions(self, mf, m=None, funcs=None):
 		from context import ModuleFunctions
 		self.assertIsInstance(mf,ModuleFunctions)
@@ -114,7 +114,7 @@ class BaseTestClass(unittest.TestCase):
 		for f in mf.functions:
 			self.assertIsInstance(f,str)
 			self.assertIn(f,funcs)
-
+	
 	def assertOutput(self,output):
 		from context import Output
 		self.assertIsInstance(output,Output)
@@ -206,7 +206,7 @@ class BaseTestClass(unittest.TestCase):
 			self.assertOutput(log.output())
 		self.assertIsInstance(log.timestamp(),float)
 		self.assertGreaterEqual(log.timestamp(),0)
-
+	
 	def assertRuleSystem(self, rs, path, rules,
 		ignore_fpath=False,ignore_line=False):
 		""" assert a rules system instance with the expected path and rules """
@@ -313,7 +313,7 @@ class BaseTestClass(unittest.TestCase):
 		self.assertIn("badge",dir(a))
 		self.assertIn("timestamp",dir(a))
 		self.assertIn("info",dir(a))
-
+	
 	def assertPreCondition (self, prec):
 		from course import PreCondition
 		self.assertIsInstance(prec,PreCondition)
@@ -334,7 +334,7 @@ class BaseTestClass(unittest.TestCase):
 		name = str(s.name)
 		email = str(s.email)
 		campus = str(s.campus)
-
+		
 		student_tostring = "%s,%s,%s,%s" % (s.num,name,email,campus)
 		student_representation = "Student(%s)" % str(s)
 		self.assertEqual(student_tostring,str(s))
@@ -373,7 +373,7 @@ class BaseTestClass(unittest.TestCase):
 				result = capcombos_aux(i+1,w1)
 			return result
 		return capcombos_aux(0,word)
-
+		
 	def check_all(self, iterable, value=None):
 		""" return True if all elements of the iterebale have the value """
 		for element in iterable:
@@ -429,7 +429,7 @@ class BaseTestClass(unittest.TestCase):
 	def generateIndexRule(self, index, path, line):
 		""" generate a sequential rule, where its attributes
 		are based on an index number
-		"""
+		""" 
 		name = str(index)
 		desc = name
 		stmts = self.generateStatements(index,path,line)
@@ -453,7 +453,7 @@ class BaseTestClass(unittest.TestCase):
 	def generateStatements(self, num, filepath='', start=1):
 		"""	Generates a list of Expression Statements,
 		consisting in a range of numbers
-		"""
+		""" 
 		ls = start
 		fp = filepath
 		from context import Expression
@@ -464,7 +464,7 @@ class BaseTestClass(unittest.TestCase):
 		fp = filepath
 		from context import Expression
 		return [Expression(str(i),fp,ls+i) for i in range(num)]
-
+	
 	def get_fpath (self):
 		from context import testfiles_path
 		return testfiles_path

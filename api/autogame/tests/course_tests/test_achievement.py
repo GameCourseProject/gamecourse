@@ -58,35 +58,35 @@ class TestAchievement (BaseTestClass):
 # Creation tests (__init__)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestCreation(TestAchievement):
-
+	
 	def test_01 (self):
 		""" test valid student creation """
 		self.assertCreation("name","description","c1;c2;c2","1;3;9",False,False)
-
+	
 	def test_02 (self):
 		""" test valid student creation """
 		self.assertCreation("4232","12312","33;22;11","13;23;39",True,True)
-
+	
 	def test_03 (self):
 		""" test valid student creation """
 		self.assertCreation("ºãàáäâç",".:,_-;","#;!;?","999;312;0",True,False)
-
+	
 	def test_04 (self):
 		""" test valid student creation """
 		self.assertCreation("(&%#$\"\'\\","ìóüê","12;asd;?§€","0;0;0",False,False)
-
+	
 	def test_05 (self):
 		""" test valid student creation """
 		self.assertCreation("}{wqe","&%2",";;",";;",False,False)
-
+	
 	def test_06 (self):
 		""" test valid student creation """
 		self.assertCreation("j%&","'self'","bº;;","21;;",True,False)
-
+	
 	def test_07 (self):
 		""" test valid student creation """
 		self.assertCreation("\t\r 	","    ","`;´;","3;2;",False,True)
-
+	
 	def test_08 (self):
 		""" test valid student creation """
 		self.assertCreation("jo\t12"," _ ","1;;","-1;;",True,True)
@@ -180,7 +180,7 @@ class TestRepresentation(TestAchievement):
 # Comparison tests (__eq__, __ne__, __lt__, __le__, __gt__, __ge__)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestCompare(TestAchievement):
-
+	
 	def test_01 (self):
 		""" test comparison between two equal achievements """
 		n = "Hero"; d = "Be a hero!"
@@ -190,7 +190,7 @@ class TestCompare(TestAchievement):
 		a1 = Achievement(n,d,c1,c2,c3,x1,x2,x3,is_counted,is_postbased)
 		a2 = Achievement(n,None,c1,c2,c3,x1,x2,x3,is_counted,is_postbased)
 		self.assertEQ(a1,a2)
-
+	
 	def test_02 (self):
 		""" test comparison between two unequal achievements """
 		n = "Hero"; d = "Be a hero!"
@@ -200,7 +200,7 @@ class TestCompare(TestAchievement):
 		a1 = Achievement(n,d,c1,c2,c3,x1,x2,x3,is_counted,is_postbased)
 		a2 = Achievement(n+"2",d,c1,c2,c3,x1,x2,x3,is_counted,is_postbased)
 		self.assertNE(a1,a2)
-
+	
 	def test_03 (self):
 		""" test comparison between an achievement equal to other obj """
 		class A:
@@ -213,7 +213,7 @@ class TestCompare(TestAchievement):
 		a1 = Achievement(n,d,c1,c2,c3,x1,x2,x3,is_counted,is_postbased)
 		a2 = A(n,(c1,c2,c3),(x1,x2,x3))
 		self.assertEQ(a1,a2)
-
+	
 	def test_04 (self):
 		""" test comparison between an achievement equal to other obj """
 		class A:
@@ -226,7 +226,7 @@ class TestCompare(TestAchievement):
 		a1 = Achievement(n,d,c1,c2,c3,x1,x2,x3,is_counted,is_postbased)
 		a2 = A(n,(c1,c2,c3),(x1,x2,x3))
 		self.assertNE(a1,a2)
-
+	
 	def test_05 (self):
 		""" test comparison between an achievement equal to other obj """
 		n = "Hero"; d = "Be a hero!"
@@ -235,7 +235,7 @@ class TestCompare(TestAchievement):
 		is_counted = False; is_postbased = True
 		a1 = Achievement(n,d,c1,c2,c3,x1,x2,x3,is_counted,is_postbased)
 		self.assertNE(a1,"achievement")
-
+	
 	def test_06 (self):
 		""" test comparison between two unequal achievements """
 		class A:

@@ -26,5 +26,5 @@ class TestPathError(unittest.TestCase):
 		self.assertEqual(ex.errno,errno)
 		self.assertEqual(ex.filename,path)
 		self.assertEqual(ex.path,path)
-
+		
 		self.assertEqual(str(ex),"%s: %s" % (msg,path))

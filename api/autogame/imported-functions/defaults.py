@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import datetime
-from decorators import rule_function
+from decorators import rule_function, rule_effect
 from gamerules.connector import gamecourse_connector as connector
 
 
@@ -66,6 +66,84 @@ def get_rating(logs):
 
 
 @rule_function
+def get_campus(target):
+    """
+    Returns the campus of a given student
+    """
+    result = connector.get_campus(target)
+    return result
+
+@rule_function
+def get_username(target):
+    """
+    Returns the username of a given student
+    """
+    result = connector.get_username(target)
+    return result
+
+@rule_function
+def get_team(target):
+    """
+    Returns the team of a given student
+    """
+    result = connector.get_team(target)
+    return result
+
+@rule_function
+def get_logs(target, type):
+    """
+    Returns the logs of a target for a specific
+    participation type
+    """
+    result  = connector.get_logs(target, type)
+    return result
+
+
+@rule_function
+def get_graded_skill_logs(target, minRating):
+    """
+    Returns the logs of a target for a specific
+    participation type
+    """
+    result  = connector.get_graded_skill_logs(target, minRating)
+    return result
+
+
+@rule_function
+def get_graded_logs(target, minRating, include_skills):
+    """
+    Returns the logs of a target for a specific
+    participation type
+    """
+    result  = connector.get_graded_logs(target, minRating, include_skills)
+    return result
+
+@rule_function
+def consecutive_peergrading(target):
+    """
+    Returns the username of a given student
+    """
+    result = connector.consecutive_peergrading(target)
+    return result
+
+@rule_function
+def get_valid_attempts(target, skill):
+    """
+    Returns number of valid attempts for a given skill
+    """
+    result = connector.get_valid_attempts(target, skill)
+    return result
+
+@rule_function
+def get_new_total(target, validAttempts, rating):
+    """
+    Checks if user has enough tokens to spend.
+    Returns the user's new wallet total.
+    """
+    (result1, result2) = connector.get_new_total(target, validAttempts, rating)
+    return (result1, result2)
+
+@rule_function
 def filter_excellence(logs, tiers, classes):
     """
     Filters the list of logs in a way that only
@@ -89,78 +167,137 @@ def filter_excellence(logs, tiers, classes):
 
 
 @rule_function
+def filter_quiz(logs, desc):
+    """
+    Filters the list of logs in a way that quiz 9
+    is removed
+    """
+
+    filtered_logs = []
+
+    for line in logs:
+        if line.description != desc or line.description != "Dry Run":
+            filtered_logs.append(line)
+    return filtered_logs
+
+@rule_function
 def filter_skills(logs):
     """
     Filters the list of logs to only keep
-    skill graded post
+    unique skill graded post.
+    Avoids multiple posts for the same skill.
     """
     desc = "Skill Tree"
     filtered_logs = []
+    already_inserted_skill = []
 
     for line in logs:
         post = line.description
         if post.startswith(desc):
-            filtered_logs.append(line)
+            if post not in already_inserted_skill:
+                already_inserted_skill.append(post)
+                filtered_logs.append(line)
     return filtered_logs
 
-
 @rule_function
+def exclude_worst(logs, last):
+    """
+    Will calculate the adjustment for getting rid of the
+    worst quiz in the bunch
+    """
+
+    worst = int(config.metadata["quiz_max_grade"])
+    fix = last
+
+    if len(logs) == 9:
+        for line in logs:
+            worst = min(int(line.rating), worst)
+
+        if len(last) == 1:
+            last_quiz = max(int(last[0].rating) - worst, 0)
+            fix[0].rating = last_quiz
+
+    return fix
+
+@rule_effect
+def print_info(text):
+        """
+        returns the output of a skill and writes the award to database
+        """
+        sys.stderr.write(str(text))
+
+
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Decorated Functions
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@rule_effect
+def transform (val):
+    """ wraps any value into a rule effect, this way it will be part of the rule
+    output
+    """
+    return val
+
+
+@rule_effect
+def award_badge(target, badge, lvl, contributions=None, info=None):
+    """
+    returns the output of a badge and writes the award to database
+    """
+    result = connector.award_badge(target, badge, lvl, contributions, info)
+    return result
+
+
+@rule_effect
+def award_skill(target, skill, rating, contributions=None, use_wildcard=False, wildcard_tier=None):
+    """
+    returns the output of a skill and writes the award to database
+    """
+    result = connector.award_skill(target, skill, rating, contributions, use_wildcard, wildcard_tier)
+    return result
+
+@rule_effect
 def award_prize(target, reward_name, xp, contributions=None):
     """
-    Awards a prize called "reward_name" of "xp" points to students.
+    returns the output of a skill and writes the award to database
     """
     connector.award_prize(target, reward_name, xp, contributions)
+    # TODO possible upgrade: returning indicators to include these types of prizes as well
     return
 
-
-@rule_function
-def award_tokens(target, reward_name, tokens=None, contributions=None):
+@rule_effect
+def award_tokens(target, reward_name, tokens = None, contributions=None):
     """
     Awards tokens to students.
     """
     connector.award_tokens(target, reward_name, tokens, contributions)
     return
 
-
-@rule_function
-def award_tokens_type(target, type, tokens, element_name=None, contributions=None):
+@rule_effect
+def award_tokens_type(target, type, element_name, to_award):
     """
     Awards tokens to students based on an award given.
     """
-    connector.award_tokens_type(target, type, tokens, element_name, contributions)
+    connector.award_tokens_type(target, type, element_name, to_award)
     return
 
-
-@rule_function
-def award_badge(target, badge, lvl, contributions=None, info=None):
+@rule_effect
+def award_grade(target, item, contributions=None, extra=None):
     """
-    Awards a Badge type award called "badge" to "target". The "lvl" argument represents the level that can be attributed
-    to a given student (used in conjunction with compute_lvl). The "contributions" parameter should receive the participations
-    that justify the attribution of the badge for a given target.
+    returns the output of a skill and writes the award to database
     """
-    result = connector.award_badge(target, badge, lvl, contributions, info)
-    return result
-
-
-@rule_function
-def award_skill(target, skill, rating, contributions=None, use_wildcard=False, wildcard_tier=None):
-    """
-    Awards a Skill type award called "skill" to "target".
-    """
-    result = connector.award_skill(target, skill, rating, contributions, use_wildcard, wildcard_tier)
-    return result
-
-
-@rule_function
-def award_grade(target, item, contributions=None):
-    """
-    Awards a grade (XP) to "target". Grades awarded will depend on the logs passed
-    in argument "item", which contain the XP reward to be awarded.
-    """
-    connector.award_grade(target, item, contributions)
+    connector.award_grade(target, item, contributions, extra)
     # TODO possible upgrade: returning indicators to include these types of prizes as well
     return
 
+@rule_effect
+def award_team_grade(target, item, contributions=None, extra=None):
+    """
+    returns the output of a grade and writes the award to database
+    """
+    connector.award_team_grade(target, item, contributions, extra)
+    # TODO possible upgrade: returning indicators to include these types of prizes as well
+    return
 
 @rule_function
 def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ignore_case=None, extra=None):
@@ -171,7 +308,6 @@ def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ign
     connector.award_quiz_grade(target, contributions, xp_per_quiz, max_grade, ignore_case, extra)
     return
 
-
 @rule_function
 def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, forum=None):
     """
@@ -180,7 +316,6 @@ def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, for
     """
     connector.award_post_grade(target, contributions, xp_per_post, max_grade, forum)
     return
-
 
 @rule_function
 def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_grade=1):
@@ -191,27 +326,21 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
     connector.award_assignment_grade(target, contributions, xp_per_assignemnt, max_grade)
     return
 
-
-@rule_function
+@rule_effect
 def award_rating_streak(target, streak, rating, contributions=None, info=None):
     """
-    Awards a Streak type rating-related award called "streak" to "target". The "contributions"
-    parameter should receive the participations that justify the attribution of the streak for
-    a given target.
+    returns the output of a streak and writes the award to database
     """
     result = connector.award_rating_streak(target, streak, rating, contributions, info)
     return result
 
-
-@rule_function
-def award_streak(target, streak, contributions=None, info=None):
+@rule_effect
+def award_streak(target, streak, to_award, participations, type=None):
     """
-    Awards a Streak type award called "streak" to "target". The "contributions" parameter should
-    receive the participations that justify the attribution of the streak for a given target.
+    returns the output of a streak and writes the award to database
     """
-    result = connector.award_streak(target, streak, contributions, info)
+    result = connector.award_streak(target, streak, to_award, participations, type)
     return result
-
 
 @rule_function
 def remove_tokens(target, tokens = None, skillName = None, contributions=None):
@@ -224,9 +353,60 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     return result
 
 @rule_function
+def update_wallet(target, newTotal, removed, contributions=None):
+    """
+    Updates 'user_wallet' table with the new total tokens for
+    a user.
+    """
+    result = connector.update_wallet(target, newTotal, removed, contributions)
+    return result
+
+
+@rule_function
 def rule_unlocked(name, target):
     """
     Checks if rule was already unlocked by user.
     """
     result = connector.rule_unlocked(name, target)
     return result
+
+@rule_function
+def awards_to_give(target, streak_name):
+    """
+    Checks if rule was already unlocked by user.
+    """
+    result = connector.awards_to_give(target, streak_name)
+    return result
+
+@rule_effect
+def get_consecutive_peergrading_logs(target, streak, contributions):
+    """
+    Checks consecutive peergrader posts.
+    """
+    connector.get_consecutive_peergrading_logs(target, streak, contributions)
+    return
+
+@rule_effect
+def get_consecutive_rating_logs(target, streak, type, rating, only_skill_posts):
+    """
+    Checks consecutive logs - mainly based on rating or description.
+    """
+    connector.get_consecutive_rating_logs(target, streak, type, rating, only_skill_posts)
+    return
+
+@rule_effect
+def get_consecutive_logs(target, streak, type):
+    """
+    Checks consecutive logs - based on description.
+    """
+    connector.get_consecutive_logs(target, streak, type)
+    return
+
+@rule_effect
+def get_periodic_logs(target, streak_name, contributions, participationType=None):
+    """
+    Checks periodic logs - checks periodicity
+    """
+    connector.get_periodic_logs(target, streak_name, contributions, participationType)
+    return
+

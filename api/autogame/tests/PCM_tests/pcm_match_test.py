@@ -39,7 +39,7 @@ QRLOGS = cdata.read_QR_logs(STUDENTS)
 # Base class
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class MatchTest (BaseTestClass):
-
+	
 	def assertAchievementOutputs(self, achievement, rs_out, ca_out):
 		# filter and transform CourseAchievements output
 		ca_awards, ca_indicators = ca_out
@@ -132,7 +132,7 @@ class TestAchievements (MatchTest):
 		ca_output = run_CourseAchievements(STUDENT_LIST,logs,achievements,[])
 		# match the outputs
 		self.assertAchievementOutputs(a,rs_output,ca_output)
-
+	
 	def test_02 (self):
 		""" Match Test - Apprentice """
 		logs = dict(RATINGS_LOGS)
@@ -147,7 +147,7 @@ class TestAchievements (MatchTest):
 		ca_output = run_CourseAchievements(STUDENT_LIST,logs,achievements,[])
 		# match the outputs
 		self.assertAchievementOutputs(a,rs_output,ca_output)
-
+	
 	def test_03 (self):
 		""" Match Test - Artist """
 		logs = dict(RATINGS_LOGS)
@@ -162,7 +162,7 @@ class TestAchievements (MatchTest):
 		ca_output = run_CourseAchievements(STUDENT_LIST,logs,achievements,[])
 		# match the outputs
 		self.assertAchievementOutputs(a,rs_output,ca_output)
-
+	
 	def test_04 (self):
 		""" Match Test - Attentive Student """
 		logs = dict(RATINGS_LOGS)
@@ -192,7 +192,7 @@ class TestAchievements (MatchTest):
 		ca_output = run_CourseAchievements(STUDENT_LIST,logs,achievements,[])
 		# match the outputs
 		self.assertAchievementOutputs(a,rs_output,ca_output)
-
+	
 	def test_06 (self):
 		""" Match Test - Class Annotator """
 		logs = dict(MOODLE_LOGS)
@@ -207,7 +207,7 @@ class TestAchievements (MatchTest):
 		ca_output = run_CourseAchievements(STUDENT_LIST,logs,achievements,[])
 		# match the outputs
 		self.assertAchievementOutputs(a,rs_output,ca_output)
-
+	
 	def test_07 (self):
 		""" Match Test - Course Emperor """
 		logs = dict(MANUAL_LOGS)
@@ -222,7 +222,7 @@ class TestAchievements (MatchTest):
 		ca_output = run_CourseAchievements(STUDENT_LIST,logs,achievements,[])
 		# match the outputs
 		self.assertAchievementOutputs(a,rs_output,ca_output)
-
+	
 	def test_08 (self):
 		""" Match Test - Golden Star """
 		logs = dict(MANUAL_LOGS)
@@ -237,7 +237,7 @@ class TestAchievements (MatchTest):
 		ca_output = run_CourseAchievements(STUDENT_LIST,logs,achievements,[])
 		# match the outputs
 		self.assertAchievementOutputs(a,rs_output,ca_output)
-
+	
 	def test_09 (self):
 		""" Match Test - Hall of Fame """
 		logs = dict(MANUAL_LOGS)
@@ -252,7 +252,7 @@ class TestAchievements (MatchTest):
 		ca_output = run_CourseAchievements(STUDENT_LIST,logs,achievements,[])
 		# match the outputs
 		self.assertAchievementOutputs(a,rs_output,ca_output)
-
+	
 	# test 10 no longer used
 	"""
 	def test_10 (self):
@@ -270,7 +270,7 @@ class TestAchievements (MatchTest):
 		# match the outputs
 		self.assertAchievementOutputs(a,rs_output,ca_output)
 	"""
-
+	
 	def test_11 (self):
 		""" Match Test - Lab King """
 		logs = dict(MANUAL_LOGS)
@@ -285,7 +285,7 @@ class TestAchievements (MatchTest):
 		ca_output = run_CourseAchievements(STUDENT_LIST,logs,achievements,[])
 		# match the outputs
 		self.assertAchievementOutputs(a,rs_output,ca_output)
-
+	
 	def test_12 (self):
 		""" Match Test - Lab Lover """
 		logs = dict(MANUAL_LOGS)
@@ -300,7 +300,7 @@ class TestAchievements (MatchTest):
 		ca_output = run_CourseAchievements(STUDENT_LIST,logs,achievements,[])
 		# match the outputs
 		self.assertAchievementOutputs(a,rs_output,ca_output)
-
+	
 	def test_13 (self):
 		""" Match Test - Lab Master """
 		logs = dict(MANUAL_LOGS)
@@ -315,7 +315,7 @@ class TestAchievements (MatchTest):
 		ca_output = run_CourseAchievements(STUDENT_LIST,logs,achievements,[])
 		# match the outputs
 		self.assertAchievementOutputs(a,rs_output,ca_output)
-
+	
 	def test_14 (self):
 		""" Match Test - Popular Choice Award """
 		logs = dict(MANUAL_LOGS)
@@ -361,7 +361,7 @@ class TestAchievements (MatchTest):
 		# match the outputs
 		self.assertAchievementOutputs(a,rs_output,ca_output)
 
-	# test 17 no longer used
+	# test 17 no longer used 
 	"""
 	def test_17 (self):
 		# Match Test - Presentation Zen Master

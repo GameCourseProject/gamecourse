@@ -39,7 +39,7 @@ AUTOSAVE = False
 # Base class
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class MatchTest (BaseTestClass):
-
+	
 	def assertAchievementOutputs(self, achievement, ca_out, ag_out):
 		return
 
@@ -68,7 +68,7 @@ class TestStudentLoad (MatchTest):
 		rs = RuleSystem(LOAD_STUDENTS_PATH, AUTOSAVE)
 
 		students = get_targets(course_nr, limit=10)
-
+		
 		rs_output = rs.fire(students,logs,scope)
 
 		stop = time.time()
@@ -81,8 +81,8 @@ class TestStudentLoad (MatchTest):
 		nr = count_awards(course_nr)
 		print("Awards given: ", nr)
 		print("\n")
-
-
+		
+		
 
 	def test_02 (self):
 		""" Student Load - 50 students """
@@ -107,7 +107,7 @@ class TestStudentLoad (MatchTest):
 		nr = count_awards(course_nr)
 		print("Awards given: ", nr)
 		print("\n")
-
+		
 
 
 	def test_03 (self):
@@ -133,7 +133,7 @@ class TestStudentLoad (MatchTest):
 		nr = count_awards(course_nr)
 		print("Awards given: ", nr)
 		print("\n")
-
+		
 
 
 	def test_04 (self):
@@ -159,7 +159,7 @@ class TestStudentLoad (MatchTest):
 		nr = count_awards(course_nr)
 		print("Awards given: ", nr)
 		print("\n")
-
+		
 	def test_05 (self):
 		""" Student Load - 400 students """
 		course_nr = "3"
@@ -183,7 +183,7 @@ class TestStudentLoad (MatchTest):
 		nr = count_awards(course_nr)
 		print("Awards given: ", nr)
 		print("\n")
-
+		
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -203,7 +203,7 @@ class TestRuleLoad (MatchTest):
 		delete_awards("3")
 		shutil.rmtree(SETUP_DAT_PATH)
 
-
+	
 	def test_01(self):
 		""" Rule Load - 5 rules """
 
@@ -302,7 +302,7 @@ class TestRuleLoad (MatchTest):
 		print("Awards given: ", nr)
 		print("\n")
 
-
+	
 
 	def test_05(self):
 		""" Rule Load - 75 rules """
@@ -377,4 +377,4 @@ class TestRuleLoad (MatchTest):
 		nr = count_awards(self.course_nr)
 		print("Awards given: ", nr)
 		print("\n")
-
+		

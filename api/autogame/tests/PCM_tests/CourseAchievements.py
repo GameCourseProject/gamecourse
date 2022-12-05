@@ -565,7 +565,7 @@ def TreeClimber(logs,student):
 	maxlevel = 0
 	for ta in tree_awards:
 		for l in tree:
-
+			
 			if l.name in ta.info[1] and l.Satisfied([a.info[1] for a in tree_awards]):
 				if l.level>maxlevel:
 					maxlevel = l.level
@@ -796,12 +796,12 @@ def verify_achievements(logs, students, achievement_list):
 	#        print "Verifying achievements for", unicode.encode(s.name,"latin1")," - ",
 		for a in achievement_list:
 			fn_name=a.name.replace(" ","")
-
+			
 			#print("FN NAME:\t", fn_name)
 			try:
 				tmp, val, lines = eval("%s(logs, s)" % fn_name)
 				#print(tmp, "\t", val,"\t", lines)
-
+				
 				#val = str(val, "latin1")
 			except NameError:
 				tmp=None
@@ -895,7 +895,7 @@ class PCMSpreadsheetParser:
 		self._Authorize()
 		self.curr_key = ''
 		self.curr_wksht_id = ''
-
+	
 	def _Authorize(self):
 		token = None
 		if not(os.path.exists(auth_file)):
@@ -1003,7 +1003,7 @@ def readIDtoNum():
 
 def read_attendance_logs():
     res = []
-
+    
     print('Reading Attendance from \"'+ATTURL+'"')
     idtonum = readIDtoNum()
     f=urllib.request.urlopen(ATTURL)
@@ -3284,7 +3284,7 @@ def export_loglines(lines):
             print("*")
   f.close()
 
-
+  
 def save_tree_won(won):
     f = open("tree_won.txt","w")
     for w in list(won.keys()):

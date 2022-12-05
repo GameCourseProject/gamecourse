@@ -32,9 +32,9 @@ def get_config_metadata(course):
 					[key,val] = el.split(":")
 					metadata[key] = int(val)
 			return metadata
-
+	
 	except IOError:
-		error_msg = "ERROR: No config file found for course " + str(course) + "."
+		error_msg = "ERROR: No config file found for course " + str(course) + "." 
 		logging.exception(error_msg)
 		sys.exit(error_msg)
 
@@ -72,13 +72,13 @@ if __name__ == "__main__":
 			targets_list = sys.argv[3].strip("[]").split(",")
 	else:
 		sys.exit()
-
+		
 
 	with open(output_file ,'w') as lfile:
 
 		# No need to init autogame, since there are no concurrency issues,
 		# and server socket will already be open
-
+		
 		# Folder path of rules
 		# Course folder + rule tests folder
 		path = os.path.join(rulespath, RULES_TESTS_FOLDER)
@@ -98,7 +98,7 @@ if __name__ == "__main__":
 			else:
 				# get targets
 				students = get_targets(course, None, all_targets)
-
+			
 			# Import custom course functions
 			functions_path = os.path.join(IMPORTED_FUNCTIONS_FOLDER, course)
 			functions, fpaths, info = import_functions_from_rulepath(functions_path, info=True)
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 				# In this test case, dates are NOT updated, as they should
 				# However the socket needs to be closed anyway
 				autogame_terminate(course, None, None)
-
+				
 			except Exception as e:
 				logging.error('Connection Refused in autogame_terminate().')
 				lfile.write(str(e) + "\n")

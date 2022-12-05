@@ -1,8 +1,8 @@
 rule: Class Annotator
 # Find related resources, more information, about class subjects
-# 	lvl.1: get four points
-# 	lvl.2: get eight points
-# 	lvl.3: get twelve points
+# 	lvl.1: get four points 
+# 	lvl.2: get eight points 
+# 	lvl.3: get twelve points 
 
 	when:
 		logs = GC.participations.getForumParticipations(target, "Participation", "Class Annotator")

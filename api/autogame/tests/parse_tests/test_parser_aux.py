@@ -112,13 +112,13 @@ class TestParserAux(unittest.TestCase):
 
 	def test_is_next_006(self):
 		self.assertFalse(is_next("",None,None,None))
-
+	
 	def test_is_next_007(self):
 		self.assertFalse(is_next("","",None,None))
-
+	
 	def test_is_next_008(self):
 		self.assertFalse(is_next("","",1.0,None))
-
+	
 	def test_is_next_009(self):
 		self.assertFalse(is_next("","",25,None))
 
@@ -127,34 +127,34 @@ class TestParserAux(unittest.TestCase):
 
 	def test_is_next_011(self):
 		self.assertFalse(is_next("","",-5,None))
-
+	
 	def test_is_next_012(self):
 		self.assertFalse(is_next("","",-53,1.0))
-
+	
 	def test_is_next_013(self):
 		self.assertFalse(is_next("","",-53,623))
-
+	
 	def test_is_next_014(self):
 		self.assertFalse(is_next("","",-53,0x3bfe))
-
+	
 	def test_is_next_015(self):
 		self.assertFalse(is_next("",""))
-
+	
 	def test_is_next_016(self):
 		self.assertFalse(is_next("a",""))
-
+	
 	def test_is_next_017(self):
 		self.assertFalse(is_next("aa","a"))
-
+	
 	def test_is_next_018(self):
 		self.assertFalse(is_next("x","x",-567))
-
+	
 	def test_is_next_019(self):
 		self.assertFalse(is_next("x","x",90))
-
+	
 	def test_is_next_020(self):
 		self.assertFalse(is_next("bob","bob",15,0))
-
+	
 	def test_is_next_021(self):
 		key = "why?"
 		text = "long text but the word is not found"
@@ -379,7 +379,7 @@ class TestParserAux(unittest.TestCase):
 			get_stmt_type("= 1 + 2")
 	def test_get_stmt_type_invalid_02(self):
 		with self.assertRaises(RuleError):
-			get_stmt_type("i =")
+			get_stmt_type("i =")		
 
 	### %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ###
 	### skip_blank(<str>text, <int> pos, <int> line, <bool> inline)
@@ -395,7 +395,7 @@ class TestParserAux(unittest.TestCase):
 		result = skip_blank()
 		## Assert
 		self.assertEqual(result,expected)
-
+	
 	def test_skip_blank_01 (self):
 		# Arrange
 		## Args

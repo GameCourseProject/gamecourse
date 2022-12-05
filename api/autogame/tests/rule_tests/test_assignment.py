@@ -11,7 +11,7 @@ import unittest
 # Assignment
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestAssignment(unittest.TestCase):
-
+	
 	def assertAssignment(self, assignment, text=None, filepath=None, line=None):
 		self.assertIsInstance(assignment,Assignment)
 		self.assertIsInstance(assignment,Statement)
@@ -73,14 +73,14 @@ class TestAssignment(unittest.TestCase):
 		msg+= "\t%s\n" % text
 		#msg+= error_msg
 		self.assertEqual(str(cm.exception), msg)
-
+		
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Assignment(self, text, filepath, line) - Creates a new Assignment Node
 # Assignment.validate(self) - Validates the input text and compiles it
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class Creation(TestAssignment):
-
+	
 	def test_00 (self):
 		self.assertCreation("what = callable(1,2,3) + (lambda x: x**x)(2)")
 
@@ -144,7 +144,7 @@ class Creation(TestAssignment):
 # Assignment.fire(self, scope) -> Executes the Assignment code
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class Fire (TestAssignment):
-
+	
 
 	def test_01 (self):
 		t = "x = 9+8-1"

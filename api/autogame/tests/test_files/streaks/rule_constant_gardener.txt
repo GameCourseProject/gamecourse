@@ -1,0 +1,10 @@
+Rule: Constant Gardener
+	when:
+		logs = get_graded_skill_logs(target, [3,4,5])
+
+		get_periodic_logs(target, "Constant Gardener", logs)
+		to_award, participations = awards_to_give(target, "Constant Gardener")
+		to_award > 0
+
+	then:
+	    award_streak(target, "Constant Gardener", to_award, participations, "graded post")

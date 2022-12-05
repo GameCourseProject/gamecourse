@@ -9,37 +9,37 @@ import unittest
 # RuleError(self, filepath, line, message)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class Creation(unittest.TestCase):
-
+	
 	def test_00 (self):
 		f = "C:\\rules\\course2018.txt"
 		l = 30
 		m = "RuleError"
 		ex = RuleError(f,l,m)
 		assert_RuleError(self,ex,f,l,m)
-
+	
 	def test_01 (self):
 		ex = RuleError()
 		m = "RuleError"
 		assert_RuleError(self,ex,'?','?', m)
-
+	
 	def test_02 (self):
 		with self.assertRaises(TypeError) as cm:
 			RuleError(filepath=123)
-
+	
 	def test_03 (self):
 		with self.assertRaises(TypeError) as cm:
 			RuleError(line={'a':453})
-
+	
 	def test_04 (self):
 		with self.assertRaises(TypeError) as cm:
 			RuleError(message=[RuleError(),self,unittest])
-
+	
 	def test_05 (self):
 		m = "error message ..."
 		ex = RuleError(message=Exception(m))
 		m = "RuleError"
 		assert_RuleError(self,ex,'?','?',m)
-
+	
 	def test_06 (self):
 		f = "C:\\rules\\rule01.txt"
 		l = 2

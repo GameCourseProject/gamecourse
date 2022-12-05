@@ -104,6 +104,12 @@ class Dictionary
     /**
      * Calls a dictionary function defined in a given library.
      *
+     * The arguments format is as follows:
+     *  - whether to mock data
+     *  - if a course is passed, the course it refers to
+     *  - if context data is passed, the context data
+     *  - actual arguments passed in function
+     *
      * @param Course|null $course
      * @param string $libraryId
      * @param string $funcName
@@ -125,10 +131,10 @@ class Dictionary
         if ($context !== null) array_unshift($args, $context);
 
         // Add course
-        $args[] = $course;
+        if ($course) array_unshift($args, $course);
 
         // Mock data
-        $args[] = $mockData;
+        array_unshift($args, $mockData);
 
         // Call function
         return $library->{$funcName}(...$args);

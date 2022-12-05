@@ -37,11 +37,11 @@ class TestOutput(BaseTestClass):
 # Output(val) --> Output
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestCreation(TestOutput):
-
+	
 	def test_01(self):
 		""" create an output with several effects """
 		self.assertCreation((132,"string",32.9,('asd',12,{}),None,[1,2,3]))
-
+	
 	def test_02(self):
 		""" try to create an output with illegal values """
 		self.assertCreationRaises(TypeError,132)

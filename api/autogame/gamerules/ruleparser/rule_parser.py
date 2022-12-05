@@ -64,7 +64,7 @@ def parse_file(fpath):
 		text = f.read()
 	# remove tags line before parsing
 	new_text = re.sub('\ntags:.+\n', '\n', text)
-	list_rules = parse_list_rules(new_text,fpath)
+	list_rules = parse_list_rules(new_text,fpath)		
 
 	return list_rules
 
@@ -78,7 +78,7 @@ def parse_list_rules(text="", fpath=""):
 	list_rules = []
 	pos = 0
 	line = 1
-
+	
 	while pos < len(text):
 		if text[pos] == "\n":
 			line += 1
@@ -89,12 +89,12 @@ def parse_list_rules(text="", fpath=""):
 			pos = parse_comment(text, pos)
 			continue
 		rule, pos, line = parse_rule(text,pos,fpath,line)
-		if rule == None:
+		if rule == None: 
 			## Case where rule is ignored because it is inactive
 			continue
 		else:
 			list_rules.append(rule)
-
+		
 	return list_rules
 
 
@@ -132,7 +132,7 @@ def parse_rule(text="", pos=0, fpath="", line=1):
 	if text[pos-1] == "\n": line += 1
 	if is_next("INACTIVE",text,pos):
 		inactive = True
-
+	
 	## Parse Description if there is any
 	desc, pos, line = parse_description(text,pos,line)
 	## Parse Preconditions & Actions
@@ -189,7 +189,7 @@ def parse_actions(text="", pos=0, fpath="", line=1):
 
 def parse_named_block(name="", text="", pos=0, endkey="", fpath="", line=1):
 	"""
-	A named block is a name followed by a ':' followed by a block
+	A named block is a name followed by a ':' followed by a block 
 	returns a list of variable declarations, a list of expressions
 	and the position and line parsed
 	"""
@@ -209,7 +209,7 @@ def parse_named_block(name="", text="", pos=0, endkey="", fpath="", line=1):
 	if not result or result[1] != line:
 		msg = "parse_named_block:: Expected \':\' after the block name"
 		raise ParseError(file=fpath,line=line,val=msg)
-
+	
 	# update pos
 	pos = result[0] + 1
 	# parse block
@@ -258,7 +258,7 @@ def parse_block (text="", pos=0, endkey="", fpath="", line=1):
 def parse_statement(text="", pos=0, fpath="", line=1):
 	"""
 	Parse the next statement in the text starting in position 'pos'.
-	A statement can be an assignment if there is an assignment operation
+	A statement can be an assignment if there is an assignment operation 
 	otherwise it's an expression. Returns the statement and position of the
 	last character parsed in the text
 	"""
@@ -279,7 +279,7 @@ def parse_statement(text="", pos=0, fpath="", line=1):
 				whitespace_allowed = False
 			pos += 1
 			continue
-
+		
 		# necessary condition for not checking the last char of the line
 		if pos < len(text) - 1:
 			# this branch will check the syntax for a function
@@ -287,7 +287,7 @@ def parse_statement(text="", pos=0, fpath="", line=1):
 			# GC.library.function(arg1, arg2, ...)
 
 			# detect function
-			if char == 'G' and text[pos+1] == 'C' and text[pos+2] == '.':
+			if char == 'G' and text[pos+1] == 'C' and text[pos+2] == '.': 
 				#skip the prefix "GC."
 				pos += 3
 
@@ -313,7 +313,7 @@ def parse_statement(text="", pos=0, fpath="", line=1):
 
 				parenthesis = 1
 				args = char
-
+				
 				while parenthesis != 0:
 					pos += 1
 					char = text[pos]
@@ -339,15 +339,15 @@ def parse_statement(text="", pos=0, fpath="", line=1):
 							pos += 1
 							char = text[pos]
 							args += char
-
+				
 				stmt += "gc(\"" + library + "\",\"" + fn_call + "\""
 				if args != "()": # if the function has arguments
 					stmt += ", " + args[1:-1]
-
+				
 		stmt += char
 		pos += 1
 		whitespace_allowed = True
-
+	
 	# if last character was a whitespace, delete it
 	if len(stmt) > 0 \
 	and isblank(stmt[len(stmt)-1]):
@@ -359,7 +359,7 @@ def parse_statement(text="", pos=0, fpath="", line=1):
 	# convert the statement string into a StatementNode
 	from .aux_functions import get_stmt
 	stmt = get_stmt(stmt,fpath,line)
-
+	
 	return stmt, pos
 
 

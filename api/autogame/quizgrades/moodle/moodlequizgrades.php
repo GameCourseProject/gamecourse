@@ -62,7 +62,7 @@ $sql.=";";
 if ($result = $db->query($sql)) {
 	// Query Successed
 
-	// Separator between results
+	// Separator between results 
 	$sep = "\t";
 	// End of Line
 	$lb = "\n";
@@ -83,7 +83,7 @@ if ($result = $db->query($sql)) {
 		.$sep.$row['grade']
 		.$sep."/mod/quiz/view.php?id=".$row['quizid'].$lb;
 	}
-
+	
 	// free result set
 	$result->free();
 }

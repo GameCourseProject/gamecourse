@@ -127,7 +127,7 @@ abstract class AutoGame
      */
     private static function setIsRunning(int $courseId, bool $isRunning, bool $onlyStatus = false)
     {
-        $where = ["isRunning" => $isRunning];
+        $where = ["isRunning" => +$isRunning];
         if (!$onlyStatus) $where[$isRunning ? "startedRunning" : "finishedRunning"] = date("Y-m-d H:i:s", time());
         Core::database()->update(self::TABLE_AUTOGAME, $where, ["course" => $courseId]);
     }
@@ -141,6 +141,22 @@ abstract class AutoGame
     public static function isRunning(int $courseId): bool
     {
         return boolval(Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "isRunning"));
+    }
+
+    /**
+     * Checks whether AutoGame is stuck running (in the database)
+     * due to an error being thrown.
+     *
+     * When errors are thrown during the execution of AutoGame,
+     * the log file ends without a proper separator.
+     *
+     * @param int $courdeId
+     * @return bool
+     */
+    private static function isStuck(int $courdeId): bool
+    {
+        $logs = self::getLogs($courdeId);
+        return !substr(trim($logs), -strlen(self::SEPARATOR)) == self::SEPARATOR;
     }
 
     /**
@@ -161,8 +177,13 @@ abstract class AutoGame
         }
 
         if (self::isRunning($courseId)) {
-            self::log($courseId, "AutoGame is already running.");
-            return;
+            if (self::isStuck($courseId)) {
+                self::setIsRunning($courseId, false, true);
+
+            } else {
+                self::log($courseId, "AutoGame is already running.", "WARNING");
+                return;
+            }
         }
 
         if (self::isSocketOpen()) {
@@ -227,7 +248,7 @@ abstract class AutoGame
             $address = "tcp://" . self::$host . ":" . self::$port;
             $socket = stream_socket_server($address, $errorCode, $errorMsg);
             if (!$socket) {
-                self::log($courseId, "Could not create socket.");
+                self::log($courseId, "Could not create socket.\n\n$errorMsg");
                 return;
             }
 
@@ -279,7 +300,7 @@ abstract class AutoGame
             }
 
         } catch (Throwable $e) {
-            self::log($courseId, "Caught an error on startSocket().");
+            self::log($courseId, "Caught an error on startSocket().\n\n" . $e->getMessage());
 
         } finally {
             if (isset($connection)) fclose($connection);
@@ -307,6 +328,8 @@ abstract class AutoGame
     /*** ---------------------- Logging --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    const SEPARATOR = "================================================================================";
+
     /**
      * Gets AutoGame logs for a given course.
      *
@@ -329,12 +352,12 @@ abstract class AutoGame
      */
     public static function log(int $courseId, string $message, string $type = "ERROR")
     {
-        $sep = "\n================================================================================\n";
-        $date = "[" . date("Y/m/d H:i:s") . "] : php : " . $type . " \n\n";
-        $error = "\n\n================================================================================\n\n";
+        $sep = self::SEPARATOR;
+        $header = "[" . date("Y/m/d H:i:s") . "] [$type] : ";
+        $error = "\n$sep\n$header$message\n$sep\n\n";
 
         $logsFile = LOGS_FOLDER . "/autogame_" . $courseId . ".txt";
-        file_put_contents($logsFile, $sep . $date . $message . $error, FILE_APPEND);
+        file_put_contents($logsFile, $error, FILE_APPEND);
     }
 
 
@@ -344,22 +367,37 @@ abstract class AutoGame
 
     /**
      * Gets all participations of a given course.
-     * Option for a specific user and/or source and/or type.
+     * Option for a specific user, type, rating, evaluator and/or
+     * source, as well as an initial and/or end date.
      *
      * @param int $courseId
      * @param int|null $userId
-     * @param string|null $source
      * @param string|null $type
+     * @param int|null $rating
+     * @param int|null $evaluatorId
+     * @param string|null $startDate
+     * @param string|null $endDate
+     * @param string|null $source
      * @return array
      */
-    public static function getParticipations(int $courseId, int $userId = null, string $source = null, string $type = null): array
+    public static function getParticipations(int $courseId, int $userId = null, string $type = null, int $rating = null,
+                                             int $evaluatorId = null, string $startDate = null, string $endDate = null,
+                                             string $source = null): array
     {
         $table = self::TABLE_PARTICIPATION;
+
         $where = ["course" => $courseId];
         if (!is_null($userId)) $where["user"] = $userId;
-        if (!is_null($source)) $where["source"] = $source;
         if (!is_null($type)) $where["type"] = $type;
-        $participations = Core::database()->selectMultiple($table, $where, "*", "date DESC");
+        if (!is_null($rating)) $where["rating"] = $rating;
+        if (!is_null($evaluatorId)) $where["evaluator"] = $evaluatorId;
+        if (!is_null($source)) $where["source"] = $source;
+
+        $whereCompare = [];
+        if (!is_null($startDate)) $whereCompare[] = ["date", ">=", $startDate];
+        if (!is_null($endDate)) $whereCompare[] = ["date", "<=", $endDate];
+
+        $participations = Core::database()->selectMultiple($table, $where, "*", "date DESC", [], $whereCompare);
 
         // Parse
         foreach ($participations as &$participation) {

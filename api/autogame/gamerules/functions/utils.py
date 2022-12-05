@@ -61,7 +61,7 @@ def import_functions_from_FuncPaths (fp):
 import_functions_from_FPaths = import_functions_from_FuncPaths
 
 def import_functions_from_rulepath (p, info=False):
-
+	
 	if not isinstance(p,str):
 		raise TypeError("path must be a string")
 	import os

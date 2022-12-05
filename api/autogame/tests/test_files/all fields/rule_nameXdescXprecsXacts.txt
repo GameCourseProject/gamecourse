@@ -24,7 +24,7 @@ corrupt son, he comes to Rome as a gladiator to seek revenge.
 		russel in stars
 	then:
 		distances = sum(map(len,stars))
-		distances > 10
+		distances > 10 
 
 
 
@@ -34,7 +34,7 @@ rule: gladiator
 # comcomomcomcoimos
 When a Roman General is betrayed, and his family murdered by an emperor's
 corrupt son, he comes to Rome as a gladiator to seek revenge.
-
+	
 #hjsoapdan
 	when:
 		# This is when the going gets tough!
@@ -44,4 +44,4 @@ corrupt son, he comes to Rome as a gladiator to seek revenge.
 		russel in stars
 	then:
 		distances = sum(map(len,stars))
-		distances > 10
+		distances > 10 

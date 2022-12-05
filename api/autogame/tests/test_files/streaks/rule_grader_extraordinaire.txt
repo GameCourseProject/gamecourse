@@ -1,0 +1,11 @@
+Rule: Grader Extraordinaire
+	when:
+		user = get_username(target)
+		logs = consecutive_peergrading(user)
+		len(logs)>0
+
+		get_consecutive_peergrading_logs(target, "Grader Extraordinaire", logs)
+		to_award, participations = awards_to_give(target, "Grader Extraordinaire")
+		to_award > 0
+	then:
+		award_streak(target, "Grader Extraordinaire", to_award, participations)

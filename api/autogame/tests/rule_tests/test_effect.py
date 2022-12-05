@@ -30,7 +30,7 @@ class TestEffect(BaseTestClass):
 # Effect(val) --> Effect
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestCreation(TestEffect):
-
+	
 	def test_01(self):
 		""" create several effects with different values """
 		self.assertCreation(132)

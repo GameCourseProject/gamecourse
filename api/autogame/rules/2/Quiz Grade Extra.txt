@@ -10,6 +10,6 @@ rule: Quiz Grade Extra
 		log = exclude_worst(flogs, quiz_nine)
 		logs = log if extra else quiz_nine
 		len(quiz_nine) > 0
-
+		
 	then:
 		award_grade(target, "Quiz", logs, extra)

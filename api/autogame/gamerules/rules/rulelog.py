@@ -5,7 +5,7 @@ import time
 from .. import validate
 
 class RuleLog(object):
-
+	
 	def __init__(self,rule,target,output,ts=None):
 		validate.rulelog_args(rule,output)
 		self.__rule = rule

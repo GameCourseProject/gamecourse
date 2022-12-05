@@ -36,7 +36,7 @@ def compute_lvl (val, *lvls):
 		> compute_lvl(val=5, [2,4,6]) ==> returns 2
 		> compute_lvl(val=5, (10,5,1)) ==> returns 3
 	"""
-
+	
 	if len(lvls)==0: # no level specified?
 		return 0 # then return the least lvl specified
 	if isinstance(lvls[0],(tuple,list)):
@@ -99,7 +99,7 @@ def transform_rulesystem_output(output):
 	return awards, p.indicators
 
 def get_tree():
-	"""
+	""" 
 	gets tree from course data so that it can be consulted when writing
 	rules in text files
 	"""

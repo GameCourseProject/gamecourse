@@ -3,7 +3,7 @@
 # description and actions fields
 
 rule: # no name
-
+	
 	# It's a TRAP!!!
 
 	the nature
@@ -43,5 +43,5 @@ rule, sure was long, wasn't it Watson?
 		watson = "Sure, Sherlock!"
 		watson = "But if you think I forgot what just happened,"
 		watson = " you're in a for a big treat."
-
+		
 		watson == "staring intensely"

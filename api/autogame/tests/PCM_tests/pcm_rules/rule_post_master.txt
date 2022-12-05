@@ -9,7 +9,7 @@ rule: Post Master
 		logs+= filter_logs(facts,target,action="forum add discussion")
 		# compute the number of logs
 		number_of_posts = len(logs)
-		# compute lvl achieved based on the number of posts
+		# compute lvl achieved based on the number of posts 
 		lvl = compute_lvl(number_of_posts,20,30,50)
 		lvl > 0
 	then:

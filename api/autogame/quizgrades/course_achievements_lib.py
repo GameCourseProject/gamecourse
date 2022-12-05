@@ -39,12 +39,12 @@ class LogLine:
 
 		if type(self.info)==tuple:
 			# decoding fix
-			# ul = "("+codecs.decode(self.info[0],"latin1")+", "+codecs.decode(self.info[1],"latin1")+")"
-			ul = "("+self.info[0]+", "+self.info[1]+")"
+			# ul = "("+codecs.decode(self.info[0],"latin1")+", "+codecs.decode(self.info[1],"latin1")+")"				
+			ul = "("+self.info[0]+", "+self.info[1]+")"				
 		elif type(self.info)==str:
 			#ul = codecs.decode(self.info,"latin1")
 			# decoding fix
-			#ul = self.info.decode("latin1")
+			#ul = self.info.decode("latin1")				
 			ul = self.info
 		else:
 			ul = self.info
@@ -65,12 +65,12 @@ class LogLine:
 	#try:
 		if type(self.info)==tuple:
 			# decoding fix
-			#ul = "("+codecs.decode(self.info[0],"latin1")+", "+codecs.decode(self.info[1],"latin1")+")"
-			ul = "("+self.info[0]+", "+self.info[1]+")"
+			#ul = "("+codecs.decode(self.info[0],"latin1")+", "+codecs.decode(self.info[1],"latin1")+")"				
+			ul = "("+self.info[0]+", "+self.info[1]+")"				
 		elif type(self.info)==str:
 			#ul = codecs.decode(self.info,"latin1")
 			# decoding fix
-			#ul = self.info.decode("latin1")
+			#ul = self.info.decode("latin1")				
 			ul = self.info
 		else:
 			ul = self.info
@@ -91,14 +91,14 @@ def find_student(name,students):
 			return s
 
 def read_student_list():
-
+	
 	students_list = codecs.open("students.txt","r")
 	students = []
-
+	
 	for student in students_list :
 		(num, name, email, campus) = student.strip().split(";")
-		students.append(Student(num,name,email,campus))
-
+		students.append(Student(num,name,email,campus))	
+	
 	return students
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # MAIN (for testing)

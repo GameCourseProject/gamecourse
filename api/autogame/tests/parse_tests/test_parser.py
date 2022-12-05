@@ -24,7 +24,7 @@ class TestParserBase(TestParseFolderBase):
 		result = parser.parse(path)
 		self.assertListRules(expected,result,
 			ignore_fpath=True,ignore_line=True)
-
+	
 	def assertParseFolder(self, folder):
 		from context import testfiles_path
 		from os.path import join
@@ -39,7 +39,7 @@ class TestParserBase(TestParseFolderBase):
 			msg = "%s doens't exist in module 'aux_functions'" % function_name
 			raise NameError(msg)
 		expected = eval('aux_functions.%s()' % function_name, locals())
-
+		
 		result = parser.parse(path)
 		self.assertListRules(expected,result,ignore_fpath=True,ignore_line=True)
 
@@ -98,7 +98,7 @@ class TestParser (TestParserBase):
 	def test_02_desc (self):
 		""" test parse file with rule that have just the description """
 		self.assertParseFile('desc','1 field')
-
+		
 	def test_03_precs (self):
 		""" test parse file with rule that have just the preconditions """
 		self.assertParseFile('precs','1 field')

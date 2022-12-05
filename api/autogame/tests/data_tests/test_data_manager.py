@@ -15,7 +15,7 @@ from context import testfiles_path
 # Main Class - TestPathData
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestDataManager(BaseTestClass):
-
+	
 	def assertLoadRaises(self,error,arg):
 		""" asserts if the method load raises an exception with the given arg """
 		dm = DataManager()
@@ -23,7 +23,7 @@ class TestDataManager(BaseTestClass):
 
 	def assertLoad(self,dm,f,d):
 		""" asserts if the dm (DataManager) can load the rules and all
-		associated information from the file f in directory d """
+		associated information from the file f in directory d """ 
 		filename = 'rule_%s.txt' % f
 		path = os.path.join(testfiles_path,d,filename)
 		function_name = 'get_rule_%s' % f
@@ -81,7 +81,7 @@ class TestLoad(TestDataManager):
 	def test_03(self):
 		""" test load rules from a file path that wasn't loaded before """
 		self.assertLoad(DataManager(False),'nameXdescXprecsXacts','all fields')
-
+		
 
 	def test_04(self):
 		""" test load a previously loaded file that, meanwhile, has been removed """

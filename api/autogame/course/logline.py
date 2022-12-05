@@ -37,3 +37,4 @@ class LogLine:
 			logline += ", "
 		logline = logline[:-2] + ")"
 		return logline
+		

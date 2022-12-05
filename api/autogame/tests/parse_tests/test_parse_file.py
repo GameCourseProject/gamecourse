@@ -37,8 +37,8 @@ class TestParseFile (TestParseFileBase):
 	def test_invalid_args (self):
 		with self.assertRaises(OSError):
 			# refactor : parse_file(1) opens file descriptor
-			#parser.parse_file(1)
-			parser.parse_file(10)
+			#parser.parse_file(1) 
+			parser.parse_file(10) 
 
 	def test_invalid_file_type(self):
 		fp = os.path.join(fpath, "empty_file", "invalid.py")
@@ -87,7 +87,7 @@ class TestParseFile (TestParseFileBase):
 	def test_02_desc (self):
 		""" test parse file with rule that have just the description """
 		self.assertParseFile('desc','1 field')
-
+		
 	def test_03_precs (self):
 		""" test parse file with rule that have just the preconditions """
 		self.assertParseFile('precs','1 field')

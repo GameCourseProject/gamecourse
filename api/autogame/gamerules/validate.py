@@ -65,7 +65,7 @@ def isassignment(stmt_txt, filepath, line):
 		if c == "(": is_expression = True
 		elif c == ")": is_expression = False
 		index += 1
-
+	
 	if not found:
 		return False
 	# Check for errors ..
@@ -79,7 +79,7 @@ def isassignment(stmt_txt, filepath, line):
 		ex.text = stmt_txt
 		ex.offset = len(stmt_txt)+1
 		raise RuleError(filepath, line, ex)
-
+	
 	prev_char = stmt_txt[index-1]
 	next_char = stmt_txt[index+1]
 	assignment_operators = "+-*/%"

@@ -10,10 +10,10 @@ extinction.
 		eren == "human"
 
 
-		rule	:	with 	tabulation
+		rule	:	with 	tabulation				
 	this 	rule		makes my
 
-	eyes hurt
+	eyes hurt 	
 
 
 
