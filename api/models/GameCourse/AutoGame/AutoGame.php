@@ -304,7 +304,7 @@ abstract class AutoGame
             self::log($courseId, "Caught an error on startSocket().\n\n" . $e->getMessage());
 
         } finally {
-            if (isset($connection)) fclose($connection);
+            if (isset($connection) && $connection) fclose($connection);
 
             $nrCoursesRunning = Core::database()->select(self::TABLE_AUTOGAME, ["isRunning" => true], "COUNT(*)", null, [["course", 0]]);
             if ($nrCoursesRunning == 0 && $socket) fclose($socket);
