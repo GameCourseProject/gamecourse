@@ -355,10 +355,10 @@ abstract class AutoGame
     {
         $sep = self::SEPARATOR;
         $header = "[" . date("Y/m/d H:i:s") . "] [$type] : ";
-        $error = "\n$sep\n$header$message\n$sep\n\n";
+        $log = "\n$sep\n$header$message\n$sep\n\n";
 
         $logsFile = self::getLogsFile($courseId);
-        file_put_contents($logsFile, $error, FILE_APPEND);
+        file_put_contents($logsFile, $log, FILE_APPEND);
     }
 
     /**
