@@ -11,7 +11,7 @@
  *     e.g.: sudo -u www-data php /var/www/html/gamecourse/api/models/GameCourse/AutoGame/AutoGameScriptManual.php 1
  *
  *  -> Running for specific targets:
- *     e.g.: sudo -u www-data php /var/www/html/gamecourse/api/models/GameCourse/AutoGame/AutoGameScriptManual.php 1 [138, 140]
+ *     e.g.: sudo -u www-data php /var/www/html/gamecourse/api/models/GameCourse/AutoGame/AutoGameScriptManual.php 1 [138,140]
  *
  *  -> Running in test mode:
  *     e.g.: sudo -u www-data php /var/www/html/gamecourse/api/models/GameCourse/AutoGame/AutoGameScriptManual.php 1 test
@@ -28,19 +28,24 @@ $nrArgs = sizeof($argv) - 2;
 if ($nrArgs >= 0) {
     $courseId = intval($argv[1]);
 
-    if ($nrArgs == 0) { // Run for all
-        AutoGame::run($courseId, true);
+    try {
+        if ($nrArgs == 0) { // Run for all
+            AutoGame::run($courseId, true);
 
-    } else if ($nrArgs == 1) {
-        if ($argv[2] == "test") { // Run in test mode
-            AutoGame::run($courseId, true, null, true);
+        } else if ($nrArgs == 1) {
+            if ($argv[2] == "test") { // Run in test mode
+                AutoGame::run($courseId, true, null, true);
 
-        } else { // Run for specific targets
-            $targets = array_map(function ($target) {
-                return intval(trim($target));
-            }, explode(",", substr($argv[2], 1, -1)));
-            AutoGame::run($courseId, false, $targets);
+            } else { // Run for specific targets
+                $targets = array_map(function ($target) {
+                    return intval(trim($target));
+                }, explode(",", substr($argv[2], 1, -1)));
+                AutoGame::run($courseId, false, $targets);
+            }
         }
+
+    } catch (Exception $e) {
+        AutoGame::log($courseId, $e->getMessage());
     }
 
 } else {

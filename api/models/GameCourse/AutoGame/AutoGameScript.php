@@ -29,9 +29,8 @@ try {
         $newData = $dataSource->importData();
         if ($newData) $runAutoGame = true;
     }
+    if ($runAutoGame) AutoGame::run($courseId);
 
 } catch (Exception $e) {
     AutoGame::log($courseId, $e->getMessage());
 }
-
-if ($runAutoGame) AutoGame::run($courseId);
