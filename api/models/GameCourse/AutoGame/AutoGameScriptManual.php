@@ -36,7 +36,9 @@ if ($nrArgs >= 0) {
             AutoGame::run($courseId, true, null, true);
 
         } else { // Run for specific targets
-            $targets = array_map("trim", explode(",", substr($argv[2], 1, -1)));
+            $targets = array_map(function ($target) {
+                return intval(trim($target));
+            }, explode(",", substr($argv[2], 1, -1)));
             AutoGame::run($courseId, false, $targets);
         }
     }
