@@ -41,7 +41,7 @@ abstract class AutoGame
 
         // Setup logging
         if (!file_exists(LOGS_FOLDER)) mkdir(LOGS_FOLDER, 0777, true);
-        $logsFile = LOGS_FOLDER . "/autogame_" . $courseId . ".txt";
+        $logsFile = self::getLogsFile($courseId);
         file_put_contents($logsFile, "");
     }
 
@@ -74,7 +74,8 @@ abstract class AutoGame
         RuleSystem::deleteRuleSystemInfo($courseId);
 
         // Remove logging info
-        Utils::deleteFile(LOGS_FOLDER, "autogame_" . $courseId . ".txt");
+        $logsFile = self::getLogsFile($courseId, false);
+        Utils::deleteFile(LOGS_FOLDER, $logsFile);
     }
 
     /**
@@ -338,7 +339,7 @@ abstract class AutoGame
      */
     public static function getLogs(int $courseId): string
     {
-        $logsFile = LOGS_FOLDER . "/autogame_" . $courseId . ".txt";
+        $logsFile = self::getLogsFile($courseId);
         return file_get_contents($logsFile);
     }
 
@@ -356,8 +357,22 @@ abstract class AutoGame
         $header = "[" . date("Y/m/d H:i:s") . "] [$type] : ";
         $error = "\n$sep\n$header$message\n$sep\n\n";
 
-        $logsFile = LOGS_FOLDER . "/autogame_" . $courseId . ".txt";
+        $logsFile = self::getLogsFile($courseId);
         file_put_contents($logsFile, $error, FILE_APPEND);
+    }
+
+    /**
+     * Gets AutoGame logs file for a given course.
+     *
+     * @param int $courseId
+     * @param bool $fullPath
+     * @return string
+     */
+    private static function getLogsFile(int $courseId, bool $fullPath = true): string
+    {
+        $filename = "autogame_$courseId.txt";
+        if ($fullPath) return LOGS_FOLDER . "/" . $filename;
+        else return $filename;
     }
 
 
