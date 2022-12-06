@@ -58,11 +58,11 @@ if __name__ == "__main__":
 	if len(sys.argv) >= 4:
 		if course_exists(sys.argv[1]):
 			course = sys.argv[1]
-			config.course = course
+			config.COURSE = course
 			config.test_mode = True
 			rulespath = sys.argv[2]
-			config.rules_folder = os.path.join(rulespath, RULES_TESTS_FOLDER)
-			output_file = os.path.join(config.rules_folder, "rule-test-output.txt")
+			config.RULES_PATH = os.path.join(rulespath, RULES_TESTS_FOLDER)
+			output_file = os.path.join(config.RULES_PATH, "rule-test-output.txt")
 
 		else:
 			sys.exit("ERROR: Course passed is not active or does not exist.")

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import socket
 import signal, os, sys, logging
 import json
@@ -19,8 +18,7 @@ from course.coursedata import read_achievements, read_tree
 achievements = read_achievements()
 tree_awards = read_tree()
 
-from gamerules.connector.db_connection import Database
-db = Database()
+from gamerules.connector.db_connector import gc_db as db
 
 #   TODO:
 #   - check if dictionary only contains terms that are active for a given course id
@@ -54,7 +52,7 @@ def get_dictionary():
 
     # keyword must be queried first so it serves as key for a dictionary
     query = "SELECT keyword, moduleId FROM dictionary WHERE course = %s;"
-    course = (config.course,)
+    course = (config.COURSE,)
 
     cursor.execute(query, course)
     table = cursor.fetchall()
@@ -119,7 +117,7 @@ def check_dictionary(library, function):
     connect = db.connection
 
     query = "SELECT keyword, moduleId FROM dictionary WHERE course = %s and library=%s and keyword = %s;"
-    args = (config.course, library, function)
+    args = (config.COURSE, library, function)
 
     cursor.execute(query, args)
     table = cursor.fetchall()
@@ -132,7 +130,7 @@ def check_dictionary(library, function):
 
 
 
-def get_targets(course, timestamp=None, all_targets=False):
+def get_targets(course, timestamp=None, all_targets=False, targets_list=None):
     """
     Returns targets for running rules (students)
     """
@@ -140,34 +138,50 @@ def get_targets(course, timestamp=None, all_targets=False):
     cursor = db.cursor
     connect = db.connection
 
-    # query that joins roles with participations
-    # select participation.user, role.name from participation left join user_role on participation.user = user_role.user left join role on user_role.role = role.id where participation.course = 1 and role.name="Student";
+    if targets_list is not None:
+        if len(targets_list) == 0:
+            return {}
 
-    if all_targets:
-        query = "SELECT user_role.user FROM user_role left join role on user_role.role=role.id WHERE user_role.course =%s AND role.name='Student';"
-        cursor.execute(query, (course))
+        # Running for certain targets
+        query = "SELECT id, name, studentNumber FROM user WHERE id IN (" + ", ".join(targets_list) + ")"
+        cursor.execute(query)
         table = cursor.fetchall()
-        #cnx.close()
 
     else:
-        if timestamp == None:
-            query = "SELECT participation.user FROM participation LEFT JOIN user_role ON participation.user = user_role.user LEFT JOIN role ON user_role.role = role.id WHERE participation.course =%s AND role.name='Student';"
-            cursor.execute(query, (course,))
-
+        if all_targets:
+            # Running for all targets
+            query = "SELECT user.id, user.name, user.studentNumber " \
+                    "FROM user_role LEFT JOIN role on user_role.role=role.id " \
+                    "LEFT JOIN course_user on user_role.user=course_user.id " \
+                    "LEFT JOIN user on user_role.user=user.id " \
+                    "WHERE user_role.course =%s AND course_user.isActive=1 AND role.name='Student';"
+            cursor.execute(query, course)
             table = cursor.fetchall()
-            #cnx.close()
 
-        elif timestamp != None:
-            query = "SELECT participation.user FROM participation LEFT JOIN user_role ON participation.user = user_role.user LEFT JOIN role ON user_role.role = role.id WHERE participation.course =%s AND role.name='Student' AND date > %s;"
-            cursor.execute(query, (course, timestamp))
+        else:
+            query = "SELECT user.id, user.name, user.studentNumber " \
+                    "FROM participation LEFT JOIN user_role ON participation.user = user_role.user " \
+                    "LEFT JOIN role ON user_role.role = role.id " \
+                    "LEFT JOIN course_user on user_role.user=course_user.id " \
+                    "LEFT JOIN user on user_role.user=user.id " \
+                    "WHERE participation.course =%s AND course_user.isActive=1 AND role.name='Student'"
 
-            table = cursor.fetchall()
-            #cnx.close()
+            if timestamp is None:
+                # Running only for targets w/ data in course
+                query += ";"
+                cursor.execute(query, (course,))
+                table = cursor.fetchall()
+
+            else:
+                # Running only for targets w/ new data in course
+                query += " AND date > %s;"
+                cursor.execute(query, (course, timestamp))
+                table = cursor.fetchall()
 
     targets = {}
-    for line in table:
-        (user,) = line
-        targets[user] = 1
+    for row in table:
+        (user_id, user_name, user_number) = row
+        targets[user_id] = {"name": user_name.decode("utf8", errors="replace"), "studentNumber": user_number}
 
     return targets
 
@@ -179,7 +193,7 @@ def get_logs(target, type):
     #queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
     typeof = "streak"
 
     if type == "peergraded post":
@@ -200,7 +214,7 @@ def get_graded_skill_logs(target, ratings, skill = None):
     #queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
     typeof = "streak"
 
     type = "graded post"
@@ -235,7 +249,7 @@ def get_graded_logs(target, minRating, include_skills = False):
     #queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
     typeof = "streak"
 
     type = "graded post"
@@ -487,41 +501,33 @@ def calculate_xp(course, target):
 
 def autogame_init(course):
     # -----------------------------------------------------------
-    # Pulls gamerules related info for a given course
+    # Checks AutoGame status for a given course and initializes it
     # -----------------------------------------------------------
 
     cursor = db.cursor
     connect = db.connection
 
-    query = "SELECT * FROM autogame where course = %s;"
+    query = "SELECT startedRunning, isRunning FROM autogame where course = %s;"
 
     cursor.execute(query, (course,))
     table = cursor.fetchall()
 
-    last_activity = None
+    last_activity = table[0][0]
+    is_running = table[0][1]
 
-    if len(table) == 0:
-        # if course does not exist, add to table
-        query = "INSERT INTO autogame (course,startedRunning,finishedRunning,isRunning) VALUES(%s, %s, %s, %s);"
+    # Check AutoGame status
+    if is_running:
+        db.close_db()
+        error_msg = "AutoGame is already running for this course."
+        logging.error(error_msg)
+        sys.exit("ERROR: " + error_msg)
 
-        timestamp = datetime.now()
-        time = timestamp.strftime("%Y/%m/%d %H:%M:%S")
-        # create line as running
-        cursor.execute(query, (course, time, time, True))
-    else:
-        if table[0][3] == True:
-            #cnx.close()
-            is_running = True
-            return last_activity, is_running
-
-        last_activity = table[0][1]
-        query = "UPDATE autogame SET isRunning=%s WHERE course=%s;"
-
-        cursor.execute(query, (True, course))
-
+    # Initialize AutoGame
+    query = "UPDATE autogame SET isRunning=%s WHERE course=%s;"
+    cursor.execute(query, (True, course))
     connect.commit()
-    #cnx.close()
-    return last_activity, False
+
+    return last_activity
 
 
 def autogame_terminate(course, start_date, finish_date):
@@ -576,7 +582,7 @@ def clear_badge_progression(target):
     cursor = db.cursor
     connect = db.connection
 
-    course = config.course
+    course = config.COURSE
 
     query = "DELETE from badge_progression where course=%s and user=%s;"
     cursor.execute(query, (course, target))
@@ -599,7 +605,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
     #results = db.results
 
     dict = db.course_dict
-    course = config.course
+    course = config.COURSE
     typeof = "badge"
 
     achievement = {}
@@ -747,7 +753,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
     #queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
     typeof = "skill"
 
     if not config.test_mode:
@@ -855,7 +861,7 @@ def award_prize(target, reward_name, xp, contributions=None):
     #queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
     typeof = "bonus"
     reward = int(xp)
 
@@ -896,7 +902,7 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
     #queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
     typeof = "tokens"
 
     if tokens != None:
@@ -1007,7 +1013,7 @@ def award_tokens_type(target, type, element_name, to_award):
     #queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
     typeof = "tokens"
 
     if type == "streak":
@@ -1078,7 +1084,7 @@ def get_valid_attempts(target, skill):
     ##queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
 
     query = "SELECT attemptRating FROM virtual_currency_config where course = \"" + course + "\";"
     result = db.course_data_broker(course, query)
@@ -1110,7 +1116,7 @@ def get_new_total(target, validAttempts, rating):
     #queries = #
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
 
     query = "SELECT tokens FROM user_wallet where user = %s AND course = %s;"
     cursor.execute(query, (target, course))
@@ -1183,7 +1189,7 @@ def update_wallet(target, newTotal, removed, contributions=None):
     ##queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
 
     query = "SELECT award FROM award_participation LEFT JOIN award ON award_participation.award = award.id where user = \""+ str(target) +"\" AND course = \""+ course +"\" AND participation = \""+ str(contributions[0].log_id) +"\";"
     cursor.execute(query)
@@ -1228,7 +1234,7 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     #queries = #
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
     typeof = "tokens"
 
     if config.test_mode:
@@ -1364,7 +1370,7 @@ def get_team(target):
     cursor = db.cursor
     connect = db.connection
 
-    course = config.course
+    course = config.COURSE
 
     query = "SELECT teamId FROM teams_members where memberId = \"" + str(target) + "\";"
     cursor.execute(query)
@@ -1393,7 +1399,7 @@ def award_team_grade(target, item, contributions=None, extra=None):
     cursor = db.cursor
     connect = db.connection
 
-    course = config.course
+    course = config.COURSE
 
     if config.test_mode:
         awards_table = "award_teams_test"
@@ -1443,7 +1449,7 @@ def award_grade(target, item, contributions=None, extra=None):
     cursor = db.cursor
     connect = db.connection
 
-    course = config.course
+    course = config.COURSE
 
     if config.test_mode:
         awards_table = "award_test"
@@ -1556,7 +1562,7 @@ def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ign
     cursor = db.cursor
     connect = db.connection
 
-    course = config.course
+    course = config.COURSE
 
     if config.test_mode:
         awards_table = "award_test"
@@ -1643,7 +1649,7 @@ def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, for
     cursor = db.cursor
     connect = db.connection
 
-    course = config.course
+    course = config.COURSE
     typeof = "post"
     if config.test_mode:
         awards_table = "award_test"
@@ -1699,7 +1705,7 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
     cursor = db.cursor
     connect = db.connection
 
-    course = config.course
+    course = config.COURSE
     typeof = "assignment"
     if config.test_mode:
         awards_table = "award_test"
@@ -1749,7 +1755,7 @@ def clear_streak_progression(target):
       cursor = db.cursor
       connect = db.connection
 
-      course = config.course
+      course = config.COURSE
 
       query = "DELETE from streak_progression where course=%s and user=%s;"
       cursor.execute(query, (course, target))
@@ -1766,7 +1772,7 @@ def clear_streak_participations(target):
       cursor = db.cursor
       connect = db.connection
 
-      course = config.course
+      course = config.COURSE
 
       query = "DELETE from streak_participations where course=%s and user=%s;"
       cursor.execute(query, (course, target))
@@ -1785,7 +1791,7 @@ def get_consecutive_peergrading_logs(target, streak, contributions):
     #queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
     typeof = "streak"
 
     size = len(contributions)
@@ -1834,7 +1840,7 @@ def get_consecutive_rating_logs(target, streak, type, rating, only_skill_posts):
     #queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
     typeof = "streak"
 
     participationType = type + "%"
@@ -1896,7 +1902,7 @@ def get_consecutive_logs(target, streak, type):
     #queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
     typeof = "streak"
 
     participationType = type + "%"
@@ -2084,7 +2090,7 @@ def get_periodic_logs(target, streak_name, contributions, participationType = No
     #queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
     typeof = "streak"
 
     if len(contributions) <= 0:
@@ -2476,7 +2482,7 @@ def awards_to_give(target, streak_name):
     #queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
 
     #       isPeriodic and not isCount || isPeriodic and isAtMost
 
@@ -2536,7 +2542,7 @@ def award_streak(target, streak, to_award, participations, type=None):
     ##queries = db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
     typeof = "streak"
 
     nlogs = len(participations)
@@ -2674,7 +2680,7 @@ def get_campus(target):
     #queries =  #
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
     query = "select major from course_user left join user on course_user.id=user.id where course = \"" + course + "\" and course_user.id = \"" + str(target) + "\";"
     result = db.student_data_broker(target, query)
     if not result:
@@ -2713,7 +2719,7 @@ def get_username(target):
     cursor = db.cursor
     #connect = db.connection
 
-    course = config.course
+    course = config.COURSE
     query = "select username from auth right join course_user on auth.user=course_user.id where course = %s and auth.user = %s;"
 
     cursor.execute(query, (course, target))
@@ -2743,7 +2749,7 @@ def consecutive_peergrading(target):
     host='db.rnl.tecnico.ulisboa.pt', database='pcm_moodle')
     cursor = cnx.cursor(prepared=True)
 
-    course = config.course
+    course = config.COURSE
     query = "select id, timeassigned, expired, ended from mdl_peerforum_time_assigned where component = %s and userid = (select id from mdl_user where username = %s);"
     comp  = 'mod_peerforum'
     if target is None:
@@ -2766,7 +2772,7 @@ def rule_unlocked(name, target):
     #queries =  db.queries
     #results = db.results
 
-    course = config.course
+    course = config.COURSE
 
     #query = "SELECT description FROM award WHERE user = %s AND course = %s AND description = %s AND type = 'skill'; "
     query = "SELECT description FROM award WHERE user = \"" + str(target) + "\" AND course = \"" + str(course) + "\" AND description = \"" + name + "\" AND type = 'skill'; "
