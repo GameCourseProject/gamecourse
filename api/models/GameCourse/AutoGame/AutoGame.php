@@ -157,7 +157,7 @@ abstract class AutoGame
     private static function isStuck(int $courdeId): bool
     {
         $logs = self::getLogs($courdeId);
-        return !substr(trim($logs), -strlen(self::SEPARATOR)) == self::SEPARATOR;
+        return !(substr(trim($logs), -strlen(self::SEPARATOR)) == self::SEPARATOR);
     }
 
     /**
