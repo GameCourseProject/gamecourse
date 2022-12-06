@@ -60,7 +60,7 @@ class TestStudentLoad (MatchTest):
 	def test_01 (self):
 		""" Student Load - 10 students """
 		course_nr = "3"
-		config.course = course_nr
+		config.COURSE = course_nr
 
 		start = time.time()
 
@@ -87,7 +87,7 @@ class TestStudentLoad (MatchTest):
 	def test_02 (self):
 		""" Student Load - 50 students """
 		course_nr = "3"
-		config.course = course_nr
+		config.COURSE = course_nr
 
 		start = time.time()
 
@@ -113,7 +113,7 @@ class TestStudentLoad (MatchTest):
 	def test_03 (self):
 		""" Student Load - 100 students """
 		course_nr = "3"
-		config.course = course_nr
+		config.COURSE = course_nr
 
 		start = time.time()
 
@@ -139,7 +139,7 @@ class TestStudentLoad (MatchTest):
 	def test_04 (self):
 		""" Student Load - 200 students """
 		course_nr = "3"
-		config.course = course_nr
+		config.COURSE = course_nr
 
 		start = time.time()
 
@@ -163,7 +163,7 @@ class TestStudentLoad (MatchTest):
 	def test_05 (self):
 		""" Student Load - 400 students """
 		course_nr = "3"
-		config.course = course_nr
+		config.COURSE = course_nr
 
 		start = time.time()
 
@@ -197,7 +197,7 @@ class TestRuleLoad (MatchTest):
 
 	def setUp(self):
 		self.course_nr = "3"
-		config.course = self.course_nr
+		config.COURSE = self.course_nr
 
 	def tearDown(self):
 		delete_awards("3")

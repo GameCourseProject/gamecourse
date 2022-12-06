@@ -199,6 +199,8 @@ abstract class AutoGame
 
     /**
      * Calls AutoGame python script for a given course.
+     * Format:
+     * $ python3 run_autogame.py <course-ID> <targets> <rules-folder> <logs-file> <db-name> <db-user> <db-password>
      *
      * @param int $courseId
      * @param bool $all
@@ -209,18 +211,25 @@ abstract class AutoGame
     private static function callAutoGame(int $courseId, bool $all = false, ?array $targets = null, bool $testMode = false)
     {
         $AutoGamePath = ROOT_PATH . "autogame/" . ($testMode ? "run_autogame_test.py" : "run_autogame.py");
-        $courseDataFolder = (new Course($courseId))->getDataFolder();
+        $rulesFolder = RuleSystem::getDataFolder($courseId);
+        $logsFile = self::getLogsFile($courseId);
 
-        $cmd = "python3 $AutoGamePath $courseId \"$courseDataFolder\" ";
+        $cmd = "python3 $AutoGamePath $courseId ";
         if ($all) {
             // Running for all targets
             $cmd .= "all ";
 
         } else if (!is_null($targets)) {
             // Running for certain targets
-            $cmd .= implode(", ", $targets) . " ";
+            $cmd .= "[" . implode(",", $targets) . "] ";
+
+        } else {
+            // Running only for targets w/ new data
+            $cmd .= "new ";
         }
-        $cmd .= ">> " . ROOT_PATH . "autogame/test_log.txt &";
+
+        $cmd .= "\"$rulesFolder\" \"$logsFile\" " . DB_NAME . " " . DB_USER . " \"" . DB_PASSWORD . "\"";
+        $cmd .= " >> " . ROOT_PATH . "autogame/test_log.txt &";
         system($cmd);
     }
 

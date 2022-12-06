@@ -491,7 +491,7 @@ def gc(library, name, *args):
     #dictionary = get_dictionary()
 
     if True:
-        data = call_gamecourse(config.course, library, name, list(args))
+        data = call_gamecourse(config.COURSE, library, name, list(args))
 
     return data
 

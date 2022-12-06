@@ -1,17 +1,8 @@
-import socket
-import signal, os, sys, logging
-import json
-import mysql.connector
+from gamerules.connector.db_connection import Database
 
-def get_db_credentials():
-    # -----------------------------------------------------------
-    # Read db credentials from file
-    # -----------------------------------------------------------
-    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),'credentials.txt'), 'r') as f:
-        data = f.readlines()
-        if len(data) == 3:
-            db = data[0].strip('\n')
-            un = data[1].strip('\n')
-            pw = data[2].strip('\n')
-            return (db, un, pw)
+gc_db = None
 
+
+def connect_to_gamecourse_db(database, username, password):
+    global gc_db
+    gc_db = Database(database, username, password)

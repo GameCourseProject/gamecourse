@@ -35,10 +35,10 @@ class DataManager(object):
 
 	def boot(self):
 		""" reads from setup data file (setup.dat) to initialize paths data """
-		if config.rules_folder == None:
+		if config.RULES_PATH == None:
 			data_location = os.path.join(os.getcwd(), "data")
 		else: 
-			data_location = os.path.join(os.getcwd(), config.rules_folder, "data")	
+			data_location = os.path.join(os.getcwd(), config.RULES_PATH, "data")
 
 		if not os.path.exists(data_location):
 			os.mkdir(data_location)
@@ -130,10 +130,10 @@ class DataManager(object):
 
 	def save_paths(self):
 		""" saves the paths structure """
-		if config.rules_folder == None:
+		if config.RULES_PATH == None:
 			data_location = os.path.join(os.getcwd(), "data")
 		else: 
-			data_location = os.path.join(os.getcwd(), config.rules_folder, "data")	
+			data_location = os.path.join(os.getcwd(), config.RULES_PATH, "data")
 
 		if not os.path.exists(data_location):
 				os.mkdir(data_location)
