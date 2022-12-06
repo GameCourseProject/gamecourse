@@ -58,7 +58,10 @@ import {
 } from 'src/app/_views/restricted/courses/course/settings/modules/config/personalized-config/qr/qr.component';
 import {Rule} from "../../_domain/rules/rule";
 import {CourseRule} from "../../_domain/rules/course-rule";
-import {CourseRuleManageData} from "../../_views/restricted/courses/course/settings/rules/rules.component";
+import {
+  CourseRuleManageData, SectionManageData
+} from "../../_views/restricted/courses/course/settings/rules/rules.component";
+import {RuleSection} from "../../_domain/rules/RuleSection";
 
 @Injectable({
   providedIn: 'root'
@@ -79,6 +82,7 @@ export class ApiHttpService {
   static readonly USER: string = 'User';
   static readonly VIEWS: string = 'Views';
   static readonly RULE: string = 'Rule';
+  static readonly RULESYSTEM: string = 'RuleSystem';
   // NOTE: insert here new controllers & update cache dependencies
 
   static readonly GOOGLESHEETS: string = 'GoogleSheets';
@@ -1027,7 +1031,7 @@ export class ApiHttpService {
 
   public getCourseRules(courseID: number, active?: boolean): Observable<CourseRule[]> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
+      qs.push('module', ApiHttpService.RULESYSTEM);
       qs.push('request', 'getCourseRules');
       qs.push('courseId', courseID);
       if (active !== undefined) qs.push('active', active);
@@ -1086,7 +1090,8 @@ export class ApiHttpService {
   public createCourseRule(courseID: number, ruleData: CourseRuleManageData): Observable<CourseRule> {
     const data = {
       courseId: courseID,
-      name: ruleData.name
+      name: ruleData.name,
+      section: ruleData.section
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -1097,6 +1102,23 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => CourseRule.fromDatabase(res['data'])) );
+  }
+
+  public createSection(courseID: number, sectionData: SectionManageData): Observable<RuleSection> {
+    const data = {
+      courseId : courseID,
+      name: sectionData.name,
+      rules: sectionData.rules
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('request', 'createSection');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => RuleSection.fromDatabase(res['data'])));
   }
 
   // Configuration

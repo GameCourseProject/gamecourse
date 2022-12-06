@@ -16,6 +16,7 @@ import {AlertService, AlertType} from "../../../../../../_services/alert.service
 import {NgForm} from "@angular/forms";
 import {DownloadManager} from "../../../../../../_utils/download/download-manager";
 import {clearEmptyValues} from "../../../../../../_utils/misc/misc";
+import {RuleSection} from "../../../../../../_domain/rules/RuleSection";
 
 @Component({
   selector: 'app-rules',
@@ -34,7 +35,10 @@ export class RulesComponent implements OnInit {
   course: Course;
   courseRules: CourseRule[];
 
-  mode: 'add' | 'edit' | 'select';
+  sections: RuleSection[];
+  sectionToManage: SectionManageData = this.initSectionToManage();
+
+  mode: 'add section' | 'edit section' |'add' | 'edit' | 'select';
   ruleToManage: CourseRuleManageData = this.initRuleToManage();
   @ViewChild('f', {static: false}) f: NgForm;
 
@@ -108,12 +112,11 @@ export class RulesComponent implements OnInit {
   ];
   data: {type: TableDataType, content: any}[][];
   tableOptions = {
-    order: [[ 0, 'asc' ], [ 2, 'asc' ]], // default order
-    columnDefs: [
-      { type: 'natural', targets: [0, 1, 2, 3, 4, 5] },
-      { orderData: 4,   targets: 5 },
-      { searchable: false, targets: [4, 6, 7]},
-      { orderable: false, targets: [1, 6, 7] }
+    order: [ 0, 'asc' ],        // default order -> column 0 ascendant
+    columnDefs: [ // not sure
+      { type: 'natural', targets: [0, 1, 2, 3, 4] }, // natural means number or string
+      //{ searchable: false, targets: [4, 6, 7]},
+      { orderable: false, targets: 1 }
     ]
   }
 
@@ -125,7 +128,7 @@ export class RulesComponent implements OnInit {
       table.push([
         {type: TableDataType.NUMBER, content: {value: rule.id, valueFormat: 'none'}},
         {type: TableDataType.TEXT, content: {text: rule.name}},
-        // FALTA TAGS
+        {type: TableDataType.TEXT, content: ""},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: rule.isActiveInCourse}},
         {type: TableDataType.ACTIONS, content: {actions: [
           Action.EDIT, Action.REMOVE]} // FALTA DUPLICATE E MUDAR PRIORIDADE. ADICIONAR VIEW?
@@ -156,11 +159,15 @@ export class RulesComponent implements OnInit {
     } else if (action === Action.EXPORT){
       this.exportRules(this.courseRules);
 
-    } else if (action === 'Create new rule'){
+    } else if (action === 'Create new section'){
+      this.mode = 'add section';
+      this.sectionToManage = this.initSectionToManage();
+      ModalService.openModal('manage');
+
+    } else if (action === 'Create new rule') {
       this.mode = 'add';
       this.ruleToManage = this.initRuleToManage();
       ModalService.openModal('manage');
-
     }
   }
 
@@ -229,8 +236,33 @@ export class RulesComponent implements OnInit {
   /*** ------------------ Sections ----------------- ***/
   /*** --------------------------------------------- ***/
 
-  // TODO
+  initSectionToManage(section?: RuleSection): SectionManageData {
+    const sectionData: SectionManageData = {
+      name: section?.name ?? null
+    };
+    if (section) sectionData.id = section.id;
+    return sectionData;
+  }
 
+  async createSection(): Promise<void> {
+    if (this.f.valid) {
+      this.loading.action = true;
+
+      const newSection = await this.api.createSection(this.course.id, clearEmptyValues(this.sectionToManage)).toPromise();
+      this.sections.push(newSection);
+      this.buildTable();
+
+      this.loading.action = false;
+      ModalService.closeModal('manage');
+      this.resetSectionManage();
+      AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + newSection.name + '\' added to course');
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+  }
+
+  async editSection(): Promise<void>{
+    // TODO
+  }
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Tags ------------------- ***/
@@ -242,9 +274,14 @@ export class RulesComponent implements OnInit {
   /*** ------------------- Helpers ----------------- ***/
   /*** --------------------------------------------- ***/
 
+  filterRules(section: RuleSection): Rule[]{
+    return this.filteredRules.filter(rule => rule.section === section);
+  }
+
   initRuleToManage(rule?: CourseRule): CourseRuleManageData {
     const ruleData: CourseRuleManageData = {
-      name: rule?.name ?? null
+      name: rule?.name ?? null,
+      section: rule?.section ?? null
     };
     if (rule) ruleData.id = rule.id;
     return ruleData;
@@ -260,9 +297,23 @@ export class RulesComponent implements OnInit {
     this.ruleToManage = this.initRuleToManage();
     this.f.resetForm();
   }
+
+  resetSectionManage(){
+    this.mode = null;
+    this.sectionToManage = this.initSectionToManage();
+    this.f.resetForm();
+  }
+
 }
 
 export interface CourseRuleManageData {
   id?: number,
   name?: string,
+  section?: RuleSection
+}
+
+export interface SectionManageData {
+  id?: number,
+  name?: string,
+  rules?: Rule[]
 }

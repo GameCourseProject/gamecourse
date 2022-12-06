@@ -288,7 +288,8 @@ class CourseUser extends User
      * @return CourseUser
      * @throws Exception
      */
-    public static function addCourseUser(int $userId, int $courseId, string $roleName = null, int $roleId = null, bool $isActive = true): CourseUser
+    public static function addCourseUser(int $userId, int $courseId, string $roleName = null,
+                                         int $roleId = null, bool $isActive = true): CourseUser
     {
         // Create new course user
         self::validateState($userId, $isActive);

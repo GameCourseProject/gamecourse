@@ -147,7 +147,8 @@ import {
   TablerIdBadge2,
   TablerPlug,
   TablerPrompt,
-  TablerSchool
+  TablerSchool,
+  TablerNewSection
 } from "@ng-icons/tabler-icons";
 
 
@@ -330,6 +331,7 @@ import {
       FeatherX,
       FeatherXCircle,
 
+
       JamDownload,
       JamEyeF,
       JamGoogle,
@@ -355,7 +357,8 @@ import {
       TablerIdBadge2,
       TablerPlug,
       TablerPrompt,
-      TablerSchool
+      TablerSchool,
+      TablerNewSection,
     }),
     DataTablesModule,
     NgApexchartsModule

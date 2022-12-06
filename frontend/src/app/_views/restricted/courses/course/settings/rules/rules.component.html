@@ -11,41 +11,59 @@
     (onSearch)="filteredRules = $event">
   </app-input-search>
 
-  <!-- Top Actions -->
+  <!-- Top Actions
+    //, dropdown: [
+    //  {action: 'Create new section', icon:'tabler-new-section'},
+    //  {action: 'Create new rule', icon: 'tabler-clipboard-list'}]
+    // }]"
+  -->
   <app-top-actions
     [leftActions]="[
       {action: Action.IMPORT, icon:'jam-download'},
       {action: Action.EXPORT, icon:'jam-upload'}
     ]"
-    [rightActions]="[{action: 'Add section', icon: 'feather-plus-circle', color: 'primary'}]"
+    [rightActions]="[{action: 'Create new section', icon: 'feather-plus-circle', color: 'primary'}]"
     (btnClicked)="doAction($event)">
   </app-top-actions>
 
-  <!-- Section Table -->
-  <app-table
-    [id] = "'rules'"
-    [classList]="'mt-5'"
-    [headers] = "headers"
-    [data] = "data"
-    [options] = "tableOptions"
-    [loading] = "loading.table"
-    (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
-    (valueChanged)="doActionOnTable('value changed', $event.row, $event.col, $event.value)">
-  </app-table>
+  <!-- Rules -->
+  <div *ngFor="let section of sections">
+    <app-header [subHeader]="true" [title]="section.name" [classList]="'mt-10'"></app-header>
 
-  <!-- Loader -->
-  <app-loader [loading]="loading.page"></app-loader>
+    <!--<div class="flex flex-wrap -mx-4">
+      <ng-container *ngIf="!loading.page">
+        <div *ngFor="let rule of filterRules(section)" class="sm:w-1/2 xl:w-1/3 2xl:w-1/4 w-full p-4">
+          Section Table
+          <app-table
+            [id] = "'rules'"
+            [classList]="'mt-5'"
+            [headers] = "headers"
+            [data] = "data"
+            [options] = "tableOptions"
+            [loading] = "loading.table"
+            (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
+            (valueChanged)="doActionOnTable('value changed', $event.row, $event.col, $event.value)">
+          </app-table>
+        </div>
+        <span *ngIf="filterRules(section).length === 0" class="text-error px-4">No rules of section</span>
+      </ng-container>
+
+      Loader
+      <app-loader [loading]="loading.page"></app-loader>
+
+    </div>-->
+  </div>
 </div>
 
 
 <!-- New / Edit modal -->
-<app-modal *ngIf="mode && ruleToManage"
+<app-modal *ngIf="mode && sectionToManage"
   [id]="'manage'"
   [templateRef]="MANAGE"
   [size]="'lg'"
-  [header]="mode?.capitalize() + 'rule'"
+  [header]="mode?.capitalize()"
   [actionInProgress] = "loading.action"
-  (submitBtnClicked)="f.onSubmit(null); mode === 'add' ? createRule() : editRule">
+  (submitBtnClicked)="f.onSubmit(null); mode === 'add section' ? createSection() : editSection()">
 
 </app-modal>
 
@@ -56,11 +74,24 @@
     <div class="flex flex-wrap">
 
       <div class="w-full sm:w-1/3 sm:pr-12">
-
-
+        <!-- Section -->
+        <app-input-text
+          [id] = "'section-name'"
+          [form] = "f"
+          [(value)] = "sectionToManage.name"
+          [placeholder]="'Section Name'"
+          [topLabel]="'Name'"
+          [pattern]="'(?!^\\d+$)^.+$'"
+          [patternErrorMessage]="'Section name can\'t be composed of only numbers'"
+          [required]="true"
+          [maxLength]="60"
+          [maxLengthErrorMessage]="'Section name is too long: maximum of 60 characters'">
+        </app-input-text>
       </div>
 
-    </div>
-
+      </div>
   </form>
 </ng-template>
+
+
+<!-- Select Modal -->

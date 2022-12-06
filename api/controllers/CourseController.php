@@ -201,31 +201,6 @@ class CourseController
         $course->setVisible($isVisible);
     }
 
-
-    /*** --------------------------------------------- ***/
-    /*** --------------- Course Rules ---------------- ***/
-    /*** --------------------------------------------- ***/
-
-    /**
-    * @throws Exception
-    */
-    public function getCourseRules()
-    {
-        API::requireValues("courseId");
-
-        $courseId = API::getValue("courseId", "int");
-        $course = API::verifyCourseExists($courseId);
-
-        API::requireCourseAdminPermission($course);
-        $active = API::getValue("active", "bool");
-
-        $courseRules = $course -> getCourseRules($active);
-        foreach ($courseRules as &$courseRuleInfo) {
-            $course->getCourseRuleById($courseRuleInfo["id"]);
-        }
-        API::response($courseRules);
-    }
-
     /*** --------------------------------------------- ***/
     /*** --------------- Course Users ---------------- ***/
     /*** --------------------------------------------- ***/

@@ -576,6 +576,7 @@ class Course
      * @param bool|null $active
      * @return array
      */
+    // MAYBE NOT NEEDED -- SEE SECTION.PHP
     public function getCourseRules(?bool $active = null): array
     {
         $table = Rule::TABLE_RULE . " r JOIN " . Course::TABLE_COURSE . " c on r.course=c.name "; // not sure
@@ -595,9 +596,29 @@ class Course
      * @param int $ruleId
      * @return CourseRule|null
      */
+    // MAYBE NOT NEEDED -- SEE SECTION.PHP
     public function getCourseRuleById(int $ruleId): ?CourseRule
     {
         return CourseRule::getCourseRuleById($ruleId, $this);
+    }
+
+    /**
+     * Adds a given rule to a course.
+     * Returns the newly created course rule.
+     *
+     * @param int $ruleId
+     * @param string|null $description
+     * @param string $when
+     * @param string $then
+     * @param bool $isActive
+     * @param array $tags
+     * @return CourseUser
+     * @throws Exception
+     */
+    public function addRuleToCourse(int $ruleId, string $roleName = null, int $roleId = null, bool $isActive = true): CourseRule
+    {
+        // CHECK THIS -- INCOMPLETE
+        return CourseRule::addCourseRule($ruleId, $this->id, $roleName, $roleId, $isActive);
     }
 
     /*** ---------------------------------------------------- ***/
