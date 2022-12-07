@@ -4,7 +4,7 @@
 from .. import validate
 
 class Output(object):
-
+	
 	def __init__(self,effects):
 		validate.effects(effects)
 		self.__effects = effects

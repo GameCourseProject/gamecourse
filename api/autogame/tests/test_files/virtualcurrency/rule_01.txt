@@ -1,0 +1,3 @@
+Rule: VirtualCurrency R1
+then:
+	award_tokens(target, "Simoleons", 10, "contributions?")

@@ -11,7 +11,7 @@ import os
 # Base class
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestCourseData(BaseTestClass):
-
+	
 	def assertTreeAwards (self, tree):
 		self.assertIsInstance(tree,dict)
 		for ta in tree:
@@ -28,7 +28,7 @@ class TestCourseData(BaseTestClass):
 # read_tree([path]): dictionary containning all the course TreeAwards by name
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestReadTree(TestCourseData):
-
+	
 	def test_01 (self):
 		"""
 		test read_tree with default arguments, meaning the default tree
@@ -37,14 +37,14 @@ class TestReadTree(TestCourseData):
 		tree = cdata.read_tree()
 		self.assertTreeAwards(tree)
 		self.assertEqual(len(tree),20)
-
+	
 	def test_02 (self):
 		""" test read_tree with given path to the default tree file	"""
 		path = os.path.join(os.getcwd(),"course_tests","metadata","tree_orig.txt")
 		tree = cdata.read_tree(path)
 		self.assertTreeAwards(tree)
 		self.assertEqual(len(tree),25)
-
+	
 	def test_03(self):
 		""" test read_tree with given path to the default tree file	"""
 		path = os.path.join(os.getcwd(),"course_tests","metadata","tree_1.txt")

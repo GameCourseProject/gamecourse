@@ -52,7 +52,7 @@ def isnum (char):
 	and inbetween(char,'0','9'):
 		return True
 	return False
-
+	
 def isalnum(char):
 	if isalpha(char) or isnum(char):
 		return True
@@ -67,7 +67,7 @@ def inbetween (char, min, max):
 def is_followed(a,b,text,pos):
 	"""
 	check if any of the words in tuple 'a' is the next word in text starting
-	from position 'pos'and is followed by any word in tuple 'b'
+	from position 'pos'and is followed by any word in tuple 'b' 
 	"""
 	if not is_followed_guard(a,b,text,pos):
 		return False
@@ -90,7 +90,7 @@ def is_followed(a,b,text,pos):
 			break
 		else:
 			found = False
-
+	
 	if not found:
 		return False
 
@@ -101,7 +101,7 @@ def is_followed(a,b,text,pos):
 			break
 		else:
 			found = False
-
+	
 	return found
 
 def is_followed_guard(a,b,text,pos):
@@ -222,7 +222,7 @@ def skip_blank_inline (text="",pos=0):
 	while pos < len(text):
 		char = text[pos]
 		if char == "\n":
-			break
+			break 
 		if isblank(char):
 			pos += 1
 			continue

@@ -6,7 +6,7 @@ from gamerules.connector import gamecourse_connector as connector
 import sys, logging
 import config
 
-from datetime import datetime
+from datetime import datetime 
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Regular Functions
@@ -127,12 +127,66 @@ def get_username(target):
     return result
 
 @rule_function
+def get_team(target):
+    """
+    Returns the team of a given student
+    """
+    result = connector.get_team(target)
+    return result
+
+@rule_function
+def get_logs(target, type):
+    """
+    Returns the logs of a target for a specific
+    participation type
+    """
+    result  = connector.get_logs(target, type)
+    return result
+
+
+@rule_function
+def get_graded_skill_logs(target, minRating):
+    """
+    Returns the logs of a target for a specific
+    participation type
+    """
+    result  = connector.get_graded_skill_logs(target, minRating)
+    return result
+
+
+@rule_function
+def get_graded_logs(target, minRating, include_skills):
+    """
+    Returns the logs of a target for a specific
+    participation type
+    """
+    result  = connector.get_graded_logs(target, minRating, include_skills)
+    return result
+
+@rule_function
 def consecutive_peergrading(target):
     """
     Returns the username of a given student
     """
     result = connector.consecutive_peergrading(target)
     return result
+
+@rule_function
+def get_valid_attempts(target, skill):
+    """
+    Returns number of valid attempts for a given skill
+    """
+    result = connector.get_valid_attempts(target, skill)
+    return result
+
+@rule_function
+def get_new_total(target, validAttempts, rating):
+    """
+    Checks if user has enough tokens to spend.
+    Returns the user's new wallet total.
+    """
+    (result1, result2) = connector.get_new_total(target, validAttempts, rating)
+    return (result1, result2)
 
 @rule_function
 def filter_excellence(logs, tiers, classes):
@@ -210,6 +264,18 @@ def exclude_worst(logs, last):
 
     return fix
 
+@rule_function
+def compare_exam(total_quiz_grade, exam):
+	"""
+	Will calculate the adjustment for after the exam.
+	Decides between sum of quizzes or exam grade, and calculates adjustment.
+	"""
+	exam_grade = 0
+	if len(exam) == 1:
+		exam_grade = max(int(exam[0].rating) - total_quiz_grade, 0)
+
+	return exam_grade
+
 @rule_effect
 def print_info(text):
         """
@@ -265,11 +331,11 @@ def award_tokens(target, reward_name, tokens = None, contributions=None):
     return
 
 @rule_effect
-def award_tokens_type(target, type, tokens, element_name = None, contributions=None):
+def award_tokens_type(target, type, element_name, to_award):
     """
     Awards tokens to students based on an award given.
     """
-    connector.award_tokens_type(target, type, tokens, element_name, contributions)
+    connector.award_tokens_type(target, type, element_name, to_award)
     return
 
 @rule_effect
@@ -278,6 +344,15 @@ def award_grade(target, item, contributions=None, extra=None):
     returns the output of a skill and writes the award to database
     """
     connector.award_grade(target, item, contributions, extra)
+    # TODO possible upgrade: returning indicators to include these types of prizes as well
+    return
+
+@rule_effect
+def award_team_grade(target, item, contributions=None, extra=None):
+    """
+    returns the output of a grade and writes the award to database
+    """
+    connector.award_team_grade(target, item, contributions, extra)
     # TODO possible upgrade: returning indicators to include these types of prizes as well
     return
 
@@ -317,11 +392,11 @@ def award_rating_streak(target, streak, rating, contributions=None, info=None):
     return result
 
 @rule_effect
-def award_streak(target, streak, contributions=None, info=None):
+def award_streak(target, streak, to_award, participations, type=None):
     """
     returns the output of a streak and writes the award to database
     """
-    result = connector.award_streak(target, streak, contributions, info)
+    result = connector.award_streak(target, streak, to_award, participations, type)
     return result
 
 @rule_function
@@ -335,12 +410,63 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     return result
 
 @rule_function
+def update_wallet(target, newTotal, removed, contributions=None):
+    """
+    Updates 'user_wallet' table with the new total tokens for
+    a user.
+    """
+    result = connector.update_wallet(target, newTotal, removed, contributions)
+    return result
+
+
+@rule_function
 def rule_unlocked(name, target):
     """
     Checks if rule was already unlocked by user.
     """
     result = connector.rule_unlocked(name, target)
     return result
+
+@rule_function
+def awards_to_give(target, streak_name):
+    """
+    Checks if rule was already unlocked by user.
+    """
+    result = connector.awards_to_give(target, streak_name)
+    return result
+
+@rule_effect
+def get_consecutive_peergrading_logs(target, streak, contributions):
+    """
+    Checks consecutive peergrader posts.
+    """
+    connector.get_consecutive_peergrading_logs(target, streak, contributions)
+    return
+
+@rule_effect
+def get_consecutive_rating_logs(target, streak, type, rating, only_skill_posts):
+    """
+    Checks consecutive logs - mainly based on rating or description.
+    """
+    connector.get_consecutive_rating_logs(target, streak, type, rating, only_skill_posts)
+    return
+
+@rule_effect
+def get_consecutive_logs(target, streak, type):
+    """
+    Checks consecutive logs - based on description.
+    """
+    connector.get_consecutive_logs(target, streak, type)
+    return
+
+@rule_effect
+def get_periodic_logs(target, streak_name, contributions, participationType=None):
+    """
+    Checks periodic logs - checks periodicity 
+    """
+    connector.get_periodic_logs(target, streak_name, contributions, participationType)
+    return
+
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## GameCourse Wrapper Functions
@@ -365,7 +491,7 @@ def gc(library, name, *args):
     #dictionary = get_dictionary()
 
     if True:
-        data = call_gamecourse(config.course, library, name, list(args))
+        data = call_gamecourse(config.COURSE, library, name, list(args))
 
     return data
 

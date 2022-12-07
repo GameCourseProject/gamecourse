@@ -41,7 +41,7 @@ abstract class AutoGame
 
         // Setup logging
         if (!file_exists(LOGS_FOLDER)) mkdir(LOGS_FOLDER, 0777, true);
-        $logsFile = LOGS_FOLDER . "/autogame_" . $courseId . ".txt";
+        $logsFile = self::getLogsFile($courseId);
         file_put_contents($logsFile, "");
     }
 
@@ -74,7 +74,8 @@ abstract class AutoGame
         RuleSystem::deleteRuleSystemInfo($courseId);
 
         // Remove logging info
-        Utils::deleteFile(LOGS_FOLDER, "autogame_" . $courseId . ".txt");
+        $logsFile = self::getLogsFile($courseId, false);
+        Utils::deleteFile(LOGS_FOLDER, $logsFile);
     }
 
     /**
@@ -127,7 +128,7 @@ abstract class AutoGame
      */
     private static function setIsRunning(int $courseId, bool $isRunning, bool $onlyStatus = false)
     {
-        $where = ["isRunning" => $isRunning];
+        $where = ["isRunning" => +$isRunning];
         if (!$onlyStatus) $where[$isRunning ? "startedRunning" : "finishedRunning"] = date("Y-m-d H:i:s", time());
         Core::database()->update(self::TABLE_AUTOGAME, $where, ["course" => $courseId]);
     }
@@ -141,6 +142,22 @@ abstract class AutoGame
     public static function isRunning(int $courseId): bool
     {
         return boolval(Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "isRunning"));
+    }
+
+    /**
+     * Checks whether AutoGame is stuck running (in the database)
+     * due to an error being thrown.
+     *
+     * When errors are thrown during the execution of AutoGame,
+     * the log file ends without a proper separator.
+     *
+     * @param int $courdeId
+     * @return bool
+     */
+    private static function isStuck(int $courdeId): bool
+    {
+        $logs = self::getLogs($courdeId);
+        return !(substr(trim($logs), -strlen(self::SEPARATOR)) == self::SEPARATOR);
     }
 
     /**
@@ -161,8 +178,13 @@ abstract class AutoGame
         }
 
         if (self::isRunning($courseId)) {
-            self::log($courseId, "AutoGame is already running.");
-            return;
+            if (self::isStuck($courseId)) {
+                self::setIsRunning($courseId, false, true);
+
+            } else {
+                self::log($courseId, "AutoGame is already running.", "WARNING");
+                return;
+            }
         }
 
         if (self::isSocketOpen()) {
@@ -177,6 +199,8 @@ abstract class AutoGame
 
     /**
      * Calls AutoGame python script for a given course.
+     * Format:
+     * $ python3 run_autogame.py <course-ID> <targets> <rules-folder> <logs-file> <db-name> <db-user> <db-password>
      *
      * @param int $courseId
      * @param bool $all
@@ -187,18 +211,25 @@ abstract class AutoGame
     private static function callAutoGame(int $courseId, bool $all = false, ?array $targets = null, bool $testMode = false)
     {
         $AutoGamePath = ROOT_PATH . "autogame/" . ($testMode ? "run_autogame_test.py" : "run_autogame.py");
-        $courseDataFolder = (new Course($courseId))->getDataFolder();
+        $rulesFolder = RuleSystem::getDataFolder($courseId);
+        $logsFile = self::getLogsFile($courseId);
 
-        $cmd = "python3 $AutoGamePath $courseId \"$courseDataFolder\" ";
+        $cmd = "python3 $AutoGamePath $courseId ";
         if ($all) {
             // Running for all targets
             $cmd .= "all ";
 
         } else if (!is_null($targets)) {
             // Running for certain targets
-            $cmd .= implode(", ", $targets) . " ";
+            $cmd .= "[" . implode(",", $targets) . "] ";
+
+        } else {
+            // Running only for targets w/ new data
+            $cmd .= "new ";
         }
-        $cmd .= ">> " . ROOT_PATH . "autogame/test_log.txt &";
+
+        $cmd .= "\"$rulesFolder\" \"$logsFile\" " . DB_NAME . " " . DB_USER . " \"" . DB_PASSWORD . "\"";
+        $cmd .= " >> " . ROOT_PATH . "autogame/test_log.txt &";
         system($cmd);
     }
 
@@ -227,7 +258,7 @@ abstract class AutoGame
             $address = "tcp://" . self::$host . ":" . self::$port;
             $socket = stream_socket_server($address, $errorCode, $errorMsg);
             if (!$socket) {
-                self::log($courseId, "Could not create socket.");
+                self::log($courseId, "Could not create socket.\n\n$errorMsg");
                 return;
             }
 
@@ -279,10 +310,10 @@ abstract class AutoGame
             }
 
         } catch (Throwable $e) {
-            self::log($courseId, "Caught an error on startSocket().");
+            self::log($courseId, "Caught an error on startSocket().\n\n" . $e->getMessage());
 
         } finally {
-            if (isset($connection)) fclose($connection);
+            if (isset($connection) && $connection) fclose($connection);
 
             $nrCoursesRunning = Core::database()->select(self::TABLE_AUTOGAME, ["isRunning" => true], "COUNT(*)", null, [["course", 0]]);
             if ($nrCoursesRunning == 0 && $socket) fclose($socket);
@@ -307,6 +338,8 @@ abstract class AutoGame
     /*** ---------------------- Logging --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    const SEPARATOR = "================================================================================";
+
     /**
      * Gets AutoGame logs for a given course.
      *
@@ -315,7 +348,7 @@ abstract class AutoGame
      */
     public static function getLogs(int $courseId): string
     {
-        $logsFile = LOGS_FOLDER . "/autogame_" . $courseId . ".txt";
+        $logsFile = self::getLogsFile($courseId);
         return file_get_contents($logsFile);
     }
 
@@ -329,12 +362,26 @@ abstract class AutoGame
      */
     public static function log(int $courseId, string $message, string $type = "ERROR")
     {
-        $sep = "\n================================================================================\n";
-        $date = "[" . date("Y/m/d H:i:s") . "] : php : " . $type . " \n\n";
-        $error = "\n\n================================================================================\n\n";
+        $sep = self::SEPARATOR;
+        $header = "[" . date("Y/m/d H:i:s") . "] [$type] : ";
+        $log = "\n$sep\n$header$message\n$sep\n\n";
 
-        $logsFile = LOGS_FOLDER . "/autogame_" . $courseId . ".txt";
-        file_put_contents($logsFile, $sep . $date . $message . $error, FILE_APPEND);
+        $logsFile = self::getLogsFile($courseId);
+        file_put_contents($logsFile, $log, FILE_APPEND);
+    }
+
+    /**
+     * Gets AutoGame logs file for a given course.
+     *
+     * @param int $courseId
+     * @param bool $fullPath
+     * @return string
+     */
+    private static function getLogsFile(int $courseId, bool $fullPath = true): string
+    {
+        $filename = "autogame_$courseId.txt";
+        if ($fullPath) return LOGS_FOLDER . "/" . $filename;
+        else return $filename;
     }
 
 
@@ -344,22 +391,37 @@ abstract class AutoGame
 
     /**
      * Gets all participations of a given course.
-     * Option for a specific user and/or source and/or type.
+     * Option for a specific user, type, rating, evaluator and/or
+     * source, as well as an initial and/or end date.
      *
      * @param int $courseId
      * @param int|null $userId
-     * @param string|null $source
      * @param string|null $type
+     * @param int|null $rating
+     * @param int|null $evaluatorId
+     * @param string|null $startDate
+     * @param string|null $endDate
+     * @param string|null $source
      * @return array
      */
-    public static function getParticipations(int $courseId, int $userId = null, string $source = null, string $type = null): array
+    public static function getParticipations(int $courseId, int $userId = null, string $type = null, int $rating = null,
+                                             int $evaluatorId = null, string $startDate = null, string $endDate = null,
+                                             string $source = null): array
     {
         $table = self::TABLE_PARTICIPATION;
+
         $where = ["course" => $courseId];
         if (!is_null($userId)) $where["user"] = $userId;
-        if (!is_null($source)) $where["source"] = $source;
         if (!is_null($type)) $where["type"] = $type;
-        $participations = Core::database()->selectMultiple($table, $where, "*", "date DESC");
+        if (!is_null($rating)) $where["rating"] = $rating;
+        if (!is_null($evaluatorId)) $where["evaluator"] = $evaluatorId;
+        if (!is_null($source)) $where["source"] = $source;
+
+        $whereCompare = [];
+        if (!is_null($startDate)) $whereCompare[] = ["date", ">=", $startDate];
+        if (!is_null($endDate)) $whereCompare[] = ["date", "<=", $endDate];
+
+        $participations = Core::database()->selectMultiple($table, $where, "*", "date DESC", [], $whereCompare);
 
         // Parse
         foreach ($participations as &$participation) {

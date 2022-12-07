@@ -1,0 +1,8 @@
+Rule: Practitioner
+	when:
+		get_consecutive_logs(target, "Practitioner", "lab grade", "description")
+		to_award, participations = awards_to_give(target, "Practitioner")
+		to_award > 0
+
+	then:
+		award_streak(target, "Practitioner", to_award, participations, "lab grade")

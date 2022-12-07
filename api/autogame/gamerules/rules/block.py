@@ -65,7 +65,7 @@ class Block (BaseNode):
 		result = None # default return value
 		# execute all statements defined in the block
 		for s in self.stmts():
-			result = s.fire(scope)
+			result = s.fire(scope)		
 		return result
 
 	def to_pickle(self):
@@ -76,7 +76,7 @@ class Block (BaseNode):
 		# Block.stmts(self)
 		self.statements = self.stmts
 		self.get_statements = self.stmts
-		self.get_stmts = self.stmts
+		self.get_stmts = self.stmts		
 		# Block.fpath(self)
 		self.fpath = self.path
 		self.location = self.fpath

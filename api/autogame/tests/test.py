@@ -53,7 +53,7 @@ parse_named_block = parse_nblock
 from parse_tests import test_parse_block as parse_block
 from parse_tests import test_parse_stmt as parse_stmt
 from parse_tests import test_parse_name as parse_name
-from parse_tests import test_parse_description as parse_description
+from parse_tests import test_parse_description as parse_description 
 parse_desc = parse_description
 from parse_tests import test_parse_comment as parse_comment
 from parse_tests import test_parser_aux as parser_aux

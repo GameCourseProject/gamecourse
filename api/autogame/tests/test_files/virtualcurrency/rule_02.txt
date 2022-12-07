@@ -1,0 +1,3 @@
+Rule: VirtualCurrency R2
+then:
+	award_tokens_type(target, "streak", "Constant Gardener", logs)

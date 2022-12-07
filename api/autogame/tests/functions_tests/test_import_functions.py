@@ -22,7 +22,7 @@ class TestImportFunctions (BaseTestClass):
 # import_functions_from_module
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TestImportFunctionsFromModule(TestImportFunctions):
-
+	
 	def test_01 (self):
 		""" test import functions from arithmetic module """
 		from .test_files.arithmetic.functions import arithmetic

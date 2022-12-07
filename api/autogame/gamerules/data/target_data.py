@@ -82,12 +82,12 @@ class TargetData:
 		for target in self.targets():
 			td[target] = {}
 			for rule in self.target_rules(target):
-
+				
 				output = self.target_ruleoutput(target,rule)
 				output = output.convert()
 
 				# this if condition will supress outputs for cases where the rule was fired
-				# (in the case of having and integrated version of gamerules all rules are
+				# (in the case of having and integrated version of gamerules all rules are 
 				# fired because their effects may need to be reverted on the database)
 				# but the output was empty
 				#td[target] = {}
@@ -96,7 +96,7 @@ class TargetData:
 
 				if output != [None]:
 					# this if condition will supress outputs for cases where the rule was fired
-					# (in the case of having and integrated version of gamerules all rules are
+					# (in the case of having and integrated version of gamerules all rules are 
 					# fired because their effects may need to be reverted on the database)
 					# but the output was empty
 					td[target] = {}

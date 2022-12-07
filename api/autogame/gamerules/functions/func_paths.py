@@ -14,7 +14,7 @@ class FPaths:
 
 	def __repr__ (self):
 		return repr(self._fp)
-
+	
 	def __str__ (self):
 		return repr(self)
 
@@ -44,7 +44,7 @@ class ModuleFunctions:
 
 	def __repr__(self):
 		return "<" + self.module + ": " + repr(self.functions) + ">"
-
+	
 	def __str__ (self):
 		return repr(self)
 
@@ -55,6 +55,6 @@ class ModuleFunctions:
 
 	def __ne__ (self,other):
 		return not self == other
-
+	
 	def add(self,function):
 		self.functions.append(function)

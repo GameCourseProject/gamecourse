@@ -47,7 +47,7 @@ class Assignment (Statement):
 		invalid_operators = "!><"
 		prev_char = self.text()[index-1]
 		next_char = self.text()[index+1]
-
+		
 		return prev_char not in invalid_operators \
 		and next_char is not '='
 

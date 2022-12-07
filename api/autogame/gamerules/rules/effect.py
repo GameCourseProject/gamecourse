@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 class Effect(object):
-
+	
 	def __init__(self,val):
 		self.__val = val if not isinstance(val,Effect) else val.val()
 

@@ -43,7 +43,7 @@ class TestPathData (BaseTestClass):
 		test the addition of multiple paths
 		"""
 		for p in paths:
-			self.assertAdd(pd,p)
+			self.assertAdd(pd,p)		
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # PathData() ---> return a PathData object

@@ -88,7 +88,7 @@ class TestParsePreconditions (TestParsePreconditionsBase):
 	# 	# Assertion
 	# 	self.assertEqual(parser.parse_preconditions(text=t),expected)
 	# 	assert_block(self,expected[0],stmts,f)
-
+	
 	# def test_parse_preconditions_003(self):
 	# 	# Input
 	# 	f = "preconditions file is now.txt"
@@ -114,7 +114,7 @@ class TestParsePreconditions (TestParsePreconditionsBase):
 	# 	s = Statement("\"invalid_student_id\" not in l1",f,l)
 	# 	b.add_stmt(s)
 	# 	t += "\"invalid_student_id\" not in l1\n"
-
+		
 	# 	# Expected Output
 	# 	pos = len(t)
 	# 	line = 1 + t.count("\n")
@@ -125,7 +125,7 @@ class TestParsePreconditions (TestParsePreconditionsBase):
 	# 	# Assertion
 	# 	self.assertEqual(parser.parse_preconditions(text=t),expected)
 	# 	assert_block(self,expected[0],stmts,f)
-
+	
 	# def test_parse_preconditions_004(self):
 	# 	# Input
 	# 	f = "preconditions file is now.txt"
@@ -146,7 +146,7 @@ class TestParsePreconditions (TestParsePreconditionsBase):
 	# 	# Assertion
 	# 	self.assertEqual(parser.parse_preconditions(text=t),expected)
 	# 	assert_block(self,expected[0],stmts,f)
-
+	
 	# def test_parse_preconditions_005(self):
 	# 	# Input
 	# 	f = "preconditions file is now.txt"

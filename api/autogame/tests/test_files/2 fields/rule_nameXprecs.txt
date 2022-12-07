@@ -1,5 +1,5 @@
 
-rule: Class Annotator
+rule: Class Annotator	
 	when:
 		contributions = 8
 		contributions > 8
@@ -7,7 +7,7 @@ rule: Class Annotator
 
 
 		rule: oppsidussi
-	when:
+	when: 
 	i=0
 	j=10+i
 	j**i
@@ -23,7 +23,7 @@ rule: Class Annotator
 
 
 
-True
+True							
 rule: whaaaaaaaaaaaaaaaaaaaaaaaaat???
 	when:
 		1

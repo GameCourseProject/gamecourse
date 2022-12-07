@@ -48,7 +48,7 @@ METADATA = { "all_lectures_alameda": 24,  #excl. invited lectures
              "invited_tagus": 2,
              "all_labs": 11,
              "lab_max_grade": 600,
-             "lab_excellence_threshold": 350,
+             "lab_excellence_threshold": 350, 
              "quiz_max_grade": 750,
              "initial_bonus": 500,
              "max_xp": 20000,
@@ -269,18 +269,18 @@ class LogLine:
         #try:
             if type(self.info)==tuple:
                 # decoding fix
-                #ul = "("+codecs.decode(self.info[0],"latin1")+", "+codecs.decode(self.info[1],"latin1")+")"
-                ul = "("+self.info[0]+", "+self.info[1]+")"
+                #ul = "("+codecs.decode(self.info[0],"latin1")+", "+codecs.decode(self.info[1],"latin1")+")"                
+                ul = "("+self.info[0]+", "+self.info[1]+")"                
             elif type(self.info)==str:
                 #ul = codecs.decode(self.info,"latin1")
                 # decoding fix :
-                # ul = self.info.decode("latin1")
+                # ul = self.info.decode("latin1")                
                 ul = self.info
             else:
                 ul = self.info
             #ul = str(ul, "latin1")
             ul = str(ul)
-
+            
         #except:
             #print self.info, self.action
             return 'LogLine(%s, %s,%s,%s,%s,%s)' % (self.num, self.timestamp, self.action, self.xp, ul, self.url)
@@ -318,8 +318,8 @@ def BookMaster(logs, student):
     for i in range(1,METADATA["all_lectures"]+10):
         lecture_names.append("Lecture "+str(i)+" Slides")
         lecture_names.append("Lecture "+str(i)+" - Slides")
-        lecture_names.append("Lecture "+str(i)+"&"+str(i+1)+" Slides")
-        lecture_names.append("Lecture "+str(i)+"&"+str(i+1)+" - Slides")
+        lecture_names.append("Lecture "+str(i)+"&"+str(i+1)+" Slides")         
+        lecture_names.append("Lecture "+str(i)+"&"+str(i+1)+" - Slides") 
     total=0
     views=[]
     for n in lecture_names:
@@ -569,7 +569,7 @@ def TreeClimber(logs,student):
             if l.name in ta.info[1] and l.Satisfied([a.info[1] for a in tree_awards]):
                 if l.level>maxlevel:
                     maxlevel = l.level
-    return max(0,maxlevel-1), totals, tree_awards
+    return max(0,maxlevel-1), totals, tree_awards 
 
 
 
@@ -871,16 +871,16 @@ class PCMSpreadsheetParser:
     if not(os.path.exists(auth_file)):
       token = gdata.gauth.OAuth2Token(
         client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
+        client_secret=CLIENT_SECRET, 
         scope=SCOPE,
         user_agent=application_name);
-
+      
       url = token.generate_authorize_url()
       print('Use this url to authorize the application: \n')
       print(url)
       code = input('What is the verification code? ').strip()
       token.get_access_token(code)
-
+      
       with open(auth_file, 'w') as file:
         file.write(token.refresh_token + '\n')
         file.write(token.access_token + '\n')
@@ -890,15 +890,15 @@ class PCMSpreadsheetParser:
       with open(auth_file, 'r') as file:
         refresh_token = file.readline().strip()
         access_token = file.readline().strip()
-
+          
       token = gdata.gauth.OAuth2Token(
         client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
+        client_secret=CLIENT_SECRET, 
         scope=SCOPE,
         user_agent=application_name,
         refresh_token=refresh_token,
         access_token=access_token);
-
+            
     self.gd_client = gdata.spreadsheets.client.SpreadsheetsClient()
     token.authorize(self.gd_client)
   def _FindSpreadsheet(self):
@@ -911,7 +911,7 @@ class PCMSpreadsheetParser:
     id_parts = entry.id.text.split('/')
     self.curr_key = id_parts[len(id_parts) - 1]
 #    print self.curr_key
-
+  
   def _FindWorksheet(self, name):
     # Get the list of worksheets
     feed = self.gd_client.GetWorksheets(self.curr_key)
@@ -1164,7 +1164,7 @@ def read_quiz_grades (students):
 			studentname = str(studentname, "latin1")								# Because that is what we get from the logs "now" (15/02/2018)
 			timestamp = time.mktime(time.strptime(timestamp.strip(), "%d %B %Y, %H:%M %p"))
 			s = find_student(studentname, students)
-
+			
 			# Check if the student exists (is valid)
 			if not s :
 				print("Invalid student: " + studentname)
@@ -1176,7 +1176,7 @@ def read_quiz_grades (students):
 				action = "quiz grade"
                 grade = int(round(float(grade),0))
                 if not "dry run" in quiz.lower():
-                    if not "quiz 9" in quiz.lower():
+                    if not "quiz 9" in quiz.lower():    
     			        loglines = loglines + [LogLine(s.num, studentname, timestamp, action, str(grade), quiz, quizurl)]
 
 	# End of For-Loop
@@ -1189,7 +1189,7 @@ def read_quiz_grades (students):
 		print("Could not parse %s lines (see above)" % ignored_lines)
 	return loglines
 
-
+      
 
 def read_log_files(students):
     print('Reading logfiles from \"'+LOGFILEURL+'"')
@@ -3043,7 +3043,7 @@ def satisfied_tree(students,logs,tree, indicators):
     achieved={}
     for student in students:
         tree_awards, vals, totals=FilterGrades(logs,student,forum="Skill Tree",grades=[3,4,5],max_repeats=None)
-        #if student.num=="78800":
+        #if student.num=="78800":          
             #pprint.pprint(logs[student.num])
             #print tree_awards, vals, totals
         lines = tree_awards
@@ -3063,7 +3063,7 @@ def satisfied_tree(students,logs,tree, indicators):
                 else:
 #                    pass
                     print("Locked Tree Attempt",ta.name,"from",student.name)
-
+                          
             else:
                 if ta.Satisfied(tree_awards):
                     res.append(ta.name)
@@ -3163,7 +3163,7 @@ def export_grades(students,awards,achievement_list):
     level = compute_level(xp)
     f.write("%s;%s;%s;%s\n" % (s.num,s.name,level,s.campus))
   f.close()
-
+            
 
 def main():
     tree = read_tree()
@@ -3174,7 +3174,7 @@ def main():
     tree_won,tree_unlocked, tree_achieved, indicators = satisfied_tree(students,logs,tree,indicators)
     save_indicators(indicators)
     achieved = MergeAchievements(achieved,tree_achieved)
-    awards=commit_awards(achieved, achievement_list)
+    awards=commit_awards(achieved, achievement_list)    
     #gen_pages(students, achievement_list, awards, indicators, tree, tree_won, tree_unlocked,logs)
     #gen_unlocks(students, awards, achievement_list)
     export_grades(students,awards,achievement_list)

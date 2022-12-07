@@ -112,7 +112,7 @@ def get_empty_rules ():
 	rules = []
 	for i in range(12):
 		rules.append(Rule(fpath=path))
-	return rules
+	return rules                         
 def get_rule_empty ():
 	return get_empty_rules()
 # def get_0fields_rules ():
@@ -175,7 +175,7 @@ def get_allfields_rules ():
 	# e = "end"
 	# f = "test_parse_block_i"
 	# if test_id: f += str(test_id)
-	# else: f += "**"
+	# else: f += "**" 
 	# l = 3456789
 	# s1 = Statement("valid = True",f,l)
 	# s2 = Statement("valid is True",f,l)
@@ -196,7 +196,7 @@ def get_parse_nblock_iargs(test_id=None):
 	block = Block([],f)
 	n = "blockname"
 	l = 19
-
+	
 	t = "\t"*14 + "\n"*514 + n + "	 \f"*51 + ":" + "\n\n\n\t\t\n" * 20
 	line = l + t.count("\n")
 	s = Statement("valid=True",f,line)
@@ -222,12 +222,12 @@ def get_parse_nblock_iargs(test_id=None):
 	s = Statement("True or False",f,line)
 	block.add_stmt(s)
 	t += "True or False\n" # expression-3
-
+	
 	t += "\n"*4 + " 	 "*2 + "\r  \f"*5 # to ignore
 	t_final = t + "stop:_ERROR this should NOT BE PARSED!! KABOOM!! THE END!"
 	p = 13
 	s = "stop"
-	# Expected Output
+	# Expected Output	
 	pos = len(t)
 	line = l + t.count("\n")
 	result = (block, pos, line)
@@ -266,7 +266,7 @@ extinction."""
 	n = "with 	tabulation"
 	d = """this 	rule		makes my
 
-	eyes hurt
+	eyes hurt 	
 
 
 
@@ -287,7 +287,7 @@ extinction."""
 	l.append(Rule(name=n,desc=d,precs=p))
 
 	n = "Bring on the Titans!"
-	d = """it's about
+	d = """it's about 
 	time they air
 
 	season 3 of Attack on Titan"""
@@ -325,19 +325,19 @@ def get_rule_desc():
 
 	s = "valid description with ascii chars"
 	l.append(Rule(desc=s))
-
+	
 	s = """E quando Carlos Eduardo
 		pousou o olhar em Maria Eduarda,
 		nunca mais foi o mesmo ..."""
 	l.append(Rule(desc=s))
-
+	
 	s = """à
 	è
-	ì
-	ò
-	ù
+	ì 
+	ò 
+	ù 
 
-	áéíóú
+	áéíóú 
 
 	äëïöü  ãõ âêîôû ç
 	ÁÉÍÓÚ ÀÈÌÒÙ ÄËÏÖÜ ÃÕ ÂÊÎÔÛ Ç"""
@@ -416,8 +416,8 @@ def get_rule_descXacts ():
 
 	d = """the nature
 	of man
-
-
+	
+	
 	is savage"""
 	a = Block()
 	a.add_stmt(Statement("deactivated = False"))
@@ -521,7 +521,7 @@ def get_rule_nameXdesc ():
 	n = "simple name"
 	d = "this rule does nothing"
 	l.append(Rule(name=n,desc=d))
-
+	
 	n = "Talkative"
 	d = """Participate in Theoretical Lectures!
 lvl1: participate 2 times (+100xp)
@@ -597,14 +597,14 @@ weapons used to produce millions of casualties in four short years."""
 
 def get_rule_nameXprecs ():
 	l = []
-
+	
 	p = Block([])
 	n = "Class Annotator"
 	p.add_stmt(Statement("contributions = 8"))
 	p.add_stmt(Statement("contributions > 8"))
 	p.add_stmt(Statement("contributions < 10"))
 	l.append(Rule(name=n,precs=p))
-
+	
 	p = Block([])
 	n = "oppsidussi"
 	s = Statement("i=0")
@@ -674,7 +674,7 @@ def get_rule_precsXacts ():
 # 	e = "end"
 # 	f = "test_parse_block_i"
 # 	if test_id: f += str(test_id)
-# 	else: f += "**"
+# 	else: f += "**" 
 # 	l = 3456789
 # 	s1 = Statement("valid = True",f,l)
 # 	s2 = Statement("valid is True",f,l)

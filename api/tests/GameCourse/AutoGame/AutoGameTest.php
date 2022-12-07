@@ -297,18 +297,12 @@ class AutoGameTest extends TestCase
         AutoGame::log($courseId, "Testing 2", "WARNING");
         $this->assertEquals($this->trim("
 ================================================================================
-[" . date("Y/m/d H:i:s", time()) . "] : php : ERROR 
-
-Testing 1
-
+[" . date("Y/m/d H:i:s", time()) . "] [ERROR] : Testing 1
 ================================================================================
 
 
 ================================================================================
-[" . date("Y/m/d H:i:s", time()) . "] : php : WARNING 
-
-Testing 2
-
+[" . date("Y/m/d H:i:s", time()) . "] [WARNING] : Testing 2
 ================================================================================
 
 "), $this->trim(AutoGame::getLogs($courseId)));
@@ -333,18 +327,12 @@ Testing 2
         AutoGame::log($courseId, "Testing 2", "WARNING");
         $this->assertEquals($this->trim("
 ================================================================================
-[" . date("Y/m/d H:i:s", time()) . "] : php : ERROR 
-
-Testing 1
-
+[" . date("Y/m/d H:i:s", time()) . "] [ERROR] : Testing 1
 ================================================================================
 
 
 ================================================================================
-[" . date("Y/m/d H:i:s", time()) . "] : php : WARNING 
-
-Testing 2
-
+[" . date("Y/m/d H:i:s", time()) . "] [WARNING] : Testing 2
 ================================================================================
 
 "), $this->trim(AutoGame::getLogs($courseId)));

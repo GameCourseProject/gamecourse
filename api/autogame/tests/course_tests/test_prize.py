@@ -203,7 +203,7 @@ class TestPrize(BaseTestClass):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Creation tests (__init__)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class TestCreation(TestPrize):
+class TestCreation(TestPrize): 
 
 	def test_01(self):
 		""" test prize creation with valid arguments """

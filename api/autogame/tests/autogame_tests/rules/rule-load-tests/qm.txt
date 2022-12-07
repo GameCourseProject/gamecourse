@@ -7,9 +7,9 @@ rule: Quiz Master
 	when:
 		max_grade = METADATA["quiz_max_grade"]
 		logs = GC.participations.getParticipations(target, "quiz grade", max_grade)
-
+		
 		flogs = filter_quiz(logs)
-
+		
 		nlogs = len(flogs)
 		lvl = compute_lvl(nlogs, 4, 6, 8)
 	then:

@@ -65,15 +65,16 @@ class SystemLibrary extends Library
      * Checks a condition and returns the 2nd argument if true,
      * or the 3rd if false.
      *
-     * @example system.if(1 >= 0, "yes", "no") --> "yes"
-     * @example system.if("hello" == "olá", 1, 0) --> 0
-     *
+     * @param bool $mockData
      * @param bool $condition
      * @param $ifTrue
      * @param $ifFalse
      * @return ValueNode
+     * @example system.if("hello" == "olá", 1, 0) --> 0
+     *
+     * @example system.if(1 >= 0, "yes", "no") --> "yes"
      */
-    public function if(bool $condition, $ifTrue, $ifFalse): ValueNode
+    public function if(bool $mockData, bool $condition, $ifTrue, $ifFalse): ValueNode
     {
         return new ValueNode($condition ? $ifTrue : $ifFalse);
     }
@@ -81,14 +82,15 @@ class SystemLibrary extends Library
     /**
      * Returns the absolute value of an integer.
      *
+     * @param bool $mockData
+     * @param int $value
+     * @return ValueNode
      * @example system.abs(1) --> 1
      * @example system.abs(-1) --> 1
      * @example system.abs(0) --> 0
      *
-     * @param int $value
-     * @return ValueNode
      */
-    public function abs(int $value): ValueNode
+    public function abs(bool $mockData, int $value): ValueNode
     {
         return new ValueNode(abs($value));
     }
@@ -96,14 +98,15 @@ class SystemLibrary extends Library
     /**
      * Returns the smallest number between two integers.
      *
-     * @example system.min(1, 2) --> 1
-     * @example system.min(2, 0) --> 0
-     *
+     * @param bool $mockData
      * @param int $value1
      * @param int $value2
      * @return ValueNode
+     * @example system.min(1, 2) --> 1
+     * @example system.min(2, 0) --> 0
+     *
      */
-    public function min(int $value1, int $value2): ValueNode
+    public function min(bool $mockData, int $value1, int $value2): ValueNode
     {
         return new ValueNode(min($value1, $value2));
     }
@@ -111,14 +114,15 @@ class SystemLibrary extends Library
     /**
      * Returns the greatest number between two integers.
      *
-     * @example system.max(1, 2) --> 2
-     * @example system.max(0, -3) --> -3
-     *
+     * @param bool $mockData
      * @param int $value1
      * @param int $value2
      * @return ValueNode
+     * @example system.max(1, 2) --> 2
+     * @example system.max(0, -3) --> -3
+     *
      */
-    public function max(int $value1, int $value2): ValueNode
+    public function max(bool $mockData, int $value1, int $value2): ValueNode
     {
         return new ValueNode(max($value1, $value2));
     }
@@ -126,11 +130,12 @@ class SystemLibrary extends Library
     /**
      * Returns the time in seconds since the epoch as a floating point number.
      *
+     * @param bool $mockData
+     * @return ValueNode
      * @example system.time() --> 1654297355
      *
-     * @return ValueNode
      */
-    public function time(): ValueNode
+    public function time(bool $mockData): ValueNode
     {
         return new ValueNode(time());
     }
