@@ -17,6 +17,7 @@ import {NgForm} from "@angular/forms";
 import {DownloadManager} from "../../../../../../_utils/download/download-manager";
 import {clearEmptyValues} from "../../../../../../_utils/misc/misc";
 import {RuleSection} from "../../../../../../_domain/rules/RuleSection";
+import {RuleTag} from "../../../../../../_domain/rules/RuleTag";
 
 @Component({
   selector: 'app-rules',
@@ -36,11 +37,12 @@ export class RulesComponent implements OnInit {
   courseRules: CourseRule[];
 
   sections: RuleSection[];
+  filteredSections: RuleSection[];
   sectionToManage: SectionManageData = this.initSectionToManage();
-
-  mode: 'add section' | 'edit section' |'add' | 'edit' | 'select';
-  ruleToManage: CourseRuleManageData = this.initRuleToManage();
   @ViewChild('f', {static: false}) f: NgForm;
+
+  mode: 'add section' | 'edit section' |'add rule' | 'edit rule' | 'select';
+  ruleToManage: CourseRuleManageData = this.initRuleToManage();
 
   reduce = new Reduce();
   searchQuery: string;
@@ -57,6 +59,7 @@ export class RulesComponent implements OnInit {
     this.route.parent.params.subscribe(async params => {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
+      await this.getCourseSections(courseID);
       await this.getCourseRules(courseID);
       this.loading.page = false;
 
@@ -72,7 +75,6 @@ export class RulesComponent implements OnInit {
     return ModalService;
   }
 
-
   /*** --------------------------------------------- ***/
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
@@ -81,8 +83,13 @@ export class RulesComponent implements OnInit {
     this.course = await this.api.getCourseById(courseID).toPromise();
   }
 
-  async getCourseRules(courseID: number): Promise<void>{
+  async getCourseRules(courseID: number): Promise<void> {
     this.courseRules = (await this.api.getCourseRules(courseID).toPromise()).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async getCourseSections(courseID: number): Promise<void> {
+    this.sections = (await this.api.getCourseSections(courseID).toPromise()).sort((a, b) => a.name.localeCompare(b.name));
+    this.filteredSections = this.sections;
   }
 
   async getRules(courseID: number) : Promise<void> {
@@ -131,7 +138,7 @@ export class RulesComponent implements OnInit {
         {type: TableDataType.TEXT, content: ""},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: rule.isActiveInCourse}},
         {type: TableDataType.ACTIONS, content: {actions: [
-          Action.EDIT, Action.REMOVE]} // FALTA DUPLICATE E MUDAR PRIORIDADE. ADICIONAR VIEW?
+          Action.EDIT, Action.REMOVE]} // FALTA DUPLICATE E MUDAR PRIORIDADE. ADICIONAR VIEW E IMPORT?
         }
       ]);
     });
@@ -162,12 +169,12 @@ export class RulesComponent implements OnInit {
     } else if (action === 'Create new section'){
       this.mode = 'add section';
       this.sectionToManage = this.initSectionToManage();
-      ModalService.openModal('manage');
+      ModalService.openModal('manage-section');
 
     } else if (action === 'Create new rule') {
-      this.mode = 'add';
+      this.mode = 'add rule';
       this.ruleToManage = this.initRuleToManage();
-      ModalService.openModal('manage');
+      ModalService.openModal('manage-rule');
     }
   }
 
@@ -216,12 +223,12 @@ export class RulesComponent implements OnInit {
     if (this.f.valid) {
       this.loading.action = true;
 
-      const newRule = await this.api.createCourseRule(this.course.id, clearEmptyValues(this.ruleToManage)).toPromise();
+      const newRule = await this.api.createRule(this.course.id, clearEmptyValues(this.ruleToManage)).toPromise();
       this.courseRules.push(newRule);
       this.buildTable();
 
       this.loading.action = false;
-      ModalService.closeModal('manage');
+      ModalService.closeModal('manage-rule');
       this.resetManage();
       AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + newRule.name + '\' added to course');
 
@@ -253,7 +260,7 @@ export class RulesComponent implements OnInit {
       this.buildTable();
 
       this.loading.action = false;
-      ModalService.closeModal('manage');
+      ModalService.closeModal('manage-section');
       this.resetSectionManage();
       AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + newSection.name + '\' added to course');
 
@@ -274,14 +281,24 @@ export class RulesComponent implements OnInit {
   /*** ------------------- Helpers ----------------- ***/
   /*** --------------------------------------------- ***/
 
-  filterRules(section: RuleSection): Rule[]{
-    return this.filteredRules.filter(rule => rule.section === section);
+  filterSections(sectionSearch: RuleSection): RuleSection[]{
+    return this.filteredSections.filter(section => section.name === sectionSearch.name);
+  }
+
+  filterRules(ruleSearch: Rule): Rule[]{
+    return this.filteredRules.filter(rule => rule.name === ruleSearch.name);
   }
 
   initRuleToManage(rule?: CourseRule): CourseRuleManageData {
     const ruleData: CourseRuleManageData = {
+      sectionId: rule?.sectionId ?? null,
       name: rule?.name ?? null,
-      section: rule?.section ?? null
+      description: rule?.description ?? null,
+      when: rule?.when ?? null,
+      then: rule?.then ?? null,
+      position: rule?.position ?? null,
+      isActive: rule?.isActive ?? null,
+      tags: rule?.tags ?? null
     };
     if (rule) ruleData.id = rule.id;
     return ruleData;
@@ -308,8 +325,14 @@ export class RulesComponent implements OnInit {
 
 export interface CourseRuleManageData {
   id?: number,
+  sectionId?: number,
   name?: string,
-  section?: RuleSection
+  description?: string,
+  when?: string,
+  then?: string,
+  position?: number,
+  isActive?: boolean,
+  tags?: RuleTag[]
 }
 
 export interface SectionManageData {

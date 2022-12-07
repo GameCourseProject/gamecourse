@@ -1,5 +1,3 @@
-import { Rule } from "./rule";
-
 export class RuleSection{
 
   private _id: number;

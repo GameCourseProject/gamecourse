@@ -13,6 +13,26 @@ class RuleSystemController
     /*** --------------------------------------------- ***/
 
     /**
+     * Gets section of specific course
+     *
+     * @throws Exception
+     */
+    public function getCourseSections(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $courseSections = Section::getSections($courseId);
+        foreach ($courseSections as &$courseSectionInfo) {
+            Section::getSectionById($courseSectionInfo["id"]);
+        }
+        API::response($courseSections);
+    }
+
+    /**
      * Create a new section in the system and add it to the course.
      *
      * @throws Exception
@@ -55,9 +75,9 @@ class RuleSystemController
         API::requireCourseAdminPermission($course);
         $active = API::getValue("active", "bool");
 
-        $courseRules = $course -> getCourseRules($active);
+        $courseRules = Rule::getRules($courseId, $active);
         foreach ($courseRules as &$courseRuleInfo) {
-            $course->getCourseRuleById($courseRuleInfo["id"]);
+            Rule::getRuleById($courseRuleInfo["id"]);
         }
         API::response($courseRules);
     }
@@ -67,10 +87,10 @@ class RuleSystemController
      *
      * @throws Exception
      */
-    public function createCourseRule()
-        // CHECK THIS -- INCOMPLETE
+    public function createRule()
     {
-        API::requireValues('courseId', 'name', 'section');
+        API::requireValues('courseId', 'sectionId', 'name', 'description', 'when',
+            'then', 'position', 'isActive');
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -78,22 +98,23 @@ class RuleSystemController
         API::requireCourseAdminPermission($course);
 
         // Get values
+        $sectionId = API::getValue("sectionId");
         $name = API::getValue("name");
         $description = API::getValue("description");
         $when = API::getValue("when");
         $then = API::getValue("then");
+        $position= API::getValue("position");
         $isActive = API::getValue("isActive");
         $tags = API::getValue("tags");
-        $section = API::getValue("section");
+
 
         // Add rule to system
-        $rule = Rule::addRule($name, $description, $when, $then, $isActive, $tags, $section);
+        $rule = Rule::addRule($courseId, $sectionId, $name, $description, $when, $then, $position, $isActive, $tags);
 
         // Add rule to course
         $courseRule = $course->AddRuleToCourse($rule->getId());
 
         $courseRuleInfo = $courseRule->getData();
         API::response($courseRuleInfo);
-
     }
 }

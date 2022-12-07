@@ -5,10 +5,10 @@
 
   <!-- Search -->
   <app-input-search
-    [id] = "'rule-search'"
-    [items] = "rules"
+    [id] = "'sections-search'"
+    [items] = "sections"
     [classList]="'lg:w-1/2 mx-auto'"
-    (onSearch)="filteredRules = $event">
+    (onSearch)="filteredSections = $event">
   </app-input-search>
 
   <!-- Top Actions
@@ -26,55 +26,65 @@
     (btnClicked)="doAction($event)">
   </app-top-actions>
 
-  <!-- Rules -->
+  <!-- Sections and Rules -->
   <div *ngFor="let section of sections">
     <app-header [subHeader]="true" [title]="section.name" [classList]="'mt-10'"></app-header>
 
-    <!--<div class="flex flex-wrap -mx-4">
+    <div class="flex flex-wrap -mx-4">
+
       <ng-container *ngIf="!loading.page">
-        <div *ngFor="let rule of filterRules(section)" class="sm:w-1/2 xl:w-1/3 2xl:w-1/4 w-full p-4">
-          Section Table
-          <app-table
-            [id] = "'rules'"
-            [classList]="'mt-5'"
-            [headers] = "headers"
-            [data] = "data"
-            [options] = "tableOptions"
-            [loading] = "loading.table"
-            (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
-            (valueChanged)="doActionOnTable('value changed', $event.row, $event.col, $event.value)">
-          </app-table>
+        <div *ngFor="let section of filterSections(section)">
+          <!-- Actions for rules -->
+          <app-top-actions
+          [leftActions]="[
+                {action: Action.IMPORT, icon:'jam-download'},
+                {action: Action.EXPORT, icon:'jam-upload'}
+              ]"
+          [rightActions]="[{action: 'Create new rule', icon: 'feather-plus-circle', color: 'primary'}]"
+          (btnClicked)="doAction($event)">
+          </app-top-actions>
+
+          <div *ngFor="let rule of rules"
+               class="sm:w-1/2 xl:w-1/3 2xl:w-1/4 w-full p-4">
+            <!-- Section Table -->
+            <app-table
+              [id] = "'rules'"
+              [classList]="'mt-5'"
+              [headers] = "headers"
+              [data] = "data"
+              [options] = "tableOptions"
+              [loading] = "loading.table"
+              (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
+              (valueChanged)="doActionOnTable('add', $event.row, $event.col, $event.value)">
+            </app-table>
+          </div>
+
+        <span *ngIf="filterSections(section).length === 0" class="text-error px-4">No Sections</span>
         </div>
-        <span *ngIf="filterRules(section).length === 0" class="text-error px-4">No rules of section</span>
       </ng-container>
 
-      Loader
+      <!-- Loader -->
       <app-loader [loading]="loading.page"></app-loader>
 
-    </div>-->
+    </div>
   </div>
 </div>
 
 
-<!-- New / Edit modal -->
+<!-- New / Edit section modal -->
 <app-modal *ngIf="mode && sectionToManage"
-  [id]="'manage'"
-  [templateRef]="MANAGE"
+  [id]="'manage-section'"
+  [templateRef]="MANAGE_SECTION"
   [size]="'lg'"
   [header]="mode?.capitalize()"
   [actionInProgress] = "loading.action"
   (submitBtnClicked)="f.onSubmit(null); mode === 'add section' ? createSection() : editSection()">
-
 </app-modal>
 
-
-<ng-template #MANAGE>
+<ng-template #MANAGE_SECTION>
   <form #f="ngForm">
-
     <div class="flex flex-wrap">
-
       <div class="w-full sm:w-1/3 sm:pr-12">
-        <!-- Section -->
         <app-input-text
           [id] = "'section-name'"
           [form] = "f"
@@ -90,6 +100,42 @@
       </div>
 
       </div>
+  </form>
+</ng-template>
+
+<!-- New / Edit rule modal -->
+<app-modal *ngIf="mode && ruleToManage"
+           [id]="'manage-rule'"
+           [templateRef]="MANAGE_RULE"
+           [size]="'lg'"
+           [header]="mode?.capitalize()"
+           [actionInProgress] = "loading.action"
+           (submitBtnClicked)="f.onSubmit(null); mode === 'add rule' ? createRule() : editRule()">
+</app-modal>
+
+
+<ng-template #MANAGE_RULE>
+  <form #f="ngForm">
+
+    <div class="flex flex-wrap">
+
+      <div class="w-full sm:w-1/3 sm:pr-12">
+        <!-- Section -->
+        <app-input-text
+          [id] = "'rule-name'"
+          [form] = "f"
+          [(value)] = "ruleToManage.name"
+          [placeholder]="'Rule Name'"
+          [topLabel]="'Name'"
+          [pattern]="'(?!^\\d+$)^.+$'"
+          [patternErrorMessage]="'Rule name can\'t be composed of only numbers'"
+          [required]="true"
+          [maxLength]="60"
+          [maxLengthErrorMessage]="'Rule name is too long: maximum of 60 characters'">
+        </app-input-text>
+      </div>
+
+    </div>
   </form>
 </ng-template>
 

@@ -569,38 +569,6 @@ class Course
     /*** ------------------- Course Rules ------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    /**
-     * Gets course rules.
-     * Option for 'active'.
-     *
-     * @param bool|null $active
-     * @return array
-     */
-    // MAYBE NOT NEEDED -- SEE SECTION.PHP
-    public function getCourseRules(?bool $active = null): array
-    {
-        $table = Rule::TABLE_RULE . " r JOIN " . Course::TABLE_COURSE . " c on r.course=c.name "; // not sure
-        $where = ["r.course" => $this->id];
-        if ($active !== null) $where["r.isActive"] = $active;
-        $courseRules =  Core::database()->selectMultiple($table, $where,"r.*","r.id");
-        foreach ($courseRules as &$courseRule) {
-            $courseRule = CourseRule::parse($courseRule);
-        }
-        return $courseRules;
-    }
-
-    /**
-     * Gets a course user by its ID.
-     * Returns null if course user doesn't exist.
-     *
-     * @param int $ruleId
-     * @return CourseRule|null
-     */
-    // MAYBE NOT NEEDED -- SEE SECTION.PHP
-    public function getCourseRuleById(int $ruleId): ?CourseRule
-    {
-        return CourseRule::getCourseRuleById($ruleId, $this);
-    }
 
     /**
      * Adds a given rule to a course.

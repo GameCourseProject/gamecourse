@@ -1015,6 +1015,20 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
   }
 
+  // Sections
+  public getCourseSections(courseID: number): Observable<RuleSection[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('request', 'getCourseSections');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => CourseRule.fromDatabase(obj))) );
+  }
+
   // Rules
   // TODO: refactor
   public getRules(): Observable<Rule[]> {
@@ -1087,16 +1101,22 @@ export class ApiHttpService {
       .pipe( map((res: any) => 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data'])) );
   }
 
-  public createCourseRule(courseID: number, ruleData: CourseRuleManageData): Observable<CourseRule> {
+  public createRule(courseID: number, ruleData: CourseRuleManageData): Observable<CourseRule> {
     const data = {
       courseId: courseID,
+      sectionId: ruleData.sectionId,
       name: ruleData.name,
-      section: ruleData.section
+      description: ruleData.description,
+      when: ruleData.when,
+      then: ruleData.then,
+      position: ruleData.position,
+      isActive: ruleData.isActive,
+      tags: ruleData.tags
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'createCourseRule');
+      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('request', 'createRule');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
@@ -1107,8 +1127,7 @@ export class ApiHttpService {
   public createSection(courseID: number, sectionData: SectionManageData): Observable<RuleSection> {
     const data = {
       courseId : courseID,
-      name: sectionData.name,
-      rules: sectionData.rules
+      name: sectionData.name
     }
 
     const params = (qs: QueryStringParameters) => {
