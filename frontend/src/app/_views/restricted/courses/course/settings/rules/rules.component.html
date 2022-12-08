@@ -30,7 +30,7 @@
   <div *ngFor="let section of sections">
     <app-header [subHeader]="true" [title]="section.name" [classList]="'mt-10'"></app-header>
 
-    <div class="flex flex-wrap -mx-4">
+    <div class="w-full relative">
 
       <ng-container *ngIf="!loading.page">
         <div *ngFor="let section of filterSections(section)">
@@ -44,10 +44,8 @@
           (btnClicked)="doAction($event)">
           </app-top-actions>
 
-          <div *ngFor="let rule of rules"
-               class="sm:w-1/2 xl:w-1/3 2xl:w-1/4 w-full p-4">
-            <!-- Section Table -->
-            <app-table
+          <!-- Section Table -->
+          <app-table
               [id] = "'rules'"
               [classList]="'mt-5'"
               [headers] = "headers"
@@ -55,17 +53,15 @@
               [options] = "tableOptions"
               [loading] = "loading.table"
               (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
-              (valueChanged)="doActionOnTable('add', $event.row, $event.col, $event.value)">
+              (valueChanged)="doActionOnTable('add rule', $event.row, $event.col, $event.value)">
             </app-table>
-          </div>
+
+          <!-- Loader -->
+          <app-loader [loading]="loading.page"></app-loader>
 
         <span *ngIf="filterSections(section).length === 0" class="text-error px-4">No Sections</span>
         </div>
       </ng-container>
-
-      <!-- Loader -->
-      <app-loader [loading]="loading.page"></app-loader>
-
     </div>
   </div>
 </div>
@@ -110,7 +106,8 @@
            [size]="'lg'"
            [header]="mode?.capitalize()"
            [actionInProgress] = "loading.action"
-           (submitBtnClicked)="f.onSubmit(null); mode === 'add rule' ? createRule() : editRule()">
+           (submitBtnClicked)="f.onSubmit(null); mode === 'add rule' ? createRule() : editRule()"
+           (onClose)="resetRuleManage()">
 </app-modal>
 
 
@@ -120,6 +117,7 @@
     <div class="flex flex-wrap">
 
       <div class="w-full sm:w-1/3 sm:pr-12">
+
         <!-- Section -->
         <app-input-text
           [id] = "'rule-name'"
@@ -138,6 +136,3 @@
     </div>
   </form>
 </ng-template>
-
-
-<!-- Select Modal -->

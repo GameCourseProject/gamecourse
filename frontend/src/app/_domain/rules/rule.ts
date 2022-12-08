@@ -107,7 +107,7 @@ export class Rule {
       obj.when,
       obj.then,
       obj.position,
-      obj.isActive,
+      obj.isActive ?? null,
       obj.tags
     );
   }

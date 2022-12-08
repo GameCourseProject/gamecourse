@@ -1110,7 +1110,6 @@ export class ApiHttpService {
       when: ruleData.when,
       then: ruleData.then,
       position: ruleData.position,
-      isActive: ruleData.isActive,
       tags: ruleData.tags
     }
 

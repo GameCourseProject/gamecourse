@@ -92,7 +92,7 @@ export class RulesComponent implements OnInit {
     this.filteredSections = this.sections;
   }
 
-  async getRules(courseID: number) : Promise<void> {
+  async getRules() : Promise<void> {
     this.rules = (await this.api.getRules().toPromise())
       .sort((a,b) => a.name.localeCompare(b.name));
     this.filteredRules = this.rules;
@@ -111,9 +111,8 @@ export class RulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
-    {label: '#', align: 'left'},
-    {label: 'Rule Name', align: 'left'},
-    {label: 'Tags', align: 'middle'},
+    {label: 'Execution Order', align: 'left'},
+    {label: 'Name', align: 'left'},
     {label: 'Active', align: 'middle'},
     {label: 'Actions'}
   ];
@@ -121,9 +120,9 @@ export class RulesComponent implements OnInit {
   tableOptions = {
     order: [ 0, 'asc' ],        // default order -> column 0 ascendant
     columnDefs: [ // not sure
-      { type: 'natural', targets: [0, 1, 2, 3, 4] }, // natural means number or string
-      //{ searchable: false, targets: [4, 6, 7]},
-      { orderable: false, targets: 1 }
+      { type: 'natural', targets: [0,1] }, // natural means number or string
+      { searchable: false, targets: [2,3] },
+      { orderable: false, targets: [2,3] }
     ]
   }
 
@@ -133,9 +132,9 @@ export class RulesComponent implements OnInit {
     const table: { type: TableDataType, content: any }[][] = [];
     this.courseRules.forEach(rule => {
       table.push([
-        {type: TableDataType.NUMBER, content: {value: rule.id, valueFormat: 'none'}},
+        {type: TableDataType.NUMBER, content: {value: rule.position, valueFormat: 'none'}},
         {type: TableDataType.TEXT, content: {text: rule.name}},
-        {type: TableDataType.TEXT, content: ""},
+        //{type: TableDataType.TEXT, content: ""},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: rule.isActiveInCourse}},
         {type: TableDataType.ACTIONS, content: {actions: [
           Action.EDIT, Action.REMOVE]} // FALTA DUPLICATE E MUDAR PRIORIDADE. ADICIONAR VIEW E IMPORT?
@@ -229,7 +228,7 @@ export class RulesComponent implements OnInit {
 
       this.loading.action = false;
       ModalService.closeModal('manage-rule');
-      this.resetManage();
+      this.resetRuleManage();
       AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + newRule.name + '\' added to course');
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -297,7 +296,6 @@ export class RulesComponent implements OnInit {
       when: rule?.when ?? null,
       then: rule?.then ?? null,
       position: rule?.position ?? null,
-      isActive: rule?.isActive ?? null,
       tags: rule?.tags ?? null
     };
     if (rule) ruleData.id = rule.id;
@@ -309,7 +307,7 @@ export class RulesComponent implements OnInit {
     this.fImport.resetForm();
   }
 
-  resetManage(){
+  resetRuleManage(){
     this.mode = null;
     this.ruleToManage = this.initRuleToManage();
     this.f.resetForm();
@@ -331,7 +329,6 @@ export interface CourseRuleManageData {
   when?: string,
   then?: string,
   position?: number,
-  isActive?: boolean,
   tags?: RuleTag[]
 }
 

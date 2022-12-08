@@ -90,7 +90,7 @@ class RuleSystemController
     public function createRule()
     {
         API::requireValues('courseId', 'sectionId', 'name', 'description', 'when',
-            'then', 'position', 'isActive');
+            'then', 'position', 'tags');
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -104,12 +104,11 @@ class RuleSystemController
         $when = API::getValue("when");
         $then = API::getValue("then");
         $position= API::getValue("position");
-        $isActive = API::getValue("isActive");
         $tags = API::getValue("tags");
 
 
         // Add rule to system
-        $rule = Rule::addRule($courseId, $sectionId, $name, $description, $when, $then, $position, $isActive, $tags);
+        $rule = Rule::addRule($courseId, $sectionId, $name, $description, $when, $then, $position, true, $tags);
 
         // Add rule to course
         $courseRule = $course->AddRuleToCourse($rule->getId());
