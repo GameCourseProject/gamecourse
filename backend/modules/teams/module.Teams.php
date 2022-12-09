@@ -418,6 +418,23 @@ class Teams extends Module
         });
 
         /**
+         * Gets max nr of team members from teams_config table.
+         *
+         * @param int $courseId
+         */
+        API::registerFunction(self::ID, 'getUserId', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('courseId', 'name', 'studentNr');
+
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+            $name = API::getValue('name');
+            $studentNr = API::getValue('studentNt');
+
+            API::response(["memberId" => intval($this->getMemberId($courseId, $name, $studentNr))]);
+        });
+
+        /**
          * Import teams into the system.
          *
          * @param $file
@@ -776,7 +793,7 @@ class Teams extends Module
                         $team['members'] .= $teamMembers[$i]['memberId'] . "|";
                     }
                     $memberId = $teamMembers[$i]['memberId'];
-                    $member = Core::$systemDB->select(self::TABLE_GC_USERS, ["id" => $memberId], "name, major, studentNumber");
+                    $member = Core::$systemDB->select(self::TABLE_GC_USERS, ["id" => $memberId], "id, name, major, studentNumber");
                     array_push($team['teamMembers'], $member);
                 }
 
@@ -797,7 +814,6 @@ class Teams extends Module
                 throw new \Exception("In function teams.getTeam(team): couldn't find badge with id '" . $where["id"] . "'.");
             $type = "object";
         }
-        return Dictionary::createNode($teamArray, self::ID, $type);
         return Dictionary::createNode($teamArray, self::ID, $type);
     }
 
@@ -861,18 +877,24 @@ class Teams extends Module
         return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "nrTeamMembers");
     }
 
+    public function getMemberId($courseId, $name, $studentNr)
+    {
+        return Core::$systemDB->select("game_course_user", ["name" => $name, "studentNumber" => $studentNr], "id");
+    }
+
+
     public function saveNumberOfTeamElements($nr, $courseId)
     {
         $save = true;
         $current = $this->getNumberOfTeamMembers($courseId);
-        if ($nr < $current){
+        /*if ($nr < $current){
             $biggestTeam = Core::$systemDB->executeQuery("select max(ct) as m from ( SELECT teamId, count(teamId) AS ct FROM teams_members GROUP BY teamId) as t");
             $returnVal = $biggestTeam->fetch(\PDO::FETCH_ASSOC);
             if ($returnVal > $nr){
                 $save = false;
-                API::error("There are teams with more elements than the selected new maximum.");
+                API::error("There are teams with more elements than the new established maximum.");
             }
-        }
+        }*/
         if ($save){
             Core::$systemDB->update(self::TABLE_CONFIG, ["nrTeamMembers" => $nr], ["course" => $courseId]);
         }
@@ -924,7 +946,7 @@ class Teams extends Module
             ];
             Core::$systemDB->update(self::TABLE, $teamData, ["id" => $team["id"]]);
         }
-        
+
         if(!empty($originalTeamMembers)){
             Core::$systemDB->delete(self::TABLE_MEMBERS, ["teamId" => $team["id"]]);
 
