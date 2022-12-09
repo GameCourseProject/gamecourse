@@ -126,13 +126,11 @@
         <input type="number" class="form__input" id="team-number" style="width: 400px" placeholder="Team Number (Optional)" [(ngModel)]="newTeam.teamNumber" [required]="false">
       </div>
 
+
       <!-- Select Team Members -->
+
       <div class="sub_title">Select Members: </div>
-      <!--
-      <div class="sub_title" *ngFor="let user of teamMembers" >
-        {{user.id + '-' + user.name + '-' + user.studentNumber }}
-      </div>
-      -->
+
       <div *ngIf="newTeam.teamMembers != null && newTeam.teamMembers.length == nrTeamMembers" class = "info_message"> Team is complete! You'll need to remove existent members to add new ones.</div>
       <div class="content">
         <div id="new_box" class="inputs">
@@ -149,7 +147,7 @@
           <!-- Users -->
           <div class="select_box" id="system_users">
             <div *ngFor="let user of reduceNonMembers.items" class="line">
-              <div>{{user.name + ' - ' + user.studentNumber}}</div>
+              <div>{{user.name + ' - ' + user.studentNumber }}</div>
               <div *ngIf="newTeam.teamMembers == null || newTeam.teamMembers.length < nrTeamMembers " class="add_icon_no_outline icon" (click)="addTeamMember(user)"></div>
             </div>
           </div>
@@ -169,12 +167,12 @@
 
 
 <!-- Delete Verification Modal -->
+<!--    [target]="teamToDelete.id + ' - ' + teamToDelete.teamNumber + ' - ' + teamToDelete.teamName" -->
 <ng-container *ngIf="isDeleteVerificationModalOpen">
   <app-verification-modal
     [isModalOpen]="isDeleteVerificationModalOpen"
     [id]="'delete-verification-' + teamToDelete.id"
     [text]="'Are you sure you want to delete this Team?'"
-    [target]="teamToDelete.id + ' - ' + teamToDelete.teamNumber + ' - ' + teamToDelete.teamName"
     [positiveBtnText]="'Delete'"
     (positiveBtnClicked)="deleteTeam()"
     (negativeBtnClicked)="teamToDelete = null; isDeleteVerificationModalOpen = false"

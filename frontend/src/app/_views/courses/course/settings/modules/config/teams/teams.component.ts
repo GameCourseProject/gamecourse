@@ -27,6 +27,7 @@ export class TeamsComponent implements OnInit {
   testRemoved: string;
 
   nrTeamMembers: number;
+  userId: number;
 
   content: string;
 
@@ -142,6 +143,7 @@ export class TeamsComponent implements OnInit {
         },
         error => ErrorService.set(error))
   }
+
   getTeamMembers(teamId: number) {
     this.api.getTeamMembers(teamId)
       .subscribe(members => {
@@ -170,18 +172,9 @@ export class TeamsComponent implements OnInit {
         nrTeamMembers => this.nrTeamMembers = nrTeamMembers,
         error => ErrorService.set(error)
       );
+
   }
 
-  getMembersofTeam(team: Team){
-    this.loading = true;
-
-    this.api.getMembersofTeam(this.courseID, team['id'] )
-      .pipe( finalize(() => this.loading = false) )
-      .subscribe(users => {
-          team.teamMembers = users;
-        },
-        error => ErrorService.set(error))
-  }
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
@@ -242,13 +235,12 @@ export class TeamsComponent implements OnInit {
   addTeamMember(user: User): void {
     if (!this.selectedMembers) this.selectedMembers = [];
     if (!this.newTeam.teamMembers) this.newTeam.teamMembers = [];
-    //if (!this.teamMembers) this.newTeam.teamMembers = [];
 
-    if(this.selectedMembers.length == 3) this.maxMembersReached = true;
+    if(this.selectedMembers.length == this.nrTeamMembers) this.maxMembersReached = true;
     else {
+      // if selected user does not exist in selectedMembers aka not member of that team
       if (!this.selectedMembers.find(el => el.id === user.id)) {
         this.selectedMembers.push(user);
-        //this.teamMembers.push(user);
 
         this.reduceListNonUsers();
 
@@ -262,35 +254,34 @@ export class TeamsComponent implements OnInit {
         } else {
           this.newTeam.members += '|' + (user.id).toString()
         }
+
       }
     }
   }
 
-  removeMember(user: User): void {
-    /*
-        const index = this.selectedMembers.findIndex(el => el.id === user.id);
-        this.selectedMembers.splice(index, 1);
+  typeOf(value) {
+    return typeof value;
+  }
 
-        const index3 = this.teamMembers.findIndex(el => el.id === user.id);
-        this.teamMembers.splice(index3, 1);
-    */
+  removeMember(user: User): void {
 
     this.allNonMembers.push(user);
-
 
     const index2 = this.newTeam.teamMembers.findIndex(el => el.id === user.id);
     this.newTeam.teamMembers.splice(index2, 1);
 
-
-    //this.newTeam.teamMembers = this.teamMembers;
     this.newTeam.members = '';
-    if (this.newTeam.teamMembers.length == 1){
-      this.newTeam.members = (user.id).toString()
-    } else {
-      this.newTeam.members += '|' + (user.id).toString()
+
+    for(let i=0; i<this.newTeam.teamMembers.length; i++) {
+
+      if (i == 0) {
+        this.newTeam.members = (this.newTeam.teamMembers[i].id).toString()
+      } else {
+        this.newTeam.members += '|' + (this.newTeam.teamMembers[i].id).toString()
+      }
     }
 
-    if(this.newTeam.teamMembers.length < 3) this.maxMembersReached = false;
+    if(this.newTeam.teamMembers.length < this.nrTeamMembers) this.maxMembersReached = false;
   }
 
   importTeams(replace: boolean): void {

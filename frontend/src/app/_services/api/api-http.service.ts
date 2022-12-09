@@ -1559,6 +1559,7 @@ export class ApiHttpService {
 
 
   public createTeam(courseID: number, team: TeamData): Observable<void> {
+    console.log(team.teamMembers)
     const data = {
       courseId: courseID,
       team
@@ -1631,6 +1632,7 @@ export class ApiHttpService {
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['nrTeamMembers']) );
   }
+
 
   public importCourseTeams(courseID: number, importData: ImportTeamsData): Observable<number> {
     const data = {
