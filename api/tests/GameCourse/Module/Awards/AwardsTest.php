@@ -908,13 +908,11 @@ class AwardsTest extends TestCase
         $VCModule = new VirtualCurrency($this->course);
         $VCModule->setEnabled(true);
         $this->insertAward($this->course->getId(), $user->getId(), AwardType::TOKEN, null, "Initial tokens", 50);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::TOKEN, null, "Peergrading", 100);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::TOKEN, null, "Pixel Art cost", -20);
 
         // Then
         $totalReward = $this->module->getUserTotalReward($user->getId());
         $this->assertEquals(3500, $totalReward["XP"]);
-        $this->assertEquals(130, $totalReward["tokens"]);
+        $this->assertEquals(50, $totalReward["tokens"]);
     }
 
     /**

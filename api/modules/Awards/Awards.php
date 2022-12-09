@@ -374,7 +374,7 @@ class Awards extends Module
      */
     private static function validateReward($reward)
     {
-        if (!is_numeric($reward) || !is_int($reward))
-            throw new Exception("Award reward must be an integer.");
+        if (!is_numeric($reward) || $reward < 0)
+            throw new Exception("Award reward must be a number bigger or equal than 0.");
     }
 }
