@@ -1,6 +1,5 @@
 import {Rule} from "./rule";
 import {LoadingState} from "../modules/module";
-import {RuleSection} from "./RuleSection";
 import {RuleTag} from "./RuleTag";
 
 export class CourseRule extends Rule {

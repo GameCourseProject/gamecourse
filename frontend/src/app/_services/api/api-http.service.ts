@@ -62,6 +62,7 @@ import {
   CourseRuleManageData, SectionManageData
 } from "../../_views/restricted/courses/course/settings/rules/rules.component";
 import {RuleSection} from "../../_domain/rules/RuleSection";
+import {RuleTag} from "../../_domain/rules/RuleTag";
 
 @Injectable({
   providedIn: 'root'
@@ -1016,6 +1017,22 @@ export class ApiHttpService {
   }
 
   // Sections
+  public createSection(courseID: number, sectionData: SectionManageData): Observable<RuleSection> {
+    const data = {
+      courseId : courseID,
+      name: sectionData.name
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('request', 'createSection');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => RuleSection.fromDatabase(res['data'])));
+  }
+
   public getCourseSections(courseID: number): Observable<RuleSection[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULESYSTEM);
@@ -1064,7 +1081,6 @@ export class ApiHttpService {
       "isActive": isActive
     }
 
-    // not sure
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
       qs.push('request', 'setCourseUserActive');
@@ -1123,20 +1139,19 @@ export class ApiHttpService {
       .pipe( map((res: any) => CourseRule.fromDatabase(res['data'])) );
   }
 
-  public createSection(courseID: number, sectionData: SectionManageData): Observable<RuleSection> {
-    const data = {
-      courseId : courseID,
-      name: sectionData.name
-    }
-
+  // Tags
+  public getCourseTags(courseID: number, active?:boolean): Observable<RuleTag[]>{
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULESYSTEM);
-      qs.push('request', 'createSection');
+      qs.push('request', 'getCourseTags');
+      qs.push('courseId', courseID);
+      if (active !== undefined) qs.push('active', active);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe(map((res:any) => RuleSection.fromDatabase(res['data'])));
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => CourseRule.fromDatabase(obj))) );
   }
 
   // Configuration

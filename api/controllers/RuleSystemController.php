@@ -4,7 +4,9 @@ namespace API;
 
 use Exception;
 use GameCourse\AutoGame\RuleSystem\Rule;
+use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\AutoGame\RuleSystem\Section;
+use GameCourse\AutoGame\RuleSystem\Tag;
 
 class RuleSystemController
 {
@@ -116,4 +118,21 @@ class RuleSystemController
         $courseRuleInfo = $courseRule->getData();
         API::response($courseRuleInfo);
     }
+
+    public function getCourseTags(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        $active = API::getValue("active", "bool");
+
+        $courseTags = RuleSystem::getTags($courseId);
+        foreach ($courseTags as &$courseTagInfo){
+            Tag::getTagById($courseTagInfo["id"]);
+        }
+        API::response($courseTags);
+    }
+
 }

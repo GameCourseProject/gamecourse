@@ -35,6 +35,7 @@ export class RulesComponent implements OnInit {
   filteredRules: Rule[];
   course: Course;
   courseRules: CourseRule[];
+  courseTags: RuleTag[];
 
   sections: RuleSection[];
   filteredSections: RuleSection[];
@@ -61,6 +62,7 @@ export class RulesComponent implements OnInit {
       await this.getCourse(courseID);
       await this.getCourseSections(courseID);
       await this.getCourseRules(courseID);
+      await this.getTags(courseID);
       this.loading.page = false;
 
       this.buildTable();
@@ -90,6 +92,10 @@ export class RulesComponent implements OnInit {
   async getCourseSections(courseID: number): Promise<void> {
     this.sections = (await this.api.getCourseSections(courseID).toPromise()).sort((a, b) => a.name.localeCompare(b.name));
     this.filteredSections = this.sections;
+  }
+
+  async getTags(courseID: number): Promise<void> {
+    this.courseTags = await this.api.getCourseTags(courseID).toPromise();
   }
 
   async getRules() : Promise<void> {
@@ -158,7 +164,7 @@ export class RulesComponent implements OnInit {
   /*** ------------------ Actions ----------------- ***/
   /*** --------------------------------------------- ***/
 
-  doAction(action: string) {
+  doAction(action: string, section?: RuleSection) {
     if (action === Action.IMPORT){
       ModalService.openModal('import');
 
@@ -173,6 +179,7 @@ export class RulesComponent implements OnInit {
     } else if (action === 'Create new rule') {
       this.mode = 'add rule';
       this.ruleToManage = this.initRuleToManage();
+      this.ruleToManage.sectionId = section.id;
       ModalService.openModal('manage-rule');
     }
   }
@@ -274,11 +281,27 @@ export class RulesComponent implements OnInit {
   /*** -------------------- Tags ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  // TODO
+  getTagsNames():  {value: string, text: string}[] {
+    let nameTags : {value: string, text: string}[] = [{value: 't-1', text: 'awards'}, {value: 't-2', text: "badges"}];
+    for (let i = 0; i < this.courseTags.length ; i++){
+        nameTags.push({value: 't-' + i.toString(), text: this.courseTags[i].name});
+    }
+    return nameTags;
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------- Helpers ----------------- ***/
   /*** --------------------------------------------- ***/
+
+  findSectionName(rule: CourseRuleManageData): string{
+    let section = this.sections.find(el => el.id === rule.sectionId);
+
+    if (section){
+      return section.name;
+    }
+    return "";
+  }
 
   filterSections(sectionSearch: RuleSection): RuleSection[]{
     return this.filteredSections.filter(section => section.name === sectionSearch.name);

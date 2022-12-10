@@ -8,6 +8,7 @@ use GameCourse\AutoGame\AutoGame;
 use GameCourse\AutoGame\RuleSystem\CourseRule;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\RuleSystem;
+use GameCourse\AutoGame\RuleSystem\Tag;
 use GameCourse\Core\Auth;
 use GameCourse\Core\Core;
 use GameCourse\Module\DependencyMode;
@@ -587,6 +588,11 @@ class Course
     {
         // CHECK THIS -- INCOMPLETE
         return CourseRule::addCourseRule($ruleId, $this->id, $roleName, $roleId, $isActive);
+    }
+
+    public function getTags(int $courseId, bool $active): array
+    {
+        return [];
     }
 
     /*** ---------------------------------------------------- ***/
