@@ -11,36 +11,35 @@
     (onSearch)="filteredSections = $event">
   </app-input-search>
 
-  <!-- Top Actions
-    //, dropdown: [
-    //  {action: 'Create new section', icon:'tabler-new-section'},
-    //  {action: 'Create new rule', icon: 'tabler-clipboard-list'}]
-    // }]"
-  -->
-  <app-top-actions
+  <!--
     [leftActions]="[
       {action: Action.IMPORT, icon:'jam-download'},
       {action: Action.EXPORT, icon:'jam-upload'}
     ]"
-    [rightActions]="[{action: 'Create new section', icon: 'feather-plus-circle', color: 'primary'}]"
-    (btnClicked)="doAction($event)">
-  </app-top-actions>
+  -->
+
+  <div class="py-6 border-b-2 border-gray-300 ">
+    <app-top-actions
+      [rightActions]="[{action: 'Add new section', icon: 'feather-plus-circle', color: 'primary'}]"
+      (btnClicked)="doAction($event)">
+    </app-top-actions>
+  </div>
 
   <!-- Sections and Rules -->
   <div *ngFor="let section of sections">
-    <app-header [subHeader]="true" [title]="section.name" [classList]="'mt-10'"></app-header>
+    <app-header [subHeader]="true" [title]="section.name" [icon] ="'jam-box'" [classList]="'mt-10'"></app-header>
 
     <div class="w-full relative">
       <ng-container *ngIf="!loading.page">
         <div *ngFor="let section of filterSections(section)">
           <!-- Actions for rules -->
           <app-top-actions
-          [leftActions]="[
-                {action: Action.IMPORT, icon:'jam-download'},
-                {action: Action.EXPORT, icon:'jam-upload'}
-              ]"
-          [rightActions]="[{action: 'Create new rule', icon: 'feather-plus-circle', color: 'primary'}]"
-          (btnClicked)="doAction($event, section)">
+            [rightActions]="[{action: 'Create rule', icon: 'tabler-clipboard-list', color: 'primary', outline: true},
+                             {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
+                              {action: Action.IMPORT + ' rule', icon:'jam-download'},
+                              {action: Action.EXPORT + ' all rules', icon:'jam-upload'}
+                            ]}]"
+            (btnClicked)="doAction($event, section)">
           </app-top-actions>
 
           <!-- Section Table -->
@@ -70,10 +69,10 @@
 <app-modal *ngIf="mode && sectionToManage"
   [id]="'manage-section'"
   [templateRef]="MANAGE_SECTION"
-  [size]="'lg'"
+  [size]="'md'"
   [header]="mode?.capitalize()"
   [actionInProgress] = "loading.action"
-  (submitBtnClicked)="f.onSubmit(null); mode === 'add section' ? createSection() : editSection()">
+  (submitBtnClicked)="f.onSubmit(null); createSection()">
 </app-modal>
 
 <ng-template #MANAGE_SECTION>
@@ -100,12 +99,11 @@
            [id]="'manage-rule'"
            [templateRef]="MANAGE_RULE"
            [size]="'lg'"
-           [header]="'[Section ' + findSectionName(ruleToManage) + '] : ' + mode?.capitalize()"
+           [header]="mode?.capitalize() + ' to \'' + findSectionName(ruleToManage) + '\' :' "
            [actionInProgress] = "loading.action"
-           (submitBtnClicked)="f.onSubmit(null); mode === 'add rule' ? createRule() : editRule()"
+           (submitBtnClicked)="f.onSubmit(null); createRule()"
            (onClose)="resetRuleManage()">
 </app-modal>
-
 
 <ng-template #MANAGE_RULE>
   <form #f="ngForm">
@@ -158,13 +156,12 @@
         </div>
 
         <div class="sm:w-2/12 sm:pl-3">
-          <button class="btn btn-md btn-primary">Add new tag</button>
+          <button type="button" class="btn-md rounded-lg btn-primary" (click) = "doAction('add tag')">Add new tag</button>
         </div>
       </div>
     </div>
   </form>
 </ng-template>
-
 
 <!--
 <div class="w-full sm:w-1/2 sm:pr-12">
@@ -186,3 +183,75 @@
     [topLabel]="'Then'">
   </app-input-text>
 </div>-->
+
+<!-- New / Edit tag modal -->
+<app-modal *ngIf="mode"
+           [id]="'manage-tag'"
+           [templateRef]="MANAGE_TAG"
+           [size]="'md'"
+           [header]="mode?.capitalize()"
+           [actionInProgress] = "loading.action"
+           [submitBtnText] = "'Done'"
+           (submitBtnClicked)="t.onSubmit(null); submitTags();"
+           (closeBtnClicked)="resetTagManage();">
+</app-modal>
+
+<ng-template #MANAGE_TAG>
+  <form #t="ngForm">
+    <div class="w-full flex flex-wrap mt-3">
+
+      <div *ngIf="this.selectedTags?.length > 0" class="w-full justify-center pb-3">
+        <p>Your tags:</p>
+        <ng-container *ngFor="let tag of this.selectedTags">
+            <div class="inline-flex items-center rounded-lg py-1
+                    px-2 mr-2 text-sm bg-{{tag.color}} text-white">{{ tag.name }}
+              <button type="button"
+                      (click)="removeTag(tag)"
+                      class="inline-flex items-center p-0.5 ml-2 text-sm
+                      bg-transparent rounded-lg hover:bg-blue-200 hover:text-blue-900
+                      dark:hover:bg-blue-300 dark:hover:text-blue-900">
+                <ng-icon name="feather-x" color="white" size="1rem" class="text-info"></ng-icon>
+              </button>
+            </div>
+        </ng-container>
+      </div>
+
+      <div class="w-full flex flex-wrap" style="align-items: self-end">
+        <!-- Tag Name -->
+        <div class="sm:w-2/6 sm:pr-3">
+          <app-input-text
+            [id] = "'tag-name'"
+            [form] = "t"
+            [(value)] = "tagToManage.name"
+            [placeholder]="'Tag Name'"
+            [topLabel]="'Name'"
+            [pattern]="'(?!^\\d+$)^.+$'"
+            [patternErrorMessage]="'Name name can\'t be composed of only numbers'"
+            [required]="true"
+            [maxLength]="60"
+            [maxLengthErrorMessage]="'Rule name is too long: maximum of 60 characters'">
+          </app-input-text>
+        </div>
+
+        <!-- Tag Color -->
+        <div class="sm:w-3/6 sm:pr-3">
+          <app-input-select
+            [id]="'tag-color'"
+            [form] = "t"
+            [(value)] = "tagToManage.color"
+            [options] = "getColors()"
+            [multiple] = "false"
+            [search]="false"
+            [placeholder]="'Choose a color'"
+            [topLabel]="'Tag Color'"
+            [required]="true">
+          </app-input-select>
+        </div>
+
+        <div class="sm:w-1/6">
+          <button type="button" class="btn-md rounded-lg btn-primary" (click) = "createTag()">Create!</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</ng-template>

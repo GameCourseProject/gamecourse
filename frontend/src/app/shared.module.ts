@@ -130,7 +130,8 @@ import {
   JamPlus,
   JamStopSign,
   JamTrashF,
-  JamUpload
+  JamUpload,
+  JamBox
 } from "@ng-icons/jam-icons";
 
 import {
@@ -148,7 +149,8 @@ import {
   TablerPlug,
   TablerPrompt,
   TablerSchool,
-  TablerNewSection
+  TablerNewSection,
+  TablerArrowsUpDown
 } from "@ng-icons/tabler-icons";
 
 
@@ -343,6 +345,7 @@ import {
       JamStopSign,
       JamTrashF,
       JamUpload,
+      JamBox,
 
       TablerArchive,
       TablerArrowBackUp,
@@ -359,6 +362,7 @@ import {
       TablerPrompt,
       TablerSchool,
       TablerNewSection,
+      TablerArrowsUpDown
     }),
     DataTablesModule,
     NgApexchartsModule

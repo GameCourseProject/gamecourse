@@ -21,28 +21,31 @@ import { ApiComponent } from './api/api.component';
 
 
 @NgModule({
-  declarations: [
-    ViewsComponent,
-    FunctionsComponent,
-    ModulesShellComponent,
-    SidebarComponent,
-    DocsComponent,
-    PartsComponent,
-    ExpressionLanguageComponent,
-    PartConfigComponent,
-    ViewsShellComponent,
-    ModulesShellComponent,
-    CreationComponent,
-    InitComponent,
-    ModuleConfigComponent,
-    ResourcesComponent,
-    DataComponent,
-    ApiComponent
-  ],
-  imports: [
-    CommonModule,
-    DocsRoutingModule,
-    SharedModule
-  ]
+    declarations: [
+        ViewsComponent,
+        FunctionsComponent,
+        ModulesShellComponent,
+        SidebarComponent,
+        DocsComponent,
+        PartsComponent,
+        ExpressionLanguageComponent,
+        PartConfigComponent,
+        ViewsShellComponent,
+        ModulesShellComponent,
+        CreationComponent,
+        InitComponent,
+        ModuleConfigComponent,
+        ResourcesComponent,
+        DataComponent,
+        ApiComponent
+    ],
+    exports: [
+        InitComponent
+    ],
+    imports: [
+        CommonModule,
+        DocsRoutingModule,
+        SharedModule
+    ]
 })
 export class DocsModule { }

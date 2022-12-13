@@ -28,26 +28,33 @@ export class RulesComponent implements OnInit {
   loading ={
     page: true,
     action: false,
-    table: true,
+    table: false,
   }
 
-  rules: Rule[];
-  filteredRules: Rule[];
   course: Course;
+  rules: Rule[];
+  filteredRules: Rule[];                  // rule search
   courseRules: CourseRule[];
-  courseTags: RuleTag[];
 
-  sections: RuleSection[];
-  filteredSections: RuleSection[];
+  courseTags: RuleTag[];                  // all tags available in the course
+  submitedTags: RuleTag[];
+  selectedTags: TagManageData[] = [];     // tags user chooses to specific rule
+
+  sections: RuleSection[];                // sections of page
+  filteredSections: RuleSection[];        // section search
+
+  mode: 'add section' | 'edit section'|'add rule' | 'edit rule' | 'select' | 'add new tag';
+
+  // MANAGE DATA
   sectionToManage: SectionManageData = this.initSectionToManage();
-  @ViewChild('f', {static: false}) f: NgForm;
-
-  mode: 'add section' | 'edit section' |'add rule' | 'edit rule' | 'select';
   ruleToManage: CourseRuleManageData = this.initRuleToManage();
+  tagToManage: TagManageData = this.initTagToManage();
 
   reduce = new Reduce();
   searchQuery: string;
 
+  @ViewChild('f', {static: false}) f: NgForm;
+  @ViewChild('t', {static: false}) t: NgForm;       // tag form
   importData: {file: File, replace: boolean} = {file: null, replace: true};
   @ViewChild('fImport', { static: false }) fImport: NgForm;
 
@@ -171,17 +178,24 @@ export class RulesComponent implements OnInit {
     } else if (action === Action.EXPORT){
       this.exportRules(this.courseRules);
 
-    } else if (action === 'Create new section'){
+    } else if (action === 'Add new section'){
       this.mode = 'add section';
       this.sectionToManage = this.initSectionToManage();
       ModalService.openModal('manage-section');
 
-    } else if (action === 'Create new rule') {
+    } else if (action === 'Create rule') {
       this.mode = 'add rule';
       this.ruleToManage = this.initRuleToManage();
       this.ruleToManage.sectionId = section.id;
       ModalService.openModal('manage-rule');
+
+    } else if (action === 'add tag') {
+      this.mode = 'add new tag';
+      this.tagToManage = this.initTagToManage();
+      this.selectedTags = [];
+      ModalService.openModal('manage-tag');
     }
+
   }
 
   async toggleActive(courseRule: CourseRule){
@@ -282,17 +296,55 @@ export class RulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   getTagsNames():  {value: string, text: string}[] {
-    let nameTags : {value: string, text: string}[] = [{value: 't-1', text: 'awards'}, {value: 't-2', text: "badges"}];
-    for (let i = 0; i < this.courseTags.length ; i++){
-        nameTags.push({value: 't-' + i.toString(), text: this.courseTags[i].name});
+    let allTags : RuleTag[] = this.courseTags;
+
+    let nameTags : {value: string, text: string}[] = [{value: "0", text: 'extra-credit'}];
+    for (let i = 0; i < allTags.length ; i++){
+      console.log("aqui");
+        nameTags.push({value: (allTags[i].id).toString(), text: allTags[i].name});
     }
     return nameTags;
   }
 
+  createTag(){
+    if (this.t.valid) {
+      this.selectedTags.push(this.tagToManage);
+      this.tagToManage = this.initTagToManage();
+      this.resetTagManage();
+    }
+  }
+
+  removeTag(tag: TagManageData){
+      this.selectedTags.splice(this.selectedTags.indexOf(tag), 1);
+  }
+
+  submitTags(){
+    this.submitedTags = [];
+    for (let i = 0; i < this.selectedTags.length ; i++){
+      let newTag = new RuleTag(this.selectedTags[i].id, this.selectedTags[i].name, this.selectedTags[i].color);
+      this.submitedTags.push(newTag);
+    }
+    ModalService.closeModal('manage-tag');
+    this.resetTagManage();
+  }
 
   /*** --------------------------------------------- ***/
   /*** ------------------- Helpers ----------------- ***/
   /*** --------------------------------------------- ***/
+
+  getColors(): {value: string, text: string}[]{
+    let colors : {value: string, text: string}[] = [];
+
+    colors.push({value: "primary", text: "Indigo"});
+    colors.push({value: "secondary", text: "Pink"});
+    colors.push({value: "accent", text: "Teal"});
+    colors.push({value: "info", text: "Blue"});
+    colors.push({value: "success", text: "Green"});
+    colors.push({value: "warning", text: "Amber"});
+    colors.push({value: "error", text: "Red"});
+
+    return colors;
+  }
 
   findSectionName(rule: CourseRuleManageData): string{
     let section = this.sections.find(el => el.id === rule.sectionId);
@@ -325,6 +377,15 @@ export class RulesComponent implements OnInit {
     return ruleData;
   }
 
+  initTagToManage(tag?: RuleTag): TagManageData {
+    const tagData: TagManageData = {
+      name : tag?.name ?? null,
+      color : tag?.color ?? null
+    };
+    if (tag) tagData.id = tag.id;
+    return tagData;
+  }
+
   resetImport(){
     this.importData = {file:null, replace: true};
     this.fImport.resetForm();
@@ -340,6 +401,11 @@ export class RulesComponent implements OnInit {
     this.mode = null;
     this.sectionToManage = this.initSectionToManage();
     this.f.resetForm();
+  }
+
+  resetTagManage() {
+    this.tagToManage = this.initTagToManage();
+    this.t.resetForm();
   }
 
 }
@@ -359,4 +425,10 @@ export interface SectionManageData {
   id?: number,
   name?: string,
   rules?: Rule[]
+}
+
+export interface TagManageData {
+  id?: number,
+  name?: string,
+  color?: string
 }

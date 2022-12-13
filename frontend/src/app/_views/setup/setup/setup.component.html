@@ -31,18 +31,12 @@
               ></app-input-text>
             </div>
             <div class="mb-3 mr-2">
-              <app-input-text
+              <app-input-color
               [id] = "'courseColor'"
               [form] = "f"
               [(value)]="courseColor"
-              [placeholder]="'ex: #ffffff'"
               [topLabel]="'Course Color'"
-              [required]="true"
-              [pattern]="''"
-              [patternErrorMessage]=""
-              [maxLength]="7"
-              [maxLengthErrorMessage]=""
-              ></app-input-text>
+              ></app-input-color>
             </div>
           </div>
           <div class="w-full sm:w-1/2 sm:pr-3">
