@@ -36,8 +36,11 @@ export class RulesComponent implements OnInit {
   filteredRules: Rule[];                  // rule search
   courseRules: CourseRule[];
 
+
+  basicTag : {value: string, text: string}[] = [{value: "0", text: 'extra-credit'}]; // move to backend later maybe?
+  nameTags : {value: string, text: string}[] = this.basicTag;
   courseTags: RuleTag[];                  // all tags available in the course
-  submitedTags: RuleTag[];
+  //submitedTags: RuleTag[];
   selectedTags: TagManageData[] = [];     // tags user chooses to specific rule
 
   sections: RuleSection[];                // sections of page
@@ -103,6 +106,10 @@ export class RulesComponent implements OnInit {
 
   async getTags(courseID: number): Promise<void> {
     this.courseTags = await this.api.getCourseTags(courseID).toPromise();
+
+    for (let i = 0; i < this.courseTags.length ; i++){
+      this.nameTags.push({value: (this.courseTags[i].id).toString(), text: this.courseTags[i].name});
+    }
   }
 
   async getRules() : Promise<void> {
@@ -163,7 +170,7 @@ export class RulesComponent implements OnInit {
     const ruleToActOn = this.courseRules[row];
 
     if (action === 'value changed'){
-      if (col === 7) this.toggleActive(ruleToActOn);
+      if (col === 2) this.toggleActive(ruleToActOn);
     }
   }
 
@@ -245,8 +252,8 @@ export class RulesComponent implements OnInit {
 
       const newRule = await this.api.createRule(this.course.id, clearEmptyValues(this.ruleToManage)).toPromise();
       this.courseRules.push(newRule);
-      this.buildTable();
 
+      this.buildTable();
       this.loading.action = false;
       ModalService.closeModal('manage-rule');
       this.resetRuleManage();
@@ -295,26 +302,27 @@ export class RulesComponent implements OnInit {
   /*** -------------------- Tags ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  getTagsNames():  {value: string, text: string}[] {
-    let allTags : RuleTag[] = this.courseTags;
-
-    let nameTags : {value: string, text: string}[] = [{value: "0", text: 'extra-credit'}];
-    for (let i = 0; i < allTags.length ; i++){
-      console.log("aqui");
-        nameTags.push({value: (allTags[i].id).toString(), text: allTags[i].name});
-    }
-    return nameTags;
-  }
-
   createTag(){
     if (this.t.valid) {
+      this.loading.action = true;
+
       this.selectedTags.push(this.tagToManage);
-      this.tagToManage = this.initTagToManage();
+
+      // add new tag to 'select' option
+      for (let i = 0; i < this.selectedTags.length; i++){
+        this.nameTags.push({value:this.selectedTags[i].name, text: this.selectedTags[i].name});
+      }
+
+      this.loading.action = false;
+      ModalService.closeModal('manage-tag');
+      //this.tagToManage = this.initTagToManage();
       this.resetTagManage();
-    }
+      AlertService.showAlert(AlertType.SUCCESS, 'Tag added to course');
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
-  removeTag(tag: TagManageData){
+  /*removeTag(tag: TagManageData){
       this.selectedTags.splice(this.selectedTags.indexOf(tag), 1);
   }
 
@@ -326,7 +334,7 @@ export class RulesComponent implements OnInit {
     }
     ModalService.closeModal('manage-tag');
     this.resetTagManage();
-  }
+  }*/
 
   /*** --------------------------------------------- ***/
   /*** ------------------- Helpers ----------------- ***/
@@ -404,6 +412,7 @@ export class RulesComponent implements OnInit {
   }
 
   resetTagManage() {
+    this.mode = "add rule";
     this.tagToManage = this.initTagToManage();
     this.t.resetForm();
   }

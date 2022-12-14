@@ -146,11 +146,13 @@
             [id]="'rule-tags'"
             [form] = "f"
             [(value)] = "ruleToManage.tags"
-            [options] = "getTagsNames()"
+            [options] = "nameTags"
             [multiple] = "true"
             [search]="false"
             [placeholder]="'Rule Tags'"
             [topLabel]="'Tags'"
+            [helperPosition]="'bottom'"
+            [helperText]="'Tag colors will only show in table'"
             [required]="false">
           </app-input-select>
         </div>
@@ -192,7 +194,7 @@
            [header]="mode?.capitalize()"
            [actionInProgress] = "loading.action"
            [submitBtnText] = "'Done'"
-           (submitBtnClicked)="t.onSubmit(null); submitTags();"
+           (submitBtnClicked)="t.onSubmit(null); createTag();"
            (closeBtnClicked)="resetTagManage();">
 </app-modal>
 
@@ -200,7 +202,7 @@
   <form #t="ngForm">
     <div class="w-full flex flex-wrap mt-3">
 
-      <div *ngIf="this.selectedTags?.length > 0" class="w-full justify-center pb-3">
+      <!--<div *ngIf="this.selectedTags?.length > 0" class="w-full justify-center pb-3">
         <p>Your tags:</p>
         <ng-container *ngFor="let tag of this.selectedTags">
             <div class="inline-flex items-center rounded-lg py-1
@@ -214,11 +216,11 @@
               </button>
             </div>
         </ng-container>
-      </div>
+      </div>-->
 
       <div class="w-full flex flex-wrap" style="align-items: self-end">
         <!-- Tag Name -->
-        <div class="sm:w-2/6 sm:pr-3">
+        <div class="sm:w-1/2 sm:pr-3">
           <app-input-text
             [id] = "'tag-name'"
             [form] = "t"
@@ -234,7 +236,7 @@
         </div>
 
         <!-- Tag Color -->
-        <div class="sm:w-3/6 sm:pr-3">
+        <div class="sm:w-1/2 sm:pr-3">
           <app-input-select
             [id]="'tag-color'"
             [form] = "t"
@@ -248,9 +250,9 @@
           </app-input-select>
         </div>
 
-        <div class="sm:w-1/6">
+        <!--<div class="sm:w-1/6">
           <button type="button" class="btn-md rounded-lg btn-primary" (click) = "createTag()">Create!</button>
-        </div>
+        </div>-->
       </div>
     </div>
   </form>
