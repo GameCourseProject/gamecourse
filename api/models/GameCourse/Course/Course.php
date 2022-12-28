@@ -576,18 +576,14 @@ class Course
      * Returns the newly created course rule.
      *
      * @param int $ruleId
-     * @param string|null $description
-     * @param string $when
-     * @param string $then
      * @param bool $isActive
-     * @param array $tags
-     * @return CourseUser
+     * @return CourseRule
      * @throws Exception
      */
-    public function addRuleToCourse(int $ruleId, string $roleName = null, int $roleId = null, bool $isActive = true): CourseRule
+    public function addRuleToCourse(int $ruleId, bool $isActive = true) : CourseRule
     {
         // CHECK THIS -- INCOMPLETE
-        return CourseRule::addCourseRule($ruleId, $this->id, $roleName, $roleId, $isActive);
+        return CourseRule::addCourseRule($ruleId, $this->id, $isActive);
     }
 
     public function getTags(int $courseId, bool $active): array

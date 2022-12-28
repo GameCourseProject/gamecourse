@@ -11,7 +11,7 @@ use GameCourse\AutoGame\RuleSystem\Tag;
 class RuleSystemController
 {
     /*** --------------------------------------------- ***/
-    /*** --------------- Course Section ---------------- ***/
+    /*** ------------------  Section ----------------- ***/
     /*** --------------------------------------------- ***/
 
     /**
@@ -35,7 +35,7 @@ class RuleSystemController
     }
 
     /**
-     * Create a new section in the system and add it to the course.
+     * Create a new section in the system.
      *
      * @throws Exception
      */
@@ -54,15 +54,35 @@ class RuleSystemController
         // Add section to system
         $section = Section::addSection($courseId, $name);
 
-        // Add section to course missing? -- NOT SURE
-
         $sectionInfo = $section->getData();
         API::response($sectionInfo);
     }
 
     /*** --------------------------------------------- ***/
-    /*** --------------- Course Rules ---------------- ***/
+    /*** ------------------- Rules ------------------- ***/
     /*** --------------------------------------------- ***/
+
+    /**
+     * @throws Exception
+     */
+    public function getRulesOfSection()
+    {
+        API::requireValues("courseId", "sectionId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        $sectionId = API::getValue("sectionId", "int");
+        $active = API::getValue("active", "bool");
+
+        $sectionRules = Rule::getRulesOfSection($sectionId, $active);
+        foreach ($sectionRules as &$sectionRuleInfo) {
+            Rule::getRuleById($sectionRuleInfo["id"]);
+        }
+        API::response($sectionRules);
+    }
+
 
     /**
      * @throws Exception
@@ -85,7 +105,7 @@ class RuleSystemController
     }
 
     /**
-     * Creates a new rule in the system and adds it to the course
+     * Creates a new rule in the system
      *
      * @throws Exception
      */
@@ -112,27 +132,53 @@ class RuleSystemController
         // Add rule to system
         $rule = Rule::addRule($courseId, $sectionId, $name, $description, $when, $then, $position, true, $tags);
 
-        // Add rule to course
-        $courseRule = $course->AddRuleToCourse($rule->getId());
-
-        $courseRuleInfo = $courseRule->getData();
-        API::response($courseRuleInfo);
+        $ruleInfo = $rule->getData();
+        API::response($ruleInfo);
     }
 
-    public function getCourseTags(){
-        API::requireValues("courseId");
+    /**
+     * Removes a rule from a given section
+     *
+     * @throws Exception
+     */
+    public function removeRuleFromSection()
+    {
+        API::requireValues('sectionId', 'ruleId');
+
+        $sectionId = API::getValue('sectionId', "int");
+        $ruleId = API::getValue('ruleId', "int");
+
+        $section = Section::getSectionById($sectionId);
+        $section->removeRule($ruleId);
+    }
+
+    /*** --------------------------------------------- ***/
+    /*** -------------------- Tags ------------------- ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * Create a new tag in the system
+     *
+     * @throws Exception
+     */
+    public function createTag()
+    {
+        API::requireValues('courseId', 'name', 'color');
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
 
         API::requireCourseAdminPermission($course);
-        $active = API::getValue("active", "bool");
 
-        $courseTags = RuleSystem::getTags($courseId);
-        foreach ($courseTags as &$courseTagInfo){
-            Tag::getTagById($courseTagInfo["id"]);
-        }
-        API::response($courseTags);
+        // Get values
+        $name = API::getValue("name");
+        $color = API::getValue("color");
+
+        // Add tag to system
+        $tag = Tag::addTag($courseId, $name, $color);
+
+        $tagInfo = $tag->getData();
+        API::response($tagInfo);
     }
 
 }

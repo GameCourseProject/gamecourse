@@ -150,7 +150,9 @@ import {
   TablerPrompt,
   TablerSchool,
   TablerNewSection,
-  TablerArrowsUpDown
+  TablerArrowsUpDown,
+  TablerAlertTriangle,
+  TablerCopy
 } from "@ng-icons/tabler-icons";
 
 
@@ -347,22 +349,24 @@ import {
       JamUpload,
       JamBox,
 
+      TablerAlertTriangle,
       TablerArchive,
       TablerArrowBackUp,
       TablerArrowNarrowUp,
       TablerArrowNarrowDown,
+      TablerArrowsUpDown,
       TablerBarrierBlock,
       TablerBooks,
       TablerCaretDown,
       TablerClipboardList,
       TablerCloudUpload,
       TablerColorSwatch,
+      TablerCopy,
       TablerIdBadge2,
+      TablerNewSection,
       TablerPlug,
       TablerPrompt,
       TablerSchool,
-      TablerNewSection,
-      TablerArrowsUpDown
     }),
     DataTablesModule,
     NgApexchartsModule

@@ -51,7 +51,7 @@
               [options] = "tableOptions"
               [loading] = "loading.table"
               (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
-              (valueChanged)="doActionOnTable('add rule', $event.row, $event.col, $event.value)">
+              (valueChanged)="doActionOnTable('value changed rule', $event.row, $event.col, $event.value)">
             </app-table>
 
           <!-- Loader -->
@@ -72,7 +72,8 @@
   [size]="'md'"
   [header]="mode?.capitalize()"
   [actionInProgress] = "loading.action"
-  (submitBtnClicked)="f.onSubmit(null); createSection()">
+  (submitBtnClicked)="f.onSubmit(null); createSection()"
+  (onClose)="resetSectionManage()">
 </app-modal>
 
 <ng-template #MANAGE_SECTION>
@@ -106,15 +107,16 @@
 </app-modal>
 
 <ng-template #MANAGE_RULE>
-  <form #f="ngForm">
+  <form #r="ngForm">
 
     <div class="flex flex-wrap mt-3">
 
+      <div class="w-full border-b-2 border-gray-300">
       <div class="w-full sm:pr-7">
         <!-- Name -->
         <app-input-text
           [id] = "'rule-name'"
-          [form] = "f"
+          [form] = "r"
           [(value)] = "ruleToManage.name"
           [placeholder]="'Rule Name'"
           [topLabel]="'Name'"
@@ -129,7 +131,7 @@
         <!-- Description -->
         <app-input-textarea
           [id] = "'rule-description'"
-          [form] = "f"
+          [form] = "r"
           [(value)] = "ruleToManage.description"
           [placeholder]="'Rule Description'"
           [label] = "'Description'"
@@ -144,15 +146,13 @@
           <!-- Tags -->
           <app-input-select
             [id]="'rule-tags'"
-            [form] = "f"
+            [form] = "r"
             [(value)] = "ruleToManage.tags"
-            [options] = "nameTags"
+            [options] = "getTagNames(ruleToManage.tags)"
             [multiple] = "true"
             [search]="false"
-            [placeholder]="'Rule Tags'"
+            [placeholder]="'Select tags for rule'"
             [topLabel]="'Tags'"
-            [helperPosition]="'bottom'"
-            [helperText]="'Tag colors will only show in table'"
             [required]="false">
           </app-input-select>
         </div>
@@ -160,34 +160,41 @@
         <div class="sm:w-2/12 sm:pl-3">
           <button type="button" class="btn-md rounded-lg btn-primary" (click) = "doAction('add tag')">Add new tag</button>
         </div>
+
+        <p class="pl-1 pb-16"><small> Tag colors will only show in table</small></p>
+
+      </div>
+      </div>
+
+      <div class="w-full flex flex-wrap mt-16" style="align-items: flex-end">
+        <!-- When clause -->
+        <div class="sm:w-1/2">
+          <app-input-text
+            [id]="'rule-when'"
+            [form] = "r"
+            [(value)] = "ruleToManage.when"
+            [placeholder]="'Rule When Clause'"
+            [topLabel]="'When'">
+          </app-input-text>
+       </div>
+
+        <!-- Then clause -->
+        <div class="sm:w-1/2 sm:pl-3 sm:pr-5">
+          <app-input-text
+            [id]="'rule-then'"
+            [form] = "r"
+            [(value)] = "ruleToManage.then"
+            [placeholder]="'Rule Then Clause'"
+            [topLabel]="'Then'">
+          </app-input-text>
+       </div>
       </div>
     </div>
   </form>
 </ng-template>
 
-<!--
-<div class="w-full sm:w-1/2 sm:pr-12">
-  When
-  <app-input-text
-    [id]="'rule-when'"
-    [form] = "f"
-    [(value)] = "ruleToManage.when"
-    [placeholder]="'Rule When Clause'"
-    [topLabel]="'When'">
-  </app-input-text>
-
-  Then
-  <app-input-text
-    [id]="'rule-then'"
-    [form] = "f"
-    [(value)] = "ruleToManage.then"
-    [placeholder]="'Rule Then Clause'"
-    [topLabel]="'Then'">
-  </app-input-text>
-</div>-->
-
 <!-- New / Edit tag modal -->
-<app-modal *ngIf="mode"
+<app-modal *ngIf="mode && tagToManage"
            [id]="'manage-tag'"
            [templateRef]="MANAGE_TAG"
            [size]="'md'"
@@ -257,3 +264,17 @@
     </div>
   </form>
 </ng-template>
+
+
+
+<!-- Delete Verification Modal -->
+<app-simple-modal *ngIf="ruleToDelete"
+                  [id]="'delete-verification'"
+                  [title]="'Remove rule'"
+                  [text]="'Are you sure you want to remove rule \'' + ruleToDelete?.name + '\' from this section? You won\'t be able to undo this action.'"
+                  [submitBtnText]="'Remove'"
+                  [submitBtnColor]="'error'"
+                  [actionInProgress]="loading.action"
+                  (submitBtnClicked)="deleteRule(ruleToDelete)"
+                  (onClose)="ruleToDelete = null">
+</app-simple-modal>
