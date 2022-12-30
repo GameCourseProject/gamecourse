@@ -51,8 +51,8 @@ export class RulesComponent implements OnInit {
   reduce = new Reduce();
   searchQuery: string;
 
-  @ViewChild('f', {static: false}) f: NgForm;
-  @ViewChild('r', {static: false}) r: NgForm;
+  @ViewChild('f', {static: false}) f: NgForm;       // section form
+  @ViewChild('r', {static: false}) r: NgForm;       // rule form
   @ViewChild('t', {static: false}) t: NgForm;       // tag form
   importData: {file: File, replace: boolean} = {file: null, replace: true};
   @ViewChild('fImport', { static: false }) fImport: NgForm;
@@ -101,6 +101,13 @@ export class RulesComponent implements OnInit {
 
   async getCourseRules(courseID: number): Promise<void> {
     this.courseRules = (await this.api.getCourseRules(courseID).toPromise()).sort((a, b) => a.name.localeCompare(b.name));
+
+    console.log(this.courseRules);
+    // Get tags for each rule -> Tags are on different table (RULE_TAGS)
+    for (let i=0; i < this.courseRules.length; i++){
+      this.courseRules[i].tags = await this.api.getRuleTags(courseID, this.courseRules[i].id).toPromise();
+    }
+
     this.filteredRules = this.courseRules;
   }
 
@@ -200,8 +207,9 @@ export class RulesComponent implements OnInit {
       this.mode = 'add rule';
       this.ruleToManage = this.initRuleToManage();
 
-      this.ruleToManage.sectionId = section.id;
-      console.log(this.ruleToManage.sectionId);
+      this.ruleToManage.section = section.id;
+      this.ruleToManage.course = this.course.id
+      console.log(this.ruleToManage);
       //if (!this.ruleToManage.tags.includes(this.defaultTag)){
       //  this.ruleToManage.tags.push(this.defaultTag);
       //}
@@ -219,7 +227,7 @@ export class RulesComponent implements OnInit {
   async deleteRule(rule: Rule): Promise<void> {
     this.loading.action = true;
 
-    await this.api.deleteRule(rule.sectionId, rule.id).toPromise();
+    await this.api.deleteRule(rule.section, rule.id).toPromise();
     const index = this.courseRules.findIndex(el => el.id === rule.id);
     this.courseRules.removeAtIndex(index);
     this.buildTable();
@@ -274,13 +282,15 @@ export class RulesComponent implements OnInit {
     if (this.r.valid) {
       this.loading.action = true;
 
-      console.log(this.ruleToManage);
       // create position --- NEEDS ABSTRACTION
-      const sectionRules = await this.getRulesOfSection(this.course.id, this.ruleToManage.sectionId);
+      const sectionRules = await this.getRulesOfSection(this.course.id, this.ruleToManage.section);
       this.ruleToManage.position = sectionRules.length + 1;
+
       console.log(this.ruleToManage);
 
-      const newRule = await this.api.createRule(this.course.id, clearEmptyValues(this.ruleToManage)).toPromise();
+      const newRule = await this.api.createRule(clearEmptyValues(this.ruleToManage)).toPromise();
+      newRule.tags = await this.api.getRuleTags(newRule.course, newRule.id).toPromise();
+
       this.courseRules.push(newRule);
       console.log(this.courseRules);
 
@@ -321,9 +331,9 @@ export class RulesComponent implements OnInit {
     // TODO
   }
 
-  async getRulesOfSection(courseId: number, sectionId: number, active?: boolean): Promise<Rule[]>
+  async getRulesOfSection(courseId: number, section: number, active?: boolean): Promise<Rule[]>
   {
-    let rulesOfSection = await this.api.getRulesOfSection(courseId, sectionId, active).toPromise();
+    let rulesOfSection = await this.api.getRulesOfSection(courseId, section, active).toPromise();
     return rulesOfSection;
   }
 
@@ -342,10 +352,12 @@ export class RulesComponent implements OnInit {
     if (this.t.valid) {
       this.loading.action = true;
 
+      this.tagToManage.course = this.course.id;
+
       const color = this.colorToHexa(this.tagToManage.color);
       this.tagToManage.color = color;
 
-      const newTag = await this.api.createTag(this.course.id, clearEmptyValues(this.tagToManage)).toPromise();
+      const newTag = await this.api.createTag(clearEmptyValues(this.tagToManage)).toPromise();
       this.ruleToManage.tags.push(newTag);
       console.log(this.ruleToManage.tags);
       //adicionar uma especie de buildTable() para dar refresh a valores do select? -- pensar nisto
@@ -419,7 +431,7 @@ export class RulesComponent implements OnInit {
   }
 
   findSectionName(rule: RuleManageData): string{
-    let section = this.sections.find(el => el.id === rule.sectionId);
+    let section = this.sections.find(el => el.id === rule.section);
 
     if (section){
       return section.name;
@@ -445,11 +457,12 @@ export class RulesComponent implements OnInit {
 
   initRuleToManage(rule?: Rule): RuleManageData {
     const ruleData: RuleManageData = {
-      sectionId: rule?.sectionId ?? null,
+      course: rule?.course ?? null,
+      section: rule?.section ?? null,
       name: rule?.name ?? null,
       description: rule?.description ?? null,
-      when: rule?.when ?? null,
-      then: rule?.then ?? null,
+      whenClause: rule?.whenClause ?? null,
+      thenClause: rule?.thenClause ?? null,
       position: rule?.position ?? null,
       tags: rule?.tags ?? []
     };
@@ -461,10 +474,11 @@ export class RulesComponent implements OnInit {
 
   initTagToManage(tag?: RuleTag): TagManageData {
     const tagData: TagManageData = {
+      course: tag?.course ?? null,
       name : tag?.name ?? null,
       color : tag?.color ?? null
     };
-    if (tag) tagData.id = tag.id;
+    if (tag) { tagData.id = tag.id; }
     return tagData;
   }
 
@@ -476,7 +490,7 @@ export class RulesComponent implements OnInit {
   resetRuleManage(){
     this.mode = null;
     this.ruleToManage = this.initRuleToManage();
-    this.f.resetForm();
+    this.r.resetForm();
   }
 
   resetSectionManage(){
@@ -495,11 +509,12 @@ export class RulesComponent implements OnInit {
 
 export interface RuleManageData {
   id?: number,
-  sectionId?: number,
+  course?: number,
+  section?: number,
   name?: string,
   description?: string,
-  when?: string,
-  then?: string,
+  whenClause?: string,
+  thenClause?: string,
   position?: number,
   tags?: RuleTag[]
 }
@@ -512,6 +527,7 @@ export interface SectionManageData {
 
 export interface TagManageData {
   id?: number,
+  course?: number,
   name?: string,
   color?: string
 }

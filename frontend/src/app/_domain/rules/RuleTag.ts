@@ -1,11 +1,13 @@
 export class RuleTag{
   private _id: number;
+  private _course: number;
   private _name: string;
   private _color: string;
 
 
-  constructor(id: number, name: string, color: string){
+  constructor(id: number, course: number, name: string, color: string){
     this._id = id;
+    this._course = course;
     this._name = name;
     this._color = color;
   }
@@ -16,6 +18,14 @@ export class RuleTag{
 
   set id(value: number) {
     this._id = value;
+  }
+
+  get course(): number {
+    return this._course;
+  }
+
+  set course(value: number) {
+    this._course = value;
   }
 
   get name(): string {
@@ -37,6 +47,7 @@ export class RuleTag{
   static fromDatabase(obj: RuleTagDatabase): RuleTag {
     return new RuleTag(
       obj.id,
+      obj.course,
       obj.name,
       obj.color
     );
@@ -45,6 +56,7 @@ export class RuleTag{
 
 interface RuleTagDatabase {
   id: number,
+  course: number,
   name: string,
   color: string,
 }

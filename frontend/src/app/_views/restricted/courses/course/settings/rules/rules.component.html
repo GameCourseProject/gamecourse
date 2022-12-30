@@ -170,10 +170,11 @@
         <!-- When clause -->
         <div class="sm:w-1/2">
           <app-input-text
-            [id]="'rule-when'"
+            [id]="'rule-whenClause'"
             [form] = "r"
-            [(value)] = "ruleToManage.when"
+            [(value)] = "ruleToManage.whenClause"
             [placeholder]="'Rule When Clause'"
+            [required]="true"
             [topLabel]="'When'">
           </app-input-text>
        </div>
@@ -181,10 +182,11 @@
         <!-- Then clause -->
         <div class="sm:w-1/2 sm:pl-3 sm:pr-5">
           <app-input-text
-            [id]="'rule-then'"
+            [id]="'rule-thenClause'"
             [form] = "r"
-            [(value)] = "ruleToManage.then"
+            [(value)] = "ruleToManage.thenClause"
             [placeholder]="'Rule Then Clause'"
+            [required]="true"
             [topLabel]="'Then'">
           </app-input-text>
        </div>

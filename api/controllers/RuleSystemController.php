@@ -67,16 +67,16 @@ class RuleSystemController
      */
     public function getRulesOfSection()
     {
-        API::requireValues("courseId", "sectionId");
+        API::requireValues("courseId", "section");
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
 
         API::requireCourseAdminPermission($course);
-        $sectionId = API::getValue("sectionId", "int");
+        $section = API::getValue("section", "int");
         $active = API::getValue("active", "bool");
 
-        $sectionRules = Rule::getRulesOfSection($sectionId, $active);
+        $sectionRules = Rule::getRulesOfSection($section, $active);
         foreach ($sectionRules as &$sectionRuleInfo) {
             Rule::getRuleById($sectionRuleInfo["id"]);
         }
@@ -111,26 +111,26 @@ class RuleSystemController
      */
     public function createRule()
     {
-        API::requireValues('courseId', 'sectionId', 'name', 'description', 'when',
-            'then', 'position', 'tags');
+        API::requireValues('course', 'section', 'name', 'description', 'whenClause',
+            'thenClause', 'position', 'tags');
 
-        $courseId = API::getValue("courseId", "int");
-        $course = API::verifyCourseExists($courseId);
+        $course = API::getValue("course", "int");
+        $courseEntity = API::verifyCourseExists($course);
 
-        API::requireCourseAdminPermission($course);
+        API::requireCourseAdminPermission($courseEntity);
 
         // Get values
-        $sectionId = API::getValue("sectionId");
+        $section = API::getValue("section", "int");
         $name = API::getValue("name");
         $description = API::getValue("description");
-        $when = API::getValue("when");
-        $then = API::getValue("then");
-        $position= API::getValue("position");
+        $whenClause = API::getValue("whenClause");
+        $thenClause = API::getValue("thenClause");
+        $position= API::getValue("position", "int");
         $tags = API::getValue("tags");
 
 
         // Add rule to system
-        $rule = Rule::addRule($courseId, $sectionId, $name, $description, $when, $then, $position, true, $tags);
+        $rule = Rule::addRule($course, $section, $name, $description, $whenClause, $thenClause, $position, true, $tags);
 
         $ruleInfo = $rule->getData();
         API::response($ruleInfo);
@@ -143,9 +143,9 @@ class RuleSystemController
      */
     public function removeRuleFromSection()
     {
-        API::requireValues('sectionId', 'ruleId');
+        API::requireValues('section', 'ruleId');
 
-        $sectionId = API::getValue('sectionId', "int");
+        $sectionId = API::getValue('section', "int");
         $ruleId = API::getValue('ruleId', "int");
 
         $section = Section::getSectionById($sectionId);
@@ -163,9 +163,9 @@ class RuleSystemController
      */
     public function createTag()
     {
-        API::requireValues('courseId', 'name', 'color');
+        API::requireValues('course', 'name', 'color');
 
-        $courseId = API::getValue("courseId", "int");
+        $courseId = API::getValue("course", "int");
         $course = API::verifyCourseExists($courseId);
 
         API::requireCourseAdminPermission($course);
@@ -179,6 +179,29 @@ class RuleSystemController
 
         $tagInfo = $tag->getData();
         API::response($tagInfo);
+    }
+
+    /**
+     * Gets all tag from a rule
+     *
+     * @throws Exception
+     */
+    public function getRuleTags(){
+        API::requireValues("courseId","ruleId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        $ruleId = API::getValue("ruleId", "int");
+
+        API::requireCourseAdminPermission($course);
+
+        $ruleTags = Tag::getRuleTags($ruleId);
+        foreach ($ruleTags as &$ruleTagInfo) {
+            Tag::getTagById($ruleTagInfo["id"]);
+        }
+        API::response($ruleTags);
+
     }
 
 }

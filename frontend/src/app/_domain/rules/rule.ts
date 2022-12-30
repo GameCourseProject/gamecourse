@@ -4,23 +4,25 @@ import {RuleTag} from "./RuleTag";
 
 export class Rule {
   private _id: number;
-  private _sectionId: number;
+  private _course: number;
+  private _section: number;
   private _name: string;
   private _description: string;
-  private _when: string;
-  private _then: string;
+  private _whenClause: string;
+  private _thenClause: string;
   private _position: number;
   private _isActive: boolean;
   private _tags: RuleTag[];
 
-  constructor(id: number, sectionID: number, name: string, description: string, when: string, then: string,
+  constructor(id: number, course: number, section: number, name: string, description: string, whenClause: string, thenClause: string,
               position: number, isActive: boolean, tags: RuleTag[]) {
     this._id = id;
-    this._sectionId = sectionID;
+    this._course = course;
+    this._section = section;
     this._name = name;
     this._description = description;
-    this._when = when;
-    this._then = then;
+    this._whenClause = whenClause;
+    this._thenClause = thenClause;
     this._position = position;
     this._isActive = isActive;
     this._tags = tags;
@@ -34,12 +36,20 @@ export class Rule {
     this._id = value;
   }
 
-  get sectionId(): number {
-    return this._sectionId;
+  get course(): number {
+    return this._course;
   }
 
-  set sectionId(value: number) {
-    this._sectionId = value;
+  set course(value: number) {
+    this._course = value;
+  }
+
+  get section(): number {
+    return this._section;
+  }
+
+  set section(value: number) {
+    this._section = value;
   }
 
   get name(): string {
@@ -58,20 +68,20 @@ export class Rule {
     this._description = value;
   }
 
-  get when(): string {
-    return this._when;
+  get whenClause(): string {
+    return this._whenClause;
   }
 
-  set when(value: string) {
-    this._when = value;
+  set whenClause(value: string) {
+    this._whenClause = value;
   }
 
-  get then(): string {
-    return this._then;
+  get thenClause(): string {
+    return this._thenClause;
   }
 
-  set then(value: string) {
-    this._then = value;
+  set thenClause(value: string) {
+    this._thenClause = value;
   }
 
   get position(): number {
@@ -101,11 +111,12 @@ export class Rule {
   static fromDatabase(obj: RuleDatabase): Rule {
     return new Rule(
       obj.id,
-      obj.sectionId,
+      obj.course,
+      obj.section,
       obj.name,
       obj.description,
-      obj.when,
-      obj.then,
+      obj.whenClause,
+      obj.thenClause,
       obj.position,
       obj.isActive ?? null,
       obj.tags
@@ -115,11 +126,12 @@ export class Rule {
 
 interface RuleDatabase {
   id: number,
-  sectionId: number,
+  course: number,
+  section: number,
   name: string,
   description: string,
-  when: string,
-  then: string,
+  whenClause: string,
+  thenClause: string,
   position: number,
   isActive: boolean,
   tags: RuleTag[]

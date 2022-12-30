@@ -1,6 +1,6 @@
 import {Injectable, Query} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpXhrBackend} from "@angular/common/http";
-import {Observable, throwError} from "rxjs";
+import {observable, Observable, throwError} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
 import {ApiEndpointsService} from "./api-endpoints.service";
@@ -1047,14 +1047,14 @@ export class ApiHttpService {
 
   // Rules
 
-  public createRule(courseID: number, ruleData: RuleManageData): Observable<Rule> {
+  public createRule(ruleData: RuleManageData): Observable<Rule> {
     const data = {
-      courseId: courseID,
-      sectionId: ruleData.sectionId,
+      course: ruleData.course,
+      section: ruleData.section,
       name: ruleData.name,
       description: ruleData.description,
-      when: ruleData.when,
-      then: ruleData.then,
+      whenClause: ruleData.whenClause,
+      thenClause: ruleData.thenClause,
       position: ruleData.position,
       tags: ruleData.tags
     }
@@ -1069,8 +1069,8 @@ export class ApiHttpService {
       .pipe( map((res: any) => Rule.fromDatabase(res['data'])) );
   }
 
-  public deleteRule(sectionID: number, ruleID: number) : Observable<void> {
-    const data = {sectionId: sectionID, ruleId: ruleID };
+  public deleteRule(section: number, ruleID: number) : Observable<void> {
+    const data = {section: section, ruleId: ruleID };
 
     const params = (qs:QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULESYSTEM);
@@ -1082,12 +1082,12 @@ export class ApiHttpService {
       .pipe(map((res:any) => res));
   }
 
-  public getRulesOfSection(courseID: number, sectionID: number, active?: boolean) : Observable<Rule[]>{
+  public getRulesOfSection(courseID: number, section: number, active?: boolean) : Observable<Rule[]>{
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULESYSTEM);
       qs.push('request', 'getRulesOfSection');
       qs.push('courseId', courseID);
-      qs.push('sectionId', sectionID);
+      qs.push('section', section);
       if (active !== undefined) qs.push('active', active);
     };
 
@@ -1157,9 +1157,9 @@ export class ApiHttpService {
 
   // Tags
 
-  public createTag(courseID: number, tagData: TagManageData) : Observable<RuleTag> {
+  public createTag(tagData: TagManageData) : Observable<RuleTag> {
     const data = {
-      courseId: courseID,
+      course: tagData.course,
       name: tagData.name,
       color: tagData.color
     }
@@ -1172,6 +1172,20 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe(map((res:any) => RuleTag.fromDatabase(res['data'])));
+  }
+
+  public getRuleTags(courseID: number, ruleID: number) : Observable<RuleTag[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('request', 'getRuleTags');
+      qs.push('courseId', courseID);
+      qs.push('ruleId', ruleID);
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data'].map(obj => RuleTag.fromDatabase(obj))));
   }
 
   // Configuration
