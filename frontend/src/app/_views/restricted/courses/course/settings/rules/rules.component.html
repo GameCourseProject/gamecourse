@@ -20,7 +20,7 @@
 
   <div class="py-6 border-b-2 border-gray-300 ">
     <app-top-actions
-      [rightActions]="[{action: 'Add new section', icon: 'feather-plus-circle', color: 'primary'}]"
+      [rightActions]="[{action: 'Add section', icon: 'feather-plus-circle', color: 'primary'}]"
       (btnClicked)="doAction($event)">
     </app-top-actions>
   </div>
@@ -35,7 +35,7 @@
           <!-- Actions for rules -->
           <app-top-actions
             [leftActions]="[{action: 'Edit Section', icon: 'jam-pencil-f'},
-                            {action: 'Delete Section', icon: 'jam-trash-f'}]"
+                            {action: 'Remove Section', icon: 'jam-trash-f'}]"
             [rightActions]="[{action: 'Create rule', icon: 'tabler-clipboard-list', color: 'primary', outline: true},
                              {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
                               {action: Action.IMPORT + ' rule', icon:'jam-download'},
@@ -73,9 +73,9 @@
   [templateRef]="MANAGE_SECTION"
   [size]="'md'"
   [header]="mode?.capitalize()"
-  [closeBtnText]="mode?.capitalize()"
+  [submitBtnText]="mode?.capitalize()"
   [actionInProgress] = "loading.action"
-  (submitBtnClicked)="s.onSubmit(null); mode === 'edit section' ? createSection() : editSection()"
+  (submitBtnClicked)="s.onSubmit(null); mode === 'add section' ? createSection() : editSection()"
   (onClose)="resetSectionManage()">
 </app-modal>
 
@@ -277,13 +277,16 @@
 
 
 <!-- Delete Verification Modal -->
-<app-simple-modal *ngIf="ruleToDelete"
+<app-simple-modal *ngIf="mode && (ruleToDelete || sectionToDelete)"
                   [id]="'delete-verification'"
-                  [title]="'Remove rule'"
-                  [text]="'Are you sure you want to remove rule \'' + ruleToDelete?.name + '\' from this section? You won\'t be able to undo this action.'"
+                  [title]="mode?.capitalize()"
+                  [text]=" mode === 'remove rule' ? 'Are you sure you want to remove rule \'' + ruleToDelete?.name +
+                                                    '\' from this section? You won\'t be able to undo this action.' :
+                                                    'Are you sure you want to remove section \'' + sectionToDelete?.name +
+                                                    '\' and its current rules? You won\'t be able to undo this action.'"
                   [submitBtnText]="'Remove'"
                   [submitBtnColor]="'error'"
                   [actionInProgress]="loading.action"
-                  (submitBtnClicked)="deleteRule(ruleToDelete)"
+                  (submitBtnClicked)="mode === 'remove rule' ? deleteRule(ruleToDelete): deleteSection(sectionToDelete)"
                   (onClose)="ruleToDelete = null">
 </app-simple-modal>

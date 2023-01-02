@@ -39,10 +39,10 @@ export class RulesComponent implements OnInit {
   selectedTags: string[];
   availableTags: any[] = [];
 
-  sections: RuleSection[];                // sections of page
-  filteredSections: RuleSection[];        // section search
+  sections: RuleSection[] = [];                // sections of page
+  filteredSections: RuleSection[] = [];        // section search
 
-  mode: 'add section' | 'edit section' | 'delete section' | 'add rule' | 'edit rule' | 'delete rule';
+  mode: 'add section' | 'edit section' | 'remove section' | 'add rule' | 'edit rule' | 'remove rule';
   tagMode : 'add tag' | 'edit tag';
 
   // MANAGE DATA
@@ -216,7 +216,7 @@ export class RulesComponent implements OnInit {
     } else if (action === Action.EXPORT) {
       this.exportRules(this.courseRules);
 
-    } else if (action === 'Add new section'){
+    } else if (action === 'Add section'){
       this.mode = 'add section';
       this.sectionToManage = this.initSectionToManage();
       this.sectionToManage.course = this.course.id;
@@ -243,7 +243,8 @@ export class RulesComponent implements OnInit {
 
       ModalService.openModal('manage-section')
 
-    } else if (action === 'Delete Section') {
+    } else if (action === 'Remove Section') {
+      this.mode = 'remove section';
       this.sectionToDelete = section;
       ModalService.openModal('delete-verification');
     }
@@ -260,7 +261,28 @@ export class RulesComponent implements OnInit {
 
     this.loading.action = false;
     ModalService.closeModal('delete-verification');
+    this.mode = null;
+    this.ruleToDelete = null;
+
     AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + rule.name + '\' was removed from this section');
+  }
+
+  async deleteSection(section: RuleSection): Promise<void> {
+    this.loading.action = true;
+
+    const rules = await this.api.getRulesOfSection(this.course.id,section.id).toPromise();
+    await this.api.deleteSection(section.id, rules);
+
+    const index = this.sections.findIndex(el => el.id === section.id);
+    this.sections.removeAtIndex(index);
+
+    this.loading.action = false;
+    ModalService.closeModal('delete-verification');
+    this.mode = null;
+    this.sectionToDelete = null;
+
+    AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + section.name + '\' was removed from this course');
+
   }
 
   async toggleActive(rule: Rule){
@@ -357,7 +379,10 @@ export class RulesComponent implements OnInit {
     if (this.s.valid) {
       this.loading.action = true;
 
-      const newSection = await this.api.createSection(this.course.id, clearEmptyValues(this.sectionToManage)).toPromise();
+      // create position --- NEEDS ABSTRACTION
+      this.sectionToManage.position = this.sections.length + 1;
+
+      const newSection = await this.api.createSection(clearEmptyValues(this.sectionToManage)).toPromise();
       this.sections.push(newSection);
       this.buildTable();
 
@@ -386,11 +411,6 @@ export class RulesComponent implements OnInit {
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
-  async getRulesOfSection(courseId: number, section: number, active?: boolean): Promise<Rule[]>
-  {
-    let rulesOfSection = await this.api.getRulesOfSection(courseId, section, active).toPromise();
-    return rulesOfSection;
-  }
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Tags ------------------- ***/
@@ -561,6 +581,12 @@ export class RulesComponent implements OnInit {
 
   filterRules(ruleSearch: Rule): Rule[]{
     return this.filteredRules.filter(rule => rule.name === ruleSearch.name);
+  }
+
+  async getRulesOfSection(courseId: number, section: number, active?: boolean): Promise<Rule[]>
+  {
+    let rulesOfSection = await this.api.getRulesOfSection(courseId, section, active).toPromise();
+    return rulesOfSection;
   }
 
   initSectionToManage(section?: RuleSection): SectionManageData {

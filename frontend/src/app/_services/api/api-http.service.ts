@@ -1016,10 +1016,11 @@ export class ApiHttpService {
   }
 
   // Sections
-  public createSection(courseID: number, sectionData: SectionManageData): Observable<RuleSection> {
+  public createSection(sectionData: SectionManageData): Observable<RuleSection> {
     const data = {
-      courseId : courseID,
-      name: sectionData.name
+      course : sectionData.course,
+      name: sectionData.name,
+      position: sectionData.position
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -1048,6 +1049,19 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe(map((res:any) => RuleSection.fromDatabase(res['data'])));
+  }
+
+  public deleteSection(sectionID: number, rules: Rule[]) : Observable<void>{
+    const data = { sectionId: sectionID, rules: rules };
+
+    const params = (qs:QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('request', 'deleteSection');
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => res));
   }
 
   public getCourseSections(courseID: number): Observable<RuleSection[]> {

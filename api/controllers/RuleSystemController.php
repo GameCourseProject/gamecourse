@@ -41,15 +41,16 @@ class RuleSystemController
      */
     public function createSection()
     {
-        API::requireValues('courseId', 'name');
+        API::requireValues('course', 'name', 'position');
 
-        $courseId = API::getValue("courseId", "int");
+        $courseId = API::getValue("course", "int");
         $course = API::verifyCourseExists($courseId);
 
         API::requireCourseAdminPermission($course);
 
         // Get values
         $name = API::getValue("name");
+        $position = API::getValue("position");
 
         // Add section to system
         $section = Section::addSection($courseId, $name);
@@ -58,6 +59,11 @@ class RuleSystemController
         API::response($sectionInfo);
     }
 
+    /**
+     * Edits a section from a specific course
+     *
+     * @throws Exception
+     */
     public function editSection()
     {
         API::requireValues('id', 'course', 'name', 'position');
@@ -78,6 +84,23 @@ class RuleSystemController
         $sectionInfo = $section->getData();
 
         API::response($sectionInfo);
+    }
+
+    /**
+     * Deletes section and assigned rules from system
+     *
+     * @throws Exception
+     */
+    public function deleteSection(){
+        API::requireValues('sectionId', 'rules');
+
+        $sectionId = API::getValue("sectionId", "int");
+        $rules = API::getValue("rules");
+
+        Section::deleteSection($sectionId);
+
+        // remove rules?
+
     }
 
     /*** --------------------------------------------- ***/
