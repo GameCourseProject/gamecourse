@@ -58,6 +58,28 @@ class RuleSystemController
         API::response($sectionInfo);
     }
 
+    public function editSection()
+    {
+        API::requireValues('id', 'course', 'name', 'position');
+
+        $courseId = API::getValue("course", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireAdminPermission($course);
+
+        $sectionId = API::getValue("id", "int");
+        $section = Section::getSectionById($sectionId);
+
+        // Get values
+        $name = API::getValue("name");
+        $position = API::getValue("position", "int");
+
+        $section->editSection($name, $position);
+        $sectionInfo = $section->getData();
+
+        API::response($sectionInfo);
+    }
+
     /*** --------------------------------------------- ***/
     /*** ------------------- Rules ------------------- ***/
     /*** --------------------------------------------- ***/
@@ -82,7 +104,6 @@ class RuleSystemController
         }
         API::response($sectionRules);
     }
-
 
     /**
      * @throws Exception
@@ -112,7 +133,7 @@ class RuleSystemController
     public function createRule()
     {
         API::requireValues('course', 'section', 'name', 'description', 'whenClause',
-            'thenClause', 'position', 'tags');
+            'thenClause', 'position', 'isActive', 'tags');
 
         $course = API::getValue("course", "int");
         $courseEntity = API::verifyCourseExists($course);
@@ -125,14 +146,50 @@ class RuleSystemController
         $description = API::getValue("description");
         $whenClause = API::getValue("whenClause");
         $thenClause = API::getValue("thenClause");
-        $position= API::getValue("position", "int");
+        $position = API::getValue("position", "int");
+        $isActive = API::getValue("isActive");
         $tags = API::getValue("tags");
 
 
         // Add rule to system
-        $rule = Rule::addRule($course, $section, $name, $description, $whenClause, $thenClause, $position, true, $tags);
+        $rule = Rule::addRule($course, $section, $name, $description, $whenClause, $thenClause, $position, $isActive, $tags);
 
         $ruleInfo = $rule->getData();
+        API::response($ruleInfo);
+    }
+
+    /**
+     * Edits a rule from a given section
+     *
+     * @throws Exception
+     */
+    public function editRule()
+    {
+        API::requireValues('id', 'course', 'name', 'description', 'whenClause',
+            'thenClause', 'position', 'isActive', 'tags');
+
+        $courseId = API::getValue("course", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $ruleId = API::getValue("id", "int");
+        $rule = Rule::getRuleById($ruleId);
+
+        //Get values
+        $name = API::getValue("name");
+        $description = API::getValue("description");
+        $whenClause = API::getValue("whenClause");
+        $thenClause = API::getValue("thenClause");
+        $position = API::getValue("position", "int");
+        $isActive = API::getValue("isActive");
+        $tags = API::getValue("tags");
+
+        // Edit rule
+        $rule->editRule($name, $description, $whenClause, $thenClause, $position, $isActive, $tags);
+
+        $ruleInfo = $rule->getData();
+        $ruleInfo["tags"] = $rule->getTags();
         API::response($ruleInfo);
     }
 

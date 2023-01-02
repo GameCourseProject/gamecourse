@@ -36,24 +36,26 @@ export class RulesComponent implements OnInit {
 
   nameTags : {value: string, text: string}[] = [];  // move to backend later maybe?;
   //defaultTag: RuleTag = this.initTagToManage();
-  selectedTags: any[] = [];
+  selectedTags: string[];
   availableTags: any[] = [];
 
   sections: RuleSection[];                // sections of page
   filteredSections: RuleSection[];        // section search
 
-  mode: 'add section' | 'edit section' | 'add rule' | 'edit rule' | 'select' | 'add new tag';
+  mode: 'add section' | 'edit section' | 'delete section' | 'add rule' | 'edit rule' | 'delete rule';
+  tagMode : 'add tag' | 'edit tag';
 
   // MANAGE DATA
   sectionToManage: SectionManageData = this.initSectionToManage();
+  sectionToDelete: RuleSection;
   ruleToManage: RuleManageData = this.initRuleToManage();
-  tagToManage: TagManageData = this.initTagToManage();
   ruleToDelete: Rule;
+  tagToManage: TagManageData = this.initTagToManage();
 
   reduce = new Reduce();
   searchQuery: string;
 
-  @ViewChild('f', {static: false}) f: NgForm;       // section form
+  @ViewChild('s', {static: false}) s: NgForm;       // section form
   @ViewChild('r', {static: false}) r: NgForm;       // rule form
   @ViewChild('t', {static: false}) t: NgForm;       // tag form
   importData: {file: File, replace: boolean} = {file: null, replace: true};
@@ -184,6 +186,22 @@ export class RulesComponent implements OnInit {
       this.ruleToDelete = ruleToActOn;
       ModalService.openModal('delete-verification');
 
+    } else if (action === Action.EDIT) {
+      this.mode = 'edit rule';
+      this.ruleToManage = this.initRuleToManage(ruleToActOn);
+
+      // for the input-select
+      if (!this.selectedTags) {
+        let tagSelect = this.getTagNames(this.ruleToManage.tags);
+        this.selectedTags = [];
+
+        for (let i = 0; i < tagSelect.length; i++){
+          this.selectedTags.push(tagSelect[i].value);
+        }
+
+      }
+      if (!this.availableTags) this.getTags(this.course.id);
+      ModalService.openModal('manage-rule')
     }
   }
 
@@ -201,6 +219,8 @@ export class RulesComponent implements OnInit {
     } else if (action === 'Add new section'){
       this.mode = 'add section';
       this.sectionToManage = this.initSectionToManage();
+      this.sectionToManage.course = this.course.id;
+
       ModalService.openModal('manage-section');
 
     } else if (action === 'Create rule') {
@@ -213,9 +233,19 @@ export class RulesComponent implements OnInit {
       ModalService.openModal('manage-rule');
 
     } else if (action === 'add tag') {
-      this.mode = 'add new tag';
+      this.tagMode = 'add tag';
       this.tagToManage = this.initTagToManage();
       ModalService.openModal('manage-tag');
+
+    } else if (action === 'Edit Section') {
+      this.mode = 'edit section';
+      this.sectionToManage = this.initSectionToManage(section);
+
+      ModalService.openModal('manage-section')
+
+    } else if (action === 'Delete Section') {
+      this.sectionToDelete = section;
+      ModalService.openModal('delete-verification');
     }
 
   }
@@ -282,7 +312,7 @@ export class RulesComponent implements OnInit {
       const sectionRules = await this.getRulesOfSection(this.course.id, this.ruleToManage.section);
       this.ruleToManage.position = sectionRules.length + 1;
 
-      this.ruleToManage.tags = this.selectedTags;
+      this.findTag();   // sets tags for rule creation
       const newRule = await this.api.createRule(clearEmptyValues(this.ruleToManage)).toPromise();
       newRule.tags = await this.api.getRuleTags(newRule.course, newRule.id).toPromise();
 
@@ -298,7 +328,25 @@ export class RulesComponent implements OnInit {
   }
 
   async editRule(): Promise<void> {
-    // TODO
+    if (this.r.valid) {
+      this.loading.action = true;
+
+      this.findTag();     // set tags for rule edition
+
+      const ruleEdited = await this.api.editRule(clearEmptyValues(this.ruleToManage)).toPromise();
+      ruleEdited.tags = await this.api.getRuleTags(ruleEdited.course, ruleEdited.id).toPromise();
+
+      const index = this.courseRules.findIndex(rule => rule.id === ruleEdited.id);
+      this.courseRules.removeAtIndex(index);
+      this.courseRules.push(ruleEdited);
+
+      this.buildTable();
+      this.loading.action = false;
+      ModalService.closeModal('manage-rule');
+      this.resetRuleManage();
+      AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + ruleEdited.name + '\' edited');
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
   /*** --------------------------------------------- ***/
@@ -306,7 +354,7 @@ export class RulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async createSection(): Promise<void> {
-    if (this.f.valid) {
+    if (this.s.valid) {
       this.loading.action = true;
 
       const newSection = await this.api.createSection(this.course.id, clearEmptyValues(this.sectionToManage)).toPromise();
@@ -322,7 +370,20 @@ export class RulesComponent implements OnInit {
   }
 
   async editSection(): Promise<void>{
-    // TODO
+    if (this.s.valid) {
+      this.loading.action = true;
+
+      const sectionEdited = await this.api.editSection(clearEmptyValues(this.sectionToManage)).toPromise();
+      const index = this.sections.findIndex(section => section.id === sectionEdited.id);
+      this.sections.removeAtIndex(index);
+      this.sections.push(sectionEdited);
+
+      this.loading.action = false;
+      ModalService.closeModal('manage-section');
+      this.resetSectionManage();
+      AlertService.showAlert(AlertType.SUCCESS, 'Section + \'' + sectionEdited.name + '\' edited');
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
   async getRulesOfSection(courseId: number, section: number, active?: boolean): Promise<Rule[]>
@@ -336,11 +397,13 @@ export class RulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   getTagNames(tags: RuleTag[]): {value: string, text: string}[] {
+    this.nameTags = [];
     for (let i = 0; i < tags.length ; i++){
-      this.nameTags.push({value: 't-' + tags[i].name, text: tags[i].name});
+      this.nameTags.push({value: tags[i].id + '-' + tags[i].name, text: tags[i].name});
     }
     return this.nameTags;
   }
+
 
   async createTag(): Promise<void> {
     if (this.t.valid) {
@@ -353,18 +416,10 @@ export class RulesComponent implements OnInit {
 
       const newTag = await this.api.createTag(clearEmptyValues(this.tagToManage)).toPromise();
       const obj = RuleTag.toJason(newTag);
+      this.availableTags.push(obj);
 
-      let contains = false;
-      for (let i = 0; i < this.selectedTags.length; i++){
-        if ((this.selectedTags[i].name === obj.name)){ //&& (this.selectedTags[i].color === obj.color )
-          contains = true;
-        }
-      }
-      if (!contains){
-        this.availableTags.push(obj);
-        this.selectedTags.push(obj);
-      }
-      //adicionar uma especie de buildTable() para dar refresh a valores do select? -- pensar nisto
+      // Add to input select NOT WORKING!! FIXME
+      this.selectedTags.push('' + newTag.id + '-' + newTag.name);
 
       this.loading.action = false;
       ModalService.closeModal('manage-tag');
@@ -374,6 +429,27 @@ export class RulesComponent implements OnInit {
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
+  findTag() {
+    let tags = [];
+    let obj;
+
+    // should be changed if there is a very high amount of tags per course!
+    for (let i = 0; i < this.selectedTags.length; i++){
+      // if tag "3-extra-credit", "id" will be 3 and "name" will be "extra-credit"
+      const myString = this.selectedTags[i].split(/-(.*)/s);
+      const id = myString[0];
+      const name = myString[1];
+
+      for (let j = 0; j < this.availableTags.length; j++){
+        if (this.availableTags[j].id === id && this.availableTags[j].name === name){
+          obj = RuleTag.toJason(this.availableTags[j]);
+          tags.push(obj);
+        }
+      }
+    }
+
+    this.ruleToManage.tags = tags;
+  }
 
   /* async createDefaultTag(courseID: number): Promise<void> {
      const defaultTag = this.initTagToManage();
@@ -489,7 +565,9 @@ export class RulesComponent implements OnInit {
 
   initSectionToManage(section?: RuleSection): SectionManageData {
     const sectionData: SectionManageData = {
-      name: section?.name ?? null
+      course: section?.course ?? null,
+      name: section?.name ?? null,
+      position: section?.position ?? null
     };
     if (section) sectionData.id = section.id;
     return sectionData;
@@ -504,6 +582,7 @@ export class RulesComponent implements OnInit {
       whenClause: rule?.whenClause ?? null,
       thenClause: rule?.thenClause ?? null,
       position: rule?.position ?? null,
+      isActive: rule?.isActive ?? true,
       tags: rule?.tags ?? []
     };
     if (rule) {
@@ -536,11 +615,10 @@ export class RulesComponent implements OnInit {
   resetSectionManage(){
     this.mode = null;
     this.sectionToManage = this.initSectionToManage();
-    this.f.resetForm();
+    this.s.resetForm();
   }
 
   resetTagManage() {
-    this.mode = "add rule";
     this.tagToManage = this.initTagToManage();
     this.t.resetForm();
   }
@@ -556,13 +634,15 @@ export interface RuleManageData {
   whenClause?: string,
   thenClause?: string,
   position?: number,
+  isActive?: boolean,
   tags?: any[]
 }
 
 export interface SectionManageData {
   id?: number,
+  course?: number,
   name?: string,
-  rules?: Rule[]
+  position?: number
 }
 
 export interface TagManageData {

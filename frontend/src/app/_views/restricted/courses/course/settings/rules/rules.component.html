@@ -34,6 +34,8 @@
         <div *ngFor="let section of filterSections(section)">
           <!-- Actions for rules -->
           <app-top-actions
+            [leftActions]="[{action: 'Edit Section', icon: 'jam-pencil-f'},
+                            {action: 'Delete Section', icon: 'jam-trash-f'}]"
             [rightActions]="[{action: 'Create rule', icon: 'tabler-clipboard-list', color: 'primary', outline: true},
                              {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
                               {action: Action.IMPORT + ' rule', icon:'jam-download'},
@@ -71,17 +73,18 @@
   [templateRef]="MANAGE_SECTION"
   [size]="'md'"
   [header]="mode?.capitalize()"
+  [closeBtnText]="mode?.capitalize()"
   [actionInProgress] = "loading.action"
-  (submitBtnClicked)="f.onSubmit(null); createSection()"
+  (submitBtnClicked)="s.onSubmit(null); mode === 'edit section' ? createSection() : editSection()"
   (onClose)="resetSectionManage()">
 </app-modal>
 
 <ng-template #MANAGE_SECTION>
-  <form #f="ngForm">
+  <form #s="ngForm">
     <div class="w-full flex-wrap mt-3">
       <app-input-text
         [id] = "'section-name'"
-        [form] = "f"
+        [form] = "s"
         [(value)] = "sectionToManage.name"
         [placeholder]="'Section Name'"
         [topLabel]="'Name'"
@@ -100,9 +103,11 @@
            [id]="'manage-rule'"
            [templateRef]="MANAGE_RULE"
            [size]="'lg'"
-           [header]="mode?.capitalize() + ' to \'' + findSectionName(ruleToManage) + '\' :' "
+           [header]="mode === 'add rule' ? mode?.capitalize() + ' to \'' + findSectionName(ruleToManage) + '\' :' :
+                                           mode?.capitalize() + 'of \'' + findSectionName(ruleToManage) + '\' :'"
+           [submitBtnText]="mode?.capitalize()"
            [actionInProgress] = "loading.action"
-           (submitBtnClicked)="f.onSubmit(null); createRule()"
+           (submitBtnClicked)="r.onSubmit(null); mode === 'add rule' ? createRule() : editRule()"
            (onClose)="resetRuleManage()">
 </app-modal>
 
@@ -198,7 +203,7 @@
 </ng-template>
 
 <!-- New / Edit tag modal -->
-<app-modal *ngIf="mode && tagToManage"
+<app-modal *ngIf="tagMode && tagToManage"
            [id]="'manage-tag'"
            [templateRef]="MANAGE_TAG"
            [size]="'md'"

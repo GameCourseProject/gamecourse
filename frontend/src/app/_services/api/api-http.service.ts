@@ -1032,6 +1032,24 @@ export class ApiHttpService {
       .pipe(map((res:any) => RuleSection.fromDatabase(res['data'])));
   }
 
+  public editSection(sectionData: SectionManageData): Observable<RuleSection> {
+    const data = {
+      id: sectionData.id,
+      course: sectionData.course,
+      name: sectionData.name,
+      position: sectionData.position
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('request', 'editSection');
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => RuleSection.fromDatabase(res['data'])));
+  }
+
   public getCourseSections(courseID: number): Observable<RuleSection[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULESYSTEM);
@@ -1056,6 +1074,7 @@ export class ApiHttpService {
       whenClause: ruleData.whenClause,
       thenClause: ruleData.thenClause,
       position: ruleData.position,
+      isActive: ruleData.isActive,
       tags: ruleData.tags
     }
 
@@ -1067,6 +1086,30 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => Rule.fromDatabase(res['data'])) );
+  }
+
+  public editRule(ruleData: RuleManageData): Observable<Rule> {
+    const data = {
+      id: ruleData.id,
+      course: ruleData.course,
+      name: ruleData.name,
+      description: ruleData.description,
+      whenClause: ruleData.whenClause,
+      thenClause: ruleData.thenClause,
+      position: ruleData.position,
+      isActive: ruleData.isActive,
+      tags: ruleData.tags
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('request', 'editRule');
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => Rule.fromDatabase(res['data'])));
+
   }
 
   public deleteRule(section: number, ruleID: number) : Observable<void> {
