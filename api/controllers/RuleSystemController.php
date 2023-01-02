@@ -204,4 +204,23 @@ class RuleSystemController
 
     }
 
+    /**
+     * Gets all tag from a course
+     *
+     * @throws Exception
+     */
+    public function getTags(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCourseAdminPermission($course);
+
+        $tags = Tag::getTags($courseId);
+        foreach ($tags as $tagInfo){
+            Tag::getTagById($tagInfo["id"]);
+        }
+        API::response($tags);
+    }
+
 }

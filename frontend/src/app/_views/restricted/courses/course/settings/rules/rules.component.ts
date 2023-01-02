@@ -35,6 +35,9 @@ export class RulesComponent implements OnInit {
   filteredRules: Rule[];                  // rule search
 
   nameTags : {value: string, text: string}[] = [];  // move to backend later maybe?;
+  //defaultTag: RuleTag = this.initTagToManage();
+  selectedTags: any[] = [];
+  availableTags: any[] = [];
 
   sections: RuleSection[];                // sections of page
   filteredSections: RuleSection[];        // section search
@@ -46,7 +49,6 @@ export class RulesComponent implements OnInit {
   ruleToManage: RuleManageData = this.initRuleToManage();
   tagToManage: TagManageData = this.initTagToManage();
   ruleToDelete: Rule;
-  //defaultTag: RuleTag;
 
   reduce = new Reduce();
   searchQuery: string;
@@ -70,12 +72,7 @@ export class RulesComponent implements OnInit {
       await this.getCourse(courseID);
       await this.getCourseSections(courseID);
       await this.getCourseRules(courseID);
-
-      // init default tag
-      //const defaultTag = this.initTagToManage();
-      //defaultTag.name = "extra-credit";
-      //defaultTag.color = this.colorToHexa("primary");
-      //this.defaultTag = await this.api.createTag(this.course.id, clearEmptyValues(defaultTag)).toPromise();
+      await this.getTags(courseID);
 
       this.loading.page = false;
 
@@ -102,7 +99,6 @@ export class RulesComponent implements OnInit {
   async getCourseRules(courseID: number): Promise<void> {
     this.courseRules = (await this.api.getCourseRules(courseID).toPromise()).sort((a, b) => a.name.localeCompare(b.name));
 
-    console.log(this.courseRules);
     // Get tags for each rule -> Tags are on different table (RULE_TAGS)
     for (let i=0; i < this.courseRules.length; i++){
       this.courseRules[i].tags = await this.api.getRuleTags(courseID, this.courseRules[i].id).toPromise();
@@ -114,6 +110,10 @@ export class RulesComponent implements OnInit {
   async getCourseSections(courseID: number): Promise<void> {
     this.sections = (await this.api.getCourseSections(courseID).toPromise()).sort((a, b) => a.name.localeCompare(b.name));
     this.filteredSections = this.sections;
+  }
+
+  async getTags(courseID: number): Promise<void> {
+    this.availableTags = await this.api.getTags(courseID).toPromise();
   }
 
   /*** --------------------------------------------- ***/
@@ -129,7 +129,7 @@ export class RulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
-    {label: 'Execution Order', align: 'left'},
+    {label: 'Execution Order', align: 'middle'},
     {label: 'Name', align: 'left'},
     {label: 'Tags', align: 'middle'},
     {label: 'Active', align: 'middle'},
@@ -155,7 +155,7 @@ export class RulesComponent implements OnInit {
         {type: TableDataType.TEXT, content: {text: rule.name}},
         {type: TableDataType.CUSTOM, content: {html: '<div class="gap-2">' +
               rule.tags.sort((a,b) => a.name.localeCompare(b.name))
-                .map(tag => '<div class="badge badge-sm badge-' + tag.color + '">' + tag.name + '</div>').join('') +
+                .map(tag => '<div class="badge badge-sm badge-' + this.hexaToColor(tag.color) + '">' + tag.name + '</div>').join('') +
                 '</div>', searchBy: rule.tags.map(tag => tag.name).join(' ') }},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: rule.isActive}},
         {type: TableDataType.ACTIONS, content: {actions: [
@@ -208,11 +208,7 @@ export class RulesComponent implements OnInit {
       this.ruleToManage = this.initRuleToManage();
 
       this.ruleToManage.section = section.id;
-      this.ruleToManage.course = this.course.id
-      console.log(this.ruleToManage);
-      //if (!this.ruleToManage.tags.includes(this.defaultTag)){
-      //  this.ruleToManage.tags.push(this.defaultTag);
-      //}
+      this.ruleToManage.course = this.course.id;
 
       ModalService.openModal('manage-rule');
 
@@ -286,13 +282,11 @@ export class RulesComponent implements OnInit {
       const sectionRules = await this.getRulesOfSection(this.course.id, this.ruleToManage.section);
       this.ruleToManage.position = sectionRules.length + 1;
 
-      console.log(this.ruleToManage);
-
+      this.ruleToManage.tags = this.selectedTags;
       const newRule = await this.api.createRule(clearEmptyValues(this.ruleToManage)).toPromise();
       newRule.tags = await this.api.getRuleTags(newRule.course, newRule.id).toPromise();
 
       this.courseRules.push(newRule);
-      console.log(this.courseRules);
 
       this.buildTable();
       this.loading.action = false;
@@ -358,31 +352,51 @@ export class RulesComponent implements OnInit {
       this.tagToManage.color = color;
 
       const newTag = await this.api.createTag(clearEmptyValues(this.tagToManage)).toPromise();
-      this.ruleToManage.tags.push(newTag);
-      console.log(this.ruleToManage.tags);
+      const obj = RuleTag.toJason(newTag);
+
+      let contains = false;
+      for (let i = 0; i < this.selectedTags.length; i++){
+        if ((this.selectedTags[i].name === obj.name)){ //&& (this.selectedTags[i].color === obj.color )
+          contains = true;
+        }
+      }
+      if (!contains){
+        this.availableTags.push(obj);
+        this.selectedTags.push(obj);
+      }
       //adicionar uma especie de buildTable() para dar refresh a valores do select? -- pensar nisto
 
       this.loading.action = false;
       ModalService.closeModal('manage-tag');
       this.resetTagManage();
-      AlertService.showAlert(AlertType.SUCCESS, 'Tag \'' + newTag.name + '\' added to current rule');
+      AlertService.showAlert(AlertType.SUCCESS, 'Tag \'' + newTag.name + '\' created');
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
-  /*removeTag(tag: TagManageData){
-      this.selectedTags.splice(this.selectedTags.indexOf(tag), 1);
-  }
 
-  submitTags(){
-    this.submitedTags = [];
-    for (let i = 0; i < this.selectedTags.length ; i++){
-      let newTag = new RuleTag(this.selectedTags[i].id, this.selectedTags[i].name, this.selectedTags[i].color);
-      this.submitedTags.push(newTag);
-    }
-    ModalService.closeModal('manage-tag');
-    this.resetTagManage();
-  }*/
+  /* async createDefaultTag(courseID: number): Promise<void> {
+     const defaultTag = this.initTagToManage();
+     defaultTag.course = courseID;
+     defaultTag.name = "extra-credit";
+     defaultTag.color = this.colorToHexa("primary");
+
+     const obj = await this.api.createTag(clearEmptyValues(defaultTag)).toPromise();
+     this.availableTags.push(obj);
+   }
+   removeTag(tag: TagManageData){
+       this.selectedTags.splice(this.selectedTags.indexOf(tag), 1);
+   }
+
+   submitTags(){
+     this.submitedTags = [];
+     for (let i = 0; i < this.selectedTags.length ; i++){
+       let newTag = new RuleTag(this.selectedTags[i].id, this.selectedTags[i].name, this.selectedTags[i].color);
+       this.submitedTags.push(newTag);
+     }
+     ModalService.closeModal('manage-tag');
+     this.resetTagManage();
+   }*/
 
   /*** --------------------------------------------- ***/
   /*** ------------------- Helpers ----------------- ***/
@@ -425,6 +439,32 @@ export class RulesComponent implements OnInit {
         case "success" : return "#36D399";
         case "warning" : return "#FBBD23";
         case "error" : return "#EF6060";
+      }
+    }
+    return "";
+  }
+
+  hexaToColor(color: string) : string {
+    if (this.themeService.getTheme() === "light"){
+      switch (color) {
+        case "#5E72E4" : return "primary";
+        case "#EA6FAC" : return "secondary";
+        case "#1EA896" : return "accent";
+        case "#38BFF8" : return "info";
+        case "#36D399" : return "success";
+        case "#FBB50A" : return "warning";
+        case "#EF6060" : return "error";
+      }
+    }
+    else {
+      switch (color) {
+        case "#5E72E4" : return "primary";
+        case "#EA6FAC" : return "secondary";
+        case "#1EA896" : return "accent";
+        case "#38BFF8" : return "info";
+        case "#36D399" : return "success";
+        case "#FBBD23" : return "warning";
+        case "#EF6060" : return "error";
       }
     }
     return "";
@@ -516,7 +556,7 @@ export interface RuleManageData {
   whenClause?: string,
   thenClause?: string,
   position?: number,
-  tags?: RuleTag[]
+  tags?: any[]
 }
 
 export interface SectionManageData {

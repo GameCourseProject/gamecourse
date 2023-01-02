@@ -147,13 +147,15 @@
           <app-input-select
             [id]="'rule-tags'"
             [form] = "r"
-            [(value)] = "ruleToManage.tags"
-            [options] = "getTagNames(ruleToManage.tags)"
+            [(value)] = "selectedTags"
+            [options] = "getTagNames(availableTags)"
             [multiple] = "true"
             [search]="false"
             [placeholder]="'Select tags for rule'"
             [topLabel]="'Tags'"
-            [required]="false">
+            [required]="false"
+            (valueChange)="selectedTags = $event ?? []"
+          >
           </app-input-select>
         </div>
 

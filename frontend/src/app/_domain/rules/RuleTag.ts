@@ -44,6 +44,22 @@ export class RuleTag{
     this._color = value;
   }
 
+  /**
+   * Custom way to stringfy with class
+   * This is needed so that the output of JSON.stringfy()
+   * doesn't have '_' attributes
+   * */
+  static toJason (tag: RuleTag) {
+    return {
+      id: tag.id > 0 ? tag.id : null, //does't send fake ids used only for editing
+      course: tag.course > 0 ? tag.course : null,
+      name: tag.name || null,
+      color: tag.color || null
+    }
+  }
+
+
+
   static fromDatabase(obj: RuleTagDatabase): RuleTag {
     return new RuleTag(
       obj.id,

@@ -1188,6 +1188,18 @@ export class ApiHttpService {
       .pipe(map((res: any) => res['data'].map(obj => RuleTag.fromDatabase(obj))));
   }
 
+  public getTags(courseID: number) : Observable<RuleTag[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('request', 'getTags');
+      qs.push('courseId', courseID);
+    }
+      const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+      return this.get(url, ApiHttpService.httpOptions)
+        .pipe(map((res:any) => res['data'].map(obj => RuleTag.fromDatabase(obj))));
+  }
+
   // Configuration
 
   public getModuleConfig(courseID: number, moduleID: string): Observable<{generalInputs: ConfigSection[] | null, lists: List[] | null, personalizedConfig: string | null}> {
