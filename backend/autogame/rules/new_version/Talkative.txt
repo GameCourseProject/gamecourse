@@ -1,0 +1,13 @@
+rule: Talkative
+# Participate in Theoretical Lectures!
+# 	lvl.1: participate 2 times 
+# 	lvl.2: participate 6 times 
+# 	lvl.3: participate 12 times 
+
+	when:
+		logs = get_logs(target, "participated in lecture")
+        logs += get_logs(target, "participated in invited lecture")
+        nlogs = len(logs)
+		lvl = compute_lvl(nlogs, 2, 6, 12)
+	then:
+		award_badge(target, "Talkative", lvl, logs)

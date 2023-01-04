@@ -1,0 +1,11 @@
+rule: Course Emperor
+# Take the course, be the best
+# 	lvl.1: Have the highest course grade
+
+	when:
+		logs = get_logs(target, "course emperor")
+		nlogs = len(logs)
+		lvl = compute_lvl(nlogs, 1)
+
+	then:
+		award_badge(target, "Course Emperor", lvl, logs)

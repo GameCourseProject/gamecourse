@@ -81,13 +81,23 @@ def compute_lvl (val, *lvls):
 
 
 @rule_function
-def compute_rating (logs):
+def compute_rating_old (logs):
     """
     Sums the ratings of a series of logs
     """
     rating = 0
     for logline in logs:
         rating += logline.rating
+    return rating
+
+@rule_function
+def compute_rating (logs):
+    """
+    Sums the ratings of a series of logs
+    """
+    rating = 0
+    for logline in logs:
+        rating += logline[4]
     return rating
 
 @rule_function
@@ -189,7 +199,7 @@ def get_new_total(target, validAttempts, rating):
     return (result1, result2)
 
 @rule_function
-def filter_excellence(logs, tiers, classes):
+def filter_excellence_old(logs, tiers, classes):
     """
     Filters the list of logs in a way that only
     participations within excellence thresholds are
@@ -210,6 +220,41 @@ def filter_excellence(logs, tiers, classes):
 
     return filtered
 
+@rule_function
+def filter_excellence(logs, tiers, classes):
+    """
+    Filters the list of logs in a way that only
+    participations within excellence thresholds are
+    returned.
+    """
+
+    if len(tiers) != len(classes):
+        print("ERROR: number of tiers does not match number of classes")
+
+    filtered = []
+    for i in range(0, len(classes)):
+        tier = tiers[i]
+        tier_labs = classes[i]
+
+        for line in logs:
+            if int(line[3]) in tier_labs and int(line[4]) >= tier:
+                filtered.append(line)
+
+    return filtered
+
+@rule_function
+def filter_quiz_old(logs, desc):
+    """
+    Filters the list of logs in a way that quiz 9
+    is removed
+    """
+
+    filtered_logs = []
+
+    for line in logs:
+        if line.description != desc or line.description != "Dry Run":
+            filtered_logs.append(line)
+    return filtered_logs
 
 @rule_function
 def filter_quiz(logs, desc):
@@ -221,7 +266,7 @@ def filter_quiz(logs, desc):
     filtered_logs = []
 
     for line in logs:
-        if line.description != desc or line.description != "Dry Run":
+        if line[3] != desc or line[3] != "Dry Run":
             filtered_logs.append(line)
     return filtered_logs
 
@@ -245,7 +290,7 @@ def filter_skills(logs):
     return filtered_logs
 
 @rule_function
-def exclude_worst(logs, last):
+def exclude_worst_old(logs, last):
     """
     Will calculate the adjustment for getting rid of the
     worst quiz in the bunch
@@ -263,6 +308,27 @@ def exclude_worst(logs, last):
             fix[0].rating = last_quiz
 
     return fix
+
+@rule_function
+def exclude_worst(logs, last):
+    """
+    Will calculate the adjustment for getting rid of the
+    worst quiz in the bunch
+    """
+
+    worst = int(config.metadata["quiz_max_grade"])
+    fix = last
+
+    if len(logs) == 9:
+        for line in logs:
+            worst = min(int(line[4]), worst)
+
+        if len(last) == 1:
+            last_quiz = max(int(last[0][4]) - worst, 0)
+            fix[0][4] = last_quiz
+
+    return fix
+ 
 
 @rule_effect
 def print_info(text):

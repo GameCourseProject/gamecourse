@@ -176,17 +176,60 @@ def get_logs(target, type):
     cursor = db.cursor
     connect = db.connection
 
-    #queries = db.queries
-    #results = db.results
-
     course = config.course
-    typeof = "streak"
 
     if type == "peergraded post":
         query = "SELECT id, date, post, description, rating, type FROM participation WHERE evaluator = %s AND course = %s AND type = %s ;"
     else:
         query = "SELECT id, date, post, description, rating, type FROM participation WHERE user = %s AND course = %s AND type = %s ;"
     cursor.execute(query, (target, course, type))
+    table_participations = cursor.fetchall()
+
+    return table_participations
+
+def get_logs_by_description(target, type, description):
+
+    cursor = db.cursor
+    connect = db.connection
+
+    #queries = db.queries
+    #results = db.results
+
+    course = config.course
+
+    if type == "peergraded post":
+        query = "SELECT id, date, post, description, rating, type FROM participation WHERE evaluator = %s AND course = %s AND type = %s AND description = %s ;"
+    else:
+        query = "SELECT id, date, post, description, rating, type FROM participation WHERE user = %s AND course = %s AND type = %s AND description = %s ;"
+    cursor.execute(query, (target, course, type))
+    table_participations = cursor.fetchall()
+
+    return table_participations                                                                               
+
+def get_forum_logs(target, forum, thread = None, rating = None):
+
+    cursor = db.cursor
+    connect = db.connection
+
+    #queries = db.queries
+    #results = db.results
+
+    course = config.course
+    type = "graded post"
+
+
+    if thread == None:
+        where = forum + ",%"
+    else:
+        where = forum + ", Re: " + thread + "%"
+
+
+    query = "SELECT id, date, post, description, rating, type FROM participation WHERE user = %s AND course = %s AND description = %s"
+    if rating != None:
+        query += " AND rating = " + str(rating)
+    query += " ;"
+    
+    cursor.execute(query, (target, course, where))
     table_participations = cursor.fetchall()
 
     return table_participations
@@ -201,8 +244,6 @@ def get_graded_skill_logs(target, ratings, skill = None):
     #results = db.results
 
     course = config.course
-    typeof = "streak"
-
     type = "graded post"
 
     if len(ratings) == 0:
@@ -227,7 +268,7 @@ def get_graded_skill_logs(target, ratings, skill = None):
     return table_participations
 
 
-def get_graded_logs(target, minRating, include_skills = False):
+def get_graded_logs(target, ratings, include_skills = False):
 
     cursor = db.cursor
     connect = db.connection
@@ -236,8 +277,6 @@ def get_graded_logs(target, minRating, include_skills = False):
     #results = db.results
 
     course = config.course
-    typeof = "streak"
-
     type = "graded post"
 
     if len(ratings) == 0:
@@ -249,14 +288,22 @@ def get_graded_logs(target, minRating, include_skills = False):
             query = "SELECT id, date, post, description, rating, type FROM participation WHERE user = %s AND course = %s AND type = %s AND description NOT LIKE 'Skill Tree%' AND rating = %s;"
     else:
         ratings.sort()
-        if include_skills != None:
-            query = "SELECT id, date, post, description, rating, type FROM participation WHERE user = %s AND course = %s AND type = %s AND rating >= %s;"
-        else:
-            query = "SELECT id, date, post, description, rating, type FROM participation WHERE user = %s AND course = %s AND type = %s AND description NOT LIKE 'Skill Tree%' AND rating >= %s;"
+        str_rating = "(rating =   \"" + str(ratings[0]) + "\" "
+        for rating in range(1, ratings):
+            str_rating += " OR rating =   \"" + str(rating) + "\""
+        str_rating += " )"
 
-    cursor.execute(query, (target, course, type, str(ratings[0])))
+        if include_skills != None:
+            query = "SELECT id, date, post, description, rating, type FROM participation WHERE user = %s AND course = %s AND type = %s AND %s; "
+        else:
+            query = "SELECT id, date, post, description, rating, type FROM participation WHERE user = %s AND course = %s AND type = %s AND description NOT LIKE 'Skill Tree%' AND %s;"
+
+    cursor.execute(query, (target, course, type, str_rating)
     table_participations = cursor.fetchall()
+    
     return table_participations
+
+
 
 def count_awards(course):
     # -----------------------------------------------------------
@@ -639,7 +686,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
                 for log in contributions:
                     query = "INSERT into badge_progression (course, user, badgeId, participationId) values (%s,%s,%s,%s);"
-                    cursor.execute(query, (course, target, badgeid, log.log_id))
+                    cursor.execute(query, (course, target, badgeid, log[0]))
                     connect.commit()
 
 
@@ -674,7 +721,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
                 if not config.test_mode:
                     for el in contributions:
-                        participation_id = el.log_id
+                        participation_id = el[0]
                         query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
                         cursor.execute(query, (award_id, participation_id))
                         connect.commit()
@@ -727,7 +774,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
                 if not config.test_mode:
                     for el in contributions:
-                        participation_id = el.log_id
+                        participation_id = el[0]
                         query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
                         cursor.execute(query, (award_id, participation_id))
                         connect.commit()
@@ -1185,7 +1232,7 @@ def update_wallet(target, newTotal, removed, contributions=None):
 
     course = config.course
 
-    query = "SELECT award FROM award_participation LEFT JOIN award ON award_participation.award = award.id where user = \""+ str(target) +"\" AND course = \""+ course +"\" AND participation = \""+ str(contributions[0].log_id) +"\";"
+    query = "SELECT award FROM award_participation LEFT JOIN award ON award_participation.award = award.id where user = \""+ str(target) +"\" AND course = \""+ course +"\" AND participation = \""+ str(contributions[0][0]) +"\";"
     cursor.execute(query)
     table_awarded = cursor.fetchall()
 
@@ -1195,7 +1242,7 @@ def update_wallet(target, newTotal, removed, contributions=None):
     if awarded == 0:
         return
 
-    query = "SELECT * FROM remove_tokens_participation where user = \""+ str(target) +"\" AND course = \""+ course +"\" AND participation = \""+ str(contributions[0].log_id) +"\" ;"
+    query = "SELECT * FROM remove_tokens_participation where user = \""+ str(target) +"\" AND course = \""+ course +"\" AND participation = \""+ str(contributions[0][0]) +"\" ;"
     cursor.execute(query)
     table_removed = cursor.fetchall()
     
@@ -1205,7 +1252,7 @@ def update_wallet(target, newTotal, removed, contributions=None):
         return
 
     query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
-    cursor.execute(query, (course, target, contributions[0].log_id, removed))
+    cursor.execute(query, (course, target, contributions[0][0], removed))
     connect.commit()
 
     # simply remove the tokens
@@ -1259,7 +1306,7 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     # If tokens are give, simply remove them for the user.
     if tokens != None:
         query = "SELECT participation FROM remove_tokens_participation WHERE user = %s AND course = %s AND participation = %s ;"
-        cursor.execute(query, (target, course, contributions[0].log_id))
+        cursor.execute(query, (target, course, contributions[0][0]))
         table_removed = cursor.fetchall()
 
         if len(table_removed) == 0:
@@ -1267,7 +1314,7 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
             #newTotal = currentTokens - toRemove
 
             query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
-            cursor.execute(query, (course, target, contributions[0].log_id, toRemove))
+            cursor.execute(query, (course, target, contributions[0][0], toRemove))
             connect.commit()
 
             query = "UPDATE user_wallet SET tokens=%s WHERE course=%s AND user = %s;"
@@ -1300,7 +1347,7 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
         validAttempts = len(table_counter_participations)
 
         query = "SELECT * FROM remove_tokens_participation where user = %s AND course = %s AND participation = %s ;"
-        cursor.execute(query, (target, course, contributions[0].log_id))
+        cursor.execute(query, (target, course, contributions[0][0]))
         table_participation = cursor.fetchall()
         # We need to check if the participation at cause has already been inserted in the table so that we do not
         # remove tokens for the same participation
@@ -1342,7 +1389,7 @@ def remove_tokens(target, tokens = None, skillName = None, contributions=None):
 
             if newTotal >= 0:
                 query = "INSERT INTO remove_tokens_participation (course, user, participation, tokensRemoved) VALUES(%s, %s, %s, %s); "
-                cursor.execute(query, (course, target, contributions[0].log_id, removed))
+                cursor.execute(query, (course, target, contributions[0][0], removed))
                 connect.commit()
 
                 # simply remove the tokens

@@ -1,0 +1,10 @@
+rule: Flawless Duet
+
+	when:
+		rule_unlocked("Podcast", target)
+		rule_unlocked("Radio Commercial", target)
+		logs = GC.participations.getSkillParticipations(target, "Flawless Duet")
+		rating = get_rating(logs)
+		rating >= 3
+	then:
+		award_skill(target, "Flawless Duet", rating, logs)

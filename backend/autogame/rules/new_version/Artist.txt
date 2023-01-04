@@ -1,0 +1,12 @@
+rule: Artist
+# Show creativity and quality
+# 	lvl.1: get four posts of four points
+# 	lvl.2: get six posts of four points
+# 	lvl.3:  get twelve posts of four points
+
+	when:
+		logs = get_graded_logs(target, [4,5])
+		nlogs = len(logs)
+		lvl = compute_lvl(nlogs, 4,6,12)
+	then:
+		award_badge(target, "Artist", lvl, logs)

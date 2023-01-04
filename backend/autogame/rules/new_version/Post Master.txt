@@ -1,0 +1,15 @@
+rule: Post Master
+# Post something in the forums
+# 	lvl.1: make twenty posts
+# 	lvl.2: make thirty posts
+# 	lvl.3: make fifty posts
+
+	when:
+		logs = get_logs(target, "forum add post")
+		logs += get_logs(target, "forum add discussion")
+		nlogs = len(logs)
+
+		# Compute the level of the badge that the student deserves
+		lvl = compute_lvl(nlogs, 20, 30, 50)
+	then:
+		award_badge(target, "Post Master", lvl, logs)

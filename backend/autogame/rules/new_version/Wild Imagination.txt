@@ -1,0 +1,11 @@
+rule: Wild Imagination
+# Suggest presentation subjects
+# 	lvl.1: suggest a new subject for your presentation
+
+	when:
+		logs = get_logs(target, "suggested presentation subject")
+		nlogs = len(logs)
+		lvl = compute_lvl(nlogs, 1)
+
+	then:
+		award_badge(target, "Wild Imagination", lvl, logs)
