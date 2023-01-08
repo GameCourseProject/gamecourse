@@ -855,7 +855,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
             table_id = cursor.fetchall()
             award_id = table_id[0][0]
             # contributions is always len == 1, ensured by getSkillParticipations
-            participation_id = contributions[0].log_id
+            participation_id = contributions[0][0]
 
             query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
             cursor.execute(query, (award_id, participation_id))
@@ -876,9 +876,11 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
                 query = "DELETE FROM award WHERE user = %s AND course = %s AND description = %s AND type=%s;"
                 cursor.execute(query, (target, course, skill, typeof))
             else:
-                if contributions[0].rating > table[0][5]:
+                # get_logs: rating = contributions[0][4] |
+                # gc.paticipatios.GetAllParticipatios: rating = contributions[0].rating
+                if contributions[0][4] > table[0][5]:
                     award_id = table[0][0]
-                    participation_id = contributions[0].log_id
+                    participation_id = contributions[0][0]
 
                     query = "UPDATE award_participation set participation=%s where award=%s;"
                     cursor.execute(query, (participation_id, award_id))
@@ -1460,7 +1462,7 @@ def award_team_grade(target, item, contributions=None, extra=None):
 
     if item == "Presentation":
         for line in contributions:
-            grade = int(line.rating)
+            grade = int(line[4])
             if len(table) == 0:
                 query = "INSERT INTO " + awards_table + " (team, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
                 cursor.execute(query, (target, course, description, typeof, grade))
@@ -1515,7 +1517,7 @@ def award_grade(target, item, contributions=None, extra=None):
 
     if item == "Presentation":
         for line in contributions:
-            grade = int(line.rating)
+            grade = int(line[4])
             if len(table) == 0:
                 query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
                 cursor.execute(query, (target, course, description, typeof, grade))
@@ -1530,8 +1532,8 @@ def award_grade(target, item, contributions=None, extra=None):
     elif item == "Quiz" and extra:
         # add last quiz
         if len(contributions) == 1:
-            number = int(contributions[0].description.split()[1]) # get the number
-            grade = int(contributions[0].rating)
+            number = int(contributions[0][3].split()[1]) # get the number
+            grade = int(contributions[0][4])
             found = False
             for row in table:
                 if row[0] == number:
@@ -1557,11 +1559,11 @@ def award_grade(target, item, contributions=None, extra=None):
 
     elif (item == "Quiz" and not extra) or item == "Lab":
         for line in contributions:
-            if line.description == "Dry Run":
+            if line[3] == "Dry Run":
                 continue
 
-            grade = int(line.rating)
-            nums = [int(s) for s in line.description.split() if s.isdigit()]
+            grade = int(line[4])
+            nums = [int(s) for s in line[3].split() if s.isdigit()]
             number = nums[0]
 
             found = False
@@ -1621,8 +1623,8 @@ def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ign
     if extra:
         # add last quiz
         if len(contributions) == 1:
-            number = int(contributions[0].description.split()[1]) # get the number
-            grade = (int(contributions[0].rating)/ max_grade) * xp_per_quiz
+            number = int(contributions[0][3].split()[1]) # get the number
+            grade = (int(contributions[0][4])/ max_grade) * xp_per_quiz
             found = False
             for row in table:
                 if row[0] == number:
@@ -1651,8 +1653,8 @@ def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ign
             if ignore_case != None and ignore_case in line.description:
                 continue
 
-            grade = (int(line.rating) / max_grade) * xp_per_quiz
-            nums = [int(s) for s in line.description.split() if s.isdigit()]
+            grade = (int(line[4]) / max_grade) * xp_per_quiz
+            nums = [int(s) for s in line[3].split() if s.isdigit()]
             number = nums[0]
 
             found = False
@@ -1708,9 +1710,9 @@ def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, for
         table = cursor.fetchall()
 
     for line in contributions:
-        grade = (int(line.rating) / max_grade) * xp_per_post
+        grade = (int(line[4]) / max_grade) * xp_per_post
         if forum == None:
-            description = line.description
+            description = line[3]
 
         found = False
         for row in table:
@@ -1759,8 +1761,8 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
 
 
     for line in contributions:
-        grade = (int(line.rating) / max_grade) * xp_per_assignemnt
-        description = line.description
+        grade = (int(line[4]) / max_grade) * xp_per_assignemnt
+        description = line[3]
 
         found = False
         for row in table:
