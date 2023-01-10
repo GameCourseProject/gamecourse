@@ -156,7 +156,7 @@ export class TableComponent implements OnInit, OnChanges {
 
                     // On every filtering
                     $('input', filterCell)
-                      .on('keyup change', filter)
+                      .on('keyup change search', filter)
 
                     $('select', filterCell)
                       .off('keyup change')

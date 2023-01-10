@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import mysql.connector
 
 def init(dbHost, dbName, dbUser, dbPass):
