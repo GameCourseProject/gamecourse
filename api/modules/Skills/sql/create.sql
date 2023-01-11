@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS skills_config(
     course                      int unsigned PRIMARY KEY,
     maxExtraCredit              int unsigned NOT NULL DEFAULT 0,
+    minRating                   int unsigned NOT NULL DEFAULT 3,
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
