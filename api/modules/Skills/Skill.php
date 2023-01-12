@@ -2,10 +2,13 @@
 namespace GameCourse\Module\Skills;
 
 use Exception;
+use GameCourse\AutoGame\AutoGame;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Awards\Awards;
+use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\XPLevels\XPLevels;
 use Utils\Utils;
 use ZipArchive;
@@ -306,6 +309,14 @@ class Skill
                         if (empty($wildcardTier->getSkills(true)))
                             self::removeAllWildcardDependencies($skillTreeId);
                     }
+
+                    // Remove awards already given
+                    $course = $this->getCourse();
+                    $awardsModule = new Awards($course);
+                    $removed = $awardsModule->removeAwards(null, null, AwardType::SKILL, $this->id);
+
+                    // Re-run AutoGame to propagate changes
+                    if ($removed > 0) AutoGame::run($course->getId(), true);
                 }
 
                 // Update rule status
@@ -639,6 +650,13 @@ class Skill
 
             // Delete skill from database
             Core::database()->delete(self::TABLE_SKILL, ["id" => $skillId]);
+
+            // Remove awards already given
+            $awardsModule = new Awards(new Course($courseId));
+            $removed = $awardsModule->removeAwards(null, null, AwardType::SKILL, $skillId);
+
+            // Re-run AutoGame to propagate changes
+            if ($removed > 0) AutoGame::run($courseId, true);
         }
     }
 

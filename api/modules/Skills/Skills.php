@@ -481,7 +481,7 @@ class Skills extends Module
                 continue;
 
             $nrWildcardsUsed = intval(Core::database()->select(self::TABLE_AWARD_WILDCARD, [
-                "user" => $userId, "course" => $this->getCourse()->getId(), "award" => $award["id"]
+                "award" => $award["id"]
             ], "nrWildcardsUsed"));
             $nrUsedWildcards += $nrWildcardsUsed;
         }

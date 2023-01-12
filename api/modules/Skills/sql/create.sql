@@ -67,11 +67,8 @@ CREATE TABLE IF NOT EXISTS skill_dependency_combo(
 );
 
 CREATE TABLE IF NOT EXISTS award_wildcard( /* awards that used wildcards */
-    user                        int unsigned NOT NULL,
-    course                      int unsigned NOT NULL,
-    award                       int unsigned NOT NULL,
+    award                       int unsigned NOT NULL PRIMARY KEY,
     nrWildcardsUsed             int unsigned DEFAULT 1,
 
-    FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
     FOREIGN key(award) REFERENCES award(id) ON DELETE CASCADE
 );
