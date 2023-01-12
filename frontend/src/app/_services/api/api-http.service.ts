@@ -62,6 +62,7 @@ import {
 } from "../../_views/restricted/courses/course/settings/rules/rules.component";
 import {RuleSection} from "../../_domain/rules/RuleSection";
 import {RuleTag} from "../../_domain/rules/RuleTag";
+import {Notification} from "../../_domain/notifications/notification";
 
 @Injectable({
   providedIn: 'root'
@@ -81,7 +82,8 @@ export class ApiHttpService {
   static readonly THEME: string = 'Theme';
   static readonly USER: string = 'User';
   static readonly VIEWS: string = 'Views';
-  static readonly RULESYSTEM: string = 'RuleSystem';
+  static readonly RULES_SYSTEM: string = 'RuleSystem';
+  static readonly NOTIFICATION_SYSTEM: string = 'NotificationSystem';
   // NOTE: insert here new controllers & update cache dependencies
 
   static readonly GOOGLESHEETS: string = 'GoogleSheets';
@@ -995,8 +997,6 @@ export class ApiHttpService {
   }
 
 
-
-
   /*** --------------------------------------------- ***/
   /*** ------------------- Module ------------------ ***/
   /*** --------------------------------------------- ***/
@@ -1015,6 +1015,11 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
   }
 
+
+  /*** -------------------------------------------------- ***/
+  /*** ------------------- RULE SYSTEM ------------------ ***/
+  /*** -------------------------------------------------- ***/
+
   // Sections
   public createSection(sectionData: SectionManageData): Observable<RuleSection> {
     const data = {
@@ -1024,7 +1029,7 @@ export class ApiHttpService {
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'createSection');
     };
 
@@ -1042,7 +1047,7 @@ export class ApiHttpService {
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'editSection');
     }
 
@@ -1055,7 +1060,7 @@ export class ApiHttpService {
     const data = { sectionId: sectionID, rules: rules };
 
     const params = (qs:QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'deleteSection');
     }
 
@@ -1066,7 +1071,7 @@ export class ApiHttpService {
 
   public getCourseSections(courseID: number): Observable<RuleSection[]> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'getCourseSections');
       qs.push('courseId', courseID);
     };
@@ -1093,7 +1098,7 @@ export class ApiHttpService {
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'createRule');
     };
 
@@ -1116,7 +1121,7 @@ export class ApiHttpService {
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'editRule');
     }
 
@@ -1130,7 +1135,7 @@ export class ApiHttpService {
     const data = {section: section, ruleId: ruleID };
 
     const params = (qs:QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'removeRuleFromSection');
     };
 
@@ -1141,7 +1146,7 @@ export class ApiHttpService {
 
   public getRulesOfSection(courseID: number, section: number, active?: boolean) : Observable<Rule[]>{
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'getRulesOfSection');
       qs.push('courseId', courseID);
       qs.push('section', section);
@@ -1157,7 +1162,7 @@ export class ApiHttpService {
 
   public getCourseRules(courseID: number, active?: boolean): Observable<Rule[]> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'getCourseRules');
       qs.push('courseId', courseID);
       if (active !== undefined) qs.push('active', active);
@@ -1177,7 +1182,7 @@ export class ApiHttpService {
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'setCourseRuleActive');
     };
 
@@ -1190,7 +1195,7 @@ export class ApiHttpService {
     const data = {courseId: courseID, file, replace};
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'importCourseRules');
     };
 
@@ -1201,7 +1206,7 @@ export class ApiHttpService {
 
   public exportCourseRules(courseID: number, rulesIDs: number[]): Observable<string> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'exportCourseRules');
       qs.push('courseId', courseID);
       qs.push('rulesIds', rulesIDs);
@@ -1222,7 +1227,7 @@ export class ApiHttpService {
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'createTag');
     }
 
@@ -1233,7 +1238,7 @@ export class ApiHttpService {
 
   public getRuleTags(courseID: number, ruleID: number) : Observable<RuleTag[]> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'getRuleTags');
       qs.push('courseId', courseID);
       qs.push('ruleId', ruleID);
@@ -1247,7 +1252,7 @@ export class ApiHttpService {
 
   public getTags(courseID: number) : Observable<RuleTag[]> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.RULESYSTEM);
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'getTags');
       qs.push('courseId', courseID);
     }
@@ -1256,6 +1261,40 @@ export class ApiHttpService {
       return this.get(url, ApiHttpService.httpOptions)
         .pipe(map((res:any) => res['data'].map(obj => RuleTag.fromDatabase(obj))));
   }
+
+
+  /*** ---------------------------------------------------------- ***/
+  /*** ------------------- NOTIFICATION SYSTEM ------------------ ***/
+  /*** ---------------------------------------------------------- ***/
+
+  public createNotification(courseID: number): Observable<Notification> {
+    const data = {
+      course: courseID
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'createNotification');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => Notification.fromDatabase(res['data'])));
+  }
+
+  public getNotifications(courseID: number): Observable<Notification[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'getNotifications');
+      qs.push('course', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => res['data'].map(obj => Notification.fromDatabase(obj))));
+  }
+
 
   // Configuration
 

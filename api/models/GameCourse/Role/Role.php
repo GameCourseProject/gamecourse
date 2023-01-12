@@ -21,7 +21,7 @@ class Role
     const TABLE_USER_ROLE = "user_role";
 
     const DEFAULT_ROLES = ["Teacher", "Student", "Watcher"];  // default roles for each course
-
+    const VERSION_ROLES = ["versionA", "versionB"];           // roles used for adaptation purposes
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Setup ---------------------- ***/

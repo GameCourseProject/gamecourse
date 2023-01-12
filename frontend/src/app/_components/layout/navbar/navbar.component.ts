@@ -12,6 +12,7 @@ import {SidebarService} from "../../../_services/sidebar.service";
 
 import {User} from "../../../_domain/users/user";
 import {Course} from 'src/app/_domain/courses/course';
+import {Notification} from '../../../_domain/notifications/notification';
 import {ResourceManager} from "../../../_utils/resources/resource-manager";
 
 @Component({
@@ -23,6 +24,8 @@ export class NavbarComponent implements OnInit {
   user: User;
   course: Course;
   photo: ResourceManager;
+
+  notifications: Notification[] = [];
 
   // FIXME: navbar space should be configurable in modules
   hasTokensEnabled: boolean;
@@ -47,6 +50,9 @@ export class NavbarComponent implements OnInit {
 
     // Get course information
     await this.getCourse();
+
+    // Get notifications information
+    await this.getNotifications();
 
     // Whenever URL changes
     this.router.events.subscribe(event => {
@@ -77,7 +83,7 @@ export class NavbarComponent implements OnInit {
 
 
   /*** --------------------------------------------- ***/
-  /*** -------------------- Course ------------------- ***/
+  /*** -------------------- Course ----------------- ***/
   /*** --------------------------------------------- ***/
 
   async getCourse(): Promise<void> {
@@ -86,6 +92,18 @@ export class NavbarComponent implements OnInit {
     else this.course = null;
   }
 
+
+  /*** --------------------------------------------- ***/
+  /*** ------------- Notifications ----------------- ***/
+  /*** --------------------------------------------- ***/
+
+  async getNotifications(): Promise<void> {
+    const courseID = this.getCourseIDFromURL();
+
+    await this.api.createNotification(courseID).toPromise();
+
+    this.notifications = await this.api.getNotifications(courseID).toPromise();
+  }
 
   /*** --------------------------------------------- ***/
   /*** ------------- Configurable Area ------------- ***/

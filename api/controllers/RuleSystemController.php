@@ -173,7 +173,6 @@ class RuleSystemController
         $isActive = API::getValue("isActive");
         $tags = API::getValue("tags");
 
-
         // Add rule to system
         $rule = Rule::addRule($course, $section, $name, $description, $whenClause, $thenClause, $position, $isActive, $tags);
 

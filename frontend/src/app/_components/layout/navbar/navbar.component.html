@@ -53,6 +53,18 @@
           <app-theme-toggler></app-theme-toggler>
         </ng-container>
 
+        <!-- Notification -->
+        <div class="dropdown dropdown-end">
+          <label tabindex="0" class="btn btn-ghost btn-circle text-primary-content">
+            <ng-icon name="tabler-bell-ringing" size="1.7rem" color="fillCurrent"></ng-icon>
+          </label>
+          <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-base-100 rounded-box w-48 !z-50">
+              <li *ngFor="let notification of notifications">
+                {{notification.message}}
+              </li>
+          </ul>
+        </div>
+
         <ng-container *ngIf="user">
           <!-- Greet -->
           <p class="text-white align-middle ml-2">Hey, {{user.nickname?.split(' ')[0] ?? user.name.split(' ')[0] ?? user.username}}!</p>
