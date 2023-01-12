@@ -13,6 +13,8 @@ use GameCourse\Module\Skills\SkillTree;
 use GameCourse\Module\Skills\Tier;
 use GameCourse\Module\Streaks\Streak;
 use GameCourse\Module\Streaks\Streaks;
+use GameCourse\Module\VirtualCurrency\VirtualCurrency;
+use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
@@ -898,11 +900,19 @@ class AwardsTest extends TestCase
     {
         // Given
         $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
+        $XPModule = new XPLevels($this->course);
+        $XPModule->setEnabled(true);
         $this->insertAward($this->course->getId(), $user->getId(), AwardType::BONUS, null, "Bonus", 500);
         $this->insertAward($this->course->getId(), $user->getId(), AwardType::PRESENTATION, null, "Presentation", 3000);
 
+        $VCModule = new VirtualCurrency($this->course);
+        $VCModule->setEnabled(true);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::TOKEN, null, "Initial tokens", 50);
+
         // Then
-        $this->assertEquals(3500, $this->module->getUserTotalReward($user->getId()));
+        $totalReward = $this->module->getUserTotalReward($user->getId());
+        $this->assertEquals(3500, $totalReward["XP"]);
+        $this->assertEquals(50, $totalReward["tokens"]);
     }
 
     /**
@@ -912,7 +922,7 @@ class AwardsTest extends TestCase
     public function getUserTotalRewardNoAwards()
     {
         $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
-        $this->assertEquals(0, $this->module->getUserTotalReward($user->getId()));
+        $this->assertEmpty($this->module->getUserTotalReward($user->getId()));
     }
 
 

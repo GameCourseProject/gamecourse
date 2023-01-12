@@ -11,6 +11,7 @@ use GameCourse\Module\ModuleType;
 use GameCourse\Module\Skills\Skills;
 use GameCourse\Module\Streaks\Streaks;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
+use GameCourse\Module\XPLevels\XPLevels;
 
 /**
  * This is the Awards module, which serves as a compartimentalized
@@ -47,7 +48,8 @@ class Awards extends Module
         ["id" => Badges::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT],
         ["id" => Skills::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT],
         ["id" => Streaks::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT],
-        ["id" => VirtualCurrency::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
+        ["id" => VirtualCurrency::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT],
+        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
     ];
     // NOTE: dependencies should be updated on code changes
 
@@ -219,14 +221,33 @@ class Awards extends Module
     /*** ---------- Rewards ---------- ***/
 
     /**
-     * Gets total reward for a given user.
+     * Gets total reward for a given user, by type of reward.
      *
      * @param int $userId
-     * @return int
+     * @return array
      */
-    public function getUserTotalReward(int $userId): int
+    public function getUserTotalReward(int $userId): array
     {
-       return array_sum(array_column($this->getUserAwards($userId), "reward"));
+        $totalReward = [];
+
+        // Get total XP reward
+        try {
+            $this->checkDependency(XPLevels::ID);
+            $totalReward["XP"] = array_sum(array_column(Core::database()->selectMultiple(self::TABLE_AWARD, [
+                "course" => $this->course->getId(),
+                "user" => $userId,
+            ], "*", null, [["type", AwardType::TOKEN]]), "reward"));
+
+        } catch (Exception $e) {}
+
+        // Get total tokens reward
+        try {
+            $this->checkDependency(VirtualCurrency::ID);
+            $totalReward["tokens"] = $this->getUserTotalRewardByType($userId, AwardType::TOKEN);
+
+        } catch (Exception $e) {}
+
+        return $totalReward;
     }
 
     /**

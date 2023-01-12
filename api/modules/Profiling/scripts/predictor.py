@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import connector
 from profiler import *
@@ -30,7 +30,7 @@ def predict_kmeans_silhouette(data):
         clusterer.fit(xp)
         silhouette_avg = silhouette_score(xp, clusterer.labels_)
         scores[n_clusters] = silhouette_avg
-    
+
     return max(scores.items(), key=operator.itemgetter(1))[0]
 
 def predict_kmeans_elbow(data):
@@ -96,7 +96,7 @@ if __name__ == "__main__":
                 file.close()
                 connector.close()
                 sys.exit(0)
-            
+
             elif method == 's':
                 result = predict_kmeans_silhouette(total_xp)
                 file.write(str(result))
