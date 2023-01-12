@@ -5,7 +5,6 @@ IMPORTED_FUNCTIONS_FOLDER = os.path.join(ROOT_PATH, "imported-functions")
 RULES_PATH = None
 
 COURSE = None
-METADATA = None
 TEST_MODE = False
 AUTOSAVE = False
 

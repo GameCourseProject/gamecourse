@@ -35,24 +35,24 @@ def configure_logging(logs_file):
     logging.basicConfig(filename=logs_file, filemode='a', format=log_format, datefmt='%Y-%m-%d %H:%M:%S',
                         level=logging.DEBUG)
 
-def get_config_metadata(course):
-    configfile = "config_" + str(course) + ".txt"
-    configpath = os.path.join(config.ROOT_PATH, "config", configfile)
+def get_metadata():
+    metadata_file = "config_" + str(config.COURSE) + ".txt"
+    metadata_path = os.path.join(config.ROOT_PATH, "config", metadata_file)
+
     try:
-        with open(configpath, 'r') as f:
+        with open(metadata_path, 'r') as f:
             lines = f.read()
             data = lines.split("\n")
             metadata = {}
             for el in data:
-                if len(el.split(":")) == 2:
-                    [key, val] = el.split(":")
+                parts = el.split(":")
+                if len(parts) == 2:
+                    [key, val] = parts
                     metadata[key] = int(val)
             return metadata
 
     except IOError:
-        error_msg = "ERROR: No config file found for course " + str(course) + "."
-        logging.exception(error_msg)
-        sys.exit(error_msg)
+        raise Exception("No config file found for course with ID = %s." % config.COURSE)
 
 def log_start():
     logging.info("AutoGame started running.")
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         functions, fpaths, info = import_functions_from_rulepath(functions_path, info=True)
 
         # Read and set Metadata
-        METADATA = get_config_metadata(course)
+        METADATA = get_metadata()
         scope, logs = {"METADATA": METADATA, "null": None}, {}
 
         try:
