@@ -1,0 +1,16 @@
+rule: Golden Star
+# Be creative and do relevant things to help improve the course
+#   lvl.1: perform one task
+#   lvl.2: perform two tasks
+#   lvl.3: perform three tasks
+
+    when:
+        # Get target progress in badge
+        logs = get_logs(target, "golden star award")
+        progress = len(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(progress, 1, 2, 3)
+
+    then:
+        award_badge(target, "Golden Star", lvl, logs)

@@ -1,0 +1,10 @@
+rule: Presentation Grade
+# Give presentation grade
+
+    when:
+        logs = get_presentation_logs(target)
+        len(logs) == 1
+        rating = get_rating(logs)
+
+    then:
+        award_presentation_grade(target, "Presentation", rating)

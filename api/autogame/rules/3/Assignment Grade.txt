@@ -1,0 +1,10 @@
+rule: Assignment Grade
+# Gives grades from assignments
+
+    when:
+        logs = get_assignment_logs(target)
+        flogs = filter_logs(logs, None, "Relatório Final")
+        len(flogs) > 0
+
+    then:
+        award_assignment_grade(target, flogs, 1167, 50)

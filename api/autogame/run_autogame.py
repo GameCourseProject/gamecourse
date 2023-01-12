@@ -1,5 +1,6 @@
-import os, sys, json
-import config, logging
+#!/usr/bin/env python3
+import os, sys, config, logging
+from datetime import datetime
 
 from gamerules import *
 from gamerules.functions.utils import import_functions_from_rulepath
@@ -22,7 +23,7 @@ def process_args(_course, _rules_path, _targets):
         return _course, _all_targets, _targets_list
 
     else:
-        db.close_db()
+        db.close()
         sys.exit("ERROR: Course is not active or does not exist.")
 
 def configure_logging(logs_file):
@@ -53,15 +54,47 @@ def get_config_metadata(course):
         logging.exception(error_msg)
         sys.exit(error_msg)
 
+def log_start():
+    logging.info("AutoGame started running.")
 
-# ------------------------------------------------------------
-#
-#	Main GameRules interface
-#
-# ------------------------------------------------------------
+def log_end():
+    def first_and_last_name(_name):
+        first, *middle, last = _name.split()
+        return first + " " + last
+
+    def truncate(_info, _max, _gap):
+        return _info[:(_max - _gap)] + "..." if len(_info) > _max else _info
+
+    # Process targets name and student number
+    targets_info = list(
+        map(lambda s: truncate("(" + str(s["studentNumber"]) + ") " + first_and_last_name(s["name"]), 25, 2),
+            sorted(students.values(), key=lambda s: s["name"])))
+
+    # Divide targets info into columns
+    col = 3
+    targets_info = [targets_info[i:i+col] for i in range(0, len(targets_info), col)]
+
+    fill_with_empty = col - len(targets_info[-1])
+    for i in range(fill_with_empty):
+        targets_info[-1].append("")
+
+    targets_str = ""
+    for _info in targets_info:
+        targets_str += "{: <27} {: <27} {: <27}\n".format(*_info)
+
+    # Log info
+    logging.info("AutoGame finished running.\n\n" +
+                 "AutoGame ran for the following targets:\n\n" +
+                 "TOTAL = " + str(len(list(students.keys()))) + "\n" +
+                 targets_str + "\n")
+
+
+### ------------------------------------------------------ ###
+###	-------------- Main GameRules Interface -------------- ###
+### ------------------------------------------------------ ###
 
 # This python script will be invoked from the php side.
-# cli prompt: python3 run_autogame.py [courseId] [all/new/targets] [rules_path] [logs_file] [dbName] [dbUser] [dbPass]
+# CLI prompt: python3 run_autogame.py [courseId] [all/new/targets] [rules_path] [logs_file] [dbName] [dbUser] [dbPass]
 if __name__ == "__main__":
     if len(sys.argv) != 8:
         error_msg = "ERROR: AutoGame didn't receive all the information."
@@ -73,7 +106,6 @@ if __name__ == "__main__":
 
     # Initialize connector
     from gamerules.connector.db_connector import connect_to_gamecourse_db
-
     connect_to_gamecourse_db(sys.argv[5], sys.argv[6], sys.argv[7])
     from gamerules.connector.gamecourse_connector import *
 
@@ -87,12 +119,9 @@ if __name__ == "__main__":
         # Get targets to run
         students = get_targets(course, last_activity, all_targets, targets_list)
 
-        # Clear badge progression before calculating again
-        # FIXME: dependent on modules being active
+        # Clear all progression before calculating again
         for el in students.keys():
-            clear_badge_progression(el)
-            clear_streak_progression(el)
-            clear_streak_participations(el)
+            clear_progression(el)
 
         # Import custom course functions
         functions_path = os.path.join(config.IMPORTED_FUNCTIONS_FOLDER, course)
@@ -105,7 +134,7 @@ if __name__ == "__main__":
         try:
             # Save the start date
             start_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-            logging.info("AutoGame started running.")
+            log_start()
 
             # Fire Rule System
             rs = RuleSystem(config.RULES_PATH, config.AUTOSAVE)
@@ -115,15 +144,11 @@ if __name__ == "__main__":
                 # Terminate AutoGame
                 finish_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
                 autogame_terminate(course, start_date, finish_date)
-                targets_info = " | ".join(list(map(lambda s: "(" + str(s["studentNumber"]) + ") " + s["name"], list(students.values()))))
-                logging.info("AutoGame finished running.\n\n" +
-                             "AutoGame ran for the following targets (total=" + str(len(list(students.keys()))) + "):\n\n" +
-                             "\n".join(targets_info[i:i+80] for i in range(0, len(targets_info), 80)) +"\n")
+                log_end()
 
-                # Calculate new XP value for each target
+                # Calculate new grade for each target
                 for el in students.keys():
-                    calculate_xp(course, el)
-                    calculate_teams_xp(course, el)
+                    calculate_grade(el)
 
             except Exception as e:
                 error_msg = str(e)
@@ -138,7 +163,7 @@ if __name__ == "__main__":
         raise
 
     finally:
-        db.close_db()
+        db.close()
         if error_msg is not None:
             logging.exception(error_msg)
             sys.exit("ERROR: " + error_msg)

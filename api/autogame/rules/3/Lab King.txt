@@ -1,0 +1,14 @@
+rule: Lab King
+# Attend the labs, be the best
+#   lvl.1: have the highest grade in the labs
+
+    when:
+        # Get target progress in badge
+        logs = get_logs(target, "lab king")
+        progress = len(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(progress, 1)
+
+    then:
+        award_badge(target, "Lab King", lvl, logs)

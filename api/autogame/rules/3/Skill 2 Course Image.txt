@@ -1,0 +1,11 @@
+rule: Course Image
+
+    when:
+        combo1 = skill_completed(target, "Course Logo") and skill_completed(target, "Podcast")
+        dependencies = combo1
+
+        logs = get_skill_logs(target, "Course Image")
+        rating = get_rating(logs)
+
+    then:
+        award_skill(target, "Course Image", rating, logs, dependencies)

@@ -1,0 +1,19 @@
+rule: Quiz Master
+# Excel at the quizzes
+#   lvl.1: top grade in three quizzes
+#   lvl.2: top grade in five quizzes
+#   lvl.3: top grade in six quizzes
+
+    when:
+        max_grade = METADATA["max_quiz_grade"]
+
+        # Get target progress in badge
+        logs = get_quiz_logs(target)
+        flogs = filter_logs(logs, None, "Dry Run", max_grade)
+        progress = len(flogs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(progress, 3, 5, 6)
+
+    then:
+        award_badge(target, "Quiz Master", lvl, logs)

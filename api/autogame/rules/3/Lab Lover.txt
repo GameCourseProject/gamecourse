@@ -1,0 +1,16 @@
+rule: Lab Lover
+# Show up for the labs
+#   lvl.1: be there for 50% of labs
+#   lvl.2: be there for 75% of labs
+#   lvl.3: be there for all of the labs
+
+    when:
+        # Get target progress in badge
+        logs = get_attendance_lab_logs(target)
+        attendances = len(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(attendances, 4, 6, 8)
+
+    then:
+        award_badge(target, "Lab Lover", lvl, logs)

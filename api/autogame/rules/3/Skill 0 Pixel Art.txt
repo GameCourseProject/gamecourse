@@ -1,0 +1,8 @@
+rule: Pixel Art
+
+    when:
+        logs = get_skill_logs(target, "Pixel Art")
+        rating = get_rating(logs)
+
+    then:
+        award_skill(target, "Pixel Art", rating, logs)
