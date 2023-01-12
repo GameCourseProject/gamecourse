@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS award_participation(
     award                       int unsigned NOT NULL,
     participation               int unsigned NOT NULL,
 
-    PRIMARY key(award,participation),
+    PRIMARY key(award, participation),
     FOREIGN key(award) REFERENCES award(id) ON DELETE CASCADE,
     FOREIGN key(participation) REFERENCES participation(id) ON DELETE CASCADE
 );

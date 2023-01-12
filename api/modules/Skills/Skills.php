@@ -13,7 +13,6 @@ use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\XPLevels\XPLevels;
-use Utils\Utils;
 
 /**
  * This is the Skills module, which serves as a compartimentalized
@@ -141,6 +140,20 @@ class Skills extends Module
                                     "minValue" => 0
                                 ],
                                 "helper" => "Maximum extra credit students can earn with skills"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::NUMBER,
+                                "id" => "minRating",
+                                "value" => $this->getMinRating(),
+                                "placeholder" => "Skills min. rating",
+                                "options" => [
+                                    "topLabel" => "Min. rating",
+                                    "required" => true,
+                                    "minValue" => 0
+                                ],
+                                "helper" => "Minimum rating for a skill to be awarded"
                             ]
                         ]
                     ]
@@ -156,6 +169,7 @@ class Skills extends Module
     {
         foreach ($inputs as $input) {
             if ($input["id"] == "maxExtraCredit") $this->updateMaxExtraCredit($input["value"]);
+            if ($input["id"] == "minRating") $this->updateMinRating($input["value"]);
         }
     }
 
@@ -331,6 +345,19 @@ class Skills extends Module
         Core::database()->update(self::TABLE_SKILL_CONFIG, ["maxExtraCredit" => $max], ["course" => $this->course->getId()]);
     }
 
+    public function getMinRating(): int
+    {
+        return intval(Core::database()->select(self::TABLE_SKILL_CONFIG, ["course" => $this->course->getId()], "minRating"));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function updateMinRating(int $minRating)
+    {
+        Core::database()->update(self::TABLE_SKILL_CONFIG, ["minRating" => $minRating], ["course" => $this->course->getId()]);
+    }
+
 
     /*** ---------- Skills ---------- ***/
 
@@ -454,7 +481,7 @@ class Skills extends Module
                 continue;
 
             $nrWildcardsUsed = intval(Core::database()->select(self::TABLE_AWARD_WILDCARD, [
-                "user" => $userId, "course" => $this->getCourse()->getId(), "award" => $award["id"]
+                "award" => $award["id"]
             ], "nrWildcardsUsed"));
             $nrUsedWildcards += $nrWildcardsUsed;
         }

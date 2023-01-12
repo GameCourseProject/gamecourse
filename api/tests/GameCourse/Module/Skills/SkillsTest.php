@@ -489,8 +489,6 @@ class SkillsTest extends TestCase
 
         if (!is_null($nrWildcardsUsed)) {
             Core::database()->insert(Skills::TABLE_AWARD_WILDCARD, [
-                "user" => $userId,
-                "course" => $courseId,
                 "award" => $id,
                 "nrWildcardsUsed" => $nrWildcardsUsed
             ]);

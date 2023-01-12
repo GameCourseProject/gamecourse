@@ -8,6 +8,7 @@ use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
+use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
@@ -877,11 +878,11 @@ class StreakTest extends TestCase
         $this->assertFalse($streak->isPeriodic());
     }
 
-        /**
-         * @test
-         * @throws Exception
-         */
-        public function setAtMost()
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setAtMost()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
             null, null, 100, null, false, false, false,
