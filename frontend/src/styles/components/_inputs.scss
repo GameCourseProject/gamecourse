@@ -120,6 +120,11 @@
     @apply rounded-b-xl #{!important};
   }
 
+  .ss-option:first-child,
+  .ss-option:nth-child(2) {
+    @apply rounded-t-xl #{!important};
+  }
+
   .ss-option:hover {
     @apply bg-base-300 text-base-content #{!important};
   }

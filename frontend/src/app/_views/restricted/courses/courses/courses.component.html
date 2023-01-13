@@ -141,6 +141,7 @@
           [options]="yearOptions"
           [placeholder]="'Select an academic year'"
           [search]="false"
+          [classList]="'mt-3 sm:mt-0'"
           [topLabel]="'Academic year'"
           [required]="true">
         </app-input-select>
@@ -153,6 +154,7 @@
           [form]="f"
           [(value)]="courseToManage.color"
           [placeholder]="'Course color'"
+          [classList]="'mt-3 sm:mt-0'"
           [topLabel]="'Color'">
         </app-input-color>
       </div>
@@ -178,6 +180,7 @@
           [form]="f"
           [(value)]="courseToManage.endDate"
           [placeholder]="'Course end date'"
+          [classList]="'mt-3 sm:mt-0'"
           [topLabel]="'End date'">
         </app-input-date>
       </div>
