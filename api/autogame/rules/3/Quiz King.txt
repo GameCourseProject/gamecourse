@@ -1,0 +1,14 @@
+rule: Quiz King
+# Take the quizzes, be the best
+#   lvl.1: have the highest grade in the quizzes
+
+    when:
+        # Get target progress in badge
+        logs = get_logs(target, "quiz king")
+        progress = len(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(progress, 1)
+
+    then:
+        award_badge(target, "Quiz King", lvl, logs)

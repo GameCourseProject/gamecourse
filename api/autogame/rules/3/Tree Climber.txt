@@ -1,0 +1,19 @@
+rule: Tree Climber
+# Reach higher levels of the Skill Tree
+#   lvl.1: reach level two
+#   lvl.2: reach level three
+
+    when:
+        # Get target progress in badge
+        tier_2_logs = get_skill_tier_logs(target, 2)
+        tier_3_logs = get_skill_tier_logs(target, 3)
+
+        reached_tier_2 = len(tier_2_logs) > 0
+        reached_tier_3 = len(tier_3_logs) > 0
+        logs = tier_3_logs if reached_tier_3 else tier_2_logs if reached_tier_2 else []
+
+        # Compute badge level the target deserves
+        lvl = 2 if reached_tier_3 else 1 if reached_tier_2 else 0
+
+    then:
+        award_badge(target, "Tree Climber", lvl, logs)

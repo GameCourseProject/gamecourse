@@ -397,58 +397,6 @@ class AwardsTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function getUserBadgesAwardsOnlyActive()
-    {
-        // Given
-        $badgesModule = new Badges($this->course);
-        $badgesModule->setEnabled(true);
-        $badgeActive = Badge::addBadge($this->course->getId(), "Bagde Active", "Perform action", false, false, false, false, false, [
-            ["description" => "one time", "goal" => 1, "reward" => 100],
-            ["description" => "two times", "goal" => 2, "reward" => 100],
-            ["description" => "three times", "goal" => 3, "reward" => 100]
-        ]);
-        $badgeNotActive = Badge::addBadge($this->course->getId(), "Bagde Not Active", "Perform action", false, false, false, false, false, [
-            ["description" => "one time", "goal" => 1, "reward" => 100],
-            ["description" => "two times", "goal" => 2, "reward" => 100],
-            ["description" => "three times", "goal" => 3, "reward" => 100]
-        ]);
-
-        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BADGE, $badgeActive->getId(), "Award 1", 100);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BADGE, $badgeNotActive->getId(), "Award 2", 100);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BONUS, null, "Bonus", 500);
-
-        // When
-        $badgeNotActive->setActive(false);
-        $awards = $this->module->getUserBadgesAwards($user->getId());
-
-        // Then
-        $this->assertIsArray($awards);
-        $this->assertCount(1, $awards);
-
-        $keys = ["id", "user", "course", "description", "type", "moduleInstance", "reward", "date"];
-        $nrKeys = count($keys);
-        foreach ($keys as $key) {
-            $this->assertCount($nrKeys, array_keys($awards[0]));
-            $this->assertArrayHasKey($key, $awards[0]);
-
-            if ($key === "date") continue;
-            if ($key === "description") $this->assertEquals("Award 1", $awards[0][$key]);
-            else $this->assertEquals($awards[0][$key], [
-                "id" => 1,
-                "user" => $user->getId(),
-                "course" => $this->course->getId(),
-                "type" => AwardType::BADGE,
-                "moduleInstance" => $badgeActive->getId(),
-                "reward" => 100
-            ][$key]);
-        }
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
     public function getUserBadgesAwardsBadgesNotEnabled()
     {
         // Given
@@ -591,52 +539,6 @@ class AwardsTest extends TestCase
                 "course" => $this->course->getId(),
                 "type" => AwardType::SKILL,
                 "moduleInstance" => $skillNotExtra->getId(),
-                "reward" => 100
-            ][$key]);
-        }
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function getUserSkillsAwardsOnlyActive()
-    {
-        // Given
-        $skillsModule = new Skills($this->course);
-        $skillsModule->setEnabled(true);
-        $skillTree = SkillTree::addSkillTree($this->course->getId(), null, 6000);
-        $tier = Tier::addTier($skillTree->getId(), "Tier 1", 100);
-        $skillActive = Skill::addSkill($tier->getId(), "Skill Active", null, null, false, false, []);
-        $skillNotActive = Skill::addSkill($tier->getId(), "Skill Not Active", null, null, false, false, []);
-
-        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::SKILL, $skillActive->getId(), "Award 1", 100);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::SKILL, $skillNotActive->getId(), "Award 2", 100);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BONUS, null, "Bonus", 500);
-
-        // When
-        $skillNotActive->setActive(false);
-        $awards = $this->module->getUserSkillsAwards($user->getId());
-
-        // Then
-        $this->assertIsArray($awards);
-        $this->assertCount(1, $awards);
-
-        $keys = ["id", "user", "course", "description", "type", "moduleInstance", "reward", "date"];
-        $nrKeys = count($keys);
-        foreach ($keys as $key) {
-            $this->assertCount($nrKeys, array_keys($awards[0]));
-            $this->assertArrayHasKey($key, $awards[0]);
-
-            if ($key === "date") continue;
-            if ($key === "description") $this->assertEquals("Award 1", $awards[0][$key]);
-            else $this->assertEquals($awards[0][$key], [
-                "id" => 1,
-                "user" => $user->getId(),
-                "course" => $this->course->getId(),
-                "type" => AwardType::SKILL,
-                "moduleInstance" => $skillActive->getId(),
                 "reward" => 100
             ][$key]);
         }
@@ -801,54 +703,6 @@ class AwardsTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function getUserStreaksAwardsOnlyActive()
-    {
-        // Given
-        $streaksModule = new Streaks($this->course);
-        $streaksModule->setEnabled(true);
-        $streakActive = Streak::addStreak($this->course->getId(), "Streak Active", "Perform action", null,
-            10, null, null, 100, null, false, true,
-            false, false, false);
-        $streakNotActive = Streak::addStreak($this->course->getId(), "Streak Not Active", "Perform action", null,
-            10, null, null, 100, null, false, true,
-            false, false, false);
-
-        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::STREAK, $streakActive->getId(), "Award 1", 100);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::STREAK, $streakNotActive->getId(), "Award 2", 100);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BONUS, null, "Bonus", 500);
-
-        // When
-        $streakNotActive->setActive(false);
-        $awards = $this->module->getUserStreaksAwards($user->getId());
-
-        // Then
-        $this->assertIsArray($awards);
-        $this->assertCount(1, $awards);
-
-        $keys = ["id", "user", "course", "description", "type", "moduleInstance", "reward", "date"];
-        $nrKeys = count($keys);
-        foreach ($keys as $key) {
-            $this->assertCount($nrKeys, array_keys($awards[0]));
-            $this->assertArrayHasKey($key, $awards[0]);
-
-            if ($key === "date") continue;
-            if ($key === "description") $this->assertEquals("Award 1", $awards[0][$key]);
-            else $this->assertEquals($awards[0][$key], [
-                "id" => 1,
-                "user" => $user->getId(),
-                "course" => $this->course->getId(),
-                "type" => AwardType::STREAK,
-                "moduleInstance" => $streakActive->getId(),
-                "reward" => 100
-            ][$key]);
-        }
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
     public function getUserStreaksAwardsStreaksNotEnabled()
     {
         // Given
@@ -887,6 +741,46 @@ class AwardsTest extends TestCase
         $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
         $this->expectException(Exception::class);
         $this->module->giveAward($user->getId(), "Award", "award_type");
+    }
+
+
+    /**
+     * @test
+     */
+    public function removeAwards()
+    {
+        // Given
+        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BADGE, 1, "Badge award", 100);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::SKILL, 1, "Skill award", 100);
+
+        // When
+        $nrAwards = $this->module->removeAwards(null, null, AwardType::BADGE);
+
+        // Then
+        $userAwards = $this->module->getUserAwards($user->getId());
+        $this->assertCount(1, $userAwards);
+        $this->assertEquals(AwardType::SKILL, $userAwards[0]["type"]);
+        $this->assertEquals(1, $nrAwards);
+    }
+
+    /**
+     * @test
+     */
+    public function removeAwardsNoAwardsToRemove()
+    {
+        // Given
+        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BADGE, 1, "Badge award", 100);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::SKILL, 1, "Skill award", 100);
+
+        // When
+        $nrAwards = $this->module->removeAwards(null, null, AwardType::BONUS);
+
+        // Then
+        $userAwards = $this->module->getUserAwards($user->getId());
+        $this->assertCount(2, $userAwards);
+        $this->assertEquals(0, $nrAwards);
     }
 
 
@@ -1042,38 +936,6 @@ class AwardsTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function getUserBadgesTotalRewardOnlyActive()
-    {
-        // Given
-        $badgesModule = new Badges($this->course);
-        $badgesModule->setEnabled(true);
-        $badgeActive = Badge::addBadge($this->course->getId(), "Bagde Active", "Perform action", false, false, false, false, false, [
-            ["description" => "one time", "goal" => 1, "reward" => 100],
-            ["description" => "two times", "goal" => 2, "reward" => 100],
-            ["description" => "three times", "goal" => 3, "reward" => 100]
-        ]);
-        $badgeNotActive = Badge::addBadge($this->course->getId(), "Bagde Not Active", "Perform action", false, false, false, false, false, [
-            ["description" => "one time", "goal" => 1, "reward" => 100],
-            ["description" => "two times", "goal" => 2, "reward" => 100],
-            ["description" => "three times", "goal" => 3, "reward" => 100]
-        ]);
-
-        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BADGE, $badgeActive->getId(), "Award 1", 200);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BADGE, $badgeNotActive->getId(), "Award 2", 100);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BONUS, null, "Bonus", 500);
-
-        // When
-        $badgeNotActive->setActive(false);
-
-        // Then
-        $this->assertEquals(200, $this->module->getUserBadgesTotalReward($user->getId()));
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
     public function getUserBadgesTotalRewardBadgesNotEnabled()
     {
         // Given
@@ -1152,32 +1014,6 @@ class AwardsTest extends TestCase
 
         // Then
         $this->assertEquals(100, $this->module->getUserSkillsTotalReward($user->getId(), null, false));
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function getUserSkillsTotalRewardOnlyActive()
-    {
-        // Given
-        $skillsModule = new Skills($this->course);
-        $skillsModule->setEnabled(true);
-        $skillTree = SkillTree::addSkillTree($this->course->getId(), null, 6000);
-        $tier = Tier::addTier($skillTree->getId(), "Tier 1", 100);
-        $skillActive = Skill::addSkill($tier->getId(), "Skill Active", null, null, false, false, []);
-        $skillNotActive = Skill::addSkill($tier->getId(), "Skill Not Active", null, null, false, false, []);
-
-        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::SKILL, $skillActive->getId(), "Award 1", 100);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::SKILL, $skillNotActive->getId(), "Award 2", 100);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BONUS, null, "Bonus", 500);
-
-        // When
-        $skillNotActive->setActive(false);
-
-        // Then
-        $this->assertEquals(100, $this->module->getUserSkillsTotalReward($user->getId()));
     }
 
     /**

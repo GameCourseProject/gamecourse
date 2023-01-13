@@ -1,6 +1,5 @@
+#!/usr/bin/env python3
 import logging
-import sys
-
 import mysql.connector
 
 
@@ -8,55 +7,64 @@ class Database:
 
     connection = None
     cursor = None
+    data_broker = None
+
+    def __init__(self, database, username, password):
+        try:
+            # Connect to database
+            Database.connection = mysql.connector.connect(user=username, password=password, host='localhost',
+                                                          database=database)
+            Database.cursor = Database.connection.cursor(prepared=True)
+
+            self.connection = Database.connection
+            self.cursor = Database.cursor
+            self.data_broker = DataBroker()
+
+        except Exception as e:
+            error_msg = "Couldn't connect to database '" + database + "'.\n" + str(e)
+            logging.exception(error_msg)
+            raise
+
+    def close(self):
+        # Close connection to database
+        self.connection.close()
+
+    def execute_query(self, query, args=(), type="fetch"):
+        # Execute a given SQL query
+        self.cursor.execute(query, args)
+
+        if type is "fetch":
+            return self.cursor.fetchall()
+
+        elif type is "commit":
+            self.connection.commit()
+
+
+class DataBroker:
 
     student_dict = {}
     course_dict = {}
 
-    def __init__(self, database, username, password):
-        if Database.connection is None:
-            try:
-                Database.connection = mysql.connector.connect(user=username, password=password, host='localhost',
-                                                              database=database)
-                Database.cursor = Database.connection.cursor(prepared=True)
+    def __int__(self):
+        pass
 
-                self.connection = Database.connection
-                self.cursor = Database.cursor
+    def get(self, db, key, query, type="course"):
+        try:
+            dict = self.course_dict if type is "course" else self.student_dict
+            return dict[key][query]
 
-            except Exception as e:
-                error_msg = "Couldn't connect to database '" + database + "'.\n" + str(e)
-                logging.exception(error_msg)
-                raise
-
-        if Database.student_dict or Database.course_dict:
-            Database.student_dict = {}
-            Database.course_dict = {}
-
-    def close_db(self):
-        self.connection.close()
-
-    def query(self,sql):
-        cursor = Database.connection.cursor()
-        cursor.execute(sql)
-
-    def student_data_broker(self, id, query):
-         try:
-            result = self.student_dict[id][query]
+        except KeyError:
+            result = db.execute_query(query)
+            self.add(key, query, result, type)
             return result
-         except KeyError:
-            return False
 
-    def course_data_broker(self, id, query):
-         try:
-            result = self.course_dict[id][query]
-            return result
-         except KeyError:
-            return False
+    def add(self, key, query, result, type="course"):
+        dict = self.course_dict if type is "course" else self.student_dict
+        try:
+            exist = dict[key][query]
 
+        except:
+            dict[key] = {}
 
-    def data_broker_add(self, dict, id, query, result):
-         try:
-           exist = dict[id][query]
-         except:
-           dict[id] = {}
-         finally:
-            dict[id][query] = result
+        finally:
+            dict[key][query] = result

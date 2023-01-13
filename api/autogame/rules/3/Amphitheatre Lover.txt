@@ -1,0 +1,17 @@
+rule: Amphitheatre Lover
+# Show up for theoretical lectures
+#   lvl.1: be there for 50% of lectures
+#   lvl.2: be there for 75% of lectures
+#   lvl.3: be there for all of the lectures
+
+    when:
+        # Get target progress in badge
+        logs = get_attendance_lecture_logs(target)
+        logs += get_attendance_lecture_late_logs(target)
+        attendances = len(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(attendances, 6, 9, 13)
+
+    then:
+        award_badge(target, "Amphitheatre Lover", lvl, logs)

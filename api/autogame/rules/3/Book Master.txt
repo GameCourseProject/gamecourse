@@ -1,0 +1,16 @@
+rule: Book Master
+# Read class slides
+#   lvl.1: read slides for 50% of lectures
+#   lvl.2: read slides for 75% of lectures
+#   lvl.3: read all lecture slides
+
+    when:
+        # Get target progress in badge
+        logs = get_resource_view_logs(target, "Lecture % Slides%")
+        slides_read = len(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(slides_read, 7, 11, 15)
+
+    then:
+        award_badge(target, "Book Master", lvl, logs)

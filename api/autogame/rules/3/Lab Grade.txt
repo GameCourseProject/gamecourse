@@ -1,0 +1,9 @@
+rule: Lab Grade
+# Gives grades from labs
+
+    when:
+        logs = get_lab_logs(target)
+        len(logs) > 0
+		
+    then:
+        award_lab_grade(target, logs)

@@ -1,0 +1,18 @@
+rule: Stop Motion
+
+    when:
+        wildcard = has_wildcard_available(target, 1, "Wildcard")
+
+        combo1 = skill_completed(target, "Alien Invasions") and skill_completed(target, "First-Person Narrator")
+        combo2 = skill_completed(target, "Alien Invasions") and wildcard
+        combo3 = skill_completed(target, "First-Person Narrator") and wildcard
+        dependencies = combo1 or combo2 or combo3
+
+        skill_based = combo1
+        use_wildcard = False if skill_based else True
+
+        logs = get_skill_logs(target, "Stop Motion")
+        rating = get_rating(logs)
+
+    then:
+        award_skill(target, "Stop Motion", rating, logs, dependencies, use_wildcard)

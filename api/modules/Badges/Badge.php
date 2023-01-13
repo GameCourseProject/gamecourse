@@ -2,9 +2,12 @@
 namespace GameCourse\Module\Badges;
 
 use Exception;
+use GameCourse\AutoGame\AutoGame;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Awards\Awards;
+use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\XPLevels\XPLevels;
 use Utils\Utils;
 use ZipArchive;
@@ -258,6 +261,16 @@ class Badge
         }
         if (key_exists("isActive", $fieldValues)) {
             if ($oldStatus != $newStatus) {
+                if (!$newStatus) {
+                    // Remove awards already given
+                    $course = $this->getCourse();
+                    $awardsModule = new Awards($course);
+                    $removed = $awardsModule->removeAwards(null, null, AwardType::BADGE, $this->id);
+
+                    // Re-run AutoGame to propagate changes
+                    if ($removed > 0) AutoGame::run($course->getId(), true);
+                }
+
                 // Update rule status
                 $rule->setActive($newStatus);
             }
@@ -481,6 +494,13 @@ class Badge
 
             // Delete badge from database
             Core::database()->delete(self::TABLE_BADGE, ["id" => $badgeId]);
+
+            // Remove awards already given
+            $awardsModule = new Awards(new Course($courseId));
+            $removed = $awardsModule->removeAwards(null, null, AwardType::BADGE, $badgeId);
+
+            // Re-run AutoGame to propagate changes
+            if ($removed > 0) AutoGame::run($courseId, true);
         }
     }
 

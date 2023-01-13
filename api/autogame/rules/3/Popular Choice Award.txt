@@ -1,0 +1,16 @@
+rule: Popular Choice Award
+# Have the most liked multimedia presentation
+#   lvl.1: be the third most liked
+#   lvl.2: be the second most liked
+#   lvl.3: be the most liked
+
+    when:
+        # Get target progress in badge
+        logs = get_logs(target, "popular choice award (presentation)")
+        ranking = int(get_description(log[0])) if len(logs) == 1 else 0
+
+        # Compute badge level the target deserves
+        lvl = 4 - ranking
+		
+    then:
+        award_badge(target, "Popular Choice Award", lvl, logs)

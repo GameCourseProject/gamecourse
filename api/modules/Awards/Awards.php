@@ -217,6 +217,30 @@ class Awards extends Module
         ]);
     }
 
+    /**
+     * Removes awards under certain conditions.
+     * Returns the number of awards removed.
+     *
+     * @param int|null $userId
+     * @param string|null $description
+     * @param string|null $type
+     * @param int|null $moduleInstance
+     * @return int
+     */
+    public function removeAwards(int $userId = null, string $description = null, string $type = null, int $moduleInstance = null): int
+    {
+        $where = ["course" => $this->course->getId()];
+
+        if (!is_null($userId)) $where["user"] = $userId;
+        if (!is_null($description)) $where["description"] = $description;
+        if (!is_null($type)) $where["type"] = $type;
+        if (!is_null($moduleInstance)) $where["moduleInstance"] = $moduleInstance;
+
+        $nrAwards = Core::database()->select(self::TABLE_AWARD, $where, "COUNT(*)");
+        Core::database()->delete(self::TABLE_AWARD, $where);
+        return $nrAwards;
+    }
+
 
     /*** ---------- Rewards ---------- ***/
 
