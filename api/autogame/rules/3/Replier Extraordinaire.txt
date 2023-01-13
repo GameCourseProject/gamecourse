@@ -1,0 +1,16 @@
+rule: Replier Extraordinaire
+# Respond to the gamification questionnaires
+#   lvl.1: respond to the first questionnaire
+#   lvl.2: respond to both the first questionnaire and the weekly questionnaires
+#   lvl.3: respond to all questionnaires
+
+    when:
+        # Get target progress in badge
+        logs = get_logs(target, "replied to questionnaires")
+        progress = len(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(progress, 1, 2, 3)
+
+    then:
+        award_badge(target, "Replier Extraordinaire", lvl, logs)

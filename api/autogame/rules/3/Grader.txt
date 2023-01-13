@@ -1,0 +1,16 @@
+rule: Grader
+# Peergrade your colleague's posts in the Skill Tree
+#   lvl.1: peergrade 10 posts
+#   lvl.2: peergrade 20 posts
+#   lvl.3: peergrade 45 posts
+
+    when:
+        # Get target progress in badge
+        logs = get_peergrading_logs(target, "Skill Tree")
+        progress = len(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(progress, 10, 20, 45)
+
+    then:
+        award_badge(target, "Grader", lvl, logs)

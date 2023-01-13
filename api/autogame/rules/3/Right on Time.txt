@@ -1,0 +1,16 @@
+rule: Right on Time
+# Don't be late for class
+#   lvl.1: be on time for 50% of lectures
+#   lvl.2: be on time for 75% of lectures
+#   lvl.3: always be there on time
+
+    when:
+        # Get target progress in badge
+        logs = get_attendance_lecture_logs(target)
+        attendances = len(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(attendances, 6, 9, 13)
+
+    then:
+        award_badge(target, "Right on Time", lvl, logs)

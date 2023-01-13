@@ -1,0 +1,16 @@
+rule: Hall of Fame
+# Get into the Hall of Fame
+#   lvl.1: get one entry
+#   lvl.2: get two entries
+#   lvl.3: get three entries
+
+    when:
+        # Get target progress in badge
+        logs = get_logs(target, "hall of fame")
+        progress = len(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(progress, 1, 2, 3)
+
+    then:
+        award_badge(target, "Hall of Fame", lvl, logs)

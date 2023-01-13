@@ -1,0 +1,14 @@
+rule: Focused
+# Participate in the Focus Group Interviews
+#   lvl.1: participate in the interviews
+
+    when:
+        # Get target progress in badge
+        logs = get_logs(target, "participated in focus groups")
+        progress = len(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(progress, 1)
+
+    then:
+        award_badge(target, "Focused", lvl, logs)

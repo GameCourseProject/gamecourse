@@ -59,7 +59,7 @@ if __name__ == "__main__":
 		if course_exists(sys.argv[1]):
 			course = sys.argv[1]
 			config.COURSE = course
-			config.test_mode = True
+			config.TEST_MODE = True
 			rulespath = sys.argv[2]
 			config.RULES_PATH = os.path.join(rulespath, RULES_TESTS_FOLDER)
 			output_file = os.path.join(config.RULES_PATH, "rule-test-output.txt")

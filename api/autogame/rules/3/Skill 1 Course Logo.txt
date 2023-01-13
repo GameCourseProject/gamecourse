@@ -1,0 +1,8 @@
+rule: Course Logo
+
+    when:
+        logs = get_skill_logs(target, "Course Logo")
+        rating = get_rating(logs)
+
+    then:
+        award_skill(target, "Course Logo", rating, logs)

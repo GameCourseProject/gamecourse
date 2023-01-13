@@ -1,0 +1,16 @@
+rule: Squire
+# Help your colleagues by writing tutorials of your tree challenges
+#   lvl.1: get four points
+#   lvl.2: get ten points
+#   lvl.3: get sixteen points
+
+    when:
+        # Get target progress in badge
+        logs = get_forum_logs(target, "Participation Forum", "Tutorials")
+        points = compute_rating(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(points, 4, 10, 16)
+
+    then:
+        award_badge(target, "Squire", lvl, logs)

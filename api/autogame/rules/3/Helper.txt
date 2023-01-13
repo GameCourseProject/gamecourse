@@ -1,0 +1,17 @@
+rule: Helper
+# Give answers in the modules forums
+#   lvl.1: get six points
+#   lvl.2: get ten points
+#   lvl.3: get fourteen points
+
+    when:
+        # Get target progress in badge
+        logs = get_forum_logs(target, "Fórum Geral")
+        logs += get_forum_logs(target, "Fórum: Módulo %")
+        points = compute_rating(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(points, 6, 10, 14)
+
+    then:
+        award_badge(target, "Helper", lvl, logs)

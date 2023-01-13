@@ -1,0 +1,14 @@
+rule: Presentation King
+# Present your thing, be the best
+#   lvl.1: have the highest grade in the presentation
+
+    when:
+        # Get target progress in badge
+        logs = get_logs(target, "presentation king")
+        progress = len(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(progress, 1)
+
+    then:
+        award_badge(target, "Presentation King", lvl, logs)

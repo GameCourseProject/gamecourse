@@ -1,59 +1,341 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import config
 
 from .utils import rule_effect, rule_function
 from gamerules.connector import gamecourse_connector as connector
-import sys, logging
-import config
 
-from datetime import datetime 
 
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## Regular Functions
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@rule_function
-def count(collection):
-    """ just another name for function 'len' """
-    return len(collection)
+### ------------------------------------------------------ ###
+###	------------------ Regular Functions ----------------- ###
+### ------------------------------------------------------ ###
+
+### Getting logs
 
 @rule_function
-def is_rule_unlocked(name,target=None):
-    """ Returns True if the target has unlocked any rule with the given name """
-    from ..namespace import rule_system as rs
-    if target is None:
-        from ..namespace import target as t
-        target = t
-    try:
-        rules = rs.__data__.target_data.target_rules(target)
-    except Exception:
-        return False
-    else:
-        for rule in rules:
-            if rule == name:
-                return True
-        return False
+def get_logs(target=None, type=None, rating=None, evaluator=None, start_date=None, end_date=None, description=None):
+    """
+    Gets all logs under certain conditions.
 
+    Option to get logs for a specific target, type, rating,
+    evaluator, and/or description, as well as an initial and/or end date.
+    """
+
+    return connector.get_logs(target, type, rating, evaluator, start_date, end_date, description)
 
 @rule_function
-def effect_unlocked(val,target=None):
-    """ Returns True if the target has unlocked the given effect """
-    from ..namespace import rule_system as rs
-    if target is None:
-        from ..namespace import target as t
-        target = t
-    try:
-        to = rs.__data__.target_data.target_outputs(target)
-    except Exception:
-        return False
-    else:
-        for output in to:
-            for effect in output.effects():
-                if effect.val() == val:
-                    return True
-        return False
+def get_assignment_logs(target, name=None):
+    """
+    Gets all assignment logs for a specific target.
+
+    Option to get a specific assignment by name.
+    """
+
+    return connector.get_assignment_logs(target, name)
 
 @rule_function
-def compute_lvl (val, *lvls):
+def get_attendance_lab_logs(target, lab_nr=None):
+    """
+    Gets all lab attendance logs for a specific target.
+
+    Option to get a specific lab by number.
+    """
+
+    return connector.get_attendance_lab_logs(target, lab_nr)
+
+@rule_function
+def get_attendance_lecture_logs(target, lecture_nr=None):
+    """
+    Gets all lecture attendance logs for a specific target.
+
+    Option to get a specific lecture by number.
+    """
+
+    return connector.get_attendance_lecture_logs(target, lecture_nr)
+
+@rule_function
+def get_attendance_lecture_late_logs(target, lecture_nr=None):
+    """
+    Gets all late lecture attendance logs for a specific target.
+
+    Option to get a specific lecture by number.
+    """
+
+    return connector.get_attendance_lecture_late_logs(target, lecture_nr)
+
+@rule_function
+def get_forum_logs(target, forum=None, thread=None, rating=None):
+    """
+    Gets forum logs for a specific target.
+
+    Options to get logs from a specific forum and/or thread,
+    as well as with a certain rating.
+    """
+
+    return connector.get_forum_logs(target, forum, thread, rating)
+
+@rule_function
+def get_lab_logs(target, lab_nr=None):
+    """
+    Gets all labs logs for a specific target.
+
+    Option to get a specific lab by number.
+    """
+
+    return connector.get_lab_logs(target, lab_nr)
+
+@rule_function
+def get_page_view_logs(target, name=None):
+    """
+    Gets all page view logs for a specific target.
+
+    Option to get a specific page view by name.
+    """
+
+    return connector.get_page_view_logs(target, name)
+
+@rule_function
+def get_participation_lecture_logs(target, lecture_nr):
+    """
+    Gets all lecture participation logs for a specific target.
+
+    Option to get a specific participation by lecture number.
+    """
+
+    return connector.get_participation_lecture_logs(target, lecture_nr)
+
+@rule_function
+def get_participation_invited_lecture_logs(target, lecture_nr):
+    """
+    Gets all invited lecture participation logs for a specific target.
+
+    Option to get a specific participation by lecture number.
+    """
+
+    return connector.get_participation_invited_lecture_logs(target, lecture_nr)
+
+@rule_function
+def get_peergrading_logs(target, forum=None, thread=None, rating=None):
+    """
+    Gets peergrading logs for a specific target.
+
+    Options to get logs from a specific forum and/or thread,
+    as well as with a certain rating.
+    """
+
+    return connector.get_peergrading_logs(target, forum, thread, rating)
+
+@rule_function
+def get_presentation_logs(target):
+    """
+    Gets presentation logs for a specific target.
+    """
+
+    return connector.get_presentation_logs(target)
+
+@rule_function
+def get_questionnaire_logs(target, name=None):
+    """
+    Gets all questionnaire logs for a specific target.
+
+    Option to get a specific questionnaire by name.
+    """
+
+    return connector.get_questionnaire_logs(target, name)
+
+@rule_function
+def get_quiz_logs(target, name=None):
+    """
+    Gets all quiz logs for a specific target.
+
+    Option to get a specific quiz by name.
+    """
+
+    return connector.get_quiz_logs(target, name)
+
+@rule_function
+def get_resource_view_logs(target, name=None):
+    """
+    Gets all resource view logs for a specific target.
+
+    Option to get a specific resource view by name.
+    """
+
+    return connector.get_resource_view_logs(target, name)
+
+@rule_function
+def get_skill_logs(target, name=None, rating=None):
+    """
+    Gets skill logs for a specific target.
+
+    Options to get logs for a specific skill by name,
+    as well as with a certain rating.
+    """
+
+    return connector.get_skill_logs(target, name, rating)
+
+@rule_function
+def get_skill_tier_logs(target, tier):
+    """
+    Gets skill tier logs for a specific target.
+    """
+
+    return connector.get_skill_tier_logs(target, tier)
+
+@rule_function
+def get_url_view_logs(target, name=None):
+    """
+    Gets all URL view logs for a specific target.
+
+    Option to get a specific URL view by name.
+    """
+
+    return connector.get_url_view_logs(target, name)
+
+
+### Getting total reward
+
+@rule_function
+def get_total_reward(target, type):
+    """
+    Gets total reward for a given target of a specific type.
+    """
+
+    return connector.get_total_reward(target, type)
+
+@rule_function
+def get_total_assignment_reward(target):
+    """
+    Gets total reward for a given target from assignments.
+    """
+
+    return connector.get_total_assignment_reward(target)
+
+@rule_function
+def get_total_badge_reward(target):
+    """
+    Gets total reward for a given target from badges.
+    """
+
+    return connector.get_total_badge_reward(target)
+
+@rule_function
+def get_total_bonus_reward(target):
+    """
+    Gets total reward for a given target from bonus.
+    """
+
+    return connector.get_total_bonus_reward(target)
+
+@rule_function
+def get_total_exam_reward(target):
+    """
+    Gets total reward for a given target from exams.
+    """
+
+    return connector.get_total_exam_reward(target)
+
+@rule_function
+def get_total_lab_reward(target):
+    """
+    Gets total reward for a given target from labs.
+    """
+
+    return connector.get_total_lab_reward(target)
+
+@rule_function
+def get_total_presentation_reward(target):
+    """
+    Gets total reward for a given target from presentations.
+    """
+
+    return connector.get_total_presentation_reward(target)
+
+@rule_function
+def get_total_quiz_reward(target):
+    """
+    Gets total reward for a given target from quizzes.
+    """
+
+    return connector.get_total_quiz_reward(target)
+
+@rule_function
+def get_total_skill_reward(target):
+    """
+    Gets total reward for a given target from skills.
+    """
+
+    return connector.get_total_skill_reward(target)
+
+@rule_function
+def get_total_streak_reward(target):
+    """
+    Gets total reward for a given target from streaks.
+    """
+
+    return connector.get_total_streak_reward(target)
+
+@rule_function
+def get_total_tokens_reward(target):
+    """
+    Gets total reward for a given target from tokens.
+    """
+
+    return connector.get_total_tokens_reward(target)
+
+
+### Filtering logs
+
+@rule_function
+def filter_logs(logs, with_descriptions=None, without_descriptions=None, min_rating=None, max_rating=None):
+    """
+    Filters logs by a set of descriptions and/or ratings.
+    """
+
+    # Filter by description
+    logs = filter_logs_by_description(logs, with_descriptions, without_descriptions)
+
+    # Filter by rating
+    logs = filter_logs_by_rating(logs, min_rating, max_rating)
+
+    return logs
+
+@rule_function
+def filter_logs_by_description(logs, with_descriptions=None, without_descriptions=None):
+    """
+    Filters logs by a set of descriptions.
+    Ex:
+        > filter_logs_by_description(logs, "A") ==> w/ description equal to 'A'
+        > filter_logs_by_description(logs, ["A", "B"]) ==> w/ description equal to 'A' or 'B'
+        > filter_logs_by_description(logs, None, "A") ==> w/ description not equal to 'A'
+        > filter_logs_by_description(logs, None, ["A", "B"]) ==> w/ description not equal to 'A' nor 'B'
+    """
+
+    if isinstance(with_descriptions, str):
+        with_descriptions = [with_descriptions]
+
+    if isinstance(without_descriptions, str):
+        without_descriptions = [without_descriptions]
+
+    return [log for log in logs if
+            with_descriptions is not None and log[config.DESCRIPTION_COL].decode() in with_descriptions or
+            without_descriptions is not None and log[config.DESCRIPTION_COL].decode() not in without_descriptions]
+
+@rule_function
+def filter_logs_by_rating(logs, min_rating=None, max_rating=None):
+    """
+    Filters logs by rating.
+    """
+
+    return [log for log in logs if
+            (int(log[config.RATING_COL]) >= min_rating if min_rating is not None else True) and
+            (int(log[config.RATING_COL]) <= max_rating if max_rating is not None else True)]
+
+
+### Computing values
+
+@rule_function
+def compute_lvl(val, *lvls):
     """
     The purpose of this function is to determine which level a value belongs to.
     It does so by matching the 'val' against the lvl requirements in 'lvls',
@@ -63,60 +345,266 @@ def compute_lvl (val, *lvls):
         > compute_lvl(val=5, 1,5) ==> returns 2
         > compute_lvl(val=5, 10,10,10) ==> returns 0
         > compute_lvl(val=5, 10,5,1) ==> returns 3
-        > compute_lvl(val=5 ) ==> returns 0
+        > compute_lvl(val=5) ==> returns 0
         > compute_lvl(val=5, [2,4,6]) ==> returns 2
         > compute_lvl(val=5, (10,5,1)) ==> returns 3
     """
 
-    if len(lvls)==0: # no level specified?
-        return 0 # then return the least lvl specified
-    if isinstance(lvls[0],(tuple,list)):
+    # No levels specified
+    if len(lvls) == 0:
+        return 0
+
+    # Levels passed as tuple or list
+    if isinstance(lvls[0], (tuple, list)):
         lvls = lvls[0]
-    index = len(lvls)-1
-    while index >= 0:
-        if val >= lvls[index]:
-            return index+1
-        index-= 1
+
+    # Find level associated to value
+    for i in range(len(lvls) - 1, -1, -1):
+        if val >= lvls[i]:
+            return i + 1
+
     return 0
 
+@rule_function
+def compute_rating(logs):
+    """
+    Sums the ratings of a set of logs.
+    """
+
+    return sum([log[config.RATING_COL] for log in logs])
+
+
+### Utils
 
 @rule_function
-def compute_rating (logs):
+def count(collection):
     """
-    Sums the ratings of a series of logs
+    Just another name for function 'len'.
     """
-    rating = 0
-    for logline in logs:
-        rating += logline.rating
-    return rating
+
+    return len(collection)
 
 @rule_function
-def get_rating (logs):
+def get_description(log):
     """
-    Returns the rating column of a logline
+    Returns the description of a logline.
     """
-    if len(logs) == 0:
-        return 0
-    elif len(logs) == 1:
-        for logline in logs:
-            rating = logline.rating
-            return rating
+
+    return log[config.DESCRIPTION_COL]
+
+@rule_function
+def get_rating(logs):
+    """
+    Returns the rating of a set of logs.
+
+    If there are multiple logs, returns the most
+    recent rating.
+
+    NOTE: logs are ordered by date ASC.
+    """
+
+    nr_logs = len(logs)
+    return 0 if nr_logs == 0 else int(logs[nr_logs - 1][config.RATING_COL])
+
+@rule_function
+def skill_completed(target, name):
+    """
+    Checks whether a given skill has already been awarded
+    to a specific target.
+    """
+
+    return connector.skill_completed(target, name)
+
+@rule_function
+def has_wildcard_available(target, skill_tree_id, wildcard_tier):
+    """
+    Checks whether a given target has wildcards available to use.
+    """
+
+    return connector.has_wildcard_available(target, skill_tree_id, wildcard_tier)
+
+
+### ------------------------------------------------------ ###
+###	---------------- Decorated Functions ----------------- ###
+### ------------------------------------------------------ ###
+
+### Awarding items
+
+@rule_effect
+def award(target, type, description, reward, instance=None):
+    """
+    Awards a single prize to a specific target.
+
+    NOTE: will not retract, but will not award twice.
+    Updates award if reward has changed.
+    """
+
+    connector.award(target, type, description, reward, instance)
+
+@rule_effect
+def award_assignment_grade(target, logs, max_xp=1, max_grade=1):
+    """
+    Awards assignment grades to a specific target.
+
+    Option to calculate how many XP should be awarded:
+     > max_xp ==> max. XP per assignment
+     > max_grade ==> max. grade per assignment
+    """
+
+    connector.award_assignment_grade(target, logs, max_xp, max_grade)
+
+@rule_effect
+def award_badge(target, name, lvl, logs):
+    """
+    Awards a given level to a specific target.
+
+    NOTE: will retract if level changed.
+    Updates award if reward has changed.
+    """
+
+    connector.award_badge(target, name, lvl, logs)
+
+@rule_effect
+def award_bonus(target, name, reward):
+    """
+    Awards a given bonus to a specific target.
+    """
+
+    connector.award_bonus(target, name, reward)
+
+@rule_effect
+def award_exam_grade(target, name, reward):
+    """
+    Awards a given exam grade to a specific target.
+    """
+
+    connector.award_exam_grade(target, name, reward)
+
+@rule_effect
+def award_lab_grade(target, logs, max_xp=1, max_grade=1):
+    """
+    Awards lab grades to a specific target.
+
+    Option to calculate how many XP should be awarded:
+     > max_xp ==> max. XP per lab
+     > max_grade ==> max. grade per lab
+    """
+
+    connector.award_lab_grade(target, logs, max_xp, max_grade)
+
+@rule_effect
+def award_post_grade(target, logs, max_xp=1, max_grade=1):
+    """
+    Awards post grades to a specific target.
+
+    Option to calculate how many XP should be awarded:
+     > max_xp ==> max. XP per post
+     > max_grade ==> max. grade per post
+    """
+
+    connector.award_post_grade(target, logs, max_xp, max_grade)
+
+@rule_effect
+def award_presentation_grade(target, name, reward):
+    """
+    Awards a given presentation grade to a specific target.
+    """
+
+    connector.award_presentation_grade(target, name, reward)
+
+@rule_effect
+def award_quiz_grade(target, logs, max_xp=1, max_grade=1):
+    """
+    Awards quiz grades to a specific target.
+
+    Option to calculate how many XP should be awarded:
+     > max_xp ==> max. XP per quiz
+     > max_grade ==> max. grade per quiz
+    """
+
+    connector.award_quiz_grade(target, logs, max_xp, max_grade)
+
+@rule_effect
+def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=False):
+    """
+    Awards a given skill to a specific target.
+    Option to spend a wildcard to give award.
+
+    NOTE: will retract if rating changed.
+    Updates award if reward has changed.
+    """
+
+    connector.award_skill(target, name, rating, logs, dependencies, use_wildcard)
+
+
+### ------------------------------------------------------ ###
+###	----------------- GameCourse Wrapper ----------------- ###
+### ------------------------------------------------------ ###
+
+@rule_function
+def gc(library, name, *args):
+    """
+    This is a wrapper that handles GameCourse specific functions.
+
+    Every rule with a function that has syntax:
+        GC.library.function(arg1, arg2)
+
+    will be mapped on the parser to function:
+        gc("library", "function", arg1, arg2)
+
+    This wrapper will handle the function request and pass it to PHP.
+    """
+
+    from ..connector.gamecourse_connector import call_gamecourse
+
+    if True:
+        data = call_gamecourse(config.COURSE, library, name, list(args))
+
+    return data
+
+
+### ------------------------------------------------------ ###
+###	-------------------- Used in tests ------------------- ###
+### ------------------------------------------------------ ###
+
+@rule_function
+def effect_unlocked(val, target=None):
+    """
+    Returns True if the target has unlocked the given effect.
+    """
+
+    from ..namespace import rule_system as rs
+
+    if target is None:
+        from ..namespace import target as t
+        target = t
+
+    try:
+        to = rs.__data__.target_data.target_outputs(target)
+
+    except Exception:
+        return False
+
     else:
-        ts = datetime.min
-        for logline in logs:
-            if logline.date > ts:
-                rating = logline.rating
-                ts = logline.date
-        return rating
+        for output in to:
+            for effect in output.effects():
+                if effect.val() == val:
+                    return True
+        return False
+
+@rule_effect
+def transform(val):
+    """
+    Wraps any value into a rule effect, this way it will be
+    part of the rule output.
+    """
+
+    return val
 
 
-@rule_function
-def get_campus(target):
-    """
-    Returns the campus of a given student
-    """
-    result = connector.get_campus(target)
-    return result
+
+
+# FIXME: refactor below
 
 @rule_function
 def get_username(target):
@@ -132,35 +620,6 @@ def get_team(target):
     Returns the team of a given student
     """
     result = connector.get_team(target)
-    return result
-
-@rule_function
-def get_logs(target, type):
-    """
-    Returns the logs of a target for a specific
-    participation type
-    """
-    result  = connector.get_logs(target, type)
-    return result
-
-
-@rule_function
-def get_graded_skill_logs(target, minRating):
-    """
-    Returns the logs of a target for a specific
-    participation type
-    """
-    result  = connector.get_graded_skill_logs(target, minRating)
-    return result
-
-
-@rule_function
-def get_graded_logs(target, minRating, include_skills):
-    """
-    Returns the logs of a target for a specific
-    participation type
-    """
-    result  = connector.get_graded_logs(target, minRating, include_skills)
     return result
 
 @rule_function
@@ -189,217 +648,6 @@ def get_new_total(target, validAttempts, rating):
     return (result1, result2)
 
 @rule_function
-def filter_excellence(logs, tiers, classes):
-    """
-    Filters the list of logs in a way that only
-    participations within excellence thresholds are
-    returned.
-    """
-
-    if len(tiers) != len(classes):
-        print("ERROR: number of tiers does not match number of classes")
-
-    filtered = []
-    for i in range(0, len(classes)):
-        tier = tiers[i]
-        tier_labs = classes[i]
-
-        for line in logs:
-            if int(line.description) in tier_labs and int(line.rating) >= tier:
-                filtered.append(line)
-
-    return filtered
-
-
-@rule_function
-def filter_quiz(logs, desc):
-    """
-    Filters the list of logs in a way that quiz 9
-    is removed
-    """
-
-    filtered_logs = []
-
-    for line in logs:
-        if line.description != desc or line.description != "Dry Run":
-            filtered_logs.append(line)
-    return filtered_logs
-
-@rule_function
-def filter_skills(logs):
-    """
-    Filters the list of logs to only keep
-    unique skill graded post.
-    Avoids multiple posts for the same skill.
-    """
-    desc = "Skill Tree"
-    filtered_logs = []
-    already_inserted_skill = []
-
-    for line in logs:
-        post = line.description
-        if post.startswith(desc):
-            if post not in already_inserted_skill:
-                already_inserted_skill.append(post)
-                filtered_logs.append(line)
-    return filtered_logs
-
-@rule_function
-def exclude_worst(logs, last):
-    """
-    Will calculate the adjustment for getting rid of the
-    worst quiz in the bunch
-    """
-
-    worst = int(config.metadata["quiz_max_grade"])
-    fix = last
-
-    if len(logs) == 9:
-        for line in logs:
-            worst = min(int(line.rating), worst)
-
-        if len(last) == 1:
-            last_quiz = max(int(last[0].rating) - worst, 0)
-            fix[0].rating = last_quiz
-
-    return fix
-
-@rule_function
-def compare_exam(total_quiz_grade, exam):
-	"""
-	Will calculate the adjustment for after the exam.
-	Decides between sum of quizzes or exam grade, and calculates adjustment.
-	"""
-	exam_grade = 0
-	if len(exam) == 1:
-		exam_grade = max(int(exam[0].rating) - total_quiz_grade, 0)
-
-	return exam_grade
-
-@rule_effect
-def print_info(text):
-        """
-        returns the output of a skill and writes the award to database
-        """
-        sys.stderr.write(str(text))
-
-
-
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## Decorated Functions
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@rule_effect
-def transform (val):
-    """ wraps any value into a rule effect, this way it will be part of the rule
-    output
-    """
-    return val
-
-
-@rule_effect
-def award_badge(target, badge, lvl, contributions=None, info=None):
-    """
-    returns the output of a badge and writes the award to database
-    """
-    result = connector.award_badge(target, badge, lvl, contributions, info)
-    return result
-
-
-@rule_effect
-def award_skill(target, skill, rating, contributions=None, use_wildcard=False, wildcard_tier=None):
-    """
-    returns the output of a skill and writes the award to database
-    """
-    result = connector.award_skill(target, skill, rating, contributions, use_wildcard, wildcard_tier)
-    return result
-
-@rule_effect
-def award_prize(target, reward_name, xp, contributions=None):
-    """
-    returns the output of a skill and writes the award to database
-    """
-    connector.award_prize(target, reward_name, xp, contributions)
-    # TODO possible upgrade: returning indicators to include these types of prizes as well
-    return
-
-@rule_effect
-def award_tokens(target, reward_name, tokens = None, contributions=None):
-    """
-    Awards tokens to students.
-    """
-    connector.award_tokens(target, reward_name, tokens, contributions)
-    return
-
-@rule_effect
-def award_tokens_type(target, type, element_name, to_award):
-    """
-    Awards tokens to students based on an award given.
-    """
-    connector.award_tokens_type(target, type, element_name, to_award)
-    return
-
-@rule_effect
-def award_grade(target, item, contributions=None, extra=None):
-    """
-    returns the output of a skill and writes the award to database
-    """
-    connector.award_grade(target, item, contributions, extra)
-    # TODO possible upgrade: returning indicators to include these types of prizes as well
-    return
-
-@rule_effect
-def award_team_grade(target, item, contributions=None, extra=None):
-    """
-    returns the output of a grade and writes the award to database
-    """
-    connector.award_team_grade(target, item, contributions, extra)
-    # TODO possible upgrade: returning indicators to include these types of prizes as well
-    return
-
-@rule_function
-def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ignore_case=None, extra=None):
-    """
-    Awards a quiz grade (XP) to "target". Grades awarded will depend on the logs passed
-    , which contain the XP reward to be awarded.
-    """
-    connector.award_quiz_grade(target, contributions, xp_per_quiz, max_grade, ignore_case, extra)
-    return
-
-@rule_function
-def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, forum=None):
-    """
-    Awards a post grade (XP) to "target". Grades awarded will depend on the logs passed
-    , which contain the XP reward to be awarded.
-    """
-    connector.award_post_grade(target, contributions, xp_per_post, max_grade, forum)
-    return
-
-@rule_function
-def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_grade=1):
-    """
-    Awards an assignment grade (XP) to "target". Grades awarded will depend on the logs passed
-    , which contain the XP reward to be awarded.
-    """
-    connector.award_assignment_grade(target, contributions, xp_per_assignemnt, max_grade)
-    return
-
-@rule_effect
-def award_rating_streak(target, streak, rating, contributions=None, info=None):
-    """
-    returns the output of a streak and writes the award to database
-    """
-    result = connector.award_rating_streak(target, streak, rating, contributions, info)
-    return result
-
-@rule_effect
-def award_streak(target, streak, to_award, participations, type=None):
-    """
-    returns the output of a streak and writes the award to database
-    """
-    result = connector.award_streak(target, streak, to_award, participations, type)
-    return result
-
-@rule_function
 def remove_tokens(target, tokens = None, skillName = None, contributions=None):
     """
     Removes tokens for a specific user.
@@ -418,15 +666,6 @@ def update_wallet(target, newTotal, removed, contributions=None):
     result = connector.update_wallet(target, newTotal, removed, contributions)
     return result
 
-
-@rule_function
-def rule_unlocked(name, target):
-    """
-    Checks if rule was already unlocked by user.
-    """
-    result = connector.rule_unlocked(name, target)
-    return result
-
 @rule_function
 def awards_to_give(target, streak_name):
     """
@@ -434,64 +673,3 @@ def awards_to_give(target, streak_name):
     """
     result = connector.awards_to_give(target, streak_name)
     return result
-
-@rule_effect
-def get_consecutive_peergrading_logs(target, streak, contributions):
-    """
-    Checks consecutive peergrader posts.
-    """
-    connector.get_consecutive_peergrading_logs(target, streak, contributions)
-    return
-
-@rule_effect
-def get_consecutive_rating_logs(target, streak, type, rating, only_skill_posts):
-    """
-    Checks consecutive logs - mainly based on rating or description.
-    """
-    connector.get_consecutive_rating_logs(target, streak, type, rating, only_skill_posts)
-    return
-
-@rule_effect
-def get_consecutive_logs(target, streak, type):
-    """
-    Checks consecutive logs - based on description.
-    """
-    connector.get_consecutive_logs(target, streak, type)
-    return
-
-@rule_effect
-def get_periodic_logs(target, streak_name, contributions, participationType=None):
-    """
-    Checks periodic logs - checks periodicity 
-    """
-    connector.get_periodic_logs(target, streak_name, contributions, participationType)
-    return
-
-
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## GameCourse Wrapper Functions
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@rule_function
-def gc(library, name, *args):
-        # this is a wrapper that handles gamecourse specific functions.
-    # every rule with a function that has syntax
-    #
-    # 	GC.library.function(arg1, arg2)
-    #
-    # will be mapped on the parser to function
-    #
-    #	gc("library", "function", arg1, arg2)
-    #
-    # This wrapper will handle the function request and pass it to php
-
-    from ..connector.gamecourse_connector import get_dictionary, check_dictionary, call_gamecourse
-
-    # TODO fix condition : must check the dictionary first
-    #in_dictionary = check_dictionary(library, name)
-    #dictionary = get_dictionary()
-
-    if True:
-        data = call_gamecourse(config.COURSE, library, name, list(args))
-
-    return data
-

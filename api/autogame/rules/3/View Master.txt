@@ -1,0 +1,16 @@
+rule: View Master
+# Watch class videos
+#   lvl.1: watch 50% of the videos
+#   lvl.2: watch 75% of the videos
+#   lvl.3: watch all the videos
+
+    when:
+        # Get target progress in badge
+        logs = get_url_view_logs(target, "[Vídeo]%")
+        videos_watched = len(logs)
+
+        # Compute badge level the target deserves
+        lvl = compute_lvl(videos_watched, 6, 9, 13)
+
+    then:
+        award_badge(target, "View Master", lvl, logs)
