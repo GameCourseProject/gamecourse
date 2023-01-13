@@ -58,11 +58,9 @@ class NotificationTest extends TestCase
     /*** ---------------------------------------------------- ***/
 
     // FAZ SENTIDO ADICIONAR ESTE TESTE???
-    public function setNotificationCourseSuccessProvider(): array
-    {
-        return [
-            "ASCII characters" =>
-        ]
-    }
+    //public function setNotificationCourseSuccessProvider(): array
+    //{
+
+    //}
 
 }

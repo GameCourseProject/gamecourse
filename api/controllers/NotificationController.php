@@ -94,21 +94,20 @@ class NotificationController
     }*/
 
     /**
-     * Gets all notification given a course -- CHANGE LATER
+     * Gets all unread notifications
+     *
+     * @param bool $isShowed (optional)
      *
      * @throws Exception
      */
     public function getNotifications()
     {
-        API::requireValues('course');
+        // DOES IT NEED ADMIN PERMISSION ??
+        //API::requireAdminPermission();
 
-        $courseId = API::getValue("course", "int");
-        $course = API::verifyCourseExists($courseId);
+        $isShowed = API::getValue("isShowed", "bool");
 
-        API::requireAdminPermission($course); // Not sure
-
-        // Get notifications
-        $notifications = Notification::getNotifications($courseId);
+        $notifications = Notification::getNotifications($isShowed);
         foreach ($notifications as &$notificationInfo){
             Notification::getNotificationById($notificationInfo["id"]);
         }

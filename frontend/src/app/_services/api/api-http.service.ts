@@ -83,7 +83,7 @@ export class ApiHttpService {
   static readonly USER: string = 'User';
   static readonly VIEWS: string = 'Views';
   static readonly RULES_SYSTEM: string = 'RuleSystem';
-  static readonly NOTIFICATION_SYSTEM: string = 'NotificationSystem';
+  static readonly NOTIFICATION_SYSTEM: string = 'Notification';
   // NOTE: insert here new controllers & update cache dependencies
 
   static readonly GOOGLESHEETS: string = 'GoogleSheets';
@@ -1267,7 +1267,7 @@ export class ApiHttpService {
   /*** ------------------- NOTIFICATION SYSTEM ------------------ ***/
   /*** ---------------------------------------------------------- ***/
 
-  public createNotification(courseID: number): Observable<Notification> {
+  /*public createNotification(courseID: number): Observable<Notification> {
     const data = {
       course: courseID
     }
@@ -1281,12 +1281,12 @@ export class ApiHttpService {
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe(map((res:any) => Notification.fromDatabase(res['data'])));
   }
-
-  public getNotifications(courseID: number): Observable<Notification[]> {
+*/
+  public getNotifications(isShowed?: boolean): Observable<Notification[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
       qs.push('request', 'getNotifications');
-      qs.push('course', courseID);
+      if (isShowed !== undefined) qs.push('isShowed', isShowed);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

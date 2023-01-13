@@ -169,7 +169,9 @@ class Notification
         if ($showed !== null) $where["showed"] = $showed;
         $notifications = Core::database()->selectMultiple(
             self::TABLE_NOTIFICATION,
-            $where
+            $where,
+            "*",
+            "id"
         );
 
         foreach ($notifications as &$notification) { $notification = self::parse($notification); }

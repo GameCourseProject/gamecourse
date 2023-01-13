@@ -52,7 +52,7 @@ export class NavbarComponent implements OnInit {
     await this.getCourse();
 
     // Get notifications information
-    await this.getNotifications();
+    await this.api.getNotifications().toPromise();
 
     // Whenever URL changes
     this.router.events.subscribe(event => {
@@ -92,18 +92,6 @@ export class NavbarComponent implements OnInit {
     else this.course = null;
   }
 
-
-  /*** --------------------------------------------- ***/
-  /*** ------------- Notifications ----------------- ***/
-  /*** --------------------------------------------- ***/
-
-  async getNotifications(): Promise<void> {
-    const courseID = this.getCourseIDFromURL();
-
-    await this.api.createNotification(courseID).toPromise();
-
-    this.notifications = await this.api.getNotifications(courseID).toPromise();
-  }
 
   /*** --------------------------------------------- ***/
   /*** ------------- Configurable Area ------------- ***/
