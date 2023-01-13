@@ -8,7 +8,6 @@ use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
-use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;

@@ -2,12 +2,9 @@
 namespace GameCourse\Module\Streaks;
 
 use Exception;
-use GameCourse\AutoGame\AutoGame;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\Awards\Awards;
-use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 use Utils\Utils;
@@ -341,16 +338,6 @@ class Streak
         }
         if (key_exists("isActive", $fieldValues)) {
             if ($oldStatus != $newStatus) {
-                if (!$newStatus) {
-                    // Remove awards already given
-                    $course = $this->getCourse();
-                    $awardsModule = new Awards($course);
-                    $removed = $awardsModule->removeAwards(null, null, AwardType::STREAK, $this->id);
-
-                    // Re-run AutoGame to propagate changes
-                    if ($removed > 0) AutoGame::run($course->getId(), true);
-                }
-
                 // Update rule status
                 $rule->setActive($newStatus);
             }
@@ -569,13 +556,6 @@ class Streak
 
             // Delete streak from database
             Core::database()->delete(self::TABLE_STREAK, ["id" => $streakId]);
-
-            // Remove awards already given
-            $awardsModule = new Awards(new Course($courseId));
-            $removed = $awardsModule->removeAwards(null, null, AwardType::STREAK, $streakId);
-
-            // Re-run AutoGame to propagate changes
-            if ($removed > 0) AutoGame::run($courseId, true);
         }
     }
 
