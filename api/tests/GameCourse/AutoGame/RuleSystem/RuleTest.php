@@ -571,7 +571,8 @@ tags:
      */
     public function setDataFailure($name, $description, $when, $then, $position, $isActive, $tags)
     {
-        $rule = Rule::addRule($this->courseId, $this->sectionId, "NAME", "DESCRIPTION", "WHEN", "THEN", 0);
+        $rule = Rule::addRule($this->courseId, $this->sectionId, "NAME",
+            "DESCRIPTION", "WHEN", "THEN", 0);
         try {
             $rule->setData(["name" => $name, "description" => $description, "whenClause" => $when, "thenClause" => $then,
                 "position" => $position, "isActive" => $isActive]);

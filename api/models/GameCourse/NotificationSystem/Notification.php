@@ -19,7 +19,7 @@ class Notification
     protected $id;
 
     const HEADERS = [ // headers for import/export functionality
-        "user", "message", "showed"
+        "user", "message", "isShowed"
     ];
 
     public function __construct(int $id)
@@ -36,24 +36,24 @@ class Notification
         return $this->id;
     }
 
-    public function getCourse() : Course
+    public function getCourse() : int
     {
-        return Course::getCourseById($this->getData("course"));
+        return $this->getData("course");
     }
 
     public function getUser(): int
     {
-        return $this->id;
+        return $this->getData("user");
     }
 
     public function getMessage(): string
     {
-        return $this->getMessage();
+        return $this->getData("message");
     }
 
-    public function isShowed(): Boolean
+    public function isShowed(): bool
     {
-        return $this->isShowed();
+        return $this->getData("isShowed");
     }
 
     /*** ---------------------------------------------------- ***/
@@ -64,13 +64,13 @@ class Notification
      * @throws Exception
      */
     public function setShowed(bool $isShowed){
-        $this->setData(["showed" => +$isShowed]);
+        $this->setData(["isShowed" => +$isShowed]);
     }
 
     /**
      * @throws Exception
      */
-    public function setMessage(?string $message){
+    public function setMessage(string $message){
         $this->setData(["message" => $message]);
     }
 
@@ -88,8 +88,12 @@ class Notification
         // Trim values
         self::trim($fieldValues);
 
-        // Validate data
-        // TODO
+        if (key_exists("message", $fieldValues)) self::validateMessage($fieldValues["message"]);
+
+        // Update data
+        if (count($fieldValues) != 0)
+            Core::database()->update(self::TABLE_NOTIFICATION, $fieldValues, ["id" => $this->id]);
+
     }
 
     /*** ------------------------------------------------------------ ***/
@@ -101,22 +105,24 @@ class Notification
      * Returns the newly created notification.
      *
      * @param int $courseId
+     * @param int $userId
      * @param string $message
+     * @param bool $isShowed
      * @return Notification
      *
      * @throws Exception
      */
-    public static function addNotification(int $courseId, int $userId, string $message, bool $showed) : Notification
+    public static function addNotification(int $courseId, int $userId, string $message, bool $isShowed = false) : Notification
     {
         self::trim($message);
-        // self::validateMessage($message);
+        self::validateNotification($message, $isShowed);
 
         // Insert in database
         $id = Core::database()->insert(self::TABLE_NOTIFICATION, [
             "course" => $courseId,
             "user" => $userId,
             "message" => $message,
-            "showed" => $showed
+            "isShowed" => $isShowed
 
         ]);
 
@@ -153,6 +159,46 @@ class Notification
     }
 
     /*** ---------------------------------------------------- ***/
+    /*** ------------------- Validations -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Validates notification parameters.
+     *
+     * @param $message
+     * @param $isShowed
+     * @return void
+     * @throws Exception
+     */
+    private static function validateNotification($message, $isShowed)
+    {
+        self::validateMessage($message);
+
+        if (!is_bool($isShowed))
+            throw new Exception("'isShowed' must be either true or false.");
+    }
+
+    /**
+     * Validates rule name.
+     *
+     * @param $message
+     * @return void
+     * @throws Exception
+     */
+    private static function validateMessage($message)
+    {
+        if (!is_string($message) || empty(trim($message)))
+            throw new Exception("Notification message can't be null neither empty");
+
+        preg_match("/[^\w():&\s-]/u", $message, $matches);
+        if (count($matches) != 0)
+            throw new Exception("Notification message '" . $message . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-', '&'");
+
+        if (iconv_strlen($message) > 50)
+            throw new Exception("Notification message is too long: maximum of 50 characters.");
+    }
+
+    /*** ---------------------------------------------------- ***/
     /*** --------------------- General ---------------------- ***/
     /*** ---------------------------------------------------- ***/
 
@@ -163,10 +209,10 @@ class Notification
      * @param int $courseId
      * @return array
      */
-    public static function getNotifications(?bool $showed = null): array
+    public static function getNotifications(?bool $isShowed = null): array
     {
         $where = [];
-        if ($showed !== null) $where["showed"] = $showed;
+        if ($isShowed !== null) $where["isShowed"] = $isShowed;
         $notifications = Core::database()->selectMultiple(
             self::TABLE_NOTIFICATION,
             $where,
@@ -225,7 +271,7 @@ class Notification
 
         foreach ($notifications as &$notification)
         {
-            $notification = self::parse($notifications);
+            $notification = self::parse($notification);
         }
 
         return $notifications;
@@ -250,7 +296,7 @@ class Notification
             $course = self::parse(null, Utils::nullify($notification[$indexes["course"]]), "course");
             $user = self::parse(null, Utils::nullify($notification[$indexes["user"]]), "user");
             $message = Utils::nullify($notification[$indexes["message"]]);
-            $showed = Utils::nullify($notification[$indexes["showed"]]);
+            $isShowed = Utils::nullify($notification[$indexes["isShowed"]]);
 
             // TODO
 
@@ -270,7 +316,7 @@ class Notification
         return Utils::exportToCSV(
             $notificationsToExport,
             function ($notification) {
-                return [$notification["course"], $notification["user"], $notification["message"], +$notification["showed"]];
+                return [$notification["course"], $notification["user"], $notification["message"], +$notification["isShowed"]];
             },
             self::HEADERS);
     }
