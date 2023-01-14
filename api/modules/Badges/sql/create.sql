@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS badges_config(
     course                      int unsigned PRIMARY KEY,
-    maxExtraCredit              int unsigned NOT NULL DEFAULT 0,
+    maxXP                       int unsigned DEFAULT NULL,
+    maxExtraCredit              int unsigned DEFAULT NULL,
     imageExtra                  varchar(50),
     imageBragging               varchar(50),
     imageLevel2                 varchar(50),

@@ -201,9 +201,30 @@ class StreaksTest extends TestCase
     /**
      * @test
      */
+    public function getMaxXP()
+    {
+        $this->assertNull($this->module->getMaxXP());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function updateMaxXP()
+    {
+        $this->module->updateMaxXP(1000);
+        $this->assertEquals(1000, $this->module->getMaxXP());
+
+        $this->module->updateMaxXP(null);
+        $this->assertNull($this->module->getMaxXP());
+    }
+
+    /**
+     * @test
+     */
     public function getMaxExtraCredit()
     {
-        $this->assertEquals(0, $this->module->getMaxExtraCredit());
+        $this->assertNull($this->module->getMaxExtraCredit());
     }
 
     /**
@@ -214,6 +235,9 @@ class StreaksTest extends TestCase
     {
         $this->module->updateMaxExtraCredit(1000);
         $this->assertEquals(1000, $this->module->getMaxExtraCredit());
+
+        $this->module->updateMaxExtraCredit(null);
+        $this->assertNull($this->module->getMaxExtraCredit());
     }
 
 

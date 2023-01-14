@@ -173,72 +173,106 @@ def award_received(target, description, type):
 
 ### Calculating rewards
 
+def calculate_reward(target, type, reward, old_reward=0):
+    """
+    Calculates reward for a given target based on max. values.
+    """
+
+    def calculate_by_type(type):
+        return type == "badge" or type == "skill" or type == "streak"
+
+    def get_max_xp():
+        query = "SELECT maxXP FROM xp_config WHERE course = %s;" % config.COURSE
+        result = db.data_broker.get(db, config.COURSE, query)[0][0]
+        return int(result) if result else None
+
+    def get_max_xp_by_type(type):
+        query = "SELECT maxXP FROM %s WHERE course = %s;" % (type + "s_config", config.COURSE)
+        result = db.data_broker.get(db, config.COURSE, query)[0][0]
+        return int(result) if result else None
+
+    if module_enabled("XPLevels"):
+        # Get max XP info
+        max_xp = get_max_xp()
+        max_xp_for_type = get_max_xp_by_type(type) if calculate_by_type(type) else None
+
+        # Calculate reward
+        if max_xp is not None:
+            reward = max(min(max_xp - (get_total_reward(target) - old_reward), reward), 0)
+
+        if max_xp_for_type is not None:
+            reward = max(min(max_xp_for_type - (get_total_reward(target, type) - old_reward), reward), 0)
+
+        return reward
+
+    return 0
+
 def calculate_extra_credit_reward(target, reward, type, instance):
     """
     Calculates reward of a certain type for a given target
     based on max. extra credit values.
     """
 
-    if module_enabled("XPLevels"):
-        # Get extra credit info
+    def get_max_extra_credit():
         query = "SELECT maxExtraCredit FROM xp_config WHERE course = %s;" % config.COURSE
-        max_extra_credit = int(db.data_broker.get(db, config.COURSE, query)[0][0])
+        result = db.data_broker.get(db, config.COURSE, query)[0][0]
+        return int(result) if result else None
+
+    def get_max_extra_credit_by_type(type):
+        query = "SELECT maxExtraCredit FROM %s WHERE course = %s;" % (type + "s_config", config.COURSE)
+        result = db.data_broker.get(db, config.COURSE, query)[0][0]
+        return int(result) if result else None
+
+    def get_target_extra_credit(target, type, instance):
+        awards_table = get_awards_table()
+        extra_credit = {"total": 0}
+
+        # Get badges extra credit
+        if module_enabled("Badges"):
+            query = "SELECT IFNULL(SUM(a.reward), 0) " \
+                    "FROM " + awards_table + " a LEFT JOIN badge b on a.moduleInstance = b.id " \
+                                             "WHERE a.course = %s AND a.user = %s AND a.type = %s AND a.moduleInstance != %s AND b.isExtra = 1;"
+            badges_total = int(db.execute_query(query, (config.COURSE, target, type, instance))[0][0])
+            extra_credit["badges"] = badges_total
+            extra_credit["total"] += badges_total
+
+        # Get skills extra credit
+        if module_enabled("Skills"):
+            query = "SELECT IFNULL(SUM(a.reward), 0) " \
+                    "FROM " + awards_table + " a LEFT JOIN skill s on a.moduleInstance = s.id " \
+                                             "WHERE a.course = %s AND a.user = %s AND a.type = %s AND a.moduleInstance != %s AND s.isExtra = 1;"
+            skills_total = int(db.execute_query(query, (config.COURSE, target, type, instance))[0][0])
+            extra_credit["skills"] = skills_total
+            extra_credit["total"] += skills_total
+
+        # Get streaks extra credit
+        if module_enabled("Streaks"):
+            query = "SELECT IFNULL(SUM(a.reward), 0) " \
+                    "FROM " + awards_table + " a LEFT JOIN streak s on a.moduleInstance = s.id " \
+                                             "WHERE a.course = %s AND a.user = %s AND a.type = %s AND a.moduleInstance != %s AND s.isExtra = 1;"
+            streaks_total = int(db.execute_query(query, (config.COURSE, target, type, instance))[0][0])
+            extra_credit["streaks"] = streaks_total
+            extra_credit["total"] += streaks_total
+
+        return extra_credit
+
+    if module_enabled("XPLevels"):
+        # Get max extra credit
+        max_extra_credit = get_max_extra_credit()
         max_extra_credit_for_type = get_max_extra_credit_by_type(type)
-        target_extra_credit = get_target_extra_credit(target, type, instance)
+        target_extra_credit = get_target_extra_credit(target, type, instance) if \
+            (max_extra_credit is not None or max_extra_credit_for_type is not None) else None
 
         # Calculate reward
-        return max(min(
-            min(max_extra_credit - target_extra_credit["total"], reward),
-            min(max_extra_credit_for_type - target_extra_credit[type + "s"], reward)
-        ), 0)
+        if max_extra_credit is not None:
+            reward = max(min(max_extra_credit - target_extra_credit["total"], reward), 0)
+
+        if max_extra_credit_for_type is not None:
+            reward = max(min(max_extra_credit_for_type - target_extra_credit[type + "s"], reward), 0)
+
+        return reward
 
     return 0
-
-def get_target_extra_credit(target, type, instance):
-    """
-    Gets total extra credit values for a given target
-    and award type.
-    """
-
-    awards_table = get_awards_table()
-    extra_credit = {"total": 0}
-
-    # Get badges extra credit
-    if type == "badge" and module_enabled("Badges"):
-        query = "SELECT IFNULL(SUM(a.reward), 0) " \
-                "FROM " + awards_table + " a LEFT JOIN badge b on a.moduleInstance = b.id " \
-                "WHERE a.course = %s AND a.user = %s AND a.type = %s AND a.moduleInstance != %s AND b.isExtra = 1;"
-        badges_total = int(db.execute_query(query, (config.COURSE, target, type, instance))[0][0])
-        extra_credit["badges"] = badges_total
-        extra_credit["total"] += badges_total
-
-    # Get skills extra credit
-    if type == "skill" and module_enabled("Skills"):
-        query = "SELECT IFNULL(SUM(a.reward), 0) " \
-                "FROM " + awards_table + " a LEFT JOIN skill s on a.moduleInstance = s.id " \
-                "WHERE a.course = %s AND a.user = %s AND a.type = %s AND a.moduleInstance != %s AND s.isExtra = 1;"
-        skills_total = int(db.execute_query(query, (config.COURSE, target, type, instance))[0][0])
-        extra_credit["skills"] = skills_total
-        extra_credit["total"] += skills_total
-
-    # Get streaks extra credit
-    if type == "streak" and module_enabled("Streaks"):
-        query = "SELECT IFNULL(SUM(a.reward), 0) " \
-                "FROM " + awards_table + " a LEFT JOIN streak s on a.moduleInstance = s.id " \
-                "WHERE a.course = %s AND a.user = %s AND a.type = %s AND a.moduleInstance != %s AND s.isExtra = 1;"
-        streaks_total = int(db.execute_query(query, (config.COURSE, target, type, instance))[0][0])
-        extra_credit["streaks"] = streaks_total
-        extra_credit["total"] += streaks_total
-
-    return extra_credit
-
-def get_max_extra_credit_by_type(type):
-    """
-    Gets max. extra credit for a given type.
-    """
-
-    query = "SELECT maxExtraCredit FROM %s WHERE course = %s;" % (type + "s_config", config.COURSE)
-    return int(db.data_broker.get(db, config.COURSE, query)[0][0])
 
 
 ### Calculating grade
@@ -678,14 +712,19 @@ def get_url_view_logs(target, name=None):
 
 ### Getting total reward
 
-def get_total_reward(target, type):
+def get_total_reward(target, type=None):
     """
     Gets total reward for a given target of a specific type.
     """
 
-    table = get_awards_table()
-    query = "SELECT IFNULL(SUM(reward), 0) FROM " + table + " WHERE course = %s AND user = %s AND type = %s;"
-    return int(db.execute_query(query, (config.COURSE, target, type))[0][0])
+    awards_table = get_awards_table()
+
+    query = "SELECT IFNULL(SUM(reward), 0) FROM " + awards_table + " WHERE course = %s AND user = %s"
+    if type is not None:
+        query += " AND type = %s" % type
+    query += ";"
+
+    return int(db.execute_query(query, (config.COURSE, target))[0][0])
 
 def get_total_assignment_reward(target):
     """
@@ -777,10 +816,12 @@ def award(target, type, description, reward, instance=None):
         return
 
     if len(results) == 0:  # Award
+        reward = calculate_reward(target, type, reward)
         give_award(target, type, description, reward, instance)
 
     else:  # Update award, if changed
         old_reward = int(results[0][0])
+        reward = calculate_reward(target, type, reward, old_reward)
         if reward != old_reward:
             query = "UPDATE " + table + " SET reward = %s WHERE course = %s AND user = %s AND type = %s AND description = %s;"
             db.execute_query(query, (reward, config.COURSE, target, type, description), "commit")
@@ -959,13 +1000,12 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
             query = "DELETE FROM award_wildcard WHERE award = %s;"
             db.execute_query(query, (award_id,), "commit")
 
-    def calculate_skill_reward(target, reward, max_total_reward):
-        # Get total skill reward
+    def calculate_skill_tree_reward(target, reward, skill_tree_max_reward):
         query = "SELECT IFNULL(SUM(reward), 0) FROM " + awards_table + \
                 " WHERE course = %s AND user = %s AND type = %s AND moduleInstance != %s;"
-        total_reward = int(db.execute_query(query, (config.COURSE, target, type, skill_id))[0][0])
+        target_skill_tree_reward = int(db.execute_query(query, (config.COURSE, target, type, skill_id))[0][0])
 
-        return max(min(max_total_reward - total_reward, reward), 0)
+        return max(min(skill_tree_max_reward - target_skill_tree_reward, reward), 0)
 
     type = "skill"
     awards_table = get_awards_table()
@@ -997,10 +1037,10 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
         else:
             # Calculate reward
             is_extra = table_skill[2]
-            max_reward = int(table_skill[3])
+            skill_tree_max_reward = int(table_skill[3])
             skill_reward = int(table_skill[1])
             reward = calculate_extra_credit_reward(target, skill_reward, type, skill_id) if is_extra else skill_reward
-            reward = calculate_skill_reward(target, reward, max_reward)
+            reward = calculate_skill_tree_reward(target, reward, skill_tree_max_reward)
 
             # Award skill
             award(target, type, name, reward, skill_id)

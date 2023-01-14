@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS streaks_config(
     course                      int unsigned PRIMARY KEY,
-    maxExtraCredit              int unsigned NOT NULL DEFAULT 0,
+    maxXP                       int unsigned DEFAULT NULL,
+    maxExtraCredit              int unsigned DEFAULT NULL,
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );

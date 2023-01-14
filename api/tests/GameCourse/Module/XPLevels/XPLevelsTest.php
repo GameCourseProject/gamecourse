@@ -7,7 +7,6 @@ use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
-use GameCourse\Module\Badges\Badges;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
@@ -234,9 +233,30 @@ class XPLevelsTest extends TestCase
     /**
      * @test
      */
+    public function getMaxXP()
+    {
+        $this->assertNull($this->module->getMaxXP());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function updateMaxXP()
+    {
+        $this->module->updateMaxXP(1000);
+        $this->assertEquals(1000, $this->module->getMaxXP());
+
+        $this->module->updateMaxXP(null);
+        $this->assertNull($this->module->getMaxXP());
+    }
+
+    /**
+     * @test
+     */
     public function getMaxExtraCredit()
     {
-        $this->assertEquals(0, $this->module->getMaxExtraCredit());
+        $this->assertNull($this->module->getMaxExtraCredit());
     }
 
     /**
@@ -247,6 +267,9 @@ class XPLevelsTest extends TestCase
     {
         $this->module->updateMaxExtraCredit(1000);
         $this->assertEquals(1000, $this->module->getMaxExtraCredit());
+
+        $this->module->updateMaxExtraCredit(null);
+        $this->assertNull($this->module->getMaxExtraCredit());
     }
 
 
@@ -282,10 +305,15 @@ class XPLevelsTest extends TestCase
         $this->module->setUserXP($student->getId(), 1000);
         $this->assertEquals(1000, $this->module->getUserXP($student->getId()));
 
+        // XP bigger than max.
+        $this->module->updateMaxXP(1500);
+        $this->module->setUserXP($student->getId(), 2000);
+        $this->assertEquals(1500, $this->module->getUserXP($student->getId()));
+
         // XP not initialized
         Core::database()->delete(XPLevels::TABLE_XP, ["user" => $student->getId()]);
         try {
-            $this->module->setUserXP($student->getId(), 2000);
+            $this->module->setUserXP($student->getId(), 500);
         } catch (Exception $e) {
             $this->assertFalse($this->module->userHasXP($student->getId()));
         }
@@ -311,6 +339,11 @@ class XPLevelsTest extends TestCase
         // Do nothing
         $this->module->updateUserXP($student->getId(), 0);
         $this->assertEquals(500, $this->module->getUserXP($student->getId()));
+
+        // Reached max.
+        $this->module->updateMaxXP(1000);
+        $this->module->updateUserXP($student->getId(), 1000);
+        $this->assertEquals(1000, $this->module->getUserXP($student->getId()));
     }
 
     /**

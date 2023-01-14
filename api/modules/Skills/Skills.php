@@ -131,15 +131,27 @@ class Skills extends Module
                                 "contentType" => "item",
                                 "width" => "1/3",
                                 "type" => InputType::NUMBER,
-                                "id" => "maxExtraCredit",
-                                "value" => $this->getMaxExtraCredit(),
-                                "placeholder" => "Skills max. extra credit",
+                                "id" => "maxXP",
+                                "value" => $this->getMaxXP(),
+                                "placeholder" => "Max. XP",
                                 "options" => [
-                                    "topLabel" => "Max. extra credit",
-                                    "required" => true,
+                                    "topLabel" => "Skills max. XP",
                                     "minValue" => 0
                                 ],
-                                "helper" => "Maximum extra credit students can earn with skills"
+                                "helper" => "Maximum XP each student can earn with skills"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::NUMBER,
+                                "id" => "maxExtraCredit",
+                                "value" => $this->getMaxExtraCredit(),
+                                "placeholder" => "Max. extra credit",
+                                "options" => [
+                                    "topLabel" => "Skills max. extra credit XP",
+                                    "minValue" => 0
+                                ],
+                                "helper" => "Maximum extra credit XP each student can earn with skills"
                             ],
                             [
                                 "contentType" => "item",
@@ -147,9 +159,9 @@ class Skills extends Module
                                 "type" => InputType::NUMBER,
                                 "id" => "minRating",
                                 "value" => $this->getMinRating(),
-                                "placeholder" => "Skills min. rating",
+                                "placeholder" => "Min. rating",
                                 "options" => [
-                                    "topLabel" => "Min. rating",
+                                    "topLabel" => "Skills min. rating",
                                     "required" => true,
                                     "minValue" => 0
                                 ],
@@ -168,6 +180,7 @@ class Skills extends Module
     public function saveGeneralInputs(array $inputs)
     {
         foreach ($inputs as $input) {
+            if ($input["id"] == "maxXP") $this->updateMaxXP($input["value"]);
             if ($input["id"] == "maxExtraCredit") $this->updateMaxExtraCredit($input["value"]);
             if ($input["id"] == "minRating") $this->updateMinRating($input["value"]);
         }
@@ -332,15 +345,32 @@ class Skills extends Module
 
     /*** ---------- Config ---------- ***/
 
-    public function getMaxExtraCredit(): int
+    public function getMaxXP(): ?int
     {
-        return intval(Core::database()->select(self::TABLE_SKILL_CONFIG, ["course" => $this->course->getId()], "maxExtraCredit"));
+        $maxXP = Core::database()->select(self::TABLE_SKILL_CONFIG, ["course" => $this->course->getId()], "maxXP");
+        if (!is_null($maxXP)) $maxXP = intval($maxXP);
+        return $maxXP;
     }
 
     /**
      * @throws Exception
      */
-    public function updateMaxExtraCredit(int $max)
+    public function updateMaxXP(?int $max)
+    {
+        Core::database()->update(self::TABLE_SKILL_CONFIG, ["maxXP" => $max], ["course" => $this->course->getId()]);
+    }
+
+    public function getMaxExtraCredit(): ?int
+    {
+        $maxExtraCredit = Core::database()->select(self::TABLE_SKILL_CONFIG, ["course" => $this->course->getId()], "maxExtraCredit");
+        if (!is_null($maxExtraCredit)) $maxExtraCredit = intval($maxExtraCredit);
+        return $maxExtraCredit;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function updateMaxExtraCredit(?int $max)
     {
         Core::database()->update(self::TABLE_SKILL_CONFIG, ["maxExtraCredit" => $max], ["course" => $this->course->getId()]);
     }

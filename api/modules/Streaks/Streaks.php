@@ -133,15 +133,27 @@ class Streaks extends Module
                                 "contentType" => "item",
                                 "width" => "1/3",
                                 "type" => InputType::NUMBER,
-                                "id" => "maxExtraCredit",
-                                "value" => $this->getMaxExtraCredit(),
-                                "placeholder" => "Streaks max. extra credit",
+                                "id" => "maxXP",
+                                "value" => $this->getMaxXP(),
+                                "placeholder" => "Max. XP",
                                 "options" => [
-                                    "topLabel" => "Max. extra credit",
-                                    "required" => true,
+                                    "topLabel" => "Streaks max. XP",
                                     "minValue" => 0
                                 ],
-                                "helper" => "Maximum extra credit students can earn with streaks"
+                                "helper" => "Maximum XP each student can earn with streaks"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::NUMBER,
+                                "id" => "maxExtraCredit",
+                                "value" => $this->getMaxExtraCredit(),
+                                "placeholder" => "Max. extra credit",
+                                "options" => [
+                                    "topLabel" => "Streaks max. extra credit XP",
+                                    "minValue" => 0
+                                ],
+                                "helper" => "Maximum extra credit XP each student can earn with streaks"
                             ]
                         ]
                     ]
@@ -156,6 +168,7 @@ class Streaks extends Module
     public function saveGeneralInputs(array $inputs)
     {
         foreach ($inputs as $input) {
+            if ($input["id"] == "maxXP") $this->updateMaxXP($input["value"]);
             if ($input["id"] == "maxExtraCredit") $this->updateMaxExtraCredit($input["value"]);
         }
     }
@@ -695,15 +708,32 @@ class Streaks extends Module
 
     /*** ---------- Config ---------- ***/
 
-    public function getMaxExtraCredit(): int
+    public function getMaxXP(): ?int
     {
-        return intval(Core::database()->select(self::TABLE_STREAK_CONFIG, ["course" => $this->course->getId()], "maxExtraCredit"));
+        $maxXP = Core::database()->select(self::TABLE_STREAK_CONFIG, ["course" => $this->course->getId()], "maxXP");
+        if (!is_null($maxXP)) $maxXP = intval($maxXP);
+        return $maxXP;
     }
 
     /**
      * @throws Exception
      */
-    public function updateMaxExtraCredit(int $max)
+    public function updateMaxXP(?int $max)
+    {
+        Core::database()->update(self::TABLE_STREAK_CONFIG, ["maxXP" => $max], ["course" => $this->course->getId()]);
+    }
+
+    public function getMaxExtraCredit(): ?int
+    {
+        $maxExtraCredit = Core::database()->select(self::TABLE_STREAK_CONFIG, ["course" => $this->course->getId()], "maxExtraCredit");
+        if (!is_null($maxExtraCredit)) $maxExtraCredit = intval($maxExtraCredit);
+        return $maxExtraCredit;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function updateMaxExtraCredit(?int $max)
     {
         Core::database()->update(self::TABLE_STREAK_CONFIG, ["maxExtraCredit" => $max], ["course" => $this->course->getId()]);
     }
