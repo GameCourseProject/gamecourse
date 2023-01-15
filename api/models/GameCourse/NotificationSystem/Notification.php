@@ -19,7 +19,7 @@ class Notification
     protected $id;
 
     const HEADERS = [ // headers for import/export functionality
-        "user", "message", "isShowed"
+        "course", "user", "message", "isShowed"
     ];
 
     public function __construct(int $id)
@@ -206,7 +206,7 @@ class Notification
      * Gets notifications in the Notification System for a given course.
      * Returns null if notification doesn't exist.
      *
-     * @param int $courseId
+     * @param bool $isShowed (optional)
      * @return array
      */
     public static function getNotifications(?bool $isShowed = null): array

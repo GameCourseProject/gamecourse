@@ -1,13 +1,17 @@
 export class Notification{
   private _id: number;
   private _course: number;
+  private _user: number;
   private _message: string;
+  private _isShowed: boolean;
 
 
-  constructor(id: number, course: number, message: string) {
+  constructor(id: number, course: number, user: number, message: string, isShowed: boolean) {
     this._id = id;
     this._course = course;
+    this._user = user;
     this._message = message;
+    this._isShowed = isShowed;
   }
 
   get id(): number {
@@ -26,6 +30,14 @@ export class Notification{
     this._course = value;
   }
 
+  get user(): number {
+    return this._user;
+  }
+
+  set user(value: number) {
+    this._user = value;
+  }
+
   get message(): string {
     return this._message;
   }
@@ -34,11 +46,21 @@ export class Notification{
     this._message = value;
   }
 
+  get isShowed(): boolean {
+    return this._isShowed;
+  }
+
+  set isShowed(value: boolean) {
+    this._isShowed = value;
+  }
+
   static fromDatabase(obj: NotificationDatabase): Notification {
     return new Notification(
       obj.id,
       obj.course,
-      obj.message
+      obj.user,
+      obj.message,
+      obj.isShowed
     );
   }
 }
@@ -46,5 +68,7 @@ export class Notification{
 interface NotificationDatabase {
   id: number,
   course: number,
+  user: number,
   message: string
+  isShowed: boolean
 }

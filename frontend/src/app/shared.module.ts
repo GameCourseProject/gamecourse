@@ -153,7 +153,8 @@ import {
   TablerArrowsUpDown,
   TablerAlertTriangle,
   TablerCopy,
-  TablerBellRinging
+  TablerBellRinging,
+  TablerBell
 } from "@ng-icons/tabler-icons";
 
 
@@ -368,7 +369,8 @@ import {
       TablerPlug,
       TablerPrompt,
       TablerSchool,
-      TablerBellRinging
+      TablerBellRinging,
+      TablerBell
     }),
     DataTablesModule,
     NgApexchartsModule

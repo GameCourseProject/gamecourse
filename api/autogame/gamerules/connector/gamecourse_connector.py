@@ -858,6 +858,27 @@ def award_badge(target, name, lvl, logs):
             description = get_description(name, level)
             award(target, type, description, reward, badge_id)
 
+
+        # Get awards given for badge
+        query = "SELECT bl.goal FROM badge_level bl JOIN badge b ON b.id = bl.badge" \
+                " WHERE b.course = %s AND b.name = '%s' AND bl.number = %s;"
+        goal = int(db.execute_query(query, (config.COURSE, name, lvl))[0][0])
+
+
+        # Check if give notification
+        if name == "Amphitheatre Lover": attendance = len(logs)
+        else: attendance = logs
+
+        instances = goal - attendance
+
+        if instances > 0 :
+            description = get_description(name, lvl)
+            message = "You are" + instances + "events away from achieving" + name + "badge! : " + description
+
+            query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s, %s, %s,%s);"
+            db.execute_query(query, (config.COURSE, target, message, 0), "commit")
+
+
 def award_bonus(target, name, reward):
     """
     Awards a given bonus to a specific target.
@@ -993,6 +1014,15 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
             if nr_awards > 0:
                 query = "DELETE FROM " + awards_table + " WHERE course = %s AND user = %s AND type = %s AND description = %s AND moduleInstance = %s;"
                 db.execute_query(query, (config.COURSE, target, type, name, skill_id), "commit")
+
+            if not dependencies:
+                query = "SELECT name FROM skill s JOIN skill_dependency sd ON sd.skill = s.id" \
+                        "WHERE s.course = %s AND s.id= %s;"
+                dependency = db.execute_query(query, (config.COURSE, skill_id), "commit")
+                message = "You need to complete dependencies " + dependency + " to achieve a new reward!"
+
+                query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s,%s,%s,%s);"
+                db.execute_query(query, (config.COURSE, target, message, 0), "commit")
 
         else:
             # Calculate reward

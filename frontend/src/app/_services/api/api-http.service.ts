@@ -1282,6 +1282,7 @@ export class ApiHttpService {
       .pipe(map((res:any) => Notification.fromDatabase(res['data'])));
   }
 */
+
   public getNotifications(isShowed?: boolean): Observable<Notification[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);

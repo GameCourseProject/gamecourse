@@ -26,6 +26,7 @@ export class NavbarComponent implements OnInit {
   photo: ResourceManager;
 
   notifications: Notification[] = [];
+  mode: "new" | "notNew";
 
   // FIXME: navbar space should be configurable in modules
   hasTokensEnabled: boolean;
@@ -52,7 +53,7 @@ export class NavbarComponent implements OnInit {
     await this.getCourse();
 
     // Get notifications information
-    await this.api.getNotifications().toPromise();
+    //await this.getNotifications();
 
     // Whenever URL changes
     this.router.events.subscribe(event => {
@@ -90,6 +91,25 @@ export class NavbarComponent implements OnInit {
     const courseID = this.getCourseIDFromURL();
     if (courseID) this.course = await this.api.getCourseById(courseID).toPromise();
     else this.course = null;
+  }
+
+  /*** --------------------------------------------- ***/
+  /*** --------------- Notification ---------------- ***/
+  /*** --------------------------------------------- ***/
+
+  async getNotifications():Promise<void> {
+    this.notifications = await this.api.getNotifications().toPromise();
+
+    // see if there are notifications to be showed
+    for (let i = 0; i < this.notifications.length; i++){
+      if (!this.notifications[i].isShowed){
+        this.mode = "new";
+        break;
+      }
+
+      this.mode = "notNew";
+    }
+
   }
 
 
