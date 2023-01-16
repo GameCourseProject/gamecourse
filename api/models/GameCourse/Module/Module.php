@@ -3,6 +3,7 @@ namespace GameCourse\Module;
 
 use Error;
 use Event\Event;
+use Event\EventType;
 use Exception;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\RuleSystem;
@@ -174,6 +175,8 @@ abstract class Module
 
         if ($isEnabled) $this->init();
         else $this->disable();
+
+        Event::trigger($isEnabled ? EventType::MODULE_ENABLED : EventType::MODULE_DISABLED, $this->course->getId(), $this->id);
     }
 
 
