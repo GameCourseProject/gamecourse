@@ -560,7 +560,8 @@ abstract class Module
         preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
         $tables = $matches[2];
         foreach ($tables as $table) {
-            Core::database()->delete($table, ["course" => $this->course->getId()]);
+            if (Core::database()->columnExists($table, "course"))
+                Core::database()->delete($table, ["course" => $this->course->getId()]);
         }
     }
 
