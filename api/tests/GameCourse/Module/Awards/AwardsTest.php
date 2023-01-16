@@ -420,7 +420,7 @@ class AwardsTest extends TestCase
 
         // When
         $badgeNotActive->setActive(false);
-        $awards = $this->module->getUserBadgesAwards($user->getId());
+        $awards = $this->module->getUserBadgesAwards($user->getId(), null, null, null, null, null, true);
 
         // Then
         $this->assertIsArray($awards);
@@ -707,7 +707,7 @@ class AwardsTest extends TestCase
 
         // When
         $skillNotActive->setActive(false);
-        $awards = $this->module->getUserSkillsAwards($user->getId());
+        $awards = $this->module->getUserSkillsAwards($user->getId(), null, null, true);
 
         // Then
         $this->assertIsArray($awards);
@@ -910,7 +910,7 @@ class AwardsTest extends TestCase
 
         // When
         $streakNotActive->setActive(false);
-        $awards = $this->module->getUserStreaksAwards($user->getId());
+        $awards = $this->module->getUserStreaksAwards($user->getId(), null, true);
 
         // Then
         $this->assertIsArray($awards);
@@ -997,7 +997,7 @@ class AwardsTest extends TestCase
 
         $VCModule = new VirtualCurrency($this->course);
         $VCModule->setEnabled(true);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::TOKEN, null, "Initial tokens", 50);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::TOKENS, null, "Initial tokens", 50);
 
         // Then
         $totalReward = $this->module->getUserTotalReward($user->getId());
@@ -1157,7 +1157,7 @@ class AwardsTest extends TestCase
         $badgeNotActive->setActive(false);
 
         // Then
-        $this->assertEquals(200, $this->module->getUserBadgesTotalReward($user->getId()));
+        $this->assertEquals(200, $this->module->getUserBadgesTotalReward($user->getId(), null, null, null, null, null, true));
     }
 
     /**
@@ -1313,7 +1313,7 @@ class AwardsTest extends TestCase
         $skillNotActive->setActive(false);
 
         // Then
-        $this->assertEquals(100, $this->module->getUserSkillsTotalReward($user->getId()));
+        $this->assertEquals(100, $this->module->getUserSkillsTotalReward($user->getId(), null, null, true));
     }
 
     /**
@@ -1429,7 +1429,7 @@ class AwardsTest extends TestCase
         $streakNotActive->setActive(false);
 
         // Then
-        $this->assertEquals(100, $this->module->getUserStreaksTotalReward($user->getId()));
+        $this->assertEquals(100, $this->module->getUserStreaksTotalReward($user->getId(), null, true));
     }
 
     /**

@@ -8,6 +8,7 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
+use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
@@ -210,7 +211,7 @@ class ProgressReport extends Module
             else $index = 0;
             $awardsXPCurrentPeriodByDay[$index] += intval($award["reward"]);
 
-            $typeDescription = self::awardTypeToDescription($award["type"], $tokensName);
+            $typeDescription = $award["type"] === AwardType::TOKENS ? $tokensName : AwardType::description($award["type"]);
             if (!isset($awardsByType[$typeDescription])) $awardsByType[$typeDescription] = 0;
             $awardsByType[$typeDescription] += 1;
         }
@@ -563,7 +564,7 @@ class ProgressReport extends Module
                                                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                                                       <tr>
                                                         <td style="padding: 0" align="center">
-                                                            <img src="' . $info['imgsPath'] . '/' . ProgressReport::getAwardImg($award["type"]) . '" style="width: 25px; height: 25px;">
+                                                            <img src="' . AwardType::image($award["type"], "outline", "jpg") . '" style="width: 25px; height: 25px;">
                                                         </td>
                                                       </tr>
                                                     </table>
@@ -582,7 +583,7 @@ class ProgressReport extends Module
                                                       <tr>
                                                         <td style="padding-right: 0px;padding-left: 0px;" align="left">
                                                           <p style="font-weight: 600; font-size: 16px;">' . $award["description"] . '</p>
-                                                          <p style="color: #9e9d9d; font-size: 14px; margin-top: 5px">' . ProgressReport::awardTypeToDescription($award["type"], $tokensName) . '</p>
+                                                          <p style="color: #9e9d9d; font-size: 14px; margin-top: 5px">' . $award["type"] === AwardType::TOKENS ? $tokensName : AwardType::description($award["type"]) . '</p>
                                                         </td>
                                                       </tr>
                                                     </table>
@@ -822,39 +823,6 @@ class ProgressReport extends Module
     {
         if ($date1 > $date2) return ProgressReport::datediff($date2, $date1, $type);
         return ceil($date1->diff($date2)->days / ($type === "weeks" ? 7 : 1));
-    }
-
-    private static function awardTypeToDescription($type, ?string $tokensName) : string {
-        switch ($type) {
-            case "bonus": return "Bonus";
-            case "badge": return "Badge";
-            case "quiz": return "Quiz";
-            case "labs": return "Lab Assignment";
-            case "skill": return "Skill Tree";
-            case "presentantion": return "Presentation";
-            case "streak": return "Streak";
-            case "post": return "Post";
-            case "assignment": return "Assignment";
-            case "tokens": return $tokensName ?? "Token(s)";
-            default: return ucfirst($type);
-        }
-    }
-
-    private static function getAwardImg($type): string {
-        switch ($type) {
-            case "bonus": return 'gift.jpg';
-            case "badge": return 'badge.jpg';
-            case "exam": return 'book-open.jpg';
-            case "quiz": return 'clipboard.jpg';
-            case "labs": return 'terminal.jpg';
-            case "skill": return 'light-bulb.jpg';
-            case "presentation": return 'presentation.jpg';
-            case "streak": return 'fire.jpg';
-            case "post": return 'annotation.jpg';
-            case "assignment": return 'paper-clip.jpg';
-            case "tokens": return 'currency.jpg';
-            default: return 'check.jpg';
-        }
     }
 
     private static function getGradeColor($grade): string {

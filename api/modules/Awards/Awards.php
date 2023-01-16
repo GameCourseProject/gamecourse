@@ -53,7 +53,7 @@ class Awards extends Module
     ];
     // NOTE: dependencies should be updated on code changes
 
-    const RESOURCES = ['assets/'];
+    const RESOURCES = ['assets/award-types/'];
 
 
     /*** ----------------------------------------------- ***/
@@ -131,20 +131,22 @@ class Awards extends Module
      * @param bool|null $count
      * @param bool|null $post
      * @param bool|null $point
+     * @param bool|null $active
      * @return array
      * @throws Exception
      */
     public function getUserBadgesAwards(int $userId, bool $extra = null, bool $bragging = null, bool $count = null,
-                                        bool $post = null, bool $point = null): array
+                                        bool $post = null, bool $point = null, bool $active = null): array
     {
         $this->checkDependency(Badges::ID);
         $table = self::TABLE_AWARD . " a LEFT JOIN " . Badges::TABLE_BADGE . " b on a.moduleInstance=b.id";
-        $where = ["a.course" => $this->course->getId(), "a.user" => $userId, "a.type" => AwardType::BADGE, "b.isActive" => true];
+        $where = ["a.course" => $this->course->getId(), "a.user" => $userId, "a.type" => AwardType::BADGE];
         if ($extra !== null) $where["b.isExtra"] = $extra;
         if ($bragging !== null) $where["b.isBragging"] = $bragging;
         if ($count !== null) $where["b.isCount"] = $count;
         if ($post !== null) $where["b.isPost"] = $post;
         if ($point !== null) $where["b.isPoint"] = $point;
+        if ($active !== null) $where["b.isActive"] = $active;
         return Core::database()->selectMultiple($table, $where, "a.*");
     }
 
@@ -159,16 +161,18 @@ class Awards extends Module
      * @param int $userId
      * @param bool|null $collab
      * @param bool|null $extra
+     * @param bool|null $active
      * @return array
      * @throws Exception
      */
-    public function getUserSkillsAwards(int $userId, bool $collab = null, bool $extra = null): array
+    public function getUserSkillsAwards(int $userId, bool $collab = null, bool $extra = null, bool $active = null): array
     {
         $this->checkDependency(Skills::ID);
         $table = self::TABLE_AWARD . " a LEFT JOIN " . Skills::TABLE_SKILL . " s on a.moduleInstance=s.id";
-        $where = ["a.course" => $this->course->getId(), "a.user" => $userId, "a.type" => AwardType::SKILL, "s.isActive" => true];
+        $where = ["a.course" => $this->course->getId(), "a.user" => $userId, "a.type" => AwardType::SKILL];
         if ($collab !== null) $where["s.isCollab"] = $collab;
         if ($extra !== null) $where["s.isExtra"] = $extra;
+        if ($active !== null) $where["s.isActive"] = $active;
         return Core::database()->selectMultiple($table, $where, "a.*");
     }
 
@@ -181,15 +185,17 @@ class Awards extends Module
      *
      * @param int $userId
      * @param bool|null $extra
+     * @param bool|null $active
      * @return array
      * @throws Exception
      */
-    public function getUserStreaksAwards(int $userId, bool $extra = null): array
+    public function getUserStreaksAwards(int $userId, bool $extra = null, bool $active = null): array
     {
         $this->checkDependency(Streaks::ID);
         $table = self::TABLE_AWARD . " a LEFT JOIN " . Streaks::TABLE_STREAK . " s on a.moduleInstance=s.id";
-        $where = ["a.course" => $this->course->getId(), "a.user" => $userId, "a.type" => AwardType::STREAK, "s.isActive" => true];
+        $where = ["a.course" => $this->course->getId(), "a.user" => $userId, "a.type" => AwardType::STREAK];
         if ($extra !== null) $where["s.isExtra"] = $extra;
+        if ($active !== null) $where["s.isActive"] = $active;
         return Core::database()->selectMultiple($table, $where, "a.*");
     }
 
@@ -236,7 +242,7 @@ class Awards extends Module
             $totalReward["XP"] = array_sum(array_column(Core::database()->selectMultiple(self::TABLE_AWARD, [
                 "course" => $this->course->getId(),
                 "user" => $userId,
-            ], "*", null, [["type", AwardType::TOKEN]]), "reward"));
+            ], "*", null, [["type", AwardType::TOKENS]]), "reward"));
 
         } catch (Exception $e) {}
 
@@ -278,14 +284,15 @@ class Awards extends Module
      * @param bool|null $count
      * @param bool|null $post
      * @param bool|null $point
+     * @param bool|null $active
      * @return int
      * @throws Exception
      */
     public function getUserBadgesTotalReward(int $userId, bool $extra = null, bool $bragging = null, bool $count = null,
-                                             bool $post = null, bool $point = null): int
+                                             bool $post = null, bool $point = null, bool $active = null): int
     {
         $this->checkDependency(Badges::ID);
-        return array_sum(array_column($this->getUserBadgesAwards($userId, $extra, $bragging, $count, $post, $point), "reward"));
+        return array_sum(array_column($this->getUserBadgesAwards($userId, $extra, $bragging, $count, $post, $point, $active), "reward"));
     }
 
     /**
@@ -299,13 +306,14 @@ class Awards extends Module
      * @param int $userId
      * @param bool|null $collab
      * @param bool|null $extra
+     * @param bool|null $active
      * @return int
      * @throws Exception
      */
-    public function getUserSkillsTotalReward(int $userId, bool $collab = null, bool $extra = null): int
+    public function getUserSkillsTotalReward(int $userId, bool $collab = null, bool $extra = null, bool $active = null): int
     {
         $this->checkDependency(Skills::ID);
-        return array_sum(array_column($this->getUserSkillsAwards($userId, $collab, $extra), "reward"));
+        return array_sum(array_column($this->getUserSkillsAwards($userId, $collab, $extra, $active), "reward"));
     }
 
     /**
@@ -317,13 +325,14 @@ class Awards extends Module
      *
      * @param int $userId
      * @param bool|null $extra
+     * @param bool|null $active
      * @return int
      * @throws Exception
      */
-    public function getUserStreaksTotalReward(int $userId, bool $extra = null): int
+    public function getUserStreaksTotalReward(int $userId, bool $extra = null, bool $active = null): int
     {
         $this->checkDependency(Streaks::ID);
-        return array_sum(array_column($this->getUserStreaksAwards($userId, $extra), "reward"));
+        return array_sum(array_column($this->getUserStreaksAwards($userId, $extra, $active), "reward"));
     }
 
 
