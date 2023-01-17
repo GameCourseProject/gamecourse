@@ -86,6 +86,8 @@ class Badges extends Module
         $copiedModule = new Badges($copyTo);
 
         // Copy config
+        $maxXP = $this->getMaxXP();
+        $copiedModule->updateMaxXP($maxXP);
         $maxExtraCredit = $this->getMaxExtraCredit();
         $copiedModule->updateMaxExtraCredit($maxExtraCredit);
 

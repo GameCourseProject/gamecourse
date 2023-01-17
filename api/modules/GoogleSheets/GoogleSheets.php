@@ -66,27 +66,7 @@ class GoogleSheets extends Module
      */
     public function copyTo(Course $copyTo)
     {
-        // Copy config
-        $config = Core::database()->select(self::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->getCourse()->getId()]);
-        Core::database()->update(self::TABLE_GOOGLESHEETS_CONFIG, [
-            "key_" => $config["key_"],
-            "clientId" => $config["clientId"],
-            "projectId" => $config["projectId"],
-            "authUri" => $config["authUri"],
-            "tokenUri" => $config["tokenUri"],
-            "authProvider" => $config["authProvider"],
-            "clientSecret" => $config["clientSecret"],
-            "redirectUris" => $config["redirectUris"],
-            "authUrl" => $config["authUrl"],
-            "accessToken" => $config["accessToken"],
-            "expiresIn" => $config["expiresIn"],
-            "scope" => $config["scope"],
-            "tokenType" => $config["tokenType"],
-            "created" => $config["created"],
-            "refreshToken" => $config["refreshToken"],
-            "spreadsheetId" => $config["spreadsheetId"],
-            "sheetName" => $config["sheetName"]
-        ], ["course" => $copyTo->getId()]);
+        // Nothing to do here
     }
 
     public function disable()
@@ -367,7 +347,7 @@ class GoogleSheets extends Module
     const COL_ACTION = 3;
     const COL_XP = 4;
     const COL_INFO = 5;
-    
+
     /**
      * Checks connection to Google sheet.
      *

@@ -88,6 +88,8 @@ class Streaks extends Module
         $copiedModule = new Streaks($copyTo);
 
         // Copy config
+        $maxXP = $this->getMaxXP();
+        $copiedModule->updateMaxXP($maxXP);
         $maxExtraCredit = $this->getMaxExtraCredit();
         $copiedModule->updateMaxExtraCredit($maxExtraCredit);
 

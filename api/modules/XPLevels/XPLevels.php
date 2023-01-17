@@ -110,6 +110,8 @@ class XPLevels extends Module
         $copiedModule = new XPLevels($copyTo);
 
         // Copy config
+        $maxXP = $this->getMaxXP();
+        $copiedModule->updateMaxXP($maxXP);
         $maxExtraCredit = $this->getMaxExtraCredit();
         $copiedModule->updateMaxExtraCredit($maxExtraCredit);
 

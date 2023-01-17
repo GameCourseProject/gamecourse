@@ -86,8 +86,12 @@ class Skills extends Module
         $copiedModule = new Skills($copyTo);
 
         // Copy config
+        $maxXP = $this->getMaxXP();
+        $copiedModule->updateMaxXP($maxXP);
         $maxExtraCredit = $this->getMaxExtraCredit();
         $copiedModule->updateMaxExtraCredit($maxExtraCredit);
+        $minRating = $this->getMinRating();
+        $copiedModule->updateMinRating($minRating);
 
         // Copy skill trees
         $skillTrees = SkillTree::getSkillTrees($this->course->getId(), "id");
