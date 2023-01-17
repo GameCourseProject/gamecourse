@@ -25,6 +25,7 @@ class Skills extends Module
     const TABLE_SKILL = Skill::TABLE_SKILL;
     const TABLE_SKILL_DEPENDENCY = Skill::TABLE_SKILL_DEPENDENCY;
     const TABLE_SKILL_DEPENDENCY_COMBO = Skill::TABLE_SKILL_DEPENDENCY_COMBO;
+    const TABLE_SKILL_PROGRESSION = Skill::TABLE_SKILL_PROGRESSION;
     const TABLE_AWARD_WILDCARD = "award_wildcard";
     const TABLE_SKILL_CONFIG = 'skills_config';
 

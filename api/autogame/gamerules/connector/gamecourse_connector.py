@@ -92,6 +92,10 @@ def clear_progression(target):
     if module_enabled("Badges"):
         clear_badge_progression(target)
 
+    # Clear skill progression, if skills enabled
+    if module_enabled("Skills"):
+        clear_skill_progression(target)
+
     # Clear streak progression, if streaks enabled
     if module_enabled("Streaks"):
         clear_streak_progression(target)
@@ -105,6 +109,17 @@ def clear_badge_progression(target):
     """
 
     query = "DELETE FROM badge_progression WHERE course = %s AND user = %s;"
+    db.execute_query(query, (config.COURSE, target), "commit")
+
+def clear_skill_progression(target):
+    """
+    Clears all skill progression for a given target
+    before calculating again.
+
+    Needs to be refreshed everytime the Rule System runs.
+    """
+
+    query = "DELETE FROM skill_progression WHERE course = %s AND user = %s;"
     db.execute_query(query, (config.COURSE, target), "commit")
 
 def clear_streak_progression(target):
@@ -701,7 +716,7 @@ def get_skill_logs(target, name=None, rating=None):
 
     return get_forum_logs(target, "Skill Tree", name, rating) if module_enabled("Skills") else []
 
-def get_skill_tier_logs(target, tier):
+def get_skill_tier_logs(target, tier, only_min_rating=True):
     """
     Gets skill tier logs for a specific target.
     """
@@ -710,13 +725,20 @@ def get_skill_tier_logs(target, tier):
         type = "skill"
         table = get_awards_table()
 
+        # Get min. rating
+        query = "SELECT minRating FROM skills_config WHERE course = %s;" % config.COURSE
+        min_rating = int(db.data_broker.get(db, config.COURSE, query)[0][0])
+
+        # Get logs
         query = "SELECT p.* " \
                 "FROM " + table + " a LEFT JOIN skill s on a.moduleInstance = s.id " \
                 "LEFT JOIN skill_tier t on s.tier = t.id " \
-                "LEFT JOIN award_participation ap on a.id = ap.award " \
-                "LEFT JOIN participation p on ap.participation = p.id " \
-                "WHERE a.course = %s AND a.user = %s AND a.type = %s AND t.position = %s " \
-                "ORDER BY p.date ASC;"
+                "LEFT JOIN skill_progression sp on sp.skill = s.id " \
+                "LEFT JOIN participation p on sp.participation = p.id " \
+                "WHERE a.course = %s AND a.user = %s AND a.type = %s AND t.position = %s"
+        if only_min_rating:
+            query += " AND p.rating >= %s" % min_rating
+        query += " ORDER BY p.date ASC;"
         return db.execute_query(query, (config.COURSE, target, type, tier - 1))
 
     return []
@@ -999,20 +1021,6 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
     Updates award if reward has changed.
     """
 
-    def award_participation(award_id, participation_id):
-        query = "SELECT participation FROM award_participation WHERE award = %s;"
-        results = db.execute_query(query, (award_id,))
-
-        # Everything up to date
-        if len(results) > 0 and results[0][0] == participation_id:
-            return
-
-        needs_update = len(results) > 0 and results[0][0] != participation_id
-
-        query = "UPDATE award_participation SET participation = %s WHERE award = %s;" if needs_update \
-            else "INSERT INTO award_participation (participation, award) VALUES (%s, %s);"
-        db.execute_query(query, (participation_id, award_id), "commit")
-
     def spend_wildcard(award_id, use_wildcard):
         query = "SELECT COUNT(*) FROM award_wildcard WHERE award = %s;"
         used_wildcard = int(db.execute_query(query, (award_id,))[0][0]) > 0
@@ -1037,7 +1045,7 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
     type = "skill"
     awards_table = get_awards_table()
 
-    if not config.TEST_MODE and module_enabled("Skills"):
+    if module_enabled("Skills"):
         # Get min. rating
         query = "SELECT minRating FROM skills_config WHERE course = %s;" % config.COURSE
         min_rating = int(db.data_broker.get(db, config.COURSE, query)[0][0])
@@ -1049,6 +1057,12 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
                 "WHERE s.course = %s AND s.name = '%s';" % (config.COURSE, name)
         table_skill = db.data_broker.get(db, config.COURSE, query)[0]
         skill_id = table_skill[0]
+
+        # Update skill progression
+        if not config.TEST_MODE:
+            for log in logs:
+                query = "INSERT INTO skill_progression (course, user, skill, participation) VALUES (%s, %s, %s, %s);"
+                db.execute_query(query, (config.COURSE, target, skill_id, log[0]), "commit")
 
         # Rating is not enough to win the award or dependencies haven't been met
         if rating < min_rating or not dependencies:
@@ -1076,11 +1090,6 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
 
             # Spend wildcard
             spend_wildcard(award_id, use_wildcard)
-
-            # Update award participation
-            # NOTE: logs are ordered by date ASC
-            participation_id = logs[len(logs) - 1][0]
-            award_participation(award_id, participation_id)
 
 def award_tokens(target, name, reward, repetitions=1):
     """

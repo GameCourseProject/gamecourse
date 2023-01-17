@@ -19,6 +19,7 @@ class Skill
     const TABLE_SKILL = "skill";
     const TABLE_SKILL_DEPENDENCY = "skill_dependency";
     const TABLE_SKILL_DEPENDENCY_COMBO = "skill_dependency_combo";
+    const TABLE_SKILL_PROGRESSION = "skill_progression";
 
     const HEADERS = [   // headers for import/export functionality
         "name", "color", "page", "isCollab", "isExtra", "isActive", "position"

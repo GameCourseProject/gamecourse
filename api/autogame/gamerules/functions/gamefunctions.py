@@ -175,12 +175,12 @@ def get_skill_logs(target, name=None, rating=None):
     return connector.get_skill_logs(target, name, rating)
 
 @rule_function
-def get_skill_tier_logs(target, tier):
+def get_skill_tier_logs(target, tier, only_min_rating=True):
     """
     Gets skill tier logs for a specific target.
     """
 
-    return connector.get_skill_tier_logs(target, tier)
+    return connector.get_skill_tier_logs(target, tier, only_min_rating)
 
 @rule_function
 def get_url_view_logs(target, name=None):
