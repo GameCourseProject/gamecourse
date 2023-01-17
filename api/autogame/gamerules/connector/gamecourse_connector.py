@@ -879,7 +879,7 @@ def award_badge(target, name, lvl, logs):
 
     if module_enabled("Badges"):
         # Get badge info
-        query = "SELECT bl.badge, bl.number, bl.reward, b.isExtra " \
+        query = "SELECT bl.badge, bl.number, bl.reward, bl.tokens, b.isExtra " \
                 "FROM badge_level bl LEFT JOIN badge b on b.id = bl.badge " \
                 "WHERE b.course = %s AND b.name = '%s' ORDER BY number;" % (config.COURSE, name)
         table_badge = db.data_broker.get(db, config.COURSE, query)
@@ -913,13 +913,18 @@ def award_badge(target, name, lvl, logs):
         # Award and/or update badge levels
         for level in range(1, lvl + 1):
             # Calculate reward
-            is_extra = table_badge[level - 1][3]
+            is_extra = table_badge[level - 1][4]
             badge_reward = int(table_badge[level - 1][2])
             reward = calculate_extra_credit_reward(target, badge_reward, type, badge_id) if is_extra else badge_reward
 
             # Award badge
             description = get_description(name, level)
             award(target, type, description, reward, badge_id)
+
+            # Award tokens, if virtual currency enabled
+            if module_enabled("VirtualCurrency"):
+                badge_tokens = int(table_badge[level - 1][3])
+                award_tokens(target, description, badge_tokens)
 
 def award_bonus(target, name, reward):
     """

@@ -214,6 +214,11 @@ class BadgeTest extends TestCase
             "one level" => ["Badge Name", "Perform action", false, false, false, false, false, [
                 ["description" => "one time", "goal" => 1, "reward" => 100]
             ]],
+            "tokens" => ["Badge Name", "Perform action", false, false, false, false, false, [
+                ["description" => "one time", "goal" => 1, "reward" => 100, "tokens" => 10],
+                ["description" => "two times", "goal" => 2, "reward" => 100, "tokens" => 10],
+                ["description" => "three times", "goal" => 3, "reward" => 100, "tokens" => 10]
+            ]],
         ];
     }
 
@@ -258,7 +263,7 @@ class BadgeTest extends TestCase
                 ["description" => "one time", "goal" => 0, "reward" => 100],
                 ["description" => "two times", "goal" => 0, "reward" => 100],
                 ["description" => "three times", "goal" => 0, "reward" => 100]
-            ]],
+            ]]
         ];
     }
 
@@ -1002,15 +1007,16 @@ class BadgeTest extends TestCase
         $this->assertCount(2, $badges);
 
         $keys = ["id", "course", "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPost", "isPoint",
-            "isActive", "rule", "image", "desc1", "goal1", "reward1", "desc2", "goal2", "reward2", "desc3", "goal3", "reward3"];
+            "isActive", "rule", "image", "desc1", "goal1", "reward1", "tokens1", "desc2", "goal2", "reward2", "tokens2", "desc3", "goal3", "reward3", "tokens3",];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($badges as $i => $badge) {
                 $this->assertCount($nrKeys, array_keys($badge));
                 $this->assertArrayHasKey($key, $badge);
                 if ($key == "image") $this->assertEquals($badge[$key], ${"badge".($i+1)}->getImage());
-                else if ($key == "desc1" | $key == "goal1" | $key == "reward1" | $key == "desc2" | $key == "goal2" |
-                    $key == "reward2" | $key == "desc3" | $key == "goal3" | $key == "reward3") continue;
+                else if ($key == "desc1" | $key == "goal1" | $key == "reward1" | $key == "tokens1" | $key == "desc2" |
+                    $key == "goal2" | $key == "reward2" | $key == "tokens2" | $key == "desc3" | $key == "goal3" |
+                    $key == "reward3" | $key == "tokens3") continue;
                 else $this->assertEquals($badge[$key], ${"badge".($i+1)}->getData($key));
             }
         }
@@ -1039,15 +1045,16 @@ class BadgeTest extends TestCase
         $this->assertCount(1, $badges);
 
         $keys = ["id", "course", "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPost", "isPoint",
-            "isActive", "rule", "image", "desc1", "goal1", "reward1", "desc2", "goal2", "reward2", "desc3", "goal3", "reward3"];
+            "isActive", "rule", "image", "desc1", "goal1", "reward1", "tokens1", "desc2", "goal2", "reward2", "tokens2", "desc3", "goal3", "reward3", "tokens3",];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($badges as $badge) {
                 $this->assertCount($nrKeys, array_keys($badge));
                 $this->assertArrayHasKey($key, $badge);
                 if ($key == "image") $this->assertEquals($badge[$key], $badge1->getImage());
-                else if ($key == "desc1" | $key == "goal1" | $key == "reward1" | $key == "desc2" | $key == "goal2" |
-                    $key == "reward2" | $key == "desc3" | $key == "goal3" | $key == "reward3") continue;
+                else if ($key == "desc1" | $key == "goal1" | $key == "reward1" | $key == "tokens1" | $key == "desc2" |
+                    $key == "goal2" | $key == "reward2" | $key == "tokens2" | $key == "desc3" | $key == "goal3" |
+                    $key == "reward3" | $key == "tokens3") continue;
                 else $this->assertEquals($badge[$key], $badge1->getData($key));
             }
         }
@@ -1076,15 +1083,16 @@ class BadgeTest extends TestCase
         $this->assertCount(1, $badges);
 
         $keys = ["id", "course", "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPost", "isPoint",
-            "isActive", "rule", "image", "desc1", "goal1", "reward1", "desc2", "goal2", "reward2", "desc3", "goal3", "reward3"];
+            "isActive", "rule", "image", "desc1", "goal1", "reward1", "tokens1", "desc2", "goal2", "reward2", "tokens2", "desc3", "goal3", "reward3", "tokens3"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($badges as $badge) {
                 $this->assertCount($nrKeys, array_keys($badge));
                 $this->assertArrayHasKey($key, $badge);
                 if ($key == "image") $this->assertEquals($badge[$key], $badge2->getImage());
-                else if ($key == "desc1" | $key == "goal1" | $key == "reward1" | $key == "desc2" | $key == "goal2" |
-                    $key == "reward2" | $key == "desc3" | $key == "goal3" | $key == "reward3") continue;
+                else if ($key == "desc1" | $key == "goal1" | $key == "reward1" | $key == "tokens1" | $key == "desc2" |
+                    $key == "goal2" | $key == "reward2" | $key == "tokens2" | $key == "desc3" | $key == "goal3" |
+                    $key == "reward3" | $key == "tokens3") continue;
                 else $this->assertEquals($badge[$key], $badge2->getData($key));
             }
         }
@@ -1110,15 +1118,18 @@ class BadgeTest extends TestCase
         $badgeInfo["desc1"] = $levels[0]["description"];
         $badgeInfo["goal1"] = $levels[0]["goal"];
         $badgeInfo["reward1"] = $levels[0]["reward"];
+        $badgeInfo["tokens1"] = $levels[0]["tokens"] ?? 0;
         if (count($levels) > 1) {
             $badgeInfo["desc2"] = $levels[1]["description"];
             $badgeInfo["goal2"] = $levels[1]["goal"];
             $badgeInfo["reward2"] = $levels[1]["reward"];
+            $badgeInfo["tokens2"] = $levels[1]["tokens"] ?? 0;
         }
         if (count($levels) > 2) {
             $badgeInfo["desc3"] = $levels[2]["description"];
             $badgeInfo["goal3"] = $levels[2]["goal"];
             $badgeInfo["reward3"] = $levels[2]["reward"];
+            $badgeInfo["tokens3"] = $levels[2]["tokens"] ?? 0;
         }
         $this->assertEquals($badgeInfo, $badgeDB);
 
@@ -1131,12 +1142,14 @@ class BadgeTest extends TestCase
         $this->assertEquals($levels[0]["description"], $lvl1["description"]);
         $this->assertEquals($levels[0]["goal"], $lvl1["goal"]);
         $this->assertEquals($levels[0]["reward"], $lvl1["reward"]);
+        $this->assertEquals($levels[0]["tokens"] ?? 0, $lvl1["tokens"]);
 
         if ($size >= 2) {
             $lvl2 = $lvls[1];
             $this->assertEquals($levels[1]["description"], $lvl2["description"]);
             $this->assertEquals($levels[1]["goal"], $lvl2["goal"]);
             $this->assertEquals($levels[1]["reward"], $lvl2["reward"]);
+            $this->assertEquals($levels[1]["tokens"] ?? 0, $lvl2["tokens"]);
         }
 
         if ($size == 3) {
@@ -1144,6 +1157,7 @@ class BadgeTest extends TestCase
             $this->assertEquals($levels[2]["description"], $lvl3["description"]);
             $this->assertEquals($levels[2]["goal"], $lvl3["goal"]);
             $this->assertEquals($levels[2]["reward"], $lvl3["reward"]);
+            $this->assertEquals($levels[2]["tokens"] ?? 0, $lvl3["tokens"]);
         }
 
         // Check data folder was created
@@ -1248,12 +1262,14 @@ tags:
         $this->assertEquals($levels[0]["description"], $lvl1["description"]);
         $this->assertEquals($levels[0]["goal"], $lvl1["goal"]);
         $this->assertEquals($levels[0]["reward"], $lvl1["reward"]);
+        $this->assertEquals($levels[0]["tokens"] ?? 0, $lvl1["tokens"]);
 
         if ($size >= 2) {
             $lvl2 = $lvls[1];
             $this->assertEquals($levels[1]["description"], $lvl2["description"]);
             $this->assertEquals($levels[1]["goal"], $lvl2["goal"]);
             $this->assertEquals($levels[1]["reward"], $lvl2["reward"]);
+            $this->assertEquals($levels[1]["tokens"] ?? 0, $lvl2["tokens"]);
         }
 
         if ($size == 3) {
@@ -1261,6 +1277,7 @@ tags:
             $this->assertEquals($levels[2]["description"], $lvl3["description"]);
             $this->assertEquals($levels[2]["goal"], $lvl3["goal"]);
             $this->assertEquals($levels[2]["reward"], $lvl3["reward"]);
+            $this->assertEquals($levels[2]["tokens"] ?? 0, $lvl3["tokens"]);
         }
 
         // Check data folder
@@ -1405,6 +1422,7 @@ tags:
                 $this->assertEquals($badge["desc$l"], $copiedBadges[$i]["desc$l"]);
                 $this->assertEquals($badge["goal$l"], $copiedBadges[$i]["goal$l"]);
                 $this->assertEquals($badge["reward$l"], $copiedBadges[$i]["reward$l"]);
+                $this->assertEquals($badge["tokens$l"], $copiedBadges[$i]["tokens$l"]);
             }
 
             $this->assertEquals((new Rule($badge["rule"]))->getText(), (new Rule($copiedBadges[$i]["rule"]))->getText());
@@ -1494,7 +1512,7 @@ tags:
         $this->assertIsArray($levels);
         $this->assertCount(3, $levels);
 
-        $keys = ["id", "number", "description", "goal", "reward"];
+        $keys = ["id", "number", "description", "goal", "reward", "tokens"];
         $nrKeys = count($keys);
 
         $lvl1 = $levels[0];
@@ -1508,6 +1526,7 @@ tags:
         $this->assertEquals("one time", $lvl1["description"]);
         $this->assertEquals(1, $lvl1["goal"]);
         $this->assertEquals(100, $lvl1["reward"]);
+        $this->assertEquals(0, $lvl1["tokens"]);
 
         $lvl2 = $levels[1];
         $this->assertCount($nrKeys, $lvl2);
@@ -1520,6 +1539,7 @@ tags:
         $this->assertEquals("two times", $lvl2["description"]);
         $this->assertEquals(2, $lvl2["goal"]);
         $this->assertEquals(100, $lvl2["reward"]);
+        $this->assertEquals(0, $lvl2["tokens"]);
 
         $lvl3 = $levels[2];
         $this->assertCount($nrKeys, $lvl3);
@@ -1532,6 +1552,65 @@ tags:
         $this->assertEquals("three times", $lvl3["description"]);
         $this->assertEquals(3, $lvl3["goal"]);
         $this->assertEquals(100, $lvl3["reward"]);
+        $this->assertEquals(0, $lvl3["tokens"]);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getLevelsWithTokens()
+    {
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+            ["description" => "one time", "goal" => 1, "reward" => 100, "tokens" => 10],
+            ["description" => "two times", "goal" => 2, "reward" => 100, "tokens" => 10],
+            ["description" => "three times", "goal" => 3, "reward" => 100, "tokens" => 10]
+        ]);
+        $levels = $badge->getLevels();
+        $this->assertIsArray($levels);
+        $this->assertCount(3, $levels);
+
+        $keys = ["id", "number", "description", "goal", "reward", "tokens"];
+        $nrKeys = count($keys);
+
+        $lvl1 = $levels[0];
+        $this->assertCount($nrKeys, $lvl1);
+        $this->assertArrayHasKey("id", $lvl1);
+        $this->assertArrayHasKey("number", $lvl1);
+        $this->assertArrayHasKey("description", $lvl1);
+        $this->assertArrayHasKey("goal", $lvl1);
+        $this->assertArrayHasKey("reward", $lvl1);
+        $this->assertEquals(1, $lvl1["number"]);
+        $this->assertEquals("one time", $lvl1["description"]);
+        $this->assertEquals(1, $lvl1["goal"]);
+        $this->assertEquals(100, $lvl1["reward"]);
+        $this->assertEquals(10, $lvl1["tokens"]);
+
+        $lvl2 = $levels[1];
+        $this->assertCount($nrKeys, $lvl2);
+        $this->assertArrayHasKey("id", $lvl2);
+        $this->assertArrayHasKey("number", $lvl2);
+        $this->assertArrayHasKey("description", $lvl2);
+        $this->assertArrayHasKey("goal", $lvl2);
+        $this->assertArrayHasKey("reward", $lvl2);
+        $this->assertEquals(2, $lvl2["number"]);
+        $this->assertEquals("two times", $lvl2["description"]);
+        $this->assertEquals(2, $lvl2["goal"]);
+        $this->assertEquals(100, $lvl2["reward"]);
+        $this->assertEquals(10, $lvl2["tokens"]);
+
+        $lvl3 = $levels[2];
+        $this->assertCount($nrKeys, $lvl3);
+        $this->assertArrayHasKey("id", $lvl3);
+        $this->assertArrayHasKey("number", $lvl3);
+        $this->assertArrayHasKey("description", $lvl3);
+        $this->assertArrayHasKey("goal", $lvl3);
+        $this->assertArrayHasKey("reward", $lvl3);
+        $this->assertEquals(3, $lvl3["number"]);
+        $this->assertEquals("three times", $lvl3["description"]);
+        $this->assertEquals(3, $lvl3["goal"]);
+        $this->assertEquals(100, $lvl3["reward"]);
+        $this->assertEquals(10, $lvl3["tokens"]);
     }
 
     /**
@@ -1549,6 +1628,12 @@ tags:
         // One level
         $badge->setLevels([
             ["description" => "one time", "goal" => 1, "reward" => 100]
+        ]);
+        $this->assertCount(1, $badge->getLevels());
+
+        // One level w/ tokens
+        $badge->setLevels([
+            ["description" => "one time", "goal" => 1, "reward" => 100, "tokens" => 10]
         ]);
         $this->assertCount(1, $badge->getLevels());
 

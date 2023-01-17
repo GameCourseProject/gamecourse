@@ -111,7 +111,7 @@ class VirtualCurrency extends Module
         $copiedModule = new VirtualCurrency($copyTo);
 
         // Copy config
-        $copiedModule->setName($this->getName());
+        $copiedModule->setVCName($this->getVCName());
 
         // Copy image
         if ($this->hasImage()) {
@@ -144,7 +144,7 @@ class VirtualCurrency extends Module
 
     public function getLists(): array
     {
-        $name = $this->getName();
+        $name = $this->getVCName();
         $img = $this->getImage();
 
         return [
@@ -228,7 +228,7 @@ class VirtualCurrency extends Module
         if ($listName == "Settings") {
             if ($action == Action::EDIT) {
                 // Set name
-                $this->setName($item["name"] ?? self::DEFAULT_NAME);
+                $this->setVCName($item["name"] ?? self::DEFAULT_NAME);
 
                 // Set image
                 if (isset($item["image"]) && !Utils::strStartsWith($item["image"], API_URL))
@@ -249,7 +249,7 @@ class VirtualCurrency extends Module
      *
      * @return string
      */
-    public function getName(): string
+    public function getVCName(): string
     {
         return Core::database()->select(self::TABLE_VC_CONFIG, ["course" => $this->course->getId()], "name");
     }
@@ -261,7 +261,7 @@ class VirtualCurrency extends Module
      * @return void
      * @throws Exception
      */
-    public function setName(string $name)
+    public function setVCName(string $name)
     {
         self::validateName($name);
         Core::database()->update(self::TABLE_VC_CONFIG, ["name" => $name], ["course" => $this->course->getId()]);
@@ -412,7 +412,7 @@ class VirtualCurrency extends Module
 
         // Check if already exchanged
         if ($this->hasExchanged($userId))
-            throw new Exception("Can't exchange " . $this->getName() . " more than once.");
+            throw new Exception("Can't exchange " . $this->getVCName() . " more than once.");
 
         $totalTokens = $this->getUserTokens($userId);
         $exchangeableTokens = min($totalTokens, $threshold ?? PHP_INT_MAX);
@@ -428,7 +428,7 @@ class VirtualCurrency extends Module
 
         // Give award
         $awardsModule = new Awards($this->course);
-        $awardsModule->giveAward($userId, $this->getName() . " exchange", AwardType::BONUS, null, $earnedXP);
+        $awardsModule->giveAward($userId, $this->getVCName() . " exchange", AwardType::BONUS, null, $earnedXP);
 
         return $earnedXP;
     }

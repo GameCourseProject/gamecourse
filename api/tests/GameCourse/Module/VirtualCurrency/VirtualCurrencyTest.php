@@ -136,7 +136,7 @@ class VirtualCurrencyTest extends TestCase
             $this->assertTrue(Core::database()->tableExists($table));
         }
         $this->assertTrue(file_exists($this->module->getDataFolder()));
-        $this->assertEquals(VirtualCurrency::DEFAULT_NAME, $this->module->getName());
+        $this->assertEquals(VirtualCurrency::DEFAULT_NAME, $this->module->getVCName());
 
         $students = $this->course->getStudents();
         foreach ($students as $student) {
@@ -161,14 +161,14 @@ class VirtualCurrencyTest extends TestCase
         $VC = new VirtualCurrency($copyTo);
         $VC->setEnabled(true);
 
-        $this->module->setName("Gold");
+        $this->module->setVCName("Gold");
         $this->module->setImage($this->imageProvider()["png"][0]);
 
         // When
         $this->module->copyTo($copyTo);
 
         // Then
-        $this->assertEquals($this->module->getName(), $VC->getName());
+        $this->assertEquals($this->module->getVCName(), $VC->getVCName());
         $this->assertTrue($VC->hasImage());
         $this->assertEquals(file_get_contents($this->module->getImage()), file_get_contents($VC->getImage()));
     }
@@ -241,7 +241,7 @@ class VirtualCurrencyTest extends TestCase
      */
     public function getVirtualCurrencyName()
     {
-        $this->assertEquals(VirtualCurrency::DEFAULT_NAME, $this->module->getName());
+        $this->assertEquals(VirtualCurrency::DEFAULT_NAME, $this->module->getVCName());
     }
 
     /**
@@ -250,8 +250,8 @@ class VirtualCurrencyTest extends TestCase
      */
     public function setVirtualCurrencyName()
     {
-        $this->module->setName("Gold");
-        $this->assertEquals("Gold", $this->module->getName());
+        $this->module->setVCName("Gold");
+        $this->assertEquals("Gold", $this->module->getVCName());
     }
 
 

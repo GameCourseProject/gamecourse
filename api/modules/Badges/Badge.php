@@ -5,7 +5,6 @@ use Exception;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\XPLevels\XPLevels;
 use Utils\Utils;
 use ZipArchive;
 
@@ -23,7 +22,7 @@ class Badge
         "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPost", "isPoint", "isActive"
     ];
     const LEVEL_HEADERS = [
-        "badge_name", "number", "goal", "description", "reward"
+        "badge_name", "number", "goal", "description", "reward", "tokens"
     ];
 
     const DEFAULT_IMAGE = "blank.png";
@@ -331,6 +330,7 @@ class Badge
                 $badgeInfo["desc" . $i] = $level["description"];
                 $badgeInfo["goal" . $i] = $level["goal"];
                 $badgeInfo["reward" . $i] = $level["reward"];
+                $badgeInfo["tokens" . $i] = $level["tokens"];
             }
         }
         return $badges;
@@ -496,11 +496,12 @@ class Badge
      */
     public function getLevels(): array
     {
-        $levels = Core::database()->selectMultiple(self::TABLE_BADGE_LEVEL, ["badge" => $this->id], "id, number, goal, description, reward", "number");
+        $levels = Core::database()->selectMultiple(self::TABLE_BADGE_LEVEL, ["badge" => $this->id], "id, number, goal, description, reward, tokens", "number");
         foreach ($levels as &$level) {
             $level["number"] = intval($level["number"]);
             $level["goal"] = intval($level["goal"]);
             $level["reward"] = intval($level["reward"]);
+            $level["tokens"] = intval($level["tokens"]);
         }
         return $levels;
     }
@@ -529,7 +530,8 @@ class Badge
                 "number" => $i + 1,
                 "goal" => $level["goal"],
                 "description" => $level["description"],
-                "reward" => !$isBragging ? $level["reward"] : 0
+                "reward" => !$isBragging ? $level["reward"] : 0,
+                "tokens" => $level["tokens"] ?? 0
             ]);
         }
         Core::database()->update(self::TABLE_BADGE, ["nrLevels" => count($levels)], ["id" => $this->id]);
@@ -762,7 +764,8 @@ class Badge
                 "number" => intval($level[$indexes["number"]]),
                 "goal" => intval($level[$indexes["goal"]]),
                 "description" => $level[$indexes["description"]],
-                "reward" => intval($level[$indexes["reward"]])
+                "reward" => intval($level[$indexes["reward"]]),
+                "tokens" => intval($level[$indexes["tokens"]])
             ];
             return 0;
         }, $file);
@@ -954,6 +957,9 @@ class Badge
 
             if (!$isBragging && (!isset($levels[$i]["reward"]) || !is_numeric($levels[$i]["reward"]) || $levels[$i]["reward"] < 0))
                 throw new Exception("Badge level " . ($i+1) . " reward can't be null nor negative.");
+
+            if (isset($levels[$i]["tokens"]) && (!is_numeric($levels[$i]["tokens"]) || $levels[$i]["tokens"] < 0))
+                throw new Exception("Badge level " . ($i+1) . " tokens can't be null nor negative.");
 
             if ($i != 0) {
                 if ($levels[$i - 1]["goal"] >= $levels[$i]["goal"])

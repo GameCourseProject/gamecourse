@@ -13,6 +13,7 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 use Utils\Cache;
 use Utils\Utils;
@@ -51,7 +52,8 @@ class Badges extends Module
 
     const DEPENDENCIES = [
         ["id" => Awards::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD],
-        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
+        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT],
+        ["id" => VirtualCurrency::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
     ];
     // NOTE: dependencies should be updated on code changes
 
@@ -182,10 +184,13 @@ class Badges extends Module
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function getLists(): array
     {
         $badges = Badge::getBadges($this->course->getId());
-        return [
+        $lists = [
             [
                 "name" => "Badges",
                 "itemName" => "badge",
@@ -346,14 +351,14 @@ class Badges extends Module
                                     "width" => "1/3",
                                     "type" => InputType::NUMBER,
                                     "id" => "reward1",
-                                    "placeholder" => "Reward of level 1",
+                                    "placeholder" => "Reward (XP) of level 1",
                                     "options" => [
                                         "color" => "primary",
                                         "topLabel" => "Reward (XP)",
                                         "required" => true,
                                         "minValue" => 0
                                     ],
-                                    "helper" => "Reward to be given when reaching badge level 1"
+                                    "helper" => "XP reward to be given when reaching badge level 1"
                                 ],
                                 [
                                     "contentType" => "item",
@@ -387,13 +392,13 @@ class Badges extends Module
                                     "width" => "1/3",
                                     "type" => InputType::NUMBER,
                                     "id" => "reward2",
-                                    "placeholder" => "Reward of level 2",
+                                    "placeholder" => "Reward (XP) of level 2",
                                     "options" => [
                                         "color" => "secondary",
                                         "topLabel" => "Reward (XP)",
                                         "minValue" => 0
                                     ],
-                                    "helper" => "Reward to be given when reaching badge level 2"
+                                    "helper" => "XP reward to be given when reaching badge level 2"
                                 ],
                                 [
                                     "contentType" => "item",
@@ -426,13 +431,13 @@ class Badges extends Module
                                     "width" => "1/3",
                                     "type" => InputType::NUMBER,
                                     "id" => "reward3",
-                                    "placeholder" => "Reward of level 3",
+                                    "placeholder" => "Reward (XP) of level 3",
                                     "options" => [
                                         "color" => "accent",
                                         "topLabel" => "Reward (XP)",
                                         "minValue" => 0
                                     ],
-                                    "helper" => "Reward to be given when reaching badge level 3"
+                                    "helper" => "XP reward to be given when reaching badge level 3"
                                 ],
                                 [
                                     "contentType" => "item",
@@ -576,14 +581,14 @@ class Badges extends Module
                                     "type" => InputType::NUMBER,
                                     "scope" => ActionScope::ALL,
                                     "id" => "reward1",
-                                    "placeholder" => "Reward of level 1",
+                                    "placeholder" => "Reward (XP) of level 1",
                                     "options" => [
                                         "color" => "primary",
                                         "topLabel" => "Reward (XP)",
                                         "required" => true,
                                         "minValue" => 0
                                     ],
-                                    "helper" => "Reward to be given when reaching badge level 1"
+                                    "helper" => "XP reward to be given when reaching badge level 1"
                                 ],
                                 [
                                     "contentType" => "item",
@@ -620,13 +625,13 @@ class Badges extends Module
                                     "type" => InputType::NUMBER,
                                     "scope" => ActionScope::ALL,
                                     "id" => "reward2",
-                                    "placeholder" => "Reward of level 2",
+                                    "placeholder" => "Reward (XP) of level 2",
                                     "options" => [
                                         "color" => "secondary",
                                         "topLabel" => "Reward (XP)",
                                         "minValue" => 0
                                     ],
-                                    "helper" => "Reward to be given when reaching badge level 2"
+                                    "helper" => "XP reward to be given when reaching badge level 2"
                                 ],
                                 [
                                     "contentType" => "item",
@@ -662,13 +667,13 @@ class Badges extends Module
                                     "type" => InputType::NUMBER,
                                     "scope" => ActionScope::ALL,
                                     "id" => "reward3",
-                                    "placeholder" => "Reward of level 3",
+                                    "placeholder" => "Reward (XP) of level 3",
                                     "options" => [
                                         "color" => "accent",
                                         "topLabel" => "Reward (XP)",
                                         "minValue" => 0
                                     ],
-                                    "helper" => "Reward to be given when reaching badge level 3"
+                                    "helper" => "XP reward to be given when reaching badge level 3"
                                 ],
                                 [
                                     "contentType" => "item",
@@ -693,6 +698,116 @@ class Badges extends Module
                 ]
             ]
         ];
+
+        // Add tokens option as reward, if virtual currency enabled
+        $VCModule = new VirtualCurrency($this->course);
+        if ($VCModule->exists() && $VCModule->isEnabled()) {
+            $VCName = $VCModule->getVCName();
+
+            // Add option when creating badge
+            array_splice($lists[0][Action::NEW]["contents"][3]["contents"], 2, 0, [
+                [
+                    "contentType" => "item",
+                    "width" => "1/4",
+                    "type" => InputType::NUMBER,
+                    "id" => "tokens1",
+                    "placeholder" => "Reward ($VCName) of level 1",
+                    "options" => [
+                        "color" => "primary",
+                        "topLabel" => "Reward ($VCName)",
+                        "minValue" => 0
+                    ],
+                    "helper" => "$VCName reward to be given when reaching badge level 1"
+                ]
+            ]);
+            array_splice($lists[0][Action::NEW]["contents"][3]["contents"], 6, 0, [
+                [
+                    "contentType" => "item",
+                    "width" => "1/4",
+                    "type" => InputType::NUMBER,
+                    "id" => "tokens2",
+                    "placeholder" => "Reward ($VCName) of level 2",
+                    "options" => [
+                        "color" => "secondary",
+                        "topLabel" => "Reward ($VCName)",
+                        "minValue" => 0
+                    ],
+                    "helper" => "$VCName reward to be given when reaching badge level 2"
+                ]
+            ]);
+            array_splice($lists[0][Action::NEW]["contents"][3]["contents"], 10, 0, [
+                [
+                    "contentType" => "item",
+                    "width" => "1/4",
+                    "type" => InputType::NUMBER,
+                    "id" => "tokens3",
+                    "placeholder" => "Reward ($VCName) of level 3",
+                    "options" => [
+                        "color" => "accent",
+                        "topLabel" => "Reward ($VCName)",
+                        "minValue" => 0
+                    ],
+                    "helper" => "$VCName reward to be given when reaching badge level 3"
+                ]
+            ]);
+            $lists[0][Action::NEW]["contents"][3]["contents"] = array_map(function ($item) {
+                $item["width"] = "1/4";
+                return $item;
+            }, $lists[0][Action::NEW]["contents"][3]["contents"]);
+
+            // Add option when editing badge
+            array_splice($lists[0][Action::EDIT]["contents"][3]["contents"], 2, 0, [
+                [
+                    "contentType" => "item",
+                    "width" => "1/4",
+                    "type" => InputType::NUMBER,
+                    "id" => "tokens1",
+                    "placeholder" => "Reward ($VCName) of level 1",
+                    "options" => [
+                        "color" => "primary",
+                        "topLabel" => "Reward ($VCName)",
+                        "minValue" => 0
+                    ],
+                    "helper" => "$VCName reward to be given when reaching badge level 1"
+                ]
+            ]);
+            array_splice($lists[0][Action::EDIT]["contents"][3]["contents"], 6, 0, [
+                [
+                    "contentType" => "item",
+                    "width" => "1/4",
+                    "type" => InputType::NUMBER,
+                    "id" => "tokens2",
+                    "placeholder" => "Reward ($VCName) of level 2",
+                    "options" => [
+                        "color" => "secondary",
+                        "topLabel" => "Reward ($VCName)",
+                        "minValue" => 0
+                    ],
+                    "helper" => "$VCName reward to be given when reaching badge level 2"
+                ]
+            ]);
+            array_splice($lists[0][Action::EDIT]["contents"][3]["contents"], 10, 0, [
+                [
+                    "contentType" => "item",
+                    "width" => "1/4",
+                    "type" => InputType::NUMBER,
+                    "id" => "tokens3",
+                    "placeholder" => "Reward ($VCName) of level 3",
+                    "options" => [
+                        "color" => "accent",
+                        "topLabel" => "Reward ($VCName)",
+                        "minValue" => 0
+                    ],
+                    "helper" => "$VCName reward to be given when reaching badge level 3"
+                ]
+            ]);
+            $lists[0][Action::EDIT]["contents"][3]["contents"] = array_map(function ($item) {
+                $item["width"] = "1/4";
+                return $item;
+            }, $lists[0][Action::EDIT]["contents"][3]["contents"]);
+        }
+
+        return $lists;
     }
 
     /**
@@ -716,7 +831,8 @@ class Badges extends Module
                     if (isset($item["reward" . $i])) $levels[] = [
                         "description" => $item["desc" . $i],
                         "goal" => $item["goal" . $i],
-                        "reward" => $item["reward" . $i]
+                        "reward" => $item["reward" . $i],
+                        "tokens" => $item["tokens" . $i] ?? 0
                     ];
                 }
 
