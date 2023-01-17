@@ -986,40 +986,6 @@ class AwardsTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function getUserTotalReward()
-    {
-        // Given
-        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
-        $XPModule = new XPLevels($this->course);
-        $XPModule->setEnabled(true);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BONUS, null, "Bonus", 500);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::PRESENTATION, null, "Presentation", 3000);
-
-        $VCModule = new VirtualCurrency($this->course);
-        $VCModule->setEnabled(true);
-        $this->insertAward($this->course->getId(), $user->getId(), AwardType::TOKENS, null, "Initial tokens", 50);
-
-        // Then
-        $totalReward = $this->module->getUserTotalReward($user->getId());
-        $this->assertEquals(3500, $totalReward["XP"]);
-        $this->assertEquals(50, $totalReward["tokens"]);
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function getUserTotalRewardNoAwards()
-    {
-        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
-        $this->assertEmpty($this->module->getUserTotalReward($user->getId()));
-    }
-
-
-    /**
-     * @test
-     * @throws Exception
-     */
     public function getUserTotalRewardByType()
     {
         // Given

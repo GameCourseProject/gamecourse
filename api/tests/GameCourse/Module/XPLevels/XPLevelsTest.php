@@ -148,6 +148,7 @@ class XPLevelsTest extends TestCase
         $xpLevels = new XPLevels($copyTo);
         $xpLevels->setEnabled(true);
 
+        $this->module->updateMaxXP(2000);
         $this->module->updateMaxExtraCredit(1000);
         Level::getLevelZero($this->course->getId())->setDescription("Level 0");
         Level::addLevel($this->course->getId(), 1000, "Level 1");
@@ -157,6 +158,7 @@ class XPLevelsTest extends TestCase
         $this->module->copyTo($copyTo);
 
         // Then
+        $this->assertEquals($this->module->getMaxXP(), $xpLevels->getMaxXP());
         $this->assertEquals($this->module->getMaxExtraCredit(), $xpLevels->getMaxExtraCredit());
 
         $levels = Level::getLevels($this->course->getId());

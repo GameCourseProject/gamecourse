@@ -227,36 +227,6 @@ class Awards extends Module
     /*** ---------- Rewards ---------- ***/
 
     /**
-     * Gets total reward for a given user, by type of reward.
-     *
-     * @param int $userId
-     * @return array
-     */
-    public function getUserTotalReward(int $userId): array
-    {
-        $totalReward = [];
-
-        // Get total XP reward
-        try {
-            $this->checkDependency(XPLevels::ID);
-            $totalReward["XP"] = array_sum(array_column(Core::database()->selectMultiple(self::TABLE_AWARD, [
-                "course" => $this->course->getId(),
-                "user" => $userId,
-            ], "*", null, [["type", AwardType::TOKENS]]), "reward"));
-
-        } catch (Exception $e) {}
-
-        // Get total tokens reward
-        try {
-            $this->checkDependency(VirtualCurrency::ID);
-            $totalReward["tokens"] = $this->getUserTotalRewardByType($userId, AwardType::TOKEN);
-
-        } catch (Exception $e) {}
-
-        return $totalReward;
-    }
-
-    /**
      * Gets total reward for a given user of a specific type of award.
      * NOTE: types of awards in AwardType.php
      *

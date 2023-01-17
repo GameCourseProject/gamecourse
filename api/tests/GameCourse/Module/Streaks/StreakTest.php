@@ -941,39 +941,6 @@ class StreakTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function setExtraNoExtraCreditAvailable()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-
-        // No extra credit available
-        try {
-            $streak->setExtra(true);
-            $this->fail("Error should have been thrown on 'setExtraNoExtraCreditAvailable'");
-
-        } catch (Exception $e) {
-            $this->assertFalse($streak->isExtra());
-
-            // No streak extra credit available
-            $xpLevels = new XPLevels(new Course($this->courseId));
-            $xpLevels->setEnabled(true);
-            $xpLevels->updateMaxExtraCredit(1000);
-
-            try {
-                $streak->setExtra(true);
-                $this->fail("Error should have been thrown on 'setExtraNoExtraCreditAvailable'");
-
-            } catch (Exception $e) {
-                $this->assertFalse($streak->isExtra());
-            }
-        }
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
     public function setActive()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,

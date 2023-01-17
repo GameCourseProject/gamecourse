@@ -780,41 +780,6 @@ class BadgeTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function setExtraNoExtraCreditAvailable()
-    {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
-            ["description" => "one time", "goal" => 1, "reward" => 100],
-            ["description" => "two times", "goal" => 2, "reward" => 100],
-            ["description" => "three times", "goal" => 3, "reward" => 100]
-        ]);
-
-        // No extra credit available
-        try {
-            $badge->setExtra(true);
-            $this->fail("Error should have been thrown on 'setExtraNoExtraCreditAvailable'");
-
-        } catch (Exception $e) {
-            $this->assertFalse($badge->isExtra());
-
-            // No badge extra credit available
-            $xpLevels = new XPLevels(new Course($this->courseId));
-            $xpLevels->setEnabled(true);
-            $xpLevels->updateMaxExtraCredit(1000);
-
-            try {
-                $badge->setExtra(true);
-                $this->fail("Error should have been thrown on 'setExtraNoExtraCreditAvailable'");
-
-            } catch (Exception $e) {
-                $this->assertFalse($badge->isExtra());
-            }
-        }
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
     public function setBragging()
     {
         $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [

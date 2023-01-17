@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\Module\Awards;
 
+use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use ReflectionClass;
 use Utils\Utils;
 
@@ -47,7 +48,7 @@ class AwardType
             case AwardType::QUIZ: return "Quiz";
             case AwardType::SKILL: return "Skill Tree";
             case AwardType::STREAK: return "Streak";
-            case AwardType::TOKENS: return "Token(s)";
+            case AwardType::TOKENS: return VirtualCurrency::DEFAULT_NAME;
             default: return ucfirst($type);
         }
     }

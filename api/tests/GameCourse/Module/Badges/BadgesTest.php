@@ -131,10 +131,12 @@ class BadgesTest extends TestCase
         (new Awards($copyTo))->setEnabled(true);
         $xpLevels = (new XPLevels($copyTo));
         $xpLevels->setEnabled(true);
+        $xpLevels->updateMaxXP(2000);
         $xpLevels->updateMaxExtraCredit(1000);
         $badgesModule = new Badges($copyTo);
         $badgesModule->setEnabled(true);
 
+        $this->module->updateMaxXP(1000);
         $this->module->updateMaxExtraCredit(500);
         $badge1 = Badge::addBadge($this->course->getId(), "Badge1", "Perform action", false, false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
@@ -151,6 +153,7 @@ class BadgesTest extends TestCase
         $this->module->copyTo($copyTo);
 
         // Then
+        $this->assertEquals($this->module->getMaxXP(), $badgesModule->getMaxXP());
         $this->assertEquals($this->module->getMaxExtraCredit(), $badgesModule->getMaxExtraCredit());
 
         $badges = Badge::getBadges($this->course->getId());

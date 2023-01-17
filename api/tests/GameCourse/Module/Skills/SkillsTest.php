@@ -133,10 +133,12 @@ class SkillsTest extends TestCase
         (new Awards($copyTo))->setEnabled(true);
         $xpLevels = (new XPLevels($copyTo));
         $xpLevels->setEnabled(true);
+        $xpLevels->updateMaxXP(2000);
         $xpLevels->updateMaxExtraCredit(1000);
         $skillsModule = new Skills($copyTo);
         $skillsModule->setEnabled(true);
 
+        $this->module->updateMaxXP(1000);
         $this->module->updateMaxExtraCredit(500);
 
         $skillTree = SkillTree::addSkillTree($this->course->getId(), "Skill Tree", 1000);
@@ -158,6 +160,7 @@ class SkillsTest extends TestCase
         $this->module->copyTo($copyTo);
 
         // Then
+        $this->assertEquals($this->module->getMaxXP(), $skillsModule->getMaxXP());
         $this->assertEquals($this->module->getMaxExtraCredit(), $skillsModule->getMaxExtraCredit());
 
         $skillTrees = SkillTree::getSkillTrees($this->course->getId());

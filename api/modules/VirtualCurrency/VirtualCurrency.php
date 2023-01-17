@@ -15,7 +15,6 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
-use GameCourse\Module\Skills\Skills;
 use GameCourse\Module\XPLevels\XPLevels;
 use Utils\Utils;
 
@@ -26,9 +25,10 @@ use Utils\Utils;
 class VirtualCurrency extends Module
 {
     const TABLE_WALLET = "user_wallet";
-    const TABLE_REMOVE_TOKENS = "remove_tokens_participation";
+    const TABLE_VC_SPENDING = "virtual_currency_spending";
     const TABLE_VC_CONFIG = "virtual_currency_config";
 
+    const DEFAULT_NAME = "Token(s)";
     const DEFAULT_IMAGE = "default.png";
 
     public function __construct(?Course $course)
@@ -44,7 +44,7 @@ class VirtualCurrency extends Module
 
     const ID = "VirtualCurrency";  // NOTE: must match the name of the class
     const NAME = "Virtual Currency";
-    const DESCRIPTION = "Enables Virtual Currency to be given to students as a reward.";
+    const DESCRIPTION = "Enables virtual currency to be given to students as a reward.";
     const TYPE = ModuleType::GAME_ELEMENT;
 
     const VERSION = "2.2.0";                                     // Current module version
@@ -54,8 +54,7 @@ class VirtualCurrency extends Module
 
     const DEPENDENCIES = [
         ["id" => Awards::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD],
-        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT],
-        ["id" => Skills::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
+        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
     ];
     // NOTE: dependencies should be updated on code changes
 
@@ -113,9 +112,6 @@ class VirtualCurrency extends Module
 
         // Copy config
         $copiedModule->setName($this->getName());
-        $copiedModule->setSkillCost($this->getSkillCost());
-        $copiedModule->setWildcardCost($this->getWildcardCost());
-        $copiedModule->setAttemptRating($this->getAttemptRating());
 
         // Copy image
         if ($this->hasImage()) {
@@ -144,78 +140,6 @@ class VirtualCurrency extends Module
     public function isConfigurable(): bool
     {
         return true;
-    }
-
-    public function getGeneralInputs(): array
-    {
-        return [
-            [
-                "name" => Skills::NAME,
-                "contents" => [
-                    [
-                        "contentType" => "container",
-                        "classList" => "flex flex-wrap items-center",
-                        "contents" => [
-                            [
-                                "contentType" => "item",
-                                "width" => "1/3",
-                                "type" => InputType::NUMBER,
-                                "id" => "attemptRating",
-                                "value" => $this->getAttemptRating(),
-                                "placeholder" => "Min. grade for attempt",
-                                "options" => [
-                                    "topLabel" => "Min. grade for attempt",
-                                    "required" => true,
-                                    "minValue" => 0,
-                                    "maxValue" => 5
-                                ],
-                                "helper" => "Minimum skill grade to count as an attempt"
-                            ],
-                            [
-                                "contentType" => "item",
-                                "width" => "1/3",
-                                "type" => InputType::NUMBER,
-                                "id" => "wildcardCost",
-                                "value" => $this->getWildcardCost(),
-                                "placeholder" => "Initial cost for wildcard",
-                                "options" => [
-                                    "topLabel" => "Wildcard initial cost",
-                                    "required" => true,
-                                    "minValue" => 0
-                                ],
-                                "helper" => "Wildcard skills initial currency cost. Afterwards cost will be: #attempts x increment_cost"
-                            ],
-                            [
-                                "contentType" => "item",
-                                "width" => "1/3",
-                                "type" => InputType::NUMBER,
-                                "id" => "skillCost",
-                                "value" => $this->getSkillCost(),
-                                "placeholder" => "Increment for wildcard cost",
-                                "options" => [
-                                    "topLabel" => "Wildcard increment cost",
-                                    "required" => true,
-                                    "minValue" => 0
-                                ],
-                                "helper" => "Wildcard increment currency cost"
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ];
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function saveGeneralInputs(array $inputs)
-    {
-        foreach ($inputs as $input) {
-            if ($input["id"] == "attemptRating") $this->setAttemptRating($input["value"]);
-            if ($input["id"] == "wildcardCost") $this->setWildcardCost($input["value"]);
-            if ($input["id"] == "skillCost") $this->setSkillCost($input["value"]);
-        }
     }
 
     public function getLists(): array
@@ -248,7 +172,7 @@ class VirtualCurrency extends Module
                     "hasColumnFiltering" => false,
                     "hasFooters" => false,
                     "columnDefs" => [
-                        ["orderable" => false, "targets" => [0, 1, 2]]
+                        ["orderable" => false, "targets" => [0, 1]]
                     ]
                 ],
                 "items" => [
@@ -270,7 +194,6 @@ class VirtualCurrency extends Module
                                     "placeholder" => "Virtual currency name",
                                     "options" => [
                                         "topLabel" => "Name",
-                                        "required" => true,
                                         "maxLength" => 50
                                     ],
                                     "helper" => "Display name for virtual currency"
@@ -305,7 +228,7 @@ class VirtualCurrency extends Module
         if ($listName == "Settings") {
             if ($action == Action::EDIT) {
                 // Set name
-                $this->setName($item["name"] ?? "Token(s)");
+                $this->setName($item["name"] ?? self::DEFAULT_NAME);
 
                 // Set image
                 if (isset($item["image"]) && !Utils::strStartsWith($item["image"], API_URL))
@@ -378,78 +301,6 @@ class VirtualCurrency extends Module
     }
 
 
-    /**
-     * Gets Virtual Currency skill cost.
-     *
-     * @return void
-     */
-    public function getSkillCost(): int
-    {
-        return intval(Core::database()->select(self::TABLE_VC_CONFIG, ["course" => $this->course->getId()], "skillCost"));
-    }
-
-    /**
-     * Sets Virtual Currency skill cost.
-     *
-     * @param int $cost
-     * @return void
-     * @throws Exception
-     */
-    public function setSkillCost(int $cost)
-    {
-        self::validateInteger("skill cost", $cost);
-        Core::database()->update(self::TABLE_VC_CONFIG, ["skillCost" => $cost], ["course" => $this->course->getId()]);
-    }
-
-
-    /**
-     * Gets Virtual Currency wildcard cost.
-     *
-     * @return void
-     */
-    public function getWildcardCost(): int
-    {
-        return intval(Core::database()->select(self::TABLE_VC_CONFIG, ["course" => $this->course->getId()], "wildcardCost"));
-    }
-
-    /**
-     * Sets Virtual Currency wildcard cost.
-     *
-     * @param int $cost
-     * @return void
-     * @throws Exception
-     */
-    public function setWildcardCost(int $cost)
-    {
-        self::validateInteger("wildcard cost", $cost);
-        Core::database()->update(self::TABLE_VC_CONFIG, ["wildcardCost" => $cost], ["course" => $this->course->getId()]);
-    }
-
-
-    /**
-     * Gets Virtual Currency attempt rating.
-     *
-     * @return void
-     */
-    public function getAttemptRating(): int
-    {
-        return intval(Core::database()->select(self::TABLE_VC_CONFIG, ["course" => $this->course->getId()], "attemptRating"));
-    }
-
-    /**
-     * Sets Virtual Currency attempt rating.
-     *
-     * @param int $rating
-     * @return void
-     * @throws Exception
-     */
-    public function setAttemptRating(int $rating)
-    {
-        self::validateInteger("rating", $rating);
-        Core::database()->update(self::TABLE_VC_CONFIG, ["attemptRating" => $rating], ["course" => $this->course->getId()]);
-    }
-
-
     /*** ---------- Wallet ---------- ***/
 
     /**
@@ -467,7 +318,7 @@ class VirtualCurrency extends Module
         if ($this->userHasWallet($userId)) // already has a wallet
             Core::database()->update(self::TABLE_WALLET, [
                 "tokens" => 0,
-                "exchanged" => false
+                "exchanged" => +false
             ], ["course" => $courseId, "user" => $userId]);
 
         else
@@ -475,7 +326,7 @@ class VirtualCurrency extends Module
                 "course" => $courseId,
                 "user" => $userId,
                 "tokens" => 0,
-                "exchanged" => false
+                "exchanged" => +false
             ]);
     }
 
@@ -524,7 +375,7 @@ class VirtualCurrency extends Module
      */
     public function updateUserTokens(int $userId, int $tokens)
     {
-        $newTokens = max($this->getUserTokens($userId) + $tokens, 0);
+        $newTokens = $this->getUserTokens($userId) + $tokens;
         $this->setUserTokens($userId, $newTokens);
     }
 
@@ -550,23 +401,21 @@ class VirtualCurrency extends Module
      * NOTE: threshold is related to tokens, not XP
      *
      * @param int $userId
-     * @param int $ratio
+     * @param float $ratio
      * @param int|null $threshold
      * @return int
      * @throws Exception
      */
     public function exchangeTokensForXP(int $userId, float $ratio = 1, ?int $threshold = null): int
     {
-        $xpLevels = $this->course->getModuleById(XPLevels::ID);
-        if (!$xpLevels || !$xpLevels->isEnabled())
-            throw new Exception("Can't exchange tokens for XP: " . $xpLevels::NAME . " module is not enabled or doesn't exist.");
+        $this->checkDependency(XPLevels::ID);
 
         // Check if already exchanged
         if ($this->hasExchanged($userId))
             throw new Exception("Can't exchange " . $this->getName() . " more than once.");
 
         $totalTokens = $this->getUserTokens($userId);
-        $exchangeableTokens = !is_null($threshold) ? min($totalTokens, $threshold) : $totalTokens;
+        $exchangeableTokens = min($totalTokens, $threshold ?? PHP_INT_MAX);
         $earnedXP = intval(round($exchangeableTokens * $ratio));
 
         // Remove tokens & set flag
@@ -614,22 +463,5 @@ class VirtualCurrency extends Module
 
         if (iconv_strlen($name) > 50)
             throw new Exception("Virtual Currency name is too long: maximum of 50 characters.");
-    }
-
-    /**
-     * Validates an integer.
-     *
-     * @param string $param
-     * @param $value
-     * @return void
-     * @throws Exception
-     */
-    private static function validateInteger(string $param, $value)
-    {
-        if (is_null($value))
-            throw new Exception("Virtual Currency $param can't be null.");
-
-        if (!is_numeric($value) || $value < 0)
-            throw new Exception("Virtual Currency $param needs to be a number bigger or equal than 0.");
     }
 }

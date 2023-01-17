@@ -1,9 +1,6 @@
 CREATE TABLE IF NOT EXISTS virtual_currency_config(
     course                      int unsigned PRIMARY KEY,
     name                        varchar(50) NOT NULL DEFAULT 'Token(s)',
-    skillCost                   int unsigned NOT NULL DEFAULT 0,
-    wildcardCost                int unsigned NOT NULL DEFAULT 0,
-    attemptRating               int unsigned NOT NULL DEFAULT 0,
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
@@ -18,12 +15,13 @@ CREATE TABLE IF NOT EXISTS user_wallet(
     FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS remove_tokens_participation(
-    course                      int unsigned NOT NULL,
+CREATE TABLE IF NOT EXISTS virtual_currency_spending(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
     user                        int unsigned NOT NULL,
-    participation               int unsigned NOT NULL,
-    tokensRemoved               int unsigned NOT NULL,
+    course                      int unsigned NOT NULL,
+    description                 varchar(100) NOT NULL,
+    amount                      int unsigned NOT NULL DEFAULT 0,
+    date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
-    FOREIGN key(participation) REFERENCES participation(id) ON DELETE CASCADE
+    FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE
 );
