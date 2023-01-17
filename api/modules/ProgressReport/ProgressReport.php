@@ -87,7 +87,7 @@ class ProgressReport extends Module
                 $this->saveProgressReportConfig($config["endDate"], $config["periodicityTime"],  $config["periodicityHours"],
                     $config["periodicityDay"], false);
             }
-        });
+        }, self::ID);
     }
 
     public function copyTo(Course $copyTo)

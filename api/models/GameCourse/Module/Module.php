@@ -570,13 +570,14 @@ abstract class Module
     }
 
     /**
-     * Stops listening to any events of module.
+     * Stops listening to any events of module if not enabled in any course.
      *
      * @return void
      */
     protected function removeEvents()
     {
-        Event::stopAll($this->getId());
+        if (empty(Core::database()->select(self::TABLE_COURSE_MODULE, ["module" => $this->id, "isEnabled" => true])))
+            Event::stopAll($this->id);
     }
 
     /**

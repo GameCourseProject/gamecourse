@@ -231,15 +231,6 @@ class Skill
                 self::updatePageURLs($fieldValues["page"], $oldSkillName, $newSkillName, "relative");
             }
         }
-        if (key_exists("isExtra", $fieldValues) && $fieldValues["isExtra"]) {
-            $xpLevelsModule = new XPLevels($course);
-            if ($xpLevelsModule->isEnabled() && !$xpLevelsModule->getMaxExtraCredit())
-                throw new Exception("You're attempting to set a skill as extra credit while there's no extra credit available to earn. Go to " . XPLevels::NAME . " module and set a max. global extra credit value first.");
-
-            $skillsModule = new Skills($course);
-            if (!$skillsModule->getMaxExtraCredit())
-                throw new Exception("You're attempting to set a skill as extra credit while there's no skill extra credit available to earn. Set a max. skill extra credit value first.");
-        }
         if (key_exists("position", $fieldValues)) {
             $newPosition = $fieldValues["position"];
             $oldPosition = $this->getPosition();

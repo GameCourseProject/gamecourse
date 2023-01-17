@@ -519,10 +519,8 @@ class XPLevels extends Module
         if (!$this->userHasXP($userId))
             throw new Exception("User with ID = " . $userId . " doesn't have XP initialized.");
 
-        $maxXP = $this->getMaxXP() ?? PHP_INT_MAX;
-        $newXP = max(min($maxXP, $xp), 0);
-
         $courseId = $this->course->getId();
+        $newXP = min($this->getMaxXP() ?? PHP_INT_MAX, $xp);
         Core::database()->update(self::TABLE_XP, ["xp" => $newXP, "level" => Level::getLevelByXP($courseId, $xp)->getId()],
             ["course" => $courseId, "user" => $userId]);
     }
