@@ -8,4 +8,4 @@ rule: Quiz King
 		lvl = compute_lvl(nlogs, 1)
 
 	then:
-		award_badge(target, "Quiz King", lvl, logs)
+		award_badge(target, "Quiz King", lvl, logs, nlogs)

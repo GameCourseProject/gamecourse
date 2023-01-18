@@ -11,4 +11,4 @@ rule: Course Emperor
         lvl = compute_lvl(progress, 1)
 
     then:
-        award_badge(target, "Course Emperor", lvl, logs)
+        award_badge(target, "Course Emperor", lvl, logs, progress)

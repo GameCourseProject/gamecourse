@@ -10,4 +10,4 @@ rule: Talkative
         nlogs = len(logs)
 		lvl = compute_lvl(nlogs, 2, 6, 12)
 	then:
-		award_badge(target, "Talkative", lvl, logs)
+		award_badge(target, "Talkative", lvl, logs, nlogs)

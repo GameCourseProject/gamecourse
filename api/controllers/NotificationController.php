@@ -6,6 +6,18 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\NotificationSystem\Notification;
 
+/**
+ * This is the Notification controller, which holds API endpoints for
+ * notification related actions.
+ *
+ * NOTE: use annotations to automatically generate OpenAPI
+ *      documentation for GameCourse's RESTful API
+ *
+ * @OA\Tag(
+ *     name="Notification",
+ *     description="API endpoints for user related actions"
+ * )
+ */
 class NotificationController
 {
 
@@ -71,30 +83,83 @@ class NotificationController
         API::response($notifications);
     }
 
+
     /**
      * Creates a new notification in the system
      *
      * @throws Exception
      */
-    /*public function createNotification()
+    public function createNotification()
     {
-        API::requireValues('course', 'user', 'message', 'showed');
+        API::requireValues('course', 'user', 'message', 'isShowed');
 
         $courseId = API::getValue("course", "int");
         $course = API::verifyCourseExists($courseId);
 
-        API::requireCourseAdminPermission($course); // Not sure
+        API::requireCourseAdminPermission($course); // Not sure if it needs admin permission
 
+        $userId = API::getValue("user", "int");
+        $user = API::verifyUserExists($userId);
+
+        $message = API::getValue("message");
+        $isShowed = API::getValue("isShowed");
 
         // Add notification to system
-        $notification = Notification::addNotification($courseId, "This is the notification message");
+        $notification = Notification::addNotification($courseId, $userId, $message, $isShowed);
 
         $notificationInfo = $notification->getData();
         API::response($notificationInfo);
-    }*/
+    }
 
     /**
-     * Gets all unread notifications
+     * Edits notification in the system
+     *
+     * @throws Exception
+     */
+    public function editNotification()
+    {
+        API::requireValues('id', 'course', 'user', 'message', 'isShowed');
+
+        // Get values
+        $courseId = API::getValue("course", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $userId = API::getValue("user", "int");
+        $user = API::verifyUserExists($userId);
+
+        $message = API::getValue("message");
+        $isShowed = API::getValue("isShowed");
+
+        $notificationId = API::getValue("id", "int");
+        $notification = Notification::getNotificationById($notificationId);
+
+
+        // Edit notification
+        $notification->editNotification($courseId, $userId, $message, $isShowed);
+
+        $notificationInfo = $notification->getData();
+        API::response($notificationInfo);
+    }
+
+    /**
+     * Edits notification in the system
+     *
+     * @throws Exception
+     */
+    public function removeNotification()
+    {
+        API::requireValues('notificationId');
+
+        $notificationId = API::getValue("notificationId", "int");
+        $notification = Notification::getNotificationById($notificationId);
+        $notification->removeNotification($notificationId);
+    }
+
+
+    /**
+     * Gets all notifications from the system
      *
      * @param bool $isShowed (optional)
      *
@@ -103,9 +168,9 @@ class NotificationController
     public function getNotifications()
     {
         // DOES IT NEED ADMIN PERMISSION ??
-        //API::requireAdminPermission();
+        // API::requireAdminPermission();
 
-        $isShowed = API::getValue("isShowed", "bool");
+        $isShowed = API::getValue("isShowed");
 
         $notifications = Notification::getNotifications($isShowed);
         foreach ($notifications as &$notificationInfo){
@@ -130,6 +195,9 @@ class NotificationController
 
         $isShowed = API::getValue("isShowed", "bool");
         $notification->setShowed($isShowed);
+
+        $notificationInfo = $notification->getData();
+        API::response($notificationInfo);
     }
 
     /**

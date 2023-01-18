@@ -54,14 +54,20 @@
         </ng-container>
 
         <!-- Notification -->
-        <div class="dropdown dropdown-end" (click)="this.mode = 'notNew'">
+        <div class="dropdown dropdown-end" (click)="notificationSetShowed()">
           <label tabindex="0" class="btn btn-ghost btn-circle text-primary-content">
             <ng-icon *ngIf="this.mode === 'notNew'" name="tabler-bell" size="1.7rem" color="fillCurrent"></ng-icon>
             <ng-icon *ngIf="this.mode === 'new'" name="tabler-bell-ringing" size="1.7rem" color="#EF6060"></ng-icon>
           </label>
-          <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-base-100 rounded-box w-48 !z-50">
-              <li *ngFor="let notification of notifications">
-                {{notification.message}}
+          <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-base-100 rounded-box w-80 !z-50">
+              <li *ngFor="let notification of notifications;">
+                <!-- border is only for all items but the last in notification array -->
+                <div class="pb-3 border-b border-gray-300" *ngIf="notification !== notifications[notifications.length - 1]">
+                  {{notification.message}}
+                </div>
+                <div *ngIf="notification === notifications[notifications.length - 1]">
+                  {{notification.message}}
+                </div>
               </li>
           </ul>
         </div>

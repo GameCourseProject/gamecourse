@@ -21,4 +21,4 @@ rule: Lab Master
         lvl = compute_lvl(progress, 4, 6, labs)
 
     then:
-        award_badge(target, "Lab Master", lvl, logs)
+        award_badge(target, "Lab Master", lvl, logs, progress)

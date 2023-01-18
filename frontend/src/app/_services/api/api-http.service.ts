@@ -1267,9 +1267,14 @@ export class ApiHttpService {
   /*** ------------------- NOTIFICATION SYSTEM ------------------ ***/
   /*** ---------------------------------------------------------- ***/
 
-  /*public createNotification(courseID: number): Observable<Notification> {
+  /* FOR FUTURE USE
+
+  public createNotification(notificationData: NotificationManageData): Observable<Notification> {
     const data = {
-      course: courseID
+      course: notificationData.course,
+      user: notificationData.user,
+      message: notificationData.message,
+      isShowed: notificationData.isShowed
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -1281,7 +1286,58 @@ export class ApiHttpService {
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe(map((res:any) => Notification.fromDatabase(res['data'])));
   }
-*/
+
+  public editNotification(notificationData: NotificationManageData): Observable<Notification> {
+    const data = {
+      id: notificationData.id,
+      course: notificationData.course,
+      user: notificationData.user,
+      message: notificationData.message,
+      isShowed: notificationData.isShowed
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'editNotification');
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => Notification.fromDatabase(res['data'])));
+  }
+
+  public deleteNotification(notificationID: number): Observable<void> {
+    const data = {notificationId : notificationID};
+
+    const params = (qs:QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'removeNotification');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => res));
+  }
+  */
+
+  public createNotification(course: number, user: number, message: string, isShowed: boolean): Observable<Notification>
+  {
+    const data = {
+      course: course,
+      user: user,
+      message: message,
+      isShowed: isShowed
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'createNotification');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => Notification.fromDatabase(res['data'])));
+  }
 
   public getNotifications(isShowed?: boolean): Observable<Notification[]> {
     const params = (qs: QueryStringParameters) => {
@@ -1296,6 +1352,21 @@ export class ApiHttpService {
       .pipe(map((res:any) => res['data'].map(obj => Notification.fromDatabase(obj))));
   }
 
+  public notificationSetShowed(notificationID: number, isShowed: boolean): Observable<Notification> {
+    const data = {
+      notificationId: notificationID,
+      isShowed: isShowed
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'setShowed');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => Notification.fromDatabase(res['data'])));
+  }
 
   // Configuration
 

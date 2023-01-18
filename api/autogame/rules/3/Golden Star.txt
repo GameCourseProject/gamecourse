@@ -13,4 +13,4 @@ rule: Golden Star
         lvl = compute_lvl(progress, 1, 2, 3)
 
     then:
-        award_badge(target, "Golden Star", lvl, logs)
+        award_badge(target, "Golden Star", lvl, logs, progress)

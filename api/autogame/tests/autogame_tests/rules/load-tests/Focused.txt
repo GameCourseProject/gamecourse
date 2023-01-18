@@ -10,4 +10,4 @@ rule: Focused
 		lvl = compute_lvl(nlogs, 1)
 		
 	then:
-		award_badge(target, "Focused", lvl, logs)
+		award_badge(target, "Focused", lvl, logs, nlogs)

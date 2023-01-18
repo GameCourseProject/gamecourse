@@ -14,4 +14,4 @@ rule: Talkative
         lvl = compute_lvl(progress, 2, 6, 12)
 
     then:
-        award_badge(target, "Talkative", lvl, logs)
+        award_badge(target, "Talkative", lvl, logs, progress)

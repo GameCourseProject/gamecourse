@@ -10,4 +10,4 @@ rule: Artist
 		nlogs = len(logs)
 		lvl = compute_lvl(nlogs, 4,6,12)
 	then:
-		award_badge(target, "Artist", lvl, logs)
+		award_badge(target, "Artist", lvl, logs, nlogs)

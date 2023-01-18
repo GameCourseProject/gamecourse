@@ -129,6 +129,40 @@ class Notification
         return new Notification($id);
     }
 
+    /**
+     * Edits an existing notification in the Notification System.
+     * Returns the edited notification.
+     *
+     * @param int $courseId
+     * @param int $userId
+     * @param string $message
+     * @param bool $isShowed
+     * @return Notification
+     * @throws Exception
+     */
+    public function editNotification(int $courseId, int $userId, string $message, bool $isShowed) : Notification
+    {
+        $this->setData([
+            "course" => $courseId,
+            "user" => $userId,
+            "message" => $message,
+            "isShowed" => $isShowed,
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * Removes a notification from the Notification System.
+     *
+     * @param int $notificationId
+     * @return void
+     * @throws Exception
+     */
+    public static function removeNotification(int $notificationId)
+    {
+        Core::database()->delete(self::TABLE_NOTIFICATION, ["id" => $notificationId]);
+    }
 
     /**
      * Gets notification data from the database.

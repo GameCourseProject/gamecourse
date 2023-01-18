@@ -53,7 +53,7 @@ export class NavbarComponent implements OnInit {
     await this.getCourse();
 
     // Get notifications information
-    //await this.getNotifications();
+    await this.getNotifications();
 
     // Whenever URL changes
     this.router.events.subscribe(event => {
@@ -102,14 +102,28 @@ export class NavbarComponent implements OnInit {
 
     // see if there are notifications to be showed
     for (let i = 0; i < this.notifications.length; i++){
-      if (!this.notifications[i].isShowed){
+      if (!this.notifications[i].isShowed === false) {
         this.mode = "new";
         break;
       }
-
-      this.mode = "notNew";
     }
+  }
 
+  async notificationSetShowed(): Promise<void> {
+    this.mode = "notNew";
+
+    for (let i = 0; i < this.notifications.length; i++){
+      if (!this.notifications[i].isShowed === false) {
+        console.log("hey");
+        const notificationEdited = await this.api.notificationSetShowed(this.notifications[i].id, true).toPromise();
+
+        // FIXME: Shouldn't change order in notifications array
+        const index = this.notifications.findIndex(notification => notification.id === notificationEdited.id);
+        this.notifications.removeAtIndex(index);
+        this.notifications.push(notificationEdited);
+      }
+    }
+    console.log(this.notifications);
   }
 
 

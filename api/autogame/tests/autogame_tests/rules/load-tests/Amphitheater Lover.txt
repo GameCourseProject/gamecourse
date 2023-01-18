@@ -20,4 +20,4 @@ rule: Amphitheatre Lover
 		lvl = compute_lvl(attendances, int(0.5 * lectures), int(0.75 * lectures), lectures)
 
 	then:
-		award_badge(target, "Amphitheatre Lover", lvl, logs)
+		award_badge(target, "Amphitheatre Lover", lvl, logs, attendances)

@@ -454,7 +454,7 @@ def award_assignment_grade(target, logs, max_xp=1, max_grade=1):
     connector.award_assignment_grade(target, logs, max_xp, max_grade)
 
 @rule_effect
-def award_badge(target, name, lvl, logs):
+def award_badge(target, name, lvl, logs, progress = None):
     """
     Awards a given level to a specific target.
 
@@ -462,7 +462,7 @@ def award_badge(target, name, lvl, logs):
     Updates award if reward has changed.
     """
 
-    connector.award_badge(target, name, lvl, logs)
+    connector.award_badge(target, name, lvl, logs, progress)
 
 @rule_effect
 def award_bonus(target, name, reward):

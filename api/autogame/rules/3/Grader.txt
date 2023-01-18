@@ -13,4 +13,4 @@ rule: Grader
         lvl = compute_lvl(progress, 10, 20, 45)
 
     then:
-        award_badge(target, "Grader", lvl, logs)
+        award_badge(target, "Grader", lvl, logs, progress)

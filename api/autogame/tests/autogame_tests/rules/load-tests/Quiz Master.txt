@@ -16,4 +16,4 @@ rule: Quiz Master
 		nlogs = len(flogs)
 		lvl = compute_lvl(nlogs, 4, 6, 8)
 	then:
-		award_badge(target, "Quiz Master", lvl, logs)
+		award_badge(target, "Quiz Master", lvl, logs, nlogs)
