@@ -851,7 +851,10 @@ def award(target, type, description, reward, instance=None, unique=True):
     """
 
     table = get_awards_table()
-    query = "SELECT reward FROM " + table + " WHERE course = %s AND user = %s AND type = %s AND description = %s;"
+    query = "SELECT reward FROM " + table + " WHERE course = %s AND user = %s AND type = %s AND description = %s"
+    if instance is not None:
+        query += " AND moduleInstance = %s" % instance
+    query += ";"
     results = db.execute_query(query, (config.COURSE, target, type, description))
     awards_given = len(results)
 
@@ -932,6 +935,10 @@ def award_badge(target, name, lvl, logs):
                 query = "DELETE FROM " + awards_table + " WHERE course = %s AND user = %s AND type = %s AND description = %s AND moduleInstance = %s;"
                 db.execute_query(query, (config.COURSE, target, type, description, badge_id), "commit")
 
+                # Remove tokens
+                query = "DELETE FROM " + awards_table + " WHERE course = %s AND user = %s AND type = 'tokens' AND description = %s AND moduleInstance = %s;"
+                db.execute_query(query, (config.COURSE, target, description, badge_id), "commit")
+
         # Award and/or update badge levels
         for level in range(1, lvl + 1):
             # Calculate reward
@@ -943,10 +950,10 @@ def award_badge(target, name, lvl, logs):
             description = get_description(name, level)
             award(target, type, description, reward, badge_id)
 
-            # Award tokens, if virtual currency enabled
-            if module_enabled("VirtualCurrency"):
-                badge_tokens = int(table_badge[level - 1][3])
-                award_tokens(target, description, badge_tokens)
+            # Award tokens
+            badge_tokens = int(table_badge[level - 1][3])
+            if module_enabled("VirtualCurrency") and badge_tokens > 0:
+                award_tokens(target, description, badge_tokens, 1, badge_id)
 
 def award_bonus(target, name, reward):
     """
@@ -1021,6 +1028,22 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
     Updates award if reward has changed.
     """
 
+    def get_attempt_cost(tier_cost_info, attempt_nr):
+        if attempt_nr < 1:
+            raise Exception("User with ID = %s attempt number at skill '%s' needs to be bigger than zero." % (target, name))
+
+        if tier_cost_info["costType"] == "fixed":
+            return tier_cost_info["cost"]
+
+        else:
+            attempt_logs = logs[0: attempt_nr - 1]
+            nr_attempts = len([log for log in attempt_logs if int(log[config.RATING_COL]) >= tier_cost_info["minRating"]])
+            return tier_cost_info["cost"] + tier_cost_info["increment"] * nr_attempts
+
+    def get_attempt_description(attempt):
+        attempt_info = " (%s%s attempt)" % (attempt, "st" if attempt == 1 else "nd" if attempt == 2 else "rd" if attempt == 3 else "th")
+        return name + attempt_info
+
     def spend_wildcard(award_id, use_wildcard):
         query = "SELECT COUNT(*) FROM award_wildcard WHERE award = %s;"
         used_wildcard = int(db.execute_query(query, (award_id,))[0][0]) > 0
@@ -1051,14 +1074,16 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
         min_rating = int(db.data_broker.get(db, config.COURSE, query)[0][0])
 
         # Get skill info
-        query = "SELECT s.id, t.reward, s.isExtra, st.maxReward " \
+        query = "SELECT s.id, t.reward, s.isExtra, st.maxReward, tc.costType, tc.cost, tc.increment, tc.minRating " \
                 "FROM skill s LEFT JOIN skill_tier t on s.tier = t.id " \
+                "LEFT JOIN skill_tier_cost tc on tc.tier = t.id " \
                 "LEFT JOIN skill_tree st on t.skillTree = st.id " \
                 "WHERE s.course = %s AND s.name = '%s';" % (config.COURSE, name)
         table_skill = db.data_broker.get(db, config.COURSE, query)[0]
         skill_id = table_skill[0]
 
         # Update skill progression
+        nr_attempts = len(logs)
         if not config.TEST_MODE:
             for log in logs:
                 query = "INSERT INTO skill_progression (course, user, skill, participation) VALUES (%s, %s, %s, %s);"
@@ -1070,10 +1095,25 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
             query = "SELECT COUNT(*) FROM " + awards_table + " WHERE course = %s AND user = %s AND type = %s AND description = %s;"
             nr_awards = int(db.execute_query(query, (config.COURSE, target, type, name))[0][0])
 
-            # Delete invalid award
+            # Delete invalid skill
             if nr_awards > 0:
+                # Delete award
                 query = "DELETE FROM " + awards_table + " WHERE course = %s AND user = %s AND type = %s AND description = %s AND moduleInstance = %s;"
                 db.execute_query(query, (config.COURSE, target, type, name, skill_id), "commit")
+
+                # Give tokens back
+                if module_enabled("VirtualCurrency"):
+                    table = "virtual_currency_spending"
+
+                    # Get date from which to give back
+                    query = "SELECT date FROM " + table + " WHERE course = %s AND user = %s AND description LIKE %s " \
+                            "ORDER BY date ASC;"
+                    spending_table = db.execute_query(query, (config.COURSE, target, name + " (% attempt)"))
+                    delete_from = spending_table[nr_attempts][0]
+
+                    # Return tokens
+                    query = "DELETE FROM " + table + " WHERE course = %s AND user = %s AND date >= %s;"
+                    db.execute_query(query, (config.COURSE, target, delete_from), "commit")
 
         else:
             # Calculate reward
@@ -1091,19 +1131,32 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
             # Spend wildcard
             spend_wildcard(award_id, use_wildcard)
 
-def award_tokens(target, name, reward, repetitions=1):
+        # Spend tokens, if virtual currency enabled
+        if module_enabled("VirtualCurrency") and nr_attempts > 0 and dependencies:
+            tier_cost_info = {"costType": table_skill[4], "cost": int(table_skill[5]), "increment": int(table_skill[6]),
+                              "minRating": int(table_skill[7])}
+            for attempt in range(1, nr_attempts + 1):
+                attempt_cost = get_attempt_cost(tier_cost_info, attempt)
+                if attempt_cost > 0:
+                    description = get_attempt_description(attempt)
+                    spend_tokens(target, description, attempt_cost, 1)
+
+def award_tokens(target, name, reward, repetitions=1, instance=None):
     """
     Awards given tokens to a specific target.
     """
 
     # Get awards already given
     awards_table = get_awards_table()
-    query = "SELECT COUNT(*) FROM " + awards_table + " WHERE course = %s AND user = %s AND description = %s AND type = 'tokens';"
+    query = "SELECT COUNT(*) FROM " + awards_table + " WHERE course = %s AND user = %s AND description = %s AND type = 'tokens'"
+    if instance is not None:
+        query += " AND moduleInstance = %s" % instance
+    query += ";"
     awards_given = int(db.execute_query(query, (config.COURSE, target, name))[0][0])
 
     # Give awards missing
     for diff in range(awards_given, repetitions):
-        award(target, "tokens", name, reward, None, repetitions == 1)
+        award(target, "tokens", name, reward, instance, repetitions == 1)
 
 
 ### Spend items

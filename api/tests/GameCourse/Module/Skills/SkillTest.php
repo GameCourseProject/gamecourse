@@ -2,12 +2,14 @@
 namespace GameCourse\Module\Skills;
 
 use Exception;
+use GameCourse\AutoGame\AutoGame;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
+use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
@@ -2302,6 +2304,137 @@ tags:
         $this->assertTrue($skill2->hasWildcardDependency());
         $this->assertFalse($skill1->hasWildcardDependency());
         $this->assertFalse($skillWildcard->hasWildcardDependency());
+    }
+
+
+    // Cost
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getSkillCostForUserFixedCost()
+    {
+        // Given
+        $skill = Skill::addSkill($this->tierId, "Skill", null, null, false, false, []);
+        $user = Core::getLoggedUser();
+
+        (new VirtualCurrency(new Course($this->courseId)))->setEnabled(true);
+        $tier = new Tier($this->tierId);
+        $tier->setCost(10);
+
+        // When
+        $cost = $skill->getSkillCostForUser($user->getId());
+
+        // Then
+        $this->assertEquals(10, $cost);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getSkillCostForUserVariableCost()
+    {
+        // Given
+        $skill = Skill::addSkill($this->tierId, "Skill", null, null, false, false, []);
+        $user = Core::getLoggedUser();
+
+        (new VirtualCurrency(new Course($this->courseId)))->setEnabled(true);
+        $tier = new Tier($this->tierId);
+        $tier->setCostType("variable");
+        $tier->setCost(10);
+        $tier->setIncrement(5);
+
+        AutoGame::addParticipation($this->courseId, $user->getId(), "Skill Tree, Re: Skill", "graded post", null, null, null, 2);
+        AutoGame::addParticipation($this->courseId, $user->getId(), "Skill Tree, Re: Skill", "graded post", null, null, null, 3);
+        AutoGame::addParticipation($this->courseId, $user->getId(), "Skill Tree, Re: Skill", "graded post", null, null, null, 4);
+
+        // Default min rating
+        $tier->setMinRating(3);
+        $cost = $skill->getSkillCostForUser($user->getId());
+        $this->assertEquals(20, $cost);
+
+        // Bigger min rating
+        $tier->setMinRating(4);
+        $cost = $skill->getSkillCostForUser($user->getId());
+        $this->assertEquals(15, $cost);
+
+        // Smaller min rating
+        $tier->setMinRating(2);
+        $cost = $skill->getSkillCostForUser($user->getId());
+        $this->assertEquals(25, $cost);
+
+        // Zero min rating
+        $tier->setMinRating(0);
+        $cost = $skill->getSkillCostForUser($user->getId());
+        $this->assertEquals(25, $cost);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getSkillCostForUserVariableCostOnlyCostingRetries()
+    {
+        // Given
+        $skill = Skill::addSkill($this->tierId, "Skill", null, null, false, false, []);
+        $user = Core::getLoggedUser();
+
+        (new VirtualCurrency(new Course($this->courseId)))->setEnabled(true);
+        $tier = new Tier($this->tierId);
+        $tier->setCostType("variable");
+        $tier->setCost(0);
+        $tier->setIncrement(5);
+
+        AutoGame::addParticipation($this->courseId, $user->getId(), "Skill Tree, Re: Skill", "graded post", null, null, null, 2);
+        AutoGame::addParticipation($this->courseId, $user->getId(), "Skill Tree, Re: Skill", "graded post", null, null, null, 3);
+        AutoGame::addParticipation($this->courseId, $user->getId(), "Skill Tree, Re: Skill", "graded post", null, null, null, 4);
+
+        // Default min rating
+        $tier->setMinRating(3);
+        $cost = $skill->getSkillCostForUser($user->getId());
+        $this->assertEquals(10, $cost);
+
+        // Bigger min rating
+        $tier->setMinRating(4);
+        $cost = $skill->getSkillCostForUser($user->getId());
+        $this->assertEquals(5, $cost);
+
+        // Smaller min rating
+        $tier->setMinRating(2);
+        $cost = $skill->getSkillCostForUser($user->getId());
+        $this->assertEquals(15, $cost);
+
+        // Zero min rating
+        $tier->setMinRating(0);
+        $cost = $skill->getSkillCostForUser($user->getId());
+        $this->assertEquals(15, $cost);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getSkillCostForUserVariableCostNoAttempts()
+    {
+        // Given
+        $skill = Skill::addSkill($this->tierId, "Skill", null, null, false, false, []);
+        $user = Core::getLoggedUser();
+
+        (new VirtualCurrency(new Course($this->courseId)))->setEnabled(true);
+        $tier = new Tier($this->tierId);
+        $tier->setCostType("variable");
+
+        // No cost
+        $tier->setCost(0);
+        $cost = $skill->getSkillCostForUser($user->getId());
+        $this->assertEquals(0, $cost);
+
+        // With cost
+        $tier->setCost(10);
+        $cost = $skill->getSkillCostForUser($user->getId());
+        $this->assertEquals(10, $cost);
     }
 
 

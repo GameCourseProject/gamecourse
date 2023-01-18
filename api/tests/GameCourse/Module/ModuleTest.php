@@ -6,6 +6,7 @@ use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
+use GameCourse\Module\Fenix\Fenix;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
@@ -179,7 +180,7 @@ class ModuleTest extends TestCase
      */
     public function isEnabled()
     {
-        $module = new Awards($this->course);
+        $module = new Fenix($this->course);
         $module->setEnabled(true);
         $this->assertTrue($module->isEnabled());
     }
@@ -241,7 +242,7 @@ class ModuleTest extends TestCase
      */
     public function disable()
     {
-        $module = new Awards($this->course);
+        $module = new Fenix($this->course);
         $module->setEnabled(true);
         $this->assertTrue($module->isEnabled());
 

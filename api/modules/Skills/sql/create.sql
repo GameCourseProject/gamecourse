@@ -30,6 +30,16 @@ CREATE TABLE IF NOT EXISTS skill_tier(
     FOREIGN key(skillTree) REFERENCES skill_tree(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS skill_tier_cost(
+    tier                        int unsigned PRIMARY KEY,
+    costType                    ENUM ('fixed', 'variable') NOT NULL DEFAULT 'fixed',
+    cost                        int unsigned NOT NULL DEFAULT 0,
+    increment                   int unsigned NOT NULL DEFAULT 0,
+    minRating                   int unsigned NOT NULL DEFAULT 3, /* min. rating to start increment the cost */
+
+    FOREIGN key(tier) REFERENCES skill_tier(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS skill(
     id 	                        int unsigned AUTO_INCREMENT PRIMARY KEY,
     course                      int unsigned NOT NULL,

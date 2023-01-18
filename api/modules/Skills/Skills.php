@@ -12,6 +12,7 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 
 /**
@@ -22,6 +23,7 @@ class Skills extends Module
 {
     const TABLE_SKILL_TREE = SkillTree::TABLE_SKILL_TREE;
     const TABLE_SKILL_TIER = Tier::TABLE_SKILL_TIER;
+    const TABLE_SKILL_TIER_COST = Tier::TABLE_SKILL_TIER_COST;
     const TABLE_SKILL = Skill::TABLE_SKILL;
     const TABLE_SKILL_DEPENDENCY = Skill::TABLE_SKILL_DEPENDENCY;
     const TABLE_SKILL_DEPENDENCY_COMBO = Skill::TABLE_SKILL_DEPENDENCY_COMBO;
@@ -52,7 +54,8 @@ class Skills extends Module
 
     const DEPENDENCIES = [
         ["id" => Awards::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD],
-        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
+        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT],
+        ["id" => VirtualCurrency::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
     ];
     // NOTE: dependencies should be updated on code changes
 
@@ -209,7 +212,7 @@ class Skills extends Module
                 ],
                 "headers" => [
                     ["label" => "Name", "align" => "middle"],
-                    ["label" => "Max. Reward", "align" => "middle"]
+                    ["label" => "Max. Reward (XP)", "align" => "middle"]
                 ],
                 "data" => array_map(function ($skillTree) {
                     return [
@@ -255,11 +258,11 @@ class Skills extends Module
                                     "id" => "maxReward",
                                     "placeholder" => "Skill tree maximum reward",
                                     "options" => [
-                                        "topLabel" => "Max. reward",
+                                        "topLabel" => "Max. reward (XP)",
                                         "required" => true,
                                         "minValue" => 0
                                     ],
-                                    "helper" => "Maximum total reward that can be earned with skill tree"
+                                    "helper" => "Maximum XP that can be earned with skill tree"
                                 ]
                             ]
                         ]
@@ -293,19 +296,19 @@ class Skills extends Module
                                     "id" => "maxReward",
                                     "placeholder" => "Skill tree maximum reward",
                                     "options" => [
-                                        "topLabel" => "Max. reward",
+                                        "topLabel" => "Max. reward (XP)",
                                         "required" => true,
                                         "minValue" => 0
                                     ],
-                                    "helper" => "Maximum total reward that can be earned with skill tree"
+                                    "helper" => "Maximum XP that can be earned with skill tree"
                                 ]
                             ]
                         ]
                     ]
                 ],
                 Action::IMPORT => [
-                "extensions" => [".zip"]
-            ]
+                    "extensions" => [".zip"]
+                ]
             ]
         ];
     }

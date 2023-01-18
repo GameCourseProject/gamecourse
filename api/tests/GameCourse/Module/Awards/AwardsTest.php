@@ -13,8 +13,6 @@ use GameCourse\Module\Skills\SkillTree;
 use GameCourse\Module\Skills\Tier;
 use GameCourse\Module\Streaks\Streak;
 use GameCourse\Module\Streaks\Streaks;
-use GameCourse\Module\VirtualCurrency\VirtualCurrency;
-use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;

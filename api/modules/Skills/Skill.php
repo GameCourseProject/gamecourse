@@ -2,11 +2,12 @@
 namespace GameCourse\Module\Skills;
 
 use Exception;
+use GameCourse\AutoGame\AutoGame;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\XPLevels\XPLevels;
+use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use Utils\Utils;
 use ZipArchive;
 
@@ -930,6 +931,39 @@ class Skill
             }
         }
         return false;
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ----------------------- Cost ----------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets skill cost in tokens for a given user.
+     *
+     * @param int $userId
+     * @return int
+     * @throws Exception
+     */
+    public function getSkillCostForUser(int $userId): int
+    {
+        $course = $this->getCourse();
+        $skillsModule = new Skills($course);
+        $skillsModule->checkDependency(VirtualCurrency::ID);
+
+        // Get tier cost info
+        $tier = $this->getTier();
+        $tierInfo = $tier->getData("costType, cost, increment, minRating");
+
+        // Get skill cost for user
+        if ($tierInfo["costType"] === "fixed") return $tierInfo["cost"];
+
+        $name = $this->getName();
+        $nrAttempts = count(array_filter(AutoGame::getParticipations($course->getId(), $userId, "graded post"),
+            function ($item) use ($name, $tierInfo) {
+                return $item["description"] === "Skill Tree, Re: $name" && $item["rating"] >= $tierInfo["minRating"];
+        }));
+        return $tierInfo["cost"] + $tierInfo["increment"] * $nrAttempts;
     }
 
 

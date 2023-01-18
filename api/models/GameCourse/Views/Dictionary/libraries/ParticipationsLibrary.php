@@ -45,7 +45,7 @@ class ParticipationsLibrary extends Library
      * @example participations.getParticipations() --> gets all participations
      * @example participations.getParticipations(123) --> gets all participations for user with ID = 123
      * @example participations.getParticipations(123, "initial bonus") --> gets all participations for user with ID = 123 of type 'initial bonus'
-     * @example participations.getParticipations(null, null, null, null, "2022-12-01 00:00:00", "2022-12-04 23:59:59") --> gets all participations for user with ID = 123 of type 'initial bonus'
+     * @example participations.getParticipations(null, null, null, null, "2022-12-01 00:00:00", "2022-12-04 23:59:59") --> gets all participations between '2022-12-01 00:00:00' and '2022-12-04 23:59:59'
      *
      * @param bool $mockData
      * @param Course $course

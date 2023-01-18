@@ -537,12 +537,12 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
     connector.award_skill(target, name, rating, logs, dependencies, use_wildcard)
 
 @rule_effect
-def award_tokens(target, name, reward, repetitions=1):
+def award_tokens(target, name, reward, repetitions=1, instance=None):
     """
     Awards given tokens to a specific target.
     """
 
-    connector.award_tokens(target, name, reward, repetitions)
+    connector.award_tokens(target, name, reward, repetitions, instance)
 
 
 ### Spend items

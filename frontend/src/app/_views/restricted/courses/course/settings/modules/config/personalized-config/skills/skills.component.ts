@@ -114,7 +114,7 @@ export class SkillsComponent implements OnInit {
       headers: [
         {label: 'Position (sorting)', align: 'middle'},
         {label: 'Tier', align: 'middle'},
-        {label: 'Reward', align: 'middle'},
+        {label: 'Reward (XP)', align: 'middle'},
         {label: 'Active', align: 'middle'},
         {label: 'Actions'}
       ],
