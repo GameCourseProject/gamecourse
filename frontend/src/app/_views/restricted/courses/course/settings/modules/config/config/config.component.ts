@@ -40,7 +40,7 @@ export class ConfigComponent implements OnInit {
   generalInputs: ConfigSection[];
   unsavedGeneralInputs: ConfigSection[];
   lists: List[];
-  personalizedConfig: string;
+  personalizedConfig: PersonalizedConfig;
 
   mode: 'create' | 'duplicate' | 'edit' | 'delete' | string;
   itemToManage: ItemManageData;
@@ -363,13 +363,16 @@ export class ConfigComponent implements OnInit {
   // PERSONALIZED CONFIG
 
   get PersonalizedConfig() {
-    if (this.personalizedConfig === ApiHttpService.GOOGLESHEETS) return GooglesheetsComponent;
-    if (this.personalizedConfig === ApiHttpService.PROGRESS_REPORT) return ProgressReportComponent;
-    if (this.personalizedConfig === ApiHttpService.PROFILING) return ProfilingComponent;
-    if (this.personalizedConfig === ApiHttpService.SKILLS) return SkillsComponent;
-    if (this.personalizedConfig === ApiHttpService.QR) return QrComponent;
+    if (this.personalizedConfig) {
+      if (this.module.id === ApiHttpService.GOOGLESHEETS) return GooglesheetsComponent;
+      if (this.module.id === ApiHttpService.PROFILING) return ProfilingComponent;
+      if (this.module.id === ApiHttpService.PROGRESS_REPORT) return ProgressReportComponent;
+      if (this.module.id === ApiHttpService.QR) return QrComponent;
+      if (this.module.id === ApiHttpService.SKILLS) return SkillsComponent;
 
-    ErrorService.set("Personalized config for module '" + this.module.id + "' not found.");
+      ErrorService.set("Personalized config for module '" + this.module.id + "' not found.");
+    }
+
     return null;
   }
 
@@ -564,6 +567,7 @@ export interface ConfigInputItem {
 
 export type List = {
   name: string,
+  description?: string,
   itemName: string,
   topActions?: {left: {action: Action | string, icon?: string}[], right: {action: Action | string, icon?: string, outline?: boolean,
       color?: 'ghost' | 'primary' | 'secondary' | 'accent' | 'neutral' | 'info' | 'success' | 'warning' | 'error'}[]},
@@ -580,6 +584,10 @@ export type List = {
   [Action.NEW]?: {modalSize?: 'sm' | 'md' | 'lg', contents: (ConfigInputContainer|ConfigInputItem)[]},
   [Action.EDIT]?: {modalSize?: 'sm' | 'md' | 'lg', contents: (ConfigInputContainer|ConfigInputItem)[]},
   [Action.IMPORT]?: {extensions: string[], csvHeaders?: string[], csvRows?: string[][]}
+}
+
+export type PersonalizedConfig = {
+  position: 'before' | 'after'
 }
 
 export interface ItemManageData {

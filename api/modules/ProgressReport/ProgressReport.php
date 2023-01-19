@@ -119,9 +119,9 @@ class ProgressReport extends Module
         return true;
     }
 
-    public function getPersonalizedConfig(): ?string
+    public function getPersonalizedConfig(): ?array
     {
-        return $this->id;
+        return ["position" => "before"];
     }
 
 

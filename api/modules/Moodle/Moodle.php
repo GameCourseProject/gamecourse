@@ -266,6 +266,7 @@ class Moodle extends Module
         return [
             [
                 "name" => "Status",
+                "description" => "Check whether " . self::NAME . " is currently running and when it last imported new data.",
                 "itemName" => "status",
                 "headers" => [
                     ["label" => "Started importing data", "align" => "middle"],

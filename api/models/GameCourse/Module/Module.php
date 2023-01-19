@@ -685,11 +685,11 @@ abstract class Module
     }
 
     /**
-     * Gets module personalized configuration ID.
+     * Gets module personalized configuration.
      *
-     * @return string
+     * @return array
      */
-    public function getPersonalizedConfig(): ?string
+    public function getPersonalizedConfig(): ?array
     {
         return null;
     }

@@ -330,9 +330,9 @@ class Skills extends Module
         return null;
     }
 
-    public function getPersonalizedConfig(): ?string
+    public function getPersonalizedConfig(): ?array
     {
-        return $this->id;
+        return ["position" => "after"];
     }
 
 

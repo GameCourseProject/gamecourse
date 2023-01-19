@@ -89,6 +89,7 @@ class GoogleSheets extends Module
         return [
             [
                 "name" => "Status",
+                "description" => "Check whether " . self::NAME . " is currently running and when it last imported new data.",
                 "itemName" => "status",
                 "headers" => [
                     ["label" => "Started importing data", "align" => "middle"],
@@ -117,9 +118,9 @@ class GoogleSheets extends Module
         ];
     }
 
-    public function getPersonalizedConfig(): ?string
+    public function getPersonalizedConfig(): ?array
     {
-        return $this->id;
+        return ["position" => "before"];
     }
 
 

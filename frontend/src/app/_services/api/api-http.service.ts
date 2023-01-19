@@ -25,7 +25,7 @@ import {dateFromDatabase, exists} from "../../_utils/misc/misc";
 import {
   ConfigInputItem,
   ConfigSection,
-  List
+  List, PersonalizedConfig
 } from "../../_views/restricted/courses/course/settings/modules/config/config/config.component";
 import {Tier} from "../../_domain/modules/config/personalized-config/skills/tier";
 import {
@@ -997,7 +997,7 @@ export class ApiHttpService {
 
   // Configuration
 
-  public getModuleConfig(courseID: number, moduleID: string): Observable<{generalInputs: ConfigSection[] | null, lists: List[] | null, personalizedConfig: string | null}> {
+  public getModuleConfig(courseID: number, moduleID: string): Observable<{generalInputs: ConfigSection[] | null, lists: List[] | null, personalizedConfig: PersonalizedConfig | null}> {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);

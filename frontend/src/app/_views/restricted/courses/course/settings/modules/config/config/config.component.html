@@ -13,6 +13,11 @@
       <p class="text-justify normal-case font-normal">{{module.description}}</p>
     </div>
 
+    <!-- Personalized Config : BEFORE -->
+    <div *ngIf="personalizedConfig?.position === 'before'" class="personalized-config {{module.id}}">
+      <ng-container [ngComponentOutlet]="PersonalizedConfig"></ng-container>
+    </div>
+
     <!-- General Inputs -->
     <ng-container *ngIf="generalInputs?.length > 0" [ngTemplateOutlet]="GENERAL_INPUTS"></ng-container>
 
@@ -20,7 +25,7 @@
     <ng-container *ngIf="lists?.length > 0" [ngTemplateOutlet]="LISTS"></ng-container>
 
     <!-- Personalized Config -->
-    <div *ngIf="personalizedConfig" class="personalized-config {{module.id}}">
+    <div *ngIf="personalizedConfig?.position === 'after'" class="personalized-config {{module.id}}">
       <ng-container [ngComponentOutlet]="PersonalizedConfig"></ng-container>
     </div>
 
@@ -35,7 +40,7 @@
 <!-- General Inputs -->
 <ng-template #GENERAL_INPUTS>
   <div *ngFor="let section of unsavedGeneralInputs; let cIdx = index; let last = last" class="card w-full bg-base-100 shadow-xl"
-         [ngClass]="{'mt-5': cIdx !== 0, 'mb-5': last && lists?.length > 0}">
+         [ngClass]="{'mt-5': cIdx !== 0 || (cIdx === 0 && personalizedConfig?.position === 'before'), 'mb-5': last && (lists?.length > 0 || personalizedConfig?.position === 'after')}">
 
       <form #f="ngForm" class="card-body" (ngSubmit)="saveGeneralInputs(section, f)">
 
@@ -75,14 +80,22 @@
 <!-- Lists -->
 <ng-template #LISTS>
   <div *ngFor="let list of lists; let lIdx = index; let last = last" class="card w-full bg-base-100 shadow-xl"
-       [ngClass]="{'mt-5': lIdx !== 0, 'mb-5': last && personalizedConfig}">
+       [ngClass]="{'mt-5': lIdx !== 0 || (lIdx === 0 && !generalInputs && personalizedConfig?.position === 'before'),
+                   'mb-5': last && personalizedConfig?.position === 'after'}">
 
     <div class="card-body">
 
-      <!-- List name -->
-      <div class="flex items-center mb-3">
-        <h2 class="card-title mb-0">{{list.name}}</h2>
-        <app-spinner *ngIf="list.loading.action" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+      <!-- Header -->
+      <div class="mb-3">
+
+        <!-- List name -->
+        <div class="flex items-center">
+          <h2 class="card-title mb-0">{{list.name}}</h2>
+          <app-spinner *ngIf="list.loading.action" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+        </div>
+
+        <!-- List description -->
+        <p *ngIf="list.description" class="text-[0.95rem] text-justify text-base-content/75 mt-2">{{list.description}}</p>
       </div>
 
       <!-- Top Actions -->
