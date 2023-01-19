@@ -98,11 +98,16 @@ export class NavbarComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async getNotifications():Promise<void> {
+
     this.notifications = await this.api.getNotifications().toPromise();
 
+
+    this.mode = "notNew";
     // see if there are notifications to be showed
-    for (let i = 0; i < this.notifications.length; i++){
-      if (!this.notifications[i].isShowed === false) {
+    for (let i = 0; i < this.notifications.length; i++) {
+
+      const isShowed = (this.notifications[i].isShowed).toString();
+      if ( isShowed === "0" || isShowed === "false") {
         this.mode = "new";
         break;
       }
@@ -110,20 +115,19 @@ export class NavbarComponent implements OnInit {
   }
 
   async notificationSetShowed(): Promise<void> {
-    this.mode = "notNew";
 
     for (let i = 0; i < this.notifications.length; i++){
-      if (!this.notifications[i].isShowed === false) {
-        console.log("hey");
+
+      const isShowed = (this.notifications[i].isShowed).toString();
+      if ( isShowed === "0" || isShowed === "false") {
         const notificationEdited = await this.api.notificationSetShowed(this.notifications[i].id, true).toPromise();
 
-        // FIXME: Shouldn't change order in notifications array
         const index = this.notifications.findIndex(notification => notification.id === notificationEdited.id);
-        this.notifications.removeAtIndex(index);
-        this.notifications.push(notificationEdited);
+        this.notifications.splice(index, 1, notificationEdited);
       }
     }
-    console.log(this.notifications);
+
+    this.mode = "notNew";
   }
 
 

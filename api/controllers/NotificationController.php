@@ -91,7 +91,7 @@ class NotificationController
      */
     public function createNotification()
     {
-        API::requireValues('course', 'user', 'message', 'isShowed');
+        API::requireValues("course", "user", "message", "isShowed");
 
         $courseId = API::getValue("course", "int");
         $course = API::verifyCourseExists($courseId);

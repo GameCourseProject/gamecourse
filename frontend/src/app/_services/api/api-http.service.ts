@@ -1308,8 +1308,9 @@ export class ApiHttpService {
   }
   */
 
-  public createNotification(course: number, user: number, message: string, isShowed: boolean): Observable<Notification>
+  public createNotification(course: number, user: number, message: string, isShowed?: boolean): Observable<Notification>
   {
+    console.log("AQUI");
     const data = {
       course: course,
       user: user,
