@@ -95,7 +95,7 @@ def get_page_view_logs(target, name=None):
     return connector.get_page_view_logs(target, name)
 
 @rule_function
-def get_participation_lecture_logs(target, lecture_nr):
+def get_participation_lecture_logs(target, lecture_nr=None):
     """
     Gets all lecture participation logs for a specific target.
 
@@ -105,7 +105,7 @@ def get_participation_lecture_logs(target, lecture_nr):
     return connector.get_participation_lecture_logs(target, lecture_nr)
 
 @rule_function
-def get_participation_invited_lecture_logs(target, lecture_nr):
+def get_participation_invited_lecture_logs(target, lecture_nr=None):
     """
     Gets all invited lecture participation logs for a specific target.
 
@@ -175,12 +175,12 @@ def get_skill_logs(target, name=None, rating=None):
     return connector.get_skill_logs(target, name, rating)
 
 @rule_function
-def get_skill_tier_logs(target, tier):
+def get_skill_tier_logs(target, tier, only_min_rating=True):
     """
     Gets skill tier logs for a specific target.
     """
 
-    return connector.get_skill_tier_logs(target, tier)
+    return connector.get_skill_tier_logs(target, tier, only_min_rating)
 
 @rule_function
 def get_url_view_logs(target, name=None):
@@ -431,15 +431,15 @@ def has_wildcard_available(target, skill_tree_id, wildcard_tier):
 ### Awarding items
 
 @rule_effect
-def award(target, type, description, reward, instance=None):
+def award(target, type, description, reward, instance=None, unique=True):
     """
     Awards a single prize to a specific target.
 
-    NOTE: will not retract, but will not award twice.
+    NOTE: will not retract, but will not award twice if unique.
     Updates award if reward has changed.
     """
 
-    connector.award(target, type, description, reward, instance)
+    connector.award(target, type, description, reward, instance, unique)
 
 @rule_effect
 def award_assignment_grade(target, logs, max_xp=1, max_grade=1):
@@ -535,6 +535,28 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
     """
 
     connector.award_skill(target, name, rating, logs, dependencies, use_wildcard)
+
+@rule_effect
+def award_tokens(target, name, reward, repetitions=1, instance=None):
+    """
+    Awards given tokens to a specific target.
+    """
+
+    connector.award_tokens(target, name, reward, repetitions, instance)
+
+
+### Spend items
+
+@rule_effect
+def spend_tokens(target, name, amount, repetitions=1):
+    """
+    Spends a single item of a specific target.
+
+    NOTE: will not retract, but will not spend twice if is unique.
+    Updates if amount has changed.
+    """
+
+    connector.spend_tokens(target, name, amount, repetitions)
 
 
 ### ------------------------------------------------------ ###
@@ -636,34 +658,6 @@ def get_valid_attempts(target, skill):
     Returns number of valid attempts for a given skill
     """
     result = connector.get_valid_attempts(target, skill)
-    return result
-
-@rule_function
-def get_new_total(target, validAttempts, rating):
-    """
-    Checks if user has enough tokens to spend.
-    Returns the user's new wallet total.
-    """
-    (result1, result2) = connector.get_new_total(target, validAttempts, rating)
-    return (result1, result2)
-
-@rule_function
-def remove_tokens(target, tokens = None, skillName = None, contributions=None):
-    """
-    Removes tokens for a specific user.
-    If tokens are given, simply removes.
-    If skillName & contributions are given, removes tokens for skill retries.
-    """
-    result = connector.remove_tokens(target, tokens, skillName, contributions)
-    return result
-
-@rule_function
-def update_wallet(target, newTotal, removed, contributions=None):
-    """
-    Updates 'user_wallet' table with the new total tokens for
-    a user.
-    """
-    result = connector.update_wallet(target, newTotal, removed, contributions)
     return result
 
 @rule_function

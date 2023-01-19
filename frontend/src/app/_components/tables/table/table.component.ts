@@ -139,7 +139,7 @@ export class TableComponent implements OnInit, OnChanges {
                   filterCell.html('');
 
                   // Skip types that are not filterable
-                  if (isFilterable(colType)) {
+                  if (isFilterable(colType, opts, colIdx)) {
                     if (isSelectable(colType)) {
                       // Get all different options of column
                       const title = that.headers[colIdx].label;

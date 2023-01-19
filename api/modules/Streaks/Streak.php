@@ -2,12 +2,9 @@
 namespace GameCourse\Module\Streaks;
 
 use Exception;
-use GameCourse\AutoGame\AutoGame;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\Awards\Awards;
-use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 use Utils\Utils;
@@ -313,16 +310,6 @@ class Streak
             $newTokens = $fieldValues["tokens"];
             if (!is_null($newTokens)) self::validateInteger("tokens", $newTokens);
         }
-        if (key_exists("isExtra", $fieldValues) && $fieldValues["isExtra"]) {
-            $course = $this->getCourse();
-            $xpLevelsModule = new XPLevels($course);
-            if ($xpLevelsModule->isEnabled() && !$xpLevelsModule->getMaxExtraCredit())
-                throw new Exception("You're attempting to set a streak as extra credit while there's no extra credit available to earn. Go to " . XPLevels::NAME . " module and set a max. global extra credit value first.");
-
-            $streaksModule = new Streaks($course);
-            if (!$streaksModule->getMaxExtraCredit())
-                throw new Exception("You're attempting to set a streak as extra credit while there's no streak extra credit available to earn. Set a max. streak extra credit value first.");
-        }
         if (key_exists("isActive", $fieldValues)) {
             $newStatus = $fieldValues["isActive"];
             $oldStatus = $this->isActive();
@@ -341,16 +328,6 @@ class Streak
         }
         if (key_exists("isActive", $fieldValues)) {
             if ($oldStatus != $newStatus) {
-                if (!$newStatus) {
-                    // Remove awards already given
-                    $course = $this->getCourse();
-                    $awardsModule = new Awards($course);
-                    $removed = $awardsModule->removeAwards(null, null, AwardType::STREAK, $this->id);
-
-                    // Re-run AutoGame to propagate changes
-                    if ($removed > 0) AutoGame::run($course->getId(), true);
-                }
-
                 // Update rule status
                 $rule->setActive($newStatus);
             }
@@ -569,13 +546,6 @@ class Streak
 
             // Delete streak from database
             Core::database()->delete(self::TABLE_STREAK, ["id" => $streakId]);
-
-            // Remove awards already given
-            $awardsModule = new Awards(new Course($courseId));
-            $removed = $awardsModule->removeAwards(null, null, AwardType::STREAK, $streakId);
-
-            // Re-run AutoGame to propagate changes
-            if ($removed > 0) AutoGame::run($courseId, true);
         }
     }
 

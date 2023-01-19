@@ -9,4 +9,4 @@ Includes rules for:
 - Labs
 - Presentation
 - Quizzes
-- Skills
+- Skills (0 -> wildcard tier, 1 -> 1st tier, ...)

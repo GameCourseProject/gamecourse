@@ -8,7 +8,3 @@ from gamerules.functions import gamefunctions as gcfuncs
 @rule_effect
 def award_tokens(target, reward_name, tokens = None, contributions=None):
     return gcfuncs.award_tokens(target, reward_name, tokens, contributions)
-
-@rule_effect
-def award_tokens_type(target, type, element_name, to_award):
-    return gcfuncs.award_tokens_type(target, type, element_name, to_award)

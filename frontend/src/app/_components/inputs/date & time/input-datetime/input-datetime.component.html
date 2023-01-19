@@ -3,7 +3,7 @@
   <!-- Label -->
   <label *ngIf="topLabel" class="label cursor-pointer justify-start gap-2" [ngClass]="{'pl-0': helperText}">
     <app-simple-helper *ngIf="helperText" [text]="helperText" [position]="helperPosition"></app-simple-helper>
-    <span class="label-text">{{topLabel}} <span *ngIf="required" class="text-secondary">*</span></span>
+    <span class="label-text" [ngClass]="{'opacity-50': disabled}">{{topLabel}} <span *ngIf="required" class="text-secondary">*</span></span>
   </label>
 
   <!-- Simple Input -->

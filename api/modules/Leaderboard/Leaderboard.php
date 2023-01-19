@@ -55,7 +55,7 @@ class Leaderboard extends Module
 
     public function copyTo(Course $copyTo)
     {
-        // TODO: Implement copy() method.
+        // Nothing to do here
     }
 
     public function disable()

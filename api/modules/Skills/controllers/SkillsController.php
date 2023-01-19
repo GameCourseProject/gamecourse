@@ -77,15 +77,19 @@ class SkillsController
         $course = API::verifyCourseExists($courseId);
 
         API::requireCourseAdminPermission($course);
-        API::requireValues("skillTreeId", "name", "reward");
+        API::requireValues("skillTreeId", "name", "reward", "costType", "cost", "increment", "minRating");
 
         // Get values
         $skillTreeId = API::getValue("skillTreeId", "int");
         $name = API::getValue("name");
         $reward = API::getValue("reward", "int");
+        $costType = API::getValue("costType");
+        $cost = API::getValue("cost", "int");
+        $increment = API::getValue("increment", "int");
+        $minRating = API::getValue("minRating", "int");
 
         // Add new tier
-        Tier::addTier($skillTreeId, $name, $reward);
+        Tier::addTier($skillTreeId, $name, $reward, $costType, $cost, $increment, $minRating);
     }
 
     /**
@@ -99,18 +103,22 @@ class SkillsController
         $course = API::verifyCourseExists($courseId);
 
         API::requireCourseAdminPermission($course);
-        API::requireValues("tierId", "name", "reward", "position", "isActive");
+        API::requireValues("tierId", "name", "reward", "costType", "cost", "increment", "minRating", "position", "isActive");
 
         // Get values
         $tierId = API::getValue("tierId", "int");
         $name = API::getValue("name");
         $reward = API::getValue("reward", "int");
+        $costType = API::getValue("costType");
+        $cost = API::getValue("cost", "int");
+        $increment = API::getValue("increment", "int");
+        $minRating = API::getValue("minRating", "int");
         $position = API::getValue("position", "int");
         $isActive = API::getValue("isActive", "bool");
 
         // Edit skill
         $tier = Tier::getTierById($tierId);
-        $tier->editTier($name, $reward, $position, $isActive);
+        $tier->editTier($name, $reward, $position, $isActive, $costType, $cost, $increment, $minRating);
     }
 
     /**

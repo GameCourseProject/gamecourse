@@ -131,10 +131,12 @@ class BadgesTest extends TestCase
         (new Awards($copyTo))->setEnabled(true);
         $xpLevels = (new XPLevels($copyTo));
         $xpLevels->setEnabled(true);
+        $xpLevels->updateMaxXP(2000);
         $xpLevels->updateMaxExtraCredit(1000);
         $badgesModule = new Badges($copyTo);
         $badgesModule->setEnabled(true);
 
+        $this->module->updateMaxXP(1000);
         $this->module->updateMaxExtraCredit(500);
         $badge1 = Badge::addBadge($this->course->getId(), "Badge1", "Perform action", false, false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
@@ -151,6 +153,7 @@ class BadgesTest extends TestCase
         $this->module->copyTo($copyTo);
 
         // Then
+        $this->assertEquals($this->module->getMaxXP(), $badgesModule->getMaxXP());
         $this->assertEquals($this->module->getMaxExtraCredit(), $badgesModule->getMaxExtraCredit());
 
         $badges = Badge::getBadges($this->course->getId());
@@ -205,9 +208,30 @@ class BadgesTest extends TestCase
     /**
      * @test
      */
+    public function getMaxXP()
+    {
+        $this->assertNull($this->module->getMaxXP());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function updateMaxXP()
+    {
+        $this->module->updateMaxXP(1000);
+        $this->assertEquals(1000, $this->module->getMaxXP());
+
+        $this->module->updateMaxXP(null);
+        $this->assertNull($this->module->getMaxXP());
+    }
+
+    /**
+     * @test
+     */
     public function getMaxExtraCredit()
     {
-        $this->assertEquals(0, $this->module->getMaxExtraCredit());
+        $this->assertNull($this->module->getMaxExtraCredit());
     }
 
     /**
@@ -218,6 +242,9 @@ class BadgesTest extends TestCase
     {
         $this->module->updateMaxExtraCredit(1000);
         $this->assertEquals(1000, $this->module->getMaxExtraCredit());
+
+        $this->module->updateMaxExtraCredit(null);
+        $this->assertNull($this->module->getMaxExtraCredit());
     }
 
 

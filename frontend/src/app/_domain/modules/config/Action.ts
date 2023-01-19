@@ -5,6 +5,7 @@ export enum Action {
   REMOVE = 'remove',
   DUPLICATE = 'duplicate',
   VIEW = 'view',
+  VIEW_RULE = 'view-rule',
   MOVE_UP = 'move-up',
   MOVE_DOWN = 'move-down',
   IMPORT = 'import',
@@ -23,7 +24,7 @@ export enum ActionScope {
   ALL_BUT_TWO_LAST = 'all-but-two-last'
 }
 
-export function scopeAllows(scope: ActionScope, nrItems: number, index: number): boolean {
+export function scopeAllows(scope: ActionScope | string, nrItems: number, index: number): boolean {
   const first = index === 0;
   const last = index === nrItems - 1;
   const even = index % 2 === 0;
@@ -38,5 +39,8 @@ export function scopeAllows(scope: ActionScope, nrItems: number, index: number):
   if (scope === ActionScope.ALL_BUT_LAST && !last) return true;
   if (scope === ActionScope.ALL_BUT_FIRST_AND_LAST && !first && !last) return true;
   if (scope === ActionScope.ALL_BUT_TWO_LAST && index < nrItems - 2) return true;
-  return false;
+
+  // ALL_BUT_INDEXES (format: "[0, 3]")
+  const indexes = scope.slice(1, -1).split(",").map(i => parseInt(i.trim()));
+  return !indexes.includes(index);
 }

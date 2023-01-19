@@ -63,6 +63,7 @@ export class TableData implements OnInit {
   buttonText?: string;                                          // Button text
   buttonColor?: 'ghost' | 'primary' | 'secondary' | 'accent'
     | 'neutral' | 'info' | 'success' | 'warning' | 'error';     // Button color
+  buttonStyle?: 'default' | 'outline' = 'default';              // Button style
   buttonIcon?: string;                                          // Button icon
 
   // Type: AVATAR
@@ -184,6 +185,7 @@ export class TableData implements OnInit {
     } else if (this.type === TableDataType.BUTTON) {
       this.buttonText = this.data.buttonText;
       this.buttonColor = this.data.buttonColor ?? null;
+      this.buttonStyle = this.data.buttonStyle ?? null;
       this.buttonIcon = this.data.buttonIcon ?? null;
 
     } else if (this.type === TableDataType.AVATAR) {
@@ -256,7 +258,7 @@ export enum TableDataType {
   COLOR = 'color',          // params -> color: string, colorLabel?: string
   IMAGE = 'image',          // params -> imgSrc: string, imgShape?: round | square
   PILL = 'pill',            // params -> pillText: string, pillColor?: string
-  BUTTON = 'button',        // params -> buttonText: string, buttonColor?: string, buttonIcon?: string
+  BUTTON = 'button',        // params -> buttonText: string, buttonColor?: string, buttonStyle?: string, buttonIcon?: string
   AVATAR = 'avatar',        // params -> avatarSrc: string, avatarTitle: string, avatarSubtitle?: string
   CHECKBOX = 'checkbox',    // params -> checkboxId: string, checkboxValue: boolean, checkboxColor?: string, checkboxDisabled?: boolean
   RADIO = 'radio',          // params -> radioId: string, radioGroup: string, radioOptionValue: any, radioValue: any, radioColor?: string, radioDisabled?: boolean
@@ -281,7 +283,11 @@ export function getValue(data: {type: TableDataType, content: any}): string {
   return '';
 }
 
-export function isFilterable(type: TableDataType): boolean {
+export function isFilterable(type: TableDataType, options, index): boolean {
+  for (const option of options['columnDefs']) {
+    if (option.hasOwnProperty('filterable') && !option['filterable'] && option.hasOwnProperty('targets') && option['targets'].includes(index))
+      return false;
+  }
   return type !== TableDataType.IMAGE && type !== TableDataType.BUTTON && type !== TableDataType.ACTIONS;
 }
 

@@ -124,6 +124,10 @@ class TierTest extends TestCase
         foreach ($names as $d1 => $name) {
             $provider["name: " . $d1 . " | reward: 100"] = [$name, 100];
         }
+        $provider["with fixed cost"] = ["Tier 1", 100, "fixed", 10, 0];
+        $provider["with variable cost"] = ["Tier 1", 100, "variable", 10, 5];
+        $provider["with variable cost; not default min. rating"] = ["Tier 1", 100, "variable", 10, 5, 0];
+
         return $provider;
     }
 
@@ -222,6 +226,46 @@ class TierTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function getCostType()
+    {
+        $tier = Tier::addTier($this->skillTreeId, "Tier", 100);
+        $this->assertEquals("fixed", $tier->getCostType());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getCost()
+    {
+        $tier = Tier::addTier($this->skillTreeId, "Tier", 100);
+        $this->assertEquals(0, $tier->getCost());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getIncrement()
+    {
+        $tier = Tier::addTier($this->skillTreeId, "Tier", 100);
+        $this->assertEquals(0, $tier->getIncrement());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getMinRating()
+    {
+        $tier = Tier::addTier($this->skillTreeId, "Tier", 100);
+        $this->assertEquals(3, $tier->getMinRating());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function isActive()
     {
         $tier = Tier::addTier($this->skillTreeId, "Tier", 100);
@@ -266,8 +310,8 @@ class TierTest extends TestCase
     public function getData()
     {
         $tier = Tier::addTier($this->skillTreeId, "Tier", 100);
-        $this->assertEquals(["id" => 2, "skillTree" => $this->skillTreeId, "name" => "Tier", "reward" => 100,
-            "position" => 0, "isActive" => true], $tier->getData());
+        $this->assertEquals(["id" => 2, "skillTree" => $this->skillTreeId, "name" => "Tier", "reward" => 100, "position" => 0,
+            "isActive" => true, "costType" => "fixed", "cost" => 0, "increment" => 0, "minRating" => 3], $tier->getData());
     }
 
 
@@ -375,6 +419,59 @@ class TierTest extends TestCase
         $this->assertEquals(2, $tier1->getPosition());
         $this->assertEquals(0, $tier2->getPosition());
         $this->assertEquals(1, $tier3->getPosition());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setCostType()
+    {
+        // Variable
+        $tier = Tier::addTier($this->skillTreeId, "Tier", 100);
+        $tier->setCostType("variable");
+        $this->assertEquals("variable", $tier->getCostType());
+
+        // Fixed
+        $tier->setIncrement(10);
+        $tier->setMinRating(0);
+        $tier->setCostType("fixed");
+        $this->assertEquals("fixed", $tier->getCostType());
+        $this->assertEquals(0, $tier->getIncrement());
+        $this->assertEquals(3, $tier->getMinRating());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setCost()
+    {
+        $tier = Tier::addTier($this->skillTreeId, "Tier", 100);
+        $tier->setCost(10);
+        $this->assertEquals(10, $tier->getCost());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setIncrement()
+    {
+        $tier = Tier::addTier($this->skillTreeId, "Tier", 100);
+        $tier->setIncrement(10);
+        $this->assertEquals(10, $tier->getIncrement());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setMinRating()
+    {
+        $tier = Tier::addTier($this->skillTreeId, "Tier", 100);
+        $tier->setMinRating(0);
+        $this->assertEquals(0, $tier->getMinRating());
     }
 
     /**
@@ -539,12 +636,15 @@ class TierTest extends TestCase
         $this->assertIsArray($tiers);
         $this->assertCount(5, $tiers);
 
-        $keys = ["id", "skillTree", "name", "reward", "position", "isActive"];
+        $keys = ["id", "skillTree", "name", "reward", "position", "isActive", "costType", "cost", "increment", "minRating"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($tiers as $i => $tier) {
                 $this->assertCount($nrKeys, array_keys($tier));
                 $this->assertArrayHasKey($key, $tier);
+                if ($key === "costType") $this->assertEquals("fixed", ${"tier".($i+1)}->getData($key));
+                if ($key === "cost" || $key === "increment") $this->assertEquals(0, ${"tier".($i+1)}->getData($key));
+                if ($key === "minRating") $this->assertEquals(3, ${"tier".($i+1)}->getData($key));
                 $this->assertEquals($tier[$key], ${"tier".($i+1)}->getData($key));
             }
         }
@@ -570,12 +670,15 @@ class TierTest extends TestCase
         $this->assertIsArray($tiers);
         $this->assertCount(4, $tiers);
 
-        $keys = ["id", "skillTree", "name", "reward", "position", "isActive"];
+        $keys = ["id", "skillTree", "name", "reward", "position", "isActive", "costType", "cost", "increment", "minRating"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($tiers as $i => $tier) {
                 $this->assertCount($nrKeys, array_keys($tier));
                 $this->assertArrayHasKey($key, $tier);
+                if ($key === "costType") $this->assertEquals("fixed", ${"tier".($i+1)}->getData($key));
+                if ($key === "cost" || $key === "increment") $this->assertEquals(0, ${"tier".($i+1)}->getData($key));
+                if ($key === "minRating") $this->assertEquals(3, ${"tier".($i+1)}->getData($key));
                 $this->assertEquals($tier[$key], ${"tier".($i+2)}->getData($key));
             }
         }
@@ -602,12 +705,15 @@ class TierTest extends TestCase
         $this->assertIsArray($tiers);
         $this->assertCount(2, $tiers);
 
-        $keys = ["id", "skillTree", "name", "reward", "position", "isActive"];
+        $keys = ["id", "skillTree", "name", "reward", "position", "isActive", "costType", "cost", "increment", "minRating"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($tiers as $i => $tier) {
                 $this->assertCount($nrKeys, array_keys($tier));
                 $this->assertArrayHasKey($key, $tier);
+                if ($key === "costType") $this->assertEquals("fixed", ${"tier".($i+1)}->getData($key));
+                if ($key === "cost" || $key === "increment") $this->assertEquals(0, ${"tier".($i+1)}->getData($key));
+                if ($key === "minRating") $this->assertEquals(3, ${"tier".($i+1)}->getData($key));
                 $this->assertEquals($tier[$key], ${"tier".($i+1)}->getData($key));
             }
         }
@@ -631,12 +737,15 @@ class TierTest extends TestCase
         $this->assertIsArray($tiers);
         $this->assertCount(5, $tiers);
 
-        $keys = ["id", "skillTree", "name", "reward", "position", "isActive"];
+        $keys = ["id", "skillTree", "name", "reward", "position", "isActive", "costType", "cost", "increment", "minRating"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($tiers as $i => $tier) {
                 $this->assertCount($nrKeys, array_keys($tier));
                 $this->assertArrayHasKey($key, $tier);
+                if ($key === "costType") $this->assertEquals("fixed", ${"tier".($i+1)}->getData($key));
+                if ($key === "cost" || $key === "increment") $this->assertEquals(0, ${"tier".($i+1)}->getData($key));
+                if ($key === "minRating") $this->assertEquals(3, ${"tier".($i+1)}->getData($key));
                 $this->assertEquals($tier[$key], ${"tier".($i+1)}->getData($key));
             }
         }
@@ -657,12 +766,15 @@ class TierTest extends TestCase
         $this->assertIsArray($tiers);
         $this->assertCount(2, $tiers);
 
-        $keys = ["id", "skillTree", "name", "reward", "position", "isActive"];
+        $keys = ["id", "skillTree", "name", "reward", "position", "isActive", "costType", "cost", "increment", "minRating"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($tiers as $i => $tier) {
                 $this->assertCount($nrKeys, array_keys($tier));
                 $this->assertArrayHasKey($key, $tier);
+                if ($key === "costType") $this->assertEquals("fixed", ${"tier".($i+1)}->getData($key));
+                if ($key === "cost" || $key === "increment") $this->assertEquals(0, ${"tier".($i+1)}->getData($key));
+                if ($key === "minRating") $this->assertEquals(3, ${"tier".($i+1)}->getData($key));
                 $this->assertEquals($tier[$key], ${"tier".($i+1)}->getData($key));
             }
         }
@@ -683,12 +795,15 @@ class TierTest extends TestCase
         $this->assertIsArray($tiers);
         $this->assertCount(3, $tiers);
 
-        $keys = ["id", "skillTree", "name", "reward", "position", "isActive"];
+        $keys = ["id", "skillTree", "name", "reward", "position", "isActive", "costType", "cost", "increment", "minRating"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($tiers as $i => $tier) {
                 $this->assertCount($nrKeys, array_keys($tier));
                 $this->assertArrayHasKey($key, $tier);
+                if ($key === "costType") $this->assertEquals("fixed", ${"tier".($i+1)}->getData($key));
+                if ($key === "cost" || $key === "increment") $this->assertEquals(0, ${"tier".($i+1)}->getData($key));
+                if ($key === "minRating") $this->assertEquals(3, ${"tier".($i+1)}->getData($key));
                 $this->assertEquals($tier[$key], ${"tier".($i+1)}->getData($key));
             }
         }
@@ -710,12 +825,15 @@ class TierTest extends TestCase
         $this->assertIsArray($tiers);
         $this->assertCount(2, $tiers);
 
-        $keys = ["id", "skillTree", "name", "reward", "position", "isActive"];
+        $keys = ["id", "skillTree", "name", "reward", "position", "isActive", "costType", "cost", "increment", "minRating"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($tiers as $i => $tier) {
                 $this->assertCount($nrKeys, array_keys($tier));
                 $this->assertArrayHasKey($key, $tier);
+                if ($key === "costType") $this->assertEquals("fixed", ${"tier".($i+1)}->getData($key));
+                if ($key === "cost" || $key === "increment") $this->assertEquals(0, ${"tier".($i+1)}->getData($key));
+                if ($key === "minRating") $this->assertEquals(3, ${"tier".($i+1)}->getData($key));
                 $this->assertEquals($tier[$key], ${"tier".($i+2)}->getData($key));
             }
         }
@@ -738,12 +856,15 @@ class TierTest extends TestCase
         $this->assertIsArray($tiers);
         $this->assertCount(2, $tiers);
 
-        $keys = ["id", "skillTree", "name", "reward", "position", "isActive"];
+        $keys = ["id", "skillTree", "name", "reward", "position", "isActive", "costType", "cost", "increment", "minRating"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($tiers as $i => $tier) {
                 $this->assertCount($nrKeys, array_keys($tier));
                 $this->assertArrayHasKey($key, $tier);
+                if ($key === "costType") $this->assertEquals("fixed", ${"tier".($i+1)}->getData($key));
+                if ($key === "cost" || $key === "increment") $this->assertEquals(0, ${"tier".($i+1)}->getData($key));
+                if ($key === "minRating") $this->assertEquals(3, ${"tier".($i+1)}->getData($key));
                 $this->assertEquals($tier[$key], ${"tier".($i+1)}->getData($key));
             }
         }
@@ -763,7 +884,7 @@ class TierTest extends TestCase
         $this->assertIsArray($tiers);
         $this->assertCount(3, $tiers);
 
-        $keys = ["id", "skillTree", "name", "reward", "position", "isActive"];
+        $keys = ["id", "skillTree", "name", "reward", "position", "isActive", "costType", "cost", "increment", "minRating"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($tiers as $i => $tier) {
@@ -796,9 +917,10 @@ class TierTest extends TestCase
      * @dataProvider tierSuccessProvider
      * @throws Exception
      */
-    public function addTierSuccess(string $name, int $reward)
+    public function addTierSuccess(string $name, int $reward, string $costType = null, int $cost = null,
+                                   int $increment = null, int $minRating = null)
     {
-        $tier = Tier::addTier($this->skillTreeId, $name, $reward);
+        $tier = Tier::addTier($this->skillTreeId, $name, $reward, $costType, $cost, $increment, $minRating);
 
         // Check is added to database
         $tierDB = Tier::getTiers($this->courseId)[0];

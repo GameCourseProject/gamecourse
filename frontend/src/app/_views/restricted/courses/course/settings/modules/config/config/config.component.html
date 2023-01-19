@@ -116,19 +116,19 @@
 <app-modal *ngIf="mode && itemToManage"
    [id]="'manage'"
    [templateRef]="MANAGE"
-   [size]="itemToManage.list[mode === 'create' ? Action.NEW : Action.EDIT]['modalSize'] ?? 'sm'"
-   [header]="mode?.capitalize() + ' ' + itemToManage.list.itemName"
+   [size]="itemToManage.list[getConfigKey()]['modalSize'] ?? 'sm'"
+   [header]="mode?.capitalize() + ' ' + (itemToManage.list.itemName ?? '')"
    [closeBtnText]="'Discard ' + (mode === 'create' ? itemToManage.list.itemName : 'changes')"
-   [submitBtnText]="mode?.capitalize() + ' ' + itemToManage.list.itemName"
+   [submitBtnText]="mode?.capitalize() + ' ' + (itemToManage.list.itemName ?? '')"
    [actionInProgress]="itemToManage.list.loading.action"
-   (submitBtnClicked)="fManage.onSubmit(null); doAction(itemToManage.list, mode === 'create' ? Action.NEW : Action.EDIT)"
+   (submitBtnClicked)="fManage.onSubmit(null); doAction(itemToManage.list, getConfigKey())"
    (onClose)="resetManage()">
 </app-modal>
 
 <ng-template #MANAGE>
   <form #fManage="ngForm" class="overflow-x-hidden p-1 !-mx-1">
 
-    <ng-container *ngFor="let artifact of itemToManage.list[mode === 'create' ? Action.NEW : Action.EDIT]['contents']; let i = index">
+    <ng-container *ngFor="let artifact of itemToManage.list[getConfigKey()]['contents']; let i = index">
       <ng-container
         [ngTemplateOutlet]="ARTIFACT"
         [ngTemplateOutletContext]="{artifact, form: fManage, index: i}">

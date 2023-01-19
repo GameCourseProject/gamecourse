@@ -7,9 +7,7 @@ use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\Awards\Awards;
-use GameCourse\Module\Awards\AwardType;
-use GameCourse\Module\XPLevels\XPLevels;
+use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use Utils\Utils;
 use ZipArchive;
 
@@ -22,6 +20,7 @@ class Skill
     const TABLE_SKILL = "skill";
     const TABLE_SKILL_DEPENDENCY = "skill_dependency";
     const TABLE_SKILL_DEPENDENCY_COMBO = "skill_dependency_combo";
+    const TABLE_SKILL_PROGRESSION = "skill_progression";
 
     const HEADERS = [   // headers for import/export functionality
         "name", "color", "page", "isCollab", "isExtra", "isActive", "position"
@@ -234,15 +233,6 @@ class Skill
                 self::updatePageURLs($fieldValues["page"], $oldSkillName, $newSkillName, "relative");
             }
         }
-        if (key_exists("isExtra", $fieldValues) && $fieldValues["isExtra"]) {
-            $xpLevelsModule = new XPLevels($course);
-            if ($xpLevelsModule->isEnabled() && !$xpLevelsModule->getMaxExtraCredit())
-                throw new Exception("You're attempting to set a skill as extra credit while there's no extra credit available to earn. Go to " . XPLevels::NAME . " module and set a max. global extra credit value first.");
-
-            $skillsModule = new Skills($course);
-            if (!$skillsModule->getMaxExtraCredit())
-                throw new Exception("You're attempting to set a skill as extra credit while there's no skill extra credit available to earn. Set a max. skill extra credit value first.");
-        }
         if (key_exists("position", $fieldValues)) {
             $newPosition = $fieldValues["position"];
             $oldPosition = $this->getPosition();
@@ -309,14 +299,6 @@ class Skill
                         if (empty($wildcardTier->getSkills(true)))
                             self::removeAllWildcardDependencies($skillTreeId);
                     }
-
-                    // Remove awards already given
-                    $course = $this->getCourse();
-                    $awardsModule = new Awards($course);
-                    $removed = $awardsModule->removeAwards(null, null, AwardType::SKILL, $this->id);
-
-                    // Re-run AutoGame to propagate changes
-                    if ($removed > 0) AutoGame::run($course->getId(), true);
                 }
 
                 // Update rule status
@@ -650,13 +632,6 @@ class Skill
 
             // Delete skill from database
             Core::database()->delete(self::TABLE_SKILL, ["id" => $skillId]);
-
-            // Remove awards already given
-            $awardsModule = new Awards(new Course($courseId));
-            $removed = $awardsModule->removeAwards(null, null, AwardType::SKILL, $skillId);
-
-            // Re-run AutoGame to propagate changes
-            if ($removed > 0) AutoGame::run($courseId, true);
         }
     }
 
@@ -956,6 +931,39 @@ class Skill
             }
         }
         return false;
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ----------------------- Cost ----------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets skill cost in tokens for a given user.
+     *
+     * @param int $userId
+     * @return int
+     * @throws Exception
+     */
+    public function getSkillCostForUser(int $userId): int
+    {
+        $course = $this->getCourse();
+        $skillsModule = new Skills($course);
+        $skillsModule->checkDependency(VirtualCurrency::ID);
+
+        // Get tier cost info
+        $tier = $this->getTier();
+        $tierInfo = $tier->getData("costType, cost, increment, minRating");
+
+        // Get skill cost for user
+        if ($tierInfo["costType"] === "fixed") return $tierInfo["cost"];
+
+        $name = $this->getName();
+        $nrAttempts = count(array_filter(AutoGame::getParticipations($course->getId(), $userId, "graded post"),
+            function ($item) use ($name, $tierInfo) {
+                return $item["description"] === "Skill Tree, Re: $name" && $item["rating"] >= $tierInfo["minRating"];
+        }));
+        return $tierInfo["cost"] + $tierInfo["increment"] * $nrAttempts;
     }
 
 
