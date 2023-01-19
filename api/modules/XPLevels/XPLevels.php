@@ -323,7 +323,7 @@ class XPLevels extends Module
     /**
      * @throws Exception
      */
-    public function saveListingItem(string $listName, string $action, array $item)
+    public function saveListingItem(string $listName, string $action, array $item): ?string
     {
         $courseId = $this->course->getId();
         if ($listName == "Levels") {
@@ -333,6 +333,8 @@ class XPLevels extends Module
                 $level->editLevel($item["minXP"], $item["description"]);
             } elseif ($action == Action::DELETE) Level::deleteLevel($item["id"]);
         }
+
+        return null;
     }
 
     /**

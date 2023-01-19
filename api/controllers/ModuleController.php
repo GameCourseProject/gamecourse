@@ -86,7 +86,7 @@ class ModuleController
             $listName = API::getValue("listName");
             $action = API::getValue("action");
             $item = API::getValue("listingItem");
-            $module->saveListingItem($listName, $action, $item);
+            API::response($module->saveListingItem($listName, $action, $item));
         }
 
         // NOTE: personalized config should have its own API requests

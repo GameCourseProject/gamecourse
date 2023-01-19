@@ -42,7 +42,7 @@ export class ConfigComponent implements OnInit {
   lists: List[];
   personalizedConfig: string;
 
-  mode: 'create' | 'duplicate' | 'edit' | 'delete';
+  mode: 'create' | 'duplicate' | 'edit' | 'delete' | string;
   itemToManage: ItemManageData;
   @ViewChild('fManage', { static: false }) fManage: NgForm;
 
@@ -242,7 +242,12 @@ export class ConfigComponent implements OnInit {
       this.itemToManage = this.initItemToManage(list);
       ModalService.openModal('manage');
 
-    } else if (action === Action.NEW || action === Action.DUPLICATE || action === Action.EDIT || action === Action.DELETE) {
+    } else if (list.hasOwnProperty(action) && list[action].hasOwnProperty("contents") && !ModalService.isOpen('manage')) {
+      this.mode = action;
+      this.itemToManage = this.initItemToManage(list);
+      ModalService.openModal('manage');
+
+    } else {
       if (action !== Action.DUPLICATE && action !== Action.DELETE)
         if (!this.fManage.valid) {
           AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -252,14 +257,13 @@ export class ConfigComponent implements OnInit {
       list.loading.action = true;
 
       try {
-        await this.api.saveModuleConfig(this.course.id, this.module.id, null, this.getItemToManage(), list.name, action).toPromise();
+        let successMsg = await this.api.saveModuleConfig(this.course.id, this.module.id, null, this.getItemToManage(), list.name, action).toPromise();
         await this.getModuleConfig(this.module.id);
 
         list.loading.action = false;
         ModalService.closeModal('manage');
         this.resetManage();
 
-        let successMsg = "";
         if (action === Action.NEW || action === Action.DUPLICATE) successMsg = 'New ' + list.itemName + ' created';
         else if (action === Action.EDIT) successMsg = list.itemName.capitalize() + ' edited';
         else if (action === Action.DELETE) successMsg = list.itemName.capitalize() + ' deleted';
@@ -306,6 +310,11 @@ export class ConfigComponent implements OnInit {
 
     } else if (action === Action.EXPORT) {
       this.exportItems(list, [itemToActOn]);
+
+    } else {
+      this.mode = action;
+      this.itemToManage = this.initItemToManage(list, itemToActOn, row);
+      ModalService.openModal('manage');
     }
   }
 
@@ -359,7 +368,7 @@ export class ConfigComponent implements OnInit {
     else await ResourceManager.getText(files.item(0)).then(data => artifact.value = data);
   }
 
-  scopeAllows(scope: ActionScope): boolean {
+  scopeAllows(scope: ActionScope | string): boolean {
     if (!scope) return true;
     return scopeAllows(scope, this.itemToManage.list.data.length, this.itemToManage.index);
   }
@@ -442,8 +451,9 @@ export class ConfigComponent implements OnInit {
   // Lists
 
   initItemToManage(list: List, item?: any, index?: number): ItemManageData {
-    const itemData = item ? _.cloneDeep(item) : getEmptyItem(list[Action.NEW].contents, {});
-    initValues(list[this.mode === 'create' ? Action.NEW : Action.EDIT]['contents'], itemData);
+    const itemData = item ? _.cloneDeep(item) : getEmptyItem(list[this.mode === 'create' ? Action.NEW : this.mode].contents, {});
+    if (this.mode === 'create' || this.mode === 'edit')
+      initValues(list[this.mode === 'create' ? Action.NEW : this.mode]['contents'], itemData);
     return {
       list: list,
       item: itemData,
@@ -468,7 +478,7 @@ export class ConfigComponent implements OnInit {
   }
 
   getItemToManage(): ItemManageData {
-    getItem(this.itemToManage.list[this.mode === 'create' ? Action.NEW : Action.EDIT]['contents'], this.itemToManage.item);
+    getItem(this.itemToManage.list[this.mode === 'create' ? Action.NEW : this.mode]['contents'], this.itemToManage.item);
     return this.nullifyEmptyValues(this.itemToManage.item);
 
     function getItem(contents: (ConfigInputContainer|ConfigInputItem)[], item: any): any {
@@ -527,7 +537,7 @@ export type List = {
       color?: 'ghost' | 'primary' | 'secondary' | 'accent' | 'neutral' | 'info' | 'success' | 'warning' | 'error'}[]},
   headers: {label: string, align?: 'left' | 'middle' | 'right'}[],
   data: {type: TableDataType, content: any}[][],
-  actions?: {action: Action | string, scope: ActionScope, icon?: string, color?: 'ghost' | 'primary' | 'secondary' |
+  actions?: {action: Action | string, scope: ActionScope | string, icon?: string, color?: 'ghost' | 'primary' | 'secondary' |
       'accent' | 'neutral' | 'info' | 'success' | 'warning' | 'error', disabled?: boolean}[],
   options?: any,
   loading: {

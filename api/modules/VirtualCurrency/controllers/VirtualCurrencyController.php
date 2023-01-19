@@ -63,4 +63,31 @@ class VirtualCurrencyController
         $VCModule = new VirtualCurrency($course);
         API::response($VCModule->getUserTokens($userId));
     }
+
+    /**
+     * Exchanges tokens for XP.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function exchangeUserTokens()
+    {
+        API::requireValues("courseId", "userId", "ratio", "threshold");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $userId = API::getValue("users", "int");
+        $parts = explode(":", API::getValue("ratio"));
+        $ratio = round(intval($parts[0]) / intval($parts[1]));
+        $threshold = API::getValue("threshold", "int");
+
+        $VCModule = new VirtualCurrency($course);
+        if (!$VCModule->hasExchanged($userId))
+            $earnedXP = $VCModule->exchangeTokensForXP($userId, $ratio, $threshold);
+
+        API::response($earnedXP);
+    }
 }

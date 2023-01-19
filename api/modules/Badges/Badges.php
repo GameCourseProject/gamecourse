@@ -813,7 +813,7 @@ class Badges extends Module
     /**
      * @throws Exception
      */
-    public function saveListingItem(string $listName, string $action, array $item)
+    public function saveListingItem(string $listName, string $action, array $item): ?string
     {
         $courseId = $this->course->getId();
         if ($listName == "Badges") {
@@ -860,6 +860,8 @@ class Badges extends Module
 
             } elseif ($action == Action::DELETE) Badge::deleteBadge($item["id"]);
         }
+
+        return null;
     }
 
     /**

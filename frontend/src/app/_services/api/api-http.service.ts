@@ -1013,7 +1013,7 @@ export class ApiHttpService {
   }
 
   public saveModuleConfig(courseID: number, moduleID: string, generalInputs?: ConfigInputItem[], listingItem?: any,
-                          listName?: string, action?: Action): Observable<void> {
+                          listName?: string, action?: Action | string): Observable<string> {
     const data = {
       "courseId": courseID,
       "moduleId": moduleID,
@@ -1033,7 +1033,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+      .pipe( map((res: any) => res['data']) );
   }
 
   // TODO: refactor
@@ -1827,6 +1827,24 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']) );
+  }
+
+  public exchangeUserTokens(courseID: number, userIds: number[], ratio: string, threshold: number): Observable<void | number> {
+    const data = {
+      courseId: courseID,
+      users: userIds,
+      ratio,
+      threshold
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.VIRTUAL_CURRENCY);
+      qs.push('request', 'exchangeUserTokens');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
   }
 
 

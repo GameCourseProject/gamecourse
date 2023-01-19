@@ -16,6 +16,7 @@ use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\XPLevels\XPLevels;
+use GameCourse\User\User;
 use Utils\Utils;
 
 /**
@@ -147,7 +148,7 @@ class VirtualCurrency extends Module
         $name = $this->getVCName();
         $img = $this->getImage();
 
-        return [
+        $lists = [
             [
                 "name" => "Settings",
                 "itemName" => "settings",
@@ -218,13 +219,172 @@ class VirtualCurrency extends Module
                 ]
             ]
         ];
+
+        // Exchange tokens, if XP & Levels enabled
+        $xpModule = $this->course->getModuleById(XPLevels::ID);
+        if ($xpModule && $xpModule->isEnabled()) {
+            $wallets = Core::database()->selectMultiple(self::TABLE_WALLET . " w LEFT JOIN user u on w.user=u.id", [
+                "course" => $this->course->getId()
+            ], "w.*, u.name");
+            $wallets = array_map(function ($userWallet) {
+                $userWallet["ratio"] = null;
+                $userWallet["threshold"] = null;
+                return $userWallet;
+            }, $wallets);
+            usort($wallets, function ($a, $b) { return strcmp($a["name"], $b["name"]); });
+
+            $exchanged = array_filter($wallets, function ($userWallet) { return $userWallet["exchanged"] || intval($userWallet["tokens"]) <= 0; });
+            $exchanged = array_map(function ($userWallet, $index) { return $index; }, $exchanged, array_keys($exchanged));
+            $scope = "[" . implode(", ", $exchanged) . "]";
+
+            $lists[] = [
+                "name" => "Exchanging $name",
+                "itemName" => null,
+                "topActions" => [
+                    "right" => [
+                        ["action" => "Exchange multiple", "icon" => "feather-repeat", "color" => "success"]
+                    ]
+                ],
+                "headers" => [
+                    ["label" => "Student", "align" => "left"],
+                    ["label" => "Student Nr", "align" => "middle"],
+                    ["label" => "Exchanged", "align" => "left"],
+                    ["label" => "Total", "align" => "middle"]
+                ],
+                "data" => array_map(function ($userWallet) use ($name, $img) {
+                    $user = User::getUserById($userWallet["user"]);
+                    $userImg = $user->getImage() ?? URL . "/assets/imgs/user-" . (Core::getLoggedUser()->getTheme() ?? "light") . ".png";
+                    $tokens = self::getUserTokens($user->getId());
+                    return [
+                        ["type" => DataType::AVATAR, "content" => ["avatarSrc" => $userImg , "avatarTitle" => $user->getName(), "avatarSubtitle" => $user->getMajor()]],
+                        ["type" => DataType::NUMBER, "content" => ["value" => $user->getStudentNumber(), "valueFormat" => "none"]],
+                        ["type" => DataType::COLOR, "content" => ["color" => $userWallet["exchanged"] ? "#36D399" : "#EF6060", "colorLabel" => $userWallet["exchanged"] ? "Exchanged $name" : "Hasn't exchanged yet"]],
+                        ["type" => DataType::CUSTOM, "content" => ["html" => "<div class='flex items-center justify-center'>
+                            <span class='prose text-sm'>$tokens</span><img class='h-4 w-4 object-contain ml-2' src='$img'></div>", "searchBy" => strval($tokens)]],
+                    ];
+                }, $wallets),
+                "actions" => [
+                    ["action" => 'Exchange ' . $name, "icon" => 'feather-repeat', "color" => "success", "scope" => $scope]
+                ],
+                "options" => [
+                    "order" => [[0, "asc"]],
+                    "columnDefs" => [
+                        ["type" => "natural", "targets" => [0, 1, 3]],
+                        ["searchable" => false, "targets" => [2]],
+                        ["filterable" => false, "targets" => [2]],
+                        ["orderable" => false, "targets" => [2]]
+                    ]
+                ],
+                "items" => $wallets,
+                "Exchange multiple" => [
+                    "modalSize" => "sm",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "full",
+                                    "type" => InputType::SELECT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "users",
+                                    "placeholder" => "Select students to exchange $name",
+                                    "options" => [
+                                        "options" => array_map(function ($userWallet) {
+                                            return ["value" => "id-" . $userWallet["user"], "text" => $userWallet["name"]];
+                                        }, $wallets),
+                                        "multiple" => true,
+                                        "closeOnSelect" => false,
+                                        "hideSelectedOption" => true,
+                                        "topLabel" => "Students",
+                                        "required" => true
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "ratio",
+                                    "placeholder" => "2:1 (double), 1:1 (same), ...",
+                                    "options" => [
+                                        "topLabel" => "Ratio",
+                                        "required" => true
+                                    ],
+                                    "helper" => "How many XP per 1 " . $name
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "threshold",
+                                    "placeholder" => "Threshold",
+                                    "options" => [
+                                        "topLabel" => "Threshold"
+                                    ],
+                                    "helper" => "Max. $name that can be exchanged"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                "Exchange $name" => [
+                    "modalSize" => "sm",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "ratio",
+                                    "placeholder" => "2:1 (double), 1:1 (same), ...",
+                                    "options" => [
+                                        "topLabel" => "Ratio",
+                                        "required" => true
+                                    ],
+                                    "helper" => "How many XP per 1 " . $name
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "threshold",
+                                    "placeholder" => "Threshold",
+                                    "options" => [
+                                        "topLabel" => "Threshold"
+                                    ],
+                                    "helper" => "Max. $name that can be exchanged"
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+        }
+
+        return $lists;
     }
 
     /**
      * @throws Exception
      */
-    public function saveListingItem(string $listName, string $action, array $item)
+    public function saveListingItem(string $listName, string $action, array $item): ?string
     {
+        $name = $this->getVCName();
+
         if ($listName == "Settings") {
             if ($action == Action::EDIT) {
                 // Set name
@@ -234,7 +394,29 @@ class VirtualCurrency extends Module
                 if (isset($item["image"]) && !Utils::strStartsWith($item["image"], API_URL))
                     $this->setImage($item["image"]);
             }
+
+        } elseif ($listName == "Exchanging $name") {
+            if ($action == "Exchange $name" || $action == "Exchange multiple") {
+                if ($action == "Exchange $name") $users = [$item["user"]];
+                else $users = array_map(function ($userId) {
+                    return intval(substr($userId, 3));
+                }, $item["users"]);
+
+                foreach ($users as $userId) {
+                    if (!self::hasExchanged($userId)) {
+                        $parts = explode(":", $item["ratio"]);
+                        $ratio = round(intval($parts[0]) / intval($parts[1]));
+                        $threshold = $item["threshold"] ?? null;
+                        $earnedXP = self::exchangeTokensForXP($userId, $ratio, $threshold);
+
+                        if ($action == "Exchange $name") return $item["name"] . " earned $earnedXP XP";
+                    }
+                }
+                return "Exchanged $name!";
+            }
         }
+
+        return null;
     }
 
 

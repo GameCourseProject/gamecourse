@@ -25,4 +25,9 @@ export class ModalService {
       modal.checked = !modal.checked;
     }, 0);
   }
+
+  static isOpen(id: string): boolean {
+    const modal = document.getElementById(id) as HTMLInputElement;
+    return modal?.checked;
+  }
 }

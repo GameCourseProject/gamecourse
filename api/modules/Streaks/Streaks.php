@@ -640,7 +640,7 @@ class Streaks extends Module
     /**
      * @throws Exception
      */
-    public function saveListingItem(string $listName, string $action, array $item)
+    public function saveListingItem(string $listName, string $action, array $item): ?string
     {
         $courseId = $this->course->getId();
         if ($listName == "Streaks") {
@@ -670,6 +670,8 @@ class Streaks extends Module
 
             } elseif ($action == Action::DELETE) Streak::deleteStreak($item["id"]);
         }
+
+        return null;
     }
 
     /**

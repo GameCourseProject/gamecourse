@@ -316,7 +316,7 @@ class Skills extends Module
     /**
      * @throws Exception
      */
-    public function saveListingItem(string $listName, string $action, array $item)
+    public function saveListingItem(string $listName, string $action, array $item): ?string
     {
         $courseId = $this->course->getId();
         if ($listName == "Skill Trees") {   // Skill Trees
@@ -326,6 +326,8 @@ class Skills extends Module
                 $skillTree->editSkillTree($item["name"], $item["maxReward"]);
             } elseif ($action == Action::DELETE) SkillTree::deleteSkillTree($item["id"]);
         }
+
+        return null;
     }
 
     public function getPersonalizedConfig(): ?string

@@ -646,14 +646,16 @@ abstract class Module
 
     /**
      * Updates a listing item of a specific list.
+     * Option to return a success message.
      *
      * @param string $listName
      * @param string $action
      * @param array $item
-     * @return void
+     * @return string|null
      */
-    public function saveListingItem(string $listName, string $action, array $item)
+    public function saveListingItem(string $listName, string $action, array $item): ?string
     {
+        return null;
     }
 
     /**

@@ -281,7 +281,11 @@ export function getValue(data: {type: TableDataType, content: any}): string {
   return '';
 }
 
-export function isFilterable(type: TableDataType): boolean {
+export function isFilterable(type: TableDataType, options, index): boolean {
+  for (const option of options['columnDefs']) {
+    if (option.hasOwnProperty('filterable') && !option['filterable'] && option.hasOwnProperty('targets') && option['targets'].includes(index))
+      return false;
+  }
   return type !== TableDataType.IMAGE && type !== TableDataType.BUTTON && type !== TableDataType.ACTIONS;
 }
 
