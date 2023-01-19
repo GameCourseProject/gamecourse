@@ -1008,23 +1008,24 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
         table_skill = db.data_broker.get(db, config.COURSE, query)[0]
         skill_id = table_skill[0]
 
+        # check if dependencies are missing to create notification
         if not dependencies:
-            # skill_id should be added somewhere in this query
-            # CHECK THIS
-            query = "SELECT s.name FROM skill s JOIN skill_dependency sd JOIN skill_depencency_combo sdc " \
-                    "ON s.id = sd.skill AND sd.id = sdc.depencency" \
-                    "WHERE sdc.skill = s.id;"
+            query = "SELECT s.name" \
+                    " FROM skill s JOIN skill_dependency sd JOIN skill_depencency_combo sdc " \
+                    "ON s.id = sd.skill AND sd.id = sdc.depencency " \
+                    "WHERE sdc.skill = %s;" % skill_id
             dependencies_names = db.data_broker.get(db, config.COURSE, query)
 
-            # Transform array into string
-            dependencies_names_string = ""
-            for element in dependencies_names:
-                dependencies_names_string += element
+            # removes duplicates
+            dependencies_names_unique = list(dict.fromkeys(dependencies_names))
+
+            # Transform array into string with commas
+            dependencies_names_string = ','.join(dependencies_names_unique)
 
             message = "You can't be rewarded yet... Almost there! There are some dependencies missing: " \
                       + dependencies_names_string
 
-            # verificar se notificacao esta na tabela
+            # Add notification to table
             query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s,%s,%s,%s);"
             db.execute_query(query, (config.COURSE, target, message, 0), "commit")
 
