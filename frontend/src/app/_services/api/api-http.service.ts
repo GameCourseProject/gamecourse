@@ -10,7 +10,6 @@ import {QueryStringParameters} from "../../_utils/api/query-string-parameters";
 import {AuthType} from "../../_domain/auth/auth-type";
 import {Course} from "../../_domain/courses/course";
 import {User} from "../../_domain/users/user";
-import {SetupData} from "../../_views/setup/setup/setup.component";
 import {CourseManageData, ImportCoursesData} from "../../_views/restricted/courses/courses/courses.component";
 import {UserManageData} from "../../_views/restricted/users/users/users.component";
 import {Module} from "../../_domain/modules/module";
@@ -797,6 +796,7 @@ export class ApiHttpService {
 
 
   // Modules
+
   public getCourseModuleById(courseID: number, moduleID: string): Observable<Module> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
@@ -854,20 +854,6 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  // TODO: refactor
-  public isVirtualCurrencyEnabled(courseID: number): Observable<boolean> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'isVirtualCurrencyEnabled');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['isEnabled']) );
-  }
-
 
   // Course Data
 
@@ -922,6 +908,7 @@ export class ApiHttpService {
 
 
   // Styling
+
   public getCourseStyles(courseID: number): Observable<{path: string, contents: string} | null> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
@@ -1681,7 +1668,11 @@ export class ApiHttpService {
       courseId: courseID,
       skillTreeId: skillTreeID,
       name: tierData.name,
-      reward: tierData.reward
+      reward: tierData.reward,
+      costType: tierData.costType,
+      cost: tierData.cost,
+      increment: tierData.increment,
+      minRating: tierData.minRating
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -1700,6 +1691,10 @@ export class ApiHttpService {
       tierId: tier.id,
       name: tier.name,
       reward: tier.reward,
+      costType: tier.costType,
+      cost: tier.cost,
+      increment: tier.increment,
+      minRating: tier.minRating,
       position: tier.position,
       isActive: tier.isActive
     }
@@ -1806,6 +1801,19 @@ export class ApiHttpService {
 
 
   // Virtual Currency
+
+  public getVCName(courseID: number): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.VIRTUAL_CURRENCY);
+      qs.push('request', 'getVCName');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
 
   public getUserTokens(courseID: number, userID: number): Observable<number> {
     const params = (qs: QueryStringParameters) => {

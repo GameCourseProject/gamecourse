@@ -23,6 +23,29 @@ class VirtualCurrencyController
     /*** --------------------------------------------- ***/
 
     /**
+     * Gets virtual currency name.
+     *
+     * @throws Exception
+     */
+    public function getVCName()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $VCModule = new VirtualCurrency($course);
+        API::response($VCModule->getVCName());
+    }
+
+
+    /*** --------------------------------------------- ***/
+    /*** ------------------- Users ------------------- ***/
+    /*** --------------------------------------------- ***/
+
+    /**
      * Gets user tokens of a given user.
      *
      * @throws Exception

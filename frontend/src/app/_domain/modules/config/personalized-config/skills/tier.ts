@@ -1,20 +1,27 @@
-import {environment} from "../../../../../../environments/environment";
-
 export class Tier {
   private _id: number;
   private _skillTreeID: number;
   private _name: string;
   private _reward: number;
+  private _costType: 'fixed' | 'variable';
+  private _cost: number;
+  private _increment: number;
+  private _minRating: number;
   private _position: number;
   private _isActive: boolean;
 
   static readonly WILDCARD: string = "Wildcard";
 
-  constructor(id: number, skillTreeID: number, name: string, reward: number, position: number, isActive: boolean) {
+  constructor(id: number, skillTreeID: number, name: string, reward: number, costType: 'fixed' | 'variable', cost: number,
+              increment: number, minRating: number, position: number, isActive: boolean) {
     this._id = id;
     this._skillTreeID = skillTreeID;
     this._name = name;
     this._reward = reward;
+    this._costType = costType;
+    this._cost = cost;
+    this._increment = increment;
+    this._minRating = minRating;
     this._position = position;
     this._isActive = isActive;
   }
@@ -51,6 +58,38 @@ export class Tier {
     this._reward = value;
   }
 
+  get costType(): "fixed" | "variable" {
+    return this._costType;
+  }
+
+  set costType(value: "fixed" | "variable") {
+    this._costType = value;
+  }
+
+  get cost(): number {
+    return this._cost;
+  }
+
+  set cost(value: number) {
+    this._cost = value;
+  }
+
+  get increment(): number {
+    return this._increment;
+  }
+
+  set increment(value: number) {
+    this._increment = value;
+  }
+
+  get minRating(): number {
+    return this._minRating;
+  }
+
+  set minRating(value: number) {
+    this._minRating = value;
+  }
+
   get position(): number {
     return this._position;
   }
@@ -82,6 +121,10 @@ export class Tier {
       skillTree: this.skillTreeID,
       name: this.name,
       reward: this.reward,
+      costType: this.costType,
+      cost: this.cost,
+      increment: this.increment,
+      minRating: this.minRating,
       position: this.position,
       isActive: this.isActive,
     };
@@ -93,6 +136,10 @@ export class Tier {
       obj.skillTree,
       obj.name,
       obj.reward,
+      obj.costType,
+      obj.cost,
+      obj.increment,
+      obj.minRating,
       obj.position,
       obj.isActive
     );
@@ -104,6 +151,10 @@ interface TierDatabase {
   skillTree: number,
   name: string,
   reward: number,
+  costType: 'fixed' | 'variable',
+  cost: number,
+  increment: number,
+  minRating: number,
   position: number,
   isActive: boolean
 }
