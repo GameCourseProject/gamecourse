@@ -1,5 +1,5 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {NgForm} from "@angular/forms";
 
 import {ApiHttpService} from "../../../../../../../../_services/api/api-http.service";
@@ -51,7 +51,8 @@ export class ConfigComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -257,7 +258,8 @@ export class ConfigComponent implements OnInit {
       list.loading.action = true;
 
       try {
-        let successMsg = await this.api.saveModuleConfig(this.course.id, this.module.id, null, this.getItemToManage(), list.name, action).toPromise();
+        const item = this.getItemToManage();
+        let successMsg = await this.api.saveModuleConfig(this.course.id, this.module.id, null, item, list.name, action).toPromise();
         await this.getModuleConfig(this.module.id);
 
         list.loading.action = false;
@@ -268,6 +270,12 @@ export class ConfigComponent implements OnInit {
         else if (action === Action.EDIT) successMsg = list.itemName.capitalize() + ' edited';
         else if (action === Action.DELETE) successMsg = list.itemName.capitalize() + ' deleted';
         AlertService.showAlert(AlertType.SUCCESS, successMsg);
+
+        // Redirect to rule
+        if ((action === Action.NEW || action === Action.EDIT) && item.hasOwnProperty("rule")) {
+          // const redirectLink = '/rule-system/rule/' + item["rule"];
+          // this.router.navigate([redirectLink]); FIXME: redirect
+        }
 
       } catch (error) {
         list.loading.action = false;
