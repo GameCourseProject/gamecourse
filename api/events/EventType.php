@@ -11,10 +11,15 @@ class EventType
     /*** -------------------- Types -------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    const COURSE_ENABLED = 0;                   // args: int $courseId
-    const COURSE_DISABLED = 1;                  // args: int $courseId
-    const STUDENT_ADDED_TO_COURSE = 2;          // args: int $courseId, int $studentId
-    const STUDENT_REMOVED_FROM_COURSE = 3;      // args: int $courseId, int $studentId
-    const PAGE_VIEWED = 4;                      // args: int $pageId, int $viewerId, int $userId
+    const COURSE_ENABLED = "CE";                   // args: int $courseId
+    const COURSE_DISABLED = "CD";                  // args: int $courseId
+
+    const MODULE_ENABLED = "ME";                   // args: int $courseId, string $moduleId
+    const MODULE_DISABLED = "MD";                  // args: int $courseId, string $moduleId
+
+    const STUDENT_ADDED_TO_COURSE = "SAC";         // args: int $courseId, int $studentId
+    const STUDENT_REMOVED_FROM_COURSE = "SRC";     // args: int $courseId, int $studentId
+
+    const PAGE_VIEWED = "PV";                      // args: int $pageId, int $viewerId, int $userId
     // NOTE: insert here new types of events
 }

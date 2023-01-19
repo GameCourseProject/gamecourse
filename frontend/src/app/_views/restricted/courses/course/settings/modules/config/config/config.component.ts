@@ -1,5 +1,5 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {NgForm} from "@angular/forms";
 
 import {ApiHttpService} from "../../../../../../../../_services/api/api-http.service";
@@ -42,7 +42,7 @@ export class ConfigComponent implements OnInit {
   lists: List[];
   personalizedConfig: string;
 
-  mode: 'create' | 'duplicate' | 'edit' | 'delete';
+  mode: 'create' | 'duplicate' | 'edit' | 'delete' | string;
   itemToManage: ItemManageData;
   @ViewChild('fManage', { static: false }) fManage: NgForm;
 
@@ -51,7 +51,8 @@ export class ConfigComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -114,18 +115,36 @@ export class ConfigComponent implements OnInit {
       // Add actions to table
       if (list.actions?.length > 0 && list.headers[list.headers.length - 1].label !== 'Actions') {
         const nrItems = list.data.length;
+
+        // Add headers
+        const hasRuleAction = list.actions.find(action => action.action === Action.VIEW_RULE);
+        if (hasRuleAction) list.headers.push({label: 'View Rule'});
         list.headers.push({label: 'Actions'});
+
+        // Add cells
         list.data = list.data.map((row, index) => {
-          row.push({type: TableDataType.ACTIONS, content: {actions: list.actions.map(action => {
-            const a = _.cloneDeep(action);
-            a.disabled = !scopeAllows(action.scope, nrItems, index);
-            return a;
+          if (hasRuleAction) {
+            row.push({type: TableDataType.ACTIONS, content: {actions: list.actions
+                  .filter(action => action.action === Action.VIEW_RULE)
+                  .map(action => {
+                    const a = _.cloneDeep(action);
+                    a.disabled = !scopeAllows(action.scope, nrItems, index);
+                    return a;
+            })}});
+          }
+          row.push({type: TableDataType.ACTIONS, content: {actions: list.actions
+                .filter(action => action.action !== Action.VIEW_RULE)
+                .map(action => {
+                  const a = _.cloneDeep(action);
+                  a.disabled = !scopeAllows(action.scope, nrItems, index);
+                  return a;
           })}});
           return row;
         });
         if (!list.options) list.options = {};
         if (!list.options.hasOwnProperty('columnDefs')) list.options['columnDefs'] = [];
-        list.options['columnDefs'].push({orderable: false, targets: list.headers.length - 1});
+        list.options['columnDefs'].push({orderable: false, targets: [list.headers.length - 1]});
+        if (hasRuleAction) list.options['columnDefs'][list.options['columnDefs'].length - 1]['targets'].push(list.headers.length - 2);
       }
 
       // Parse dates
@@ -242,7 +261,12 @@ export class ConfigComponent implements OnInit {
       this.itemToManage = this.initItemToManage(list);
       ModalService.openModal('manage');
 
-    } else if (action === Action.NEW || action === Action.DUPLICATE || action === Action.EDIT || action === Action.DELETE) {
+    } else if (list.hasOwnProperty(action) && list[action].hasOwnProperty("contents") && !ModalService.isOpen('manage')) {
+      this.mode = action;
+      this.itemToManage = this.initItemToManage(list);
+      ModalService.openModal('manage');
+
+    } else {
       if (action !== Action.DUPLICATE && action !== Action.DELETE)
         if (!this.fManage.valid) {
           AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -252,14 +276,14 @@ export class ConfigComponent implements OnInit {
       list.loading.action = true;
 
       try {
-        await this.api.saveModuleConfig(this.course.id, this.module.id, null, this.getItemToManage(), list.name, action).toPromise();
+        const item = this.getItemToManage();
+        let successMsg = await this.api.saveModuleConfig(this.course.id, this.module.id, null, item, list.name, action).toPromise();
         await this.getModuleConfig(this.module.id);
 
         list.loading.action = false;
         ModalService.closeModal('manage');
         this.resetManage();
 
-        let successMsg = "";
         if (action === Action.NEW || action === Action.DUPLICATE) successMsg = 'New ' + list.itemName + ' created';
         else if (action === Action.EDIT) successMsg = list.itemName.capitalize() + ' edited';
         else if (action === Action.DELETE) successMsg = list.itemName.capitalize() + ' deleted';
@@ -306,6 +330,16 @@ export class ConfigComponent implements OnInit {
 
     } else if (action === Action.EXPORT) {
       this.exportItems(list, [itemToActOn]);
+
+    } else if (action === Action.VIEW_RULE) {
+      // const ruleLink = './rule-system/rule/' + itemToActOn["rule"]; // FIXME: redirect to rule
+      const ruleLink = './rule-system'
+      this.router.navigate([ruleLink], {relativeTo: this.route.parent});
+
+    } else {
+      this.mode = action;
+      this.itemToManage = this.initItemToManage(list, itemToActOn, row);
+      ModalService.openModal('manage');
     }
   }
 
@@ -359,7 +393,7 @@ export class ConfigComponent implements OnInit {
     else await ResourceManager.getText(files.item(0)).then(data => artifact.value = data);
   }
 
-  scopeAllows(scope: ActionScope): boolean {
+  scopeAllows(scope: ActionScope | string): boolean {
     if (!scope) return true;
     return scopeAllows(scope, this.itemToManage.list.data.length, this.itemToManage.index);
   }
@@ -370,6 +404,13 @@ export class ConfigComponent implements OnInit {
         item[key] = null;
     }
     return item;
+  }
+
+  getConfigKey(): string
+  {
+    if (this.mode === 'create') return Action.NEW;
+    if (['duplicate', 'edit', 'delete'].includes(this.mode)) return Action.EDIT;
+    return this.mode;
   }
 
 
@@ -442,8 +483,9 @@ export class ConfigComponent implements OnInit {
   // Lists
 
   initItemToManage(list: List, item?: any, index?: number): ItemManageData {
-    const itemData = item ? _.cloneDeep(item) : getEmptyItem(list[Action.NEW].contents, {});
-    initValues(list[this.mode === 'create' ? Action.NEW : Action.EDIT]['contents'], itemData);
+    const itemData = item ? _.cloneDeep(item) : getEmptyItem(list[this.getConfigKey()].contents, {});
+    if (this.mode === 'create' || this.mode === 'edit' || this.mode === 'duplicate' || this.mode === 'delete')
+      initValues(list[this.getConfigKey()]['contents'], itemData);
     return {
       list: list,
       item: itemData,
@@ -468,7 +510,7 @@ export class ConfigComponent implements OnInit {
   }
 
   getItemToManage(): ItemManageData {
-    getItem(this.itemToManage.list[this.mode === 'create' ? Action.NEW : Action.EDIT]['contents'], this.itemToManage.item);
+    getItem(this.itemToManage.list[this.getConfigKey()]['contents'], this.itemToManage.item);
     return this.nullifyEmptyValues(this.itemToManage.item);
 
     function getItem(contents: (ConfigInputContainer|ConfigInputItem)[], item: any): any {
@@ -527,7 +569,7 @@ export type List = {
       color?: 'ghost' | 'primary' | 'secondary' | 'accent' | 'neutral' | 'info' | 'success' | 'warning' | 'error'}[]},
   headers: {label: string, align?: 'left' | 'middle' | 'right'}[],
   data: {type: TableDataType, content: any}[][],
-  actions?: {action: Action | string, scope: ActionScope, icon?: string, color?: 'ghost' | 'primary' | 'secondary' |
+  actions?: {action: Action | string, scope: ActionScope | string, icon?: string, color?: 'ghost' | 'primary' | 'secondary' |
       'accent' | 'neutral' | 'info' | 'success' | 'warning' | 'error', disabled?: boolean}[],
   options?: any,
   loading: {

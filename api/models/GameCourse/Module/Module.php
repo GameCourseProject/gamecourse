@@ -3,6 +3,7 @@ namespace GameCourse\Module;
 
 use Error;
 use Event\Event;
+use Event\EventType;
 use Exception;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\RuleSystem;
@@ -174,6 +175,8 @@ abstract class Module
 
         if ($isEnabled) $this->init();
         else $this->disable();
+
+        Event::trigger($isEnabled ? EventType::MODULE_ENABLED : EventType::MODULE_DISABLED, $this->course->getId(), $this->id);
     }
 
 
@@ -557,7 +560,8 @@ abstract class Module
         preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
         $tables = $matches[2];
         foreach ($tables as $table) {
-            Core::database()->delete($table, ["course" => $this->course->getId()]);
+            if (Core::database()->columnExists($table, "course"))
+                Core::database()->delete($table, ["course" => $this->course->getId()]);
         }
     }
 
@@ -566,13 +570,14 @@ abstract class Module
     }
 
     /**
-     * Stops listening to any events of module.
+     * Stops listening to any events of module if not enabled in any course.
      *
      * @return void
      */
     protected function removeEvents()
     {
-        Event::stopAll($this->getId());
+        if (empty(Core::database()->select(self::TABLE_COURSE_MODULE, ["module" => $this->id, "isEnabled" => true])))
+            Event::stopAll($this->id);
     }
 
     /**
@@ -641,14 +646,16 @@ abstract class Module
 
     /**
      * Updates a listing item of a specific list.
+     * Option to return a success message.
      *
      * @param string $listName
      * @param string $action
      * @param array $item
-     * @return void
+     * @return string|null
      */
-    public function saveListingItem(string $listName, string $action, array $item)
+    public function saveListingItem(string $listName, string $action, array $item): ?string
     {
+        return null;
     }
 
     /**

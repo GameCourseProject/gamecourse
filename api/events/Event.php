@@ -75,12 +75,12 @@ class Event
      * callback function when triggered.
      * Option to pass a custom ID for event.
      *
-     * @param int $type
+     * @param string $type
      * @param $callback
      * @param string|null $prefix
      * @return string|null
      */
-    public static function listen(int $type, $callback, string $prefix = null): string
+    public static function listen(string $type, $callback, string $prefix = null): string
     {
         $id = uniqid($prefix !== null ? $prefix : "");
         self::$events[$type][$id] = $callback;
@@ -92,11 +92,11 @@ class Event
      * Trigger an event of a given type.
      * Option to pass any number of arguments.
      *
-     * @param int $type
+     * @param string $type
      * @param ...$args
      * @return void
      */
-    public static function trigger(int $type, ...$args)
+    public static function trigger(string $type, ...$args)
     {
         if (isset(self::$events[$type])) {
             foreach (self::$events[$type] as $id => $callback) {
@@ -108,11 +108,11 @@ class Event
     /**
      * Stop listening to an event of a given type and ID.
      *
-     * @param int $type
+     * @param string $type
      * @param string $id
      * @return void
      */
-    public static function stop(int $type, string $id)
+    public static function stop(string $type, string $id)
     {
         unset(self::$events[$type][$id]);
         Cache::store(null, "events", self::$events);

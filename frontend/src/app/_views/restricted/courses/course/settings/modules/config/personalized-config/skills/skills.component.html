@@ -44,6 +44,7 @@
   <app-modal *ngIf="tierMode && tierToManage"
      [id]="'tier-manage'"
      [templateRef]="TIER_MANAGE"
+     [size]="'md'"
      [header]="tierMode?.capitalize() + ' tier'"
      [closeBtnText]="'Discard ' + (tierMode === 'create' ? 'tier' : 'changes')"
      [submitBtnText]="tierMode?.capitalize() + ' tier'"
@@ -67,7 +68,9 @@
             [topLabel]="'Name'"
             [required]="true"
             [maxLength]="50"
-            [maxLengthErrorMessage]="'Tier name is too long: maximum of 50 characters'">
+            [maxLengthErrorMessage]="'Tier name is too long: maximum of 50 characters'"
+            [helperText]="'Name for tier'"
+            [helperPosition]="'right'">
           </app-input-text>
         </div>
 
@@ -80,11 +83,96 @@
             [placeholder]="'Tier reward'"
             [topLabel]="'Reward (XP)'"
             [required]="true"
-            [minValue]="0">
+            [minValue]="0"
+            [helperText]="'XP earned on each skill of tier'"
+            [helperPosition]="'left'">
           </app-input-number>
         </div>
 
       </div>
+
+      <!-- Skills cost -->
+      <ng-container *ngIf="VCEnabled">
+        <span class="block font-semibold pl-1 pt-2 mt-4">Skills cost ({{VCName}})</span>
+
+        <!-- Cost Type -->
+        <div class="flex flex-wrap">
+          <app-input-radio
+            [id]="'cost-type-fixed'"
+            [group]="'cost-type'"
+            [form]="fTier"
+            [optionValue]="'fixed'"
+            [(value)]="tierToManage.costType"
+            [color]="'primary'"
+            [classList]="'mr-8'"
+            [label]="'Fixed'"
+            [helperText]="'All skill attempts in this tier cost the same fixed amount of ' + VCName"
+            [helperPosition]="'right'">
+          </app-input-radio>
+
+          <app-input-radio
+            [id]="'cost-type-variable'"
+            [group]="'cost-type'"
+            [form]="fTier"
+            [optionValue]="'variable'"
+            [(value)]="tierToManage.costType"
+            [color]="'primary'"
+            [label]="'Variable'"
+            [helperText]="'Cost in ' + VCName + ' of skill attempts in this tier is increased by \'increment\' for each prior attempt with a rating higher than \'min. rating\': base + increment x #attempts w/ rating >= min.rating'">
+          </app-input-radio>
+        </div>
+
+        <div class="flex flex-wrap">
+
+          <!-- Base Cost -->
+          <div class="w-full sm:w-1/3 sm:pr-3">
+            <app-input-number
+              [id]="'tier-cost'"
+              [form]="fTier"
+              [(value)]="tierToManage.cost"
+              [placeholder]="'Skill base cost'"
+              [topLabel]="'Base cost (' + VCName + ')'"
+              [helperText]="'Baseline cost for skills in this tier'"
+              [helperPosition]="'right'"
+              [required]="true"
+              [minValue]="0">
+            </app-input-number>
+          </div>
+
+          <!-- Increment Cost -->
+          <div class="w-full sm:w-1/3 sm:pr-3">
+            <app-input-number
+              [id]="'tier-increment'"
+              [form]="fTier"
+              [(value)]="tierToManage.increment"
+              [placeholder]="'Increment on each attempt'"
+              [disabled]="tierToManage.costType === 'fixed'"
+              [topLabel]="'Increment (' + VCName + ')'"
+              [helperText]="'Cost increment on each attempt of skills in this tier'"
+              [helperPosition]="'right'"
+              [required]="true"
+              [minValue]="0">
+            </app-input-number>
+          </div>
+
+          <!-- Min. Rating -->
+          <div class="w-full sm:w-1/3">
+            <app-input-number
+              [id]="'tier-min-rating'"
+              [form]="fTier"
+              [(value)]="tierToManage.minRating"
+              [placeholder]="'Min. rating'"
+              [disabled]="tierToManage.costType === 'fixed'"
+              [topLabel]="'Min. attempt rating'"
+              [helperText]="'Min. skill rating to start incrementing cost'"
+              [helperPosition]="'left'"
+              [required]="true"
+              [minValue]="0">
+            </app-input-number>
+          </div>
+
+        </div>
+      </ng-container>
 
     </form>
   </ng-template>
@@ -167,7 +255,9 @@
             [options]="getTierOptions()"
             [placeholder]="'Select a tier'"
             [topLabel]="'Tier'"
-            [required]="true">
+            [required]="true"
+            [helperText]="'Tier skill belongs'"
+            [helperPosition]="'right'">
           </app-input-select>
         </div>
 
@@ -179,7 +269,9 @@
             [(value)]="skillToManage.name"
             [placeholder]="'Skill name'"
             [topLabel]="'Name'"
-            [required]="true">
+            [required]="true"
+            [helperText]="'Name for skill'"
+            [helperPosition]="'right'">
           </app-input-text>
         </div>
 
@@ -190,47 +282,48 @@
             [form]="fSkill"
             [(value)]="skillToManage.color"
             [placeholder]="'Skill color'"
-            [topLabel]="'Color'">
+            [topLabel]="'Color'"
+            [helperText]="'Color to differentiate skills'"
+            [helperPosition]="'left'">
           </app-input-color>
         </div>
 
       </div>
 
       <div *ngIf="skillToManage.tierID && showDependencies()">
-        <div class="prose mt-5"><h4>Dependencies</h4></div>
+        <!-- Add dependency -->
+        <div class="w-full md:w-2/3 mt-5">
+          <form #fDependency="ngForm">
+            <app-input-select
+              [id]="'skill-dependencies'"
+              [form]="fDependency"
+              [(value)]="dependency"
+              [options]="getDependencyOptions()"
+              [placeholder]="'Select skills for dependency'"
+              [multiple]="true"
+              [closeOnSelect]="false"
+              [topLabel]="'Dependencies'"
+              [btnText]="'Add'"
+              [required]="true"
+              [helperText]="'Combination of skills that need to be earned first'"
+              [helperPosition]="'right'"
+              (valueChange)="dependency = $event ?? []"
+              (btnClicked)="addDependency()">
+            </app-input-select>
+          </form>
+        </div>
 
-        <div class="flex flex-wrap-reverse sm:flex-wrap mt-3">
-          <!-- Dependencies -->
-          <div class="w-full sm:w-1/2 sm:pr-2.5 mt-3 sm:mt-0">
-            <div *ngFor="let dep of skillToManage.dependencies; let i = index" class="prose flex items-center">
-              <div class="tooltip tooltip-right" data-tip="Remove">
-                <button type="button" class="btn btn-sm btn-ghost btn-circle h-8 w-8" (click)="removeDependency(i)">
-                  <ng-icon name="feather-x" size="1.3rem" class="text-error"></ng-icon>
-                </button>
-              </div>
-              {{getComboText(dep)}}
+        <!-- Dependencies -->
+        <div class="w-full mt-3">
+          <div *ngFor="let dep of skillToManage.dependencies; let i = index" class="prose flex items-center">
+            <div class="tooltip tooltip-right" data-tip="Remove">
+              <button type="button" class="btn btn-sm btn-ghost btn-circle h-8 w-8" (click)="removeDependency(i)">
+                <ng-icon name="feather-x" size="1.3rem" class="text-error"></ng-icon>
+              </button>
             </div>
-            <span *ngIf="skillToManage.dependencies.length === 0" class="italic text-sm text-info">No dependencies added</span>
+            {{getComboText(dep)}}
           </div>
-
-          <!-- Add dependency -->
-          <div class="w-full sm:w-1/2 sm:pl-2.5">
-            <form #fDependency="ngForm">
-              <app-input-select
-                [id]="'skill-dependencies'"
-                [form]="fDependency"
-                [(value)]="dependency"
-                [options]="getDependencyOptions()"
-                [placeholder]="'Select skills for dependency'"
-                [multiple]="true"
-                [closeOnSelect]="false"
-                [btnText]="'Add'"
-                [required]="true"
-                (valueChange)="dependency = $event ?? []"
-                (btnClicked)="addDependency()">
-              </app-input-select>
-            </form>
-          </div>
+          <span *ngIf="skillToManage.dependencies.length === 0" class="italic text-sm text-info">No dependencies added</span>
         </div>
       </div>
 

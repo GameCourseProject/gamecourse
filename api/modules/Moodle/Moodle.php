@@ -82,12 +82,7 @@ class Moodle extends Module
      */
     public function copyTo(Course $copyTo)
     {
-        $copiedModule = new Moodle($copyTo);
-
-        // Copy config
-        $config = $this->getMoodleConfig();
-        $copiedModule->saveMoodleConfig($config["dbServer"], $config["dbUser"], $config["dbPass"], $config["dbName"],
-            $config["dbPort"], $config["tablesPrefix"], $config["moodleURL"], null);
+        // Nothing to do here
     }
 
     public function disable()

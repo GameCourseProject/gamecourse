@@ -110,6 +110,8 @@ class XPLevels extends Module
         $copiedModule = new XPLevels($copyTo);
 
         // Copy config
+        $maxXP = $this->getMaxXP();
+        $copiedModule->updateMaxXP($maxXP);
         $maxExtraCredit = $this->getMaxExtraCredit();
         $copiedModule->updateMaxExtraCredit($maxExtraCredit);
 
@@ -151,15 +153,27 @@ class XPLevels extends Module
                                 "contentType" => "item",
                                 "width" => "1/3",
                                 "type" => InputType::NUMBER,
+                                "id" => "maxXP",
+                                "value" => $this->getMaxXP(),
+                                "placeholder" => "Max. XP",
+                                "options" => [
+                                    "topLabel" => "Total max. XP",
+                                    "minValue" => 0
+                                ],
+                                "helper" => "Maximum XP each student can earn in total"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::NUMBER,
                                 "id" => "maxExtraCredit",
                                 "value" => $this->getMaxExtraCredit(),
                                 "placeholder" => "Max. extra credit",
                                 "options" => [
-                                    "topLabel" => "Total max. extra credit",
-                                    "required" => true,
+                                    "topLabel" => "Total max. extra credit XP",
                                     "minValue" => 0
                                 ],
-                                "helper" => "Maximum extra credit students can earn in total"
+                                "helper" => "Maximum extra credit XP each student can earn in total"
                             ]
                         ]
                     ]
@@ -174,6 +188,7 @@ class XPLevels extends Module
     public function saveGeneralInputs(array $inputs)
     {
         foreach ($inputs as $input) {
+            if ($input["id"] == "maxXP") $this->updateMaxXP($input["value"]);
             if ($input["id"] == "maxExtraCredit") $this->updateMaxExtraCredit($input["value"]);
         }
     }
@@ -308,7 +323,7 @@ class XPLevels extends Module
     /**
      * @throws Exception
      */
-    public function saveListingItem(string $listName, string $action, array $item)
+    public function saveListingItem(string $listName, string $action, array $item): ?string
     {
         $courseId = $this->course->getId();
         if ($listName == "Levels") {
@@ -318,6 +333,8 @@ class XPLevels extends Module
                 $level->editLevel($item["minXP"], $item["description"]);
             } elseif ($action == Action::DELETE) Level::deleteLevel($item["id"]);
         }
+
+        return null;
     }
 
     /**
@@ -342,15 +359,32 @@ class XPLevels extends Module
 
     /*** ---------- Config ---------- ***/
 
-    public function getMaxExtraCredit(): int
+    public function getMaxXP(): ?int
     {
-        return intval(Core::database()->select(self::TABLE_XP_CONFIG, ["course" => $this->course->getId()], "maxExtraCredit"));
+        $maxXP = Core::database()->select(self::TABLE_XP_CONFIG, ["course" => $this->course->getId()], "maxXP");
+        if (!is_null($maxXP)) $maxXP = intval($maxXP);
+        return $maxXP;
     }
 
     /**
      * @throws Exception
      */
-    public function updateMaxExtraCredit(int $max)
+    public function updateMaxXP(?int $max)
+    {
+        Core::database()->update(self::TABLE_XP_CONFIG, ["maxXP" => $max], ["course" => $this->course->getId()]);
+    }
+
+    public function getMaxExtraCredit(): ?int
+    {
+        $maxExtraCredit = Core::database()->select(self::TABLE_XP_CONFIG, ["course" => $this->course->getId()], "maxExtraCredit");
+        if (!is_null($maxExtraCredit)) $maxExtraCredit = intval($maxExtraCredit);
+        return $maxExtraCredit;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function updateMaxExtraCredit(?int $max)
     {
         Core::database()->update(self::TABLE_XP_CONFIG, ["maxExtraCredit" => $max], ["course" => $this->course->getId()]);
     }
@@ -488,7 +522,8 @@ class XPLevels extends Module
             throw new Exception("User with ID = " . $userId . " doesn't have XP initialized.");
 
         $courseId = $this->course->getId();
-        Core::database()->update(self::TABLE_XP, ["xp" => $xp, "level" => Level::getLevelByXP($courseId, $xp)->getId()],
+        $newXP = min($this->getMaxXP() ?? PHP_INT_MAX, $xp);
+        Core::database()->update(self::TABLE_XP, ["xp" => $newXP, "level" => Level::getLevelByXP($courseId, $xp)->getId()],
             ["course" => $courseId, "user" => $userId]);
     }
 
@@ -502,7 +537,7 @@ class XPLevels extends Module
      */
     public function updateUserXP(int $userId, int $xp)
     {
-        $newXP = max($this->getUserXP($userId) + $xp, 0);
+        $newXP = $this->getUserXP($userId) + $xp;
         $this->setUserXP($userId, $newXP);
     }
 

@@ -124,6 +124,7 @@ if __name__ == "__main__":
             clear_progression(el)
 
         # Import custom course functions
+        # FIXME: doesn't seem to be doing anything
         functions_path = os.path.join(config.IMPORTED_FUNCTIONS_FOLDER, course)
         functions, fpaths, info = import_functions_from_rulepath(functions_path, info=True)
 

@@ -2,13 +2,9 @@
 namespace GameCourse\Module\Badges;
 
 use Exception;
-use GameCourse\AutoGame\AutoGame;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\Awards\Awards;
-use GameCourse\Module\Awards\AwardType;
-use GameCourse\Module\XPLevels\XPLevels;
 use Utils\Utils;
 use ZipArchive;
 
@@ -26,7 +22,7 @@ class Badge
         "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPost", "isPoint", "isActive"
     ];
     const LEVEL_HEADERS = [
-        "badge_name", "number", "goal", "description", "reward"
+        "badge_name", "number", "goal", "description", "reward", "tokens"
     ];
 
     const DEFAULT_IMAGE = "blank.png";
@@ -120,7 +116,7 @@ class Badge
      * @example getData("name, description") --> gets badge name & description
      *
      * @param string $field
-     * @return array|int|null
+     * @return array|int|string|boolean|null
      */
     public function getData(string $field = "*")
     {
@@ -233,16 +229,6 @@ class Badge
             $newDescription = $fieldValues["description"];
             self::validateDescription($newDescription);
         }
-        if (key_exists("isExtra", $fieldValues) && $fieldValues["isExtra"]) {
-            $course = $this->getCourse();
-            $xpLevelsModule = new XPLevels($course);
-            if ($xpLevelsModule->isEnabled() && !$xpLevelsModule->getMaxExtraCredit())
-                throw new Exception("You're attempting to set a badge as extra credit while there's no extra credit available to earn. Go to " . XPLevels::NAME . " module and set a max. global extra credit value first.");
-
-            $badgesModule = new Badges($course);
-            if (!$badgesModule->getMaxExtraCredit())
-                throw new Exception("You're attempting to set a badge as extra credit while there's no badge extra credit available to earn. Set a max. badge extra credit value first.");
-        }
         if (key_exists("isActive", $fieldValues)) {
             $newStatus = $fieldValues["isActive"];
             $oldStatus = $this->isActive();
@@ -261,16 +247,6 @@ class Badge
         }
         if (key_exists("isActive", $fieldValues)) {
             if ($oldStatus != $newStatus) {
-                if (!$newStatus) {
-                    // Remove awards already given
-                    $course = $this->getCourse();
-                    $awardsModule = new Awards($course);
-                    $removed = $awardsModule->removeAwards(null, null, AwardType::BADGE, $this->id);
-
-                    // Re-run AutoGame to propagate changes
-                    if ($removed > 0) AutoGame::run($course->getId(), true);
-                }
-
                 // Update rule status
                 $rule->setActive($newStatus);
             }
@@ -354,6 +330,7 @@ class Badge
                 $badgeInfo["desc" . $i] = $level["description"];
                 $badgeInfo["goal" . $i] = $level["goal"];
                 $badgeInfo["reward" . $i] = $level["reward"];
+                $badgeInfo["tokens" . $i] = $level["tokens"];
             }
         }
         return $badges;
@@ -494,13 +471,6 @@ class Badge
 
             // Delete badge from database
             Core::database()->delete(self::TABLE_BADGE, ["id" => $badgeId]);
-
-            // Remove awards already given
-            $awardsModule = new Awards(new Course($courseId));
-            $removed = $awardsModule->removeAwards(null, null, AwardType::BADGE, $badgeId);
-
-            // Re-run AutoGame to propagate changes
-            if ($removed > 0) AutoGame::run($courseId, true);
         }
     }
 
@@ -526,11 +496,12 @@ class Badge
      */
     public function getLevels(): array
     {
-        $levels = Core::database()->selectMultiple(self::TABLE_BADGE_LEVEL, ["badge" => $this->id], "id, number, goal, description, reward", "number");
+        $levels = Core::database()->selectMultiple(self::TABLE_BADGE_LEVEL, ["badge" => $this->id], "id, number, goal, description, reward, tokens", "number");
         foreach ($levels as &$level) {
             $level["number"] = intval($level["number"]);
             $level["goal"] = intval($level["goal"]);
             $level["reward"] = intval($level["reward"]);
+            $level["tokens"] = intval($level["tokens"]);
         }
         return $levels;
     }
@@ -559,7 +530,8 @@ class Badge
                 "number" => $i + 1,
                 "goal" => $level["goal"],
                 "description" => $level["description"],
-                "reward" => !$isBragging ? $level["reward"] : 0
+                "reward" => !$isBragging ? $level["reward"] : 0,
+                "tokens" => $level["tokens"] ?? 0
             ]);
         }
         Core::database()->update(self::TABLE_BADGE, ["nrLevels" => count($levels)], ["id" => $this->id]);
@@ -792,7 +764,8 @@ class Badge
                 "number" => intval($level[$indexes["number"]]),
                 "goal" => intval($level[$indexes["goal"]]),
                 "description" => $level[$indexes["description"]],
-                "reward" => intval($level[$indexes["reward"]])
+                "reward" => intval($level[$indexes["reward"]]),
+                "tokens" => intval($level[$indexes["tokens"]])
             ];
             return 0;
         }, $file);
@@ -984,6 +957,9 @@ class Badge
 
             if (!$isBragging && (!isset($levels[$i]["reward"]) || !is_numeric($levels[$i]["reward"]) || $levels[$i]["reward"] < 0))
                 throw new Exception("Badge level " . ($i+1) . " reward can't be null nor negative.");
+
+            if (isset($levels[$i]["tokens"]) && (!is_numeric($levels[$i]["tokens"]) || $levels[$i]["tokens"] < 0))
+                throw new Exception("Badge level " . ($i+1) . " tokens can't be null nor negative.");
 
             if ($i != 0) {
                 if ($levels[$i - 1]["goal"] >= $levels[$i]["goal"])

@@ -12,6 +12,7 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 
 /**
@@ -22,9 +23,11 @@ class Skills extends Module
 {
     const TABLE_SKILL_TREE = SkillTree::TABLE_SKILL_TREE;
     const TABLE_SKILL_TIER = Tier::TABLE_SKILL_TIER;
+    const TABLE_SKILL_TIER_COST = Tier::TABLE_SKILL_TIER_COST;
     const TABLE_SKILL = Skill::TABLE_SKILL;
     const TABLE_SKILL_DEPENDENCY = Skill::TABLE_SKILL_DEPENDENCY;
     const TABLE_SKILL_DEPENDENCY_COMBO = Skill::TABLE_SKILL_DEPENDENCY_COMBO;
+    const TABLE_SKILL_PROGRESSION = Skill::TABLE_SKILL_PROGRESSION;
     const TABLE_AWARD_WILDCARD = "award_wildcard";
     const TABLE_SKILL_CONFIG = 'skills_config';
 
@@ -51,7 +54,8 @@ class Skills extends Module
 
     const DEPENDENCIES = [
         ["id" => Awards::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD],
-        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
+        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT],
+        ["id" => VirtualCurrency::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
     ];
     // NOTE: dependencies should be updated on code changes
 
@@ -86,8 +90,12 @@ class Skills extends Module
         $copiedModule = new Skills($copyTo);
 
         // Copy config
+        $maxXP = $this->getMaxXP();
+        $copiedModule->updateMaxXP($maxXP);
         $maxExtraCredit = $this->getMaxExtraCredit();
         $copiedModule->updateMaxExtraCredit($maxExtraCredit);
+        $minRating = $this->getMinRating();
+        $copiedModule->updateMinRating($minRating);
 
         // Copy skill trees
         $skillTrees = SkillTree::getSkillTrees($this->course->getId(), "id");
@@ -131,15 +139,27 @@ class Skills extends Module
                                 "contentType" => "item",
                                 "width" => "1/3",
                                 "type" => InputType::NUMBER,
-                                "id" => "maxExtraCredit",
-                                "value" => $this->getMaxExtraCredit(),
-                                "placeholder" => "Skills max. extra credit",
+                                "id" => "maxXP",
+                                "value" => $this->getMaxXP(),
+                                "placeholder" => "Max. XP",
                                 "options" => [
-                                    "topLabel" => "Max. extra credit",
-                                    "required" => true,
+                                    "topLabel" => "Skills max. XP",
                                     "minValue" => 0
                                 ],
-                                "helper" => "Maximum extra credit students can earn with skills"
+                                "helper" => "Maximum XP each student can earn with skills"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::NUMBER,
+                                "id" => "maxExtraCredit",
+                                "value" => $this->getMaxExtraCredit(),
+                                "placeholder" => "Max. extra credit",
+                                "options" => [
+                                    "topLabel" => "Skills max. extra credit XP",
+                                    "minValue" => 0
+                                ],
+                                "helper" => "Maximum extra credit XP each student can earn with skills"
                             ],
                             [
                                 "contentType" => "item",
@@ -147,9 +167,9 @@ class Skills extends Module
                                 "type" => InputType::NUMBER,
                                 "id" => "minRating",
                                 "value" => $this->getMinRating(),
-                                "placeholder" => "Skills min. rating",
+                                "placeholder" => "Min. rating",
                                 "options" => [
-                                    "topLabel" => "Min. rating",
+                                    "topLabel" => "Skills min. rating",
                                     "required" => true,
                                     "minValue" => 0
                                 ],
@@ -168,6 +188,7 @@ class Skills extends Module
     public function saveGeneralInputs(array $inputs)
     {
         foreach ($inputs as $input) {
+            if ($input["id"] == "maxXP") $this->updateMaxXP($input["value"]);
             if ($input["id"] == "maxExtraCredit") $this->updateMaxExtraCredit($input["value"]);
             if ($input["id"] == "minRating") $this->updateMinRating($input["value"]);
         }
@@ -191,7 +212,7 @@ class Skills extends Module
                 ],
                 "headers" => [
                     ["label" => "Name", "align" => "middle"],
-                    ["label" => "Max. Reward", "align" => "middle"]
+                    ["label" => "Max. Reward (XP)", "align" => "middle"]
                 ],
                 "data" => array_map(function ($skillTree) {
                     return [
@@ -237,11 +258,11 @@ class Skills extends Module
                                     "id" => "maxReward",
                                     "placeholder" => "Skill tree maximum reward",
                                     "options" => [
-                                        "topLabel" => "Max. reward",
+                                        "topLabel" => "Max. reward (XP)",
                                         "required" => true,
                                         "minValue" => 0
                                     ],
-                                    "helper" => "Maximum total reward that can be earned with skill tree"
+                                    "helper" => "Maximum XP that can be earned with skill tree"
                                 ]
                             ]
                         ]
@@ -275,19 +296,19 @@ class Skills extends Module
                                     "id" => "maxReward",
                                     "placeholder" => "Skill tree maximum reward",
                                     "options" => [
-                                        "topLabel" => "Max. reward",
+                                        "topLabel" => "Max. reward (XP)",
                                         "required" => true,
                                         "minValue" => 0
                                     ],
-                                    "helper" => "Maximum total reward that can be earned with skill tree"
+                                    "helper" => "Maximum XP that can be earned with skill tree"
                                 ]
                             ]
                         ]
                     ]
                 ],
                 Action::IMPORT => [
-                "extensions" => [".zip"]
-            ]
+                    "extensions" => [".zip"]
+                ]
             ]
         ];
     }
@@ -295,7 +316,7 @@ class Skills extends Module
     /**
      * @throws Exception
      */
-    public function saveListingItem(string $listName, string $action, array $item)
+    public function saveListingItem(string $listName, string $action, array $item): ?string
     {
         $courseId = $this->course->getId();
         if ($listName == "Skill Trees") {   // Skill Trees
@@ -305,6 +326,8 @@ class Skills extends Module
                 $skillTree->editSkillTree($item["name"], $item["maxReward"]);
             } elseif ($action == Action::DELETE) SkillTree::deleteSkillTree($item["id"]);
         }
+
+        return null;
     }
 
     public function getPersonalizedConfig(): ?string
@@ -332,15 +355,32 @@ class Skills extends Module
 
     /*** ---------- Config ---------- ***/
 
-    public function getMaxExtraCredit(): int
+    public function getMaxXP(): ?int
     {
-        return intval(Core::database()->select(self::TABLE_SKILL_CONFIG, ["course" => $this->course->getId()], "maxExtraCredit"));
+        $maxXP = Core::database()->select(self::TABLE_SKILL_CONFIG, ["course" => $this->course->getId()], "maxXP");
+        if (!is_null($maxXP)) $maxXP = intval($maxXP);
+        return $maxXP;
     }
 
     /**
      * @throws Exception
      */
-    public function updateMaxExtraCredit(int $max)
+    public function updateMaxXP(?int $max)
+    {
+        Core::database()->update(self::TABLE_SKILL_CONFIG, ["maxXP" => $max], ["course" => $this->course->getId()]);
+    }
+
+    public function getMaxExtraCredit(): ?int
+    {
+        $maxExtraCredit = Core::database()->select(self::TABLE_SKILL_CONFIG, ["course" => $this->course->getId()], "maxExtraCredit");
+        if (!is_null($maxExtraCredit)) $maxExtraCredit = intval($maxExtraCredit);
+        return $maxExtraCredit;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function updateMaxExtraCredit(?int $max)
     {
         Core::database()->update(self::TABLE_SKILL_CONFIG, ["maxExtraCredit" => $max], ["course" => $this->course->getId()]);
     }

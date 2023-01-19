@@ -1,7 +1,9 @@
 <?php
 namespace GameCourse\Module\Awards;
 
+use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use ReflectionClass;
+use Utils\Utils;
 
 /**
  * This class holds all award types available in the system
@@ -23,9 +25,48 @@ class AwardType
     const QUIZ = "quiz";
     const SKILL = "skill";
     const STREAK = "streak";
-    const TOKEN = "tokens";
+    const TOKENS = "tokens";
     // NOTE: insert here new types of awards & update awards tables
 
+
+    /**
+     * Gets an award type description.
+     *
+     * @param string $type
+     * @return string
+     */
+    public static function description(string $type): string
+    {
+        switch ($type) {
+            case AwardType::ASSIGNMENT: return "Assignment";
+            case AwardType::BADGE: return "Badge";
+            case AwardType::BONUS: return "Bonus";
+            case AwardType::EXAM: return "Exam";
+            case AwardType::LAB: return "Lab Assignment";
+            case AwardType::POST: return "Post";
+            case AwardType::PRESENTATION: return "Presentation";
+            case AwardType::QUIZ: return "Quiz";
+            case AwardType::SKILL: return "Skill Tree";
+            case AwardType::STREAK: return "Streak";
+            case AwardType::TOKENS: return VirtualCurrency::DEFAULT_NAME;
+            default: return ucfirst($type);
+        }
+    }
+
+    /**
+     * Gets an award type image URL.
+     * Option for image style as 'outline' or 'solid'.
+     *
+     * @param string $type
+     * @param string $style
+     * @param string $extension
+     * @return string
+     */
+    public static function image(string $type, string $style = 'outline' | 'solid', string $extension = "svg" | "jpg"): string
+    {
+        return API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . Awards::ID . "/assets/award-types/" .
+            $type . "_" . $style . "." . $extension;
+    }
 
     /**
      * Checks if a given award type is available in the system.

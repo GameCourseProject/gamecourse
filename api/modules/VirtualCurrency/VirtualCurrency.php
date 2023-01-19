@@ -15,8 +15,8 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
-use GameCourse\Module\Skills\Skills;
 use GameCourse\Module\XPLevels\XPLevels;
+use GameCourse\User\User;
 use Utils\Utils;
 
 /**
@@ -26,9 +26,11 @@ use Utils\Utils;
 class VirtualCurrency extends Module
 {
     const TABLE_WALLET = "user_wallet";
-    const TABLE_REMOVE_TOKENS = "remove_tokens_participation";
+    const TABLE_VC_SPENDING = "virtual_currency_spending";
+    const TABLE_VC_AUTO_ACTION = AutoAction::TABLE_VC_AUTO_ACTION;
     const TABLE_VC_CONFIG = "virtual_currency_config";
 
+    const DEFAULT_NAME = "Token(s)";
     const DEFAULT_IMAGE = "default.png";
 
     public function __construct(?Course $course)
@@ -44,7 +46,7 @@ class VirtualCurrency extends Module
 
     const ID = "VirtualCurrency";  // NOTE: must match the name of the class
     const NAME = "Virtual Currency";
-    const DESCRIPTION = "Enables Virtual Currency to be given to students as a reward.";
+    const DESCRIPTION = "Enables virtual currency to be given to students as a reward.";
     const TYPE = ModuleType::GAME_ELEMENT;
 
     const VERSION = "2.2.0";                                     // Current module version
@@ -54,14 +56,14 @@ class VirtualCurrency extends Module
 
     const DEPENDENCIES = [
         ["id" => Awards::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::HARD],
-        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT],
-        ["id" => Skills::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
+        ["id" => XPLevels::ID, "minVersion" => "2.2.0", "maxVersion" => null, "mode" => DependencyMode::SOFT]
     ];
     // NOTE: dependencies should be updated on code changes
 
     const RESOURCES = ['assets/'];
 
     const DATA_FOLDER = 'virtual_currency';
+    const RULE_SECTION = "Virtual Currency";
 
 
     /*** ----------------------------------------------- ***/
@@ -75,6 +77,7 @@ class VirtualCurrency extends Module
     {
         $this->initDatabase();
         $this->createDataFolder();
+        $this->initRules();
 
         // Init config
         Core::database()->insert(self::TABLE_VC_CONFIG, ["course" => $this->course->getId()]);
@@ -112,17 +115,19 @@ class VirtualCurrency extends Module
         $copiedModule = new VirtualCurrency($copyTo);
 
         // Copy config
-        $copiedModule->setName($this->getName());
-        $copiedModule->setSkillCost($this->getSkillCost());
-        $copiedModule->setWildcardCost($this->getWildcardCost());
-        $copiedModule->setAttemptRating($this->getAttemptRating());
-
-        // Copy image
+        $copiedModule->setVCName($this->getVCName());
         if ($this->hasImage()) {
             $path = $this->getDataFolder() . "/token.png";
             $type = pathinfo($path, PATHINFO_EXTENSION);
             $base64 = 'data:image/' . $type . ';base64,' . base64_encode(file_get_contents($path));
             $copiedModule->setImage($base64);
+        }
+
+        // Copy auto actions
+        $actions = AutoAction::getActions($this->course->getId(), null, "id");
+        foreach ($actions as $action) {
+            $action = new AutoAction($action["id"]);
+            $action->copyAction($copyTo);
         }
     }
 
@@ -133,6 +138,7 @@ class VirtualCurrency extends Module
     {
         $this->cleanDatabase();
         $this->removeDataFolder();
+        $this->removeRules();
         $this->removeEvents();
     }
 
@@ -146,84 +152,27 @@ class VirtualCurrency extends Module
         return true;
     }
 
-    public function getGeneralInputs(): array
-    {
-        return [
-            [
-                "name" => Skills::NAME,
-                "contents" => [
-                    [
-                        "contentType" => "container",
-                        "classList" => "flex flex-wrap items-center",
-                        "contents" => [
-                            [
-                                "contentType" => "item",
-                                "width" => "1/3",
-                                "type" => InputType::NUMBER,
-                                "id" => "attemptRating",
-                                "value" => $this->getAttemptRating(),
-                                "placeholder" => "Min. grade for attempt",
-                                "options" => [
-                                    "topLabel" => "Min. grade for attempt",
-                                    "required" => true,
-                                    "minValue" => 0,
-                                    "maxValue" => 5
-                                ],
-                                "helper" => "Minimum skill grade to count as an attempt"
-                            ],
-                            [
-                                "contentType" => "item",
-                                "width" => "1/3",
-                                "type" => InputType::NUMBER,
-                                "id" => "wildcardCost",
-                                "value" => $this->getWildcardCost(),
-                                "placeholder" => "Initial cost for wildcard",
-                                "options" => [
-                                    "topLabel" => "Wildcard initial cost",
-                                    "required" => true,
-                                    "minValue" => 0
-                                ],
-                                "helper" => "Wildcard skills initial currency cost. Afterwards cost will be: #attempts x increment_cost"
-                            ],
-                            [
-                                "contentType" => "item",
-                                "width" => "1/3",
-                                "type" => InputType::NUMBER,
-                                "id" => "skillCost",
-                                "value" => $this->getSkillCost(),
-                                "placeholder" => "Increment for wildcard cost",
-                                "options" => [
-                                    "topLabel" => "Wildcard increment cost",
-                                    "required" => true,
-                                    "minValue" => 0
-                                ],
-                                "helper" => "Wildcard increment currency cost"
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ];
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function saveGeneralInputs(array $inputs)
-    {
-        foreach ($inputs as $input) {
-            if ($input["id"] == "attemptRating") $this->setAttemptRating($input["value"]);
-            if ($input["id"] == "wildcardCost") $this->setWildcardCost($input["value"]);
-            if ($input["id"] == "skillCost") $this->setSkillCost($input["value"]);
-        }
-    }
-
     public function getLists(): array
     {
-        $name = $this->getName();
+        $name = $this->getVCName();
         $img = $this->getImage();
 
-        return [
+        $actions = AutoAction::getActions($this->course->getId());
+        $actionTypes = [
+            "assignment grade" => "Assignment grade",
+            "attended lab" => "Attended lab",
+            "attended lecture" => "Attended lecture",
+            "attended lecture (late)" => "Attended lecture late",
+            "lab grade" => "Lab grade",
+            "participated in lecture" => "Participated in lecture",
+            "participated in invited lecture" => "Participated in invited lecture",
+            "peergraded post" => "Peergraded colleagues' posts",
+            "presentation grade" => "Presentation grade",
+            "questionnaire submitted" => "Questionnaire submitted",
+            "quiz grade" => "Quiz grade"
+        ];
+
+        $lists = [
             [
                 "name" => "Settings",
                 "itemName" => "settings",
@@ -248,7 +197,7 @@ class VirtualCurrency extends Module
                     "hasColumnFiltering" => false,
                     "hasFooters" => false,
                     "columnDefs" => [
-                        ["orderable" => false, "targets" => [0, 1, 2]]
+                        ["orderable" => false, "targets" => [0, 1]]
                     ]
                 ],
                 "items" => [
@@ -270,7 +219,6 @@ class VirtualCurrency extends Module
                                     "placeholder" => "Virtual currency name",
                                     "options" => [
                                         "topLabel" => "Name",
-                                        "required" => true,
                                         "maxLength" => 50
                                     ],
                                     "helper" => "Display name for virtual currency"
@@ -293,25 +241,435 @@ class VirtualCurrency extends Module
                         ]
                     ]
                 ]
+            ],
+            [
+                "name" => "Automated actions",
+                "itemName" => "action",
+                "topActions" => [
+                    "left" => [
+                        ["action" => Action::IMPORT, "icon" => "jam-download"],
+                        ["action" => Action::EXPORT, "icon" => "jam-upload"]
+                    ],
+                    "right" => [
+                        ["action" => Action::NEW, "icon" => "feather-plus-circle", "color" => "primary"]
+                    ]
+                ],
+                "headers" => [
+                    ["label" => "Action", "align" => "left"],
+                    ["label" => "Type", "align" => "middle"],
+                    ["label" => "$name", "align" => "middle"],
+                    ["label" => "Active", "align" => "middle"]
+                ],
+                "data" => array_map(function ($action) use ($actionTypes, $img) {
+                    return [
+                        ["type" => DataType::TEXT, "content" => ["text" => $action["name"], "subtitle" => $action["description"]]],
+                        ["type" => DataType::TEXT, "content" => ["text" => $actionTypes[$action["type"]]]],
+                        ["type" => DataType::CUSTOM, "content" => ["html" => "<div class='flex items-center justify-center'>
+                            <span class='prose text-sm'>" . $action["amount"] . "</span><img class='h-4 w-4 object-contain ml-2' src='$img'></div>", "searchBy" => strval($action["amount"])]],
+                        ["type" => DataType::TOGGLE, "content" => ["toggleId" => "isActive", "toggleValue" => $action["isActive"]]]
+                    ];
+                }, $actions),
+                "actions" => [
+                    ["action" => Action::VIEW_RULE, "scope" => ActionScope::ALL],
+                    ["action" => Action::DUPLICATE, "scope" => ActionScope::ALL],
+                    ["action" => Action::EDIT, "scope" => ActionScope::ALL],
+                    ["action" => Action::DELETE, "scope" => ActionScope::ALL],
+                    ["action" => Action::EXPORT, "scope" => ActionScope::ALL]
+                ],
+                "options" => [
+                    "order" => [[0, "asc"]],
+                    "columnDefs" => [
+                        ["type" => "natural", "targets" => [0, 1, 2]],
+                        ["searchable" => false, "targets" => [3]],
+                        ["orderable" => false, "targets" => [3]]
+                    ]
+                ],
+                "items" => $actions,
+                Action::NEW => [
+                    "modalSize" => "md",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "id" => "name",
+                                    "placeholder" => "Action name",
+                                    "options" => [
+                                        "topLabel" => "Name",
+                                        "required" => true,
+                                        "pattern" => "^[x00-\\xFF\\w()&\\s-]+$",
+                                        "patternErrorMessage" => "Action name is not allowed. Allowed characters: alphanumeric  _  (  )  -  &",
+                                        "maxLength" => 50
+                                    ],
+                                    "helper" => "Name for action"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "id" => "description",
+                                    "placeholder" => "Action description",
+                                    "options" => [
+                                        "topLabel" => "Description",
+                                        "pattern" => "(?!^\\d+$)^.+$",
+                                        "patternErrorMessage" => "Action description can't be composed of only numbers",
+                                        "maxLength" => 150
+                                    ],
+                                    "helper" => "Description for action"
+                                ]
+                            ],
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-5",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::SELECT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "type",
+                                    "placeholder" => "Select a type of action to award or penalize",
+                                    "options" => [
+                                        "options" => array_map(function ($description, $type) {
+                                            return ["value" => $type, "text" => $description];
+                                        }, $actionTypes, array_keys($actionTypes)),
+                                        "topLabel" => "Type",
+                                        "required" => true
+                                    ],
+                                    "helper" => "Type of action to award or penalize"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "amount",
+                                    "placeholder" => "Amount of $name to award or penalize",
+                                    "options" => [
+                                        "topLabel" => "Amount",
+                                        "required" => true
+                                    ],
+                                    "helper" => "Amount of $name to award (positive amount) or penalize (negative amount)"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                Action::EDIT => [
+                    "modalSize" => "md",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "id" => "name",
+                                    "placeholder" => "Action name",
+                                    "options" => [
+                                        "topLabel" => "Name",
+                                        "required" => true,
+                                        "pattern" => "^[x00-\\xFF\\w()&\\s-]+$",
+                                        "patternErrorMessage" => "Action name is not allowed. Allowed characters: alphanumeric  _  (  )  -  &",
+                                        "maxLength" => 50
+                                    ],
+                                    "helper" => "Name for action"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "id" => "description",
+                                    "placeholder" => "Action description",
+                                    "options" => [
+                                        "topLabel" => "Description",
+                                        "pattern" => "(?!^\\d+$)^.+$",
+                                        "patternErrorMessage" => "Action description can't be composed of only numbers",
+                                        "maxLength" => 150
+                                    ],
+                                    "helper" => "Description for action"
+                                ]
+                            ],
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-5",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::SELECT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "type",
+                                    "placeholder" => "Select a type of action to award or penalize",
+                                    "options" => [
+                                        "options" => array_map(function ($description, $type) {
+                                            return ["value" => $type, "text" => $description];
+                                        }, $actionTypes, array_keys($actionTypes)),
+                                        "topLabel" => "Type",
+                                        "required" => true
+                                    ],
+                                    "helper" => "Type of action to award or penalize"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "amount",
+                                    "placeholder" => "Amount of $name to award or penalize",
+                                    "options" => [
+                                        "topLabel" => "Amount",
+                                        "required" => true
+                                    ],
+                                    "helper" => "Amount of $name to award or penalize"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                Action::IMPORT => [
+                    "extensions" => [".csv", ".txt"]
+                ]
             ]
         ];
+
+        // Exchange tokens, if XP & Levels enabled
+        $xpModule = $this->course->getModuleById(XPLevels::ID);
+        if ($xpModule && $xpModule->isEnabled()) {
+            $wallets = Core::database()->selectMultiple(self::TABLE_WALLET . " w LEFT JOIN user u on w.user=u.id", [
+                "course" => $this->course->getId()
+            ], "w.*, u.name");
+            $wallets = array_map(function ($userWallet) {
+                $userWallet["ratio"] = null;
+                $userWallet["threshold"] = null;
+                return $userWallet;
+            }, $wallets);
+            usort($wallets, function ($a, $b) { return strcmp($a["name"], $b["name"]); });
+
+            $exchanged = array_filter($wallets, function ($userWallet) { return $userWallet["exchanged"] || intval($userWallet["tokens"]) <= 0; });
+            $exchanged = array_map(function ($userWallet, $index) { return $index; }, $exchanged, array_keys($exchanged));
+            $scope = "[" . implode(", ", $exchanged) . "]";
+
+            $lists[] = [
+                "name" => "Exchanging $name",
+                "itemName" => null,
+                "topActions" => [
+                    "right" => [
+                        ["action" => "Exchange multiple", "icon" => "feather-repeat", "color" => "success"]
+                    ]
+                ],
+                "headers" => [
+                    ["label" => "Student", "align" => "left"],
+                    ["label" => "Student Nr", "align" => "middle"],
+                    ["label" => "Exchanged", "align" => "left"],
+                    ["label" => "Total", "align" => "middle"]
+                ],
+                "data" => array_map(function ($userWallet) use ($name, $img) {
+                    $user = User::getUserById($userWallet["user"]);
+                    $userImg = $user->getImage() ?? URL . "/assets/imgs/user-" . (Core::getLoggedUser()->getTheme() ?? "light") . ".png";
+                    $tokens = self::getUserTokens($user->getId());
+                    return [
+                        ["type" => DataType::AVATAR, "content" => ["avatarSrc" => $userImg , "avatarTitle" => $user->getName(), "avatarSubtitle" => $user->getMajor()]],
+                        ["type" => DataType::NUMBER, "content" => ["value" => $user->getStudentNumber(), "valueFormat" => "none"]],
+                        ["type" => DataType::COLOR, "content" => ["color" => $userWallet["exchanged"] ? "#36D399" : "#EF6060", "colorLabel" => $userWallet["exchanged"] ? "Exchanged $name" : "Hasn't exchanged yet"]],
+                        ["type" => DataType::CUSTOM, "content" => ["html" => "<div class='flex items-center justify-center'>
+                            <span class='prose text-sm'>$tokens</span><img class='h-4 w-4 object-contain ml-2' src='$img'></div>", "searchBy" => strval($tokens)]],
+                    ];
+                }, $wallets),
+                "actions" => [
+                    ["action" => 'Exchange ' . $name, "icon" => 'feather-repeat', "color" => "success", "scope" => $scope]
+                ],
+                "options" => [
+                    "order" => [[0, "asc"]],
+                    "columnDefs" => [
+                        ["type" => "natural", "targets" => [0, 1, 3]],
+                        ["searchable" => false, "targets" => [2]],
+                        ["filterable" => false, "targets" => [2]],
+                        ["orderable" => false, "targets" => [2]]
+                    ]
+                ],
+                "items" => $wallets,
+                "Exchange multiple" => [
+                    "modalSize" => "sm",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "full",
+                                    "type" => InputType::SELECT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "users",
+                                    "placeholder" => "Select students to exchange $name",
+                                    "options" => [
+                                        "options" => array_map(function ($userWallet) {
+                                            return ["value" => "id-" . $userWallet["user"], "text" => $userWallet["name"]];
+                                        }, $wallets),
+                                        "multiple" => true,
+                                        "closeOnSelect" => false,
+                                        "hideSelectedOption" => true,
+                                        "topLabel" => "Students",
+                                        "required" => true
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "ratio",
+                                    "placeholder" => "2:1 (double), 1:1 (same), ...",
+                                    "options" => [
+                                        "topLabel" => "Ratio",
+                                        "required" => true,
+                                        "pattern" => "^\\d+:\\d+$",
+                                        "patternErrorMessage" => "Ratio format must be 'number:number' (ex: 2:1, 1:1, ...)"
+                                    ],
+                                    "helper" => "How many XP per 1 " . $name
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "threshold",
+                                    "placeholder" => "Threshold",
+                                    "options" => [
+                                        "topLabel" => "Threshold"
+                                    ],
+                                    "helper" => "Max. $name that can be exchanged"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                "Exchange $name" => [
+                    "modalSize" => "sm",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "ratio",
+                                    "placeholder" => "2:1 (double), 1:1 (same), ...",
+                                    "options" => [
+                                        "topLabel" => "Ratio",
+                                        "required" => true,
+                                        "pattern" => "^\\d+:\\d+$",
+                                        "patternErrorMessage" => "Ratio format must be 'number:number' (ex: 2:1, 1:1, ...)"
+                                    ],
+                                    "helper" => "How many XP per 1 " . $name
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "threshold",
+                                    "placeholder" => "Threshold",
+                                    "options" => [
+                                        "topLabel" => "Threshold"
+                                    ],
+                                    "helper" => "Max. $name that can be exchanged"
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+        }
+
+        return $lists;
     }
 
     /**
      * @throws Exception
      */
-    public function saveListingItem(string $listName, string $action, array $item)
+    public function saveListingItem(string $listName, string $action, array $item): ?string
     {
+        $name = $this->getVCName();
+
         if ($listName == "Settings") {
             if ($action == Action::EDIT) {
                 // Set name
-                $this->setName($item["name"] ?? "Token(s)");
+                $this->setVCName($item["name"] ?? self::DEFAULT_NAME);
 
                 // Set image
                 if (isset($item["image"]) && !Utils::strStartsWith($item["image"], API_URL))
                     $this->setImage($item["image"]);
             }
+
+        } elseif ($listName == "Automated actions") {
+            if ($action == Action::NEW || $action == Action::DUPLICATE || $action == Action::EDIT) {
+                if ($action == Action::NEW || $action == Action::DUPLICATE) {
+                    // Format name
+                    $name = $item["name"];
+                    if ($action == Action::DUPLICATE) $name .= " (Copy)";
+
+                    $action = AutoAction::addAction($this->course->getId(), $name, $item["description"], $item["type"],
+                        $item["amount"]);
+
+                } else {
+                    $action = AutoAction::getActionById($item["id"]);
+                    $action->editAction($item["name"], $item["description"], $item["type"], $item["amount"], $item["isActive"] ?? false);
+                }
+
+            } elseif ($action == Action::DELETE) AutoAction::deleteAction($item["id"]);
+
+        } elseif ($listName == "Exchanging $name") {
+            if ($action == "Exchange $name" || $action == "Exchange multiple") {
+                if ($action == "Exchange $name") $users = [$item["user"]];
+                else $users = array_map(function ($userId) {
+                    return intval(substr($userId, 3));
+                }, $item["users"]);
+
+                foreach ($users as $userId) {
+                    if (!self::hasExchanged($userId)) {
+                        $parts = explode(":", $item["ratio"]);
+                        $ratio = round(intval($parts[0]) / intval($parts[1]));
+                        $threshold = $item["threshold"] ?? null;
+                        $earnedXP = self::exchangeTokensForXP($userId, $ratio, $threshold);
+
+                        if ($action == "Exchange $name") return $item["name"] . " earned $earnedXP XP";
+                    }
+                }
+                return "Exchanged $name!";
+            }
         }
+
+        return null;
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ----------------- Rule System ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    /**
+     * @throws Exception
+     */
+    protected function generateRuleParams(...$args): array
+    {
+        return AutoAction::generateRuleParams(...$args);
     }
 
 
@@ -326,7 +684,7 @@ class VirtualCurrency extends Module
      *
      * @return string
      */
-    public function getName(): string
+    public function getVCName(): string
     {
         return Core::database()->select(self::TABLE_VC_CONFIG, ["course" => $this->course->getId()], "name");
     }
@@ -338,7 +696,7 @@ class VirtualCurrency extends Module
      * @return void
      * @throws Exception
      */
-    public function setName(string $name)
+    public function setVCName(string $name)
     {
         self::validateName($name);
         Core::database()->update(self::TABLE_VC_CONFIG, ["name" => $name], ["course" => $this->course->getId()]);
@@ -378,78 +736,6 @@ class VirtualCurrency extends Module
     }
 
 
-    /**
-     * Gets Virtual Currency skill cost.
-     *
-     * @return void
-     */
-    public function getSkillCost(): int
-    {
-        return intval(Core::database()->select(self::TABLE_VC_CONFIG, ["course" => $this->course->getId()], "skillCost"));
-    }
-
-    /**
-     * Sets Virtual Currency skill cost.
-     *
-     * @param int $cost
-     * @return void
-     * @throws Exception
-     */
-    public function setSkillCost(int $cost)
-    {
-        self::validateInteger("skill cost", $cost);
-        Core::database()->update(self::TABLE_VC_CONFIG, ["skillCost" => $cost], ["course" => $this->course->getId()]);
-    }
-
-
-    /**
-     * Gets Virtual Currency wildcard cost.
-     *
-     * @return void
-     */
-    public function getWildcardCost(): int
-    {
-        return intval(Core::database()->select(self::TABLE_VC_CONFIG, ["course" => $this->course->getId()], "wildcardCost"));
-    }
-
-    /**
-     * Sets Virtual Currency wildcard cost.
-     *
-     * @param int $cost
-     * @return void
-     * @throws Exception
-     */
-    public function setWildcardCost(int $cost)
-    {
-        self::validateInteger("wildcard cost", $cost);
-        Core::database()->update(self::TABLE_VC_CONFIG, ["wildcardCost" => $cost], ["course" => $this->course->getId()]);
-    }
-
-
-    /**
-     * Gets Virtual Currency attempt rating.
-     *
-     * @return void
-     */
-    public function getAttemptRating(): int
-    {
-        return intval(Core::database()->select(self::TABLE_VC_CONFIG, ["course" => $this->course->getId()], "attemptRating"));
-    }
-
-    /**
-     * Sets Virtual Currency attempt rating.
-     *
-     * @param int $rating
-     * @return void
-     * @throws Exception
-     */
-    public function setAttemptRating(int $rating)
-    {
-        self::validateInteger("rating", $rating);
-        Core::database()->update(self::TABLE_VC_CONFIG, ["attemptRating" => $rating], ["course" => $this->course->getId()]);
-    }
-
-
     /*** ---------- Wallet ---------- ***/
 
     /**
@@ -467,7 +753,7 @@ class VirtualCurrency extends Module
         if ($this->userHasWallet($userId)) // already has a wallet
             Core::database()->update(self::TABLE_WALLET, [
                 "tokens" => 0,
-                "exchanged" => false
+                "exchanged" => +false
             ], ["course" => $courseId, "user" => $userId]);
 
         else
@@ -475,7 +761,7 @@ class VirtualCurrency extends Module
                 "course" => $courseId,
                 "user" => $userId,
                 "tokens" => 0,
-                "exchanged" => false
+                "exchanged" => +false
             ]);
     }
 
@@ -524,7 +810,7 @@ class VirtualCurrency extends Module
      */
     public function updateUserTokens(int $userId, int $tokens)
     {
-        $newTokens = max($this->getUserTokens($userId) + $tokens, 0);
+        $newTokens = $this->getUserTokens($userId) + $tokens;
         $this->setUserTokens($userId, $newTokens);
     }
 
@@ -550,23 +836,21 @@ class VirtualCurrency extends Module
      * NOTE: threshold is related to tokens, not XP
      *
      * @param int $userId
-     * @param int $ratio
+     * @param float $ratio
      * @param int|null $threshold
      * @return int
      * @throws Exception
      */
     public function exchangeTokensForXP(int $userId, float $ratio = 1, ?int $threshold = null): int
     {
-        $xpLevels = $this->course->getModuleById(XPLevels::ID);
-        if (!$xpLevels || !$xpLevels->isEnabled())
-            throw new Exception("Can't exchange tokens for XP: " . $xpLevels::NAME . " module is not enabled or doesn't exist.");
+        $this->checkDependency(XPLevels::ID);
 
         // Check if already exchanged
         if ($this->hasExchanged($userId))
-            throw new Exception("Can't exchange " . $this->getName() . " more than once.");
+            throw new Exception("Can't exchange " . $this->getVCName() . " more than once.");
 
         $totalTokens = $this->getUserTokens($userId);
-        $exchangeableTokens = !is_null($threshold) ? min($totalTokens, $threshold) : $totalTokens;
+        $exchangeableTokens = min($totalTokens, $threshold ?? PHP_INT_MAX);
         $earnedXP = intval(round($exchangeableTokens * $ratio));
 
         // Remove tokens & set flag
@@ -579,7 +863,7 @@ class VirtualCurrency extends Module
 
         // Give award
         $awardsModule = new Awards($this->course);
-        $awardsModule->giveAward($userId, $this->getName() . " exchange", AwardType::BONUS, null, $earnedXP);
+        $awardsModule->giveAward($userId, $this->getVCName() . " exchange", AwardType::BONUS, null, $earnedXP);
 
         return $earnedXP;
     }
@@ -614,22 +898,5 @@ class VirtualCurrency extends Module
 
         if (iconv_strlen($name) > 50)
             throw new Exception("Virtual Currency name is too long: maximum of 50 characters.");
-    }
-
-    /**
-     * Validates an integer.
-     *
-     * @param string $param
-     * @param $value
-     * @return void
-     * @throws Exception
-     */
-    private static function validateInteger(string $param, $value)
-    {
-        if (is_null($value))
-            throw new Exception("Virtual Currency $param can't be null.");
-
-        if (!is_numeric($value) || $value < 0)
-            throw new Exception("Virtual Currency $param needs to be a number bigger or equal than 0.");
     }
 }

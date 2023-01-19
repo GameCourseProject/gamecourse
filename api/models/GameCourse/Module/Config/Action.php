@@ -16,6 +16,7 @@ class Action
     const DELETE = "delete";
     const DUPLICATE = "duplicate";
     const VIEW = "view";
+    const VIEW_RULE = "view-rule";
     const MOVE_UP = "move-up";
     const MOVE_DOWN = "move-down";
     const IMPORT = "import";

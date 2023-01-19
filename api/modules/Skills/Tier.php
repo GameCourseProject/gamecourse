@@ -14,9 +14,10 @@ use ZipArchive;
 class Tier
 {
     const TABLE_SKILL_TIER = 'skill_tier';
+    const TABLE_SKILL_TIER_COST = 'skill_tier_cost';
 
     const HEADERS = [   // headers for import/export functionality
-        "name", "reward", "position", "isActive"
+        "name", "reward", "position", "isActive", "costType", "cost", "increment, minRating"
     ];
 
     const WILDCARD = "Wildcard";
@@ -63,6 +64,26 @@ class Tier
         return $this->getData("position");
     }
 
+    public function getCostType(): string
+    {
+        return $this->getData("costType");
+    }
+
+    public function getCost(): int
+    {
+        return $this->getData("cost");
+    }
+
+    public function getIncrement(): int
+    {
+        return $this->getData("increment");
+    }
+
+    public function getMinRating(): int
+    {
+        return $this->getData("minRating");
+    }
+
     public function isActive(): bool
     {
         return $this->getData("isActive");
@@ -90,8 +111,9 @@ class Tier
      */
     public function getData(string $field = "*")
     {
-        $table = self::TABLE_SKILL_TIER;
+        $table = self::TABLE_SKILL_TIER . " t LEFT JOIN " . self::TABLE_SKILL_TIER_COST . " tc on tc.tier=t.id";
         $where = ["id" => $this->id];
+        if ($field == "*") $field = "t.*, tc.costType, tc.cost, tc.increment, tc.minRating";
         $res = Core::database()->select($table, $where, $field);
         return is_array($res) ? self::parse($res) : self::parse(null, $res, $field);
     }
@@ -128,6 +150,38 @@ class Tier
     /**
      * @throws Exception
      */
+    public function setCostType(string $type)
+    {
+        $this->setData(["costType" => $type]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setCost(int $cost)
+    {
+        $this->setData(["cost" => $cost]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setIncrement(int $increment)
+    {
+        $this->setData(["increment" => $increment]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setMinRating(int $rating)
+    {
+        $this->setData(["minRating" => $rating]);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function setActive(bool $isActive)
     {
         $this->setData(["isActive" => +$isActive]);
@@ -147,6 +201,24 @@ class Tier
         // Trim values
         self::trim($fieldValues);
 
+        $costValues = []; // values that need to go to 'skill_tier_cost' table
+        if (key_exists("costType", $fieldValues)) {
+            $costValues["costType"] = $fieldValues["costType"];
+            unset($fieldValues["costType"]);
+        }
+        if (key_exists("cost", $fieldValues)) {
+            $costValues["cost"] = $fieldValues["cost"];
+            unset($fieldValues["cost"]);
+        }
+        if (key_exists("increment", $fieldValues)) {
+            $costValues["increment"] = $fieldValues["increment"];
+            unset($fieldValues["increment"]);
+        }
+        if (key_exists("minRating", $fieldValues)) {
+            $costValues["minRating"] = $fieldValues["minRating"];
+            unset($fieldValues["minRating"]);
+        }
+
         // Validate data
         if (key_exists("name", $fieldValues)) {
             self::validateName($fieldValues["name"]);
@@ -159,10 +231,14 @@ class Tier
             Utils::updateItemPosition($oldPosition, $newPosition, self::TABLE_SKILL_TIER, "position",
                 $this->id, $this->getSkillTree()->getTiers());
         }
+        if (key_exists("costType", $costValues)) {
+            $newCostType = $costValues["costType"];
+            $oldCostType = $this->getCostType();
+        }
 
         // Update data
-        if (count($fieldValues) != 0)
-            Core::database()->update(self::TABLE_SKILL_TIER, $fieldValues, ["id" => $this->id]);
+        if (count($costValues) != 0) Core::database()->update(self::TABLE_SKILL_TIER_COST, $costValues, ["tier" => $this->id]);
+        if (count($fieldValues) != 0) Core::database()->update(self::TABLE_SKILL_TIER, $fieldValues, ["id" => $this->id]);
 
         // Additional actions
         if (key_exists("isActive", $fieldValues) && !$fieldValues["isActive"]) {
@@ -172,6 +248,10 @@ class Tier
                 $skill = new Skill($skill["id"]);
                 $skill->setActive(false);
             }
+        }
+        if (key_exists("costType", $costValues)) {
+            if ($newCostType !== $oldCostType && $newCostType === "fixed")
+                $this->setData(["increment" => 0, "minRating" => 3]);
         }
     }
 
@@ -246,11 +326,11 @@ class Tier
      */
     public static function getTiers(int $courseId, bool $active = null, string $orderBy = "st.id, t.position"): array
     {
+        $table = SkillTree::TABLE_SKILL_TREE . " st RIGHT JOIN " . self::TABLE_SKILL_TIER . " t on t.skillTree=st.id" .
+            " LEFT JOIN " . self::TABLE_SKILL_TIER_COST . " tc on tc.tier=t.id";
         $where = ["course" => $courseId];
         if ($active !== null) $where["t.isActive"] = $active;
-        $tiers = Core::database()->selectMultiple(
-            SkillTree::TABLE_SKILL_TREE . " st RIGHT JOIN " . self::TABLE_SKILL_TIER . " t on t.skillTree=st.id",
-            $where, "t.*", $orderBy);
+        $tiers = Core::database()->selectMultiple($table, $where, "t.*, tc.costType, tc.cost, tc.increment, tc.minRating", $orderBy);
         foreach ($tiers as &$tier) { $tier = self::parse($tier); }
         return $tiers;
     }
@@ -266,9 +346,10 @@ class Tier
      */
     public static function getTiersOfSkillTree(int $skillTreeId, bool $active = null, string $orderBy = "position"): array
     {
+        $table = self::TABLE_SKILL_TIER . " t LEFT JOIN " . self::TABLE_SKILL_TIER_COST . " tc on tc.tier=t.id";
         $where = ["skillTree" => $skillTreeId];
         if ($active !== null) $where["isActive"] = $active;
-        $tiers = Core::database()->selectMultiple(self::TABLE_SKILL_TIER, $where, "*", $orderBy);
+        $tiers = Core::database()->selectMultiple($table, $where, "t.*, tc.costType, tc.cost, tc.increment, tc.minRating", $orderBy);
         foreach ($tiers as &$tier) { $tier = self::parse($tier); }
         return $tiers;
     }
@@ -285,10 +366,15 @@ class Tier
      * @param int $skillTreeId
      * @param string $name
      * @param int $reward
+     * @param string|null $costType
+     * @param int|null $cost
+     * @param int|null $increment
+     * @param int|null $minRating
      * @return Tier
      * @throws Exception
      */
-    public static function addTier(int $skillTreeId, string $name, int $reward): Tier
+    public static function addTier(int $skillTreeId, string $name, int $reward, string $costType = null, int $cost = null,
+                                   int $increment = null, int $minRating = null): Tier
     {
         self::trim($name);
         self::validateName($name);
@@ -296,6 +382,13 @@ class Tier
             "skillTree" => $skillTreeId,
             "name" => $name,
             "reward" => $reward
+        ]);
+        Core::database()->insert(self::TABLE_SKILL_TIER_COST, [
+            "tier" => $id,
+            "costType" => $costType ?? "fixed",
+            "cost" => $cost ?? 0,
+            "increment" => $increment ?? 0,
+            "minRating" => $minRating ?? 3
         ]);
         $tier = new Tier($id);
 
@@ -316,16 +409,25 @@ class Tier
      * @param int $reward
      * @param int $position
      * @param bool $isActive
+     * @param string|null $costType
+     * @param int|null $cost
+     * @param int|null $increment
+     * @param int|null $minRating
      * @return Tier
      * @throws Exception
      */
-    public function editTier(string $name, int $reward, int $position, bool $isActive): Tier
+    public function editTier(string $name, int $reward, int $position, bool $isActive, string $costType = null, int $cost = null,
+                             int $increment = null, int $minRating = null): Tier
     {
         $this->setData([
             "name" => $name,
             "reward" => $reward,
             "isActive" => +$isActive,
-            "position" => $position
+            "position" => $position,
+            "costType" => $costType ?? "fixed",
+            "cost" => $cost ?? 0,
+            "increment" => $increment ?? 0,
+            "minRating" => $minRating ?? 3
         ]);
         return $this;
     }
@@ -345,10 +447,15 @@ class Tier
             $copiedWildcard = self::getWildcard($copyTo->getId());
             $copiedWildcard->setReward($tierInfo["reward"]);
             $copiedWildcard->setActive($tierInfo["isActive"]);
+            $copiedWildcard->setCostType($tierInfo["costType"]);
+            $copiedWildcard->setCost($tierInfo["cost"]);
+            $copiedWildcard->setIncrement($tierInfo["increment"]);
+            $copiedWildcard->setMinRating($tierInfo["minRating"]);
             $copiedTier = $copiedWildcard;
 
         } else {
-            $copiedTier = self::addTier($copyTo->getId(), $tierInfo["name"], $tierInfo["reward"]);
+            $copiedTier = self::addTier($copyTo->getId(), $tierInfo["name"], $tierInfo["reward"], $tierInfo["costType"],
+                $tierInfo["cost"], $tierInfo["increment"], $tierInfo["minRating"]);
             $copiedTier->setActive($tierInfo["isActive"]);
         }
 
@@ -526,7 +633,7 @@ class Tier
      */
     private static function parse(array $tier = null, $field = null, string $fieldName = null)
     {
-        $intValues = ["id", "skillTree", "reward", "position"];
+        $intValues = ["id", "skillTree", "reward", "position", "cost", "increment", "minRating"];
         $boolValues = ["isActive"];
 
         return Utils::parse(["int" => $intValues, "bool" => $boolValues], $tier, $field, $fieldName);
@@ -540,7 +647,7 @@ class Tier
      */
     private static function trim(&...$values)
     {
-        $params = ["name"];
+        $params = ["name", "costType"];
         Utils::trim($params, ...$values);
     }
 }

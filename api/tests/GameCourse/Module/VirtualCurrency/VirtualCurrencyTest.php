@@ -7,7 +7,6 @@ use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
-use GameCourse\Module\Skills\Skills;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
@@ -137,7 +136,7 @@ class VirtualCurrencyTest extends TestCase
             $this->assertTrue(Core::database()->tableExists($table));
         }
         $this->assertTrue(file_exists($this->module->getDataFolder()));
-        $this->assertEquals("Token(s)", $this->module->getName());
+        $this->assertEquals(VirtualCurrency::DEFAULT_NAME, $this->module->getVCName());
 
         $students = $this->course->getStudents();
         foreach ($students as $student) {
@@ -159,24 +158,17 @@ class VirtualCurrencyTest extends TestCase
 
         (new Awards($copyTo))->setEnabled(true);
         (new XPLevels($copyTo))->setEnabled(true);
-        (new Skills($copyTo))->setEnabled(true);
         $VC = new VirtualCurrency($copyTo);
         $VC->setEnabled(true);
 
-        $this->module->setName("Gold");
-        $this->module->setSkillCost(10);
-        $this->module->setWildcardCost(40);
-        $this->module->setAttemptRating(3);
+        $this->module->setVCName("Gold");
         $this->module->setImage($this->imageProvider()["png"][0]);
 
         // When
         $this->module->copyTo($copyTo);
 
         // Then
-        $this->assertEquals($this->module->getName(), $VC->getName());
-        $this->assertEquals($this->module->getSkillCost(), $VC->getSkillCost());
-        $this->assertEquals($this->module->getWildcardCost(), $VC->getWildcardCost());
-        $this->assertEquals($this->module->getAttemptRating(), $VC->getAttemptRating());
+        $this->assertEquals($this->module->getVCName(), $VC->getVCName());
         $this->assertTrue($VC->hasImage());
         $this->assertEquals(file_get_contents($this->module->getImage()), file_get_contents($VC->getImage()));
     }
@@ -249,7 +241,7 @@ class VirtualCurrencyTest extends TestCase
      */
     public function getVirtualCurrencyName()
     {
-        $this->assertEquals("Token(s)", $this->module->getName());
+        $this->assertEquals(VirtualCurrency::DEFAULT_NAME, $this->module->getVCName());
     }
 
     /**
@@ -258,8 +250,8 @@ class VirtualCurrencyTest extends TestCase
      */
     public function setVirtualCurrencyName()
     {
-        $this->module->setName("Gold");
-        $this->assertEquals("Gold", $this->module->getName());
+        $this->module->setVCName("Gold");
+        $this->assertEquals("Gold", $this->module->getVCName());
     }
 
 
@@ -307,63 +299,6 @@ class VirtualCurrencyTest extends TestCase
         // Image set
         file_put_contents($this->module->getDataFolder() . "/token.png", "");
         $this->assertTrue($this->module->hasImage());
-    }
-
-
-    /**
-     * @test
-     */
-    public function getSkillCost()
-    {
-        $this->assertEquals(0, $this->module->getSkillCost());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function setSkillCost()
-    {
-        $this->module->setSkillCost(10);
-        $this->assertEquals(10, $this->module->getSkillCost());
-    }
-
-
-    /**
-     * @test
-     */
-    public function getWildcardCost()
-    {
-        $this->assertEquals(0, $this->module->getWildcardCost());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function setWildcardCost()
-    {
-        $this->module->setWildcardCost(40);
-        $this->assertEquals(40, $this->module->getWildcardCost());
-    }
-
-
-    /**
-     * @test
-     */
-    public function getAttemptRating()
-    {
-        $this->assertEquals(0, $this->module->getAttemptRating());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function setAttemptRating()
-    {
-        $this->module->setAttemptRating(3);
-        $this->assertEquals(3, $this->module->getAttemptRating());
     }
 
 

@@ -42,9 +42,9 @@
   <div class="flex items-center justify-start cursor-pointer gap-2">
     <app-simple-helper *ngIf="helperText" [text]="helperText" [position]="helperPosition"></app-simple-helper>
     <label class="label cursor-pointer">
-      <span *ngIf="labelPosition === 'left'" class="label-text mr-3">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
+      <span *ngIf="labelPosition === 'left'" [ngClass]="{'opacity-50': disabled}" class="label-text mr-3">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
       <ng-container [ngTemplateOutlet]="TOGGLE"></ng-container>
-      <span *ngIf="labelPosition === 'right'" class="label-text mr-3">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
+      <span *ngIf="labelPosition === 'right'" [ngClass]="{'opacity-50': disabled}" class="label-text mr-3">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
     </label>
   </div>
 </ng-template>

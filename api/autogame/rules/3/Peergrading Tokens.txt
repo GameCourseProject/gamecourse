@@ -1,0 +1,11 @@
+rule: Peergrading Tokens
+# Awards tokens for each peergraded post made
+
+    when:
+        tokens = METADATA["peergraded_tokens"]
+        logs = get_peergrading_logs(target)
+        repetitions = len(logs)
+        repetitions > 0
+		
+    then:
+        award_tokens(target, "Peergrading Gold", tokens, repetitions)

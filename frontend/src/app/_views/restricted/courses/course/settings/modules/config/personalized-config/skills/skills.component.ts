@@ -28,6 +28,9 @@ export class SkillsComponent implements OnInit {
   courseID: number;
   courseFolder: string;
 
+  VCEnabled: boolean;
+  VCName: string;
+
   skillTrees: SkillTree[];
   skillTreesInfo: {
     skillTreeId: number,
@@ -60,8 +63,13 @@ export class SkillsComponent implements OnInit {
   ngOnInit(): void {
     this.route.parent.params.subscribe(async params => {
       this.courseID = parseInt(params.id);
+
+      await this.isVCEnabled();
+      await this.getVCName();
+
       await this.initSkillTreesInfo(this.courseID);
       // await this.getCourseDataFolder();
+
       this.loading.page = false;
     });
   }
@@ -95,6 +103,14 @@ export class SkillsComponent implements OnInit {
     this.courseFolder = (await this.api.getCourseById(this.courseID).toPromise()).folder;
   }
 
+  async isVCEnabled() {
+    this.VCEnabled = (await this.api.getCourseModuleById(this.courseID, ApiHttpService.VIRTUAL_CURRENCY).toPromise()).enabled;
+  }
+
+  async getVCName() {
+    this.VCName = (await this.api.getVCName(this.courseID).toPromise());
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------- Tables ------------------ ***/
@@ -114,7 +130,8 @@ export class SkillsComponent implements OnInit {
       headers: [
         {label: 'Position (sorting)', align: 'middle'},
         {label: 'Tier', align: 'middle'},
-        {label: 'Reward', align: 'middle'},
+        {label: 'Reward (XP)', align: 'middle'},
+        {label: 'Cost', align: 'middle'},
         {label: 'Active', align: 'middle'},
         {label: 'Actions'}
       ],
@@ -122,7 +139,7 @@ export class SkillsComponent implements OnInit {
         order: [[ 0, 'asc' ]], // default order,
         columnDefs: [
           { orderData: 0,   targets: 1 },
-          { orderable: false, targets: [0, 1, 2, 3, 4] }
+          { orderable: false, targets: [0, 1, 2, 3, 4, 5] }
         ]
       }
     },
@@ -136,6 +153,7 @@ export class SkillsComponent implements OnInit {
         {label: 'Collab', align: 'middle'},
         {label: 'Extra', align: 'middle'},
         {label: 'Active', align: 'middle'},
+        {label: 'View Rule'},
         {label: 'Actions'}
       ],
       tableOptions: {
@@ -143,7 +161,7 @@ export class SkillsComponent implements OnInit {
         columnDefs: [
           { orderData: 0, targets: 2 },
           { orderData: 1, targets: 2 },
-          { orderable: false, targets: [0, 1, 2, 3, 4, 5, 6, 7, 8] }
+          { orderable: false, targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] }
         ]
       }
     }
@@ -159,6 +177,8 @@ export class SkillsComponent implements OnInit {
         {type: TableDataType.NUMBER, content: {value: tier.position}},
         {type: TableDataType.TEXT, content: {text: tier.name, classList: 'font-semibold'}},
         {type: TableDataType.NUMBER, content: {value: tier.reward}},
+        {type: TableDataType.TEXT, content: {text: tier.costType.capitalize() + ': ' + tier.cost +
+              (tier.costType === 'variable' ? (' + ' + tier.increment + ' x #attempts (rating >= ' + tier.minRating + ')') : '')}},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: tier.isActive}},
         {type: TableDataType.ACTIONS, content: {actions: [
           Action.EDIT,
@@ -169,6 +189,8 @@ export class SkillsComponent implements OnInit {
         ]}}
       ]);
     });
+
+    this.tablesInfo.tiers.headers[3].label = 'Cost (' + this.VCName + ')';
 
     this.getSkillTreeInfo(skillTreeId).data.tiers = table;
     this.getSkillTreeInfo(skillTreeId).loading.tiers = false;
@@ -207,6 +229,7 @@ export class SkillsComponent implements OnInit {
         {type: TableDataType.TOGGLE, content: {toggleId: 'isCollab', toggleValue: skill.isCollab}},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isExtra', toggleValue: skill.isExtra}},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: skill.isActive}},
+        {type: TableDataType.ACTIONS, content: {actions: [Action.VIEW_RULE]}},
         {type: TableDataType.ACTIONS, content: {actions: [
           {action: Action.VIEW, disabled: !skill.page},
           Action.EDIT,
@@ -298,6 +321,12 @@ export class SkillsComponent implements OnInit {
 
       } else if (action === Action.EXPORT) {
         // this.exportUsers([userToActOn]);
+
+      } else if (action === Action.VIEW_RULE) {
+        // const ruleLink = './rule-system/rule/' + skillToActOn["rule"]; // FIXME: redirect to rule
+        const ruleLink = './rule-system'
+        this.router.navigate([ruleLink], {relativeTo: this.route.parent});
+
       }
     }
   }
@@ -362,6 +391,10 @@ export class SkillsComponent implements OnInit {
       const tierToEdit = this.getSkillTreeInfo(this.skillTreeInView.id).tiers.find(el => el.id === this.tierToManage.id);
       tierToEdit.name = this.tierToManage.name;
       tierToEdit.reward = this.tierToManage.reward;
+      tierToEdit.costType = this.tierToManage.costType;
+      tierToEdit.cost = this.tierToManage.cost;
+      tierToEdit.increment = this.tierToManage.increment;
+      tierToEdit.minRating = this.tierToManage.minRating;
       await this.api.editTier(this.courseID, clearEmptyValues(tierToEdit)).toPromise();
       this.getSkillTreeInfo(this.skillTreeInView.id).tiers = await this.api.getTiersOfSkillTree(this.skillTreeInView.id, null).toPromise();
       this.buildTiersTable(this.skillTreeInView.id);
@@ -496,7 +529,11 @@ export class SkillsComponent implements OnInit {
   initTierToManage(tier?: Tier): TierManageData {
     const tierData: TierManageData = {
       name: tier?.name ?? null,
-      reward: tier?.reward ?? null
+      reward: tier?.reward ?? null,
+      costType: tier?.costType ?? 'fixed',
+      cost: tier?.cost ?? 0,
+      increment: tier?.increment ?? 0,
+      minRating: tier?.minRating ?? 3
     };
     if (tier) tierData.id = tier.id;
     return tierData;
@@ -619,7 +656,11 @@ export class SkillsComponent implements OnInit {
 export interface TierManageData {
   id?: number,
   name: string,
-  reward: number
+  reward: number,
+  costType: 'fixed' | 'variable',
+  cost: number,
+  increment: number,
+  minRating: number
 }
 
 export interface SkillManageData {

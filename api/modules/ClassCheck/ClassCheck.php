@@ -65,11 +65,7 @@ class ClassCheck extends Module
      */
     public function copyTo(Course $copyTo)
     {
-        $copiedModule = new ClassCheck($copyTo);
-
-        // Copy config
-        $tsvCode = $this->getTSVCode();
-        $copiedModule->saveTSVCode($tsvCode);
+        // Nothing to do here
     }
 
     public function disable()
