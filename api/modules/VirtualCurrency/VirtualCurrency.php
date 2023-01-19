@@ -535,7 +535,9 @@ class VirtualCurrency extends Module
                                     "placeholder" => "2:1 (double), 1:1 (same), ...",
                                     "options" => [
                                         "topLabel" => "Ratio",
-                                        "required" => true
+                                        "required" => true,
+                                        "pattern" => "^\\d+:\\d+$",
+                                        "patternErrorMessage" => "Ratio format must be 'number:number' (ex: 2:1, 1:1, ...)"
                                     ],
                                     "helper" => "How many XP per 1 " . $name
                                 ],
@@ -571,7 +573,9 @@ class VirtualCurrency extends Module
                                     "placeholder" => "2:1 (double), 1:1 (same), ...",
                                     "options" => [
                                         "topLabel" => "Ratio",
-                                        "required" => true
+                                        "required" => true,
+                                        "pattern" => "^\\d+:\\d+$",
+                                        "patternErrorMessage" => "Ratio format must be 'number:number' (ex: 2:1, 1:1, ...)"
                                     ],
                                     "helper" => "How many XP per 1 " . $name
                                 ],
