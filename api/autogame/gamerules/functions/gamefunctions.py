@@ -95,7 +95,7 @@ def get_page_view_logs(target, name=None):
     return connector.get_page_view_logs(target, name)
 
 @rule_function
-def get_participation_lecture_logs(target, lecture_nr):
+def get_participation_lecture_logs(target, lecture_nr=None):
     """
     Gets all lecture participation logs for a specific target.
 
@@ -105,7 +105,7 @@ def get_participation_lecture_logs(target, lecture_nr):
     return connector.get_participation_lecture_logs(target, lecture_nr)
 
 @rule_function
-def get_participation_invited_lecture_logs(target, lecture_nr):
+def get_participation_invited_lecture_logs(target, lecture_nr=None):
     """
     Gets all invited lecture participation logs for a specific target.
 

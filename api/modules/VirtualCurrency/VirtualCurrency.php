@@ -27,6 +27,7 @@ class VirtualCurrency extends Module
 {
     const TABLE_WALLET = "user_wallet";
     const TABLE_VC_SPENDING = "virtual_currency_spending";
+    const TABLE_VC_AUTO_ACTION = AutoAction::TABLE_VC_AUTO_ACTION;
     const TABLE_VC_CONFIG = "virtual_currency_config";
 
     const DEFAULT_NAME = "Token(s)";
@@ -62,6 +63,7 @@ class VirtualCurrency extends Module
     const RESOURCES = ['assets/'];
 
     const DATA_FOLDER = 'virtual_currency';
+    const RULE_SECTION = "Virtual Currency";
 
 
     /*** ----------------------------------------------- ***/
@@ -75,6 +77,7 @@ class VirtualCurrency extends Module
     {
         $this->initDatabase();
         $this->createDataFolder();
+        $this->initRules();
 
         // Init config
         Core::database()->insert(self::TABLE_VC_CONFIG, ["course" => $this->course->getId()]);
@@ -113,13 +116,18 @@ class VirtualCurrency extends Module
 
         // Copy config
         $copiedModule->setVCName($this->getVCName());
-
-        // Copy image
         if ($this->hasImage()) {
             $path = $this->getDataFolder() . "/token.png";
             $type = pathinfo($path, PATHINFO_EXTENSION);
             $base64 = 'data:image/' . $type . ';base64,' . base64_encode(file_get_contents($path));
             $copiedModule->setImage($base64);
+        }
+
+        // Copy auto actions
+        $actions = AutoAction::getActions($this->course->getId(), null, "id");
+        foreach ($actions as $action) {
+            $action = new AutoAction($action["id"]);
+            $action->copyAction($copyTo);
         }
     }
 
@@ -130,6 +138,7 @@ class VirtualCurrency extends Module
     {
         $this->cleanDatabase();
         $this->removeDataFolder();
+        $this->removeRules();
         $this->removeEvents();
     }
 
@@ -147,6 +156,21 @@ class VirtualCurrency extends Module
     {
         $name = $this->getVCName();
         $img = $this->getImage();
+
+        $actions = AutoAction::getActions($this->course->getId());
+        $actionTypes = [
+            "assignment grade" => "Assignment grade",
+            "attended lab" => "Attended lab",
+            "attended lecture" => "Attended lecture",
+            "attended lecture (late)" => "Attended lecture late",
+            "lab grade" => "Lab grade",
+            "participated in lecture" => "Participated in lecture",
+            "participated in invited lecture" => "Participated in invited lecture",
+            "peergraded post" => "Peergraded colleagues' posts",
+            "presentation grade" => "Presentation grade",
+            "questionnaire submitted" => "Questionnaire submitted",
+            "quiz grade" => "Quiz grade"
+        ];
 
         $lists = [
             [
@@ -216,6 +240,200 @@ class VirtualCurrency extends Module
                             ]
                         ]
                     ]
+                ]
+            ],
+            [
+                "name" => "Automated actions",
+                "itemName" => "action",
+                "topActions" => [
+                    "left" => [
+                        ["action" => Action::IMPORT, "icon" => "jam-download"],
+                        ["action" => Action::EXPORT, "icon" => "jam-upload"]
+                    ],
+                    "right" => [
+                        ["action" => Action::NEW, "icon" => "feather-plus-circle", "color" => "primary"]
+                    ]
+                ],
+                "headers" => [
+                    ["label" => "Action", "align" => "left"],
+                    ["label" => "Type", "align" => "middle"],
+                    ["label" => "$name", "align" => "middle"],
+                    ["label" => "Active", "align" => "middle"]
+                ],
+                "data" => array_map(function ($action) use ($actionTypes, $img) {
+                    return [
+                        ["type" => DataType::TEXT, "content" => ["text" => $action["name"], "subtitle" => $action["description"]]],
+                        ["type" => DataType::TEXT, "content" => ["text" => $actionTypes[$action["type"]]]],
+                        ["type" => DataType::CUSTOM, "content" => ["html" => "<div class='flex items-center justify-center'>
+                            <span class='prose text-sm'>" . $action["amount"] . "</span><img class='h-4 w-4 object-contain ml-2' src='$img'></div>", "searchBy" => strval($action["amount"])]],
+                        ["type" => DataType::TOGGLE, "content" => ["toggleId" => "isActive", "toggleValue" => $action["isActive"]]]
+                    ];
+                }, $actions),
+                "actions" => [
+                    ["action" => Action::DUPLICATE, "scope" => ActionScope::ALL],
+                    ["action" => Action::EDIT, "scope" => ActionScope::ALL],
+                    ["action" => Action::DELETE, "scope" => ActionScope::ALL],
+                    ["action" => Action::EXPORT, "scope" => ActionScope::ALL]
+                ],
+                "options" => [
+                    "order" => [[0, "asc"]],
+                    "columnDefs" => [
+                        ["type" => "natural", "targets" => [0, 1, 2]],
+                        ["searchable" => false, "targets" => [3]],
+                        ["orderable" => false, "targets" => [3]]
+                    ]
+                ],
+                "items" => $actions,
+                Action::NEW => [
+                    "modalSize" => "md",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "id" => "name",
+                                    "placeholder" => "Action name",
+                                    "options" => [
+                                        "topLabel" => "Name",
+                                        "required" => true,
+                                        "pattern" => "^[x00-\\xFF\\w()&\\s-]+$",
+                                        "patternErrorMessage" => "Action name is not allowed. Allowed characters: alphanumeric  _  (  )  -  &",
+                                        "maxLength" => 50
+                                    ],
+                                    "helper" => "Name for action"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "id" => "description",
+                                    "placeholder" => "Action description",
+                                    "options" => [
+                                        "topLabel" => "Description",
+                                        "pattern" => "(?!^\\d+$)^.+$",
+                                        "patternErrorMessage" => "Action description can't be composed of only numbers",
+                                        "maxLength" => 150
+                                    ],
+                                    "helper" => "Description for action"
+                                ]
+                            ],
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-5",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::SELECT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "type",
+                                    "placeholder" => "Select a type of action to award or penalize",
+                                    "options" => [
+                                        "options" => array_map(function ($description, $type) {
+                                            return ["value" => $type, "text" => $description];
+                                        }, $actionTypes, array_keys($actionTypes)),
+                                        "topLabel" => "Type",
+                                        "required" => true
+                                    ],
+                                    "helper" => "Type of action to award or penalize"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "amount",
+                                    "placeholder" => "Amount of $name to award or penalize",
+                                    "options" => [
+                                        "topLabel" => "Amount",
+                                        "required" => true
+                                    ],
+                                    "helper" => "Amount of $name to award or penalize"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                Action::EDIT => [
+                    "modalSize" => "md",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "id" => "name",
+                                    "placeholder" => "Action name",
+                                    "options" => [
+                                        "topLabel" => "Name",
+                                        "required" => true,
+                                        "pattern" => "^[x00-\\xFF\\w()&\\s-]+$",
+                                        "patternErrorMessage" => "Action name is not allowed. Allowed characters: alphanumeric  _  (  )  -  &",
+                                        "maxLength" => 50
+                                    ],
+                                    "helper" => "Name for action"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::TEXT,
+                                    "id" => "description",
+                                    "placeholder" => "Action description",
+                                    "options" => [
+                                        "topLabel" => "Description",
+                                        "pattern" => "(?!^\\d+$)^.+$",
+                                        "patternErrorMessage" => "Action description can't be composed of only numbers",
+                                        "maxLength" => 150
+                                    ],
+                                    "helper" => "Description for action"
+                                ]
+                            ],
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap mt-5",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::SELECT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "type",
+                                    "placeholder" => "Select a type of action to award or penalize",
+                                    "options" => [
+                                        "options" => array_map(function ($description, $type) {
+                                            return ["value" => $type, "text" => $description];
+                                        }, $actionTypes, array_keys($actionTypes)),
+                                        "topLabel" => "Type",
+                                        "required" => true
+                                    ],
+                                    "helper" => "Type of action to award or penalize"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/2",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "amount",
+                                    "placeholder" => "Amount of $name to award or penalize",
+                                    "options" => [
+                                        "topLabel" => "Amount",
+                                        "required" => true
+                                    ],
+                                    "helper" => "Amount of $name to award or penalize"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                Action::IMPORT => [
+                    "extensions" => [".csv", ".txt"]
                 ]
             ]
         ];
@@ -395,6 +613,23 @@ class VirtualCurrency extends Module
                     $this->setImage($item["image"]);
             }
 
+        } elseif ($listName == "Automated actions") {
+            if ($action == Action::NEW || $action == Action::DUPLICATE || $action == Action::EDIT) {
+                if ($action == Action::NEW || $action == Action::DUPLICATE) {
+                    // Format name
+                    $name = $item["name"];
+                    if ($action == Action::DUPLICATE) $name .= " (Copy)";
+
+                    $action = AutoAction::addAction($this->course->getId(), $name, $item["description"], $item["type"],
+                        $item["amount"]);
+
+                } else {
+                    $action = AutoAction::getActionById($item["id"]);
+                    $action->editAction($item["name"], $item["description"], $item["type"], $item["amount"], $item["isActive"] ?? false);
+                }
+
+            } elseif ($action == Action::DELETE) AutoAction::deleteAction($item["id"]);
+
         } elseif ($listName == "Exchanging $name") {
             if ($action == "Exchange $name" || $action == "Exchange multiple") {
                 if ($action == "Exchange $name") $users = [$item["user"]];
@@ -417,6 +652,19 @@ class VirtualCurrency extends Module
         }
 
         return null;
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ----------------- Rule System ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    /**
+     * @throws Exception
+     */
+    protected function generateRuleParams(...$args): array
+    {
+        return AutoAction::generateRuleParams(...$args);
     }
 
 

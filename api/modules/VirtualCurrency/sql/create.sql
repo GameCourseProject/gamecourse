@@ -25,3 +25,18 @@ CREATE TABLE IF NOT EXISTS virtual_currency_spending(
 
     FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS virtual_currency_auto_action(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course                      int unsigned NOT NULL,
+    name                        varchar(50) NOT NULL,
+    description                 varchar(150),
+    type                        varchar(50) NOT NULL,
+    amount                      int NOT NULL DEFAULT 0,
+    isActive                    boolean NOT NULL DEFAULT TRUE,
+    rule                        int unsigned NOT NULL,
+
+    UNIQUE key(name, course),
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN key(rule) REFERENCES rule(id) ON DELETE CASCADE
+);

@@ -116,7 +116,7 @@ class Badge
      * @example getData("name, description") --> gets badge name & description
      *
      * @param string $field
-     * @return array|int|null
+     * @return array|int|string|boolean|null
      */
     public function getData(string $field = "*")
     {

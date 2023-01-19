@@ -643,7 +643,7 @@ def get_page_view_logs(target, name=None):
 
     return get_logs(target, "page viewed", None, None, None, None, name)
 
-def get_participation_lecture_logs(target, lecture_nr):
+def get_participation_lecture_logs(target, lecture_nr=None):
     """
     Gets all lecture participation logs for a specific target.
 
@@ -652,7 +652,7 @@ def get_participation_lecture_logs(target, lecture_nr):
 
     return get_logs(target, "participated in lecture", None, None, None, None, lecture_nr)
 
-def get_participation_invited_lecture_logs(target, lecture_nr):
+def get_participation_invited_lecture_logs(target, lecture_nr=None):
     """
     Gets all invited lecture participation logs for a specific target.
 

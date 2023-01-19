@@ -381,6 +381,13 @@ export class ConfigComponent implements OnInit {
     return item;
   }
 
+  getConfigKey(): string
+  {
+    if (this.mode === 'create') return Action.NEW;
+    if (['duplicate', 'edit', 'delete'].includes(this.mode)) return Action.EDIT;
+    return this.mode;
+  }
+
 
   // General Inputs
 
@@ -451,9 +458,9 @@ export class ConfigComponent implements OnInit {
   // Lists
 
   initItemToManage(list: List, item?: any, index?: number): ItemManageData {
-    const itemData = item ? _.cloneDeep(item) : getEmptyItem(list[this.mode === 'create' ? Action.NEW : this.mode].contents, {});
-    if (this.mode === 'create' || this.mode === 'edit')
-      initValues(list[this.mode === 'create' ? Action.NEW : this.mode]['contents'], itemData);
+    const itemData = item ? _.cloneDeep(item) : getEmptyItem(list[this.getConfigKey()].contents, {});
+    if (this.mode === 'create' || this.mode === 'edit' || this.mode === 'duplicate' || this.mode === 'delete')
+      initValues(list[this.getConfigKey()]['contents'], itemData);
     return {
       list: list,
       item: itemData,
@@ -478,7 +485,7 @@ export class ConfigComponent implements OnInit {
   }
 
   getItemToManage(): ItemManageData {
-    getItem(this.itemToManage.list[this.mode === 'create' ? Action.NEW : this.mode]['contents'], this.itemToManage.item);
+    getItem(this.itemToManage.list[this.getConfigKey()]['contents'], this.itemToManage.item);
     return this.nullifyEmptyValues(this.itemToManage.item);
 
     function getItem(contents: (ConfigInputContainer|ConfigInputItem)[], item: any): any {
