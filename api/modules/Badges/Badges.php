@@ -220,6 +220,7 @@ class Badges extends Module
                     ];
                 }, $badges),
                 "actions" => [
+                    ["action" => Action::VIEW_RULE, "scope" => ActionScope::ALL],
                     ["action" => Action::DUPLICATE, "scope" => ActionScope::ALL],
                     ["action" => Action::EDIT, "scope" => ActionScope::ALL],
                     ["action" => Action::DELETE, "scope" => ActionScope::ALL],

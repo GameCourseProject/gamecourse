@@ -5,6 +5,7 @@ export enum Action {
   REMOVE = 'remove',
   DUPLICATE = 'duplicate',
   VIEW = 'view',
+  VIEW_RULE = 'view-rule',
   MOVE_UP = 'move-up',
   MOVE_DOWN = 'move-down',
   IMPORT = 'import',

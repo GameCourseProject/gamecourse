@@ -270,6 +270,7 @@ class VirtualCurrency extends Module
                     ];
                 }, $actions),
                 "actions" => [
+                    ["action" => Action::VIEW_RULE, "scope" => ActionScope::ALL],
                     ["action" => Action::DUPLICATE, "scope" => ActionScope::ALL],
                     ["action" => Action::EDIT, "scope" => ActionScope::ALL],
                     ["action" => Action::DELETE, "scope" => ActionScope::ALL],
@@ -352,7 +353,7 @@ class VirtualCurrency extends Module
                                         "topLabel" => "Amount",
                                         "required" => true
                                     ],
-                                    "helper" => "Amount of $name to award or penalize"
+                                    "helper" => "Amount of $name to award (positive amount) or penalize (negative amount)"
                                 ]
                             ]
                         ]

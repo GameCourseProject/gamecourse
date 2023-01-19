@@ -153,6 +153,7 @@ export class SkillsComponent implements OnInit {
         {label: 'Collab', align: 'middle'},
         {label: 'Extra', align: 'middle'},
         {label: 'Active', align: 'middle'},
+        {label: 'View Rule'},
         {label: 'Actions'}
       ],
       tableOptions: {
@@ -160,7 +161,7 @@ export class SkillsComponent implements OnInit {
         columnDefs: [
           { orderData: 0, targets: 2 },
           { orderData: 1, targets: 2 },
-          { orderable: false, targets: [0, 1, 2, 3, 4, 5, 6, 7, 8] }
+          { orderable: false, targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] }
         ]
       }
     }
@@ -228,6 +229,7 @@ export class SkillsComponent implements OnInit {
         {type: TableDataType.TOGGLE, content: {toggleId: 'isCollab', toggleValue: skill.isCollab}},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isExtra', toggleValue: skill.isExtra}},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: skill.isActive}},
+        {type: TableDataType.ACTIONS, content: {actions: [Action.VIEW_RULE]}},
         {type: TableDataType.ACTIONS, content: {actions: [
           {action: Action.VIEW, disabled: !skill.page},
           Action.EDIT,
@@ -319,6 +321,12 @@ export class SkillsComponent implements OnInit {
 
       } else if (action === Action.EXPORT) {
         // this.exportUsers([userToActOn]);
+
+      } else if (action === Action.VIEW_RULE) {
+        // const ruleLink = './rule-system/rule/' + skillToActOn["rule"]; // FIXME: redirect to rule
+        const ruleLink = './rule-system'
+        this.router.navigate([ruleLink], {relativeTo: this.route.parent});
+
       }
     }
   }

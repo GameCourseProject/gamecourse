@@ -57,8 +57,8 @@
 
 <!-- Type: BUTTON -->
 <ng-container *ngIf="type === DataType.BUTTON">
-  <button class="btn btn-sm btn-wide {{buttonColor ? buttons[buttonColor] : ''}} {{classList}}" [ngClass]="{'gap-2': buttonIcon}"
-          (click)="btnClicked.emit('single')">
+  <button class="btn btn-sm flex-nowrap {{buttonColor ? buttons[buttonColor] : ''}} {{buttonStyle === 'outline' ? 'btn-outline' : ''}}
+          {{classList}}" [ngClass]="{'gap-2': buttonIcon}" (click)="btnClicked.emit('single')">
     <ng-icon *ngIf="buttonIcon" [name]="buttonIcon" size="1.2rem"></ng-icon>
     {{buttonText}}
   </button>
@@ -164,6 +164,12 @@
         <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" [disabled]="$any(action).disabled" (click)="btnClicked.emit(Action.VIEW)">
           <ng-icon name="jam-eye-f" size="1.5rem" class="text-base-content text-opacity-75"></ng-icon>
         </button>
+      </div>
+
+      <div table-data *ngIf="action === Action.VIEW_RULE || $any(action).action === Action.VIEW_RULE"
+        [type]="DataType.BUTTON"
+        [data]="{buttonText: 'Rule', buttonColor: 'secondary', buttonStyle: 'outline', buttonIcon: 'tabler-clipboard-list'}"
+        (btnClicked)="btnClicked.emit(Action.VIEW_RULE)">
       </div>
 
       <div *ngIf="action === Action.MOVE_UP || $any(action).action === Action.MOVE_UP" class="tooltip" data-tip="Move up" [ngClass]="{'cursor-not-allowed': $any(action).disabled}">

@@ -115,18 +115,36 @@ export class ConfigComponent implements OnInit {
       // Add actions to table
       if (list.actions?.length > 0 && list.headers[list.headers.length - 1].label !== 'Actions') {
         const nrItems = list.data.length;
+
+        // Add headers
+        const hasRuleAction = list.actions.find(action => action.action === Action.VIEW_RULE);
+        if (hasRuleAction) list.headers.push({label: 'View Rule'});
         list.headers.push({label: 'Actions'});
+
+        // Add cells
         list.data = list.data.map((row, index) => {
-          row.push({type: TableDataType.ACTIONS, content: {actions: list.actions.map(action => {
-            const a = _.cloneDeep(action);
-            a.disabled = !scopeAllows(action.scope, nrItems, index);
-            return a;
+          if (hasRuleAction) {
+            row.push({type: TableDataType.ACTIONS, content: {actions: list.actions
+                  .filter(action => action.action === Action.VIEW_RULE)
+                  .map(action => {
+                    const a = _.cloneDeep(action);
+                    a.disabled = !scopeAllows(action.scope, nrItems, index);
+                    return a;
+            })}});
+          }
+          row.push({type: TableDataType.ACTIONS, content: {actions: list.actions
+                .filter(action => action.action !== Action.VIEW_RULE)
+                .map(action => {
+                  const a = _.cloneDeep(action);
+                  a.disabled = !scopeAllows(action.scope, nrItems, index);
+                  return a;
           })}});
           return row;
         });
         if (!list.options) list.options = {};
         if (!list.options.hasOwnProperty('columnDefs')) list.options['columnDefs'] = [];
-        list.options['columnDefs'].push({orderable: false, targets: list.headers.length - 1});
+        list.options['columnDefs'].push({orderable: false, targets: [list.headers.length - 1]});
+        if (hasRuleAction) list.options['columnDefs'][list.options['columnDefs'].length - 1]['targets'].push(list.headers.length - 2);
       }
 
       // Parse dates
@@ -271,12 +289,6 @@ export class ConfigComponent implements OnInit {
         else if (action === Action.DELETE) successMsg = list.itemName.capitalize() + ' deleted';
         AlertService.showAlert(AlertType.SUCCESS, successMsg);
 
-        // Redirect to rule
-        if ((action === Action.NEW || action === Action.EDIT) && item.hasOwnProperty("rule")) {
-          // const redirectLink = '/rule-system/rule/' + item["rule"];
-          // this.router.navigate([redirectLink]); FIXME: redirect
-        }
-
       } catch (error) {
         list.loading.action = false;
       }
@@ -318,6 +330,11 @@ export class ConfigComponent implements OnInit {
 
     } else if (action === Action.EXPORT) {
       this.exportItems(list, [itemToActOn]);
+
+    } else if (action === Action.VIEW_RULE) {
+      // const ruleLink = './rule-system/rule/' + itemToActOn["rule"]; // FIXME: redirect to rule
+      const ruleLink = './rule-system'
+      this.router.navigate([ruleLink], {relativeTo: this.route.parent});
 
     } else {
       this.mode = action;
