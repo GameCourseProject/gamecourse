@@ -467,14 +467,14 @@ class GoogleSheets extends Module
                                 "\"" . $this->id . "\"",
                                 "\"\"",
                                 "\"$action\"",
-                                $xp,
+                                intval(round($xp)),
                                 $profId
                             ];
                             $values[] = "(" . implode(", ", $params) . ")";
 
                         } else if (intval($result["rating"]) != $xp) { // update data
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
-                                "rating" => $xp,
+                                "rating" => intval(round($xp)),
                             ], ["user" => $userId, "course" => $courseId, "type" => $action]);
                             $newData = true;
                         }
@@ -543,14 +543,14 @@ class GoogleSheets extends Module
                                 "\"" . $this->id . "\"",
                                 "\"$info\"",
                                 "\"$action\"",
-                                $xp,
+                                intval(round($xp)),
                                 $profId
                             ];
                             $values[] = "(" . implode(", ", $params) . ")";
 
                         } else if (intval($result["rating"]) != $xp) { // update data
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
-                                "rating" =>  $xp
+                                "rating" =>  intval(round($xp))
                             ], ["user" => $userId, "course" => $courseId, "description" => $info, "type" =>  $action]);
                             $newData = true;
                         }

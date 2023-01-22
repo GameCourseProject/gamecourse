@@ -12,6 +12,7 @@ use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use PDO;
 use PDOException;
+use Utils\Utils;
 
 /**
  * This is the Moodle module, which serves as a compartimentalized
@@ -494,8 +495,10 @@ class Moodle extends Module
      */
     public function getAssignmentGrades(): array
     {
-        $fields = "a.id as assignmentId, a.name as assignmentName, u.username, g.grade, ug.username as grader, g.timemodified as timestamp";
+        $fields = "a.id as assignmentId, a.name as assignmentName, u.username, g.grade, ug.username as grader, 
+                   s.timemodified as submissionTimestamp, g.timemodified as gradeTimestamp";
         $table = self::$prefix . "assign_grades g JOIN " . self::$prefix . "assign a on g.assignment=a.id JOIN " .
+            self::$prefix . "assign_submission s on s.assignment=a.id and s.userid=g.userid JOIN " .
             self::$prefix . "user u on g.userid=u.id JOIN " . self::$prefix . "user ug on g.grader=ug.id JOIN " .
             self::$prefix . "course c on a.course=c.id";
         $where = ["a.course" => self::$courseId];
@@ -535,7 +538,7 @@ class Moodle extends Module
                         "\"" . $assignmentGrade["assignmentName"] . "\"",
                         "\"assignment grade\"",
                         "\"mod/assign/view.php?id=" . $assignmentGrade["assignmentId"] . "\"",
-                        "\"" . date("Y-m-d H:i:s", $assignmentGrade["timestamp"]) . "\"",
+                        "\"" . date("Y-m-d H:i:s", $assignmentGrade["submissionTimestamp"]) . "\"",
                         $assignmentGrade["grade"],
                         $grader ? $grader->getId() : null
                     ];
@@ -544,12 +547,12 @@ class Moodle extends Module
                 } else { // already has assignment grade
                     Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
                         "description" => $assignmentGrade["assignmentName"],
-                        "date" => date("Y-m-d H:i:s", $assignmentGrade["timestamp"]),
+                        "date" => date("Y-m-d H:i:s", $assignmentGrade["submissionTimestamp"]),
                         "rating" => $assignmentGrade["grade"],
                         "evaluator" => $grader ? $grader->getId() : null
                     ], ["id" => $this->getAssignmentGradeParticipationId($courseUser->getId(), $assignmentGrade["assignmentId"])]);
                 }
-                $lastRecordTimestamp = max($assignmentGrade["timestamp"], $lastRecordTimestamp);
+                $lastRecordTimestamp = max($assignmentGrade["gradeTimestamp"], $lastRecordTimestamp);
             }
         }
 
@@ -635,9 +638,10 @@ class Moodle extends Module
      */
     public function getForumGrades(): array
     {
-        $fields = "f.name as forumName, fd.id as discussionId, fp.subject, g.itemId as gradeId, u.username, g.rating as grade, ug.username as grader, g.timemodified as timestamp";
-        $table = self::$prefix . "peerforum f JOIN " . self::$prefix . "peerforum_discussions fd on fd.peerforum=f.id JOIN " .
-            self::$prefix . "peerforum_posts fp on fp.discussion=fd.id JOIN " . self::$prefix . "rating g on g.itemId=fp.id JOIN " .
+        $fields = "f.name as forumName, fd.id as discussionId, fp.subject, g.itemId as gradeId, u.username, g.rating as grade, 
+                   ug.username as grader, fp.modified as submissionTimestamp, g.timemodified as gradeTimestamp";
+        $table = self::$prefix . "forum f JOIN " . self::$prefix . "forum_discussions fd on fd.forum=f.id JOIN " .
+            self::$prefix . "forum_posts fp on fp.discussion=fd.id JOIN " . self::$prefix . "rating g on g.itemId=fp.id JOIN " .
             self::$prefix . "user u on fp.userid=u.id JOIN " . self::$prefix . "user ug on g.userid=ug.id JOIN " .
             self::$prefix . "course c on f.course=c.id";
         $where = ["f.course" => self::$courseId];
@@ -655,9 +659,10 @@ class Moodle extends Module
      */
     public function getPeergradedForumGrades(): array
     {
-        $fields = "f.name as forumName, fd.id as discussionId, fp.subject, g.itemId as gradeId, u.username, g.rating as grade, ug.username as grader, g.timemodified as timestamp";
-        $table = self::$prefix . "forum f JOIN " . self::$prefix . "forum_discussions fd on fd.forum=f.id JOIN " .
-            self::$prefix . "forum_posts fp on fp.discussion=fd.id JOIN " . self::$prefix . "rating g on g.itemId=fp.id JOIN " .
+        $fields = "f.name as forumName, fd.id as discussionId, fp.subject, g.itemId as gradeId, u.username, g.rating as grade, 
+                   ug.username as grader, fp.modified as submissionTimestamp, g.timemodified as gradeTimestamp";
+        $table = self::$prefix . "peerforum f JOIN " . self::$prefix . "peerforum_discussions fd on fd.peerforum=f.id JOIN " .
+            self::$prefix . "peerforum_posts fp on fp.discussion=fd.id JOIN " . self::$prefix . "rating g on g.itemId=fp.id JOIN " .
             self::$prefix . "user u on fp.userid=u.id JOIN " . self::$prefix . "user ug on g.userid=ug.id JOIN " .
             self::$prefix . "course c on f.course=c.id";
         $where = ["f.course" => self::$courseId];
@@ -698,7 +703,7 @@ class Moodle extends Module
                         "\"" . $forumGrade["forumName"] . ", " . $forumGrade["subject"] . "\"",
                         "\"graded post\"",
                         "\"mod/" . ($peerForum ? "peerforum" : "forum") . "/discuss.php?d=" . $forumGrade["discussionId"] . "#p" . $forumGrade["gradeId"] . "\"",
-                        "\"" . date("Y-m-d H:i:s", $forumGrade["timestamp"]) . "\"",
+                        "\"" . date("Y-m-d H:i:s", $forumGrade["submissionTimestamp"]) . "\"",
                         $forumGrade["grade"],
                         $grader->getId()
                     ];
@@ -707,12 +712,12 @@ class Moodle extends Module
                 } else { // already has grade
                     Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
                         "description" => $forumGrade["forumName"] . ", " . $forumGrade["subject"],
-                        "date" => date("Y-m-d H:i:s", $forumGrade["timestamp"]),
+                        "date" => date("Y-m-d H:i:s", $forumGrade["submissionTimestamp"]),
                         "rating" => $forumGrade["grade"],
                         "evaluator" => $grader->getId()
                     ], ["id" => $this->getForumGradeParticipationId($courseUser->getId(), $forumGrade["discussionId"], $forumGrade["gradeId"], $grader->getId())]);
                 }
-                $lastRecordTimestamp = max($forumGrade["timestamp"], $lastRecordTimestamp);
+                $lastRecordTimestamp = max($forumGrade["gradeTimestamp"], $lastRecordTimestamp);
             }
         }
 
@@ -769,7 +774,7 @@ class Moodle extends Module
     private static function parseForumGrade(array &$forumGrade)
     {
         if (isset($forumGrade["discussionId"])) $forumGrade["discussionId"] = intval($forumGrade["discussionId"]);
-        if (isset($forumGrade["voteId"])) $forumGrade["voteId"] = intval($forumGrade["voteId"]);
+        if (isset($forumGrade["gradeId"])) $forumGrade["gradeId"] = intval($forumGrade["gradeId"]);
         if (isset($forumGrade["grade"])) $forumGrade["grade"] = intval(round($forumGrade["grade"]));
         if (isset($forumGrade["timestamp"])) $forumGrade["timestamp"] = intval($forumGrade["timestamp"]);
     }
@@ -1236,7 +1241,8 @@ class Moodle extends Module
      */
     public function getPeergrades(): array
     {
-        $fields = "f.name as forumName, fd.id as discussionId, fp.subject, g.itemId as peergradeId, u.username, g.peergrade as grade, ug.username as grader, g.timemodified as timestamp";
+        $fields = "f.name as forumName, fd.id as discussionId, fp.subject, g.itemId as peergradeId, u.username, g.peergrade as grade, 
+                   ug.username as grader, g.timemodified as timestamp";
         $table = self::$prefix . "peerforum f JOIN " . self::$prefix . "peerforum_discussions fd on fd.peerforum=f.id JOIN " .
             self::$prefix . "peerforum_posts fp on fp.discussion=fd.id JOIN " . self::$prefix . "peerforum_peergrade g on g.itemId=fp.id JOIN " .
             self::$prefix . "user u on fp.userid=u.id JOIN " . self::$prefix . "user ug on g.userid=ug.id JOIN " .

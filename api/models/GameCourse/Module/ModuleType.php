@@ -16,7 +16,7 @@ class ModuleType
     const GAME_ELEMENT = "GameElement";         // Modules that represent game elements
     const DATA_SOURCE = "DataSource";           // Modules that input data into the system
     const UTILITY = "Util";                     // Modules that add utility functionality
-    // NOTE: insert here new types of modules & update module table definition
+    // NOTE: insert here new types of modules & update 'module' table definition
 
 
     /**

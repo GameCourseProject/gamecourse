@@ -114,6 +114,7 @@ class StreaksTest extends TestCase
         foreach ($tables as $table) {
             $this->assertTrue(Core::database()->tableExists($table));
         }
+        $this->assertEquals(0, $this->module->getMaxXP());
         $this->assertEquals(0, $this->module->getMaxExtraCredit());
         $this->assertTrue(file_exists($this->module->getDataFolder()));
         $this->assertTrue(Section::getSectionByName($this->course->getId(), $this->module::RULE_SECTION)->exists());

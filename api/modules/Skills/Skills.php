@@ -417,7 +417,10 @@ class Skills extends Module
             foreach ($this->getCourse()->getStudents() as $student) {
                 $completedSkills = $this->getUserSkills($student["id"], $skillTreeId);
                 foreach ($completedSkills as $skill) {
-                    if ($skill["id"] == $skillId) $users[] = $student;
+                    if ($skill["id"] == $skillId) {
+                        $users[] = $student;
+                        break;
+                    }
                 }
             }
         }
@@ -426,7 +429,6 @@ class Skills extends Module
 
     /**
      * Gets skills completed by a given user on a specific Skill Tree.
-     * NOTE: only returns skills that are currently active.
      *
      * @param int $userId
      * @param int $skillTreeId

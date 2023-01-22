@@ -766,7 +766,6 @@ class Streaks extends Module
 
     /**
      * Gets streaks earned by a given user.
-     * NOTE: only returns streaks that are currently active.
      *
      * @param int $userId
      * @param bool|null $isExtra

@@ -26,7 +26,7 @@ class AwardType
     const SKILL = "skill";
     const STREAK = "streak";
     const TOKENS = "tokens";
-    // NOTE: insert here new types of awards & update awards tables
+    // NOTE: insert here new types of awards & update 'award' table
 
 
     /**

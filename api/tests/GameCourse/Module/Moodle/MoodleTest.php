@@ -271,8 +271,8 @@ class MoodleTest extends TestCase
             "2020-05-12 12:34:22", "mod/assign/view.php?id=1", 10, 1);
 
         $assignmentGrades = [
-            ["assignmentId" => 1, "assignmentName" => "Assignment 1", "username" => $student1->getUsername(), "grade" => 3.4, "grader" => "ist123456", "timestamp" => 1662138988],
-            ["assignmentId" => 1, "assignmentName" => "Assignment 1", "username" => $student2->getUsername(), "grade" => 5.5, "grader" => "ist123456", "timestamp" => 1662138968],
+            ["assignmentId" => 1, "assignmentName" => "Assignment 1", "username" => $student1->getUsername(), "grade" => 3.4, "grader" => "ist123456", "submissionTimestamp" => 1662138980, "gradeTimestamp" => 1662138988],
+            ["assignmentId" => 1, "assignmentName" => "Assignment 1", "username" => $student2->getUsername(), "grade" => 5.5, "grader" => "ist123456", "submissionTimestamp" => 1662138960, "gradeTimestamp" => 1662138968],
         ];
 
         // When
@@ -289,12 +289,12 @@ class MoodleTest extends TestCase
         $p1 = $participations[0];
         $this->assertEquals(["id" => 2, "user" => (new User($student1->getId()))->getData(), "course" => $this->course->getId(),
             "source" => $this->module->getId(), "description" => "Assignment 1", "type" => "assignment grade", "post" => "mod/assign/view.php?id=1",
-            "date" => date("Y-m-d H:i:s", 1662138988), "rating" => 3, "evaluator" => 1], $p1);
+            "date" => date("Y-m-d H:i:s", 1662138980), "rating" => 3, "evaluator" => 1], $p1);
 
         $p2 = $participations[1];
         $this->assertEquals(["id" => 1, "user" => (new User($student2->getId()))->getData(), "course" => $this->course->getId(),
             "source" => $this->module->getId(), "description" => "Assignment 1", "type" => "assignment grade", "post" => "mod/assign/view.php?id=1",
-            "date" => date("Y-m-d H:i:s", 1662138968), "rating" => 6, "evaluator" => 1], $p2);
+            "date" => date("Y-m-d H:i:s", 1662138960), "rating" => 6, "evaluator" => 1], $p2);
     }
 
     /**
@@ -310,10 +310,10 @@ class MoodleTest extends TestCase
             "2020-05-12 12:34:22", "mod/forum/discuss.php?d=123#p6418", 10, 1);
 
         $forumGrades = [
-            ["forumName" => "Skill Tree", "discussionId" => 123, "subject" => "Re: Looping GIF", "gradeId" => 6418, "username" => $student1->getUsername(), "grade" => 3, "grader" => "ist123456", "timestamp" => 1662138988],
+            ["forumName" => "Skill Tree", "discussionId" => 123, "subject" => "Re: Looping GIF", "gradeId" => 6418, "username" => $student1->getUsername(), "grade" => 3, "grader" => "ist123456", "submissionTimestamp" => 1662138980, "gradeTimestamp" => 1662138988],
         ];
         $peerForumGrades = [
-            ["forumName" => "Bugs Forum", "discussionId" => 245, "subject" => "Re: Pixel Art", "gradeId" => 6537, "username" => $student2->getUsername(), "grade" => 5, "grader" => "ist123456", "timestamp" => 1662138968],
+            ["forumName" => "Bugs Forum", "discussionId" => 245, "subject" => "Re: Pixel Art", "gradeId" => 6537, "username" => $student2->getUsername(), "grade" => 5, "grader" => "ist123456", "submissionTimestamp" => 1662138960, "gradeTimestamp" => 1662138968],
         ];
 
         // When
@@ -330,7 +330,7 @@ class MoodleTest extends TestCase
         $p1 = $participations[0];
         $this->assertEquals(["id" => 1, "user" => (new User($student1->getId()))->getData(), "course" => $this->course->getId(),
             "source" => $this->module->getId(), "description" => "Skill Tree, Re: Looping GIF", "type" => "graded post", "post" => "mod/forum/discuss.php?d=123#p6418",
-            "date" => date("Y-m-d H:i:s", 1662138988), "rating" => 3, "evaluator" => 1], $p1);
+            "date" => date("Y-m-d H:i:s", 1662138980), "rating" => 3, "evaluator" => 1], $p1);
 
         // When
         $lastRecordTimestamp = $this->module->saveForumGrades($peerForumGrades, true);
@@ -346,7 +346,7 @@ class MoodleTest extends TestCase
         $p2 = $participations[1];
         $this->assertEquals(["id" => 2, "user" => (new User($student2->getId()))->getData(), "course" => $this->course->getId(),
             "source" => $this->module->getId(), "description" => "Bugs Forum, Re: Pixel Art", "type" => "graded post", "post" => "mod/peerforum/discuss.php?d=245#p6537",
-            "date" => date("Y-m-d H:i:s", 1662138968), "rating" => 5, "evaluator" => 1], $p2);
+            "date" => date("Y-m-d H:i:s", 1662138960), "rating" => 5, "evaluator" => 1], $p2);
     }
 
     /**
