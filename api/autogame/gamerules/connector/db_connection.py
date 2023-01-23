@@ -9,11 +9,10 @@ class Database:
     cursor = None
     data_broker = None
 
-    def __init__(self, database, username, password):
+    def __init__(self, host, database, username, password):
         try:
             # Connect to database
-            Database.connection = mysql.connector.connect(user=username, password=password, host='localhost',
-                                                          database=database)
+            Database.connection = mysql.connector.connect(user=username, password=password, host=host, database=database)
             Database.cursor = Database.connection.cursor(prepared=True)
 
             self.connection = Database.connection

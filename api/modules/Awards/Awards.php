@@ -183,16 +183,18 @@ class Awards extends Module
      *  - if true --> gets awards only for streaks that are extra credit
      *
      * @param int $userId
+     * @param bool|null $repeatable
      * @param bool|null $extra
      * @param bool|null $active
      * @return array
      * @throws Exception
      */
-    public function getUserStreaksAwards(int $userId, bool $extra = null, bool $active = null): array
+    public function getUserStreaksAwards(int $userId, bool $repeatable = null, bool $extra = null, bool $active = null): array
     {
         $this->checkDependency(Streaks::ID);
         $table = self::TABLE_AWARD . " a LEFT JOIN " . Streaks::TABLE_STREAK . " s on a.moduleInstance=s.id";
         $where = ["a.course" => $this->course->getId(), "a.user" => $userId, "a.type" => AwardType::STREAK];
+        if ($repeatable !== null) $where["s.isRepeatable"] = $repeatable;
         if ($extra !== null) $where["s.isExtra"] = $extra;
         if ($active !== null) $where["s.isActive"] = $active;
         return Core::database()->selectMultiple($table, $where, "a.*");
@@ -293,15 +295,16 @@ class Awards extends Module
      *  - if true --> gets total reward only for streaks that are extra credit
      *
      * @param int $userId
+     * @param bool|null $repeatable
      * @param bool|null $extra
      * @param bool|null $active
      * @return int
      * @throws Exception
      */
-    public function getUserStreaksTotalReward(int $userId, bool $extra = null, bool $active = null): int
+    public function getUserStreaksTotalReward(int $userId, bool $repeatable = null, bool $extra = null, bool $active = null): int
     {
         $this->checkDependency(Streaks::ID);
-        return array_sum(array_column($this->getUserStreaksAwards($userId, $extra, $active), "reward"));
+        return array_sum(array_column($this->getUserStreaksAwards($userId, $repeatable, $extra, $active), "reward"));
     }
 
 

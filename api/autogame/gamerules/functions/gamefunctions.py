@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import config
+import config, re
 
 from .utils import rule_effect, rule_function
 from gamerules.connector import gamecourse_connector as connector
@@ -191,6 +191,104 @@ def get_url_view_logs(target, name=None):
     """
 
     return connector.get_url_view_logs(target, name)
+
+
+### Getting consecutive & periodic logs
+
+@rule_function
+def get_consecutive_logs(logs):
+    """
+    Gets consecutive logs on a set of logs.
+
+    The order is defined by the log 1st number in description:
+        > "1" -> order 1
+        > "Quiz 1" -> order 1
+        > "Quiz 1 (22/01/2023)" -> order 1
+        > "1 - Quiz" -> order 1
+        > "1 - Quiz (22/01/2023)" -> order 1
+        > "Quiz (22/01/2023) - 1" -> will raise error
+        > "Quiz" -> will raise error
+    """
+
+    def find_order(description):
+        if description.isnumeric():
+            return int(description)
+
+        else:
+            order = re.findall(r'\d+', description)
+
+            if len(order) == 0:
+                raise Exception("Found no possible order for description '%s'." % description)
+
+            if len(order) > 1:
+                raise Exception("Found more than one possible order for description '%s'." % description)
+
+            return int(order[0])
+
+    def is_consecutive(order, last_order):
+        return last_order is not None and order > last_order and order - last_order == 1
+
+    consecutive_logs = []
+    last_order = None
+
+    for log in logs:
+        order = find_order(log[config.DESCRIPTION_COL].decode())
+        if is_consecutive(order, last_order):
+            consecutive_logs[len(consecutive_logs) - 1].append(log)
+        else:
+            consecutive_logs.append([log])
+        last_order = order
+
+    return consecutive_logs
+
+@rule_function
+def get_consecutive_rating_logs(logs, min_rating):
+    """
+    Gets consecutive logs on a set of logs with a min. rating.
+    """
+
+    def is_consecutive(rating, last_rating):
+        return last_rating is not None and last_rating >= min_rating and rating >= min_rating
+
+    consecutive_logs = []
+    last_rating = None
+
+    for log in logs:
+        rating = log[config.RATING_COL]
+        if rating < min_rating:
+            last_rating = None
+            continue
+
+        if is_consecutive(rating, last_rating):
+            consecutive_logs[len(consecutive_logs) - 1].append(log)
+        else:
+            consecutive_logs.append([log])
+        last_rating = rating
+
+    return consecutive_logs
+
+@rule_function
+def get_consecutive_peergrading_logs(target):
+    """
+    Gets consecutive peergrading logs done by target.
+    """
+
+    return connector.get_consecutive_peergrading_logs(target)
+
+@rule_function
+def get_periodic_logs(logs, number, time, type):
+    """
+    Gets periodic logs on a set of logs.
+
+    There are two options for periodicity:
+        > absolute -> check periodicity in equal periods,
+                    beginning at course start date until end date.
+
+        > relative -> check periodicity starting on the
+                    first entry for streak
+    """
+
+    return connector.get_periodic_logs(logs, number, time, type)
 
 
 ### Getting total reward
@@ -625,16 +723,7 @@ def transform(val):
 
 
 
-
 # FIXME: refactor below
-
-@rule_function
-def get_username(target):
-    """
-    Returns the username of a given student
-    """
-    result = connector.get_username(target)
-    return result
 
 @rule_function
 def get_team(target):
@@ -642,28 +731,4 @@ def get_team(target):
     Returns the team of a given student
     """
     result = connector.get_team(target)
-    return result
-
-@rule_function
-def consecutive_peergrading(target):
-    """
-    Returns the username of a given student
-    """
-    result = connector.consecutive_peergrading(target)
-    return result
-
-@rule_function
-def get_valid_attempts(target, skill):
-    """
-    Returns number of valid attempts for a given skill
-    """
-    result = connector.get_valid_attempts(target, skill)
-    return result
-
-@rule_function
-def awards_to_give(target, streak_name):
-    """
-    Checks if rule was already unlocked by user.
-    """
-    result = connector.awards_to_give(target, streak_name)
     return result

@@ -26,7 +26,6 @@ class Streaks extends Module
 {
     const TABLE_STREAK = Streak::TABLE_STREAK;
     const TABLE_STREAK_PROGRESSION = Streak::TABLE_STREAK_PROGRESSION;
-    const TABLE_STREAK_PARTICIPATIONS = Streak::TABLE_STREAK_PARTICIPATIONS;
     const TABLE_STREAK_CONFIG = 'streaks_config';
 
     public function __construct(?Course $course)
@@ -73,7 +72,6 @@ class Streaks extends Module
     public function init()
     {
         $this->initDatabase();
-        $this->createDataFolder();
         $this->initRules();
 
         // Init config
@@ -107,7 +105,6 @@ class Streaks extends Module
     public function disable()
     {
         $this->cleanDatabase();
-        $this->removeDataFolder();
         $this->removeRules();
     }
 
@@ -575,10 +572,10 @@ class Streaks extends Module
             ]
         ];
 
-        // Tokens info
-        $virtualCurrencyModule = $this->course->getModuleById(VirtualCurrency::ID);
-        if ($virtualCurrencyModule && $virtualCurrencyModule->isEnabled()) {
-            $VCName = $virtualCurrencyModule->getName();
+        // Add tokens option as reward, if virtual currency enabled
+        $VCModule = new VirtualCurrency($this->course);
+        if ($VCModule->exists() && $VCModule->isEnabled()) {
+            $VCName = $VCModule->getVCName();
 
             array_splice($lists[0]["headers"], 3, 0, [
                 ["label" => "Reward (" . $VCName . ")", "align" => "middle"],
@@ -759,6 +756,7 @@ class Streaks extends Module
         $users = [];
         foreach ($this->getCourse()->getStudents() as $student) {
             $streakNrCompletions = $this->getUserStreakCompletions($student["id"], $streakId);
+            $student["nrCompletions"] = $streakNrCompletions;
             if ($streakNrCompletions > 0) $users[] = $student;
         }
         return $users;
@@ -769,16 +767,17 @@ class Streaks extends Module
      *
      * @param int $userId
      * @param bool|null $isExtra
+     * @param bool|null $isRepeatable
      * @return array
      * @throws Exception
      */
-    public function getUserStreaks(int $userId, bool $isExtra = null): array
+    public function getUserStreaks(int $userId, bool $isExtra = null, bool $isRepeatable = null): array
     {
         $course = $this->getCourse();
         $awardsModule = new Awards($course);
-        $userStreakAwards = $awardsModule->getUserStreaksAwards($userId, $isExtra);
+        $userStreakAwards = $awardsModule->getUserStreaksAwards($userId, $isRepeatable, $isExtra);
 
-        // Group by badge ID
+        // Group by streak ID
         $awards = [];
         foreach ($userStreakAwards as $award) {
             $awards[$award["moduleInstance"]][] = $award;
@@ -815,14 +814,7 @@ class Streaks extends Module
             return $cacheValue;
 
         } else {
-            $total = intval(Core::database()->select(self::TABLE_STREAK_PROGRESSION, [
-                "course" => $courseId,
-                "user" => $userId,
-                "streak" => $streakId
-            ], "COUNT(*)"));
-            $progression = $total % (new Streak($streakId))->getCount();
-            Cache::store($courseId, $cacheId, $progression);
-            return $progression;
+            // TODO
         }
     }
 

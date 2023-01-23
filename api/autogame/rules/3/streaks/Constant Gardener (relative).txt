@@ -1,0 +1,12 @@
+rule: Constant Gardener
+# Do five skills with no more than five days between them
+
+    when:
+        # Get target progress in streak
+        logs = get_skill_logs(target)
+
+        # Get only periodic progress
+        plogs = get_periodic_logs(logs, 5, "day", "relative")
+
+    then:
+        award_streak(target, "Constant Gardener", plogs)

@@ -5,8 +5,8 @@ use Exception;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\VirtualCurrency\VirtualCurrency;
-use GameCourse\Module\XPLevels\XPLevels;
+use GameCourse\Theme\Theme;
+use Utils\Time;
 use Utils\Utils;
 
 /**
@@ -17,11 +17,10 @@ class Streak
 {
     const TABLE_STREAK = 'streak';
     const TABLE_STREAK_PROGRESSION = 'streak_progression';
-    const TABLE_STREAK_PARTICIPATIONS = 'streak_participations';
 
     const HEADERS = [   // headers for import/export functionality
-        "name", "description", "color", "count", "periodicity", "periodicityTime", "reward", "tokens", "isRepeatable",
-        "isCount", "isPeriodic", "isAtMost", "isExtra", "isActive"
+        "name", "description", "color", "goal", "periodicityGoal", "periodicityNumber", "periodicityTime", "periodicityType",
+        "reward", "tokens", "isExtra", "isRepeatable", "isActive"
     ];
 
     const EMPTY_IMAGE = __DIR__ . "/assets/empty.svg";
@@ -64,14 +63,19 @@ class Streak
         return $this->getData("color");
     }
 
-    public function getCount(): int
+    public function getGoal(): int
     {
-        return $this->getData("count");
+        return $this->getData("goal");
     }
 
-    public function getPeriodicity(): ?int
+    public function getPeriodicityGoal(): ?int
     {
-        return $this->getData("periodicity");
+        return $this->getData("periodicityGoal");
+    }
+
+    public function getPeriodicityNumber(): ?int
+    {
+        return $this->getData("periodicityNumber");
     }
 
     public function getPeriodicityTime(): ?string
@@ -79,56 +83,40 @@ class Streak
         return $this->getData("periodicityTime");
     }
 
+    public function getPeriodicityType(): ?string
+    {
+        return $this->getData("periodicityType");
+    }
+
     public function getReward(): int
     {
         return $this->getData("reward");
     }
 
-    /**
-     * @throws Exception
-     */
-    public function getTokens(): ?int
+    public function getTokens(): int
     {
-        $virtualCurrencyModule = $this->getCourse()->getModuleById(VirtualCurrency::ID);
-        if ($virtualCurrencyModule && $virtualCurrencyModule->isEnabled())
-            return $this->getData("tokens");
-        return null;
+        return $this->getData("tokens");
     }
 
     public function getImage(): string
     {
-        $img = file_get_contents(self::EMPTY_IMAGE);
+        $img = file_get_contents(__DIR__ . "/icon.svg");
 
         // Change image color
-        $color = $this->getColor();
-        if ($color) $img = preg_replace("/fill=\"(.*?)\"/", "fill=\"$color\"", $img);
+        $color = $this->getColor() ?? (Core::getLoggedUser()->getTheme() == Theme::DARK ? "#BFC6D4" : "#DDDDDD");
+        $img = preg_replace("/fill=\"(.*?)\"/", "fill=\"$color\"", $img);
 
         return "data:image/svg+xml;base64," . base64_encode($img);
-    }
-
-    public function isRepeatable(): bool
-    {
-        return $this->getData("isRepeatable");
-    }
-
-    public function isCount(): bool
-    {
-        return $this->getData("isCount");
-    }
-
-    public function isPeriodic(): bool
-    {
-        return $this->getData("isPeriodic");
-    }
-
-    public function isAtMost(): bool
-    {
-        return $this->getData("isAtMost");
     }
 
     public function isExtra(): bool
     {
         return $this->getData("isExtra");
+    }
+
+    public function isRepeatable(): bool
+    {
+        return $this->getData("isRepeatable");
     }
 
     public function isActive(): bool
@@ -186,25 +174,41 @@ class Streak
     /**
      * @throws Exception
      */
-    public function setCount(int $count)
+    public function setGoal(int $goal)
     {
-        $this->setData(["count" => $count]);
+        $this->setData(["goal" => $goal]);
     }
 
     /**
      * @throws Exception
      */
-    public function setPeriodicity(?int $periodicity)
+    public function setPeriodicityGoal(?int $goal)
     {
-        $this->setData(["periodicity" => $periodicity]);
+        $this->setData(["periodicityGoal" => $goal]);
     }
 
     /**
      * @throws Exception
      */
-    public function setPeriodicityTime(?string $periodicityTime)
+    public function setPeriodicityNumber(?int $number)
     {
-        $this->setData(["periodicityTime" => $periodicityTime]);
+        $this->setData(["periodicityNumber" => $number]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setPeriodicityTime(?string $time)
+    {
+        $this->setData(["periodicityTime" => $time]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setPeriodicityType(?string $type)
+    {
+        $this->setData(["periodicityType" => $type]);
     }
 
     /**
@@ -218,41 +222,9 @@ class Streak
     /**
      * @throws Exception
      */
-    public function setTokens(?int $tokens)
+    public function setTokens(int $tokens)
     {
         $this->setData(["tokens" => $tokens]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function setRepeatable(bool $isRepeatable)
-    {
-        $this->setData(["isRepeatable" => +$isRepeatable]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function setIsCount(bool $isCount)
-    {
-        $this->setData(["isCount" => +$isCount]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function setPeriodic(bool $isPeriodic)
-    {
-        $this->setData(["isPeriodic" => +$isPeriodic]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function setIsAtMost(bool $isAtMost)
-    {
-        $this->setData(["isAtMost" => +$isAtMost]);
     }
 
     /**
@@ -261,6 +233,14 @@ class Streak
     public function setExtra(bool $isExtra)
     {
         $this->setData(["isExtra" => +$isExtra]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setRepeatable(bool $isRepeatable)
+    {
+        $this->setData(["isRepeatable" => +$isRepeatable]);
     }
 
     /**
@@ -291,24 +271,25 @@ class Streak
         if (key_exists("name", $fieldValues)) {
             $newName = $fieldValues["name"];
             self::validateName($newName);
-            $oldName = $this->getName();
         }
         if (key_exists("description", $fieldValues)) {
             $newDescription = $fieldValues["description"];
             self::validateDescription($newDescription);
         }
         if (key_exists("color", $fieldValues)) self::validateColor($fieldValues["color"]);
-        if (key_exists("count", $fieldValues)) self::validateInteger("count", $fieldValues["count"]);
-        if (key_exists("periodicity", $fieldValues) && !is_null($fieldValues["periodicity"])) self::validateInteger("periodicity", $fieldValues["periodicity"]);
+        if (key_exists("goal", $fieldValues)) self::validateInteger("goal", $fieldValues["goal"]);
+        if (key_exists("periodicityGoal", $fieldValues) && !is_null($fieldValues["periodicityGoal"]))
+            self::validateInteger("periodicityGoal", $fieldValues["periodicityGoal"]);
+        if (key_exists("periodicityNumber", $fieldValues) && !is_null($fieldValues["periodicityNumber"]))
+            self::validateInteger("periodicityNumber", $fieldValues["periodicityNumber"]);
+        if (key_exists("periodicityTime", $fieldValues) && !is_null($fieldValues["periodicityTime"]))
+            self::validatePeriodicityTime($fieldValues["periodicityTime"]);
+        if (key_exists("periodicityType", $fieldValues) && !is_null($fieldValues["periodicityType"]))
+            self::validatePeriodicityType($fieldValues["periodicityType"]);
         if (key_exists("reward", $fieldValues)) self::validateInteger("reward", $fieldValues["reward"]);
         if (key_exists("tokens", $fieldValues)) {
-            $course = $this->getCourse();
-            $virtualCurrencyModule = $course->getModuleById(VirtualCurrency::ID);
-            if (!$virtualCurrencyModule || !$virtualCurrencyModule->isEnabled())
-                throw new Exception($virtualCurrencyModule::NAME . " is not enabled for course with ID = " . $course->getId() . ".");
-
             $newTokens = $fieldValues["tokens"];
-            if (!is_null($newTokens)) self::validateInteger("tokens", $newTokens);
+            self::validateInteger("tokens", $newTokens);
         }
         if (key_exists("isActive", $fieldValues)) {
             $newStatus = $fieldValues["isActive"];
@@ -320,12 +301,6 @@ class Streak
             Core::database()->update(self::TABLE_STREAK, $fieldValues, ["id" => $this->id]);
 
         // Additional actions
-        if (key_exists("name", $fieldValues)) {
-            if (strcmp($oldName, $newName) !== 0) {
-                // Update badge folder
-                rename($this->getDataFolder(true, $oldName), $this->getDataFolder(true, $newName));
-            }
-        }
         if (key_exists("isActive", $fieldValues)) {
             if ($oldStatus != $newStatus) {
                 // Update rule status
@@ -412,25 +387,25 @@ class Streak
      * @param string $name
      * @param string|null $description
      * @param string|null $color
-     * @param int $count
-     * @param int|null $periodicity
+     * @param int $goal
+     * @param int|null $periodicityGoal
+     * @param int|null $periodicityNumber
      * @param string|null $periodicityTime
+     * @param string|null $periodicityType
      * @param int $reward
      * @param int|null $tokens
-     * @param bool $isRepeatable
-     * @param bool $isCount
-     * @param bool $isPeriodic
-     * @param bool $isAtMost
      * @param bool $isExtra
+     * @param bool $isRepeatable
      * @return Streak
      * @throws Exception
      */
-    public static function addStreak(int $courseId, string $name, string $description, ?string $color, int $count,
-                                     ?int $periodicity, ?string $periodicityTime, int $reward, ?int $tokens,
-                                     bool $isRepeatable, bool $isCount, bool $isPeriodic, bool $isAtMost, bool $isExtra): Streak
+    public static function addStreak(int $courseId, string $name, string $description, ?string $color, int $goal,
+                                     ?int $periodicityGoal, ?int $periodicityNumber, ?string $periodicityTime,
+                                     ?string $periodicityType, int $reward, int $tokens, bool $isExtra, bool $isRepeatable): Streak
     {
-        self::trim($name, $description, $color, $periodicityTime);
-        self::validateStreak($name, $description, $color, $count, $periodicity, $reward, $tokens, $isRepeatable, $isCount, $isPeriodic, $isAtMost, $isExtra);
+        self::trim($name, $description, $color, $periodicityTime, $periodicityType);
+        self::validateStreak($name, $description, $color, $goal, $periodicityGoal, $periodicityNumber, $periodicityTime,
+            $periodicityType, $reward, $tokens, $isExtra, $isRepeatable);
 
         // Create streak rule
         $rule = self::addRule($courseId, $name, $description, $tokens);
@@ -441,22 +416,17 @@ class Streak
             "name" => $name,
             "description" => $description,
             "color" => $color,
-            "count" => $count,
-            "periodicity" => $periodicity,
+            "goal" => $goal,
+            "periodicityGoal" => $periodicityGoal,
+            "periodicityNumber" => $periodicityNumber,
             "periodicityTime" => $periodicityTime,
+            "periodicityType" => $periodicityType,
             "reward" => $reward,
             "tokens" => $tokens,
-            "isRepeatable" => +$isRepeatable,
-            "isCount" => +$isCount,
-            "isPeriodic" => +$isPeriodic,
-            "isAtMost" => +$isAtMost,
             "isExtra" => +$isExtra,
+            "isRepeatable" => +$isRepeatable,
             "rule" => $rule->getId()
         ]);
-
-        // Create streak data folder
-        self::createDataFolder($courseId, $name);
-
         return new Streak($id);
     }
 
@@ -467,38 +437,36 @@ class Streak
      * @param string $name
      * @param string|null $description
      * @param string|null $color
-     * @param int $count
-     * @param int|null $periodicity
+     * @param int $goal
+     * @param int|null $periodicityGoal
+     * @param int|null $periodicityNumber
      * @param string|null $periodicityTime
+     * @param string|null $periodicityType
      * @param int $reward
      * @param int|null $tokens
-     * @param bool $isRepeatable
-     * @param bool $isCount
-     * @param bool $isPeriodic
-     * @param bool $isAtMost
      * @param bool $isExtra
+     * @param bool $isRepeatable
      * @param bool $isActive
      * @return Streak
      * @throws Exception
      */
-    public function editStreak(string $name, string $description, ?string $color, int $count, ?int $periodicity,
-                               ?string $periodicityTime, int $reward, ?int $tokens, bool $isRepeatable, bool $isCount,
-                               bool $isPeriodic, bool $isAtMost, bool $isExtra, bool $isActive): Streak
+    public function editStreak(string $name, string $description, ?string $color, int $goal, ?int $periodicityGoal,
+                               ?int $periodicityNumber, ?string $periodicityTime, ?string $periodicityType, int $reward,
+                               int $tokens, bool $isExtra, bool $isRepeatable, bool $isActive): Streak
     {
         $this->setData([
             "name" => $name,
             "description" => $description,
             "color" => $color,
-            "count" => $count,
-            "periodicity" => $periodicity,
+            "goal" => $goal,
+            "periodicityGoal" => $periodicityGoal,
+            "periodicityNumber" => $periodicityNumber,
             "periodicityTime" => $periodicityTime,
+            "periodicityType" => $periodicityType,
             "reward" => $reward,
             "tokens" => $tokens,
-            "isRepeatable" => +$isRepeatable,
-            "isCount" => +$isCount,
-            "isPeriodic" => +$isPeriodic,
-            "isAtMost" => +$isAtMost,
             "isExtra" => +$isExtra,
+            "isRepeatable" => +$isRepeatable,
             "isActive" => +$isActive
         ]);
         return $this;
@@ -517,9 +485,8 @@ class Streak
 
         // Copy streak
         $copiedStreak = self::addStreak($copyTo->getId(), $streakInfo["name"], $streakInfo["description"], $streakInfo["color"],
-            $streakInfo["count"], $streakInfo["periodicity"], $streakInfo["periodicityTime"], $streakInfo["reward"],
-            $streakInfo["tokens"], $streakInfo["isRepeatable"], $streakInfo["isCount"], $streakInfo["isPeriodic"],
-            $streakInfo["isAtMost"], $streakInfo["isExtra"]);
+            $streakInfo["goal"], $streakInfo["periodicityGoal"], $streakInfo["periodicityNumber"], $streakInfo["periodicityTime"],
+            $streakInfo["periodicityType"], $streakInfo["reward"], $streakInfo["tokens"], $streakInfo["isExtra"], $streakInfo["isRepeatable"]);
         $copiedStreak->setActive($streakInfo["isActive"]);
 
         // Copy rule
@@ -537,9 +504,6 @@ class Streak
         $streak = self::getStreakById($streakId);
         if ($streak) {
             $courseId = $streak->getCourse()->getId();
-
-            // Remove streak data folder
-            self::removeDataFolder($courseId, $streak->getName());
 
             // Remove streak rule
             self::removeRule($courseId, $streak->getRule()->getId());
@@ -690,68 +654,6 @@ class Streak
 
 
     /*** ---------------------------------------------------- ***/
-    /*** ------------------- Streak Data -------------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-    /**
-     * Gets streak data folder path.
-     * Option to retrieve full server path or the short version.
-     *
-     * @param bool $fullPath
-     * @param string|null $streakName
-     * @return string
-     */
-    public function getDataFolder(bool $fullPath = true, string $streakName = null): string
-    {
-        if (!$streakName) $streakName = $this->getName();
-        $streaksModule = new Streaks($this->getCourse());
-        return $streaksModule->getDataFolder($fullPath) . "/" . Utils::strip($streakName, "_");
-    }
-
-    /**
-     * Gets streak data folder contents.
-     *
-     * @return array
-     * @throws Exception
-     */
-    public function getDataFolderContents(): array
-    {
-        return Utils::getDirectoryContents($this->getDataFolder());
-    }
-
-    /**
-     * Creates a data folder for a given streak. If folder exists, it
-     * will delete its contents.
-     *
-     * @param int $courseId
-     * @param string $streakName
-     * @return string
-     * @throws Exception
-     */
-    public static function createDataFolder(int $courseId, string $streakName): string
-    {
-        $dataFolder = self::getStreakByName($courseId, $streakName)->getDataFolder();
-        if (file_exists($dataFolder)) self::removeDataFolder($courseId, $streakName);
-        mkdir($dataFolder, 0777, true);
-        return $dataFolder;
-    }
-
-    /**
-     * Deletes a given streak's data folder.
-     *
-     * @param int $courseId
-     * @param string $streakName
-     * @return void
-     * @throws Exception
-     */
-    public static function removeDataFolder(int $courseId, string $streakName)
-    {
-        $dataFolder = self::getStreakByName($courseId, $streakName)->getDataFolder();
-        if (file_exists($dataFolder)) Utils::deleteDirectory($dataFolder);
-    }
-
-
-    /*** ---------------------------------------------------- ***/
     /*** ------------------ Import/Export ------------------- ***/
     /*** ---------------------------------------------------- ***/
 
@@ -771,27 +673,26 @@ class Streak
             $name = Utils::nullify($streak[$indexes["name"]]);
             $description = Utils::nullify($streak[$indexes["description"]]);
             $color = Utils::nullify($streak[$indexes["color"]]);
-            $count = self::parse(null, $streak[$indexes["count"]], "count");
-            $periodicity = self::parse(null, $streak[$indexes["periodicity"]], "periodicity");
+            $goal = self::parse(null, $streak[$indexes["goal"]], "goal");
+            $periodicityGoal = self::parse(null, $streak[$indexes["periodicityGoal"]], "periodicityGoal");
+            $periodicityNumber = self::parse(null, $streak[$indexes["periodicityNumber"]], "periodicityNumber");
             $periodicityTime = Utils::nullify($streak[$indexes["periodicityTime"]]);
+            $periodicityType = Utils::nullify($streak[$indexes["periodicityType"]]);
             $reward = self::parse(null, $streak[$indexes["reward"]], "reward");
             $tokens = self::parse(null, $streak[$indexes["tokens"]], "tokens");
-            $isRepeatable = self::parse(null, $streak[$indexes["isRepeatable"]], "isRepeatable");
-            $isCount = self::parse(null, $streak[$indexes["isCount"]], "isCount");
-            $isPeriodic = self::parse(null, $streak[$indexes["isPeriodic"]], "isPeriodic");
-            $isAtMost = self::parse(null, $streak[$indexes["isAtMost"]], "isAtMost");
             $isExtra = self::parse(null, $streak[$indexes["isExtra"]], "isExtra");
+            $isRepeatable = self::parse(null, $streak[$indexes["isRepeatable"]], "isRepeatable");
             $isActive = self::parse(null, $streak[$indexes["isActive"]], "isActive");
 
             $streak = self::getStreakByName($courseId, $name);
             if ($streak) {  // streak already exists
                 if ($replace)  // replace
-                    $streak->editStreak($name, $description, $color, $count, $periodicity, $periodicityTime, $reward,
-                        $tokens, $isRepeatable, $isCount, $isPeriodic, $isAtMost, $isExtra, $isActive);
+                    $streak->editStreak($name, $description, $color, $goal, $periodicityGoal, $periodicityNumber,
+                        $periodicityTime, $periodicityType, $reward, $tokens, $isExtra, $isRepeatable, $isActive);
 
             } else {  // streak doesn't exist
-                Streak::addStreak($courseId, $name, $description, $color, $count, $periodicity, $periodicityTime, $reward,
-                    $tokens, $isRepeatable, $isCount, $isPeriodic, $isAtMost, $isExtra);
+                Streak::addStreak($courseId, $name, $description, $color, $goal, $periodicityGoal, $periodicityNumber,
+                    $periodicityTime, $periodicityType, $reward, $tokens, $isExtra, $isRepeatable);
                 return 1;
             }
             return 0;
@@ -809,9 +710,9 @@ class Streak
     {
         $streaksToExport = array_values(array_filter(self::getStreaks($courseId), function ($streak) use ($streakIds) { return in_array($streak["id"], $streakIds); }));
         return ["extension" => ".csv", "file" => Utils::exportToCSV($streaksToExport, function ($streak) {
-            return [$streak["name"], $streak["description"], $streak["color"], $streak["count"], $streak["periodicity"],
-                $streak["periodicityTime"], $streak["reward"], $streak["tokens"], $streak["isRepeatable"], $streak["isCount"],
-                $streak["isPeriodic"], $streak["isAtMost"], $streak["isExtra"], $streak["isActive"]];
+            return [$streak["name"], $streak["description"], $streak["color"], $streak["goal"], $streak["periodicityGoal"],
+                $streak["periodicityNumber"], $streak["periodicityTime"], $streak["periodicityType"], $streak["reward"],
+                $streak["tokens"], $streak["isExtra"], $streak["isRepeatable"], $streak["isActive"]];
         }, self::HEADERS)];
     }
 
@@ -826,32 +727,33 @@ class Streak
      * @param $name
      * @param $description
      * @param $color
-     * @param $count
-     * @param $periodicity
+     * @param $goal
+     * @param $periodicityGoal
+     * @param $periodicityNumber
+     * @param $periodicityTime
+     * @param $periodicityType
      * @param $reward
      * @param $tokens
-     * @param $isRepeatable
-     * @param $isCount
-     * @param $isPeriodic
-     * @param $isAtMost
      * @param $isExtra
+     * @param $isRepeatable
      * @return void
      * @throws Exception
      */
-    private static function validateStreak($name, $description, $color, $count, $periodicity, $reward, $tokens, $isRepeatable, $isCount, $isPeriodic, $isAtMost, $isExtra)
+    private static function validateStreak($name, $description, $color, $goal, $periodicityGoal, $periodicityNumber,
+                                           $periodicityTime, $periodicityType, $reward, $tokens, $isExtra, $isRepeatable)
     {
         self::validateName($name);
         self::validateDescription($description);
         self::validateColor($color);
-        self::validateInteger("count", $count);
-        if (!is_null($periodicity)) self::validateInteger("periodicity", $periodicity);
+        self::validateInteger("goal", $goal);
+        if (!is_null($periodicityGoal)) self::validateInteger("periodicityGoal", $periodicityGoal);
+        if (!is_null($periodicityNumber)) self::validateInteger("periodicityNumber", $periodicityNumber);
+        self::validatePeriodicityTime($periodicityTime);
+        self::validatePeriodicityType($periodicityType);
         self::validateInteger("reward", $reward);
-        if (!is_null($tokens)) self::validateInteger("tokens", $tokens);
-        if (!is_bool($isRepeatable)) throw new Exception("'isRepeatable' must be either true or false.");
-        if (!is_bool($isCount)) throw new Exception("'isCount' must be either true or false.");
-        if (!is_bool($isPeriodic)) throw new Exception("'isPeriodic' must be either true or false.");
-        if (!is_bool($isAtMost)) throw new Exception("'isAtMost' must be either true or false.");
+        self::validateInteger("tokens", $tokens);
         if (!is_bool($isExtra)) throw new Exception("'isExtra' must be either true or false.");
+        if (!is_bool($isRepeatable)) throw new Exception("'isRepeatable' must be either true or false.");
     }
 
     /**
@@ -910,6 +812,38 @@ class Streak
     }
 
     /**
+     * Validates streak periodicity time.
+     *
+     * @throws Exception
+     */
+    private static function validatePeriodicityTime($time)
+    {
+        if (is_null($time)) return;
+
+        if (!is_string($time) || empty($time))
+            throw new Exception("Streak periodicity time can't be empty.");
+
+        if (!Time::exists($time))
+            throw new Exception("Streak periodicity time doesn't exist.");
+    }
+
+    /**
+     * Validates streak periodicity type.
+     *
+     * @throws Exception
+     */
+    private static function validatePeriodicityType($type)
+    {
+        if (is_null($type)) return;
+
+        if (!is_string($type) || empty($type))
+            throw new Exception("Streak periodicity type can't be empty.");
+
+        if (!in_array($type, ["absolute", "relative"]))
+            throw new Exception("Streak periodicity type doesn't exist.");
+    }
+
+    /**
      * Validates streak value is >= 0.
      *
      * @param string $param
@@ -945,8 +879,8 @@ class Streak
      */
     private static function parse(array $streak = null, $field = null, string $fieldName = null)
     {
-        $intValues = ["id", "course", "count", "periodicity", "reward", "tokens", "rule"];
-        $boolValues = ["isRepeatable", "isCount", "isPeriodic", "isAtMost", "isExtra", "isActive"];
+        $intValues = ["id", "course", "goal", "periodicityGoal", "periodicityNumber", "reward", "tokens", "rule"];
+        $boolValues = ["isExtra", "isRepeatable", "isActive"];
 
         return Utils::parse(["int" => $intValues, "bool" => $boolValues], $streak, $field, $fieldName);
     }
@@ -959,7 +893,7 @@ class Streak
      */
     private static function trim(&...$values)
     {
-        $params = ["name", "description", "color", "periodicityTime"];
+        $params = ["name", "description", "color", "periodicityTime", "periodicityType"];
         Utils::trim($params, ...$values);
     }
 }

@@ -1,0 +1,19 @@
+rule: Practitioner
+# Get three consecutive maximum grades in laboratorial classes
+
+    when:
+        tier_1 = METADATA["labs_tier_1"]
+        tier_2 = METADATA["labs_tier_2"]
+        tier_3 = METADATA["labs_tier_3"]
+
+        # Get target progress in streak
+        logs = get_lab_logs(target)
+        flogs = filter_logs(logs, ["1", "2"], None, tier_1)
+        flogs += filter_logs(logs, ["3", "5", "7", "9", "11"], None, tier_2)
+        flogs += filter_logs(logs, ["4", "6", "8", "10", "12"], None, tier_3)
+
+        # Get only consecutive progress
+        clogs = get_consecutive_logs(flogs)
+
+    then:
+        award_streak(target, "Practitioner", clogs)
