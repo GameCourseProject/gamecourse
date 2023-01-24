@@ -55,6 +55,7 @@ import {
   QRCode,
   QRParticipation
 } from 'src/app/_views/restricted/courses/course/settings/modules/config/personalized-config/qr/qr.component';
+import {SetupData} from "../../_views/setup/setup/setup.component";
 
 @Injectable({
   providedIn: 'root'
@@ -96,12 +97,12 @@ export class ApiHttpService {
   /*** ------------------- Setup ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  public doSetup(courseName: string, courseColor: string, teacherId: number, teacherUsername: string): Observable<boolean> {
+  public doSetup(setupData: SetupData): Observable<boolean> {
     const formData = new FormData();
-    formData.append('course-name', courseName);
-    formData.append('course-color', courseColor);
-    formData.append('teacher-id', teacherId.toString());
-    formData.append('teacher-username', teacherUsername);
+    formData.append('course-name', setupData.courseName);
+    formData.append('course-color', setupData.courseColor);
+    formData.append('admin-id', setupData.adminId.toString());
+    formData.append('admin-username', setupData.adminUsername);
 
     const url = this.apiEndpoint.createUrl('setup/setup.php');
 
