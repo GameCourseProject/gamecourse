@@ -93,7 +93,7 @@
   [size]="'md'"
   [header]="mode?.capitalize() + ' course'"
   [closeBtnText]="'Discard ' + (mode === 'create' ? 'course' : 'changes')"
-  [submitBtnText]="mode?.capitalize() + ' course'"
+  [submitBtnText]="mode === 'create' ? mode?.capitalize() + ' course' : 'Save'"
   [actionInProgress]="loading.action"
   (submitBtnClicked)="f.onSubmit(null); mode === 'create' ? createCourse() : editCourse()"
   (onClose)="resetManage()">

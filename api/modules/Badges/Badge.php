@@ -854,7 +854,7 @@ class Badge
 
         // Add levels .csv file
         $zip->addFromString("levels.csv", Utils::exportToCSV($levels, function ($level) {
-            return [$level["badge_name"], $level["number"], $level["goal"], $level["description"], $level["reward"]];
+            return [$level["badge_name"], $level["number"], $level["goal"], $level["description"], $level["reward"], $level["tokens"]];
         }, self::LEVEL_HEADERS));
 
         $zip->close();

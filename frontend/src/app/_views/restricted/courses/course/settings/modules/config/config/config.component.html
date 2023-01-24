@@ -107,7 +107,7 @@
 
       <!-- Table -->
       <app-table
-        [id]="'list-' + list.name.replace(' ', '-')"
+        [id]="'list-' + lIdx"
         [classList]="'mt-5'"
         [headers]="list.headers"
         [hasColumnFiltering]="list.options['hasColumnFiltering'] ?? true"
@@ -132,7 +132,7 @@
    [size]="itemToManage.list[getConfigKey()]['modalSize'] ?? 'sm'"
    [header]="mode?.capitalize() + ' ' + (itemToManage.list.itemName ?? '')"
    [closeBtnText]="'Discard ' + (mode === 'create' ? itemToManage.list.itemName : 'changes')"
-   [submitBtnText]="mode?.capitalize() + ' ' + (itemToManage.list.itemName ?? '')"
+   [submitBtnText]="mode === 'edit' ? 'Save' : mode?.capitalize() + ' ' + (itemToManage.list.itemName ?? '')"
    [actionInProgress]="itemToManage.list.loading.action"
    (submitBtnClicked)="fManage.onSubmit(null); doAction(itemToManage.list, getConfigKey())"
    (onClose)="resetManage()">

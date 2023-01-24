@@ -40,7 +40,7 @@ export class UsersComponent implements OnInit {
   course: Course;
   courseUsers: CourseUser[];
 
-  mode: 'add' | 'edit' | 'select' | 'roles';
+  mode: 'create' | 'edit' | 'select' | 'roles';
   userToManage: CourseUserManageData = this.initUserToManage();
   userToDelete: CourseUser;
   @ViewChild('f', { static: false }) f: NgForm;
@@ -250,7 +250,7 @@ export class UsersComponent implements OnInit {
       this.exportUsers(this.courseUsers);
 
     } else if (action === 'Create new user') {
-      this.mode = 'add';
+      this.mode = 'create';
       this.userToManage = this.initUserToManage();
       ModalService.openModal('manage');
       if (!this.roleNames) this.getCourseRolesNames(this.course.id);
@@ -397,7 +397,7 @@ export class UsersComponent implements OnInit {
       const roleToAdd = selectedRoleNames.filter(roleName => !this.previousSelected.includes(roleName))[0];
 
       // Get role parents to select as well
-      selectedRoleNames = this.selectRoles(roleToAdd, selectedRoleNames, 'add');
+      selectedRoleNames = this.selectRoles(roleToAdd, selectedRoleNames, 'create');
 
     } else { // removing role
       const roleToRemove = this.previousSelected.filter(roleName => !selectedRoleNames.includes(roleName))[0];
@@ -415,10 +415,10 @@ export class UsersComponent implements OnInit {
     this.previousSelected = selectedRoleNames;
   }
 
-  selectRoles(roleName: string, selectedRoleNames: string[], action: 'add' | 'remove'): string[] {
+  selectRoles(roleName: string, selectedRoleNames: string[], action: 'create' | 'remove'): string[] {
     if (!roleName) return [];
 
-    if (action === 'add') {
+    if (action === 'create') {
       if (!selectedRoleNames.includes(roleName)) selectedRoleNames.push(roleName);
 
       const parent = this.rolesHierarchySmart[roleName].parent;

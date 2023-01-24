@@ -3,7 +3,6 @@ namespace Utils;
 
 use Exception;
 use GameCourse\Core\Core;
-use OpenApi\Util;
 use PHPUnit\Framework\TestCase;
 
 /**

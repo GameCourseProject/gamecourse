@@ -13,10 +13,10 @@
   <ng-container *ngIf="leftLabel" [ngTemplateOutlet]="GROUP"></ng-container>
 
   <!-- Error Messages -->
-  <label *ngIf="form && form.submitted && inputDate.invalid" class="label">
-    <span *ngIf="inputDate.errors.pattern" class="label-text-alt">{{patternErrorMessage}}</span>
-    <span *ngIf="inputDate.errors.required" class="label-text-alt">{{requiredErrorMessage}}</span>
-    <span *ngIf="inputDate.errors.incorrect" class="label-text-alt">{{incorrectErrorMessage}}</span>
+  <label *ngIf="form && form.submitted && inputDate.invalid" class="error-messages">
+    <span *ngIf="inputDate.errors.pattern && patternErrorMessage !== null" class="label-text-alt">{{patternErrorMessage}}</span>
+    <span *ngIf="inputDate.errors.required && requiredErrorMessage !== null" class="label-text-alt">{{requiredErrorMessage}}</span>
+    <span *ngIf="inputDate.errors.incorrect && incorrectErrorMessage !== null" class="label-text-alt">{{incorrectErrorMessage}}</span>
   </label>
 
 </div>

@@ -7,8 +7,8 @@
   <ng-container *ngIf="label" [ngTemplateOutlet]="WITH_LABEL"></ng-container>
 
   <!-- Error Messages -->
-  <label *ngIf="form && form.submitted && toggle.invalid" class="label">
-    <span *ngIf="toggle.errors.required" class="label-text-alt">{{requiredErrorMessage}}</span>
+  <label *ngIf="form && form.submitted && toggle.invalid" class="error-messages">
+    <span *ngIf="toggle.errors.required && requiredErrorMessage !== null" class="label-text-alt">{{requiredErrorMessage}}</span>
   </label>
 
 </div>

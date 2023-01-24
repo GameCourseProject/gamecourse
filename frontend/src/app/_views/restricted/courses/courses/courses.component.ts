@@ -136,8 +136,8 @@ export class CoursesComponent implements OnInit {
     const courseToActOn = this.courses[row];
 
     if (action === 'value changed') {
-      if (col === 8) this.toggleActive(courseToActOn);
-      else if (col === 9) this.toggleVisible(courseToActOn);
+      if (col === 7) this.toggleActive(courseToActOn);
+      else if (col === 8) this.toggleVisible(courseToActOn);
 
     } else if (action === Action.VIEW) {
       const redirectLink = this.getRedirectLink(courseToActOn);

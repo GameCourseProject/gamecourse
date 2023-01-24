@@ -13,8 +13,8 @@
   <ng-container *ngIf="leftLabel || rightLabel || btnText || btnIcon" [ngTemplateOutlet]="GROUP"></ng-container>
 
   <!-- Error Messages -->
-  <label *ngIf="form && form.submitted && inputSelect.invalid" class="label">
-    <span *ngIf="inputSelect.errors.required" class="label-text-alt">{{requiredErrorMessage}}</span>
+  <label *ngIf="form && form.submitted && inputSelect.invalid" class="error-messages">
+    <span *ngIf="inputSelect.errors.required && requiredErrorMessage !== null" class="label-text-alt">{{requiredErrorMessage}}</span>
   </label>
 
 </div>
@@ -24,7 +24,7 @@
     id="{{id}}"
     name="{{id}}"
     [multiple]="multiple"
-    class="{{size}} {{color}}"
+    class="{{size}} {{InputSelectColor[color]}}"
     [(ngModel)]="value"
     (ngModelChange)="valueChange.emit(Value)"
     [required]="required"
