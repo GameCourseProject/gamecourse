@@ -29,6 +29,7 @@ export enum InputType {
 
   // Select
   SELECT = 'select',
+  PERIODICITY = 'periodicity',
   WEEKDAY = 'weekday',
 
   // Toggle

@@ -414,7 +414,27 @@ class Utils
 
             // Import each item
             foreach ($lines as $line) {
-                $item = array_map('trim', explode($separator, trim($line)));
+                // Parse line manually into each item's param
+                // NOTE: this makes sure CSV separators found on info strings don't break the line
+                $item = [];
+                $opened = false;
+                $param = "";
+                foreach (str_split(trim($line)) as $char) {
+                    if ($char === $separator) {
+                        if ($opened) {
+                            $param .= $char;
+                            continue;
+                        }
+                        $item[] = $param;
+                        $param = "";
+
+                    } else if ($char === "\"") {
+                        if (!$opened) $opened = true;
+                        else $opened = false;
+
+                    } else $param .= $char;
+                }
+                $item[] = $param;
                 $nrItemsImported += $import($item, $indexes);
             }
         }
@@ -442,7 +462,10 @@ class Utils
 
         // Add each item
         foreach ($items as $i => $item) {
-            $itemInfo = $getInfo($item);
+            // Surround string info with ""
+            // NOTE: this ensures the line is not broken when there's an CSV separator on the info
+            $itemInfo = array_map(function ($info) { return is_string($info) ? "\"$info\"" : $info; }, $getInfo($item));
+
             $file .= join($separator, $itemInfo);
             if ($i != $len - 1) $file .= "\n";
         }

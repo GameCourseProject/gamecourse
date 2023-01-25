@@ -43,6 +43,7 @@ class InputType
 
     // Select
     const SELECT = "select";
+    const PERIODICITY = "periodicity";
     const WEEKDAY = "weekday";
 
     // Toggle

@@ -1015,9 +1015,9 @@ class LevelTest extends TestCase
         Level::addLevel($this->courseId, 2000, "Level 2");
 
         $expectedFile = "title,minimum XP\n";
-        $expectedFile .= "AWOL,0\n";
-        $expectedFile .= "Level 1,1000\n";
-        $expectedFile .= "Level 2,2000";
+        $expectedFile .= "\"AWOL\",0\n";
+        $expectedFile .= "\"Level 1\",1000\n";
+        $expectedFile .= "\"Level 2\",2000";
 
         $export = Level::exportLevels($this->courseId, [1, 2, 3]);
         $this->assertEquals(".csv", $export["extension"]);
@@ -1034,8 +1034,8 @@ class LevelTest extends TestCase
         Level::addLevel($this->courseId, 2000, "Level 2");
 
         $expectedFile = "title,minimum XP\n";
-        $expectedFile .= "Level 1,1000\n";
-        $expectedFile .= "Level 2,2000";
+        $expectedFile .= "\"Level 1\",1000\n";
+        $expectedFile .= "\"Level 2\",2000";
 
         $export = Level::exportLevels($this->courseId, [2, 3]);
         $this->assertEquals(".csv", $export["extension"]);

@@ -1034,7 +1034,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']) );
+      .pipe( map((res: any) => res ? res['data'] : null) );
   }
 
   // TODO: refactor

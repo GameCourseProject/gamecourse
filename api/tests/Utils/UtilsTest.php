@@ -1138,7 +1138,7 @@ class UtilsTest extends TestCase
             $headers);
 
         // Then
-        $this->assertEquals("Header #1,Header #2,Header #3\nItem 11,Item 12,Item 13\nItem 21,Item 22,Item 23\nItem 31,Item 32,Item 33", $file);
+        $this->assertEquals("Header #1,Header #2,Header #3\n\"Item 11\",\"Item 12\",\"Item 13\"\n\"Item 21\",\"Item 22\",\"Item 23\"\n\"Item 31\",\"Item 32\",\"Item 33\"", $file);
     }
 
 

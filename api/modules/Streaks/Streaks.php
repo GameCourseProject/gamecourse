@@ -16,7 +16,7 @@ use GameCourse\Module\ModuleType;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 use Utils\Cache;
-use Utils\Utils;
+use Utils\Time;
 
 /**
  * This is the Streaks module, which serves as a compartimentalized
@@ -177,7 +177,12 @@ class Streaks extends Module
      */
     public function getLists(): array
     {
-        $streaks = Streak::getStreaks($this->course->getId());
+        $streaks = array_map(function ($streak) {
+            $streak["isPeriodic"] = !is_null($streak["periodicityTime"]);
+            $streak["periodicity"] = ["number" => $streak["periodicityNumber"], "time" => $streak["periodicityTime"]];
+            return $streak;
+        }, Streak::getStreaks($this->course->getId()));
+
         $lists = [
             [
                 "name" => "Streaks",
@@ -193,16 +198,16 @@ class Streaks extends Module
                 ],
                 "headers" => [
                     ["label" => "Streak", "align" => "left"],
-                    ["label" => "# Steps", "align" => "middle"],
                     ["label" => "Reward (XP)", "align" => "middle"],
+                    ["label" => "Repeats", "align" => "middle"],
                     ["label" => "Extra", "align" => "middle"],
                     ["label" => "Active", "align" => "middle"]
                 ],
                 "data" => array_map(function ($streak) {
                     return [
                         ["type" => DataType::AVATAR, "content" => ["avatarSrc" => $streak["image"], "avatarTitle" => $streak["name"], "avatarSubtitle" => $streak["description"]]],
-                        ["type" => DataType::NUMBER, "content" => ["value" => $streak["count"], "valueFormat" => "none"]],
                         ["type" => DataType::NUMBER, "content" => ["value" => $streak["reward"], "valueFormat" => "default"]],
+                        ["type" => DataType::TOGGLE, "content" => ["toggleId" => "isRepeatable", "toggleValue" => $streak["isRepeatable"]]],
                         ["type" => DataType::TOGGLE, "content" => ["toggleId" => "isExtra", "toggleValue" => $streak["isExtra"]]],
                         ["type" => DataType::TOGGLE, "content" => ["toggleId" => "isActive", "toggleValue" => $streak["isActive"]]]
                     ];
@@ -217,14 +222,14 @@ class Streaks extends Module
                 "options" => [
                     "order" => [[0, "asc"]],
                     "columnDefs" => [
-                        ["type" => "natural", "targets" => [0, 1, 2]],
-                        ["searchable" => false, "targets" => [3, 4]],
-                        ["orderable" => false, "targets" => [3, 4]]
+                        ["type" => "natural", "targets" => [0, 1]],
+                        ["searchable" => false, "targets" => [2, 3, 4, 5]],
+                        ["orderable" => false, "targets" => [2, 3, 4, 5]]
                     ]
                 ],
                 "items" => $streaks,
                 Action::NEW => [
-                    "modalSize" => "md",
+                    "modalSize" => "lg",
                     "contents" => [
                         [
                             "contentType" => "container",
@@ -248,17 +253,6 @@ class Streaks extends Module
                                 [
                                     "contentType" => "item",
                                     "width" => "1/2",
-                                    "type" => InputType::COLOR,
-                                    "id" => "color",
-                                    "placeholder" => "Streak color",
-                                    "options" => [
-                                        "topLabel" => "Color"
-                                    ],
-                                    "helper" => "Color for streak"
-                                ],
-                                [
-                                    "contentType" => "item",
-                                    "width" => "full",
                                     "type" => InputType::TEXT,
                                     "id" => "description",
                                     "placeholder" => "Streak description",
@@ -275,27 +269,25 @@ class Streaks extends Module
                         ],
                         [
                             "contentType" => "container",
-                            "classList" => "flex flex-wrap mt-5",
+                            "classList" => "flex flex-wrap mt-3",
                             "contents" => [
                                 [
                                     "contentType" => "item",
                                     "width" => "1/2",
-                                    "type" => InputType::NUMBER,
-                                    "id" => "count",
-                                    "placeholder" => "Streak number of steps",
+                                    "type" => InputType::COLOR,
+                                    "id" => "color",
+                                    "placeholder" => "Streak color",
                                     "options" => [
-                                        "topLabel" => "Steps",
-                                        "required" => true,
-                                        "minValue" => 1
+                                        "topLabel" => "Color"
                                     ],
-                                    "helper" => "Number of steps until earning the streak"
+                                    "helper" => "Color for streak"
                                 ],
                                 [
                                     "contentType" => "item",
                                     "width" => "1/2",
                                     "type" => InputType::NUMBER,
                                     "id" => "reward",
-                                    "placeholder" => "Streak reward",
+                                    "placeholder" => "Streak reward (XP)",
                                     "options" => [
                                         "topLabel" => "Reward (XP)",
                                         "required" => true,
@@ -311,84 +303,102 @@ class Streaks extends Module
                             "contents" => [
                                 [
                                     "contentType" => "item",
-                                    "width" => "1/2",
-                                    "type" => InputType::TOGGLE,
-                                    "id" => "isCount",
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "goal",
+                                    "placeholder" => "Number of steps",
                                     "options" => [
-                                        "label" => "Based on counts"
+                                        "topLabel" => "Steps",
+                                        "required" => true,
+                                        "minValue" => 1
                                     ],
-                                    "helper" => "Whether streak's steps are based on counting ocurrences of some type"
+                                    "helper" => "Number of steps to earn the streak"
                                 ],
                                 [
                                     "contentType" => "item",
-                                    "width" => "1/2",
-                                    "type" => InputType::TOGGLE,
-                                    "id" => "isPeriodic",
-                                    "options" => [
-                                        "label" => "Based on time"
-                                    ],
-                                    "helper" => "Whether streak's steps are based on ocurrences within a certain time period"
-                                ],
-                                [
-                                    "contentType" => "item",
-                                    "width" => "1/2",
-                                    "type" => InputType::TOGGLE,
-                                    "id" => "isAtMost",
-                                    "options" => [
-                                        "label" => "IsAtMost"
-                                    ],
-                                    "helper" => "TODO"
-                                ],
-                                [
-                                    "contentType" => "item",
-                                    "width" => "1/2",
+                                    "width" => "1/4",
                                     "type" => InputType::TOGGLE,
                                     "id" => "isRepeatable",
                                     "options" => [
-                                        "label" => "Repeatable"
+                                        "classList" => "sm:mt-12",
+                                        "label" => "Repeatable",
                                     ],
-                                    "helper" => "Whether streak resets once its reached"
+                                    "helper" => "Whether the streak can be earned multiple times"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/4",
+                                    "type" => InputType::TOGGLE,
+                                    "id" => "isPeriodic",
+                                    "options" => [
+                                        "color" => "accent",
+                                        "classList" => "sm:mt-12",
+                                        "label" => "Periodic",
+                                    ],
+                                    "helper" => "Whether the streak is earned by doing actions periodically instead of consecutively"
                                 ]
                             ]
                         ],
                         [
                             "contentType" => "container",
+                            "visibleWhen" => ["isPeriodic" => true],
                             "classList" => "flex flex-wrap mt-3",
                             "contents" => [
                                 [
                                     "contentType" => "item",
-                                    "width" => "1/2",
-                                    "type" => InputType::NUMBER,
+                                    "width" => "1/3",
+                                    "type" => InputType::PERIODICITY,
                                     "id" => "periodicity",
-                                    "placeholder" => "Time period value",
+                                    "placeholder" => "Period of time",
                                     "options" => [
-                                        "topLabel" => "Time period value",
-                                        "minValue" => 0
+                                        "filterOptions" => [Time::SECOND, Time::YEAR],
+                                        "color" => "accent",
+                                        "topLabel" => "Period",
+                                        "minValue" => 1,
+                                        "required" => true,
+                                        "minNumber" => 1
                                     ],
-                                    "helper" => "Time period value for time based streaks"
+                                    "helper" => "Period of time available to earn (absolute period) or progress (relative period) in the streak"
                                 ],
                                 [
                                     "contentType" => "item",
-                                    "width" => "1/2",
+                                    "width" => "1/3",
                                     "type" => InputType::SELECT,
-                                    "id" => "periodicityTime",
-                                    "placeholder" => "Time period",
+                                    "id" => "periodicityType",
+                                    "placeholder" => "Type of period",
                                     "options" => [
+                                        "color" => "accent",
                                         "options" => [
-                                            ["value" => "days", "text" => "Days"]
+                                            ["value" => "absolute", "text" => "Absolute"],
+                                            ["value" => "relative", "text" => "Relative"]
                                         ],
                                         "search" => false,
-                                        "topLabel" => "Time period",
-                                        "minValue" => 0
+                                        "topLabel" => "Period type",
+                                        "required" => true
                                     ],
-                                    "helper" => "Time period for time based streaks"
+                                    "helper" => "Whether period is 'absolute' (doing actions every period of time) or 'relative' (referring to period of time between each action)"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "disabledWhen" => ["periodicityType" => "relative"],
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "periodicityGoal",
+                                    "placeholder" => "Goal for period",
+                                    "options" => [
+                                        "color" => "accent",
+                                        "topLabel" => "Period goal",
+                                        "minValue" => 1,
+                                        "required" => true
+                                    ],
+                                    "helper" => "Number of actions to be performed on each period"
                                 ],
                             ]
                         ]
                     ]
                 ],
                 Action::EDIT => [
-                    "modalSize" => "md",
+                    "modalSize" => "lg",
                     "contents" => [
                         [
                             "contentType" => "container",
@@ -398,7 +408,6 @@ class Streaks extends Module
                                     "contentType" => "item",
                                     "width" => "1/2",
                                     "type" => InputType::TEXT,
-                                    "scope" => ActionScope::ALL,
                                     "id" => "name",
                                     "placeholder" => "Streak name",
                                     "options" => [
@@ -413,20 +422,7 @@ class Streaks extends Module
                                 [
                                     "contentType" => "item",
                                     "width" => "1/2",
-                                    "type" => InputType::COLOR,
-                                    "scope" => ActionScope::ALL,
-                                    "id" => "color",
-                                    "placeholder" => "Streak color",
-                                    "options" => [
-                                        "topLabel" => "Color"
-                                    ],
-                                    "helper" => "Color for streak"
-                                ],
-                                [
-                                    "contentType" => "item",
-                                    "width" => "full",
                                     "type" => InputType::TEXT,
-                                    "scope" => ActionScope::ALL,
                                     "id" => "description",
                                     "placeholder" => "Streak description",
                                     "options" => [
@@ -442,27 +438,25 @@ class Streaks extends Module
                         ],
                         [
                             "contentType" => "container",
-                            "classList" => "flex flex-wrap mt-5",
+                            "classList" => "flex flex-wrap mt-3",
                             "contents" => [
                                 [
                                     "contentType" => "item",
                                     "width" => "1/2",
-                                    "type" => InputType::NUMBER,
-                                    "id" => "count",
-                                    "placeholder" => "Streak number of steps",
+                                    "type" => InputType::COLOR,
+                                    "id" => "color",
+                                    "placeholder" => "Streak color",
                                     "options" => [
-                                        "topLabel" => "Steps",
-                                        "required" => true,
-                                        "minValue" => 1
+                                        "topLabel" => "Color"
                                     ],
-                                    "helper" => "Number of steps until earning the streak"
+                                    "helper" => "Color for streak"
                                 ],
                                 [
                                     "contentType" => "item",
                                     "width" => "1/2",
                                     "type" => InputType::NUMBER,
                                     "id" => "reward",
-                                    "placeholder" => "Streak reward",
+                                    "placeholder" => "Streak reward (XP)",
                                     "options" => [
                                         "topLabel" => "Reward (XP)",
                                         "required" => true,
@@ -478,83 +472,95 @@ class Streaks extends Module
                             "contents" => [
                                 [
                                     "contentType" => "item",
-                                    "width" => "1/2",
-                                    "type" => InputType::TOGGLE,
-                                    "scope" => ActionScope::ALL,
-                                    "id" => "isCount",
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "goal",
+                                    "placeholder" => "Number of steps",
                                     "options" => [
-                                        "label" => "Based on counts"
+                                        "topLabel" => "Steps",
+                                        "required" => true,
+                                        "minValue" => 1
                                     ],
-                                    "helper" => "Whether streak's steps are based on counting ocurrences of some type"
+                                    "helper" => "Number of steps to earn the streak"
                                 ],
                                 [
                                     "contentType" => "item",
-                                    "width" => "1/2",
+                                    "width" => "1/4",
                                     "type" => InputType::TOGGLE,
-                                    "scope" => ActionScope::ALL,
-                                    "id" => "isPeriodic",
-                                    "options" => [
-                                        "label" => "Based on time"
-                                    ],
-                                    "helper" => "Whether streak's steps are based on ocurrences within a certain time period"
-                                ],
-                                [
-                                    "contentType" => "item",
-                                    "width" => "1/2",
-                                    "type" => InputType::TOGGLE,
-                                    "scope" => ActionScope::ALL,
-                                    "id" => "isAtMost",
-                                    "options" => [
-                                        "label" => "IsAtMost"
-                                    ],
-                                    "helper" => "TODO"
-                                ],
-                                [
-                                    "contentType" => "item",
-                                    "width" => "1/2",
-                                    "type" => InputType::TOGGLE,
-                                    "scope" => ActionScope::ALL,
                                     "id" => "isRepeatable",
                                     "options" => [
-                                        "label" => "Repeatable"
+                                        "classList" => "sm:mt-12",
+                                        "label" => "Repeatable",
                                     ],
-                                    "helper" => "Whether streak resets once its reached"
+                                    "helper" => "Whether the streak can be earned multiple times"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "width" => "1/4",
+                                    "type" => InputType::TOGGLE,
+                                    "id" => "isPeriodic",
+                                    "options" => [
+                                        "color" => "accent",
+                                        "classList" => "sm:mt-12",
+                                        "label" => "Periodic",
+                                    ],
+                                    "helper" => "Whether the streak is earned by doing actions periodically instead of consecutively"
                                 ]
                             ]
                         ],
                         [
                             "contentType" => "container",
+                            "visibleWhen" => ["isPeriodic" => true],
                             "classList" => "flex flex-wrap mt-3",
                             "contents" => [
                                 [
                                     "contentType" => "item",
-                                    "width" => "1/2",
-                                    "type" => InputType::NUMBER,
-                                    "scope" => ActionScope::ALL,
+                                    "width" => "1/3",
+                                    "type" => InputType::PERIODICITY,
                                     "id" => "periodicity",
-                                    "placeholder" => "Time period value",
+                                    "placeholder" => "Period of time",
                                     "options" => [
-                                        "topLabel" => "Time period value",
-                                        "minValue" => 0
+                                        "filterOptions" => [Time::SECOND, Time::YEAR],
+                                        "color" => "accent",
+                                        "topLabel" => "Period",
+                                        "minValue" => 1,
+                                        "required" => true,
+                                        "minNumber" => 1
                                     ],
-                                    "helper" => "Time period value for time based streaks"
+                                    "helper" => "Period of time available to earn (absolute period) or progress (relative period) in the streak"
                                 ],
                                 [
                                     "contentType" => "item",
-                                    "width" => "1/2",
+                                    "width" => "1/3",
                                     "type" => InputType::SELECT,
-                                    "scope" => ActionScope::ALL,
-                                    "id" => "periodicityTime",
-                                    "placeholder" => "Time period",
+                                    "id" => "periodicityType",
+                                    "placeholder" => "Type of period",
                                     "options" => [
+                                        "color" => "accent",
                                         "options" => [
-                                            ["value" => "days", "text" => "Days"]
+                                            ["value" => "absolute", "text" => "Absolute"],
+                                            ["value" => "relative", "text" => "Relative"]
                                         ],
                                         "search" => false,
-                                        "topLabel" => "Time period",
-                                        "minValue" => 0
+                                        "topLabel" => "Period type",
+                                        "required" => true
                                     ],
-                                    "helper" => "Time period for time based streaks"
+                                    "helper" => "Whether period is 'absolute' (doing actions every period of time) or 'relative' (referring to period of time between each action)"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "disabledWhen" => ["periodicityType" => "relative"],
+                                    "width" => "1/3",
+                                    "type" => InputType::NUMBER,
+                                    "id" => "periodicityGoal",
+                                    "placeholder" => "Goal for period",
+                                    "options" => [
+                                        "color" => "accent",
+                                        "topLabel" => "Period goal",
+                                        "minValue" => 1,
+                                        "required" => true
+                                    ],
+                                    "helper" => "Number of actions to be performed on each period"
                                 ],
                             ]
                         ]
@@ -564,9 +570,9 @@ class Streaks extends Module
                     "extensions" => [".csv", ".txt"],
                     "csvHeaders" => Streak::HEADERS,
                     "csvRows" => [
-                        ["Sage", "Get three consecutive maximum grades in quizzes", "#00A2FF", "3", "", "", "50", "100", "1", "1", "0", "0", "0", "1"],
-                        ["Constant Gardener", "Do five skills with no more than five days between them", "#36987B", "5", "5", "days", "150", "100", "1", "0", "1", "1", "1", "1"],
-                        ["...", "...", "...", "...", "...", "...", "...", "...", "...", "...", "...", "...", "...", "..."]
+                        ["Sage", "Get three consecutive maximum grades in quizzes", "#00A2FF", "3", "", "", "", "", "50", "100", "1", "0", "1"],
+                        ["Constant Gardener", "Do five skills with no more than five days between them", "#36987B", "5", "1", "5", "day", "relative", "150", "100", "0", "1", "1"],
+                        ["...", "...", "...", "...", "...", "...", "...", "...", "...", "...", "...", "...", "..."]
                     ]
                 ]
             ]
@@ -577,22 +583,22 @@ class Streaks extends Module
         if ($VCModule->exists() && $VCModule->isEnabled()) {
             $VCName = $VCModule->getVCName();
 
-            array_splice($lists[0]["headers"], 3, 0, [
+            // Add VC reward to table
+            array_splice($lists[0]["headers"], 2, 0, [
                 ["label" => "Reward (" . $VCName . ")", "align" => "middle"],
             ]);
-
-            array_splice($lists[0]["options"]["columnDefs"][0]["targets"], 3, 0, 3);
+            array_splice($lists[0]["options"]["columnDefs"][0]["targets"], 2, 0, 2);
             $lists[0]["options"]["columnDefs"][2]["targets"] = array_map(function ($target) {
                 return $target + 1;
             }, $lists[0]["options"]["columnDefs"][2]["targets"]);
-
             $lists[0]["data"] = array_map(function (&$row, $index) use ($streaks) {
-                array_splice($row, 3, 0, [
+                array_splice($row, 2, 0, [
                     ["type" => DataType::NUMBER, "content" => ["value" => $streaks[$index]["tokens"], "valueFormat" => "default"]],
                 ]);
                 return $row;
             }, $lists[0]["data"], array_keys($lists[0]["data"]));
 
+            // Add option when creating streak
             array_splice($lists[0][Action::NEW]["contents"][1]["contents"], 2, 0, [
                 [
                     "contentType" => "item",
@@ -612,6 +618,7 @@ class Streaks extends Module
                 return $item;
             }, $lists[0][Action::NEW]["contents"][1]["contents"]);
 
+            // Add option when editing streak
             array_splice($lists[0][Action::EDIT]["contents"][1]["contents"], 2, 0, [
                 [
                     "contentType" => "item",
@@ -642,29 +649,45 @@ class Streaks extends Module
     {
         $courseId = $this->course->getId();
         if ($listName == "Streaks") {
-            $item["isPeriodic"] = $item["isPeriodic"] ?? false;
-            if ($item["isPeriodic"] && (!isset($item["periodicity"]) || !isset($item["periodicityTime"])))
-                throw new Exception("Periodic streaks must have a periodicity and periodicity time.");
+            if ($action == Action::NEW || $action == Action::DUPLICATE || $action == Action::EDIT) {
+                // Get periodicity
+                if ($item["isPeriodic"]) {
+                    $item["periodicityNumber"] = $item["periodicity"]["number"];
+                    $item["periodicityTime"] = $item["periodicity"]["time"];
+                    if ($item["periodicityType"] === "relative") $item["periodicityGoal"] = 1;
 
-            if ($action == Action::NEW || $action == Action::DUPLICATE) {
+                } else {
+                    $params = ["periodicityGoal", "periodicityNumber", "periodicityTime", "periodicityType"];
+                    foreach ($params as $param) { $item[$param] = null; }
+                }
+
+                // Make verifications
+                if ($item["isPeriodic"]) {
+                    if (!isset($item["periodicityNumber"]) || !isset($item["periodicityTime"]) || !isset($item["periodicityType"]))
+                        throw new Exception("Periodic streaks must have a period set and its type.");
+
+                    if ($item["periodicityType"] === "absolute" && !isset($item["periodicityGoal"]))
+                        throw new Exception("Periodic streaks with an absolute period type must have a period goal set.");
+                }
+
                 // Format name
                 $name = $item["name"];
                 if ($action == Action::DUPLICATE) $name .= " (Copy)";
 
-                $streak = Streak::addStreak($courseId, $name, $item["description"], $item["color"] ?? null, $item["count"],
-                    $item["periodicity"] ?? null, $item["periodicityTime"] ?? null, $item["reward"],
-                    $item["tokens"] ?? null, $item["isRepeatable"] ?? false, $item["isCount"] ?? false,
-                    $item["isPeriodic"] ?? false, $item["isAtMost"] ?? false, $item["isExtra"] ?? false);
+                if ($action == Action::NEW || $action == Action::DUPLICATE) {
+                    Streak::addStreak($courseId, $name, $item["description"], $item["color"] ?? null, $item["goal"],
+                        $item["periodicityGoal"] ?? null, $item["periodicityNumber"] ?? null,
+                        $item["periodicityTime"] ?? null, $item["periodicityType"] ?? null, $item["reward"],
+                        $item["tokens"] ?? 0, $item["isExtra"] ?? false, $item["isRepeatable"] ?? false);
 
-                if ($action == Action::DUPLICATE)
-                    Utils::copyDirectory(Streak::getStreakByName($courseId, $item["name"])->getDataFolder() . "/", $streak->getDataFolder() . "/");
-
-            } elseif ($action == Action::EDIT) {
-                $streak = Streak::getStreakById($item["id"]);
-                $streak->editStreak($item["name"], $item["description"], $item["color"] ?? null, $item["count"],
-                    $item["periodicity"] ?? null, $item["periodicityTime"] ?? null, $item["reward"],
-                    $item["tokens"] ?? null, $item["isRepeatable"] ?? false, $item["isCount"] ?? false,
-                    $item["isPeriodic"] ?? false, $item["isAtMost"] ?? false, $item["isExtra"] ?? false, $item["isActive"] ?? false);
+                } else {
+                    $streak = Streak::getStreakById($item["id"]);
+                    $streak->editStreak($item["name"], $item["description"], $item["color"] ?? null, $item["goal"],
+                        $item["periodicityGoal"] ?? null, $item["periodicityNumber"] ?? null,
+                        $item["periodicityTime"] ?? null, $item["periodicityType"] ?? null,
+                        $item["reward"], $item["tokens"] ?? 0, $item["isExtra"] ?? false, $item["isRepeatable"] ?? false,
+                        $item["isActive"] ?? false);
+                }
 
             } elseif ($action == Action::DELETE) Streak::deleteStreak($item["id"]);
         }

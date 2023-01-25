@@ -248,3 +248,13 @@ select + .ss-main .ss-multi-selected.ss-disabled {
 select:disabled + .ss-main .ss-disabled {
   @apply px-2 #{!important};
 }
+
+.input-period {
+  .input-period-number input {
+    @apply rounded-r-none pr-0 #{!important};
+  }
+
+  .input-period-time .ss-main .ss-single-selected {
+    @apply font-normal rounded-l-none #{!important};
+  }
+}

@@ -225,7 +225,7 @@ export class ConfigComponent implements OnInit {
   async doAction(list: List, action: string) {
     if (action === Action.IMPORT) {
       if (!this.itemToManage) {
-        this.itemToManage = this.initItemToManage(list);
+        this.itemToManage = {list: list, item: null, index: null};
         ModalService.openModal('import');
 
       } else {
@@ -276,7 +276,7 @@ export class ConfigComponent implements OnInit {
       list.loading.action = true;
 
       try {
-        const item = this.getItemToManage();
+        const item = this.nullifyEmptyValues(this.itemToManage.item);
         let successMsg = await this.api.saveModuleConfig(this.course.id, this.module.id, null, item, list.name, action).toPromise();
         await this.getModuleConfig(this.module.id);
 
@@ -392,13 +392,50 @@ export class ConfigComponent implements OnInit {
   async onFileSelected(files: FileList, artifact: ConfigInputItem, accept: string): Promise<void> {
     // FIXME: should be more general than this (create input-image component)
     const isImage = accept.containsWord('image') || accept.containsWord('svg') || accept.containsWord('png') || accept.containsWord('jpg');
-    if (isImage) await ResourceManager.getBase64(files.item(0)).then(data => artifact.value = data);
-    else await ResourceManager.getText(files.item(0)).then(data => artifact.value = data);
+    if (isImage) await ResourceManager.getBase64(files.item(0)).then(data => this.setItemToManage(artifact, data));
+    else await ResourceManager.getText(files.item(0)).then(data => this.setItemToManage(artifact, data));
   }
 
   scopeAllows(scope: ActionScope | string): boolean {
     if (!scope) return true;
     return scopeAllows(scope, this.itemToManage.list.data.length, this.itemToManage.index);
+  }
+
+  visible(artifact: ConfigInputContainer | ConfigInputItem, conditions: {[key: string]: boolean}, form: NgForm): boolean {
+    if (!conditions) return true;
+    for (const [key, value] of Object.entries(conditions)) {
+      if (this.itemToManage.item[key] != value) {
+        removeFormControl(artifact, form);
+        form.form.removeControl('periodicity-number');
+        form.form.removeControl('periodicity-time');
+        return false;
+      }
+    }
+    return true;
+
+    function removeFormControl(artifact: ConfigInputContainer | ConfigInputItem, form: NgForm) {
+      if (artifact.contentType === 'container') {
+        for (const item of artifact.contents) {
+          removeFormControl(item, form);
+        }
+
+      } else {
+        form.form.removeControl(artifact.id);
+        if (artifact.type === InputType.PERIODICITY) {
+          form.form.removeControl(artifact.id + '-number');
+          form.form.removeControl(artifact.id + '-time');
+        }
+      }
+    }
+  }
+
+  disabled(conditions: {[key: string]: boolean}): boolean {
+    if (!conditions) return false;
+    for (const [key, value] of Object.entries(conditions)) {
+      if (this.itemToManage.item[key] == value)
+        return true;
+    }
+    return false;
   }
 
   nullifyEmptyValues(item: any): any {
@@ -409,8 +446,7 @@ export class ConfigComponent implements OnInit {
     return item;
   }
 
-  getConfigKey(): string
-  {
+  getConfigKey(): string {
     if (this.mode === 'create') return Action.NEW;
     if (['duplicate', 'edit', 'delete'].includes(this.mode)) return Action.EDIT;
     return this.mode;
@@ -498,7 +534,8 @@ export class ConfigComponent implements OnInit {
     function getEmptyItem(contents: (ConfigInputContainer|ConfigInputItem)[], item: any): any {
       for (const artifact of contents) {
         if (artifact.contentType === 'item')
-          item[artifact.id] = artifact.type === InputType.SELECT || artifact.type === InputType.WEEKDAY ? [] : null;
+          item[artifact.id] = artifact.type === InputType.SELECT || artifact.type === InputType.PERIODICITY ||
+                              artifact.type === InputType.WEEKDAY ? [] : null;
         else item = getEmptyItem(artifact.contents, item);
       }
       return item;
@@ -512,17 +549,9 @@ export class ConfigComponent implements OnInit {
     }
   }
 
-  getItemToManage(): ItemManageData {
-    getItem(this.itemToManage.list[this.getConfigKey()]['contents'], this.itemToManage.item);
-    return this.nullifyEmptyValues(this.itemToManage.item);
-
-    function getItem(contents: (ConfigInputContainer|ConfigInputItem)[], item: any): any {
-      for (const artifact of contents) {
-        if (artifact.contentType === 'item')
-          item[artifact.id] = artifact.value;
-        else getItem(artifact.contents, item);
-      }
-    }
+  setItemToManage(artifact: ConfigInputItem, value: any): void {
+    if (this.itemToManage && this.itemToManage.item)
+      this.itemToManage.item[artifact.id] = value
   }
 
   resetManage() {
@@ -548,6 +577,8 @@ export interface ConfigSection {
 
 export interface ConfigInputContainer {
   contentType: 'container',
+  visibleWhen?: {[key: string]: boolean},
+  disabledWhen?: {[key: string]: boolean},
   classList?: string,
   width?: 'full' | '1/2' | '1/3' | '1/4',
   contents: (ConfigInputContainer|ConfigInputItem)[]
@@ -555,6 +586,8 @@ export interface ConfigInputContainer {
 
 export interface ConfigInputItem {
   contentType: 'item',
+  visibleWhen?: {[key: string]: boolean},
+  disabledWhen?: {[key: string]: boolean},
   classList?: string,
   width?: 'full' | '1/2' | '1/3' | '1/4',
   type: InputType,
