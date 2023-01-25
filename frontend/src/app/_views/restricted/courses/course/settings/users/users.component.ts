@@ -210,7 +210,7 @@ export class UsersComponent implements OnInit {
     const userToActOn = this.courseUsers[row];
 
     if (action === 'value changed') {
-      if (col === 7) this.toggleActive(userToActOn);
+      if (col === 6) this.toggleActive(userToActOn);
 
     } else if (action === Action.VIEW) {
       const redirectLink = '/profile/' + userToActOn.id;

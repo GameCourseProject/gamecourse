@@ -542,7 +542,17 @@ export class ConfigComponent implements OnInit {
 
         // Check conditions apply
         let applies = true;
-        for (const [key, condition] of Object.entries(value['when'])) {
+        for (let [key, condition] of Object.entries(value['when'])) {
+
+          // Replace condition variables by their actual values
+          if (typeof condition == 'string') {
+            let eCondition: any = replaceVariables(condition as string, this.itemToManage.item);
+            if (eCondition === 'true') eCondition = true;
+            else if (eCondition === 'false') eCondition = false;
+            else if (!isNaN(eCondition)) eCondition = parseInt(eCondition);
+            condition = eCondition;
+          }
+
           const itemValue = getValue(key, this.itemToManage.item);
           if ((typeof condition == 'boolean' && !!itemValue != condition) ||
             (typeof condition != 'boolean' && itemValue != condition)) {
@@ -552,20 +562,23 @@ export class ConfigComponent implements OnInit {
         }
         if (!applies) continue;
 
-        // Replace variables by their actual values
-        let text = value['show'];
-        const matches = value['show'].matchAll(/{{([\w.\-_]+)}}/g);
-        for (const match of matches) {
-          text = text.replaceAll(match[0], getValue(match[1], this.itemToManage.item));
-        }
-        return text;
+        // Replace text variables by their actual values
+        return replaceVariables(value['show'], this.itemToManage.item);
       }
 
     } else if (options['type'] === 'static') {
-      return ''; // TODO
+      return ''; // TODO: get static with variables
     }
 
     return '';
+
+    function replaceVariables(text: string, item: any): string {
+      const matches = text.matchAll(/{{([\w.\-_]+)}}/g);
+      for (const match of matches) {
+        text = text.replaceAll(match[0], getValue(match[1], item));
+      }
+      return text;
+    }
 
     function getValue(key: string, value: any): any {
       const parts = key.split(".");

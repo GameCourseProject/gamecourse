@@ -654,7 +654,7 @@ class VirtualCurrency extends Module
                 foreach ($users as $userId) {
                     if (!self::hasExchanged($userId)) {
                         $parts = explode(":", $item["ratio"]);
-                        $ratio = round(intval($parts[0]) / intval($parts[1]));
+                        $ratio = intval($parts[0]) / intval($parts[1]);
                         $threshold = $item["threshold"] ?? null;
                         $earnedXP = self::exchangeTokensForXP($userId, $ratio, $threshold);
 
@@ -873,6 +873,14 @@ class VirtualCurrency extends Module
         // Give award
         $awardsModule = new Awards($this->course);
         $awardsModule->giveAward($userId, $this->getVCName() . " exchange", AwardType::BONUS, null, $earnedXP);
+
+        // Log spending
+        Core::database()->insert(self::TABLE_VC_SPENDING, [
+            "user" => $userId,
+            "course" => $this->course->getId(),
+            "description" => $this->getVCName() . " exchange",
+            "amount" => $exchangeableTokens
+        ]);
 
         return $earnedXP;
     }

@@ -47,3 +47,4 @@ Thumbs.db
 
 # Config
 src/environments/config.ts
+src/environments/config.production.ts

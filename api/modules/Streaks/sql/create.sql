@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS streak_progression(
 	course                      int unsigned NOT NULL,
 	user                        int unsigned NOT NULL,
 	streak 	                    int unsigned NOT NULL,
-	number                      int unsigned NOT NULL,
+	repetition                  int unsigned NOT NULL,
 	participation 	            int unsigned NOT NULL,
 
     FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
