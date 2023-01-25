@@ -571,6 +571,20 @@ class CourseController
     /**
      * @throws Exception
      */
+    public function getAdaptationRoles()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireAdminPermission($course);
+        API::response(Role::ADAPTATION_ROLES);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function getRoles()
     {
         API::requireValues("courseId");

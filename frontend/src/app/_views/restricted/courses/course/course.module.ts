@@ -12,6 +12,7 @@ import { MainComponent } from './main/main.component';
 import { ViewsComponent } from "./settings/views/views/views.component";
 import { ViewsEditorComponent } from './settings/views/views-editor/views-editor.component';
 import { GlobalComponent } from "./settings/global/global.component";
+import { AdaptationComponent } from "./settings/adaptation/adaptation.component";
 
 import { ModulesComponent } from "./settings/modules/modules/modules.component";
 import { ConfigComponent } from './settings/modules/config/config/config.component';
@@ -38,7 +39,8 @@ import { ProfilingComponent } from './settings/modules/config/personalized-confi
     GooglesheetsComponent,
     QrComponent,
     ProgressReportComponent,
-    ProfilingComponent
+    ProfilingComponent,
+    AdaptationComponent
   ],
   imports: [
     CommonModule,

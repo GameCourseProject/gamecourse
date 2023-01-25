@@ -24,7 +24,7 @@ import {ThemingService} from "../../../../../../_services/theming/theming.servic
 })
 export class RulesComponent implements OnInit {
 
-  loading ={
+  loading = {
     page: true,
     action: false,
     table: false,

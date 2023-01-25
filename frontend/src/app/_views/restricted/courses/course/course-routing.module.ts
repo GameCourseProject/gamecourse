@@ -13,6 +13,7 @@ import { ViewsEditorComponent } from "./settings/views/views-editor/views-editor
 import { PageComponent } from "./page/page.component";
 import { ConfigComponent } from "./settings/modules/config/config/config.component";
 import {ComingSoonComponent} from "../../../../_components/misc/pages/coming-soon/coming-soon.component";
+import {AdaptationComponent} from "./settings/adaptation/adaptation.component";
 
 const routes: Routes = [
   {
@@ -64,6 +65,10 @@ const routes: Routes = [
       {
         path: 'themes',
         component: ComingSoonComponent
+      },
+      {
+        path: 'adaptation',
+        component: AdaptationComponent
       }
     ]
   },

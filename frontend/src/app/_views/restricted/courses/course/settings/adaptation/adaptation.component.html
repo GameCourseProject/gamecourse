@@ -1,0 +1,58 @@
+<div class="w-full relative">
+  <!-- Header -->
+  <app-header [title] = "'Adaptation'" [icon] = "'tabler-puzzle'"
+              [loading] = "loading.action" ></app-header>
+
+  <div class="sm:w-1/2">
+    <app-input-select
+      [id]="'game-elements'"
+      [(value)] = "selectedGameElement"
+      [options] = "availableGameElements"
+      [multiple] = "false"
+      [search] = "true"
+      [placeholder]="'Select game element'"
+      [topLabel]="'Choose a game element to adapt'"
+      (valueChange)="selectedGameElement = $event ?? []"
+    ></app-input-select>
+  </div>
+
+  <div *ngIf = "selectedGameElement" class="w-full flex flex-wrap mt-7">
+
+    <div class="sm:w-5/12">
+      <strong>CURRENT</strong>
+    </div>
+
+    <div class="divider divider-horizontal rounded bg-base-200"></div>
+
+    <div class="sm:w-5/12">
+      <strong>NEW</strong>
+
+      <p class="mt-2">Options available</p>
+      <div class="btn-group flex justify-start sm:mr-[6rem] mt-2">
+        <div *ngFor="let option of getChildren(selectedGameElement); let i = index" class="pr-1">
+          <input type = "button"
+                 class="btn-sm rounded-lg btn-{{getButtonColor(i)}} px-2 text-white"
+                 value="Option {{i+1}}"
+                 (click) = "setActive(i); doAction(option)"/>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Actions -->
+  <div class="flex items-center justify-end mt-6 sm:mr-[6rem]">
+    <button type="button" class="btn btn-ghost mr-2" (click)="discard()">Discard changes</button>
+    <button type="submit" class="btn btn-primary" (click)="save()">
+
+      <!-- Spinner -->
+      <ng-container *ngIf="loading.action">
+        <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+      </ng-container>
+
+      Save preferences
+    </button>
+  </div>
+
+</div>
+

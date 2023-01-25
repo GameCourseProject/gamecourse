@@ -20,8 +20,17 @@ class Role
     const TABLE_ROLE = "role";
     const TABLE_USER_ROLE = "user_role";
 
+
     const DEFAULT_ROLES = ["Teacher", "Student", "Watcher"];  // default roles for each course
-    const VERSION_ROLES = ["versionA", "versionB"];           // roles used for adaptation purposes
+
+    /**
+     * Adaptation role -> It will contain different roles for different game elements
+     * Children will be added later to this role. Examples:
+     * B001, B002, B003 (for different versions of Badges)
+     * LB001, LB002 (for different versions of LeaderBoard)
+     */
+    const ADAPTATION_ROLES = ["customBadge", "customLeaderboard"];
+    //const ADAPTATION_ROLES_CHILDREN = [[""]]
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Setup ---------------------- ***/
@@ -36,10 +45,12 @@ class Role
     public static function setupRoles()
     {
         Core::database()->setForeignKeyChecks(false);
-        self::setCourseRoles(0, self::DEFAULT_ROLES);
+        $roles = array_merge(self::DEFAULT_ROLES, self::ADAPTATION_ROLES);
+        self::setCourseRoles(0, $roles);
         Core::database()->setForeignKeyChecks(true);
-    }
 
+        self::addAdaptationChildrenInCourse(0, );
+    }
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- General --------------------- ***/
@@ -133,6 +144,22 @@ class Role
     }
 
     /**
+     * Adds default and adaptation roles to a given course.
+     *
+     * @param int $courseId
+     * @throws Exception
+     */
+    public static function addRolesToCourse(int $courseId)
+    {
+        $roles = array_merge(self::DEFAULT_ROLES, self::ADAPTATION_ROLES);
+        self::setCourseRoles($courseId, $roles);
+
+        // Update roles hierarchy
+        $hierarchy = array_map(function ($role) { return ["name" => $role]; }, $roles);
+        (new Course($courseId))->setRolesHierarchy($hierarchy);
+    }
+
+    /**
      * Gets course's roles. Option to retrieve only roles' names and/or to
      * sort them hierarchly. Sorting works like this:
      *  - if only names --> with the more specific roles first, followed
@@ -146,9 +173,9 @@ class Role
      *          getCourseRoles(<courseID>, false) --> [
      *                                                  ["name" => "Watcher", "id" => 3, "landingPage" => null, "module" => null],
      *                                                  ["name" => "Student", "id" => 2, "landingPage" => null, "module" => null],
-     *                                                  ["name" => "StudentB", "id" => 5, "landingPage" => null"module" => null],
-     *                                                  ["name" => "StudentA", "id" => 4, "landingPage" => null"module" => null],
-     *                                                  ["name" => "Teacher", "id" => 1, "landingPage" => null"module" => null]
+     *                                                  ["name" => "StudentB", "id" => 5, "landingPage" => null, "module" => null],
+     *                                                  ["name" => "StudentA", "id" => 4, "landingPage" => null, "module" => null],
+     *                                                  ["name" => "Teacher", "id" => 1, "landingPage" => null, "module" => null]
      *                                                ] (no fixed order)
      *
      * @example Course Roles: Teacher, Student, StudentA, StudentB, Watcher

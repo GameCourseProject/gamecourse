@@ -105,6 +105,16 @@ CREATE TABLE user_role(
     FOREIGN key(role) REFERENCES role(id) ON DELETE CASCADE
 );
 
+CREATE TABLE user_role_preferences(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    user                        int unsigned NOT NULL,
+    date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    previousRolePreference      varchar(50) NOT NULL,
+    newRolePreference           varchar(50) NOT NULL,
+
+    UNIQUE key(user, date),
+    FOREIGN KEY(user) REFERENCES user(studentNumber) ON DELETE CASCADE,
+);
 
 /*** ---------------------------------------------------- ***/
 /*** ------------------ Module tables ------------------- ***/

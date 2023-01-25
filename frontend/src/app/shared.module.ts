@@ -148,6 +148,7 @@ import {
   TablerColorSwatch,
   TablerIdBadge2,
   TablerPlug,
+  TablerPuzzle,
   TablerPrompt,
   TablerSchool,
   TablerNewSection,
@@ -360,6 +361,8 @@ import {
       TablerArrowNarrowDown,
       TablerArrowsUpDown,
       TablerBarrierBlock,
+      TablerBell,
+      TablerBellRinging,
       TablerBooks,
       TablerCaretDown,
       TablerClipboardList,
@@ -371,8 +374,7 @@ import {
       TablerPlug,
       TablerPrompt,
       TablerSchool,
-      TablerBellRinging,
-      TablerBell
+      TablerPuzzle
     }),
     DataTablesModule,
     NgApexchartsModule

@@ -253,6 +253,11 @@ export class SidebarComponent implements OnInit {
                 link: path + 'settings/themes',
                 name: 'Themes',
                 icon: 'tabler-color-swatch'
+              },
+              {
+                link: path + 'settings/adaptation',
+                name: 'Adaptation',
+                icon: 'tabler-puzzle'
               }
             ]
           },

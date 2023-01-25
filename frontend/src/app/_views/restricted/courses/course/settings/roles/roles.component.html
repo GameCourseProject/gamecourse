@@ -41,14 +41,14 @@
 <ng-template #LIST let-rolesHierarchy='rolesHierarchy'>
 
   <ol class="dd-list">
-    <li *ngFor="let role of rolesHierarchy" class="dd-item" [ngClass]="{'dd-nodrag': isDefaultRole(role.name)}"
+    <li *ngFor="let role of rolesHierarchy" class="dd-item" [ngClass]="{'dd-nodrag': isDefaultRole(role.name) || isAdaptationRole(role.name)}"
         [attr.data-id]="role.id ?? null" [attr.data-name]="role.name" [attr.data-landingpage]="role.landingPage ?? null">
 
       <div class="flex items-center mb-3">
 
         <div class="flex items-center w-[calc(100%-6rem)]">
             <!-- Move -->
-            <div *ngIf="!isDefaultRole(role.name)" class="tooltip align-middle absolute -left-10" data-tip="Move">
+            <div *ngIf="!isDefaultRole(role.name) && !isAdaptationRole(role.name)" class="tooltip align-middle absolute -left-10" data-tip="Move">
               <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative">
                 <ng-icon name="feather-move" size="1.2rem"></ng-icon>
                 <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
@@ -56,7 +56,7 @@
             </div>
 
             <!-- Role -->
-            <div class="dd-content" [ngClass]="{'!border-primary !border-opacity-75 text-primary font-semibold': isDefaultRole(role.name)}">
+            <div class="dd-content" [ngClass]="{'!border-primary !border-opacity-75 text-primary font-semibold': isDefaultRole(role.name) || isAdaptationRole(role.name)}">
               {{role.name}}
             </div>
         </div>
@@ -71,7 +71,7 @@
             </button>
           </div>
 
-          <div *ngIf="!isDefaultRole(role.name)" class="tooltip align-middle" data-tip="Edit"
+          <div *ngIf="!isDefaultRole(role.name) && !isAdaptationRole(role.name)" class="tooltip align-middle" data-tip="Edit"
                (click)="mode = 'edit'; roleToManage = initRoleToManage(role); ModalService.openModal('manage')">
 
             <button class="btn btn-sm btn-ghost btn-circle">
@@ -79,7 +79,7 @@
             </button>
           </div>
 
-          <div *ngIf="!isDefaultRole(role.name)" class="tooltip align-middle" data-tip="Delete"
+          <div *ngIf="!isDefaultRole(role.name) && !isAdaptationRole(role.name)" class="tooltip align-middle" data-tip="Delete"
             (click)="removeRole(role)">
 
             <button class="btn btn-sm btn-ghost btn-circle">

@@ -35,6 +35,8 @@ export class RolesComponent implements OnInit {
   defaultRoleNames: string[];
   rolesHierarchySmart: {[roleName: string]: {role: Role, parent: Role, children: Role[]}};
 
+  adaptationRoleNames: string[];
+
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute
@@ -71,6 +73,7 @@ export class RolesComponent implements OnInit {
 
   async getRoles(courseID: number): Promise<void> {
     this.defaultRoleNames = await this.api.getDefaultRoles(courseID).toPromise();
+    this.adaptationRoleNames = await this.api.getAdaptationRoles(courseID).toPromise();
     this.originalRolesHierarchy = _.cloneDeep(this.course.roleHierarchy);
     this.initRolesHierarchySmart();
   }
@@ -134,6 +137,7 @@ export class RolesComponent implements OnInit {
 
   removeRole(role: Role): void {
     if (this.isDefaultRole(role.name)) return;
+    if (this.isAdaptationRole(role.name)) return;
 
     const parent = this.rolesHierarchySmart[role.name].parent;
     if (parent) {
@@ -225,6 +229,10 @@ export class RolesComponent implements OnInit {
 
   isDefaultRole(roleName): boolean {
     return this.defaultRoleNames.includes(roleName);
+  }
+
+  isAdaptationRole(roleName): boolean {
+    return this.adaptationRoleNames.includes(roleName);
   }
 
 }
