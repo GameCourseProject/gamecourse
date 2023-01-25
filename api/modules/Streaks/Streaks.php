@@ -394,6 +394,35 @@ class Streaks extends Module
                                     "helper" => "Number of actions to be performed on each period"
                                 ],
                             ]
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "mt-5",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "full",
+                                    "type" => "dynamic-text",
+                                    "id" => "example",
+                                    "options" => [
+                                        "type" => "conditional",
+                                        "value" => [
+                                            "consecutive" => [
+                                                "when" => ["goal" => true, "isPeriodic" => false],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something consecutively {{goal}} times.</i>"
+                                            ],
+                                            "periodic (absolute)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => true],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times, {{periodicityGoal}} every {{periodicity.number}} {{periodicity.time}}s.</i>"
+                                            ],
+                                            "periodic (relative)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "relative"],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times with no more than {{periodicity.number}} {{periodicity.time}}s in between.</i>"
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
                         ]
                     ]
                 ],
@@ -562,6 +591,35 @@ class Streaks extends Module
                                     ],
                                     "helper" => "Number of actions to be performed on each period"
                                 ],
+                            ]
+                        ],
+                        [
+                            "contentType" => "container",
+                            "classList" => "mt-5",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "width" => "full",
+                                    "type" => "dynamic-text",
+                                    "id" => "example",
+                                    "options" => [
+                                        "type" => "conditional",
+                                        "value" => [
+                                            "consecutive" => [
+                                                "when" => ["goal" => true, "isPeriodic" => false],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something consecutively {{goal}} times.</i>"
+                                            ],
+                                            "periodic (absolute)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => true],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times, {{periodicityGoal}} every {{periodicity.number}} {{periodicity.time}}s.</i>"
+                                            ],
+                                            "periodic (relative)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "relative"],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times with no more than {{periodicity.number}} {{periodicity.time}}s in between.</i>"
+                                            ]
+                                        ]
+                                    ]
+                                ]
                             ]
                         ]
                     ]

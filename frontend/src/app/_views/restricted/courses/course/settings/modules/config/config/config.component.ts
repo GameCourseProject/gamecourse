@@ -404,7 +404,9 @@ export class ConfigComponent implements OnInit {
   visible(artifact: ConfigInputContainer | ConfigInputItem, conditions: {[key: string]: boolean}, form: NgForm): boolean {
     if (!conditions) return true;
     for (const [key, value] of Object.entries(conditions)) {
-      if (this.itemToManage.item[key] != value) {
+      const itemValue = getValue(key, this.itemToManage.item);
+      if ((typeof value == 'boolean' && !!itemValue != value) ||
+        (typeof value != 'boolean' && itemValue != value)) {
         removeFormControl(artifact, form);
         form.form.removeControl('periodicity-number');
         form.form.removeControl('periodicity-time');
@@ -412,6 +414,13 @@ export class ConfigComponent implements OnInit {
       }
     }
     return true;
+
+    function getValue(key: string, value: any): any {
+      const parts = key.split(".");
+      value = value[parts[0]];
+      if (parts.length > 1) value = getValue(parts.splice(1).join("."), value);
+      return value;
+    }
 
     function removeFormControl(artifact: ConfigInputContainer | ConfigInputItem, form: NgForm) {
       if (artifact.contentType === 'container') {
@@ -432,10 +441,19 @@ export class ConfigComponent implements OnInit {
   disabled(conditions: {[key: string]: boolean}): boolean {
     if (!conditions) return false;
     for (const [key, value] of Object.entries(conditions)) {
-      if (this.itemToManage.item[key] == value)
+      const itemValue = getValue(key, this.itemToManage.item);
+      if ((typeof value == 'boolean' && !!itemValue == value) ||
+        (typeof value != 'boolean' && itemValue == value))
         return true;
     }
     return false;
+
+    function getValue(key: string, value: any): any {
+      const parts = key.split(".");
+      value = value[parts[0]];
+      if (parts.length > 1) value = getValue(parts.splice(1).join("."), value);
+      return value;
+    }
   }
 
   nullifyEmptyValues(item: any): any {
@@ -518,6 +536,45 @@ export class ConfigComponent implements OnInit {
     return IDs;
   }
 
+  getDynamicText(options): string {
+    if (options['type'] === 'conditional') {
+      for (const value of Object.values(options['value'])) {
+
+        // Check conditions apply
+        let applies = true;
+        for (const [key, condition] of Object.entries(value['when'])) {
+          const itemValue = getValue(key, this.itemToManage.item);
+          if ((typeof condition == 'boolean' && !!itemValue != condition) ||
+            (typeof condition != 'boolean' && itemValue != condition)) {
+              applies = false;
+              break;
+          }
+        }
+        if (!applies) continue;
+
+        // Replace variables by their actual values
+        let text = value['show'];
+        const matches = value['show'].matchAll(/{{([\w.\-_]+)}}/g);
+        for (const match of matches) {
+          text = text.replaceAll(match[0], getValue(match[1], this.itemToManage.item));
+        }
+        return text;
+      }
+
+    } else if (options['type'] === 'static') {
+      return ''; // TODO
+    }
+
+    return '';
+
+    function getValue(key: string, value: any): any {
+      const parts = key.split(".");
+      value = value[parts[0]];
+      if (parts.length > 1) value = getValue(parts.splice(1).join("."), value);
+      return value;
+    }
+  }
+
 
   // Lists
 
@@ -590,7 +647,7 @@ export interface ConfigInputItem {
   disabledWhen?: {[key: string]: boolean},
   classList?: string,
   width?: 'full' | '1/2' | '1/3' | '1/4',
-  type: InputType,
+  type: InputType | 'dynamic-text',
   id: string,
   value: any,
   placeholder?: string,

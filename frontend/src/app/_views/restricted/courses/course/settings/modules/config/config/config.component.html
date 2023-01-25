@@ -596,6 +596,11 @@
         </app-input-toggle>
       </ng-container>
 
+      <!-- Dynamic Text -->
+      <ng-container *ngIf="artifact.type === 'dynamic-text'">
+        <p class="prose {{artifact.classList}}" [innerHTML]="getDynamicText(artifact.options) | sanitizeHTML"></p>
+      </ng-container>
+
     </ng-container>
 
   </div>
