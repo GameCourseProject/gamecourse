@@ -46,7 +46,7 @@ class AutoAction
         return $this->getData("name");
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
         return $this->getData("description");
     }
@@ -101,7 +101,7 @@ class AutoAction
     /**
      * @throws Exception
      */
-    public function setDescription(?string $description)
+    public function setDescription(string $description)
     {
         $this->setData(["description" => $description]);
     }
@@ -253,13 +253,13 @@ class AutoAction
      *
      * @param int $courseId
      * @param string $name
-     * @param string|null $description
+     * @param string $description
      * @param string $type
      * @param int $amount
      * @return AutoAction
      * @throws Exception
      */
-    public static function addAction(int $courseId, string $name, ?string $description, string $type, int $amount): AutoAction
+    public static function addAction(int $courseId, string $name, string $description, string $type, int $amount): AutoAction
     {
         self::trim($name, $description, $type);
         self::validateAction($name, $description, $type);
@@ -284,14 +284,14 @@ class AutoAction
      * Returns the edited action.
      *
      * @param string $name
-     * @param string|null $description
+     * @param string $description
      * @param string $type
      * @param int $amount
      * @param bool $isActive
      * @return AutoAction
      * @throws Exception
      */
-    public function editAction(string $name, ?string $description, string $type, int $amount, bool $isActive): AutoAction
+    public function editAction(string $name, string $description, string $type, int $amount, bool $isActive): AutoAction
     {
         $this->setData([
             "name" => $name,
@@ -374,13 +374,13 @@ class AutoAction
      *
      * @param int $courseId
      * @param string $name
-     * @param string|null $description
+     * @param string $description
      * @param string $type
      * @param int $amount
      * @return Rule
      * @throws Exception
      */
-    private static function addRule(int $courseId, string $name, ?string $description, string $type, int $amount): Rule
+    private static function addRule(int $courseId, string $name, string $description, string $type, int $amount): Rule
     {
         // Add rule to virtual currency section
         $VCModule = new VirtualCurrency(new Course($courseId));
@@ -392,13 +392,13 @@ class AutoAction
      *
      * @param int $ruleId
      * @param string $name
-     * @param string|null $description
+     * @param string $description
      * @param string $type
      * @param int $amount
      * @return void
      * @throws Exception
      */
-    private static function updateRule(int $ruleId, string $name, ?string $description, string $type, int $amount)
+    private static function updateRule(int $ruleId, string $name, string $description, string $type, int $amount)
     {
         $rule = new Rule($ruleId);
         $params = self::generateRuleParams($name, $description, $type, $amount);
@@ -426,13 +426,13 @@ class AutoAction
      * Generates action rule parameters.
      *
      * @param string $name
-     * @param string|null $description
+     * @param string $description
      * @param string $type
      * @param int $amount
      * @return array
      * @throws Exception
      */
-    public static function generateRuleParams(string $name, ?string $description, string $type, int $amount): array
+    public static function generateRuleParams(string $name, string $description, string $type, int $amount): array
     {
         // Generate when clause
         $logs = "get_logs(" . ($type !== "peergraded post" ? "target" : "None") . ", \"$type\"" . ($type === "peergraded post" ? ", None, target" : "") . ")";
@@ -440,7 +440,7 @@ class AutoAction
 
         // Generate then clause
         $then = str_replace("<action>", $amount > 0 ? "award" : "spend", file_get_contents(__DIR__ . "/rules/then_template.txt"));
-        $then = str_replace("<name>", $name, $then);
+        $then = str_replace("<name>", "\"$description\"", $then);
         $then = str_replace("<amount>", abs($amount), $then);
 
         return ["name" => $name, "description" => $description, "when" => $when, "then" => $then];
@@ -551,10 +551,8 @@ class AutoAction
      */
     private static function validateDescription($description)
     {
-        if (is_null($description)) return;
-
         if (!is_string($description) || empty(trim($description)))
-            throw new Exception("Action description can't be empty.");
+            throw new Exception("Action description can't be null nor empty.");
 
         if (is_numeric($description))
             throw new Exception("Action description can't be composed of only numbers.");

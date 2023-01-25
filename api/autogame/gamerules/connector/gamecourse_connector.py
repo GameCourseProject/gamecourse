@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import socket, logging
 import mysql.connector
+import math
 from datetime import datetime, timedelta
 
 from io import StringIO
@@ -11,7 +12,7 @@ from course.coursedata import read_achievements, read_tree
 achievements = read_achievements()
 tree_awards = read_tree()
 
-from gamerules.connector.db_connector import gc_db as db, moodle_db
+from gamerules.connector.db_connector import gc_db as db
 
 
 ### ------------------------------------------------------ ###
@@ -131,9 +132,6 @@ def clear_streak_progression(target):
     """
 
     query = "DELETE FROM streak_progression WHERE course = %s and user = %s;"
-    db.execute_query(query, (config.COURSE, target), "commit")
-
-    query = "DELETE FROM streak_participations WHERE course = %s and user = %s;"
     db.execute_query(query, (config.COURSE, target), "commit")
 
 
@@ -385,7 +383,7 @@ def get_course_dates(course):
     """
 
     query = "SELECT startDate, endDate FROM course WHERE id = %s;" % course
-    return [parse_date_from_db(date.decode()) for date in db.data_broker.get(db, course, query)[0]]
+    return [date for date in db.data_broker.get(db, course, query)[0]]
 
 def module_enabled(module):
     """
@@ -444,14 +442,6 @@ def get_targets(course, datetime=None, all_targets=False, targets_list=None):
         targets[user_id] = {"name": user_name.decode(), "studentNumber": user_number}
 
     return targets
-
-def parse_date_from_db(date):
-    """
-    Parses a given date coming from the database, with format
-    'YYYY-MM-DD HH:mm:ss' to a datetime object.
-    """
-
-    return datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
 
 def get_dates_of_period(date, number, time, precise=True):
     """
@@ -826,10 +816,15 @@ def get_consecutive_peergrading_logs(target):
     Gets consecutive peergrading logs done by target.
     """
 
+    if module_enabled("Moodle"):
+        from gamerules.connector.db_connector import moodle_db
+    else:
+        raise Exception("Can't get consecutive peergrading logs: Moodle is not enabled.")
+
     # Get target username
     # NOTE: target GC username = target Moodle username
     query = "SELECT username FROM auth WHERE user = %s;" % target
-    username = db.data_broker.get(db, target, query, "user")[0][0].decode()
+    username = (db.data_broker.get(db, target, query, "user")[0][0]).decode()
 
     # Get Moodle info
     query = "SELECT tablesPrefix, moodleCourse FROM moodle_config WHERE course = %s;" % config.COURSE
@@ -844,7 +839,7 @@ def get_consecutive_peergrading_logs(target):
             "JOIN " + mdl_prefix + "user u on pa.userid=u.id " \
             "WHERE f.course = %s AND u.username = %s" \
             "ORDER BY pa.timeassigned;"
-    logs = db.execute_query(query, (mdl_course, username))
+    logs = moodle_db.execute_query(query, (mdl_course, username))
 
     # Get consecutive peergrading logs
     consecutive_logs = []
@@ -886,12 +881,12 @@ def get_periodic_logs(logs, number, time, type):
         start_date, end_date = get_dates_of_period(course_start_date, number, time, False)
 
     else:
-        start_date, end_date = get_dates_of_period(parse_date_from_db(logs[0][config.DATE_COL].decode()), number, time)
+        start_date, end_date = get_dates_of_period(logs[0][config.DATE_COL], number, time)
 
     periodic_logs = []
 
     for log in logs:
-        date = parse_date_from_db(log[config.DATE_COL].decode())
+        date = log[config.DATE_COL]
         if start_date <= date <= end_date:
             nr_periods = len(periodic_logs)
             if nr_periods == 0:
@@ -900,15 +895,19 @@ def get_periodic_logs(logs, number, time, type):
                 periodic_logs[nr_periods - 1].append(log)
 
         else:
-            periodic_logs.append([log])
-
             if type == "absolute":
                 period = end_date - start_date
                 start_date = end_date
                 end_date += period
 
+                if not (start_date <= date <= end_date):
+                    periodic_logs.append([])
+                    start_date, end_date = get_dates_of_period(date, number, time, False)
+
+            periodic_logs.append([log])
+
         if type == "relative":
-            start_date, end_date = get_dates_of_period(parse_date_from_db(log[config.DATE_COL].decode()), number, time)
+            start_date, end_date = get_dates_of_period(log[config.DATE_COL], number, time)
 
     return periodic_logs
 
@@ -1301,6 +1300,111 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
                     description = get_attempt_description(attempt)
                     spend_tokens(target, description, attempt_cost, 1)
 
+def award_streak(target, name, logs):
+    """
+    Awards a given streak to a specific target.
+
+    NOTE: will retract if streak changed.
+    Updates award if reward has changed.
+    """
+
+    def get_description(name, repetition):
+        repetition_info = " (%s%s time)" % (repetition, "st" if repetition == 1 else "nd" if repetition == 2 else "rd" if repetition == 3 else "th")
+        return name + repetition_info
+
+    type = "streak"
+    awards_table = get_awards_table()
+
+    if module_enabled("Streaks"):
+        # Get streak info
+        query = "SELECT id, goal, periodicityGoal, periodicityTime, periodicityType, reward, tokens, isExtra, isRepeatable " \
+                "FROM streak WHERE course = %s AND name = '%s';" % (config.COURSE, name)
+        table_streak = db.data_broker.get(db, config.COURSE, query)
+        streak_id = table_streak[0][0]
+        goal = int(table_streak[0][1])
+        is_periodic = table_streak[0][3] is not None
+        period_type = table_streak[0][4]
+        period_goal = int(table_streak[0][2]) if table_streak[0][2] is not None else None
+
+        # Get awards given for streak
+        query = "SELECT COUNT(*) FROM " + awards_table + " WHERE course = %s AND user = %s AND type = %s AND description LIKE %s;"
+        nr_awards = int(db.execute_query(query, (config.COURSE, target, type, name + "%"))[0][0])
+
+        # No streaks reached and there are no awards to be removed
+        # Simply return right away
+        nr_groups = len(logs)
+        if nr_groups == 0 and nr_awards == 0:
+            return
+
+        # Get target progression in streak
+        progression = []
+        for group_index in range(0, nr_groups):
+            group = logs[group_index]
+            last = group_index == nr_groups - 1
+            total = len(group)
+
+            nr_valid = 0
+            if is_periodic and period_type == "absolute":   # periodic (absolute)
+                if total >= period_goal or last:
+                    nr_valid = total
+
+                else:
+                    progression = []
+
+            else:   # consecutive & periodic (relative)
+                nr_valid = math.floor(total / goal) * goal
+                if last:
+                    nr_valid = total
+
+            for index in range(0, nr_valid):
+                progression.append(group[index])
+
+        # If not repeatable, only allow one repetition of streak
+        is_repeatable = table_streak[0][8]
+        if not is_repeatable:
+            progression = progression[:goal]
+
+        # Update streak progression
+        steps = len(progression)
+        if not config.TEST_MODE:
+            for index in range(0, steps):
+                log = progression[index]
+                repetition = math.floor(index / goal + 1)
+
+                query = "INSERT INTO streak_progression (course, user, streak, repetition, participation) VALUES (%s, %s, %s, %s, %s);"
+                db.execute_query(query, (config.COURSE, target, streak_id, repetition, log[0]), "commit")
+
+        # Award and/or update streaks
+        nr_repetitions = math.floor(steps / goal)
+        for repetition in range(1, nr_repetitions + 1):
+            # Calculate reward
+            is_extra = table_streak[0][7]
+            streak_reward = int(table_streak[0][5])
+            reward = calculate_extra_credit_reward(target, streak_reward, type, streak_id) if is_extra else streak_reward
+
+            # Award streak
+            description = get_description(name, repetition)
+            award(target, type, description, reward, streak_id)
+
+            # Award tokens
+            streak_tokens = int(table_streak[0][6])
+            if module_enabled("VirtualCurrency") and streak_tokens > 0:
+                award_tokens(target, description, streak_tokens, 1, streak_id)
+
+        # The rule/data sources have been updated, the 'award' table
+        # has streaks attributed which are no longer valid.
+        # All streaks no longer valid must be deleted
+        if nr_awards > nr_repetitions:
+            for repetition in range(nr_repetitions + 1, nr_awards + 1):
+                # Delete award
+                description = get_description(name, repetition)
+                query = "DELETE FROM " + awards_table + " WHERE course = %s AND user = %s AND type = %s AND description = %s AND moduleInstance = %s;"
+                db.execute_query(query, (config.COURSE, target, type, description, streak_id), "commit")
+
+                # Remove tokens
+                query = "DELETE FROM " + awards_table + " WHERE course = %s AND user = %s AND type = 'tokens' AND description = %s AND moduleInstance = %s;"
+                db.execute_query(query, (config.COURSE, target, description, streak_id), "commit")
+
 def award_tokens(target, name, reward, repetitions=1, instance=None):
     """
     Awards given tokens to a specific target.
@@ -1463,142 +1567,3 @@ def award_team_grade(target, item, contributions=None, extra=None):
 
     #cnx.close()
     return
-
-def award_streak(target, streak, to_award, participations, type=None):
-    # -----------------------------------------------------------
-    # Writes and updates 'award' table with streaks won by the
-    # user. Will retract if rules/participations have been
-    # changed.
-    # Is also responsible for creating indicators.
-    # -----------------------------------------------------------
-
-    cursor = db.cursor
-    connect = db.connection
-
-    ##queries = db.queries
-    #results = db.results
-
-    course = config.COURSE
-    typeof = "streak"
-
-    nlogs = len(participations)
-    participationType = ''
-    if type != None and streak != "Grader":
-        participationType = type
-
-    if config.TEST_MODE:
-        awards_table = "award_test"
-    else:
-        awards_table = "award"
-
-
-
-    # gets all awards for this user order by descending date (most recent on top)
-    query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description like %s AND type=%s;"
-    streak_name = streak + "%"
-    cursor.execute(query, (target, course, streak_name, typeof))
-    table = cursor.fetchall()
-
-    # get streak info
-    query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic, isAtMost, isActive from streak where course = \"" + course + "\" and name = \"" + streak + "\";"
-    result = db.data_broker.get(course, query)
-    if not result:
-        cursor.execute(query)
-        table_streak = cursor.fetchall()
-        db.data_broker.add(course, query, table_streak)
-
-    else:
-        table_streak = result
-
-    streakid = table_streak[0][0]
-    isStreakActive = table_streak[0][9]
-
-    if not isStreakActive:
-        return
-
-    # table contains  user, course, description,  type, reward, date
-    # table = filtered awards_table
-    if len(table) == 0:  # no streak has been awarded with this name for this user
-
-        isRepeatable = table_streak[0][5]
-        streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
-
-        if not isRepeatable:
-            description = streak
-
-            query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-            cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
-            connect.commit()
-
-            if not streak.startswith("Grader"):
-                # gets award_id
-                query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
-                cursor.execute(query, (target, course, description, typeof))
-                table_id = cursor.fetchall()
-                award_id = table_id[0][0]
-
-                if not config.TEST_MODE:
-                    for id in participations:
-                        query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
-                        cursor.execute(query, (award_id, id))
-                        connect.commit()
-
-        else:
-            # inserts in award table the new streaks that have not been awarded
-            for diff in range(len(table), to_award):
-                repeated_info = " (" + str(diff + 1) + ")"
-                description = streak + repeated_info
-
-                query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-                cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
-                connect.commit()
-
-                if diff == 0:
-                    query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
-                    cursor.execute(query, (target, course, description, typeof))
-                    table_id = cursor.fetchall()
-                    award_id = table_id[0][0]
-
-                    if not config.TEST_MODE and not streak.startswith("Grader"):
-                        for id in participations:
-                            query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
-                            cursor.execute(query, (award_id, id))
-                            connect.commit()
-
-
-        #if not config.test_mode:
-        #    if contributions != None and contributions != None:
-        #        nr_contributions = str(len(contributions))
-        #    else:
-        #        nr_contributions = ''
-        #
-        #    config.award_list.append([str(target), str(streak), str(streak_reward), nr_contributions])
-
-    # if this streak has already been awarded, check if it is repeatable to award it again.
-    elif len(table) > 0:
-        isRepeatable = table_streak[0][5]
-        streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
-
-        if isRepeatable:
-
-            # inserts in award table the new streaks that have not been awarded
-            for diff in range(len(table), to_award):
-                repeated_info = " (" + str(diff + 1) + ")"
-                description = streak + repeated_info
-
-                query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-                cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
-                connect.commit()
-
-                query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
-                cursor.execute(query, (target, course, description, typeof))
-                table_id = cursor.fetchall()
-                award_id = table_id[0][0]
-
-                if not config.TEST_MODE and not streak.startswith("Grader"):
-                    for id in participations:
-                        query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
-                        cursor.execute(query, (award_id, id))
-                        connect.commit()
-
-    connect.commit()

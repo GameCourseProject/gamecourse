@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS virtual_currency_auto_action(
     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
     course                      int unsigned NOT NULL,
     name                        varchar(50) NOT NULL,
-    description                 varchar(150),
+    description                 varchar(150) NOT NULL,
     type                        varchar(50) NOT NULL,
     amount                      int NOT NULL DEFAULT 0,
     isActive                    boolean NOT NULL DEFAULT TRUE,

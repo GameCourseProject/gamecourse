@@ -354,9 +354,8 @@ class Streaks extends Module
                                         "filterOptions" => [Time::SECOND, Time::YEAR],
                                         "color" => "accent",
                                         "topLabel" => "Period",
-                                        "minValue" => 1,
+                                        "minNumber" => 1,
                                         "required" => true,
-                                        "minNumber" => 1
                                     ],
                                     "helper" => "Period of time available to earn (absolute period) or progress (relative period) in the streak"
                                 ],
@@ -407,15 +406,67 @@ class Streaks extends Module
                                     "options" => [
                                         "type" => "conditional",
                                         "value" => [
-                                            "consecutive" => [
+                                            "consecutive (goal = 1)" => [
+                                                "when" => ["goal" => 1, "isPeriodic" => false],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something consecutively one time.</i>"
+                                            ],
+                                            "consecutive (goal > 1)" => [
                                                 "when" => ["goal" => true, "isPeriodic" => false],
                                                 "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something consecutively {{goal}} times.</i>"
                                             ],
-                                            "periodic (absolute)" => [
+
+                                            "periodic absolute (goal = 1 and periodicityGoal = 1 and periodicityNumber = 1)" => [
+                                                "when" => ["goal" => 1, "isPeriodic" => true, "periodicity.number" => 1, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => 1],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something one time every {{periodicity.time}}.</i>"
+                                            ],
+                                            "periodic absolute (goal = 1 and periodicityGoal = 1 and periodicityNumber > 1)" => [
+                                                "when" => ["goal" => 1, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => 1],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something one time every {{periodicity.number}} {{periodicity.time}}s.</i>"
+                                            ],
+                                            "periodic absolute (goal = 1 and periodicityGoal > 1)" => [
+                                                "when" => ["goal" => 1, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => true],
+                                                "show" => "<b class='text-error'>Period goal can't be bigger than the number of steps.</b>"
+                                            ],
+
+                                            "periodic absolute (goal = period goal and periodicityNumber = 1)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => 1, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => "{{goal}}"],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times every {{periodicity.time}}.</i>"
+                                            ],
+                                            "periodic absolute (goal = period goal and periodicityNumber > 1)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => "{{goal}}"],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times every {{periodicity.number}} {{periodicity.time}}s.</i>"
+                                            ],
+
+                                            "periodic absolute (goal > 1 and periodicityGoal = 1 and periodicityNumber = 1)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => 1, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => 1],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times every {{periodicity.time}}.</i>"
+                                            ],
+                                            "periodic absolute (goal > 1 and periodicityGoal = 1 and periodicityNumber > 1)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => 1],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times every {{periodicity.number}} {{periodicity.time}}s.</i>"
+                                            ],
+                                            "periodic absolute (goal > 1 and periodicityGoal > 1 and periodicityNumber = 1)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => 1, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => true],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times, {{periodicityGoal}} every {{periodicity.time}}.</i>"
+                                            ],
+                                            "periodic absolute (goal > 1 and periodicityGoal > 1 and periodicityNumber > 1)" => [
                                                 "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => true],
                                                 "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times, {{periodicityGoal}} every {{periodicity.number}} {{periodicity.time}}s.</i>"
                                             ],
-                                            "periodic (relative)" => [
+
+                                            "periodic relative (goal = 1 and periodicityNumber = 1)" => [
+                                                "when" => ["goal" => 1, "isPeriodic" => true, "periodicity.number" => 1, "periodicity.time" => true, "periodicityType" => "relative"],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something one time with no more than a {{periodicity.time}} in between.</i>"
+                                            ],
+                                            "periodic relative (goal = 1 and periodicityNumber > 1)" => [
+                                                "when" => ["goal" => 1, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "relative"],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something one time with no more than {{periodicity.number}} {{periodicity.time}}s in between.</i>"
+                                            ],
+                                            "periodic relative (goal > 1 and periodicityNumber = 1)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => 1, "periodicity.time" => true, "periodicityType" => "relative"],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times with no more than a {{periodicity.time}} in between.</i>"
+                                            ],
+                                            "periodic relative (goal > 1 and periodicityNumber > 1)" => [
                                                 "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "relative"],
                                                 "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times with no more than {{periodicity.number}} {{periodicity.time}}s in between.</i>"
                                             ]
@@ -552,9 +603,8 @@ class Streaks extends Module
                                         "filterOptions" => [Time::SECOND, Time::YEAR],
                                         "color" => "accent",
                                         "topLabel" => "Period",
-                                        "minValue" => 1,
+                                        "minNumber" => 1,
                                         "required" => true,
-                                        "minNumber" => 1
                                     ],
                                     "helper" => "Period of time available to earn (absolute period) or progress (relative period) in the streak"
                                 ],
@@ -605,15 +655,67 @@ class Streaks extends Module
                                     "options" => [
                                         "type" => "conditional",
                                         "value" => [
-                                            "consecutive" => [
+                                            "consecutive (goal = 1)" => [
+                                                "when" => ["goal" => 1, "isPeriodic" => false],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something consecutively one time.</i>"
+                                            ],
+                                            "consecutive (goal > 1)" => [
                                                 "when" => ["goal" => true, "isPeriodic" => false],
                                                 "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something consecutively {{goal}} times.</i>"
                                             ],
-                                            "periodic (absolute)" => [
+
+                                            "periodic absolute (goal = 1 and periodicityGoal = 1 and periodicityNumber = 1)" => [
+                                                "when" => ["goal" => 1, "isPeriodic" => true, "periodicity.number" => 1, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => 1],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something one time every {{periodicity.time}}.</i>"
+                                            ],
+                                            "periodic absolute (goal = 1 and periodicityGoal = 1 and periodicityNumber > 1)" => [
+                                                "when" => ["goal" => 1, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => 1],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something one time every {{periodicity.number}} {{periodicity.time}}s.</i>"
+                                            ],
+                                            "periodic absolute (goal = 1 and periodicityGoal > 1)" => [
+                                                "when" => ["goal" => 1, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => true],
+                                                "show" => "<b class='text-error'>Period goal can't be bigger than the number of steps.</b>"
+                                            ],
+
+                                            "periodic absolute (goal = period goal and periodicityNumber = 1)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => 1, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => "{{goal}}"],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times every {{periodicity.time}}.</i>"
+                                            ],
+                                            "periodic absolute (goal = period goal and periodicityNumber > 1)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => "{{goal}}"],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times every {{periodicity.number}} {{periodicity.time}}s.</i>"
+                                            ],
+
+                                            "periodic absolute (goal > 1 and periodicityGoal = 1 and periodicityNumber = 1)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => 1, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => 1],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times every {{periodicity.time}}.</i>"
+                                            ],
+                                            "periodic absolute (goal > 1 and periodicityGoal = 1 and periodicityNumber > 1)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => 1],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times every {{periodicity.number}} {{periodicity.time}}s.</i>"
+                                            ],
+                                            "periodic absolute (goal > 1 and periodicityGoal > 1 and periodicityNumber = 1)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => 1, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => true],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times, {{periodicityGoal}} every {{periodicity.time}}.</i>"
+                                            ],
+                                            "periodic absolute (goal > 1 and periodicityGoal > 1 and periodicityNumber > 1)" => [
                                                 "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "absolute", "periodicityGoal" => true],
                                                 "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times, {{periodicityGoal}} every {{periodicity.number}} {{periodicity.time}}s.</i>"
                                             ],
-                                            "periodic (relative)" => [
+
+                                            "periodic relative (goal = 1 and periodicityNumber = 1)" => [
+                                                "when" => ["goal" => 1, "isPeriodic" => true, "periodicity.number" => 1, "periodicity.time" => true, "periodicityType" => "relative"],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something one time with no more than a {{periodicity.time}} in between.</i>"
+                                            ],
+                                            "periodic relative (goal = 1 and periodicityNumber > 1)" => [
+                                                "when" => ["goal" => 1, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "relative"],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something one time with no more than {{periodicity.number}} {{periodicity.time}}s in between.</i>"
+                                            ],
+                                            "periodic relative (goal > 1 and periodicityNumber = 1)" => [
+                                                "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => 1, "periodicity.time" => true, "periodicityType" => "relative"],
+                                                "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times with no more than a {{periodicity.time}} in between.</i>"
+                                            ],
+                                            "periodic relative (goal > 1 and periodicityNumber > 1)" => [
                                                 "when" => ["goal" => true, "isPeriodic" => true, "periodicity.number" => true, "periodicity.time" => true, "periodicityType" => "relative"],
                                                 "show" => "<b class='text-info'>Example for these settings:</b><br> <i>Doing something {{goal}} times with no more than {{periodicity.number}} {{periodicity.time}}s in between.</i>"
                                             ]
@@ -713,6 +815,8 @@ class Streaks extends Module
                     $item["periodicityNumber"] = $item["periodicity"]["number"];
                     $item["periodicityTime"] = $item["periodicity"]["time"];
                     if ($item["periodicityType"] === "relative") $item["periodicityGoal"] = 1;
+                    if ($item["periodicityGoal"] > $item["goal"])
+                        throw new Exception("Period goal needs to be smaller or equal than the number of steps.");
 
                 } else {
                     $params = ["periodicityGoal", "periodicityNumber", "periodicityTime", "periodicityType"];

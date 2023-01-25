@@ -635,6 +635,17 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
     connector.award_skill(target, name, rating, logs, dependencies, use_wildcard)
 
 @rule_effect
+def award_streak(target, name, logs):
+    """
+    Awards a given streak to a specific target.
+
+    NOTE: will retract if streak changed.
+    Updates award if reward has changed.
+    """
+
+    connector.award_streak(target, name, logs)
+
+@rule_effect
 def award_tokens(target, name, reward, repetitions=1, instance=None):
     """
     Awards given tokens to a specific target.
@@ -720,15 +731,3 @@ def transform(val):
     """
 
     return val
-
-
-
-# FIXME: refactor below
-
-@rule_function
-def get_team(target):
-    """
-    Returns the team of a given student
-    """
-    result = connector.get_team(target)
-    return result
