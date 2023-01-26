@@ -29,8 +29,11 @@ class Role
      * B001, B002, B003 (for different versions of Badges)
      * LB001, LB002 (for different versions of LeaderBoard)
      */
-    const ADAPTATION_ROLES = ["customBadge", "customLeaderboard"];
-    //const ADAPTATION_ROLES_CHILDREN = [[""]]
+    const ADAPTATION_ROLES = [
+        "customBadge" => ["B001", "B002"],
+        "customLeaderboard" => ["LB001", "LB002"]
+    ];
+
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Setup ---------------------- ***/
@@ -45,11 +48,15 @@ class Role
     public static function setupRoles()
     {
         Core::database()->setForeignKeyChecks(false);
-        $roles = array_merge(self::DEFAULT_ROLES, self::ADAPTATION_ROLES);
+
+        // only parents from ADAPTATION_ROLES
+        $roles = self::DEFAULT_ROLES;
+        foreach (self::ADAPTATION_ROLES as $key => $value){
+            array_push($roles, $key);
+        }
+
         self::setCourseRoles(0, $roles);
         Core::database()->setForeignKeyChecks(true);
-
-        self::addAdaptationChildrenInCourse(0, );
     }
 
     /*** ---------------------------------------------------- ***/
@@ -151,12 +158,41 @@ class Role
      */
     public static function addRolesToCourse(int $courseId)
     {
-        $roles = array_merge(self::DEFAULT_ROLES, self::ADAPTATION_ROLES);
+        $roles = self::DEFAULT_ROLES;
+
+        foreach (self::ADAPTATION_ROLES as $key => $value){
+            array_push($roles, $key);
+        }
+
         self::setCourseRoles($courseId, $roles);
 
         // Update roles hierarchy
         $hierarchy = array_map(function ($role) { return ["name" => $role]; }, $roles);
         (new Course($courseId))->setRolesHierarchy($hierarchy);
+
+        // Add adaptation roles children
+        self::setAdaptationChildren($courseId);
+    }
+
+    /**
+     * Adds adaptation children roles to a given course.
+     *
+     * @param int $courseId
+     * @throws Exception
+     */
+    public static function setAdaptationChildren(int $courseId)
+    {
+        $course = new Course($courseId);
+
+        foreach (self::ADAPTATION_ROLES as $key => $values){
+            foreach ($values as $value){
+                $course->addRole($value);
+                $hierarchy = $course->getRolesHierarchy();
+                //array_push($hierarchy[$])
+                $hierarchy[$key]["children"] = ["name" => $value];
+                $course->setRolesHierarchy($hierarchy);
+            }
+        }
     }
 
     /**

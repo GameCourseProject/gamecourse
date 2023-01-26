@@ -755,6 +755,46 @@ export class ApiHttpService {
 
   // Roles
 
+  // NOTICE RETURN VALUES
+  public getPreviousPreference(courseID: number, userID: number, date?: Date): Observable<string> {
+    // KEEP IN MIND!!
+    // PREVIOUS PREFERENCE WILL BE LAST ENTRY'S 'NEW PREFERENCE'
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getPreviousPreference');
+      qs.push('courseId', courseID);
+      qs.push('userId', userID);
+      if (date !== undefined) qs.push('date', date);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data']));
+  }
+
+  // NOTICE RETURN VALUES
+  public updatePreference(courseID: number, userID: number, previousPreference: string, newPreference: string, date: Date = null): Observable<void> {
+    const data = {
+      course: courseID,
+      user: userID,
+      previousPreference: previousPreference,
+      newPreference: newPreference,
+      date: date
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'updatePreference');
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data']));
+  }
+
+
+
   public getAdaptationRoles(courseID: number): Observable<string[]>{
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);

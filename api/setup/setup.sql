@@ -107,13 +107,16 @@ CREATE TABLE user_role(
 
 CREATE TABLE user_role_preferences(
     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course                      int unsigned NOT NULL,
     user                        int unsigned NOT NULL,
+    previousPreference          int unsigned NOT NULL,
+    newPreference               int unsigned NOT NULL,
     date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    previousRolePreference      varchar(50) NOT NULL,
-    newRolePreference           varchar(50) NOT NULL,
 
     UNIQUE key(user, date),
-    FOREIGN KEY(user) REFERENCES user(studentNumber) ON DELETE CASCADE,
+    FOREIGN KEY(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
+    FOREIGN KEY (previousPreference) REFERENCES role(id) ON DELETE CASCADE,
+    FOREIGN KEY (newPreference) REFERENCES role(id) ON DELETE CASCADE
 );
 
 /*** ---------------------------------------------------- ***/
