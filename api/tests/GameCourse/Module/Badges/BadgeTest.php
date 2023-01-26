@@ -214,6 +214,16 @@ class BadgeTest extends TestCase
             "one level" => ["Badge Name", "Perform action", false, false, false, false, false, [
                 ["description" => "one time", "goal" => 1, "reward" => 100]
             ]],
+            "based on counts" => ["Badge Name", "Perform action", false, false, true, false, false, [
+                ["description" => "one time", "goal" => 1, "reward" => 100],
+                ["description" => "two times", "goal" => 2, "reward" => 100],
+                ["description" => "three times", "goal" => 3, "reward" => 100]
+            ]],
+            "based on points" => ["Badge Name", "Perform action", false, false, false, false, true, [
+                ["description" => "one time", "goal" => 1, "reward" => 100],
+                ["description" => "two times", "goal" => 2, "reward" => 100],
+                ["description" => "three times", "goal" => 3, "reward" => 100]
+            ]],
             "tokens" => ["Badge Name", "Perform action", false, false, false, false, false, [
                 ["description" => "one time", "goal" => 1, "reward" => 100, "tokens" => 10],
                 ["description" => "two times", "goal" => 2, "reward" => 100, "tokens" => 10],
@@ -1174,7 +1184,7 @@ tags:
 	when:
 		# Get target progress in badge
 		logs = [] # COMPLETE THIS: get appropriate logs for this badge
-		progress = len(logs)
+		progress = " . ($isPoint ? "compute_rating" : "len") . "(logs)
 		
 		# Compute badge level the target deserves
 		lvl = compute_lvl(progress, " . $lvl1["goal"] . ($size >= 2 ? ", " . $lvl2["goal"] : "") . ($size == 3 ? ", " . $lvl3["goal"] : "") . ")
@@ -1667,7 +1677,7 @@ tags:
     public function generateRuleParamsFresh(string $name, string $description, bool $isExtra, bool $isBragging, bool $isCount,
                                             bool $isPost, bool $isPoint, array $levels)
     {
-        $params = Badge::generateRuleParams($name, $description, $isPost, $levels);
+        $params = Badge::generateRuleParams($name, $description, $isPoint, $levels);
 
         // Name
         $this->assertTrue(isset($params["name"]));
@@ -1683,7 +1693,7 @@ tags:
         $this->assertTrue(isset($params["when"]));
         $this->assertEquals("# Get target progress in badge
 logs = [] # COMPLETE THIS: get appropriate logs for this badge
-progress = len(logs)
+progress = " . ($isPoint ? "compute_rating" : "len") . "(logs)
 
 # Compute badge level the target deserves
 lvl = compute_lvl(progress, " . $levels[0]["goal"] . (count($levels) >= 2 ? ", " . $levels[1]["goal"] : "") .
@@ -1710,16 +1720,16 @@ lvl = compute_lvl(progress, " . $levels[0]["goal"] . (count($levels) >= 2 ? ", "
             (count($levels) == 3 ? "\n\tlvl.3: " . $levels[2]["description"] : "");
         $when = "progress = None # Some changes
 
-# Compute badge level the student deserves
+# Compute badge level the target deserves
 lvl = compute_lvl(progress, " . $levels[0]["goal"] . (count($levels) >= 2 ? ", " . $levels[1]["goal"] : "") .
             (count($levels)== 3 ? ", " . $levels[2]["goal"] : "") . ")";
         $then = "# Some changes
-award_badge(target, \"$name\", lvl)";
+award_badge(target, \"$name\", lvl, logs)";
 
         $rule = Section::getSectionByName($this->courseId, Badges::RULE_SECTION)->addRule($name, $description, $when, $then);
 
         // When
-        $params = Badge::generateRuleParams("New Name", "New Description", false, [
+        $params = Badge::generateRuleParams("New Name", "New Description", $isPoint, [
             ["description" => "new", "goal" => 100, "reward" => 1000]
         ], false, $rule->getId());
 
@@ -1737,13 +1747,13 @@ award_badge(target, \"$name\", lvl)";
         $this->assertTrue(isset($params["when"]));
         $this->assertEquals("progress = None # Some changes
 
-# Compute badge level the student deserves
+# Compute badge level the target deserves
 lvl = compute_lvl(progress, 100)", $params["when"]);
 
         // Then
         $this->assertTrue(isset($params["then"]));
         $this->assertEquals("# Some changes
-award_badge(target, \"New Name\", lvl)", $params["then"]);
+award_badge(target, \"New Name\", lvl, logs)", $params["then"]);
     }
 
 

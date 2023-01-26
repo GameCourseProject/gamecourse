@@ -263,8 +263,8 @@ class Badge
             // Update badge rule
             $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
             $description = key_exists("description", $fieldValues) ? $newDescription : $this->getDescription();
-            $isPost = key_exists("isPost", $fieldValues) ? $fieldValues["isPost"] : $this->isPost();
-            self::updateRule($rule->getId(), $name, $description, $isPost, $this->getLevels());
+            $isPoint = key_exists("isPoint", $fieldValues) ? $fieldValues["isPoint"] : $this->isPoint();
+            self::updateRule($rule->getId(), $name, $description, $isPoint, $this->getLevels());
         }
     }
 
@@ -365,7 +365,7 @@ class Badge
         self::validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels);
 
         // Create badge rule
-        $rule = self::addRule($courseId, $name, $description, $isPost, $levels);
+        $rule = self::addRule($courseId, $name, $description, $isPoint, $levels);
 
         // Insert in database
         $id = Core::database()->insert(self::TABLE_BADGE, [
@@ -563,16 +563,16 @@ class Badge
      * @param int $courseId
      * @param string $name
      * @param string $description
-     * @param bool $isPost
+     * @param bool $isPoint
      * @param array $levels
      * @return Rule
      * @throws Exception
      */
-    private static function addRule(int $courseId, string $name, string $description, bool $isPost, array $levels): Rule
+    private static function addRule(int $courseId, string $name, string $description, bool $isPoint, array $levels): Rule
     {
         // Add rule to badges section
         $badgesModule = new Badges(new Course($courseId));
-        return $badgesModule->addRuleOfItem(null, $name, $description, $isPost, $levels);
+        return $badgesModule->addRuleOfItem(null, $name, $description, $isPoint, $levels);
     }
 
     /**
@@ -581,15 +581,15 @@ class Badge
      * @param int $ruleId
      * @param string $name
      * @param string $description
-     * @param bool $isPost
+     * @param bool $isPoint
      * @param array $levels
      * @return void
      * @throws Exception
      */
-    private static function updateRule(int $ruleId, string $name, string $description, bool $isPost, array $levels)
+    private static function updateRule(int $ruleId, string $name, string $description, bool $isPoint, array $levels)
     {
         $rule = new Rule($ruleId);
-        $params = self::generateRuleParams($name, $description, $isPost, $levels, false, $ruleId);
+        $params = self::generateRuleParams($name, $description, $isPoint, $levels, false, $ruleId);
         $rule->setName($params["name"]);
         $rule->setDescription($params["description"]);
         $rule->setWhen($params["when"]);
@@ -617,14 +617,14 @@ class Badge
      *
      * @param string $name
      * @param string $description
-     * @param bool $isPost
+     * @param bool $isPoint
      * @param array $levels
      * @param bool $fresh
      * @param int|null $ruleId
      * @return array
      * @throws Exception
      */
-    public static function generateRuleParams(string $name, string $description, bool $isPost, array $levels,
+    public static function generateRuleParams(string $name, string $description, bool $isPoint, array $levels,
                                               bool $fresh = true, int $ruleId = null): array
     {
         // Generate description
@@ -635,7 +635,7 @@ class Badge
         // Generate rule clauses
         $goals = implode(", ", array_column($levels, "goal"));
         if ($fresh) { // generate from templates
-            $when = str_replace("<progress>", $isPost ? "compute_rating(logs)" : "len(logs)", file_get_contents(__DIR__ . "/rules/when_template.txt"));
+            $when = str_replace("<progress>", $isPoint ? "compute_rating(logs)" : "len(logs)", file_get_contents(__DIR__ . "/rules/when_template.txt"));
             $when = str_replace("<goals>", $goals, $when);
             $then = str_replace("<badge-name>", $name, file_get_contents(__DIR__ . "/rules/then_template.txt"));
 
