@@ -1697,13 +1697,11 @@ progress = " . ($isPoint ? "compute_rating" : "len") . "(logs)
 
 # Compute badge level the target deserves
 lvl = compute_lvl(progress, " . $levels[0]["goal"] . (count($levels) >= 2 ? ", " . $levels[1]["goal"] : "") .
-            (count($levels)== 3 ? ", " . $levels[2]["goal"] : "") . ")
-", $params["when"]);
+            (count($levels)== 3 ? ", " . $levels[2]["goal"] : "") . ")", $params["when"]);
 
         // Then
         $this->assertTrue(isset($params["then"]));
-        $this->assertEquals("award_badge(target, \"$name\", lvl, logs)
-", $params["then"]);
+        $this->assertEquals("award_badge(target, \"$name\", lvl, logs)", $params["then"]);
     }
 
     /**

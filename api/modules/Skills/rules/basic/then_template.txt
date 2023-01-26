@@ -1,1 +1,1 @@
-award_skill(target, "<skill-name>", rating, logs)
+award_skill(target, "<skill-name>", rating, logs, <dependencies>)

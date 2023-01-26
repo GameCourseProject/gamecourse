@@ -464,16 +464,15 @@ class SkillTest extends TestCase
 tags: 
 
 	when:
-		combo1 = rule_unlocked(\"Skill Name\", target)
-		combo2 = rule_unlocked(\"Skill2\", target)
-		combo1 or combo2
+		combo1 = skill_completed(target, \"Skill Name\")
+		combo2 = skill_completed(target, \"Skill2\")
+		dependencies = combo1 or combo2
 		
-		logs = GC.participations.getSkillParticipations(target, \"Skill3\")
+		logs = get_skill_logs(target, \"Skill3\")
 		rating = get_rating(logs)
-		rating >= 3
 
 	then:
-		award_skill(target, \"Skill3\", rating, logs)"), $this->trim($skill3->getRule()->getText()));
+		award_skill(target, \"Skill3\", rating, logs, dependencies)"), $this->trim($skill3->getRule()->getText()));
     }
 
     /**
@@ -1082,9 +1081,8 @@ tags:
 tags: 
 
 	when:
-		logs = GC.participations.getSkillParticipations(target, \"$name\")
+		logs = get_skill_logs(target, \"$name\")
 		rating = get_rating(logs)
-		rating >= 3
 
 	then:
 		award_skill(target, \"$name\", rating, logs)"), $this->trim($rule->getText()));
@@ -1160,22 +1158,20 @@ tags:
 tags: 
 
 	when:
-		user = GC.users.getUser(target)
-		wildcard = user.hasWildcardAvailable($skillTreeId)
+		wildcard = has_wildcard_available(target, $skillTreeId, \"" . Tier::WILDCARD . "\")
 		
-		combo1 = rule_unlocked(\"Skill1\", target)
+		combo1 = skill_completed(target, \"Skill1\")
 		combo2 = wildcard
-		combo1 or combo2
+		dependencies = combo1 or combo2
 		
 		skill_based = combo1
 		use_wildcard = False if skill_based else True
 		
-		logs = GC.participations.getSkillParticipations(target, \"Skill2\")
+		logs = get_skill_logs(target, \"Skill2\")
 		rating = get_rating(logs)
-		rating >= 3
 
 	then:
-		award_skill(target, \"Skill2\", rating, logs, use_wildcard, \"" . Tier::WILDCARD . "\")"), $this->trim($rule->getText()));
+		award_skill(target, \"Skill2\", rating, logs, dependencies, use_wildcard)"), $this->trim($rule->getText()));
     }
 
     /**
@@ -1285,9 +1281,8 @@ tags:
 tags: 
 
 	when:
-		logs = GC.participations.getSkillParticipations(target, \"Skill Wildcard\")
+		logs = get_skill_logs(target, \"Skill Wildcard\")
 		rating = get_rating(logs)
-		rating >= 3
 
 	then:
 		award_skill(target, \"Skill Wildcard\", rating, logs)"), $this->trim($rule->getText()));
@@ -2456,9 +2451,8 @@ tags:
 
         // When
         $this->assertTrue(isset($params["when"]));
-        $this->assertEquals("logs = GC.participations.getSkillParticipations(target, \"$skillName\")
-rating = get_rating(logs)
-rating >= 3", $params["when"]);
+        $this->assertEquals("logs = get_skill_logs(target, \"$skillName\")
+rating = get_rating(logs)", $params["when"]);
 
         // Then
         $this->assertTrue(isset($params["then"]));
@@ -2477,6 +2471,7 @@ rating >= 3", $params["when"]);
         $skillName = "Skill Name";
 
         $params = Skill::generateRuleParams(false, $skillTreeId, $skillName, [
+            [$skill1->getId(), $skill2->getId()],
             [$skill1->getId()],
             [$skill2->getId()]
         ]);
@@ -2487,17 +2482,17 @@ rating >= 3", $params["when"]);
 
         // When
         $this->assertTrue(isset($params["when"]));
-        $this->assertEquals($this->trim("combo1 = rule_unlocked(\"Skill1\", target)
-combo2 = rule_unlocked(\"Skill2\", target)
-combo1 or combo2
+        $this->assertEquals($this->trim("combo1 = skill_completed(target, \"Skill1\") and skill_completed(target, \"Skill2\")
+combo2 = skill_completed(target, \"Skill1\")
+combo3 = skill_completed(target, \"Skill2\")
+dependencies = combo1 or combo2 or combo3
 
-logs = GC.participations.getSkillParticipations(target, \"$skillName\")
-rating = get_rating(logs)
-rating >= 3"), $this->trim($params["when"]));
+logs = get_skill_logs(target, \"$skillName\")
+rating = get_rating(logs)"), $this->trim($params["when"]));
 
         // Then
         $this->assertTrue(isset($params["then"]));
-        $this->assertEquals("award_skill(target, \"$skillName\", rating, logs)", $params["then"]);
+        $this->assertEquals("award_skill(target, \"$skillName\", rating, logs, dependencies)", $params["then"]);
     }
 
     /**
@@ -2525,24 +2520,22 @@ rating >= 3"), $this->trim($params["when"]));
 
         // When
         $this->assertTrue(isset($params["when"]));
-        $this->assertEquals($this->trim("user = GC.users.getUser(target)
-wildcard = user.hasWildcardAvailable($skillTreeId)
+        $this->assertEquals($this->trim("wildcard = has_wildcard_available(target, $skillTreeId, \"" . Tier::WILDCARD . "\")
 
-combo1 = rule_unlocked(\"Skill1\", target) and rule_unlocked(\"Skill2\", target)
-combo2 = rule_unlocked(\"Skill1\", target) and wildcard
-combo3 = rule_unlocked(\"Skill2\", target) and wildcard
-combo1 or combo2 or combo3
+combo1 = skill_completed(target, \"Skill1\") and skill_completed(target, \"Skill2\")
+combo2 = skill_completed(target, \"Skill1\") and wildcard
+combo3 = skill_completed(target, \"Skill2\") and wildcard
+dependencies = combo1 or combo2 or combo3
 
 skill_based = combo1
 use_wildcard = False if skill_based else True
 
-logs = GC.participations.getSkillParticipations(target, \"$skillName\")
-rating = get_rating(logs)
-rating >= 3"), $this->trim($params["when"]));
+logs = get_skill_logs(target, \"$skillName\")
+rating = get_rating(logs)"), $this->trim($params["when"]));
 
         // Then
         $this->assertTrue(isset($params["then"]));
-        $this->assertEquals("award_skill(target, \"$skillName\", rating, logs, use_wildcard, \"" . Tier::WILDCARD . "\")", $params["then"]);
+        $this->assertEquals("award_skill(target, \"$skillName\", rating, logs, dependencies, use_wildcard)", $params["then"]);
     }
 
 
