@@ -40,7 +40,7 @@ export class ConfigComponent implements OnInit {
   generalInputs: ConfigSection[];
   unsavedGeneralInputs: ConfigSection[];
   lists: List[];
-  personalizedConfig: string;
+  personalizedConfig: PersonalizedConfig;
 
   mode: 'create' | 'duplicate' | 'edit' | 'delete' | string;
   itemToManage: ItemManageData;
@@ -225,7 +225,7 @@ export class ConfigComponent implements OnInit {
   async doAction(list: List, action: string) {
     if (action === Action.IMPORT) {
       if (!this.itemToManage) {
-        this.itemToManage = this.initItemToManage(list);
+        this.itemToManage = {list: list, item: null, index: null};
         ModalService.openModal('import');
 
       } else {
@@ -276,7 +276,7 @@ export class ConfigComponent implements OnInit {
       list.loading.action = true;
 
       try {
-        const item = this.getItemToManage();
+        const item = this.nullifyEmptyValues(this.itemToManage.item);
         let successMsg = await this.api.saveModuleConfig(this.course.id, this.module.id, null, item, list.name, action).toPromise();
         await this.getModuleConfig(this.module.id);
 
@@ -363,13 +363,16 @@ export class ConfigComponent implements OnInit {
   // PERSONALIZED CONFIG
 
   get PersonalizedConfig() {
-    if (this.personalizedConfig === ApiHttpService.GOOGLESHEETS) return GooglesheetsComponent;
-    if (this.personalizedConfig === ApiHttpService.PROGRESS_REPORT) return ProgressReportComponent;
-    if (this.personalizedConfig === ApiHttpService.PROFILING) return ProfilingComponent;
-    if (this.personalizedConfig === ApiHttpService.SKILLS) return SkillsComponent;
-    if (this.personalizedConfig === ApiHttpService.QR) return QrComponent;
+    if (this.personalizedConfig) {
+      if (this.module.id === ApiHttpService.GOOGLESHEETS) return GooglesheetsComponent;
+      if (this.module.id === ApiHttpService.PROFILING) return ProfilingComponent;
+      if (this.module.id === ApiHttpService.PROGRESS_REPORT) return ProgressReportComponent;
+      if (this.module.id === ApiHttpService.QR) return QrComponent;
+      if (this.module.id === ApiHttpService.SKILLS) return SkillsComponent;
 
-    ErrorService.set("Personalized config for module '" + this.module.id + "' not found.");
+      ErrorService.set("Personalized config for module '" + this.module.id + "' not found.");
+    }
+
     return null;
   }
 
@@ -389,13 +392,68 @@ export class ConfigComponent implements OnInit {
   async onFileSelected(files: FileList, artifact: ConfigInputItem, accept: string): Promise<void> {
     // FIXME: should be more general than this (create input-image component)
     const isImage = accept.containsWord('image') || accept.containsWord('svg') || accept.containsWord('png') || accept.containsWord('jpg');
-    if (isImage) await ResourceManager.getBase64(files.item(0)).then(data => artifact.value = data);
-    else await ResourceManager.getText(files.item(0)).then(data => artifact.value = data);
+    if (isImage) await ResourceManager.getBase64(files.item(0)).then(data => this.setItemToManage(artifact, data));
+    else await ResourceManager.getText(files.item(0)).then(data => this.setItemToManage(artifact, data));
   }
 
   scopeAllows(scope: ActionScope | string): boolean {
     if (!scope) return true;
     return scopeAllows(scope, this.itemToManage.list.data.length, this.itemToManage.index);
+  }
+
+  visible(artifact: ConfigInputContainer | ConfigInputItem, conditions: {[key: string]: boolean}, form: NgForm): boolean {
+    if (!conditions) return true;
+    for (const [key, value] of Object.entries(conditions)) {
+      const itemValue = getValue(key, this.itemToManage.item);
+      if ((typeof value == 'boolean' && !!itemValue != value) ||
+        (typeof value != 'boolean' && itemValue != value)) {
+        removeFormControl(artifact, form);
+        form.form.removeControl('periodicity-number');
+        form.form.removeControl('periodicity-time');
+        return false;
+      }
+    }
+    return true;
+
+    function getValue(key: string, value: any): any {
+      const parts = key.split(".");
+      value = value[parts[0]];
+      if (parts.length > 1) value = getValue(parts.splice(1).join("."), value);
+      return value;
+    }
+
+    function removeFormControl(artifact: ConfigInputContainer | ConfigInputItem, form: NgForm) {
+      if (artifact.contentType === 'container') {
+        for (const item of artifact.contents) {
+          removeFormControl(item, form);
+        }
+
+      } else {
+        form.form.removeControl(artifact.id);
+        if (artifact.type === InputType.PERIODICITY) {
+          form.form.removeControl(artifact.id + '-number');
+          form.form.removeControl(artifact.id + '-time');
+        }
+      }
+    }
+  }
+
+  disabled(conditions: {[key: string]: boolean}): boolean {
+    if (!conditions) return false;
+    for (const [key, value] of Object.entries(conditions)) {
+      const itemValue = getValue(key, this.itemToManage.item);
+      if ((typeof value == 'boolean' && !!itemValue == value) ||
+        (typeof value != 'boolean' && itemValue == value))
+        return true;
+    }
+    return false;
+
+    function getValue(key: string, value: any): any {
+      const parts = key.split(".");
+      value = value[parts[0]];
+      if (parts.length > 1) value = getValue(parts.splice(1).join("."), value);
+      return value;
+    }
   }
 
   nullifyEmptyValues(item: any): any {
@@ -406,8 +464,7 @@ export class ConfigComponent implements OnInit {
     return item;
   }
 
-  getConfigKey(): string
-  {
+  getConfigKey(): string {
     if (this.mode === 'create') return Action.NEW;
     if (['duplicate', 'edit', 'delete'].includes(this.mode)) return Action.EDIT;
     return this.mode;
@@ -479,6 +536,58 @@ export class ConfigComponent implements OnInit {
     return IDs;
   }
 
+  getDynamicText(options): string {
+    if (options['type'] === 'conditional') {
+      for (const value of Object.values(options['value'])) {
+
+        // Check conditions apply
+        let applies = true;
+        for (let [key, condition] of Object.entries(value['when'])) {
+
+          // Replace condition variables by their actual values
+          if (typeof condition == 'string') {
+            let eCondition: any = replaceVariables(condition as string, this.itemToManage.item);
+            if (eCondition === 'true') eCondition = true;
+            else if (eCondition === 'false') eCondition = false;
+            else if (!isNaN(eCondition)) eCondition = parseInt(eCondition);
+            condition = eCondition;
+          }
+
+          const itemValue = getValue(key, this.itemToManage.item);
+          if ((typeof condition == 'boolean' && !!itemValue != condition) ||
+            (typeof condition != 'boolean' && itemValue != condition)) {
+              applies = false;
+              break;
+          }
+        }
+        if (!applies) continue;
+
+        // Replace text variables by their actual values
+        return replaceVariables(value['show'], this.itemToManage.item);
+      }
+
+    } else if (options['type'] === 'static') {
+      return ''; // TODO: get static with variables
+    }
+
+    return '';
+
+    function replaceVariables(text: string, item: any): string {
+      const matches = text.matchAll(/{{([\w.\-_]+)}}/g);
+      for (const match of matches) {
+        text = text.replaceAll(match[0], getValue(match[1], item));
+      }
+      return text;
+    }
+
+    function getValue(key: string, value: any): any {
+      const parts = key.split(".");
+      value = value[parts[0]];
+      if (parts.length > 1) value = getValue(parts.splice(1).join("."), value);
+      return value;
+    }
+  }
+
 
   // Lists
 
@@ -495,7 +604,8 @@ export class ConfigComponent implements OnInit {
     function getEmptyItem(contents: (ConfigInputContainer|ConfigInputItem)[], item: any): any {
       for (const artifact of contents) {
         if (artifact.contentType === 'item')
-          item[artifact.id] = artifact.type === InputType.SELECT || artifact.type === InputType.WEEKDAY ? [] : null;
+          item[artifact.id] = artifact.type === InputType.SELECT || artifact.type === InputType.PERIODICITY ||
+                              artifact.type === InputType.WEEKDAY ? [] : null;
         else item = getEmptyItem(artifact.contents, item);
       }
       return item;
@@ -509,17 +619,9 @@ export class ConfigComponent implements OnInit {
     }
   }
 
-  getItemToManage(): ItemManageData {
-    getItem(this.itemToManage.list[this.getConfigKey()]['contents'], this.itemToManage.item);
-    return this.nullifyEmptyValues(this.itemToManage.item);
-
-    function getItem(contents: (ConfigInputContainer|ConfigInputItem)[], item: any): any {
-      for (const artifact of contents) {
-        if (artifact.contentType === 'item')
-          item[artifact.id] = artifact.value;
-        else getItem(artifact.contents, item);
-      }
-    }
+  setItemToManage(artifact: ConfigInputItem, value: any): void {
+    if (this.itemToManage && this.itemToManage.item)
+      this.itemToManage.item[artifact.id] = value
   }
 
   resetManage() {
@@ -545,6 +647,8 @@ export interface ConfigSection {
 
 export interface ConfigInputContainer {
   contentType: 'container',
+  visibleWhen?: {[key: string]: boolean},
+  disabledWhen?: {[key: string]: boolean},
   classList?: string,
   width?: 'full' | '1/2' | '1/3' | '1/4',
   contents: (ConfigInputContainer|ConfigInputItem)[]
@@ -552,9 +656,11 @@ export interface ConfigInputContainer {
 
 export interface ConfigInputItem {
   contentType: 'item',
+  visibleWhen?: {[key: string]: boolean},
+  disabledWhen?: {[key: string]: boolean},
   classList?: string,
   width?: 'full' | '1/2' | '1/3' | '1/4',
-  type: InputType,
+  type: InputType | 'dynamic-text',
   id: string,
   value: any,
   placeholder?: string,
@@ -564,6 +670,7 @@ export interface ConfigInputItem {
 
 export type List = {
   name: string,
+  description?: string,
   itemName: string,
   topActions?: {left: {action: Action | string, icon?: string}[], right: {action: Action | string, icon?: string, outline?: boolean,
       color?: 'ghost' | 'primary' | 'secondary' | 'accent' | 'neutral' | 'info' | 'success' | 'warning' | 'error'}[]},
@@ -580,6 +687,10 @@ export type List = {
   [Action.NEW]?: {modalSize?: 'sm' | 'md' | 'lg', contents: (ConfigInputContainer|ConfigInputItem)[]},
   [Action.EDIT]?: {modalSize?: 'sm' | 'md' | 'lg', contents: (ConfigInputContainer|ConfigInputItem)[]},
   [Action.IMPORT]?: {extensions: string[], csvHeaders?: string[], csvRows?: string[][]}
+}
+
+export type PersonalizedConfig = {
+  position: 'before' | 'after'
 }
 
 export interface ItemManageData {

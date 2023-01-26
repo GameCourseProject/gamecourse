@@ -1,0 +1,12 @@
+rule: Constant Gardener
+# Do two skills every week
+
+    when:
+        # Get target progress in streak
+        logs = get_skill_logs(target)
+
+        # Get only periodic progress
+        plogs = get_periodic_logs(logs, 1, "week", "absolute")
+
+    then:
+        award_streak(target, "Constant Gardener", plogs)

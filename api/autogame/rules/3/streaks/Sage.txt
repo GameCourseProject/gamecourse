@@ -1,0 +1,15 @@
+rule: Sage
+# Get three consecutive maximum grades in quizzes
+
+    when:
+        max_grade = METADATA["max_quiz_grade"]
+
+        # Get target progress in streak
+        logs = get_quiz_logs(target)
+        flogs = filter_logs(logs, None, "Dry Run")
+
+        # Get only consecutive progress
+        clogs = get_consecutive_rating_logs(flogs, max_grade)
+
+    then:
+        award_streak(target, "Sage", clogs)

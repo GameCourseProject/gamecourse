@@ -47,7 +47,7 @@
      [size]="'md'"
      [header]="tierMode?.capitalize() + ' tier'"
      [closeBtnText]="'Discard ' + (tierMode === 'create' ? 'tier' : 'changes')"
-     [submitBtnText]="tierMode?.capitalize() + ' tier'"
+     [submitBtnText]="tierMode === 'create' ? tierMode?.capitalize() + ' tier' : 'Save'"
      [actionInProgress]="getSkillTreeInfo(skillTreeInView.id).loading.tiers"
      (submitBtnClicked)="fTier.onSubmit(null); tierMode === 'create' ? createTier() : editTier()"
      (onClose)="resetTierToManage()">
@@ -93,7 +93,7 @@
 
       <!-- Skills cost -->
       <ng-container *ngIf="VCEnabled">
-        <span class="block font-semibold pl-1 pt-2 mt-4">Skills cost ({{VCName}})</span>
+        <span class="block font-semibold pl-1 pt-2 mt-10">Skills cost ({{VCName}})</span>
 
         <!-- Cost Type -->
         <div class="flex flex-wrap">
@@ -118,7 +118,7 @@
             [(value)]="tierToManage.costType"
             [color]="'primary'"
             [label]="'Variable'"
-            [helperText]="'Cost in ' + VCName + ' of skill attempts in this tier is increased by \'increment\' for each prior attempt with a rating higher than \'min. rating\': base + increment x #attempts w/ rating >= min.rating'">
+            [helperText]="'Cost in ' + VCName + ' of skill attempts in this tier is increased by \'increment\' for each prior attempt with a rating higher than \'min. rating\'. Formula: base + increment x #attempts w/ rating >= min.rating'">
           </app-input-radio>
         </div>
 
@@ -235,7 +235,7 @@
      [extraBtnColor]="'secondary'"
      [extraBtnOutline]="true"
      [extraBtnDisabled]="!skillToManage.page"
-     [submitBtnText]="skillMode?.capitalize() + ' skill'"
+     [submitBtnText]="skillMode === 'create' ? skillMode?.capitalize() + ' skill' : 'Save'"
      [actionInProgress]="getSkillTreeInfo(skillTreeInView.id).loading.skills"
      (submitBtnClicked)="fSkill.onSubmit(null); skillMode === 'create' ? createSkill() : editSkill()"
      (onClose)="resetSkillToManage()">

@@ -104,7 +104,7 @@ if __name__ == "__main__":
     configure_logging(sys.argv[4])
     error_msg = None
 
-    # Initialize connector
+    # Initialize GameCourse connector
     from gamerules.connector.db_connector import connect_to_gamecourse_db
     connect_to_gamecourse_db(sys.argv[5], sys.argv[6], sys.argv[7])
     from gamerules.connector.gamecourse_connector import *
@@ -112,6 +112,15 @@ if __name__ == "__main__":
     try:
         # Process arguments
         (course, all_targets, targets_list) = process_args(sys.argv[1], sys.argv[3], sys.argv[2])
+
+        # Initialize Moodle connector
+        if module_enabled("Moodle"):
+            mdl_table = "moodle_config"
+            query = "SELECT dbServer, dbName, dbUser, dbPass FROM " + mdl_table + " WHERE course = %s;"
+            mdl_host, mdl_database, mdl_username, mdl_password = db.execute_query(query, (config.COURSE,))[0]
+            if mdl_password:
+                from gamerules.connector.db_connector import connect_to_moodle_db
+                connect_to_moodle_db(mdl_host, mdl_database, mdl_username, mdl_password)
 
         # Initialize AutoGame
         last_activity = autogame_init(course)

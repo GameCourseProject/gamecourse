@@ -89,6 +89,7 @@ class GoogleSheets extends Module
         return [
             [
                 "name" => "Status",
+                "description" => "Check whether " . self::NAME . " is currently running and when it last imported new data.",
                 "itemName" => "status",
                 "headers" => [
                     ["label" => "Started importing data", "align" => "middle"],
@@ -117,9 +118,9 @@ class GoogleSheets extends Module
         ];
     }
 
-    public function getPersonalizedConfig(): ?string
+    public function getPersonalizedConfig(): ?array
     {
-        return $this->id;
+        return ["position" => "before"];
     }
 
 
@@ -466,14 +467,14 @@ class GoogleSheets extends Module
                                 "\"" . $this->id . "\"",
                                 "\"\"",
                                 "\"$action\"",
-                                $xp,
+                                intval(round($xp)),
                                 $profId
                             ];
                             $values[] = "(" . implode(", ", $params) . ")";
 
                         } else if (intval($result["rating"]) != $xp) { // update data
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
-                                "rating" => $xp,
+                                "rating" => intval(round($xp)),
                             ], ["user" => $userId, "course" => $courseId, "type" => $action]);
                             $newData = true;
                         }
@@ -542,14 +543,14 @@ class GoogleSheets extends Module
                                 "\"" . $this->id . "\"",
                                 "\"$info\"",
                                 "\"$action\"",
-                                $xp,
+                                intval(round($xp)),
                                 $profId
                             ];
                             $values[] = "(" . implode(", ", $params) . ")";
 
                         } else if (intval($result["rating"]) != $xp) { // update data
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
-                                "rating" =>  $xp
+                                "rating" =>  intval(round($xp))
                             ], ["user" => $userId, "course" => $courseId, "description" => $info, "type" =>  $action]);
                             $newData = true;
                         }

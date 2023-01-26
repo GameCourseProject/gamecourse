@@ -98,32 +98,37 @@
 
 <ng-template #ADMIN let-f='form'>
 
-  <!-- Name -->
-  <app-input-text
-    [id]="'user-name'"
-    [form]="f"
-    [(value)]="userToManage.name"
-    [placeholder]="'Your name'"
-    [classList]="'mt-3'"
-    [topLabel]="'Name'"
-    [pattern]="'(?!^\\d+$)^.+$'"
-    [patternErrorMessage]="'Name can\'t be composed of only numbers.'"
-    [required]="true"
-    [maxLength]="60"
-    [maxLengthErrorMessage]="'Name is too long: maximum of 60 characters'">
-  </app-input-text>
+  <div class="flex flex-wrap mt-3">
+    <!-- Name -->
+    <div class="w-full sm:w-1/2 sm:pr-3">
+      <app-input-text
+        [id]="'user-name'"
+        [form]="f"
+        [(value)]="userToManage.name"
+        [placeholder]="'Your name'"
+        [topLabel]="'Name'"
+        [pattern]="'(?!^\\d+$)^.+$'"
+        [patternErrorMessage]="'Name can\'t be composed of only numbers.'"
+        [required]="true"
+        [maxLength]="60"
+        [maxLengthErrorMessage]="'Name is too long: maximum of 60 characters'">
+      </app-input-text>
+    </div>
 
-  <!-- Nickname -->
-  <app-input-text
-    [id]="'user-nickname'"
-    [form]="f"
-    [(value)]="userToManage.nickname"
-    [placeholder]="'Your nickname'"
-    [classList]="'mt-3'"
-    [topLabel]="'Nickname'"
-    [maxLength]="50"
-    [maxLengthErrorMessage]="'Nickname is too long: maximum of 50 characters'">
-  </app-input-text>
+    <!-- Nickname -->
+    <div class="w-full sm:w-1/2">
+      <app-input-text
+        [id]="'user-nickname'"
+        [form]="f"
+        [(value)]="userToManage.nickname"
+        [placeholder]="'Your nickname'"
+        [classList]="'mt-3 sm:mt-0'"
+        [topLabel]="'Nickname'"
+        [maxLength]="50"
+        [maxLengthErrorMessage]="'Nickname is too long: maximum of 50 characters'">
+      </app-input-text>
+    </div>
+  </div>
 
   <!-- Email -->
   <app-input-email
@@ -159,6 +164,7 @@
         [form]="f"
         [(value)]="userToManage.major"
         [placeholder]="'Your major'"
+        [classList]="'mt-3 sm:mt-0'"
         [topLabel]="'Major'"
         [maxLength]="8"
         [maxLengthErrorMessage]="'Major is too long: maximum of 8 characters'">
@@ -188,6 +194,7 @@
         [form]="f"
         [(value)]="userToManage.username"
         [placeholder]="'Your username'"
+        [classList]="'mt-3 sm:mt-0'"
         [topLabel]="'Username'"
         [required]="true"
         [maxLength]="50"

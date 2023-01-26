@@ -13,12 +13,12 @@
   <ng-container *ngIf="leftLabel || rightLabel || btnText || btnIcon" [ngTemplateOutlet]="GROUP"></ng-container>
 
   <!-- Error Messages -->
-  <label *ngIf="form && form.submitted && inputText.invalid" class="label">
-    <span *ngIf="inputText.errors.pattern" class="label-text-alt">{{patternErrorMessage}}</span>
-    <span *ngIf="inputText.errors.required" class="label-text-alt">{{requiredErrorMessage}}</span>
-    <span *ngIf="inputText.errors.minlength" class="label-text-alt">{{minLengthErrorMessage}}</span>
-    <span *ngIf="inputText.errors.maxlength" class="label-text-alt">{{maxLengthErrorMessage}}</span>
-    <span *ngIf="inputText.errors.incorrect" class="label-text-alt">{{incorrectErrorMessage}}</span>
+  <label *ngIf="form && form.submitted && inputText.invalid" class="error-messages">
+    <span *ngIf="inputText.errors.pattern && patternErrorMessage !== null" class="label-text-alt">{{patternErrorMessage}}</span>
+    <span *ngIf="inputText.errors.required && requiredErrorMessage !== null" class="label-text-alt">{{requiredErrorMessage}}</span>
+    <span *ngIf="inputText.errors.minlength && minLengthErrorMessage !== null" class="label-text-alt">{{minLengthErrorMessage}}</span>
+    <span *ngIf="inputText.errors.maxlength && maxLengthErrorMessage !== null" class="label-text-alt">{{maxLengthErrorMessage}}</span>
+    <span *ngIf="inputText.errors.incorrect && incorrectErrorMessage !== null" class="label-text-alt">{{incorrectErrorMessage}}</span>
   </label>
 
 </div>

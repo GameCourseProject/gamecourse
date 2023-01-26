@@ -93,7 +93,7 @@
   [size]="'md'"
   [header]="mode?.capitalize() + ' course'"
   [closeBtnText]="'Discard ' + (mode === 'create' ? 'course' : 'changes')"
-  [submitBtnText]="mode?.capitalize() + ' course'"
+  [submitBtnText]="mode === 'create' ? mode?.capitalize() + ' course' : 'Save'"
   [actionInProgress]="loading.action"
   (submitBtnClicked)="f.onSubmit(null); mode === 'create' ? createCourse() : editCourse()"
   (onClose)="resetManage()">
@@ -169,7 +169,8 @@
           [form]="f"
           [(value)]="courseToManage.startDate"
           [placeholder]="'Course start date'"
-          [topLabel]="'Start date'">
+          [topLabel]="'Start date'"
+          [required]="true">
         </app-input-date>
       </div>
 
@@ -181,7 +182,8 @@
           [(value)]="courseToManage.endDate"
           [placeholder]="'Course end date'"
           [classList]="'mt-3 sm:mt-0'"
-          [topLabel]="'End date'">
+          [topLabel]="'End date'"
+          [required]="true">
         </app-input-date>
       </div>
 

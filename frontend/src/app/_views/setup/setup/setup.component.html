@@ -9,72 +9,80 @@
   <div class="flex justify-center mt-1 text-base-content">
     <div class="block p-6 rounded-lg shadow-lg bg-base-100">
       <div class="pb-3 border-b border-gray-300 ">
-        <h2 class="text-xl"><strong>First time setup!</strong></h2>
-        <p class="text-sm">Create a course!</p>
+        <h2 class="text-xl"><strong>First time setup</strong></h2>
+        <p class="text-sm mt-2">Create the first course and enter your credentials as an admin</p>
       </div>
 
       <form #f="ngForm">
         <div class="flex flex-wrap mt-3">
+
+          <!-- Course Name -->
           <div class="w-full sm:w-1/2 sm:pr-3">
-            <div class="mb-3 mr-2">
-              <app-input-text
-                [id] = "'courseName'"
-                [form] = "f"
-                [(value)]="courseName"
-                [placeholder]="'ex: PCM 2021-2022'"
-                [topLabel]="'Course Name'"
-                [required]="true"
-                [pattern]="'^[x00-\\xFF\\w()&\\s-]+$'"
-                [patternErrorMessage]="'Course name \'' + courseName + '\' is not allowed. Allowed characters: alphanumeric  _  (  )  -  &'"
-                [maxLength]="100"
-                [maxLengthErrorMessage]="'Course name is too long: maximum of 100 characters'"
-              ></app-input-text>
-            </div>
-            <div class="mb-3 mr-2">
-              <app-input-text
-              [id] = "'courseColor'"
-              [form] = "f"
-              [(value)]="courseColor"
-              [placeholder]="'ex: #ffffff'"
-              [topLabel]="'Course Color'"
+            <app-input-text
+              [id]="'courseName'"
+              [form]="f"
+              [(value)]="setupData.courseName"
+              [placeholder]="'E.g. Multimedia Content Production'"
+              [topLabel]="'Course Name'"
               [required]="true"
-              [pattern]="''"
-              [patternErrorMessage]=""
-              [maxLength]="7"
-              [maxLengthErrorMessage]=""
-              ></app-input-text>
-            </div>
+              [pattern]="'^[x00-\\xFF\\w()&\\s-]+$'"
+              [patternErrorMessage]="'Course name \'' + setupData.courseName + '\' is not allowed. Allowed characters: alphanumeric  _  (  )  -  &'"
+              [maxLength]="100"
+              [maxLengthErrorMessage]="'Course name is too long: maximum of 100 characters'">
+            </app-input-text>
           </div>
+
+          <!-- Course Color -->
+          <div class="w-full sm:w-1/2">
+            <app-input-color
+              [id]="'courseColor'"
+              [form]="f"
+              [(value)]="setupData.courseColor"
+              [placeholder]="'E.g. #FFFFFF'"
+              [classList]="'mt-3 sm:mt-0'"
+              [topLabel]="'Course Color'"
+            ></app-input-color>
+          </div>
+
+        </div>
+
+        <div class="flex flex-wrap mt-3">
+
+          <!-- Admin ID -->
           <div class="w-full sm:w-1/2 sm:pr-3">
-            <div class="mb-3 ml-2">
-              <app-input-number
-              [id] = "'teacherId'"
-              [form] = "f"
-              [(value)]="teacherId"
-              [placeholder]="'ex: 123456'"
-              [topLabel]="'Teacher ID'"
+            <app-input-number
+              [id]="'teacherId'"
+              [form]="f"
+              [(value)]="setupData.adminId"
+              [placeholder]="'E.g. 123456'"
+              [topLabel]="'Admin ID'"
               [required]="true"
               [minValue]="0"
               [maxValue]="999999"
-              [minValueErrorMessage]="'ID number must be between 0 and 999999.'"
-              [maxValueErrorMessage]="'ID number must be between 0 and 999999.'"
-            ></app-input-number>
-            </div>
-            <div class="mb-3 ml-2">
-              <app-input-text
-              [id] = "'teacherUsername'"
-              [form] = "f"
-              [(value)]="teacherUsername"
-              [placeholder]="'ex: ist112345'"
-              [topLabel]="'Teacher Username'"
-              [required]="true"
-              [pattern]="''"
-              [patternErrorMessage]=""
-              [maxLength]="9"
-              [maxLengthErrorMessage]=""
-            ></app-input-text>
-            </div>
+              [minValueErrorMessage]="'ID number must be between 0 and 999999'"
+              [maxValueErrorMessage]="'ID number must be between 0 and 999999'"
+              [helperText]="'Your IST student number'">
+            </app-input-number>
           </div>
+
+          <!-- Admin Username -->
+          <div class="w-full sm:w-1/2">
+            <app-input-text
+              [id]="'teacherUsername'"
+              [form]="f"
+              [(value)]="setupData.adminUsername"
+              [placeholder]="'E.g. ist112345'"
+              [classList]="'mt-3 sm:mt-0'"
+              [topLabel]="'Admin Username'"
+              [required]="true"
+              [pattern]="'^ist\\d+$'"
+              [patternErrorMessage]="'Username must be in the format \'istXXXXXX\''"
+              [maxLength]="50"
+              [maxLengthErrorMessage]="'Admin username is too long: maximum of 50 characters'"
+              [helperText]="'Your IST ID'">
+            </app-input-text>
+          </div>
+
         </div>
 
         <button type="submit"

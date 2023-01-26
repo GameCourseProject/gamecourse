@@ -30,3 +30,14 @@ export enum InputGroupBtnColor {
   warning = 'btn-warning',
   error = 'btn-error'
 }
+
+export enum InputSelectColor {
+  ghost = 'select-ghost',
+  primary = 'select-primary',
+  secondary = 'select-secondary',
+  accent = 'select-accent',
+  info = 'select-info',
+  success = 'select-success',
+  warning = 'select-warning',
+  error = 'select-error'
+}

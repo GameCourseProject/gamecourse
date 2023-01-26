@@ -41,6 +41,7 @@ import { InputRadioComponent } from './_components/inputs/checkbox & radio/input
 import { InputToggleComponent } from './_components/inputs/toggle/input-toggle/input-toggle.component';
 import { InputSelectComponent } from './_components/inputs/select/input-select/input-select.component';
 import { InputSelectWeekdayComponent } from './_components/inputs/select/input-select-weekday/input-select-weekday.component';
+import { InputSelectPeriodicityComponent } from './_components/inputs/select/input-select-periodicity/input-select-periodicity.component';
 import { InputDateComponent } from './_components/inputs/date & time/input-date/input-date.component';
 import { InputTimeComponent } from './_components/inputs/date & time/input-time/input-time.component';
 import { InputDatetimeComponent } from './_components/inputs/date & time/input-datetime/input-datetime.component';
@@ -139,12 +140,14 @@ import {
   TablerArrowBackUp,
   TablerArrowNarrowUp,
   TablerArrowNarrowDown,
+  TablerAward,
   TablerBarrierBlock,
   TablerBooks,
   TablerCaretDown,
   TablerClipboardList,
   TablerCloudUpload,
   TablerColorSwatch,
+  TablerGavel,
   TablerIdBadge2,
   TablerPlug,
   TablerPrompt,
@@ -187,6 +190,7 @@ import {
     InputToggleComponent,
     InputSelectComponent,
     InputSelectWeekdayComponent,
+    InputSelectPeriodicityComponent,
     InputDateComponent,
     InputTimeComponent,
     InputDatetimeComponent,
@@ -304,7 +308,8 @@ import {
     ComingSoonComponent,
 
     NgIconsModule,
-    FormsModule
+    FormsModule,
+    InputSelectPeriodicityComponent
   ],
   imports: [
     CommonModule,
@@ -348,12 +353,14 @@ import {
       TablerArrowBackUp,
       TablerArrowNarrowUp,
       TablerArrowNarrowDown,
+      TablerAward,
       TablerBarrierBlock,
       TablerBooks,
       TablerCaretDown,
       TablerClipboardList,
       TablerCloudUpload,
       TablerColorSwatch,
+      TablerGavel,
       TablerIdBadge2,
       TablerPlug,
       TablerPrompt,

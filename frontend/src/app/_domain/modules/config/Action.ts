@@ -40,6 +40,9 @@ export function scopeAllows(scope: ActionScope | string, nrItems: number, index:
   if (scope === ActionScope.ALL_BUT_FIRST_AND_LAST && !first && !last) return true;
   if (scope === ActionScope.ALL_BUT_TWO_LAST && index < nrItems - 2) return true;
 
+  if ((Object.values(ActionScope) as string[]).includes(scope))
+    return false;
+
   // ALL_BUT_INDEXES (format: "[0, 3]")
   const indexes = scope.slice(1, -1).split(",").map(i => parseInt(i.trim()));
   return !indexes.includes(index);

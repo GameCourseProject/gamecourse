@@ -6,7 +6,8 @@ module.exports = {
   mode: 'jit',
   content: [
     './src/**/*.{html,ts}',
-    './src/index.html'
+    './src/index.html',
+    '../api/modules/**/*.php'
   ],
   plugins: [
     require('@tailwindcss/typography'),
