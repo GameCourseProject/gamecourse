@@ -631,7 +631,7 @@ class BadgeTest extends TestCase
         $this->assertFalse(file_exists($badge->getDataFolder(true, "Badge")));
 
         $this->assertEquals($name, $badge->getRule()->getName());
-        $this->assertEquals("award_badge(target, \"" . $name . "\", lvl)", $badge->getRule()->getThen());
+        $this->assertEquals("award_badge(target, \"" . $name . "\", lvl, logs)", $badge->getRule()->getThen());
     }
 
     /**
@@ -654,7 +654,7 @@ class BadgeTest extends TestCase
             $this->assertEquals("Badge", $badge->getName());
             $this->assertTrue(file_exists($badge->getDataFolder(true, "Badge")));
             $this->assertEquals("Badge", $badge->getRule()->getName());
-            $this->assertEquals("award_badge(target, \"Badge\", lvl)", $badge->getRule()->getThen());
+            $this->assertEquals("award_badge(target, \"Badge\", lvl, logs)", $badge->getRule()->getThen());
         }
     }
 
@@ -682,7 +682,7 @@ class BadgeTest extends TestCase
             $this->assertEquals("Badge2", $badge2->getName());
             $this->assertTrue(file_exists($badge2->getDataFolder(true, "Badge2")));
             $this->assertEquals("Badge2", $badge2->getRule()->getName());
-            $this->assertEquals("award_badge(target, \"Badge2\", lvl)", $badge2->getRule()->getThen());
+            $this->assertEquals("award_badge(target, \"Badge2\", lvl, logs)", $badge2->getRule()->getThen());
         }
     }
 
@@ -1172,14 +1172,15 @@ tags:
 #	lvl.1: " . $lvl1["description"] . ($size >= 2 ? "\n#\tlvl.2: " . $lvl2["description"] : "") . ($size == 3 ? "\n#\tlvl.3: " . $lvl3["description"] : "") . "
 
 	when:
-		progress = None # COMPLETE THIS: get student progress in badge
-		len(progress) > 0
+		# Get target progress in badge
+		logs = [] # COMPLETE THIS: get appropriate logs for this badge
+		progress = len(logs)
 		
-		# Compute badge level the student deserves
+		# Compute badge level the target deserves
 		lvl = compute_lvl(progress, " . $lvl1["goal"] . ($size >= 2 ? ", " . $lvl2["goal"] : "") . ($size == 3 ? ", " . $lvl3["goal"] : "") . ")
 
 	then:
-		award_badge(target, \"$name\", lvl)"), $this->trim($rule->getText()));
+		award_badge(target, \"$name\", lvl, logs)"), $this->trim($rule->getText()));
     }
 
     /**
@@ -1290,14 +1291,15 @@ tags:
 #	lvl.1: " . $lvl1["description"] . ($size >= 2 ? "\n#\tlvl.2: " . $lvl2["description"] : "") . ($size == 3 ? "\n#\tlvl.3: " . $lvl3["description"] : "") . "
 
 	when:
-		progress = None # COMPLETE THIS: get student progress in badge
-		len(progress) > 0
+		# Get target progress in badge
+		logs = [] # COMPLETE THIS: get appropriate logs for this badge
+		progress = len(logs)
 		
-		# Compute badge level the student deserves
+		# Compute badge level the target deserves
 		lvl = compute_lvl(progress, " . $lvl1["goal"] . ($size >= 2 ? ", " . $lvl2["goal"] : "") . ($size == 3 ? ", " . $lvl3["goal"] : "") . ")
 
 	then:
-		award_badge(target, \"$name\", lvl)"), $this->trim($badge->getRule()->getText()));
+		award_badge(target, \"$name\", lvl, logs)"), $this->trim($badge->getRule()->getText()));
     }
 
     /**
@@ -1359,14 +1361,15 @@ tags:
 #	lvl.3: three times
 
 	when:
-		progress = None # COMPLETE THIS: get student progress in badge
-		len(progress) > 0
+		# Get target progress in badge
+		logs = [] # COMPLETE THIS: get appropriate logs for this badge
+		progress = len(logs)
 		
-		# Compute badge level the student deserves
+		# Compute badge level the target deserves
 		lvl = compute_lvl(progress, 1, 2, 3)
 
 	then:
-		award_badge(target, \"Badge2\", lvl)"), $this->trim($badge->getRule()->getText()));
+		award_badge(target, \"Badge2\", lvl, logs)"), $this->trim($badge->getRule()->getText()));
         }
     }
 
@@ -1664,7 +1667,7 @@ tags:
     public function generateRuleParamsFresh(string $name, string $description, bool $isExtra, bool $isBragging, bool $isCount,
                                             bool $isPost, bool $isPoint, array $levels)
     {
-        $params = Badge::generateRuleParams($name, $description, $levels);
+        $params = Badge::generateRuleParams($name, $description, $isPost, $levels);
 
         // Name
         $this->assertTrue(isset($params["name"]));
@@ -1678,16 +1681,19 @@ tags:
 
         // When
         $this->assertTrue(isset($params["when"]));
-        $this->assertEquals("progress = None # COMPLETE THIS: get student progress in badge
-len(progress) > 0
+        $this->assertEquals("# Get target progress in badge
+logs = [] # COMPLETE THIS: get appropriate logs for this badge
+progress = len(logs)
 
-# Compute badge level the student deserves
+# Compute badge level the target deserves
 lvl = compute_lvl(progress, " . $levels[0]["goal"] . (count($levels) >= 2 ? ", " . $levels[1]["goal"] : "") .
-            (count($levels)== 3 ? ", " . $levels[2]["goal"] : "") . ")", $params["when"]);
+            (count($levels)== 3 ? ", " . $levels[2]["goal"] : "") . ")
+", $params["when"]);
 
         // Then
         $this->assertTrue(isset($params["then"]));
-        $this->assertEquals("award_badge(target, \"$name\", lvl)", $params["then"]);
+        $this->assertEquals("award_badge(target, \"$name\", lvl, logs)
+", $params["then"]);
     }
 
     /**
@@ -1713,7 +1719,7 @@ award_badge(target, \"$name\", lvl)";
         $rule = Section::getSectionByName($this->courseId, Badges::RULE_SECTION)->addRule($name, $description, $when, $then);
 
         // When
-        $params = Badge::generateRuleParams("New Name", "New Description", [
+        $params = Badge::generateRuleParams("New Name", "New Description", false, [
             ["description" => "new", "goal" => 100, "reward" => 1000]
         ], false, $rule->getId());
 

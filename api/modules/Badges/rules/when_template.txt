@@ -1,5 +1,6 @@
-progress = None # COMPLETE THIS: get student progress in badge
-len(progress) > 0
+# Get target progress in badge
+logs = [] # COMPLETE THIS: get appropriate logs for this badge
+progress = <progress>
 
-# Compute badge level the student deserves
+# Compute badge level the target deserves
 lvl = compute_lvl(progress, <goals>)
