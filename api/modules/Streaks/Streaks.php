@@ -26,6 +26,7 @@ class Streaks extends Module
 {
     const TABLE_STREAK = Streak::TABLE_STREAK;
     const TABLE_STREAK_PROGRESSION = Streak::TABLE_STREAK_PROGRESSION;
+    const TABLE_STREAK_DEADLINE = Streak::TABLE_STREAK_DEADLINE;
     const TABLE_STREAK_CONFIG = 'streaks_config';
 
     public function __construct(?Course $course)
@@ -1018,5 +1019,18 @@ class Streaks extends Module
             if ($streak["id"] == $streakId) return $streak["nrCompletions"];
         }
         return 0;
+    }
+
+    /**
+     * Gets streak deadline for a given user.
+     *
+     * @param int $userId
+     * @param int $streakdId
+     * @return string|null
+     */
+    public function getUserStreakDeadline(int $userId, int $streakdId): ?string
+    {
+        $streak = Streak::getStreakById($streakdId);
+        return $streak->getDeadline($userId);
     }
 }

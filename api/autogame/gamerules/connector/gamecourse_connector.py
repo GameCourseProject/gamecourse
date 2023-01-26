@@ -854,7 +854,7 @@ def get_consecutive_peergrading_logs(target):
             continue
 
         if last_peergrading is not None:
-            consecutive_logs[len(consecutive_logs) - 1].append(log)
+            consecutive_logs[-1].append(log)
         else:
             consecutive_logs.append([log])
         last_peergrading = peergraded
@@ -1312,18 +1312,28 @@ def award_streak(target, name, logs):
         repetition_info = " (%s%s time)" % (repetition, "st" if repetition == 1 else "nd" if repetition == 2 else "rd" if repetition == 3 else "th")
         return name + repetition_info
 
+    def get_deadline(last_date, period_type, period_number, period_time):
+        if not is_periodic or not last_date:
+            return None
+
+        course_end_date = get_course_dates(config.COURSE)[1]
+        deadline = get_dates_of_period(last_date, period_number, period_time, not period_type == "absolute")[1]
+        return course_end_date if deadline >= course_end_date else deadline
+
     type = "streak"
     awards_table = get_awards_table()
 
     if module_enabled("Streaks"):
         # Get streak info
-        query = "SELECT id, goal, periodicityGoal, periodicityTime, periodicityType, reward, tokens, isExtra, isRepeatable " \
+        query = "SELECT id, goal, periodicityGoal, periodicityNumber, periodicityTime, periodicityType, reward, tokens, isExtra, isRepeatable " \
                 "FROM streak WHERE course = %s AND name = '%s';" % (config.COURSE, name)
         table_streak = db.data_broker.get(db, config.COURSE, query)
         streak_id = table_streak[0][0]
         goal = int(table_streak[0][1])
-        is_periodic = table_streak[0][3] is not None
-        period_type = table_streak[0][4]
+        period_number = int(table_streak[0][3]) if table_streak[0][3] is not None else None
+        period_time = table_streak[0][4].decode() if table_streak[0][4] is not None else None
+        is_periodic = period_number is not None and period_time is not None
+        period_type = table_streak[0][5].decode() if table_streak[0][5] is not None else None
         period_goal = int(table_streak[0][2]) if table_streak[0][2] is not None else None
 
         # Get awards given for streak
@@ -1345,22 +1355,24 @@ def award_streak(target, name, logs):
 
             nr_valid = 0
             if is_periodic and period_type == "absolute":   # periodic (absolute)
-                if total >= period_goal or last:
+                if total >= period_goal or (last and total > 0 and get_deadline(group[-1][config.DATE_COL], period_type, period_number, period_time) > datetime.now()):
                     nr_valid = total
-
                 else:
                     progression = []
 
             else:   # consecutive & periodic (relative)
                 nr_valid = math.floor(total / goal) * goal
-                if last:
-                    nr_valid = total
+                if last and total > 0 and nr_valid < total:
+                    last_date = group[-1][config.DATE_COL]
+                    deadline = get_deadline(last_date, period_type, period_number, period_time)
+                    if deadline > datetime.now():
+                        nr_valid = total
 
             for index in range(0, nr_valid):
                 progression.append(group[index])
 
         # If not repeatable, only allow one repetition of streak
-        is_repeatable = table_streak[0][8]
+        is_repeatable = table_streak[0][9]
         if not is_repeatable:
             progression = progression[:goal]
 
@@ -1374,12 +1386,35 @@ def award_streak(target, name, logs):
                 query = "INSERT INTO streak_progression (course, user, streak, repetition, participation) VALUES (%s, %s, %s, %s, %s);"
                 db.execute_query(query, (config.COURSE, target, streak_id, repetition, log[0]), "commit")
 
+        # Update streak deadline for target
+        if is_periodic:
+            if steps == 0:
+                last_date = datetime.now() if period_type == "absolute" else None
+            else:
+                last_date = progression[-1][config.DATE_COL]
+
+            query = "SELECT deadline FROM streak_deadline WHERE course = %s AND user = %s AND streak = %s;"
+            old_deadline = db.execute_query(query, (config.COURSE, target, streak_id))
+            new_deadline = get_deadline(last_date, period_type, period_number, period_time)
+
+            if not old_deadline and new_deadline:
+                query = "INSERT INTO streak_deadline (course, user, streak, deadline) VALUES (%s, %s, %s, %s);"
+                db.execute_query(query, (config.COURSE, target, streak_id, new_deadline), "commit")
+
+            elif old_deadline and new_deadline and new_deadline != old_deadline:
+                query = "UPDATE streak_deadline SET deadline = %s WHERE course = %s AND user = %s AND streak = %s;"
+                db.execute_query(query, (new_deadline, config.COURSE, target, streak_id), "commit")
+
+            elif old_deadline and not new_deadline:
+                query = "DELETE FROM streak_deadline WHERE course = %s AND user = %s and streak = %s;"
+                db.execute_query(query, (config.COURSE, target, streak_id), "commit")
+
         # Award and/or update streaks
         nr_repetitions = math.floor(steps / goal)
         for repetition in range(1, nr_repetitions + 1):
             # Calculate reward
-            is_extra = table_streak[0][7]
-            streak_reward = int(table_streak[0][5])
+            is_extra = table_streak[0][8]
+            streak_reward = int(table_streak[0][6])
             reward = calculate_extra_credit_reward(target, streak_reward, type, streak_id) if is_extra else streak_reward
 
             # Award streak
@@ -1387,7 +1422,7 @@ def award_streak(target, name, logs):
             award(target, type, description, reward, streak_id)
 
             # Award tokens
-            streak_tokens = int(table_streak[0][6])
+            streak_tokens = int(table_streak[0][7])
             if module_enabled("VirtualCurrency") and streak_tokens > 0:
                 award_tokens(target, description, streak_tokens, 1, streak_id)
 

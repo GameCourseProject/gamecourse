@@ -17,6 +17,7 @@ class Streak
 {
     const TABLE_STREAK = 'streak';
     const TABLE_STREAK_PROGRESSION = 'streak_progression';
+    const TABLE_STREAK_DEADLINE = 'streak_deadline';
 
     const HEADERS = [   // headers for import/export functionality
         "name", "description", "color", "goal", "periodicityGoal", "periodicityNumber", "periodicityTime", "periodicityType",
@@ -109,6 +110,29 @@ class Streak
         return "data:image/svg+xml;base64," . base64_encode($img);
     }
 
+    public function getDeadline(int $userId): ?string
+    {
+        if (!$this->isPeriodic())
+            return null;
+
+        $courseEndDate = $this->getCourse()->getEndDate();
+        $deadline =  Core::database()->select(self::TABLE_STREAK_DEADLINE, [
+            "course" => $this->getCourse()->getId(),
+            "user" => $userId,
+            "streak" => $this->id
+        ], "deadline");
+
+        // Deadline is over
+        if ($deadline && strtotime($deadline) < strtotime(date("Y-m-d H:i:s", time())))
+            return null;
+
+        // Deadline is after the end of course
+        if ($deadline && $courseEndDate && strtotime($deadline) > strtotime($courseEndDate))
+            return $courseEndDate;
+
+        return $deadline;
+    }
+
     public function isExtra(): bool
     {
         return $this->getData("isExtra");
@@ -117,6 +141,11 @@ class Streak
     public function isRepeatable(): bool
     {
         return $this->getData("isRepeatable");
+    }
+
+    public function isPeriodic(): bool
+    {
+        return !is_null($this->getPeriodicityNumber()) && !is_null($this->getPeriodicityTime());
     }
 
     public function isActive(): bool

@@ -234,7 +234,7 @@ def get_consecutive_logs(logs):
     for log in logs:
         order = find_order(log[config.DESCRIPTION_COL].decode())
         if is_consecutive(order, last_order):
-            consecutive_logs[len(consecutive_logs) - 1].append(log)
+            consecutive_logs[-1].append(log)
         else:
             consecutive_logs.append([log])
         last_order = order
@@ -260,7 +260,7 @@ def get_consecutive_rating_logs(logs, min_rating):
             continue
 
         if is_consecutive(rating, last_rating):
-            consecutive_logs[len(consecutive_logs) - 1].append(log)
+            consecutive_logs[-1].append(log)
         else:
             consecutive_logs.append([log])
         last_rating = rating

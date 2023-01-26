@@ -40,3 +40,14 @@ CREATE TABLE IF NOT EXISTS streak_progression(
     FOREIGN key(streak) REFERENCES streak(id) ON DELETE CASCADE,
     FOREIGN key(participation) REFERENCES participation(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS streak_deadline(
+    course                      int unsigned NOT NULL,
+    user                        int unsigned NOT NULL,
+    streak                      int unsigned NOT NULL,
+    deadline                    TIMESTAMP NOT NULL, /* only periodic streaks have deadlines */
+
+    PRIMARY key(course, user, streak),
+    FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
+    FOREIGN key(streak) REFERENCES streak(id) ON DELETE CASCADE
+);
