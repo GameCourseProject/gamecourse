@@ -86,9 +86,12 @@ class Leaderboard extends Module
         // Nothing to do here
     }
 
+    /**
+     * @throws Exception
+     */
     public function disable()
     {
         $this->removeTemplates();
-        $this->removeAdaptationRolesFromCourse();
+        //$this->removeAdaptationRolesFromCourse();
     }
 }

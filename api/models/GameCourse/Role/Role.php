@@ -6,6 +6,7 @@ use Event\EventType;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Module;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Page\Page;
 use PDOException;
@@ -231,6 +232,43 @@ class Role
             }
             // TODO: UPDATE HIERARCHY
         }
+    }
+
+    /**
+     * Gets all adaptation roles
+     * @throws Exception
+     */
+    // TODO: Merge this function with following one
+    public static function getAdaptationCourseRoles(int $courseId): array {
+        $roles = self::getCourseRoles($courseId);
+
+        foreach (self::DEFAULT_ROLES as $defaultRole){
+            if (in_array($defaultRole, $roles)){
+                $index = array_search($defaultRole, $roles);
+                unset($roles[$index]);
+            }
+        }
+        return $roles;
+    }
+
+    /**
+     * Gets parents of all adaptation roles
+     * @throws Exception
+     */
+    public static function getAdaptationParentCourseRoles(int $courseId): array {
+        $moduleIds = Module::getModulesInCourse($courseId, true, true);
+        $roles = self::getCourseRoles($courseId);
+        $course = Course::getCourseById($courseId);
+
+        $response = [];
+        foreach($moduleIds as $moduleId){
+            $module = Module::getModuleById($moduleId, $course);
+            $moduleName = $module->getName();
+            if (in_array($moduleName, $roles)){
+                array_push($response, $moduleName);
+            }
+        }
+        return $response;
     }
 
     /**

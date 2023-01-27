@@ -135,7 +135,7 @@ class Badges extends Module
         $this->cleanDatabase();
         $this->removeDataFolder();
         $this->removeRules();
-        $this->removeAdaptationRolesFromCourse();
+        //$this->removeAdaptationRolesFromCourse();
     }
 
 

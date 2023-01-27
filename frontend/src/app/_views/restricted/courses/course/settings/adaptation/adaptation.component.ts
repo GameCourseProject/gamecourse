@@ -68,7 +68,7 @@ export class AdaptationComponent implements OnInit {
   }
 
   async getGameElements(courseID: number): Promise<void> {
-    const gameNames = await this.api.getAdaptationRoles(courseID).toPromise();
+    const gameNames = await this.api.getAdaptationParentRoles(courseID).toPromise();
     console.log(gameNames);
 
     let elements = Object.values(gameNames);

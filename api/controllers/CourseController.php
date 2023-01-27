@@ -581,14 +581,23 @@ class CourseController
 
         API::requireCourseAdminPermission($course);
 
-        $roles = Role::getCourseRoles($courseId);
+        $roles = Role::getAdaptationCourseRoles($courseId);
+        API::response($roles);
+    }
 
-        foreach(Role::DEFAULT_ROLES as $dr){
-            if (in_array($dr, $roles)){
-                $index = array_search($dr, $roles);
-                unset($roles[$index]);
-            }
-        }
+    /**
+     * @throws Exception
+     */
+    public function getAdaptationParentRoles()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $roles = Role::getAdaptationParentCourseRoles($courseId);
 
         API::response($roles);
     }
