@@ -1,12 +1,14 @@
 <?php
 namespace GameCourse\Module\Leaderboard;
 
+use Exception;
 use GameCourse\Course\Course;
 use GameCourse\Module\Badges\Badges;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\XPLevels\XPLevels;
+use GameCourse\Role\Role;
 
 /**
  * This is the Leaderboard module, which serves as a compartimentalized
@@ -43,14 +45,19 @@ class Leaderboard extends Module
 
     const RESOURCES = [];
 
+    const ADAPTATION_LEADERBOARD = [ "Leaderboard" => ["LB001", "LB002"]];
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function init()
     {
         $this->initTemplates();
+        Role::addAdaptationRolesToCourse($this->course->getId(), self::ADAPTATION_LEADERBOARD, self::ID);
     }
 
     public function copyTo(Course $copyTo)

@@ -24,15 +24,16 @@ class Role
     const DEFAULT_ROLES = ["Teacher", "Student", "Watcher"];  // default roles for each course
 
     /**
+     * There's also adaptation roles that contain different roles for different game elements
+     * They depend on each module (Badges and Leaderboard) and are only added when enabled
+     */
+    //private var $adaptation_roles = [];
+    /**
      * Adaptation role -> It will contain different roles for different game elements
      * Children will be added later to this role. Examples:
      * B001, B002, B003 (for different versions of Badges)
      * LB001, LB002 (for different versions of LeaderBoard)
      */
-    const ADAPTATION_ROLES = [
-        "customBadge" => ["B001", "B002"],
-        "customLeaderboard" => ["LB001", "LB002"]
-    ];
 
 
     /*** ---------------------------------------------------- ***/
@@ -48,14 +49,7 @@ class Role
     public static function setupRoles()
     {
         Core::database()->setForeignKeyChecks(false);
-
-        // only parents from ADAPTATION_ROLES
-        $roles = self::DEFAULT_ROLES;
-        foreach (self::ADAPTATION_ROLES as $key => $value){
-            array_push($roles, $key);
-        }
-
-        self::setCourseRoles(0, $roles);
+        self::setCourseRoles(0, self::DEFAULT_ROLES);
         Core::database()->setForeignKeyChecks(true);
     }
 
@@ -151,47 +145,57 @@ class Role
     }
 
     /**
-     * Adds default and adaptation roles to a given course.
+     * Adds adaptation roles to a given course - comes from modules
+     * Notice: array $roles should only have 1 parent!
      *
      * @param int $courseId
+     * @param array $roles // should have structure [ "name" => ["child1", "child2"] ]
+     * @param string $moduleId
      * @throws Exception
      */
-    public static function addRolesToCourse(int $courseId)
+    public static function addAdaptationRolesToCourse(int $courseId, array $roles, string $moduleId)
     {
-        $roles = self::DEFAULT_ROLES;
+        $course = new Course($courseId);
+        $courseRoles = self::getCourseRoles($courseId);
 
-        foreach (self::ADAPTATION_ROLES as $key => $value){
-            array_push($roles, $key);
+        // TODO: should save $roles to a "global variable" here ?
+
+        $roleParent = array_keys($roles); // FIXME only considers 1 parent
+        foreach ($roleParent as $parent){
+            self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
         }
 
-        self::setCourseRoles($courseId, $roles);
-
+        // TODO: STUDY THIS
         // Update roles hierarchy
-        $hierarchy = array_map(function ($role) { return ["name" => $role]; }, $roles);
-        (new Course($courseId))->setRolesHierarchy($hierarchy);
+        // $hierarchy = array_map(function ($role) { return ["name" => $role]; }, $roles);
+        // (new Course($courseId))->setRolesHierarchy($hierarchy);
 
-        // Add adaptation roles children
-        self::setAdaptationChildren($courseId);
+        /*$roleChildren = array_values($roles);
+        foreach($roleChildren as $child){
+            self::addRoleToCourse($courseId, $child, null, null, $moduleId);
+            $hierarchy = $course->getRolesHierarchy();
+            $parentIndex = array_search($roleParent, $roles);
+            // + 3 -> length of const DEFAULT_ROLES
+            $hierarchy[$parentIndex + 3]["children"][] = ["name" => $child];
+            $course->setRolesHierarchy($hierarchy);
+        }*/
     }
 
     /**
-     * Adds adaptation children roles to a given course.
+     * Removes adaptation roles from a course, including its children.
+     * NOTE: it doesn't update roles hierarchy
      *
      * @param int $courseId
+     * @param array $roles
+     * @param string|null $moduleId
+     * @return void
      * @throws Exception
      */
-    public static function setAdaptationChildren(int $courseId)
-    {
-        $course = new Course($courseId);
-
-        foreach (self::ADAPTATION_ROLES as $key => $values){
-            foreach ($values as $value){
-                $course->addRole($value);
-                $hierarchy = $course->getRolesHierarchy();
-                //array_push($hierarchy[$])
-                $hierarchy[$key]["children"] = ["name" => $value];
-                $course->setRolesHierarchy($hierarchy);
-            }
+    public static function removeAdaptationRolesFromCourse(int $courseId, array $roles, string $moduleId){
+        foreach($roles as $role){
+            $roleId = self::getRoleId($role, $courseId);
+            // NOTICE: Doesn't update hierarchy!!! TODO
+            self::removeRoleFromCourse($courseId, $role, $roleId, $moduleId);
         }
     }
 

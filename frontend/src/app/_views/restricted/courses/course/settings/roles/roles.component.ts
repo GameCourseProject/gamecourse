@@ -72,11 +72,16 @@ export class RolesComponent implements OnInit {
   }
 
   async getRoles(courseID: number): Promise<void> {
+    // default roles
     this.defaultRoleNames = await this.api.getDefaultRoles(courseID).toPromise();
 
-    this.adaptationRoleNames = await this.api.getAdaptationRoles(courseID).toPromise();
+    // adaptation roles
+    let adaptationRoles = await this.api.getAdaptationRoles(courseID).toPromise();
+    this.adaptationRoleNames = Object.values(adaptationRoles);
+    console.log(this.adaptationRoleNames);
 
     this.originalRolesHierarchy = _.cloneDeep(this.course.roleHierarchy);
+    console.log(this.originalRolesHierarchy);
     this.initRolesHierarchySmart();
   }
 
@@ -234,6 +239,8 @@ export class RolesComponent implements OnInit {
   }
 
   isAdaptationRole(roleName): boolean {
+    console.log(roleName);
+    console.log(this.adaptationRoleNames.includes(roleName));
     return this.adaptationRoleNames.includes(roleName);
   }
 

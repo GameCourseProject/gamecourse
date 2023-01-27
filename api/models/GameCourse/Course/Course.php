@@ -397,10 +397,7 @@ class Course
         $course->setAutomation("AutoDisabling", $endDate);
 
         // Add default roles
-        // Role::addDefaultRolesToCourse($id);
-
-        // Add roles
-        Role::addRolesToCourse($id);
+        Role::addDefaultRolesToCourse($id);
 
         $teacherRoleId = Role::getRoleId("Teacher", $id);
 

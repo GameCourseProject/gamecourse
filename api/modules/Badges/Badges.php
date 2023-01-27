@@ -15,6 +15,7 @@ use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
+use GameCourse\Role\Role;
 use Utils\Cache;
 use Utils\Utils;
 
@@ -62,6 +63,7 @@ class Badges extends Module
     const DATA_FOLDER = 'badges';
     const RULE_SECTION = "Badges";
 
+    const ADAPTATION_BADGES = [ "Badges" => ["B001", "B002"]];
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -78,6 +80,8 @@ class Badges extends Module
 
         // Init config
         Core::database()->insert(self::TABLE_BADGE_CONFIG, ["course" => $this->course->getId()]);
+
+        Role::addAdaptationRolesToCourse($this->course->getId(), self::ADAPTATION_BADGES, self::ID);
     }
 
     /**
@@ -109,6 +113,8 @@ class Badges extends Module
         $this->cleanDatabase();
         $this->removeDataFolder();
         $this->removeRules();
+
+        Role::removeAdaptationRolesFromCourse($this->course->getId(), self::ADAPTATION_BADGES, self::ID);
     }
 
 

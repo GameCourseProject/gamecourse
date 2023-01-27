@@ -571,6 +571,7 @@ class CourseController
     /**
      * @throws Exception
      */
+    // FIXME - what if default roles are not there or some default roles have been deleted??
     public function getAdaptationRoles()
     {
         API::requireValues("courseId");
@@ -578,8 +579,18 @@ class CourseController
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
 
-        API::requireAdminPermission($course);
-        API::response(Role::ADAPTATION_ROLES);
+        API::requireCourseAdminPermission($course);
+
+        $roles = Role::getCourseRoles($courseId);
+
+        foreach(Role::DEFAULT_ROLES as $dr){
+            if (in_array($dr, $roles)){
+                $index = array_search($dr, $roles);
+                unset($roles[$index]);
+            }
+        }
+
+        API::response($roles);
     }
 
     /**
