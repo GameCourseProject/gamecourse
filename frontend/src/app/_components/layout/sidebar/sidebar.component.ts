@@ -255,20 +255,26 @@ export class SidebarComponent implements OnInit {
                 icon: 'tabler-color-swatch'
               },
               {
-                link: path + 'settings/adaptation',
-                name: 'Adaptation',
-                icon: 'tabler-puzzle'
+                link: path + 'overview',
+                name: 'Overview',
+                icon: 'feather-info'
               }
             ]
-          },
-          {
-            link: path + 'overview',
-            name: 'Overview',
-            icon: 'feather-info'
           }
         ];
         navigation = navigation.concat(fixed);
       }
+
+      const adaptation: Navigation = {
+        link: path + 'settings/adaptation',
+        name: 'Adaptation',
+        icon: 'tabler-puzzle'
+      }
+      if (isAdminOrTeacher) navigation[3].children.splice(2, 0, adaptation);
+      else navigation.concat({
+        category: 'User Interface',
+        children: [adaptation]
+      });
 
       return navigation;
     }

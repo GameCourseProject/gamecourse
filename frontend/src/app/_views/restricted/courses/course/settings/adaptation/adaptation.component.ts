@@ -1,8 +1,9 @@
 import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
-import {Component, OnInit } from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Course} from "../../../../../../_domain/courses/course";
-import { User } from "src/app/_domain/users/user";
+import {User} from "src/app/_domain/users/user";
+import {TableDataType} from "../../../../../../_components/tables/table-data/table-data.component";
 
 @Component({
   selector: 'app-adaptation',
@@ -10,14 +11,20 @@ import { User } from "src/app/_domain/users/user";
 })
 export class AdaptationComponent implements OnInit {
 
+  /** -- COMMON VARIABLES -- **/
   loading = {
     page: true,
-    action: false
+    action: false,
+    table: false
   }
 
   course: Course;
   user: User;
 
+  /** -- ADMIN VARIABLES -- **/
+  mode: 'configure';
+
+  /** -- NON-ADMIN VARIABLES -- **/
   selectedGameElement: string;
   gameElementChildren: string[];
   previousPreference: string;
@@ -40,7 +47,12 @@ export class AdaptationComponent implements OnInit {
       await this.getGameElements(courseID);
 
       this.loading.page = false;
-    })
+
+      if (this.user.isAdmin){
+        this.buildTable();
+      }
+
+    });
   }
 
   /*** --------------------------------------------- ***/
@@ -56,17 +68,75 @@ export class AdaptationComponent implements OnInit {
   }
 
   async getGameElements(courseID: number): Promise<void> {
-    let gameNames = await this.api.getAdaptationRoles(courseID).toPromise();
+    const gameNames = await this.api.getAdaptationRoles(courseID).toPromise();
+    console.log(gameNames);
 
-    for (let i = 0; i < gameNames.length; i++){
-      this.availableGameElements.push({value: gameNames[i], text: gameNames[i]});
+    let elements = Object.values(gameNames);
+    for (let i = 0; i < elements.length; i++){
+      this.availableGameElements.push({value: elements[i], text: elements[i]});
+    }
+    console.log(this.availableGameElements);
+  }
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------- Table ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
+    {label: 'Game Element', align: 'middle'},
+    {label: 'Active', align: 'middle'},
+    {label: 'Actions'}
+  ];
+  data: {type: TableDataType, content: any}[][];
+  tableOptions = {
+    order: [0, 'asc'],
+    columnDefs: [ // not sure
+      { type: 'natural', targets: [0] },
+      { orderable: false, targets: [1] }
+    ]
+  }
+
+  buildTable(): void {
+    this.loading.table = true;
+
+    const table: {type: TableDataType, content: any}[][] = [];
+    this.availableGameElements.forEach(gameElement => {
+      table.push([
+        {type: TableDataType.TEXT, content: {text: gameElement.text}},
+        {type: TableDataType.PILL, content: true},
+        {type: TableDataType.ACTIONS, content: {actions: [
+          {action: 'Configure', icon: 'tabler-settings', color: 'primary'}]}
+        }
+      ]);
+    });
+
+    this.data = table;
+    this.loading.table = false;
+  }
+
+  doActionOnTable(action: string, row: number, col: number, value?: any): void{
+    const gameElementToActOn = this.availableGameElements[row];
+
+    if (action === 'value changed'){
+      //if (col === 1) this.toggleActive(gameElementToActOn);
+
+    } else if (action === 'Configure') {
+      this.mode = 'configure';
+      //this.
     }
   }
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
+/*
+  async toggleActive(gameElement: AdaptationGameElement){
+    this.loading.action = true;
 
+    gameElement.isActive = !gameElement.isActive;
+    await this.api.setAdaptationGameElementActive()
+  }
+  */
   doAction(gameElement: string) {
     // TODO
   }

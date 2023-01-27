@@ -239,8 +239,6 @@ export class RolesComponent implements OnInit {
   }
 
   isAdaptationRole(roleName): boolean {
-    console.log(roleName);
-    console.log(this.adaptationRoleNames.includes(roleName));
     return this.adaptationRoleNames.includes(roleName);
   }
 

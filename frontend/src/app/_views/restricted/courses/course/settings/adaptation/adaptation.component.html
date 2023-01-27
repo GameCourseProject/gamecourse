@@ -3,6 +3,37 @@
   <app-header [title] = "'Adaptation'" [icon] = "'tabler-puzzle'"
               [loading] = "loading.action" ></app-header>
 
+  <ng-container *ngIf="!loading.page">
+    <!-- Admin Template -->
+    <ng-container *ngIf="true" [ngTemplateOutlet]="ADMIN"></ng-container>
+
+    <!-- Non-Admin Template -->
+    <ng-container *ngIf="false" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
+  </ng-container>
+
+</div>
+
+<!-- Admin Template -->
+<ng-template #ADMIN>
+  <div class="w-full relative">
+    <app-table
+      [id] = "'gameElements'"
+      [classList]="'mt-5'"
+      [headers] = "headers"
+      [data] = "data"
+      [options] = "tableOptions"
+      [loading] = "loading.table"
+      (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
+      (valueChanged)="doActionOnTable('value changed game element', $event.row, $event.col, $event.value)">
+    </app-table>
+
+    <!-- Loader -->
+    <app-loader [loading] = "loading.page"></app-loader>
+  </div>
+</ng-template>
+
+<ng-template #NON_ADMIN>
+
   <div class="sm:w-1/2">
     <app-input-select
       [id]="'game-elements'"
@@ -51,6 +82,8 @@
       Save preferences
     </button>
   </div>
+</ng-template>
 
-</div>
+
+
 

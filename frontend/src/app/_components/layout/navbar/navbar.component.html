@@ -60,6 +60,7 @@
             <ng-icon *ngIf="this.mode === 'new'" name="tabler-bell-ringing" size="1.7rem" color="#EF6060"></ng-icon>
           </label>
           <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-base-100 rounded-box w-80 !z-50">
+            <li *ngIf="notifications.length === 0">You don't have notifications!</li>
               <li *ngFor="let notification of notifications;">
                 <!-- border is only for all items but the last in notification array -->
                 <div class="pb-3 border-b border-gray-300" *ngIf="notification !== notifications[notifications.length - 1]">

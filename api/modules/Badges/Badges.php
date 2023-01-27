@@ -81,7 +81,29 @@ class Badges extends Module
         // Init config
         Core::database()->insert(self::TABLE_BADGE_CONFIG, ["course" => $this->course->getId()]);
 
-        Role::addAdaptationRolesToCourse($this->course->getId(), self::ADAPTATION_BADGES, self::ID);
+        $this->addAdaptationRolesToCourse();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function addAdaptationRolesToCourse(){
+
+        $parent = array_keys(self::ADAPTATION_BADGES)[0];
+        $children = array_values(self::ADAPTATION_BADGES)[0];
+
+        Role::addAdaptationRolesToCourse($this->course->getId(), self::ID, $parent, $children);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function removeAdaptationRolesFromCourse(){
+        $parent = array_keys(self::ADAPTATION_BADGES)[0];
+        $children = array_values(self::ADAPTATION_BADGES)[0];
+
+        Role::removeAdaptationRolesFromCourse($this->course->getId(), self::ID, $parent);
+
     }
 
     /**
@@ -113,8 +135,7 @@ class Badges extends Module
         $this->cleanDatabase();
         $this->removeDataFolder();
         $this->removeRules();
-
-        Role::removeAdaptationRolesFromCourse($this->course->getId(), self::ADAPTATION_BADGES, self::ID);
+        $this->removeAdaptationRolesFromCourse();
     }
 
 

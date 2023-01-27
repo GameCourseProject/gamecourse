@@ -144,6 +144,7 @@ class Role
         (new Course($courseId))->setRolesHierarchy($hierarchy);
     }
 
+
     /**
      * Adds adaptation roles to a given course - comes from modules
      * Notice: array $roles should only have 1 parent!
@@ -153,33 +154,60 @@ class Role
      * @param string $moduleId
      * @throws Exception
      */
-    public static function addAdaptationRolesToCourse(int $courseId, array $roles, string $moduleId)
+    public static function addAdaptationRolesToCourse(int $courseId, string $moduleId, string $parent, array $children = null)
     {
+        // TODO: should save $roles to a "global variable" here?
+        // something like ADAPTATION_ROLES = ["Badges" => ["B001", "B002"], "Leaderboard" => ["LB001", "LB002]]
+
+        self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
+
         $course = new Course($courseId);
         $courseRoles = self::getCourseRoles($courseId);
 
-        // TODO: should save $roles to a "global variable" here ?
+        // Update roles hierarchy
+        $hierarchy = array_map(function ($role) { return ["name" => $role]; }, $courseRoles);
+        $course->setRolesHierarchy($hierarchy);
+
+        // Add children
+        foreach($children as $child){
+            self::addRoleToCourse($courseId, $child, null, null, $moduleId);
+        }
+
+        // Update hierarchy
+        /*$parentIndex = array_search($parent, $courseRoles);
+        $hierarchy = $course->getRolesHierarchy();
+        $hierarchy[$parentIndex]["children"][] = ["name" => $children];
+        $course->setRolesHierarchy($hierarchy);*/
+    }
+    /*
+    public static function addAdaptationRolesToCourse(int $courseId, array $roles, string $moduleId)
+    {
+        // TODO: should save $roles to a "global variable" here?
+        // something like ADAPTATION_ROLES = ["Badges" => ["B001", "B002"], "Leaderboard" => ["LB001", "LB002]]
 
         $roleParent = array_keys($roles); // FIXME only considers 1 parent
         foreach ($roleParent as $parent){
             self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
         }
 
-        // TODO: STUDY THIS
-        // Update roles hierarchy
-        // $hierarchy = array_map(function ($role) { return ["name" => $role]; }, $roles);
-        // (new Course($courseId))->setRolesHierarchy($hierarchy);
+        $course = new Course($courseId);
+        $courseRoles = self::getCourseRoles($courseId);
 
-        /*$roleChildren = array_values($roles);
+        // Update roles hierarchy
+         $hierarchy = array_map(function ($role) { return ["name" => $role]; }, $courseRoles);
+         $course->setRolesHierarchy($hierarchy);
+
+        $roleChildren = array_values($roles);
         foreach($roleChildren as $child){
             self::addRoleToCourse($courseId, $child, null, null, $moduleId);
-            $hierarchy = $course->getRolesHierarchy();
-            $parentIndex = array_search($roleParent, $roles);
-            // + 3 -> length of const DEFAULT_ROLES
-            $hierarchy[$parentIndex + 3]["children"][] = ["name" => $child];
-            $course->setRolesHierarchy($hierarchy);
-        }*/
-    }
+        }
+
+        $parentIndex = array_search($roleParent, $courseRoles);
+        $hierarchy = $course->getRolesHierarchy();
+
+        $hierarchy[$parentIndex]["children"][] = array_map(function ($roleChild) { return ["name" => $roleChild]; }, $roleChildren);
+        $course->setRolesHierarchy($hierarchy);
+    }*/
 
     /**
      * Removes adaptation roles from a course, including its children.
@@ -191,11 +219,17 @@ class Role
      * @return void
      * @throws Exception
      */
-    public static function removeAdaptationRolesFromCourse(int $courseId, array $roles, string $moduleId){
-        foreach($roles as $role){
-            $roleId = self::getRoleId($role, $courseId);
-            // NOTICE: Doesn't update hierarchy!!! TODO
-            self::removeRoleFromCourse($courseId, $role, $roleId, $moduleId);
+    public static function removeAdaptationRolesFromCourse(int $courseId, string $moduleId, string $parent, array $children = null){
+
+        $parentId = Role::getRoleId($parent, $courseId);
+        self::removeRoleFromCourse($courseId, $parent, $parentId, $moduleId);
+
+        if ($children){
+            foreach ($children as $child){
+                $childId = Role::getRoleId($child, $courseId);
+                Role::removeRoleFromCourse($courseId, $child, $childId, $moduleId);
+            }
+            // TODO: UPDATE HIERARCHY
         }
     }
 
