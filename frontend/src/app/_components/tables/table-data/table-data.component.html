@@ -4,7 +4,7 @@
 
   <div *ngIf="subtitle" class="prose text-sm {{Align}} {{classList}}">
     <h4>{{text ?? ''}}</h4>
-    <p class="opacity-50">{{subtitle ?? ''}}</p>
+    <p class="opacity-75">{{subtitle ?? ''}}</p>
   </div>
 </ng-container>
 
@@ -70,14 +70,15 @@
 
     <div class="flex items-center space-x-3 {{classList}}">
       <div class="avatar">
-        <div class="mask mask-circle w-9 h-9">
-          <img class="object-cover" [src]="avatar?.get('SafeUrl') ?? DefaultProfileImg" [alt]="avatarTitle" />
+        <div class="mask {{avatarSrc ? 'mask-circle' : ''}} w-9 h-9">
+          <img *ngIf="!avatarIcon" class="object-cover" [src]="avatar?.get('SafeUrl') ?? DefaultProfileImg" [alt]="avatarTitle" />
+          <ng-icon *ngIf="avatarIcon" [name]="avatarIcon" size="1.8rem" class="{{textColors[avatarIconColor]}}"></ng-icon>
         </div>
       </div>
 
       <div class="prose text-sm">
         <h4 class="!mb-0.5">{{avatarTitle ?? ''}}</h4>
-        <span *ngIf="avatarSubtitle" class="opacity-50">{{avatarSubtitle}}</span>
+        <span *ngIf="avatarSubtitle" class="opacity-75">{{avatarSubtitle}}</span>
       </div>
     </div>
 

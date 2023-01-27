@@ -962,7 +962,6 @@ class Badges extends Module
 
     /**
      * Gets badges earned by a given user.
-     * NOTE: only returns badges that are currently active.
      *
      * @param int $userId
      * @param bool|null $isExtra

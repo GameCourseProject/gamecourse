@@ -1,0 +1,12 @@
+rule: Lab Stalker
+# Attend seven consecutive laboratorial classes
+
+    when:
+        # Get target progress in streak
+        logs = get_attendance_lab_logs(target)
+
+        # Get only consecutive progress
+        clogs = get_consecutive_logs(logs)
+
+    then:
+        award_streak(target, "Lab Stalker", clogs)

@@ -38,7 +38,7 @@
    [size]="'lg'"
    [header]="mode?.capitalize() + ' user'"
    [closeBtnText]="'Discard ' + (mode === 'add' ? 'user' : 'changes')"
-   [submitBtnText]="mode?.capitalize() + ' user'"
+   [submitBtnText]="mode === 'add' ? mode?.capitalize() + ' user' : 'Save'"
    [actionInProgress]="loading.action"
    (submitBtnClicked)="f.onSubmit(null); mode === 'add' ? createUser() : editUser()"
    (onClose)="resetManage()">
@@ -71,31 +71,38 @@
       </div>
 
       <div class="w-full sm:w-2/3">
-        <!-- Name -->
-        <app-input-text
-          [id]="'user-name'"
-          [form]="f"
-          [(value)]="userToManage.name"
-          [placeholder]="'User name'"
-          [topLabel]="'Name'"
-          [pattern]="'(?!^\\d+$)^.+$'"
-          [patternErrorMessage]="'User name can\'t be composed of only numbers.'"
-          [required]="true"
-          [maxLength]="60"
-          [maxLengthErrorMessage]="'User name is too long: maximum of 60 characters'">
-        </app-input-text>
+        <div class="flex flex-wrap">
 
-        <!-- Nickname -->
-        <app-input-text
-          [id]="'user-nickname'"
-          [form]="f"
-          [(value)]="userToManage.nickname"
-          [placeholder]="'User nickname'"
-          [classList]="'mt-3'"
-          [topLabel]="'Nickname'"
-          [maxLength]="50"
-          [maxLengthErrorMessage]="'User nickname is too long: maximum of 50 characters'">
-        </app-input-text>
+          <!-- Name -->
+          <div class="w-full sm:w-1/2 sm:pr-3">
+            <app-input-text
+              [id]="'user-name'"
+              [form]="f"
+              [(value)]="userToManage.name"
+              [placeholder]="'User name'"
+              [topLabel]="'Name'"
+              [pattern]="'(?!^\\d+$)^.+$'"
+              [patternErrorMessage]="'User name can\'t be composed of only numbers.'"
+              [required]="true"
+              [maxLength]="60"
+              [maxLengthErrorMessage]="'User name is too long: maximum of 60 characters'">
+            </app-input-text>
+          </div>
+
+          <!-- Nickname -->
+          <div class="w-full sm:w-1/2">
+            <app-input-text
+              [id]="'user-nickname'"
+              [form]="f"
+              [(value)]="userToManage.nickname"
+              [placeholder]="'User nickname'"
+              [classList]="'mt-3 sm:mt-0'"
+              [topLabel]="'Nickname'"
+              [maxLength]="50"
+              [maxLengthErrorMessage]="'User nickname is too long: maximum of 50 characters'">
+            </app-input-text>
+          </div>
+        </div>
 
         <!-- Email -->
         <app-input-email

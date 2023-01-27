@@ -14,7 +14,7 @@
       [form]="fAuth"
       [accept]="'.json'"
       [size]="'xs'"
-      [color]="'primary'"
+      [color]="'accent'"
       [classList]="''"
       [label]="'Credentials'"
       [helperText]="'File with credentials for Google script taken from Google Cloud console'"
@@ -24,7 +24,7 @@
 
     <!-- Action button -->
     <div class="flex items-center justify-end mt-4">
-      <button type="submit" class="btn btn-primary" [disabled]="!canAuthenticate">
+      <button type="submit" class="btn btn-accent" [disabled]="!canAuthenticate">
 
         <!-- Spinner -->
         <ng-container *ngIf="loading.auth">

@@ -16,6 +16,7 @@ use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
 use TypeError;
+use Utils\Time;
 use Utils\Utils;
 
 /**
@@ -185,24 +186,74 @@ class StreakTest extends TestCase
     }
 
 
+    public function streakPeriodicityTimeSuccessProvider(): array
+    {
+        return [
+            "null" => [null],
+            "seconds" => [Time::SECOND],
+            "minutes" => [Time::MINUTE],
+            "hours" => [Time::HOUR],
+            "days" => [Time::DAY],
+            "weeks" => [Time::WEEK],
+            "months" => [Time::MONTH],
+            "years" => [Time::YEAR],
+            "trimmed" => [" " . Time::SECOND . " "]
+        ];
+    }
+
+    public function streakPeriodicityTimeFailureProvider(): array
+    {
+        return [
+            "empty" => [""],
+            "whitespace" => [" "],
+            "doesn't exist" => ["semester"]
+        ];
+    }
+
+
+    public function streakPeriodicityTypeSuccessProvider(): array
+    {
+        return [
+            "null" => [null],
+            "absolute" => ["absolute"],
+            "relative" => ["relative"]
+        ];
+    }
+
+    public function streakPeriodicityTypeFailureProvider(): array
+    {
+        return [
+            "empty" => [""],
+            "whitespace" => [" "],
+            "doesn't exist" => ["dynamic"]
+        ];
+    }
+
+
     public function streakSuccessProvider(): array
     {
         return [
-            "default" => ["Streak Name", "Perform action", null, 10, null, null, 100, null, false, true, false, false, false],
-            "with color" => ["Streak Name", "Perform action", "#ffffff", 10, null, null, 100, null, false, true, false, false, false],
-            "tokens" => ["Streak Name", "Perform action", null, 10, null, null, 100, 50, false, true, false, false, false],
-            "periodic" => ["Streak Name", "Perform action", null, 10, 5, "Days", 100, null, false, false, true, false, false],
-            "at most" => ["Streak Name", "Perform action", null, 10, 5, "Days", 100, null, false, false, true, true, false],
-            "repeatable" => ["Streak Name", "Perform action", null, 10, null, null, 100, null, true, true, false, false, false]
+            "default" => ["Streak Name", "Perform action", null, 10, null, null, null, null, 100, 0, false, false],
+            "with color" => ["Streak Name", "Perform action", "#ffffff", 10, null, null, null, null, 100, 0, false, false],
+            "periodic" => ["Streak Name", "Perform action", null, 10, 5, 5, Time::DAY, "absolute", 100, 0, false, false],
+            "periodic between" => ["Streak Name", "Perform action", null, 10, 5, 5, Time::DAY, "relative", 100, 0, false, false],
+            "repeatable" => ["Streak Name", "Perform action", null, 10, null, null, null, null, 100, 0, false, true]
         ];
     }
 
     public function streakFailureProvider(): array
     {
         return [
-            "invalid name" => [null, "Perform action", null, 10, null, null, 100, null, false, true, false, false, false],
-            "invalid description" => ["Streak Name", null, null, 10, null, null, 100, null, false, true, false, false, false],
-            "invalid color"  => ["Streak Name", "Perform action", "white", 10, null, null, 100, null, false, true, false, false, false]
+            "invalid name" => [null, "Perform action", null, 10, null, null, null, null, 100, 0, false, false],
+            "invalid description" => ["Streak Name", null, null, 10, null, null, null, null, 100, 0, false, false],
+            "invalid color"  => ["Streak Name", "Perform action", "white", 10, null, null, null, null, 100, 0, false, false],
+            "invalid goal" => ["Streak Name", "Perform action", null, -10, null, null, null, null, 100, 0, false, false],
+            "invalid periodicity goal" => ["Streak Name", "Perform action", null, 10, -10, null, null, null, 100, 0, false, false],
+            "invalid periodicity number" => ["Streak Name", "Perform action", null, 10, null, -10, null, null, 100, 0, false, false],
+            "invalid periodicity time" => ["Streak Name", "Perform action", null, 10, null, null, "semester", null, 100, 0, false, false],
+            "invalid periodicity type" => ["Streak Name", "Perform action", null, 10, null, null, null, "dynamic", 100, 0, false, false],
+            "invalid reward" => ["Streak Name", "Perform action", null, 10, null, null, null, null, -100, 0, false, false],
+            "invalid tokens" => ["Streak Name", "Perform action", null, 10, null, null, null, null, 100, -10, false, false]
         ];
     }
 
@@ -232,8 +283,8 @@ class StreakTest extends TestCase
     public function getId()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $id = intval(Core::database()->select(Streak::TABLE_STREAK, ["name" => "Streak"], "id"));
         $this->assertEquals($id, $streak->getId());
     }
@@ -245,8 +296,8 @@ class StreakTest extends TestCase
     public function getCourse()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $this->assertEquals($this->courseId, $streak->getCourse()->getId());
     }
 
@@ -257,8 +308,8 @@ class StreakTest extends TestCase
     public function getStreakName()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $this->assertEquals("Streak", $streak->getName());
     }
 
@@ -269,8 +320,8 @@ class StreakTest extends TestCase
     public function getDescription()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $this->assertEquals("Perform action", $streak->getDescription());
     }
 
@@ -281,8 +332,8 @@ class StreakTest extends TestCase
     public function getColor()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $this->assertNull($streak->getColor());
     }
 
@@ -290,24 +341,36 @@ class StreakTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function getStreakCount()
+    public function getGoal()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $this->assertEquals(10, $streak->getCount());
+            null, null, null, null, 100, 0, false,
+            false);
+        $this->assertEquals(10, $streak->getGoal());
     }
 
     /**
      * @test
      * @throws Exception
      */
-    public function getPeriodicity()
+    public function getPeriodicityGoal()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $this->assertNull($streak->getPeriodicity());
+            null, null, null, null, 100, 0, false,
+            false);
+        $this->assertNull($streak->getPeriodicityGoal());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getPeriodicityNumber()
+    {
+        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
+            null, null, null, null, 100, 0, false,
+            false);
+        $this->assertNull($streak->getPeriodicityNumber());
     }
 
     /**
@@ -317,9 +380,21 @@ class StreakTest extends TestCase
     public function getPeriodicityTime()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $this->assertNull($streak->getPeriodicityTime());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getPeriodicityType()
+    {
+        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
+            null, null, null, null, 100, 0, false,
+            false);
+        $this->assertNull($streak->getPeriodicityType());
     }
 
     /**
@@ -329,8 +404,8 @@ class StreakTest extends TestCase
     public function getReward()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $this->assertEquals(100, $streak->getReward());
     }
 
@@ -341,9 +416,9 @@ class StreakTest extends TestCase
     public function getTokens()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $this->assertNull($streak->getTokens());
+            null, null, null, null, 100, 0, false,
+            false);
+        $this->assertEquals(0, $streak->getTokens());
     }
 
     /**
@@ -353,107 +428,12 @@ class StreakTest extends TestCase
     public function getImage()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $this->assertEquals("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"currentColor\">
+            null, null, null, null, 100, 0, false,
+            false);
+        $this->assertEquals("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"#DDDDDD\">
     <path fill-rule=\"evenodd\" d=\"M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177A7.547 7.547 0 016.648 6.61a.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 011.925-3.545 3.75 3.75 0 013.255 3.717z\" clip-rule=\"evenodd\" />
-</svg>", base64_decode(preg_replace('/^data:.*\/.*?;base64,/i', '', $streak->getImage())));
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function isRepeatable()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, true, true, false,
-            false, false);
-        $this->assertTrue($streak->isRepeatable());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function isNotRepeatable()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $this->assertFalse($streak->isRepeatable());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function isCount()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $this->assertTrue($streak->isCount());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function isNotCount()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, false, false,
-            false, false);
-        $this->assertFalse($streak->isCount());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function isPeriodic()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, true,
-            false, false);
-        $this->assertTrue($streak->isPeriodic());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function isNotPeriodic()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $this->assertFalse($streak->isPeriodic());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function isAtMost()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            true, false);
-        $this->assertTrue($streak->isAtMost());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function isNotAtMost()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $this->assertFalse($streak->isAtMost());
+</svg>
+", base64_decode(preg_replace('/^data:.*\/.*?;base64,/i', '', $streak->getImage())));
     }
 
     /**
@@ -463,8 +443,8 @@ class StreakTest extends TestCase
     public function isExtra()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, true);
+            null, null, null, null, 100, 0, true,
+            false);
         $this->assertTrue($streak->isExtra());
     }
 
@@ -475,9 +455,33 @@ class StreakTest extends TestCase
     public function isNotExtra()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $this->assertFalse($streak->isExtra());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isRepeatable()
+    {
+        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
+            null, null, null, null, 100, 0, false,
+            true);
+        $this->assertTrue($streak->isRepeatable());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isNotRepeatable()
+    {
+        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
+            null, null, null, null, 100, 0, false,
+            false);
+        $this->assertFalse($streak->isRepeatable());
     }
 
     /**
@@ -487,8 +491,8 @@ class StreakTest extends TestCase
     public function isActive()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, true, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $this->assertTrue($streak->isActive());
     }
 
@@ -499,8 +503,8 @@ class StreakTest extends TestCase
     public function isInactive()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak->setActive(false);
         $this->assertFalse($streak->isActive());
     }
@@ -512,11 +516,11 @@ class StreakTest extends TestCase
     public function getData()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $this->assertEquals(["id" => 1, "course" => $this->courseId, "name" => "Streak", "description" => "Perform action",
-            "color" => null, "count" => 10, "periodicity" => null, "periodicityTime" => null, "reward" => 100, "tokens" => null,
-            "isRepeatable" => false, "isCount" => true, "isPeriodic" => false, "isAtMost" => false, "isExtra" => false,
+            "color" => null, "goal" => 10, "periodicityGoal" => null, "periodicityNumber" => null, "periodicityTime" => null,
+            "periodicityType" => null, "reward" => 100, "tokens" => 0, "isExtra" => false, "isRepeatable" => false,
             "isActive" => true, "rule" => $streak->getRule()->getId()], $streak->getData());
     }
 
@@ -531,17 +535,14 @@ class StreakTest extends TestCase
     public function setStreakNameSuccess(string $name)
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak->setName($name);
         $name = trim($name);
         $this->assertEquals($name, $streak->getName());
 
-        $this->assertTrue(file_exists($streak->getDataFolder(true, $name)));
-        $this->assertFalse(file_exists($streak->getDataFolder(true, "Streak")));
-
         $this->assertEquals($name, $streak->getRule()->getName());
-        $this->assertEquals("award_streak(target, \"" . $name . "\", progress)", $streak->getRule()->getThen());
+        $this->assertEquals("award_streak(target, \"" . $name . "\", clogs)", $streak->getRule()->getThen());
     }
 
     /**
@@ -552,17 +553,16 @@ class StreakTest extends TestCase
     public function setStreakNameFailure($name)
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         try {
             $streak->setName($name);
             $this->fail("Error should have been thrown on 'setStreakNameFailure'");
 
         } catch (Exception|TypeError $e) {
             $this->assertEquals("Streak", $streak->getName());
-            $this->assertTrue(file_exists($streak->getDataFolder(true, "Streak")));
             $this->assertEquals("Streak", $streak->getRule()->getName());
-            $this->assertEquals("award_streak(target, \"Streak\", progress)", $streak->getRule()->getThen());
+            $this->assertEquals("award_streak(target, \"Streak\", clogs)", $streak->getRule()->getThen());
         }
     }
 
@@ -573,20 +573,19 @@ class StreakTest extends TestCase
     public function setStreakNameDuplicateName()
     {
         $streak1 = Streak::addStreak($this->courseId, "Streak1", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak2 = Streak::addStreak($this->courseId, "Streak2", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         try {
             $streak2->setName($streak1->getName());
             $this->fail("Error should have been thrown on 'setStreakNameDuplicateName'");
 
         } catch (Exception|TypeError $e) {
             $this->assertEquals("Streak2", $streak2->getName());
-            $this->assertTrue(file_exists($streak2->getDataFolder(true, "Streak2")));
             $this->assertEquals("Streak2", $streak2->getRule()->getName());
-            $this->assertEquals("award_streak(target, \"Streak2\", progress)", $streak2->getRule()->getThen());
+            $this->assertEquals("award_streak(target, \"Streak2\", clogs)", $streak2->getRule()->getThen());
         }
     }
 
@@ -598,8 +597,8 @@ class StreakTest extends TestCase
     public function setDescriptionSuccess(string $description)
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak->setDescription($description);
         $description = trim($description);
         $this->assertEquals($description, $streak->getDescription());
@@ -615,8 +614,8 @@ class StreakTest extends TestCase
     public function setDescriptionFailure($description)
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         try {
             $streak->setDescription($description);
             $this->fail("Error should have been thrown on 'setDescriptionFailure'");
@@ -635,8 +634,8 @@ class StreakTest extends TestCase
     public function setColorSuccess(?string $color)
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak->setColor($color);
         $this->assertEquals(trim($color), $streak->getColor());
     }
@@ -649,8 +648,8 @@ class StreakTest extends TestCase
     public function setColorFailure($color)
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         try {
             $streak->setColor($color);
             $this->fail("Error should have been thrown on 'streakColorFailureProvider'");
@@ -664,30 +663,30 @@ class StreakTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function setCountSuccess()
+    public function setGoalSuccess()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $streak->setCount(100);
-        $this->assertEquals(100, $streak->getCount());
+            null, null, null, null, 100, 0, false,
+            false);
+        $streak->setGoal(100);
+        $this->assertEquals(100, $streak->getGoal());
     }
 
     /**
      * @test
      * @throws Exception
      */
-    public function setCountFailure()
+    public function setGoalFailure()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         try {
-            $streak->setCount(-10);
+            $streak->setGoal(-10);
             $this->fail("Error should have been thrown on 'setCountFailure'");
 
         } catch (Exception|TypeError $e) {
-            $this->assertEquals(10, $streak->getCount());
+            $this->assertEquals(10, $streak->getGoal());
         }
     }
 
@@ -695,30 +694,30 @@ class StreakTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function setPeriodicitySuccess()
+    public function setPeriodicityGoalSuccess()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $streak->setPeriodicity(5);
-        $this->assertEquals(5, $streak->getPeriodicity());
+            null, null, null, null, 100, 0, false,
+            false);
+        $streak->setPeriodicityGoal(5);
+        $this->assertEquals(5, $streak->getPeriodicityGoal());
     }
 
     /**
      * @test
      * @throws Exception
      */
-    public function setPeriodicityFailure()
+    public function setPeriodicityGoalFailure()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         try {
-            $streak->setPeriodicity(-10);
+            $streak->setPeriodicityGoal(-10);
             $this->fail("Error should have been thrown on 'setPeriodicityFailure'");
 
         } catch (Exception|TypeError $e) {
-            $this->assertNull($streak->getPeriodicity());
+            $this->assertNull($streak->getPeriodicityGoal());
         }
     }
 
@@ -726,13 +725,93 @@ class StreakTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function setPeriodicityTime()
+    public function setPeriodicityNumberSuccess()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $streak->setPeriodicityTime("Days");
-        $this->assertEquals("Days", $streak->getPeriodicityTime());
+            null, null, null, null, 100, 0, false,
+            false);
+        $streak->setPeriodicityNumber(5);
+        $this->assertEquals(5, $streak->getPeriodicityNumber());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setPeriodicityNumberFailure()
+    {
+        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
+            null, null, null, null, 100, 0, false,
+            false);
+        try {
+            $streak->setPeriodicityNumber(-10);
+            $this->fail("Error should have been thrown on 'setPeriodicityFailure'");
+
+        } catch (Exception|TypeError $e) {
+            $this->assertNull($streak->getPeriodicityNumber());
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setPeriodicityTimeSuccess()
+    {
+        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
+            null, null, null, null, 100, 0, false,
+            false);
+        $streak->setPeriodicityTime(Time::DAY);
+        $this->assertEquals(Time::DAY, $streak->getPeriodicityTime());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setPeriodicityTimeFailure()
+    {
+        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
+            null, null, null, null, 100, 0, false,
+            false);
+        try {
+            $streak->setPeriodicityTime("semester");
+            $this->fail("Error should have been thrown on 'setPeriodicityFailure'");
+
+        } catch (Exception|TypeError $e) {
+            $this->assertNull($streak->getPeriodicityTime());
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setPeriodicityTypeSuccess()
+    {
+        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
+            null, null, null, null, 100, 0, false,
+            false);
+        $streak->setPeriodicityType("absolute");
+        $this->assertEquals("absolute", $streak->getPeriodicityType());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setPeriodicityTypeFailure()
+    {
+        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
+            null, null, null, null, 100, 0, false,
+            false);
+        try {
+            $streak->setPeriodicityType("dynamic");
+            $this->fail("Error should have been thrown on 'setPeriodicityFailure'");
+
+        } catch (Exception|TypeError $e) {
+            $this->assertNull($streak->getPeriodicityType());
+        }
     }
 
     /**
@@ -742,8 +821,8 @@ class StreakTest extends TestCase
     public function setRewardSuccess()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak->setReward(500);
         $this->assertEquals(500, $streak->getReward());
     }
@@ -755,8 +834,8 @@ class StreakTest extends TestCase
     public function setRewardFailure()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         try {
             $streak->setReward(-100);
             $this->fail("Error should have been thrown on 'setRewardFailure'");
@@ -772,11 +851,9 @@ class StreakTest extends TestCase
      */
     public function setTokensSuccess()
     {
-        $virtualCurrency = (new Course($this->courseId))->getModuleById(VirtualCurrency::ID);
-        $virtualCurrency->setEnabled(true);
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak->setTokens(50);
         $this->assertEquals(50, $streak->getTokens());
     }
@@ -788,119 +865,15 @@ class StreakTest extends TestCase
     public function setTokensFailure()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         try {
             $streak->setTokens(-50);
             $this->fail("Error should have been thrown on 'setTokensFailure'");
 
         } catch (Exception|TypeError $e) {
-            $this->assertNull($streak->getTokens());
+            $this->assertEquals(0, $streak->getTokens());
         }
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function setRepeatable()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $streak->setRepeatable(true);
-        $this->assertTrue($streak->isRepeatable());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function setNotRepeatable()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, true, true, false,
-            false, false);
-        $streak->setRepeatable(false);
-        $this->assertFalse($streak->isRepeatable());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function setIsCount()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, false, false,
-            false, false);
-        $streak->setIsCount(true);
-        $this->assertTrue($streak->isCount());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function setNotCount()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $streak->setIsCount(false);
-        $this->assertFalse($streak->isCount());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function setPeriodic()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, false, false,
-            false, false);
-        $streak->setPeriodic(true);
-        $this->assertTrue($streak->isPeriodic());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function setNotPeriodic()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, false, true,
-            false, false);
-        $streak->setPeriodic(false);
-        $this->assertFalse($streak->isPeriodic());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function setAtMost()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, false, false,
-            false, false);
-        $streak->setIsAtMost(true);
-        $this->assertTrue($streak->isAtMost());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function setNotAtNotMost()
-    {
-        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, false, false,
-            true, false);
-        $streak->setIsAtMost(false);
-        $this->assertFalse($streak->isAtMost());
     }
 
     /**
@@ -910,8 +883,8 @@ class StreakTest extends TestCase
     public function setExtra()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
 
         $xpLevels = new XPLevels(new Course($this->courseId));
         $xpLevels->setEnabled(true);
@@ -931,10 +904,36 @@ class StreakTest extends TestCase
     public function setNotExtra()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, true);
+            null, null, null, null, 100, 0, true,
+            false);
         $streak->setExtra(false);
         $this->assertFalse($streak->isExtra());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setRepeatable()
+    {
+        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
+            null, null, null, null, 100, 0, false,
+            false);
+        $streak->setRepeatable(true);
+        $this->assertTrue($streak->isRepeatable());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setNotRepeatable()
+    {
+        $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
+            null, null, null, null, 100, 0, false,
+            true);
+        $streak->setRepeatable(false);
+        $this->assertFalse($streak->isRepeatable());
     }
 
     /**
@@ -944,8 +943,8 @@ class StreakTest extends TestCase
     public function setActive()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak->setActive(false);
         $streak->setActive(true);
         $this->assertTrue($streak->isActive());
@@ -959,8 +958,8 @@ class StreakTest extends TestCase
     public function setInactive()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak->setActive(false);
         $this->assertFalse($streak->isActive());
         $this->assertFalse($streak->getRule()->isActive());
@@ -976,8 +975,8 @@ class StreakTest extends TestCase
     public function getStreakById()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $this->assertEquals($streak, Streak::getStreakById($streak->getId()));
     }
 
@@ -996,8 +995,8 @@ class StreakTest extends TestCase
     public function getStreakByName()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $this->assertEquals($streak, Streak::getStreakByName($this->courseId, "Streak"));
     }
 
@@ -1017,18 +1016,18 @@ class StreakTest extends TestCase
     public function getAllStreaks()
     {
         $streak1 = Streak::addStreak($this->courseId, "Streak1", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak2 = Streak::addStreak($this->courseId, "Streak2", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
 
         $streaks = Streak::getStreaks($this->courseId);
         $this->assertIsArray($streaks);
         $this->assertCount(2, $streaks);
 
-        $keys = ["id", "course", "name", "description", "color", "count", "periodicity", "periodicityTime", "reward",
-            "tokens", "isRepeatable", "isCount", "isPeriodic", "isAtMost", "isExtra", "isActive", "rule", "image"];
+        $keys = ["id", "course", "name", "description", "color", "goal", "periodicityGoal", "periodicityNumber",
+            "periodicityTime", "periodicityType", "reward", "tokens", "isRepeatable", "isExtra", "isActive", "rule", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($streaks as $i => $streak) {
@@ -1047,19 +1046,19 @@ class StreakTest extends TestCase
     public function getAllActiveStreaks()
     {
         $streak1 = Streak::addStreak($this->courseId, "Streak1", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak2 = Streak::addStreak($this->courseId, "Streak2", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak2->setActive(false);
 
         $streaks = Streak::getStreaks($this->courseId, true);
         $this->assertIsArray($streaks);
         $this->assertCount(1, $streaks);
 
-        $keys = ["id", "course", "name", "description", "color", "count", "periodicity", "periodicityTime", "reward",
-            "tokens", "isRepeatable", "isCount", "isPeriodic", "isAtMost", "isExtra", "isActive", "rule", "image"];
+        $keys = ["id", "course", "name", "description", "color", "goal", "periodicityGoal", "periodicityNumber",
+            "periodicityTime", "periodicityType", "reward", "tokens", "isRepeatable", "isExtra", "isActive", "rule", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($streaks as $streak) {
@@ -1078,19 +1077,19 @@ class StreakTest extends TestCase
     public function getAllInactiveStreaks()
     {
         $streak1 = Streak::addStreak($this->courseId, "Streak1", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak2 = Streak::addStreak($this->courseId, "Streak2", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak2->setActive(false);
 
         $streaks = Streak::getStreaks($this->courseId, false);
         $this->assertIsArray($streaks);
         $this->assertCount(1, $streaks);
 
-        $keys = ["id", "course", "name", "description", "color", "count", "periodicity", "periodicityTime", "reward",
-            "tokens", "isRepeatable", "isCount", "isPeriodic", "isAtMost", "isExtra", "isActive", "rule", "image"];
+        $keys = ["id", "course", "name", "description", "color", "goal", "periodicityGoal", "periodicityNumber",
+            "periodicityTime", "periodicityType", "reward", "tokens", "isRepeatable", "isExtra", "isActive", "rule", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($streaks as $streak) {
@@ -1110,12 +1109,12 @@ class StreakTest extends TestCase
      * @dataProvider streakSuccessProvider
      * @throws Exception
      */
-    public function addStreakSuccess(string $name, string $description, ?string $color, int $count, ?int $periodicity,
-                                     ?string $periodicityTime, int $reward, ?int $tokens, bool $isRepeatable, bool $isCount,
-                                     bool $isPeriodic, bool $isAtMost, bool $isExtra)
+    public function addStreakSuccess(string $name, string $description, ?string $color, int $goal, ?int $periodicityGoal,
+                                     ?int $periodicityNumber, ?string $periodicityTime, ?string $periodicityType,
+                                     int $reward, int $tokens, bool $isExtra, bool $isRepeatable)
     {
-        $streak = Streak::addStreak($this->courseId, $name, $description, $color, $count, $periodicity, $periodicityTime,
-            $reward, $tokens, $isRepeatable, $isCount, $isPeriodic, $isAtMost, $isExtra);
+        $streak = Streak::addStreak($this->courseId, $name, $description, $color, $goal, $periodicityGoal, $periodicityNumber,
+            $periodicityTime, $periodicityType, $reward, $tokens, $isExtra, $isRepeatable);
 
         // Check is added to database
         $streakDB = Streak::getStreaks($this->courseId)[0];
@@ -1123,22 +1122,9 @@ class StreakTest extends TestCase
         $streakInfo["image"] = $streak->getImage();
         $this->assertEquals($streakInfo, $streakDB);
 
-        // Check data folder was created
-        $this->assertTrue(file_exists($streak->getDataFolder()));
-
         // Check rule was created
         $rule = $streak->getRule();
         $this->assertTrue($rule->exists());
-        $this->assertEquals($this->trim("rule: $name
-tags: 
-# $description
-
-	when:
-		progress = None # COMPLETE THIS: get student progress in streak
-		len(progress) > 0
-
-	then:
-		award_streak(target, \"$name\", progress)" . (!is_null($tokens) ? "\n\t\taward_tokens_type(target, \"streak\", $tokens, \"$name\", progress)" : "")), $this->trim($rule->getText()));
     }
 
     /**
@@ -1146,17 +1132,16 @@ tags:
      * @dataProvider streakFailureProvider
      * @throws Exception
      */
-    public function addStreakFailure($name, $description, $color, $count, $periodicity, $periodicityTime, $reward, $tokens,
-                                     $isRepeatable, $isCount, $isPeriodic, $isAtMost, $isExtra)
+    public function addStreakFailure($name, $description, $color, $goal, $periodicityGoal, $periodicityNumber,
+                                     $periodicityTime, $periodicityType, $reward, $tokens, $isExtra, $isRepeatable)
     {
         try {
-            Streak::addStreak($this->courseId, $name, $description, $color, $count, $periodicity, $periodicityTime,
-                $reward, $tokens, $isRepeatable, $isCount, $isPeriodic, $isAtMost, $isExtra);
+            Streak::addStreak($this->courseId, $name, $description, $color, $goal, $periodicityGoal, $periodicityNumber,
+                $periodicityTime, $periodicityType, $reward, $tokens, $isExtra, $isRepeatable);
             $this->fail("Error should have been thrown on 'addStreakFailure'");
 
         } catch (Exception|TypeError $e) {
             $this->assertEmpty(Streak::getStreaks($this->courseId));
-            $this->assertEquals(0, Utils::getDirectorySize((new Streaks(new Course($this->courseId)))->getDataFolder()));
             $this->assertEmpty(Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->getRules());
         }
     }
@@ -1168,18 +1153,17 @@ tags:
     public function addStreakDuplicateName()
     {
         Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         try {
             Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-                null, null, 100, null, false, true, false,
-                false, false);
+                null, null, null, null, 100, 0, false,
+                false);
             $this->fail("Error should have been thrown on 'addStreakDuplicateName'");
 
 
         } catch (PDOException $e) {
             $this->assertCount(1, Streak::getStreaks($this->courseId));
-            $this->assertEquals(1, Utils::getDirectorySize((new Streaks(new Course($this->courseId)))->getDataFolder()));
             $this->assertCount(1, Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->getRules());
         }
     }
@@ -1190,49 +1174,30 @@ tags:
      * @dataProvider streakSuccessProvider
      * @throws Exception
      */
-    public function editStreakSuccess(string $name, string $description, ?string $color, int $count, ?int $periodicity,
-                                      ?string $periodicityTime, int $reward, ?int $tokens, bool $isRepeatable, bool $isCount,
-                                      bool $isPeriodic, bool $isAtMost, bool $isExtra)
+    public function editStreakSuccess(string $name, string $description, ?string $color, int $goal, ?int $periodicityGoal,
+                                      ?int $periodicityNumber, ?string $periodicityTime, ?string $periodicityType,
+                                      int $reward, int $tokens, bool $isExtra, bool $isRepeatable)
     {
-        $virtualCurrency = (new Course($this->courseId))->getModuleById(VirtualCurrency::ID);
-        $virtualCurrency->setEnabled(true);
-
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $streak->editStreak($name, $description, $color, $count, $periodicity, $periodicityTime, $reward, $tokens, $isRepeatable,
-            $isCount, $isPeriodic, $isAtMost, $isExtra, true);
+            null, null, null, null, 100, 0, false,
+            false);
+        $streak->editStreak($name, $description, $color, $goal, $periodicityGoal, $periodicityNumber,
+            $periodicityTime, $periodicityType, $reward, $tokens, $isExtra, $isRepeatable, true);
 
         // Check is updated
         $this->assertEquals($name, $streak->getName());
         $this->assertEquals($description, $streak->getDescription());
         $this->assertEquals($color, $streak->getColor());
-        $this->assertEquals($count, $streak->getCount());
-        $this->assertEquals($periodicity, $streak->getPeriodicity());
+        $this->assertEquals($goal, $streak->getGoal());
+        $this->assertEquals($periodicityGoal, $streak->getPeriodicityGoal());
+        $this->assertEquals($periodicityNumber, $streak->getPeriodicityNumber());
         $this->assertEquals($periodicityTime, $streak->getPeriodicityTime());
+        $this->assertEquals($periodicityType, $streak->getPeriodicityType());
         $this->assertEquals($reward, $streak->getReward());
         $this->assertEquals($tokens, $streak->getTokens());
-        $this->assertEquals($isRepeatable, $streak->isRepeatable());
-        $this->assertEquals($isCount, $streak->isCount());
-        $this->assertEquals($isPeriodic, $streak->isPeriodic());
-        $this->assertEquals($isAtMost, $streak->isAtMost());
         $this->assertEquals($isExtra, $streak->isExtra());
+        $this->assertEquals($isRepeatable, $streak->isRepeatable());
         $this->assertTrue($streak->isActive());
-
-        // Check data folder
-        $this->assertTrue(file_exists($streak->getDataFolder(true, $name)));
-
-        // Check rule
-        $this->assertEquals($this->trim("rule: $name
-tags: 
-# $description
-
-	when:
-		progress = None # COMPLETE THIS: get student progress in streak
-		len(progress) > 0
-
-	then:
-		award_streak(target, \"$name\", progress)" . (!is_null($tokens) ? "\n\t\taward_tokens_type(target, \"streak\", $tokens, \"$name\", progress)" : "")), $this->trim($streak->getRule()->getText()));
     }
 
     /**
@@ -1240,21 +1205,31 @@ tags:
      * @dataProvider streakFailureProvider
      * @throws Exception
      */
-    public function editStreakFailure($name, $description, $color, $count, $periodicity, $periodicityTime, $reward, $tokens,
-                                      $isRepeatable, $isCount, $isPeriodic, $isAtMost, $isExtra)
+    public function editStreakFailure($name, $description, $color, $goal, $periodicityGoal, $periodicityNumber,
+                                      $periodicityTime, $periodicityType, $reward, $tokens, $isExtra, $isRepeatable)
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         try {
-            $streak->editStreak($name, $description, $color, $count, $periodicity, $periodicityTime, $reward, $tokens,
-                $isRepeatable, $isCount, $isPeriodic, $isAtMost, $isExtra, true);
+            $streak->editStreak($name, $description, $color, $goal, $periodicityGoal, $periodicityNumber,
+                $periodicityTime, $periodicityType, $reward, $tokens, $isExtra, $isRepeatable, true);
             $this->fail("Error should have been thrown on 'editStreakFailure'");
 
         } catch (Exception|TypeError $e) {
-            $this->assertCount(1, Streak::getStreaks($this->courseId));
-            $this->assertEquals(1, Utils::getDirectorySize((new Streaks(new Course($this->courseId)))->getDataFolder()));
-            $this->assertCount(1, Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->getRules());
+            $this->assertEquals("Streak", $streak->getName());
+            $this->assertEquals("Perform action", $streak->getDescription());
+            $this->assertNull($streak->getColor());
+            $this->assertEquals(10, $streak->getGoal());
+            $this->assertNull($streak->getPeriodicityGoal());
+            $this->assertNull($streak->getPeriodicityNumber());
+            $this->assertNull($streak->getPeriodicityTime());
+            $this->assertNull($streak->getPeriodicityType());
+            $this->assertEquals(100, $streak->getReward());
+            $this->assertEquals(0, $streak->getTokens());
+            $this->assertFalse($streak->isExtra());
+            $this->assertFalse($streak->isRepeatable());
+            $this->assertTrue($streak->isActive());
         }
     }
 
@@ -1264,35 +1239,20 @@ tags:
      */
     public function editStreakDuplicateName()
     {
-        $virtualCurrency = (new Course($this->courseId))->getModuleById(VirtualCurrency::ID);
-        $virtualCurrency->setEnabled(true);
-
         Streak::addStreak($this->courseId, "Streak1", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak = Streak::addStreak($this->courseId, "Streak2", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         try {
             $streak->editStreak("Streak1", "Perform action", null, 10, null,
-                null, 100, null, false, true, false,
-                false, false, true);
+                null, null, null, 100, 0, false, false, true);
             $this->fail("Error should have been thrown on 'editStreakDuplicateName'");
 
 
         } catch (PDOException $e) {
             $this->assertEquals("Streak2", $streak->getName());
-            $this->assertTrue(file_exists($streak->getDataFolder(true, "Streak2")));
-            $this->assertEquals($this->trim("rule: Streak2
-tags: 
-# Perform action
-
-	when:
-		progress = None # COMPLETE THIS: get student progress in streak
-		len(progress) > 0
-
-	then:
-		award_streak(target, \"Streak2\", progress)"), $this->trim($streak->getRule()->getText()));
         }
     }
 
@@ -1311,12 +1271,12 @@ tags:
         (new XPLevels($copyTo))->setEnabled(true);
         (new Streaks($copyTo))->setEnabled(true);
 
-        $streak1 = Streak::addStreak($this->courseId, "Streak1", "Perform action", "#ffffff", 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $streak2 = Streak::addStreak($this->courseId, "Streak2", "Perform action", null, 5,
-            null, null, 200, null, false, true, false,
-            false, true);
+        $streak1 = Streak::addStreak($this->courseId, "Streak1", "Perform action", null, 10,
+            null, null, null, null, 100, 0, false,
+            false);
+        $streak2 = Streak::addStreak($this->courseId, "Streak2", "Perform action", null, 10,
+            null, null, null, null, 100, 0, false,
+            false);
 
         // When
         $streak1->copyStreak($copyTo);
@@ -1330,16 +1290,15 @@ tags:
             $this->assertEquals($streak["name"], $copiedStreaks[$i]["name"]);
             $this->assertEquals($streak["description"], $copiedStreaks[$i]["description"]);
             $this->assertEquals($streak["color"], $copiedStreaks[$i]["color"]);
-            $this->assertEquals($streak["count"], $copiedStreaks[$i]["count"]);
-            $this->assertEquals($streak["periodicity"], $copiedStreaks[$i]["periodicity"]);
+            $this->assertEquals($streak["goal"], $copiedStreaks[$i]["goal"]);
+            $this->assertEquals($streak["periodicityGoal"], $copiedStreaks[$i]["periodicityGoal"]);
+            $this->assertEquals($streak["periodicityNumber"], $copiedStreaks[$i]["periodicityNumber"]);
             $this->assertEquals($streak["periodicityTime"], $copiedStreaks[$i]["periodicityTime"]);
+            $this->assertEquals($streak["periodicityType"], $copiedStreaks[$i]["periodicityType"]);
             $this->assertEquals($streak["reward"], $copiedStreaks[$i]["reward"]);
             $this->assertEquals($streak["tokens"], $copiedStreaks[$i]["tokens"]);
-            $this->assertEquals($streak["isRepeatable"], $copiedStreaks[$i]["isRepeatable"]);
-            $this->assertEquals($streak["isCount"], $copiedStreaks[$i]["isCount"]);
-            $this->assertEquals($streak["isPeriodic"], $copiedStreaks[$i]["isPeriodic"]);
-            $this->assertEquals($streak["isAtMost"], $copiedStreaks[$i]["isAtMost"]);
             $this->assertEquals($streak["isExtra"], $copiedStreaks[$i]["isExtra"]);
+            $this->assertEquals($streak["isRepeatable"], $copiedStreaks[$i]["isRepeatable"]);
             $this->assertEquals($streak["isActive"], $copiedStreaks[$i]["isActive"]);
 
             $this->assertEquals($streak["image"], $copiedStreaks[$i]["image"]);
@@ -1356,22 +1315,20 @@ tags:
     public function deleteStreak()
     {
         $streak1 = Streak::addStreak($this->courseId, "Streak1", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $streak2 = Streak::addStreak($this->courseId, "Streak2", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
 
         // Not empty
         Streak::deleteStreak($streak2->getId());
         $this->assertCount(1, Streak::getStreaks($this->courseId));
-        $this->assertFalse(file_exists($streak2->getDataFolder(true, "Streak2")));
         $this->assertCount(1, Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->getRules());
 
         // Empty
         Streak::deleteStreak($streak1->getId());
         $this->assertEmpty(Streak::getStreaks($this->courseId));
-        $this->assertFalse(file_exists($streak1->getDataFolder(true, "Streak1")));
         $this->assertEmpty(Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->getRules());
     }
 
@@ -1393,8 +1350,8 @@ tags:
     public function streakExists()
     {
         $streak = Streak::addStreak($this->courseId, "Streak", "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
+            null, null, null, null, 100, 0, false,
+            false);
         $this->assertTrue($streak->exists());
     }
 
@@ -1415,10 +1372,12 @@ tags:
      * @dataProvider streakSuccessProvider
      * @throws Exception
      */
-    public function generateRuleParamsFresh(string $name, string $description, ?string $color, int $count, ?int $periodicity,
-                                            ?string $periodicityTime, int $reward, ?int $tokens)
+    public function generateRuleParamsFresh(string $name, string $description, ?string $color, int $goal,
+                                            ?int $periodicityGoal, ?int $periodicityNumber, ?string $periodicityTime,
+                                            ?string $periodicityType)
     {
-        $params = Streak::generateRuleParams($name, $description, $tokens);
+        $params = Streak::generateRuleParams($name, $description, $periodicityNumber, $periodicityTime, $periodicityType);
+        $isPeriodic = !is_null($periodicityNumber) && !is_null($periodicityTime);
 
         // Name
         $this->assertTrue(isset($params["name"]));
@@ -1430,12 +1389,28 @@ tags:
 
         // When
         $this->assertTrue(isset($params["when"]));
-        $this->assertEquals("progress = None # COMPLETE THIS: get student progress in streak
-len(progress) > 0", $params["when"]);
+        if ($isPeriodic) {
+            $this->assertEquals("# Get target progress in streak
+logs = [] # COMPLETE THIS: get appropriate logs for this streak
+
+# Get only periodic progress
+plogs = get_periodic_logs(logs, $periodicityNumber, \"$periodicityTime\", \"$periodicityType\")", $params["when"]);
+
+        } else {
+            $this->assertEquals("# Get target progress in streak
+logs = [] # COMPLETE THIS: get appropriate logs for this streak
+
+# Get only consecutive progress
+# NOTE: available functions
+#   > get_consecutive_logs(logs) [default] --> gets consecutive logs on a set of logs
+#   > get_consecutive_rating_logs(logs, min_rating) --> gets consecutive logs on a set of logs rating >= min. rating
+#   > get_consecutive_peergrading_logs(target) --> gets consecutive peergrading logs done by target
+clogs = get_consecutive_logs(logs)", $params["when"]);
+        }
 
         // Then
         $this->assertTrue(isset($params["then"]));
-        $this->assertEquals("award_streak(target, \"$name\", progress)" . (!is_null($tokens) ? "\naward_tokens_type(target, \"streak\", $tokens, \"$name\", progress)" : ""), $params["then"]);
+        $this->assertEquals("award_streak(target, \"$name\", " . ($isPeriodic ? "plogs" : "clogs") . ")", $params["then"]);
     }
 
     /**
@@ -1443,16 +1418,21 @@ len(progress) > 0", $params["when"]);
      * @dataProvider streakSuccessProvider
      * @throws Exception
      */
-    public function generateRuleParamsNotFresh(string $name, string $description)
+    public function generateRuleParamsNotFreshPeriodic(string $name, string $description)
     {
         // Given
-        $when = "progress = None # Some changes";
-        $then = "# Some changes\naward_streak(target, \"$name\", progress)";
+        $when = "# Get target progress in streak
+        logs = get_skill_logs(target)
+
+        # Get only periodic progress
+        plogs = get_periodic_logs(logs, 1, \"week\", \"absolute\")";
+        $then = "award_streak(target, \"Constant Gardener\", plogs)";
 
         $rule = Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->addRule($name, $description, $when, $then);
 
         // When
-        $params = Streak::generateRuleParams("New Name", "New Description", null, false, $rule->getId());
+        $params = Streak::generateRuleParams("New Name", "New Description", 2,
+            "day", "relative", false, $rule->getId());
 
         // Then
 
@@ -1466,58 +1446,156 @@ len(progress) > 0", $params["when"]);
 
         // When
         $this->assertTrue(isset($params["when"]));
-        $this->assertEquals("progress = None # Some changes", $params["when"]);
+        $this->assertEquals("# Get target progress in streak
+        logs = get_skill_logs(target)
+
+        # Get only periodic progress
+        plogs = get_periodic_logs(logs, 2, \"day\", \"relative\")", $params["when"]);
 
         // Then
         $this->assertTrue(isset($params["then"]));
-        $this->assertEquals("# Some changes\naward_streak(target, \"New Name\", progress)", $params["then"]);
-    }
-
-
-    // Streak Data
-
-    /**
-     * @test
-     * @dataProvider streakNameSuccessProvider
-     * @throws Exception
-     */
-    public function getDataFolder(string $name)
-    {
-        $streak = Streak::addStreak($this->courseId, $name, "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $streaksDataFolder = (new Streaks(new Course($this->courseId)))->getDataFolder();
-        $this->assertEquals($streaksDataFolder . "/" . Utils::strip($name, "_"), $streak->getDataFolder(true, $name));
+        $this->assertEquals("award_streak(target, \"New Name\", plogs)", $params["then"]);
     }
 
     /**
      * @test
-     * @dataProvider streakNameSuccessProvider
+     * @dataProvider streakSuccessProvider
      * @throws Exception
      */
-    public function createDataFolder(string $name)
+    public function generateRuleParamsNotFreshConsecutive(string $name, string $description)
     {
-        $streak = Streak::addStreak($this->courseId, $name, "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $name = trim($name);
-        Streak::createDataFolder($this->courseId, $name);
-        $this->assertTrue(file_exists($streak->getDataFolder(true, $name)));
+        // Given
+        $when = "max_grade = METADATA[\"max_quiz_grade\"]
+
+        # Get target progress in streak
+        logs = get_quiz_logs(target)
+        flogs = filter_logs(logs, None, \"Dry Run\")
+
+        # Get only consecutive progress
+        clogs = get_consecutive_rating_logs(flogs, max_grade)";
+        $then = "award_streak(target, \"Sage\", clogs)";
+
+        $rule = Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->addRule($name, $description, $when, $then);
+
+        // When
+        $params = Streak::generateRuleParams("New Name", "New Description", null,
+            null, null, false, $rule->getId());
+
+        // Then
+
+        // Name
+        $this->assertTrue(isset($params["name"]));
+        $this->assertEquals("New Name", $params["name"]);
+
+        // Description
+        $this->assertTrue(isset($params["description"]));
+        $this->assertEquals("New Description", $params["description"]);
+
+        // When
+        $this->assertTrue(isset($params["when"]));
+        $this->assertEquals($when, $params["when"]);
+
+        // Then
+        $this->assertTrue(isset($params["then"]));
+        $this->assertEquals("award_streak(target, \"New Name\", clogs)", $params["then"]);
     }
 
     /**
      * @test
-     * @dataProvider streakNameSuccessProvider
+     * @dataProvider streakSuccessProvider
      * @throws Exception
      */
-    public function removeDataFolder(string $name)
+    public function generateRuleParamsNotFreshConsecutiveToPeriodic(string $name, string $description)
     {
-        $streak = Streak::addStreak($this->courseId, $name, "Perform action", null, 10,
-            null, null, 100, null, false, true, false,
-            false, false);
-        $name = trim($name);
-        Streak::removeDataFolder($this->courseId, $name);
-        $this->assertFalse(file_exists($streak->getDataFolder(true, $name)));
+        // Given
+        $when = "max_grade = METADATA[\"max_quiz_grade\"]
+
+        # Get target progress in streak
+        logs = get_quiz_logs(target)
+        flogs = filter_logs(logs, None, \"Dry Run\")
+
+        # Get only consecutive progress
+        clogs = get_consecutive_rating_logs(flogs, max_grade)";
+        $then = "award_streak(target, \"Sage\", clogs)";
+
+        $rule = Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->addRule($name, $description, $when, $then);
+
+        // When
+        $params = Streak::generateRuleParams("New Name", "New Description", 1,
+            "week", "absolute", false, $rule->getId());
+
+        // Then
+
+        // Name
+        $this->assertTrue(isset($params["name"]));
+        $this->assertEquals("New Name", $params["name"]);
+
+        // Description
+        $this->assertTrue(isset($params["description"]));
+        $this->assertEquals("New Description", $params["description"]);
+
+        // When
+        $this->assertTrue(isset($params["when"]));
+        $this->assertEquals("max_grade = METADATA[\"max_quiz_grade\"]
+
+        # Get target progress in streak
+        logs = get_quiz_logs(target)
+        flogs = filter_logs(logs, None, \"Dry Run\")
+
+        # Get only periodic progress
+        plogs = get_periodic_logs(logs, 1, \"week\", \"absolute\")", $params["when"]);
+
+        // Then
+        $this->assertTrue(isset($params["then"]));
+        $this->assertEquals("award_streak(target, \"New Name\", clogs)", $params["then"]);
+    }
+
+    /**
+     * @test
+     * @dataProvider streakSuccessProvider
+     * @throws Exception
+     */
+    public function generateRuleParamsNotFreshPeriodicToConsecutive(string $name, string $description)
+    {
+        // Given
+        $when = "# Get target progress in streak
+        logs = get_skill_logs(target)
+
+        # Get only periodic progress
+        plogs = get_periodic_logs(logs, 1, \"week\", \"absolute\")";
+        $then = "award_streak(target, \"Constant Gardener\", plogs)";
+
+        $rule = Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->addRule($name, $description, $when, $then);
+
+        // When
+        $params = Streak::generateRuleParams("New Name", "New Description", null,
+            null, null, false, $rule->getId());
+
+        // Then
+
+        // Name
+        $this->assertTrue(isset($params["name"]));
+        $this->assertEquals("New Name", $params["name"]);
+
+        // Description
+        $this->assertTrue(isset($params["description"]));
+        $this->assertEquals("New Description", $params["description"]);
+
+        // When
+        $this->assertTrue(isset($params["when"]));
+        $this->assertEquals("# Get target progress in streak
+logs = [] # COMPLETE THIS: get appropriate logs for this streak
+
+# Get only consecutive progress
+# NOTE: available functions
+#   > get_consecutive_logs(logs) [default] --> gets consecutive logs on a set of logs
+#   > get_consecutive_rating_logs(logs, min_rating) --> gets consecutive logs on a set of logs rating >= min. rating
+#   > get_consecutive_peergrading_logs(target) --> gets consecutive peergrading logs done by target
+clogs = get_consecutive_logs(logs)", $params["when"]);
+
+        // Then
+        $this->assertTrue(isset($params["then"]));
+        $this->assertEquals("award_streak(target, \"New Name\", clogs)", $params["then"]);
     }
 
 

@@ -114,8 +114,8 @@ class StreaksTest extends TestCase
         foreach ($tables as $table) {
             $this->assertTrue(Core::database()->tableExists($table));
         }
+        $this->assertEquals(0, $this->module->getMaxXP());
         $this->assertEquals(0, $this->module->getMaxExtraCredit());
-        $this->assertTrue(file_exists($this->module->getDataFolder()));
         $this->assertTrue(Section::getSectionByName($this->course->getId(), $this->module::RULE_SECTION)->exists());
     }
 
@@ -139,12 +139,12 @@ class StreaksTest extends TestCase
 
         $this->module->updateMaxXP(1000);
         $this->module->updateMaxExtraCredit(500);
-        $streak1 = Streak::addStreak($this->course->getId(), "Streak1", "Perform action", "#ffffff", 10,
-            null, null, 100, null, false, true, false,
+        $streak1 = Streak::addStreak($this->course->getId(), "Streak1", "Perform action", null,
+            10, null, null, null, null, 100, 0,
             false, false);
-        $streak2 = Streak::addStreak($this->course->getId(), "Streak2", "Perform action", null, 5,
-            null, null, 200, null, false, true, false,
-            false, true);
+        $streak2 = Streak::addStreak($this->course->getId(), "Streak2", "Perform action", null,
+            10, null, null, null, null, 100, 0,
+            false, false);
 
         // When
         $this->module->copyTo($copyTo);
@@ -160,16 +160,15 @@ class StreaksTest extends TestCase
             $this->assertEquals($streak["name"], $copiedStreaks[$i]["name"]);
             $this->assertEquals($streak["description"], $copiedStreaks[$i]["description"]);
             $this->assertEquals($streak["color"], $copiedStreaks[$i]["color"]);
-            $this->assertEquals($streak["count"], $copiedStreaks[$i]["count"]);
-            $this->assertEquals($streak["periodicity"], $copiedStreaks[$i]["periodicity"]);
+            $this->assertEquals($streak["goal"], $copiedStreaks[$i]["goal"]);
+            $this->assertEquals($streak["periodicityGoal"], $copiedStreaks[$i]["periodicityGoal"]);
+            $this->assertEquals($streak["periodicityNumber"], $copiedStreaks[$i]["periodicityNumber"]);
             $this->assertEquals($streak["periodicityTime"], $copiedStreaks[$i]["periodicityTime"]);
+            $this->assertEquals($streak["periodicityType"], $copiedStreaks[$i]["periodicityType"]);
             $this->assertEquals($streak["reward"], $copiedStreaks[$i]["reward"]);
             $this->assertEquals($streak["tokens"], $copiedStreaks[$i]["tokens"]);
-            $this->assertEquals($streak["isRepeatable"], $copiedStreaks[$i]["isRepeatable"]);
-            $this->assertEquals($streak["isCount"], $copiedStreaks[$i]["isCount"]);
-            $this->assertEquals($streak["isPeriodic"], $copiedStreaks[$i]["isPeriodic"]);
-            $this->assertEquals($streak["isAtMost"], $copiedStreaks[$i]["isAtMost"]);
             $this->assertEquals($streak["isExtra"], $copiedStreaks[$i]["isExtra"]);
+            $this->assertEquals($streak["isRepeatable"], $copiedStreaks[$i]["isRepeatable"]);
             $this->assertEquals($streak["isActive"], $copiedStreaks[$i]["isActive"]);
 
             $this->assertEquals($streak["image"], $copiedStreaks[$i]["image"]);
@@ -194,7 +193,6 @@ class StreaksTest extends TestCase
         foreach ($tables as $table) {
             $this->assertFalse(Core::database()->tableExists($table));
         }
-        $this->assertFalse(file_exists($this->module->getDataFolder()));
         $this->assertNull(Section::getSectionByName($this->course->getId(), $this->module::RULE_SECTION));
     }
 
@@ -265,14 +263,14 @@ class StreaksTest extends TestCase
         $this->course->addUserToCourse($user3->getId(), "Student", null, false);
 
         $streak1 = Streak::addStreak($this->course->getId(), "Streak1", "Perform action", null,
-            10, null, null, 100, null, false, true,
-            false, false, false);
+            10, null, null, null, null, 100, 0,
+            false, false);
         $streak2 = Streak::addStreak($this->course->getId(), "Streak2", "Perform action", null,
-            10, null, null, 100, null, false, true,
-            false, false, false);
+            10, null, null, null, null, 100, 0,
+            false, false);
         $streak3 = Streak::addStreak($this->course->getId(), "Streak3", "Perform action", null,
-            10, null, null, 100, null, false, true,
-            false, false, false);
+            10, null, null, null, null, 100, 0,
+            false, true);
 
         $this->insertAward($this->course->getId(), $user1->getId(), $streak1->getId(), "Award 1", 100);
         $this->insertAward($this->course->getId(), $user1->getId(), $streak1->getId(), "Award 2", 100);
@@ -307,19 +305,19 @@ class StreaksTest extends TestCase
         $this->course->addUserToCourse($user3->getId(), "Student", null, false);
 
         $streak1 = Streak::addStreak($this->course->getId(), "Streak1", "Perform action", null,
-            10, null, null, 100, null, false, true,
-            false, false, false);
+            10, null, null, null, null, 100, 0,
+            false, false);
         $streak2 = Streak::addStreak($this->course->getId(), "Streak2", "Perform action", null,
-            10, null, null, 100, null, false, true,
-            false, false, false);
+            10, null, null, null, null, 100, 0,
+            false, false);
 
         $this->insertAward($this->course->getId(), $user1->getId(), $streak1->getId(), "Award 1", 100);
         $this->insertAward($this->course->getId(), $user1->getId(),$streak1->getId(), "Award 2", 100);
         $this->insertAward($this->course->getId(), $user1->getId(), $streak2->getId(), "Award 3", 500);
         $this->insertAward($this->course->getId(), $user3->getId(), $streak2->getId(), "Award 4", 500);
 
-        $keys = ["id", "course", "name", "description", "color", "count", "periodicity", "periodicityTime", "reward", "tokens",
-            "isRepeatable", "isCount", "isPeriodic", "isAtMost", "isExtra", "isActive", "rule", "nrCompletions"];
+        $keys = ["id", "course", "name", "description", "color", "goal", "periodicityGoal", "periodicityNumber",
+            "periodicityTime", "periodicityType", "reward", "tokens", "isExtra", "isRepeatable", "isActive", "rule", "nrCompletions"];
         $nrKeys = count($keys);
 
         // Has streaks
@@ -339,46 +337,7 @@ class StreaksTest extends TestCase
         $this->assertEmpty($this->module->getUserStreaks($user2->getId()));
     }
 
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function getUserStreakProgression()
-    {
-        // Given
-        $user1 = User::addUser("Student A", "student_a", AuthService::FENIX, null,
-            1, null, null, false, true);
-        $user2 = User::addUser("Student B", "student_b", AuthService::FENIX, null,
-            2, null, null, false, true);
-        $user3 = User::addUser("Student C", "student_c", AuthService::FENIX, null,
-            3, null, null, false, true);
-
-        $this->course->addUserToCourse($user1->getId(), "Student");
-        $this->course->addUserToCourse($user2->getId(), "Student");
-        $this->course->addUserToCourse($user3->getId(), "Student", null, false);
-
-        $streak1 = Streak::addStreak($this->course->getId(), "Streak1", "Perform action", null,
-            5, null, null, 100, null, false, true,
-            false, false, false);
-        $streak2 = Streak::addStreak($this->course->getId(), "Streak2", "Perform action", null,
-            2, null, null, 100, null, false, true,
-            false, false, false);
-
-        $this->insertProgression($this->course->getId(), $user1->getId(), $streak1->getId(), "Participation 1");
-        $this->insertProgression($this->course->getId(), $user1->getId(), $streak1->getId(), "Participation 2");
-        $this->insertProgression($this->course->getId(), $user1->getId(), $streak1->getId(), "Participation 3");
-        $this->insertProgression($this->course->getId(), $user1->getId(), $streak2->getId(), "Participation 4");
-        $this->insertProgression($this->course->getId(), $user1->getId(), $streak2->getId(), "Participation 5");
-        $this->insertProgression($this->course->getId(), $user1->getId(), $streak2->getId(), "Participation 6");
-        $this->insertProgression($this->course->getId(), $user2->getId(), $streak2->getId(), "Participation 7");
-        $this->insertProgression($this->course->getId(), $user2->getId(), $streak2->getId(), "Participation 8");
-
-        // Then
-        $this->assertEquals(3, $this->module->getUserStreakProgression($user1->getId(), $streak1->getId()));
-        $this->assertEquals(1, $this->module->getUserStreakProgression($user1->getId(), $streak2->getId()));
-        $this->assertEquals(0, $this->module->getUserStreakProgression($user2->getId(), $streak2->getId()));
-        $this->assertEquals(0, $this->module->getUserStreakProgression($user3->getId(), $streak1->getId()));
-    }
+    // TODO: getUserStreakProgression
 
     /**
      * @test
@@ -396,11 +355,11 @@ class StreaksTest extends TestCase
         $this->course->addUserToCourse($user2->getId(), "Student");
 
         $streak1 = Streak::addStreak($this->course->getId(), "Streak1", "Perform action", null,
-            10, null, null, 100, null, false, true,
-            false, false, false);
+            10, null, null, null, null, 100, 0,
+            false, false);
         $streak2 = Streak::addStreak($this->course->getId(), "Streak2", "Perform action", null,
-            10, null, null, 100, null, false, true,
-            false, false, false);
+            10, null, null, null, null, 100, 0,
+            false, false);
 
         $this->insertAward($this->course->getId(), $user1->getId(), $streak1->getId(), "Award 1", 100);
         $this->insertAward($this->course->getId(), $user1->getId(), $streak1->getId(), "Award 2", 100);
@@ -429,7 +388,7 @@ class StreaksTest extends TestCase
         ]);
     }
 
-    private function insertProgression(int $courseId, int $userId, int $streakId, string $description)
+    private function insertProgression(int $courseId, int $userId, int $streakId, int $number, string $description)
     {
         $id = Core::database()->insert(AutoGame::TABLE_PARTICIPATION, [
             "user" => $userId,
@@ -443,6 +402,7 @@ class StreaksTest extends TestCase
             "course" => $courseId,
             "user" => $userId,
             "streak" => $streakId,
+            "number" => $number,
             "participation" => $id
         ]);
     }

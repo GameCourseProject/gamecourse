@@ -13,11 +13,11 @@
   <ng-container *ngIf="leftLabel || rightLabel || btnText || btnIcon" [ngTemplateOutlet]="GROUP"></ng-container>
 
   <!-- Error Messages -->
-  <label *ngIf="form && form.submitted && inputNumber.invalid" class="label">
-    <span *ngIf="inputNumber.errors.required" class="label-text-alt">{{requiredErrorMessage}}</span>
-    <span *ngIf="inputNumber.errors.min" class="label-text-alt">{{minValueErrorMessage}}</span>
-    <span *ngIf="inputNumber.errors.max" class="label-text-alt">{{maxValueErrorMessage}}</span>
-    <span *ngIf="inputNumber.errors.incorrect" class="label-text-alt">{{incorrectErrorMessage}}</span>
+  <label *ngIf="form && form.submitted && inputNumber.invalid" class="error-messages">
+    <span *ngIf="inputNumber.errors.required && requiredErrorMessage !== null" class="label-text-alt">{{requiredErrorMessage}}</span>
+    <span *ngIf="inputNumber.errors.min && minValueErrorMessage !== null" class="label-text-alt">{{minValueErrorMessage}}</span>
+    <span *ngIf="inputNumber.errors.max && maxValueErrorMessage !== null" class="label-text-alt">{{maxValueErrorMessage}}</span>
+    <span *ngIf="inputNumber.errors.incorrect && incorrectErrorMessage !== null" class="label-text-alt">{{incorrectErrorMessage}}</span>
   </label>
 
 </div>

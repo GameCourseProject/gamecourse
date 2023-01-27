@@ -106,7 +106,7 @@
    [templateRef]="MANAGE"
    [header]="mode?.capitalize() + ' role'"
    [closeBtnText]="'Discard ' + (mode === 'add' ? 'role' : 'changes')"
-   [submitBtnText]="mode?.capitalize() + ' role'"
+   [submitBtnText]="mode === 'add' ? mode?.capitalize() + ' role' : 'Save'"
    [actionInProgress]="loading.action"
    (submitBtnClicked)="f.onSubmit(null); mode === 'add' ? addRole() : editRole()"
    (onClose)="resetManage()">

@@ -1,11 +1,9 @@
-user = GC.users.getUser(target)
-wildcard = user.hasWildcardAvailable(<skill-tree-ID>)
+wildcard = has_wildcard_available(target, <skill-tree-ID>, <wildcard-tier-name>)
 
 <skill-dependencies>
 
 skill_based = <skill-based>
 use_wildcard = False if skill_based else True
 
-logs = GC.participations.getSkillParticipations(target, "<skill-name>")
+logs = get_skill_logs(target, "<skill-name>")
 rating = get_rating(logs)
-rating >= 3

@@ -1,13 +1,14 @@
-import {Component, Input, OnInit, ViewChild} from '@angular/core';
-import { NgForm, Validators} from "@angular/forms";
+import {Component, OnInit, ViewChild} from '@angular/core';
+import { NgForm} from "@angular/forms";
 import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {Router} from "@angular/router";
-import {finalize, map} from "rxjs/operators";
+import {finalize} from "rxjs/operators";
 
 import {ThemingService} from "../../../_services/theming/theming.service";
 import {Theme} from "../../../_services/theming/themes-available";
-import {AuthType} from "../../../_domain/auth/auth-type";
+
 import {environment} from "../../../../environments/environment";
+import {AlertService, AlertType} from "../../../_services/alert.service";
 
 @Component({
   selector: 'app-setup',
@@ -15,13 +16,14 @@ import {environment} from "../../../../environments/environment";
 })
 export class SetupComponent implements OnInit {
 
+  setupData: SetupData = {
+    courseName: null,
+    courseColor: null,
+    adminId: null,
+    adminUsername: null
+  };
+
   actionInProgress: boolean;
-
-  courseName: string;
-  courseColor: string;
-  teacherId: number;
-  teacherUsername: string;
-
 
   @ViewChild('f', { static: false }) f:NgForm;
 
@@ -37,12 +39,17 @@ export class SetupComponent implements OnInit {
   submit(): void{
     if (this.f.valid) {
       this.actionInProgress = true;
-        this.api.doSetup(this.courseName, this.courseColor, this.teacherId, this.teacherUsername)
+
+      this.api.doSetup(this.setupData)
         .pipe( finalize(() => this.actionInProgress = false) )
         .subscribe(setupDone => {
-          if (setupDone) this.router.navigate(['/']);
+          if (setupDone) {
+            AlertService.showAlert(AlertType.SUCCESS, 'GameCourse is ready to go!');
+            this.router.navigate(['/']);
+          }
         });
-    }
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
 
@@ -59,6 +66,6 @@ export class SetupComponent implements OnInit {
 export interface SetupData {
   courseName: string,
   courseColor: string,
-  teacherId: number,
-  teacherUsername: string
+  adminId: number,
+  adminUsername: string
 }

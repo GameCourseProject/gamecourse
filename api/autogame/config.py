@@ -9,6 +9,7 @@ TEST_MODE = False
 AUTOSAVE = False
 
 DESCRIPTION_COL = 4
+DATE_COL = 7
 RATING_COL = 8
 
 HOST = "127.0.0.1"  # The server's hostname or IP address

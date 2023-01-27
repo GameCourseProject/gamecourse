@@ -110,9 +110,9 @@ class Profiling extends Module
         return true;
     }
 
-    public function getPersonalizedConfig(): ?string
+    public function getPersonalizedConfig(): ?array
     {
-        return self::ID;
+        return ["position" => "before"];
     }
 
 

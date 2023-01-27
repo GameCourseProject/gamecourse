@@ -47,12 +47,12 @@
   </label>
 
   <!-- Error Messages -->
-  <label *ngIf="form && form.submitted && inputColor.invalid" class="label">
-    <span *ngIf="inputColor.errors.pattern" class="label-text-alt">{{patternErrorMessage}}</span>
-    <span *ngIf="inputColor.errors.required" class="label-text-alt">{{requiredErrorMessage}}</span>
-    <span *ngIf="inputColor.errors.minlength" class="label-text-alt">{{minLengthErrorMessage}}</span>
-    <span *ngIf="inputColor.errors.maxlength" class="label-text-alt">{{maxLengthErrorMessage}}</span>
-    <span *ngIf="inputColor.errors.incorrect" class="label-text-alt">{{incorrectErrorMessage}}</span>
+  <label *ngIf="form && form.submitted && inputColor.invalid" class="error-messages">
+    <span *ngIf="inputColor.errors.pattern && patternErrorMessage !== null" class="label-text-alt">{{patternErrorMessage}}</span>
+    <span *ngIf="inputColor.errors.required && requiredErrorMessage !== null" class="label-text-alt">{{requiredErrorMessage}}</span>
+    <span *ngIf="inputColor.errors.minlength && minLengthErrorMessage !== null" class="label-text-alt">{{minLengthErrorMessage}}</span>
+    <span *ngIf="inputColor.errors.maxlength && maxLengthErrorMessage !== null" class="label-text-alt">{{maxLengthErrorMessage}}</span>
+    <span *ngIf="inputColor.errors.incorrect && incorrectErrorMessage !== null" class="label-text-alt">{{incorrectErrorMessage}}</span>
   </label>
 
 </div>

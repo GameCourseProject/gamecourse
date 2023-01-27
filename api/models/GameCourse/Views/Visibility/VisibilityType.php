@@ -14,5 +14,5 @@ class VisibilityType
     const VISIBLE = "visible";
     const INVISIBLE = "invisible";
     const CONDITIONAL = "conditional";
-    // NOTE: insert here new view visibility types & update view table definition
+    // NOTE: insert here new view visibility types & update 'view' table definition
 }

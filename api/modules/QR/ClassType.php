@@ -15,7 +15,7 @@ class ClassType
 
     const LECTURE = "Lecture";
     const INVITED_LECTURE = "Invited Lecture";
-    // NOTE: insert here new types of classes & update qr code table
+    // NOTE: insert here new types of classes & update 'qr_code' table
 
 
     /**

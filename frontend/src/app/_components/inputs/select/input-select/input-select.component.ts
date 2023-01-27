@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild
 import {NgForm, NgModel} from "@angular/forms";
 import {Observable} from "rxjs";
 
-import { InputColor, InputGroupBtnColor, InputGroupLabelColor } from '../../InputColors';
+import { InputGroupBtnColor, InputGroupLabelColor, InputSelectColor } from '../../InputColors';
 import { InputGroupSize, InputSize } from '../../InputSizes';
 
 import SlimSelect from "slim-select";
@@ -30,7 +30,7 @@ export class InputSelectComponent implements OnInit {
 
   // Extras
   @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';                                 // Size  FIXME: not working
-  @Input() color?: 'ghost' | 'primary' | 'secondary' | 'accent' |                   // Color FIXME: not working
+  @Input() color?: 'ghost' | 'primary' | 'secondary' | 'accent' |                   // Color
     'info' | 'success' | 'warning' | 'error';
   @Input() classList?: string;                                                      // Classes to add
   @Input() disabled?: boolean;                                                      // Make it disabled
@@ -128,8 +128,8 @@ export class InputSelectComponent implements OnInit {
 
     this.select = new SlimSelect(options);
 
-    // Set deselect;
-    if (!this.value) {
+    // Set deselect
+    if (!this.value || (Array.isArray(this.value) && this.value.length == 0)) {
       const deselect = $('.ss-deselect')[0]
       if (deselect) deselect.classList.add('!hidden');
     }
@@ -155,8 +155,8 @@ export class InputSelectComponent implements OnInit {
     return InputGroupSize;
   }
 
-  get InputColor(): typeof InputColor {
-    return InputColor;
+  get InputSelectColor(): typeof InputSelectColor {
+    return InputSelectColor;
   }
 
   get InputGroupLabelColor(): typeof InputGroupLabelColor {

@@ -199,6 +199,8 @@ class XPLevels extends Module
         return [
             [
                 "name" => "Levels",
+                "description" => "Create multiple descriptive levels dividing the range of total XP earned by students, 
+                                encouraging them to climb to highest ones. There needs to be at least one level setup.",
                 "itemName" => "level",
                 "topActions" => [
                     "left" => [

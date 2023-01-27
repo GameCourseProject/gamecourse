@@ -12,17 +12,16 @@ CREATE TABLE IF NOT EXISTS streak(
 	name                        varchar(50) NOT NULL,
 	description                 varchar(150) NOT NULL,
     color                       varchar(7),
-    count                       int unsigned NOT NULL DEFAULT 1,
-    periodicity                 int unsigned DEFAULT NULL,
-    periodicityTime             varchar(25) DEFAULT NULL,
-    reward                      int unsigned NOT NULL,
-    tokens                      int unsigned DEFAULT NULL,
-    isRepeatable                boolean NOT NULL DEFAULT FALSE,
-	isCount                     boolean NOT NULL DEFAULT FALSE,
-	isPeriodic                  boolean NOT NULL DEFAULT FALSE,
-    isAtMost                    boolean NOT NULL DEFAULT FALSE,
+    goal                        int unsigned NOT NULL DEFAULT 0,
+    periodicityGoal             int unsigned DEFAULT NULL,
+    periodicityNumber           int unsigned DEFAULT NULL,
+    periodicityTime             ENUM ('second', 'minute', 'hour', 'day', 'week', 'month', 'year') DEFAULT NULL,
+    periodicityType             ENUM ('absolute', 'relative') DEFAULT NULL,
+    reward                      int unsigned NOT NULL DEFAULT 0,
+    tokens                      int unsigned NOT NULL DEFAULT 0,
     isExtra                     boolean NOT NULL DEFAULT FALSE,
-	isActive                    boolean NOT NULL DEFAULT TRUE,
+    isRepeatable                boolean NOT NULL DEFAULT FALSE,
+    isActive                    boolean NOT NULL DEFAULT TRUE,
     rule                        int unsigned NOT NULL,
 
     UNIQUE key(name, course),
@@ -34,6 +33,7 @@ CREATE TABLE IF NOT EXISTS streak_progression(
 	course                      int unsigned NOT NULL,
 	user                        int unsigned NOT NULL,
 	streak 	                    int unsigned NOT NULL,
+	repetition                  int unsigned NOT NULL,
 	participation 	            int unsigned NOT NULL,
 
     FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
@@ -41,14 +41,13 @@ CREATE TABLE IF NOT EXISTS streak_progression(
     FOREIGN key(participation) REFERENCES participation(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS streak_participations(
+CREATE TABLE IF NOT EXISTS streak_deadline(
     course                      int unsigned NOT NULL,
     user                        int unsigned NOT NULL,
-    streak 	                    int unsigned NOT NULL,
-    participation 	            int unsigned NOT NULL,
-    isValid                     boolean NOT NULL DEFAULT FALSE,
+    streak                      int unsigned NOT NULL,
+    deadline                    TIMESTAMP NOT NULL, /* only periodic streaks have deadlines */
 
+    PRIMARY key(course, user, streak),
     FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
-    FOREIGN key(streak) REFERENCES streak(id) ON DELETE CASCADE,
-    FOREIGN key(participation) REFERENCES participation(id) ON DELETE CASCADE
+    FOREIGN key(streak) REFERENCES streak(id) ON DELETE CASCADE
 );

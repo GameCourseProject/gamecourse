@@ -1,0 +1,97 @@
+<div class="form-control w-full {{classList}}">
+
+  <!-- Label -->
+  <label *ngIf="topLabel" class="label cursor-pointer justify-start gap-2" [ngClass]="{'pl-0': helperText}">
+    <app-simple-helper *ngIf="helperText" [text]="helperText" [position]="helperPosition"></app-simple-helper>
+    <span class="label-text" [ngClass]="{'opacity-50': disabled}">{{topLabel}} <span *ngIf="required" class="text-secondary">*</span></span>
+  </label>
+
+  <!-- Group Input -->
+  <label class="{{InputGroupSize[size]}}">
+
+    <!-- Left label -->
+    <span *ngIf="leftLabel" class="min-w-fit {{InputGroupLabelColor[color]}}">{{leftLabel}}</span>
+
+    <!-- Input -->
+    <div class="input-period flex items-center">
+      <!-- Number -->
+      <div class="input-period-number max-w-[5.5rem]">
+        <app-input-number
+          [id]="id + '-number'"
+          [form]="form"
+          [(value)]="number"
+          [placeholder]="'Amount'"
+
+          [size]="size"
+          [color]="color"
+          [disabled]="disabled"
+
+          [helperText]="helperText"
+          [helperPosition]="helperPosition"
+
+          [required]="required"
+          [minValue]="minNumber"
+          [maxValue]="maxNumber"
+
+          [requiredErrorMessage]="null"
+          [minValueErrorMessage]="null"
+          [maxValueErrorMessage]="null"
+
+          (valueChange)="emit(valueChange)">
+        </app-input-number>
+      </div>
+
+      <!-- Time -->
+      <div class="input-period-time w-full">
+        <app-input-select
+          [id]="id + '-time'"
+          [form]="form"
+          [(value)]="time"
+          [options]="periods"
+          [placeholder]="'Select a time period'"
+
+          [search]="false"
+
+          [size]="size"
+          [color]="color"
+          [disabled]="disabled"
+
+          [btnText]="btnText"
+          [btnIcon]="btnIcon"
+
+          [required]="required"
+          [requiredErrorMessage]="null"
+
+          (valueChange)="emit(valueChange)"
+          (btnClicked)="emit(btnClicked)">
+        </app-input-select>
+      </div>
+    </div>
+
+    <!-- Right label -->
+    <span *ngIf="rightLabel" class="min-w-fit {{InputGroupLabelColor[color]}}">{{rightLabel}}</span>
+
+    <!-- Button -->
+    <button type="button" *ngIf="btnText || btnIcon" class="h-auto btn {{btnIcon ? 'btn-square' : ''}} {{InputGroupBtnColor[color]}}" (click)="emit(btnClicked)">
+      <span *ngIf="btnText" class="bg-transparent">{{btnText}}</span>
+      <ng-icon *ngIf="btnIcon" [name]="btnIcon" size="1.5rem"></ng-icon>
+    </button>
+
+  </label>
+
+  <!-- Error Messages -->
+  <label *ngIf="form && form.submitted && (form.controls[id + '-number'].invalid || form.controls[id + '-time'].invalid)" class="error-messages">
+    <span *ngIf="form.controls[id + '-number'].errors?.required && !form.controls[id + '-time'].errors?.required" class="label-text-alt">
+      Period amount is required
+    </span>
+    <span *ngIf="!form.controls[id + '-number'].errors?.required && form.controls[id + '-time'].errors?.required" class="label-text-alt">
+      Period time is required
+    </span>
+    <span *ngIf="form.controls[id + '-number'].errors?.required && form.controls[id + '-time'].errors?.required && requiredErrorMessage !== null" class="label-text-alt">
+      {{requiredErrorMessage}}
+    </span>
+    <span *ngIf="form.controls[id + '-number'].errors?.min && minValueErrorMessage !== null" class="label-text-alt">{{minValueErrorMessage}}</span>
+    <span *ngIf="form.controls[id + '-number'].errors?.max && maxValueErrorMessage !== null" class="label-text-alt">{{maxValueErrorMessage}}</span>
+  </label>
+
+</div>

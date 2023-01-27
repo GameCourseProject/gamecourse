@@ -68,9 +68,12 @@ export class TableData implements OnInit {
 
   // Type: AVATAR
   avatar: ResourceManager;                                      // Triggers avatar update
-  avatarSrc?: string;                                           // Avatar image source
   avatarTitle?: string;                                         // Avatar name (either 1 line or 1st line)
   avatarSubtitle?: string;                                      // Avatar additional text (2nd line)
+  avatarSrc?: string;                                           // Avatar image source
+  avatarIcon?: string;                                          // Avatar icon
+  avatarIconColor?: 'primary' | 'secondary' | 'accent'
+    | 'neutral' | 'info' | 'success' | 'warning' | 'error';     // Avatar icon color
 
   // Type: CHECKBOX
   checkboxId?: string;                                          // Checkbox ID
@@ -189,11 +192,15 @@ export class TableData implements OnInit {
       this.buttonIcon = this.data.buttonIcon ?? null;
 
     } else if (this.type === TableDataType.AVATAR) {
-      this.avatarSrc = this.data.avatarSrc;
-      this.avatar = new ResourceManager(this.sanitizer);
-      this.avatar.set(this.avatarSrc);
       this.avatarTitle = this.data.avatarTitle;
       this.avatarSubtitle = this.data.avatarSubtitle ?? null;
+      this.avatarSrc = this.data.avatarSrc ?? null;
+      if (this.avatarSrc) {
+        this.avatar = new ResourceManager(this.sanitizer);
+        this.avatar.set(this.avatarSrc);
+      }
+      this.avatarIcon = this.data.avatarIcon ?? null;
+      this.avatarIconColor = this.data.avatarIconColor ?? null;
 
     } else if (this.type === TableDataType.CHECKBOX) {
       this.checkboxId = this.data.checkboxId;
@@ -259,7 +266,7 @@ export enum TableDataType {
   IMAGE = 'image',          // params -> imgSrc: string, imgShape?: round | square
   PILL = 'pill',            // params -> pillText: string, pillColor?: string
   BUTTON = 'button',        // params -> buttonText: string, buttonColor?: string, buttonStyle?: string, buttonIcon?: string
-  AVATAR = 'avatar',        // params -> avatarSrc: string, avatarTitle: string, avatarSubtitle?: string
+  AVATAR = 'avatar',        // params -> avatarTitle: string, avatarSubtitle?: string, avatarSrc?: string, avatarIcon?: string, avatarIconColor: string
   CHECKBOX = 'checkbox',    // params -> checkboxId: string, checkboxValue: boolean, checkboxColor?: string, checkboxDisabled?: boolean
   RADIO = 'radio',          // params -> radioId: string, radioGroup: string, radioOptionValue: any, radioValue: any, radioColor?: string, radioDisabled?: boolean
   TOGGLE = 'toggle',        // params -> toggleId: string, toggleValue: boolean, toggleColor?: string, toggleDisabled?: boolean

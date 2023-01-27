@@ -17,7 +17,7 @@ class AuthService
     const GOOGLE = "google";
     const FACEBOOK = "facebook";
     const LINKEDIN = "linkedin";
-    // NOTE: insert here new authentication services
+    // NOTE: insert here new authentication services & update 'auth' table definition
 
 
     /**

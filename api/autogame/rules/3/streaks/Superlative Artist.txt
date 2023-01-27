@@ -1,0 +1,12 @@
+rule: Superlative Artist
+# Get three skills of at least four points in a row
+
+    when:
+        # Get target progress in streak
+        logs = get_skill_logs(target)
+
+        # Get only consecutive progress
+        clogs = get_consecutive_rating_logs(logs, 4)
+
+    then:
+        award_streak(target, "Superlative Artist", clogs)

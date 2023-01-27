@@ -7,8 +7,8 @@
   <ng-container *ngIf="label" [ngTemplateOutlet]="WITH_LABEL"></ng-container>
 
   <!-- Error Messages -->
-  <label *ngIf="form && form.submitted && checkbox.invalid" class="label">
-    <span *ngIf="checkbox.errors.required" class="label-text-alt">{{requiredErrorMessage}}</span>
+  <label *ngIf="form && form.submitted && checkbox.invalid" class="error-messages">
+    <span *ngIf="checkbox.errors.required && requiredErrorMessage !== null" class="label-text-alt">{{requiredErrorMessage}}</span>
   </label>
 
 </div>

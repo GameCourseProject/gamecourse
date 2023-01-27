@@ -32,12 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] == "GET") {  // check setup
         API::error('GameCourse setup already done.', 405);
 
     if (array_key_exists('course-name', $_POST) && array_key_exists('course-color', $_POST) &&
-        array_key_exists('teacher-id', $_POST) && array_key_exists('teacher-username', $_POST)) {
+        array_key_exists('admin-id', $_POST) && array_key_exists('admin-username', $_POST)) {
 
         $courseName = $_POST['course-name'];
         $courseColor = $_POST['course-color'];
-        $teacherId = $_POST['teacher-id'];
-        $teacherUsername = $_POST['teacher-username'];
+        $adminId = $_POST['admin-id'];
+        $adminUsername = $_POST['admin-username'];
 
         Core::resetGameCourse();
 
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] == "GET") {  // check setup
         Core::database()->executeQuery($sql);
 
         // Create user in the system
-        $user = User::addUser("Teacher", $teacherUsername, AuthService::FENIX, null, $teacherId, null,
+        $user = User::addUser("Admin", $adminUsername, AuthService::FENIX, null, $adminId, null,
             null, true, true);
         Core::setLoggedUser($user);
 

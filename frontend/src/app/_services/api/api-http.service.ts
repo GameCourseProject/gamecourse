@@ -26,7 +26,7 @@ import {dateFromDatabase, exists} from "../../_utils/misc/misc";
 import {
   ConfigInputItem,
   ConfigSection,
-  List
+  List, PersonalizedConfig
 } from "../../_views/restricted/courses/course/settings/modules/config/config/config.component";
 import {Tier} from "../../_domain/modules/config/personalized-config/skills/tier";
 import {
@@ -106,12 +106,12 @@ export class ApiHttpService {
   /*** ------------------- Setup ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  public doSetup(courseName: string, courseColor: string, teacherId: number, teacherUsername: string): Observable<boolean> {
+  public doSetup(setupData: SetupData): Observable<boolean> {
     const formData = new FormData();
-    formData.append('course-name', courseName);
-    formData.append('course-color', courseColor);
-    formData.append('teacher-id', teacherId.toString());
-    formData.append('teacher-username', teacherUsername);
+    formData.append('course-name', setupData.courseName);
+    formData.append('course-color', setupData.courseColor);
+    formData.append('admin-id', setupData.adminId.toString());
+    formData.append('admin-username', setupData.adminUsername);
 
     const url = this.apiEndpoint.createUrl('setup/setup.php');
 
@@ -1412,7 +1412,7 @@ export class ApiHttpService {
 
   // Configuration
 
-  public getModuleConfig(courseID: number, moduleID: string): Observable<{generalInputs: ConfigSection[] | null, lists: List[] | null, personalizedConfig: string | null}> {
+  public getModuleConfig(courseID: number, moduleID: string): Observable<{generalInputs: ConfigSection[] | null, lists: List[] | null, personalizedConfig: PersonalizedConfig | null}> {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
@@ -1448,7 +1448,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']) );
+      .pipe( map((res: any) => res ? res['data'] : null) );
   }
 
   // TODO: refactor

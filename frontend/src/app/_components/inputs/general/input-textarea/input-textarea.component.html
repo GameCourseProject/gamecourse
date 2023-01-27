@@ -24,12 +24,12 @@
   </textarea>
 
   <!-- Error Messages -->
-  <label *ngIf="form && form.submitted && inputTextarea.invalid" class="label">
-    <span *ngIf="inputTextarea.errors.pattern" class="label-text-alt">{{patternErrorMessage}}</span>
-    <span *ngIf="inputTextarea.errors.required" class="label-text-alt">{{requiredErrorMessage}}</span>
-    <span *ngIf="inputTextarea.errors.minlength" class="label-text-alt">{{minLengthErrorMessage}}</span>
-    <span *ngIf="inputTextarea.errors.maxlength" class="label-text-alt">{{maxLengthErrorMessage}}</span>
-    <span *ngIf="inputTextarea.errors.incorrect" class="label-text-alt">{{incorrectErrorMessage}}</span>
+  <label *ngIf="form && form.submitted && inputTextarea.invalid" class="error-messages">
+    <span *ngIf="inputTextarea.errors.pattern && patternErrorMessage !== null" class="label-text-alt">{{patternErrorMessage}}</span>
+    <span *ngIf="inputTextarea.errors.required && requiredErrorMessage !== null" class="label-text-alt">{{requiredErrorMessage}}</span>
+    <span *ngIf="inputTextarea.errors.minlength && minLengthErrorMessage !== null" class="label-text-alt">{{minLengthErrorMessage}}</span>
+    <span *ngIf="inputTextarea.errors.maxlength && maxLengthErrorMessage !== null" class="label-text-alt">{{maxLengthErrorMessage}}</span>
+    <span *ngIf="inputTextarea.errors.incorrect && incorrectErrorMessage !== null" class="label-text-alt">{{incorrectErrorMessage}}</span>
   </label>
 
 </div>

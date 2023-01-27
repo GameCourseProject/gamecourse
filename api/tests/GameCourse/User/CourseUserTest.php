@@ -1886,12 +1886,12 @@ class CourseUserTest extends TestCase
         $courseUser->setActive(false);
 
         $expectedFile = "name,email,major,nickname,studentNumber,username,auth_service,isAdmin,isActive,isActiveInCourse,roles\n";
-        $expectedFile .= "John Smith Doe,johndoe@email.com,MEIC-A,John Doe,123456,ist123456,fenix,1,1,1,Teacher\n";
-        $expectedFile .= "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1,1,Student\n";
-        $expectedFile .= "Marcus Notø,marcus.n.hansen@gmail.com,MEEC,Marcus Notø,1101036,ist1101036,fenix,1,0,0,Student\n";
-        $expectedFile .= "Inês Albano,ines.albano@tecnico.ulisboa.pt,MEIC-A,,87664,ist187664,fenix,0,1,1,Student\n";
-        $expectedFile .= "Filipe José Zillo Colaço,fijozico@hotmail.com,LEIC-T,,84715,ist426015,fenix,0,1,1,Teacher\n";
-        $expectedFile .= "Mariana Wong Brandão,marianawbrandao@icloud.com,MEMec,Mariana Brandão,86893,ist186893,fenix,0,0,0,Teacher Student";
+        $expectedFile .= "\"John Smith Doe\",\"johndoe@email.com\",\"MEIC-A\",\"John Doe\",123456,\"ist123456\",\"fenix\",1,1,1,\"Teacher\"\n";
+        $expectedFile .= "\"Sabri M'Barki\",\"sabri.m.barki@efrei.net\",\"MEIC-T\",\"Sabri M'Barki\",100956,\"ist1100956\",\"fenix\",1,1,1,\"Student\"\n";
+        $expectedFile .= "\"Marcus Notø\",\"marcus.n.hansen@gmail.com\",\"MEEC\",\"Marcus Notø\",1101036,\"ist1101036\",\"fenix\",1,0,0,\"Student\"\n";
+        $expectedFile .= "\"Inês Albano\",\"ines.albano@tecnico.ulisboa.pt\",\"MEIC-A\",,87664,\"ist187664\",\"fenix\",0,1,1,\"Student\"\n";
+        $expectedFile .= "\"Filipe José Zillo Colaço\",\"fijozico@hotmail.com\",\"LEIC-T\",,84715,\"ist426015\",\"fenix\",0,1,1,\"Teacher\"\n";
+        $expectedFile .= "\"Mariana Wong Brandão\",\"marianawbrandao@icloud.com\",\"MEMec\",\"Mariana Brandão\",86893,\"ist186893\",\"fenix\",0,0,0,\"Teacher Student\"";
 
         $file = CourseUser::exportCourseUsers($this->course->getId(), [1, $user1->getId(), $user2->getId(), $user3->getId(), $user4->getId(), $user5->getId()]);
         $this->assertEquals($expectedFile, $file);

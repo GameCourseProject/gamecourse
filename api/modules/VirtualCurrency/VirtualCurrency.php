@@ -152,6 +152,9 @@ class VirtualCurrency extends Module
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     public function getLists(): array
     {
         $name = $this->getVCName();
@@ -244,6 +247,8 @@ class VirtualCurrency extends Module
             ],
             [
                 "name" => "Automated actions",
+                "description" => "Setup automated actions to award or penalize specific student behaviour and interactions 
+                                automatically. ",
                 "itemName" => "action",
                 "topActions" => [
                     "left" => [
@@ -260,12 +265,13 @@ class VirtualCurrency extends Module
                     ["label" => "$name", "align" => "middle"],
                     ["label" => "Active", "align" => "middle"]
                 ],
-                "data" => array_map(function ($action) use ($actionTypes, $img) {
+                "data" => array_map(function ($action) use ($actionTypes, $name, $img) {
                     return [
-                        ["type" => DataType::TEXT, "content" => ["text" => $action["name"], "subtitle" => $action["description"]]],
+                        ["type" => DataType::AVATAR, "content" => ["avatarTitle" => $action["name"], "avatarSubtitle" => $action["description"],
+                            "avatarIcon" => $action["amount"] > 0 ? "tabler-award" : "tabler-gavel", "avatarIconColor" => $action["amount"] > 0 ? "accent" : "error"]],
                         ["type" => DataType::TEXT, "content" => ["text" => $actionTypes[$action["type"]]]],
                         ["type" => DataType::CUSTOM, "content" => ["html" => "<div class='flex items-center justify-center'>
-                            <span class='prose text-sm'>" . $action["amount"] . "</span><img class='h-4 w-4 object-contain ml-2' src='$img'></div>", "searchBy" => strval($action["amount"])]],
+                            <span class='prose text-sm'>" . $action["amount"] . "</span><img class='h-4 w-4 object-contain ml-2' src='$img' alt='$name icon'></div>", "searchBy" => strval($action["amount"])]],
                         ["type" => DataType::TOGGLE, "content" => ["toggleId" => "isActive", "toggleValue" => $action["isActive"]]]
                     ];
                 }, $actions),
@@ -458,10 +464,13 @@ class VirtualCurrency extends Module
 
             $lists[] = [
                 "name" => "Exchanging $name",
+                "description" => "$name can be exchanged by XP at a fixed ratio, for instance 2:1 ratio will earn double 
+                                the amount of $name in XP. Additionally, setup a threshold if you want the limit the 
+                                maximum amount of $name that can be exchanged. Each student can only exchange $name once.",
                 "itemName" => null,
                 "topActions" => [
                     "right" => [
-                        ["action" => "Exchange multiple", "icon" => "feather-repeat", "color" => "success"]
+                        ["action" => "Exchange multiple", "icon" => "feather-repeat", "color" => "accent"]
                     ]
                 ],
                 "headers" => [
@@ -479,11 +488,11 @@ class VirtualCurrency extends Module
                         ["type" => DataType::NUMBER, "content" => ["value" => $user->getStudentNumber(), "valueFormat" => "none"]],
                         ["type" => DataType::COLOR, "content" => ["color" => $userWallet["exchanged"] ? "#36D399" : "#EF6060", "colorLabel" => $userWallet["exchanged"] ? "Exchanged $name" : "Hasn't exchanged yet"]],
                         ["type" => DataType::CUSTOM, "content" => ["html" => "<div class='flex items-center justify-center'>
-                            <span class='prose text-sm'>$tokens</span><img class='h-4 w-4 object-contain ml-2' src='$img'></div>", "searchBy" => strval($tokens)]],
+                            <span class='prose text-sm'>$tokens</span><img class='h-4 w-4 object-contain ml-2' src='$img' alt='$name icon'></div>", "searchBy" => strval($tokens)]],
                     ];
                 }, $wallets),
                 "actions" => [
-                    ["action" => 'Exchange ' . $name, "icon" => 'feather-repeat', "color" => "success", "scope" => $scope]
+                    ["action" => 'Exchange ' . $name, "icon" => 'feather-repeat', "color" => "accent", "scope" => $scope]
                 ],
                 "options" => [
                     "order" => [[0, "asc"]],
@@ -625,7 +634,7 @@ class VirtualCurrency extends Module
                     $name = $item["name"];
                     if ($action == Action::DUPLICATE) $name .= " (Copy)";
 
-                    $action = AutoAction::addAction($this->course->getId(), $name, $item["description"], $item["type"],
+                    AutoAction::addAction($this->course->getId(), $name, $item["description"], $item["type"],
                         $item["amount"]);
 
                 } else {
@@ -645,7 +654,7 @@ class VirtualCurrency extends Module
                 foreach ($users as $userId) {
                     if (!self::hasExchanged($userId)) {
                         $parts = explode(":", $item["ratio"]);
-                        $ratio = round(intval($parts[0]) / intval($parts[1]));
+                        $ratio = intval($parts[0]) / intval($parts[1]);
                         $threshold = $item["threshold"] ?? null;
                         $earnedXP = self::exchangeTokensForXP($userId, $ratio, $threshold);
 
@@ -753,7 +762,7 @@ class VirtualCurrency extends Module
         if ($this->userHasWallet($userId)) // already has a wallet
             Core::database()->update(self::TABLE_WALLET, [
                 "tokens" => 0,
-                "exchanged" => +false
+                "exchanged" => 0
             ], ["course" => $courseId, "user" => $userId]);
 
         else
@@ -761,7 +770,7 @@ class VirtualCurrency extends Module
                 "course" => $courseId,
                 "user" => $userId,
                 "tokens" => 0,
-                "exchanged" => +false
+                "exchanged" => 0
             ]);
     }
 
@@ -864,6 +873,14 @@ class VirtualCurrency extends Module
         // Give award
         $awardsModule = new Awards($this->course);
         $awardsModule->giveAward($userId, $this->getVCName() . " exchange", AwardType::BONUS, null, $earnedXP);
+
+        // Log spending
+        Core::database()->insert(self::TABLE_VC_SPENDING, [
+            "user" => $userId,
+            "course" => $this->course->getId(),
+            "description" => $this->getVCName() . " exchange",
+            "amount" => $exchangeableTokens
+        ]);
 
         return $earnedXP;
     }

@@ -2224,11 +2224,11 @@ class UserTest extends TestCase
             86893, "Mariana Brandão", "MEMec", false, false)->getId();
 
         $expectedFile = "name,email,major,nickname,studentNumber,username,auth_service,isAdmin,isActive\n";
-        $expectedFile .= "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1\n";
-        $expectedFile .= "Marcus Notø,marcus.n.hansen@gmail.com,MEEC,Marcus Notø,1101036,ist1101036,fenix,1,0\n";
-        $expectedFile .= "Inês Albano,ines.albano@tecnico.ulisboa.pt,MEIC-A,,87664,ist187664,fenix,0,1\n";
-        $expectedFile .= "Filipe José Zillo Colaço,fijozico@hotmail.com,LEIC-T,,84715,ist426015,fenix,0,1\n";
-        $expectedFile .= "Mariana Wong Brandão,marianawbrandao@icloud.com,MEMec,Mariana Brandão,86893,ist186893,fenix,0,0";
+        $expectedFile .= "\"Sabri M'Barki\",\"sabri.m.barki@efrei.net\",\"MEIC-T\",\"Sabri M'Barki\",100956,\"ist1100956\",\"fenix\",1,1\n";
+        $expectedFile .= "\"Marcus Notø\",\"marcus.n.hansen@gmail.com\",\"MEEC\",\"Marcus Notø\",1101036,\"ist1101036\",\"fenix\",1,0\n";
+        $expectedFile .= "\"Inês Albano\",\"ines.albano@tecnico.ulisboa.pt\",\"MEIC-A\",,87664,\"ist187664\",\"fenix\",0,1\n";
+        $expectedFile .= "\"Filipe José Zillo Colaço\",\"fijozico@hotmail.com\",\"LEIC-T\",,84715,\"ist426015\",\"fenix\",0,1\n";
+        $expectedFile .= "\"Mariana Wong Brandão\",\"marianawbrandao@icloud.com\",\"MEMec\",\"Mariana Brandão\",86893,\"ist186893\",\"fenix\",0,0";
 
         $file = User::exportUsers([$userId1, $userId2, $userId3, $userId4, $userId5]);
         $this->assertSame($expectedFile, $file);
@@ -2252,8 +2252,8 @@ class UserTest extends TestCase
             86893, "Mariana Brandão", "MEMec", false, false)->getId();
 
         $expectedFile = "name,email,major,nickname,studentNumber,username,auth_service,isAdmin,isActive\n";
-        $expectedFile .= "Sabri M'Barki,sabri.m.barki@efrei.net,MEIC-T,Sabri M'Barki,100956,ist1100956,fenix,1,1\n";
-        $expectedFile .= "Filipe José Zillo Colaço,fijozico@hotmail.com,LEIC-T,,84715,ist426015,fenix,0,1";
+        $expectedFile .= "\"Sabri M'Barki\",\"sabri.m.barki@efrei.net\",\"MEIC-T\",\"Sabri M'Barki\",100956,\"ist1100956\",\"fenix\",1,1\n";
+        $expectedFile .= "\"Filipe José Zillo Colaço\",\"fijozico@hotmail.com\",\"LEIC-T\",,84715,\"ist426015\",\"fenix\",0,1";
 
         $file = User::exportUsers([$userId1, $userId4]);
         $this->assertSame($expectedFile, $file);
