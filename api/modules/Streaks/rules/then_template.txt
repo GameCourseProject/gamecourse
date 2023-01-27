@@ -1,2 +1,0 @@
-award_streak(target, "<streak-name>", progress)
-<award-tokens>

@@ -1076,22 +1076,24 @@ class Skill
         $when = file_get_contents(__DIR__ . "/rules/" . ($isWildcard ? "wildcard" : "basic") . "/when_template.txt");
         $then = file_get_contents(__DIR__ . "/rules/" . ($isWildcard ? "wildcard" : "basic") . "/then_template.txt");
 
-        // Fill-in skill tree ID
-        $when = str_replace("<skill-tree-ID>", $skillTreeId, $when);
-
         // Fill-in skill name
         $when = str_replace("<skill-name>", $skillName, $when);
         $then = str_replace("<skill-name>", $skillName, $then);
 
         if ($isWildcard) {
+            // Fill-in skill tree ID
+            $when = str_replace("<skill-tree-ID>", $skillTreeId, $when);
+
             // Fill-in wildcard tier name
-            $when = str_replace("<wildcard-tier-name>", Tier::WILDCARD, $when);
-            $then = str_replace("<wildcard-tier-name>", Tier::WILDCARD, $then);
+            $when = str_replace("<wildcard-tier-name>", "\"" . Tier::WILDCARD . "\"", $when);
         }
 
         // Fill-in skill dependencies
-        if (empty($dependencies)) $when = preg_replace("/<skill-dependencies>(\r*\n)*/", "", $when);
-        else {
+        if (empty($dependencies)) {
+            $when = preg_replace("/<skill-dependencies>(\r*\n)*/", "", $when);
+            $then = str_replace(", <dependencies>", "", $then);
+
+        } else {
             $dependenciesTxt = "";
             $conditions = [];
             $skillBasedConditions = [];
@@ -1101,19 +1103,20 @@ class Skill
             foreach ($dependencies as $dependency) {
                 $combo = [];
                 foreach ($dependency as $skillId) {
-                    $combo[] = $skillId == 0 ? "wildcard" : "rule_unlocked(\"" . (new Skill($skillId))->getName() . "\", target)";
+                    $combo[] = $skillId == 0 ? "wildcard" : "skill_completed(target, \"" . (new Skill($skillId))->getName() . "\")";
                 }
                 $dependenciesTxt .= "combo" . $comboNr . " = " . implode(" and ", $combo) . "\n";
                 $conditions[] = "combo" . $comboNr;
                 if (!in_array("wildcard", $combo)) $skillBasedConditions[] = "combo" . $comboNr;
                 $comboNr++;
             }
-            $dependenciesTxt .= implode(" or ", $conditions);
+            $dependenciesTxt .= "dependencies = " . implode(" or ", $conditions);
 
             // Fill-in dependencies
             $parts = explode("<skill-dependencies>", $when);
             array_splice($parts, 1, 0, $dependenciesTxt);
             $when = implode("", $parts);
+            $then = str_replace("<dependencies>", "dependencies", $then);
 
             if ($isWildcard) {
                 // Fill-in skill based

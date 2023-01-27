@@ -340,8 +340,10 @@ class Streak
             // Update streak rule
             $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
             $description = key_exists("description", $fieldValues) ? $newDescription : $this->getDescription();
-            $tokens = key_exists("tokens", $fieldValues) ? $newTokens : $this->getTokens();
-            self::updateRule($rule->getId(), $name, $description, $tokens);
+            $periodicityNumber = key_exists("periodicityNumber", $fieldValues) ? $fieldValues["periodicityNumber"] : $this->getPeriodicityNumber();
+            $periodicityTime = key_exists("periodicityTime", $fieldValues) ? $fieldValues["periodicityTime"] : $this->getPeriodicityTime();
+            $periodicityType = key_exists("periodicityType", $fieldValues) ? $fieldValues["periodicityType"] : $this->getPeriodicityType();
+            self::updateRule($rule->getId(), $name, $description, $periodicityNumber, $periodicityTime, $periodicityType);
         }
     }
 
@@ -437,7 +439,7 @@ class Streak
             $periodicityType, $reward, $tokens, $isExtra, $isRepeatable);
 
         // Create streak rule
-        $rule = self::addRule($courseId, $name, $description, $tokens);
+        $rule = self::addRule($courseId, $name, $description, $periodicityNumber, $periodicityTime, $periodicityType);
 
         // Insert in database
         $id = Core::database()->insert(self::TABLE_STREAK, [
@@ -574,15 +576,18 @@ class Streak
      * @param int $courseId
      * @param string $name
      * @param string $description
-     * @param int|null $tokens
+     * @param int|null $periodicityNumber
+     * @param string|null $periodicityTime
+     * @param string|null $periodicityType
      * @return Rule
      * @throws Exception
      */
-    private static function addRule(int $courseId, string $name, string $description, ?int $tokens): Rule
+    private static function addRule(int $courseId, string $name, string $description, ?int $periodicityNumber,
+                                    ?string $periodicityTime, ?string $periodicityType): Rule
     {
         // Add rule to streaks section
         $streaksModule = new Streaks(new Course($courseId));
-        return $streaksModule->addRuleOfItem(null, $name, $description, $tokens);
+        return $streaksModule->addRuleOfItem(null, $name, $description, $periodicityNumber, $periodicityTime, $periodicityType);
     }
 
     /**
@@ -591,14 +596,17 @@ class Streak
      * @param int $ruleId
      * @param string $name
      * @param string $description
-     * @param int|null $tokens
+     * @param int|null $periodicityNumber
+     * @param string|null $periodicityTime
+     * @param string|null $periodicityType
      * @return void
      * @throws Exception
      */
-    private static function updateRule(int $ruleId, string $name, string $description, ?int $tokens)
+    private static function updateRule(int $ruleId, string $name, string $description, ?int $periodicityNumber,
+                                       ?string $periodicityTime, ?string $periodicityType)
     {
         $rule = new Rule($ruleId);
-        $params = self::generateRuleParams($name, $description, $tokens, false, $ruleId);
+        $params = self::generateRuleParams($name, $description, $periodicityNumber, $periodicityTime, $periodicityType, false, $ruleId);
         $rule->setName($params["name"]);
         $rule->setDescription($params["description"]);
         $rule->setWhen($params["when"]);
@@ -626,25 +634,34 @@ class Streak
      *
      * @param string $name
      * @param string $description
-     * @param int|null $tokens
+     * @param int|null $periodicityNumber
+     * @param string|null $periodicityTime
+     * @param string|null $periodicityType
      * @param bool $fresh
      * @param int|null $ruleId
      * @return array
      * @throws Exception
      */
-    public static function generateRuleParams(string $name, string $description, ?int $tokens, bool $fresh = true,
+    public static function generateRuleParams(string $name, string $description, ?int $periodicityNumber,
+                                              ?string $periodicityTime, ?string $periodicityType, bool $fresh = true,
                                               int $ruleId = null): array
     {
+        $isPeriodic = !is_null($periodicityNumber) && !is_null($periodicityTime);
+
         // Generate rule clauses
         if ($fresh) { // generate from templates
-            $when = file_get_contents(__DIR__ . "/rules/when_template.txt");
-            $then = file_get_contents(__DIR__ . "/rules/then_template.txt");
+            $when = file_get_contents(__DIR__ . "/rules/" . ($isPeriodic ? "periodic" : "consecutive") . "/when_template.txt");
+            $then = file_get_contents(__DIR__ . "/rules/" . ($isPeriodic ? "periodic" : "consecutive") . "/then_template.txt");
 
             // Fill-in streak name
             $then = str_replace("<streak-name>", $name, $then);
 
-            // Fill-in streak tokens
-            $then = preg_replace("/(\r*\n)*<award-tokens>/", !is_null($tokens) ? "\naward_tokens_type(target, \"streak\", $tokens, \"$name\", progress)" : "", $then);
+            // Fill-in streak info
+            if ($isPeriodic) {
+                $when = str_replace("<period-number>", $periodicityNumber, $when);
+                $when = str_replace("<period-time>", $periodicityTime, $when);
+                $when = str_replace("<period-type>", $periodicityType, $when);
+            }
 
         } else { // keep data intact
             if (is_null($ruleId))
@@ -652,30 +669,37 @@ class Streak
 
             $rule = Rule::getRuleById($ruleId);
             $when = $rule->getWhen();
-
             $then = $rule->getThen();
+
+            if ($isPeriodic) {
+                $wasConsecutive = strpos($when, "get_consecutive");
+                if ($wasConsecutive) {
+                    $when = preg_replace("/# Get .* consecutive(.|\n)*/", "# Get only periodic progress
+        plogs = get_periodic_logs(logs, $periodicityNumber, \"$periodicityTime\", \"$periodicityType\")", $when);
+                    $then = str_replace("plogs", "clogs", $then);
+
+                } else {
+                    preg_match('/get_periodic_logs\((.*)\)/', $when, $matches);
+                    $args = explode(", ", $matches[1]);
+                    $args[1] = "$periodicityNumber";
+                    $args[2] = "\"$periodicityTime\"";
+                    $args[3] = "\"$periodicityType\"";
+                    $args = implode(", ", $args);
+                    $when = preg_replace("/get_periodic_logs\((.*)\)/", "get_periodic_logs($args)", $when);
+                }
+
+            } else {
+                $wasPeriodic = strpos($when, "get_periodic");
+                if ($wasPeriodic)
+                    return self::generateRuleParams($name, $description, null, null,
+                        null, true, $ruleId);
+            }
+
             preg_match('/award_streak\((.*)\)/', $then, $matches);
             $args = explode(", ", $matches[1]);
             $args[1] = "\"$name\"";
             $args = implode(", ", $args);
             $then = preg_replace("/award_streak\((.*)\)/", "award_streak($args)", $then);
-
-            preg_match('/award_tokens_type\((.*)\)/', $then, $matches);
-            if (!is_null($tokens)) {
-                if (empty($matches))
-                    $then .= "\naward_tokens_type(target, \"streak\", $tokens, \"$name\", progress)";
-                else {
-                    $args = explode(", ", $matches[1]);
-                    $args[2] = $tokens;
-                    $args[3] = "\"$name\"";
-                    $args = implode(", ", $args);
-                    $then = preg_replace("/award_tokens_type\((.*)\)/", "award_tokens_type($args)", $then);
-                }
-
-            } else {
-                if (!empty($matches))
-                    $then = preg_replace("/award_tokens_type\((.*)\)(\r*\n*)*/", "", $then);
-            }
         }
 
         return ["name" => $name, "description" => $description, "when" => $when, "then" => $then];

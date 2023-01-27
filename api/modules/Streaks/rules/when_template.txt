@@ -1,2 +1,0 @@
-progress = None # COMPLETE THIS: get student progress in streak
-len(progress) > 0
