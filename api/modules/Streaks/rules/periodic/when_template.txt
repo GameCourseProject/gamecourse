@@ -1,0 +1,5 @@
+# Get target progress in streak
+logs = [] # COMPLETE THIS: get appropriate logs for this streak
+
+# Get only periodic progress
+plogs = get_periodic_logs(logs, <period-number>, "<period-time>", "<period-type>")

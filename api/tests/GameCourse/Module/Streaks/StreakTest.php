@@ -542,7 +542,7 @@ class StreakTest extends TestCase
         $this->assertEquals($name, $streak->getName());
 
         $this->assertEquals($name, $streak->getRule()->getName());
-        $this->assertEquals("award_streak(target, \"" . $name . "\", progress)\naward_tokens_type(target, \"streak\", 0, \"" . $name . "\", progress)", $streak->getRule()->getThen());
+        $this->assertEquals("award_streak(target, \"" . $name . "\", clogs)", $streak->getRule()->getThen());
     }
 
     /**
@@ -562,7 +562,7 @@ class StreakTest extends TestCase
         } catch (Exception|TypeError $e) {
             $this->assertEquals("Streak", $streak->getName());
             $this->assertEquals("Streak", $streak->getRule()->getName());
-            $this->assertEquals("award_streak(target, \"Streak\", progress)\naward_tokens_type(target, \"streak\", 0, \"Streak\", progress)", $streak->getRule()->getThen());
+            $this->assertEquals("award_streak(target, \"Streak\", clogs)", $streak->getRule()->getThen());
         }
     }
 
@@ -585,7 +585,7 @@ class StreakTest extends TestCase
         } catch (Exception|TypeError $e) {
             $this->assertEquals("Streak2", $streak2->getName());
             $this->assertEquals("Streak2", $streak2->getRule()->getName());
-            $this->assertEquals("award_streak(target, \"Streak2\", progress)\naward_tokens_type(target, \"streak\", 0, \"Streak2\", progress)", $streak2->getRule()->getThen());
+            $this->assertEquals("award_streak(target, \"Streak2\", clogs)", $streak2->getRule()->getThen());
         }
     }
 
@@ -1125,16 +1125,6 @@ class StreakTest extends TestCase
         // Check rule was created
         $rule = $streak->getRule();
         $this->assertTrue($rule->exists());
-        $this->assertEquals($this->trim("rule: $name
-tags: 
-# $description
-
-	when:
-		progress = None # COMPLETE THIS: get student progress in streak
-		len(progress) > 0
-
-	then:
-		award_streak(target, \"$name\", progress)" . (!is_null($tokens) ? "\n\t\taward_tokens_type(target, \"streak\", $tokens, \"$name\", progress)" : "")), $this->trim($rule->getText()));
     }
 
     /**
@@ -1208,18 +1198,6 @@ tags:
         $this->assertEquals($isExtra, $streak->isExtra());
         $this->assertEquals($isRepeatable, $streak->isRepeatable());
         $this->assertTrue($streak->isActive());
-
-        // Check rule
-        $this->assertEquals($this->trim("rule: $name
-tags: 
-# $description
-
-	when:
-		progress = None # COMPLETE THIS: get student progress in streak
-		len(progress) > 0
-
-	then:
-		award_streak(target, \"$name\", progress)" . (!is_null($tokens) ? "\n\t\taward_tokens_type(target, \"streak\", $tokens, \"$name\", progress)" : "")), $this->trim($streak->getRule()->getText()));
     }
 
     /**
@@ -1275,17 +1253,6 @@ tags:
 
         } catch (PDOException $e) {
             $this->assertEquals("Streak2", $streak->getName());
-            $this->assertEquals($this->trim("rule: Streak2
-tags: 
-# Perform action
-
-	when:
-		progress = None # COMPLETE THIS: get student progress in streak
-		len(progress) > 0
-
-	then:
-		award_streak(target, \"Streak2\", progress)
-		award_tokens_type(target, \"streak\", 0, \"Streak2\", progress)"), $this->trim($streak->getRule()->getText()));
         }
     }
 
@@ -1405,11 +1372,12 @@ tags:
      * @dataProvider streakSuccessProvider
      * @throws Exception
      */
-    public function generateRuleParamsFresh(string $name, string $description, ?string $color, int $goal, ?int $periodicityGoal,
-                                            ?int $periodicityNumber, ?string $periodicityTime, ?string $periodicityType,
-                                            int $reward, int $tokens, bool $isExtra, bool $isRepeatable)
+    public function generateRuleParamsFresh(string $name, string $description, ?string $color, int $goal,
+                                            ?int $periodicityGoal, ?int $periodicityNumber, ?string $periodicityTime,
+                                            ?string $periodicityType)
     {
-        $params = Streak::generateRuleParams($name, $description, $tokens);
+        $params = Streak::generateRuleParams($name, $description, $periodicityNumber, $periodicityTime, $periodicityType);
+        $isPeriodic = !is_null($periodicityNumber) && !is_null($periodicityTime);
 
         // Name
         $this->assertTrue(isset($params["name"]));
@@ -1421,12 +1389,28 @@ tags:
 
         // When
         $this->assertTrue(isset($params["when"]));
-        $this->assertEquals("progress = None # COMPLETE THIS: get student progress in streak
-len(progress) > 0", $params["when"]);
+        if ($isPeriodic) {
+            $this->assertEquals("# Get target progress in streak
+logs = [] # COMPLETE THIS: get appropriate logs for this streak
+
+# Get only periodic progress
+plogs = get_periodic_logs(logs, $periodicityNumber, \"$periodicityTime\", \"$periodicityType\")", $params["when"]);
+
+        } else {
+            $this->assertEquals("# Get target progress in streak
+logs = [] # COMPLETE THIS: get appropriate logs for this streak
+
+# Get only consecutive progress
+# NOTE: available functions
+#   > get_consecutive_logs(logs) [default] --> gets consecutive logs on a set of logs
+#   > get_consecutive_rating_logs(logs, min_rating) --> gets consecutive logs on a set of logs rating >= min. rating
+#   > get_consecutive_peergrading_logs(target) --> gets consecutive peergrading logs done by target
+clogs = get_consecutive_logs(logs)", $params["when"]);
+        }
 
         // Then
         $this->assertTrue(isset($params["then"]));
-        $this->assertEquals("award_streak(target, \"$name\", progress)" . (!is_null($tokens) ? "\naward_tokens_type(target, \"streak\", $tokens, \"$name\", progress)" : ""), $params["then"]);
+        $this->assertEquals("award_streak(target, \"$name\", " . ($isPeriodic ? "plogs" : "clogs") . ")", $params["then"]);
     }
 
     /**
@@ -1434,16 +1418,21 @@ len(progress) > 0", $params["when"]);
      * @dataProvider streakSuccessProvider
      * @throws Exception
      */
-    public function generateRuleParamsNotFresh(string $name, string $description)
+    public function generateRuleParamsNotFreshPeriodic(string $name, string $description)
     {
         // Given
-        $when = "progress = None # Some changes";
-        $then = "# Some changes\naward_streak(target, \"$name\", progress)";
+        $when = "# Get target progress in streak
+        logs = get_skill_logs(target)
+
+        # Get only periodic progress
+        plogs = get_periodic_logs(logs, 1, \"week\", \"absolute\")";
+        $then = "award_streak(target, \"Constant Gardener\", plogs)";
 
         $rule = Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->addRule($name, $description, $when, $then);
 
         // When
-        $params = Streak::generateRuleParams("New Name", "New Description", null, false, $rule->getId());
+        $params = Streak::generateRuleParams("New Name", "New Description", 2,
+            "day", "relative", false, $rule->getId());
 
         // Then
 
@@ -1457,11 +1446,156 @@ len(progress) > 0", $params["when"]);
 
         // When
         $this->assertTrue(isset($params["when"]));
-        $this->assertEquals("progress = None # Some changes", $params["when"]);
+        $this->assertEquals("# Get target progress in streak
+        logs = get_skill_logs(target)
+
+        # Get only periodic progress
+        plogs = get_periodic_logs(logs, 2, \"day\", \"relative\")", $params["when"]);
 
         // Then
         $this->assertTrue(isset($params["then"]));
-        $this->assertEquals("# Some changes\naward_streak(target, \"New Name\", progress)", $params["then"]);
+        $this->assertEquals("award_streak(target, \"New Name\", plogs)", $params["then"]);
+    }
+
+    /**
+     * @test
+     * @dataProvider streakSuccessProvider
+     * @throws Exception
+     */
+    public function generateRuleParamsNotFreshConsecutive(string $name, string $description)
+    {
+        // Given
+        $when = "max_grade = METADATA[\"max_quiz_grade\"]
+
+        # Get target progress in streak
+        logs = get_quiz_logs(target)
+        flogs = filter_logs(logs, None, \"Dry Run\")
+
+        # Get only consecutive progress
+        clogs = get_consecutive_rating_logs(flogs, max_grade)";
+        $then = "award_streak(target, \"Sage\", clogs)";
+
+        $rule = Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->addRule($name, $description, $when, $then);
+
+        // When
+        $params = Streak::generateRuleParams("New Name", "New Description", null,
+            null, null, false, $rule->getId());
+
+        // Then
+
+        // Name
+        $this->assertTrue(isset($params["name"]));
+        $this->assertEquals("New Name", $params["name"]);
+
+        // Description
+        $this->assertTrue(isset($params["description"]));
+        $this->assertEquals("New Description", $params["description"]);
+
+        // When
+        $this->assertTrue(isset($params["when"]));
+        $this->assertEquals($when, $params["when"]);
+
+        // Then
+        $this->assertTrue(isset($params["then"]));
+        $this->assertEquals("award_streak(target, \"New Name\", clogs)", $params["then"]);
+    }
+
+    /**
+     * @test
+     * @dataProvider streakSuccessProvider
+     * @throws Exception
+     */
+    public function generateRuleParamsNotFreshConsecutiveToPeriodic(string $name, string $description)
+    {
+        // Given
+        $when = "max_grade = METADATA[\"max_quiz_grade\"]
+
+        # Get target progress in streak
+        logs = get_quiz_logs(target)
+        flogs = filter_logs(logs, None, \"Dry Run\")
+
+        # Get only consecutive progress
+        clogs = get_consecutive_rating_logs(flogs, max_grade)";
+        $then = "award_streak(target, \"Sage\", clogs)";
+
+        $rule = Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->addRule($name, $description, $when, $then);
+
+        // When
+        $params = Streak::generateRuleParams("New Name", "New Description", 1,
+            "week", "absolute", false, $rule->getId());
+
+        // Then
+
+        // Name
+        $this->assertTrue(isset($params["name"]));
+        $this->assertEquals("New Name", $params["name"]);
+
+        // Description
+        $this->assertTrue(isset($params["description"]));
+        $this->assertEquals("New Description", $params["description"]);
+
+        // When
+        $this->assertTrue(isset($params["when"]));
+        $this->assertEquals("max_grade = METADATA[\"max_quiz_grade\"]
+
+        # Get target progress in streak
+        logs = get_quiz_logs(target)
+        flogs = filter_logs(logs, None, \"Dry Run\")
+
+        # Get only periodic progress
+        plogs = get_periodic_logs(logs, 1, \"week\", \"absolute\")", $params["when"]);
+
+        // Then
+        $this->assertTrue(isset($params["then"]));
+        $this->assertEquals("award_streak(target, \"New Name\", clogs)", $params["then"]);
+    }
+
+    /**
+     * @test
+     * @dataProvider streakSuccessProvider
+     * @throws Exception
+     */
+    public function generateRuleParamsNotFreshPeriodicToConsecutive(string $name, string $description)
+    {
+        // Given
+        $when = "# Get target progress in streak
+        logs = get_skill_logs(target)
+
+        # Get only periodic progress
+        plogs = get_periodic_logs(logs, 1, \"week\", \"absolute\")";
+        $then = "award_streak(target, \"Constant Gardener\", plogs)";
+
+        $rule = Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->addRule($name, $description, $when, $then);
+
+        // When
+        $params = Streak::generateRuleParams("New Name", "New Description", null,
+            null, null, false, $rule->getId());
+
+        // Then
+
+        // Name
+        $this->assertTrue(isset($params["name"]));
+        $this->assertEquals("New Name", $params["name"]);
+
+        // Description
+        $this->assertTrue(isset($params["description"]));
+        $this->assertEquals("New Description", $params["description"]);
+
+        // When
+        $this->assertTrue(isset($params["when"]));
+        $this->assertEquals("# Get target progress in streak
+logs = [] # COMPLETE THIS: get appropriate logs for this streak
+
+# Get only consecutive progress
+# NOTE: available functions
+#   > get_consecutive_logs(logs) [default] --> gets consecutive logs on a set of logs
+#   > get_consecutive_rating_logs(logs, min_rating) --> gets consecutive logs on a set of logs rating >= min. rating
+#   > get_consecutive_peergrading_logs(target) --> gets consecutive peergrading logs done by target
+clogs = get_consecutive_logs(logs)", $params["when"]);
+
+        // Then
+        $this->assertTrue(isset($params["then"]));
+        $this->assertEquals("award_streak(target, \"New Name\", clogs)", $params["then"]);
     }
 
 
