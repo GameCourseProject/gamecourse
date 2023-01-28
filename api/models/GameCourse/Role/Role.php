@@ -171,15 +171,17 @@ class Role
         //$courseRoles = self::getCourseRoles($courseId);
         //$parentIndex = array_search($parent, $courseRoles);
 
+        $hierarchy = $course->getRolesHierarchy();
+        $indexes = array_keys($hierarchy);
+        $parentIndex = end($indexes);
+
         // Add children
         foreach($children as $child){
             self::addRoleToCourse($courseId, $child, null, null, $moduleId);
 
             // Update hierarchy
-            $hierarchy = $course->getRolesHierarchy();
-            $parentIndex = array_search($parent, $hierarchy);
             if (in_array("children", array_keys($hierarchy[$parentIndex]))){
-                array_push($hierarchy[$parentIndex]["children"], ["name"=>$child]);
+                array_push($hierarchy[$parentIndex]["children"], ["name" => $child]);
                 $course->setRolesHierarchy($hierarchy);
                 continue;
             }

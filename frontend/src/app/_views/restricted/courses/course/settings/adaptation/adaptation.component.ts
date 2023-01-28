@@ -75,6 +75,7 @@ export class AdaptationComponent implements OnInit {
     for (let i = 0; i < elements.length; i++){
       this.availableGameElements.push({value: elements[i], text: elements[i]});
     }
+
     console.log(this.availableGameElements);
   }
 
