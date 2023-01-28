@@ -41,10 +41,11 @@ import { InputRadioComponent } from './_components/inputs/checkbox & radio/input
 import { InputToggleComponent } from './_components/inputs/toggle/input-toggle/input-toggle.component';
 import { InputSelectComponent } from './_components/inputs/select/input-select/input-select.component';
 import { InputSelectWeekdayComponent } from './_components/inputs/select/input-select-weekday/input-select-weekday.component';
-import { InputSelectPeriodicityComponent } from './_components/inputs/select/input-select-periodicity/input-select-periodicity.component';
 import { InputDateComponent } from './_components/inputs/date & time/input-date/input-date.component';
 import { InputTimeComponent } from './_components/inputs/date & time/input-time/input-time.component';
 import { InputDatetimeComponent } from './_components/inputs/date & time/input-datetime/input-datetime.component';
+import { InputPeriodicityComponent } from './_components/inputs/date & time/input-periodicity/input-periodicity.component';
+import { InputScheduleComponent } from './_components/inputs/date & time/input-schedule/input-schedule.component';
 import { ThemeTogglerComponent } from './_components/inputs/misc/theme-toggler/theme-toggler.component';
 
 // Components: charts
@@ -145,6 +146,7 @@ import {
   TablerAward,
   TablerBarrierBlock,
   TablerBooks,
+  TablerCalendarTime,
   TablerCaretDown,
   TablerClipboardList,
   TablerCloudUpload,
@@ -192,10 +194,11 @@ import {
     InputToggleComponent,
     InputSelectComponent,
     InputSelectWeekdayComponent,
-    InputSelectPeriodicityComponent,
     InputDateComponent,
     InputTimeComponent,
     InputDatetimeComponent,
+    InputPeriodicityComponent,
+    InputScheduleComponent,
     ThemeTogglerComponent,
 
     LineChartComponent,
@@ -272,6 +275,8 @@ import {
     InputDateComponent,
     InputTimeComponent,
     InputDatetimeComponent,
+    InputPeriodicityComponent,
+    InputScheduleComponent,
     ThemeTogglerComponent,
 
     LineChartComponent,
@@ -306,14 +311,13 @@ import {
     HeaderComponent,
     TopActionsComponent,
     LoaderComponent,
+    LogsViewerComponent,
     PageNotFoundComponent,
     NoAccessComponent,
     ComingSoonComponent,
 
     NgIconsModule,
-    FormsModule,
-    InputSelectPeriodicityComponent,
-    LogsViewerComponent
+    FormsModule
   ],
   imports: [
     CommonModule,
@@ -360,6 +364,7 @@ import {
       TablerAward,
       TablerBarrierBlock,
       TablerBooks,
+      TablerCalendarTime,
       TablerCaretDown,
       TablerClipboardList,
       TablerCloudUpload,

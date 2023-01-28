@@ -540,7 +540,7 @@
 
       <!-- Periodicity -->
       <ng-container *ngIf="artifact.type === InputType.PERIODICITY">
-        <app-input-select-periodicity
+        <app-input-periodicity
           [id]="artifact.id"
           [form]="form"
           [(value)]="artifact.value"
@@ -559,7 +559,7 @@
           [minNumber]="$any(artifact.options.minNumber) ?? null"
           [maxNumber]="$any(artifact.options.maxNumber) ?? null"
           (valueChange)="setItemToManage(artifact, $event)">
-        </app-input-select-periodicity>
+        </app-input-periodicity>
       </ng-container>
 
       <!-- Weekday -->
