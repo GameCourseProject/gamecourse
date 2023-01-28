@@ -56,6 +56,9 @@ import {
   QRParticipation
 } from 'src/app/_views/restricted/courses/course/settings/modules/config/personalized-config/qr/qr.component';
 import {SetupData} from "../../_views/setup/setup/setup.component";
+import {
+  DataSourceStatus
+} from "../../_views/restricted/courses/course/settings/modules/config/data-source-status/data-source-status.component";
 
 @Injectable({
   providedIn: 'root'
@@ -1013,6 +1016,21 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
+  public getDataSourceStatus(courseID: number, moduleID: string): Observable<DataSourceStatus> {
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'getDataSourceStatus');
+      qs.push('courseId', courseID);
+      qs.push('moduleId', moduleID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
   public saveModuleConfig(courseID: number, moduleID: string, generalInputs?: ConfigInputItem[], listingItem?: any,
                           listName?: string, action?: Action | string): Observable<string> {
     const data = {
@@ -1035,6 +1053,23 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res ? res['data'] : null) );
+  }
+
+  public changeDataSourceStatus(courseID: number, moduleID: string, status: boolean): Observable<void> {
+    const data = {
+      "courseId": courseID,
+      "moduleId": moduleID,
+      status
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'changeDataSourceStatus');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res ) );
   }
 
   // TODO: refactor

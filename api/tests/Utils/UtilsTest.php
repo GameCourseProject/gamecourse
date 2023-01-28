@@ -4,6 +4,8 @@ namespace Utils;
 use Exception;
 use GameCourse\Core\Core;
 use PHPUnit\Framework\TestCase;
+use TestingUtils;
+use Throwable;
 
 /**
  * NOTE: only run tests outside the production environment as
@@ -11,6 +13,41 @@ use PHPUnit\Framework\TestCase;
  */
 class UtilsTest extends TestCase
 {
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------- Setup & Tear Down ----------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * @throws Exception
+     */
+    public static function setUpBeforeClass(): void
+    {
+        TestingUtils::setUpBeforeClass();
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function tearDown(): void
+    {
+        TestingUtils::cleanFileStructure();
+    }
+
+    protected function onNotSuccessfulTest(Throwable $t): void
+    {
+        $this->tearDown();
+        parent::onNotSuccessfulTest($t);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public static function tearDownAfterClass(): void
+    {
+        TestingUtils::tearDownAfterClass();
+    }
+
+
     /*** ---------------------------------------------------- ***/
     /*** ------------------ Data Providers ------------------ ***/
     /*** ---------------------------------------------------- ***/
@@ -184,6 +221,16 @@ class UtilsTest extends TestCase
             "delete: start" => [0, null, 1],
             "delete: middle" => [1, null, 2],
             "delete: end" => [2, null, 3]
+        ];
+    }
+
+
+    public function addLogFileProvider(): array
+    {
+        return [
+            "1st level" => ["test.txt"],
+            "2nd level" => ["dir/test.txt"],
+            "3rd level" => ["dir/dir/test.txt"]
         ];
     }
 
@@ -1478,5 +1525,101 @@ class UtilsTest extends TestCase
     private function getItemPosition(string $table, string $key, int $itemId): int
     {
         return intval(Core::database()->select($table, ["id" => $itemId], $key));
+    }
+
+
+    // Logging
+
+    /**
+     * @test
+     * @dataProvider addLogFileProvider
+     */
+    public function initLogging(string $path)
+    {
+        Utils::initLogging($path);
+        $this->assertTrue(file_exists(LOGS_FOLDER . "/" . $path));
+        $this->assertEmpty(file_get_contents(LOGS_FOLDER . "/" . $path));
+    }
+
+    /**
+     * @test
+     * @dataProvider addLogFileProvider
+     * @throws Exception
+     */
+    public function removeLogging(string $path)
+    {
+        Utils::initLogging($path);
+        Utils::removeLogging($path);
+        $this->assertFalse(file_exists(LOGS_FOLDER . "/" . $path));
+    }
+
+    /**
+     * @test
+     * @dataProvider addLogFileProvider
+     */
+    public function getLogs(string $path)
+    {
+        // Empty
+        Utils::initLogging($path);
+        $this->assertEmpty(Utils::getLogs($path));
+
+        // Not empty
+        Utils::addLog($path, "Testing 1");
+        Utils::addLog($path, "Testing 2", "INFO");
+        Utils::addLog($path, "Testing 3", "WARNING");
+        $this->assertEquals($this->trim("
+================================================================================
+[" . date("Y/m/d H:i:s", time()) . "] [ERROR] : Testing 1
+================================================================================
+
+
+================================================================================
+[" . date("Y/m/d H:i:s", time()) . "] [INFO] : Testing 2
+================================================================================
+
+
+================================================================================
+[" . date("Y/m/d H:i:s", time()) . "] [WARNING] : Testing 3
+================================================================================
+
+"), $this->trim(Utils::getLogs($path)));
+    }
+
+    /**
+     * @test
+     * @dataProvider addLogFileProvider
+     * @throws Exception
+     */
+    public function addLog(string $path)
+    {
+        Utils::addLog($path, "Testing 1");
+        Utils::addLog($path, "Testing 2", "INFO");
+        Utils::addLog($path, "Testing 3", "WARNING");
+        $this->assertEquals($this->trim("
+================================================================================
+[" . date("Y/m/d H:i:s", time()) . "] [ERROR] : Testing 1
+================================================================================
+
+
+================================================================================
+[" . date("Y/m/d H:i:s", time()) . "] [INFO] : Testing 2
+================================================================================
+
+
+================================================================================
+[" . date("Y/m/d H:i:s", time()) . "] [WARNING] : Testing 3
+================================================================================
+
+"), $this->trim(Utils::getLogs($path)));
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------------- Helpers ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    private function trim(string $str)
+    {
+        return str_replace("\r", "", $str);
     }
 }

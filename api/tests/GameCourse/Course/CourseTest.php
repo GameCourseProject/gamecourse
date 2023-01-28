@@ -21,6 +21,7 @@ use TestingUtils;
 use Throwable;
 use TypeError;
 use Utils\Cache;
+use Utils\Time;
 use Utils\Utils;
 
 /**
@@ -1051,7 +1052,7 @@ class CourseTest extends TestCase
         $autogame = Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $course->getId()]);
         $this->assertFalse(boolval($autogame["isRunning"]));
         $this->assertEquals(10, $autogame["periodicityNumber"]);
-        $this->assertEquals("Minutes", $autogame["periodicityTime"]);
+        $this->assertEquals(Time::MINUTE, $autogame["periodicityTime"]);
 
         $this->assertTrue(file_exists(RuleSystem::getDataFolder($course->getId())));
         $this->assertTrue(file_exists(AUTOGAME_FOLDER . "/imported-functions/" . $course->getId()));

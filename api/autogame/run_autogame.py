@@ -86,7 +86,7 @@ def log_end():
     logging.info("AutoGame finished running.\n\n" +
                  "AutoGame ran for the following targets:\n\n" +
                  "TOTAL = " + str(len(list(students.keys()))) + "\n" +
-                 targets_str + "\n")
+                 targets_str)
 
 
 ### ------------------------------------------------------ ###

@@ -10,6 +10,9 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use Throwable;
+use Utils\CronJob;
+use Utils\Time;
+use Utils\Utils;
 
 /**
  * This is the ClassCheck module, which serves as a compartimentalized
@@ -19,6 +22,8 @@ class ClassCheck extends Module
 {
     const TABLE_CLASSCHECK_CONFIG = "classcheck_config";
     const TABLE_CLASSCHECK_STATUS = "classcheck_status";
+
+    const LOGS_FOLDER = "classcheck";
 
     public function __construct(?Course $course)
     {
@@ -58,6 +63,10 @@ class ClassCheck extends Module
         // Init config & status
         Core::database()->insert(self::TABLE_CLASSCHECK_CONFIG, ["course" => $this->getCourse()->getId()]);
         Core::database()->insert(self::TABLE_CLASSCHECK_STATUS, ["course" => $this->getCourse()->getId()]);
+
+        // Setup logging
+        $logsFile = self::getLogsFile($this->getCourse()->getId());
+        Utils::initLogging($logsFile);
     }
 
     /**
@@ -68,9 +77,19 @@ class ClassCheck extends Module
         // Nothing to do here
     }
 
+    /**
+     * @throws Exception
+     */
     public function disable()
     {
         $this->cleanDatabase();
+
+        // Disable auto importing
+        $this->setAutoImporting(false);
+
+        // Remove logging info
+        $logsFile = self::getLogsFile($this->getCourse()->getId());
+        Utils::removeLogging($logsFile);
     }
 
 
@@ -109,6 +128,32 @@ class ClassCheck extends Module
                         ]
                     ]
                 ]
+            ],
+            [
+                "name" => "Frequency",
+                "description" => "Define how frequently data should be imported from " . self::NAME . ".",
+                "contents" => [
+                    [
+                        "contentType" => "container",
+                        "classList" => "flex flex-wrap items-center",
+                        "contents" => [
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::PERIODICITY,
+                                "id" => "periodicity",
+                                "value" => $this->getPeriodicity(),
+                                "placeholder" => "Period of time",
+                                "options" => [
+                                    "filterOptions" => [Time::SECOND, Time::YEAR, Time::MONTH],
+                                    "topLabel" => "Import data every...",
+                                    "minNumber" => 1,
+                                    "required" => true,
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
             ]
         ];
     }
@@ -120,41 +165,8 @@ class ClassCheck extends Module
     {
         foreach ($inputs as $input) {
             if ($input["id"] == "tsvCode") $this->saveTSVCode($input["value"]);
+            if ($input["id"] == "periodicity") $this->savePeriodicity($input["value"]["number"], $input["value"]["time"]);
         }
-    }
-
-    public function getLists(): array
-    {
-        return [
-            [
-                "name" => "Status",
-                "description" => "Check whether " . self::NAME . " is currently running and when it last imported new data.",
-                "itemName" => "status",
-                "headers" => [
-                    ["label" => "Started importing data", "align" => "middle"],
-                    ["label" => "Finished importing data", "align" => "middle"],
-                    ["label" => "Now", "align" => "middle"]
-                ],
-                "data" => [
-                    [
-                        ["type" => DataType::DATETIME, "content" => ["datetime" => $this->getStartedRunning()]],
-                        ["type" => DataType::DATETIME, "content" => ["datetime" => $this->getFinishedRunning()]],
-                        ["type" => DataType::COLOR, "content" => ["color" => $this->isRunning() ? "#36D399" : "#EF6060", "colorLabel" => $this->isRunning() ? "Importing" : "Not importing"]]
-                    ]
-                ],
-                "options" => [
-                    "searching" => false,
-                    "lengthChange" => false,
-                    "paging" => false,
-                    "info" => false,
-                    "hasColumnFiltering" => false,
-                    "hasFooters" => false,
-                    "columnDefs" => [
-                        ["orderable" => false, "targets" => [0, 1, 2]]
-                    ]
-                ]
-            ]
-        ];
     }
 
 
@@ -184,7 +196,42 @@ class ClassCheck extends Module
     }
 
 
+    public function getPeriodicity(): array
+    {
+        $periodicity = Core::database()->select(self::TABLE_CLASSCHECK_CONFIG, ["course" => $this->getCourse()->getId()], "periodicityNumber, periodicityTime");
+        return ["number" => intval($periodicity["periodicityNumber"]), "time" => $periodicity["periodicityTime"]];
+    }
+
+    public function savePeriodicity(?int $periodicityNumber, ?string $periodicityTime)
+    {
+        Core::database()->update(self::TABLE_CLASSCHECK_CONFIG, [
+            "periodicityNumber" => $periodicityNumber,
+            "periodicityTime" => $periodicityTime
+        ], ["course" => $this->getCourse()->getId()]);
+    }
+
+
     /*** ---------- Status ---------- ***/
+
+    public function isAutoImporting(): bool
+    {
+        return boolval(Core::database()->select(self::TABLE_CLASSCHECK_STATUS, ["course" => $this->getCourse()->getId()], "isEnabled"));
+    }
+
+    public function setAutoImporting(bool $enable)
+    {
+        $courseId = $this->getCourse()->getId();
+
+        if ($enable) { // enable classcheck
+            $periodicity = $this->getPeriodicity();
+            new CronJob(self::ID, $courseId, $periodicity["number"],  $periodicity["time"]);
+
+        } else { // disable autogame
+            CronJob::removeCronJob(self::ID, $courseId);
+        }
+        Core::database()->update(self::TABLE_CLASSCHECK_STATUS, ["isEnabled" => $enable], ["course" => $courseId]);
+    }
+
 
     public function getStartedRunning(): ?string
     {
@@ -216,6 +263,49 @@ class ClassCheck extends Module
     public function setIsRunning(bool $status)
     {
         Core::database()->update(self::TABLE_CLASSCHECK_STATUS, ["isRunning" => $status], ["course" => $this->getCourse()->getId()]);
+    }
+
+
+    /*** --------- Logging ---------- ***/
+
+    /**
+     * Gets ClassCheck logs for a given course.
+     *
+     * @param int $courseId
+     * @return string
+     */
+    public static function getRunningLogs(int $courseId): string
+    {
+        $logsFile = self::getLogsFile($courseId);
+        return Utils::getLogs($logsFile);
+    }
+
+    /**
+     * Creates a new ClassCheck log on a given course.
+     *
+     * @param int $courseId
+     * @param string $message
+     * @param string $type
+     * @return void
+     */
+    public static function log(int $courseId, string $message, string $type = "ERROR")
+    {
+        $logsFile = self::getLogsFile($courseId);
+        Utils::addLog($logsFile, $message, $type);
+    }
+
+    /**
+     * Gets ClassCheck logs file for a given course.
+     *
+     * @param int $courseId
+     * @param bool $fullPath
+     * @return string
+     */
+    private static function getLogsFile(int $courseId, bool $fullPath = true): string
+    {
+        $filename = "classcheck_$courseId.txt";
+        if ($fullPath) return self::LOGS_FOLDER . "/" . $filename;
+        else return $filename;
     }
 
 

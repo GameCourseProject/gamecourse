@@ -88,6 +88,7 @@ import { AutoGameToastComponent } from './_components/misc/autogame-toast/auto-g
 import { HeaderComponent } from './_components/misc/header/header.component';
 import { TopActionsComponent } from './_components/misc/top-actions/top-actions.component';
 import { LoaderComponent } from './_components/misc/loader/loader.component';
+import { LogsViewerComponent } from './_components/misc/logs-viewer/logs-viewer.component';
 
 import { PageNotFoundComponent } from './_components/misc/pages/page-not-found/page-not-found.component';
 import { NoAccessComponent } from './_components/misc/pages/no-access/no-access.component';
@@ -97,6 +98,7 @@ import { ComingSoonComponent } from './_components/misc/pages/coming-soon/coming
 import { NgIconsModule } from "@ng-icons/core";
 import { DataTablesModule } from "angular-datatables";
 import { NgApexchartsModule } from "ng-apexcharts";
+import { ScrollingModule } from "@angular/cdk/scrolling";
 
 // Icons
 import {
@@ -228,6 +230,7 @@ import {
     HeaderComponent,
     TopActionsComponent,
     LoaderComponent,
+    LogsViewerComponent,
     PageNotFoundComponent,
     NoAccessComponent,
     ComingSoonComponent
@@ -309,7 +312,8 @@ import {
 
     NgIconsModule,
     FormsModule,
-    InputSelectPeriodicityComponent
+    InputSelectPeriodicityComponent,
+    LogsViewerComponent
   ],
   imports: [
     CommonModule,
@@ -367,7 +371,8 @@ import {
       TablerSchool
     }),
     DataTablesModule,
-    NgApexchartsModule
+    NgApexchartsModule,
+    ScrollingModule
   ]
 })
 export class SharedModule { }

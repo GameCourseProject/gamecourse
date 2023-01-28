@@ -326,11 +326,13 @@ CREATE TABLE page(
 
 CREATE TABLE autogame(
     course 	                    int unsigned NOT NULL PRIMARY KEY,
+    isEnabled                   boolean DEFAULT FALSE,
     startedRunning              TIMESTAMP NULL DEFAULT NULL,
     finishedRunning             TIMESTAMP NULL DEFAULT NULL,
     isRunning                   boolean DEFAULT FALSE,
+    runNext                     boolean DEFAULT FALSE,
     periodicityNumber           int unsigned DEFAULT 10,
-    periodicityTime             varchar(25) DEFAULT 'Minutes',
+    periodicityTime             varchar(25) DEFAULT 'minute',
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
