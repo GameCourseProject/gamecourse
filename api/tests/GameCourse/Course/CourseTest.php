@@ -1061,8 +1061,8 @@ class CourseTest extends TestCase
         $this->assertEquals("", file_get_contents(AUTOGAME_FOLDER . "/config/config_" . $course->getId() . ".txt"));
 
         // Check logging
-        $this->assertTrue(file_exists(LOGS_FOLDER . "/autogame_" . $course->getId() . ".txt"));
-        $this->assertEquals("", file_get_contents(LOGS_FOLDER . "/autogame_" . $course->getId() . ".txt"));
+        $this->assertTrue(file_exists(LOGS_FOLDER . "/" . AutoGame::LOGS_FOLDER . "/autogame_" . $course->getId() . ".txt"));
+        $this->assertEquals("", file_get_contents(LOGS_FOLDER . "/" . AutoGame::LOGS_FOLDER . "/autogame_" . $course->getId() . ".txt"));
     }
 
     /**

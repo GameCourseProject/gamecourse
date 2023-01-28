@@ -5,12 +5,14 @@ use Exception;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\Config\DataType;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GoogleHandler;
 use Throwable;
+use Utils\CronJob;
+use Utils\Time;
+use Utils\Utils;
 
 /**
  * This is the Google Sheets module, which serves as a compartimentalized
@@ -20,6 +22,8 @@ class GoogleSheets extends Module
 {
     const TABLE_GOOGLESHEETS_CONFIG = "googlesheets_config";
     const TABLE_GOOGLESHEETS_STATUS = "googlesheets_status";
+
+    const LOGS_FOLDER = "googlesheets";
 
     public function __construct(?Course $course)
     {
@@ -59,6 +63,10 @@ class GoogleSheets extends Module
         // Init config & status
         Core::database()->insert(self::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->getCourse()->getId()]);
         Core::database()->insert(self::TABLE_GOOGLESHEETS_STATUS, ["course" => $this->getCourse()->getId()]);
+
+        // Setup logging
+        $logsFile = self::getLogsFile($this->getCourse()->getId());
+        Utils::initLogging($logsFile);
     }
 
     /**
@@ -71,6 +79,13 @@ class GoogleSheets extends Module
 
     public function disable()
     {
+        // Disable auto importing
+        $this->setAutoImporting(false);
+
+        // Remove logging info
+        $logsFile = self::getLogsFile($this->getCourse()->getId());
+        Utils::removeLogging($logsFile);
+
         $this->cleanDatabase();
     }
 
@@ -84,38 +99,46 @@ class GoogleSheets extends Module
         return true;
     }
 
-    public function getLists(): array
+    public function getGeneralInputs(): array
     {
         return [
             [
-                "name" => "Status",
-                "description" => "Check whether " . self::NAME . " is currently running and when it last imported new data.",
-                "itemName" => "status",
-                "headers" => [
-                    ["label" => "Started importing data", "align" => "middle"],
-                    ["label" => "Finished importing data", "align" => "middle"],
-                    ["label" => "Now", "align" => "middle"]
-                ],
-                "data" => [
+                "name" => "Frequency",
+                "description" => "Define how frequently data should be imported from " . self::NAME . ".",
+                "contents" => [
                     [
-                        ["type" => DataType::DATETIME, "content" => ["datetime" => $this->getStartedRunning()]],
-                        ["type" => DataType::DATETIME, "content" => ["datetime" => $this->getFinishedRunning()]],
-                        ["type" => DataType::COLOR, "content" => ["color" => $this->isRunning() ? "#36D399" : "#EF6060", "colorLabel" => $this->isRunning() ? "Importing" : "Not importing"]]
-                    ]
-                ],
-                "options" => [
-                    "searching" => false,
-                    "lengthChange" => false,
-                    "paging" => false,
-                    "info" => false,
-                    "hasColumnFiltering" => false,
-                    "hasFooters" => false,
-                    "columnDefs" => [
-                        ["orderable" => false, "targets" => [0, 1, 2]]
+                        "contentType" => "container",
+                        "classList" => "flex flex-wrap items-center",
+                        "contents" => [
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::PERIODICITY,
+                                "id" => "periodicity",
+                                "value" => $this->getPeriodicity(),
+                                "placeholder" => "Period of time",
+                                "options" => [
+                                    "filterOptions" => [Time::SECOND, Time::YEAR, Time::MONTH],
+                                    "topLabel" => "Import data every...",
+                                    "minNumber" => 1,
+                                    "required" => true,
+                                ]
+                            ]
+                        ]
                     ]
                 ]
             ]
         ];
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function saveGeneralInputs(array $inputs)
+    {
+        foreach ($inputs as $input) {
+            if ($input["id"] == "periodicity") $this->savePeriodicity($input["value"]["number"], $input["value"]["time"]);
+        }
     }
 
     public function getPersonalizedConfig(): ?array
@@ -177,6 +200,21 @@ class GoogleSheets extends Module
         ], ["course" => $this->getCourse()->getId()]);
 
         $this->saveToken();
+    }
+
+
+    public function getPeriodicity(): array
+    {
+        $periodicity = Core::database()->select(self::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->getCourse()->getId()], "periodicityNumber, periodicityTime");
+        return ["number" => intval($periodicity["periodicityNumber"]), "time" => $periodicity["periodicityTime"]];
+    }
+
+    public function savePeriodicity(?int $periodicityNumber, ?string $periodicityTime)
+    {
+        Core::database()->update(self::TABLE_GOOGLESHEETS_CONFIG, [
+            "periodicityNumber" => $periodicityNumber,
+            "periodicityTime" => $periodicityTime
+        ], ["course" => $this->getCourse()->getId()]);
     }
 
 
@@ -305,6 +343,26 @@ class GoogleSheets extends Module
 
     /*** ---------- Status ---------- ***/
 
+    public function isAutoImporting(): bool
+    {
+        return boolval(Core::database()->select(self::TABLE_GOOGLESHEETS_STATUS, ["course" => $this->getCourse()->getId()], "isEnabled"));
+    }
+
+    public function setAutoImporting(bool $enable)
+    {
+        $courseId = $this->getCourse()->getId();
+
+        if ($enable) { // enable googlesheets
+            $periodicity = $this->getPeriodicity();
+            new CronJob(self::ID, $courseId, $periodicity["number"],  $periodicity["time"]);
+
+        } else { // disable googlesheets
+            CronJob::removeCronJob(self::ID, $courseId);
+        }
+        Core::database()->update(self::TABLE_GOOGLESHEETS_STATUS, ["isEnabled" => $enable], ["course" => $courseId]);
+    }
+
+
     public function getStartedRunning(): ?string
     {
         return Core::database()->select(self::TABLE_GOOGLESHEETS_STATUS, ["course" => $this->getCourse()->getId()], "startedRunning");
@@ -335,6 +393,49 @@ class GoogleSheets extends Module
     public function setIsRunning(bool $status)
     {
         Core::database()->update(self::TABLE_GOOGLESHEETS_STATUS, ["isRunning" => $status], ["course" => $this->getCourse()->getId()]);
+    }
+
+
+    /*** --------- Logging ---------- ***/
+
+    /**
+     * Gets GoogleSheets logs for a given course.
+     *
+     * @param int $courseId
+     * @return string
+     */
+    public static function getRunningLogs(int $courseId): string
+    {
+        $logsFile = self::getLogsFile($courseId);
+        return Utils::getLogs($logsFile);
+    }
+
+    /**
+     * Creates a new GoogleSheets log on a given course.
+     *
+     * @param int $courseId
+     * @param string $message
+     * @param string $type
+     * @return void
+     */
+    public static function log(int $courseId, string $message, string $type = "ERROR")
+    {
+        $logsFile = self::getLogsFile($courseId);
+        Utils::addLog($logsFile, $message, $type);
+    }
+
+    /**
+     * Gets GoogleSheets logs file for a given course.
+     *
+     * @param int $courseId
+     * @param bool $fullPath
+     * @return string
+     */
+    private static function getLogsFile(int $courseId, bool $fullPath = true): string
+    {
+        $filename = "googlesheets_$courseId.txt";
+        if ($fullPath) return self::LOGS_FOLDER . "/" . $filename;
+        else return $filename;
     }
 
 

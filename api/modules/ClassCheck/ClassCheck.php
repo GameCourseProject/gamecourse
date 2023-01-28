@@ -5,7 +5,6 @@ use Exception;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\Config\DataType;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
@@ -82,14 +81,14 @@ class ClassCheck extends Module
      */
     public function disable()
     {
-        $this->cleanDatabase();
-
         // Disable auto importing
         $this->setAutoImporting(false);
 
         // Remove logging info
         $logsFile = self::getLogsFile($this->getCourse()->getId());
         Utils::removeLogging($logsFile);
+
+        $this->cleanDatabase();
     }
 
 
@@ -226,7 +225,7 @@ class ClassCheck extends Module
             $periodicity = $this->getPeriodicity();
             new CronJob(self::ID, $courseId, $periodicity["number"],  $periodicity["time"]);
 
-        } else { // disable autogame
+        } else { // disable classcheck
             CronJob::removeCronJob(self::ID, $courseId);
         }
         Core::database()->update(self::TABLE_CLASSCHECK_STATUS, ["isEnabled" => $enable], ["course" => $courseId]);

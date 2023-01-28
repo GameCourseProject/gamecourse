@@ -10,6 +10,7 @@ use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
+use Utils\Time;
 
 /**
  * NOTE: only run tests outside the production environment as
@@ -161,7 +162,62 @@ class ClassCheckTest extends TestCase
     }
 
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getPeriodicity()
+    {
+        $periodicity = $this->module->getPeriodicity();
+        $this->assertEquals(10, $periodicity["number"]);
+        $this->assertEquals(Time::MINUTE, $periodicity["time"]);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function savePeriodicity()
+    {
+        $this->module->savePeriodicity(2, Time::DAY);
+        $periodicity = $this->module->getPeriodicity();
+        $this->assertEquals(2, $periodicity["number"]);
+        $this->assertEquals(Time::DAY, $periodicity["time"]);
+    }
+
+
     // Status
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isAutoImporting()
+    {
+        $this->module->setAutoImporting(true);
+        $this->assertTrue($this->module->isAutoImporting());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isNotAutoImporting()
+    {
+        $this->module->setAutoImporting(false);
+        $this->assertFalse($this->module->isAutoImporting());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setAutoImporting()
+    {
+        $this->module->setAutoImporting(true);
+        $this->assertTrue($this->module->isAutoImporting());
+    }
+
 
     /**
      * @test
@@ -224,6 +280,10 @@ class ClassCheckTest extends TestCase
         $this->assertFalse($this->module->isRunning());
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
     public function setIsRunning()
     {
         $this->module->setIsRunning(true);

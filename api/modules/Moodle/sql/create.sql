@@ -8,12 +8,15 @@ CREATE TABLE IF NOT EXISTS moodle_config(
     tablesPrefix                varchar(25),
     moodleURL                   varchar(100),
     moodleCourse                int unsigned DEFAULT NULL,
+    periodicityNumber           int unsigned DEFAULT 10,
+    periodicityTime             varchar(25) DEFAULT 'minute',
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS moodle_status(
     course                      int unsigned PRIMARY KEY,
+    isEnabled                   boolean DEFAULT FALSE,
     startedRunning              TIMESTAMP NULL DEFAULT NULL,
     finishedRunning             TIMESTAMP NULL DEFAULT NULL,
     isRunning                   boolean DEFAULT FALSE,

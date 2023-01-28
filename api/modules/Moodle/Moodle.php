@@ -6,12 +6,13 @@ use Exception;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\Config\DataType;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use PDO;
 use PDOException;
+use Utils\CronJob;
+use Utils\Time;
 use Utils\Utils;
 
 /**
@@ -22,6 +23,8 @@ class Moodle extends Module
 {
     const TABLE_MOODLE_CONFIG = "moodle_config";
     const TABLE_MOODLE_STATUS = "moodle_status";
+
+    const LOGS_FOLDER = "moodle";
 
     const DEFAULT_DB_SERVER = "db.rnl.tecnico.ulisboa.pt";
     const DEFAULT_DB_USER = "pcm_moodle";
@@ -76,6 +79,10 @@ class Moodle extends Module
             "moodleURL" => self::DEFAULT_MOODLE_URL
         ]);
         Core::database()->insert(self::TABLE_MOODLE_STATUS, ["course" => $this->getCourse()->getId()]);
+
+        // Setup logging
+        $logsFile = self::getLogsFile($this->getCourse()->getId());
+        Utils::initLogging($logsFile);
     }
 
     /**
@@ -88,6 +95,13 @@ class Moodle extends Module
 
     public function disable()
     {
+        // Disable auto importing
+        $this->setAutoImporting(false);
+
+        // Remove logging info
+        $logsFile = self::getLogsFile($this->getCourse()->getId());
+        Utils::removeLogging($logsFile);
+
         $this->cleanDatabase();
     }
 
@@ -236,6 +250,32 @@ class Moodle extends Module
                         ]
                     ]
                 ]
+            ],
+            [
+                "name" => "Frequency",
+                "description" => "Define how frequently data should be imported from " . self::NAME . ".",
+                "contents" => [
+                    [
+                        "contentType" => "container",
+                        "classList" => "flex flex-wrap items-center",
+                        "contents" => [
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::PERIODICITY,
+                                "id" => "periodicity",
+                                "value" => $this->getPeriodicity(),
+                                "placeholder" => "Period of time",
+                                "options" => [
+                                    "filterOptions" => [Time::SECOND, Time::YEAR, Time::MONTH],
+                                    "topLabel" => "Import data every...",
+                                    "minNumber" => 1,
+                                    "required" => true,
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
             ]
         ];
     }
@@ -260,40 +300,8 @@ class Moodle extends Module
 
         if (isset($inputs["dbServer"]) || isset($inputs["dbUser"]) || isset($inputs["dbPass"]) || isset($inputs["dbName"]) || isset($inputs["dbPort"]) || isset($inputs["tablesPrefix"]))
             $this->saveMoodleConfig($inputs["dbServer"], $inputs["dbUser"], $inputs["dbPass"], $inputs["dbName"], $inputs["dbPort"], $inputs["tablesPrefix"]);
-    }
 
-    public function getLists(): array
-    {
-        return [
-            [
-                "name" => "Status",
-                "description" => "Check whether " . self::NAME . " is currently running and when it last imported new data.",
-                "itemName" => "status",
-                "headers" => [
-                    ["label" => "Started importing data", "align" => "middle"],
-                    ["label" => "Finished importing data", "align" => "middle"],
-                    ["label" => "Now", "align" => "middle"]
-                ],
-                "data" => [
-                    [
-                        ["type" => DataType::DATETIME, "content" => ["datetime" => $this->getStartedRunning()]],
-                        ["type" => DataType::DATETIME, "content" => ["datetime" => $this->getFinishedRunning()]],
-                        ["type" => DataType::COLOR, "content" => ["color" => $this->isRunning() ? "#36D399" : "#EF6060", "colorLabel" => $this->isRunning() ? "Importing" : "Not importing"]]
-                    ]
-                ],
-                "options" => [
-                    "searching" => false,
-                    "lengthChange" => false,
-                    "paging" => false,
-                    "info" => false,
-                    "hasColumnFiltering" => false,
-                    "hasFooters" => false,
-                    "columnDefs" => [
-                        ["orderable" => false, "targets" => [0, 1, 2]]
-                    ]
-                ]
-            ]
-        ];
+        if ($input["id"] == "periodicity") $this->savePeriodicity($input["value"]["number"], $input["value"]["time"]);
     }
 
 
@@ -335,7 +343,42 @@ class Moodle extends Module
     }
 
 
+    public function getPeriodicity(): array
+    {
+        $periodicity = Core::database()->select(self::TABLE_MOODLE_CONFIG, ["course" => $this->getCourse()->getId()], "periodicityNumber, periodicityTime");
+        return ["number" => intval($periodicity["periodicityNumber"]), "time" => $periodicity["periodicityTime"]];
+    }
+
+    public function savePeriodicity(?int $periodicityNumber, ?string $periodicityTime)
+    {
+        Core::database()->update(self::TABLE_MOODLE_CONFIG, [
+            "periodicityNumber" => $periodicityNumber,
+            "periodicityTime" => $periodicityTime
+        ], ["course" => $this->getCourse()->getId()]);
+    }
+
+
     /*** ---------- Status ---------- ***/
+
+    public function isAutoImporting(): bool
+    {
+        return boolval(Core::database()->select(self::TABLE_MOODLE_STATUS, ["course" => $this->getCourse()->getId()], "isEnabled"));
+    }
+
+    public function setAutoImporting(bool $enable)
+    {
+        $courseId = $this->getCourse()->getId();
+
+        if ($enable) { // enable moodle
+            $periodicity = $this->getPeriodicity();
+            new CronJob(self::ID, $courseId, $periodicity["number"],  $periodicity["time"]);
+
+        } else { // disable moodle
+            CronJob::removeCronJob(self::ID, $courseId);
+        }
+        Core::database()->update(self::TABLE_MOODLE_STATUS, ["isEnabled" => $enable], ["course" => $courseId]);
+    }
+
 
     public function getStartedRunning(): ?string
     {
@@ -378,6 +421,49 @@ class Moodle extends Module
     public function setCheckpoint(string $datetime)
     {
         Core::database()->update(self::TABLE_MOODLE_STATUS, ["checkpoint" => $datetime], ["course" => $this->getCourse()->getId()]);
+    }
+
+
+    /*** --------- Logging ---------- ***/
+
+    /**
+     * Gets Moodle logs for a given course.
+     *
+     * @param int $courseId
+     * @return string
+     */
+    public static function getRunningLogs(int $courseId): string
+    {
+        $logsFile = self::getLogsFile($courseId);
+        return Utils::getLogs($logsFile);
+    }
+
+    /**
+     * Creates a new Moodle log on a given course.
+     *
+     * @param int $courseId
+     * @param string $message
+     * @param string $type
+     * @return void
+     */
+    public static function log(int $courseId, string $message, string $type = "ERROR")
+    {
+        $logsFile = self::getLogsFile($courseId);
+        Utils::addLog($logsFile, $message, $type);
+    }
+
+    /**
+     * Gets Moodle logs file for a given course.
+     *
+     * @param int $courseId
+     * @param bool $fullPath
+     * @return string
+     */
+    private static function getLogsFile(int $courseId, bool $fullPath = true): string
+    {
+        $filename = "moodle_$courseId.txt";
+        if ($fullPath) return self::LOGS_FOLDER . "/" . $filename;
+        else return $filename;
     }
 
 

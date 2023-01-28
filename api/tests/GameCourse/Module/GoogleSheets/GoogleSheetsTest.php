@@ -10,6 +10,7 @@ use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
+use Utils\Time;
 
 /**
  * NOTE: only run tests outside the production environment as
@@ -118,8 +119,10 @@ class GoogleSheetsTest extends TestCase
 
         $config = Core::database()->select(GoogleSheets::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->course->getId()]);
         unset($config["course"]);
-        foreach ($config as $value) {
-            $this->assertNull($value);
+        foreach ($config as $key => $value) {
+            if ($key === "periodicityNumber") $this->assertEquals(10, $value);
+            else if ($key === "periodicityTime") $this->assertEquals(Time::MINUTE, $value);
+            else $this->assertNull($value);
         }
     }
 
@@ -157,8 +160,62 @@ class GoogleSheetsTest extends TestCase
         $this->assertEmpty($config["ownerNames"]);
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getPeriodicity()
+    {
+        $periodicity = $this->module->getPeriodicity();
+        $this->assertEquals(10, $periodicity["number"]);
+        $this->assertEquals(Time::MINUTE, $periodicity["time"]);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function savePeriodicity()
+    {
+        $this->module->savePeriodicity(2, Time::DAY);
+        $periodicity = $this->module->getPeriodicity();
+        $this->assertEquals(2, $periodicity["number"]);
+        $this->assertEquals(Time::DAY, $periodicity["time"]);
+    }
+
 
     // Status
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isAutoImporting()
+    {
+        $this->module->setAutoImporting(true);
+        $this->assertTrue($this->module->isAutoImporting());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isNotAutoImporting()
+    {
+        $this->module->setAutoImporting(false);
+        $this->assertFalse($this->module->isAutoImporting());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setAutoImporting()
+    {
+        $this->module->setAutoImporting(true);
+        $this->assertTrue($this->module->isAutoImporting());
+    }
+
 
     /**
      * @test
