@@ -10,6 +10,7 @@ use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Role\Role;
 use Utils\Utils;
 
 /**
@@ -520,6 +521,21 @@ abstract class Module
         RuleSystem::addSection($this->course->getId(), $this::RULE_SECTION, 0, $this->id);
     }
 
+    /**
+     * Adds adaptation roles from the specific module to a course
+     *
+     * @param array $roles
+     * @param string $moduleId
+     * @return void
+     * @throws Exception
+     */
+    protected function addAdaptationRolesToCourse(array $roles, string $moduleId){
+        $parent = array_keys($roles)[0];
+        $children = array_values($roles)[0];
+
+        Role::addAdaptationRolesToCourse($this->course->getId(), $moduleId, $parent, $children);
+    }
+
 
     // Copying
 
@@ -590,6 +606,14 @@ abstract class Module
     {
         $sectionId = Section::getSectionByName($this->course->getId(), $this::RULE_SECTION)->getId();
         RuleSystem::deleteSection($sectionId);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function removeAdaptationRolesFromCourse(array $roles, string $moduleId){
+        $parent = array_keys($roles)[0];
+        Role::removeAdaptationRolesFromCourse($this->course->getId(), $moduleId, $parent);
     }
 
 

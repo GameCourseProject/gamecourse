@@ -15,7 +15,6 @@ use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
-use GameCourse\Role\Role;
 use Utils\Cache;
 use Utils\Utils;
 
@@ -81,29 +80,8 @@ class Badges extends Module
         // Init config
         Core::database()->insert(self::TABLE_BADGE_CONFIG, ["course" => $this->course->getId()]);
 
-        $this->addAdaptationRolesToCourse();
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function addAdaptationRolesToCourse(){
-
-        $parent = array_keys(self::ADAPTATION_BADGES)[0];
-        $children = array_values(self::ADAPTATION_BADGES)[0];
-
-        Role::addAdaptationRolesToCourse($this->course->getId(), self::ID, $parent, $children);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function removeAdaptationRolesFromCourse(){
-        $parent = array_keys(self::ADAPTATION_BADGES)[0];
-        $children = array_values(self::ADAPTATION_BADGES)[0];
-
-        //Role::removeAdaptationRolesFromCourse($this->course->getId(), self::ID, $parent);
-
+        // Add adaptation roles
+        $this->addAdaptationRolesToCourse(self::ADAPTATION_BADGES, self::ID);
     }
 
     /**
@@ -132,10 +110,10 @@ class Badges extends Module
      */
     public function disable()
     {
+        $this->removeAdaptationRolesFromCourse(self::ADAPTATION_BADGES, self::ID);
         $this->cleanDatabase();
         $this->removeDataFolder();
         $this->removeRules();
-        //$this->removeAdaptationRolesFromCourse();
     }
 
 

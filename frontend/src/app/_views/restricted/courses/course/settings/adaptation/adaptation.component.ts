@@ -110,7 +110,6 @@ export class AdaptationComponent implements OnInit {
         }
       ]);
     });
-
     this.data = table;
     this.loading.table = false;
   }

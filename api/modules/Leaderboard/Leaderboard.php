@@ -8,7 +8,6 @@ use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\XPLevels\XPLevels;
-use GameCourse\Role\Role;
 
 /**
  * This is the Leaderboard module, which serves as a compartimentalized
@@ -57,28 +56,7 @@ class Leaderboard extends Module
     public function init()
     {
         $this->initTemplates();
-        $this->addAdaptationRolesToCourse();
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function addAdaptationRolesToCourse(){
-        $parent = array_keys(self::ADAPTATION_LEADERBOARD)[0];
-        $children = array_values(self::ADAPTATION_LEADERBOARD)[0];
-
-        Role::addAdaptationRolesToCourse($this->course->getId(), self::ID, $parent, $children);
-
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function removeAdaptationRolesFromCourse(){
-        $parent = array_keys(self::ADAPTATION_LEADERBOARD)[0];
-        $children = array_values(self::ADAPTATION_LEADERBOARD)[0];
-
-        //Role::removeAdaptationRolesFromCourse($this->course->getId(), self::ID, $parent);
+        $this->addAdaptationRolesToCourse(self::ADAPTATION_LEADERBOARD, self::ID);
     }
 
     public function copyTo(Course $copyTo)
@@ -91,7 +69,7 @@ class Leaderboard extends Module
      */
     public function disable()
     {
+        $this->removeAdaptationRolesFromCourse(self::ADAPTATION_LEADERBOARD, self::ID);
         $this->removeTemplates();
-        //$this->removeAdaptationRolesFromCourse();
     }
 }

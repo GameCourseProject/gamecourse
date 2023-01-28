@@ -224,23 +224,27 @@ class Role
      * NOTE: it doesn't update roles hierarchy
      *
      * @param int $courseId
-     * @param array $roles
      * @param string|null $moduleId
+     * @param string $parent
      * @return void
      * @throws Exception
      */
-    public static function removeAdaptationRolesFromCourse(int $courseId, string $moduleId, string $parent, array $children = null){
+    public static function removeAdaptationRolesFromCourse(int $courseId, string $moduleId, string $parent){
 
-        $parentId = Role::getRoleId($parent, $courseId);
-        self::removeRoleFromCourse($courseId, $parent, $parentId, $moduleId);
+        self::removeRoleFromCourse($courseId, null, null, $moduleId);
 
-        if ($children){
-            foreach ($children as $child){
-                $childId = Role::getRoleId($child, $courseId);
-                Role::removeRoleFromCourse($courseId, $child, $childId, $moduleId);
+        $course = new Course($courseId);
+
+        // Update hierarchy
+        $hierarchy = $course->getRolesHierarchy();
+        $keys = array_keys($hierarchy);
+
+        foreach ($keys as $key){
+            if (array_values($hierarchy[$key])[0] == $parent){
+                unset($hierarchy[$key]);
             }
-            // TODO: UPDATE HIERARCHY
         }
+        $course->setRolesHierarchy($hierarchy);
     }
 
     /**
