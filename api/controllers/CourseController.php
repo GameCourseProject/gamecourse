@@ -578,27 +578,11 @@ class CourseController
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
-
         API::requireCourseAdminPermission($course);
 
-        $roles = Role::getAdaptationCourseRoles($courseId);
-        API::response($roles);
-    }
+        $onlyParents = API::getValue("onlyParents", "bool") ?? false;
 
-    /**
-     * @throws Exception
-     */
-    public function getAdaptationParentRoles()
-    {
-        API::requireValues("courseId");
-
-        $courseId = API::getValue("courseId", "int");
-        $course = API::verifyCourseExists($courseId);
-
-        API::requireCourseAdminPermission($course);
-
-        $roles = Role::getAdaptationParentCourseRoles($courseId);
-
+        $roles = Role::getAdaptationCourseRoles($courseId, $onlyParents);
         API::response($roles);
     }
 

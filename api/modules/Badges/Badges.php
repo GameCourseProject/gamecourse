@@ -102,7 +102,7 @@ class Badges extends Module
         $parent = array_keys(self::ADAPTATION_BADGES)[0];
         $children = array_values(self::ADAPTATION_BADGES)[0];
 
-        Role::removeAdaptationRolesFromCourse($this->course->getId(), self::ID, $parent);
+        //Role::removeAdaptationRolesFromCourse($this->course->getId(), self::ID, $parent);
 
     }
 

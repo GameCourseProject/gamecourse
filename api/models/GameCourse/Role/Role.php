@@ -157,28 +157,35 @@ class Role
      */
     public static function addAdaptationRolesToCourse(int $courseId, string $moduleId, string $parent, array $children = null)
     {
-        // TODO: should save $roles to a "global variable" here?
-        // something like ADAPTATION_ROLES = ["Badges" => ["B001", "B002"], "Leaderboard" => ["LB001", "LB002]]
-
+        // Add parent
         self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
 
         $course = new Course($courseId);
-        $courseRoles = self::getCourseRoles($courseId);
 
         // Update roles hierarchy
-        $hierarchy = array_map(function ($role) { return ["name" => $role]; }, $courseRoles);
+        $hierarchy = $course->getRolesHierarchy();
+        array_push($hierarchy, ["name" => $parent]);
         $course->setRolesHierarchy($hierarchy);
+
+
+        //$courseRoles = self::getCourseRoles($courseId);
+        //$parentIndex = array_search($parent, $courseRoles);
 
         // Add children
         foreach($children as $child){
             self::addRoleToCourse($courseId, $child, null, null, $moduleId);
-        }
 
-        // Update hierarchy
-        /*$parentIndex = array_search($parent, $courseRoles);
-        $hierarchy = $course->getRolesHierarchy();
-        $hierarchy[$parentIndex]["children"][] = ["name" => $children];
-        $course->setRolesHierarchy($hierarchy);*/
+            // Update hierarchy
+            $hierarchy = $course->getRolesHierarchy();
+            $parentIndex = array_search($parent, $hierarchy);
+            if (in_array("children", array_keys($hierarchy[$parentIndex]))){
+                array_push($hierarchy[$parentIndex]["children"], ["name"=>$child]);
+                $course->setRolesHierarchy($hierarchy);
+                continue;
+            }
+            $hierarchy[$parentIndex]["children"][] = ["name" => $child];
+            $course->setRolesHierarchy($hierarchy);
+        }
     }
     /*
     public static function addAdaptationRolesToCourse(int $courseId, array $roles, string $moduleId)
@@ -235,27 +242,15 @@ class Role
     }
 
     /**
-     * Gets all adaptation roles
+     * Gets all adaptation roles.
+     * If $onlyParents is true then it only returns parents of adaptation roles ["Badges", "Leaderboard"]
+     * Default: Gets all adaptation roles ["Badges", "B001", "B002", "Leaderboard", "LB001", "LB002"]
+     *
+     * @param int $courseId
+     * @param bool $onlyParents
      * @throws Exception
      */
-    // TODO: Merge this function with following one
-    public static function getAdaptationCourseRoles(int $courseId): array {
-        $roles = self::getCourseRoles($courseId);
-
-        foreach (self::DEFAULT_ROLES as $defaultRole){
-            if (in_array($defaultRole, $roles)){
-                $index = array_search($defaultRole, $roles);
-                unset($roles[$index]);
-            }
-        }
-        return $roles;
-    }
-
-    /**
-     * Gets parents of all adaptation roles
-     * @throws Exception
-     */
-    public static function getAdaptationParentCourseRoles(int $courseId): array {
+    public static function getAdaptationCourseRoles(int $courseId, bool $onlyParents = false): array {
         $moduleIds = Module::getModulesInCourse($courseId, true, true);
         $roles = self::getCourseRoles($courseId);
         $course = Course::getCourseById($courseId);
@@ -268,7 +263,34 @@ class Role
                 array_push($response, $moduleName);
             }
         }
+
+        if ($onlyParents){
+            return $response;
+        }
+
+        /* Example $roles (getCourseRoles with "Badge" module enabled)
+        ["name" => "Teacher", "id" => 1, "landingPage" => null, "module" => null],
+        ["name" => "Student", "id" => 2, "landingPage" => null, "module" => null],
+        ["name" => "Watcher", "id" => 3, "landingPage" => null, "module" => null]],
+        ["name" => "Badges",  "id" => 4, "landingPage" => null, "module" => "Badges",  "children" => [
+            ["name" => "B001", "id" => 5, "landingPage" => null, "module" => "Badges"],
+            ["name" => "B002", "id" => 6, "landingPage" => null, "module" => "Badges"]
+        ]]
+         */
+        $roles = self::getCourseRoles($courseId, false, true);
+
+        foreach ($roles as $role){
+            // role belongs to a module, has children and is enabled in course
+            if ($role["module"] && in_array("children", array_keys($role)) && in_array($role["module"], $moduleIds)){
+
+                    // iterates through children array
+                    foreach ($role["children"] as $child){
+                        array_push($response, $child["name"]);
+                    }
+            }
+        }
         return $response;
+
     }
 
     /**

@@ -773,7 +773,7 @@ export class ApiHttpService {
       .pipe(map((res: any) => res['data']));
   }
 
-  // NOTICE RETURN VALUES
+  // TODO: NOTICE RETURN VALUES
   public updatePreference(courseID: number, userID: number, previousPreference: string, newPreference: string, date: Date = null): Observable<void> {
     const data = {
       course: courseID,
@@ -794,25 +794,12 @@ export class ApiHttpService {
   }
 
 
-
-  public getAdaptationRoles(courseID: number): Observable<string[]>{
+  public getAdaptationRoles(courseID: number, onlyParents?: boolean): Observable<string[]>{
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
       qs.push('request', 'getAdaptationRoles');
       qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']) );
-  }
-
-  public getAdaptationParentRoles(courseID: number): Observable<string[]>{
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'getAdaptationParentRoles');
-      qs.push('courseId', courseID);
+      if (onlyParents !== undefined) qs.push('onlyParents', onlyParents);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

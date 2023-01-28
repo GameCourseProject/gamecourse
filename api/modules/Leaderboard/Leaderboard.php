@@ -78,7 +78,7 @@ class Leaderboard extends Module
         $parent = array_keys(self::ADAPTATION_LEADERBOARD)[0];
         $children = array_values(self::ADAPTATION_LEADERBOARD)[0];
 
-        Role::removeAdaptationRolesFromCourse($this->course->getId(), self::ID, $parent);
+        //Role::removeAdaptationRolesFromCourse($this->course->getId(), self::ID, $parent);
     }
 
     public function copyTo(Course $copyTo)
