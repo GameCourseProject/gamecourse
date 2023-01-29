@@ -392,7 +392,7 @@ class Moodle extends Module
         } else { // disable moodle
             CronJob::removeCronJob($script, $courseId);
         }
-        Core::database()->update(self::TABLE_MOODLE_STATUS, ["isEnabled" => $enable], ["course" => $courseId]);
+        Core::database()->update(self::TABLE_MOODLE_STATUS, ["isEnabled" => +$enable], ["course" => $courseId]);
     }
 
 

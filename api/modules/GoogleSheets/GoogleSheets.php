@@ -375,7 +375,7 @@ class GoogleSheets extends Module
         } else { // disable googlesheets
             CronJob::removeCronJob($script, $courseId);
         }
-        Core::database()->update(self::TABLE_GOOGLESHEETS_STATUS, ["isEnabled" => $enable], ["course" => $courseId]);
+        Core::database()->update(self::TABLE_GOOGLESHEETS_STATUS, ["isEnabled" => +$enable], ["course" => $courseId]);
     }
 
 

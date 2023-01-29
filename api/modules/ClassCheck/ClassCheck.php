@@ -241,7 +241,7 @@ class ClassCheck extends Module
         } else { // disable classcheck
             CronJob::removeCronJob($script, $courseId);
         }
-        Core::database()->update(self::TABLE_CLASSCHECK_STATUS, ["isEnabled" => $enable], ["course" => $courseId]);
+        Core::database()->update(self::TABLE_CLASSCHECK_STATUS, ["isEnabled" => +$enable], ["course" => $courseId]);
     }
 
 

@@ -105,7 +105,7 @@ abstract class AutoGame
         } else { // disable autogame
             CronJob::removeCronJob($script, $courseId);
         }
-        Core::database()->update(self::TABLE_AUTOGAME, ["isEnabled" => $enable], ["course" => $courseId]);
+        Core::database()->update(self::TABLE_AUTOGAME, ["isEnabled" => +$enable], ["course" => $courseId]);
     }
 
     /**
