@@ -41,10 +41,11 @@ import { InputRadioComponent } from './_components/inputs/checkbox & radio/input
 import { InputToggleComponent } from './_components/inputs/toggle/input-toggle/input-toggle.component';
 import { InputSelectComponent } from './_components/inputs/select/input-select/input-select.component';
 import { InputSelectWeekdayComponent } from './_components/inputs/select/input-select-weekday/input-select-weekday.component';
-import { InputSelectPeriodicityComponent } from './_components/inputs/select/input-select-periodicity/input-select-periodicity.component';
 import { InputDateComponent } from './_components/inputs/date & time/input-date/input-date.component';
 import { InputTimeComponent } from './_components/inputs/date & time/input-time/input-time.component';
 import { InputDatetimeComponent } from './_components/inputs/date & time/input-datetime/input-datetime.component';
+import { InputPeriodicityComponent } from './_components/inputs/date & time/input-periodicity/input-periodicity.component';
+import { InputScheduleComponent } from './_components/inputs/date & time/input-schedule/input-schedule.component';
 import { ThemeTogglerComponent } from './_components/inputs/misc/theme-toggler/theme-toggler.component';
 
 // Components: charts
@@ -88,6 +89,7 @@ import { AutoGameToastComponent } from './_components/misc/autogame-toast/auto-g
 import { HeaderComponent } from './_components/misc/header/header.component';
 import { TopActionsComponent } from './_components/misc/top-actions/top-actions.component';
 import { LoaderComponent } from './_components/misc/loader/loader.component';
+import { LogsViewerComponent } from './_components/misc/logs-viewer/logs-viewer.component';
 
 import { PageNotFoundComponent } from './_components/misc/pages/page-not-found/page-not-found.component';
 import { NoAccessComponent } from './_components/misc/pages/no-access/no-access.component';
@@ -97,6 +99,7 @@ import { ComingSoonComponent } from './_components/misc/pages/coming-soon/coming
 import { NgIconsModule } from "@ng-icons/core";
 import { DataTablesModule } from "angular-datatables";
 import { NgApexchartsModule } from "ng-apexcharts";
+import { ScrollingModule } from "@angular/cdk/scrolling";
 
 // Icons
 import {
@@ -143,6 +146,7 @@ import {
   TablerAward,
   TablerBarrierBlock,
   TablerBooks,
+  TablerCalendarTime,
   TablerCaretDown,
   TablerClipboardList,
   TablerCloudUpload,
@@ -190,10 +194,11 @@ import {
     InputToggleComponent,
     InputSelectComponent,
     InputSelectWeekdayComponent,
-    InputSelectPeriodicityComponent,
     InputDateComponent,
     InputTimeComponent,
     InputDatetimeComponent,
+    InputPeriodicityComponent,
+    InputScheduleComponent,
     ThemeTogglerComponent,
 
     LineChartComponent,
@@ -228,6 +233,7 @@ import {
     HeaderComponent,
     TopActionsComponent,
     LoaderComponent,
+    LogsViewerComponent,
     PageNotFoundComponent,
     NoAccessComponent,
     ComingSoonComponent
@@ -269,6 +275,8 @@ import {
     InputDateComponent,
     InputTimeComponent,
     InputDatetimeComponent,
+    InputPeriodicityComponent,
+    InputScheduleComponent,
     ThemeTogglerComponent,
 
     LineChartComponent,
@@ -303,13 +311,13 @@ import {
     HeaderComponent,
     TopActionsComponent,
     LoaderComponent,
+    LogsViewerComponent,
     PageNotFoundComponent,
     NoAccessComponent,
     ComingSoonComponent,
 
     NgIconsModule,
-    FormsModule,
-    InputSelectPeriodicityComponent
+    FormsModule
   ],
   imports: [
     CommonModule,
@@ -356,6 +364,7 @@ import {
       TablerAward,
       TablerBarrierBlock,
       TablerBooks,
+      TablerCalendarTime,
       TablerCaretDown,
       TablerClipboardList,
       TablerCloudUpload,
@@ -367,7 +376,8 @@ import {
       TablerSchool
     }),
     DataTablesModule,
-    NgApexchartsModule
+    NgApexchartsModule,
+    ScrollingModule
   ]
 })
 export class SharedModule { }

@@ -3,6 +3,7 @@ namespace API;
 
 use Exception;
 use GameCourse\Module\Module;
+use GameCourse\Module\ModuleType;
 
 /**
  * This is the Module controller, which holds API endpoints for
@@ -64,6 +65,36 @@ class ModuleController
     /**
      * @throws Exception
      */
+    public function getDataSourceStatus()
+    {
+        API::requireValues("courseId", "moduleId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $moduleId = API::getValue("moduleId");
+        $module = API::verifyModuleExists($moduleId, $course);
+
+        if ($module->getType() !== ModuleType::DATA_SOURCE)
+            throw new Exception("Can't get module status information: module '" . $moduleId . "' is not a data source.");
+
+        if (!$module->isEnabled())
+            throw new Exception("Can't get module status information: module '" . $moduleId . "' is not enabled in course with ID = " . $courseId . ".");
+
+        API::response([
+            "isEnabled" => $module->isAutoImporting(),
+            "startedRunning" => $module->getStartedRunning(),
+            "finishedRunning" => $module->getFinishedRunning(),
+            "isRunning" => $module->isRunning(),
+            "logs" => $module->getRunningLogs($courseId)
+        ]);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function saveConfig()
     {
         API::requireValues("courseId", "moduleId");
@@ -91,6 +122,25 @@ class ModuleController
 
         // NOTE: personalized config should have its own API requests
         //       in custom controllers inside the module
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function changeDataSourceStatus()
+    {
+        API::requireValues("courseId", "moduleId", "status");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $moduleId = API::getValue("moduleId");
+        $module = API::verifyModuleExists($moduleId, $course);
+
+        $status = API::getValue("status", "bool");
+        $module->setAutoImporting($status);
     }
 
     /**

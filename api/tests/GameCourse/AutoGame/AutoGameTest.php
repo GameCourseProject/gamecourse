@@ -11,6 +11,7 @@ use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
+use Utils\Time;
 
 /**
  * NOTE: only run tests outside the production environment as
@@ -33,11 +34,7 @@ class AutoGameTest extends TestCase
     protected function setUp(): void
     {
         Core::database()->setForeignKeyChecks(false);
-        Core::database()->insert(AutoGame::TABLE_AUTOGAME, [
-           "course" => 0,
-           "periodicityNumber" => null,
-           "periodicityTime" => null
-        ]);
+        Core::database()->insert(AutoGame::TABLE_AUTOGAME, ["course" => 0, "frequency" => null]);
         Core::database()->setForeignKeyChecks(true);
     }
 
@@ -84,8 +81,7 @@ class AutoGameTest extends TestCase
         $this->assertCount(1, $entries);
         $autogame = $entries[0];
         $this->assertEquals(0, $autogame["course"]);
-        $this->assertNull($autogame["periodicityNumber"]);
-        $this->assertNull($autogame["periodicityTime"]);
+        $this->assertNull($autogame["frequency"]);
     }
 
     /**
@@ -102,16 +98,16 @@ class AutoGameTest extends TestCase
 
         $courseAutoGame = Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $courseId]);
         $this->assertFalse(boolval($courseAutoGame["isRunning"]));
-        $this->assertEquals(10, $courseAutoGame["periodicityNumber"]);
-        $this->assertEquals("Minutes", $courseAutoGame["periodicityTime"]);
+        $this->assertEquals("*/10 * * * *", $courseAutoGame["frequency"]);
 
         $this->assertTrue(file_exists(RuleSystem::getDataFolder($courseId)));
         $this->assertTrue(file_exists(AUTOGAME_FOLDER . "/imported-functions/" . $courseId));
         $this->assertEquals(file_get_contents(AUTOGAME_FOLDER . "/imported-functions/defaults.py"), file_get_contents(AUTOGAME_FOLDER . "/imported-functions/" . $courseId . "/defaults.py"));
         $this->assertTrue(file_exists(AUTOGAME_FOLDER . "/config/config_" . $courseId . ".txt"));
         $this->assertEquals("", file_get_contents(AUTOGAME_FOLDER . "/config/config_" . $courseId . ".txt"));
-        $this->assertTrue(file_exists(LOGS_FOLDER . "/autogame_" . $courseId . ".txt"));
-        $this->assertEquals("", file_get_contents(LOGS_FOLDER . "/autogame_" . $courseId . ".txt"));
+
+        $this->assertTrue(file_exists(LOGS_FOLDER . "/" . AutoGame::LOGS_FOLDER . "/autogame_" . $courseId . ".txt"));
+        $this->assertEquals("", file_get_contents(LOGS_FOLDER . "/" . AutoGame::LOGS_FOLDER . "/autogame_" . $courseId . ".txt"));
     }
 
     /**
@@ -162,11 +158,55 @@ class AutoGameTest extends TestCase
 
         $this->assertFalse(file_exists(AUTOGAME_FOLDER . "/imported-functions/" . $courseId));
         $this->assertFalse(file_exists(AUTOGAME_FOLDER . "/config/config_" . $courseId . ".txt"));
-        $this->assertFalse(file_exists(LOGS_FOLDER . "/autogame_" . $courseId . ".txt"));
+        $this->assertFalse(file_exists(LOGS_FOLDER . "/" . AutoGame::LOGS_FOLDER . "/autogame_" . $courseId . ".txt"));
     }
 
 
-    // General
+    // Status
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function enableAutoGame()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set a course
+        $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+
+        // When
+        AutoGame::setAutoGame($course->getId(), true);
+
+        // Then
+        $this->assertTrue(AutoGame::isEnabled($course->getId()));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function disableAutoGame()
+    {
+        // Set logged user
+        $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
+            123456, "John Doe", "MEIC-A", true, true);
+        Core::setLoggedUser($loggedUser);
+
+        // Set a course
+        $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
+            null, null, true, true);
+
+        // When
+        AutoGame::setAutoGame($course->getId(), false);
+
+        // Then
+        $this->assertFalse(AutoGame::isEnabled($course->getId()));
+    }
 
     /**
      * @test
@@ -213,6 +253,23 @@ class AutoGameTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function setToRun()
+    {
+        $courseId = 1;
+
+        Core::database()->setForeignKeyChecks(false);
+        AutoGame::initAutoGame($courseId);
+        Core::database()->setForeignKeyChecks(true);
+
+        $this->assertFalse(boolval(Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $courseId], "runNext")));
+        AutoGame::setToRun($courseId);
+        $this->assertTrue(boolval(Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $courseId], "runNext")));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function isRunning()
     {
         $courseId = 1;
@@ -243,7 +300,7 @@ class AutoGameTest extends TestCase
             $this->fail("Exception should have been thrown on 'runInexistentCourse'.");
 
         } catch (Exception $e) {
-            $logsFile = LOGS_FOLDER . "/autogame_$courseId.txt";
+            $logsFile = LOGS_FOLDER . "/" . AutoGame::LOGS_FOLDER . "/autogame_$courseId.txt";
             $this->assertNotEmpty(file_get_contents($logsFile));
         }
     }
@@ -266,7 +323,7 @@ class AutoGameTest extends TestCase
             $this->fail("Exception should have been thrown on 'runAutoGameAlreadyRunning'.");
 
         } catch (Exception $e) {
-            $logsFile = LOGS_FOLDER . "/autogame_$courseId.txt";
+            $logsFile = LOGS_FOLDER . "/" . AutoGame::LOGS_FOLDER . "/autogame_$courseId.txt";
             $this->assertNotEmpty(file_get_contents($logsFile));
         }
     }

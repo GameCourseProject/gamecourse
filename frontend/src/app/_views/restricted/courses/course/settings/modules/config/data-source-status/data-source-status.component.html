@@ -1,0 +1,55 @@
+<div class="card w-full bg-base-100 shadow-xl">
+
+  <div class="card-body">
+
+    <!-- Header -->
+    <div class="mb-3">
+
+      <!-- Card name -->
+      <div class="flex items-center">
+        <h2 class="card-title mb-0">Status</h2>
+        <app-spinner *ngIf="this.loading.action" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+      </div>
+
+      <!-- Card description -->
+      <p class="text-[0.95rem] text-justify text-base-content/75 mt-2">Enable or disable data importing.
+        Check whether {{module?.name}} is currently running and when it last imported new data, as well as its running logs.
+      </p>
+    </div>
+
+    <ng-container *ngIf="!loading.table">
+
+      <!-- Enable / Disable -->
+      <app-top-actions
+        [rightActions]="[{
+          action: status.isEnabled ? 'Disable' : 'Enable',
+          color: status.isEnabled ? 'error' : 'success'
+       }]"
+        (btnClicked)="changeStatus()">
+      </app-top-actions>
+
+      <!-- Status table -->
+      <app-table
+        [id]="'status'"
+        [classList]="'mt-5'"
+        [headers]="headers"
+        [hasColumnFiltering]="false"
+        [hasFooters]="false"
+        [data]="data"
+        [options]="tableOptions"
+        [loading]="loading.table">
+      </app-table>
+
+      <!-- Logs -->
+      <app-logs-viewer *ngIf="!status.logs.isEmpty()" [logs]="status.logs" class="mt-5"></app-logs-viewer>
+
+    </ng-container>
+
+    <!-- Spinner -->
+    <div *ngIf="loading.table" class="flex justify-center items-center">
+      <app-spinner></app-spinner>
+    </div>
+
+  </div>
+
+</div>

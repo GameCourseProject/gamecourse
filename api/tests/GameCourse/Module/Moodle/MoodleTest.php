@@ -11,6 +11,7 @@ use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
+use Utils\Time;
 
 /**
  * NOTE: only run tests outside the production environment as
@@ -164,8 +165,60 @@ class MoodleTest extends TestCase
         $this->assertNull($config["moodleCourse"]);
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getSchedule()
+    {
+        $schedule = $this->module->getSchedule();
+        $this->assertEquals("*/10 * * * *", $schedule);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function saveSchedule()
+    {
+        $this->module->saveSchedule("0 */5 * * *");
+        $schedule = $this->module->getSchedule();
+        $this->assertEquals("0 */5 * * *", $schedule);
+    }
+
 
     // Status
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isAutoImporting()
+    {
+        $this->module->setAutoImporting(true);
+        $this->assertTrue($this->module->isAutoImporting());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isNotAutoImporting()
+    {
+        $this->module->setAutoImporting(false);
+        $this->assertFalse($this->module->isAutoImporting());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setAutoImporting()
+    {
+        $this->module->setAutoImporting(true);
+        $this->assertTrue($this->module->isAutoImporting());
+    }
+
 
     /**
      * @test

@@ -12,7 +12,6 @@ import {AlertService, AlertType} from "../../../../../../../../../_services/aler
 export class GooglesheetsComponent implements OnInit {
 
   loading = {
-    page: true,
     auth: false,
     action: false,
     users: false
@@ -38,7 +37,6 @@ export class GooglesheetsComponent implements OnInit {
     this.route.parent.params.subscribe(async params => {
       this.courseID = parseInt(params.id);
       await this.getConfig();
-      this.loading.page = false;
     });
   }
 

@@ -10,6 +10,7 @@ use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
+use Utils\Time;
 
 /**
  * NOTE: only run tests outside the production environment as
@@ -118,8 +119,9 @@ class GoogleSheetsTest extends TestCase
 
         $config = Core::database()->select(GoogleSheets::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->course->getId()]);
         unset($config["course"]);
-        foreach ($config as $value) {
-            $this->assertNull($value);
+        foreach ($config as $key => $value) {
+            if ($key === "frequency") $this->assertEquals("*/10 * * * *", $value);
+            else $this->assertNull($value);
         }
     }
 
@@ -157,8 +159,60 @@ class GoogleSheetsTest extends TestCase
         $this->assertEmpty($config["ownerNames"]);
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getSchedule()
+    {
+        $schedule = $this->module->getSchedule();
+        $this->assertEquals("*/10 * * * *", $schedule);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function saveSchedule()
+    {
+        $this->module->saveSchedule("0 */5 * * *");
+        $schedule = $this->module->getSchedule();
+        $this->assertEquals("0 */5 * * *", $schedule);
+    }
+
 
     // Status
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isAutoImporting()
+    {
+        $this->module->setAutoImporting(true);
+        $this->assertTrue($this->module->isAutoImporting());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isNotAutoImporting()
+    {
+        $this->module->setAutoImporting(false);
+        $this->assertFalse($this->module->isAutoImporting());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setAutoImporting()
+    {
+        $this->module->setAutoImporting(true);
+        $this->assertTrue($this->module->isAutoImporting());
+    }
+
 
     /**
      * @test

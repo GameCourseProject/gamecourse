@@ -66,7 +66,8 @@ if (!$error) {
     logProgressReport($progressReportModule->getLogsPath(), "Progress reports sent successfully.", "SUCCESS");
 
     if ($timeLeft == 0) {
-        CronJob::removeCronJob("ProgressReport", $courseId);
+        $script = MODULES_FOLDER . "/" . ProgressReport::ID . "/scripts/ProgressReportScript.php";
+        CronJob::removeCronJob($script, $courseId);
         logProgressReport($progressReportModule->getLogsPath(), "Last progress report sent. Removed Cron Job.", "SUCCESS");
     }
 } else {

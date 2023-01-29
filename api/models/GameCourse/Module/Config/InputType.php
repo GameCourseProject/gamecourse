@@ -27,6 +27,8 @@ class InputType
     const DATE = "date";
     const TIME = "time";
     const DATETIME = "datetime";
+    const PERIODICITY = "periodicity";
+    const SCHEDULE = "schedule";
 
     // General
     const TEXT = "text";
@@ -43,7 +45,6 @@ class InputType
 
     // Select
     const SELECT = "select";
-    const PERIODICITY = "periodicity";
     const WEEKDAY = "weekday";
 
     // Toggle

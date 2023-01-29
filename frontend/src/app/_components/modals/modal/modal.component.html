@@ -4,8 +4,9 @@
 <label [for]="!static ? id : ''" class="modal {{classList}}"
        [ngClass]="{'cursor-pointer': !static, 'modal-bottom sm:modal-middle': responsive}">
 
-  <label class="modal-box relative overflow-hidden" [for]="id + '-box'"
-         [ngClass]="{'w-11/12': !responsive, '!max-w-[42rem]': size === 'md', '!max-w-5xl': size === 'lg'}">
+  <label [for]="id + '-box'" class="modal-box relative overflow-hidden"
+         [ngClass]="{'w-11/12': !responsive, '!max-w-[42rem]': size === 'md', '!max-w-5xl': size === 'lg'}"
+         [ngStyle]="size !== 'sm' && size !== 'md' && size !== 'lg' ? {'max-width': '42rem'} : {}">
 
     <!-- Close X button -->
     <label [for]="id" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"

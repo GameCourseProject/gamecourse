@@ -21,6 +21,7 @@ use TestingUtils;
 use Throwable;
 use TypeError;
 use Utils\Cache;
+use Utils\Time;
 use Utils\Utils;
 
 /**
@@ -1050,8 +1051,7 @@ class CourseTest extends TestCase
         // Check autogame
         $autogame = Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $course->getId()]);
         $this->assertFalse(boolval($autogame["isRunning"]));
-        $this->assertEquals(10, $autogame["periodicityNumber"]);
-        $this->assertEquals("Minutes", $autogame["periodicityTime"]);
+        $this->assertEquals("*/10 * * * *", $autogame["frequency"]);
 
         $this->assertTrue(file_exists(RuleSystem::getDataFolder($course->getId())));
         $this->assertTrue(file_exists(AUTOGAME_FOLDER . "/imported-functions/" . $course->getId()));
@@ -1060,8 +1060,8 @@ class CourseTest extends TestCase
         $this->assertEquals("", file_get_contents(AUTOGAME_FOLDER . "/config/config_" . $course->getId() . ".txt"));
 
         // Check logging
-        $this->assertTrue(file_exists(LOGS_FOLDER . "/autogame_" . $course->getId() . ".txt"));
-        $this->assertEquals("", file_get_contents(LOGS_FOLDER . "/autogame_" . $course->getId() . ".txt"));
+        $this->assertTrue(file_exists(LOGS_FOLDER . "/" . AutoGame::LOGS_FOLDER . "/autogame_" . $course->getId() . ".txt"));
+        $this->assertEquals("", file_get_contents(LOGS_FOLDER . "/" . AutoGame::LOGS_FOLDER . "/autogame_" . $course->getId() . ".txt"));
     }
 
     /**

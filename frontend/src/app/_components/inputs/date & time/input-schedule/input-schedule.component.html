@@ -1,0 +1,347 @@
+<!-- Input -->
+<app-input-text
+  [id]="id"
+  [form]="form"
+  [(value)]="readable"
+  [placeholder]="'Setup a schedule'"
+
+  [size]="size"
+  [color]="color"
+  [classList]="'input-schedule ' + classList"
+  [disabled]="disabled"
+
+  [topLabel]="topLabel"
+  [leftLabel]="leftLabel"
+
+  [btnIcon]="'tabler-calendar-time'"
+
+  [helperText]="helperText"
+  [helperPosition]="helperPosition"
+
+  [required]="required"
+
+  [requiredErrorMessage]="requiredErrorMessage"
+
+  (btnClicked)="openEditor()"
+  (click)="openEditor()">
+</app-input-text>
+
+<!-- Modal -->
+<app-modal
+  [id]="'cron-editor'"
+  [size]="'37rem'"
+  [templateRef]="CRON_EDITOR"
+  [submitBtnText]="'Save'"
+  (submitBtnClicked)="tabActive === 'Minutes' ? fMinutes.onSubmit(null) : tabActive === 'Hourly' ?
+                      fHourly.onSubmit(null) : tabActive === 'Daily' ? fDaily.onSubmit(null) : tabActive === 'Weekly' ?
+                      fWeekly.onSubmit(null) : tabActive === 'Monthly' ? fMonthly.onSubmit(null) : fExpression.onSubmit(null);
+                      onSubmit()">
+</app-modal>
+
+<ng-template #CRON_EDITOR>
+  <!-- Tabs -->
+  <div class="tabs tabs-boxed w-full justify-center bg-base-100">
+    <a *ngFor="let tab of tabs" class="tab" [ngClass]="{'tab-active': tab === tabActive}" (click)="tabActive = tab">{{tab}}</a>
+  </div>
+
+  <!-- Options -->
+  <div class="mt-7">
+      <!-- Minutes -->
+      <ng-container *ngIf="tabActive === 'Minutes'" [ngTemplateOutlet]="MINUTES"></ng-container>
+
+      <!-- Hourly -->
+      <ng-container *ngIf="tabActive === 'Hourly'" [ngTemplateOutlet]="HOURLY"></ng-container>
+
+      <!-- Daily -->
+      <ng-container *ngIf="tabActive === 'Daily'" [ngTemplateOutlet]="DAILY"></ng-container>
+
+      <!-- Weekly -->
+      <ng-container *ngIf="tabActive === 'Weekly'" [ngTemplateOutlet]="WEEKLY"></ng-container>
+
+      <!-- Monthly -->
+      <ng-container *ngIf="tabActive === 'Monthly'" [ngTemplateOutlet]="MONTHLY"></ng-container>
+
+      <!-- Advanced -->
+      <ng-container *ngIf="tabActive === 'Advanced'" [ngTemplateOutlet]="ADVANCED"></ng-container>
+    </div>
+</ng-template>
+
+
+<!------------------------------------------------>
+<!----------------- TAB CONTENT ------------------>
+<!------------------------------------------------>
+
+<ng-template #MINUTES>
+  <form #fMinutes="ngForm">
+    <div class="flex flex-wrap items-end gap-2 font-semibold">
+      <span class="mb-[.8rem]">Every</span>
+
+      <app-input-select
+        [id]="'minutes'"
+        [form]="fMinutes"
+        [(value)]="minutes"
+        [options]="minuteOptions"
+        [search]="false"
+        [classList]="'min-w-[4.5rem]'"
+        [required]="true">
+      </app-input-select>
+
+      <span class="mb-[.8rem]">minute(s)</span>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #HOURLY>
+  <form #fHourly="ngForm">
+    <div class="flex flex-wrap items-end gap-2 font-semibold">
+      <span class="mb-[.8rem]">Every</span>
+
+      <app-input-select
+        [id]="'hours'"
+        [form]="fHourly"
+        [(value)]="hours"
+        [options]="hourOptions"
+        [search]="false"
+        [classList]="'min-w-[4.5rem]'"
+        [required]="true">
+      </app-input-select>
+
+      <span class="mb-[.8rem]">hour(s)</span>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #DAILY>
+  <form #fDaily="ngForm">
+    <!-- Case 1 -->
+    <div class="flex flex-wrap items-end gap-2 mb-8" [ngClass]="{'font-semibold': daily.case === 1}">
+      <app-input-radio
+        [id]="'case1'"
+        [group]="'daily-options'"
+        [form]="fDaily"
+        [optionValue]="1"
+        [(value)]="daily.case"
+        [color]="'primary'"
+        [classList]="'mb-[.8rem] mr-5'"
+        [required]="true">
+      </app-input-radio>
+
+      <span class="mb-[.8rem]">Every</span>
+
+      <app-input-select
+        [id]="'case1-nr-days'"
+        [form]="fDaily"
+        [(value)]="daily.days"
+        [options]="dayOptions"
+        [search]="false"
+        [classList]="'min-w-[4.5rem]'"
+        [required]="true"
+        (valueChange)="daily.case = 1">
+      </app-input-select>
+
+      <span class="mb-[.8rem]">day(s) at</span>
+
+      <app-input-time
+        [id]="'case1-time'"
+        [form]="fDaily"
+        [(value)]="daily.time1"
+        [required]="true"
+        (valueChange)="daily.case = 1">
+      </app-input-time>
+    </div>
+
+    <!-- Case 2 -->
+    <div class="flex flex-wrap items-end gap-2" [ngClass]="{'font-semibold': daily.case === 2}">
+      <app-input-radio
+        [id]="'case2'"
+        [group]="'daily-options'"
+        [form]="fDaily"
+        [optionValue]="2"
+        [(value)]="daily.case"
+        [color]="'primary'"
+        [classList]="'mb-[.8rem] mr-5'"
+        [required]="true">
+      </app-input-radio>
+
+      <span class="mb-[.8rem]">From Monday to Friday at</span>
+
+      <app-input-time
+        [id]="'case2-time'"
+        [form]="fDaily"
+        [(value)]="daily.time2"
+        [required]="true"
+        (valueChange)="daily.case = 2">
+      </app-input-time>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #WEEKLY>
+  <form #fWeekly="ngForm">
+    <div class="flex flex-wrap justify-between items-end font-semibold">
+      <div class="w-1/2 sm:w-2/3 pr-2">
+        <app-input-select-weekday
+          [id]="'weekdays'"
+          [form]="fWeekly"
+          [(value)]="weekly.days"
+          [placeholder]="'Select weekdays'"
+          [multiple]="true"
+          [closeOnSelect]="false"
+          [required]="true">
+        </app-input-select-weekday>
+      </div>
+
+      <span class="mb-[.8rem]">at</span>
+
+      <app-input-time
+        [id]="'time'"
+        [form]="fWeekly"
+        [(value)]="weekly.time"
+        [classList]="'pl-2'"
+        [required]="true">
+      </app-input-time>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #MONTHLY>
+  <form #fMonthly="ngForm">
+    <!-- Case 1 -->
+    <div class="flex flex-wrap items-end gap-2 mb-8" [ngClass]="{'font-semibold': monthly.case === 1}">
+      <app-input-radio
+        [id]="'case1'"
+        [group]="'monthly-options'"
+        [form]="fMonthly"
+        [optionValue]="1"
+        [(value)]="monthly.case"
+        [color]="'primary'"
+        [classList]="'mb-[.8rem] mr-5'"
+        [required]="true">
+      </app-input-radio>
+
+      <span class="mb-[.8rem]">Day</span>
+
+      <app-input-select
+        [id]="'case1-nr-days'"
+        [form]="fMonthly"
+        [(value)]="monthly.days"
+        [options]="dayOptions"
+        [search]="false"
+        [classList]="'min-w-[4.5rem]'"
+        [required]="true"
+        (valueChange)="monthly.case = 1">
+      </app-input-select>
+
+      <span class="mb-[.8rem]">of every</span>
+
+      <app-input-select
+        [id]="'case1-nr-months'"
+        [form]="fMonthly"
+        [(value)]="monthly.months1"
+        [options]="monthOptions"
+        [search]="false"
+        [classList]="'min-w-[4.5rem]'"
+        [required]="true"
+        (valueChange)="monthly.case = 1">
+      </app-input-select>
+
+      <span class="mb-[.8rem]">month(s) at</span>
+
+      <app-input-time
+        [id]="'case1-time'"
+        [form]="fMonthly"
+        [(value)]="monthly.time1"
+        [required]="true"
+        (valueChange)="monthly.case = 1">
+      </app-input-time>
+    </div>
+
+    <!-- Case 2 -->
+    <div class="flex flex-wrap items-end gap-2" [ngClass]="{'font-semibold': monthly.case === 2}">
+    <app-input-radio
+      [id]="'case2'"
+      [group]="'monthly-options'"
+      [form]="fMonthly"
+      [optionValue]="2"
+      [(value)]="monthly.case"
+      [color]="'primary'"
+      [classList]="'mb-[.8rem] mr-5'"
+      [required]="true">
+    </app-input-radio>
+
+    <app-input-select
+      [id]="'case2-order'"
+      [form]="fMonthly"
+      [(value)]="monthly.order"
+      [options]="orderOptions"
+      [search]="false"
+      [classList]="'min-w-[6.5rem]'"
+      [required]="true"
+      (valueChange)="monthly.case = 2">
+    </app-input-select>
+
+    <app-input-select
+      [id]="'case2-weekday'"
+      [form]="fMonthly"
+      [(value)]="monthly.weekday"
+      [options]="weekdayOptions"
+      [search]="false"
+      [classList]="'min-w-[7.8rem]'"
+      [required]="true"
+      (valueChange)="monthly.case = 2">
+    </app-input-select>
+
+    <span class="mb-[.8rem]">of every</span>
+
+    <app-input-select
+      [id]="'case2-nr-months'"
+      [form]="fMonthly"
+      [(value)]="monthly.months2"
+      [options]="monthOptions"
+      [search]="false"
+      [classList]="'min-w-[4.5rem]'"
+      [required]="true"
+      (valueChange)="monthly.case = 2">
+    </app-input-select>
+
+    <span class="mb-[.8rem]">month(s) at</span>
+
+    <app-input-time
+      [id]="'case2-time'"
+      [form]="fMonthly"
+      [(value)]="monthly.time2"
+      [required]="true"
+      (valueChange)="monthly.case = 2">
+    </app-input-time>
+  </div>
+  </form>
+</ng-template>
+
+<ng-template #ADVANCED>
+  <form #fExpression="ngForm">
+    <app-input-text
+      [id]="'expression'"
+      [form]="fExpression"
+      [(value)]="expression"
+      [placeholder]="'Write a valid expression'"
+      [topLabel]="'Cron expression'"
+      [required]="true"
+      [pattern]="'(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|((((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7})'"
+      [patternErrorMessage]="'Invalid format. Check link below for more info'">
+    </app-input-text>
+
+    <!-- Helper -->
+    <div class="alert text-sm shadow mt-5">
+    <div class="flex items-start">
+      <ng-icon name="feather-info" size="1.1rem" class="text-info mt-0.5"></ng-icon>
+      <div>
+        <h3 class="font-bold">Cron schedule expressions</h3>
+        <span>Check
+          <a class="link" [href]="'https://crontab.guru/'" target="_blank">crontab.guru</a>
+          for more information on Cron expressions, as well as an online editor to try some out.
+        </span>
+      </div>
+    </div>
+  </div>
+  </form>
+</ng-template>

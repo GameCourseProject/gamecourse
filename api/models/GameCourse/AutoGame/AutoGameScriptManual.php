@@ -1,7 +1,6 @@
 <?php
 /**
- * This is a manual script that runs AutoGame without automatic
- * invocation through the data sources.
+ * This is a manual script that runs AutoGame without automatic invocation.
  *
  * HOW TO USE:
  * Command format: sudo -u www-data php <path-to-autogame-script> <course-ID> <options>

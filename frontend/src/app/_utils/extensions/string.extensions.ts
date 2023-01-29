@@ -35,7 +35,7 @@ String.prototype.concatWithDivider = function(str: string, divider: string): str
  * @return string
  */
 String.prototype.containsWord = function(word: string): boolean {
-  return this.match(new RegExp(word)) != null;
+  return this.includes(word);
 }
 
 /**

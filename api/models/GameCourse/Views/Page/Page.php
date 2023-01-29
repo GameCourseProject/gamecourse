@@ -509,11 +509,13 @@ class Page
      *
      * @param string|null $startDate
      * @return void
+     * @throws Exception
      */
     private function setAutoEnabling(?string $startDate)
     {
-        if ($startDate) new CronJob("AutoPageEnabling", $this->id, null, null, null, $startDate);
-        else CronJob::removeCronJob("AutoPageEnabling", $this->id);
+        $script = ROOT_PATH . "models/GameCourse/Views/Page/AutoEnablingScript.php";
+        if ($startDate) new CronJob($script, CronJob::dateToExpression($startDate), $this->id);
+        else CronJob::removeCronJob($script, $this->id);
     }
 
     /**
@@ -522,11 +524,13 @@ class Page
      *
      * @param string|null $endDate
      * @return void
+     * @throws Exception
      */
     private function setAutoDisabling(?string $endDate)
     {
-        if ($endDate) new CronJob("AutoPageDisabling", $this->id, null, null, null, $endDate);
-        else CronJob::removeCronJob("AutoPageDisabling", $this->id);
+        $script = ROOT_PATH . "models/GameCourse/Views/Page/AutoDisablingScript.php";
+        if ($endDate) new CronJob($script, CronJob::dateToExpression($endDate), $this->id);
+        else CronJob::removeCronJob($script, $this->id);
     }
 
 

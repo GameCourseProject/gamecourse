@@ -21,7 +21,7 @@ export class InputColorComponent implements OnInit, AfterViewInit {
   @Input() placeholder: string = '#ffffff';                           // Message to show by default
 
   // Extras
-  @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';                   // Size
+  @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';                   // Size FIXME: not working
   @Input() color?: 'ghost' | 'primary' | 'secondary' | 'accent' |     // Color
     'info' | 'success' | 'warning' | 'error';
   @Input() classList?: string;                                        // Classes to add

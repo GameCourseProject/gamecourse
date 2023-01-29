@@ -1,0 +1,10 @@
+<cdk-virtual-scroll-viewport itemSize="24" class="mockup-code before:content-none h-96 overflow-x-auto overflow-y-auto {{getBgColor()}}">
+  <pre *cdkVirtualFor="let line of lines; let i = index" [attr.data-prefix]="i + 1" class="h-6 {{getTextColor()}}">
+    <code class="absolute left-24 {{LineColor[line.color]}}">{{line.text}}</code>
+  </pre>
+</cdk-virtual-scroll-viewport>
+
+<div class="flex justify-end">
+  <button class="btn btn-ghost btn-xs" (click)="scrollTo('top')">top</button>
+  <button class="btn btn-ghost btn-xs" (click)="scrollTo('bottom')">bottom</button>
+</div>

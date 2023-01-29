@@ -24,10 +24,13 @@
     <!-- Lists -->
     <ng-container *ngIf="lists?.length > 0" [ngTemplateOutlet]="LISTS"></ng-container>
 
-    <!-- Personalized Config -->
+    <!-- Personalized Config : AFTER -->
     <div *ngIf="personalizedConfig?.position === 'after'" class="personalized-config {{module.id}}">
       <ng-container [ngComponentOutlet]="PersonalizedConfig"></ng-container>
     </div>
+
+    <!-- Data Source Status -->
+    <app-data-source-status *ngIf="module.type === ModuleType.DATA_SOURCE"></app-data-source-status>
 
   </ng-container>
 
@@ -40,14 +43,22 @@
 <!-- General Inputs -->
 <ng-template #GENERAL_INPUTS>
   <div *ngFor="let section of unsavedGeneralInputs; let cIdx = index; let last = last" class="card w-full bg-base-100 shadow-xl"
-         [ngClass]="{'mt-5': cIdx !== 0 || (cIdx === 0 && personalizedConfig?.position === 'before'), 'mb-5': last && (lists?.length > 0 || personalizedConfig?.position === 'after')}">
+         [ngClass]="{'mt-5': cIdx !== 0 || (cIdx === 0 && personalizedConfig?.position === 'before'),
+                     'mb-5': last && (lists?.length > 0 || personalizedConfig?.position === 'after' || module.type === ModuleType.DATA_SOURCE)}">
 
       <form #f="ngForm" class="card-body" (ngSubmit)="saveGeneralInputs(section, f)">
 
-        <!-- Section name -->
-        <div class="flex items-center mb-3">
-          <h2 class="card-title mb-0">{{section.name}}</h2>
-          <app-spinner *ngIf="section.loading" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+        <!-- Header -->
+        <div class="mb-3">
+
+          <!-- Section name -->
+          <div class="flex items-center">
+            <h2 class="card-title mb-0">{{section.name}}</h2>
+            <app-spinner *ngIf="section.loading" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+          </div>
+
+          <!-- Section description -->
+          <p *ngIf="section.description" class="text-[0.95rem] text-justify text-base-content/75 mt-2">{{section.description}}</p>
         </div>
 
         <!-- Section contents -->
@@ -81,7 +92,7 @@
 <ng-template #LISTS>
   <div *ngFor="let list of lists; let lIdx = index; let last = last" class="card w-full bg-base-100 shadow-xl"
        [ngClass]="{'mt-5': lIdx !== 0 || (lIdx === 0 && !generalInputs && personalizedConfig?.position === 'before'),
-                   'mb-5': last && personalizedConfig?.position === 'after'}">
+                   'mb-5': last && (personalizedConfig?.position === 'after' || module.type === ModuleType.DATA_SOURCE)}">
 
     <div class="card-body">
 
@@ -358,6 +369,50 @@
         </app-input-datetime>
       </ng-container>
 
+      <!-- Periodicity -->
+      <ng-container *ngIf="artifact.type === InputType.PERIODICITY">
+        <app-input-periodicity
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [filterOptions]="$any(artifact.options.filterOptions) ?? null"
+          [size]="$any(artifact.options.size) ?? 'md'"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? disabled($any(artifact.disabledWhen)) ?? null"
+          [topLabel]="$any(artifact.options.topLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [btnText]="$any(artifact.options.btnText) ?? null"
+          [btnIcon]="$any(artifact.options.btnIcon) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
+          [required]="$any(artifact.options.required) ?? null"
+          [minNumber]="$any(artifact.options.minNumber) ?? null"
+          [maxNumber]="$any(artifact.options.maxNumber) ?? null"
+          (valueChange)="setItemToManage(artifact, $event)">
+        </app-input-periodicity>
+      </ng-container>
+
+      <!-- Schedule -->
+      <ng-container *ngIf="artifact.type === InputType.SCHEDULE">
+        <app-input-schedule
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [filterOptions]="$any(artifact.options.filterOptions) ?? null"
+          [size]="$any(artifact.options.size) ?? 'md'"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? disabled($any(artifact.disabledWhen)) ?? null"
+          [topLabel]="$any(artifact.options.topLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
+          [required]="$any(artifact.options.required) ?? null"
+          (valueChange)="setItemToManage(artifact, $event)">
+        </app-input-schedule>
+      </ng-container>
+
       <!-- Text -->
       <ng-container *ngIf="artifact.type === InputType.TEXT">
         <app-input-text
@@ -525,30 +580,6 @@
           [required]="$any(artifact.options.required) ?? null"
           (valueChange)="setItemToManage(artifact, $event)">
         </app-input-select>
-      </ng-container>
-
-      <!-- Periodicity -->
-      <ng-container *ngIf="artifact.type === InputType.PERIODICITY">
-        <app-input-select-periodicity
-          [id]="artifact.id"
-          [form]="form"
-          [(value)]="artifact.value"
-          [filterOptions]="$any(artifact.options.filterOptions) ?? null"
-          [size]="$any(artifact.options.size) ?? 'md'"
-          [color]="$any(artifact.options.color) ?? null"
-          [classList]="$any(artifact.options.classList) ?? null"
-          [disabled]="$any(artifact.options.disabled) ?? disabled($any(artifact.disabledWhen)) ?? null"
-          [topLabel]="$any(artifact.options.topLabel) ?? null"
-          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
-          [btnText]="$any(artifact.options.btnText) ?? null"
-          [btnIcon]="$any(artifact.options.btnIcon) ?? null"
-          [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
-          [required]="$any(artifact.options.required) ?? null"
-          [minNumber]="$any(artifact.options.minNumber) ?? null"
-          [maxNumber]="$any(artifact.options.maxNumber) ?? null"
-          (valueChange)="setItemToManage(artifact, $event)">
-        </app-input-select-periodicity>
       </ng-container>
 
       <!-- Weekday -->
