@@ -270,7 +270,7 @@ class Course
             $this->setAutomation("AutoDisabling", $fieldValues["endDate"]);
         }
         if (key_exists("isActive", $fieldValues)) {
-            AutoGame::setAutoGame($this->id, $fieldValues["isActive"]);
+            AutoGame::setAutoGame($this->id, boolval($fieldValues["isActive"]));
             Event::trigger($fieldValues["isActive"] ? EventType::COURSE_ENABLED : EventType::COURSE_DISABLED, $this->id);
         }
     }
