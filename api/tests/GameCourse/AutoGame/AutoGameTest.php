@@ -34,11 +34,7 @@ class AutoGameTest extends TestCase
     protected function setUp(): void
     {
         Core::database()->setForeignKeyChecks(false);
-        Core::database()->insert(AutoGame::TABLE_AUTOGAME, [
-           "course" => 0,
-           "periodicityNumber" => null,
-           "periodicityTime" => null
-        ]);
+        Core::database()->insert(AutoGame::TABLE_AUTOGAME, ["course" => 0, "frequency" => null]);
         Core::database()->setForeignKeyChecks(true);
     }
 
@@ -85,8 +81,7 @@ class AutoGameTest extends TestCase
         $this->assertCount(1, $entries);
         $autogame = $entries[0];
         $this->assertEquals(0, $autogame["course"]);
-        $this->assertNull($autogame["periodicityNumber"]);
-        $this->assertNull($autogame["periodicityTime"]);
+        $this->assertNull($autogame["frequency"]);
     }
 
     /**
@@ -103,8 +98,7 @@ class AutoGameTest extends TestCase
 
         $courseAutoGame = Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $courseId]);
         $this->assertFalse(boolval($courseAutoGame["isRunning"]));
-        $this->assertEquals(10, $courseAutoGame["periodicityNumber"]);
-        $this->assertEquals(Time::MINUTE, $courseAutoGame["periodicityTime"]);
+        $this->assertEquals("*/10 * * * *", $courseAutoGame["frequency"]);
 
         $this->assertTrue(file_exists(RuleSystem::getDataFolder($courseId)));
         $this->assertTrue(file_exists(AUTOGAME_FOLDER . "/imported-functions/" . $courseId));

@@ -1051,8 +1051,7 @@ class CourseTest extends TestCase
         // Check autogame
         $autogame = Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $course->getId()]);
         $this->assertFalse(boolval($autogame["isRunning"]));
-        $this->assertEquals(10, $autogame["periodicityNumber"]);
-        $this->assertEquals(Time::MINUTE, $autogame["periodicityTime"]);
+        $this->assertEquals("*/10 * * * *", $autogame["frequency"]);
 
         $this->assertTrue(file_exists(RuleSystem::getDataFolder($course->getId())));
         $this->assertTrue(file_exists(AUTOGAME_FOLDER . "/imported-functions/" . $course->getId()));

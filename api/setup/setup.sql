@@ -331,15 +331,14 @@ CREATE TABLE autogame(
     finishedRunning             TIMESTAMP NULL DEFAULT NULL,
     isRunning                   boolean DEFAULT FALSE,
     runNext                     boolean DEFAULT FALSE,
-    periodicityNumber           int unsigned DEFAULT 10,
-    periodicityTime             varchar(25) DEFAULT 'minute',
+    frequency                   varchar(50) DEFAULT '*/10 * * * *',
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
 
 SET FOREIGN_KEY_CHECKS=0;
-INSERT INTO autogame (course, periodicityNumber, periodicityTime) values (0, NULL, NULL);
+INSERT INTO autogame (course, frequency) values (0, NULL);
 SET FOREIGN_KEY_CHECKS=1;
 
 CREATE TABLE rule_section(

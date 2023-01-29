@@ -369,6 +369,50 @@
         </app-input-datetime>
       </ng-container>
 
+      <!-- Periodicity -->
+      <ng-container *ngIf="artifact.type === InputType.PERIODICITY">
+        <app-input-periodicity
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [filterOptions]="$any(artifact.options.filterOptions) ?? null"
+          [size]="$any(artifact.options.size) ?? 'md'"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? disabled($any(artifact.disabledWhen)) ?? null"
+          [topLabel]="$any(artifact.options.topLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [btnText]="$any(artifact.options.btnText) ?? null"
+          [btnIcon]="$any(artifact.options.btnIcon) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
+          [required]="$any(artifact.options.required) ?? null"
+          [minNumber]="$any(artifact.options.minNumber) ?? null"
+          [maxNumber]="$any(artifact.options.maxNumber) ?? null"
+          (valueChange)="setItemToManage(artifact, $event)">
+        </app-input-periodicity>
+      </ng-container>
+
+      <!-- Schedule -->
+      <ng-container *ngIf="artifact.type === InputType.SCHEDULE">
+        <app-input-schedule
+          [id]="artifact.id"
+          [form]="form"
+          [(value)]="artifact.value"
+          [filterOptions]="$any(artifact.options.filterOptions) ?? null"
+          [size]="$any(artifact.options.size) ?? 'md'"
+          [color]="$any(artifact.options.color) ?? null"
+          [classList]="$any(artifact.options.classList) ?? null"
+          [disabled]="$any(artifact.options.disabled) ?? disabled($any(artifact.disabledWhen)) ?? null"
+          [topLabel]="$any(artifact.options.topLabel) ?? null"
+          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
+          [helperText]="$any(artifact.helper) ?? null"
+          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
+          [required]="$any(artifact.options.required) ?? null"
+          (valueChange)="setItemToManage(artifact, $event)">
+        </app-input-schedule>
+      </ng-container>
+
       <!-- Text -->
       <ng-container *ngIf="artifact.type === InputType.TEXT">
         <app-input-text
@@ -536,30 +580,6 @@
           [required]="$any(artifact.options.required) ?? null"
           (valueChange)="setItemToManage(artifact, $event)">
         </app-input-select>
-      </ng-container>
-
-      <!-- Periodicity -->
-      <ng-container *ngIf="artifact.type === InputType.PERIODICITY">
-        <app-input-periodicity
-          [id]="artifact.id"
-          [form]="form"
-          [(value)]="artifact.value"
-          [filterOptions]="$any(artifact.options.filterOptions) ?? null"
-          [size]="$any(artifact.options.size) ?? 'md'"
-          [color]="$any(artifact.options.color) ?? null"
-          [classList]="$any(artifact.options.classList) ?? null"
-          [disabled]="$any(artifact.options.disabled) ?? disabled($any(artifact.disabledWhen)) ?? null"
-          [topLabel]="$any(artifact.options.topLabel) ?? null"
-          [leftLabel]="$any(artifact.options.leftLabel) ?? null"
-          [btnText]="$any(artifact.options.btnText) ?? null"
-          [btnIcon]="$any(artifact.options.btnIcon) ?? null"
-          [helperText]="$any(artifact.helper) ?? null"
-          [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
-          [required]="$any(artifact.options.required) ?? null"
-          [minNumber]="$any(artifact.options.minNumber) ?? null"
-          [maxNumber]="$any(artifact.options.maxNumber) ?? null"
-          (valueChange)="setItemToManage(artifact, $event)">
-        </app-input-periodicity>
       </ng-container>
 
       <!-- Weekday -->

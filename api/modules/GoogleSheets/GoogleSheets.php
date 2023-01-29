@@ -1,6 +1,8 @@
 <?php
 namespace GameCourse\Module\GoogleSheets;
 
+use Event\Event;
+use Event\EventType;
 use Exception;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
@@ -11,7 +13,6 @@ use GameCourse\Module\ModuleType;
 use GoogleHandler;
 use Throwable;
 use Utils\CronJob;
-use Utils\Time;
 use Utils\Utils;
 
 /**
@@ -67,6 +68,16 @@ class GoogleSheets extends Module
         // Setup logging
         $logsFile = self::getLogsFile($this->getCourse()->getId());
         Utils::initLogging($logsFile);
+
+        $this->initEvents();
+    }
+
+    public function initEvents()
+    {
+        Event::listen(EventType::COURSE_DISABLED, function (int $courseId) {
+            if ($courseId == $this->course->getId())
+                $this->setAutoImporting(false);
+        }, self::ID);
     }
 
     /**
@@ -74,9 +85,13 @@ class GoogleSheets extends Module
      */
     public function copyTo(Course $copyTo)
     {
-        // Nothing to do here
+        $copiedModule = new GoogleSheets($copyTo);
+        $copiedModule->saveSchedule($this->getSchedule());
     }
 
+    /**
+     * @throws Exception
+     */
     public function disable()
     {
         // Disable auto importing
@@ -87,6 +102,7 @@ class GoogleSheets extends Module
         Utils::removeLogging($logsFile);
 
         $this->cleanDatabase();
+        $this->removeEvents();
     }
 
 
@@ -103,7 +119,7 @@ class GoogleSheets extends Module
     {
         return [
             [
-                "name" => "Frequency",
+                "name" => "Schedule",
                 "description" => "Define how frequently data should be imported from " . self::NAME . ".",
                 "contents" => [
                     [
@@ -112,15 +128,11 @@ class GoogleSheets extends Module
                         "contents" => [
                             [
                                 "contentType" => "item",
-                                "width" => "1/3",
-                                "type" => InputType::PERIODICITY,
-                                "id" => "periodicity",
-                                "value" => $this->getPeriodicity(),
-                                "placeholder" => "Period of time",
+                                "width" => "1/2",
+                                "type" => InputType::SCHEDULE,
+                                "id" => "schedule",
+                                "value" => $this->getSchedule(),
                                 "options" => [
-                                    "filterOptions" => [Time::SECOND, Time::YEAR, Time::MONTH],
-                                    "topLabel" => "Import data every...",
-                                    "minNumber" => 1,
                                     "required" => true,
                                 ]
                             ]
@@ -137,7 +149,7 @@ class GoogleSheets extends Module
     public function saveGeneralInputs(array $inputs)
     {
         foreach ($inputs as $input) {
-            if ($input["id"] == "periodicity") $this->savePeriodicity($input["value"]["number"], $input["value"]["time"]);
+            if ($input["id"] == "schedule") $this->saveSchedule($input["value"]);
         }
     }
 
@@ -203,18 +215,18 @@ class GoogleSheets extends Module
     }
 
 
-    public function getPeriodicity(): array
+    public function getSchedule(): string
     {
-        $periodicity = Core::database()->select(self::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->getCourse()->getId()], "periodicityNumber, periodicityTime");
-        return ["number" => intval($periodicity["periodicityNumber"]), "time" => $periodicity["periodicityTime"]];
+        return Core::database()->select(self::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->getCourse()->getId()], "frequency");
     }
 
-    public function savePeriodicity(?int $periodicityNumber, ?string $periodicityTime)
+    /**
+     * @throws Exception
+     */
+    public function saveSchedule(string $expression)
     {
-        Core::database()->update(self::TABLE_GOOGLESHEETS_CONFIG, [
-            "periodicityNumber" => $periodicityNumber,
-            "periodicityTime" => $periodicityTime
-        ], ["course" => $this->getCourse()->getId()]);
+        Core::database()->update(self::TABLE_GOOGLESHEETS_CONFIG, ["frequency" => $expression,], ["course" => $this->getCourse()->getId()]);
+        $this->setAutoImporting($this->isAutoImporting());
     }
 
 
@@ -348,16 +360,20 @@ class GoogleSheets extends Module
         return boolval(Core::database()->select(self::TABLE_GOOGLESHEETS_STATUS, ["course" => $this->getCourse()->getId()], "isEnabled"));
     }
 
+    /**
+     * @throws Exception
+     */
     public function setAutoImporting(bool $enable)
     {
         $courseId = $this->getCourse()->getId();
+        $script = MODULES_FOLDER . "/" . self::ID . "/scripts/ImportData.php";
 
         if ($enable) { // enable googlesheets
-            $periodicity = $this->getPeriodicity();
-            new CronJob(self::ID, $courseId, $periodicity["number"],  $periodicity["time"]);
+            $expression = $this->getSchedule();
+            new CronJob($script, $expression, $courseId);
 
         } else { // disable googlesheets
-            CronJob::removeCronJob(self::ID, $courseId);
+            CronJob::removeCronJob($script, $courseId);
         }
         Core::database()->update(self::TABLE_GOOGLESHEETS_STATUS, ["isEnabled" => $enable], ["course" => $courseId]);
     }

@@ -120,8 +120,7 @@ class GoogleSheetsTest extends TestCase
         $config = Core::database()->select(GoogleSheets::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->course->getId()]);
         unset($config["course"]);
         foreach ($config as $key => $value) {
-            if ($key === "periodicityNumber") $this->assertEquals(10, $value);
-            else if ($key === "periodicityTime") $this->assertEquals(Time::MINUTE, $value);
+            if ($key === "frequency") $this->assertEquals("*/10 * * * *", $value);
             else $this->assertNull($value);
         }
     }
@@ -164,23 +163,21 @@ class GoogleSheetsTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function getPeriodicity()
+    public function getSchedule()
     {
-        $periodicity = $this->module->getPeriodicity();
-        $this->assertEquals(10, $periodicity["number"]);
-        $this->assertEquals(Time::MINUTE, $periodicity["time"]);
+        $schedule = $this->module->getSchedule();
+        $this->assertEquals("*/10 * * * *", $schedule);
     }
 
     /**
      * @test
      * @throws Exception
      */
-    public function savePeriodicity()
+    public function saveSchedule()
     {
-        $this->module->savePeriodicity(2, Time::DAY);
-        $periodicity = $this->module->getPeriodicity();
-        $this->assertEquals(2, $periodicity["number"]);
-        $this->assertEquals(Time::DAY, $periodicity["time"]);
+        $this->module->saveSchedule("0 */5 * * *");
+        $schedule = $this->module->getSchedule();
+        $this->assertEquals("0 */5 * * *", $schedule);
     }
 
 

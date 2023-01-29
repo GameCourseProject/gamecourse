@@ -94,15 +94,16 @@ abstract class AutoGame
      */
     public static function setAutoGame(int $courseId, bool $enable)
     {
+        $script = ROOT_PATH . "models/GameCourse/AutoGame/AutoGameScript.php";
         if ($enable) { // enable autogame
             if (!(new Course($courseId))->isActive())
                 throw new Exception("Course with ID = " . $courseId . " is not enabled: can't enable AutoGame.");
 
-            $periodicity = Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "periodicityNumber, periodicityTime");
-            new CronJob("AutoGame", $courseId, intval($periodicity["periodicityNumber"]),  $periodicity["periodicityTime"]);
+            $expression = Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "frequency");
+            new CronJob($script, $expression, $courseId);
 
         } else { // disable autogame
-            CronJob::removeCronJob("AutoGame", $courseId);
+            CronJob::removeCronJob($script, $courseId);
         }
         Core::database()->update(self::TABLE_AUTOGAME, ["isEnabled" => $enable], ["course" => $courseId]);
     }

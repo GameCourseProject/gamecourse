@@ -28,6 +28,7 @@ class InputType
     const TIME = "time";
     const DATETIME = "datetime";
     const PERIODICITY = "periodicity";
+    const SCHEDULE = "schedule";
 
     // General
     const TEXT = "text";

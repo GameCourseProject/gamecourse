@@ -14,6 +14,7 @@ export enum InputType {
   TIME = 'time',
   DATETIME = 'datetime',
   PERIODICITY = 'periodicity',
+  SCHEDULE = 'schedule',
 
   // General
   TEXT = 'text',

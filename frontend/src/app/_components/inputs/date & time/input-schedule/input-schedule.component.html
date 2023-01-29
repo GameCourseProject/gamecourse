@@ -2,7 +2,7 @@
 <app-input-text
   [id]="id"
   [form]="form"
-  [(value)]="humanReadable"
+  [(value)]="readable"
   [placeholder]="'Setup a schedule'"
 
   [size]="size"
@@ -29,22 +29,29 @@
 <!-- Modal -->
 <app-modal
   [id]="'cron-editor'"
+  [size]="'37rem'"
   [templateRef]="CRON_EDITOR"
   [submitBtnText]="'Save'"
-  (submitBtnClicked)="form.onSubmit(null); tabActive === 'Daily' ? fDaily.onSubmit(null) : tabActive === 'Weekly' ?
-                      fWeekly.onSubmit(null) : tabActive === 'Monthly' ? fMonthly.onSubmit(null) :
-                      fExpression.onSubmit(null); onSubmit()"
-  (onClose)="tabActive = tabs[0]">
+  (submitBtnClicked)="tabActive === 'Minutes' ? fMinutes.onSubmit(null) : tabActive === 'Hourly' ?
+                      fHourly.onSubmit(null) : tabActive === 'Daily' ? fDaily.onSubmit(null) : tabActive === 'Weekly' ?
+                      fWeekly.onSubmit(null) : tabActive === 'Monthly' ? fMonthly.onSubmit(null) : fExpression.onSubmit(null);
+                      onSubmit()">
 </app-modal>
 
 <ng-template #CRON_EDITOR>
-    <!-- Tabs -->
-    <div class="tabs tabs-boxed w-full justify-center bg-base-100">
-      <a *ngFor="let tab of tabs" class="tab" [ngClass]="{'tab-active': tab === tabActive}" (click)="tabActive = tab">{{tab}}</a>
-    </div>
+  <!-- Tabs -->
+  <div class="tabs tabs-boxed w-full justify-center bg-base-100">
+    <a *ngFor="let tab of tabs" class="tab" [ngClass]="{'tab-active': tab === tabActive}" (click)="tabActive = tab">{{tab}}</a>
+  </div>
 
-    <!-- Options -->
-    <div class="mt-7">
+  <!-- Options -->
+  <div class="mt-7">
+      <!-- Minutes -->
+      <ng-container *ngIf="tabActive === 'Minutes'" [ngTemplateOutlet]="MINUTES"></ng-container>
+
+      <!-- Hourly -->
+      <ng-container *ngIf="tabActive === 'Hourly'" [ngTemplateOutlet]="HOURLY"></ng-container>
+
       <!-- Daily -->
       <ng-container *ngIf="tabActive === 'Daily'" [ngTemplateOutlet]="DAILY"></ng-container>
 
@@ -63,6 +70,46 @@
 <!------------------------------------------------>
 <!----------------- TAB CONTENT ------------------>
 <!------------------------------------------------>
+
+<ng-template #MINUTES>
+  <form #fMinutes="ngForm">
+    <div class="flex flex-wrap items-end gap-2 font-semibold">
+      <span class="mb-[.8rem]">Every</span>
+
+      <app-input-select
+        [id]="'minutes'"
+        [form]="fMinutes"
+        [(value)]="minutes"
+        [options]="minuteOptions"
+        [search]="false"
+        [classList]="'min-w-[4.5rem]'"
+        [required]="true">
+      </app-input-select>
+
+      <span class="mb-[.8rem]">minute(s)</span>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #HOURLY>
+  <form #fHourly="ngForm">
+    <div class="flex flex-wrap items-end gap-2 font-semibold">
+      <span class="mb-[.8rem]">Every</span>
+
+      <app-input-select
+        [id]="'hours'"
+        [form]="fHourly"
+        [(value)]="hours"
+        [options]="hourOptions"
+        [search]="false"
+        [classList]="'min-w-[4.5rem]'"
+        [required]="true">
+      </app-input-select>
+
+      <span class="mb-[.8rem]">hour(s)</span>
+    </div>
+  </form>
+</ng-template>
 
 <ng-template #DAILY>
   <form #fDaily="ngForm">
@@ -131,28 +178,29 @@
 
 <ng-template #WEEKLY>
   <form #fWeekly="ngForm">
-    <div class="flex flex-wrap justify-between items-end">
-    <div class="w-1/2 sm:w-2/3 pr-2">
-      <app-input-select-weekday
-        [id]="'weekdays'"
+    <div class="flex flex-wrap justify-between items-end font-semibold">
+      <div class="w-1/2 sm:w-2/3 pr-2">
+        <app-input-select-weekday
+          [id]="'weekdays'"
+          [form]="fWeekly"
+          [(value)]="weekly.days"
+          [placeholder]="'Select weekdays'"
+          [multiple]="true"
+          [closeOnSelect]="false"
+          [required]="true">
+        </app-input-select-weekday>
+      </div>
+
+      <span class="mb-[.8rem]">at</span>
+
+      <app-input-time
+        [id]="'time'"
         [form]="fWeekly"
-        [(value)]="weekly.days"
-        [multiple]="true"
-        [closeOnSelect]="false"
+        [(value)]="weekly.time"
+        [classList]="'pl-2'"
         [required]="true">
-      </app-input-select-weekday>
+      </app-input-time>
     </div>
-
-    <span class="mb-[.8rem]">at</span>
-
-    <app-input-time
-      [id]="'time'"
-      [form]="fWeekly"
-      [(value)]="weekly.time"
-      [classList]="'pl-2'"
-      [required]="true">
-    </app-input-time>
-  </div>
   </form>
 </ng-template>
 
@@ -238,7 +286,7 @@
       [(value)]="monthly.weekday"
       [options]="weekdayOptions"
       [search]="false"
-      [classList]="'min-w-[6.5rem]'"
+      [classList]="'min-w-[7.8rem]'"
       [required]="true"
       (valueChange)="monthly.case = 2">
     </app-input-select>
@@ -275,7 +323,7 @@
       [id]="'expression'"
       [form]="fExpression"
       [(value)]="expression"
-      [placeholder]="'Write a cron expression'"
+      [placeholder]="'Write a valid expression'"
       [topLabel]="'Cron expression'"
       [required]="true"
       [pattern]="'(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|((((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7})'"

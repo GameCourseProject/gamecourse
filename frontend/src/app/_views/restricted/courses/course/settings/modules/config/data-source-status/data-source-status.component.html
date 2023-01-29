@@ -40,9 +40,8 @@
         [loading]="loading.table">
       </app-table>
 
-      <div class="mt-5">
-        <app-logs-viewer [logs]="status.logs"></app-logs-viewer>
-      </div>
+      <!-- Logs -->
+      <app-logs-viewer *ngIf="!status.logs.isEmpty()" [logs]="status.logs" class="mt-5"></app-logs-viewer>
 
     </ng-container>
 

@@ -17,8 +17,7 @@ CREATE TABLE IF NOT EXISTS googlesheets_config(
     refreshToken                TEXT DEFAULT NULL,
     spreadsheetId               TEXT DEFAULT NULL,
     sheetName                   TEXT DEFAULT NULL,
-    periodicityNumber           int unsigned DEFAULT 10,
-    periodicityTime             varchar(25) DEFAULT 'minute',
+    frequency                   varchar(50) DEFAULT '*/10 * * * *',
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );

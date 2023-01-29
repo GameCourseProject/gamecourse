@@ -40,35 +40,44 @@ export class InputScheduleComponent implements OnInit {
 
   @Output() valueChange = new EventEmitter<string>();
 
+  @ViewChild('fMinutes', { static: false }) fMinutes: NgForm;
+  @ViewChild('fHourly', { static: false }) fHourly: NgForm;
   @ViewChild('fDaily', { static: false }) fDaily: NgForm;
   @ViewChild('fWeekly', { static: false }) fWeekly: NgForm;
   @ViewChild('fMonthly', { static: false }) fMonthly: NgForm;
   @ViewChild('fExpression', { static: false }) fExpression: NgForm;
 
-  tabs: string[]= ["Daily", "Weekly", "Monthly", "Advanced"];
-  tabActive: string = this.tabs[0];
+  tabs: string[] = ["Minutes", "Hourly", "Daily", "Weekly", "Monthly", "Advanced"];
+  tabActive: string;
 
-  dayOptions: {value: string, text: string}[] = this.initDayOptions(1, 31);
-  monthOptions: {value: string, text: string}[] = this.initMonthOptions(1, 12);
+  minuteOptions: {value: string, text: string}[] = this.initNumberOptions(1, 59);
+  hourOptions: {value: string, text: string}[] = this.initNumberOptions(0, 23);
+  dayOptions: {value: string, text: string}[] = this.initNumberOptions(1, 31);
+  monthOptions: {value: string, text: string}[] = this.initNumberOptions(1, 12);
   orderOptions: {value: string, text: string}[] = this.initOrderOptions();
   weekdayOptions: {value: string, text: string}[] = this.initWeekdayOptions();
 
+  minutes: string;
+  hours: string;
   daily: DailyData;
   weekly: WeeklyData;
   monthly: MonthlyData;
   expression: string;
 
-  humanReadable: string;
+  readable: string
 
   constructor() { }
 
   ngOnInit(): void {
-    // Init values
-    this.initDailyData();
-    this.initWeeklyData();
-    this.initMonthlyData();
+    // Filter options
+    if (this.filterOptions?.length > 0)
+      this.tabs = this.tabs.filter(tab => !this.filterOptions.includes(tab))
 
-    // TODO: set value if not undefined
+    // Set active tab
+    this.tabActive = this.tabs[0];
+
+    // Init values
+    this.init();
   }
 
 
@@ -76,15 +85,9 @@ export class InputScheduleComponent implements OnInit {
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  initDayOptions(min: number, max: number) {
+  initNumberOptions(min: number, max:number) {
     const options: {value: string, text: string}[] = [];
-    for (let i = min; i <= max; i++) { options.push({value: 'd-' + i, text: i.toString()}); }
-    return options;
-  }
-
-  initMonthOptions(min: number, max: number) {
-    const options: {value: string, text: string}[] = [];
-    for (let i = min; i <= max; i++) { options.push({value: 'm-' + i, text: i.toString()}); }
+    for (let i = min; i <= max; i++) { options.push({value: 'i-' + i, text: i.toString()}); }
     return options;
   }
 
@@ -110,7 +113,7 @@ export class InputScheduleComponent implements OnInit {
   initDailyData(data?: DailyData) {
     this.daily = data ?? {
       case: 1,
-      days: 'd-1',
+      days: 'i-1',
       time1: '00:00',
       time2: '00:00',
     };
@@ -126,9 +129,9 @@ export class InputScheduleComponent implements OnInit {
   initMonthlyData(data?: MonthlyData) {
     this.monthly = data ?? {
       case: 1,
-      days: 'd-1',
-      months1: 'm-1',
-      months2: 'm-1',
+      days: 'i-1',
+      months1: 'i-1',
+      months2: 'i-1',
       order: 'first',
       weekday: 'd-1',
       time1: '00:00',
@@ -137,16 +140,28 @@ export class InputScheduleComponent implements OnInit {
   }
 
 
+  init() {
+    this.minutes = 'i-1';
+    this.hours = 'i-1';
+    this.initDailyData();
+    this.initWeeklyData();
+    this.initMonthlyData();
+    if (this.value) this.expressionToData(this.value);
+  }
+
+
   /*** --------------------------------------------- ***/
   /*** ----------------- Actions ------------------- ***/
   /*** --------------------------------------------- ***/
 
   onSubmit() {
-    if ((this.tabActive === 'Daily' && this.fDaily.valid) || (this.tabActive === 'Weekly' && this.fWeekly.valid) ||
+    if ((this.tabActive === 'Minutes' && this.fMinutes.valid) || (this.tabActive === 'Hourly' && this.fHourly.valid) ||
+      (this.tabActive === 'Daily' && this.fDaily.valid) || (this.tabActive === 'Weekly' && this.fWeekly.valid) ||
       (this.tabActive === 'Monthly' && this.fMonthly.valid) || (this.tabActive === 'Advanced' && this.fExpression.valid)) {
+
       const expression = this.dataToExpression();
       this.valueChange.emit(expression);
-      this.humanReadable = this.expressionToText(expression);
+      this.readable = this.expressionToText(expression);
 
       if (this.tabActive !== 'Daily') this.initDailyData();
       if (this.tabActive !== 'Weekly') this.initWeeklyData();
@@ -161,7 +176,15 @@ export class InputScheduleComponent implements OnInit {
    * Transforms user input data into a Cron expression.
    */
   dataToExpression(): string {
-    if (this.tabActive === 'Daily') {
+    if (this.tabActive === 'Minutes') {
+      const minutes = this.minutes.substring(2);
+      return createCronExpression('*/' + minutes, '*', '*', '*', '*');
+
+    } else if (this.tabActive === 'Hourly') {
+      const hours = this.hours.substring(2);
+      return createCronExpression('0', '*/' + hours, '*', '*', '*');
+
+    } else if (this.tabActive === 'Daily') {
       if (this.daily.case === 1) {
         const days = this.daily.days.substring(2);
         const hours = this.daily.time1.split(':')[0];
@@ -229,8 +252,109 @@ export class InputScheduleComponent implements OnInit {
    * Returns a readable description from a Cron expression.
    */
   expressionToText(expression: string): string {
-    const options = {verbose: true, use24HourTimeFormat: true};
+    const options = {verbose: false, use24HourTimeFormat: true};
     return cronstrue.toString(expression, options);
+  }
+
+  /**
+   * Transforms a given expression into appropriate data.
+   */
+  expressionToData(expression: string) {
+    const MINUTES_REGEX = /^\*\/(\d+) \* \* \* \*$/g;
+    const HOURLY_REGEX = /^0 \*\/(\d+) \* \* \*$/g;
+    const DAILY_1_REGEX = /^(\d+) (\d+) \*\/(\d+) \* \*$/g;
+    const DAILY_2_REGEX = /^(\d+) (\d+) \* \* MON-FRI$/g;
+    const WEEKLY_REGEX = /^(\d+) (\d+) \* \* ((?:(?:MON|TUE|WED|THU|FRI|SAT|SUN),*)+)$/g;
+    const MONTHLY_1_REGEX = /^(\d+) (\d+) (\d+) (\d+)\/(\d+) \*$/g;
+    const MONTHLY_2_REGEX = /^(\d+) (\d+) \* (\d+)\/(\d+) (MON|TUE|WED|THU|FRI|SAT|SUN)#(\d|L)$/g;
+
+    if (expression.match(MINUTES_REGEX)) {
+      const matches = expression.matchAll(MINUTES_REGEX);
+      for (const match of matches) {
+        this.minutes = 'i-' + match[1];
+        this.tabActive = 'Minutes';
+      }
+
+    } else if (expression.match(HOURLY_REGEX)) {
+      const matches = expression.matchAll(HOURLY_REGEX);
+      for (const match of matches) {
+        this.hours = 'i-' + match[1];
+        this.tabActive = 'Hourly';
+      }
+
+    } else if (expression.match(DAILY_1_REGEX)) {
+      const matches = expression.matchAll(DAILY_1_REGEX);
+      for (const match of matches) {
+        this.daily.case = 1;
+        this.daily.days = 'i-' + match[3];
+        this.daily.time1 = match[2] + ':' + match[1];
+        this.tabActive = 'Daily';
+      }
+
+    } else if (expression.match(DAILY_2_REGEX)) {
+      const matches = expression.matchAll(DAILY_2_REGEX);
+      for (const match of matches) {
+        this.daily.case = 2;
+        this.daily.time2 = match[2] + ':' + match[1];
+        this.tabActive = 'Daily';
+      }
+
+    } else if (expression.match(WEEKLY_REGEX)) {
+      const matches = expression.matchAll(WEEKLY_REGEX);
+      for (const match of matches) {
+        this.weekly.days = match[3].split(',').map(text => textToDay(text));
+        this.weekly.time = match[2] + ':' + match[1];
+        this.tabActive = 'Weekly';
+      }
+
+    } else if (expression.match(MONTHLY_1_REGEX)) {
+      const matches = expression.matchAll(MONTHLY_1_REGEX);
+      for (const match of matches) {
+        this.monthly.case = 1;
+        this.monthly.days = 'i-' + match[3];
+        this.monthly.months1 = 'i-' + match[5];
+        this.monthly.time1 = match[2] + ':' + match[1];
+        this.tabActive = 'Monthly';
+      }
+
+    } else if (expression.match(MONTHLY_2_REGEX)) {
+      const matches = expression.matchAll(MONTHLY_2_REGEX);
+      for (const match of matches) {
+        this.monthly.case = 2;
+        this.monthly.order = textToOrder(match[6])
+        this.monthly.weekday = textToDay(match[5])
+        this.monthly.months2 = 'i-' + match[4];
+        this.monthly.time2 = match[2] + ':' + match[1];
+        this.tabActive = 'Monthly';
+      }
+
+    } else {
+      this.expression = expression;
+      this.tabActive = 'Advanced';
+    }
+
+    this.readable = this.expressionToText(expression);
+
+    function textToDay(text: string): string {
+      if (text === 'MON') return 'd-1';
+      else if (text === 'TUE') return 'd-2';
+      else if (text === 'WED') return 'd-3';
+      else if (text === 'THU') return 'd-4';
+      else if (text === 'FRI') return 'd-5';
+      else if (text === 'SAT') return 'd-6';
+      else if (text === 'SUN') return 'd-0';
+      else return null;
+    }
+
+    function textToOrder(text: string): string {
+      if (text === '1') return 'first';
+      else if (text === '2') return 'second';
+      else if (text === '3') return 'third';
+      else if (text === '4') return 'fourth';
+      else if (text === '5') return 'fifth';
+      else if (text === 'L') return 'last';
+      else return '';
+    }
   }
 
 
@@ -239,6 +363,7 @@ export class InputScheduleComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   openEditor() {
+    this.init();
     ModalService.openModal('cron-editor');
   }
 

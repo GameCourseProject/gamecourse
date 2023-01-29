@@ -8,8 +8,7 @@ CREATE TABLE IF NOT EXISTS moodle_config(
     tablesPrefix                varchar(25),
     moodleURL                   varchar(100),
     moodleCourse                int unsigned DEFAULT NULL,
-    periodicityNumber           int unsigned DEFAULT 10,
-    periodicityTime             varchar(25) DEFAULT 'minute',
+    frequency                   varchar(50) DEFAULT '*/10 * * * *',
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
