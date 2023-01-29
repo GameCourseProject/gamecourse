@@ -65,6 +65,7 @@
             [form]="fTier"
             [(value)]="tierToManage.name"
             [placeholder]="'Tier name'"
+            [disabled]="tierToManage.name === 'Wildcard'"
             [topLabel]="'Name'"
             [required]="true"
             [maxLength]="50"
@@ -355,34 +356,38 @@
     <!-- Skill Tree -->
     <div class="flex flex-col w-full lg:flex-row">
       <ng-container *ngFor="let tier of getSkillTreeInfo(skillTreeInView.id).tiers; let first = first">
-        <!-- Divider -->
-        <div *ngIf="!first" class="divider lg:divider-horizontal"></div>
+        <ng-container *ngIf="!tier.isActive"></ng-container>
 
-        <!-- Tier -->
-        <div class="grid flex-grow h-fit p-2 place-items-center">
-          <span class="text-center text-primary font-semibold mb-2">{{tier.name}}: {{tier.reward}} XP</span>
+        <ng-container *ngIf="tier.isActive">
+          <!-- Divider -->
+          <div *ngIf="!first" class="divider lg:divider-horizontal"></div>
 
-          <!-- Skill -->
-          <div class="flex flex-wrap flex-row justify-center items-start lg:items-center w-full lg:flex-col">
-            <div *ngFor="let skill of filterSkillsByTier(getSkillTreeInfo(skillTreeInView.id).skills, tier.id)" class="flex flex-col justify-center m-2">
+          <!-- Tier -->
+          <div class="grid flex-grow h-fit p-2 place-items-center">
+            <span class="text-center text-primary font-semibold mb-2">{{tier.name}}: {{tier.reward}} XP</span>
 
-              <!-- Skill box -->
-              <div class="flex justify-center">
-                <div class="w-20 h-20 p-2 rounded-lg hover:cursor-pointer hover:outline hover:outline-offset-2"
-                     [ngStyle]="{'background-color': skill.color, 'outline-color': skill.color}" (click)="goToSkillPage(skill)">
-                  <span class="text-white font-semibold text-xs line-clamp-2">{{skill.name}}</span>
+            <!-- Skill -->
+            <div class="flex flex-wrap flex-row justify-center items-start lg:items-center w-full lg:flex-col">
+              <div *ngFor="let skill of filterSkillsByTier(getSkillTreeInfo(skillTreeInView.id).skills, tier.id)" class="flex flex-col justify-center m-2">
+
+                <!-- Skill box -->
+                <div class="flex justify-center">
+                  <div class="w-20 h-20 p-2 rounded-lg hover:cursor-pointer hover:outline hover:outline-offset-2"
+                       [ngStyle]="{'background-color': skill.color, 'outline-color': skill.color}" (click)="goToSkillPage(skill)">
+                    <span class="text-white font-semibold text-xs line-clamp-2">{{skill.name}}</span>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Skill dependencies -->
-              <div *ngIf="skill.dependencies.length > 0" class="mt-1 lg:mb-5">
-                <p *ngFor="let combo of skill.dependencies; let last = last" class="prose text-xs text-center" [ngClass]="{'mb-0.5': !last}">{{getComboText(combo)}}</p>
-              </div>
+                <!-- Skill dependencies -->
+                <div *ngIf="skill.dependencies.length > 0" class="mt-1 lg:mb-5">
+                  <p *ngFor="let combo of skill.dependencies; let last = last" class="prose text-xs text-center" [ngClass]="{'mb-0.5': !last}">{{getComboText(combo)}}</p>
+                </div>
 
+              </div>
             </div>
-          </div>
 
-        </div>
+          </div>
+        </ng-container>
 
       </ng-container>
     </div>
