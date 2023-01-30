@@ -65,7 +65,7 @@ export class SkillsComponent implements OnInit {
       this.courseID = parseInt(params.id);
 
       await this.isVCEnabled();
-      await this.getVCName();
+      if (this.VCEnabled) await this.getVCName();
 
       await this.initSkillTreesInfo(this.courseID);
       // await this.getCourseDataFolder();
@@ -131,7 +131,6 @@ export class SkillsComponent implements OnInit {
         {label: 'Position (sorting)', align: 'middle'},
         {label: 'Tier', align: 'middle'},
         {label: 'Reward (XP)', align: 'middle'},
-        {label: 'Cost', align: 'middle'},
         {label: 'Active', align: 'middle'},
         {label: 'Actions'}
       ],
@@ -139,7 +138,7 @@ export class SkillsComponent implements OnInit {
         order: [[ 0, 'asc' ]], // default order,
         columnDefs: [
           { orderData: 0,   targets: 1 },
-          { orderable: false, targets: [0, 1, 2, 3, 4, 5] }
+          { orderable: false, targets: [0, 1, 2, 3, 4] }
         ]
       }
     },
@@ -170,27 +169,41 @@ export class SkillsComponent implements OnInit {
   buildTiersTable(skillTreeId: number): void {
     this.getSkillTreeInfo(skillTreeId).loading.tiers = true;
 
+    // Add tier cost if Virtual Currency enabled
+    if (this.VCEnabled) {
+      this.tablesInfo.tiers.headers.splice(3, 0,  {label: 'Cost (' + this.VCName + ')', align: 'middle'});
+      this.tablesInfo.tiers.tableOptions['columnDefs'][1]['targets'].push(5);
+    }
+
     const table: { type: TableDataType, content: any }[][] = []
     const nrTiers = this.getSkillTreeInfo(skillTreeId).tiers.length;
     this.getSkillTreeInfo(skillTreeId).tiers.forEach((tier, index) => {
-      table.push([
+      const row: { type: TableDataType, content: any }[] = [
         {type: TableDataType.NUMBER, content: {value: tier.position}},
         {type: TableDataType.TEXT, content: {text: tier.name, classList: 'font-semibold'}},
         {type: TableDataType.NUMBER, content: {value: tier.reward}},
-        {type: TableDataType.TEXT, content: {text: tier.costType.capitalize() + ': ' + tier.cost +
-              (tier.costType === 'variable' ? (' + ' + tier.increment + ' x #attempts (rating >= ' + tier.minRating + ')') : '')}},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: tier.isActive}},
         {type: TableDataType.ACTIONS, content: {actions: [
-          Action.EDIT,
-          {action: Action.DELETE, disabled: !scopeAllows(ActionScope.ALL_BUT_LAST, nrTiers, index)},
-          {action: Action.MOVE_UP, disabled: !scopeAllows(ActionScope.ALL_BUT_FIRST_AND_LAST, nrTiers, index)},
-          {action: Action.MOVE_DOWN, disabled: !scopeAllows(ActionScope.ALL_BUT_TWO_LAST, nrTiers, index)},
-          Action.EXPORT
-        ]}}
-      ]);
-    });
+              Action.EDIT,
+              {action: Action.DELETE, disabled: !scopeAllows(ActionScope.ALL_BUT_LAST, nrTiers, index)},
+              {action: Action.MOVE_UP, disabled: !scopeAllows(ActionScope.ALL_BUT_FIRST_AND_LAST, nrTiers, index)},
+              {action: Action.MOVE_DOWN, disabled: !scopeAllows(ActionScope.ALL_BUT_TWO_LAST, nrTiers, index)},
+              Action.EXPORT
+            ]}}
+      ];
 
-    this.tablesInfo.tiers.headers[3].label = 'Cost (' + this.VCName + ')';
+      // Add tier cost if Virtual Currency enabled
+      if (this.VCEnabled) {
+        row.splice(3, 0, {
+          type: TableDataType.TEXT, content: {
+            text: tier.costType.capitalize() + ': ' + tier.cost +
+              (tier.costType === 'variable' ? (' + ' + tier.increment + ' x #attempts (rating >= ' + tier.minRating + ')') : '')
+          }
+        });
+      }
+
+      table.push(row);
+    });
 
     this.getSkillTreeInfo(skillTreeId).data.tiers = table;
     this.getSkillTreeInfo(skillTreeId).loading.tiers = false;

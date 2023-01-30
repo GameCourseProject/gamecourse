@@ -127,6 +127,7 @@ class TestingUtils
         Mockery::mock("overload:Utils\CronJob", [
             "__construct" => null,
             "removeCronJob" => null,
+            "dateToExpression" => null
         ]);
     }
 }

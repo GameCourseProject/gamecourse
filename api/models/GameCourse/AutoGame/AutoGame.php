@@ -19,6 +19,8 @@ abstract class AutoGame
     const TABLE_AUTOGAME = "autogame";
     const TABLE_PARTICIPATION = "participation";
 
+    const LOGS_FOLDER = "autogame";
+
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Setup ---------------------- ***/
@@ -40,9 +42,8 @@ abstract class AutoGame
         RuleSystem::initRuleSystem($courseId);
 
         // Setup logging
-        if (!file_exists(LOGS_FOLDER)) mkdir(LOGS_FOLDER, 0777, true);
         $logsFile = self::getLogsFile($courseId);
-        file_put_contents($logsFile, "");
+        Utils::initLogging($logsFile);
     }
 
     /**
@@ -74,9 +75,14 @@ abstract class AutoGame
         RuleSystem::deleteRuleSystemInfo($courseId);
 
         // Remove logging info
-        $logsFile = self::getLogsFile($courseId, false);
-        Utils::deleteFile(LOGS_FOLDER, $logsFile);
+        $logsFile = self::getLogsFile($courseId);
+        Utils::removeLogging($logsFile);
     }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------------- Status ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
 
     /**
      * Enables/disables autogame for a given course.
@@ -88,16 +94,29 @@ abstract class AutoGame
      */
     public static function setAutoGame(int $courseId, bool $enable)
     {
+        $script = ROOT_PATH . "models/GameCourse/AutoGame/AutoGameScript.php";
         if ($enable) { // enable autogame
             if (!(new Course($courseId))->isActive())
                 throw new Exception("Course with ID = " . $courseId . " is not enabled: can't enable AutoGame.");
 
-            $periodicity = Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "periodicityNumber, periodicityTime");
-            new CronJob("AutoGame", $courseId, intval($periodicity["periodicityNumber"]),  $periodicity["periodicityTime"]);
+            $expression = Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "frequency");
+            new CronJob($script, $expression, $courseId);
 
         } else { // disable autogame
-            CronJob::removeCronJob("AutoGame", $courseId);
+            CronJob::removeCronJob($script, $courseId);
         }
+        Core::database()->update(self::TABLE_AUTOGAME, ["isEnabled" => +$enable], ["course" => $courseId]);
+    }
+
+    /**
+     * Checks whether AutoGame is enabled for a given course.
+     *
+     * @param int $courseId
+     * @return bool
+     */
+    public static function isEnabled(int $courseId): bool
+    {
+        return boolval(Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "isEnabled"));
     }
 
 
@@ -114,6 +133,17 @@ abstract class AutoGame
     public static function getLastRun(int $courseId): ?string
     {
         return Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "finishedRunning");
+    }
+
+    /**
+     * Triggers AutoGame to run on the next iteration.
+     *
+     * @param int $courseId
+     * @return void
+     */
+    public static function setToRun(int $courseId)
+    {
+        Core::database()->update(self::TABLE_AUTOGAME, ["runNext" => 1], ["course" => $courseId]);
     }
 
     /**
@@ -154,10 +184,10 @@ abstract class AutoGame
      * @param int $courdeId
      * @return bool
      */
-    private static function isStuck(int $courdeId): bool
+    private static function isStuck(int $courseId): bool
     {
-        $logs = self::getLogs($courdeId);
-        return !(substr(trim($logs), -strlen(self::SEPARATOR)) == self::SEPARATOR);
+        $logs = self::getLogs($courseId);
+        return !(substr(trim($logs), -strlen(Utils::LOGS_SEPARATOR)) == Utils::LOGS_SEPARATOR);
     }
 
     /**
@@ -338,8 +368,6 @@ abstract class AutoGame
     /*** ---------------------- Logging --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    const SEPARATOR = "================================================================================";
-
     /**
      * Gets AutoGame logs for a given course.
      *
@@ -349,7 +377,7 @@ abstract class AutoGame
     public static function getLogs(int $courseId): string
     {
         $logsFile = self::getLogsFile($courseId);
-        return file_get_contents($logsFile);
+        return Utils::getLogs($logsFile);
     }
 
     /**
@@ -362,12 +390,8 @@ abstract class AutoGame
      */
     public static function log(int $courseId, string $message, string $type = "ERROR")
     {
-        $sep = self::SEPARATOR;
-        $header = "[" . date("Y/m/d H:i:s") . "] [$type] : ";
-        $log = "\n$sep\n$header$message\n$sep\n\n";
-
         $logsFile = self::getLogsFile($courseId);
-        file_put_contents($logsFile, $log, FILE_APPEND);
+        Utils::addLog($logsFile, $message, $type);
     }
 
     /**
@@ -380,7 +404,7 @@ abstract class AutoGame
     private static function getLogsFile(int $courseId, bool $fullPath = true): string
     {
         $filename = "autogame_$courseId.txt";
-        if ($fullPath) return LOGS_FOLDER . "/" . $filename;
+        if ($fullPath) return self::LOGS_FOLDER . "/" . $filename;
         else return $filename;
     }
 

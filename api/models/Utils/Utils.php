@@ -196,7 +196,7 @@ class Utils
      */
     public static function uploadFile(string $to, string $base64, string $filename): string
     {
-        if (!file_exists($to)) mkdir($to, 077, true);
+        if (!file_exists($to)) mkdir($to, 0777, true);
         if (!is_dir($to)) {
             unlink($to);
             throw new Exception("Can't upload file to '" . $to . "' since it isn't a directory.");
@@ -817,5 +817,87 @@ class Utils
      */
     private static function setItemPosition($itemId, ?int $position, string $table, string $key) {
         Core::database()->update($table, [$key => $position], ["id" => $itemId]);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------------- Logging --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    const LOGS_SEPARATOR = "================================================================================";
+
+    /**
+     * Initializes logging on a given path by creating an empty
+     * log file.
+     *
+     * @param string $path
+     * @return void
+     */
+    public static function initLogging(string $path)
+    {
+        $logsFile = LOGS_FOLDER . "/" . $path;
+        if (!file_exists(LOGS_FOLDER)) mkdir(LOGS_FOLDER, 0777, true);
+        if (!file_exists($logsFile)) {
+            $parts = explode("/", $path);
+            if (count($parts) > 1) {    // directory
+                $dir = LOGS_FOLDER . "/" . implode("/", array_slice($parts, 0, -1));
+                if (!file_exists($dir)) mkdir( $dir, 0777, true);
+            }
+        }
+        file_put_contents($logsFile, "");
+    }
+
+    /**
+     * Removes logging on a given path by deleting its log file.
+     * @return void
+     * @throws Exception
+     */
+    public static function removeLogging(string $path)
+    {
+        $parts = explode("/", $path);
+        $filename = end($parts);
+        if (count($parts) == 1) $dir = LOGS_FOLDER;
+        else $dir = LOGS_FOLDER . "/" . implode("/", array_slice($parts, 0, -1));
+        self::deleteFile($dir, $filename);
+    }
+
+    /**
+     * Gets logs on a given path.
+     *
+     * @param string $path
+     * @return string
+     */
+    public static function getLogs(string $path): string
+    {
+        $logsFile = LOGS_FOLDER . "/" . $path;
+        return file_exists($logsFile) ? file_get_contents($logsFile) : "";
+    }
+
+    /**
+     * Creates a new log on a given path.
+     *
+     * @param string $path
+     * @param string $message
+     * @param string $type
+     * @return void
+     */
+    public static function addLog(string $path, string $message, string $type = "ERROR")
+    {
+        $sep = self::LOGS_SEPARATOR;
+        $header = "[" . date("Y/m/d H:i:s") . "] [$type] : ";
+        $log = "\n$sep\n$header$message\n$sep\n\n";
+
+        $logsFile = LOGS_FOLDER . "/" . $path;
+        if (!file_exists(LOGS_FOLDER)) mkdir(LOGS_FOLDER, 0777, true);
+        if (!file_exists($logsFile)) {
+            $parts = explode("/", $path);
+            if (count($parts) > 1) {    // directory
+                $dir = implode("/", array_slice($parts, 0, -1));
+                mkdir(LOGS_FOLDER . "/" . $dir, 0777, true);
+
+            } else file_put_contents($logsFile, "");    // file
+        }
+
+        file_put_contents($logsFile, $log, FILE_APPEND);
     }
 }

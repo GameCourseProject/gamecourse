@@ -11,6 +11,7 @@ import {DownloadManager} from "../../../../../../../../_utils/download/download-
 
 import {Course} from "../../../../../../../../_domain/courses/course";
 import {Module} from "../../../../../../../../_domain/modules/module";
+import {ModuleType} from "../../../../../../../../_domain/modules/ModuleType";
 import {InputType} from "../../../../../../../../_components/inputs/InputType";
 import {Action, ActionScope, scopeAllows} from 'src/app/_domain/modules/config/Action';
 import {TableDataType} from "../../../../../../../../_components/tables/table-data/table-data.component";
@@ -69,6 +70,10 @@ export class ConfigComponent implements OnInit {
         setTimeout(() => this.initIcon());
       });
     });
+  }
+
+  get ModuleType(): typeof ModuleType {
+    return ModuleType;
   }
 
   get InputType(): typeof InputType {
@@ -639,6 +644,7 @@ export class ConfigComponent implements OnInit {
 
 export interface ConfigSection {
   name: string,
+  description?: string,
   btnText?: string,
   successMsg?: string,
   contents: (ConfigInputContainer|ConfigInputItem)[],

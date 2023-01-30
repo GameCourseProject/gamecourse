@@ -258,3 +258,7 @@ select:disabled + .ss-main .ss-disabled {
     @apply font-normal rounded-l-none #{!important};
   }
 }
+
+.input-schedule input {
+  @apply cursor-pointer #{!important};
+}

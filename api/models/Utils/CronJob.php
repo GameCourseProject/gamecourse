@@ -1,11 +1,12 @@
 <?php
 namespace Utils;
 
-use GameCourse\Module\ProgressReport\ProgressReport;
+use Exception;
 
 /**
- * This class is responsible to enable/disable cron jobs,
- * which are periodic scripts that run on a schedule.
+ * This class is responsible for scheduling cron jobs,
+ * which are periodic scripts that run on a schedule
+ * automatically.
  *
  * Editor for cron schedule expressions: https://crontab.guru
  */
@@ -13,98 +14,93 @@ class CronJob
 {
     const CRONFILE = ROOT_PATH . "crontab.txt";
 
-    public function __construct(string $script, int $itemId, ?int $number, ?string $time, int $day = null, string $datetime = null)
+    /*** ----------------------------------------------- ***/
+    /*** ----------- Cron Jobs Manipulation ------------ ***/
+    /*** ----------------------------------------------- ***/
+
+    /**
+     * Creates or updates a given cron job.
+     * Cron jobs are identified by their script path and arguments.
+     *
+     * @param string $script
+     * @param string $expression
+     * @param ...$args
+     * @throws Exception
+     */
+    public function __construct(string $script, string $expression, ...$args)
     {
-        self::updateCronTab($script, $itemId, $number, $time, $day, $datetime);
-    }
-
-    public static function removeCronJob(string $script, int $itemId)
-    {
-        self::updateCronTab($script, $itemId, null, null, null, null, true);
-    }
-
-    private static function updateCronTab(string $script, int $itemId, ?int $number, ?string $time, int $day = null, string $datetime = null, bool $remove = false)
-    {
-        // FIXME: allow for arguments to be passed
-        $path = self::getScriptPath($script);
-        $output = shell_exec('crontab -l');
-
-        if ($path) {
-            $file = $output;
-            $lines = explode("\n", $file);
-            $toWrite = "";
-            foreach ($lines as $line) {
-                $separated = explode(" ", $line);
-                if ((strpos($line, $path) === false or end($separated) != $itemId) and $line != '') {
-                    $toWrite .= $line . "\n";
-                }
-            }
-
-            if (!$remove) {
-                // TODO: replace with getExpression()
-                $periodStr = "";
-                if (!is_null($datetime)) {
-                    // NOTE: max. working datetime = datetime + 1 year
-                    $day = intval(substr($datetime, 8, 2));
-                    $month = intval(substr($datetime, 5, 2));
-                    $hour = intval(substr($datetime, 11, 2));
-                    $minute = intval(substr($datetime, 14, 2));
-                    $periodStr = $minute . " " . $hour . " " . $day . " " . $month . " *";
-
-                } else if ($time == "Minutes") {
-                    $periodStr = "*/" . $number . " * * * *";
-                } else if ($time == "Hours") {
-                    $periodStr = "0 */" . $number . " * * *";
-                } else if ($time == "Day") {
-                    $periodStr = "0 0 */" . $number . " * *";
-                } else if ($time == "Daily"){
-                    $periodStr = "0 " . $number . " * * *";
-                } else if ($time == "Weekly" && $day != null) {
-                    $periodStr = "0 " . $number . " * * " . $day;   // (0-sunday, 1-monday, 2-tuesday, etc)
-                }
-                $toWrite .= $periodStr . " /usr/bin/php " . $path . " " . $itemId . "\n";
-            }
-
-            file_put_contents(self::CRONFILE, $toWrite);
-            echo exec('crontab ' . self::CRONFILE);
-        }
-    }
-
-    private static function getScriptPath(string $script): ?string
-    {
-        switch ($script) {
-            case "AutoCourseEnabling":
-                return ROOT_PATH . "models/GameCourse/Course/AutoEnablingScript.php";
-
-            case "AutoCourseDisabling":
-                return ROOT_PATH . "models/GameCourse/Course/AutoDisablingScript.php";
-
-            case "AutoGame":
-                return ROOT_PATH . "models/GameCourse/AutoGame/AutoGameScript.php";
-
-            case "AutoPageEnabling":
-                return ROOT_PATH . "models/GameCourse/Views/Page/AutoEnablingScript.php";
-
-            case "AutoPageDisabling":
-                return ROOT_PATH . "models/GameCourse/Views/Page/AutoDisablingScript.php";
-
-            case "ProgressReport": // FIXME: should be compartimentalized inside module
-                return MODULES_FOLDER . "/" . ProgressReport::ID . "/scripts/ProgressReportScript.php";
-
-            default:
-                return null;
-        }
+        self::updateCronTab($script, $expression, ...$args);
     }
 
     /**
-     * TODO: add more flexibility and replace section in updateCrontab function
-     * Gets a cron schedule expression based on specifications given.
-     * Extensive editor on: https://crontab.guru
+     * Removes a given cron job.
+     * Cron jobs are identified by their script path and arguments.
      *
+     * @param string $script
+     * @param ...$args
+     * @return void
+     * @throws Exception
+     */
+    public static function removeCronJob(string $script, ...$args)
+    {
+        self::updateCronTab($script, null, $args);
+    }
+
+    /**
+     * Updates Cron jobs scheduled by adding (when expression passed)
+     * or removing (no expression passed).
+     *
+     * @param string $script
+     * @param string|null $expression
+     * @param ...$args
+     * @return void
+     * @throws Exception
+     */
+    private static function updateCronTab(string $script, ?string $expression, ...$args)
+    {
+        // Check script exists
+        if (!file_exists($script))
+            throw new Exception("Script '$script' doesn't exist: can't update Cron job.");
+
+        // Get scheduled cron jobs list
+        $output = shell_exec('crontab -l');
+        $cronjobs = array_filter(array_map('trim', explode("\n", trim($output))), function ($line) { return !empty($line); });
+
+        // Filter out given script
+        $cronjobs = array_filter($cronjobs, function ($cronjob) use ($script, $args) {
+            $parts = explode(" ", $cronjob);
+            $scr = $parts[6];
+            $arg = count($parts) > 7 ? array_slice($parts, 7) : [];
+            return $scr != $script || implode(" ", $arg) != implode(" ", $args);
+        });
+
+        // Add updated cron job
+        if ($expression) $cronjobs[] = implode(" ", array_merge([$expression, "/usr/bin/php", $script], $args));
+
+        // Save scheduled cron jobs
+        file_put_contents(self::CRONFILE, implode("\n", $cronjobs));
+        echo exec('crontab ' . self::CRONFILE);
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Utils -------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    /**
+     * Converts a given datetime into a cron expression.
+     * NOTE: don't forget to remove cron job when date has come,
+     *       otherwise it will repeat every year on given date.
+     *
+     * @param string $datetime
      * @return string
      */
-    private static function getExpression(): string
+    public static function dateToExpression(string $datetime): string
     {
-        return "";
+        $day = substr($datetime, 8, 2);
+        $month = substr($datetime, 5, 2);
+        $hour = substr($datetime, 11, 2);
+        $minute = substr($datetime, 14, 2);
+        return "$minute $hour $day $month *";
     }
 }

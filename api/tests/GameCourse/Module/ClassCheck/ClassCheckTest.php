@@ -161,7 +161,60 @@ class ClassCheckTest extends TestCase
     }
 
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getSchedule()
+    {
+        $schedule = $this->module->getSchedule();
+        $this->assertEquals("*/10 * * * *", $schedule);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function saveSchedule()
+    {
+        $this->module->saveSchedule("0 */5 * * *");
+        $schedule = $this->module->getSchedule();
+        $this->assertEquals("0 */5 * * *", $schedule);
+    }
+
+
     // Status
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isAutoImporting()
+    {
+        $this->module->setAutoImporting(true);
+        $this->assertTrue($this->module->isAutoImporting());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function isNotAutoImporting()
+    {
+        $this->module->setAutoImporting(false);
+        $this->assertFalse($this->module->isAutoImporting());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setAutoImporting()
+    {
+        $this->module->setAutoImporting(true);
+        $this->assertTrue($this->module->isAutoImporting());
+    }
+
 
     /**
      * @test
@@ -224,6 +277,10 @@ class ClassCheckTest extends TestCase
         $this->assertFalse($this->module->isRunning());
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
     public function setIsRunning()
     {
         $this->module->setIsRunning(true);

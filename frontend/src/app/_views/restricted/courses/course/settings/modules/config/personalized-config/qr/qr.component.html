@@ -21,7 +21,8 @@
         [helperText]="'Number of unique QR codes to generate'"
         [helperPosition]="'right'"
         [required]="true"
-        [minValue]="0">
+        [minValue]="0"
+        (btnClicked)="generateQRCodes()">
       </app-input-number>
     </div>
 

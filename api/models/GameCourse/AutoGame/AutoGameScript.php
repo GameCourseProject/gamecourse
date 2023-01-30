@@ -1,35 +1,27 @@
 <?php
 /**
- * This is the AutoGame script, which imports new data from
- * enabled data sources into the system automatically and,
- * in case there's new information, runs AutoGame.
+ * This is the AutoGame script, which runs automatically at given
+ * periods of time.
+ *
+ * It is responsible for triggering AutoGame, which will fire any
+ * available rules in the course specified, trying to award targets
+ * with prizes.
  */
 
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
 use GameCourse\AutoGame\AutoGame;
-use GameCourse\Course\Course;
-use GameCourse\Module\ModuleType;
+use GameCourse\Core\Core;
 
 require __DIR__ . "/../../../inc/bootstrap.php";
 
 $courseId = intval($argv[1]);
-$course = Course::getCourseById($courseId);
-
-$dataSources = array_filter(array_map(function ($moduleId) use ($course) {
-    return $course->getModuleById($moduleId);
-}, $course->getModules(true, true)), function ($module) {
-    return $module->getType() == ModuleType::DATA_SOURCE && method_exists($module, "importData");
-});
 
 try {
-    $runAutoGame = false;
-    foreach ($dataSources as $dataSource) {
-        $newData = $dataSource->importData();
-        if ($newData) $runAutoGame = true;
-    }
-    if ($runAutoGame) AutoGame::run($courseId);
+    // Checks whether to run AutoGame (there's new data from data sources) and runs if so
+    $run = boolval(Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $courseId], "runNext"));
+    if ($run) AutoGame::run($courseId);
 
 } catch (Exception $e) {
     AutoGame::log($courseId, $e->getMessage());

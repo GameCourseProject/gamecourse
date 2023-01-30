@@ -270,7 +270,7 @@ class Course
             $this->setAutomation("AutoDisabling", $fieldValues["endDate"]);
         }
         if (key_exists("isActive", $fieldValues)) {
-            AutoGame::setAutoGame($this->id, $fieldValues["isActive"]);
+            AutoGame::setAutoGame($this->id, boolval($fieldValues["isActive"]));
             Event::trigger($fieldValues["isActive"] ? EventType::COURSE_ENABLED : EventType::COURSE_DISABLED, $this->id);
         }
     }
@@ -1220,11 +1220,13 @@ class Course
      *
      * @param string|null $startDate
      * @return void
+     * @throws Exception
      */
     private function setAutoEnabling(?string $startDate)
     {
-        if ($startDate) new CronJob("AutoCourseEnabling", $this->id, null, null, null, $startDate);
-        else CronJob::removeCronJob("AutoCourseEnabling", $this->id);
+        $script = ROOT_PATH . "models/GameCourse/Course/AutoEnablingScript.php";
+        if ($startDate) new CronJob($script, CronJob::dateToExpression($startDate), $this->id);
+        else CronJob::removeCronJob($script, $this->id);
     }
 
     /**
@@ -1233,11 +1235,13 @@ class Course
      *
      * @param string|null $endDate
      * @return void
+     * @throws Exception
      */
     private function setAutoDisabling(?string $endDate)
     {
-        if ($endDate) new CronJob("AutoCourseDisabling", $this->id, null, null, null, $endDate);
-        else CronJob::removeCronJob("AutoCourseDisabling", $this->id);
+        $script = ROOT_PATH . "models/GameCourse/Course/AutoDisablingScript.php";
+        if ($endDate) new CronJob($script, CronJob::dateToExpression($endDate), $this->id);
+        else CronJob::removeCronJob($script, $this->id);
     }
 
 

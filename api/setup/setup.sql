@@ -384,18 +384,19 @@ CREATE TABLE notification(
 
 CREATE TABLE autogame(
     course 	                    int unsigned NOT NULL PRIMARY KEY,
+    isEnabled                   boolean DEFAULT FALSE,
     startedRunning              TIMESTAMP NULL DEFAULT NULL,
     finishedRunning             TIMESTAMP NULL DEFAULT NULL,
     isRunning                   boolean DEFAULT FALSE,
-    periodicityNumber           int unsigned DEFAULT 10,
-    periodicityTime             varchar(25) DEFAULT 'Minutes',
+    runNext                     boolean DEFAULT FALSE,
+    frequency                   varchar(50) DEFAULT '*/10 * * * *',
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
 
 SET FOREIGN_KEY_CHECKS=0;
-INSERT INTO autogame (course, periodicityNumber, periodicityTime) values (0, NULL, NULL);
+INSERT INTO autogame (course, frequency) values (0, NULL);
 SET FOREIGN_KEY_CHECKS=1;
 
 CREATE TABLE rule_section(

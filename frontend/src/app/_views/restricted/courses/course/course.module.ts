@@ -21,6 +21,7 @@ import { GooglesheetsComponent } from './settings/modules/config/personalized-co
 import { QrComponent } from './settings/modules/config/personalized-config/qr/qr.component';
 import { ProgressReportComponent } from './settings/modules/config/personalized-config/progress-report/progress-report.component';
 import { ProfilingComponent } from './settings/modules/config/personalized-config/profiling/profiling.component';
+import { DataSourceStatusComponent } from "./settings/modules/config/data-source-status/data-source-status.component";
 
 
 @NgModule({
@@ -41,6 +42,8 @@ import { ProfilingComponent } from './settings/modules/config/personalized-confi
     ProgressReportComponent,
     ProfilingComponent,
     AdaptationComponent
+    ProfilingComponent,
+    DataSourceStatusComponent
   ],
   imports: [
     CommonModule,

@@ -1,10 +1,7 @@
 CREATE TABLE IF NOT EXISTS progress_report_config(
     course                      int unsigned PRIMARY KEY,
-    endDate                     TIMESTAMP NULL DEFAULT NULL,
-    periodicityTime             varchar(25) DEFAULT NULL,
-    periodicityHours            int DEFAULT NULL,
-    periodicityDay              int DEFAULT NULL,
     isEnabled                   boolean NOT NULL DEFAULT FALSE,
+    frequency                   varchar(50) DEFAULT '*/10 * * * *',
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );

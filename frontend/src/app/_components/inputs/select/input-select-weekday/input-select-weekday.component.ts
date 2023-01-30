@@ -10,7 +10,7 @@ export class InputSelectWeekdayComponent implements OnInit {
   // Essentials
   @Input() id: string;                                                // Unique ID
   @Input() form: NgForm;                                              // Form it's part of
-  @Input() value: string;                                             // Where to store the value
+  @Input() value: any;                                                // Where to store the value
   @Input() placeholder: string = 'Select a weekday';                  // Message to show by default
 
   @Input() multiple?: boolean;                                        // Whether to allow multiple selects
@@ -41,8 +41,8 @@ export class InputSelectWeekdayComponent implements OnInit {
   // Errors
   @Input() requiredErrorMessage?: string = 'Required';                // Message for required error
 
-  @Output() valueChange = new EventEmitter<number[]>();
-  @Output() btnClicked = new EventEmitter<number[]>();
+  @Output() valueChange = new EventEmitter<string[]>();
+  @Output() btnClicked = new EventEmitter<string[]>();
 
   weekdays: {value: string, text: string}[] = [
     {value: 'd-1', text: 'Monday'},

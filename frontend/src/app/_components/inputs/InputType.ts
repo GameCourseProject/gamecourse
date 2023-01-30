@@ -13,6 +13,8 @@ export enum InputType {
   DATE = 'date',
   TIME = 'time',
   DATETIME = 'datetime',
+  PERIODICITY = 'periodicity',
+  SCHEDULE = 'schedule',
 
   // General
   TEXT = 'text',
@@ -29,7 +31,6 @@ export enum InputType {
 
   // Select
   SELECT = 'select',
-  PERIODICITY = 'periodicity',
   WEEKDAY = 'weekday',
 
   // Toggle
