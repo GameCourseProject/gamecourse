@@ -13,4 +13,4 @@ rule: Lab Lover
         lvl = compute_lvl(attendances, 4, 6, 8)
 
     then:
-        award_badge(target, "Lab Lover", lvl, logs)
+        award_badge(target, "Lab Lover", lvl, logs, attendances)

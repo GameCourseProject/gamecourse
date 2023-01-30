@@ -155,7 +155,9 @@ import {
   TablerIdBadge2,
   TablerPlug,
   TablerPrompt,
-  TablerSchool
+  TablerSchool,
+  TablerBellRinging,
+  TablerBell,
 } from "@ng-icons/tabler-icons";
 
 
@@ -373,7 +375,9 @@ import {
       TablerIdBadge2,
       TablerPlug,
       TablerPrompt,
-      TablerSchool
+      TablerSchool,
+      TablerBellRinging,
+      TablerBell,
     }),
     DataTablesModule,
     NgApexchartsModule,

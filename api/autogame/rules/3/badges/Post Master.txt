@@ -13,4 +13,4 @@ rule: Post Master
         lvl = compute_lvl(posts, 20, 30, 50)
 
     then:
-        award_badge(target, "Post Master", lvl, logs)
+        award_badge(target, "Post Master", lvl, logs, posts)

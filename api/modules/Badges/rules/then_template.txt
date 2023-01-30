@@ -1,1 +1,1 @@
-award_badge(target, "<badge-name>", lvl, logs)
+award_badge(target, "<badge-name>", lvl, logs, progress)

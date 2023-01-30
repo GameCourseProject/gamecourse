@@ -14,4 +14,4 @@ rule: Helper
         lvl = compute_lvl(points, 6, 10, 14)
 
     then:
-        award_badge(target, "Helper", lvl, logs)
+        award_badge(target, "Helper", lvl, logs, points)

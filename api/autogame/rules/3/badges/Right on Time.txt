@@ -13,4 +13,4 @@ rule: Right on Time
         lvl = compute_lvl(attendances, 6, 9, 13)
 
     then:
-        award_badge(target, "Right on Time", lvl, logs)
+        award_badge(target, "Right on Time", lvl, logs, attendances)
