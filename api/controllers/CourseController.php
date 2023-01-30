@@ -571,7 +571,6 @@ class CourseController
     /**
      * @throws Exception
      */
-    // FIXME - what if default roles are not there or some default roles have been deleted??
     public function getAdaptationRoles()
     {
         API::requireValues("courseId");
@@ -622,6 +621,41 @@ class CourseController
         $course->updateRoles($roles);
         $course->setRolesHierarchy($hierarchy);
     }
+
+
+    /*** --------------------------------------------- ***/
+    /*** ----------- Editable Game Elements ---------- ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * Updates information regarding the editableGameElement
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function updateEditableGameElement()
+    {
+        API::requireAdminPermission();
+        API::requireValues('courseId', 'moduleId', 'nDays', 'notify');
+
+        $courseId = API::getValue('courseId', "int");
+        $course = API::verifyCourseExists($courseId);
+
+        $moduleId = API::getValue('moduleId');
+        $module = API::verifyModuleExists($moduleId, $course);
+
+        $nDays = API::getValue("nDays", "int");
+        $notify = API::getValue("notify", "bool");
+
+        $module->updateEditableGameElement($nDays, $notify);
+
+    }
+
+    public function setEditableGameElement()
+    {
+        // TODO
+    }
+
 
 
     /*** --------------------------------------------- ***/

@@ -525,17 +525,85 @@ abstract class Module
      * Adds adaptation roles from the specific module to a course
      *
      * @param array $roles
-     * @param string $moduleId
      * @return void
      * @throws Exception
      */
-    protected function addAdaptationRolesToCourse(array $roles, string $moduleId){
+    protected function addAdaptationRolesToCourse(array $roles){
+
         $parent = array_keys($roles)[0];
         $children = array_values($roles)[0];
 
-        Role::addAdaptationRolesToCourse($this->course->getId(), $moduleId, $parent, $children);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $this->id, $parent, $children);
     }
 
+    /**
+     * When a module is enabled the game element of the module is made editable
+     * This function adds this game elements to the table editable_game_element table and are set to editable = true
+     *
+     * @param string $moduleId
+     * @param bool $isEditable (optional)
+     * @return void
+     * @throws Exception
+     */
+    protected function addEditableGameElement(string $moduleId, bool $isEditable = true){
+        // THIS SHOULD GO TO EDITABLE GAME ELEMENT.PHP
+
+        self::trim($moduleId);
+        self::validateName($moduleId);
+
+        Core::database()->insert(self::TABLE_EDITABLE_GAME_ELEMENT, [
+            "course" => $this->course->getId(),
+            "module" => $moduleId,
+            "isEditable" => +$isEditable
+        ]);
+    }
+
+    /**
+     * Where a module is disabled, this game element ceased to exist and is delete from table editable_game_element
+     *
+     * @param string $id
+     * @return void
+     * @throws Exception
+     */
+    protected function removeEditableGameElement(string $id){
+        // THIS SHOULD GO TO EDITABLE GAME ELEMENT.PHP
+        Core::database()->delete(self::TABLE_EDITABLE_GAME_ELEMENT, ["id" => $id]);
+    }
+
+    /**
+     * Updates the information regarding the editableGameElement
+     *
+     * @param int $nDays
+     * @param bool $notify
+     * @return void
+     * @throws Exception
+     */
+    public function updateEditableGameElement(int $nDays, bool $notify) {
+        // THIS SHOULD GO TO EDITABLE GAME ELEMENT.PHP
+        if (!$this->course)
+            throw new Exception("Can't update editable game element '" . $this->id . "': no course given.");
+
+
+        Core::database()->update(self::TABLE_EDITABLE_GAME_ELEMENT,
+            ["nDays" => $nDays, "notify" => $notify], ["module" => $this->id, "course" => $this->course->getId()]);
+    }
+
+    /**
+     * Sets editableGameElement to true/false
+     *
+     * @param bool $isEditable
+     * @return void
+     * @throws Exception
+     */
+    public function setEditable(bool $isEditable)
+    {
+        if (!$this->course)
+            throw new Exception("Can't make game element '" . $this->id . "'  editable: no course given.");
+
+        Core::database()->update(self::TABLE_EDITABLE_GAME_ELEMENT,
+            ["isEditable" => $isEditable], ["module" => $this->id, "course" => $this->course->getId()]);
+
+    }
 
     // Copying
 
@@ -611,9 +679,9 @@ abstract class Module
     /**
      * @throws Exception
      */
-    public function removeAdaptationRolesFromCourse(array $roles, string $moduleId){
+    public function removeAdaptationRolesFromCourse(array $roles){
         $parent = array_keys($roles)[0];
-        Role::removeAdaptationRolesFromCourse($this->course->getId(), $moduleId, $parent);
+        Role::removeAdaptationRolesFromCourse($this->course->getId(), $this->id, $parent);
     }
 
 

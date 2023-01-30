@@ -81,7 +81,8 @@ class Badges extends Module
         Core::database()->insert(self::TABLE_BADGE_CONFIG, ["course" => $this->course->getId()]);
 
         // Add adaptation roles
-        $this->addAdaptationRolesToCourse(self::ADAPTATION_BADGES, self::ID);
+        $this->addAdaptationRolesToCourse(self::ADAPTATION_BADGES);
+        $this->addEditableGameElement(self::ID);
     }
 
     /**
@@ -110,7 +111,8 @@ class Badges extends Module
      */
     public function disable()
     {
-        $this->removeAdaptationRolesFromCourse(self::ADAPTATION_BADGES, self::ID);
+        $this->removeAdaptationRolesFromCourse(self::ADAPTATION_BADGES);
+        $this->removeEditableGameElement(self::ID);
         $this->cleanDatabase();
         $this->removeDataFolder();
         $this->removeRules();

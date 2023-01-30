@@ -56,7 +56,8 @@ class Leaderboard extends Module
     public function init()
     {
         $this->initTemplates();
-        $this->addAdaptationRolesToCourse(self::ADAPTATION_LEADERBOARD, self::ID);
+        $this->addAdaptationRolesToCourse(self::ADAPTATION_LEADERBOARD);
+        $this->addEditableGameElement(self::ID);
     }
 
     public function copyTo(Course $copyTo)
@@ -69,7 +70,8 @@ class Leaderboard extends Module
      */
     public function disable()
     {
-        $this->removeAdaptationRolesFromCourse(self::ADAPTATION_LEADERBOARD, self::ID);
+        $this->removeAdaptationRolesFromCourse(self::ADAPTATION_LEADERBOARD);
+        $this->removeEditableGameElement(self::ID);
         $this->removeTemplates();
     }
 }

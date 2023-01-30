@@ -24,18 +24,6 @@ class Role
 
     const DEFAULT_ROLES = ["Teacher", "Student", "Watcher"];  // default roles for each course
 
-    /**
-     * There's also adaptation roles that contain different roles for different game elements
-     * They depend on each module (Badges and Leaderboard) and are only added when enabled
-     */
-    //private var $adaptation_roles = [];
-    /**
-     * Adaptation role -> It will contain different roles for different game elements
-     * Children will be added later to this role. Examples:
-     * B001, B002, B003 (for different versions of Badges)
-     * LB001, LB002 (for different versions of LeaderBoard)
-     */
-
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Setup ---------------------- ***/
@@ -167,10 +155,6 @@ class Role
         array_push($hierarchy, ["name" => $parent]);
         $course->setRolesHierarchy($hierarchy);
 
-
-        //$courseRoles = self::getCourseRoles($courseId);
-        //$parentIndex = array_search($parent, $courseRoles);
-
         $hierarchy = $course->getRolesHierarchy();
         $indexes = array_keys($hierarchy);
         $parentIndex = end($indexes);
@@ -189,35 +173,6 @@ class Role
             $course->setRolesHierarchy($hierarchy);
         }
     }
-    /*
-    public static function addAdaptationRolesToCourse(int $courseId, array $roles, string $moduleId)
-    {
-        // TODO: should save $roles to a "global variable" here?
-        // something like ADAPTATION_ROLES = ["Badges" => ["B001", "B002"], "Leaderboard" => ["LB001", "LB002]]
-
-        $roleParent = array_keys($roles); // FIXME only considers 1 parent
-        foreach ($roleParent as $parent){
-            self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
-        }
-
-        $course = new Course($courseId);
-        $courseRoles = self::getCourseRoles($courseId);
-
-        // Update roles hierarchy
-         $hierarchy = array_map(function ($role) { return ["name" => $role]; }, $courseRoles);
-         $course->setRolesHierarchy($hierarchy);
-
-        $roleChildren = array_values($roles);
-        foreach($roleChildren as $child){
-            self::addRoleToCourse($courseId, $child, null, null, $moduleId);
-        }
-
-        $parentIndex = array_search($roleParent, $courseRoles);
-        $hierarchy = $course->getRolesHierarchy();
-
-        $hierarchy[$parentIndex]["children"][] = array_map(function ($roleChild) { return ["name" => $roleChild]; }, $roleChildren);
-        $course->setRolesHierarchy($hierarchy);
-    }*/
 
     /**
      * Removes adaptation roles from a course, including its children.
@@ -241,7 +196,8 @@ class Role
 
         foreach ($keys as $key){
             if (array_values($hierarchy[$key])[0] == $parent){
-                unset($hierarchy[$key]);
+                array_splice($hierarchy, $key, 1);
+                break;
             }
         }
         $course->setRolesHierarchy($hierarchy);
@@ -257,6 +213,7 @@ class Role
      * @throws Exception
      */
     public static function getAdaptationCourseRoles(int $courseId, bool $onlyParents = false): array {
+        // THIS SHOULD GO TO EDITABLE GAME ELEMENT.PHP --> much more simplified !
         $moduleIds = Module::getModulesInCourse($courseId, true, true);
         $roles = self::getCourseRoles($courseId);
         $course = Course::getCourseById($courseId);
@@ -274,15 +231,6 @@ class Role
             return $response;
         }
 
-        /* Example $roles (getCourseRoles with "Badge" module enabled)
-        ["name" => "Teacher", "id" => 1, "landingPage" => null, "module" => null],
-        ["name" => "Student", "id" => 2, "landingPage" => null, "module" => null],
-        ["name" => "Watcher", "id" => 3, "landingPage" => null, "module" => null]],
-        ["name" => "Badges",  "id" => 4, "landingPage" => null, "module" => "Badges",  "children" => [
-            ["name" => "B001", "id" => 5, "landingPage" => null, "module" => "Badges"],
-            ["name" => "B002", "id" => 6, "landingPage" => null, "module" => "Badges"]
-        ]]
-         */
         $roles = self::getCourseRoles($courseId, false, true);
 
         foreach ($roles as $role){

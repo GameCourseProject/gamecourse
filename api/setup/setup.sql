@@ -105,6 +105,8 @@ CREATE TABLE user_role(
     FOREIGN key(role) REFERENCES role(id) ON DELETE CASCADE
 );
 
+/*--- "Best guess" adaptation ---*/
+
 CREATE TABLE user_role_preferences(
     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
     course                      int unsigned NOT NULL,
@@ -114,10 +116,40 @@ CREATE TABLE user_role_preferences(
     date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     UNIQUE key(user, date),
-    FOREIGN KEY(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
+    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE
     FOREIGN KEY (previousPreference) REFERENCES role(id) ON DELETE CASCADE,
     FOREIGN KEY (newPreference) REFERENCES role(id) ON DELETE CASCADE
 );
+
+CREATE TABLE questionnaire_preferences(
+    id          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course      int unsigned NOT NULL,
+    user        int unsigned NOT NULL,
+    isAnswered  boolean DEFAULT FALSE,
+    question1   boolean DEFAULT FALSE,
+    question2   var(200) NOT NULL,
+    question3   int unsigned NOT NULL,
+
+    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE
+);
+
+CREATE TABLE editable_game_element(
+    id          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course      int unsigned NOT NULL,
+    module      varchar(50) NOT NULL,
+    isEditable  boolean DEFAULT FALSE,
+    nDays       int unsigned DEFAULT 5,
+    notify      boolean DEFAULT FALSE,
+    /* ADD USERS? */
+
+    UNIQUE key(course, module),
+    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN KEY (module) REFERENCES module(id) ON DELETE CASCADE
+);
+
+/*--- End of "Best guess" adaptation ---*/
 
 /*** ---------------------------------------------------- ***/
 /*** ------------------ Module tables ------------------- ***/

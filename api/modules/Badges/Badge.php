@@ -297,7 +297,8 @@ class Badge
      */
     public static function getBadgeByName(int $courseId, string $name): ?Badge
     {
-        $badgeId = intval(Core::database()->select(self::TABLE_BADGE, ["course" => $courseId, "name" => $name], "id"));
+        $badgeId = intval(Core::database()->select(self::TABLE_BADGE,
+            ["course" => $courseId, "name" => $name], "id"));
         if (!$badgeId) return null;
         else return new Badge($badgeId);
     }
