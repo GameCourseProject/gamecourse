@@ -105,52 +105,6 @@ CREATE TABLE user_role(
     FOREIGN key(role) REFERENCES role(id) ON DELETE CASCADE
 );
 
-/*--- "Best guess" adaptation ---*/
-
-CREATE TABLE user_role_preferences(
-    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
-    course                      int unsigned NOT NULL,
-    user                        int unsigned NOT NULL,
-    previousPreference          int unsigned NOT NULL,
-    newPreference               int unsigned NOT NULL,
-    date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    UNIQUE key(user, date),
-    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
-    FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE
-    FOREIGN KEY (previousPreference) REFERENCES role(id) ON DELETE CASCADE,
-    FOREIGN KEY (newPreference) REFERENCES role(id) ON DELETE CASCADE
-);
-
-CREATE TABLE questionnaire_preferences(
-    id          int unsigned AUTO_INCREMENT PRIMARY KEY,
-    course      int unsigned NOT NULL,
-    user        int unsigned NOT NULL,
-    isAnswered  boolean DEFAULT FALSE,
-    question1   boolean DEFAULT FALSE,
-    question2   var(200) NOT NULL,
-    question3   int unsigned NOT NULL,
-
-    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
-    FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE
-);
-
-CREATE TABLE editable_game_element(
-    id          int unsigned AUTO_INCREMENT PRIMARY KEY,
-    course      int unsigned NOT NULL,
-    module      varchar(50) NOT NULL,
-    isEditable  boolean DEFAULT FALSE,
-    nDays       int unsigned DEFAULT 5,
-    notify      boolean DEFAULT FALSE,
-    /* ADD USERS? */
-
-    UNIQUE key(course, module),
-    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
-    FOREIGN KEY (module) REFERENCES module(id) ON DELETE CASCADE
-);
-
-/*--- End of "Best guess" adaptation ---*/
-
 /*** ---------------------------------------------------- ***/
 /*** ------------------ Module tables ------------------- ***/
 /*** ---------------------------------------------------- ***/
@@ -191,6 +145,51 @@ CREATE TABLE course_module(
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
+/*--- "Best guess" adaptation ---*/
+
+CREATE TABLE user_role_preferences(
+  id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+  course                      int unsigned NOT NULL,
+  user                        int unsigned NOT NULL,
+  previousPreference          int unsigned NOT NULL,
+  newPreference               int unsigned NOT NULL,
+  date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE key(user, date),
+  FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
+  FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE,
+  FOREIGN KEY (previousPreference) REFERENCES role(id) ON DELETE CASCADE,
+  FOREIGN KEY (newPreference) REFERENCES role(id) ON DELETE CASCADE
+);
+
+CREATE TABLE questionnaire_preferences(
+    id          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course      int unsigned NOT NULL,
+    user        int unsigned NOT NULL,
+    isAnswered  boolean NOT NULL DEFAULT FALSE,
+    question1   boolean NOT NULL DEFAULT FALSE,
+    question2   varchar(200) NOT NULL,
+    question3   int unsigned NOT NULL,
+
+    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE
+);
+
+/* ADD USERS? */
+CREATE TABLE editable_game_element(
+    id          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course      int unsigned NOT NULL,
+    module      varchar(50) NOT NULL,
+    isEditable  boolean NOT NULL DEFAULT FALSE,
+    nDays       int unsigned DEFAULT 5,
+    notify      boolean DEFAULT FALSE,
+
+    UNIQUE key(course, module),
+    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN KEY (module) REFERENCES module(id) ON DELETE CASCADE
+);
+
+/*--- End of "Best guess" adaptation ---*/
 
 /*** ---------------------------------------------------- ***/
 /*** ------------------- Views tables ------------------- ***/

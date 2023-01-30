@@ -1,12 +1,8 @@
 <?php
-namespace GameCourse\EditableGameElement;
+namespace GameCourse\Adaptation;
 
-use Event\Event;
-use Event\EventType;
 use Exception;
 use GameCourse\Core\Core;
-use GameCourse\Course\Course;
-use GameCourse\Module\Module;
 use Utils\Utils;
 
 class EditableGameElement
@@ -152,16 +148,16 @@ class EditableGameElement
      *
      * @param int $courseId
      * @param bool $isEditable (optional)
-     * @param bool $IDsOnly (optional)
+     * @param bool $onlyNames (optional)
      * @return array
      */
-    public static function getEditableGameElements(int $courseId, ?bool $isEditable = null, bool $IDsOnly = false): array{
+    public static function getEditableGameElements(int $courseId, ?bool $isEditable = null, ?bool $onlyNames = false): array{
         $table = self::TABLE_EDITABLE_GAME_ELEMENT;
         $where = ["course" => $courseId];
         if ($isEditable !== null) $where["isEditable"] = $isEditable;
         $editableGameElements = Core::database()->selectMultiple($table, $where, "*", "id");
 
-        if ($IDsOnly) return array_column($editableGameElements,"id");
+        if ($onlyNames) return array_column($editableGameElements,"module");
         foreach ($editableGameElements as &$editableGameElementInfo){
             $editableGameElementInfo = self::parse($editableGameElementInfo);
         }
@@ -186,16 +182,51 @@ class EditableGameElement
     /*** -------- EditableGameElement Manipulation ---------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * Adds an editableGameElement to the database.
+     * Returns the newly created editableGameElement.
+     *
+     * @param int $course
+     * @param string $moduleId
+     * @param bool $isEditable (optional)
+     * @return EditableGameElement
+     * @throws Exception
+     */
     public static function addEditableGameElement(int $course, string $moduleId, bool $isEditable = true): EditableGameElement{
-        // TODO
+        $table = self::TABLE_EDITABLE_GAME_ELEMENT;
+        $id = Core::database()->insert($table, [
+            "course" => $course,
+            "module" => $moduleId,
+            "isEditable" => +$isEditable
+        ]);
+
+        return new EditableGameElement($id);
     }
 
-    public static function removeEditableGameElement(){
-        // TODO
+    /**
+     * Removes an editableGameElement from the database.
+     *
+     * @param int $courseId
+     * @param string $moduleId
+     * @throws Exception
+     */
+    public static function removeEditableGameElement(int $courseId, string $moduleId){
+        $table = self::TABLE_EDITABLE_GAME_ELEMENT;
+        Core::database()->delete($table, ["course" => $courseId, "module" => $moduleId]);
     }
 
-    public static function updateEditableGameElement(): EditableGameElement{
-        // TODO
+    /**
+     * Updates a specific editableGameElement
+     * Returns the editableGameElement with the updated information
+     *
+     * @param int $nDays
+     * @param bool $notify (optional)
+     * @return EditableGameElement
+     * @throws Exception
+     */
+    public function updateEditableGameElement(int $nDays, bool $notify = false): EditableGameElement{
+        $this->setData(["nDays" => $nDays, "notify" => +$notify]);
+        return $this;
     }
 
     /**
@@ -209,12 +240,36 @@ class EditableGameElement
     }
 
     /*** ---------------------------------------------------- ***/
+    /*** ------------------- Validations -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Validates module ID or name.
+     *
+     * @param $module
+     * @return void
+     * @throws Exception
+     */
+    private static function validateModule($module)
+    {
+        if (!is_string($module) || empty($module))
+            throw new Exception("Module name can't be null neither empty.");
+
+        if (is_numeric($module))
+            throw new Exception("Module name can't be composed of only numbers.");
+
+        if (iconv_strlen($module) > 50)
+            throw new Exception("Module name is too long: maximum of 50 characters.");
+    }
+
+
+    /*** ---------------------------------------------------- ***/
     /*** ----------------------- Utils ---------------------- ***/
     /*** ---------------------------------------------------- ***/
 
     /**
      * Parses a editableGameElement from the database to appropriate types.
-     * Option to pass a specific field to parse intsead
+     * Option to pass a specific field to parse instead
      *
      * @param array|null $editableGameElement
      * @param $field

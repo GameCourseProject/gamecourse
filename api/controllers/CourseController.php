@@ -4,6 +4,7 @@ namespace API;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\EditableGameElement\EditableGameElement;
 use GameCourse\Module\Module;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
@@ -580,8 +581,9 @@ class CourseController
         API::requireCourseAdminPermission($course);
 
         $onlyParents = API::getValue("onlyParents", "bool") ?? false;
+        $onlyNames = API::getValue("onlyNames", "bool") ?? false;
 
-        $roles = Role::getAdaptationCourseRoles($courseId, $onlyParents);
+        $roles = Role::getAdaptationCourseRoles($courseId, $onlyParents, $onlyNames);
         API::response($roles);
     }
 
@@ -636,7 +638,7 @@ class CourseController
     public function updateEditableGameElement()
     {
         API::requireAdminPermission();
-        API::requireValues('courseId', 'moduleId', 'nDays', 'notify');
+        API::requireValues('courseId', 'moduleId', 'nDays');
 
         $courseId = API::getValue('courseId', "int");
         $course = API::verifyCourseExists($courseId);
@@ -645,15 +647,34 @@ class CourseController
         $module = API::verifyModuleExists($moduleId, $course);
 
         $nDays = API::getValue("nDays", "int");
-        $notify = API::getValue("notify", "bool");
+        $notify = API::getValue("notify", "bool") ?? false;
 
-        $module->updateEditableGameElement($nDays, $notify);
+        $editableGameElement = EditableGameElement::getEditableGameElementByModule($courseId, $moduleId);
+        $editableGameElement->updateEditableGameElement($nDays, $notify);
 
     }
 
+    /**
+     * Makes editableGameElement editable true/false
+     *
+     * @return void
+     * @throws Exception
+     */
     public function setEditableGameElement()
     {
-        // TODO
+        API::requireAdminPermission();
+        API::requireValues('courseId', 'moduleId', 'isEditable');
+
+        $courseId = API::getValue('courseId', "int");
+        $course = API::verifyCourseExists($courseId);
+
+        $moduleId = API::getValue('moduleId');
+        $module = API::verifyModuleExists($moduleId, $course);
+
+        $isEditable = API::getValue('isEditable', "bool");
+
+        $editableGameElement = EditableGameElement::getEditableGameElementByModule($courseId, $moduleId);
+        $editableGameElement->setEditable($isEditable);
     }
 
 

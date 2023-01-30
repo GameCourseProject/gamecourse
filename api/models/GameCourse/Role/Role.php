@@ -4,9 +4,9 @@ namespace GameCourse\Role;
 use Event\Event;
 use Event\EventType;
 use Exception;
+use GameCourse\Adaptation\EditableGameElement;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\Module;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Page\Page;
 use PDOException;
@@ -209,11 +209,33 @@ class Role
      * Default: Gets all adaptation roles ["Badges", "B001", "B002", "Leaderboard", "LB001", "LB002"]
      *
      * @param int $courseId
-     * @param bool $onlyParents
+     * @param bool $onlyParents (optional)
+     * @param bool $onlyNames (optional)
+     * @return array
      * @throws Exception
      */
-    public static function getAdaptationCourseRoles(int $courseId, bool $onlyParents = false): array {
-        // THIS SHOULD GO TO EDITABLE GAME ELEMENT.PHP --> much more simplified !
+    public static function getAdaptationCourseRoles(int $courseId, bool $onlyParents = false, bool $onlyNames = false): array {
+        $response = EditableGameElement::getEditableGameElements($courseId, null, $onlyNames);
+
+        if (!$onlyParents) {
+            $roles = self::getCourseRoles($courseId, false, true);
+
+            foreach ($roles as $role) {
+                // role belongs to a module, has children and is enabled in course
+                if ($role["module"] && in_array("children", array_keys($role)) && in_array($role["module"], $response)) {
+
+                    // iterates through children array
+                    foreach ($role["children"] as $child) {
+                        array_push($response, $child["name"]);
+                    }
+                }
+            }
+        }
+        return $response;
+    }
+
+    /*
+    // THIS SHOULD GO TO EDITABLE GAME ELEMENT.PHP --> much more simplified !
         $moduleIds = Module::getModulesInCourse($courseId, true, true);
         $roles = self::getCourseRoles($courseId);
         $course = Course::getCourseById($courseId);
@@ -244,8 +266,7 @@ class Role
             }
         }
         return $response;
-
-    }
+    */
 
     /**
      * Gets course's roles. Option to retrieve only roles' names and/or to
