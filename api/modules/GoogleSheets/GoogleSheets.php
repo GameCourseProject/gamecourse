@@ -66,7 +66,7 @@ class GoogleSheets extends Module
         Core::database()->insert(self::TABLE_GOOGLESHEETS_STATUS, ["course" => $this->getCourse()->getId()]);
 
         // Setup logging
-        $logsFile = self::getLogsFile($this->getCourse()->getId());
+        $logsFile = self::getLogsFile($this->getCourse()->getId(), false);
         Utils::initLogging($logsFile);
 
         $this->initEvents();
@@ -98,7 +98,7 @@ class GoogleSheets extends Module
         $this->setAutoImporting(false);
 
         // Remove logging info
-        $logsFile = self::getLogsFile($this->getCourse()->getId());
+        $logsFile = self::getLogsFile($this->getCourse()->getId(), false);
         Utils::removeLogging($logsFile);
 
         $this->cleanDatabase();
@@ -422,7 +422,7 @@ class GoogleSheets extends Module
      */
     public static function getRunningLogs(int $courseId): string
     {
-        $logsFile = self::getLogsFile($courseId);
+        $logsFile = self::getLogsFile($courseId, false);
         return Utils::getLogs($logsFile);
     }
 
@@ -436,7 +436,7 @@ class GoogleSheets extends Module
      */
     public static function log(int $courseId, string $message, string $type = "ERROR")
     {
-        $logsFile = self::getLogsFile($courseId);
+        $logsFile = self::getLogsFile($courseId, false);
         Utils::addLog($logsFile, $message, $type);
     }
 
@@ -449,9 +449,9 @@ class GoogleSheets extends Module
      */
     private static function getLogsFile(int $courseId, bool $fullPath = true): string
     {
-        $filename = "googlesheets_$courseId.txt";
-        if ($fullPath) return self::LOGS_FOLDER . "/" . $filename;
-        else return $filename;
+        $path = self::LOGS_FOLDER . "/" . "googlesheets_$courseId.txt";
+        if ($fullPath) return LOGS_FOLDER . "/" . $path;
+        else return $path;
     }
 
 
