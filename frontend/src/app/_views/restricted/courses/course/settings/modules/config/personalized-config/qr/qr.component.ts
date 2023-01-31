@@ -205,6 +205,7 @@ export class QrComponent implements OnInit {
     const table: { type: TableDataType, content: any }[][] = [];
     this.QRParticipations = await this.api.getClassParticipations(this.courseID).toPromise();
     this.QRParticipations.forEach(p => {
+      console.log(p.user)
       table.push([
         {type: TableDataType.TEXT, content: {text: p.user.nickname ?? p.user.name}},
         {type: TableDataType.AVATAR, content: {avatarSrc: p.user.photoUrl, avatarTitle: p.user.nickname ?? p.user.name, avatarSubtitle: p.user.major}},
