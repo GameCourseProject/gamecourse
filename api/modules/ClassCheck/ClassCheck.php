@@ -274,7 +274,7 @@ class ClassCheck extends Module
 
     public function setIsRunning(bool $status)
     {
-        Core::database()->update(self::TABLE_CLASSCHECK_STATUS, ["isRunning" => $status], ["course" => $this->getCourse()->getId()]);
+        Core::database()->update(self::TABLE_CLASSCHECK_STATUS, ["isRunning" => +$status], ["course" => $this->getCourse()->getId()]);
     }
 
 
@@ -349,11 +349,14 @@ class ClassCheck extends Module
      */
     public function importData(): bool
     {
-        if ($this->isRunning())
-            throw new Exception("Already importing data from ClassCheck.");
+        if ($this->isRunning()) {
+            self::log($this->course->getId(), "Already importing data from " . self::NAME . ".", "WARNING");
+            return false;
+        }
 
         $this->setStartedRunning(date("Y-m-d H:i:s", time()));
         $this->setIsRunning(true);
+        self::log($this->course->getId(), "Importing data from " . self::NAME . "...", "INFO");
 
         try {
             $tsvCode = $this->getTSVCode();
@@ -362,6 +365,7 @@ class ClassCheck extends Module
         } finally {
             $this->setIsRunning(false);
             $this->setFinishedRunning(date("Y-m-d H:i:s", time()));
+            self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
         }
     }
 
