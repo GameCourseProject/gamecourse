@@ -3,6 +3,7 @@ namespace GameCourse\Module\VirtualCurrency;
 
 use Event\Event;
 use Exception;
+use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -157,12 +158,14 @@ class VirtualCurrencyTest extends TestCase
             null, null, false, false);
 
         (new Awards($copyTo))->setEnabled(true);
-        (new XPLevels($copyTo))->setEnabled(true);
         $VC = new VirtualCurrency($copyTo);
         $VC->setEnabled(true);
 
         $this->module->setVCName("Gold");
         $this->module->setImage($this->imageProvider()["png"][0]);
+
+        AutoAction::addAction($this->course->getId(), "Action1", "description", "type", 20);
+        AutoAction::addAction($this->course->getId(), "Action2", "description", "type", -20);
 
         // When
         $this->module->copyTo($copyTo);
@@ -171,6 +174,19 @@ class VirtualCurrencyTest extends TestCase
         $this->assertEquals($this->module->getVCName(), $VC->getVCName());
         $this->assertTrue($VC->hasImage());
         $this->assertEquals(file_get_contents($this->module->getImage()), file_get_contents($VC->getImage()));
+
+        $actions = AutoAction::getActions($this->course->getId());
+        $copiedActions = AutoAction::getActions($copyTo->getId());
+        $this->assertSameSize($actions, $copiedActions);
+        foreach ($actions as $i => $action) {
+            $this->assertEquals($action["name"], $copiedActions[$i]["name"]);
+            $this->assertEquals($action["description"], $copiedActions[$i]["description"]);
+            $this->assertEquals($action["type"], $copiedActions[$i]["type"]);
+            $this->assertEquals($action["amount"], $copiedActions[$i]["amount"]);
+            $this->assertEquals($action["isActive"], $copiedActions[$i]["isActive"]);
+
+            $this->assertEquals((new Rule($action["rule"]))->getText(), (new Rule($copiedActions[$i]["rule"]))->getText());
+        }
     }
 
     /**

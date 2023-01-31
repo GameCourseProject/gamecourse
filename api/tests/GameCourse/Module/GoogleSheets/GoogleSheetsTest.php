@@ -129,6 +129,28 @@ class GoogleSheetsTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function copy()
+    {
+        // Given
+        $copyTo = Course::addCourse("Course Copy", "CPY", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        $googlesheetsModule = new GoogleSheets($copyTo);
+        $googlesheetsModule->setEnabled(true);
+
+        $this->module->saveSchedule("* * * * *");
+
+        // When
+        $this->module->copyTo($copyTo);
+
+        // Then
+        $this->assertEquals($this->module->getSchedule(), $googlesheetsModule->getSchedule());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function disable()
     {
         // When

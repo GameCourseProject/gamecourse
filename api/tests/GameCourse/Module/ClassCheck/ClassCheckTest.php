@@ -124,6 +124,28 @@ class ClassCheckTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function copy()
+    {
+        // Given
+        $copyTo = Course::addCourse("Course Copy", "CPY", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        $classcheckModule = new ClassCheck($copyTo);
+        $classcheckModule->setEnabled(true);
+
+        $this->module->saveSchedule("* * * * *");
+
+        // When
+        $this->module->copyTo($copyTo);
+
+        // Then
+        $this->assertEquals($this->module->getSchedule(), $classcheckModule->getSchedule());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function disable()
     {
         // When

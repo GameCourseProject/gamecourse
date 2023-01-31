@@ -130,10 +130,7 @@ class BadgesTest extends TestCase
             null, null, false, false);
 
         (new Awards($copyTo))->setEnabled(true);
-        $xpLevels = (new XPLevels($copyTo));
-        $xpLevels->setEnabled(true);
-        $xpLevels->updateMaxXP(2000);
-        $xpLevels->updateMaxExtraCredit(1000);
+        (new XPLevels($copyTo))->setEnabled(true);
         $badgesModule = new Badges($copyTo);
         $badgesModule->setEnabled(true);
 

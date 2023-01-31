@@ -132,6 +132,28 @@ class MoodleTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function copy()
+    {
+        // Given
+        $copyTo = Course::addCourse("Course Copy", "CPY", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        $moodlesModule = new Moodle($copyTo);
+        $moodlesModule->setEnabled(true);
+
+        $this->module->saveSchedule("* * * * *");
+
+        // When
+        $this->module->copyTo($copyTo);
+
+        // Then
+        $this->assertEquals($this->module->getSchedule(), $moodlesModule->getSchedule());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function disable()
     {
         // When

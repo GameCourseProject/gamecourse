@@ -321,6 +321,7 @@ class VirtualCurrency extends Module
                                     "placeholder" => "Action description",
                                     "options" => [
                                         "topLabel" => "Description",
+                                        "required" => true,
                                         "pattern" => "(?!^\\d+$)^.+$",
                                         "patternErrorMessage" => "Action description can't be composed of only numbers",
                                         "maxLength" => 150
@@ -395,6 +396,7 @@ class VirtualCurrency extends Module
                                     "placeholder" => "Action description",
                                     "options" => [
                                         "topLabel" => "Description",
+                                        "required" => true,
                                         "pattern" => "(?!^\\d+$)^.+$",
                                         "patternErrorMessage" => "Action description can't be composed of only numbers",
                                         "maxLength" => 150

@@ -445,6 +445,10 @@ class Course
         $course->setRolesHierarchy($courseToCopy->getRolesHierarchy());
         $course->setRoles($courseToCopy->getRoles());
 
+        // Make user a teacher
+        $courseUser = $course->getCourseUserById(Core::getLoggedUser()->getId());
+        $courseUser->addRole("Teacher");
+
         // Copy modules info
         // NOTE: module dependencies are copied before the module
         $modulesEnabled = $courseToCopy->getModules(true, true);
