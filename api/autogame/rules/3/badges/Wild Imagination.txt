@@ -11,4 +11,4 @@ rule: Wild Imagination
         lvl = compute_lvl(progress, 1)
 
     then:
-        award_badge(target, "Wild Imagination", lvl, logs)
+        award_badge(target, "Wild Imagination", lvl, logs, progress)

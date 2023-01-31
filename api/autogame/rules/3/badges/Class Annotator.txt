@@ -13,4 +13,4 @@ rule: Class Annotator
         lvl = compute_lvl(points, 4, 8, 12)
 
     then:
-        award_badge(target, "Class Annotator", lvl, logs)
+        award_badge(target, "Class Annotator", lvl, logs, points)

@@ -13,4 +13,4 @@ rule: Squire
         lvl = compute_lvl(points, 4, 10, 16)
 
     then:
-        award_badge(target, "Squire", lvl, logs)
+        award_badge(target, "Squire", lvl, logs, points)

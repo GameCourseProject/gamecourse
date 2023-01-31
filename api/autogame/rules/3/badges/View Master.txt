@@ -13,4 +13,4 @@ rule: View Master
         lvl = compute_lvl(videos_watched, 6, 9, 13)
 
     then:
-        award_badge(target, "View Master", lvl, logs)
+        award_badge(target, "View Master", lvl, logs, videos_watched)

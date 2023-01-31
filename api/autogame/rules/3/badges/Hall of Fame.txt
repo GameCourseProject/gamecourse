@@ -13,4 +13,4 @@ rule: Hall of Fame
         lvl = compute_lvl(progress, 1, 2, 3)
 
     then:
-        award_badge(target, "Hall of Fame", lvl, logs)
+        award_badge(target, "Hall of Fame", lvl, logs, progress)

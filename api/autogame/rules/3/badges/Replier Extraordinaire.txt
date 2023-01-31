@@ -13,4 +13,4 @@ rule: Replier Extraordinaire
         lvl = compute_lvl(progress, 1, 2, 3)
 
     then:
-        award_badge(target, "Replier Extraordinaire", lvl, logs)
+        award_badge(target, "Replier Extraordinaire", lvl, logs, progress)

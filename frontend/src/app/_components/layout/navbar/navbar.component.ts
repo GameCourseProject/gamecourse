@@ -13,6 +13,7 @@ import {SidebarService} from "../../../_services/sidebar.service";
 import {User} from "../../../_domain/users/user";
 import {Course} from 'src/app/_domain/courses/course';
 import {ResourceManager} from "../../../_utils/resources/resource-manager";
+import {Notification} from '../../../_domain/notifications/notification';
 
 @Component({
   selector: 'app-navbar',
@@ -23,6 +24,9 @@ export class NavbarComponent implements OnInit {
   user: User;
   course: Course;
   photo: ResourceManager;
+
+  notifications: Notification[] = [];
+  mode: "new" | "notNew";
 
   // FIXME: navbar space should be configurable in modules
   hasTokensEnabled: boolean;
@@ -47,6 +51,9 @@ export class NavbarComponent implements OnInit {
 
     // Get course information
     await this.getCourse();
+
+    // Get notifications information
+    await this.getNotifications();
 
     // Whenever URL changes
     this.router.events.subscribe(event => {
@@ -86,6 +93,41 @@ export class NavbarComponent implements OnInit {
     else this.course = null;
   }
 
+  /*** --------------------------------------------- ***/
+  /*** --------------- Notification ---------------- ***/
+  /*** --------------------------------------------- ***/
+
+  async getNotifications():Promise<void> {
+
+    this.notifications = await this.api.getNotifications().toPromise();
+
+    this.mode = "notNew";
+    // see if there are notifications to be showed
+    for (let i = 0; i < this.notifications.length; i++) {
+
+      const isShowed = (this.notifications[i].isShowed).toString();
+      if ( isShowed === "0" || isShowed === "false") {
+        this.mode = "new";
+        break;
+      }
+    }
+  }
+
+  async notificationSetShowed(): Promise<void> {
+
+    for (let i = 0; i < this.notifications.length; i++){
+
+      const isShowed = (this.notifications[i].isShowed).toString();
+      if ( isShowed === "0" || isShowed === "false") {
+        const notificationEdited = await this.api.notificationSetShowed(this.notifications[i].id, true).toPromise();
+
+        const index = this.notifications.findIndex(notification => notification.id === notificationEdited.id);
+        this.notifications.splice(index, 1, notificationEdited);
+      }
+    }
+
+    this.mode = "notNew";
+  }
 
   /*** --------------------------------------------- ***/
   /*** ------------- Configurable Area ------------- ***/

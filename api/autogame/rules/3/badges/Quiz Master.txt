@@ -16,4 +16,4 @@ rule: Quiz Master
         lvl = compute_lvl(progress, 3, 5, 6)
 
     then:
-        award_badge(target, "Quiz Master", lvl, logs)
+        award_badge(target, "Quiz Master", lvl, logs, progress)

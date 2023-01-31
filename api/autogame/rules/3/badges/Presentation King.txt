@@ -11,4 +11,4 @@ rule: Presentation King
         lvl = compute_lvl(progress, 1)
 
     then:
-        award_badge(target, "Presentation King", lvl, logs)
+        award_badge(target, "Presentation King", lvl, logs, progress)
