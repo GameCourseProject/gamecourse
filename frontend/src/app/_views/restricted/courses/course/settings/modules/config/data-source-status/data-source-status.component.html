@@ -37,7 +37,8 @@
         [hasFooters]="false"
         [data]="data"
         [options]="tableOptions"
-        [loading]="loading.table">
+        [loading]="loading.table"
+        (btnClicked)="doActionOnTable($event.type)">
       </app-table>
 
       <!-- Logs -->
