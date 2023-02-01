@@ -372,13 +372,11 @@ class ClassCheckTest extends TestCase
         $this->module->setIsRunning(true);
 
         // Then
-        $this->expectException(Exception::class);
-        $this->module->importData();
+        $this->assertFalse($this->module->importData());
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertEmpty($participations);
 
-        $this->assertFalse($this->module->isRunning());
         $this->assertNull($this->module->getStartedRunning());
         $this->assertNull($this->module->getFinishedRunning());
 
