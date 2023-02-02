@@ -56,7 +56,6 @@ import {
   QRCode,
   QRParticipation
 } from 'src/app/_views/restricted/courses/course/settings/modules/config/personalized-config/qr/qr.component';
-import {SetupData} from "../../_views/setup/setup/setup.component";
 import {
   DataSourceStatus
 } from "../../_views/restricted/courses/course/settings/modules/config/data-source-status/data-source-status.component";
@@ -67,6 +66,8 @@ import {
 import {RuleSection} from "../../_domain/rules/RuleSection";
 import {RuleTag} from "../../_domain/rules/RuleTag";
 import {Notification} from "../../_domain/notifications/notification";
+import {EditableGameElement} from "../../_domain/adaptation/EditableGameElement";
+import { GameElementManageData } from 'src/app/_views/restricted/courses/course/settings/adaptation/adaptation.component';
 
 @Injectable({
   providedIn: 'root'
@@ -756,11 +757,75 @@ export class ApiHttpService {
       .pipe( map((res: any) => 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data'])) );
   }
 
+  // Adaptation
+  public getEditableGameElements(courseID: number, isEditable?: boolean, onlyNames?: boolean): Observable<EditableGameElement[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getEditableGameElements');
+      qs.push('courseId', courseID);
+      if (isEditable !== undefined) qs.push('isEditable', isEditable);
+      if (onlyNames !== undefined) qs.push('onlyNames', onlyNames);
+    };
 
-  // Roles
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
-  // NOTICE RETURN VALUES
-  public getPreviousPreference(courseID: number, userID: number, date?: Date): Observable<string> {
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data'].map(obj => EditableGameElement.fromDatabase(obj))));
+  }
+
+  public setEditableGameElementEditable(courseID: number, moduleID: string, isEditable: boolean): Observable<void>{
+    const data = {
+      "courseId" : courseID,
+      "moduleId" : moduleID,
+      "isEditable" : isEditable
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'setGameElementEditable');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => res));
+  }
+
+  public updateEditableGameElement(gameElementData: GameElementManageData): Observable<EditableGameElement>{
+    const data = {
+      id: gameElementData.id,
+      course: gameElementData.course,
+      module: gameElementData.module,
+      isEditable: gameElementData.isEditable,
+      nDays: gameElementData.nDays,
+      notify: gameElementData.notify
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'updateEditableGameElement');
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => EditableGameElement.fromDatabase(res['data'])));
+
+  }
+
+  public getChildrenGameElement(courseID: number, module: string): Observable<string[]>{
+    const params = (qs:QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getChildrenGameElement');
+      qs.push('courseId', courseID);
+      qs.push('moduleId', module);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public getPreviousPreference(courseID: number, userID: number, module: string): Observable<string> {
     // KEEP IN MIND!!
     // PREVIOUS PREFERENCE WILL BE LAST ENTRY'S 'NEW PREFERENCE'
     const params = (qs: QueryStringParameters) => {
@@ -768,7 +833,7 @@ export class ApiHttpService {
       qs.push('request', 'getPreviousPreference');
       qs.push('courseId', courseID);
       qs.push('userId', userID);
-      if (date !== undefined) qs.push('date', date);
+      qs.push('moduleId', module);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
@@ -797,6 +862,8 @@ export class ApiHttpService {
       .pipe(map((res: any) => res['data']));
   }
 
+
+  // Roles
 
   public getAdaptationRoles(courseID: number, onlyParents?: boolean, onlyNames?: boolean): Observable<string[]>{
     const params = (qs: QueryStringParameters) => {

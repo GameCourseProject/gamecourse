@@ -2,12 +2,14 @@
 namespace GameCourse\Adaptation;
 
 use Exception;
+use GameCourse\Role\Role;
 use GameCourse\Core\Core;
 use Utils\Utils;
 
 class EditableGameElement
 {
     const TABLE_EDITABLE_GAME_ELEMENT = "editable_game_element";
+    const TABLE_USER_GAME_ELEMENT_PREFERENCES = "user_game_element_preferences";
 
     protected $id;
 
@@ -103,7 +105,7 @@ class EditableGameElement
     // TODO
     public function setData(array $fieldValues){
 
-        // Trim values (not needed for now -- all ints and bools)
+        // Trim values
         self::trim($fieldValues);
 
         // Validate data
@@ -178,6 +180,30 @@ class EditableGameElement
         else return new EditableGameElement($editableGameElementId);
     }
 
+    /**
+     * Gets all children of specific editableGameElement
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function getEditableGameElementChildren(): array{
+        $roles = Role::getCourseRoles($this->getCourse(), false, true);
+        $module = $this->getModule();
+
+        $response = [];
+        foreach ($roles as $role){
+            // role belongs to the module and has children
+            if ($role["module"] == $module && in_array("children", array_keys($role))){
+                // iterates through children and saves the names
+                foreach ($role["children"] as $child) {
+                    array_push($response, $child["name"]);
+                }
+                break;
+            }
+        }
+        return $response;
+    }
+
     /*** ---------------------------------------------------- ***/
     /*** -------- EditableGameElement Manipulation ---------- ***/
     /*** ---------------------------------------------------- ***/
@@ -192,7 +218,7 @@ class EditableGameElement
      * @return EditableGameElement
      * @throws Exception
      */
-    public static function addEditableGameElement(int $course, string $moduleId, bool $isEditable = true): EditableGameElement{
+    public static function addEditableGameElement(int $course, string $moduleId, bool $isEditable = false): EditableGameElement{
         $table = self::TABLE_EDITABLE_GAME_ELEMENT;
         $id = Core::database()->insert($table, [
             "course" => $course,
@@ -227,6 +253,30 @@ class EditableGameElement
     public function updateEditableGameElement(int $nDays, bool $notify = false): EditableGameElement{
         $this->setData(["nDays" => $nDays, "notify" => +$notify]);
         return $this;
+    }
+
+    /**
+     * Gets user's previous editableGameElement preference to adapt
+     *
+     * @param int $courseId
+     * @param int $userId
+     * @param string $moduleId
+     * @return string
+     * @throws Exception
+     */
+    public static function getPreviousUserPreference(int $courseId, int $userId, string $moduleId): string{
+        $table = self::TABLE_USER_GAME_ELEMENT_PREFERENCES;
+        $where = ["course" => $courseId, "user" => $userId, "module" => $moduleId];
+        $preferences = Core::database()->selectMultiple($table, $where, "*", "date");
+
+        if (count($preferences)){
+            $response = $preferences[0]["newPreference"];
+
+        } else{
+            return "No data for current preference.";
+        }
+
+        return Role::getRoleName($response);
     }
 
     /**
@@ -293,7 +343,7 @@ class EditableGameElement
     private static function trim(&...$values)
     {
         $params = ["module"];
-        Utils::parse($params, ...$values);
+        Utils::trim($params, ...$values);
     }
 
 }

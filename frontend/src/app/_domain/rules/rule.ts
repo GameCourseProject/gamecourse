@@ -1,5 +1,3 @@
-import { ApiHttpService } from "../../_services/api/api-http.service";
-import { RuleSection } from "./RuleSection";
 import {RuleTag} from "./RuleTag";
 
 export class Rule {

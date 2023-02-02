@@ -41,7 +41,7 @@ import { DataSourceStatusComponent } from "./settings/modules/config/data-source
     QrComponent,
     ProgressReportComponent,
     ProfilingComponent,
-    AdaptationComponent
+    AdaptationComponent,
     ProfilingComponent,
     DataSourceStatusComponent
   ],

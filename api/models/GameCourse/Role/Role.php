@@ -112,7 +112,6 @@ class Role
         return $rolesNames;
     }
 
-
     /*** ---------------------------------------------------- ***/
     /*** ------------------ Course related ------------------ ***/
     /*** ---------------------------------------------------- ***/
@@ -133,14 +132,14 @@ class Role
         (new Course($courseId))->setRolesHierarchy($hierarchy);
     }
 
-
     /**
      * Adds adaptation roles to a given course - comes from modules
      * Notice: array $roles should only have 1 parent!
      *
      * @param int $courseId
-     * @param array $roles // should have structure [ "name" => ["child1", "child2"] ]
      * @param string $moduleId
+     * @param string $parent
+     * @param array $children
      * @throws Exception
      */
     public static function addAdaptationRolesToCourse(int $courseId, string $moduleId, string $parent, array $children = null)
@@ -233,40 +232,6 @@ class Role
         }
         return $response;
     }
-
-    /*
-    // THIS SHOULD GO TO EDITABLE GAME ELEMENT.PHP --> much more simplified !
-        $moduleIds = Module::getModulesInCourse($courseId, true, true);
-        $roles = self::getCourseRoles($courseId);
-        $course = Course::getCourseById($courseId);
-
-        $response = [];
-        foreach($moduleIds as $moduleId){
-            $module = Module::getModuleById($moduleId, $course);
-            $moduleName = $module->getName();
-            if (in_array($moduleName, $roles)){
-                array_push($response, $moduleName);
-            }
-        }
-
-        if ($onlyParents){
-            return $response;
-        }
-
-        $roles = self::getCourseRoles($courseId, false, true);
-
-        foreach ($roles as $role){
-            // role belongs to a module, has children and is enabled in course
-            if ($role["module"] && in_array("children", array_keys($role)) && in_array($role["module"], $moduleIds)){
-
-                    // iterates through children array
-                    foreach ($role["children"] as $child){
-                        array_push($response, $child["name"]);
-                    }
-            }
-        }
-        return $response;
-    */
 
     /**
      * Gets course's roles. Option to retrieve only roles' names and/or to

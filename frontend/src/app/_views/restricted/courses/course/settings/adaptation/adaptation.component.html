@@ -5,10 +5,10 @@
 
   <ng-container *ngIf="!loading.page">
     <!-- Admin Template -->
-    <ng-container *ngIf="true" [ngTemplateOutlet]="ADMIN"></ng-container>
+    <ng-container *ngIf="false" [ngTemplateOutlet]="ADMIN"></ng-container>
 
     <!-- Non-Admin Template -->
-    <ng-container *ngIf="false" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
+    <ng-container *ngIf="true" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
   </ng-container>
 
 </div>
@@ -32,25 +32,70 @@
   </div>
 </ng-template>
 
+<app-modal *ngIf="mode && gameElementToManage"
+   [id] = "'manage-game-element'"
+   [templateRef]="MANAGE_GAME_ELEMENT"
+   [size] = "'md'"
+   [header] = "mode?.capitalize() + ' \'' + gameElementToManage.module + '\''"
+   [submitBtnText]="mode?.capitalize()"
+   [actionInProgress]="loading.action"
+   (submitBtnClicked)="c.onSubmit(null); updateGameElement()"
+   (onClose)="resetGameElementManage()">
+</app-modal>
+
+<ng-template #MANAGE_GAME_ELEMENT>
+  <form #c="ngForm">
+    <div class="w-full flex-wrap mt-3">
+      <div class="w-full sm:pr-7">
+        <!-- NDays -->
+        <app-input-number
+          [id]="'n-days'"
+          [form] = "c"
+          [(value)]="gameElementToManage.nDays"
+          [placeholder]="'Number of days'"
+          [topLabel]="'Number of days is editable'"
+          [helperPosition]="'right'"
+          [helperText]="'Number of days students can customize this game element after it is made editable.'"
+          [maxValue]="10">
+        </app-input-number>
+
+        <!-- Notification -->
+        <app-input-checkbox
+          [id]="'notification'"
+          [form] = "c"
+          [(value)]="gameElementToManage.notify"
+          [color]="'secondary'"
+          [classList]="'mt-2'"
+          [label]="'Send notification students once is made editable.'"
+          [labelPosition]="'right'"
+        ></app-input-checkbox>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
 <ng-template #NON_ADMIN>
 
   <div class="sm:w-1/2">
     <app-input-select
       [id]="'game-elements'"
       [(value)] = "selectedGameElement"
-      [options] = "availableGameElements"
+      [options] = "availableGameElementsSelect"
       [multiple] = "false"
       [search] = "true"
       [placeholder]="'Select game element'"
       [topLabel]="'Choose a game element to adapt'"
-      (valueChange)="selectedGameElement = $event ?? []"
+      (valueChange)="selectedGameElement = $event ?? []; preparePreferences(selectedGameElement)"
     ></app-input-select>
   </div>
 
   <div *ngIf = "selectedGameElement" class="w-full flex flex-wrap mt-7">
 
     <div class="sm:w-5/12">
-      <strong>CURRENT - [OPTION {{getPreviousPreference()}}]</strong>
+      <strong *ngIf="message">CURRENT</strong>
+      <strong *ngIf="!message">CURRENT - [OPTION {{previousPreference}}]</strong>
+
+      <div *ngIf="message && previousPreference !== null">{{message}}</div>
     </div>
 
     <div class="divider divider-horizontal rounded bg-base-200"></div>
@@ -58,15 +103,15 @@
     <div class="sm:w-5/12">
       <strong>NEW</strong>
 
-      <p class="mt-2">Options available</p>
-      <div class="btn-group flex justify-start sm:mr-[6rem] mt-2">
-        <div *ngFor="let option of getChildren(selectedGameElement); let i = index" class="pr-1">
+      <div *ngIf="gameElementChildren" class="btn-group flex justify-start sm:mr-[6rem] mt-2">Options available:
+        <div *ngFor="let option of gameElementChildren; let i = index" class="pl-2">
           <input type = "button"
                  class="btn-sm rounded-lg btn-{{getButtonColor(i)}} px-2 text-white"
                  value="Option {{i+1}}"
                  (click) = "setButtonActive(i); doAction(option)"/>
         </div>
       </div>
+      <strong *ngIf="activeButton != null">{{option.capitalize()}}</strong>
     </div>
 
   </div>

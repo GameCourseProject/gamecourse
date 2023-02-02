@@ -147,10 +147,11 @@ CREATE TABLE course_module(
 
 /*--- "Best guess" adaptation ---*/
 
-CREATE TABLE user_role_preferences(
+CREATE TABLE user_game_element_preferences(
   id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
   course                      int unsigned NOT NULL,
   user                        int unsigned NOT NULL,
+  module                      varchar(50) NOT NULL,
   previousPreference          int unsigned NOT NULL,
   newPreference               int unsigned NOT NULL,
   date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -158,6 +159,7 @@ CREATE TABLE user_role_preferences(
   UNIQUE key(user, date),
   FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
   FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE,
+  FOREIGN KEY (module) REFERENCES module(id) ON DELETE CASCADE,
   FOREIGN KEY (previousPreference) REFERENCES role(id) ON DELETE CASCADE,
   FOREIGN KEY (newPreference) REFERENCES role(id) ON DELETE CASCADE
 );

@@ -2,9 +2,9 @@
 namespace API;
 
 use Exception;
+use GameCourse\Adaptation\EditableGameElement;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\EditableGameElement\EditableGameElement;
 use GameCourse\Module\Module;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
@@ -638,19 +638,28 @@ class CourseController
     public function updateEditableGameElement()
     {
         API::requireAdminPermission();
-        API::requireValues('courseId', 'moduleId', 'nDays');
+        API::requireValues('id', 'course', 'module', 'isEditable', 'nDays', 'notify');
 
-        $courseId = API::getValue('courseId', "int");
+        $courseId = API::getValue('course', "int");
         $course = API::verifyCourseExists($courseId);
 
-        $moduleId = API::getValue('moduleId');
+        $moduleId = API::getValue('module');
         $module = API::verifyModuleExists($moduleId, $course);
 
-        $nDays = API::getValue("nDays", "int");
-        $notify = API::getValue("notify", "bool") ?? false;
+        $gameElementId = API::getValue("id", "int");
+        $editableGameElement = EditableGameElement::getEditableGameElementById($gameElementId);
 
-        $editableGameElement = EditableGameElement::getEditableGameElementByModule($courseId, $moduleId);
+        // Get rest of the values
+        // $isEditable = API::getValue("isEditable", "bool");
+        $nDays = API::getValue("nDays", "int");
+        $notify = API::getValue("notify", "bool");
+
+        // Update EditableGameElement
         $editableGameElement->updateEditableGameElement($nDays, $notify);
+
+        $gameElementInfo = $editableGameElement->getData();
+        API::response($gameElementInfo);
+
 
     }
 
@@ -660,7 +669,7 @@ class CourseController
      * @return void
      * @throws Exception
      */
-    public function setEditableGameElement()
+    public function setGameElementEditable()
     {
         API::requireAdminPermission();
         API::requireValues('courseId', 'moduleId', 'isEditable');
@@ -677,7 +686,69 @@ class CourseController
         $editableGameElement->setEditable($isEditable);
     }
 
+    public function getEditableGameElements()
+    {
+        API::requireValues('courseId');
 
+        $courseId = API::getValue('courseId', "int");
+        $course = API::verifyCourseExists($courseId);
+
+        $isEditable = API::getValue("isEditable", "bool") ?? null;
+        $onlyNames = API::getValue("onlyNames", "bool") ?? false;
+        $editableGameElements = EditableGameElement::getEditableGameElements($courseId, $isEditable, $onlyNames);
+
+        foreach ($editableGameElements as &$gameElementInfo) {
+            $gameElement = EditableGameElement::getEditableGameElementById($gameElementInfo["id"]);
+        }
+
+        API::response($editableGameElements);
+
+    }
+
+    /**
+     * Gets all children from a specific editableGameElement
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getChildrenGameElement()
+    {
+        API::requireValues('courseId', 'moduleId');
+
+        $courseId = API::getValue('courseId', "int");
+        $course = API::verifyCourseExists($courseId);
+
+        $moduleId = API::getValue('moduleId');
+        $module = API::verifyModuleExists($moduleId, $course);
+
+        $gameElement = EditableGameElement::getEditableGameElementByModule($courseId, $moduleId);
+        $children = $gameElement->getEditableGameElementChildren();
+        API::response($children);
+    }
+
+    /**
+     * Gets previous user preference of specific editableGameElement
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getPreviousPreference()
+    {
+        API::requireValues('courseId', 'userId', 'moduleId');
+
+        $courseId = API::getValue('courseId', "int");
+        $course = API::verifyCourseExists($courseId);
+
+        $userId = API::getValue('userId', "int");
+        //$user = API::verifyUserExists($userId);  FIXME: DEBUG ONLY
+
+        $moduleId = API::getValue('moduleId');
+        $module = API::verifyModuleExists($moduleId, $course);
+
+        $previousPreference = EditableGameElement::getPreviousUserPreference($courseId, $userId, $module->getName());
+        var_dump($previousPreference);
+        API::response($previousPreference);
+    }
 
     /*** --------------------------------------------- ***/
     /*** ------------------ Modules ------------------ ***/

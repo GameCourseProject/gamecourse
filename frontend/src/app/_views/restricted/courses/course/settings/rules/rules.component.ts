@@ -179,7 +179,7 @@ export class RulesComponent implements OnInit {
   doActionOnTable(action: string, row: number, col: number, value?: any): void{
     const ruleToActOn = this.courseRules[row];
 
-    if (action === 'value changed'){
+    if (action === 'value changed rule'){
       if (col === 5) this.toggleActive(ruleToActOn);
 
     } else if (action === Action.REMOVE) {

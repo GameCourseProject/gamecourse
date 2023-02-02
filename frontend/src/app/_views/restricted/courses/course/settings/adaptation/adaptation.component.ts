@@ -1,9 +1,15 @@
 import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, ViewChild} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Course} from "../../../../../../_domain/courses/course";
 import {User} from "src/app/_domain/users/user";
 import {TableDataType} from "../../../../../../_components/tables/table-data/table-data.component";
+import {EditableGameElement} from "../../../../../../_domain/adaptation/EditableGameElement";
+import {ModalService} from "../../../../../../_services/modal.service";
+import {NgForm} from "@angular/forms";
+import {clearEmptyValues} from "../../../../../../_utils/misc/misc";
+import {AlertService, AlertType} from "../../../../../../_services/alert.service";
+import {Observable} from "rxjs";
 
 @Component({
   selector: 'app-adaptation',
@@ -22,16 +28,22 @@ export class AdaptationComponent implements OnInit {
   user: User;
 
   /** -- ADMIN VARIABLES -- **/
+  gameElementToManage: GameElementManageData = this.initEditableGameElement();
   mode: 'configure';
+  availableGameElements: EditableGameElement[];
+
+  @ViewChild('c', {static: false}) c: NgForm;       // configure form
 
   /** -- NON-ADMIN VARIABLES -- **/
   selectedGameElement: string;
   gameElementChildren: string[];
   previousPreference: string;
 
-  availableGameElements: { value: string, text: string }[] = [];
+  availableGameElementsSelect: { value: string, text: string }[] = [];
 
-  activeButton;
+  activeButton = null;
+  option: string;
+  message: string;
 
   constructor(
     private api: ApiHttpService,
@@ -68,24 +80,23 @@ export class AdaptationComponent implements OnInit {
   }
 
   async getGameElements(courseID: number): Promise<void> {
-    const gameNames = await this.api.getAdaptationRoles(courseID, true, true).toPromise();
-    console.log(gameNames);
+    // ADMIN
+    this.availableGameElements = await this.api.getEditableGameElements(courseID).toPromise();
 
-    //let elements = Object.values(gameNames);
-    for (let i = 0; i < gameNames.length; i++){
-      this.availableGameElements.push({value: gameNames[i], text: gameNames[i]});
+    // NON-ADMIN
+    const gameElements = this.availableGameElements;
+    for (let i = 0; i < gameElements.length; i++){
+      this.availableGameElementsSelect.push({value: gameElements[i].module, text: gameElements[i].module});
     }
-
-    console.log(this.availableGameElements);
   }
 
   /*** --------------------------------------------- ***/
-  /*** ------------------- Table ------------------- ***/
+  /*** ------------ Table (ADMIN) ------------------ ***/
   /*** --------------------------------------------- ***/
 
   headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
     {label: 'Game Element', align: 'middle'},
-    {label: 'Active', align: 'middle'},
+    {label: 'Editable', align: 'middle'},
     {label: 'Actions'}
   ];
   data: {type: TableDataType, content: any}[][];
@@ -103,8 +114,8 @@ export class AdaptationComponent implements OnInit {
     const table: {type: TableDataType, content: any}[][] = [];
     this.availableGameElements.forEach(gameElement => {
       table.push([
-        {type: TableDataType.TEXT, content: {text: gameElement.text}},
-        {type: TableDataType.PILL, content: true},
+        {type: TableDataType.TEXT, content: {text: gameElement.module}},
+        {type: TableDataType.TOGGLE, content: {toggleId: 'isEditable', toggleValue: gameElement.isEditable}},
         {type: TableDataType.ACTIONS, content: {actions: [
           {action: 'Configure', icon: 'tabler-settings', color: 'primary'}]}
         }
@@ -117,40 +128,82 @@ export class AdaptationComponent implements OnInit {
   doActionOnTable(action: string, row: number, col: number, value?: any): void{
     const gameElementToActOn = this.availableGameElements[row];
 
-    if (action === 'value changed'){
-      //if (col === 1) this.toggleActive(gameElementToActOn);
+    if (action === 'value changed game element'){
+      if (col === 1) this.toggleActive(gameElementToActOn);
 
     } else if (action === 'Configure') {
       this.mode = 'configure';
-      //this.
+      this.gameElementToManage = this.initEditableGameElement(gameElementToActOn);
+      ModalService.openModal('manage-game-element');
     }
   }
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
-/*
-  async toggleActive(gameElement: AdaptationGameElement){
+
+
+  /** -- ADMIN ACTIONS -- **/
+  async toggleActive(gameElement: EditableGameElement){
     this.loading.action = true;
 
-    gameElement.isActive = !gameElement.isActive;
-    await this.api.setAdaptationGameElementActive()
+    gameElement.isEditable = !gameElement.isEditable;
+    await this.api.setEditableGameElementEditable(this.course.id, gameElement.module, gameElement.isEditable).toPromise();
+
+    this.loading.action = false;
   }
-  */
+
+  async updateGameElement(){
+    if (this.c.valid){
+      this.loading.action = true;
+
+      const gameElementConfig = await this.api.updateEditableGameElement(clearEmptyValues(this.gameElementToManage)).toPromise();
+      const index = this.availableGameElements.findIndex(gameElement => gameElement.id === gameElementConfig.id);
+      this.availableGameElements.removeAtIndex(index);
+      this.availableGameElements.push(gameElementConfig);
+
+      this.buildTable();
+      this.loading.action = false;
+      ModalService.closeModal('manage-game-element');
+      AlertService.showAlert(AlertType.SUCCESS, 'Game element \'' + gameElementConfig.module + '\' configured');
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+  }
+
+  /** -- NON-ADMIN ACTIONS -- **/
   doAction(gameElement: string) {
-    // TODO
+    this.option = gameElement;
   }
 
-  async getPreviousPreference(): Promise<void> {
-    // TODO
-    let date = new Date(); // NOT SURE
-    this.previousPreference = await this.api.getPreviousPreference(this.course.id, this.user.studentNumber, date).toPromise();
+  async preparePreferences(gameElement: string){
+    this.activeButton = null;
+
+    if (gameElement !== "undefined"){
+      await this.getChildren(gameElement);
+      await this.getPreviousPreference(gameElement);
+    }
+    else{
+      this.previousPreference = null;
+      this.gameElementChildren = null;
+    }
   }
 
-  getChildren(gameElement: string) {
-    // TODO
-    this.gameElementChildren = ["a", "b", "c"]; // await this.api....
-    return this.gameElementChildren;
+  async getPreviousPreference(gameElement: string) {
+    const preference = await this.api.getPreviousPreference(this.course.id, this.user.id, gameElement).toPromise();
+
+    // Checks if preference has multiple words
+    // If preference exists then value = "B001" | "B002" ... and so on (always one word!)
+    // If preference doesn't exist then value = "No previous preference." (multiple words)
+    if (preference.indexOf(' ') >= 0){
+      this.previousPreference = "none";
+      this.message = preference;
+    } else{
+      this.previousPreference = preference;
+    }
+  }
+
+  async getChildren(gameElement: string) {
+    this.gameElementChildren =  await this.api.getChildrenGameElement(this.course.id, gameElement).toPromise();
   }
 
   discard() {
@@ -177,4 +230,31 @@ export class AdaptationComponent implements OnInit {
     this.activeButton = index;
   }
 
+  resetGameElementManage(){
+    this.gameElementToManage = this.initEditableGameElement();
+    this.c.resetForm();
+  }
+
+  initEditableGameElement(editableGameElement? : EditableGameElement): GameElementManageData{
+    const gameElementData: GameElementManageData = {
+      course: editableGameElement?.course ?? null,
+      module: editableGameElement?.module ?? null,
+      isEditable: editableGameElement?.isEditable ?? false,
+      nDays: editableGameElement?.nDays ?? null,
+      notify: editableGameElement?.notify ?? false
+    };
+    if (editableGameElement){
+      gameElementData.id = editableGameElement.id;
+    }
+    return gameElementData;
+  }
+}
+
+export interface GameElementManageData {
+  id?: number,
+  course?: number,
+  module?: string,
+  isEditable?: boolean,
+  nDays?: number
+  notify?: boolean
 }
