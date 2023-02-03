@@ -746,7 +746,6 @@ class CourseController
         $module = API::verifyModuleExists($moduleId, $course);
 
         $previousPreference = EditableGameElement::getPreviousUserPreference($courseId, $userId, $module->getName());
-        var_dump($previousPreference);
         API::response($previousPreference);
     }
 

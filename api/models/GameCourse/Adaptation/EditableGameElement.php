@@ -252,6 +252,10 @@ class EditableGameElement
      */
     public function updateEditableGameElement(int $nDays, bool $notify = false): EditableGameElement{
         $this->setData(["nDays" => $nDays, "notify" => +$notify]);
+
+        // TODO IF NOTIFICATION IS TRUE THEN TABLE NOTIFICATION SHOULD ADD MESSAGE!
+        // DIZER À JOANA -> VAI SER OVERLOAD MUITO GRANDE À BASE DE DADOS
+
         return $this;
     }
 

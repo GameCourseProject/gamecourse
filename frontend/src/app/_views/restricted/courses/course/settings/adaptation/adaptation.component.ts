@@ -183,6 +183,7 @@ export class AdaptationComponent implements OnInit {
       await this.getPreviousPreference(gameElement);
     }
     else{
+      this.message="undefined";
       this.previousPreference = null;
       this.gameElementChildren = null;
     }
@@ -194,20 +195,19 @@ export class AdaptationComponent implements OnInit {
     // Checks if preference has multiple words
     // If preference exists then value = "B001" | "B002" ... and so on (always one word!)
     // If preference doesn't exist then value = "No previous preference." (multiple words)
-    if (preference.indexOf(' ') >= 0){
+    if (preference.indexOf(' ') >= 0)
+    {
       this.previousPreference = "none";
       this.message = preference;
+
     } else{
+      this.message = null;
       this.previousPreference = preference;
     }
   }
 
   async getChildren(gameElement: string) {
     this.gameElementChildren =  await this.api.getChildrenGameElement(this.course.id, gameElement).toPromise();
-  }
-
-  discard() {
-    // TODO
   }
 
   async save(): Promise<void> {
