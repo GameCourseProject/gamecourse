@@ -138,7 +138,7 @@
           [id]="'course-year'"
           [form]="f"
           [(value)]="courseToManage.year"
-          [options]="yearOptions"
+          [options]="mode === 'edit' ? editYearOptions : yearOptions"
           [placeholder]="'Select an academic year'"
           [search]="false"
           [classList]="'mt-3 sm:mt-0'"
