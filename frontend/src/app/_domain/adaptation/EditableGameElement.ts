@@ -5,14 +5,17 @@ export class EditableGameElement {
   private _isEditable: boolean;
   private _nDays: number;
   private _notify: boolean;
+  private _users: number[];
 
-  constructor(id: number, course: number, module: string, isEditable: boolean, nDays: number, notify: boolean) {
+  constructor(id: number, course: number, module: string, isEditable: boolean, nDays: number, notify: boolean, users?: number[]) {
     this._id = id;
     this._course = course;
     this._module = module;
     this._isEditable = isEditable;
     this._nDays = nDays;
     this._notify = notify;
+    if (users) this._users = users;
+    else this._users = [];
   }
 
   get id(): number {
@@ -63,6 +66,14 @@ export class EditableGameElement {
     this._notify = value;
   }
 
+  get users(): number[] {
+    return this._users;
+  }
+
+  set users(value: number[]){
+    this._users = value;
+  }
+
   static fromDatabase(obj: EditableGameElementDB): EditableGameElement {
     return new EditableGameElement(
       obj.id,
@@ -70,7 +81,8 @@ export class EditableGameElement {
       obj.module,
       obj.isEditable,
       obj.nDays,
-      obj.notify
+      obj.notify,
+      obj.users
     );
   }
 }
@@ -82,4 +94,5 @@ interface EditableGameElementDB {
   isEditable: boolean,
   nDays: number,
   notify: boolean
+  users: number[]
 }

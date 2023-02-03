@@ -638,7 +638,7 @@ class CourseController
     public function updateEditableGameElement()
     {
         API::requireAdminPermission();
-        API::requireValues('id', 'course', 'module', 'isEditable', 'nDays', 'notify');
+        API::requireValues('id', 'course', 'module', 'isEditable', 'nDays', 'notify', 'users');
 
         $courseId = API::getValue('course', "int");
         $course = API::verifyCourseExists($courseId);
@@ -653,9 +653,15 @@ class CourseController
         // $isEditable = API::getValue("isEditable", "bool");
         $nDays = API::getValue("nDays", "int");
         $notify = API::getValue("notify", "bool");
+        $users = API::getValue("users");
+
+        foreach ($users as $userNumber){
+            API::verifyUserExists($userNumber);
+            API::verifyCourseUserExists($course, $userNumber);
+        }
 
         // Update EditableGameElement
-        $editableGameElement->updateEditableGameElement($nDays, $notify);
+        $editableGameElement->updateEditableGameElement($nDays, $users, $notify);
 
         $gameElementInfo = $editableGameElement->getData();
         API::response($gameElementInfo);

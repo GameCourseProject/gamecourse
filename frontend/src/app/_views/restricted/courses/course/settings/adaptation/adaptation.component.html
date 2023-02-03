@@ -36,7 +36,7 @@
    [id] = "'manage-game-element'"
    [templateRef]="MANAGE_GAME_ELEMENT"
    [size] = "'md'"
-   [header] = "mode?.capitalize() + ' \'' + gameElementToManage.module + '\''"
+   [header] = "mode?.capitalize() + ' ' + gameElementToManage.module"
    [submitBtnText]="mode?.capitalize()"
    [actionInProgress]="loading.action"
    (submitBtnClicked)="c.onSubmit(null); updateGameElement()"
@@ -45,28 +45,92 @@
 
 <ng-template #MANAGE_GAME_ELEMENT>
   <form #c="ngForm">
-    <div class="w-full flex-wrap mt-3">
-      <div class="w-full sm:pr-7">
-        <!-- NDays -->
-        <app-input-number
-          [id]="'n-days'"
-          [form] = "c"
-          [(value)]="gameElementToManage.nDays"
-          [placeholder]="'Number of days'"
-          [topLabel]="'Number of days is editable'"
-          [helperPosition]="'right'"
-          [helperText]="'Number of days students can customize this game element after it is made editable.'"
-          [maxValue]="10">
-        </app-input-number>
+    <div class="w-full flex flex-wrap mt-3">
 
-        <!-- Notification -->
+      <!-- Users -->
+      <div class="w-full flex flex-wrap pb-4">
+        <p class="w-full font-semibold">Users who can customize {{gameElementToManage.module}}</p>
+        <div class="sm:w-3/12">
+          <app-input-radio
+            [id]="'all-users'"
+            [group] = "'users'"
+            [form] = "c"
+            [(value)]="usersMode"
+            [optionValue] = "'all-users'"
+            [color]="'secondary'"
+            [classList]="'mt-2'"
+            [label]="' All students'"
+            [labelPosition]="'right'"
+            (valueChange)="manageUsersMode()"
+          ></app-input-radio>
+        </div>
+
+        <div class="sm:w-4/12">
+          <app-input-radio
+            [id]="'all-except-users'"
+            [group] = "'users'"
+            [form] = "c"
+            [(value)]="usersMode"
+            [optionValue] = "'all-except-users'"
+            [color]="'secondary'"
+            [classList]="'mt-2'"
+            [label]="'All students except...'"
+            [labelPosition]="'right'"
+            (valueChange)="manageUsersMode()"
+          ></app-input-radio>
+        </div>
+        <div class="sm:w-5/12 px-1">
+          <app-input-radio
+            [id]="'only-some-users'"
+            [group] = "'users'"
+            [form] = "c"
+            [(value)]="usersMode"
+            [optionValue]="'only-some-users'"
+            [color]="'secondary'"
+            [classList]="'mt-2'"
+            [label]="'Only some students...'"
+            [labelPosition]="'right'"
+            (valueChange)="manageUsersMode()"
+          ></app-input-radio>
+        </div>
+
+        <!-- FIXME: incomplete ? -->
+        <app-input-select
+          class="w-full sm:pr-7 mt-3"
+          *ngIf="usersMode === 'all-except-users' || usersMode === 'only-some-users'"
+          [id]="'users-select'"
+          [(value)] = "gameElementToManage.users"
+          [options] = "courseUsersSelect"
+          [multiple] = "true"
+          [search] = "true"
+          [placeholder]="'Select users'"
+          [closeOnSelect]="false"
+          (valueChange)="gameElementToManage.users = $event ?? []"
+        ></app-input-select>
+      </div>
+
+      <!-- NDays -->
+      <div class="w-full flex-wrap mt-3 pb-4">
+        <p class="pb-3 font-semibold">Nº days '{{gameElementToManage.module}}' is customizable after made editable</p>
+        <div class="sm:w-1/2 sm:pr-7">
+          <app-input-periodicity
+            [id]="'n-days'"
+            [form] = "c"
+            [(value)]="periodicity"
+            [filterOptions]="['second', 'minute', 'hour', 'week', 'month', 'year']">
+          </app-input-periodicity>
+        </div>
+      </div>
+
+      <!-- Notification -->
+      <div class="sm:pr-7 w-full">
         <app-input-checkbox
           [id]="'notification'"
           [form] = "c"
           [(value)]="gameElementToManage.notify"
-          [color]="'secondary'"
+          [color]="'accent'"
           [classList]="'mt-2'"
-          [label]="'Send notification students once is made editable.'"
+          [label]="'Send notification to students'"
           [labelPosition]="'right'"
         ></app-input-checkbox>
       </div>
@@ -74,6 +138,7 @@
   </form>
 </ng-template>
 
+<!-- Non-Admin Template -->
 <ng-template #NON_ADMIN>
 
   <div class="sm:w-1/2">

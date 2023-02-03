@@ -4,12 +4,14 @@ namespace GameCourse\Adaptation;
 use Exception;
 use GameCourse\Role\Role;
 use GameCourse\Core\Core;
+use GameCourse\User\CourseUser;
 use Utils\Utils;
 
 class EditableGameElement
 {
     const TABLE_EDITABLE_GAME_ELEMENT = "editable_game_element";
     const TABLE_USER_GAME_ELEMENT_PREFERENCES = "user_game_element_preferences";
+    const TABLE_ELEMENT_USER = "element_user";
 
     protected $id;
 
@@ -246,15 +248,22 @@ class EditableGameElement
      * Returns the editableGameElement with the updated information
      *
      * @param int $nDays
+     * @param array $users
      * @param bool $notify (optional)
      * @return EditableGameElement
      * @throws Exception
      */
-    public function updateEditableGameElement(int $nDays, bool $notify = false): EditableGameElement{
+    public function updateEditableGameElement(int $nDays, array $users, bool $notify = false): EditableGameElement{
         $this->setData(["nDays" => $nDays, "notify" => +$notify]);
 
-        // TODO IF NOTIFICATION IS TRUE THEN TABLE NOTIFICATION SHOULD ADD MESSAGE!
-        // DIZER À JOANA -> VAI SER OVERLOAD MUITO GRANDE À BASE DE DADOS
+        // TODO : Add users in relationship table element_user
+        foreach ($users as $userNumber){
+            $user = CourseUser::getUserByStudentNumber($userNumber);
+            Core::database()->insert(self::TABLE_ELEMENT_USER,
+                ["element" => $this->getId(), "user" => $user->getId()]);
+        }
+
+        // TODO IF NOTIFICATION IS TRUE THEN TABLE NOTIFICATION SHOULD ADD MESSAGE! --> CREATE CRONJOB
 
         return $this;
     }

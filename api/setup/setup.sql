@@ -177,7 +177,6 @@ CREATE TABLE questionnaire_preferences(
     FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE
 );
 
-/* ADD USERS? */
 CREATE TABLE editable_game_element(
     id          int unsigned AUTO_INCREMENT PRIMARY KEY,
     course      int unsigned NOT NULL,
@@ -190,6 +189,15 @@ CREATE TABLE editable_game_element(
     FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
     FOREIGN KEY (module) REFERENCES module(id) ON DELETE CASCADE
 );
+
+CREATE TABLE element_user(
+    element     int unsigned NOT NULL,
+    user        int unsigned DEFAULT NULL,
+
+    PRIMARY key(element, user),
+    FOREIGN KEY (element) REFERENCES editable_game_element(id) ON DELETE CASCADE,
+    FOREIGN KEY (user) REFERENCES course_user(id) ON DELETE CASCADE
+)
 
 /*--- End of "Best guess" adaptation ---*/
 

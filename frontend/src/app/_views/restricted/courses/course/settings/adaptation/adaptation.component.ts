@@ -10,6 +10,7 @@ import {NgForm} from "@angular/forms";
 import {clearEmptyValues} from "../../../../../../_utils/misc/misc";
 import {AlertService, AlertType} from "../../../../../../_services/alert.service";
 import {Observable} from "rxjs";
+import {CourseUser} from "../../../../../../_domain/users/course-user";
 
 @Component({
   selector: 'app-adaptation',
@@ -31,6 +32,11 @@ export class AdaptationComponent implements OnInit {
   gameElementToManage: GameElementManageData = this.initEditableGameElement();
   mode: 'configure';
   availableGameElements: EditableGameElement[];
+
+  periodicity: {number: number, time: string};
+  usersMode: "all-users" | "all-except-users" | "only-some-users";
+  courseUsers: User[];
+  courseUsersSelect: {value: string, text: string}[] = [];
 
   @ViewChild('c', {static: false}) c: NgForm;       // configure form
 
@@ -62,6 +68,7 @@ export class AdaptationComponent implements OnInit {
 
       if (this.user.isAdmin){
         this.buildTable();
+        await this.getCourseUsers(courseID);
       }
 
     });
@@ -88,6 +95,13 @@ export class AdaptationComponent implements OnInit {
     for (let i = 0; i < gameElements.length; i++){
       this.availableGameElementsSelect.push({value: gameElements[i].module, text: gameElements[i].module});
     }
+  }
+
+  async getCourseUsers(courseID: number): Promise<void>{
+    this.courseUsers = (await this.api.getCourseUsers(courseID, true).toPromise()).sort((a, b) => a.name.localeCompare(b.name));
+    this.courseUsersSelect = this.courseUsers.map(user => {
+      return {value: 'id-' + user.id, text: user.name};
+    });
   }
 
   /*** --------------------------------------------- ***/
@@ -134,6 +148,7 @@ export class AdaptationComponent implements OnInit {
     } else if (action === 'Configure') {
       this.mode = 'configure';
       this.gameElementToManage = this.initEditableGameElement(gameElementToActOn);
+      this.periodicity = {number: this.gameElementToManage.nDays, time: 'day'}
       ModalService.openModal('manage-game-element');
     }
   }
@@ -156,6 +171,8 @@ export class AdaptationComponent implements OnInit {
   async updateGameElement(){
     if (this.c.valid){
       this.loading.action = true;
+
+      this.gameElementToManage.nDays = this.periodicity.number;
 
       const gameElementConfig = await this.api.updateEditableGameElement(clearEmptyValues(this.gameElementToManage)).toPromise();
       const index = this.availableGameElements.findIndex(gameElement => gameElement.id === gameElementConfig.id);
@@ -221,6 +238,19 @@ export class AdaptationComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  manageUsersMode(){
+    console.log(this.gameElementToManage.users); // ["id-1"]
+    if (this.usersMode === "all-users"){
+      console.log(this.usersMode);
+    }
+    else if (this.usersMode === "all-except-users"){
+      console.log(this.usersMode);
+    }
+    else if (this.usersMode == "only-some-users"){
+      console.log(this.usersMode);
+    }
+  }
+
   getButtonColor(index: number){
     if (this.activeButton === index){ return "active";}
     else return "primary";
@@ -241,7 +271,8 @@ export class AdaptationComponent implements OnInit {
       module: editableGameElement?.module ?? null,
       isEditable: editableGameElement?.isEditable ?? false,
       nDays: editableGameElement?.nDays ?? null,
-      notify: editableGameElement?.notify ?? false
+      notify: editableGameElement?.notify ?? false,
+      users: editableGameElement?.users ?? []
     };
     if (editableGameElement){
       gameElementData.id = editableGameElement.id;
@@ -256,5 +287,6 @@ export interface GameElementManageData {
   module?: string,
   isEditable?: boolean,
   nDays?: number
-  notify?: boolean
+  notify?: boolean,
+  users?: number[]
 }

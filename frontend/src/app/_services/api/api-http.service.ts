@@ -797,7 +797,8 @@ export class ApiHttpService {
       module: gameElementData.module,
       isEditable: gameElementData.isEditable,
       nDays: gameElementData.nDays,
-      notify: gameElementData.notify
+      notify: gameElementData.notify,
+      users: gameElementData.users
     }
 
     const params = (qs: QueryStringParameters) => {
