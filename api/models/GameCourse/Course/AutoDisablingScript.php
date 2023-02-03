@@ -15,4 +15,5 @@ $courseId = intval($argv[1]);
 $course = Course::getCourseById($courseId);
 
 $course->setActive(false);
+$course->setAutoDisabling(null);
 
