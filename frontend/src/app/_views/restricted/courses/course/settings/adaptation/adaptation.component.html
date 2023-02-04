@@ -49,8 +49,8 @@
 
       <!-- Users -->
       <div class="w-full flex flex-wrap pb-4">
-        <p class="w-full font-semibold">Users who can customize {{gameElementToManage.module}}</p>
-        <div class="sm:w-3/12">
+        <span class="w-full font-semibold">Users who can customize {{gameElementToManage.module}}<span class="text-secondary">*</span></span>
+        <div class="sm:w-3/13">
           <app-input-radio
             [id]="'all-users'"
             [group] = "'users'"
@@ -59,13 +59,13 @@
             [optionValue] = "'all-users'"
             [color]="'secondary'"
             [classList]="'mt-2'"
-            [label]="' All students'"
+            [label]="'All students'"
             [labelPosition]="'right'"
-            (valueChange)="manageUsersMode()"
+            (valueChange)="usersConfig()"
           ></app-input-radio>
         </div>
 
-        <div class="sm:w-4/12">
+        <div class="sm:w-5/13">
           <app-input-radio
             [id]="'all-except-users'"
             [group] = "'users'"
@@ -76,10 +76,10 @@
             [classList]="'mt-2'"
             [label]="'All students except...'"
             [labelPosition]="'right'"
-            (valueChange)="manageUsersMode()"
+            (valueChange)="usersConfig()"
           ></app-input-radio>
         </div>
-        <div class="sm:w-5/12 px-1">
+        <div class="sm:w-5/13">
           <app-input-radio
             [id]="'only-some-users'"
             [group] = "'users'"
@@ -90,7 +90,7 @@
             [classList]="'mt-2'"
             [label]="'Only some students...'"
             [labelPosition]="'right'"
-            (valueChange)="manageUsersMode()"
+            (valueChange)="usersConfig()"
           ></app-input-radio>
         </div>
 
@@ -102,6 +102,7 @@
           [(value)] = "gameElementToManage.users"
           [options] = "courseUsersSelect"
           [multiple] = "true"
+          [required] = "true"
           [search] = "true"
           [placeholder]="'Select users'"
           [closeOnSelect]="false"
@@ -111,7 +112,7 @@
 
       <!-- NDays -->
       <div class="w-full flex-wrap mt-3 pb-4">
-        <p class="pb-3 font-semibold">Nº days '{{gameElementToManage.module}}' is customizable after made editable</p>
+        <p class="pb-3 font-semibold">Amount of time '{{gameElementToManage.module}}' is customizable after made editable</p>
         <div class="sm:w-1/2 sm:pr-7">
           <app-input-periodicity
             [id]="'n-days'"

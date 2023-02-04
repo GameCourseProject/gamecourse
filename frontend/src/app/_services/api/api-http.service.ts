@@ -773,6 +773,20 @@ export class ApiHttpService {
       .pipe(map((res: any) => res['data'].map(obj => EditableGameElement.fromDatabase(obj))));
   }
 
+  public getEditableGameElementUsers(courseID: number, moduleID: string): Observable<User[]>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getEditableGameElementUsers');
+      qs.push('courseId', courseID);
+      qs.push('moduleId', moduleID);
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data'].map(obj => User.fromDatabase(obj))));
+  }
+
   public setEditableGameElementEditable(courseID: number, moduleID: string, isEditable: boolean): Observable<void>{
     const data = {
       "courseId" : courseID,
@@ -794,7 +808,7 @@ export class ApiHttpService {
     const data = {
       id: gameElementData.id,
       course: gameElementData.course,
-      module: gameElementData.module,
+      moduleId: gameElementData.module,
       isEditable: gameElementData.isEditable,
       nDays: gameElementData.nDays,
       notify: gameElementData.notify,

@@ -221,7 +221,8 @@ class Role
 
             foreach ($roles as $role) {
                 // role belongs to a module, has children and is enabled in course
-                if ($role["module"] && in_array("children", array_keys($role)) && in_array($role["module"], $response)) {
+                if ($role["module"] && in_array("children", array_keys($role))
+                    && in_array($role["module"], $response)) {
 
                     // iterates through children array
                     foreach ($role["children"] as $child) {

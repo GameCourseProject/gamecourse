@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\Role\Role;
 use GameCourse\Core\Core;
 use GameCourse\User\CourseUser;
+use GameCourse\User\User;
 use Utils\Utils;
 
 class EditableGameElement
@@ -169,7 +170,23 @@ class EditableGameElement
     }
 
     /**
-     * Gets a editableGameElement given a course and module.
+     * Gets all users allowed to customize a specific editableGameElements in the system given a course
+     *
+     * @param int $courseId
+     * @param string $moduleId
+     * @return array
+     */
+    public static function getEditableGameElementUsers(int $courseId, string $moduleId): array {
+        $table = self::TABLE_EDITABLE_GAME_ELEMENT . " ege JOIN " . self::TABLE_ELEMENT_USER . " eu on ege.id=eu.element JOIN " . User::TABLE_USER . " u on eu.user=u.id";
+        $where = ["course" => $courseId, "module" => $moduleId];
+        $users = Core::database()->selectMultiple($table, $where, "u.*");
+
+        foreach ($users as &$user) { $user = User::parse($user); }
+        return $users;
+    }
+
+    /**
+     * Gets an editableGameElement given a course and module.
      *
      * @param int $course
      * @param string $moduleId
@@ -256,12 +273,13 @@ class EditableGameElement
     public function updateEditableGameElement(int $nDays, array $users, bool $notify = false): EditableGameElement{
         $this->setData(["nDays" => $nDays, "notify" => +$notify]);
 
-        // TODO : Add users in relationship table element_user
-        foreach ($users as $userNumber){
-            $user = CourseUser::getUserByStudentNumber($userNumber);
-            Core::database()->insert(self::TABLE_ELEMENT_USER,
-                ["element" => $this->getId(), "user" => $user->getId()]);
+        // delete all users allowed to customize game element before inserting new ones
+        Core::database()->delete(self::TABLE_ELEMENT_USER, ["element" => $this->id]);
+
+        foreach ($users as $userId) {
+            Core::database()->insert(self::TABLE_ELEMENT_USER, ["element" => $this->id, "user" => $userId]);
         }
+
 
         // TODO IF NOTIFICATION IS TRUE THEN TABLE NOTIFICATION SHOULD ADD MESSAGE! --> CREATE CRONJOB
 

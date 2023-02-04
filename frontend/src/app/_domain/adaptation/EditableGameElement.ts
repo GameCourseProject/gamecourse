@@ -5,9 +5,9 @@ export class EditableGameElement {
   private _isEditable: boolean;
   private _nDays: number;
   private _notify: boolean;
-  private _users: number[];
+  private _users: string[];
 
-  constructor(id: number, course: number, module: string, isEditable: boolean, nDays: number, notify: boolean, users?: number[]) {
+  constructor(id: number, course: number, module: string, isEditable: boolean, nDays: number, notify: boolean, users?: string[]) {
     this._id = id;
     this._course = course;
     this._module = module;
@@ -66,11 +66,11 @@ export class EditableGameElement {
     this._notify = value;
   }
 
-  get users(): number[] {
+  get users(): string[] {
     return this._users;
   }
 
-  set users(value: number[]){
+  set users(value: string[]){
     this._users = value;
   }
 
@@ -94,5 +94,5 @@ interface EditableGameElementDB {
   isEditable: boolean,
   nDays: number,
   notify: boolean
-  users: number[]
+  users: string[]
 }

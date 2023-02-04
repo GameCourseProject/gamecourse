@@ -139,7 +139,7 @@ export class AdaptationComponent implements OnInit {
     this.loading.table = false;
   }
 
-  doActionOnTable(action: string, row: number, col: number, value?: any): void{
+  async doActionOnTable(action: string, row: number, col: number, value?: any) {
     const gameElementToActOn = this.availableGameElements[row];
 
     if (action === 'value changed game element'){
@@ -147,9 +147,23 @@ export class AdaptationComponent implements OnInit {
 
     } else if (action === 'Configure') {
       this.mode = 'configure';
+
       this.gameElementToManage = this.initEditableGameElement(gameElementToActOn);
-      this.periodicity = {number: this.gameElementToManage.nDays, time: 'day'}
+      this.periodicity = {number: this.gameElementToManage.nDays, time: 'day'};
+      await this.usersConfig();
+
       ModalService.openModal('manage-game-element');
+    }
+  }
+
+  async usersConfig(): Promise<void>{
+    if (!(this.usersMode && this.gameElementToManage)) { return; }
+    if (this.usersMode !== "all-except-users"){
+      const users = await this.api.getEditableGameElementUsers(this.gameElementToManage.course, this.gameElementToManage.module).toPromise();
+
+      if (this.usersMode === "only-some-users") {
+        this.gameElementToManage.users = users.map(user => { return "id-" + user.id });
+      }
     }
   }
 
@@ -169,10 +183,30 @@ export class AdaptationComponent implements OnInit {
   }
 
   async updateGameElement(){
-    if (this.c.valid){
+    if (this.c.valid && this.usersMode){
       this.loading.action = true;
 
       this.gameElementToManage.nDays = this.periodicity.number;
+
+      if (this.usersMode === "all-users"){
+        this.gameElementToManage.users = this.courseUsers.map(user => { return (user.id).toString()});
+
+      } else if (this.usersMode === "all-except-users" || this.usersMode === "only-some-users") {
+        const users = this.gameElementToManage.users.map(user => {
+          return parseInt((user.toString()).split("-").pop())
+        });
+
+        const array = [];
+        for (let i = 0; i < users.length; i++) {
+          for (let j = 0; j < this.courseUsers.length; j++) {
+            if ((this.usersMode === "all-except-users" && users[i] !== this.courseUsers[j].id) ||
+              (this.usersMode === "only-some-users" && users[i] === this.courseUsers[j].id)) {
+              array.push(this.courseUsers[j].id);
+            }
+          }
+        }
+        this.gameElementToManage.users = array;
+      }
 
       const gameElementConfig = await this.api.updateEditableGameElement(clearEmptyValues(this.gameElementToManage)).toPromise();
       const index = this.availableGameElements.findIndex(gameElement => gameElement.id === gameElementConfig.id);
@@ -238,19 +272,6 @@ export class AdaptationComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  manageUsersMode(){
-    console.log(this.gameElementToManage.users); // ["id-1"]
-    if (this.usersMode === "all-users"){
-      console.log(this.usersMode);
-    }
-    else if (this.usersMode === "all-except-users"){
-      console.log(this.usersMode);
-    }
-    else if (this.usersMode == "only-some-users"){
-      console.log(this.usersMode);
-    }
-  }
-
   getButtonColor(index: number){
     if (this.activeButton === index){ return "active";}
     else return "primary";
@@ -262,6 +283,7 @@ export class AdaptationComponent implements OnInit {
 
   resetGameElementManage(){
     this.gameElementToManage = this.initEditableGameElement();
+    this.usersMode = null;
     this.c.resetForm();
   }
 
@@ -288,5 +310,5 @@ export interface GameElementManageData {
   isEditable?: boolean,
   nDays?: number
   notify?: boolean,
-  users?: number[]
+  users?: string[]
 }

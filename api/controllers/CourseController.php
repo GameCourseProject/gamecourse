@@ -638,12 +638,12 @@ class CourseController
     public function updateEditableGameElement()
     {
         API::requireAdminPermission();
-        API::requireValues('id', 'course', 'module', 'isEditable', 'nDays', 'notify', 'users');
+        API::requireValues('id', 'course', 'moduleId', 'isEditable', 'nDays', 'notify', 'users');
 
         $courseId = API::getValue('course', "int");
         $course = API::verifyCourseExists($courseId);
 
-        $moduleId = API::getValue('module');
+        $moduleId = API::getValue('moduleId');
         $module = API::verifyModuleExists($moduleId, $course);
 
         $gameElementId = API::getValue("id", "int");
@@ -653,11 +653,11 @@ class CourseController
         // $isEditable = API::getValue("isEditable", "bool");
         $nDays = API::getValue("nDays", "int");
         $notify = API::getValue("notify", "bool");
-        $users = API::getValue("users");
+        $users = API::getValue("users", "array");
 
-        foreach ($users as $userNumber){
-            API::verifyUserExists($userNumber);
-            API::verifyCourseUserExists($course, $userNumber);
+        foreach ($users as $userId){
+            API::verifyUserExists($userId);
+            API::verifyCourseUserExists($course, $userId);
         }
 
         // Update EditableGameElement
@@ -665,8 +665,24 @@ class CourseController
 
         $gameElementInfo = $editableGameElement->getData();
         API::response($gameElementInfo);
+    }
 
+    /**
+     * Gets all users allowed to edit a specific editableGameElement
+     * @throws Exception
+     */
+    public function getEditableGameElementUsers(){
+        API::requireAdminPermission();
+        API::requireValues('courseId', 'moduleId');
 
+        $courseId = API::getValue('courseId', "int");
+        $course = API::verifyCourseExists($courseId);
+
+        $moduleId = API::getValue('moduleId');
+        $module = API::verifyModuleExists($moduleId, $course);
+
+        $users = EditableGameElement::getEditableGameElementUsers($courseId, $moduleId);
+        API::response($users);
     }
 
     /**

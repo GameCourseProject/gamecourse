@@ -192,12 +192,12 @@ CREATE TABLE editable_game_element(
 
 CREATE TABLE element_user(
     element     int unsigned NOT NULL,
-    user        int unsigned DEFAULT NULL,
+    user        int unsigned NOT NULL,
 
     PRIMARY key(element, user),
     FOREIGN KEY (element) REFERENCES editable_game_element(id) ON DELETE CASCADE,
     FOREIGN KEY (user) REFERENCES course_user(id) ON DELETE CASCADE
-)
+);
 
 /*--- End of "Best guess" adaptation ---*/
 
