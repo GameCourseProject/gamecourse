@@ -1131,7 +1131,7 @@ def award_badge(target, name, lvl, logs, progress = None):
                 instances = goal - progress
 
                 # threshold to limit notifications and avoid spamming
-                if 1 < instances <= 4:
+                if 1 < instances <= 2:
                     message = "You are " + instances + " events away from achieving " + name + " badge! : " \
                             + badge_description + " - " + level_description
 
