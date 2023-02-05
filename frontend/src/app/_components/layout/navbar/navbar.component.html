@@ -54,22 +54,31 @@
         </ng-container>
 
         <!-- Notification -->
-        <div class="dropdown dropdown-end" (click)="notificationSetShowed()">
-          <label tabindex="0" class="btn btn-ghost btn-circle text-primary-content">
-            <ng-icon *ngIf="this.mode === 'notNew'" name="tabler-bell" size="1.7rem" color="fillCurrent"></ng-icon>
-            <ng-icon *ngIf="this.mode === 'new'" name="tabler-bell-ringing" size="1.7rem" color="#EF6060"></ng-icon>
-          </label>
-          <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-base-100 rounded-box w-80 !z-50">
-            <li *ngIf="notifications.length === 0">You don't have notifications!</li>
-              <li *ngFor="let notification of notifications;">
-                <!-- border is only for all items but the last in notification array -->
-                <div class="pb-3 border-b border-gray-300" *ngIf="notification !== notifications[notifications.length - 1]">
-                  {{notification.message}}
-                </div>
-                <div *ngIf="notification === notifications[notifications.length - 1]">
-                  {{notification.message}}
-                </div>
+        <div class="dropdown dropdown-end">
+          <div class="indicator">
+            <span *ngIf="this.mode === 'new'" class="indicator-item badge badge-secondary">{{getCount()}}</span>
+            <label tabindex="0" class="btn btn-ghost btn-circle text-primary-content">
+              <ng-icon *ngIf="this.mode === 'notNew'" name="tabler-bell" size="1.7rem" color="fillCurrent"></ng-icon>
+              <ng-icon *ngIf="this.mode === 'new'" name="tabler-bell-ringing" size="1.7rem" color="#EF6060"></ng-icon>
+            </label>
+          </div>
+
+          <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-gray-800 rounded-box w-80 !z-50">
+              <div class="rounded-t-box">
+                <div class="text-lg text-white content-start px-3.5 pt-2"><strong>Notifications</strong></div>
+                <li class="text-gray-200 text-xs content-end px-2 pb-2 -mt-5 w-34 font-extralight"
+                    style="cursor:pointer" (click)="setAllNotificationsShowed()">
+                  Mark all as read
+                </li>
+              </div>
+            <div class="max-h-40 overflow-y-auto">
+              <li class="{{bgColor()}}" *ngIf="notifications.length === 0">You don't have notifications!</li>
+              <li *ngFor="let notification of notifications">
+              <span class="mb-0.5 pb-3 {{bgColor(notification)}}"
+                    (click)="notificationSetShowed(notification)">
+                <span class="text-black"><strong *ngIf="!isShowed(notification)" class="text-xl text-rose-600 mr-1">•</strong>{{notification.message}}</span></span>
               </li>
+            </div>
           </ul>
         </div>
 

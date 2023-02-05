@@ -1063,9 +1063,9 @@ def award_badge(target, name, lvl, logs, progress = None):
 
     if module_enabled("Badges"):
         # Get badge info
-        query = "SELECT bl.badge, bl.number, bl.reward, bl.tokens, b.isExtra, bl.goal, b.description, bl.description " \
-                "FROM badge_level bl LEFT JOIN badge b on b.id = bl.badge " \
-                "WHERE b.course = %s AND b.name = '%s' ORDER BY number;" % (config.COURSE, name)
+         query = "SELECT bl.badge, bl.number, bl.reward, bl.tokens, b.isExtra, bl.goal, b.description, bl.description " \
+                  "FROM badge_level bl LEFT JOIN badge b on b.id = bl.badge " \
+                  "WHERE b.course = %s AND b.name = '%s' ORDER BY number;" % (config.COURSE, name)
         table_badge = db.data_broker.get(db, config.COURSE, query)
         badge_id = table_badge[0][0]
 
@@ -1114,29 +1114,29 @@ def award_badge(target, name, lvl, logs, progress = None):
             if module_enabled("VirtualCurrency") and badge_tokens > 0:
                 award_tokens(target, description, badge_tokens, 1, badge_id)
 
-        # Notification
-        if progress:
-            goal = 0
-            badge_description = ""
-            level_description = ""
-            # Get goal and description of specific level award
-            for i in range(0, len(table_badge)):
-                if table_badge[i][1] == lvl:
-                    goal = table_badge[i][5]
-                    badge_description = table_badge[i][6]        # e.g. Show up for theoretical lectures!
-                    level_description = table_badge[i][7]        # e.g. be there for 50% of lectures
-                    break
+            # Notification
+            if progress:
+                goal = 0
+                badge_description = ""
+                level_description = ""
+                # Get goal and description of specific level award
+                for i in range(0, len(table_badge)):
+                    if table_badge[i][1] == lvl:
+                        goal = table_badge[i][5]
+                        badge_description = table_badge[i][6]        # e.g. Show up for theoretical lectures!
+                        level_description = table_badge[i][7]        # e.g. be there for 50% of lectures
+                        break
 
-            # Check if give notification
-            instances = goal - progress
+                # Check if give notification
+                instances = goal - progress
 
-            # threshold to limit notifications and avoid spamming
-            if 1 < instances <= 4:
-                message = "You are " + instances + " events away from achieving " + name + " badge! : " \
-                        + badge_description + " - " + level_description
+                # threshold to limit notifications and avoid spamming
+                if 1 < instances <= 2:
+                    message = "You are " + instances + " events away from achieving " + name + " badge! : " \
+                            + badge_description + " - " + level_description
 
-                query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s, %s, %s,%s);"
-                db.execute_query(query, (config.COURSE, target, message, 0), "commit")
+                    query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s, %s, %s,%s);"
+                    db.execute_query(query, (config.COURSE, target, message, 0), "commit")
 
 
 def award_bonus(target, name, reward):
@@ -1276,8 +1276,8 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
         # check if dependencies are missing to create notification
         if not dependencies:
             query = "SELECT s.name" \
-                    " FROM skill s JOIN skill_dependency sd JOIN skill_depencency_combo sdc " \
-                    "ON s.id = sd.skill AND sd.id = sdc.depencency " \
+                    " FROM skill s JOIN skill_dependency sd JOIN skill_dependency_combo sdc " \
+                    "ON s.id = sd.skill AND sd.id = sdc.dependency " \
                     "WHERE sdc.skill = %s;" % skill_id
             dependencies_names = db.data_broker.get(db, config.COURSE, query)
 
