@@ -2,6 +2,7 @@
 namespace GameCourse\Module\Leaderboard;
 
 use Exception;
+use GameCourse\Adaptation\EditableGameElement;
 use GameCourse\Course\Course;
 use GameCourse\Module\Badges\Badges;
 use GameCourse\Module\DependencyMode;
@@ -57,7 +58,9 @@ class Leaderboard extends Module
     {
         $this->initTemplates();
         $this->addAdaptationRolesToCourse(self::ADAPTATION_LEADERBOARD);
-        $this->addEditableGameElement();
+         //parent::initEvents();  // FIXME: Debug only
+        EditableGameElement::addEditableGameElement($this->course->getId(), self::ID);
+
     }
 
     public function copyTo(Course $copyTo)
@@ -71,7 +74,7 @@ class Leaderboard extends Module
     public function disable()
     {
         $this->removeAdaptationRolesFromCourse(self::ADAPTATION_LEADERBOARD);
-        $this->removeEditableGameElement();
+        //EditableGameElement::removeEditableGameElement($this->course->getId(), self::ID);
         $this->removeTemplates();
     }
 }

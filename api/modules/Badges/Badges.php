@@ -1,7 +1,10 @@
 <?php
 namespace GameCourse\Module\Badges;
 
+use Event\Event;
+use Event\EventType;
 use Exception;
+use GameCourse\Adaptation\EditableGameElement;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -15,6 +18,7 @@ use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
+use Google\Service\DriveActivity\Edit;
 use Utils\Cache;
 use Utils\Utils;
 
@@ -82,7 +86,8 @@ class Badges extends Module
 
         // Add adaptation roles
         $this->addAdaptationRolesToCourse(self::ADAPTATION_BADGES);
-        $this->addEditableGameElement();
+        //initEvents(); // FIXME: Debug only
+        EditableGameElement::addEditableGameElement($this->course->getId(), self::ID);
     }
 
     /**
@@ -112,7 +117,7 @@ class Badges extends Module
     public function disable()
     {
         $this->removeAdaptationRolesFromCourse(self::ADAPTATION_BADGES);
-        $this->removeEditableGameElement();
+        EditableGameElement::removeEditableGameElement($this->course->getId(), self::ID);
         $this->cleanDatabase();
         $this->removeDataFolder();
         $this->removeRules();

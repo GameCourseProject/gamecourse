@@ -2,10 +2,13 @@
 namespace GameCourse\Adaptation;
 
 use Exception;
+use GameCourse\NotificationSystem\Notification;
 use GameCourse\Role\Role;
 use GameCourse\Core\Core;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
+use Mockery\Matcher\Not;
+use Utils\CronJob;
 use Utils\Utils;
 
 class EditableGameElement
@@ -107,7 +110,6 @@ class EditableGameElement
      */
     // TODO
     public function setData(array $fieldValues){
-
         // Trim values
         self::trim($fieldValues);
 
@@ -130,6 +132,11 @@ class EditableGameElement
             Core::database()->update(self::TABLE_EDITABLE_GAME_ELEMENT, $fieldValues, ["id" => $this->id]);
 
         // Additional actions TODO
+        if (key_exists("nDays", $fieldValues)) {
+            $d = strtotime("+" . $fieldValues["nDays"]. " Days");
+            $endDate = date("Y-m-d h:i:sa", $d);
+            $this->setAutomation("AutoNotEditable", $endDate);
+        }
     }
 
     /*** ---------------------------------------------------- ***/
@@ -264,13 +271,14 @@ class EditableGameElement
      * Updates a specific editableGameElement
      * Returns the editableGameElement with the updated information
      *
+     * @param bool $isEditable
      * @param int $nDays
      * @param array $users
      * @param bool $notify (optional)
      * @return EditableGameElement
      * @throws Exception
      */
-    public function updateEditableGameElement(int $nDays, array $users, bool $notify = false): EditableGameElement{
+    public function updateEditableGameElement(bool $isEditable, int $nDays, array $users, bool $notify = false): EditableGameElement{
         $this->setData(["nDays" => $nDays, "notify" => +$notify]);
 
         // delete all users allowed to customize game element before inserting new ones
@@ -278,10 +286,15 @@ class EditableGameElement
 
         foreach ($users as $userId) {
             Core::database()->insert(self::TABLE_ELEMENT_USER, ["element" => $this->id, "user" => $userId]);
+
+            if ($isEditable && $notify){
+                $message = "Game element '" . $this->getModule() . "' is ready for customization! Go to 'Adaptation' tab for more details";
+
+                if (!Notification::isNotificationInDB($this->getCourse(), $userId, $message)){
+                    Notification::addNotification($this->getCourse(), $userId, $message);
+                }
+            }
         }
-
-
-        // TODO IF NOTIFICATION IS TRUE THEN TABLE NOTIFICATION SHOULD ADD MESSAGE! --> CREATE CRONJOB
 
         return $this;
     }
@@ -310,6 +323,20 @@ class EditableGameElement
         return Role::getRoleName($response);
     }
 
+    public static function addStudentToEdit(int $studentId){
+        /*
+        iterate through all editable game elements
+        see if mode for users is "all users" -- other cases are not covered
+        only then add user to table
+        */
+    }
+
+    public static function removeStudentToEdit(int $studentId){
+        /*
+        delete from table element_user
+        */
+    }
+
     /**
      * Checks whether editableGameElement exists.
      *
@@ -318,6 +345,43 @@ class EditableGameElement
     public function exists(): bool
     {
         return !empty($this->getData("id"));
+    }
+
+    /*** ---------------------------------------------------- ***/
+    /*** -------------------- Automation -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Sets automation for some editableGameElement processes.
+     *
+     * @param string $script
+     * @param ...$data
+     * @return void
+     * @throws Exception
+     */
+    private function setAutomation(string $script, ...$data)
+    {
+        switch ($script){
+            case "AutoNotEditable":
+                $this->setAutoNotEditable($data[0]);
+                break;
+
+            default:
+                throw new Exception("Automation script '" . $script . "' not found for course.");
+        }
+    }
+
+    /**
+     * Sets isEditable = 0 to a given editableGameElement on a specific date
+     *
+     * @param string|null $endDate
+     * @return void
+     * @throws Exception
+     */
+    public function setAutoNotEditable(?string $endDate){
+        $script = ROOT_PATH . "models/GameCourse/Adaptation/AutoNotEditableScript.php";
+        if ($endDate) new CronJob($script, CronJob::dateToExpression($endDate), $this->id);
+        else CronJob::removeCronJob($script, $this->id);
     }
 
     /*** ---------------------------------------------------- ***/

@@ -98,7 +98,7 @@ export class NavbarComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async getNotifications():Promise<void> {
-    this.notifications = await this.api.getNotifications().toPromise();
+    this.notifications = await this.api.getNotificationsByUser(this.user.id).toPromise();
     this.mode = "notNew";
 
 

@@ -184,6 +184,7 @@ CREATE TABLE editable_game_element(
     isEditable  boolean NOT NULL DEFAULT FALSE,
     nDays       int unsigned DEFAULT 5,
     notify      boolean DEFAULT FALSE,
+    usersMode   ENUM ('all-users', 'all-except-users', 'only-some-users') DEFAULT 'all-users',
 
     UNIQUE key(course, module),
     FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
@@ -381,7 +382,7 @@ CREATE TABLE notification(
      id             int unsigned PRIMARY KEY AUTO_INCREMENT,
      course         int unsigned DEFAULT NULL,
      user           int unsigned NOT NULL,
-     message        varchar(50) NOT NULL,
+     message        varchar(150) NOT NULL,
      isShowed       boolean NOT NULL DEFAULT FALSE,
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,

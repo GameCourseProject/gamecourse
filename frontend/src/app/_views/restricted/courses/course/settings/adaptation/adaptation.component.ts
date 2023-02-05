@@ -91,6 +91,8 @@ export class AdaptationComponent implements OnInit {
     this.availableGameElements = await this.api.getEditableGameElements(courseID).toPromise();
 
     // NON-ADMIN
+    // TODO : NOT ALL USERS MIGHT HAVE THE SAME INFO
+    // FINESSE NON-ADMIN FUNCTIONS e.g. users can see as option even if game element is not editable yet
     const gameElements = this.availableGameElements;
     for (let i = 0; i < gameElements.length; i++){
       this.availableGameElementsSelect.push({value: gameElements[i].module, text: gameElements[i].module});

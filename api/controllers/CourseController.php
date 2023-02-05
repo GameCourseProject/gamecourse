@@ -650,7 +650,7 @@ class CourseController
         $editableGameElement = EditableGameElement::getEditableGameElementById($gameElementId);
 
         // Get rest of the values
-        // $isEditable = API::getValue("isEditable", "bool");
+        $isEditable = API::getValue("isEditable", "bool");
         $nDays = API::getValue("nDays", "int");
         $notify = API::getValue("notify", "bool");
         $users = API::getValue("users", "array");
@@ -661,7 +661,7 @@ class CourseController
         }
 
         // Update EditableGameElement
-        $editableGameElement->updateEditableGameElement($nDays, $users, $notify);
+        $editableGameElement->updateEditableGameElement($isEditable, $nDays, $users, $notify);
 
         $gameElementInfo = $editableGameElement->getData();
         API::response($gameElementInfo);

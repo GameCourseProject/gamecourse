@@ -178,6 +178,7 @@ abstract class Module
         if ($isEnabled) $this->init();
         else $this->disable();
 
+
         Event::trigger($isEnabled ? EventType::MODULE_ENABLED : EventType::MODULE_DISABLED, $this->course->getId(), $this->id);
     }
 
@@ -505,10 +506,37 @@ abstract class Module
      * Sets events to listen to right from the start and their
      * callback functions.
      *
-     * @return void
      */
     protected function initEvents()
     {
+        Event::listen(EventType::MODULE_ENABLED, function (int $courseId, int $moduleId) {
+            if ($courseId == $this->course->getId() && $moduleId == $this->id){
+                // When a module is enabled the game element of the module is made editable
+                // This function adds this game elements to the table editable_game_element table
+                EditableGameElement::addEditableGameElement($courseId, $moduleId);
+            }
+        }, $this->id);
+
+        Event::listen(EventType::MODULE_DISABLED, function (int $courseId, int $moduleId){
+            if ($courseId == $this->course->getId() && $moduleId == $this->id) {
+                // When a module is disabled, this game element ceased to exist and is deleted from table editable_game_element
+                EditableGameElement::removeEditableGameElement($courseId, $moduleId);
+            }
+        }, $this->id);
+
+        Event::listen(EventType::STUDENT_ADDED_TO_COURSE, function (int $courseId, int $studentId){
+            if ($courseId == $this->course->getId())
+                EditableGameElement::addStudentToEdit($studentId);
+        }, $this->id);
+
+        Event::listen(EventType::STUDENT_REMOVED_FROM_COURSE, function (int $courseId, int $studentId){
+            // NOTE: this event targets cases where the course user only changed roles and
+            //       is not longer a student; there's no need for an event when a user is
+            //       completely removed from the course, as SQL 'ON DELETE CASCADE' will do it
+            if ($courseId == $this->course->getId())
+                EditableGameElement::removeStudentToEdit($studentId);
+        }, $this->id);
+
     }
 
     /**
@@ -535,27 +563,6 @@ abstract class Module
         $children = array_values($roles)[0];
 
         Role::addAdaptationRolesToCourse($this->course->getId(), $this->id, $parent, $children);
-    }
-
-    /**
-     * When a module is enabled the game element of the module is made editable
-     * This function adds this game elements to the table editable_game_element table
-     *
-     * @return void
-     * @throws Exception
-     */
-    protected function addEditableGameElement(){
-        EditableGameElement::addEditableGameElement($this->course->getId(), $this->id);
-    }
-
-    /**
-     * When a module is disabled, this game element ceased to exist and is deleted from table editable_game_element
-     *
-     * @return void
-     * @throws Exception
-     */
-    protected function removeEditableGameElement(){
-        EditableGameElement::removeEditableGameElement($this->course->getId(), $this->id);
     }
 
     // Copying
