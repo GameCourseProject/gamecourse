@@ -94,39 +94,64 @@ export class NavbarComponent implements OnInit {
   }
 
   /*** --------------------------------------------- ***/
-  /*** --------------- Notification ---------------- ***/
+  /*** -------------- Notifications ---------------- ***/
   /*** --------------------------------------------- ***/
 
   async getNotifications():Promise<void> {
-
     this.notifications = await this.api.getNotifications().toPromise();
-
     this.mode = "notNew";
+
+
     // see if there are notifications to be showed
     for (let i = 0; i < this.notifications.length; i++) {
-
-      const isShowed = (this.notifications[i].isShowed).toString();
-      if ( isShowed === "0" || isShowed === "false") {
+      if (!this.isShowed(this.notifications[i])) {
         this.mode = "new";
         break;
       }
     }
   }
 
-  async notificationSetShowed(): Promise<void> {
+  async notificationSetShowed(notification: Notification): Promise<void> {
+    if (!this.isShowed(notification)){
+      const notificationEdited = await this.api.notificationSetShowed(notification.id, true).toPromise();
+      const index = this.notifications.findIndex(notification => notification.id === notificationEdited.id);
+      this.notifications.splice(index, 1, notificationEdited);
+    }
 
+    for (let i = 0; i < this.notifications.length; i++) {
+      if (!this.isShowed(this.notifications[i])) {
+        this.mode = "new";
+        return;
+      }
+    }
+    this.mode = "notNew";
+  }
+
+  async setAllNotificationsShowed(){
     for (let i = 0; i < this.notifications.length; i++){
+      await this.notificationSetShowed(this.notifications[i]);
+    }
+  }
 
-      const isShowed = (this.notifications[i].isShowed).toString();
-      if ( isShowed === "0" || isShowed === "false") {
-        const notificationEdited = await this.api.notificationSetShowed(this.notifications[i].id, true).toPromise();
+  isShowed(notification: Notification){
+    return !((notification.isShowed).toString() === "0" || (notification.isShowed).toString() === "false");
+  }
 
-        const index = this.notifications.findIndex(notification => notification.id === notificationEdited.id);
-        this.notifications.splice(index, 1, notificationEdited);
+  bgColor(notification?: Notification){
+    if (!notification || this.isShowed(notification)){
+      return "bg-gray-50";
+    } else {return "bg-rose-100 text-black hover:bg-rose-200";}
+  }
+
+  getCount(){
+    let count = 0;
+    for (let i=0; i < this.notifications.length; i++){
+      if (!this.isShowed(this.notifications[i])) {
+        count++;
       }
     }
 
-    this.mode = "notNew";
+    if (count < 9) { return count.toString(); } else {return "9+";}
   }
 
   /*** --------------------------------------------- ***/
