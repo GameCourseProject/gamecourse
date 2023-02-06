@@ -275,7 +275,7 @@ export class AdaptationComponent implements OnInit {
       this.message = null;
       this.previousPreference = preference;
       this.option = preference;
-      this.activeButton = this.gameElementChildren.findIndex(el => el === this.previousPreference);
+      //this.activeButton = this.gameElementChildren.findIndex(el => el === this.previousPreference);
     }
   }
 
@@ -284,14 +284,17 @@ export class AdaptationComponent implements OnInit {
   }
 
   async save(): Promise<void> {
-    // TODO
     const newPreference = this.gameElementChildren[this.activeButton];
 
     if (newPreference && newPreference !== this.previousPreference){
       let date = new Date();
       if (this.previousPreference === "none") { this.previousPreference = null; }
+
       await this.api.updateUserPreference(this.course.id, this.user.id,
         this.selectedGameElement, this.previousPreference, newPreference, date).toPromise();
+
+      this.previousPreference = newPreference;
+      AlertService.showAlert(AlertType.SUCCESS, 'New preference saved');
 
     } else AlertService.showAlert(AlertType.ERROR, 'Please select a new preference to save');
   }

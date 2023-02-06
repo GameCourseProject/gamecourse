@@ -159,31 +159,39 @@
 
     <div class="sm:w-5/12">
       <strong *ngIf="message">CURRENT</strong>
-      <strong *ngIf="!message">CURRENT - [OPTION {{previousPreference}}]</strong>
+      <div *ngIf="!message">
+        <strong>CURRENT - [OPTION {{previousPreference}}]</strong>
+        <img class="p-3 pt-5 rounded max-w-md" src="assets/imgs/no-image.png" alt="previous user preference"/>
+      </div>
 
-      <div *ngIf="message && previousPreference">{{message}}</div>
+      <div *ngIf="message && previousPreference">{{message}}
+      </div>
     </div>
 
     <div class="divider divider-horizontal rounded bg-base-200"></div>
 
     <div class="sm:w-5/12">
-      <strong>NEW</strong>
-
-      <div *ngIf="gameElementChildren" class="btn-group flex justify-start sm:mr-[6rem] mt-2">Options available:
-        <div *ngFor="let option of gameElementChildren; let i = index" class="pl-2">
-          <input type = "button"
-                 class="btn-sm rounded-lg btn-{{getButtonColor(i)}} px-2 text-white"
-                 value="Option {{i+1}}"
-                 (click) = "setButtonActive(i); doAction(option)"/>
+      <div *ngIf="gameElementChildren">
+        <div class="btn-group flex justify-start sm:mr-[6rem]">
+          <strong class="mr-1">NEW -</strong>Options available:
+          <div *ngFor="let option of gameElementChildren; let i = index" class="pl-2">
+            <input type = "button"
+                   class="btn-sm rounded-lg btn-{{getButtonColor(i)}} px-2 text-white"
+                   value="{{option}}"
+                   (click) = "setButtonActive(i); doAction(option)"/>
+          </div>
         </div>
       </div>
-      <strong *ngIf="activeButton != null">{{option.capitalize()}}</strong>
+
+      <div *ngIf="!gameElementChildren"><strong>NEW</strong></div>
+
+      <img *ngIf="gameElementChildren && activeButton !== null" class="p-3 rounded max-w-sm" src="assets/imgs/no-image.png" alt="previous user preference"/>
     </div>
 
   </div>
 
   <!-- Actions -->
-  <div *ngIf="selectedGameElement">
+  <div *ngIf="selectedGameElement" style="position:relative; bottom:0; right: 0;">
     <div class="flex items-center justify-end mt-6 sm:mr-[6rem]">
       <button type="button" class="btn btn-ghost mr-2" (click)="activeButton= null;">Discard</button>
       <button type="submit" class="btn btn-primary" (click)="save()">
