@@ -56,6 +56,10 @@ class EditableGameElement
         return $this->getData("notify");
     }
 
+    public function usersMode(): string {
+        return $this->getData("usersMode");
+    }
+
     /**
      * Gets editableGameElement data from the database
      *
@@ -98,6 +102,10 @@ class EditableGameElement
         $this->setData(["notify" => $notify]);
     }
 
+    public function setUsersMode(string $usersMode){
+        $this->setData(["usersMode" => $usersMode]);
+    }
+
     /**
      * Sets editableGameElement data on the dabase.
      *
@@ -125,6 +133,10 @@ class EditableGameElement
         if (key_exists("notify", $fieldValues)){
             $newNotify = $fieldValues["notify"];
             $oldNotify = $this->notify();
+        }
+        if (key_exists("usersMode", $fieldValues)){
+            $newUsersMode = $fieldValues["usersMode"];
+            $oldUsersMode = $this->usersMode();
         }
 
         // Update values
@@ -274,12 +286,13 @@ class EditableGameElement
      * @param bool $isEditable
      * @param int $nDays
      * @param array $users
+     * @param string $usersMode
      * @param bool $notify (optional)
      * @return EditableGameElement
      * @throws Exception
      */
-    public function updateEditableGameElement(bool $isEditable, int $nDays, array $users, bool $notify = false): EditableGameElement{
-        $this->setData(["nDays" => $nDays, "notify" => +$notify]);
+    public function updateEditableGameElement(bool $isEditable, int $nDays, array $users, string $usersMode, bool $notify = false): EditableGameElement{
+        $this->setData(["nDays" => $nDays, "notify" => +$notify, "usersMode" => $usersMode]);
 
         // delete all users allowed to customize game element before inserting new ones
         Core::database()->delete(self::TABLE_ELEMENT_USER, ["element" => $this->id]);
@@ -323,18 +336,38 @@ class EditableGameElement
         return Role::getRoleName($response);
     }
 
-    public static function addStudentToEdit(int $studentId){
-        /*
-        iterate through all editable game elements
-        see if mode for users is "all users" -- other cases are not covered
-        only then add user to table
-        */
+    /**
+     * Adds a new student to table element_user to allow him/her to edit game element
+     * NOTE: It is only added if editableGameElement is editable to all users. Other cases are not covered
+     *
+     * @param int $courseId
+     * @param int $studentId
+     * @return void
+     * @throws Exception
+     */
+    public static function addStudentToEdit(int $courseId, int $studentId){
+        $editableGameElements = self::getEditableGameElements($courseId);
+
+        foreach ($editableGameElements as $gameElement){
+            // NOTE: Only covered for "all-users" case
+            if ($gameElement->getUsersMode() == "all-users"){
+                // Add to table
+                Core::database()->insert(self::TABLE_ELEMENT_USER, ["element" => $gameElement->getId(), "user" => $studentId]);
+            }
+        }
     }
 
+    /**
+     * Removes student from table element_user
+     *
+     * @param int $studentId
+     * @return void
+     * @throws Exception
+     */
     public static function removeStudentToEdit(int $studentId){
-        /*
-        delete from table element_user
-        */
+        $table = self::TABLE_ELEMENT_USER;
+        $where = ["user" => $studentId];
+        Core::database()->delete($table, $where);
     }
 
     /**
@@ -437,7 +470,7 @@ class EditableGameElement
      */
     private static function trim(&...$values)
     {
-        $params = ["module"];
+        $params = ["module", "usersMode"];
         Utils::trim($params, ...$values);
     }
 

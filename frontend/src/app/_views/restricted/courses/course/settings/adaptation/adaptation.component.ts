@@ -34,7 +34,6 @@ export class AdaptationComponent implements OnInit {
   availableGameElements: EditableGameElement[];
 
   periodicity: {number: number, time: string};
-  usersMode: "all-users" | "all-except-users" | "only-some-users";
   courseUsers: User[];
   courseUsersSelect: {value: string, text: string}[] = [];
 
@@ -159,11 +158,11 @@ export class AdaptationComponent implements OnInit {
   }
 
   async usersConfig(): Promise<void>{
-    if (!(this.usersMode && this.gameElementToManage)) { return; }
-    if (this.usersMode !== "all-except-users"){
+    if (!this.gameElementToManage) { return; }
+    if (this.gameElementToManage.usersMode !== "all-except-users"){
       const users = await this.api.getEditableGameElementUsers(this.gameElementToManage.course, this.gameElementToManage.module).toPromise();
 
-      if (this.usersMode === "only-some-users") {
+      if (this.gameElementToManage.usersMode === "only-some-users") {
         this.gameElementToManage.users = users.map(user => { return "id-" + user.id });
       }
     }
@@ -185,15 +184,15 @@ export class AdaptationComponent implements OnInit {
   }
 
   async updateGameElement(){
-    if (this.c.valid && this.usersMode){
+    if (this.c.valid && this.gameElementToManage.usersMode){
       this.loading.action = true;
 
       this.gameElementToManage.nDays = this.periodicity.number;
 
-      if (this.usersMode === "all-users"){
+      if (this.gameElementToManage.usersMode === "all-users"){
         this.gameElementToManage.users = this.courseUsers.map(user => { return (user.id).toString()});
 
-      } else if (this.usersMode === "all-except-users" || this.usersMode === "only-some-users") {
+      } else if (this.gameElementToManage.usersMode === "all-except-users" || this.gameElementToManage.usersMode === "only-some-users") {
         const users = this.gameElementToManage.users.map(user => {
           return parseInt((user.toString()).split("-").pop())
         });
@@ -201,8 +200,8 @@ export class AdaptationComponent implements OnInit {
         const array = [];
         for (let i = 0; i < users.length; i++) {
           for (let j = 0; j < this.courseUsers.length; j++) {
-            if ((this.usersMode === "all-except-users" && users[i] !== this.courseUsers[j].id) ||
-              (this.usersMode === "only-some-users" && users[i] === this.courseUsers[j].id)) {
+            if ((this.gameElementToManage.usersMode === "all-except-users" && users[i] !== this.courseUsers[j].id) ||
+              (this.gameElementToManage.usersMode === "only-some-users" && users[i] === this.courseUsers[j].id)) {
               array.push(this.courseUsers[j].id);
             }
           }
@@ -285,7 +284,6 @@ export class AdaptationComponent implements OnInit {
 
   resetGameElementManage(){
     this.gameElementToManage = this.initEditableGameElement();
-    this.usersMode = null;
     this.c.resetForm();
   }
 
@@ -296,6 +294,7 @@ export class AdaptationComponent implements OnInit {
       isEditable: editableGameElement?.isEditable ?? false,
       nDays: editableGameElement?.nDays ?? null,
       notify: editableGameElement?.notify ?? false,
+      usersMode: editableGameElement?.usersMode ?? null,
       users: editableGameElement?.users ?? []
     };
     if (editableGameElement){
@@ -312,5 +311,6 @@ export interface GameElementManageData {
   isEditable?: boolean,
   nDays?: number
   notify?: boolean,
+  usersMode?: string,
   users?: string[]
 }

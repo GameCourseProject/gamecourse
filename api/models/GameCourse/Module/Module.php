@@ -526,7 +526,7 @@ abstract class Module
 
         Event::listen(EventType::STUDENT_ADDED_TO_COURSE, function (int $courseId, int $studentId){
             if ($courseId == $this->course->getId())
-                EditableGameElement::addStudentToEdit($studentId);
+                EditableGameElement::addStudentToEdit($courseId, $studentId);
         }, $this->id);
 
         Event::listen(EventType::STUDENT_REMOVED_FROM_COURSE, function (int $courseId, int $studentId){

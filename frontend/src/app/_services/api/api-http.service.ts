@@ -89,6 +89,7 @@ export class ApiHttpService {
   static readonly VIEWS: string = 'Views';
   static readonly RULES_SYSTEM: string = 'RuleSystem';
   static readonly NOTIFICATION_SYSTEM: string = 'Notification';
+  static readonly ADAPTATION_SYSTEM: string= "Adaptation";
   // NOTE: insert here new controllers & update cache dependencies
 
   static readonly GOOGLESHEETS: string = 'GoogleSheets';
@@ -760,7 +761,7 @@ export class ApiHttpService {
   // Adaptation
   public getEditableGameElements(courseID: number, isEditable?: boolean, onlyNames?: boolean): Observable<EditableGameElement[]> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
       qs.push('request', 'getEditableGameElements');
       qs.push('courseId', courseID);
       if (isEditable !== undefined) qs.push('isEditable', isEditable);
@@ -775,7 +776,7 @@ export class ApiHttpService {
 
   public getEditableGameElementUsers(courseID: number, moduleID: string): Observable<User[]>{
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
       qs.push('request', 'getEditableGameElementUsers');
       qs.push('courseId', courseID);
       qs.push('moduleId', moduleID);
@@ -795,7 +796,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
       qs.push('request', 'setGameElementEditable');
     };
 
@@ -812,11 +813,12 @@ export class ApiHttpService {
       isEditable: gameElementData.isEditable,
       nDays: gameElementData.nDays,
       notify: gameElementData.notify,
+      usersMode: gameElementData.usersMode,
       users: gameElementData.users
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
       qs.push('request', 'updateEditableGameElement');
     }
 
@@ -828,7 +830,7 @@ export class ApiHttpService {
 
   public getChildrenGameElement(courseID: number, module: string): Observable<string[]>{
     const params = (qs:QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
       qs.push('request', 'getChildrenGameElement');
       qs.push('courseId', courseID);
       qs.push('moduleId', module);
@@ -844,7 +846,7 @@ export class ApiHttpService {
     // KEEP IN MIND!!
     // PREVIOUS PREFERENCE WILL BE LAST ENTRY'S 'NEW PREFERENCE'
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
       qs.push('request', 'getPreviousPreference');
       qs.push('courseId', courseID);
       qs.push('userId', userID);
@@ -868,7 +870,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
       qs.push('request', 'updatePreference');
     }
 

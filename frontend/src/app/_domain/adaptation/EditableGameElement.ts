@@ -5,15 +5,17 @@ export class EditableGameElement {
   private _isEditable: boolean;
   private _nDays: number;
   private _notify: boolean;
+  private _usersMode: string;
   private _users: string[];
 
-  constructor(id: number, course: number, module: string, isEditable: boolean, nDays: number, notify: boolean, users?: string[]) {
+  constructor(id: number, course: number, module: string, isEditable: boolean, nDays: number, notify: boolean, usersMode: string, users?: string[]) {
     this._id = id;
     this._course = course;
     this._module = module;
     this._isEditable = isEditable;
     this._nDays = nDays;
     this._notify = notify;
+    this._usersMode = usersMode.toString();
     if (users) this._users = users;
     else this._users = [];
   }
@@ -66,6 +68,14 @@ export class EditableGameElement {
     this._notify = value;
   }
 
+  get usersMode(): string {
+    return this._usersMode;
+  }
+
+  set usersMode(value: string) {
+    this._usersMode = value;
+  }
+
   get users(): string[] {
     return this._users;
   }
@@ -82,6 +92,7 @@ export class EditableGameElement {
       obj.isEditable,
       obj.nDays,
       obj.notify,
+      obj.usersMode,
       obj.users
     );
   }
@@ -93,6 +104,7 @@ interface EditableGameElementDB {
   module: string,
   isEditable: boolean,
   nDays: number,
-  notify: boolean
+  notify: boolean,
+  usersMode: string,
   users: string[]
 }
