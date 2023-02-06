@@ -152,7 +152,7 @@ CREATE TABLE user_game_element_preferences(
   course                      int unsigned NOT NULL,
   user                        int unsigned NOT NULL,
   module                      varchar(50) NOT NULL,
-  previousPreference          int unsigned NOT NULL,
+  previousPreference          int unsigned DEFAULT NULL,
   newPreference               int unsigned NOT NULL,
   date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -160,7 +160,6 @@ CREATE TABLE user_game_element_preferences(
   FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
   FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE,
   FOREIGN KEY (module) REFERENCES module(id) ON DELETE CASCADE,
-  FOREIGN KEY (previousPreference) REFERENCES role(id) ON DELETE CASCADE,
   FOREIGN KEY (newPreference) REFERENCES role(id) ON DELETE CASCADE
 );
 

@@ -774,6 +774,20 @@ export class ApiHttpService {
       .pipe(map((res: any) => res['data'].map(obj => EditableGameElement.fromDatabase(obj))));
   }
 
+  public getGameElementsUsersAllowedToEdit(courseID: number, userID: number): Observable<EditableGameElement[]>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'gameElementsUserAllowedToEdit');
+      qs.push('courseId', courseID);
+      qs.push('userId', userID);
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data'].map(obj => EditableGameElement.fromDatabase(obj))));
+  }
+
   public getEditableGameElementUsers(courseID: number, moduleID: string): Observable<User[]>{
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
@@ -860,10 +874,11 @@ export class ApiHttpService {
   }
 
   // TODO: NOTICE RETURN VALUES
-  public updatePreference(courseID: number, userID: number, previousPreference: string, newPreference: string, date: Date = null): Observable<void> {
+  public updateUserPreference(courseID: number, userID: number, module: string, previousPreference: string, newPreference: string, date: Date = null): Observable<void> {
     const data = {
       course: courseID,
       user: userID,
+      moduleId: module,
       previousPreference: previousPreference,
       newPreference: newPreference,
       date: date
@@ -871,7 +886,7 @@ export class ApiHttpService {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
-      qs.push('request', 'updatePreference');
+      qs.push('request', 'updateUserPreference');
     }
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

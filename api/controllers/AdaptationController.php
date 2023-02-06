@@ -4,12 +4,34 @@ namespace API;
 
 use Exception;
 use GameCourse\Adaptation\EditableGameElement;
+use GameCourse\Role\Role;
 
 class AdaptationController
 {
     /*** --------------------------------------------- ***/
     /*** ----------- Editable Game Elements ---------- ***/
     /*** --------------------------------------------- ***/
+
+    public function gameElementsUserAllowedToEdit(){
+        API::requireValues('courseId', 'userId');
+
+        $courseId = API::getValue('courseId', "int");
+        $course = API::verifyCourseExists($courseId);
+
+        $userId = API::getValue("userId", "int");
+
+        API::verifyUserExists($userId);
+        API::verifyCourseUserExists($course, $userId);
+
+        $editableGameElements = EditableGameElement::gameElementsUserAllowedToEdit($courseId, $userId);
+
+        foreach ($editableGameElements as &$gameElementInfo) {
+            $gameElement = EditableGameElement::getEditableGameElementById($gameElementInfo["id"]);
+        }
+
+        API::response($editableGameElements);
+
+    }
 
     /**
      * Updates information regarding the editableGameElement
@@ -93,6 +115,10 @@ class AdaptationController
         $editableGameElement->setEditable($isEditable);
     }
 
+    /**
+     * Gets all editableGameElement in the system
+     * @throws Exception
+     */
     public function getEditableGameElements()
     {
         API::requireValues('courseId');
@@ -147,12 +173,44 @@ class AdaptationController
         $course = API::verifyCourseExists($courseId);
 
         $userId = API::getValue('userId', "int");
-        $user = API::verifyUserExists($userId); // FIXME: DEBUG ONLY
+        $user = API::verifyUserExists($userId);
 
         $moduleId = API::getValue('moduleId');
         $module = API::verifyModuleExists($moduleId, $course);
 
         $previousPreference = EditableGameElement::getPreviousUserPreference($courseId, $userId, $module->getName());
         API::response($previousPreference);
+    }
+
+    /**
+     * Updates user preference of specific editableGameElement
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function updateUserPreference()
+    {
+        API::requireValues('course', 'user', 'moduleId', 'previousPreference', 'newPreference', 'date');
+
+        $courseId = API::getValue('course', "int");
+        $course = API::verifyCourseExists($courseId);
+
+        $userId = API::getValue('user', "int");
+        $user = API::verifyUserExists($userId);
+
+        $moduleId = API::getValue('moduleId');
+        $module = API::verifyModuleExists($moduleId, $course);
+
+        // Get rest of the values
+        $previousPreference = API::getValue('previousPreference');
+        $newPreference = API::getValue('newPreference');
+        $date = API::getValue('date') ?? date("Y-m-d h:i:sa");
+
+        if ($previousPreference != ""){
+            $previousPreference = Role::getRoleId($previousPreference, $courseId);
+        } else $previousPreference = 0; // there's no id = 0
+
+        $newPreferenceArg = Role::getRoleId($newPreference, $courseId);
+        EditableGameElement::updateUserPreference($courseId, $userId, $moduleId, $previousPreference, $newPreferenceArg, $date);
     }
 }

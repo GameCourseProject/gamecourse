@@ -213,6 +213,24 @@ class EditableGameElement
     }
 
     /**
+     * Gets all editableGameElements a specific user is allowed to edit in the system given a course
+     *
+     * @param int $courseId
+     * @param int $userId
+     * @return array
+     */
+    public static function gameElementsUserAllowedToEdit(int $courseId, int $userId): array{
+        $table = self::TABLE_ELEMENT_USER . " eu JOIN " . self::TABLE_EDITABLE_GAME_ELEMENT . " ege on eu.element=ege.id";
+        $where = ["ege.course" => $courseId, "eu.user" => $userId];
+        $elements = Core::database()->selectMultiple($table, $where, "ege.*");
+
+        foreach($elements as &$elementInfo){
+            $elementInfo = self::parse($elementInfo);
+        }
+        return $elements;
+    }
+
+    /**
      * Gets an editableGameElement given a course and module.
      *
      * @param int $course
@@ -343,6 +361,43 @@ class EditableGameElement
     }
 
     /**
+     * Updates user's preference regarding editableGameElement custom
+     *
+     * @param int $courseId
+     * @param int $userId
+     * @param string $module
+     * @param int $previousPreference
+     * @param int $newPreference
+     * @param string $date
+     * @return void
+     * @throws Exception
+     */
+    public static function updateUserPreference(int $courseId, int $userId, string $module, int $previousPreference, int $newPreference, string $date){
+        $table = self::TABLE_USER_GAME_ELEMENT_PREFERENCES;
+        $where = ["course" => $courseId, "user" => $userId];
+
+        if ($previousPreference != 0){ $where["newPreference"] = $previousPreference; }
+        else { $previousPreference = null; }
+
+        $lastPreference = Core::database()->select($table, $where, "*", "date desc");
+
+        // if lastPreference date was less than 1 day ago
+        if ($lastPreference["date"]){
+            if (strtotime('-1 day') < strtotime($lastPreference["date"])){
+                Core::database()->delete($table, ["id" => $lastPreference["id"]]);
+            }
+        }
+        Core::database()->insert($table, [
+            "course" => $courseId,
+            "user" => $userId,
+            "module" => $module,
+            "previousPreference" =>  $previousPreference,
+            "newPreference" => $newPreference,
+            "date" => $date]);
+
+    }
+
+    /**
      * Adds a new student to table element_user to allow him/her to edit game element
      * NOTE: It is only added if editableGameElement is editable to all users. Other cases are not covered
      *
@@ -403,11 +458,14 @@ class EditableGameElement
         // and therefore users already exist in table_element_user
         if($isEditable && $this->notify() && $this->usersMode()){
             $message = "Game element '" . $this->getModule() . "' is ready for customization! Go to 'Adaptation' tab for more details";
-            if (!$users){ $users = Core::database()->selectMultiple(self::TABLE_ELEMENT_USER, ["element" => $this->id], "user"); }
+            if (!$users) {
+                $users = Core::database()->selectMultiple(self::TABLE_ELEMENT_USER, ["element" => $this->id], "user");
+                $users = array_map(function ($user) {return $user["user"];}, $users);
+            }
 
             foreach ($users as $user){
-                if (!Notification::isNotificationInDB($this->getCourse(), $user["user"], $message)){
-                    Notification::addNotification($this->getCourse(), $user["user"], $message);
+                if (!Notification::isNotificationInDB($this->getCourse(), $user, $message)){
+                    Notification::addNotification($this->getCourse(), $user, $message);
                 }
             }
         }

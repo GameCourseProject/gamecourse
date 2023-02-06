@@ -88,15 +88,32 @@ export class AdaptationComponent implements OnInit {
 
   async getGameElements(courseID: number): Promise<void> {
     // ADMIN
-    this.availableGameElements = await this.api.getEditableGameElements(courseID).toPromise();
+    if (this.user.isAdmin){
+      this.availableGameElements = await this.api.getEditableGameElements(courseID).toPromise();
+
+    }
 
     // NON-ADMIN
-    // TODO : NOT ALL USERS MIGHT HAVE THE SAME INFO
-    // FINESSE NON-ADMIN FUNCTIONS e.g. users can see as option even if game element is not editable yet
-    const gameElements = this.availableGameElements;
-    for (let i = 0; i < gameElements.length; i++){
-      this.availableGameElementsSelect.push({value: gameElements[i].module, text: gameElements[i].module});
-    }
+    //else {
+      // all available editable game elements
+      this.availableGameElements = await this.api.getEditableGameElements(courseID, true).toPromise();
+      let ids = this.availableGameElements.map(value => {return value.id});
+      // game elements the logged-in user is allowed to edit
+      const gameElements = await this.api.getGameElementsUsersAllowedToEdit(courseID, this.user.id).toPromise();
+
+      let elements = [];
+      // see if game elements logged-in user is allowed to edit is editable
+      for (let i = 0; i < gameElements.length; i++){
+        if (ids.includes(gameElements[i].id)){
+          elements.push(gameElements[i]);
+        }
+      }
+
+      for (let i = 0; i < elements.length; i++){
+        this.availableGameElementsSelect.push({value: elements[i].module, text: elements[i].module});
+      }
+
+    //}
   }
 
   async getCourseUsers(courseID: number): Promise<void>{
@@ -257,6 +274,8 @@ export class AdaptationComponent implements OnInit {
     } else{
       this.message = null;
       this.previousPreference = preference;
+      this.option = preference;
+      this.activeButton = this.gameElementChildren.findIndex(el => el === this.previousPreference);
     }
   }
 
@@ -268,7 +287,13 @@ export class AdaptationComponent implements OnInit {
     // TODO
     const newPreference = this.gameElementChildren[this.activeButton];
 
-    await this.api.updatePreference(this.course.id, this.user.studentNumber, this.previousPreference, newPreference).toPromise();
+    if (newPreference && newPreference !== this.previousPreference){
+      let date = new Date();
+      if (this.previousPreference === "none") { this.previousPreference = null; }
+      await this.api.updateUserPreference(this.course.id, this.user.id,
+        this.selectedGameElement, this.previousPreference, newPreference, date).toPromise();
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Please select a new preference to save');
   }
 
   /*** --------------------------------------------- ***/
