@@ -143,7 +143,7 @@ class EditableGameElement
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_EDITABLE_GAME_ELEMENT, $fieldValues, ["id" => $this->id]);
 
-        // Additional actions TODO
+        // Additional actions TODO - add more?
         if (key_exists("nDays", $fieldValues)) {
             $d = strtotime("+" . $fieldValues["nDays"]. " Days");
             $endDate = date("Y-m-d h:i:sa", $d);
@@ -202,6 +202,10 @@ class EditableGameElement
 
         foreach ($users as &$user) { $user = User::parse($user); }
         return $users;
+        /*if ($usersMode && $usersMode != UsersMode::ALL_EXCEPT_USERS){
+            foreach ($users as &$user) { $user = User::parse($user); }
+            return $users;
+        } else return [];*/
     }
 
     /**
@@ -292,7 +296,10 @@ class EditableGameElement
      * @throws Exception
      */
     public function updateEditableGameElement(bool $isEditable, int $nDays, array $users, string $usersMode, bool $notify = false): EditableGameElement{
-        $this->setData(["nDays" => $nDays, "notify" => +$notify, "usersMode" => $usersMode]);
+
+        if ($usersMode == UsersMode::ALL_USERS){
+            $this->setData(["nDays" => $nDays, "notify" => +$notify);
+        }
 
         // delete all users allowed to customize game element before inserting new ones
         Core::database()->delete(self::TABLE_ELEMENT_USER, ["element" => $this->id]);
@@ -350,7 +357,7 @@ class EditableGameElement
 
         foreach ($editableGameElements as $gameElement){
             // NOTE: Only covered for "all-users" case
-            if ($gameElement->getUsersMode() == "all-users"){
+            if ($gameElement->getUsersMode() == UsersMode::ALL_USERS){
                 // Add to table
                 Core::database()->insert(self::TABLE_ELEMENT_USER, ["element" => $gameElement->getId(), "user" => $studentId]);
             }

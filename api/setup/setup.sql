@@ -184,7 +184,7 @@ CREATE TABLE editable_game_element(
     isEditable  boolean NOT NULL DEFAULT FALSE,
     nDays       int unsigned DEFAULT 5,
     notify      boolean DEFAULT FALSE,
-    usersMode   ENUM ('all-users', 'all-except-users', 'only-some-users') DEFAULT 'all-users',
+    usersMode   ENUM ('all-users', 'all-except-users', 'only-some-users') DEFAULT NULL,
 
     UNIQUE key(course, module),
     FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,

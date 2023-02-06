@@ -47,6 +47,7 @@ class AdaptationController
         $editableGameElement->updateEditableGameElement($isEditable, $nDays, $users, $usersMode, $notify);
 
         $gameElementInfo = $editableGameElement->getData();
+
         API::response($gameElementInfo);
     }
 
@@ -65,6 +66,7 @@ class AdaptationController
         $module = API::verifyModuleExists($moduleId, $course);
 
         $users = EditableGameElement::getEditableGameElementUsers($courseId, $moduleId);
+
         API::response($users);
     }
 

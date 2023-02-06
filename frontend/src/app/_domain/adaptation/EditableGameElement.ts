@@ -15,7 +15,7 @@ export class EditableGameElement {
     this._isEditable = isEditable;
     this._nDays = nDays;
     this._notify = notify;
-    this._usersMode = usersMode.toString();
+    if (this._usersMode) this._usersMode = usersMode.toString();
     if (users) this._users = users;
     else this._users = [];
   }
