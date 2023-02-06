@@ -86,6 +86,7 @@ class EditableGameElement
      */
     public function setEditable(bool $isEditable){
         $this->setData(["isEditable" => +$isEditable]);
+        $this->sendNotification($isEditable);
     }
 
     /**
@@ -102,6 +103,9 @@ class EditableGameElement
         $this->setData(["notify" => $notify]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setUsersMode(string $usersMode){
         $this->setData(["usersMode" => $usersMode]);
     }
@@ -134,10 +138,10 @@ class EditableGameElement
             $newNotify = $fieldValues["notify"];
             $oldNotify = $this->notify();
         }
-        if (key_exists("usersMode", $fieldValues)){
+        /*if (key_exists("usersMode", $fieldValues)){
             $newUsersMode = $fieldValues["usersMode"];
             $oldUsersMode = $this->usersMode();
-        }
+        }*/
 
         // Update values
         if (count($fieldValues) != 0)
@@ -297,25 +301,20 @@ class EditableGameElement
      */
     public function updateEditableGameElement(bool $isEditable, int $nDays, array $users, string $usersMode, bool $notify = false): EditableGameElement{
 
-        if ($usersMode == UsersMode::ALL_USERS){
-            $this->setData(["nDays" => $nDays, "notify" => +$notify);
+        if ($usersMode !== UsersMode::ALL_USERS && $usersMode !== UsersMode::ALL_EXCEPT_USERS && $usersMode !== UsersMode::ONLY_SOME_USERS){
+            throw new Exception("Data for game element configuration not accurate.");
         }
+
+        $this->setData(["nDays" => $nDays, "notify" => +$notify, "usersMode" => $usersMode]);
 
         // delete all users allowed to customize game element before inserting new ones
         Core::database()->delete(self::TABLE_ELEMENT_USER, ["element" => $this->id]);
 
         foreach ($users as $userId) {
             Core::database()->insert(self::TABLE_ELEMENT_USER, ["element" => $this->id, "user" => $userId]);
-
-            if ($isEditable && $notify){
-                $message = "Game element '" . $this->getModule() . "' is ready for customization! Go to 'Adaptation' tab for more details";
-
-                if (!Notification::isNotificationInDB($this->getCourse(), $userId, $message)){
-                    Notification::addNotification($this->getCourse(), $userId, $message);
-                }
-            }
         }
 
+        $this->sendNotification($isEditable, $users);
         return $this;
     }
 
@@ -385,6 +384,33 @@ class EditableGameElement
     public function exists(): bool
     {
         return !empty($this->getData("id"));
+    }
+
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------ Other Actions ------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Sees if notification needs to be sent after isEditable column is updated
+     *
+     * @param bool $isEditable
+     * @param array|null $users
+     * @return void
+     * @throws Exception
+     */
+    public function sendNotification(bool $isEditable, ?array $users = null){
+        // see if editableGameElement has already been configured (default: notify = 0 and usersMode = NULL)
+        // and therefore users already exist in table_element_user
+        if($isEditable && $this->notify() && $this->usersMode()){
+            $message = "Game element '" . $this->getModule() . "' is ready for customization! Go to 'Adaptation' tab for more details";
+            if (!$users){ $users = Core::database()->selectMultiple(self::TABLE_ELEMENT_USER, ["element" => $this->id], "user"); }
+
+            foreach ($users as $user){
+                if (!Notification::isNotificationInDB($this->getCourse(), $user["user"], $message)){
+                    Notification::addNotification($this->getCourse(), $user["user"], $message);
+                }
+            }
+        }
     }
 
     /*** ---------------------------------------------------- ***/
