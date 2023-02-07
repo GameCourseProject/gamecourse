@@ -37,7 +37,8 @@ const routes: Routes = [
       },
       {
         path: 'about',
-        component: AboutComponent
+        component: ComingSoonComponent
+        // component: AboutComponent FIXME: do about
       },
       {
         path: 'docs',

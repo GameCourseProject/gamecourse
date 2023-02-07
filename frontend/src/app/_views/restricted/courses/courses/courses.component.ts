@@ -93,7 +93,7 @@ export class CoursesComponent implements OnInit {
       { type: 'natural', targets: [0, 1, 2, 3, 4, 5, 6] },
       { orderData: 3,   targets: 4 },
       { orderData: 5,   targets: 6 },
-      { searchable: false, targets: [3, 5, 7, 8, 9]},
+      { searchable: false, targets: [3, 5, 9]},
       { orderable: false, targets: [7, 8, 9] }
     ]
   }

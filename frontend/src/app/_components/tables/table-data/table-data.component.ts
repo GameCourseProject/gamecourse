@@ -280,7 +280,7 @@ export function getValue(data: {type: TableDataType, content: any}): string {
   else if (data.type === TableDataType.DATE) return data.content['date']?.format(data.content['dateFormat'] ?? 'DD/MM/YYYY') ?? 'Never';
   else if (data.type === TableDataType.TIME) return data.content['time']?.format(data.content['timeFormat'] ?? 'HH:mm') ?? 'Never';
   else if (data.type === TableDataType.DATETIME) return data.content['datetime']?.format(data.content['datetimeFormat'] ?? 'DD/MM/YYYY HH:mm') ?? 'Never';
-  else if (data.type === TableDataType.COLOR) return data.content['color'] ?? '';
+  else if (data.type === TableDataType.COLOR) return data.content['colorLabel'] ?? data.content['colorLabel'] ?? '';
   else if (data.type === TableDataType.PILL) return data.content['pillText'] ?? '';
   else if (data.type === TableDataType.AVATAR) return data.content['avatarTitle'] + (' ' + data.content['avatarSubtitle'] ?? '');
   else if (data.type === TableDataType.CHECKBOX) return data.content['checkboxValue'].toString();
