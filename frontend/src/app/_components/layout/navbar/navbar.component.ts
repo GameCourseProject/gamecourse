@@ -15,6 +15,7 @@ import {Course} from 'src/app/_domain/courses/course';
 import {ResourceManager} from "../../../_utils/resources/resource-manager";
 import {Notification} from '../../../_domain/notifications/notification';
 
+
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html'
