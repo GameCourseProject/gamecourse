@@ -63,10 +63,10 @@
             </label>
           </div>
 
-          <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-gray-800 rounded-box w-80 !z-50">
+          <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-base-100 rounded-box w-80 !z-50">
             <div class="rounded-t-box">
-              <div class="text-lg text-white content-start px-3.5 pt-2"><strong>Notifications</strong></div>
-              <li class="text-gray-200 text-xs content-end px-2 pb-2 -mt-5 w-34 font-extralight"
+              <div class="text-lg content-start px-3.5 pt-2"><strong>Notifications</strong></div>
+              <li class="font-light text-xs content-end px-2 pb-2 -mt-5 w-34"
                   style="cursor:pointer" (click)="setAllNotificationsShowed()">
                 Mark all as read
               </li>
@@ -76,7 +76,9 @@
               <li *ngFor="let notification of notifications">
               <span class="mb-0.5 {{bgColor(notification)}}"
                     (click)="notificationSetShowed(notification)">
-                <span class="text-black"><strong *ngIf="!isShowed(notification)" class="text-xl text-rose-600 mr-1">•</strong>{{notification.message}}</span></span>
+                <strong *ngIf="!isShowed(notification)" class="text-xl text-rose-600 mr-1">•</strong>
+                {{notification.message}}
+              </span>
               </li>
             </div>
           </ul>
