@@ -106,7 +106,7 @@ class NotificationTest extends TestCase
         return [
             "null" => [null],
             "empty" => [""],
-            "too long" => ["This is some incredibly humongous notification This is"]
+            "too long" => ["This is some incredibly humongous notification This is some incredibly humongous notification This is some incredibly humongous notification This is so"]
         ];
     }
 

@@ -1048,24 +1048,17 @@ export class ApiHttpService {
   }
   */
 
-  public createNotification(course: number, user: number, message: string, isShowed?: boolean): Observable<Notification>
-  {
-    console.log("AQUI");
-    const data = {
-      course: course,
-      user: user,
-      message: message,
-      isShowed: isShowed
-    }
-
+  public getNotificationsByUser(userId: number): Observable<Notification[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
-      qs.push('request', 'createNotification');
+      qs.push('request', 'getNotificationsByUser');
+      qs.push('userId', userId);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe(map((res:any) => Notification.fromDatabase(res['data'])));
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => res['data'].map(obj => Notification.fromDatabase(obj))));
   }
 
   public getNotifications(isShowed?: boolean): Observable<Notification[]> {
