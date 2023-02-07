@@ -224,8 +224,7 @@ class Streaks extends Module
                     "order" => [[0, "asc"]],
                     "columnDefs" => [
                         ["type" => "natural", "targets" => [0, 1]],
-                        ["searchable" => false, "targets" => [2, 3, 4, 5]],
-                        ["orderable" => false, "targets" => [2, 3, 4, 5]]
+                        ["orderable" => false, "targets" => [2, 3, 4]]
                     ]
                 ],
                 "items" => $streaks,
@@ -749,9 +748,9 @@ class Streaks extends Module
                 ["label" => "Reward (" . $VCName . ")", "align" => "middle"],
             ]);
             array_splice($lists[0]["options"]["columnDefs"][0]["targets"], 2, 0, 2);
-            $lists[0]["options"]["columnDefs"][2]["targets"] = array_map(function ($target) {
+            $lists[0]["options"]["columnDefs"][1]["targets"] = array_map(function ($target) {
                 return $target + 1;
-            }, $lists[0]["options"]["columnDefs"][2]["targets"]);
+            }, $lists[0]["options"]["columnDefs"][1]["targets"]);
             $lists[0]["data"] = array_map(function (&$row, $index) use ($streaks) {
                 array_splice($row, 2, 0, [
                     ["type" => DataType::NUMBER, "content" => ["value" => $streaks[$index]["tokens"], "valueFormat" => "default"]],

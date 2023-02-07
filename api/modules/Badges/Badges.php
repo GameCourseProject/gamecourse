@@ -230,7 +230,6 @@ class Badges extends Module
                     "order" => [[0, "asc"]],
                     "columnDefs" => [
                         ["type" => "natural", "targets" => [0, 1]],
-                        ["searchable" => false, "targets" => [2, 3, 4]],
                         ["orderable" => false, "targets" => [2, 3, 4]]
                     ]
                 ],
