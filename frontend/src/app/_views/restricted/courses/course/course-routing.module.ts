@@ -3,18 +3,20 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { CourseAdminGuard } from "../../../../_guards/course-admin-guard";
 
+import { MainComponent } from "./main/main.component";
 import { UsersComponent } from "./settings/users/users.component";
-import { GlobalComponent } from "./settings/global/global.component";
 import { RolesComponent } from "./settings/roles/roles.component";
 import { ModulesComponent } from "./settings/modules/modules/modules.component";
-import { RulesComponent } from "./settings/rules/rules.component";
-import { ViewsComponent } from "./settings/views/views/views.component";
 import { ViewsEditorComponent } from "./settings/views/views-editor/views-editor.component";
 import { PageComponent } from "./page/page.component";
 import { ConfigComponent } from "./settings/modules/config/config/config.component";
-import {ComingSoonComponent} from "../../../../_components/misc/pages/coming-soon/coming-soon.component";
+import { ComingSoonComponent } from "../../../../_components/misc/pages/coming-soon/coming-soon.component";
 
 const routes: Routes = [
+  {
+    path: '',
+    component: MainComponent
+  },
   {
     path: 'pages/:id',
     component: PageComponent
@@ -29,13 +31,11 @@ const routes: Routes = [
     children: [
       {
         path: 'users',
-        component: UsersComponent,
-        canActivate: [CourseAdminGuard]
+        component: UsersComponent
       },
       {
         path: 'roles',
-        component: RolesComponent,
-        canActivate: [CourseAdminGuard]
+        component: RolesComponent
       },
       {
         path: 'autogame',
