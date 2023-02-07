@@ -57,4 +57,3 @@ autogame/imported-functions/*/
 /autogame/config/**
 !/autogame/config/samples
 !/autogame/config/samples/**
-/autogame/test_log.txt

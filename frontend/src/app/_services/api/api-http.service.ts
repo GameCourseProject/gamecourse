@@ -1514,18 +1514,23 @@ export class ApiHttpService {
   }
 
   public getDataSourceStatus(courseID: number, moduleID: string): Observable<DataSourceStatus> {
+    const data = {
+      "courseId": courseID,
+      "moduleId": moduleID,
+    }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
       qs.push('request', 'getDataSourceStatus');
-      qs.push('courseId', courseID);
-      qs.push('moduleId', moduleID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']) );
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => {
+        res['data']['startedRunning'] = dateFromDatabase(res['data']['startedRunning']);
+        res['data']['finishedRunning'] = dateFromDatabase(res['data']['finishedRunning']);
+        return res['data'];
+      }) );
   }
 
   public saveModuleConfig(courseID: number, moduleID: string, generalInputs?: ConfigInputItem[], listingItem?: any,

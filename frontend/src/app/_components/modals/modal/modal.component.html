@@ -41,7 +41,7 @@
 
       <!-- Extra button (middle) -->
       <button *ngIf="extraBtnText" class="btn {{extraBtnOutline ? 'btn-outline' : ''}} {{extraBtnColor ? colors[extraBtnColor].btn : ''}}"
-              [disabled]="extraBtnDisabled" (click)="btnClicked = 'extra'; extraBtnClicked.emit();">
+              [disabled]="extraBtnDisabled" type="button" (click)="btnClicked = 'extra'; extraBtnClicked.emit();">
 
         <!-- Spinner -->
         <ng-container *ngIf="actionInProgress && btnClicked == 'extra'">
@@ -53,7 +53,7 @@
 
       <!-- Submit button (right) -->
       <button *ngIf="submitBtnText" class="btn {{submitBtnOutline ? 'btn-outline' : ''}} {{submitBtnColor ? colors[submitBtnColor].btn : ''}}"
-              [disabled]="submitBtnDisabled" (click)="btnClicked = 'submit'; submitBtnClicked.emit()">
+              [disabled]="submitBtnDisabled" type="button" (click)="btnClicked = 'submit'; submitBtnClicked.emit()">
 
         <!-- Spinner -->
         <ng-container *ngIf="actionInProgress && btnClicked == 'submit'">

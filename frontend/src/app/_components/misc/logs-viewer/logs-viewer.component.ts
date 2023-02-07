@@ -1,4 +1,12 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges
+} from '@angular/core';
 
 import {Theme} from 'src/app/_services/theming/themes-available';
 
@@ -9,7 +17,7 @@ import {ThemingService} from "../../../_services/theming/theming.service";
   templateUrl: './logs-viewer.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LogsViewerComponent implements OnInit, AfterViewInit {
+export class LogsViewerComponent implements OnInit, AfterViewInit, OnChanges {
 
   items = Array.from({length: 100000}).map((_, i) => `Item #${i}`);
 
@@ -25,6 +33,15 @@ export class LogsViewerComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.lines = this.getLines(this.logs);
     this.loading = false;
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.logs) {
+      this.loading = true;
+      this.lines = this.getLines(changes.logs.currentValue);
+      this.loading = false;
+      setTimeout(() => this.scrollTo('bottom'), 0);
+    }
   }
 
   ngAfterViewInit(): void {

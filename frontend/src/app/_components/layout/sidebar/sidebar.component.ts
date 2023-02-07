@@ -183,27 +183,31 @@ export class SidebarComponent implements OnInit {
 
     function buildCourseNavigation(course: Course, activePages: Page[], isAdminOrTeacher: boolean): Navigation[] {
       const path = '/courses/' + course.id + '/';
-
       let navigation: Navigation[] = [];
 
-      if (isAdminOrTeacher) {
-        navigation.push(
-          {
-            category: 'Course Pages',
-            children: []
-          }
-        );
+      // Get started (students)
+      if (!isAdminOrTeacher) {
+        navigation.push({
+          link: path,
+          name: 'Get Started',
+          icon: 'tabler-bell-school'
+        });
       }
 
-      const pages = activePages.map(page => {
-        return {
-          link: path + 'pages/' + page.id,
-          name: page.name
-        };
-      });
-      if (isAdminOrTeacher) navigation[0].children = pages;
-      else navigation = navigation.concat(pages);
+      // Course pages
+      navigation.push(
+        {
+          category: 'Course Pages',
+          children: activePages.map(page => {
+            return {
+              link: path + 'pages/' + page.id,
+              name: page.name
+            };
+          })
+        }
+      );
 
+      // Admin pages
       if (isAdminOrTeacher) {
         const fixed: Navigation[] = [
           {

@@ -126,7 +126,9 @@ class QR extends Module
         foreach ($participations as &$participation) {
             unset($participation["course"]);
             unset($participation["participation"]);
-            $participation["user"] = (new User($participation["user"]))->getData();
+            $user = new User($participation["user"]);
+            $participation["user"] = $user->getData();
+            $participation["user"]["image"] = $user->getImage();
             $participation["classNumber"] = intval($participation["classNumber"]);
         }
         return $participations;
@@ -241,7 +243,9 @@ class QR extends Module
         $errors = Core::database()->selectMultiple(self::TABLE_QR_ERROR, ["course" => $this->course->getId()]);
         foreach ($errors as &$error) {
             unset($error["course"]);
-            $error["user"] = (new User($error["user"]))->getData();
+            $user = new User($error["user"]);
+            $error["user"] = $user->getData();
+            $error["user"]["image"] = $user->getImage();
         }
         return $errors;
     }

@@ -29,10 +29,12 @@ export class CourseAdminGuard implements CanActivate {
 
   async check() {
     const user = await this.api.getLoggedUser().toPromise();
-    const isTeacher = await this.api.isTeacher(this.courseID, user.id).toPromise();
+    if (user.isAdmin) return true;
 
-    if (user.isAdmin || isTeacher) return true;
-    else return this.router.parseUrl('/no-access');
+    const isTeacher = await this.api.isTeacher(this.courseID, user.id).toPromise();
+    if (isTeacher) return true;
+
+    return this.router.parseUrl('/no-access');
   }
 
   getCourseIDFromURL(route: ActivatedRouteSnapshot): number {

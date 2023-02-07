@@ -2,6 +2,8 @@
 
 namespace GameCourse\NotificationSystem;
 
+use Event\Event;
+use Event\EventType;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -125,6 +127,7 @@ class Notification
             "isShowed" => $isShowed
         ]);
 
+        // Event::trigger(EventType::NOTIFICATION_ADDED, $id);
         return new Notification($id);
     }
 
@@ -161,6 +164,8 @@ class Notification
     public static function removeNotification(int $notificationId)
     {
         Core::database()->delete(self::TABLE_NOTIFICATION, ["id" => $notificationId]);
+        // Event::trigger(EventType::NOTIFICATION_REMOVED, $notificationId);
+
     }
 
     /**

@@ -6,6 +6,7 @@ import {Module} from "../../../../../../../../_domain/modules/module";
 import {ApiHttpService} from "../../../../../../../../_services/api/api-http.service";
 import {TableDataType} from "../../../../../../../../_components/tables/table-data/table-data.component";
 import {AlertService, AlertType} from "../../../../../../../../_services/alert.service";
+import { Moment } from 'moment';
 
 @Component({
   selector: 'app-data-source-status',
@@ -64,6 +65,7 @@ export class DataSourceStatusComponent implements OnInit {
     {label: 'Started importing data', align: 'middle'},
     {label: 'Finished importing data', align: 'middle'},
     {label: 'Now', align: 'middle'},
+    {label: 'Actions'},
   ];
   data: {type: TableDataType, content: any}[][];
   tableOptions = {
@@ -72,7 +74,7 @@ export class DataSourceStatusComponent implements OnInit {
     paging: false,
     info: false,
     columnDefs: [
-      { orderable: false, targets: [0, 1, 2] }
+      { orderable: false, targets: [0, 1, 2, 3] }
     ]
   }
 
@@ -83,6 +85,7 @@ export class DataSourceStatusComponent implements OnInit {
       {type: TableDataType.DATETIME, content: {datetime: this.status.startedRunning}},
       {type: TableDataType.DATETIME, content: {datetime: this.status.finishedRunning}},
       {type: TableDataType.COLOR, content: {color: this.status.isRunning ? '#36D399' : '#EF6060', colorLabel: this.status.isRunning ? 'Importing' : 'Not importing'}},
+      {type: TableDataType.ACTIONS, content: {actions: [{action: 'Refresh', icon: 'feather-refresh-ccw'}]}},
     ]];
 
     this.loading.table = false;
@@ -92,6 +95,17 @@ export class DataSourceStatusComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  async doActionOnTable(action: string): Promise<void> {
+    if (action === 'Refresh') {
+      this.loading.action = true;
+
+      await this.getStatusInfo();
+      this.buildTable();
+
+      this.loading.action = false;
+    }
+  }
 
   async changeStatus() {
     this.loading.action = true;
@@ -108,8 +122,8 @@ export class DataSourceStatusComponent implements OnInit {
 
 export type DataSourceStatus = {
   isEnabled: boolean,
-  startedRunning: string,
-  finishedRunning: string,
+  startedRunning: Moment,
+  finishedRunning: Moment,
   isRunning: boolean,
   logs: string
 }

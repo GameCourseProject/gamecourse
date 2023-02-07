@@ -286,7 +286,6 @@ class VirtualCurrency extends Module
                     "order" => [[0, "asc"]],
                     "columnDefs" => [
                         ["type" => "natural", "targets" => [0, 1, 2]],
-                        ["searchable" => false, "targets" => [3]],
                         ["orderable" => false, "targets" => [3]]
                     ]
                 ],
@@ -321,6 +320,7 @@ class VirtualCurrency extends Module
                                     "placeholder" => "Action description",
                                     "options" => [
                                         "topLabel" => "Description",
+                                        "required" => true,
                                         "pattern" => "(?!^\\d+$)^.+$",
                                         "patternErrorMessage" => "Action description can't be composed of only numbers",
                                         "maxLength" => 150
@@ -395,6 +395,7 @@ class VirtualCurrency extends Module
                                     "placeholder" => "Action description",
                                     "options" => [
                                         "topLabel" => "Description",
+                                        "required" => true,
                                         "pattern" => "(?!^\\d+$)^.+$",
                                         "patternErrorMessage" => "Action description can't be composed of only numbers",
                                         "maxLength" => 150
@@ -497,10 +498,7 @@ class VirtualCurrency extends Module
                 "options" => [
                     "order" => [[0, "asc"]],
                     "columnDefs" => [
-                        ["type" => "natural", "targets" => [0, 1, 3]],
-                        ["searchable" => false, "targets" => [2]],
-                        ["filterable" => false, "targets" => [2]],
-                        ["orderable" => false, "targets" => [2]]
+                        ["type" => "natural", "targets" => [0, 1, 2, 3]]
                     ]
                 ],
                 "items" => $wallets,

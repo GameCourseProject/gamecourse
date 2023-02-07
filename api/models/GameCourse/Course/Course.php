@@ -446,6 +446,10 @@ class Course
         $course->setRolesHierarchy($courseToCopy->getRolesHierarchy());
         $course->setRoles($courseToCopy->getRoles());
 
+        // Make user a teacher
+        $courseUser = $course->getCourseUserById(Core::getLoggedUser()->getId());
+        $courseUser->addRole("Teacher");
+
         // Copy modules info
         // NOTE: module dependencies are copied before the module
         $modulesEnabled = $courseToCopy->getModules(true, true);
@@ -1198,7 +1202,7 @@ class Course
      * @return void
      * @throws Exception
      */
-    private function setAutomation(string $script, ...$data)
+    public function setAutomation(string $script, ...$data)
     {
         switch ($script) {
             case "AutoEnabling":
@@ -1222,11 +1226,14 @@ class Course
      * @return void
      * @throws Exception
      */
-    private function setAutoEnabling(?string $startDate)
+    public function setAutoEnabling(?string $startDate)
     {
         $script = ROOT_PATH . "models/GameCourse/Course/AutoEnablingScript.php";
-        if ($startDate) new CronJob($script, CronJob::dateToExpression($startDate), $this->id);
-        else CronJob::removeCronJob($script, $this->id);
+        if ($startDate) {
+            // Check if date is in the future
+            if (date("Y-m-d H:i:s", strtotime($startDate)) > date("Y-m-d H:i:s", time()))
+                new CronJob($script, CronJob::dateToExpression($startDate), $this->id);
+        } else CronJob::removeCronJob($script, $this->id);
     }
 
     /**
@@ -1237,11 +1244,15 @@ class Course
      * @return void
      * @throws Exception
      */
-    private function setAutoDisabling(?string $endDate)
+    public function setAutoDisabling(?string $endDate)
     {
         $script = ROOT_PATH . "models/GameCourse/Course/AutoDisablingScript.php";
-        if ($endDate) new CronJob($script, CronJob::dateToExpression($endDate), $this->id);
-        else CronJob::removeCronJob($script, $this->id);
+        if ($endDate) {
+            // Check if date is in the future
+            if (date("Y-m-d H:i:s", strtotime($endDate)) > date("Y-m-d H:i:s", time()))
+                new CronJob($script, CronJob::dateToExpression($endDate), $this->id);
+
+        } else CronJob::removeCronJob($script, $this->id);
     }
 
 

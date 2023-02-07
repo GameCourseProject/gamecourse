@@ -104,7 +104,7 @@ export class UsersComponent implements OnInit {
     columnDefs: [
       { type: 'natural', targets: [0, 1, 2, 3, 4, 5] },
       { orderData: 4,   targets: 5 },
-      { searchable: false, targets: [4, 6, 7, 8] },
+      { searchable: false, targets: [4, 8] },
       { orderable: false, targets: [6, 7, 8] }
     ]
   }

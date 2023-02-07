@@ -34,6 +34,7 @@ export class CoursesComponent implements OnInit {
   @ViewChild('f', { static: false }) f: NgForm;
 
   yearOptions: {value: string, text: string}[] = this.initYearOptions();
+  editYearOptions: {value: string, text: string}[] = this.initYearOptions();
 
   importedFile: File;
 
@@ -92,7 +93,7 @@ export class CoursesComponent implements OnInit {
       { type: 'natural', targets: [0, 1, 2, 3, 4, 5, 6] },
       { orderData: 3,   targets: 4 },
       { orderData: 5,   targets: 6 },
-      { searchable: false, targets: [3, 5, 7, 8, 9]},
+      { searchable: false, targets: [3, 5, 9]},
       { orderable: false, targets: [7, 8, 9] }
     ]
   }
@@ -149,6 +150,9 @@ export class CoursesComponent implements OnInit {
     } else if (action === Action.EDIT) {
       this.mode = 'edit';
       this.courseToManage = this.initCourseToManage(courseToActOn);
+      this.editYearOptions = this.initYearOptions();
+      if (this.courseToManage.year && !this.editYearOptions.find(year => year.value === this.courseToManage.year))
+        this.editYearOptions.unshift({value: this.courseToManage.year, text: this.courseToManage.year});
       ModalService.openModal('manage');
 
     } else if (action === Action.DELETE) {

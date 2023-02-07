@@ -21,5 +21,8 @@ class EventType
     const STUDENT_REMOVED_FROM_COURSE = "SRC";     // args: int $courseId, int $studentId
 
     const PAGE_VIEWED = "PV";                      // args: int $pageId, int $viewerId, int $userId
+
+    const NOTIFICATION_ADDED = "NA";               // args: int $notificationId
+    const NOTIFICATION_REMOVED = "NR";             // args: int $notificationId
     // NOTE: insert here new types of events
 }

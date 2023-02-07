@@ -15,6 +15,7 @@ import {Course} from 'src/app/_domain/courses/course';
 import {ResourceManager} from "../../../_utils/resources/resource-manager";
 import {Notification} from '../../../_domain/notifications/notification';
 
+
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html'
@@ -98,9 +99,9 @@ export class NavbarComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async getNotifications():Promise<void> {
-    this.notifications = await this.api.getNotificationsByUser(this.user.id).toPromise();
+    const notifications = await this.api.getNotificationsByUser(this.user.id).toPromise();
+    this.notifications = notifications.reverse();
     this.mode = "notNew";
-
 
     // see if there are notifications to be showed
     for (let i = 0; i < this.notifications.length; i++) {

@@ -237,7 +237,7 @@ class AutoAction
     {
         $where = ["course" => $courseId];
         if ($active !== null) $where["isActive"] = $active;
-        $actions = Core::database()->selectMultiple(self::TABLE_VC_AUTO_ACTION, $where, "*", $orderBy);
+        $actions = Core::database()->selectMultiple(self::TABLE_VC_AUTO_ACTION, $where, "id, name, description, type, amount, isActive, rule", $orderBy);
         foreach ($actions as &$actionInfo) { $actionInfo = self::parse($actionInfo); }
         return $actions;
     }
@@ -558,7 +558,7 @@ class AutoAction
             throw new Exception("Action description can't be composed of only numbers.");
 
         if (iconv_strlen($description) > 150)
-            throw new Exception("Badge description is too long: maximum of 150 characters.");
+            throw new Exception("Action description is too long: maximum of 150 characters.");
     }
 
     /**

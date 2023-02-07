@@ -21,7 +21,6 @@ use TestingUtils;
 use Throwable;
 use TypeError;
 use Utils\Cache;
-use Utils\Time;
 use Utils\Utils;
 
 /**
@@ -1202,6 +1201,7 @@ class CourseTest extends TestCase
 
         $this->assertEquals($course->getRolesHierarchy(), $copy->getRolesHierarchy());
         $this->assertEquals($course->getRoles(true, true), $copy->getRoles(true, true));
+        $this->assertTrue($course->getCourseUserById(Core::getLoggedUser()->getId())->isTeacher());
 
         $this->assertEquals(Utils::getDirectoryContents(AUTOGAME_FOLDER . "/imported-functions/" . $course->getId() . "/"),
             Utils::getDirectoryContents(AUTOGAME_FOLDER . "/imported-functions/" . $copy->getId() . "/"));
@@ -1247,6 +1247,7 @@ class CourseTest extends TestCase
         // Then
         $this->assertEquals($course->getRolesHierarchy(), $copy->getRolesHierarchy());
         $this->assertEquals($course->getRoles(true, true), $copy->getRoles(true, true));
+        $this->assertTrue($course->getCourseUserById(Core::getLoggedUser()->getId())->isTeacher());
     }
 
     public function copyCourseWithModulesEnabled()
