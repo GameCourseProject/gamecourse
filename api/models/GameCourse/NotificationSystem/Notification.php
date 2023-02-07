@@ -2,6 +2,8 @@
 
 namespace GameCourse\NotificationSystem;
 
+use Event\Event;
+use Event\EventType;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -123,9 +125,9 @@ class Notification
             "user" => $userId,
             "message" => $message,
             "isShowed" => $isShowed
-
         ]);
 
+        // Event::trigger(EventType::NOTIFICATION_ADDED, $id);
         return new Notification($id);
     }
 
@@ -162,6 +164,8 @@ class Notification
     public static function removeNotification(int $notificationId)
     {
         Core::database()->delete(self::TABLE_NOTIFICATION, ["id" => $notificationId]);
+        // Event::trigger(EventType::NOTIFICATION_REMOVED, $notificationId);
+
     }
 
     /**
@@ -224,11 +228,7 @@ class Notification
         if (!is_string($message) || empty(trim($message)))
             throw new Exception("Notification message can't be null neither empty");
 
-        preg_match("/[^\w():&\s-]/u", $message, $matches);
-        if (count($matches) != 0)
-            throw new Exception("Notification message '" . $message . "' is not allowed. Allowed characters: alphanumeric, '_', '(', ')', '-', '&'");
-
-        if (iconv_strlen($message) > 50)
+        if (iconv_strlen($message) > 150)
             throw new Exception("Notification message is too long: maximum of 50 characters.");
     }
 

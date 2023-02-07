@@ -98,9 +98,9 @@ export class NavbarComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async getNotifications():Promise<void> {
-    this.notifications = await this.api.getNotifications().toPromise();
+    const notifications = await this.api.getNotificationsByUser(this.user.id).toPromise();
+    this.notifications = notifications.reverse();
     this.mode = "notNew";
-
 
     // see if there are notifications to be showed
     for (let i = 0; i < this.notifications.length; i++) {

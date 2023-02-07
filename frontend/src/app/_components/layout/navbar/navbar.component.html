@@ -64,17 +64,17 @@
           </div>
 
           <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-gray-800 rounded-box w-80 !z-50">
-              <div class="rounded-t-box">
-                <div class="text-lg text-white content-start px-3.5 pt-2"><strong>Notifications</strong></div>
-                <li class="text-gray-200 text-xs content-end px-2 pb-2 -mt-5 w-34 font-extralight"
-                    style="cursor:pointer" (click)="setAllNotificationsShowed()">
-                  Mark all as read
-                </li>
-              </div>
+            <div class="rounded-t-box">
+              <div class="text-lg text-white content-start px-3.5 pt-2"><strong>Notifications</strong></div>
+              <li class="text-gray-200 text-xs content-end px-2 pb-2 -mt-5 w-34 font-extralight"
+                  style="cursor:pointer" (click)="setAllNotificationsShowed()">
+                Mark all as read
+              </li>
+            </div>
             <div class="max-h-50 overflow-y-auto">
-              <li class="{{bgColor()}}" *ngIf="notifications.length === 0">You don't have notifications!</li>
+              <li class="rounded-md {{bgColor()}}" *ngIf="notifications.length === 0"><span>You don't have notifications!</span></li>
               <li *ngFor="let notification of notifications">
-              <span class="mb-0.5 pb-3 {{bgColor(notification)}}"
+              <span class="mb-0.5 {{bgColor(notification)}}"
                     (click)="notificationSetShowed(notification)">
                 <span class="text-black"><strong *ngIf="!isShowed(notification)" class="text-xl text-rose-600 mr-1">•</strong>{{notification.message}}</span></span>
               </li>
