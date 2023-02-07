@@ -84,8 +84,7 @@ const routes: Routes = [
   {
     path: 'participation/:key',
     component: PageComponent
-  },
-  { path: '', redirectTo: 'overview', pathMatch: 'full' }
+  }
 ];
 
 @NgModule({
