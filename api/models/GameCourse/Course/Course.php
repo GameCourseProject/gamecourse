@@ -538,6 +538,36 @@ class Course
      */
     public static function deleteCourse(int $courseId)
     {
+        $course = new Course($courseId);
+
+        // Disable modules
+        // NOTE: module dependants are disabled before the module
+        $modulesEnabled = $course->getModules(true, true);
+        $modulesDisabled = [];
+        while (count($modulesDisabled) != count($modulesEnabled)) {
+            foreach ($modulesEnabled as $moduleId) {
+                if (in_array($moduleId, $modulesDisabled)) // already disabled
+                    continue;
+
+                // Check if dependants have already been disabled
+                $allDependantsDisabled = true;
+                foreach (($course->getModuleById($moduleId))->getDependants(DependencyMode::HARD, true) as $dependantId) {
+                    $dependant = $course->getModuleById($dependantId);
+                    if ($dependant->isEnabled()) {
+                        $allDependantsDisabled = false;
+                        break;
+                    }
+                }
+
+                // Disable module
+                if ($allDependantsDisabled) {
+                    $module = $course->getModuleById($moduleId);
+                    $module->setEnabled(false);
+                    $modulesDisabled[] = $moduleId;
+                }
+            }
+        }
+
         // Remove data folder
         Course::removeDataFolder($courseId);
 
@@ -546,7 +576,6 @@ class Course
         AutoGame::deleteAutoGameInfo($courseId);
 
         // Remove automations
-        $course = new Course($courseId);
         $course->setAutomation("AutoEnabling", null);
         $course->setAutomation("AutoDisabling", null);
 
