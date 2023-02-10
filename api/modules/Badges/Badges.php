@@ -4,7 +4,7 @@ namespace GameCourse\Module\Badges;
 use Event\Event;
 use Event\EventType;
 use Exception;
-use GameCourse\Adaptation\EditableGameElement;
+use GameCourse\Adaptation\GameElement;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -87,7 +87,7 @@ class Badges extends Module
         // Add adaptation roles
         $this->addAdaptationRolesToCourse(self::ADAPTATION_BADGES);
         //initEvents(); // FIXME: Debug only
-        EditableGameElement::addEditableGameElement($this->course->getId(), self::ID);
+        GameElement::addGameElement($this->course->getId(), self::ID);
     }
 
     /**
@@ -117,7 +117,7 @@ class Badges extends Module
     public function disable()
     {
         $this->removeAdaptationRolesFromCourse(self::ADAPTATION_BADGES);
-        EditableGameElement::removeEditableGameElement($this->course->getId(), self::ID);
+        GameElement::removeGameElement($this->course->getId(), self::ID);
         $this->cleanDatabase();
         $this->removeDataFolder();
         $this->removeRules();

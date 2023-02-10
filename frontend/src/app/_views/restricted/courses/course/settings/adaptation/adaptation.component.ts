@@ -90,11 +90,10 @@ export class AdaptationComponent implements OnInit {
     // ADMIN
     if (this.user.isAdmin){
       this.availableGameElements = await this.api.getEditableGameElements(courseID).toPromise();
-
     }
 
     // NON-ADMIN
-    //else {
+    else {
       // all available editable game elements
       this.availableGameElements = await this.api.getEditableGameElements(courseID, true).toPromise();
       let ids = this.availableGameElements.map(value => {return value.id});
@@ -113,7 +112,7 @@ export class AdaptationComponent implements OnInit {
         this.availableGameElementsSelect.push({value: elements[i].module, text: elements[i].module});
       }
 
-    //}
+    }
   }
 
   async getCourseUsers(courseID: number): Promise<void>{
@@ -294,6 +293,7 @@ export class AdaptationComponent implements OnInit {
         this.selectedGameElement, this.previousPreference, newPreference, date).toPromise();
 
       this.previousPreference = newPreference;
+      this.message = null;
       AlertService.showAlert(AlertType.SUCCESS, 'New preference saved');
 
     } else AlertService.showAlert(AlertType.ERROR, 'Please select a new preference to save');

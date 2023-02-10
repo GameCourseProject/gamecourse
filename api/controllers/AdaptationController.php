@@ -3,16 +3,17 @@
 namespace API;
 
 use Exception;
-use GameCourse\Adaptation\EditableGameElement;
+use GameCourse\Adaptation\GameElement;
 use GameCourse\Role\Role;
 
 class AdaptationController
 {
     /*** --------------------------------------------- ***/
-    /*** ----------- Editable Game Elements ---------- ***/
+    /*** --------------- Game Elements --------------- ***/
     /*** --------------------------------------------- ***/
 
-    public function gameElementsUserAllowedToEdit(){
+
+    public function gameElementsUserCanEdit(){
         API::requireValues('courseId', 'userId');
 
         $courseId = API::getValue('courseId', "int");
@@ -23,61 +24,21 @@ class AdaptationController
         API::verifyUserExists($userId);
         API::verifyCourseUserExists($course, $userId);
 
-        $editableGameElements = EditableGameElement::gameElementsUserAllowedToEdit($courseId, $userId);
+        $gameElements = GameElement::gameElementsUserCanEdit($courseId, $userId);
 
-        foreach ($editableGameElements as &$gameElementInfo) {
-            $gameElement = EditableGameElement::getEditableGameElementById($gameElementInfo["id"]);
+        foreach ($gameElements as &$gameElementInfo) {
+            $gameElement = GameElement::getGameElementById($gameElementInfo["id"]);
         }
 
-        API::response($editableGameElements);
+        API::response($gameElements);
 
     }
 
     /**
-     * Updates information regarding the editableGameElement
-     *
-     * @return void
+     * Gets all users allowed to edit a specific GameElement
      * @throws Exception
      */
-    public function updateEditableGameElement()
-    {
-        API::requireAdminPermission();
-        API::requireValues('id', 'course', 'moduleId', 'isEditable', 'nDays', 'notify', 'usersMode', 'users');
-
-        $courseId = API::getValue('course', "int");
-        $course = API::verifyCourseExists($courseId);
-
-        $moduleId = API::getValue('moduleId');
-        $module = API::verifyModuleExists($moduleId, $course);
-
-        $gameElementId = API::getValue("id", "int");
-        $editableGameElement = EditableGameElement::getEditableGameElementById($gameElementId);
-
-        // Get rest of the values
-        $isEditable = API::getValue("isEditable", "bool");
-        $nDays = API::getValue("nDays", "int");
-        $notify = API::getValue("notify", "bool");
-        $usersMode = API::getValue("usersMode");
-        $users = API::getValue("users", "array");
-
-        foreach ($users as $userId){
-            API::verifyUserExists($userId);
-            API::verifyCourseUserExists($course, $userId);
-        }
-
-        // Update EditableGameElement
-        $editableGameElement->updateEditableGameElement($isEditable, $nDays, $users, $usersMode, $notify);
-
-        $gameElementInfo = $editableGameElement->getData();
-
-        API::response($gameElementInfo);
-    }
-
-    /**
-     * Gets all users allowed to edit a specific editableGameElement
-     * @throws Exception
-     */
-    public function getEditableGameElementUsers(){
+    public function getGameElementUsers(){
         API::requireAdminPermission();
         API::requireValues('courseId', 'moduleId');
 
@@ -87,21 +48,22 @@ class AdaptationController
         $moduleId = API::getValue('moduleId');
         $module = API::verifyModuleExists($moduleId, $course);
 
-        $users = EditableGameElement::getEditableGameElementUsers($courseId, $moduleId);
+        $users = GameElement::getGameElementUsers($courseId, $moduleId);
 
         API::response($users);
     }
 
     /**
-     * Makes editableGameElement editable true/false
+     * Makes GameElement active true/false
+     * Also sends notifications to users if desired
      *
      * @return void
      * @throws Exception
      */
-    public function setGameElementEditable()
+    public function setGameElementActive()
     {
         API::requireAdminPermission();
-        API::requireValues('courseId', 'moduleId', 'isEditable');
+        API::requireValues('courseId', 'moduleId', 'isActive', 'notify');
 
         $courseId = API::getValue('courseId', "int");
         $course = API::verifyCourseExists($courseId);
@@ -109,37 +71,39 @@ class AdaptationController
         $moduleId = API::getValue('moduleId');
         $module = API::verifyModuleExists($moduleId, $course);
 
-        $isEditable = API::getValue('isEditable', "bool");
+        $isActive = API::getValue('isActive', "bool");
+        $notify = API::getValue('notify', "bool");
 
-        $editableGameElement = EditableGameElement::getEditableGameElementByModule($courseId, $moduleId);
-        $editableGameElement->setEditable($isEditable);
+        $gameElement = GameElement::getGameElementByModule($courseId, $moduleId);
+        $gameElement->setActive($isActive);
+        $gameElement->setNotify($notify);
     }
 
     /**
-     * Gets all editableGameElement in the system
+     * Gets all GameElements in the system
      * @throws Exception
      */
-    public function getEditableGameElements()
+    public function getGameElements()
     {
         API::requireValues('courseId');
 
         $courseId = API::getValue('courseId', "int");
         $course = API::verifyCourseExists($courseId);
 
-        $isEditable = API::getValue("isEditable", "bool") ?? null;
+        $isActive = API::getValue("isActive", "bool") ?? null;
         $onlyNames = API::getValue("onlyNames", "bool") ?? false;
-        $editableGameElements = EditableGameElement::getEditableGameElements($courseId, $isEditable, $onlyNames);
+        $gameElements = GameElement::getGameElements($courseId, $isActive, $onlyNames);
 
-        foreach ($editableGameElements as &$gameElementInfo) {
-            $gameElement = EditableGameElement::getEditableGameElementById($gameElementInfo["id"]);
+        foreach ($gameElements as &$gameElementInfo) {
+            $gameElement = GameElement::getGameElementById($gameElementInfo["id"]);
         }
 
-        API::response($editableGameElements);
+        API::response($gameElements);
 
     }
 
     /**
-     * Gets all children from a specific editableGameElement
+     * Gets all children from a specific GameElement
      *
      * @return void
      * @throws Exception
@@ -154,13 +118,13 @@ class AdaptationController
         $moduleId = API::getValue('moduleId');
         $module = API::verifyModuleExists($moduleId, $course);
 
-        $gameElement = EditableGameElement::getEditableGameElementByModule($courseId, $moduleId);
-        $children = $gameElement->getEditableGameElementChildren();
+        $gameElement = GameElement::getGameElementByModule($courseId, $moduleId);
+        $children = $gameElement->getGameElementChildren();
         API::response($children);
     }
 
     /**
-     * Gets previous user preference of specific editableGameElement
+     * Gets previous user preference of specific GameElement
      *
      * @return void
      * @throws Exception
@@ -178,12 +142,12 @@ class AdaptationController
         $moduleId = API::getValue('moduleId');
         $module = API::verifyModuleExists($moduleId, $course);
 
-        $previousPreference = EditableGameElement::getPreviousUserPreference($courseId, $userId, $module->getName());
+        $previousPreference = GameElement::getPreviousUserPreference($courseId, $userId, $module->getName());
         API::response($previousPreference);
     }
 
     /**
-     * Updates user preference of specific editableGameElement
+     * Updates user preference of specific GameElement
      *
      * @return void
      * @throws Exception
@@ -206,11 +170,7 @@ class AdaptationController
         $newPreference = API::getValue('newPreference');
         $date = API::getValue('date') ?? date("Y-m-d h:i:sa");
 
-        if ($previousPreference != ""){
-            $previousPreference = Role::getRoleId($previousPreference, $courseId);
-        } else $previousPreference = 0; // there's no id = 0
-
         $newPreferenceArg = Role::getRoleId($newPreference, $courseId);
-        EditableGameElement::updateUserPreference($courseId, $userId, $moduleId, $previousPreference, $newPreferenceArg, $date);
+        GameElement::updateUserPreference($courseId, $userId, $moduleId, $previousPreference, $newPreferenceArg, $date);
     }
 }

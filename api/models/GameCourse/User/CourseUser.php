@@ -240,6 +240,22 @@ class CourseUser extends User
     }
 
     /**
+     * Gets all course users inside a specific course
+     * Returns empty array no courseUsers exist.
+     *
+     * @param int $courseId
+     * @return array
+     */
+    public static function getCourseUsersByCourse(int $courseId): array{
+        $table = self::TABLE_COURSE_USER;
+        $where = ["course" => $courseId];
+        $users = Core::database()->selectMultiple($table, $where);
+
+        foreach ($users as &$user) { $user = User::parse($user); }
+        return $users;
+    }
+
+    /**
      * Updates course user's lastActivity to current time.
      *
      * @return void

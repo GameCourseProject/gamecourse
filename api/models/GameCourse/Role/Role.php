@@ -4,7 +4,7 @@ namespace GameCourse\Role;
 use Event\Event;
 use Event\EventType;
 use Exception;
-use GameCourse\Adaptation\EditableGameElement;
+use GameCourse\Adaptation\GameElement;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Views\Aspect\Aspect;
@@ -24,6 +24,7 @@ class Role
 
     const DEFAULT_ROLES = ["Teacher", "Student", "Watcher"];  // default roles for each course
 
+    const ADAPTATION_ROLES = ["Personalization"];
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Setup ---------------------- ***/
@@ -133,13 +134,13 @@ class Role
     }
 
     /**
-     * Adds adaptation roles to a given course - comes from modules
+     * Adds adaptation roles to a given course - comes from each module
      * Notice: array $roles should only have 1 parent!
      *
      * @param int $courseId
      * @param string $moduleId
      * @param string $parent
-     * @param array $children
+     * @param array|null $children
      * @throws Exception
      */
     public static function addAdaptationRolesToCourse(int $courseId, string $moduleId, string $parent, array $children = null)
@@ -147,30 +148,20 @@ class Role
         // Add parent
         self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
 
+        // Add children
+        foreach ($children as $child){
+            self::addRoleToCourse($courseId, $child, null, null, $moduleId);
+        }
+
         $course = new Course($courseId);
 
         // Update roles hierarchy
         $hierarchy = $course->getRolesHierarchy();
-        array_push($hierarchy, ["name" => $parent]);
+        $personalizationIndex = array_search("Personalization", Role::ADAPTATION_ROLES);
+        $hierarchy[$personalizationIndex]["children"][] = ["name" => $parent, "children" =>
+            array_map(function ($child) {return ["name" => $child]; }, $children)];
         $course->setRolesHierarchy($hierarchy);
 
-        $hierarchy = $course->getRolesHierarchy();
-        $indexes = array_keys($hierarchy);
-        $parentIndex = end($indexes);
-
-        // Add children
-        foreach($children as $child){
-            self::addRoleToCourse($courseId, $child, null, null, $moduleId);
-
-            // Update hierarchy
-            if (in_array("children", array_keys($hierarchy[$parentIndex]))){
-                array_push($hierarchy[$parentIndex]["children"], ["name" => $child]);
-                $course->setRolesHierarchy($hierarchy);
-                continue;
-            }
-            $hierarchy[$parentIndex]["children"][] = ["name" => $child];
-            $course->setRolesHierarchy($hierarchy);
-        }
     }
 
     /**
@@ -214,19 +205,34 @@ class Role
      * @throws Exception
      */
     public static function getAdaptationCourseRoles(int $courseId, bool $onlyParents = false, bool $onlyNames = false): array {
-        $response = EditableGameElement::getEditableGameElements($courseId, null, $onlyNames);
+        $response = GameElement::getGameElements($courseId, null, $onlyNames);
 
         if (!$onlyParents) {
             $roles = self::getCourseRoles($courseId, false, true);
 
-            foreach ($roles as $role) {
-                // role belongs to a module, has children and is enabled in course
-                if ($role["module"] && in_array("children", array_keys($role))
-                    && in_array($role["module"], $response)) {
+            //var_dump($roles);
+           /* [
+                ["name" => "Teacher", "id" => 1, "landingPage" => null, "module" => null],
+                ["name" => "Personalization", "id" => 2, "landingPage" => null, "module" => null, "children" => [
+                    ["name" => "Badges", "id" => 4, "landingPage" => null, "module" => "Badges", "children" =>
+                        ["name" => "B001", "id" => 5, "landingPage" => null, "module" => "Badges"],
+                        ["name" => "B002", "id" => 6, "landingPage" => null, "module" => "Badges"]
+                    ],
+                    ["name" => "Leaderboard", "id" => 7, "landingPage" => null, "module" => "Leaderboard", "children" => [
+                        ["name" => "LB001", "id" => 8, "landingPage" => null, "module" => "Leaderboard"],
+                        ["name" => "LB002", "id" => 9, "landingPage" => null, "module" => "Leaderboard"]]]
+          ]*/
 
-                    // iterates through children array
-                    foreach ($role["children"] as $child) {
-                        array_push($response, $child["name"]);
+            foreach ($roles as $role) {
+                // Is adaptation role and has children
+                if (in_array($role["name"], Role::ADAPTATION_ROLES) && $role["children"]){
+                    var_dump($role["children"]);
+                    // If children belongs to enabled module and has children
+                    if ($role["children"]["module"] && in_array("children", array_keys($role["children"]))){
+                        var_dump("hello");
+                        foreach ($role["children"]["children"] as $child){
+                            array_push($response, $child["name"]);
+                        }
                     }
                 }
             }

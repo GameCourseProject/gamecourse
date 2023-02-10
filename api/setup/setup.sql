@@ -145,61 +145,61 @@ CREATE TABLE course_module(
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
-/*--- "Best guess" adaptation ---*/
+/*** ---------------------------------------------------- ***/
+/*** -------------- Adaptation tables ------------------- ***/
+/*** ---------------------------------------------------- ***/
 
-CREATE TABLE user_game_element_preferences(
-  id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
-  course                      int unsigned NOT NULL,
-  user                        int unsigned NOT NULL,
-  module                      varchar(50) NOT NULL,
-  previousPreference          int unsigned DEFAULT NULL,
-  newPreference               int unsigned NOT NULL,
-  date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-  UNIQUE key(user, date),
-  FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
-  FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE,
-  FOREIGN KEY (module) REFERENCES module(id) ON DELETE CASCADE,
-  FOREIGN KEY (newPreference) REFERENCES role(id) ON DELETE CASCADE
-);
-
-CREATE TABLE questionnaire_preferences(
-    id          int unsigned AUTO_INCREMENT PRIMARY KEY,
-    course      int unsigned NOT NULL,
-    user        int unsigned NOT NULL,
-    isAnswered  boolean NOT NULL DEFAULT FALSE,
-    question1   boolean NOT NULL DEFAULT FALSE,
-    question2   varchar(200) NOT NULL,
-    question3   int unsigned NOT NULL,
-
-    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
-    FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE
-);
-
-CREATE TABLE editable_game_element(
+CREATE TABLE game_element(
     id          int unsigned AUTO_INCREMENT PRIMARY KEY,
     course      int unsigned NOT NULL,
     module      varchar(50) NOT NULL,
-    isEditable  boolean NOT NULL DEFAULT FALSE,
-    nDays       int unsigned DEFAULT 5,
+    isActive    boolean NOT NULL DEFAULT FALSE,
     notify      boolean DEFAULT FALSE,
-    usersMode   ENUM ('all-users', 'all-except-users', 'only-some-users') DEFAULT NULL,
 
     UNIQUE key(course, module),
     FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
     FOREIGN KEY (module) REFERENCES module(id) ON DELETE CASCADE
 );
 
-CREATE TABLE element_user(
-    element     int unsigned NOT NULL,
-    user        int unsigned NOT NULL,
+CREATE TABLE user_game_element_preferences(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course                      int unsigned NOT NULL,
+    user                        int unsigned NOT NULL,
+    module                      varchar(50) NOT NULL,
+    previousPreference          int unsigned NOT NULL,
+    newPreference               int unsigned NOT NULL,
+    date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    PRIMARY key(element, user),
-    FOREIGN KEY (element) REFERENCES editable_game_element(id) ON DELETE CASCADE,
-    FOREIGN KEY (user) REFERENCES course_user(id) ON DELETE CASCADE
+    UNIQUE key(user, date),
+    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (module) REFERENCES module(id) ON DELETE CASCADE,
+    FOREIGN KEY (previousPreference) REFERENCES role(id) ON DELETE CASCADE,
+    FOREIGN KEY (newPreference) REFERENCES role(id) ON DELETE CASCADE
 );
 
-/*--- End of "Best guess" adaptation ---*/
+CREATE TABLE preferences_questionnaire_answers(
+    id          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course      int unsigned NOT NULL,
+    user        int unsigned NOT NULL,
+    question1   boolean NOT NULL DEFAULT FALSE,
+    question2   varchar(250) NOT NULL,
+    question3   int unsigned NOT NULL,
+    element     int unsigned NOT NULL,
+
+    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (element) REFERENCES game_element(id) ON DELETE CASCADE
+);
+
+CREATE TABLE element_user(
+     element     int unsigned NOT NULL,
+     user        int unsigned NOT NULL,
+
+     PRIMARY key(element, user),
+     FOREIGN KEY (element) REFERENCES game_element(id) ON DELETE CASCADE,
+     FOREIGN KEY (user) REFERENCES course_user(id) ON DELETE CASCADE
+);
 
 /*** ---------------------------------------------------- ***/
 /*** ------------------- Views tables ------------------- ***/

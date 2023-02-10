@@ -5,7 +5,7 @@ use Error;
 use Event\Event;
 use Event\EventType;
 use Exception;
-use GameCourse\Adaptation\EditableGameElement;
+use GameCourse\Adaptation\GameElement;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\AutoGame\RuleSystem\Section;
@@ -513,20 +513,20 @@ abstract class Module
             if ($courseId == $this->course->getId() && $moduleId == $this->id){
                 // When a module is enabled the game element of the module is made editable
                 // This function adds this game elements to the table editable_game_element table
-                EditableGameElement::addEditableGameElement($courseId, $moduleId);
+                GameElement::addGameElement($courseId, $moduleId);
             }
         }, $this->id);
 
         Event::listen(EventType::MODULE_DISABLED, function (int $courseId, int $moduleId){
             if ($courseId == $this->course->getId() && $moduleId == $this->id) {
                 // When a module is disabled, this game element ceased to exist and is deleted from table editable_game_element
-                EditableGameElement::removeEditableGameElement($courseId, $moduleId);
+                GameElement::removeGameElement($courseId, $moduleId);
             }
         }, $this->id);
 
         Event::listen(EventType::STUDENT_ADDED_TO_COURSE, function (int $courseId, int $studentId){
             if ($courseId == $this->course->getId())
-                EditableGameElement::addStudentToEdit($courseId, $studentId);
+                GameElement::addStudentToEdit($courseId, $studentId);
         }, $this->id);
 
         Event::listen(EventType::STUDENT_REMOVED_FROM_COURSE, function (int $courseId, int $studentId){
@@ -534,7 +534,7 @@ abstract class Module
             //       is not longer a student; there's no need for an event when a user is
             //       completely removed from the course, as SQL 'ON DELETE CASCADE' will do it
             if ($courseId == $this->course->getId())
-                EditableGameElement::removeStudentToEdit($studentId);
+                GameElement::removeStudentToEdit($studentId);
         }, $this->id);
 
     }
