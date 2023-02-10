@@ -146,7 +146,6 @@ class Role
     public static function addAdaptationRolesToCourse(int $courseId, string $moduleId, string $parent, array $children = null)
     {
         $course = new Course($courseId);
-        //$roles = self::getCourseRoles($courseId, false, true);
 
         $rolesNames = self::getCourseRoles($courseId);
         if (!in_array(self::ADAPTATION_ROLE, $rolesNames)){
@@ -157,22 +156,6 @@ class Role
             array_push($hierarchy, ["name" => self::ADAPTATION_ROLE]);
             $course->setRolesHierarchy($hierarchy);
         }
-
-                /*
-        foreach ($roles as $role){
-            $personalizationIndex = array_search(self::ADAPTATION_ROLE, $role);
-
-            // Adaptation roles have not been set yet
-            if (!$personalizationIndex){
-                self::addRoleToCourse($courseId, self::ADAPTATION_ROLE); // Add adaptation role to course
-
-                // Update hierarchy
-                $hierarchy = $course->getRolesHierarchy();
-                array_push($hierarchy, ["name" => self::ADAPTATION_ROLE]);
-                $course->setRolesHierarchy($hierarchy);
-                break;
-            }
-        }*/
 
         // Add parent
         self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
@@ -186,17 +169,12 @@ class Role
         $hierarchy = $course->getRolesHierarchy();
 
         foreach ($hierarchy as $key => $value) {
-            //foreach ($value as $item){var_dump($item);}
-            //$adaptationIndex = array_search(Role::ADAPTATION_ROLE, $value);
             if ($value["name"] == Role::ADAPTATION_ROLE){
-                //var_dump($hierarchy[$key]);
                 $hierarchy[$key]["children"][] = ["name" => $parent,
                     "children" => array_map(function ($child) {return ["name" => $child]; }, $children)];
-                //var_dump($value);
                 break;
             }
         }
-        //var_dump($hierarchy);
         $course->setRolesHierarchy($hierarchy);
 
     }
@@ -222,27 +200,15 @@ class Role
 
         foreach ($hierarchy as $k => $value){
             // sees if adaptation roles has children
-            //var_dump($value);
-            //var_dump(array_keys($value));
             if ($value["name"] == self::ADAPTATION_ROLE && in_array("children", array_keys($value))){
 
-                //var_dump($value["name"]);
                 // iterates through children (at this point will be game elements "badges", "leaderboard" etc
                 foreach ($value["children"] as $key => $item){
-                    //var_dump($item);
                     // if item is the desired adaptation role to remove then splice
-
-                    /*if (in_array("children", $item)){
-                        foreach ($item["children"] as $child){
-                            if ()
-                        }
-                    }*/
-                    //foreach ($item as $child)
-                        if ($item["name"] == $parent){
-                            //var_dump("hey");
-                            array_splice($hierarchy[$k]["children"], $key, 1);
-                            break;
-                        }
+                    if ($item["name"] == $parent){
+                        array_splice($hierarchy[$k]["children"], $key, 1);
+                        break;
+                    }
                 }
 
                 // if there are no children inside Adaptation role then remove children array
@@ -251,7 +217,7 @@ class Role
                 }
             }
         }
-        //var_dump($hierarchy);
+
         $course->setRolesHierarchy($hierarchy);
     }
 
@@ -269,50 +235,16 @@ class Role
     public static function getAdaptationCourseRoles(int $courseId, bool $onlyParents = false, bool $onlyNames = false): array {
         $response = GameElement::getGameElements($courseId, null, $onlyNames);
 
-        //var_dump($response);
         if (!$onlyParents) {
-            /*$course = new Course($courseId);
-            $hierarchy = $course->getRolesHierarchy();
+           $roles = self::getCourseRoles($courseId, false, true);
 
-            foreach ($hierarchy as $value) {
-                // find adaptation role
-                if ($value["name"] == self::ADAPTATION_ROLE && in_array("children", $value)){
-                    // iterates through all roles inside adaptation
-                    foreach ($value["children"] as $item){
-                        if (in_array("children", $item)){
-                            foreach ($item["children"] as $child){
-                                array_push($response, $child["name"]);
-                            }
-                        }
-                    }
-                    break;
-                }
-            }*/
-
-            $roles = self::getCourseRoles($courseId, false, true);
-
-            //var_dump($response);
-
-            //$personalizationIndex = array_search("Personalization", $roles);
-            //var_dump($roles);
-            /* [
-                ["name" => "Teacher", "id" => 1, "landingPage" => null, "module" => null],
-                ["name" => "Personalization", "id" => 2, "landingPage" => null, "module" => null, "children" => [
-                    ["name" => "Badges", "id" => 4, "landingPage" => null, "module" => "Badges", "children" =>
-                        ["name" => "B001", "id" => 5, "landingPage" => null, "module" => "Badges"],
-                        ["name" => "B002", "id" => 6, "landingPage" => null, "module" => "Badges"]
-                    ],
-                    ["name" => "Leaderboard", "id" => 7, "landingPage" => null, "module" => "Leaderboard", "children" => [
-                        ["name" => "LB001", "id" => 8, "landingPage" => null, "module" => "Leaderboard"],
-                        ["name" => "LB002", "id" => 9, "landingPage" => null, "module" => "Leaderboard"]]]
-          ]*/
            foreach ($roles as $role) {
                $personalizationIndex = array_search(self::ADAPTATION_ROLE, $role);
+
                if ($personalizationIndex && in_array("children", array_keys($role))) {
                    foreach ($role["children"] as $value) {
-                       //var_dump($value["module"]);
+
                        if ($value["module"] && $value["children"]) {
-                           //var_dump($value["children"]);
                            foreach ($value["children"] as $child){
                                if ($onlyNames) { array_push($response, $child["name"]); }
                                else { array_push($response, $child); }
@@ -322,22 +254,7 @@ class Role
                    break;
                }
            }
-
-            /*
-
-                // Is adaptation role and has children
-                if (in_array($role["name"], Role::ADAPTATION_ROLES) && $role["children"]){
-                    //$personalizationIndex = $
-                    //var_dump($role["children"]);
-                    // If children belongs to enabled module and has children
-                    if ($role["children"]["module"] && in_array("children", array_keys($role["children"]))){
-                        //var_dump("hello");
-                        foreach ($role["children"]["children"] as $child){
-                            array_push($response, $child["name"]);
-                        }
-                    }
-                }*/
-            }
+        }
         return $response;
     }
 
