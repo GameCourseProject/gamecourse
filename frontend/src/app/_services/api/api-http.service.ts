@@ -912,6 +912,18 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
+  public getAdaptationGeneralParent(courseID: number): Observable<string>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getAdaptationGeneralParent');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
   public getDefaultRoles(courseID: number): Observable<string[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);

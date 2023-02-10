@@ -588,6 +588,19 @@ class CourseController
     }
 
     /**
+     * @return void
+     * @throws Exception
+     */
+    public function getAdaptationGeneralParent(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCourseAdminPermission($course);
+        API::response(Role::ADAPTATION_ROLE);
+    }
+
+    /**
      * @throws Exception
      */
     public function getRoles()

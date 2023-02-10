@@ -36,6 +36,7 @@ export class RolesComponent implements OnInit {
   rolesHierarchySmart: {[roleName: string]: {role: Role, parent: Role, children: Role[]}};
 
   adaptationRoleNames: string[];
+  adaptationTitle: string;
 
   constructor(
     private api: ApiHttpService,
@@ -76,13 +77,10 @@ export class RolesComponent implements OnInit {
     this.defaultRoleNames = await this.api.getDefaultRoles(courseID).toPromise();
 
     // adaptation roles
-    let adaptationRoles = await this.api.getAdaptationRoles(courseID, false, true).toPromise();
-    this.adaptationRoleNames = adaptationRoles;
-
-    console.log(this.adaptationRoleNames);
+    this.adaptationRoleNames = await this.api.getAdaptationRoles(courseID, false, true).toPromise();
+    this.adaptationTitle = await this.api.getAdaptationGeneralParent(courseID).toPromise();
 
     this.originalRolesHierarchy = _.cloneDeep(this.course.roleHierarchy);
-    console.log(this.originalRolesHierarchy);
     this.initRolesHierarchySmart();
   }
 
@@ -241,6 +239,10 @@ export class RolesComponent implements OnInit {
 
   isAdaptationRole(roleName): boolean {
     return this.adaptationRoleNames.includes(roleName);
+  }
+
+  isAdaptationTitle(roleName): boolean {
+    return roleName === this.adaptationTitle;
   }
 
 }

@@ -63,7 +63,7 @@
 
         <!-- Actions -->
         <div class="flex items-center">
-          <div class="tooltip align-middle" data-tip="Add child"
+          <div *ngIf="!isAdaptationRole(role.name) && !isAdaptationTitle(role.name)" class="tooltip align-middle" data-tip="Add child"
                (click)="mode = 'add'; roleToManage = initRoleToManage(null, role); ModalService.openModal('manage')">
 
             <button class="btn btn-sm btn-ghost btn-circle">
@@ -71,7 +71,8 @@
             </button>
           </div>
 
-          <div *ngIf="!isDefaultRole(role.name) && !isAdaptationRole(role.name)" class="tooltip align-middle" data-tip="Edit"
+          <div *ngIf="!isDefaultRole(role.name) && !isAdaptationRole(role.name) && !isAdaptationTitle(role.name)"
+               class="tooltip align-middle" data-tip="Edit"
                (click)="mode = 'edit'; roleToManage = initRoleToManage(role); ModalService.openModal('manage')">
 
             <button class="btn btn-sm btn-ghost btn-circle">
@@ -79,7 +80,8 @@
             </button>
           </div>
 
-          <div *ngIf="!isDefaultRole(role.name) && !isAdaptationRole(role.name)" class="tooltip align-middle" data-tip="Delete"
+          <div *ngIf="!isDefaultRole(role.name) && !isAdaptationRole(role.name) && !isAdaptationTitle(role.name)"
+               class="tooltip align-middle" data-tip="Delete"
             (click)="removeRole(role)">
 
             <button class="btn btn-sm btn-ghost btn-circle">
