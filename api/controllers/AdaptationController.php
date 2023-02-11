@@ -128,6 +128,25 @@ class AdaptationController
     }
 
     /**
+     * Sees whether a specific user in a course has answered the preferences questionnaire or not
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function isQuestionnaireAnswered(){
+        API::requireValues('courseId', 'userId');
+
+        $courseId = API::getValue('courseId', "int");
+        $course = API::verifyCourseExists($courseId);
+
+        $userId = API::getValue("userId", "int");
+        API::verifyUserExists($userId);
+
+        $response = GameElement::isQuestionnaireAnswered($courseId, $userId);
+        API::response($response);
+    }
+
+    /**
      * Gets previous user preference of specific GameElement
      *
      * @return void

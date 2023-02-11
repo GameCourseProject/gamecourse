@@ -821,6 +821,20 @@ export class ApiHttpService {
 
   }
 
+  public isQuestionnaireAnswered(courseID: number, userID: number): Observable<boolean>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'isQuestionnaireAnswered');
+      qs.push('courseId', courseID);
+      qs.push('userId', userID);
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data']));
+  }
+
   public getChildrenGameElement(courseID: number, module: string): Observable<string[]>{
     const params = (qs:QueryStringParameters) => {
       qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);

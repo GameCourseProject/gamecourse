@@ -230,6 +230,23 @@ class GameElement
         return $response;
     }
 
+    /**
+     * Gets all children of specific GameElement
+     *
+     * @param
+     * @param
+     * @return boolean
+     * @throws Exception
+     */
+    public static function isQuestionnaireAnswered(int $courseId, int $userId): bool {
+        $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
+        $where = ["course" => $courseId, "user" => $userId];
+        $response = Core::database()->select($table, $where);
+
+        if ($response) return true;
+        else return false;
+    }
+
     /*** ---------------------------------------------------- ***/
     /*** ------------ GameElement Manipulation -------------- ***/
     /*** ---------------------------------------------------- ***/
@@ -304,7 +321,6 @@ class GameElement
      * @throws Exception
      */
     public static function updateUserPreference(int $courseId, int $userId, string $module, int $previousPreference, int $newPreference, string $date){
-        var_dump("here");
         $table = self::TABLE_USER_GAME_ELEMENT_PREFERENCES;
         $where = ["course" => $courseId, "user" => $userId, "newPreference" => $previousPreference];
 
@@ -377,11 +393,13 @@ class GameElement
      */
     public function sendNotification(){
         if ($this->isActive()){
-            $message = $this->getModule() . " Preference Questionnaire is available! Go to 'Adaptation' tab for more";
+            $message = "Preference Questionnaire is available! Go to 'Adaptation' tab for more";
             $users = Core::database()->selectMultiple(self::TABLE_ELEMENT_USER, ["element" => $this->id], "user");
             $users = array_map(function ($user) {return $user["user"];}, $users);
 
             foreach ($users as $user){
+                // FIXME ME: INCOMPLETE --> check Notification is not in DB && questionnaire has been answered --? inconsistency in statistics later??
+                // some users might end up answering more questionnaire than others ??
                 if (!Notification::isNotificationInDB($this->getCourse(), $user, $message)){
                     Notification::addNotification($this->getCourse(), $user, $message);
                 }

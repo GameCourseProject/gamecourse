@@ -187,6 +187,7 @@ CREATE TABLE preferences_questionnaire_answers(
     question3   int unsigned NOT NULL,
     element     int unsigned NOT NULL,
 
+    UNIQUE(course, user),
     FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
     FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE,
     FOREIGN KEY (element) REFERENCES game_element(id) ON DELETE CASCADE

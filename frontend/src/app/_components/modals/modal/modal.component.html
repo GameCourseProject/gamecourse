@@ -9,7 +9,7 @@
          [ngStyle]="size !== 'sm' && size !== 'md' && size !== 'lg' ? {'max-width': '42rem'} : {}">
 
     <!-- Close X button -->
-    <label [for]="id" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+    <label *ngIf="xButton" [for]="id" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
            (click)="btnClicked = 'close'; closeBtnClicked.emit()">
       <ng-icon name="feather-x" size="1rem"></ng-icon>
     </label>

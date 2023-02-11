@@ -22,6 +22,7 @@ export class ModalComponent implements OnInit {
   @Input() closeBtnText?: string = 'Cancel';                          // Left button text
   @Input() closeBtnColor?: 'primary' | 'secondary' | 'accent' |       // Modal title color
     'neutral' | 'info' | 'success' | 'warning' | 'error';             // Left button color
+  @Input() xButton?: boolean = true;                                  // Right top button 'X'
 
   @Input() extraBtnText?: string;                                     // Middle button text
   @Input() extraBtnColor?: 'primary' | 'secondary' | 'accent' |       // Middle button color

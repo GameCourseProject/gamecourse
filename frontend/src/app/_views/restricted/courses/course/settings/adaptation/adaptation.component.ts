@@ -31,15 +31,10 @@ export class AdaptationComponent implements OnInit {
 
   /** -- ADMIN VARIABLES -- **/
   gameElementToManage: GameElementManageData = this.initGameElementToManage();
-  mode: 'questionnaire statistics' | 'activate' | 'deactivate';
   availableGameElements: GameElement[];
+  adminMode: 'questionnaire statistics' | 'activate' | 'deactivate';
 
-  periodicity: {number: number, time: string};
-  courseUsers: User[];
-  courseUsersSelect: {value: string, text: string}[] = [];
-  usersMode: "all-users" | "all-except-users" | "only-some-users";
-
-  @ViewChild('c', {static: false}) c: NgForm;       // configure form
+  @ViewChild('f', {static: false}) f: NgForm;       // (de)activation form
 
   /** -- NON-ADMIN VARIABLES -- **/
   selectedGameElement: string;
@@ -51,6 +46,9 @@ export class AdaptationComponent implements OnInit {
   activeButton = null;
   option: string;
   message: string;
+  questionnaire: boolean;
+
+  @ViewChild('q', {static: false}) q: NgForm;       // questionnaire form
 
   constructor(
     private api: ApiHttpService,
@@ -63,13 +61,15 @@ export class AdaptationComponent implements OnInit {
       await this.getCourse(courseID);
       await this.getUser();
 
-      await this.getGameElements(courseID);
+      //if (!this.user.isAdmin){ // FIXME: DEBUG ONLY
+        await this.isQuestionnaireAnswered();
+      //}
 
+      await this.getGameElements(courseID);
       this.loading.page = false;
 
       if (this.user.isAdmin){
         this.buildTable();
-        await this.getCourseUsers(courseID);
       }
 
     });
@@ -94,7 +94,7 @@ export class AdaptationComponent implements OnInit {
     }
 
     // NON-ADMIN
-    //else {
+    else {
       // all available game elements
       this.availableGameElements = await this.api.getGameElements(courseID, true).toPromise();
       let ids = this.availableGameElements.map(value => {return value.id});
@@ -113,14 +113,14 @@ export class AdaptationComponent implements OnInit {
         this.availableGameElementsSelect.push({value: elements[i].module, text: elements[i].module});
       }
 
-    //}
+    }
   }
 
-  async getCourseUsers(courseID: number): Promise<void>{
-    this.courseUsers = (await this.api.getCourseUsers(courseID, true).toPromise()).sort((a, b) => a.name.localeCompare(b.name));
-    this.courseUsersSelect = this.courseUsers.map(user => {
-      return {value: 'id-' + user.id, text: user.name};
-    });
+  async isQuestionnaireAnswered(): Promise<void>{
+    this.questionnaire = await this.api.isQuestionnaireAnswered(this.course.id, this.user.id).toPromise();
+    if (!this.questionnaire){
+      ModalService.openModal('questionnaire');
+    }
   }
 
   /*** --------------------------------------------- ***/
@@ -163,11 +163,9 @@ export class AdaptationComponent implements OnInit {
     const gameElementToActOn = this.availableGameElements[row];
 
     if (action === 'value changed game element' && col === 1){
-      console.log(gameElementToActOn);
       if (gameElementToActOn.isActive) {
-        this.mode = 'deactivate';
-        //this.toggleActive(gameElementToActOn);
-      } else this.mode = 'activate';
+        this.adminMode = 'deactivate';
+      } else this.adminMode = 'activate';
 
       this.gameElementToManage = this.initGameElementToManage(gameElementToActOn);
       ModalService.openModal('manage-game-element');
@@ -201,50 +199,9 @@ export class AdaptationComponent implements OnInit {
     this.buildTable();
     this.loading.action = false;
     ModalService.closeModal('manage-game-element');
-    AlertService.showAlert(AlertType.SUCCESS, 'Game element \'' + gameElement.module + '\'' + this.mode + 'd');
+    AlertService.showAlert(AlertType.SUCCESS, 'Game element \'' + gameElement.module + '\'' + this.adminMode + 'd');
 
   }
-
-  // FIXME
-  /*async updateGameElement(){
-    if (this.c.valid && this.usersMode){
-      this.loading.action = true;
-
-      this.gameElementToManage.nDays = this.periodicity.number;
-      this.gameElementToManage.usersMode = this.usersMode;
-
-      if (this.usersMode === "all-users"){
-        this.gameElementToManage.users = this.courseUsers.map(user => { return (user.id).toString()});
-
-      } else if (this.usersMode === "all-except-users" || this.usersMode === "only-some-users") {
-          const users = this.gameElementToManage.users.map(user => {
-          return parseInt((user.toString()).split("-").pop())
-        });
-
-        const array = [];
-        for (let i = 0; i < users.length; i++) {
-          for (let j = 0; j < this.courseUsers.length; j++) {
-            if ((this.usersMode === "all-except-users" && users[i] !== this.courseUsers[j].id) ||
-              (this.usersMode === "only-some-users" && users[i] === this.courseUsers[j].id)) {
-              array.push(this.courseUsers[j].id);
-            }
-          }
-        }
-        this.gameElementToManage.users = array;
-      }
-
-      const gameElementConfig = await this.api.updateEditableGameElement(clearEmptyValues(this.gameElementToManage)).toPromise();
-      const index = this.availableGameElements.findIndex(gameElement => gameElement.id === gameElementConfig.id);
-      this.availableGameElements.removeAtIndex(index);
-      this.availableGameElements.push(gameElementConfig);
-
-      this.buildTable();
-      this.loading.action = false;
-      ModalService.closeModal('manage-game-element');
-      AlertService.showAlert(AlertType.SUCCESS, 'Game element \'' + gameElementConfig.module + '\' configured');
-
-    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
-  }*/
 
   /** -- NON-ADMIN ACTIONS -- **/
   doAction(gameElement: string) {
@@ -320,8 +277,7 @@ export class AdaptationComponent implements OnInit {
 
   resetGameElementManage(){
     this.gameElementToManage = this.initGameElementToManage();
-    this.usersMode = null;
-    this.c.resetForm();
+    this.f.resetForm();
   }
 
   initGameElementToManage(gameElement? : GameElement): GameElementManageData{
