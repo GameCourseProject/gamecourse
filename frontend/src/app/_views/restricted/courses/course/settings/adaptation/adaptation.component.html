@@ -5,10 +5,10 @@
 
   <ng-container *ngIf="!loading.page">
     <!-- Admin Template -->
-    <ng-container *ngIf="true" [ngTemplateOutlet]="ADMIN"></ng-container>
+    <ng-container *ngIf="false" [ngTemplateOutlet]="ADMIN"></ng-container>
 
     <!-- Non-Admin Template -->
-    <ng-container *ngIf="false" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
+    <ng-container *ngIf="true" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
   </ng-container>
 
 </div>
@@ -49,12 +49,8 @@
   <form #c="ngForm">
     <div class="w-full flex flex-wrap mt-3">
 
-      <span>By doing so:
-
-      - ‘GameElementX Preference Questionnaire’ will be available to students.
-        - GameElementX will be open to customization.
-
-        These changes will be removed once game element X is deactivated
+      <span>By doing so:<br>- <i>{{gameElementToManage.module}} Preference Questionnaire </i> <strong>will be available</strong> to students.<br>
+        - {{gameElementToManage.module}} will be <strong>open</strong> to customization.
       </span>
       <!-- Users
       <div class="w-full flex flex-wrap pb-4">
@@ -140,11 +136,12 @@
           [(value)]="gameElementToManage.notify"
           [color]="'accent'"
           [classList]="'mt-2'"
-          [label]="'Send notification to students'"
+          [label]="'Notify students'"
           [labelPosition]="'right'"
         ></app-input-checkbox>
       </div>
     </div>
+    <span class="flex text-xs justify-end mt-2 -mb-1">These changes will be removed once {{gameElementToManage.module}} is deactivated</span>
   </form>
 </ng-template>
 

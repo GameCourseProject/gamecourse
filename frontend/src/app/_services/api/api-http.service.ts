@@ -802,7 +802,7 @@ export class ApiHttpService {
       .pipe(map((res: any) => res['data'].map(obj => User.fromDatabase(obj))));
   }
 
-  public setGameElementActive(courseID: number, moduleID: string, isActive: boolean, notify: boolean): Observable<void>{
+  public setGameElementActive(courseID: number, moduleID: string, isActive: boolean, notify: boolean): Observable<GameElement>{
     const data = {
       "courseId" : courseID,
       "moduleId" : moduleID,
@@ -817,7 +817,8 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe(map((res:any) => res));
+      .pipe(map((res:any) => GameElement.fromDatabase(res['data'])));
+
   }
 
   public getChildrenGameElement(courseID: number, module: string): Observable<string[]>{

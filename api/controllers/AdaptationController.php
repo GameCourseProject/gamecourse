@@ -77,6 +77,10 @@ class AdaptationController
         $gameElement = GameElement::getGameElementByModule($courseId, $moduleId);
         $gameElement->setActive($isActive);
         $gameElement->setNotify($notify);
+
+        $gameElementInfo = $gameElement->getData();
+
+        API::response($gameElementInfo);
     }
 
     /**

@@ -94,7 +94,7 @@ export class AdaptationComponent implements OnInit {
     }
 
     // NON-ADMIN
-    else {
+    //else {
       // all available game elements
       this.availableGameElements = await this.api.getGameElements(courseID, true).toPromise();
       let ids = this.availableGameElements.map(value => {return value.id});
@@ -113,7 +113,7 @@ export class AdaptationComponent implements OnInit {
         this.availableGameElementsSelect.push({value: elements[i].module, text: elements[i].module});
       }
 
-    }
+    //}
   }
 
   async getCourseUsers(courseID: number): Promise<void>{
@@ -191,10 +191,18 @@ export class AdaptationComponent implements OnInit {
     this.loading.action = true;
 
     this.gameElementToManage.isActive = !this.gameElementToManage.isActive;
-    await this.api.setGameElementActive(this.course.id, this.gameElementToManage.module,
+    const gameElement = await this.api.setGameElementActive(this.course.id, this.gameElementToManage.module,
       this.gameElementToManage.isActive, this.gameElementToManage.notify).toPromise();
 
+    const index = this.availableGameElements.findIndex(gameElement => gameElement.id === gameElement.id);
+    this.availableGameElements.removeAtIndex(index);
+    this.availableGameElements.push(gameElement);
+
+    this.buildTable();
     this.loading.action = false;
+    ModalService.closeModal('manage-game-element');
+    AlertService.showAlert(AlertType.SUCCESS, 'Game element \'' + gameElement.module + '\'' + this.mode + 'd');
+
   }
 
   // FIXME

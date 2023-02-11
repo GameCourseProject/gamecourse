@@ -214,13 +214,17 @@ class GameElement
 
         $response = [];
         foreach ($roles as $role){
-            // role belongs to the module and has children
-            if ($role["module"] == $module && in_array("children", array_keys($role))){
-                // iterates through children and saves the names
-                foreach ($role["children"] as $child) {
-                    array_push($response, $child["name"]);
+            if ($role["name"] == Role::ADAPTATION_ROLE && in_array("children", array_keys($role))){
+                foreach ($role["children"] as $value){
+                    // role belongs to the module and has children
+                    if ($value["module"] == $module && in_array("children", array_keys($value))){
+                        // iterates through children and saves the names
+                        foreach ($value["children"] as $child) {
+                            array_push($response, $child["name"]);
+                        }
+                        break;
+                    }
                 }
-                break;
             }
         }
         return $response;
@@ -300,6 +304,7 @@ class GameElement
      * @throws Exception
      */
     public static function updateUserPreference(int $courseId, int $userId, string $module, int $previousPreference, int $newPreference, string $date){
+        var_dump("here");
         $table = self::TABLE_USER_GAME_ELEMENT_PREFERENCES;
         $where = ["course" => $courseId, "user" => $userId, "newPreference" => $previousPreference];
 
@@ -372,7 +377,7 @@ class GameElement
      */
     public function sendNotification(){
         if ($this->isActive()){
-            $message = "Preference Questionnaire for '" . $this->getModule() . "' is available! Go to 'Adaptation' tab to answer it";
+            $message = $this->getModule() . " Preference Questionnaire is available! Go to 'Adaptation' tab for more";
             $users = Core::database()->selectMultiple(self::TABLE_ELEMENT_USER, ["element" => $this->id], "user");
             $users = array_map(function ($user) {return $user["user"];}, $users);
 
@@ -401,14 +406,14 @@ class GameElement
         // add all courseUsers to table element_user
         if ($isActive) {
             foreach ($users as $user){
-                Core::database()->insert(self::TABLE_ELEMENT_USER, ["element" => $gameElement, "user" => $user->getId()]);
+                Core::database()->insert(self::TABLE_ELEMENT_USER, ["element" => $gameElement, "user" => $user["id"]]);
             }
         }
 
         // remove all courseUsers from table element_user
         else {
             foreach ($users as $user){
-                Core::database()->delete(self::TABLE_ELEMENT_USER, ["element" => $gameElement, "user" => $user->getId()]);
+                Core::database()->delete(self::TABLE_ELEMENT_USER, ["element" => $gameElement, "user" => $user["id"]]);
             }
         }
     }
