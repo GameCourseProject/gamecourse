@@ -401,14 +401,14 @@ class GameElement
         // add all courseUsers to table element_user
         if ($isActive) {
             foreach ($users as $user){
-                Core::database()->insert(self::TABLE_ELEMENT_USER, ["element" => $gameElement, "user" => $user]);
+                Core::database()->insert(self::TABLE_ELEMENT_USER, ["element" => $gameElement, "user" => $user->getId()]);
             }
         }
 
         // remove all courseUsers from table element_user
         else {
             foreach ($users as $user){
-                Core::database()->delete(self::TABLE_ELEMENT_USER, ["element" => $gameElement, "user" => $user]);
+                Core::database()->delete(self::TABLE_ELEMENT_USER, ["element" => $gameElement, "user" => $user->getId()]);
             }
         }
     }

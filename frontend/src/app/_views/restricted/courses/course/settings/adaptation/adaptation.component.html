@@ -16,6 +16,8 @@
 <!-- Admin Template -->
 <ng-template #ADMIN>
   <div class="w-full relative">
+    <div></div>
+
     <app-table
       [id] = "'gameElements'"
       [classList]="'mt-5'"
@@ -39,7 +41,7 @@
    [header] = "mode?.capitalize() + ' ' + gameElementToManage.module"
    [submitBtnText]="mode?.capitalize()"
    [actionInProgress]="loading.action"
-   (submitBtnClicked)="c.onSubmit(null); updateGameElement()"
+   (submitBtnClicked)="c.onSubmit(null); toggleActive()"
    (onClose)="resetGameElementManage()">
 </app-modal>
 
@@ -47,7 +49,14 @@
   <form #c="ngForm">
     <div class="w-full flex flex-wrap mt-3">
 
-      <!-- Users -->
+      <span>By doing so:
+
+      - ‘GameElementX Preference Questionnaire’ will be available to students.
+        - GameElementX will be open to customization.
+
+        These changes will be removed once game element X is deactivated
+      </span>
+      <!-- Users
       <div class="w-full flex flex-wrap pb-4">
         <span class="w-full font-semibold">Users who can customize {{gameElementToManage.module}}<span class="text-secondary">*</span></span>
         <div class="sm:w-3/13">
@@ -94,7 +103,7 @@
           ></app-input-radio>
         </div>
 
-        <!-- FIXME: incomplete ? -->
+
         <app-input-select
           class="w-full sm:pr-7 mt-3"
           *ngIf="usersMode === 'all-except-users' || usersMode === 'only-some-users'"
@@ -108,9 +117,9 @@
           [closeOnSelect]="false"
           (valueChange)="gameElementToManage.users = $event ?? []"
         ></app-input-select>
-      </div>
+      </div>-->
 
-      <!-- NDays -->
+      <!-- NDays
       <div class="w-full flex-wrap mt-3 pb-4">
         <p class="pb-3 font-semibold">Amount of time '{{gameElementToManage.module}}' is customizable after made editable</p>
         <div class="sm:w-1/2 sm:pr-7">
@@ -121,7 +130,7 @@
             [filterOptions]="['second', 'minute', 'hour', 'week', 'month', 'year']">
           </app-input-periodicity>
         </div>
-      </div>
+      </div>-->
 
       <!-- Notification -->
       <div class="sm:pr-7 w-full">

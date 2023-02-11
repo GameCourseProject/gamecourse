@@ -4,13 +4,14 @@ import {ActivatedRoute} from "@angular/router";
 import {Course} from "../../../../../../_domain/courses/course";
 import {User} from "src/app/_domain/users/user";
 import {TableDataType} from "../../../../../../_components/tables/table-data/table-data.component";
-import {EditableGameElement} from "../../../../../../_domain/adaptation/EditableGameElement";
+import {GameElement} from "../../../../../../_domain/adaptation/GameElement";
 import {ModalService} from "../../../../../../_services/modal.service";
 import {NgForm} from "@angular/forms";
 import {clearEmptyValues} from "../../../../../../_utils/misc/misc";
 import {AlertService, AlertType} from "../../../../../../_services/alert.service";
 import {Observable} from "rxjs";
 import {CourseUser} from "../../../../../../_domain/users/course-user";
+import {Action} from "../../../../../../_domain/modules/config/Action";
 
 @Component({
   selector: 'app-adaptation',
@@ -29,9 +30,9 @@ export class AdaptationComponent implements OnInit {
   user: User;
 
   /** -- ADMIN VARIABLES -- **/
-  gameElementToManage: GameElementManageData = this.initEditableGameElement();
-  mode: 'configure';
-  availableGameElements: EditableGameElement[];
+  gameElementToManage: GameElementManageData = this.initGameElementToManage();
+  mode: 'questionnaire statistics' | 'activate' | 'deactivate';
+  availableGameElements: GameElement[];
 
   periodicity: {number: number, time: string};
   courseUsers: User[];
@@ -89,19 +90,19 @@ export class AdaptationComponent implements OnInit {
   async getGameElements(courseID: number): Promise<void> {
     // ADMIN
     if (this.user.isAdmin){
-      this.availableGameElements = await this.api.getEditableGameElements(courseID).toPromise();
+      this.availableGameElements = await this.api.getGameElements(courseID).toPromise();
     }
 
     // NON-ADMIN
     else {
-      // all available editable game elements
-      this.availableGameElements = await this.api.getEditableGameElements(courseID, true).toPromise();
+      // all available game elements
+      this.availableGameElements = await this.api.getGameElements(courseID, true).toPromise();
       let ids = this.availableGameElements.map(value => {return value.id});
       // game elements the logged-in user is allowed to edit
-      const gameElements = await this.api.getGameElementsUsersAllowedToEdit(courseID, this.user.id).toPromise();
+      const gameElements = await this.api.getGameElementsUserCanEdit(courseID, this.user.id).toPromise();
 
       let elements = [];
-      // see if game elements logged-in user is allowed to edit is editable
+      // see if game elements logged-in user is allowed to edit is active
       for (let i = 0; i < gameElements.length; i++){
         if (ids.includes(gameElements[i].id)){
           elements.push(gameElements[i]);
@@ -128,7 +129,7 @@ export class AdaptationComponent implements OnInit {
 
   headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
     {label: 'Game Element', align: 'middle'},
-    {label: 'Editable', align: 'middle'},
+    {label: 'Active', align: 'middle'},
     {label: 'Actions'}
   ];
   data: {type: TableDataType, content: any}[][];
@@ -147,9 +148,10 @@ export class AdaptationComponent implements OnInit {
     this.availableGameElements.forEach(gameElement => {
       table.push([
         {type: TableDataType.TEXT, content: {text: gameElement.module}},
-        {type: TableDataType.TOGGLE, content: {toggleId: 'isEditable', toggleValue: gameElement.isEditable}},
+        {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: gameElement.isActive}},
         {type: TableDataType.ACTIONS, content: {actions: [
-          {action: 'Configure', icon: 'tabler-settings', color: 'primary'}]}
+          {action: 'Questionnaire statistics', icon: 'tabler-chart-pie', color: 'primary'},
+          {action: 'Export questionnaire answers', icon: 'jam-upload', color: 'primary'}]}
         }
       ]);
     });
@@ -160,29 +162,23 @@ export class AdaptationComponent implements OnInit {
   async doActionOnTable(action: string, row: number, col: number, value?: any) {
     const gameElementToActOn = this.availableGameElements[row];
 
-    if (action === 'value changed game element'){
-      if (col === 1) this.toggleActive(gameElementToActOn);
+    if (action === 'value changed game element' && col === 1){
+      console.log(gameElementToActOn);
+      if (gameElementToActOn.isActive) {
+        this.mode = 'deactivate';
+        //this.toggleActive(gameElementToActOn);
+      } else this.mode = 'activate';
 
-    } else if (action === 'Configure') {
+      this.gameElementToManage = this.initGameElementToManage(gameElementToActOn);
+      ModalService.openModal('manage-game-element');
+
+    } /*else if (action === 'Configure') {
       this.mode = 'configure';
 
-      this.gameElementToManage = this.initEditableGameElement(gameElementToActOn);
-      this.periodicity = {number: this.gameElementToManage.nDays, time: 'day'};
-      await this.usersConfig();
+      this.gameElementToManage = this.initGameElementToManage(gameElementToActOn);
 
       ModalService.openModal('manage-game-element');
-    }
-  }
-
-  async usersConfig(): Promise<void>{
-    if (!(this.usersMode && this.gameElementToManage)) { return; }
-    if (this.usersMode !== "all-except-users"){
-      const users = await this.api.getEditableGameElementUsers(this.gameElementToManage.course, this.gameElementToManage.module).toPromise();
-
-      if (this.usersMode === "only-some-users") {
-        this.gameElementToManage.users = users.map(user => { return "id-" + user.id });
-      }
-    }
+    }*/
   }
 
   /*** --------------------------------------------- ***/
@@ -191,16 +187,18 @@ export class AdaptationComponent implements OnInit {
 
 
   /** -- ADMIN ACTIONS -- **/
-  async toggleActive(gameElement: EditableGameElement){
+  async toggleActive(){
     this.loading.action = true;
 
-    gameElement.isEditable = !gameElement.isEditable;
-    await this.api.setEditableGameElementEditable(this.course.id, gameElement.module, gameElement.isEditable).toPromise();
+    this.gameElementToManage.isActive = !this.gameElementToManage.isActive;
+    await this.api.setGameElementActive(this.course.id, this.gameElementToManage.module,
+      this.gameElementToManage.isActive, this.gameElementToManage.notify).toPromise();
 
     this.loading.action = false;
   }
 
-  async updateGameElement(){
+  // FIXME
+  /*async updateGameElement(){
     if (this.c.valid && this.usersMode){
       this.loading.action = true;
 
@@ -238,7 +236,7 @@ export class AdaptationComponent implements OnInit {
       AlertService.showAlert(AlertType.SUCCESS, 'Game element \'' + gameElementConfig.module + '\' configured');
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
-  }
+  }*/
 
   /** -- NON-ADMIN ACTIONS -- **/
   doAction(gameElement: string) {
@@ -313,23 +311,20 @@ export class AdaptationComponent implements OnInit {
   }
 
   resetGameElementManage(){
-    this.gameElementToManage = this.initEditableGameElement();
+    this.gameElementToManage = this.initGameElementToManage();
     this.usersMode = null;
     this.c.resetForm();
   }
 
-  initEditableGameElement(editableGameElement? : EditableGameElement): GameElementManageData{
+  initGameElementToManage(gameElement? : GameElement): GameElementManageData{
     const gameElementData: GameElementManageData = {
-      course: editableGameElement?.course ?? null,
-      module: editableGameElement?.module ?? null,
-      isEditable: editableGameElement?.isEditable ?? false,
-      nDays: editableGameElement?.nDays ?? null,
-      notify: editableGameElement?.notify ?? false,
-      usersMode: editableGameElement?.usersMode ?? null,
-      users: editableGameElement?.users ?? []
+      course: gameElement?.course ?? null,
+      module: gameElement?.module ?? null,
+      isActive: gameElement?.isActive ?? false,
+      notify: gameElement?.notify ?? false
     };
-    if (editableGameElement){
-      gameElementData.id = editableGameElement.id;
+    if (gameElement){
+      gameElementData.id = gameElement.id;
     }
     return gameElementData;
   }
@@ -339,9 +334,6 @@ export interface GameElementManageData {
   id?: number,
   course?: number,
   module?: string,
-  isEditable?: boolean,
-  nDays?: number
-  notify?: boolean,
-  usersMode?: string,
-  users?: string[]
+  isActive?: boolean,
+  notify?: boolean
 }

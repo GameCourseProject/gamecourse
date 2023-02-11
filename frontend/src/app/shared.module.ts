@@ -141,32 +141,32 @@ import {
 } from "@ng-icons/jam-icons";
 
 import {
+  TablerAlertTriangle,
   TablerArchive,
   TablerArrowBackUp,
   TablerArrowNarrowUp,
   TablerArrowNarrowDown,
+  TablerArrowsUpDown,
   TablerAward,
   TablerBarrierBlock,
+  TablerBell,
+  TablerBellRinging,
   TablerBellSchool,
   TablerBooks,
   TablerCalendarTime,
   TablerCaretDown,
+  TablerChartPie,
   TablerClipboardList,
   TablerCloudUpload,
   TablerColorSwatch,
+  TablerCopy,
   TablerGavel,
   TablerIdBadge2,
   TablerPlug,
-  TablerPuzzle,
   TablerPrompt,
+  TablerPuzzle,
   TablerSchool,
-  TablerNewSection,
-  TablerArrowsUpDown,
-  TablerAlertTriangle,
-  TablerCopy,
-  TablerBellRinging,
-  TablerBell,
-  TablerSettings
+  TablerNewSection
 } from "@ng-icons/tabler-icons";
 
 
@@ -385,6 +385,7 @@ import {
       TablerBooks,
       TablerCalendarTime,
       TablerCaretDown,
+      TablerChartPie,
       TablerClipboardList,
       TablerCloudUpload,
       TablerColorSwatch,
@@ -394,9 +395,8 @@ import {
       TablerNewSection,
       TablerPlug,
       TablerPrompt,
-      TablerSchool,
       TablerPuzzle,
-      TablerSettings
+      TablerSchool
     }),
     DataTablesModule,
     NgApexchartsModule,

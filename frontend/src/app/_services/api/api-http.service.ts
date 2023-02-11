@@ -63,10 +63,10 @@ import {Rule} from "../../_domain/rules/rule";
 import {
   RuleManageData, SectionManageData, TagManageData
 } from "../../_views/restricted/courses/course/settings/rules/rules.component";
-import {RuleSection} from "../../_domain/rules/RuleSection";
-import {RuleTag} from "../../_domain/rules/RuleTag";
-import {Notification} from "../../_domain/notifications/notification";
-import {EditableGameElement} from "../../_domain/adaptation/EditableGameElement";
+import { RuleSection } from "../../_domain/rules/RuleSection";
+import { RuleTag } from "../../_domain/rules/RuleTag";
+import { Notification } from "../../_domain/notifications/notification";
+import { GameElement } from "../../_domain/adaptation/GameElement";
 import { GameElementManageData } from 'src/app/_views/restricted/courses/course/settings/adaptation/adaptation.component';
 
 @Injectable({
@@ -759,25 +759,25 @@ export class ApiHttpService {
   }
 
   // Adaptation
-  public getEditableGameElements(courseID: number, isEditable?: boolean, onlyNames?: boolean): Observable<EditableGameElement[]> {
+  public getGameElements(courseID: number, isActive?: boolean, onlyNames?: boolean): Observable<GameElement[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
-      qs.push('request', 'getEditableGameElements');
+      qs.push('request', 'getGameElements');
       qs.push('courseId', courseID);
-      if (isEditable !== undefined) qs.push('isEditable', isEditable);
+      if (isActive !== undefined) qs.push('isActive', isActive);
       if (onlyNames !== undefined) qs.push('onlyNames', onlyNames);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data'].map(obj => EditableGameElement.fromDatabase(obj))));
+      .pipe(map((res: any) => res['data'].map(obj => GameElement.fromDatabase(obj))));
   }
 
-  public getGameElementsUsersAllowedToEdit(courseID: number, userID: number): Observable<EditableGameElement[]>{
+  public getGameElementsUserCanEdit(courseID: number, userID: number): Observable<GameElement[]>{
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
-      qs.push('request', 'gameElementsUserAllowedToEdit');
+      qs.push('request', 'gameElementsUserCanEdit');
       qs.push('courseId', courseID);
       qs.push('userId', userID);
     }
@@ -785,13 +785,13 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data'].map(obj => EditableGameElement.fromDatabase(obj))));
+      .pipe(map((res: any) => res['data'].map(obj => GameElement.fromDatabase(obj))));
   }
 
-  public getEditableGameElementUsers(courseID: number, moduleID: string): Observable<User[]>{
+  public getGameElementUsers(courseID: number, moduleID: string): Observable<User[]>{
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
-      qs.push('request', 'getEditableGameElementUsers');
+      qs.push('request', 'getGameElementUsers');
       qs.push('courseId', courseID);
       qs.push('moduleId', moduleID);
     }
@@ -802,44 +802,22 @@ export class ApiHttpService {
       .pipe(map((res: any) => res['data'].map(obj => User.fromDatabase(obj))));
   }
 
-  public setEditableGameElementEditable(courseID: number, moduleID: string, isEditable: boolean): Observable<void>{
+  public setGameElementActive(courseID: number, moduleID: string, isActive: boolean, notify: boolean): Observable<void>{
     const data = {
       "courseId" : courseID,
       "moduleId" : moduleID,
-      "isEditable" : isEditable
+      "isActive" : isActive,
+      "notify"   : notify
     };
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
-      qs.push('request', 'setGameElementEditable');
+      qs.push('request', 'setGameElementActive');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe(map((res:any) => res));
-  }
-
-  public updateEditableGameElement(gameElementData: GameElementManageData): Observable<EditableGameElement>{
-    const data = {
-      id: gameElementData.id,
-      course: gameElementData.course,
-      moduleId: gameElementData.module,
-      isEditable: gameElementData.isEditable,
-      nDays: gameElementData.nDays,
-      notify: gameElementData.notify,
-      usersMode: gameElementData.usersMode,
-      users: gameElementData.users
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
-      qs.push('request', 'updateEditableGameElement');
-    }
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => EditableGameElement.fromDatabase(res['data'])));
-
   }
 
   public getChildrenGameElement(courseID: number, module: string): Observable<string[]>{
@@ -857,8 +835,6 @@ export class ApiHttpService {
   }
 
   public getPreviousPreference(courseID: number, userID: number, module: string): Observable<string> {
-    // KEEP IN MIND!!
-    // PREVIOUS PREFERENCE WILL BE LAST ENTRY'S 'NEW PREFERENCE'
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
       qs.push('request', 'getPreviousPreference');
@@ -873,7 +849,6 @@ export class ApiHttpService {
       .pipe(map((res: any) => res['data']));
   }
 
-  // TODO: NOTICE RETURN VALUES
   public updateUserPreference(courseID: number, userID: number, module: string, previousPreference: string, newPreference: string, date: Date = null): Observable<void> {
     const data = {
       course: courseID,
