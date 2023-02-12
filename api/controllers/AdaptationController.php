@@ -4,6 +4,7 @@ namespace API;
 
 use Exception;
 use GameCourse\Adaptation\GameElement;
+use GameCourse\Module\Module;
 use GameCourse\Role\Role;
 
 class AdaptationController
@@ -134,7 +135,7 @@ class AdaptationController
      * @throws Exception
      */
     public function isQuestionnaireAnswered(){
-        API::requireValues('courseId', 'userId');
+        API::requireValues('courseId', 'userId', 'gameElementId');
 
         $courseId = API::getValue('courseId', "int");
         $course = API::verifyCourseExists($courseId);
@@ -142,8 +143,43 @@ class AdaptationController
         $userId = API::getValue("userId", "int");
         API::verifyUserExists($userId);
 
-        $response = GameElement::isQuestionnaireAnswered($courseId, $userId);
+        $gameElementId = API::getValue("gameElementId", "int");
+        $gameElement = GameElement::getGameElementById($gameElementId);
+        $moduleId = $gameElement->getModule();
+        $module = Module::getModuleById($moduleId, $course);
+        API::verifyModuleExists($module->getId(), $course);
+
+        $response = GameElement::isQuestionnaireAnswered($courseId, $userId, $gameElementId);
         API::response($response);
+    }
+
+    /**
+     * Adds a new preference questionnaire answer to the database
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function submitGameElementQuestionnaire(){
+        API::requireValues('course', 'user', 'q1', 'q2', 'q3', 'element');
+
+        $courseId = API::getValue('course', "int");
+        $course = API::verifyCourseExists($courseId);
+
+        $userId = API::getValue('user', "int");
+        $user = API::verifyUserExists($userId);
+
+        $q1 = API::getValue('q1', "bool");
+        $q2 = API::getValue('q2');
+        $q3 = API::getValue('q3', "int");
+        $element = API::getValue('element');
+
+        $module = Module::getModuleById($element, $course);
+        API::verifyModuleExists($module->getId(), $course);
+
+        $gameElement = GameElement::getGameElementByModule($courseId, $element);
+        $gameElementId = $gameElement->getId();
+
+        GameElement::submitGameElementQuestionnaire($courseId, $userId, $q1, $q2, $q3, $gameElementId);
     }
 
     /**

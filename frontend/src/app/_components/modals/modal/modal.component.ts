@@ -19,10 +19,12 @@ export class ModalComponent implements OnInit {
     'neutral' | 'info' | 'success' | 'warning' | 'error';
   @Input() headerMarginBottom?: boolean = true;                       // Modal title margin bottom
 
+  @Input() xButton?: boolean = true;                                  // Right top button 'X'
+
+  @Input() closeBtn?: boolean = true;                                 // Show left button
   @Input() closeBtnText?: string = 'Cancel';                          // Left button text
   @Input() closeBtnColor?: 'primary' | 'secondary' | 'accent' |       // Modal title color
     'neutral' | 'info' | 'success' | 'warning' | 'error';             // Left button color
-  @Input() xButton?: boolean = true;                                  // Right top button 'X'
 
   @Input() extraBtnText?: string;                                     // Middle button text
   @Input() extraBtnColor?: 'primary' | 'secondary' | 'accent' |       // Middle button color
@@ -30,6 +32,7 @@ export class ModalComponent implements OnInit {
   @Input() extraBtnOutline?: boolean;                                 // Make middle button outline
   @Input() extraBtnDisabled?: boolean;                                // Make it disabled
 
+  @Input() submitBtnIcon?: string;                                    // Icon on appended submit button
   @Input() submitBtnText?: string = 'Submit';                         // Right button text
   @Input() submitBtnColor?: 'primary' | 'secondary' | 'accent' |      // Right button color
     'neutral' | 'info' | 'success' | 'warning' | 'error' = 'primary';

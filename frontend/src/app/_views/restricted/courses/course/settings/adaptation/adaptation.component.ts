@@ -7,11 +7,8 @@ import {TableDataType} from "../../../../../../_components/tables/table-data/tab
 import {GameElement} from "../../../../../../_domain/adaptation/GameElement";
 import {ModalService} from "../../../../../../_services/modal.service";
 import {NgForm} from "@angular/forms";
-import {clearEmptyValues} from "../../../../../../_utils/misc/misc";
 import {AlertService, AlertType} from "../../../../../../_services/alert.service";
-import {Observable} from "rxjs";
-import {CourseUser} from "../../../../../../_domain/users/course-user";
-import {Action} from "../../../../../../_domain/modules/config/Action";
+import {clearEmptyValues} from "../../../../../../_utils/misc/misc";
 
 @Component({
   selector: 'app-adaptation',
@@ -47,8 +44,9 @@ export class AdaptationComponent implements OnInit {
   option: string;
   message: string;
   questionnaire: boolean;
+  mode: 'questionnaire';
 
-  @ViewChild('q', {static: false}) q: NgForm;       // questionnaire form
+  questionnaireToManage: QuestionnaireManageData;
 
   constructor(
     private api: ApiHttpService,
@@ -61,16 +59,10 @@ export class AdaptationComponent implements OnInit {
       await this.getCourse(courseID);
       await this.getUser();
 
-      //if (!this.user.isAdmin){ // FIXME: DEBUG ONLY
-        await this.isQuestionnaireAnswered();
-      //}
-
       await this.getGameElements(courseID);
       this.loading.page = false;
 
-      if (this.user.isAdmin){
-        this.buildTable();
-      }
+      await this.buildTable();
 
     });
   }
@@ -94,67 +86,78 @@ export class AdaptationComponent implements OnInit {
     }
 
     // NON-ADMIN
-    else {
+    //else { //FIXME:DEBUG ONLY
       // all available game elements
       this.availableGameElements = await this.api.getGameElements(courseID, true).toPromise();
-      let ids = this.availableGameElements.map(value => {return value.id});
-      // game elements the logged-in user is allowed to edit
-      const gameElements = await this.api.getGameElementsUserCanEdit(courseID, this.user.id).toPromise();
 
-      let elements = [];
-      // see if game elements logged-in user is allowed to edit is active
-      for (let i = 0; i < gameElements.length; i++){
-        if (ids.includes(gameElements[i].id)){
-          elements.push(gameElements[i]);
-        }
+      for (let i = 0; i < this.availableGameElements.length; i++){
+        this.availableGameElementsSelect.push({value: this.availableGameElements[i].module, text: this.availableGameElements[i].module});
       }
-
-      for (let i = 0; i < elements.length; i++){
-        this.availableGameElementsSelect.push({value: elements[i].module, text: elements[i].module});
-      }
-
-    }
-  }
-
-  async isQuestionnaireAnswered(): Promise<void>{
-    this.questionnaire = await this.api.isQuestionnaireAnswered(this.course.id, this.user.id).toPromise();
-    if (!this.questionnaire){
-      ModalService.openModal('questionnaire');
-    }
+    //}
   }
 
   /*** --------------------------------------------- ***/
-  /*** ------------ Table (ADMIN) ------------------ ***/
+  /*** ----------------- Table  -------------------- ***/
   /*** --------------------------------------------- ***/
 
-  headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
+  data: {type: TableDataType, content: any}[][];
+
+  /* ADMIN */
+  headersAdmin: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
     {label: 'Game Element', align: 'middle'},
     {label: 'Active', align: 'middle'},
     {label: 'Actions'}
   ];
-  data: {type: TableDataType, content: any}[][];
-  tableOptions = {
+  tableOptionsAdmin = {
     order: [0, 'asc'],
-    columnDefs: [ // not sure
+    columnDefs: [
       { type: 'natural', targets: [0] },
       { orderable: false, targets: [1] }
     ]
   }
 
-  buildTable(): void {
+  /* NON-ADMIN */
+  headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
+    {label: 'Game Element', align: 'middle'},
+    {label: 'Questionnaire', align: 'middle'}
+  ];
+  tableOptions = {
+    order: [0, 'asc'],
+    columnDefs: [
+      { type: 'natural', targets: [0] },
+    ]
+  }
+
+  async buildTable() {
     this.loading.table = true;
 
     const table: {type: TableDataType, content: any}[][] = [];
-    this.availableGameElements.forEach(gameElement => {
-      table.push([
-        {type: TableDataType.TEXT, content: {text: gameElement.module}},
-        {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: gameElement.isActive}},
-        {type: TableDataType.ACTIONS, content: {actions: [
-          {action: 'Questionnaire statistics', icon: 'tabler-chart-pie', color: 'primary'},
-          {action: 'Export questionnaire answers', icon: 'jam-upload', color: 'primary'}]}
-        }
-      ]);
-    });
+
+    if (!this.user.isAdmin){  //FIXME: this.user.isAdmin
+      this.availableGameElements.forEach(gameElement => {
+        table.push([
+          {type: TableDataType.TEXT, content: {text: gameElement.module}},
+          {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: gameElement.isActive}},
+          {type: TableDataType.ACTIONS, content: {actions: [
+                {action: 'Questionnaire statistics', icon: 'tabler-chart-pie', color: 'primary'},
+                {action: 'Export questionnaire answers', icon: 'jam-upload', color: 'primary'}]}
+          }
+        ]);
+      });
+    } else{
+      for (const gameElement of this.availableGameElements) {
+        const response = await this.api.isQuestionnaireAnswered(this.course.id, this.user.id, gameElement.id).toPromise();
+        table.push([
+          {type: TableDataType.TEXT, content: {text: gameElement.module}},
+          {type: TableDataType.BUTTON, content: {
+            buttonText: response ? 'Answered' : 'Answer',
+            buttonColor: response ? '' : 'success',
+            buttonStyle: 'outline',
+            buttonDisable: response}},
+        ]);
+      }
+    }
+
     this.data = table;
     this.loading.table = false;
   }
@@ -170,13 +173,13 @@ export class AdaptationComponent implements OnInit {
       this.gameElementToManage = this.initGameElementToManage(gameElementToActOn);
       ModalService.openModal('manage-game-element');
 
-    } /*else if (action === 'Configure') {
-      this.mode = 'configure';
-
-      this.gameElementToManage = this.initGameElementToManage(gameElementToActOn);
-
-      ModalService.openModal('manage-game-element');
-    }*/
+    } else if (action === 'answer questionnaire') {
+      this.mode = 'questionnaire';
+      this.questionnaireToManage = this.initQuestionnaireToManage();
+      this.questionnaireToManage.element = gameElementToActOn.module;
+      console.log(this.questionnaireToManage);
+      ModalService.openModal('questionnaire');
+    }
   }
 
   /*** --------------------------------------------- ***/
@@ -196,7 +199,7 @@ export class AdaptationComponent implements OnInit {
     this.availableGameElements.removeAtIndex(index);
     this.availableGameElements.push(gameElement);
 
-    this.buildTable();
+    await this.buildTable();
     this.loading.action = false;
     ModalService.closeModal('manage-game-element');
     AlertService.showAlert(AlertType.SUCCESS, 'Game element \'' + gameElement.module + '\'' + this.adminMode + 'd');
@@ -204,8 +207,13 @@ export class AdaptationComponent implements OnInit {
   }
 
   /** -- NON-ADMIN ACTIONS -- **/
-  doAction(gameElement: string) {
-    this.option = gameElement;
+  async doAction(action:string, gameElement?: string) {
+    if (action === 'set option'){
+      this.option = gameElement;
+    } else if (action === 'submit questionnaire'){
+      await this.api.submitGameElementQuestionnaire(clearEmptyValues(this.questionnaireToManage)).toPromise();
+    }
+
   }
 
   async preparePreferences(gameElement: string){
@@ -245,7 +253,7 @@ export class AdaptationComponent implements OnInit {
     this.gameElementChildren =  await this.api.getChildrenGameElement(this.course.id, gameElement).toPromise();
   }
 
-  async save(): Promise<void> {
+  async updatePreference(): Promise<void> {
     const newPreference = this.gameElementChildren[this.activeButton];
 
     if (newPreference && newPreference !== this.previousPreference){
@@ -275,11 +283,6 @@ export class AdaptationComponent implements OnInit {
     this.activeButton = index;
   }
 
-  resetGameElementManage(){
-    this.gameElementToManage = this.initGameElementToManage();
-    this.f.resetForm();
-  }
-
   initGameElementToManage(gameElement? : GameElement): GameElementManageData{
     const gameElementData: GameElementManageData = {
       course: gameElement?.course ?? null,
@@ -292,6 +295,28 @@ export class AdaptationComponent implements OnInit {
     }
     return gameElementData;
   }
+
+  resetGameElementManage(){
+    this.gameElementToManage = this.initGameElementToManage();
+    this.f.resetForm();
+  }
+
+  initQuestionnaireToManage(): QuestionnaireManageData{
+    const questionnaireData: QuestionnaireManageData = {
+      course: this.course.id,
+      user: this.user.id,
+      q1: null,
+      q2: null,
+      q3: null,
+      element: ""
+    };
+    return questionnaireData;
+  }
+
+  resetQuestionnaireManage(){
+    this.questionnaireToManage = this.initQuestionnaireToManage();
+    this.f.resetForm();
+  }
 }
 
 export interface GameElementManageData {
@@ -300,4 +325,13 @@ export interface GameElementManageData {
   module?: string,
   isActive?: boolean,
   notify?: boolean
+}
+
+export interface QuestionnaireManageData{
+  course?: number,
+  user?: number,
+  q1?: boolean,
+  q2?: string,
+  q3?: number,
+  element?: string
 }

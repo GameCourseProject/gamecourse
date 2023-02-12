@@ -233,18 +233,43 @@ class GameElement
     /**
      * Gets all children of specific GameElement
      *
-     * @param
-     * @param
+     * @param int $courseId
+     * @param int $userId
+     * @param int $gameElementId
      * @return boolean
      * @throws Exception
      */
-    public static function isQuestionnaireAnswered(int $courseId, int $userId): bool {
+    public static function isQuestionnaireAnswered(int $courseId, int $userId, int $gameElementId): bool {
         $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
-        $where = ["course" => $courseId, "user" => $userId];
+        $where = ["course" => $courseId, "user" => $userId, "element" => $gameElementId];
         $response = Core::database()->select($table, $where);
 
         if ($response) return true;
         else return false;
+    }
+
+    /**
+     * Adds a new preference questionnaire answer to the database
+     *
+     * @param int $course
+     * @param int $user
+     * @param bool $q1
+     * @param string $q2
+     * @param int $q3
+     * @param int $element
+     * @return void
+     * @throws Exception
+     */
+    public static function submitGameElementQuestionnaire(int $course, int $user, bool $q1, string $q2, int $q3, int $element){
+        $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
+        Core::database()->insert($table,[
+            "course" => $course,
+            "user" => $user,
+            "question1" => $q1,
+            "question2" => $q2,
+            "question3" => $q3,
+            "element" => $element
+        ]);
     }
 
     /*** ---------------------------------------------------- ***/
@@ -393,13 +418,11 @@ class GameElement
      */
     public function sendNotification(){
         if ($this->isActive()){
-            $message = "Preference Questionnaire is available! Go to 'Adaptation' tab for more";
+            $message = $this->getModule() . " Preference Questionnaire is available! Go to 'Adaptation' tab for more";
             $users = Core::database()->selectMultiple(self::TABLE_ELEMENT_USER, ["element" => $this->id], "user");
             $users = array_map(function ($user) {return $user["user"];}, $users);
 
             foreach ($users as $user){
-                // FIXME ME: INCOMPLETE --> check Notification is not in DB && questionnaire has been answered --? inconsistency in statistics later??
-                // some users might end up answering more questionnaire than others ??
                 if (!Notification::isNotificationInDB($this->getCourse(), $user, $message)){
                     Notification::addNotification($this->getCourse(), $user, $message);
                 }

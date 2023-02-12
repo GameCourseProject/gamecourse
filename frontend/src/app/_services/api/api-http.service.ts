@@ -67,7 +67,10 @@ import { RuleSection } from "../../_domain/rules/RuleSection";
 import { RuleTag } from "../../_domain/rules/RuleTag";
 import { Notification } from "../../_domain/notifications/notification";
 import { GameElement } from "../../_domain/adaptation/GameElement";
-import { GameElementManageData } from 'src/app/_views/restricted/courses/course/settings/adaptation/adaptation.component';
+import {
+  GameElementManageData,
+  QuestionnaireManageData
+} from 'src/app/_views/restricted/courses/course/settings/adaptation/adaptation.component';
 
 @Injectable({
   providedIn: 'root'
@@ -821,18 +824,39 @@ export class ApiHttpService {
 
   }
 
-  public isQuestionnaireAnswered(courseID: number, userID: number): Observable<boolean>{
+  public isQuestionnaireAnswered(courseID: number, userID: number, gameElementID: number): Observable<boolean>{
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
       qs.push('request', 'isQuestionnaireAnswered');
       qs.push('courseId', courseID);
       qs.push('userId', userID);
+      qs.push('gameElementId', gameElementID);
     }
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe(map((res: any) => res['data']));
+  }
+
+  public submitGameElementQuestionnaire(questionnaireData: QuestionnaireManageData): Observable<void>{
+    const data = {
+      course: questionnaireData.course,
+      user: questionnaireData.user,
+      q1: questionnaireData.q1,
+      q2: questionnaireData.q2,
+      q3: questionnaireData.q3,
+      element: questionnaireData.element
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'submitGameElementQuestionnaire');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => res));
   }
 
   public getChildrenGameElement(courseID: number, module: string): Observable<string[]>{

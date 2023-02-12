@@ -17,11 +17,12 @@
 <ng-template #ADMIN>
   <div class="w-full relative">
     <app-table
+      class="w-full"
       [id] = "'gameElements'"
       [classList]="'mt-5'"
-      [headers] = "headers"
+      [headers] = "headersAdmin"
       [data] = "data"
-      [options] = "tableOptions"
+      [options] = "tableOptionsAdmin"
       [loading] = "loading.table"
       (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
       (valueChanged)="doActionOnTable('value changed game element', $event.row, $event.col, $event.value)">
@@ -73,85 +74,171 @@
 
 <!-- Non-Admin Template -->
 <ng-template #NON_ADMIN>
-  <div class="sm:w-1/2">
-    <app-input-select
-      [id]="'game-elements'"
-      [(value)] = "selectedGameElement"
-      [options] = "availableGameElementsSelect"
-      [multiple] = "false"
-      [search] = "true"
-      [placeholder]="'Select game element'"
-      [topLabel]="'Choose a game element to adapt'"
-      (valueChange)="selectedGameElement = $event ?? []; preparePreferences(selectedGameElement)"
-    ></app-input-select>
-  </div>
+  <div *ngIf="questionnaire">
 
-  <div *ngIf = "selectedGameElement" class="w-full flex flex-wrap mt-7">
-
-    <div class="sm:w-5/12">
-      <strong *ngIf="message">CURRENT</strong>
-      <div *ngIf="!message">
-        <strong>CURRENT - [OPTION {{previousPreference}}]</strong>
-        <img class="p-3 pt-5 rounded max-w-md" src="assets/imgs/no-image.png" alt="previous user preference"/>
-      </div>
-
-      <div *ngIf="message && previousPreference">{{message}}
-      </div>
+    <div class="sm:w-1/2">
+      <app-input-select
+        [id]="'game-elements'"
+        [(value)] = "selectedGameElement"
+        [options] = "availableGameElementsSelect"
+        [multiple] = "false"
+        [search] = "true"
+        [placeholder]="'Select game element'"
+        [topLabel]="'Choose a game element to adapt'"
+        (valueChange)="selectedGameElement = $event ?? []; preparePreferences(selectedGameElement)"
+      ></app-input-select>
     </div>
 
-    <div class="divider divider-horizontal rounded bg-base-200"></div>
+    <div *ngIf = "selectedGameElement" class="w-full flex flex-wrap mt-7">
 
-    <div class="sm:w-5/12">
-      <div *ngIf="gameElementChildren">
-        <div class="btn-group flex justify-start sm:mr-[6rem]">
-          <strong class="mr-1">NEW -</strong>Options available:
-          <div *ngFor="let option of gameElementChildren; let i = index" class="pl-2">
-            <input type = "button"
-                   class="btn-sm rounded-lg btn-{{getButtonColor(i)}} px-2 text-white"
-                   value="{{option}}"
-                   (click) = "setButtonActive(i); doAction(option)"/>
-          </div>
+      <div class="sm:w-5/12">
+        <strong *ngIf="message">CURRENT</strong>
+        <div *ngIf="!message">
+          <strong>CURRENT - [OPTION {{previousPreference}}]</strong>
+          <img class="p-3 pt-5 rounded max-w-md" src="assets/imgs/no-image.png" alt="previous user preference"/>
+        </div>
+
+        <div *ngIf="message && previousPreference">{{message}}
         </div>
       </div>
 
-      <div *ngIf="!gameElementChildren"><strong>NEW</strong></div>
+      <div class="divider divider-horizontal rounded bg-base-200"></div>
 
-      <img *ngIf="gameElementChildren && activeButton !== null" class="p-3 rounded max-w-sm" src="assets/imgs/no-image.png" alt="previous user preference"/>
+      <div class="sm:w-5/12">
+        <div *ngIf="gameElementChildren">
+          <div class="btn-group flex justify-start sm:mr-[6rem]">
+            <strong class="mr-1">NEW -</strong>Options available:
+            <div *ngFor="let option of gameElementChildren; let i = index" class="pl-2">
+              <input type = "button"
+                     class="btn-sm rounded-lg btn-{{getButtonColor(i)}} px-2 text-white"
+                     value="{{option}}"
+                     (click) = "setButtonActive(i); doAction('set option', option)"/>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!gameElementChildren"><strong>NEW</strong></div>
+
+        <img *ngIf="gameElementChildren && activeButton !== null" class="p-3 rounded max-w-sm" src="assets/imgs/no-image.png" alt="previous user preference"/>
+      </div>
+
     </div>
 
-  </div>
-
-  <!-- Actions -->
-  <div *ngIf="selectedGameElement" style="position:relative; bottom:0; right: 0;">
-    <div class="flex items-center justify-end mt-6 sm:mr-[6rem]">
-      <button type="button" class="btn btn-ghost mr-2" (click)="activeButton= null;">Discard</button>
-      <button type="submit" class="btn btn-primary" (click)="save()">
-        <!-- Spinner -->
-        <ng-container *ngIf="loading.action">
-          <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
-        </ng-container>
-        Save preferences
-      </button>
+    <!-- Actions -->
+    <div *ngIf="selectedGameElement" style="position:relative; bottom:0; right: 0;">
+      <div class="flex items-center justify-end mt-6 sm:mr-[6rem]">
+        <button type="button" class="btn btn-ghost mr-2" (click)="activeButton= null;">Discard</button>
+        <button type="submit" class="btn btn-primary" (click)="updatePreference()">
+          <!-- Spinner -->
+          <ng-container *ngIf="loading.action">
+            <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+          </ng-container>
+          Save preferences
+        </button>
+      </div>
+      <p class="flex text-xs justify-end mt-2 sm:mr-[6rem]">Above actions will only work on current game element</p>
     </div>
-    <p class="flex text-xs justify-end mt-2 sm:mr-[6rem]">Above actions will only work on current game element</p>
   </div>
+  <div *ngIf="!questionnaire" class="w-full flex-wrap flex">
+    <app-header class="w-full" [classList]="'mt-2'" [subHeader]="true" [title]="'Welcome to Adaptation page!'"></app-header>
+    <span class="w-full">Here you will be able to <strong>custom</strong> different game elements in GameCourse.</span>
+    <span class="w-full">But first... you have some unanswered questionnaires!</span>
 
+    <app-table
+      class="w-full"
+      [id] = "'gameElements'"
+      [classList]="'mt-5'"
+      [headers] = "headers"
+      [data] = "data"
+      [options] = "tableOptions"
+      [loading] = "loading.table"
+      [hasColumnFiltering] = "false"
+      [hasFooters]="false"
+      (btnClicked)="doActionOnTable('answer questionnaire', $event.row, $event.col)">
+    </app-table>
+  </div>
 </ng-template>
 
-<app-modal *ngIf="!questionnaire"
+<app-modal *ngIf="mode && gameElementToManage"
            [id] = "'questionnaire'"
            [templateRef] = "PREFERENCE_QUESTIONNAIRE"
            [size] = "'md'"
-           [static] = "true"
-           [xButton] = "false"
-           [header] = "'Prefererence Questionnaire'"
-           [submitBtnText]="'Next'"
+           [header] = "'Preference Questionnaire'"
+           [headerMarginBottom]="false"
            [actionInProgress]="loading.action"
-           (submitBtnClicked)="q.onSubmit(null);">
+           (submitBtnClicked)="f.onSubmit(null); doAction('submit questionnaire')">
 </app-modal>
 
+
 <ng-template #PREFERENCE_QUESTIONNAIRE>
-  <form #q="ngForm"><div class="w-full flex flex-wrap mt-3">HEY</div></form>
+  <form #f="ngForm">
+    <!-- Subheader -->
+    <div class="w-full flex flex-wrap border-b border-gray-200 mb-4">
+      <span class="text-sm mb-2">We want your feedback!</span>
+    </div>
+
+    <!-- Question 1 -->
+    <div class="w-full flex flex-wrap mb-3">
+      <span class="font-semibold w-full">Have you noticed any changes regarding the <strong><i>{{questionnaireToManage.element}}</i></strong> element lately?
+        <span class="text-secondary ml-1">*</span>
+      </span>
+      <div class="md:w-1/6">
+        <app-input-radio
+          [id]="'notice-changes'"
+          [group] = "'notice-changes'"
+          [form] = "f"
+          [optionValue] = "'true'"
+          [color]="'secondary'"
+          [classList]="'mt-2'"
+          [label]="'Yes'"
+          [labelPosition]="'right'"
+          [(value)]="questionnaireToManage.q1"
+        ></app-input-radio>
+      </div>
+      <div class="md:w-1/6">
+        <app-input-radio
+          [id]="'notice-changes'"
+          [group] = "'notice-changes'"
+          [form] = "f"
+          [optionValue] = "'false'"
+          [color]="'secondary'"
+          [classList]="'mt-2'"
+          [label]="'No'"
+          [labelPosition]="'right'"
+          [(value)]="questionnaireToManage.q2"
+        ></app-input-radio>
+      </div>
+    </div>
+
+    <!-- Question 2 -->
+    <div *ngIf="questionnaireToManage.q1" class="w-full flex flex-wrap mb-4">
+        <app-input-textarea
+          class="w-full"
+          [id] = "'changes-description'"
+          [form] = "f"
+          [placeholder]="'Briefly describe the changes you noticed'"
+          [required]="true"
+          [label]="'What did you notice?'"
+          [maxLength]="250"
+          [(value)] = "questionnaireToManage.q2"
+          [maxLengthErrorMessage]="'Your description is too long: maximum of 250 characters'">
+        </app-input-textarea>
+      </div>
+
+    <!-- Question 3 -->
+    <div *ngIf="questionnaireToManage.q1" class="w-full flex flex-wrap">
+        <app-input-number
+          class="w-full"
+          [id]="'scale-preferences'"
+          [placeholder]="'1 - hate it ; 10 - love it'"
+          [topLabel]="'On a scale from 1 to 10, what did you think of said changes?'"
+          [required]="true"
+          [(value)]="questionnaireToManage.q3"
+          [minValue]="1"
+          [maxValue]="10">
+        </app-input-number>
+      </div>
+  </form>
 </ng-template>
 
 

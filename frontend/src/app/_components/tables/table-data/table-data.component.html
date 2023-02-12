@@ -57,11 +57,13 @@
 
 <!-- Type: BUTTON -->
 <ng-container *ngIf="type === DataType.BUTTON">
-  <button class="btn btn-sm flex-nowrap {{buttonColor ? buttons[buttonColor] : ''}} {{buttonStyle === 'outline' ? 'btn-outline' : ''}}
-          {{classList}}" [ngClass]="{'gap-2': buttonIcon}" (click)="btnClicked.emit('single')">
-    <ng-icon *ngIf="buttonIcon" [name]="buttonIcon" size="1.2rem"></ng-icon>
-    {{buttonText}}
-  </button>
+  <div class="{{Align}} items-center">
+    <button class="btn btn-sm flex-nowrap {{buttonColor ? buttons[buttonColor] : ''}} {{buttonStyle === 'outline' ? 'btn-outline' : ''}}
+          {{buttonDisable? 'btn-disabled' : ''}} {{classList}}" [ngClass]="{'gap-2': buttonIcon}" (click)="btnClicked.emit('single')">
+      <ng-icon *ngIf="buttonIcon" [name]="buttonIcon" size="1.2rem"></ng-icon>
+      {{buttonText}}
+    </button>
+  </div>
 </ng-container>
 
 <!-- Type: AVATAR -->
