@@ -1,0 +1,82 @@
+<app-modal [id] = "'questionnaire'"
+           [templateRef] = "PREFERENCE_QUESTIONNAIRE"
+           [size] = "'md'"
+           [header] = "'Preference Questionnaire'"
+           [headerMarginBottom]="false"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="q.onSubmit(null); submitQuestionnaire()"
+           (onClose)="resetQuestionnaireManage()">
+</app-modal>
+
+<ng-template #PREFERENCE_QUESTIONNAIRE>
+  <form #q="ngForm">
+    <!-- Subheader -->
+    <div class="w-full flex flex-wrap border-b border-gray-200 mb-4">
+      <span class="text-sm mb-2">We want your feedback!</span>
+    </div>
+
+    <!-- Question 1 -->
+    <div class="w-full flex flex-wrap mb-3">
+      <span class="font-semibold w-full">Have you noticed any changes regarding the <strong><i>{{questionnaireToManage.element}}</i></strong> element lately?
+        <span class="text-secondary ml-1">*</span>
+      </span>
+      <div class="md:w-1/6">
+        <app-input-radio
+          [id]="'notice-changes'"
+          [group] = "'notice-changes'"
+          [form] = "q"
+          [optionValue] = "true"
+          [color]="'secondary'"
+          [classList]="'mt-2'"
+          [label]="'Yes'"
+          [labelPosition]="'right'"
+          [(value)]="questionnaireToManage.q1"
+        ></app-input-radio>
+      </div>
+      <div class="md:w-1/6">
+        <app-input-radio
+          [id]="'notice-changes'"
+          [group] = "'notice-changes'"
+          [form] = "q"
+          [optionValue] = "false"
+          [color]="'secondary'"
+          [classList]="'mt-2'"
+          [label]="'No'"
+          [labelPosition]="'right'"
+          [(value)]="questionnaireToManage.q1"
+        ></app-input-radio>
+      </div>
+    </div>
+
+    <!-- Question 2 -->
+    <div *ngIf="questionnaireToManage.q1" class="w-full flex flex-wrap mb-4">
+      <app-input-textarea
+        class="w-full"
+        [id] = "'changes-description'"
+        [form] = "q"
+        [placeholder]="'Briefly describe the changes you noticed'"
+        [required]="true"
+        [label]="'What did you notice?'"
+        [maxLength]="250"
+        [(value)] = "questionnaireToManage.q2"
+        [maxLengthErrorMessage]="'Your description is too long: maximum of 250 characters'">
+      </app-input-textarea>
+    </div>
+
+    <!-- Question 3 -->
+    <div *ngIf="questionnaireToManage.q1" class="w-full flex flex-wrap">
+      <app-input-number
+        class="w-full"
+        [id]="'scale-preferences'"
+        [placeholder]="'1 - hate it ; 10 - love it'"
+        [form] = "q"
+        [topLabel]="'On a scale from 1 to 10, what did you think of said changes?'"
+        [required]="true"
+        [(value)]="questionnaireToManage.q3"
+        [minValue]="1"
+        [maxValue]="10">
+      </app-input-number>
+    </div>
+  </form>
+</ng-template>
+

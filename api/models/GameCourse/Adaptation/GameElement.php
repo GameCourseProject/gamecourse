@@ -84,7 +84,7 @@ class GameElement
      * @throws Exception
      */
     public function setNotify(bool $notify){
-        $this->setData(["notify" => $notify]);
+        $this->setData(["notify" => +$notify]);
         if ($notify) $this->sendNotification();
      }
 
@@ -254,13 +254,12 @@ class GameElement
      * @param int $course
      * @param int $user
      * @param bool $q1
-     * @param string $q2
-     * @param int $q3
+     * @param string|null $q2
+     * @param int|null $q3
      * @param int $element
      * @return void
-     * @throws Exception
      */
-    public static function submitGameElementQuestionnaire(int $course, int $user, bool $q1, string $q2, int $q3, int $element){
+    public static function submitGameElementQuestionnaire(int $course, int $user, bool $q1, ?string $q2, ?int $q3, int $element){
         $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
         Core::database()->insert($table,[
             "course" => $course,

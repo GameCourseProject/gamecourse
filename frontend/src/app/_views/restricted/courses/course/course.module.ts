@@ -13,6 +13,7 @@ import { ViewsComponent } from "./settings/views/views/views.component";
 import { ViewsEditorComponent } from './settings/views/views-editor/views-editor.component';
 import { GlobalComponent } from "./settings/global/global.component";
 import { AdaptationComponent } from "./settings/adaptation/adaptation.component";
+import { PreferenceQuestionnaireComponent } from "./settings/adaptation/questionnaire/preference-questionnaire.component"
 
 import { ModulesComponent } from "./settings/modules/modules/modules.component";
 import { ConfigComponent } from './settings/modules/config/config/config.component';
@@ -42,6 +43,7 @@ import { DataSourceStatusComponent } from "./settings/modules/config/data-source
     ProgressReportComponent,
     ProfilingComponent,
     AdaptationComponent,
+    PreferenceQuestionnaireComponent,
     ProfilingComponent,
     DataSourceStatusComponent
   ],

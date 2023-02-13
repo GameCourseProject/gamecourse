@@ -15,9 +15,8 @@
 
 <!-- Admin Template -->
 <ng-template #ADMIN>
-  <div class="w-full relative">
+  <div class="w-full">
     <app-table
-      class="w-full"
       [id] = "'gameElements'"
       [classList]="'mt-5'"
       [headers] = "headersAdmin"
@@ -74,7 +73,7 @@
 
 <!-- Non-Admin Template -->
 <ng-template #NON_ADMIN>
-  <div *ngIf="questionnaire">
+  <div *ngIf="!isQuestionnaire">
 
     <div class="sm:w-1/2">
       <app-input-select
@@ -139,7 +138,7 @@
       <p class="flex text-xs justify-end mt-2 sm:mr-[6rem]">Above actions will only work on current game element</p>
     </div>
   </div>
-  <div *ngIf="!questionnaire" class="w-full flex-wrap flex">
+  <div *ngIf="isQuestionnaire" class="w-full flex-wrap flex">
     <app-header class="w-full" [classList]="'mt-2'" [subHeader]="true" [title]="'Welcome to Adaptation page!'"></app-header>
     <span class="w-full">Here you will be able to <strong>custom</strong> different game elements in GameCourse.</span>
     <span class="w-full">But first... you have some unanswered questionnaires!</span>
@@ -159,87 +158,19 @@
   </div>
 </ng-template>
 
-<app-modal *ngIf="mode && gameElementToManage"
-           [id] = "'questionnaire'"
-           [templateRef] = "PREFERENCE_QUESTIONNAIRE"
-           [size] = "'md'"
-           [header] = "'Preference Questionnaire'"
-           [headerMarginBottom]="false"
-           [actionInProgress]="loading.action"
-           (submitBtnClicked)="f.onSubmit(null); doAction('submit questionnaire')">
-</app-modal>
+
+<app-preference-questionnaire
+  *ngIf="mode"
+  [course] = "course"
+  [user] = "user"
+  [gameElement]="gameElementToActOn"
+  [questionnaires]="questionnaires"
+  (questionnairesAfterSubmit)="this.questionnaires = $event; doAction('prepare non-admin page')">
+</app-preference-questionnaire>
 
 
-<ng-template #PREFERENCE_QUESTIONNAIRE>
-  <form #f="ngForm">
-    <!-- Subheader -->
-    <div class="w-full flex flex-wrap border-b border-gray-200 mb-4">
-      <span class="text-sm mb-2">We want your feedback!</span>
-    </div>
 
-    <!-- Question 1 -->
-    <div class="w-full flex flex-wrap mb-3">
-      <span class="font-semibold w-full">Have you noticed any changes regarding the <strong><i>{{questionnaireToManage.element}}</i></strong> element lately?
-        <span class="text-secondary ml-1">*</span>
-      </span>
-      <div class="md:w-1/6">
-        <app-input-radio
-          [id]="'notice-changes'"
-          [group] = "'notice-changes'"
-          [form] = "f"
-          [optionValue] = "'true'"
-          [color]="'secondary'"
-          [classList]="'mt-2'"
-          [label]="'Yes'"
-          [labelPosition]="'right'"
-          [(value)]="questionnaireToManage.q1"
-        ></app-input-radio>
-      </div>
-      <div class="md:w-1/6">
-        <app-input-radio
-          [id]="'notice-changes'"
-          [group] = "'notice-changes'"
-          [form] = "f"
-          [optionValue] = "'false'"
-          [color]="'secondary'"
-          [classList]="'mt-2'"
-          [label]="'No'"
-          [labelPosition]="'right'"
-          [(value)]="questionnaireToManage.q2"
-        ></app-input-radio>
-      </div>
-    </div>
 
-    <!-- Question 2 -->
-    <div *ngIf="questionnaireToManage.q1" class="w-full flex flex-wrap mb-4">
-        <app-input-textarea
-          class="w-full"
-          [id] = "'changes-description'"
-          [form] = "f"
-          [placeholder]="'Briefly describe the changes you noticed'"
-          [required]="true"
-          [label]="'What did you notice?'"
-          [maxLength]="250"
-          [(value)] = "questionnaireToManage.q2"
-          [maxLengthErrorMessage]="'Your description is too long: maximum of 250 characters'">
-        </app-input-textarea>
-      </div>
-
-    <!-- Question 3 -->
-    <div *ngIf="questionnaireToManage.q1" class="w-full flex flex-wrap">
-        <app-input-number
-          class="w-full"
-          [id]="'scale-preferences'"
-          [placeholder]="'1 - hate it ; 10 - love it'"
-          [topLabel]="'On a scale from 1 to 10, what did you think of said changes?'"
-          [required]="true"
-          [(value)]="questionnaireToManage.q3"
-          [minValue]="1"
-          [maxValue]="10">
-        </app-input-number>
-      </div>
-  </form>
-</ng-template>
 
 
 

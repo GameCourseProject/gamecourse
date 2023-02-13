@@ -160,7 +160,7 @@ class AdaptationController
      * @throws Exception
      */
     public function submitGameElementQuestionnaire(){
-        API::requireValues('course', 'user', 'q1', 'q2', 'q3', 'element');
+        API::requireValues('course', 'user', 'q1', 'element', 'q2', 'q3');
 
         $courseId = API::getValue('course', "int");
         $course = API::verifyCourseExists($courseId);
@@ -169,8 +169,8 @@ class AdaptationController
         $user = API::verifyUserExists($userId);
 
         $q1 = API::getValue('q1', "bool");
-        $q2 = API::getValue('q2');
-        $q3 = API::getValue('q3', "int");
+        $q2 = API::getValue('q2') ?? null;
+        $q3 = API::getValue('q3', "int") ?? null;
         $element = API::getValue('element');
 
         $module = Module::getModuleById($element, $course);

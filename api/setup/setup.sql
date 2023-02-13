@@ -183,11 +183,11 @@ CREATE TABLE preferences_questionnaire_answers(
     course      int unsigned NOT NULL,
     user        int unsigned NOT NULL,
     question1   boolean NOT NULL DEFAULT FALSE,
-    question2   varchar(250) NOT NULL,
-    question3   int unsigned NOT NULL,
+    question2   varchar(250),   /* default here is null */
+    question3   int unsigned,   /* default here is 0 */
     element     int unsigned NOT NULL,
 
-    UNIQUE(course, user),
+    UNIQUE(course, user, element),
     FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
     FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE,
     FOREIGN KEY (element) REFERENCES game_element(id) ON DELETE CASCADE

@@ -840,13 +840,14 @@ export class ApiHttpService {
   }
 
   public submitGameElementQuestionnaire(questionnaireData: QuestionnaireManageData): Observable<void>{
+    console.log(questionnaireData.element);
     const data = {
       course: questionnaireData.course,
       user: questionnaireData.user,
       q1: questionnaireData.q1,
+      element: questionnaireData.element,
       q2: questionnaireData.q2,
-      q3: questionnaireData.q3,
-      element: questionnaireData.element
+      q3: questionnaireData.q3
     }
 
     const params = (qs: QueryStringParameters) => {
