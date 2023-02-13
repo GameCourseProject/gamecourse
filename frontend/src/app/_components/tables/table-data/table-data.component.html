@@ -209,5 +209,6 @@
 
 <!-- Type: CUSTOM -->
 <ng-container *ngIf="type === DataType.CUSTOM">
-  <div [innerHTML]="html | sanitizeHTML"></div>
+  <div *ngIf="html" [innerHTML]="html | sanitizeHTML"></div>
 </ng-container>
+<ng-template componentContainer></ng-template>

@@ -1,4 +1,14 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {
+  Component,
+  ComponentRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  Type,
+  ViewChild, ViewContainerRef
+} from '@angular/core';
+import {DomSanitizer} from "@angular/platform-browser";
 import {environment} from "../../../../environments/environment.prod";
 import {Moment} from "moment/moment";
 
@@ -8,7 +18,7 @@ import {ThemingService} from "../../../_services/theming/theming.service";
 import {Action} from "../../../_domain/modules/config/Action";
 import {Theme} from "../../../_services/theming/themes-available";
 import {ResourceManager} from "../../../_utils/resources/resource-manager";
-import {DomSanitizer} from "@angular/platform-browser";
+import {TableDataCustomDirective} from "./table-data-custom.directive";
 
 
 @Component({
@@ -103,7 +113,10 @@ export class TableData implements OnInit {
 
   // Type: CUSTOM
   html?: string;                                                // Custom HTML
+  component?: Type<any>;                                        // Custom component
+  componentData?: {[key: string]: any};                         // Custom component data
   searchBy?: string;                                            // Search term
+  @ViewChild(TableDataCustomDirective, {static: true}) componentContainer!: TableDataCustomDirective;
 
   @Output() btnClicked: EventEmitter<Action | 'single'> = new EventEmitter<Action | 'single'>();
   @Output() valueChanged: EventEmitter<any> = new EventEmitter<any>();
@@ -226,7 +239,22 @@ export class TableData implements OnInit {
       this.actions = this.data.actions;
 
     } else if (this.type === TableDataType.CUSTOM) {
-      this.html = this.data.html;
+      if (this.data.html) this.html = this.data.html;
+      if (this.data.component) {
+        this.component = this.data.component;
+
+        const viewContainerRef: ViewContainerRef = this.componentContainer.viewContainerRef;
+        viewContainerRef.clear();
+
+        const componentRef: ComponentRef<any> = viewContainerRef.createComponent(this.component);
+        if (this.data.componentData) {
+          this.componentData = this.data.componentData;
+          for (const [key, value] of Object.entries(this.componentData)) {
+            componentRef.instance[key] = value;
+          }
+        }
+      }
+      if (this.data.searchBy) this.searchBy = this.data.searchBy;
 
     } else ErrorService.set('Table data type "' + this.type + '" not found.');
   }
@@ -271,7 +299,7 @@ export enum TableDataType {
   RADIO = 'radio',          // params -> radioId: string, radioGroup: string, radioOptionValue: any, radioValue: any, radioColor?: string, radioDisabled?: boolean
   TOGGLE = 'toggle',        // params -> toggleId: string, toggleValue: boolean, toggleColor?: string, toggleDisabled?: boolean
   ACTIONS = 'actions',      // params -> actions: (Action|{action: Action, icon?: string, color?: string, disabled?: boolean})[]
-  CUSTOM = 'custom'         // params -> html: string, searchBy: string
+  CUSTOM = 'custom'         // params -> html?: string, component?: Type<any>, componentData?: {[key: string]: any}, searchBy?: string
 }
 
 export function getValue(data: {type: TableDataType, content: any}): string {

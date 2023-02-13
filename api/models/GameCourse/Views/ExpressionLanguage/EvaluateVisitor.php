@@ -2,8 +2,8 @@
 namespace GameCourse\Views\ExpressionLanguage;
 
 use Exception;
+use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Views\Dictionary\Dictionary;
 
 class EvaluateVisitor extends Visitor
 {
@@ -68,28 +68,18 @@ class EvaluateVisitor extends Visitor
         $libraryId = $node->getLib();
 
         if ($context) {
-            $contextVal = $context->accept($this)->getValue();
-            if (!$libraryId) {
-                // gets the lib name of the previous function
-                // ex: %user.name in the function 'name' gets users lib
-                if (is_array($contextVal)) {
-                    if (empty($contextVal))
-                        throw new Exception("Tried to call function '" . $funcName . "' on an empty array.");
+            $context = $context->accept($this);
+            $contextVal = $context->getValue();
 
-                    if ($contextVal["type"] == "object")
-                        $libraryId = $contextVal["value"]["libraryOfVariable"];
-                    else { //type == collection
-                        if (!empty($contextVal["value"]))
-                            $libraryId = $contextVal["value"][0]["libraryOfVariable"];
-                    }
-                    $node->setLib($libraryId);
-                }
+            // If no library is set, gets the library of the context
+            if (!$libraryId) {
+                $libraryId = $context->getLibrary()->getId();
+                $node->setLib($libraryId);
             }
         } else $contextVal = null;
 
         $course = $this->mockData ? null : Course::getCourseById($this->params["course"]);
-        $dictionary = Dictionary::get();
-        return $dictionary->callFunction($course, $libraryId, $funcName, $args, $contextVal, $this->mockData);
+        return Core::dictionary()->callFunction($course, $libraryId, $funcName, $args, $contextVal, $this->mockData);
     }
 
     /**
@@ -156,14 +146,8 @@ class EvaluateVisitor extends Visitor
         if (!array_key_exists($variableName, $this->params))
             throw new Exception('Unknown variable: ' . $variableName);
 
-        $key = $node->getKey();
-        if ($key == null) {
-            return new ValueNode($this->params[$variableName]);
-
-        } else {
-            if (!is_string($key)) $key= $key->getValue();
-            return new ValueNode($this->params[$variableName][$key]);
-        }
+        $param = $this->params[$variableName];
+        return $param instanceof Node ? $param->accept($this) : new ValueNode($param);
     }
 
     /**

@@ -7,12 +7,11 @@ import {ApiEndpointsService} from "../../../../../_services/api/api-endpoints.se
 import {Course} from "../../../../../_domain/courses/course";
 import {exists} from "../../../../../_utils/misc/misc";
 import {User} from "../../../../../_domain/users/user";
-import {Page} from "../../../../../_domain/pages & templates/page";
+import {Page} from "../../../../../_domain/views/pages/page";
 
 @Component({
   selector: 'app-page',
-  templateUrl: './page.component.html',
-  styleUrls: ['./page.component.scss']
+  templateUrl: './page.component.html'
 })
 export class PageComponent implements OnInit {
 
@@ -42,9 +41,14 @@ export class PageComponent implements OnInit {
     return ApiEndpointsService;
   }
 
-  ngOnInit(): void {
-    this.route.parent.params.subscribe(params => {
+  async ngOnInit(): Promise<void> {
+    // Get logged user information
+    await this.getLoggedUser();
+
+    this.route.parent.params.subscribe(async params => {
+      // Get course information
       const courseID = parseInt(params.id);
+      await this.getCourse(courseID);
 
       this.route.params.subscribe(async params => {
         if (this.router.url.includes('skills')) { // Skill page
@@ -59,18 +63,43 @@ export class PageComponent implements OnInit {
         } else { // Render page
           this.pageView = null; // NOTE: Important - Forces view to completely refresh
 
-          // const pageID = parseInt(params.id); FIXME: render page
-          // const userID = parseInt(params.userId) || null;
-          // this.api.getLoggedUser()
-          //   .subscribe(user => {
-          //     this.api.renderPage(this.courseID, this.pageID, this.userID || user.id)
-          //       .pipe(finalize(() => this.loading = false))
-          //       .subscribe(view => this.pageView = view);
-          //   });
+          // Get page info
+          const pageID = parseInt(params.id);
+          await this.getPage(pageID);
+
+          // Render page
+          const userID = parseInt(params.userId) || null;
+          await this.renderPage(pageID, userID);
         }
         this.loading = false;
       });
     });
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** -------------------- Init ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  async getLoggedUser(): Promise<void> {
+    this.user = await this.api.getLoggedUser().toPromise();
+  }
+
+  async getCourse(courseID: number): Promise<void> {
+    this.course = await this.api.getCourseById(courseID).toPromise();
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** -------------------- Page ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  async getPage(pageID: number): Promise<void> {
+    this.page = await this.api.getPageById(pageID).toPromise();
+  }
+
+  async renderPage(pageID: number, userID: number): Promise<void> {
+    this.pageView = await this.api.renderPage(this.course.id, pageID, userID || this.user.id).toPromise();
   }
 
 

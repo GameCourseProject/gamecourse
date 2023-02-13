@@ -1,6 +1,13 @@
-<bb-text *ngIf="view.type === ViewType.TEXT" [view]="view | as : ViewText" [viewSelection]="view"></bb-text>
-<bb-image *ngIf="view.type === ViewType.IMAGE" [view]="view | as : ViewImage" [viewSelection]="view"></bb-image>
-<bb-header *ngIf="view.type === ViewType.HEADER" [view]="view | as : ViewHeader" [viewSelection]="view"></bb-header>
-<bb-table *ngIf="view.type === ViewType.TABLE" [view]="view | as : ViewTable" [viewSelection]="view"></bb-table>
-<bb-block *ngIf="view.type === ViewType.BLOCK" [view]="view | as : ViewBlock" [viewSelection]="view"></bb-block>
-<bb-chart *ngIf="view.type === ViewType.CHART" [view]="view | as : ViewChart" [viewSelection]="view"></bb-chart>
+<div *ngIf="visible" [classList]="classes"
+     [attr.data-view-id]="view.id"
+     [attr.data-view-root]="view.viewRoot"
+     [goToPage]="{event: getEvent(EventAction.GO_TO_PAGE) | as : GoToPageEvent, view}"
+     [showTooltip]="{event: getEvent(EventAction.SHOW_TOOLTIP) | as : ShowTooltipEvent, view}">
+
+  <bb-block *ngIf="view.type === ViewType.BLOCK" [view]="view | as : ViewBlock" [viewSelection]="view"></bb-block>
+  <bb-chart *ngIf="view.type === ViewType.CHART" [view]="view | as : ViewChart" [viewSelection]="view"></bb-chart>
+  <bb-icon  *ngIf="view.type === ViewType.ICON"  [view]="view | as : ViewIcon"  [viewSelection]="view"></bb-icon>
+  <bb-image *ngIf="view.type === ViewType.IMAGE" [view]="view | as : ViewImage" [viewSelection]="view"></bb-image>
+  <bb-table *ngIf="view.type === ViewType.TABLE" [view]="view | as : ViewTable" [viewSelection]="view"></bb-table>
+  <bb-text  *ngIf="view.type === ViewType.TEXT"  [view]="view | as : ViewText"  [viewSelection]="view"></bb-text>
+</div>

@@ -1,0 +1,28 @@
+/**
+ * ----------------------------
+ * DISPLAY VERSION
+ * ----------------------------
+ */
+
+.bb-block {
+  @apply flex flex-wrap;
+
+  &.bb-block-vertical {
+    @apply flex-col;
+  }
+
+  &.bb-block-horizontal {
+    @apply flex-row;
+  }
+}
+
+
+/**
+ * ----------------------------
+ * EDITOR VERSION
+ * ----------------------------
+ */
+
+.page-editor {
+  /* TODO */
+}

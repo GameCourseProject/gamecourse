@@ -10,10 +10,9 @@ import { SanitizeHTMLPipe } from "./_pipes/sanitize-html.pipe";
 // Directives
 import { ClickedOutsideDirective } from "./_directives/clicked-outside.directive";
 import { ViewSelectionDirective } from "./_directives/view-selection.directive";
-import { GoToPageDirective } from "./_directives/events/go-to-page.directive";
-import { HideViewDirective } from "./_directives/events/hide-view.directive";
-import { ShowViewDirective } from "./_directives/events/show-view.directive";
-import { ToggleViewDirective } from "./_directives/events/toggle-view.directive";
+import { GoToPageDirective } from "./_directives/views/events/actions/go-to-page.directive";
+import { ShowTooltipDirective } from "./_directives/views/events/actions/show-tooltip.directive";
+import { TableDataCustomDirective } from './_components/tables/table-data/table-data-custom.directive';
 
 // Components: layout
 import { NavbarComponent } from './_components/layout/navbar/navbar.component';
@@ -78,11 +77,11 @@ import { SimpleHelperComponent } from './_components/helpers/simple-helper/simpl
 // Components: building blocks
 import { BBAnyComponent } from "./_components/building-blocks/any/any.component";
 import { BBBlockComponent } from './_components/building-blocks/block/block.component';
-import { BBTextComponent } from './_components/building-blocks/text/text.component';
-import { BBImageComponent } from './_components/building-blocks/image/image.component';
-import { BBHeaderComponent } from './_components/building-blocks/header/header.component';
-import { BBTableComponent } from './_components/building-blocks/table/table.component';
 import { BBChartComponent } from "./_components/building-blocks/chart/chart.component";
+import { BBIconComponent } from './_components/building-blocks/icon/icon.component';
+import { BBImageComponent } from './_components/building-blocks/image/image.component';
+import { BBTableComponent } from './_components/building-blocks/table/table.component';
+import { BBTextComponent } from './_components/building-blocks/text/text.component';
 
 // Components: misc
 import { AutoGameToastComponent } from './_components/misc/autogame-toast/auto-game-toast.component';
@@ -146,6 +145,8 @@ import {
   TablerArrowNarrowDown,
   TablerAward,
   TablerBarrierBlock,
+  TablerBell,
+  TablerBellRinging,
   TablerBellSchool,
   TablerBooks,
   TablerCalendarTime,
@@ -157,9 +158,8 @@ import {
   TablerIdBadge2,
   TablerPlug,
   TablerPrompt,
-  TablerSchool,
-  TablerBellRinging,
-  TablerBell,
+  TablerQuestionMark,
+  TablerSchool
 } from "@ng-icons/tabler-icons";
 
 
@@ -171,9 +171,8 @@ import {
     ClickedOutsideDirective,
     ViewSelectionDirective,
     GoToPageDirective,
-    HideViewDirective,
-    ShowViewDirective,
-    ToggleViewDirective,
+    ShowTooltipDirective,
+    TableDataCustomDirective,
 
     NavbarComponent,
     SidebarComponent,
@@ -227,11 +226,11 @@ import {
 
     BBAnyComponent,
     BBBlockComponent,
-    BBTextComponent,
-    BBImageComponent,
-    BBHeaderComponent,
-    BBTableComponent,
     BBChartComponent,
+    BBIconComponent,
+    BBImageComponent,
+    BBTableComponent,
+    BBTextComponent,
 
     AutoGameToastComponent,
     HeaderComponent,
@@ -249,9 +248,8 @@ import {
     ClickedOutsideDirective,
     ViewSelectionDirective,
     GoToPageDirective,
-    HideViewDirective,
-    ShowViewDirective,
-    ToggleViewDirective,
+    ShowTooltipDirective,
+    TableDataCustomDirective,
 
     NavbarComponent,
     SidebarComponent,
@@ -305,11 +303,11 @@ import {
 
     BBAnyComponent,
     BBBlockComponent,
-    BBTextComponent,
-    BBImageComponent,
-    BBHeaderComponent,
-    BBTableComponent,
     BBChartComponent,
+    BBIconComponent,
+    BBImageComponent,
+    BBTableComponent,
+    BBTextComponent,
 
     AutoGameToastComponent,
     HeaderComponent,
@@ -368,6 +366,8 @@ import {
       TablerArrowNarrowDown,
       TablerAward,
       TablerBarrierBlock,
+      TablerBell,
+      TablerBellRinging,
       TablerBellSchool,
       TablerBooks,
       TablerCalendarTime,
@@ -379,9 +379,8 @@ import {
       TablerIdBadge2,
       TablerPlug,
       TablerPrompt,
-      TablerSchool,
-      TablerBellRinging,
-      TablerBell,
+      TablerQuestionMark,
+      TablerSchool
     }),
     DataTablesModule,
     NgApexchartsModule,

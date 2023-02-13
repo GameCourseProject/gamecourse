@@ -2,7 +2,7 @@
 namespace GameCourse\Views\Dictionary;
 
 use Exception;
-use GameCourse\Course\Course;
+use GameCourse\Core\Core;
 use GameCourse\Module\Skills\Skills;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
 
@@ -48,18 +48,16 @@ class SkillsLibrary extends Library
      * @example %user.hasWildcardAvailable(<skillTreeID>) --> true
      * @example %user.hasWildcardAvailable(<skillTreeID>) --> false
      *
-     * @param bool $mockData
-     * @param Course $course
      * @param array $user
      * @param int $skillTreeId
      * @return ValueNode
      * @throws Exception
      */
-    public function hasWildcardAvailable(bool $mockData, Course $course, array $user, int $skillTreeId): ValueNode
+    public function hasWildcardAvailable(array $user, int $skillTreeId): ValueNode
     {
-        if ($mockData) return new ValueNode(false);
+        if (Core::dictionary()->mockData()) return new ValueNode(false);
 
-        $skillsModule = new Skills($course);
+        $skillsModule = new Skills(Core::dictionary()->getCourse());
         return new ValueNode($skillsModule->userHasWildcardAvailable($user["id"], $skillTreeId));
     }
 }

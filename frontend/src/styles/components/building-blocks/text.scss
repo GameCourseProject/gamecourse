@@ -1,0 +1,22 @@
+/**
+ * ----------------------------
+ * DISPLAY VERSION
+ * ----------------------------
+ */
+
+.bb-text {
+  &.bb-text-link {
+    @apply link hover:text-primary;
+  }
+}
+
+
+/**
+ * ----------------------------
+ * EDITOR VERSION
+ * ----------------------------
+ */
+
+.page-editor {
+  /* TODO */
+}

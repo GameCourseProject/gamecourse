@@ -7,7 +7,7 @@ import { SidebarService } from "../../../_services/sidebar.service";
 
 import { User } from "../../../_domain/users/user";
 import { Course } from "../../../_domain/courses/course";
-import { Page } from "../../../_domain/pages & templates/page";
+import { Page } from "../../../_domain/views/pages/page";
 
 import {Theme} from "../../../_services/theming/themes-available";
 import {ThemingService} from "../../../_services/theming/theming.service";

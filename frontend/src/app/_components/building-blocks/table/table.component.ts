@@ -1,15 +1,13 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {ViewTable} from "../../../_domain/views/view-table";
-import {exists, requireValues} from "../../../_utils/misc/misc";
-import {ViewMode, VisibilityType} from "../../../_domain/views/view";
-import {Event} from "../../../_domain/views/events/event";
-import {EventAction, getEventFromAction} from "../../../_domain/views/events/event-action";
-import { EventGoToPage } from 'src/app/_domain/views/events/event-go-to-page';
-import { EventHideView } from 'src/app/_domain/views/events/event-hide-view';
-import { EventShowView } from 'src/app/_domain/views/events/event-show-view';
-import { EventToggleView } from 'src/app/_domain/views/events/event-toggle-view';
-import {EditorAction, ViewEditorService} from "../../../_services/view-editor.service";
-import { ViewRow } from 'src/app/_domain/views/view-row';
+
+import {ViewTable} from "../../../_domain/views/view-types/view-table";
+import {View, ViewMode} from "../../../_domain/views/view";
+import {ViewEditorService} from "../../../_services/view-editor.service";
+import {TableDataType} from "../../tables/table-data/table-data.component";
+import {ViewType} from "../../../_domain/views/view-types/view-type";
+import {ViewText} from "../../../_domain/views/view-types/view-text";
+import {BBAnyComponent} from "../any/any.component";
+import {ViewBlock} from "../../../_domain/views/view-types/view-block";
 
 @Component({
   selector: 'bb-table',
@@ -18,68 +16,80 @@ import { ViewRow } from 'src/app/_domain/views/view-row';
 export class BBTableComponent implements OnInit {
 
   @Input() view: ViewTable;
+
   edit: boolean;
+  classes: string;
+
+  loading: boolean = true;
 
   constructor(public actionManager: ViewEditorService) { }
 
   ngOnInit(): void {
-    requireValues(this.view, [this.view.headerRows, this.view.rows, this.view.nrColumns]);
     this.edit = this.view.mode === ViewMode.EDIT;
+    this.classes = 'bb-table';
 
-    if (!this.edit && !!this.view.events?.click) this.view.class += ' gc-clickable';
-    this.view.headerRows.forEach(row => {
-      if (!this.edit && !!row.events?.click) row.class += ' gc-clickable';
-    });
-    this.view.rows.forEach(row => {
-      if (!this.edit && !!row.events?.click) row.class += ' gc-clickable';
-    });
+    this.buildTable();
+  }
 
-    if (this.view.visibilityType === VisibilityType.INVISIBLE && !this.edit) {
-      this.view.style = this.view.style || '';
-      this.view.style = this.view.style.concatWithDivider('display: none', ';');
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------- Table ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [];
+  data: {type: TableDataType, content: any}[][];
+  tableOptions: {[key: string]: any} = {
+    searching: true,
+    lengthChange: true,
+    paging: true,
+    info: true,
+    columnDefs: [{orderable: true}]
+  };
+
+  buildTable(): void {
+    this.loading = true;
+
+    // Init table options
+    this.tableOptions['searching'] = this.view.searching;
+    this.tableOptions['lengthChange'] = this.view.lengthChange;
+    this.tableOptions['paging'] = this.view.paging;
+    this.tableOptions['info'] = this.view.info;
+    this.tableOptions['columnDefs'][0]['orderable'] = this.view.ordering;
+
+    // Get headers
+    if (this.view.headerRows?.length > 0) {
+      for (const header of this.view.headerRows[0].children) { // NOTE: only allows one header row
+        if (header.type === ViewType.TEXT) // NOTE: only allows text headers
+          this.headers.push({label: (header as ViewText).text, align: 'middle'});
+      }
+    }
+
+    // Get data
+    let table: { type: TableDataType, content: any }[][] = [];
+    if (this.view.bodyRows?.length > 0) {
+      for (const row of this.view.bodyRows) {
+        const rowData: { type: TableDataType, content: any}[] = [];
+        row.children.forEach(cell => {
+          rowData.push({
+            type: TableDataType.CUSTOM,
+            content: {component: BBAnyComponent, componentData: {view: cell}, searchBy: getSearchBy(cell, '')}
+          });
+        });
+        table.push(rowData);
+      }
+    }
+    this.data = table;
+
+    this.loading = false;
+
+    function getSearchBy(view: View, searchBy: string): string {
+      if (view.type === ViewType.TEXT) return (view as ViewText).text;
+      if (view.type === ViewType.BLOCK) {
+        for (const child of (view as ViewBlock).children) {
+          searchBy += getSearchBy(child, searchBy) + ' ';
+        }
+      }
+      return searchBy;
     }
   }
-
-  get ViewTable(): typeof ViewTable {
-    return ViewTable;
-  }
-
-  get ViewRow(): typeof ViewRow {
-    return ViewRow;
-  }
-
-  get EditorAction(): typeof EditorAction {
-    return EditorAction;
-  }
-
-
-  /*** ---------------------------------------- ***/
-  /*** ---------------- Events ---------------- ***/
-  /*** ---------------------------------------- ***/
-
-  getEvent(view: ViewTable | ViewRow, action: EventAction): Event {
-    if (!exists(view.events)) return null;
-    return getEventFromAction(view.events, action);
-  }
-
-  get EventAction(): typeof EventAction {
-    return EventAction;
-  }
-
-  get EventGoToPage(): typeof EventGoToPage {
-    return EventGoToPage;
-  }
-
-  get EventHideView(): typeof EventHideView {
-    return EventHideView;
-  }
-
-  get EventShowView(): typeof EventShowView {
-    return EventShowView;
-  }
-
-  get EventToggleView(): typeof EventToggleView {
-    return EventToggleView;
-  }
-
 }

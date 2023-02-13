@@ -140,7 +140,7 @@ class Aspect
 
             foreach ($roleIdsByMostSpecific as $userRoleId) {
                 foreach ($roleIdsByMostSpecific as $viewerRoleId) {
-                    $aspects[] = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId);
+                    $aspects[] = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId)->getData("id, viewerRole, userRole");
                 }
             }
 
@@ -201,7 +201,7 @@ class Aspect
         // Combine them
         foreach ($userRoleIds as $userRoleId) {
             foreach ($viewerRoleIds as $viewerRoleId) {
-                $aspects[] = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId);
+                $aspects[] = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId)->getData("id, viewerRole, userRole");
             }
         }
 

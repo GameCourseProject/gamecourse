@@ -16,6 +16,30 @@ use GameCourse\Core\Core;
 class PageController
 {
     /*** --------------------------------------------- ***/
+    /*** ------------------ General ------------------ ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * Get page by its ID.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getPageById()
+    {
+        API::requireValues("pageId");
+
+        $pageId = API::getValue("pageId", "int");
+        $page = API::verifyPageExists($pageId);
+
+        $course = $page->getCourse();
+        API::requireCoursePermission($course);
+
+        API::response($page->getData());
+    }
+
+
+    /*** --------------------------------------------- ***/
     /*** ----------------- Rendering ----------------- ***/
     /*** --------------------------------------------- ***/
 

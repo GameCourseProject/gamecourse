@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, OnInit, Type, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {NgForm} from "@angular/forms";
 
@@ -367,7 +367,7 @@ export class ConfigComponent implements OnInit {
 
   // PERSONALIZED CONFIG
 
-  get PersonalizedConfig() {
+  get PersonalizedConfig(): Type<any> {
     if (this.personalizedConfig) {
       if (this.module.id === ApiHttpService.GOOGLESHEETS) return GooglesheetsComponent;
       if (this.module.id === ApiHttpService.PROFILING) return ProfilingComponent;

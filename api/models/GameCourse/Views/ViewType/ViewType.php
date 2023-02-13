@@ -103,6 +103,7 @@ abstract class ViewType
      * @param string $folder
      * @param array $ignore
      * @return array
+     * @throws Exception
      */
     private static function getViewTypesInFolder(string $folder, array $ignore = []): array
     {

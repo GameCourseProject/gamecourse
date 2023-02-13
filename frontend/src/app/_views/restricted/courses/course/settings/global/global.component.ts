@@ -6,7 +6,7 @@ import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
 
 import {Course} from "../../../../../../_domain/courses/course";
 import {CourseUser} from "../../../../../../_domain/users/course-user";
-import {Page} from "../../../../../../_domain/pages & templates/page";
+import {Page} from "../../../../../../_domain/views/pages/page";
 import {ResourceManager} from "../../../../../../_utils/resources/resource-manager";
 import {DomSanitizer} from "@angular/platform-browser";
 

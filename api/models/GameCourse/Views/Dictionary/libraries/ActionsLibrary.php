@@ -15,8 +15,7 @@ class ActionsLibrary extends Library
 
     const ID = "actions";    // NOTE: must match the name of the class
     const NAME = "Actions";
-    const DESCRIPTION = "Library to be used only on EVENTS. These functions define the response to event triggers.";
-
+    const DESCRIPTION = "Library to be used only on EVENTS. These functions define the response action to event triggers.";
 
     /*** ----------------------------------------------- ***/
     /*** ------------------ Functions ------------------ ***/
@@ -25,9 +24,11 @@ class ActionsLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
+            new DFunction("goToPage",
+                "Navigates to a given course page.",
+                ReturnType::VOID,
+                $this
+            )
         ];
     }
-
-    // NOTE: add new library functions bellow & update its
-    //       metadata in 'getFunctions' above
 }

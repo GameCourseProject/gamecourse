@@ -1,6 +1,8 @@
 <?php
 namespace GameCourse\Views\Dictionary;
 
+use Exception;
+use GameCourse\Core\Core;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
 
 class SystemLibrary extends Library
@@ -32,27 +34,12 @@ class SystemLibrary extends Library
                 ReturnType::MIXED,
                 $this
             ),
-            new DFunction("abs",
-                "Returns the absolute value of an integer.",
-                ReturnType::INT,
-                $this
-            ),
-            new DFunction("min",
-                "Returns the smallest number between two integers.",
-                ReturnType::INT,
-                $this
-            ),
-            new DFunction("max",
-                "Returns the greatest number between two integers.",
-                ReturnType::INT,
-                $this
-            ),
             new DFunction("time",
                 "Returns the time in seconds since the epoch as a floating point number. The specific date of 
                 the epoch and the handling of leap seconds is platform dependent. On Windows and most Unix systems, 
                 the epoch is January 1, 1970, 00:00:00 (UTC) and leap seconds are not counted towards the time in seconds 
                 since the epoch. This is commonly referred to as Unix time.",
-                ReturnType::INT,
+                ReturnType::NUMBER,
                 $this
             )
         ];
@@ -65,78 +52,37 @@ class SystemLibrary extends Library
      * Checks a condition and returns the 2nd argument if true,
      * or the 3rd if false.
      *
-     * @param bool $mockData
+     * @example system.if("hello" == "olá", 1, 0) --> 0
+     * @example system.if(1 >= 0, "yes", "no") --> "yes"
+     *
      * @param bool $condition
      * @param $ifTrue
      * @param $ifFalse
      * @return ValueNode
-     * @example system.if("hello" == "olá", 1, 0) --> 0
-     *
-     * @example system.if(1 >= 0, "yes", "no") --> "yes"
+     * @throws Exception
      */
-    public function if(bool $mockData, bool $condition, $ifTrue, $ifFalse): ValueNode
+    public function if(bool $condition, $ifTrue, $ifFalse): ValueNode
     {
-        return new ValueNode($condition ? $ifTrue : $ifFalse);
-    }
+        $value = $condition ? $ifTrue : $ifFalse;
 
-    /**
-     * Returns the absolute value of an integer.
-     *
-     * @param bool $mockData
-     * @param int $value
-     * @return ValueNode
-     * @example system.abs(1) --> 1
-     * @example system.abs(-1) --> 1
-     * @example system.abs(0) --> 0
-     *
-     */
-    public function abs(bool $mockData, int $value): ValueNode
-    {
-        return new ValueNode(abs($value));
-    }
+        $library = null;
+        if (is_array($value)) $library = Core::dictionary()->getLibraryById(CollectionLibrary::ID);
+        if (is_numeric($value)) $library = Core::dictionary()->getLibraryById(MathLibrary::ID);
+        if (is_string($value)) $library = Core::dictionary()->getLibraryById(TextLibrary::ID);
 
-    /**
-     * Returns the smallest number between two integers.
-     *
-     * @param bool $mockData
-     * @param int $value1
-     * @param int $value2
-     * @return ValueNode
-     * @example system.min(1, 2) --> 1
-     * @example system.min(2, 0) --> 0
-     *
-     */
-    public function min(bool $mockData, int $value1, int $value2): ValueNode
-    {
-        return new ValueNode(min($value1, $value2));
-    }
-
-    /**
-     * Returns the greatest number between two integers.
-     *
-     * @param bool $mockData
-     * @param int $value1
-     * @param int $value2
-     * @return ValueNode
-     * @example system.max(1, 2) --> 2
-     * @example system.max(0, -3) --> -3
-     *
-     */
-    public function max(bool $mockData, int $value1, int $value2): ValueNode
-    {
-        return new ValueNode(max($value1, $value2));
+        return new ValueNode($value, $library);
     }
 
     /**
      * Returns the time in seconds since the epoch as a floating point number.
      *
-     * @param bool $mockData
-     * @return ValueNode
      * @example system.time() --> 1654297355
      *
+     * @return ValueNode
+     * @throws Exception
      */
-    public function time(bool $mockData): ValueNode
+    public function time(): ValueNode
     {
-        return new ValueNode(time());
+        return new ValueNode(time(), Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 }

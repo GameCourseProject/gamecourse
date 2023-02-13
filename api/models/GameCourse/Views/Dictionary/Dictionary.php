@@ -101,6 +101,21 @@ class Dictionary
     /*** ------------------ Functions ------------------ ***/
     /*** ----------------------------------------------- ***/
 
+    // Global variables to be used inside dictionary functions
+    private $mockData;
+    private $course;
+
+    public function mockData(): bool
+    {
+        return $this->mockData;
+    }
+
+    public function getCourse(): Course
+    {
+        return $this->course;
+    }
+
+
     /**
      * Calls a dictionary function defined in a given library.
      *
@@ -131,10 +146,10 @@ class Dictionary
         if ($context !== null) array_unshift($args, $context);
 
         // Add course
-        if ($course) array_unshift($args, $course);
+        if ($course) $this->course = $course;
 
         // Mock data
-        array_unshift($args, $mockData);
+        $this->mockData = $mockData;
 
         // Call function
         return $library->{$funcName}(...$args);

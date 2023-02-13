@@ -9,190 +9,190 @@
 <!------------------------------------------------>
 
 <ng-template #LINE>
-  <div [attr.id]="view.cssId"
-       [classList]="view.class"
-       [attr.style]="view.style"
-       [attr.data-id]="view.id"
-       [attr.data-viewId]="view.viewId"
-       [attr.data-label]="view.label"
-       [attr.data-role]="edit ? view.role : null"
-       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
-       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
-       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
-       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
-       [mode]="view.mode">
+<!--  <div [attr.id]="view.cssId"-->
+<!--       [classList]="view.class"-->
+<!--       [attr.style]="view.style"-->
+<!--       [attr.data-id]="view.id"-->
+<!--       [attr.data-viewId]="view.viewId"-->
+<!--       [attr.data-label]="view.label"-->
+<!--       [attr.data-role]="edit ? view.role : null"-->
+<!--       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : GoToPageEvent"-->
+<!--       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"-->
+<!--       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"-->
+<!--       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"-->
+<!--       [mode]="view.mode">-->
 
-    <!-- FIXME: some values are hard-coded -->
+<!--    &lt;!&ndash; FIXME: some values are hard-coded &ndash;&gt;-->
 
-    <!-- XP Evolution -->
-    <ng-container *ngIf="chartType === 'xpEvolution'">
-      <app-line-chart
-        [id]="'chart-xpEvolution'"
-        [height]="view.info['spark'] ? 20 : 300"
-        [width]="view.info['spark'] ? 50 : 500"
-        [data]="view.info['values'].y"
-        [name]="view.info['labelY']"
-        [xAxisType]="'category'"
-        [categories]="view.info['values'].x"
-        [yAxisMin]="0"
-        [yAxisMax]="20000"
-        [yAxisTickAmount]="10"
-        [xAxisTickAmount]="view.info['values'].x.length > 20 ? 10 : null"
-        [xAxisLabel]="view.info['labelX']"
-        [yAxisLabel]="view.info['labelY']"
-        [sparkline]="!!view.info['spark']">
-      </app-line-chart>
-    </ng-container>
+<!--    &lt;!&ndash; XP Evolution &ndash;&gt;-->
+<!--    <ng-container *ngIf="chartType === 'xpEvolution'">-->
+<!--      <app-line-chart-->
+<!--        [id]="'chart-xpEvolution'"-->
+<!--        [height]="view.info['spark'] ? 20 : 300"-->
+<!--        [width]="view.info['spark'] ? 50 : 500"-->
+<!--        [data]="view.info['values'].y"-->
+<!--        [name]="view.info['labelY']"-->
+<!--        [xAxisType]="'category'"-->
+<!--        [categories]="view.info['values'].x"-->
+<!--        [yAxisMin]="0"-->
+<!--        [yAxisMax]="20000"-->
+<!--        [yAxisTickAmount]="10"-->
+<!--        [xAxisTickAmount]="view.info['values'].x.length > 20 ? 10 : null"-->
+<!--        [xAxisLabel]="view.info['labelX']"-->
+<!--        [yAxisLabel]="view.info['labelY']"-->
+<!--        [sparkline]="!!view.info['spark']">-->
+<!--      </app-line-chart>-->
+<!--    </ng-container>-->
 
-    <!-- Leaderboard Evolution -->
-    <ng-container *ngIf="chartType === 'leaderboardEvolution'">
-      <app-line-chart
-        [id]="'chart-leaderboardEvolution'"
-        [height]="300"
-        [width]="500"
-        [data]="view.info['values'].y"
-        [name]="view.info['labelY']"
-        [xAxisType]="'category'"
-        [categories]="view.info['values'].x"
-        [yAxisMin]="1"
-        [yAxisMax]="view.info['domainY'][1]"
-        [yAxisTickAmount]="10"
-        [xAxisTickAmount]="view.info['values'].x.length > 20 ? 10 : null"
-        [xAxisLabel]="view.info['labelX']"
-        [yAxisLabel]="view.info['labelY']"
-        [yAxisReversed]="true">
-      </app-line-chart>
-    </ng-container>
-  </div>
+<!--    &lt;!&ndash; Leaderboard Evolution &ndash;&gt;-->
+<!--    <ng-container *ngIf="chartType === 'leaderboardEvolution'">-->
+<!--      <app-line-chart-->
+<!--        [id]="'chart-leaderboardEvolution'"-->
+<!--        [height]="300"-->
+<!--        [width]="500"-->
+<!--        [data]="view.info['values'].y"-->
+<!--        [name]="view.info['labelY']"-->
+<!--        [xAxisType]="'category'"-->
+<!--        [categories]="view.info['values'].x"-->
+<!--        [yAxisMin]="1"-->
+<!--        [yAxisMax]="view.info['domainY'][1]"-->
+<!--        [yAxisTickAmount]="10"-->
+<!--        [xAxisTickAmount]="view.info['values'].x.length > 20 ? 10 : null"-->
+<!--        [xAxisLabel]="view.info['labelX']"-->
+<!--        [yAxisLabel]="view.info['labelY']"-->
+<!--        [yAxisReversed]="true">-->
+<!--      </app-line-chart>-->
+<!--    </ng-container>-->
+<!--  </div>-->
 </ng-template>
 
 <ng-template #BAR>
-  <div [attr.id]="view.cssId"
-       [classList]="view.class"
-       [attr.style]="view.style"
-       [attr.data-id]="view.id"
-       [attr.data-viewId]="view.viewId"
-       [attr.data-label]="view.label"
-       [attr.data-role]="edit ? view.role : null"
-       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
-       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
-       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
-       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
-       [mode]="view.mode">
+<!--  <div [attr.id]="view.cssId"-->
+<!--       [classList]="view.class"-->
+<!--       [attr.style]="view.style"-->
+<!--       [attr.data-id]="view.id"-->
+<!--       [attr.data-viewId]="view.viewId"-->
+<!--       [attr.data-label]="view.label"-->
+<!--       [attr.data-role]="edit ? view.role : null"-->
+<!--       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : GoToPageEvent"-->
+<!--       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"-->
+<!--       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"-->
+<!--       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"-->
+<!--       [mode]="view.mode">-->
 
-    <!-- FIXME: some values are hard-coded -->
+<!--    &lt;!&ndash; FIXME: some values are hard-coded &ndash;&gt;-->
 
-    <!-- XP World -->
-    <ng-container *ngIf="chartType === 'xpWorld'">
-      <app-bar-chart
-        [id]="'chart-xpWorld'"
-        [height]="300"
-        [width]="500"
-        [data]="view.info['values'].y"
-        [name]="view.info['labelY']"
-        [xAxisType]="'category'"
-        [categories]="view.info['domainX']"
-        [yAxisMin]="0"
-        [yAxisTickAmount]="10"
-        [xAxisLabel]="view.info['labelX']"
-        [yAxisLabel]="view.info['labelY']"
-        [highlightedValue]="view.info['highlightValue']">
-      </app-bar-chart>
-    </ng-container>
+<!--    &lt;!&ndash; XP World &ndash;&gt;-->
+<!--    <ng-container *ngIf="chartType === 'xpWorld'">-->
+<!--      <app-bar-chart-->
+<!--        [id]="'chart-xpWorld'"-->
+<!--        [height]="300"-->
+<!--        [width]="500"-->
+<!--        [data]="view.info['values'].y"-->
+<!--        [name]="view.info['labelY']"-->
+<!--        [xAxisType]="'category'"-->
+<!--        [categories]="view.info['domainX']"-->
+<!--        [yAxisMin]="0"-->
+<!--        [yAxisTickAmount]="10"-->
+<!--        [xAxisLabel]="view.info['labelX']"-->
+<!--        [yAxisLabel]="view.info['labelY']"-->
+<!--        [highlightedValue]="view.info['highlightValue']">-->
+<!--      </app-bar-chart>-->
+<!--    </ng-container>-->
 
-    <!-- Badge World -->
-    <ng-container *ngIf="chartType === 'badgeWorld'">
-      <app-bar-chart
-        [id]="'chart-badgeWorld'"
-        [height]="300"
-        [width]="500"
-        [data]="view.info['values'].y"
-        [name]="view.info['labelY']"
-        [xAxisType]="'category'"
-        [categories]="view.info['domainX']"
-        [yAxisMin]="0"
-        [yAxisTickAmount]="10"
-        [xAxisLabel]="view.info['labelX']"
-        [yAxisLabel]="view.info['labelY']"
-        [highlightedValue]="view.info['highlightValue']">
-      </app-bar-chart>
-    </ng-container>
-  </div>
+<!--    &lt;!&ndash; Badge World &ndash;&gt;-->
+<!--    <ng-container *ngIf="chartType === 'badgeWorld'">-->
+<!--      <app-bar-chart-->
+<!--        [id]="'chart-badgeWorld'"-->
+<!--        [height]="300"-->
+<!--        [width]="500"-->
+<!--        [data]="view.info['values'].y"-->
+<!--        [name]="view.info['labelY']"-->
+<!--        [xAxisType]="'category'"-->
+<!--        [categories]="view.info['domainX']"-->
+<!--        [yAxisMin]="0"-->
+<!--        [yAxisTickAmount]="10"-->
+<!--        [xAxisLabel]="view.info['labelX']"-->
+<!--        [yAxisLabel]="view.info['labelY']"-->
+<!--        [highlightedValue]="view.info['highlightValue']">-->
+<!--      </app-bar-chart>-->
+<!--    </ng-container>-->
+<!--  </div>-->
 </ng-template>
 
 <ng-template #STAR>
-  <div [attr.id]="view.cssId"
-       [classList]="view.class"
-       [attr.style]="view.style"
-       [attr.data-id]="view.id"
-       [attr.data-viewId]="view.viewId"
-       [attr.data-label]="view.label"
-       [attr.data-role]="edit ? view.role : null"
-       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
-       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
-       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
-       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
-       [mode]="view.mode">
+<!--  <div [attr.id]="view.cssId"-->
+<!--       [classList]="view.class"-->
+<!--       [attr.style]="view.style"-->
+<!--       [attr.data-id]="view.id"-->
+<!--       [attr.data-viewId]="view.viewId"-->
+<!--       [attr.data-label]="view.label"-->
+<!--       [attr.data-role]="edit ? view.role : null"-->
+<!--       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : GoToPageEvent"-->
+<!--       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"-->
+<!--       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"-->
+<!--       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"-->
+<!--       [mode]="view.mode">-->
 
-    <!-- FIXME: some values are hard-coded -->
+<!--    &lt;!&ndash; FIXME: some values are hard-coded &ndash;&gt;-->
 
-    <!-- Star Plot -->
-    <app-radar-chart
-      [id]="'radar-chart'"
-      [height]="250"
-      [width]="250"
-      [series]="view.info['average'] !== null ? [
-        {
-          name: 'You',
-          data: view.info['user']
-        },
-        {
-          name: 'World',
-          data: view.info['average']
-        }
-      ] : [{name: '', data: view.info['user']}]"
-      [axisMax]="parseAxisMax(view.info['params'])"
-      [xAxisType]="'category'"
-      [categories]="parseCategories(view.info['params'])"
-      [toolbar]="false">
-    </app-radar-chart>
-  </div>
+<!--    &lt;!&ndash; Star Plot &ndash;&gt;-->
+<!--    <app-radar-chart-->
+<!--      [id]="'radar-chart'"-->
+<!--      [height]="250"-->
+<!--      [width]="250"-->
+<!--      [series]="view.info['average'] !== null ? [-->
+<!--        {-->
+<!--          name: 'You',-->
+<!--          data: view.info['user']-->
+<!--        },-->
+<!--        {-->
+<!--          name: 'World',-->
+<!--          data: view.info['average']-->
+<!--        }-->
+<!--      ] : [{name: '', data: view.info['user']}]"-->
+<!--      [axisMax]="parseAxisMax(view.info['params'])"-->
+<!--      [xAxisType]="'category'"-->
+<!--      [categories]="parseCategories(view.info['params'])"-->
+<!--      [toolbar]="false">-->
+<!--    </app-radar-chart>-->
+<!--  </div>-->
 </ng-template>
 
 <ng-template #PROGRESS>
-  <div [attr.id]="view.cssId"
-       [classList]="view.class"
-       [attr.style]="view.style"
-       [attr.data-id]="view.id"
-       [attr.data-viewId]="view.viewId"
-       [attr.data-label]="view.label"
-       [attr.data-role]="edit ? view.role : null"
-       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
-       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
-       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
-       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
-       [mode]="view.mode">
+<!--  <div [attr.id]="view.cssId"-->
+<!--       [classList]="view.class"-->
+<!--       [attr.style]="view.style"-->
+<!--       [attr.data-id]="view.id"-->
+<!--       [attr.data-viewId]="view.viewId"-->
+<!--       [attr.data-label]="view.label"-->
+<!--       [attr.data-role]="edit ? view.role : null"-->
+<!--       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : GoToPageEvent"-->
+<!--       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"-->
+<!--       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"-->
+<!--       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"-->
+<!--       [mode]="view.mode">-->
 
-    <app-progress-chart
-      [value]="view.info['value']"
-      [max]="view.info['max']">
-    </app-progress-chart>
-  </div>
+<!--    <app-progress-chart-->
+<!--      [value]="view.info['value']"-->
+<!--      [max]="view.info['max']">-->
+<!--    </app-progress-chart>-->
+<!--  </div>-->
 </ng-template>
 
 <ng-template #EMPTY>
-  <div [attr.id]="view.cssId"
-       [classList]="view.class + ' placeholder'"
-       [attr.style]="view.style"
-       [attr.data-id]="view.id"
-       [attr.data-viewId]="view.viewId"
-       [attr.data-label]="view.label"
-       [attr.data-role]="edit ? view.role : null"
-       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
-       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
-       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
-       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
-       [mode]="view.mode">
-    <span>{{DEFAULT}}</span>
-  </div>
+<!--  <div [attr.id]="view.cssId"-->
+<!--       [classList]="view.class + ' placeholder'"-->
+<!--       [attr.style]="view.style"-->
+<!--       [attr.data-id]="view.id"-->
+<!--       [attr.data-viewId]="view.viewId"-->
+<!--       [attr.data-label]="view.label"-->
+<!--       [attr.data-role]="edit ? view.role : null"-->
+<!--       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : GoToPageEvent"-->
+<!--       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"-->
+<!--       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"-->
+<!--       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"-->
+<!--       [mode]="view.mode">-->
+<!--    <span>{{DEFAULT}}</span>-->
+<!--  </div>-->
 </ng-template>

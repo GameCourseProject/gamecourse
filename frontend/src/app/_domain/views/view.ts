@@ -1,90 +1,68 @@
-import {Role} from "../roles/role";
-import {EventType} from "./events/event-type";
-import {ViewType} from "./view-type";
-import {Event} from "./events/event";
+import {Aspect} from "./aspects/aspect";
+import {ViewType} from "./view-types/view-type";
+import {VisibilityType} from "./visibility/visibility-type";
 import {Variable} from "./variables/variable";
+import {Event} from "./events/event";
+import {EventType} from "./events/event-type";
+
 import {buildEvent} from "./events/build-event";
 import {objectMap} from "../../_utils/misc/misc";
 
-export enum ViewMode {
-  DISPLAY = 'display',
-  EDIT = 'edit'
-}
-
-export enum VisibilityType {
-  VISIBLE = 'visible',
-  INVISIBLE = 'invisible',
-  CONDITIONAL = 'conditional'
-}
-
 export abstract class View {
-
-  private _id: number;          // Unique view id
-  private _viewId: number;      // All aspects of the view have same viewId
-  private _parentId: number;
-  private _type: ViewType;
-  private _role: string;
   private _mode: ViewMode;
+  private _type: ViewType;
 
-  private _style?: string;
+  private _id: number;            // Unique view ID
+  private _viewRoot: number;      // All aspects of view have the same viewRoot
+  private _parent: View;
+  private _aspect: Aspect;
+
   private _cssId?: string;
-  private _class?: string;
-  private _label?: string;  // FIXME: use label in events or delete
+  private _classList?: string;
+  private _styles?: string;
 
   private _visibilityType?: VisibilityType;
-  private _events?: {[key in EventType]?: Event};
+  private _visibilityCondition?: string | boolean;
 
-  // Edit only params
   private _loopData?: string;
-  private _variables?: {[name: string]: Variable};
-  private _visibilityCondition?: any;
 
-  static readonly VIEW_CLASS = 'gc-view';
+  private _variables?: Variable[];
+  private _events?: Event[];
 
 
-  protected constructor(id: number, viewId: number, parentId: number, type: ViewType, role: string, mode: ViewMode, loopData?: string,
-                        variables?: {[name: string]: Variable}, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-                        visibilityCondition?: any, events?: {[key in EventType]?: Event}) {
+  protected constructor(mode: ViewMode, type: ViewType, id: number, viewRoot: number, parent: View, aspect: Aspect,
+                        cssId?: string, classList?: string, styles?: string, visibilityType?: VisibilityType,
+                        visibilityCondition?: string | boolean, loopData?: string, variables?: Variable[],
+                        events?: Event[]) {
+
+    this.mode = mode;
+    this.type = type;
 
     this.id = id;
-    this.viewId = viewId;
-    this.parentId = parentId;
-    this.type = type;
-    this.role = role;
-    this.mode = mode;
-    this.loopData = loopData;
-    this.variables = variables;
-    this.style = style;
+    this.viewRoot = viewRoot;
+    this.parent = parent;
+    this.aspect = aspect;
+
     this.cssId = cssId;
-    this.class = cl;
-    this.label = label;
+    this.classList = classList;
+    this.styles = styles;
+
     this.visibilityType = visibilityType;
     this.visibilityCondition = visibilityCondition;
+
+    this.loopData = loopData;
+
+    this.variables = variables;
     this.events = events;
   }
 
-  get id(): number {
-    return this._id;
+
+  get mode(): ViewMode {
+    return this._mode;
   }
 
-  set id(value: number) {
-    this._id = value;
-  }
-
-  get viewId(): number {
-    return this._viewId;
-  }
-
-  set viewId(value: number) {
-    this._viewId = value;
-  }
-
-  get parentId(): number {
-    return this._parentId;
-  }
-
-  set parentId(value: number) {
-    this._parentId = value;
+  set mode(value: ViewMode) {
+    this._mode = value;
   }
 
   get type(): ViewType {
@@ -95,44 +73,36 @@ export abstract class View {
     this._type = value;
   }
 
-  get role(): string {
-    return this._role;
+  get id(): number {
+    return this._id;
   }
 
-  set role(value: string) {
-    this._role = value;
+  set id(value: number) {
+    this._id = value;
   }
 
-  get mode(): ViewMode {
-    return this._mode;
+  get viewRoot(): number {
+    return this._viewRoot;
   }
 
-  set mode(value: ViewMode) {
-    this._mode = value;
+  set viewRoot(value: number) {
+    this._viewRoot = value;
   }
 
-  get loopData(): string {
-    return this._loopData;
+  get parent(): View {
+    return this._parent;
   }
 
-  set loopData(value: string) {
-    this._loopData = value;
+  set parent(value: View) {
+    this._parent = value;
   }
 
-  get variables(): {[name: string]: Variable} {
-    return this._variables;
+  get aspect(): Aspect {
+    return this._aspect;
   }
 
-  set variables(value: {[name: string]: Variable}) {
-    this._variables = value;
-  }
-
-  get style(): string {
-    return this._style;
-  }
-
-  set style(value: string) {
-    this._style = value;
+  set aspect(value: Aspect) {
+    this._aspect = value;
   }
 
   get cssId(): string {
@@ -143,20 +113,20 @@ export abstract class View {
     this._cssId = value;
   }
 
-  get class(): string {
-    return this._class;
+  get classList(): string {
+    return this._classList;
   }
 
-  set class(value: string) {
-    this._class = value;
+  set classList(value: string) {
+    this._classList = value;
   }
 
-  get label(): string {
-    return this._label;
+  get styles(): string {
+    return this._styles;
   }
 
-  set label(value: string) {
-    this._label = value;
+  set styles(value: string) {
+    this._styles = value;
   }
 
   get visibilityType(): VisibilityType {
@@ -167,21 +137,38 @@ export abstract class View {
     this._visibilityType = value;
   }
 
-  get visibilityCondition(): any {
+  get visibilityCondition(): string | boolean {
     return this._visibilityCondition;
   }
 
-  set visibilityCondition(value: any) {
+  set visibilityCondition(value: string | boolean) {
     this._visibilityCondition = value;
   }
 
-  get events(): {[key in EventType]?: Event} {
+  get loopData(): string {
+    return this._loopData;
+  }
+
+  set loopData(value: string) {
+    this._loopData = value;
+  }
+
+  get variables(): Variable[] {
+    return this._variables;
+  }
+
+  set variables(value: Variable[]) {
+    this._variables = value;
+  }
+
+  get events(): Event[] {
     return this._events;
   }
 
-  set events(value: {[key in EventType]?: Event}) {
+  set events(value: Event[]) {
     this._events = value;
   }
+
 
   abstract updateView(newView: View);
 
@@ -197,6 +184,7 @@ export abstract class View {
 
   abstract findView(viewId: number): View;
 
+
   /**
    * Custom way to stringify this class.
    * This is needed so that the output of JSON.stringify()
@@ -204,19 +192,18 @@ export abstract class View {
    */
   static toJson(view: View) {
     return {
-      id: view.id > 0 ? view.id : null, // don't send fake ids used only for editing
-      viewId: view.viewId > 0 ? view.viewId : null,
       type: view.type,
-      role: Role.unparse(view.role),
-      style: view.style || null,
+      id: view.id > 0 ? view.id : null, // NOTE: don't send fake IDs used only for editing
+      viewRoot: view.viewRoot > 0 ? view.viewRoot : null,
+      aspect: view.aspect,
       cssId: view.cssId || null,
-      class: view.class.split(' ').filter(cl => !cl.startsWith('gc-')).join(' ') || null,
-      label: view.label || null,
+      class: view.classList || null,
+      style: view.styles || null,
       visibilityType: view.visibilityType || null,
-      events: view.events ? objectMap(view.events, event => '{actions.' + (event as Event).print() + '}') : null,
+      visibilityCondition: view.visibilityCondition || null,
       loopData: view.loopData || null,
-      variables: view.variables ? objectMap(view.variables, variable => { return {value: (variable as Variable).value} }) : null,
-      visibilityCondition: view.visibilityCondition || null
+      variables: view.variables.length > 0 ? view.variables.map(vr => { return {name: vr.name, value: vr.value, position: vr.position} }) : null,
+      events: view.events.length > 0 ? view.events.map(ev => { return {type: ev.type, action: ev.print()} }) : null
     }
   }
 
@@ -226,29 +213,32 @@ export abstract class View {
    *
    * @param obj
    */
-  static parse(obj: ViewDatabase): {id: number, viewId: number, parentId: number, type: ViewType, role: string, mode: ViewMode,
-    loopData?: any, variables?: {[name: string]: Variable}, style?: string, cssId?: string, class?: string, label?: string, visibilityType?: VisibilityType,
-    visibilityCondition?: any, events?: {[key in EventType]?: Event}} {
+  static parse(obj: ViewDatabase): {mode: ViewMode, type: ViewType, id: number, viewRoot: number, aspect: Aspect,
+    cssId?: string, classList?: string, styles?: string, visibilityType?: VisibilityType, visibilityCondition?: string | boolean,
+    loopData?: string, variables?: Variable[], events?: Event[]} {
+
+    const visibilityType = (obj.visibilityType || VisibilityType.VISIBLE) as VisibilityType;
+    const visibilityCondition = visibilityType === VisibilityType.CONDITIONAL ? obj.visibilityCondition : null;
 
     return {
-      id: parseInt(obj.id),
-      viewId: parseInt(obj.viewId),
-      parentId: parseInt(obj.parentId) || null,
-      type: obj.type as ViewType,
-      role: Role.parse(obj.role),
       mode: obj.edit ? ViewMode.EDIT : ViewMode.DISPLAY,
-      loopData: (obj.loopData && !obj.loopData.isEmpty()) ? obj.loopData : null,
-      variables: obj.variables && !!Object.keys(obj.variables).length ?
-              objectMap(obj.variables, (value, name) => new Variable(name, value.value)) : null,
-      style: (obj.style && !obj.style.isEmpty()) ? obj.style : null,
-      cssId: (obj.cssId && !obj.cssId.isEmpty()) ? obj.cssId : null,
-      class: (!obj.class || obj.class.isEmpty()) ? this.VIEW_CLASS : obj.class + ' ' + this.VIEW_CLASS,
-      label: (obj.label && !obj.label.isEmpty()) ? obj.label : null,
-      visibilityType: obj.visibilityType ? obj.visibilityType as VisibilityType : VisibilityType.VISIBLE,
-      visibilityCondition: obj.visibilityType === VisibilityType.CONDITIONAL && obj.visibilityCondition &&
-              !obj.visibilityCondition.isEmpty() ? obj.visibilityCondition : null,
-      events: obj.events && !!Object.keys(obj.events).length ?
-              objectMap(obj.events, (eventStr, type) => buildEvent(type as EventType, eventStr)) : null,
+      type: obj.type as ViewType,
+
+      id: obj.id,
+      viewRoot: obj.viewRoot,
+      aspect: Aspect.fromDatabase(obj.aspect),
+
+      cssId: obj.cssId || null,
+      classList: obj.class || null,
+      styles: obj.style || null,
+
+      visibilityType,
+      visibilityCondition,
+
+      loopData: obj.loopData || null,
+
+      variables: obj.variables ? obj.variables.map(vObj => Variable.fromDatabase(vObj)) : [],
+      events: obj.events ? obj.events.map(eObj => buildEvent(eObj.type as EventType, eObj.action)) : []
     }
   }
 
@@ -267,20 +257,23 @@ export abstract class View {
 }
 
 export interface ViewDatabase {
-  id: string;
-  viewId: string;
-  parentId: string;
+  id: number,
+  viewRoot: number,
+  aspect: {viewerRole: string, userRole: string},
   type: string;
-  role: string;
-  edit?: boolean;
-  loopData?: string;
-  variables?: {[name: string]: {value: string}};
-  style?: string;
-  cssId?: string;
-  class?: string;
-  label?: string;
-  visibilityType?: string;
-  visibilityCondition?: string;
-  events?: {[key in EventType]?: string};
+  cssId?: string,
+  class?: string,
+  style?: string,
+  visibilityType?: string,
+  visibilityCondition?: string | boolean,
+  loopData?: string,
+  variables?: {name: string, value: string, position: number}[];
+  events?: {type: string, action: string}[];
+  edit?: boolean,
+}
+
+export enum ViewMode {
+  DISPLAY = 'display',
+  EDIT = 'edit'
 }
 

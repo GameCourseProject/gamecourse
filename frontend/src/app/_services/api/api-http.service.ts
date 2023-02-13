@@ -17,8 +17,8 @@ import {Module} from "../../_domain/modules/module";
 import {ImportModulesData} from "../../_views/restricted/settings/modules/modules.component";
 import {Moment} from "moment/moment";
 import {Role} from "../../_domain/roles/role";
-import {Page} from "../../_domain/pages & templates/page";
-import {Template} from "../../_domain/pages & templates/template";
+import {Page} from "../../_domain/views/pages/page";
+import {Template} from "../../_domain/views/templates/template";
 import {RoleType} from "../../_domain/roles/role-type";
 import {View} from "../../_domain/views/view";
 import {buildView} from "../../_domain/views/build-view/build-view";
@@ -78,7 +78,7 @@ export class ApiHttpService {
   static readonly MODULE: string = 'Module';
   static readonly THEME: string = 'Theme';
   static readonly USER: string = 'User';
-  static readonly VIEWS: string = 'Views';
+  static readonly PAGE: string = 'Page';
   static readonly NOTIFICATION_SYSTEM: string = 'Notification';
   // NOTE: insert here new controllers & update cache dependencies
 
@@ -2035,7 +2035,7 @@ export class ApiHttpService {
   // TODO: refactor
   public getViewsList(courseID: number): Observable<{pages: Page[], templates: Template[], globals: Template[], types: RoleType[]}> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'listViews');
       qs.push('courseId', courseID);
     };
@@ -2055,10 +2055,24 @@ export class ApiHttpService {
 
 
   // Pages
+
+  public getPageById(pageID: number): Observable<Page> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getPageById');
+      qs.push('pageId', pageID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Page.fromDatabase(res['data'])) );
+  }
+
   // TODO: refactor
   public renderPage(courseID: number, pageID: number,  userID: number = null): Observable<View> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'renderPage');
       qs.push('courseId', courseID);
       qs.push('pageId', pageID);
@@ -2068,7 +2082,7 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => buildView(res['data']['view'])));
+      .pipe(map((res: any) => buildView(res['data'])));
   }
 
   // TODO: refactor
@@ -2081,7 +2095,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'createPage');
     };
 
@@ -2101,7 +2115,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'editPage');
     };
 
@@ -2118,7 +2132,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'deletePage');
     };
 
@@ -2137,7 +2151,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'getTemplate');
     };
 
@@ -2156,7 +2170,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'createTemplate');
     };
 
@@ -2175,7 +2189,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'editTemplateBasicInfo');
     };
 
@@ -2192,7 +2206,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'deleteTemplate');
     };
 
@@ -2210,7 +2224,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'setGlobalState');
     };
 
@@ -2227,7 +2241,7 @@ export class ApiHttpService {
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'importTemplate');
     };
 
@@ -2239,7 +2253,7 @@ export class ApiHttpService {
   // TODO: refactor
   public exportTemplate(courseID: number, templateId: number): Observable<string> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'exportTemplate');
       qs.push('courseId', courseID);
       qs.push('templateId', templateId);
@@ -2259,7 +2273,7 @@ export class ApiHttpService {
   //               enabledModules: string[]}> {
   //
   //   const params = (qs: QueryStringParameters) => {
-  //     qs.push('module', ApiHttpService.VIEWS);
+  //     qs.push('module', ApiHttpService.PAGE);
   //     qs.push('request', 'getTemplateEditInfo');
   //     qs.push('courseId', courseID);
   //     qs.push('templateId', templateID);
@@ -2281,7 +2295,7 @@ export class ApiHttpService {
   // TODO: refactor
   public previewTemplate(courseID: number, templateID: number, viewerRole: string, userRole?: string): Observable<View> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'previewTemplate');
       qs.push('courseId', courseID);
       qs.push('templateId', templateID);
@@ -2305,7 +2319,7 @@ export class ApiHttpService {
     if (viewsDeleted?.length > 0) data['viewsDeleted'] = viewsDeleted;
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'saveTemplate');
     };
 
@@ -2325,7 +2339,7 @@ export class ApiHttpService {
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'saveViewAsTemplate');
     };
 

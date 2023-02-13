@@ -1,8 +1,10 @@
 <?php
 namespace GameCourse\Views\ViewType;
 
+use GameCourse\Core\Core;
 use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\ViewHandler;
+use Utils\Utils;
 
 /**
  * This is the Table view type, which represents a core view for
@@ -11,6 +13,8 @@ use GameCourse\Views\ViewHandler;
  */
 class Table extends ViewType
 {
+    const TABLE_VIEW_TABLE = "view_table";
+
     public function __construct()
     {
         $this->id = self::ID;
@@ -31,12 +35,35 @@ class Table extends ViewType
 
     public function init()
     {
-        // Nothing to do here
+        $this->initDatabase();
+    }
+
+    protected function initDatabase()
+    {
+        Core::database()->executeQuery("
+            CREATE TABLE IF NOT EXISTS " . self::TABLE_VIEW_TABLE . "(
+                id                          bigint unsigned NOT NULL PRIMARY KEY,
+                footers                     boolean NOT NULL DEFAULT TRUE,
+                searching                   boolean NOT NULL DEFAULT TRUE,
+                columnFiltering             boolean NOT NULL DEFAULT TRUE,
+                paging                      boolean NOT NULL DEFAULT TRUE,
+                lengthChange                boolean NOT NULL DEFAULT TRUE,
+                info                        boolean NOT NULL DEFAULT TRUE,
+                ordering                    boolean NOT NULL DEFAULT TRUE,
+
+                FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
+            );
+        ");
     }
 
     public function end()
     {
-        // Nothing to do here
+        $this->cleanDatabase();
+    }
+
+    protected function cleanDatabase()
+    {
+        Core::database()->executeQuery("DROP TABLE IF EXISTS " . self::TABLE_VIEW_TABLE . ";");
     }
 
 
@@ -46,23 +73,39 @@ class Table extends ViewType
 
     public function get(int $viewId): array
     {
-        // Nothing to do here
-        return [];
+        return self::parse(Core::database()->select(self::TABLE_VIEW_TABLE, ["id" => $viewId], "footers, searching, columnFiltering, paging, lengthChange, info, ordering"));
     }
 
     public function insert(array $view)
     {
-        // Nothing to do here
+        Core::database()->insert(self::TABLE_VIEW_TABLE, [
+            "id" => $view["id"],
+            "footers" => $view["footers"] ?? true,
+            "searching" => $view["searching"] ?? true,
+            "columnFiltering" => $view["columnFiltering"] ?? true,
+            "paging" => $view["paging"] ?? true,
+            "lengthChange" => $view["lengthChange"] ?? true,
+            "info" => $view["info"] ?? true,
+            "ordering" => $view["ordering"] ?? true
+        ]);
     }
 
     public function update(array $view)
     {
-        // Nothing to do here
+        Core::database()->update(self::TABLE_VIEW_TABLE, [
+            "footers" => $view["footers"] ?? true,
+            "searching" => $view["searching"] ?? true,
+            "columnFiltering" => $view["columnFiltering"] ?? true,
+            "paging" => $view["paging"] ?? true,
+            "lengthChange" => $view["lengthChange"] ?? true,
+            "info" => $view["info"] ?? true,
+            "ordering" => $view["ordering"] ?? true
+        ], ["id" => $view["id"]]);
     }
 
     public function delete(int $viewId)
     {
-        // Nothing to do here
+        Core::database()->delete(self::TABLE_VIEW_TABLE, ["id" => $viewId]);
     }
 
     public function build(array &$view, array $sortedAspects = null)
@@ -141,7 +184,7 @@ class Table extends ViewType
 
     public function parse(array $view = null, $field = null, string $fieldName = null)
     {
-        if ($view) return $view;
-        else return $field;
+        $boolValues = ["footers", "searching", "columnFiltering", "paging", "lengthChange", "info", "ordering"];
+        return Utils::parse(["bool" => $boolValues], $view, $field, $fieldName);
     }
 }

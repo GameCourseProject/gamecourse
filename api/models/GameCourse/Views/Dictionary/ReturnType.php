@@ -11,11 +11,12 @@ class ReturnType
     /*** -------------------- Types -------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    const INT = "integer";
-    const STRING = "string";
-    const OBJECT = "object";
-    const ARRAY = "array";
+    const TEXT = "text";
+    const NUMBER = "number";
+    const COLLECTION = "collection";
     const BOOLEAN = "boolean";
+    const OBJECT = "object";
     const MIXED = "mixed";
+    const VOID = "void";
     // NOTE: insert here new return types
 }

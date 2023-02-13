@@ -1,14 +1,5 @@
-import {View} from "../../_domain/views/view";
-import {ErrorService} from "../../_services/error.service";
 import * as moment from 'moment';
 import {Moment} from "moment/moment";
-
-export function requireValues(view: View, values: any[]) {
-  values.forEach(value => {
-    if (!exists(value))
-      ErrorService.set('Error: View ' + view.type + ' doesn\'t have all required fields. View: ' + view);
-  });
-}
 
 export function exists(value: any): boolean {
   return value !== null && value !== undefined;

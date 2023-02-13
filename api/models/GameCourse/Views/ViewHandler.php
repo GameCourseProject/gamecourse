@@ -79,7 +79,7 @@ class ViewHandler
             ["variables" => Variable::getVariablesOfView($id)],
             ["events" => Event::getEventsOfView($id)]);
 
-        if ($onlyNonNull) return array_filter($view, function ($param) { return $param != null; });
+        if ($onlyNonNull) return array_filter($view, function ($param) { return $param !== null; });
         return $view;
     }
 
@@ -434,13 +434,6 @@ class ViewHandler
             }
         }
 
-        // Compile events
-        if (isset($view["events"])) {
-            foreach ($view["events"] as &$event) {
-                self::compileExpression($event["action"]);
-            }
-        }
-
         // Compile view of a specific type
         $viewType = ViewType::getViewTypeById($view["type"]);
         $viewType->compile($view);
@@ -475,11 +468,10 @@ class ViewHandler
      */
     public static function evaluateView(array &$view, EvaluateVisitor $visitor)
     {
-        // Evaluate variables & add them to visitor params
+        // Add variables as visitor params
         // NOTE: needs to be 1st so that expressions that use any of the variables can be evaluated
         if (isset($view["variables"])) {
-            foreach ($view["variables"] as &$variable) {
-                self::evaluateNode($variable["value"], $visitor);
+            foreach ($view["variables"] as $variable) {
                 $visitor->addParam($variable["name"], $variable["value"]);
             }
         }
@@ -488,13 +480,6 @@ class ViewHandler
         $params = ["cssId", "class", "style", "visibilityCondition", "loopData"];
         foreach ($params as $param) {
             if (isset($view[$param])) self::evaluateNode($view[$param], $visitor);
-        }
-
-        // Evaluate events
-        if (isset($view["events"])) {
-            foreach ($view["events"] as &$event) {
-                self::evaluateNode($event["action"], $visitor);
-            }
         }
 
         // Evaluate view of a specific type
@@ -523,32 +508,32 @@ class ViewHandler
      */
     public static function evaluateLoop(array &$view, EvaluateVisitor $visitor)
     {
+        // Get library of collection items
+        $library = Core::dictionary()->getLibraryById($view["loopData"]->getLib());
+
         // Get collection to loop
         self::evaluateNode($view["loopData"], $visitor);
         $collection = $view["loopData"];
+        unset($view["loopData"]);
         if (is_null($collection)) $collection = [];
         if (!is_array($collection)) throw new Exception("Loop data must be a collection");
 
         // Transform to sequential array
         $collection = array_values($collection);
 
-        // Format items with a key
-        $key = "item";
-        $items = array_map(function ($item) use ($key) { return [$key => $item]; }, $collection);
-
         // Repeat views
         $repeatedViews = [];
-        for ($i = 0; $i < count($items); $i++) {
-            // Copy view
+        for ($i = 0; $i < count($collection); $i++) {
+            // Copy view & visitor
             $newView = $view;
+            $newVisitor = new EvaluateVisitor($visitor->getParams(), $visitor->mockData());
 
             // Update visitor params with %item and %index
-            $visitor->addParam($key, $items[$i][$key]);
-            $visitor->addParam("index", $i);
+            $newVisitor->addParam("item", new ValueNode($collection[$i], $library));
+            $newVisitor->addParam("index", $i);
 
             // Evaluate new view
-            self::evaluateView($newView, $visitor);
-            unset($newView["loopData"]);
+            self::evaluateView($newView, $newVisitor);
             $repeatedViews[] = $newView;
         }
         $view = $repeatedViews;
@@ -688,8 +673,9 @@ class ViewHandler
      */
     private static function pickViewByAspect(array $viewsInfo, array $aspectsSortedByMostSpecific): ?array
     {
-        foreach ($aspectsSortedByMostSpecific as $aspect) {
+        foreach ($aspectsSortedByMostSpecific as $aspectInfo) {
             foreach ($viewsInfo as $info) {
+                $aspect = Aspect::getAspectById($aspectInfo["id"]);
                 if ($aspect->equals(Aspect::getAspectById($info["aspect"]))) return $info;
             }
         }
