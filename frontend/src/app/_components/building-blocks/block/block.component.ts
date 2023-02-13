@@ -2,7 +2,6 @@ import {Component, Input, OnInit} from '@angular/core';
 
 import {ViewBlock} from "../../../_domain/views/view-types/view-block";
 import {ViewMode} from "../../../_domain/views/view";
-import {ViewEditorService} from "../../../_services/view-editor.service";
 
 @Component({
   selector: 'bb-block',
@@ -17,7 +16,7 @@ export class BBBlockComponent implements OnInit {
 
   readonly DEFAULT = '(Empty block)';
 
-  constructor(public actionManager: ViewEditorService) { }
+  constructor() { }
 
   ngOnInit(): void {
     this.edit = this.view.mode === ViewMode.EDIT;

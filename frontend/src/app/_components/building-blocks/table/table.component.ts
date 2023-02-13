@@ -2,7 +2,6 @@ import {Component, Input, OnInit} from '@angular/core';
 
 import {ViewTable} from "../../../_domain/views/view-types/view-table";
 import {View, ViewMode} from "../../../_domain/views/view";
-import {ViewEditorService} from "../../../_services/view-editor.service";
 import {TableDataType} from "../../tables/table-data/table-data.component";
 import {ViewType} from "../../../_domain/views/view-types/view-type";
 import {ViewText} from "../../../_domain/views/view-types/view-text";
@@ -22,7 +21,7 @@ export class BBTableComponent implements OnInit {
 
   loading: boolean = true;
 
-  constructor(public actionManager: ViewEditorService) { }
+  constructor() { }
 
   ngOnInit(): void {
     this.edit = this.view.mode === ViewMode.EDIT;

@@ -78,6 +78,7 @@ import { SimpleHelperComponent } from './_components/helpers/simple-helper/simpl
 import { BBAnyComponent } from "./_components/building-blocks/any/any.component";
 import { BBBlockComponent } from './_components/building-blocks/block/block.component';
 import { BBChartComponent } from "./_components/building-blocks/chart/chart.component";
+import { BBCollapseComponent } from './_components/building-blocks/collapse/collapse.component';
 import { BBIconComponent } from './_components/building-blocks/icon/icon.component';
 import { BBImageComponent } from './_components/building-blocks/image/image.component';
 import { BBTableComponent } from './_components/building-blocks/table/table.component';
@@ -227,6 +228,7 @@ import {
     BBAnyComponent,
     BBBlockComponent,
     BBChartComponent,
+    BBCollapseComponent,
     BBIconComponent,
     BBImageComponent,
     BBTableComponent,

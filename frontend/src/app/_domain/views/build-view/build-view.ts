@@ -2,6 +2,7 @@ import {View, ViewDatabase} from "../view";
 import {ViewType} from "../view-types/view-type";
 import {ViewBlock, ViewBlockDatabase} from "../view-types/view-block";
 import {ViewChart, ViewChartDatabase} from "../view-types/view-chart";
+import {ViewCollapse, ViewCollapseDatabase} from "../view-types/view-collapse";
 import {ViewIcon, ViewIconDatabase} from "../view-types/view-icon";
 import {ViewImage, ViewImageDatabase} from "../view-types/view-image";
 import {ViewRow, ViewRowDatabase} from "../view-types/view-row";
@@ -24,6 +25,7 @@ export function buildView(obj: ViewDatabase): View {
 
   if (type === ViewType.BLOCK) return ViewBlock.fromDatabase(obj as ViewBlockDatabase);
   else if (type === ViewType.CHART) return ViewChart.fromDatabase(obj as ViewChartDatabase);
+  else if (type === ViewType.COLLAPSE) return ViewCollapse.fromDatabase(obj as ViewCollapseDatabase);
   else if (type === ViewType.ICON) return ViewIcon.fromDatabase(obj as ViewIconDatabase);
   else if (type === ViewType.IMAGE) return ViewImage.fromDatabase(obj as ViewImageDatabase);
   else if (type === ViewType.ROW) return ViewRow.fromDatabase(obj as ViewRowDatabase);
