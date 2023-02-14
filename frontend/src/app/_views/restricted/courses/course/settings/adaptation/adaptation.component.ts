@@ -226,12 +226,11 @@ export class AdaptationComponent implements OnInit {
       await this.buildTable();
 
       let filteredQuestionnaires = this.questionnaires.filter(function (item) { return !item.isAnswered });
+      //if (filteredQuestionnaires.length === 0) { ModalService.openModal('all-questionnaires-submitted'); } FIXME: DEBUG ONLY
 
-      // FIXME: Add another modal to maintain roles or change
-      //  ---> Or just a modal thanking for feedback and saying they can edit below
-      //  when showing this last modal -> save user_preferences as actual roles
-      this.isQuestionnaire = filteredQuestionnaires.length > 0;
-
+    } else if (action === 'show game elements'){
+      ModalService.closeModal('all-questionnaires-submitted');
+      this.isQuestionnaire = false;
     }
   }
 

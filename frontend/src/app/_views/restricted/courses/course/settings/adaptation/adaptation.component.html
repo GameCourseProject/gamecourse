@@ -73,9 +73,40 @@
 
 <!-- Non-Admin Template -->
 <ng-template #NON_ADMIN>
-  <div *ngIf="!isQuestionnaire">
+  <div *ngIf="isQuestionnaire" class="w-full flex-wrap flex mb-6">
+    <app-header class="w-full" [classList]="'mt-2'" [subHeader]="true" [title]="'Welcome to Adaptation page!'"></app-header>
+    <span class="w-full">Here you will be able to <strong>custom</strong> different game elements in GameCourse.</span>
+    <span class="w-full">But first... you have some unanswered questionnaires!</span>
 
-    <div class="sm:w-1/2">
+    <app-table
+      class="w-full"
+      [id] = "'gameElements'"
+      [classList]="'mt-5'"
+      [headers] = "headers"
+      [data] = "data"
+      [options] = "tableOptions"
+      [loading] = "loading.table"
+      [hasColumnFiltering] = "false"
+      [hasFooters]="false"
+      (btnClicked)="doActionOnTable('answer questionnaire', $event.row, $event.col)">
+    </app-table>
+  </div>
+
+    <div class="carousel w-full">
+      <div id="item1" class="carousel-item">
+        <img class="p-3 pt-5 rounded max-w-md" src="assets/imgs/no-image.png" alt="previous user preference"/>
+      </div>
+      <div id="item2" class="carousel-item">
+        <img class="p-3 pt-5 rounded max-w-md" src="assets/imgs/no-image.png" alt="previous user preference"/>
+      </div>
+    </div>
+    <div class="flex justify-center w-full py-2 gap-2">
+      <a href="#item1" class="btn btn-xs">1</a>
+      <a href="#item2" class="btn btn-xs">2</a>
+    </div>
+
+  <div *ngIf="isQuestionnaire === false">
+    <div class="mt-6 sm:w-1/2">
       <app-input-select
         [id]="'game-elements'"
         [(value)] = "selectedGameElement"
@@ -138,24 +169,6 @@
       <p class="flex text-xs justify-end mt-2 sm:mr-[6rem]">Above actions will only work on current game element</p>
     </div>
   </div>
-  <div *ngIf="isQuestionnaire" class="w-full flex-wrap flex">
-    <app-header class="w-full" [classList]="'mt-2'" [subHeader]="true" [title]="'Welcome to Adaptation page!'"></app-header>
-    <span class="w-full">Here you will be able to <strong>custom</strong> different game elements in GameCourse.</span>
-    <span class="w-full">But first... you have some unanswered questionnaires!</span>
-
-    <app-table
-      class="w-full"
-      [id] = "'gameElements'"
-      [classList]="'mt-5'"
-      [headers] = "headers"
-      [data] = "data"
-      [options] = "tableOptions"
-      [loading] = "loading.table"
-      [hasColumnFiltering] = "false"
-      [hasFooters]="false"
-      (btnClicked)="doActionOnTable('answer questionnaire', $event.row, $event.col)">
-    </app-table>
-  </div>
 </ng-template>
 
 
@@ -167,6 +180,30 @@
   [questionnaires]="questionnaires"
   (questionnairesAfterSubmit)="this.questionnaires = $event; doAction('prepare non-admin page')">
 </app-preference-questionnaire>
+
+<app-modal
+  [id] = "'all-questionnaires-submitted'"
+  [templateRef]="ALL_QUESTIONNAIRES_SUBMITTED"
+  [size] = "'md'"
+  [header]="'You answered all questionnaires!'"
+  [actionInProgress] = "loading.action"
+  (submitBtnClicked)="doAction('show game elements')"
+  [submitBtnText]="'Ok'"
+  [headerMarginBottom]="true"
+  [closeBtn]="false"
+  [xButton]="false"
+></app-modal>
+
+<ng-template #ALL_QUESTIONNAIRES_SUBMITTED>
+  <div class="w-full flex flex-wrap">
+    <!--<div class="w-full flex flex-wrap border-b border-gray-200 mb-4">
+      <span class="text-sm mb-2">Thank you for your feedback!</span>
+    </div>-->
+    <span>Thank you for your feedback!</span>
+    <span>You can now customize your own game elements below. Have fun!</span>
+    <!--<span class="text-sm"> Note: Beware, this option might not always be available</span>-->
+  </div>
+</ng-template>
 
 
 

@@ -27,8 +27,6 @@ export class PreferenceQuestionnaireComponent implements OnInit{
   @ViewChild('q', {static: false}) q: NgForm;       // questionnaire form (non-admin)
 
   loading = { action:false };
-
-  //isQuestionnaire: boolean;
   mode: 'questionnaire';
 
   questionnaireToManage: QuestionnaireManageData;
@@ -42,8 +40,6 @@ export class PreferenceQuestionnaireComponent implements OnInit{
     this.route.parent.params.subscribe();
     this.questionnaireToManage = this.initQuestionnaireToManage();
     this.questionnaireToManage.element = this.gameElement.module;
-
-    console.log(this.questionnaires);
   }
 
   async submitQuestionnaire(){
@@ -53,7 +49,9 @@ export class PreferenceQuestionnaireComponent implements OnInit{
       await this.api.submitGameElementQuestionnaire(clearEmptyValues(this.questionnaireToManage)).toPromise();
 
       const index = this.questionnaires.findIndex(q => q.element === this.questionnaireToManage.element);
-      this.questionnaires[index].isAnswered = true; // NOTE: q1, q2, q3 are not updated, but we don't need them
+
+      // NOTE: q1, q2, q3 are not updated, but we don't need them
+      this.questionnaires[index].isAnswered = true;
       this.questionnairesAfterSubmit.emit(this.questionnaires);
 
       ModalService.closeModal('questionnaire');
