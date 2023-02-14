@@ -92,34 +92,45 @@
     </app-table>
   </div>
 
-    <div class="carousel w-full">
-      <div id="item1" class="carousel-item">
-        <img class="p-3 pt-5 rounded max-w-md" src="assets/imgs/no-image.png" alt="previous user preference"/>
-      </div>
-      <div id="item2" class="carousel-item">
-        <img class="p-3 pt-5 rounded max-w-md" src="assets/imgs/no-image.png" alt="previous user preference"/>
-      </div>
-    </div>
-    <div class="flex justify-center w-full py-2 gap-2">
-      <a href="#item1" class="btn btn-xs">1</a>
-      <a href="#item2" class="btn btn-xs">2</a>
-    </div>
 
   <div *ngIf="isQuestionnaire === false">
-    <div class="mt-6 sm:w-1/2">
-      <app-input-select
-        [id]="'game-elements'"
-        [(value)] = "selectedGameElement"
-        [options] = "availableGameElementsSelect"
-        [multiple] = "false"
-        [search] = "true"
-        [placeholder]="'Select game element'"
-        [topLabel]="'Choose a game element to adapt'"
-        (valueChange)="selectedGameElement = $event ?? []; preparePreferences(selectedGameElement)"
-      ></app-input-select>
+
+    <div class="justify-center flex">
+      <div class="card w-full md:w-1/2 lg:w-3/5 bg-base-100 shadow-xl justify-center flex">
+
+        <div class="card-body">
+          <div class="card-title justify-center"><h2>Customize your own game elements</h2></div>
+          <div class="mt-6 w-full sm:px-[2rem] justify-center">
+            <app-input-select
+              [id]="'game-elements'"
+              [(value)] = "selectedGameElement"
+              [options] = "availableGameElementsSelect"
+              [multiple] = "false"
+              [search] = "true"
+              [placeholder]="'Select game element'"
+              (valueChange)="selectedGameElement = $event ?? []; preparePreferences(selectedGameElement)"
+            ></app-input-select>
+          </div>
+          <div *ngIf = "selectedGameElement" class="mt-3 sm:px-[1.5rem]">
+            <div class="btn-group flex justify-start sm:mr-[6rem]">
+              <p>Options available:</p>
+              <div *ngFor="let option of gameElementChildren; let i = index" class="pl-2">
+                <input type = "button"
+                       class="btn-sm rounded-lg btn-{{getButtonColor(i)}} px-2 text-white"
+                       value="{{option}}"
+                       (click) = "setButtonActive(i); doAction('set option', option)"/>
+              </div>
+            </div>
+            <div class="w-full justify-center flex">
+              <img src="assets/imgs/no-image.png" alt="">
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
 
-    <div *ngIf = "selectedGameElement" class="w-full flex flex-wrap mt-7">
+    <!--<div *ngIf = "selectedGameElement" class="w-full flex flex-wrap mt-7">
 
       <div class="sm:w-5/12">
         <strong *ngIf="message">CURRENT</strong>
@@ -152,7 +163,7 @@
         <img *ngIf="gameElementChildren && activeButton !== null" class="p-3 rounded max-w-sm" src="assets/imgs/no-image.png" alt="previous user preference"/>
       </div>
 
-    </div>
+    </div>-->
 
     <!-- Actions -->
     <div *ngIf="selectedGameElement" style="position:relative; bottom:0; right: 0;">

@@ -5,15 +5,17 @@ const darkThemeColors = require('daisyui/src/colors/themes')['[data-theme=dark]'
 module.exports = {
   mode: 'jit',
   content: [
-    './src/**/*.{html,ts}',
+    './src/**/*.{html,ts,js}',
     './src/index.html',
-    '../api/modules/**/*.php'
+    '../api/modules/**/*.php',
+    './node_modules/tw-elements/dist/js/**/*.js'
   ],
   plugins: [
     require('@tailwindcss/typography'),
     require('@tailwindcss/line-clamp'),
     require('tailwind-scrollbar')({ nocompatible: true }),
-    require('daisyui')
+    require('daisyui'),
+    require('tw-elements/dist/plugin')
   ],
   theme: {
     extend: {
