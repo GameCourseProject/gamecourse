@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS googlesheets_config(
     course                      int unsigned PRIMARY KEY,
-    key_                        varchar(200) DEFAULT NULL,
+    key_                        TEXT DEFAULT NULL,
     clientId                    TEXT DEFAULT NULL,
     projectId                   TEXT DEFAULT NULL,
     authUri                     TEXT DEFAULT NULL,

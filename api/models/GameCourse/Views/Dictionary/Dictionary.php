@@ -2,6 +2,8 @@
 namespace GameCourse\Views\Dictionary;
 
 use Exception;
+use Faker\Factory;
+use Faker\Generator;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
 use Utils\Utils;
@@ -102,17 +104,23 @@ class Dictionary
     /*** ----------------------------------------------- ***/
 
     // Global variables to be used inside dictionary functions
-    private $mockData;
     private $course;
+    private $mockData;
+    private $faker;
+
+    public function getCourse(): ?Course
+    {
+        return $this->course;
+    }
 
     public function mockData(): bool
     {
         return $this->mockData;
     }
 
-    public function getCourse(): Course
+    public function faker(): Generator
     {
-        return $this->course;
+        return $this->faker;
     }
 
 
@@ -150,6 +158,7 @@ class Dictionary
 
         // Mock data
         $this->mockData = $mockData;
+        $this->faker = Factory::create();
 
         // Call function
         return $library->{$funcName}(...$args);

@@ -78,7 +78,7 @@ class EvaluateVisitor extends Visitor
             }
         } else $contextVal = null;
 
-        $course = $this->mockData ? null : Course::getCourseById($this->params["course"]);
+        $course = $this->params["course"] ? Course::getCourseById($this->params["course"]) : null;
         return Core::dictionary()->callFunction($course, $libraryId, $funcName, $args, $contextVal, $this->mockData);
     }
 

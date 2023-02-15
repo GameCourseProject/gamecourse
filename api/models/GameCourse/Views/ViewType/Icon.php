@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\Views\ViewType;
 
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\ViewHandler;
@@ -111,6 +112,9 @@ class Icon extends ViewType
     /*** -------------------- Dictionary -------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function compile(array &$view)
     {
         if (isset($view["size"])) ViewHandler::compileExpression($view["size"]);

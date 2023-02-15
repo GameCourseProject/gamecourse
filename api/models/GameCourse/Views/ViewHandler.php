@@ -319,7 +319,10 @@ class ViewHandler
             // Evaluate each view
             $mockData = !is_array($populate);
             foreach ($viewTree as &$view) {
-                self::evaluateView($view, new EvaluateVisitor($mockData ? [] : $populate, $mockData));
+                self::evaluateView($view, new EvaluateVisitor(
+                    $mockData ? ["course" => 0, "viewer" => 0, "user" => 0] : $populate,
+                    $mockData
+                ));
             }
         }
 

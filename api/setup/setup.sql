@@ -165,18 +165,18 @@ CREATE TABLE aspect(
 
 CREATE TABLE view_type(
     id                          varchar(50) NOT NULL PRIMARY KEY,
-    description                 varchar(125) NOT NULL
+    description                 TEXT NOT NULL
 );
 
 CREATE TABLE view(
     id                          bigint unsigned NOT NULL PRIMARY KEY,
     type                        varchar(50) NOT NULL,
     cssId                       varchar(50) DEFAULT NULL,
-    class                       varchar(200) DEFAULT NULL,
-    style                       varchar(255) DEFAULT NULL,
+    class                       TEXT DEFAULT NULL,
+    style                       TEXT DEFAULT NULL,
     visibilityType              ENUM ('visible', 'invisible', 'conditional') DEFAULT 'visible',
-    visibilityCondition         varchar(200) DEFAULT NULL,
-    loopData                    varchar(500) DEFAULT NULL,
+    visibilityCondition         TEXT DEFAULT NULL,
+    loopData                    TEXT DEFAULT NULL,
 
     FOREIGN key(type) REFERENCES view_type(id) ON DELETE CASCADE
 );
@@ -194,7 +194,7 @@ CREATE TABLE view_aspect(
 CREATE TABLE view_variable(
     view                        bigint unsigned NOT NULL,
     name                        varchar(50) NOT NULL,
-    value                       varchar(200) NOT NULL,
+    value                       TEXT NOT NULL,
     position                    int unsigned,
 
     UNIQUE key(view, name),
@@ -205,7 +205,7 @@ CREATE TABLE view_variable(
 CREATE TABLE view_event(
     view                        bigint unsigned NOT NULL,
     type                        ENUM ('click', 'dblclick', 'mouseover', 'mouseout', 'mouseup', 'wheel', 'drag') NOT NULL,
-    action                      varchar(200) NOT NULL,
+    action                      TEXT NOT NULL,
 
     UNIQUE key(view, type),
     FOREIGN key(view) REFERENCES view(id) ON DELETE CASCADE
@@ -409,9 +409,9 @@ CREATE TABLE participation(
     user 	                    int unsigned NOT NULL,
     course 	                    int unsigned NOT NULL,
     source                      varchar(50) NOT NULL DEFAULT 'GameCourse',
-    description                 varchar(500) NOT NULL,
+    description                 TEXT NOT NULL,
     type 	                    varchar(50) NOT NULL,
-    post 	                    varchar(255) DEFAULT NULL,
+    post 	                    TEXT DEFAULT NULL,
     date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     rating                      int DEFAULT NULL,
     evaluator                   int unsigned DEFAULT NULL,

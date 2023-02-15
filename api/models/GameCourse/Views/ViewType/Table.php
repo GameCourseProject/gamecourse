@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\Views\ViewType;
 
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\ViewHandler;
@@ -108,6 +109,9 @@ class Table extends ViewType
         Core::database()->delete(self::TABLE_VIEW_TABLE, ["id" => $viewId]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function build(array &$view, array $sortedAspects = null)
     {
         $children = ViewHandler::getChildrenOfView($view["id"]);
@@ -146,6 +150,9 @@ class Table extends ViewType
     /*** -------------------- Dictionary -------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function compile(array &$view)
     {
         if (isset($view["children"])) {
@@ -157,6 +164,9 @@ class Table extends ViewType
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function evaluate(array &$view, EvaluateVisitor $visitor)
     {
         if (isset($view["children"])) {

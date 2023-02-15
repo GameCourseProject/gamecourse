@@ -26,9 +26,9 @@ CREATE TABLE IF NOT EXISTS progress_report_history(
     diffXP              int NOT NULL DEFAULT 0,
     timeLeft            int unsigned,
     prediction          int unsigned DEFAULT NULL,
-    pieChart            varchar(500),
-    areaChart           varchar(500),
-    emailSend           varchar(255),
+    pieChart            TEXT,
+    areaChart           TEXT,
+    emailSend           TEXT,
     dateSent            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,

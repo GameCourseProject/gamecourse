@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\Views\ViewType;
 
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\ViewHandler;
@@ -88,6 +89,9 @@ class Collapse extends ViewType
         Core::database()->delete(self::TABLE_VIEW_COLLAPSE, ["id" => $viewId]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function build(array &$view, array $sortedAspects = null)
     {
         // NOTE: can only have two children - header and content
@@ -129,6 +133,9 @@ class Collapse extends ViewType
     /*** -------------------- Dictionary -------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function compile(array &$view)
     {
         // NOTE: can only have two children - header and content
@@ -141,6 +148,9 @@ class Collapse extends ViewType
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function evaluate(array &$view, EvaluateVisitor $visitor)
     {
         // NOTE: can only have two children - header and content
