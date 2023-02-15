@@ -1002,7 +1002,7 @@ class Course
      */
     public function getPages(?bool $visible = null): array
     {
-        return Page::getPagesOfCourse($this->id, $visible);
+        return Page::getCoursePages($this->id, $visible);
     }
 
     /**

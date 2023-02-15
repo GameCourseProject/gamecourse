@@ -2069,6 +2069,49 @@ export class ApiHttpService {
       .pipe( map((res: any) => Page.fromDatabase(res['data'])) );
   }
 
+  public getUserLandingPage(courseID: number, userID: number): Observable<Page> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getUserLandingPage');
+      qs.push('courseId', courseID);
+      qs.push('userId', userID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Page.fromDatabase(res['data'])) );
+  }
+
+  public getCoursePages(courseID: number, isVisible?: boolean): Observable<Page[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getCoursePages');
+      qs.push('courseId', courseID);
+      if (isVisible !== undefined) qs.push('isVisible', isVisible);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => Page.fromDatabase(obj))) );
+  }
+
+  public getUserPages(courseID: number, userID: number, isVisible?: boolean): Observable<Page[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getUserPages');
+      qs.push('courseId', courseID);
+      qs.push('userId', userID);
+      if (isVisible !== undefined) qs.push('isVisible', isVisible);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => Page.fromDatabase(obj))) );
+  }
+
   // TODO: refactor
   public renderPage(courseID: number, pageID: number,  userID: number = null): Observable<View> {
     const params = (qs: QueryStringParameters) => {

@@ -133,7 +133,7 @@ export class CoursesComponent implements OnInit {
     this.loading.table = false;
   }
 
-  doActionOnTable(action: string, row: number, col: number, value?: any): void {
+  async doActionOnTable(action: string, row: number, col: number, value?: any): Promise<void> {
     const courseToActOn = this.courses[row];
 
     if (action === 'value changed') {
@@ -141,7 +141,7 @@ export class CoursesComponent implements OnInit {
       else if (col === 8) this.toggleVisible(courseToActOn);
 
     } else if (action === Action.VIEW) {
-      const redirectLink = this.getRedirectLink(courseToActOn);
+      const redirectLink = await this.getRedirectLink(courseToActOn);
       this.router.navigate([redirectLink]);
 
     } else if (action === Action.DUPLICATE) {
@@ -333,11 +333,12 @@ export class CoursesComponent implements OnInit {
     return years;
   }
 
-  getRedirectLink(course: Course): string {
+  async getRedirectLink(course: Course): Promise<string> {
     const link = '/courses/' + course.id;
     if (this.user.isAdmin) return link; // admins go to main page
 
-    const pageID = course.landingPage; // FIXME: landing page per user role
+    const userLandingPage = await this.api.getUserLandingPage(course.id, this.user.id).toPromise();
+    const pageID = userLandingPage?.id || course.landingPage;
     if (pageID) return link + '/pages/' + pageID;
     else return link;
   }

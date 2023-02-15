@@ -130,11 +130,11 @@
     </app-input-text>
 
     <!-- Landing Page -->
-    <app-input-select *ngIf="activePages.length > 0"
+    <app-input-select *ngIf="visiblePages.length > 0"
       [id]="'role-page'"
       [form]="f"
       [(value)]="roleToManage.landingPage"
-      [options]="activePages"
+      [options]="visiblePages"
       [placeholder]="'Select a landing page'"
       [classList]="'mt-3'"
       [topLabel]="'Landing Page'">

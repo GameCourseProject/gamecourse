@@ -31,7 +31,7 @@ export class RolesComponent implements OnInit {
   roleToManage: RoleManageData = this.initRoleToManage();
   @ViewChild('f', { static: false }) f: NgForm;
 
-  activePages: {value: string, text: string}[];
+  visiblePages: {value: string, text: string}[];
   defaultRoleNames: string[];
   rolesHierarchySmart: {[roleName: string]: {role: Role, parent: Role, children: Role[]}};
 
@@ -44,7 +44,7 @@ export class RolesComponent implements OnInit {
     this.route.parent.params.subscribe(async params => {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
-      await this.getActivePages(courseID);
+      await this.getVisiblePages(courseID);
       await this.getRoles(courseID);
       this.loading.page = false;
 
@@ -65,8 +65,11 @@ export class RolesComponent implements OnInit {
     this.course = await this.api.getCourseById(courseID).toPromise();
   }
 
-  async getActivePages(courseID: number): Promise<void> {
-    this.activePages = []; // FIXME
+  async getVisiblePages(courseID: number): Promise<void> {
+    const pages = await this.api.getCoursePages(courseID, true).toPromise();
+    this.visiblePages = pages.map(page => {
+      return {value: 'p-' + page.id, text: page.name};
+    })
   }
 
   async getRoles(courseID: number): Promise<void> {

@@ -271,13 +271,38 @@ class Page
      * @param bool|null $visible
      * @return array
      */
-    public static function getPagesOfCourse(int $courseId, ?bool $visible = null): array
+    public static function getCoursePages(int $courseId, ?bool $visible = null): array
     {
         $where = ["course" => $courseId];
         if ($visible !== null) $where["isVisible"] = $visible;
         $pages = Core::database()->selectMultiple(self::TABLE_PAGE, $where, "*", "id");
         foreach ($pages as &$page) { $page = self::parse($page); }
         return $pages;
+    }
+
+    /**
+     * Gets course pages available for a given user according to their roles.
+     * Option for 'visible'.
+     *
+     * @param int $courseId
+     * @param int $userid
+     * @param bool|null $visible
+     * @return array
+     * @throws Exception
+     */
+    public static function getUserPages(int $courseId, int $userid, ?bool $visible = null): array
+    {
+        // Get course pages
+        $coursePages = self::getCoursePages($courseId, $visible);
+
+        // Filter pages based on user roles and aspects defined for each page
+        $availablePagesForUser = [];
+        foreach ($coursePages as $page) {
+            // Try to build page for user
+            $viewTree = ViewHandler::buildView($page["viewRoot"], Aspect::getAspects($courseId, $userid));
+            if (!empty($viewTree)) $availablePagesForUser[] = $page;
+        }
+        return $availablePagesForUser;
     }
 
     /**
