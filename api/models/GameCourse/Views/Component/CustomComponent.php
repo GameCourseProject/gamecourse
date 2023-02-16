@@ -107,11 +107,13 @@ class CustomComponent extends Component
      */
     public function setData(array $fieldValues)
     {
+        $courseId = $this->getCourse()->getId();
+
         // Trim values
         self::trim($fieldValues);
 
         // Validate data
-        if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
+        if (key_exists("name", $fieldValues)) self::validateName($courseId, $fieldValues["name"], $this->id);
 
         // Update data
         if (count($fieldValues) != 0)
@@ -173,7 +175,7 @@ class CustomComponent extends Component
                                         ?array $viewTree = null, string $moduleId = null): CustomComponent
     {
         self::trim($name);
-        self::validateName($name);
+        self::validateName($courseId, $name);
 
         if ($creationMode == CreationMode::BY_VALUE) {
             if ($viewTree) {
@@ -265,13 +267,19 @@ class CustomComponent extends Component
      *
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName(int $courseId, $name, int $componentId = null)
     {
         if (!is_string($name) || empty($name))
             throw new Exception("Component name can't be null neither empty.");
 
         if (iconv_strlen($name) > 25)
             throw new Exception("Component name is too long: maximum of 25 characters.");
+
+        $whereNot = [];
+        if ($componentId) $whereNot[] = ["id", $componentId];
+        $componentNames = array_column(Core::database()->selectMultiple(self::TABLE_COMPONENT, ["course" => $courseId], "name", null, $whereNot), "name");
+        if (in_array($name, $componentNames))
+            throw new Exception("Duplicate component name: '$name'");
     }
 
 

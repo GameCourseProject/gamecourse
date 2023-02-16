@@ -168,13 +168,14 @@ class Rule
      */
     public function setData(array $fieldValues)
     {
+        $courseId = $this->getCourse()->getId();
         $section = $this->getSection();
 
         // Trim values
         self::trim($fieldValues);
 
         // Validate data
-        if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
+        if (key_exists("name", $fieldValues)) self::validateName($courseId, $fieldValues["name"], $this->id);
         if (key_exists("whenClause", $fieldValues)) self::validateWhen($fieldValues["whenClause"]);
         if (key_exists("thenClause", $fieldValues)) self::validateWhen($fieldValues["thenClause"]);
         if (key_exists("position", $fieldValues)) {
@@ -327,7 +328,7 @@ class Rule
                                    string $then, int $position, bool $isActive = true, array $tags = []): Rule
     {
         self::trim($name, $description, $when, $then);
-        self::validateRule($name, $when, $then, $isActive);
+        self::validateRule($courseId, $name, $when, $then, $isActive);
         $section = new Section($sectionId);
 
         // Insert in database
@@ -554,6 +555,7 @@ class Rule
     /**
      * Validates rule parameters.
      *
+     * @param int $courseId
      * @param $name
      * @param $when
      * @param $then
@@ -561,9 +563,9 @@ class Rule
      * @return void
      * @throws Exception
      */
-    private static function validateRule($name, $when, $then, $isActive)
+    private static function validateRule(int $courseId, $name, $when, $then, $isActive)
     {
-        self::validateName($name);
+        self::validateName($courseId, $name);
         self::validateWhen($when);
         self::validateThen($then);
 
@@ -573,11 +575,13 @@ class Rule
     /**
      * Validates rule name.
      *
+     * @param int $courseId
      * @param $name
+     * @param int|null $ruleId
      * @return void
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName(int $courseId, $name, int $ruleId = null)
     {
         if (!is_string($name) || empty(trim($name)))
             throw new Exception("Rule name can't be null neither empty.");
@@ -588,6 +592,12 @@ class Rule
 
         if (iconv_strlen($name) > 50)
             throw new Exception("Rule name is too long: maximum of 50 characters.");
+
+        $whereNot = [];
+        if ($ruleId) $whereNot[] = ["id", $ruleId];
+        $ruleNames = array_column(Core::database()->selectMultiple(self::TABLE_RULE, ["course" => $courseId], "name", null, $whereNot), "name");
+        if (in_array($name, $ruleNames))
+            throw new Exception("Duplicate rule name: '$name'");
     }
 
     /**

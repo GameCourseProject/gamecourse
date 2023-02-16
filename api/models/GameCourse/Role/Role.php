@@ -251,9 +251,10 @@ class Role
     public static function addRoleToCourse(int $courseId, string $roleName, string $landingPageName = null, int $landingPageId = null, string $moduleId = null)
     {
         self::trim($roleName);
-        self::validateRoleName($roleName);
 
         if (!self::courseHasRole($courseId, $roleName)) {
+            self::validateRoleName($courseId, $roleName);
+
             // Add role
             $data = ["course" => $courseId, "name" => $roleName];
             if ($landingPageName !== null) $landingPageId = Page::getPageByName($courseId, $landingPageName)->getId();
@@ -300,6 +301,7 @@ class Role
         // Update roles
         foreach ($roles as $role) {
             if (isset($role["id"])) { // update
+                self::validateRoleName($courseId, trim($role["name"]), $role["id"]);
                 Core::database()->update(self::TABLE_ROLE, [
                     "name" => trim($role["name"]),
                     "landingPage" => $role["landingPage"] ?? null
@@ -566,17 +568,25 @@ class Role
     /**
      * Validates role name.
      *
+     * @param int $courseId
      * @param $roleName
+     * @param int|null $roleId
      * @return void
      * @throws Exception
      */
-    private static function validateRoleName($roleName)
+    private static function validateRoleName(int $courseId, $roleName, int $roleId = null)
     {
         if (!is_string($roleName) || strpos($roleName, " ") !== false)
             throw new Exception("Role name '" . $roleName . "' is invalid. Role names can't be empty or have white spaces.");
 
         if (iconv_strlen($roleName) > 50)
             throw new Exception("Role name is too long: maximum of 50 characters.");
+
+        $whereNot = [];
+        if ($roleId) $whereNot[] = ["id", $roleId];
+        $roleNames = array_column(Core::database()->selectMultiple(self::TABLE_ROLE, ["course" => $courseId], "name", null, $whereNot), "name");
+        if (in_array($roleName, $roleNames))
+            throw new Exception("Duplicate role name: '$roleName'");
     }
 
 

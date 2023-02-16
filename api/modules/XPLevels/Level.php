@@ -101,11 +101,14 @@ class Level
      */
     public function setData(array $fieldValues)
     {
+        $courseId = $this->getCourse()->getId();
+
         // Trim values
         self::trim($fieldValues);
 
         // Validate data
         if (key_exists("minXP", $fieldValues)) {
+            self::validateMinXP($courseId, $fieldValues["minXP"], $this->id);
             $previousMinXP = self::getMinXP();
             $newMinXP = intval($fieldValues["minXP"]);
             if ($previousMinXP !== 0 && $newMinXP <= 0)
@@ -229,7 +232,7 @@ class Level
     public static function addLevel(int $courseId, int $minXP, ?string $description): Level
     {
         self::trim($description);
-        self::validateLevel($description);
+        self::validateLevel($courseId, $minXP, $description);
         $id = Core::database()->insert(self::TABLE_LEVEL, [
             "course" => $courseId,
             "minXP" => $minXP,
@@ -426,13 +429,36 @@ class Level
     /**
      * Validates level parameters.
      *
+     * @param int $courseId
+     * @param $minXP
      * @param $description
      * @return void
      * @throws Exception
      */
-    private static function validateLevel($description)
+    private static function validateLevel(int $courseId, $minXP, $description)
     {
+        self::validateMinXP($courseId, $minXP);
         self::validateDescription($description);
+    }
+
+    /**
+     * Validates level minimum XP.
+     *
+     * @param int $courseId
+     * @param $minXP
+     * @param int|null $levelId
+     * @return void
+     * @throws Exception
+     */
+    private static function validateMinXP(int $courseId, $minXP, int $levelId = null)
+    {
+        if (!is_numeric($minXP) || (empty($minXP) && $minXP !== 0))
+            throw new Exception("Level minimum XP can't be null neither empty.");
+
+        $whereNot = [];
+        if ($levelId) $whereNot[] = ["id", $levelId];
+        if (!empty(Core::database()->select(self::TABLE_LEVEL, ["course" => $courseId, "minXP" => $minXP], "*", null, $whereNot)))
+            throw new Exception("Duplicate minimum XP value: '$minXP'");
     }
 
     /**

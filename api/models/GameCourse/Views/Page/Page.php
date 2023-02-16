@@ -185,11 +185,13 @@ class Page
      */
     public function setData(array $fieldValues)
     {
+        $courseId = $this->getCourse()->getId();
+
         // Trim values
         self::trim($fieldValues);
 
         // Validate data
-        if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
+        if (key_exists("name", $fieldValues)) self::validateName($courseId, $fieldValues["name"], $this->id);
         if (key_exists("visibleFrom", $fieldValues)) {
             self::validateDateTime($fieldValues["visibleFrom"]);
             $visibleUntil = key_exists("visibleUntil", $fieldValues) ? $fieldValues["visibleUntil"] : $this->getVisibleUntil();
@@ -337,7 +339,7 @@ class Page
                                    ?string $visibleUntil = null): Page
     {
         self::trim($name, $visibleFrom, $visibleUntil);
-        self::validatePage($name, false, $visibleFrom, $visibleUntil);
+        self::validatePage($courseId, $name, false, $visibleFrom, $visibleUntil);
 
         // Add view tree of page
         $viewRoot = ViewHandler::insertViewTree($viewTree ?? ViewHandler::ROOT_VIEW, $courseId);
@@ -566,6 +568,7 @@ class Page
     /**
      * Validates page parameters.
      *
+     * @param int $courseId
      * @param $name
      * @param $isVisible
      * @param $visibleFrom
@@ -573,9 +576,9 @@ class Page
      * @return void
      * @throws Exception
      */
-    private static function validatePage($name, $isVisible, $visibleFrom, $visibleUntil)
+    private static function validatePage(int $courseId, $name, $isVisible, $visibleFrom, $visibleUntil)
     {
-        self::validateName($name);
+        self::validateName($courseId, $name);
         self::validateDateTime($visibleFrom);
         self::validateDateTime($visibleUntil);
         self::validateVisibleFromAndUntilDates($visibleFrom, $visibleUntil);
@@ -589,13 +592,19 @@ class Page
      *
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName(int $courseId, $name, int $pageId = null)
     {
         if (!is_string($name) || empty($name))
             throw new Exception("Page name can't be null neither empty.");
 
         if (iconv_strlen($name) > 25)
             throw new Exception("Page name is too long: maximum of 25 characters.");
+
+        $whereNot = [];
+        if ($pageId) $whereNot[] = ["id", $pageId];
+        $pageNames = array_column(Core::database()->selectMultiple(self::TABLE_PAGE, ["course" => $courseId], "name", null, $whereNot), "name");
+        if (in_array($name, $pageNames))
+            throw new Exception("Duplicate page name: '$name'");
     }
 
     /**

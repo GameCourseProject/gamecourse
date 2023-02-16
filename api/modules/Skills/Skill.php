@@ -221,7 +221,7 @@ class Skill
         }
         if (key_exists("name", $fieldValues)) {
             $newName = $fieldValues["name"];
-            self::validateName($newName);
+            self::validateName($course->getId(), $newName, $this->id);
             $oldName = $this->getName();
         }
         if (key_exists("color", $fieldValues)) self::validateColor($fieldValues["color"]);
@@ -482,9 +482,9 @@ class Skill
                                     bool $isExtra, array $dependencies): Skill
     {
         self::trim($name, $color, $page);
-        self::validateSkill($tierId, $name, $color, $page, $isCollab, $isExtra, $dependencies);
         $tier = Tier::getTierById($tierId);
         $courseId = $tier->getCourse()->getId();
+        self::validateSkill($courseId, $tierId, $name, $color, $page, $isCollab, $isExtra, $dependencies);
         $positionInTier = count($tier->getSkills());
 
         // Create skill rule
@@ -1282,7 +1282,8 @@ class Skill
     /**
      * Validates skill parameters.
      *
-     * @param $tierId
+     * @param int $courseId
+     * @param int $tierId
      * @param $name
      * @param $color
      * @param $page
@@ -1292,10 +1293,10 @@ class Skill
      * @return void
      * @throws Exception
      */
-    private static function validateSkill($tierId, $name, $color, $page, $isCollab, $isExtra, $dependencies)
+    private static function validateSkill(int $courseId, int $tierId, $name, $color, $page, $isCollab, $isExtra, $dependencies)
     {
         self::validateTier($tierId);
-        self::validateName($name);
+        self::validateName($courseId, $name);
         self::validateColor($color);
         self::validatePage($page);
         self::validateDependencies(new Tier($tierId), $dependencies);
@@ -1310,7 +1311,7 @@ class Skill
      * @return void
      * @throws Exception
      */
-    private static function validateTier($tierId)
+    private static function validateTier(int $tierId)
     {
         $tier = Tier::getTierById($tierId);
         if (!$tier) throw new Exception("Tier  with ID = " . $tierId . " doesn't exist.");
@@ -1319,11 +1320,13 @@ class Skill
     /**
      * Validates skill name.
      *
+     * @param int $courseId
      * @param $name
+     * @param int|null $skillId
      * @return void
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName(int $courseId, $name, int $skillId = null)
     {
         if (!is_string($name) || empty(trim($name)))
             throw new Exception("Skill name can't be null neither empty.");
@@ -1334,6 +1337,12 @@ class Skill
 
         if (iconv_strlen($name) > 50)
             throw new Exception("Skill name is too long: maximum of 50 characters.");
+
+        $whereNot = [];
+        if ($skillId) $whereNot[] = ["id", $skillId];
+        $skillNames = array_column(Core::database()->selectMultiple(self::TABLE_SKILL, ["course" => $courseId], "name", null, $whereNot), "name");
+        if (in_array($name, $skillNames))
+            throw new Exception("Duplicate skill name: '$name'");
     }
 
     /**

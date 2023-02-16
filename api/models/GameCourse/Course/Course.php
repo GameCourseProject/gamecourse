@@ -235,7 +235,7 @@ class Course
         // Validate data
         if (key_exists("name", $fieldValues)) {
             $newName = $fieldValues["name"];
-            self::validateName($newName);
+            self::validateName($newName, key_exists("year", $fieldValues) ? $fieldValues["year"] : $this->getYear(), $this->id);
             $oldName = $this->getName();
         }
         if (key_exists("short", $fieldValues)) self::validateShort($fieldValues["short"]);
@@ -538,52 +538,53 @@ class Course
      */
     public static function deleteCourse(int $courseId)
     {
-        $course = new Course($courseId);
+        $course = Course::getCourseById($courseId);
+        if ($course) {
+            // Disable modules
+            // NOTE: module dependants are disabled before the module
+            $modulesEnabled = $course->getModules(true, true);
+            $modulesDisabled = [];
+            while (count($modulesDisabled) != count($modulesEnabled)) {
+                foreach ($modulesEnabled as $moduleId) {
+                    if (in_array($moduleId, $modulesDisabled)) // already disabled
+                        continue;
 
-        // Disable modules
-        // NOTE: module dependants are disabled before the module
-        $modulesEnabled = $course->getModules(true, true);
-        $modulesDisabled = [];
-        while (count($modulesDisabled) != count($modulesEnabled)) {
-            foreach ($modulesEnabled as $moduleId) {
-                if (in_array($moduleId, $modulesDisabled)) // already disabled
-                    continue;
+                    // Check if dependants have already been disabled
+                    $allDependantsDisabled = true;
+                    foreach (($course->getModuleById($moduleId))->getDependants(DependencyMode::HARD, true) as $dependantId) {
+                        $dependant = $course->getModuleById($dependantId);
+                        if ($dependant->isEnabled()) {
+                            $allDependantsDisabled = false;
+                            break;
+                        }
+                    }
 
-                // Check if dependants have already been disabled
-                $allDependantsDisabled = true;
-                foreach (($course->getModuleById($moduleId))->getDependants(DependencyMode::HARD, true) as $dependantId) {
-                    $dependant = $course->getModuleById($dependantId);
-                    if ($dependant->isEnabled()) {
-                        $allDependantsDisabled = false;
-                        break;
+                    // Disable module
+                    if ($allDependantsDisabled) {
+                        $module = $course->getModuleById($moduleId);
+                        $module->setEnabled(false);
+                        $modulesDisabled[] = $moduleId;
                     }
                 }
-
-                // Disable module
-                if ($allDependantsDisabled) {
-                    $module = $course->getModuleById($moduleId);
-                    $module->setEnabled(false);
-                    $modulesDisabled[] = $moduleId;
-                }
             }
+
+            // Remove data folder
+            Course::removeDataFolder($courseId);
+
+            // Disable autogame & remove info
+            AutoGame::setAutoGame($courseId, false);
+            AutoGame::deleteAutoGameInfo($courseId);
+
+            // Remove automations
+            $course->setAutomation("AutoEnabling", null);
+            $course->setAutomation("AutoDisabling", null);
+
+            // Delete cache
+            Cache::clean($courseId);
+
+            // Delete from database
+            Core::database()->delete(self::TABLE_COURSE, ["id" => $courseId]);
         }
-
-        // Remove data folder
-        Course::removeDataFolder($courseId);
-
-        // Disable autogame & remove info
-        AutoGame::setAutoGame($courseId, false);
-        AutoGame::deleteAutoGameInfo($courseId);
-
-        // Remove automations
-        $course->setAutomation("AutoEnabling", null);
-        $course->setAutomation("AutoDisabling", null);
-
-        // Delete cache
-        Cache::clean($courseId);
-
-        // Delete from database
-        Core::database()->delete(self::TABLE_COURSE, ["id" => $courseId]);
     }
 
     /**
@@ -1448,10 +1449,10 @@ class Course
      */
     private static function validateCourse($name, $short, $color, $year, $startDate, $endDate, $isActive, $isVisible)
     {
-        self::validateName($name);
+        self::validateYear($year);
+        self::validateName($name, $year);
         self::validateShort($short);
         self::validateColor($color);
-        self::validateYear($year);
         self::validateDateTime($startDate);
         self::validateDateTime($endDate);
         self::validateStartAndEndDates($startDate, $endDate);
@@ -1465,7 +1466,7 @@ class Course
      *
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName($name, $year, int $courseId = null)
     {
         if (!is_string($name) || empty(trim($name)))
             throw new Exception("Course name can't be null neither empty.");
@@ -1476,6 +1477,11 @@ class Course
 
         if (iconv_strlen($name) > 100)
             throw new Exception("Course name is too long: maximum of 100 characters.");
+
+        $whereNot = [];
+        if ($courseId) $whereNot[] = ["id", $courseId];
+        if (!empty(Core::database()->select(self::TABLE_COURSE, ["name" => $name, "year" => $year], "*", null, $whereNot)))
+            throw new Exception("Duplicate course '$name' for academic year '$year'.");
     }
 
     /**

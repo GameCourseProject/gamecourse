@@ -256,6 +256,8 @@ class User
 
         // Validate data
         if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
+        if (key_exists("username", $fieldValues)) self::validateUsername($fieldValues["username"],
+            key_exists("auth_service", $authValues) ? $authValues["auth_service"] : $this->getAuthService(), $this->id);
         if (key_exists("email", $fieldValues)) self::validateEmail($fieldValues["email"]);
         if (key_exists("isActive", $fieldValues) && !$fieldValues["isActive"]) {
             $loggedUser = Core::getLoggedUser();
@@ -414,7 +416,7 @@ class User
                                    ?string $nickname, ?string $major, bool $isAdmin, bool $isActive): User
     {
         self::trim($name, $username, $authService, $email, $nickname, $major);
-        self::validateUser($name, $email, $authService, $isAdmin, $isActive);
+        self::validateUser($name, $username, $email, $authService, $isAdmin, $isActive);
         $id = Core::database()->insert(self::TABLE_USER, [
             "name" => $name,
             "email" => $email,
@@ -670,6 +672,7 @@ class User
      * Validates user parameters.
      *
      * @param $name
+     * @param $username
      * @param $email
      * @param $authService
      * @param $isAdmin
@@ -677,11 +680,12 @@ class User
      * @return void
      * @throws Exception
      */
-    private static function validateUser($name, $email, $authService, $isAdmin, $isActive)
+    private static function validateUser($name, $username, $email, $authService, $isAdmin, $isActive)
     {
         self::validateName($name);
         self::validateEmail($email);
         self::validateAuthService($authService);
+        self:: validateUsername($username, $authService);
         if (!is_bool($isAdmin)) throw new Exception("'isAdmin' must be either true or false.");
         if (!is_bool($isActive)) throw new Exception("'isActive' must be either true or false.");
     }
@@ -703,6 +707,29 @@ class User
 
         if (iconv_strlen($name) > 60)
             throw new Exception("User name is too long: maximum of 60 characters.");
+    }
+
+    /**
+     * Validates user username.
+     *
+     * @param $username
+     * @param $authService
+     * @param int|null $userId
+     * @return void
+     * @throws Exception
+     */
+    private static function validateUsername($username, $authService, int $userId = null)
+    {
+        if (!is_string($username) || empty($username))
+            throw new Exception("Username can't be null neither empty.");
+
+        if (iconv_strlen($username) > 50)
+            throw new Exception("Username is too long: maximum of 50 characters.");
+
+        $whereNot = [];
+        if ($userId) $whereNot[] = ["id", $userId];
+        if (!empty(Core::database()->select(Auth::TABLE_AUTH, ["username" => $username, "auth_service" => $authService], "*", null, $whereNot)))
+            throw new Exception("Duplicate username '$username' for authentication service '$authService'.");
     }
 
     /**
