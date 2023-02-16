@@ -828,7 +828,7 @@ class Badge
 
         // Create zip archive to store badges' info
         // NOTE: This zip will be automatically deleted after download is complete
-        $zipPath = $tempFolder . "/" . ($course->getShort() ?? $course->getName()) . "-badges.zip";
+        $zipPath = $tempFolder . "/" . Utils::strip($course->getShort() ?? $course->getName(), '_') . "-badges.zip";
         $zip = new ZipArchive();
         if (!$zip->open($zipPath, ZipArchive::CREATE))
             throw new Exception("Failed to create zip archive.");
