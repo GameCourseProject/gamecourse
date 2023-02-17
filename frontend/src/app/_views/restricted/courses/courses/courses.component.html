@@ -226,7 +226,7 @@
   <div class="warning">Please select a .zip file to be imported</div>
   <app-input-file
     [id]="'import_course'"
-    [accept]="'.zip'"
+    [accept]="['.zip']"
     [classList]="'config_input'"
     (valueChange)="onFileSelected($event)">
   </app-input-file>

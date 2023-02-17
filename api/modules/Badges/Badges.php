@@ -283,7 +283,7 @@ class Badges extends Module
                                     "type" => InputType::FILE,
                                     "id" => "image",
                                     "options" => [
-                                        "accept" => ".svg, .png, .jpg, .jpeg",
+                                        "accept" => [".svg", ".png", ".jpg", ".jpeg"],
                                         "size" => "xs",
                                         "color" => "primary",
                                         "label" => "Image"
@@ -508,7 +508,7 @@ class Badges extends Module
                                     "scope" => ActionScope::ALL,
                                     "id" => "image",
                                     "options" => [
-                                        "accept" => ".svg, .png, .jpg, .jpeg",
+                                        "accept" => [".svg", ".png", ".jpg", ".jpeg"],
                                         "size" => "xs",
                                         "color" => "primary",
                                         "label" => "Image"

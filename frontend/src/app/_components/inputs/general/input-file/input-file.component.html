@@ -45,7 +45,7 @@
     type="file"
     id="{{id}}"
     name="{{id}}"
-    [accept]="accept"
+    [accept]="accept?.join(',') || ''"
     class="hidden"
     [multiple]="multiple"
     [(ngModel)]="value"

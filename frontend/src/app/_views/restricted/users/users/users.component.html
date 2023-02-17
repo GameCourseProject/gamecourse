@@ -60,8 +60,7 @@
         <app-input-file
           [id]="'user-photo'"
           [form]="f"
-          [accept]="'.png, .jpg, .jpeg'"
-          [camera]="true"
+          [accept]="['.png', '.jpg', '.jpeg']"
           [size]="'xs'"
           [color]="'primary'"
           [classList]="'mt-3 mb-3 sm:mb-0'"
@@ -234,7 +233,7 @@
     <app-input-file
       [id]="'import-file'"
       [form]="fImport"
-      [accept]="'.csv, .txt'"
+      [accept]="['.csv', '.txt']"
       [size]="'sm'"
       [color]="'primary'"
       [required]="true"
