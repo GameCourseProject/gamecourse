@@ -15,4 +15,4 @@ $pageId = intval($argv[1]);
 $page = Page::getPageById($pageId);
 
 $page->setVisible(false);
-
+$page->setAutoDisabling(null);

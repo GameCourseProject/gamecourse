@@ -392,7 +392,7 @@ class Rule
      * @return void
      * @throws Exception
      */
-    public function copyRule(Section $section)
+    public function copyRule(Section $section): Rule
     {
         // Copy tags
         $tags = [];
@@ -405,7 +405,7 @@ class Rule
 
         // Copy rule
         $ruleInfo = $this->getData();
-        self::addRule($section->getCourse()->getId(), $section->getId(), $ruleInfo["name"], $ruleInfo["description"],
+        return self::addRule($section->getCourse()->getId(), $section->getId(), $ruleInfo["name"], $ruleInfo["description"],
             $ruleInfo["whenClause"], $ruleInfo["thenClause"], $ruleInfo["position"], $ruleInfo["isActive"], $tags);
     }
 

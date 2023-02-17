@@ -311,7 +311,7 @@ class AutoAction
      * @return void
      * @throws Exception
      */
-    public function copyAction(Course $copyTo)
+    public function copyAction(Course $copyTo): AutoAction
     {
         $actionInfo = $this->getData();
 
@@ -322,6 +322,8 @@ class AutoAction
 
         // Copy rule
         $this->getRule()->mirrorRule($copiedAction->getRule());
+
+        return $copiedAction;
     }
 
     /**

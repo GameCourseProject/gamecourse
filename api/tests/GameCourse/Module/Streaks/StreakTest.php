@@ -1162,7 +1162,7 @@ class StreakTest extends TestCase
             $this->fail("Error should have been thrown on 'addStreakDuplicateName'");
 
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertCount(1, Streak::getStreaks($this->courseId));
             $this->assertCount(1, Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->getRules());
         }
@@ -1251,7 +1251,7 @@ class StreakTest extends TestCase
             $this->fail("Error should have been thrown on 'editStreakDuplicateName'");
 
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertEquals("Streak2", $streak->getName());
         }
     }

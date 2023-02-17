@@ -1003,7 +1003,7 @@ class Course
      */
     public function getPages(?bool $visible = null): array
     {
-        return Page::getCoursePages($this->id, $visible);
+        return Page::getPages($this->id, $visible);
     }
 
     /**
@@ -1233,7 +1233,7 @@ class Course
      */
     public function setAutoEnabling(?string $startDate)
     {
-        $script = ROOT_PATH . "models/GameCourse/Course/AutoEnablingScript.php";
+        $script = ROOT_PATH . "models/GameCourse/Course/scripts/AutoEnablingScript.php";
         if ($startDate) {
             // Check if date is in the future
             if (date("Y-m-d H:i:s", strtotime($startDate)) > date("Y-m-d H:i:s", time()))
@@ -1251,7 +1251,7 @@ class Course
      */
     public function setAutoDisabling(?string $endDate)
     {
-        $script = ROOT_PATH . "models/GameCourse/Course/AutoDisablingScript.php";
+        $script = ROOT_PATH . "models/GameCourse/Course/scripts/AutoDisablingScript.php";
         if ($endDate) {
             // Check if date is in the future
             if (date("Y-m-d H:i:s", strtotime($endDate)) > date("Y-m-d H:i:s", time()))

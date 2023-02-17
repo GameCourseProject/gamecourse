@@ -217,7 +217,7 @@ class SkillTree
      * @return void
      * @throws Exception
      */
-    public function copySkillTree(Course $copyTo)
+    public function copySkillTree(Course $copyTo): SkillTree
     {
         // Copy skill tree
         $skillTreeInfo = $this->getData();
@@ -235,6 +235,8 @@ class SkillTree
             if ($tier->isWildcard()) continue;
             $tier->copyTier($copiedSkillTree);
         }
+
+        return $copiedSkillTree;
     }
 
     /**

@@ -7,6 +7,7 @@ use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Role\Role;
+use GameCourse\Views\CreationMode;
 use GameCourse\Views\Page\Page;
 use GameCourse\Views\ViewHandler;
 use PDOException;
@@ -221,7 +222,7 @@ class CourseUserTest extends TestCase
     public function getLandingPage()
     {
         $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
-        $page = Page::addPage($this->course->getId(), "Landing Page");
+        $page = Page::addPage($this->course->getId(), CreationMode::BY_VALUE, "Landing Page");
         $roles = Role::getCourseRoles($this->course->getId(), false);
         $roles[0]["landingPage"] = $page->getId();
         Role::updateCourseRoles($this->course->getId(), $roles);
@@ -584,7 +585,7 @@ class CourseUserTest extends TestCase
      */
     public function addCourseUserFailure(int $userId, int $courseId, ?string $roleName, ?int $roleId, ?bool $isActive)
     {
-        $this->expectException(PDOException::class);
+        $this->expectException(Exception::class);
         CourseUser::addCourseUser($userId, $courseId, $roleName, $roleId, $isActive);
         $this->assertCount(1, $this->course->getCourseUsers());
         $this->assertFalse((new CourseUser($userId, new Course($courseId)))->exists());
@@ -1141,7 +1142,7 @@ class CourseUserTest extends TestCase
     public function addRoleRolesDoesntExist()
     {
         $courseUser = CourseUser::addCourseUser($this->user->getId(), $this->course->getId());
-        $this->expectException(PDOException::class);
+        $this->expectException(Exception::class);
         $courseUser->addRole("role_doesnt_exist");
     }
 

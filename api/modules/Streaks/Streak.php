@@ -511,7 +511,7 @@ class Streak
      * @return void
      * @throws Exception
      */
-    public function copyStreak(Course $copyTo)
+    public function copyStreak(Course $copyTo): Streak
     {
         $streakInfo = $this->getData();
 
@@ -523,6 +523,8 @@ class Streak
 
         // Copy rule
         $this->getRule()->mirrorRule($copiedStreak->getRule());
+
+        return $copiedStreak;
     }
 
     /**

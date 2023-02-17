@@ -431,7 +431,7 @@ class Badge
      * @return void
      * @throws Exception
      */
-    public function copyBadge(Course $copyTo)
+    public function copyBadge(Course $copyTo): Badge
     {
         $badgeInfo = $this->getData();
 
@@ -451,6 +451,8 @@ class Badge
 
         // Copy rule
         $this->getRule()->mirrorRule($copiedBadge->getRule());
+
+        return $copiedBadge;
     }
 
     /**

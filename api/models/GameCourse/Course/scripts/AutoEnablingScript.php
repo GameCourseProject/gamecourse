@@ -16,4 +16,3 @@ $course = Course::getCourseById($courseId);
 
 $course->setActive(true);
 $course->setAutoEnabling(null);
-

@@ -238,10 +238,11 @@ CREATE TABLE view_category_order(
 );
 
 CREATE TABLE component_core(
-    viewRoot                    bigint unsigned PRIMARY KEY,
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    viewRoot                    bigint unsigned NOT NULL,
     description                 varchar(70) DEFAULT NULL,
     category                    int unsigned NOT NULL,
-    position                    int unsigned NOT NULL,
+    position                    int unsigned,
     module                      varchar(50) DEFAULT NULL,
 
     UNIQUE key(category, position),
@@ -251,36 +252,36 @@ CREATE TABLE component_core(
 );
 
 CREATE TABLE component_custom(
-    viewRoot                    bigint unsigned PRIMARY KEY,
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    viewRoot                    bigint unsigned NOT NULL,
     name                        varchar(25) NOT NULL,
     creationTimestamp           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updateTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     course                      int unsigned NOT NULL,
-    module                      varchar(50) DEFAULT NULL,
 
     UNIQUE key(course, name),
     FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
-    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
-    FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
-CREATE TABLE component_global(
-    viewRoot                    bigint unsigned PRIMARY KEY,
+CREATE TABLE component_custom_shared(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
     description                 varchar(70) DEFAULT NULL,
     category                    int unsigned NOT NULL,
     sharedBy                    int unsigned NOT NULL,
     sharedTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+    FOREIGN key(id) REFERENCES component_custom(id) ON DELETE CASCADE,
     FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
     FOREIGN key(sharedBy) REFERENCES user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE template_core(
-    viewRoot                    bigint unsigned PRIMARY KEY,
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    viewRoot                    bigint unsigned NOT NULL,
     name                        varchar(50) NOT NULL,
     category                    int unsigned NOT NULL,
-    position                    int unsigned NOT NULL,
+    position                    int unsigned,
     module                      varchar(50) DEFAULT NULL,
 
     UNIQUE key(category, position),
@@ -289,14 +290,27 @@ CREATE TABLE template_core(
     FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
 );
 
-CREATE TABLE template_global(
-    viewRoot                    bigint unsigned PRIMARY KEY,
+CREATE TABLE template_custom(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    viewRoot                    bigint unsigned NOT NULL,
     name                        varchar(50) NOT NULL,
+    creationTimestamp           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updateTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    course                      int unsigned NOT NULL,
+
+    UNIQUE key(course, name),
+    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+);
+
+CREATE TABLE template_custom_shared(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    description                 varchar(70) DEFAULT NULL,
     category                    int unsigned NOT NULL,
     sharedBy                    int unsigned NOT NULL,
     sharedTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+    FOREIGN key(id) REFERENCES component_custom(id) ON DELETE CASCADE,
     FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
     FOREIGN key(sharedBy) REFERENCES user(id) ON DELETE CASCADE
 );
@@ -311,7 +325,7 @@ CREATE TABLE page(
     updateTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     visibleFrom                 TIMESTAMP NULL DEFAULT NULL,
     visibleUntil                TIMESTAMP NULL DEFAULT NULL,
-    position                    int unsigned NULL DEFAULT NULL,
+    position                    int unsigned DEFAULT NULL,
 
     UNIQUE key(course, name),
     UNIQUE key(course, position),

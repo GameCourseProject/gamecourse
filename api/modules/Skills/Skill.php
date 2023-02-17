@@ -569,7 +569,7 @@ class Skill
      * @return void
      * @throws Exception
      */
-    public function copySkill(Tier $copyTo)
+    public function copySkill(Tier $copyTo): Skill
     {
         $skillInfo = $this->getData();
 
@@ -597,6 +597,8 @@ class Skill
 
         // Copy rule
         $this->getRule()->mirrorRule($copiedSkill->getRule());
+
+        return $copiedSkill;
     }
 
     /**

@@ -1,5 +1,5 @@
 <?php
-namespace GameCourse\Views\Component;
+namespace GameCourse\Views\Template;
 
 use Exception;
 use GameCourse\Core\Core;
@@ -8,10 +8,10 @@ use GameCourse\Views\ViewHandler;
 use ReflectionClass;
 
 /**
- * This is the Component model, which implements the necessary methods
- * to interact with view components in the MySQL database.
+ * This is the Template model, which implements the necessary methods
+ * to interact with templates in the MySQL database.
  */
-abstract class Component
+abstract class Template
 {
     protected $id;
 
@@ -32,22 +32,22 @@ abstract class Component
 
     public function getViewRoot(): int
     {
-        return intval(Core::database()->select($this::TABLE_COMPONENT, ["id" => $this->id]));
+        return intval(Core::database()->select($this::TABLE_TEMPLATE, ["id" => $this->id]));
     }
 
     /**
-     * Gets component data from the database.
+     * Gets template data from the database.
      *
-     * @example getData() --> gets all component data
-     * @example getData("field") --> gets component field
-     * @example getData("field1, field2") --> gets component fields
+     * @example getData() --> gets all template data
+     * @example getData("field") --> gets template field
+     * @example getData("field1, field2") --> gets template fields
      *
      * @param string $field
      * @return mixed
      */
     public function getData(string $field = "*")
     {
-        $data = Core::database()->select($this::TABLE_COMPONENT, ["id" => $this->id], $field);
+        $data = Core::database()->select($this::TABLE_TEMPLATE, ["id" => $this->id], $field);
         return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
     }
 
@@ -58,7 +58,7 @@ abstract class Component
 
     public function setViewRoot(int $viewRoot)
     {
-        Core::database()->update($this::TABLE_COMPONENT, ["viewRoot" => $viewRoot, ["id" => $this->id]]);
+        Core::database()->update($this::TABLE_TEMPLATE, ["viewRoot" => $viewRoot, ["id" => $this->id]]);
     }
 
 
@@ -67,27 +67,27 @@ abstract class Component
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Gets a component by its ID.
-     * Returns null if component doesn't exist.
+     * Gets a template by its ID.
+     * Returns null if template doesn't exist.
      *
      * @param int $id
-     * @return Component|null
+     * @return Template|null
      */
-    public static function getComponentById(int $id): ?Component
+    public static function getTemplateById(int $id): ?Template
     {
-        $componentClass = "\\" . get_called_class();
-        $component = new $componentClass($id);
-        if ($component->exists()) return $component;
+        $templateClass = "\\" . get_called_class();
+        $template = new $templateClass($id);
+        if ($template->exists()) return $template;
         else return null;
     }
 
 
     /*** ---------------------------------------------------- ***/
-    /*** -------------- Component Manipulation -------------- ***/
+    /*** --------------- Template Manipulation -------------- ***/
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Deletes a component from the database.
+     * Deletes a template from the database.
      * Option to keep views linked (created by reference) or delete
      * them as well.
      *
@@ -95,47 +95,47 @@ abstract class Component
      * @param bool $keepViewsLinked
      * @return void
      */
-    protected static function deleteComponent(int $id, bool $keepViewsLinked = true) {
-        $component = self::getComponentById($id);
-        if ($component) {
-            // TODO: go through each view linked to this component and either
+    protected static function deleteTemplate(int $id, bool $keepViewsLinked = true) {
+        $template = self::getTemplateById($id);
+        if ($template) {
+            // TODO: go through each view linked to this template and either
             //        replace by a copy (keep = true) or a default view
 
             // Delete view tree
-            ViewHandler::deleteViewTree($component->getViewRoot());
+            ViewHandler::deleteViewTree($template->getViewRoot());
         }
     }
 
     /**
-     * Checks whether component exists.
+     * Checks whether template exists.
      *
      * @return bool
      */
     public function exists(): bool
     {
-        return !empty(Core::database()->select($this::TABLE_COMPONENT, ["id" => $this->id]));
+        return !empty(Core::database()->select($this::TABLE_TEMPLATE, ["id" => $this->id]));
     }
 
     /**
-     * Checks whether a view root is a component.
+     * Checks whether a view root is a template.
      *
      * @param int $viewRoot
      * @return bool
      */
-    public static function isComponent(int $viewRoot): bool
+    public static function isTemplate(int $viewRoot): bool
     {
-        $typeClass = new ReflectionClass(ComponentType::class);
+        $typeClass = new ReflectionClass(TemplateType::class);
         $types = array_values($typeClass->getConstants());
 
-        $isComponent = false;
+        $isTemplate = false;
         foreach ($types as $type) {
-            $componentClass = "\\GameCourse\\Views\\Component\\" . ucfirst($type) . "Component";
-            if (!empty(Core::database()->select($componentClass::TABLE_COMPONENT, ["viewRoot" => $viewRoot]))) {
-                $isComponent = true;
+            $templateClass = "\\GameCourse\\Views\\Template\\" . ucfirst($type) . "Template";
+            if (!empty(Core::database()->select($templateClass::TABLE_TEMPLATE, ["viewRoot" => $viewRoot]))) {
+                $isTemplate = true;
                 break;
             }
         }
-        return $isComponent;
+        return $isTemplate;
     }
 
 
@@ -144,13 +144,13 @@ abstract class Component
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Renders a component.
+     * Renders a template.
      * Always renders its default aspect.
      *
      * @return array
      * @throws Exception
      */
-    public function renderComponent(): array
+    public function renderTemplate(): array
     {
         $defaultAspect = Aspect::getAspectBySpecs(0, null, null);
         $sortedAspects = [$defaultAspect->getData("id, viewerRole, userRole")];
@@ -163,13 +163,13 @@ abstract class Component
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Parses a component coming from the database to appropriate types.
+     * Parses a template coming from the database to appropriate types.
      * Option to pass a specific field to parse instead.
      *
-     * @param array|null $component
+     * @param array|null $template
      * @param $field
      * @param string|null $fieldName
      * @return mixed
      */
-    public abstract static function parse(array $component = null, $field = null, string $fieldName = null);
+    public abstract static function parse(array $template = null, $field = null, string $fieldName = null);
 }

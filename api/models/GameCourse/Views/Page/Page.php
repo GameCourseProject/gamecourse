@@ -5,8 +5,10 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Views\Aspect\Aspect;
+use GameCourse\Views\CreationMode;
 use GameCourse\Views\ViewHandler;
 use Utils\CronJob;
+use Utils\Time;
 use Utils\Utils;
 
 /**
@@ -202,10 +204,17 @@ class Page
             $visibleFrom = key_exists("visibleFrom", $fieldValues) ? $fieldValues["visibleFrom"] : $this->getVisibleFrom();
             if ($visibleFrom) self::validateVisibleFromAndUntilDates($visibleFrom, $fieldValues["visibleUntil"]);
         }
+        if (key_exists("position", $fieldValues)) {
+            $newPosition = $fieldValues["position"];
+            $oldPosition = $this->getPosition();
+            Utils::updateItemPosition($oldPosition, $newPosition, self::TABLE_PAGE, "position", $this->id, self::getPages($courseId));
+        }
 
         // Update data
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_PAGE, $fieldValues, ["id" => $this->id]);
+
+        $this->refreshUpdateTimestamp();
 
         // Additional actions
         if (key_exists("visibleFrom", $fieldValues)) {
@@ -273,7 +282,7 @@ class Page
      * @param bool|null $visible
      * @return array
      */
-    public static function getCoursePages(int $courseId, ?bool $visible = null): array
+    public static function getPages(int $courseId, ?bool $visible = null): array
     {
         $where = ["course" => $courseId];
         if ($visible !== null) $where["isVisible"] = $visible;
@@ -295,7 +304,7 @@ class Page
     public static function getUserPages(int $courseId, int $userid, ?bool $visible = null): array
     {
         // Get course pages
-        $coursePages = self::getCoursePages($courseId, $visible);
+        $coursePages = self::getPages($courseId, $visible);
 
         // Filter pages based on user roles and aspects defined for each page
         $availablePagesForUser = [];
@@ -328,30 +337,48 @@ class Page
      * Returns the newly created page.
      *
      * @param int $courseId
+     * @param string $creationMode
      * @param string $name
      * @param array|null $viewTree
+     * @param int|null $viewRoot
      * @param string|null $visibleFrom
      * @param string|null $visibleUntil
      * @return Page
      * @throws Exception
      */
-    public static function addPage(int $courseId, string $name, array $viewTree = null, ?string $visibleFrom = null,
-                                   ?string $visibleUntil = null): Page
+    public static function addPage(int $courseId, string $creationMode, string $name, array $viewTree = null,
+                                   int $viewRoot = null, ?string $visibleFrom = null, ?string $visibleUntil = null): Page
     {
         self::trim($name, $visibleFrom, $visibleUntil);
         self::validatePage($courseId, $name, false, $visibleFrom, $visibleUntil);
 
-        // Add view tree of page
-        $viewRoot = ViewHandler::insertViewTree($viewTree ?? ViewHandler::ROOT_VIEW, $courseId);
+        if ($creationMode == CreationMode::BY_VALUE) {
+            if (!$viewTree) $viewTree = ViewHandler::ROOT_VIEW;
+            $viewRoot = ViewHandler::insertViewTree($viewTree, $courseId);
+
+        } else if ($creationMode == CreationMode::BY_REFERENCE) {
+            if (is_null($viewRoot))
+                throw new Exception("Can't add page by reference: no view root given.");
+        }
+
 
         // Insert in database
+        $now = date("Y-m-d H:i:s", time());
+        $isVisible = ($visibleFrom && Time::isBefore($visibleFrom, $now)) && (!$visibleUntil || Time::isAfter($visibleUntil, $now));
         $id = Core::database()->insert(self::TABLE_PAGE, [
             "course" => $courseId,
             "name" => $name,
+            "isVisible" => +$isVisible,
             "viewRoot" => $viewRoot,
             "visibleFrom" => $visibleFrom,
             "visibleUntil" => $visibleUntil
         ]);
+
+        // Set position
+        if ($isVisible) {
+            $coursePages = self::getPages($courseId);
+            Utils::updateItemPosition(null, count($coursePages), self::TABLE_PAGE, "position", $id, $coursePages);
+        }
 
         // Set automations
         $page = new Page($id);
@@ -362,23 +389,21 @@ class Page
     }
 
     /**
-     * Adds a page to the database by copying from another
-     * existing page.
+     * Copies an existing page.
      *
-     * @param int $copyFrom
+     * @param string $creationMode
      * @return Page
      * @throws Exception
      */
-    public static function copyPage(int $copyFrom): Page
+    public function copyPage(string $creationMode): Page
     {
-        $pageToCopy = Page::getPageById($copyFrom);
-        if (!$pageToCopy) throw new Exception("Page to copy from with ID = " . $copyFrom . " doesn't exist.");
-        $pageInfo = $pageToCopy->getData();
+        $pageInfo = $this->getData();
 
-        // Create copy
+        // Copy page
         $name = $pageInfo["name"] . " (Copy)";
         $viewTree = ViewHandler::buildView($pageInfo["viewRoot"]);
-        return self::addPage($pageInfo["course"], $name, $viewTree, $pageInfo["visibleFrom"], $pageInfo["visibleUntil"]);
+        return self::addPage($pageInfo["course"], $creationMode, $name, $viewTree,
+            $creationMode === CreationMode::BY_VALUE ? ViewHandler::buildView($pageInfo["viewRoot"]) : null);
     }
 
     /**
@@ -403,7 +428,6 @@ class Page
             "visibleUntil" => $visibleUntil,
             "position" => $position
         ]);
-        $this->refreshUpdateTimestamp();
 
         // Update automations
         $this->setAutomation("AutoEnabling", $visibleFrom);
@@ -417,11 +441,25 @@ class Page
      *
      * @param int $pageId
      * @return void
+     * @throws Exception
      */
     public static function deletePage(int $pageId)
     {
         $page = Page::getPageById($pageId);
-        ViewHandler::deleteViewTree($page->getViewRoot());
+        if ($page) {
+            // TODO: go through each view linked to this page and either
+            //        replace by a copy (keep = true) or a default view
+
+            // Delete page view tree
+            ViewHandler::deleteViewTree($page->getViewRoot());
+
+            // Remove automations
+            $page->setAutomation("AutoEnabling", null);
+            $page->setAutomation("AutoDisabling", null);
+
+            // Delete from database
+            Core::database()->delete(self::TABLE_PAGE, ["id" => $pageId]);
+        }
     }
 
     /**
@@ -452,18 +490,22 @@ class Page
 
     /**
      * Renders a page for a given viewer and user.
+     * Option to render page with mocked data instead.
      *
      * @param int $viewerId
      * @param int|null $userId
+     * @param bool $mockedData
      * @return array
      * @throws Exception
      */
-    public function renderPage(int $viewerId, int $userId = null): array
+    public function renderPage(int $viewerId, int $userId = null, bool $mockedData = false): array
     {
+        // NOTE: user defaults as viewer if no user directly passed
         $userId = $userId ?? $viewerId;
+
         $pageInfo = $this->getData("course, viewRoot");
-        $paramsToPopulate = ["course" => $pageInfo["course"], "viewer" => $viewerId, "user" => $userId];
         $sortedAspects = Aspect::getAspectsByViewerAndUser($pageInfo["course"], $viewerId, $userId, true);
+        $paramsToPopulate = $mockedData ? true : ["course" => $pageInfo["course"], "viewer" => $viewerId, "user" => $userId];
         return ViewHandler::renderView($pageInfo["viewRoot"], $sortedAspects, $paramsToPopulate);
     }
 
@@ -493,12 +535,14 @@ class Page
             throw new Exception("Need either viewer ID or an aspect to preview a page.");
 
         // Render for a specific viewer and user
-        if ($viewerId) return $this->renderPage($viewerId, $userId);
+        if ($viewerId) return $this->renderPage($viewerId, $userId, true);
 
         // Render for a specific aspect
         $pageInfo = $this->getData("course, viewRoot");
+        $aspectParams = "id, viewerRole, userRole";
         $defaultAspect = Aspect::getAspectBySpecs($pageInfo["course"], null, null);
-        return ViewHandler::renderView($pageInfo["viewRoot"], [$aspect, $defaultAspect], true);
+        $sortedAspects = [$aspect->getData($aspectParams), $defaultAspect->getData($aspectParams)];
+        return ViewHandler::renderView($pageInfo["viewRoot"], $sortedAspects, true);
     }
 
 
@@ -514,7 +558,7 @@ class Page
      * @return void
      * @throws Exception
      */
-    private function setAutomation(string $script, ...$data)
+    public function setAutomation(string $script, ...$data)
     {
         switch ($script) {
             case "AutoEnabling":
@@ -538,9 +582,9 @@ class Page
      * @return void
      * @throws Exception
      */
-    private function setAutoEnabling(?string $startDate)
+    public function setAutoEnabling(?string $startDate)
     {
-        $script = ROOT_PATH . "models/GameCourse/Views/Page/AutoEnablingScript.php";
+        $script = ROOT_PATH . "models/GameCourse/Views/Page/scripts/AutoEnablingScript.php";
         if ($startDate) new CronJob($script, CronJob::dateToExpression($startDate), $this->id);
         else CronJob::removeCronJob($script, $this->id);
     }
@@ -553,9 +597,9 @@ class Page
      * @return void
      * @throws Exception
      */
-    private function setAutoDisabling(?string $endDate)
+    public function setAutoDisabling(?string $endDate)
     {
-        $script = ROOT_PATH . "models/GameCourse/Views/Page/AutoDisablingScript.php";
+        $script = ROOT_PATH . "models/GameCourse/Views/Page/scripts/AutoDisablingScript.php";
         if ($endDate) new CronJob($script, CronJob::dateToExpression($endDate), $this->id);
         else CronJob::removeCronJob($script, $this->id);
     }

@@ -440,7 +440,7 @@ class Tier
      * @return void
      * @throws Exception
      */
-    public function copyTier(SkillTree $copyTo)
+    public function copyTier(SkillTree $copyTo): Tier
     {
         // Copy tier
         $tierInfo = $this->getData();
@@ -466,6 +466,8 @@ class Tier
             $skill = new Skill($skill["id"]);
             $skill->copySkill($copiedTier);
         }
+
+        return $copiedTier;
     }
 
     /**

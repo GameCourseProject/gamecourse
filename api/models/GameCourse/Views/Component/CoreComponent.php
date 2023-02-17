@@ -6,7 +6,6 @@ use GameCourse\Core\Core;
 use GameCourse\Module\Module;
 use GameCourse\Views\Category\Category;
 use GameCourse\Views\ViewHandler;
-use PDOException;
 use Utils\Utils;
 
 /**
@@ -16,7 +15,7 @@ use Utils\Utils;
  */
 class CoreComponent extends Component
 {
-    const TABLE_CORE_COMPONENT = 'component_core';
+    const TABLE_COMPONENT = 'component_core';
 
 
     /*** ---------------------------------------------------- ***/
@@ -33,30 +32,16 @@ class CoreComponent extends Component
         return Category::getCategoryById($this->getData("category"));
     }
 
-    public function getPosition(): ?int
+    public function getPosition(): int
     {
         return $this->getData("position");
     }
 
     public function getModule(): ?Module
     {
-        return Module::getModuleById($this->getData("module"), null);
-    }
-
-    /**
-     * Gets core component data from the database.
-     *
-     * @example getData() --> gets all core component data
-     * @example getData("description") --> gets core component description
-     * @example getData("description, category") --> gets core component description & category ID
-     *
-     * @param string $field
-     * @return array|int|null
-     */
-    public function getData(string $field = "*")
-    {
-        $data = Core::database()->select(self::TABLE_CORE_COMPONENT, ["viewRoot" => $this->viewRoot], $field);
-        return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
+        $moduleId = $this->getData("module");
+        if ($moduleId) return Module::getModuleById($moduleId, null);
+        return null;
     }
 
 
@@ -100,7 +85,7 @@ class CoreComponent extends Component
 
         // Update data
         if (count($fieldValues) != 0)
-            Core::database()->update(self::TABLE_CORE_COMPONENT, $fieldValues, ["viewRoot" => $this->viewRoot]);
+            Core::database()->update(self::TABLE_COMPONENT, $fieldValues, ["id" => $this->id]);
     }
 
 
@@ -110,13 +95,19 @@ class CoreComponent extends Component
 
     /**
      * Gets core components in the system.
+     * Options for a specific category or module.
      *
-     * @param int|null $courseId
+     * @param int|null $categoryId
+     * @param string|null $moduleId
      * @return array
      */
-    public static function getComponents(int $courseId = null): array
+    public static function getComponents(int $categoryId = null, string $moduleId = null): array
     {
-        $components = Core::database()->selectMultiple(self::TABLE_CORE_COMPONENT, [], "*", "viewRoot");
+        $where = [];
+        if ($categoryId) $where[] = ["category" => $categoryId];
+        if ($moduleId) $where[] = ["module" => $moduleId];
+
+        $components = Core::database()->selectMultiple(self::TABLE_COMPONENT, $where, "*", "category, position");
         foreach ($components as &$component) { $component = self::parse($component); }
         return $components;
     }
@@ -138,18 +129,20 @@ class CoreComponent extends Component
      * @return CoreComponent
      * @throws Exception
      */
-    public static function addComponent(array $viewTree, ?string $description, int $categoryId, int $position, string $moduleId = null): CoreComponent
+    public static function addComponent(array $viewTree, ?string $description, int $categoryId, int $position,
+                                        string $moduleId = null): CoreComponent
     {
         // Verify view tree only has system and/or module aspects
         try {
+            // NOTE: will throw an exception if aspect not found
             ViewHandler::getAspectsInViewTree(null, $viewTree, 0);
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $error = $e->getMessage();
             preg_match("/Role with name '(.+)' doesn't exist/", $error, $matches);
             if (!empty($matches)) {
                 $roleName = $matches[1];
-                throw new Exception("Cannot use role with name '" . $roleName . "' as an aspect in a core component. 
+                throw new Exception("Cannot use role with name '" . $roleName . "' as an aspect in a component. 
                 Only system and/or module aspects are allowed.");
             }
         }
@@ -159,24 +152,30 @@ class CoreComponent extends Component
 
         // Create new component
         self::trim($description);
-        Core::database()->insert(self::TABLE_CORE_COMPONENT, [
+        $id = Core::database()->insert(self::TABLE_COMPONENT, [
             "viewRoot" => $viewRoot,
             "description" => $description,
             "category" => $categoryId,
-            "position" => $position,
             "module" => $moduleId
         ]);
-        return new CoreComponent($viewRoot);
+        Utils::updateItemPosition(null, $position, self::TABLE_COMPONENT, "position", $id, self::getComponents($categoryId));
+
+        return new CoreComponent($id);
     }
 
     /**
      * Deletes a core component from the database.
+     * Option to keep views linked (created by reference) or delete
+     * them as well.
      *
-     * @param int $viewRoot
+     * @param int $id
+     * @param bool $keepViewsLinked
      * @return void
      */
-    public static function deleteComponent(int $viewRoot) {
-        ViewHandler::deleteViewTree($viewRoot);
+    public static function deleteComponent(int $id, bool $keepViewsLinked = true)
+    {
+        parent::deleteComponent($id, $keepViewsLinked);
+        Core::database()->delete(self::TABLE_COMPONENT, ["id" => $id]);
     }
 
 
@@ -191,12 +190,11 @@ class CoreComponent extends Component
      * @param array|null $component
      * @param $field
      * @param string|null $fieldName
-     * @return array|bool|int|mixed|null
+     * @return mixed
      */
-    private static function parse(array $component = null, $field = null, string $fieldName = null)
+    public static function parse(array $component = null, $field = null, string $fieldName = null)
     {
         $intValues = ["viewRoot", "category", "position"];
-
         return Utils::parse(["int" => $intValues], $component, $field, $fieldName);
     }
 

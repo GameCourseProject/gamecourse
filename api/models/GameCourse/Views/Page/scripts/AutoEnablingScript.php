@@ -15,4 +15,5 @@ $pageId = intval($argv[1]);
 $page = Page::getPageById($pageId);
 
 $page->setVisible(true);
+$page->setAutoEnabling(null);
 

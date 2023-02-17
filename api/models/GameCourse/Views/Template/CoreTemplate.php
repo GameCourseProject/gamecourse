@@ -1,23 +1,21 @@
 <?php
-namespace GameCourse\Views\Page\Template;
-
+namespace GameCourse\Views\Template;
 
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
 use GameCourse\Views\Category\Category;
 use GameCourse\Views\ViewHandler;
-use PDOException;
 use Utils\Utils;
 
 /**
  * This is the Core Template model, which implements the necessary methods
- * to interact with core page templates (from system + modules) in the
+ * to interact with core templates (from system + modules) in the
  * MySQL database.
  */
 class CoreTemplate extends Template
 {
-    const TABLE_CORE_TEMPLATE = 'template_core';
+    const TABLE_TEMPLATE = 'template_core';
 
 
     /*** ---------------------------------------------------- ***/
@@ -34,30 +32,16 @@ class CoreTemplate extends Template
         return Category::getCategoryById($this->getData("category"));
     }
 
-    public function getPosition(): ?int
+    public function getPosition(): int
     {
         return $this->getData("position");
     }
 
     public function getModule(): ?Module
     {
-        return Module::getModuleById($this->getData("module"), null);
-    }
-
-    /**
-     * Gets core template data from the database.
-     *
-     * @example getData() --> gets all core template data
-     * @example getData("name") --> gets core template name
-     * @example getData("name, category") --> gets core template name & category ID
-     *
-     * @param string $field
-     * @return array|int|null
-     */
-    public function getData(string $field = "*")
-    {
-        $data = Core::database()->select(self::TABLE_CORE_TEMPLATE, ["viewRoot" => $this->viewRoot], $field);
-        return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
+        $moduleId = $this->getData("module");
+        if ($moduleId) return Module::getModuleById($moduleId, null);
+        return null;
     }
 
 
@@ -101,7 +85,7 @@ class CoreTemplate extends Template
 
         // Update data
         if (count($fieldValues) != 0)
-            Core::database()->update(self::TABLE_CORE_TEMPLATE, $fieldValues, ["viewRoot" => $this->viewRoot]);
+            Core::database()->update(self::TABLE_TEMPLATE, $fieldValues, ["id" => $this->id]);
     }
 
 
@@ -111,12 +95,19 @@ class CoreTemplate extends Template
 
     /**
      * Gets core templates in the system.
+     * Options for a specific category or module.
      *
+     * @param int|null $categoryId
+     * @param string|null $moduleId
      * @return array
      */
-    public static function getTemplates(): array
+    public static function getTemplates(int $categoryId = null, string $moduleId = null): array
     {
-        $templates = Core::database()->selectMultiple(self::TABLE_CORE_TEMPLATE, [], "*", "viewRoot");
+        $where = [];
+        if ($categoryId) $where[] = ["category" => $categoryId];
+        if ($moduleId) $where[] = ["module" => $moduleId];
+
+        $templates = Core::database()->selectMultiple(self::TABLE_TEMPLATE, $where, "*", "category, position");
         foreach ($templates as &$template) { $template = self::parse($template); }
         return $templates;
     }
@@ -142,14 +133,15 @@ class CoreTemplate extends Template
     {
         // Verify view tree only has system and/or module aspects
         try {
+            // NOTE: will throw an exception if aspect not found
             ViewHandler::getAspectsInViewTree(null, $viewTree, 0);
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $error = $e->getMessage();
             preg_match("/Role with name '(.+)' doesn't exist/", $error, $matches);
             if (!empty($matches)) {
                 $roleName = $matches[1];
-                throw new Exception("Cannot use role with name '" . $roleName . "' as an aspect in a core template. 
+                throw new Exception("Cannot use role with name '" . $roleName . "' as an aspect in a template. 
                 Only system and/or module aspects are allowed.");
             }
         }
@@ -159,24 +151,30 @@ class CoreTemplate extends Template
 
         // Create new template
         self::trim($name);
-        Core::database()->insert(self::TABLE_CORE_TEMPLATE, [
+        $id = Core::database()->insert(self::TABLE_TEMPLATE, [
             "viewRoot" => $viewRoot,
             "name" => $name,
             "category" => $categoryId,
-            "position" => $position,
             "module" => $moduleId
         ]);
+        Utils::updateItemPosition(null, $position, self::TABLE_TEMPLATE, "position", $id, self::getTemplates($categoryId));
+
         return new CoreTemplate($viewRoot);
     }
 
     /**
      * Deletes a core template from the database.
+     * Option to keep views linked (created by reference) or delete
+     * them as well.
      *
-     * @param int $viewRoot
+     * @param int $id
+     * @param bool $keepViewsLinked
      * @return void
      */
-    public static function deleteTemplate(int $viewRoot) {
-        ViewHandler::deleteViewTree($viewRoot);
+    public static function deleteTemplate(int $id, bool $keepViewsLinked = true)
+    {
+        parent::deleteTemplate($id, $keepViewsLinked);
+        Core::database()->delete(self::TABLE_TEMPLATE, ["id" => $id]);
     }
 
 
@@ -185,18 +183,17 @@ class CoreTemplate extends Template
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Parses a core template coming from the database to appropriate types.
+     * Parses a core temaplte coming from the database to appropriate types.
      * Option to pass a specific field to parse instead.
      *
      * @param array|null $template
      * @param $field
      * @param string|null $fieldName
-     * @return array|bool|int|mixed|null
+     * @return mixed
      */
-    private static function parse(array $template = null, $field = null, string $fieldName = null)
+    public static function parse(array $template = null, $field = null, string $fieldName = null)
     {
         $intValues = ["viewRoot", "category", "position"];
-
         return Utils::parse(["int" => $intValues], $template, $field, $fieldName);
     }
 

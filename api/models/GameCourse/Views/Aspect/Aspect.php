@@ -109,12 +109,16 @@ class Aspect
     {
         $viewerRole = isset($view["aspect"]) ? $view["aspect"]["viewerRole"] ?? null : null;
         $userRole = isset($view["aspect"]) ? $view["aspect"]["userRole"] ?? null : null;
-        $aspect = self::getAspectBySpecs($courseId,
-            $viewerRole ? Role::getRoleId($viewerRole, $courseId) : null,
-            $userRole ? Role::getRoleId($userRole, $courseId) : null);
 
-        if (!$aspect) throw new Exception("No aspect with viewer role = '" . $viewerRole . "' & user role = '" .
-            $userRole . "' found for course with ID = " . $courseId . ".");
+        try {
+            $aspect = self::getAspectBySpecs($courseId,
+                $viewerRole ? Role::getRoleId($viewerRole, $courseId) : null,
+                $userRole ? Role::getRoleId($userRole, $courseId) : null);
+
+        } catch (Exception $e) {
+            throw new Exception("No aspect with viewer role = '" . $viewerRole . "' & user role = '" .
+                $userRole . "' found for course with ID = " . $courseId . ".");
+        }
 
         return $aspect;
     }
@@ -126,9 +130,10 @@ class Aspect
      * @param int $courseId
      * @param int|null $userId
      * @param bool $sortByMostSpecific
+     * @param bool $IDsOnly
      * @return array
      */
-    public static function getAspects(int $courseId, int $userId = null, bool $sortByMostSpecific = false): array
+    public static function getAspects(int $courseId, int $userId = null, bool $sortByMostSpecific = false, bool $IDsOnly = false): array
     {
         $aspects = [];
 
@@ -140,7 +145,8 @@ class Aspect
 
             foreach ($roleIdsByMostSpecific as $userRoleId) {
                 foreach ($roleIdsByMostSpecific as $viewerRoleId) {
-                    $aspects[] = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId)->getData("id, viewerRole, userRole");
+                    $aspect = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId);
+                    $aspects[] = $IDsOnly ? $aspect->id : $aspect->getData("id, viewerRole, userRole");
                 }
             }
 
@@ -155,9 +161,10 @@ class Aspect
                     return in_array($aspect["viewerRole"], $userRoleIds) && in_array($aspect["userRole"], $userRoleIds);
                 });
             }
+            if ($IDsOnly) $aspects = array_map(function ($aspect) { return $aspect["id"]; }, $aspects);
         }
 
-        foreach ($aspects as &$aspect) { $aspect = self::parse($aspect); }
+        if (!$IDsOnly) foreach ($aspects as &$aspect) { $aspect = self::parse($aspect); }
         return $aspects;
     }
 

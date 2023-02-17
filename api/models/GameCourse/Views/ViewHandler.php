@@ -15,7 +15,7 @@ use GameCourse\Views\Logging\AddLog;
 use GameCourse\Views\Logging\Logging;
 use GameCourse\Views\Logging\MoveLog;
 use GameCourse\Views\Page\Page;
-use GameCourse\Views\Page\Template\Template;
+use GameCourse\Views\Template\Template;
 use GameCourse\Views\Variable\Variable;
 use GameCourse\Views\ViewType\ViewType;
 use GameCourse\Views\Visibility\VisibilityType;
@@ -640,11 +640,10 @@ class ViewHandler
 
         $aspects = [];
 
-        if ($viewRoot) {
-            // Get aspects of view root
+        if ($viewRoot) { // Get aspects of view root
             $viewsInfo = self::getAspectInfoOfViewRoot($viewRoot);
             foreach ($viewsInfo as $info) {
-                $aspects[] = Aspect::getAspectById($info["aspect"]);
+                $aspects[] = Aspect::getAspectById($info["aspect"])->getData("id, viewerRole, userRole");
 
                 // Get aspects of children
                 $children = self::getChildrenOfView($info["view"]);
@@ -655,11 +654,10 @@ class ViewHandler
                 }
             }
 
-        } else {
-            // Get aspects of view tree
+        } else { // Get aspects of view tree
             $parent = null;
             self::traverseViewTree($viewTree, function ($view, $parent, &...$data) use ($courseId) {
-                $data[0][] = Aspect::getAspectInView($view, $courseId);
+                $data[0][] = Aspect::getAspectInView($view, $courseId)->getData("id, viewerRole, userRole");
             }, $parent, $aspects);
         }
 

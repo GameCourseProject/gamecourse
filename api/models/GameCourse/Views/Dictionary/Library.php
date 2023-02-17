@@ -127,9 +127,11 @@ abstract class Library
         $libraryFile = $coreLibrariesFolder . ucfirst($this->id) . "Library.php";
         $contents = file_get_contents($libraryFile);
 
-        // Remove function info from
+        // Remove function info from library
         $pattern = "/[\s\n\t\r]*new DFunction\(\"$name\"(.|\n)*?\),*/";
         $contents = preg_replace($pattern, "", $contents);
+        $pattern = "/return \[[\s\n\t\r]*];/";
+        $contents = preg_replace($pattern, "return [];", $contents);
 
         // Remove function from library
         $pattern = "/[\s\n\t\r]*public function $name\((.|\n)*?\t}/";

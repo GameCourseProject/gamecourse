@@ -88,7 +88,7 @@ class ViewHandlerTest extends TestCase
 
         // Then
         $this->assertNotEmpty($viewInDB);
-        $this->assertCount(4, $viewInDB);
+        $this->assertCount(6, $viewInDB);
         $this->assertEquals($view["id"], $viewInDB["id"]);
         $this->assertEquals($view["type"], $viewInDB["type"]);
         $this->assertEquals(VisibilityType::VISIBLE, $viewInDB["visibilityType"]);
@@ -149,7 +149,7 @@ class ViewHandlerTest extends TestCase
         // Then
         $this->assertCount(2, $views);
         foreach ($views as $view) {
-            $this->assertCount(4, $view);
+            $this->assertCount(6, $view);
             $this->assertEquals(Block::ID, $view["type"]);
             $this->assertEquals(VisibilityType::VISIBLE, $view["visibilityType"]);
             $this->assertEquals("vertical", $view["direction"]);

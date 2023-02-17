@@ -1582,7 +1582,7 @@ class UserTest extends TestCase
         User::addUser("João Carlos Sousa", "ist123456", AuthService::FENIX, "joao@gmail.com",
             123456, "João Sousa", "MEIC-A", false, true);
 
-        $this->expectException(PDOException::class);
+        $this->expectException(Exception::class);
         User::addUser("Marcus Notø", "ist123456", AuthService::FENIX, "marcus.n.hansen@gmail.com",
             123456, "Marcus Notø", "MEEC", false, true);
     }
@@ -1596,7 +1596,7 @@ class UserTest extends TestCase
         User::addUser("João Carlos Sousa", "ist123456", AuthService::FENIX, "joao@gmail.com",
             123456, "João Sousa", "MEIC-A", false, true);
 
-        $this->expectException(PDOException::class);
+        $this->expectException(Exception::class);
         User::addUser("Marcus Notø", "ist123456", AuthService::FENIX, "joao@gmail.com",
             123456, "Marcus Notø", "MEEC", false, true);
     }

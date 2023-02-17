@@ -267,16 +267,16 @@ class Level
      * @return void
      * @throws Exception
      */
-    public function copyLevel(Course $copyTo)
+    public function copyLevel(Course $copyTo): Level
     {
         $minXP = $this->getMinXP();
         $description = $this->getDescription();
 
         if ($minXP == 0) {
             $copiedLevel0 = self::getLevelZero($copyTo->getId());
-            $copiedLevel0->editLevel($minXP, $description);
+            return $copiedLevel0->editLevel($minXP, $description);
 
-        } else self::addLevel($copyTo->getId(), $minXP, $description);
+        } else return self::addLevel($copyTo->getId(), $minXP, $description);
     }
 
     /**

@@ -1,8 +1,8 @@
 <?php
-namespace GameCourse\Views\Page\Template;
+namespace GameCourse\Views\Template;
 
 /**
- * This class holds all page template types available in the system
+ * This class holds all template types available in the system
  * and emulates an enumerator (not available in PHP 7.3).
  */
 class TemplateType
@@ -12,6 +12,6 @@ class TemplateType
     /*** ----------------------------------------------- ***/
 
     const CORE = "core";
-    const GLOBAL = "global";
+    const CUSTOM = "custom";
     // NOTE: insert here new template types
 }

@@ -8,7 +8,6 @@ use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Page\Page;
-use PDOException;
 use Utils\Utils;
 
 /**
@@ -51,11 +50,12 @@ class Role
      * @param string $roleName
      * @param int $courseId
      * @return int
+     * @throws Exception
      */
     public static function getRoleId(string $roleName, int $courseId): int
     {
         $id = intval(Core::database()->select(self::TABLE_ROLE, ["course" => $courseId, "name" => $roleName], "id"));
-        if (!$id) throw new PDOException("Role with name '" . $roleName . "' doesn't exist for course with ID = " . $courseId . ".");
+        if (!$id) throw new Exception("Role with name '" . $roleName . "' doesn't exist for course with ID = " . $courseId . ".");
         return $id;
     }
 
@@ -64,11 +64,12 @@ class Role
      *
      * @param int $roleId
      * @return string
+     * @throws Exception
      */
     public static function getRoleName(int $roleId): string
     {
         $roleName = Core::database()->select(self::TABLE_ROLE, ["id" => $roleId], "name");
-        if (!$roleName) throw new PDOException("Role with ID = " . $roleId . " doesn't exist.");
+        if (!$roleName) throw new Exception("Role with ID = " . $roleId . " doesn't exist.");
         return $roleName;
     }
 
@@ -77,11 +78,12 @@ class Role
      *
      * @param int|null $roleId
      * @return Page
+     * @throws Exception
      */
     public static function getRoleLandingPage(int $roleId = null): ?Page
     {
         $pageId = Core::database()->select(self::TABLE_ROLE, ["id" => $roleId], "landingPage");
-        if ($pageId === false) throw new PDOException("Role with ID = " . $roleId . " doesn't exist.");
+        if ($pageId === false) throw new Exception("Role with ID = " . $roleId . " doesn't exist.");
         return $pageId ? Page::getPageById($pageId) : null;
     }
 
@@ -464,7 +466,7 @@ class Role
         // Check if roles exist in course
         foreach ($rolesNames as $roleName) {
             if (!self::courseHasRole($courseId, $roleName))
-                throw new PDOException("Role with name '" . $roleName . "' doesn't exist in course with ID = " . $courseId . ".");
+                throw new Exception("Role with name '" . $roleName . "' doesn't exist in course with ID = " . $courseId . ".");
         }
 
         // Remove all user roles
@@ -493,7 +495,7 @@ class Role
             throw new Exception("Need either role name or ID to add new role to a user.");
 
         if (!self::courseHasRole($courseId, $roleName, $roleId))
-            throw new PDOException("Role with " . ($roleName ? "name '" . $roleName . "'" : "ID = " . $roleId) . " doesn't exist in course with ID = " . $courseId . ".");
+            throw new Exception("Role with " . ($roleName ? "name '" . $roleName . "'" : "ID = " . $roleId) . " doesn't exist in course with ID = " . $courseId . ".");
 
         if (!self::userHasRole($userId, $courseId, $roleName, $roleId)) {
             if (!$roleId) $roleId = self::getRoleId($roleName, $courseId);

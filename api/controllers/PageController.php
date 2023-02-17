@@ -81,7 +81,7 @@ class PageController
         API::requireCoursePermission($course);
 
         $isVisible = API::getValue("isVisible", "bool");
-        API::response(Page::getCoursePages($courseId, $isVisible));
+        API::response(Page::getPages($courseId, $isVisible));
     }
 
     /**

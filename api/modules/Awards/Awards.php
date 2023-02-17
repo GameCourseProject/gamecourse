@@ -12,6 +12,7 @@ use GameCourse\Module\Skills\Skills;
 use GameCourse\Module\Streaks\Streaks;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
+use Utils\Utils;
 
 /**
  * This is the Awards module, which serves as a compartimentalized
@@ -89,10 +90,12 @@ class Awards extends Module
      */
     public function getUserAwards(int $userId): array
     {
-        return Core::database()->selectMultiple(self::TABLE_AWARD, [
+        $awards = Core::database()->selectMultiple(self::TABLE_AWARD, [
             "course" => $this->course->getId(),
             "user" => $userId
-        ]);
+        ], "*", "date");
+        foreach ($awards as &$award) { $award = self::parse($award); }
+        return $awards;
     }
 
     /**
@@ -109,11 +112,14 @@ class Awards extends Module
         if ($type === AwardType::BADGE) return $this->getUserBadgesAwards($userId);
         elseif ($type === AwardType::SKILL) return $this->getUserSkillsAwards($userId);
         elseif ($type === AwardType::STREAK) return $this->getUserStreaksAwards($userId);
-        return Core::database()->selectMultiple(self::TABLE_AWARD, [
+
+        $awards = Core::database()->selectMultiple(self::TABLE_AWARD, [
             "course" => $this->course->getId(),
             "user" => $userId,
             "type" => $type
-        ]);
+        ], "*", "date");
+        foreach ($awards as &$award) { $award = self::parse($award); }
+        return $awards;
     }
 
     /**
@@ -146,7 +152,10 @@ class Awards extends Module
         if ($post !== null) $where["b.isPost"] = $post;
         if ($point !== null) $where["b.isPoint"] = $point;
         if ($active !== null) $where["b.isActive"] = $active;
-        return Core::database()->selectMultiple($table, $where, "a.*");
+
+        $awards = Core::database()->selectMultiple($table, $where, "a.*", "date");
+        foreach ($awards as &$award) { $award = self::parse($award); }
+        return $awards;
     }
 
     /**
@@ -172,7 +181,10 @@ class Awards extends Module
         if ($collab !== null) $where["s.isCollab"] = $collab;
         if ($extra !== null) $where["s.isExtra"] = $extra;
         if ($active !== null) $where["s.isActive"] = $active;
-        return Core::database()->selectMultiple($table, $where, "a.*");
+
+        $awards = Core::database()->selectMultiple($table, $where, "a.*", "date");
+        foreach ($awards as &$award) { $award = self::parse($award); }
+        return $awards;
     }
 
     /**
@@ -197,7 +209,10 @@ class Awards extends Module
         if ($repeatable !== null) $where["s.isRepeatable"] = $repeatable;
         if ($extra !== null) $where["s.isExtra"] = $extra;
         if ($active !== null) $where["s.isActive"] = $active;
-        return Core::database()->selectMultiple($table, $where, "a.*");
+
+        $awards = Core::database()->selectMultiple($table, $where, "a.*", "date");
+        foreach ($awards as &$award) { $award = self::parse($award); }
+        return $awards;
     }
 
     /**
@@ -357,5 +372,22 @@ class Awards extends Module
     {
         if (!is_numeric($reward) || $reward < 0)
             throw new Exception("Award reward must be a number bigger or equal than 0.");
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Utils -------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    /**
+     * Parses an award coming from the database to appropriate types.
+     *
+     * @param array $award
+     * @return array|int|null
+     */
+    private static function parse(array $award)
+    {
+        $intValues = ["id", "user", "course", "moduleInstance", "reward"];
+        return Utils::parse(["int" => $intValues], $award);
     }
 }

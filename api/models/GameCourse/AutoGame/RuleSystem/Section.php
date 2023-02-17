@@ -296,7 +296,7 @@ class Section
      * @return void
      * @throws Exception
      */
-    public function copySection(Course $copyTo)
+    public function copySection(Course $copyTo): Section
     {
         // Copy section
         $copiedSection = self::addSection($copyTo->getId(), $this->getName(), $this->getPosition(),
@@ -307,6 +307,8 @@ class Section
             $rule = new Rule($rule["id"]);
             $rule->copyRule($copiedSection);
         }
+
+        return $copiedSection;
     }
 
     /**
