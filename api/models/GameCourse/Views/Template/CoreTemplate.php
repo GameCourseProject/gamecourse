@@ -4,6 +4,7 @@ namespace GameCourse\Views\Template;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Module\Module;
+use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Category\Category;
 use GameCourse\Views\ViewHandler;
 use Utils\Utils;
@@ -134,7 +135,7 @@ class CoreTemplate extends Template
         // Verify view tree only has system and/or module aspects
         try {
             // NOTE: will throw an exception if aspect not found
-            ViewHandler::getAspectsInViewTree(null, $viewTree, 0);
+            Aspect::getAspectsInViewTree(null, $viewTree, 0);
 
         } catch (Exception $e) {
             $error = $e->getMessage();
@@ -193,7 +194,7 @@ class CoreTemplate extends Template
      */
     public static function parse(array $template = null, $field = null, string $fieldName = null)
     {
-        $intValues = ["viewRoot", "category", "position"];
+        $intValues = ["id", "viewRoot", "category", "position"];
         return Utils::parse(["int" => $intValues], $template, $field, $fieldName);
     }
 

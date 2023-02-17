@@ -43,7 +43,7 @@ class Icon extends ViewType
             CREATE TABLE IF NOT EXISTS " . self::TABLE_VIEW_ICON . "(
                 id                          bigint unsigned NOT NULL PRIMARY KEY,
                 icon                        varchar(25) NOT NULL,
-                size                        varchar(10),
+                size                        varchar(10) DEFAULT NULL,
 
                 FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
             );
@@ -92,9 +92,12 @@ class Icon extends ViewType
         Core::database()->delete(self::TABLE_VIEW_ICON, ["id" => $viewId]);
     }
 
-    public function build(array &$view, array $sortedAspects = null)
+    public function build(array &$view, array $sortedAspects = null, bool $simplify = false)
     {
-        // Nothing to do here
+        // Simplify view icon
+        if ($simplify) {
+            if (isset($view["size"]) && !$view["size"]) unset($view["size"]);
+        }
     }
 
     public function translate(array $view, array &$logs, array &$views, array $parent = null)

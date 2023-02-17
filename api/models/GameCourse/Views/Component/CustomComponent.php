@@ -7,6 +7,7 @@ use GameCourse\Course\Course;
 use GameCourse\User\User;
 use GameCourse\Views\Category\Category;
 use GameCourse\Views\CreationMode;
+use GameCourse\Views\Logging\Logging;
 use GameCourse\Views\ViewHandler;
 use Utils\Utils;
 
@@ -186,9 +187,9 @@ class CustomComponent extends Component
 
         // Copy component
         $name = $componentInfo["name"] . " (Copy)";
-        return self::addComponent($componentInfo["course"], $creationMode, $name,
-            $creationMode === CreationMode::BY_VALUE ? ViewHandler::buildView($componentInfo["viewRoot"]) : null,
-            $componentInfo["viewRoot"]);
+        $viewTree = $creationMode === CreationMode::BY_VALUE ? ViewHandler::buildView($componentInfo["viewRoot"], null, true) : null;
+        $viewRoot = $creationMode === CreationMode::BY_REFERENCE ? $componentInfo["viewRoot"] : null;
+        return self::addComponent($componentInfo["course"], $creationMode, $name, $viewTree, $viewRoot);
     }
 
     /**
@@ -196,28 +197,41 @@ class CustomComponent extends Component
      * Returns the edited custom component.
      *
      * @param string $name
+     * @param array|null $viewTreeChanges
      * @return CustomComponent
      * @throws Exception
      */
-    public function editComponent(string $name): CustomComponent
+    public function editComponent(string $name, ?array $viewTreeChanges = null): CustomComponent
     {
         $this->setName($name);
+
+        // Update view tree, if changes were made
+        if ($viewTreeChanges) {
+            $logs = $viewTreeChanges["logs"];
+            $views = $viewTreeChanges["views"];
+            Logging::processLogs($logs, $views, $this->getCourse()->getId());
+        }
+
         return $this;
     }
 
     /**
-     * Deletes a custom component from the database.
-     * Option to keep views linked (created by reference) or delete
-     * them as well.
+     * Deletes a custom component from the database and removes all its views.
+     * Option to keep views linked to component (created by reference)
+     * intact or to replace them by a placeholder view.
      *
      * @param int $id
-     * @param bool $keepViewsLinked
+     * @param bool $keepLinked
      * @return void
+     * @throws Exception
      */
-    public static function deleteComponent(int $id, bool $keepViewsLinked = true)
+    public static function deleteComponent(int $id, bool $keepLinked = true)
     {
-        parent::deleteComponent($id, $keepViewsLinked);
-        Core::database()->delete(self::TABLE_COMPONENT, ["id" => $id]);
+        $component = self::getComponentById($id);
+        if ($component) {
+            parent::deleteComponent($id, $keepLinked);
+            Core::database()->delete(self::TABLE_COMPONENT, ["id" => $id]);
+        }
     }
 
 
@@ -293,7 +307,7 @@ class CustomComponent extends Component
      */
     public static function parse(array $component = null, $field = null, string $fieldName = null)
     {
-        $intValues = ["viewRoot", "course"];
+        $intValues = ["id", "viewRoot", "course"];
         return Utils::parse(["int" => $intValues], $component, $field, $fieldName);
     }
 

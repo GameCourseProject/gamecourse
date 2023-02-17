@@ -163,4 +163,35 @@ class PageController
     // TODO: renderPageInEditor (mocked or not)
 
     // TODO: preview page
+
+
+    /*** --------------------------------------------- ***/
+    /*** -------------- Import / Export -------------- ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * Import pages into a given course.
+     *
+     * @param $courseId
+     * @param $file
+     * @param bool $replace
+     * @throws Exception
+     */
+    public function importPages()
+    {
+        API::requireValues("courseId", "file", "replace");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $file = API::getValue("file");
+        $replace = API::getValue("replace", "bool");
+
+        $nrPagesImported = Page::importPages($courseId, $file, $replace);
+        API::response($nrPagesImported);
+    }
+
+    // TODO: export
 }

@@ -1,8 +1,10 @@
 <?php
 namespace GameCourse\Views\ViewType;
 
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
+use GameCourse\Views\ExpressionLanguage\Node;
 use GameCourse\Views\ViewHandler;
 
 /**
@@ -143,9 +145,12 @@ class Chart extends ViewType
         Core::database()->delete(self::TABLE_VIEW_CHART, ["id" => $viewId]);
     }
 
-    public function build(array &$view, array $sortedAspects = null)
+    public function build(array &$view, array $sortedAspects = null, bool $simplify = false)
     {
-        // Nothing to do here
+        // Simplify view chart
+        if ($simplify) {
+            if (isset($view["options"]) && empty($view["options"])) unset($view["options"]);
+        }
     }
 
     public function translate(array $view, array &$logs, array &$views, array $parent = null)

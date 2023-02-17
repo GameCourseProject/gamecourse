@@ -318,7 +318,7 @@ CREATE TABLE template_custom_shared(
 CREATE TABLE page(
     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
     course                      int unsigned NOT NULL,
-    name                        varchar(25) NOT NULL,
+    name                        varchar(100) NOT NULL,
     isVisible                   boolean DEFAULT FALSE,
     viewRoot                    bigint unsigned NOT NULL,
     creationTimestamp           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

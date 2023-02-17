@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Role\Role;
+use GameCourse\Views\ViewHandler;
 
 /**
  * This is the Aspect model, which implements the necessary methods
@@ -132,6 +133,7 @@ class Aspect
      * @param bool $sortByMostSpecific
      * @param bool $IDsOnly
      * @return array
+     * @throws Exception
      */
     public static function getAspects(int $courseId, int $userId = null, bool $sortByMostSpecific = false, bool $IDsOnly = false): array
     {
@@ -213,6 +215,64 @@ class Aspect
         }
 
         return $aspects;
+    }
+
+    /**
+     * Gets all aspects found in a view tree.
+     *
+     * @param int|null $viewRoot
+     * @param array|null $viewTree
+     * @param int|null $courseId
+     * @return array
+     * @throws Exception
+     */
+    public static function getAspectsInViewTree(int $viewRoot = null, array $viewTree = null, int $courseId = null): array
+    {
+        if ($viewRoot === null && $viewTree === null)
+            throw new Exception("Need either view root or view tree to get aspects in a view tree.");
+
+        if ($viewTree && $courseId === null)
+            throw new Exception("Need course ID to get aspects in a view tree.");
+
+        $aspects = [];
+
+        if ($viewRoot) { // Get aspects of view root
+            $viewsInfo = self::getAspectsInfoOfView($viewRoot);
+            foreach ($viewsInfo as $info) {
+                $aspects[] = self::getAspectById($info["aspect"])->getData("id, viewerRole, userRole");
+
+                // Get aspects of children
+                $children = ViewHandler::getChildrenOfView($info["view"]);
+                if (!empty($children)) {
+                    foreach ($children as $child) {
+                        $aspects = array_merge($aspects, self::getAspectsInViewTree($child));
+                    }
+                }
+            }
+
+        } else { // Get aspects of view tree
+            $parent = null;
+            ViewHandler::traverseViewTree($viewTree, function ($view, $parent, &...$data) use ($courseId) {
+                $data[0][] = self::getAspectInView($view, $courseId)->getData("id, viewerRole, userRole");
+            }, $parent, $aspects);
+        }
+
+        return array_unique($aspects, SORT_REGULAR);
+    }
+
+    /**
+     * Gets aspects' info of a view.
+     *
+     * @param int $viewRoot
+     * @return array
+     */
+    public static function getAspectsInfoOfView(int $viewRoot): array
+    {
+        return array_map(function ($info) {
+            $info["aspect"] = intval($info["aspect"]);
+            $info["view"] = intval($info["view"]);
+            return $info;
+        }, Core::database()->selectMultiple(ViewHandler::TABLE_VIEW_ASPECT, ["viewRoot" => $viewRoot], "aspect, view", "aspect"));
     }
 
 
@@ -297,7 +357,7 @@ class Aspect
      * @param string|null $fieldName
      * @return array|int
      */
-    public static function parse(array $aspect = null, $field = null, string $fieldName = null)
+    private static function parse(array $aspect = null, $field = null, string $fieldName = null)
     {
         if ($aspect) {
             if (isset($aspect["id"])) $aspect["id"] = intval($aspect["id"]);

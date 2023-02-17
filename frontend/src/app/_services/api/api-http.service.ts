@@ -2184,6 +2184,19 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
+  public importPages(courseID: number, file: string | ArrayBuffer, replace: boolean): Observable<number> {
+    const data = {courseId: courseID, file, replace};
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'importPages');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => parseInt(res['data'])) );
+  }
+
 
   // Templates
   // TODO: refactor

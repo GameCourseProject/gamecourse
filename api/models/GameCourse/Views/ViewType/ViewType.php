@@ -255,16 +255,19 @@ abstract class ViewType
 
     /**
      * Builds a view of a specific type.
-     * Option to build for a specific set of aspects
+     * Option to build for a specific set of aspects or to simplify
+     * view tree by removing IDs and redundant params (e.g. for exporting).
      *
      * @param array $view
      * @param array|null $sortedAspects
+     * @param bool $simplify
      * @return void
      */
-    abstract function build(array &$view, array $sortedAspects = null);
+    abstract function build(array &$view, array $sortedAspects = null, bool $simplify = false);
 
     /**
-     * Translates a view into logs.
+     * Translates a view (which is not yet in the database)
+     * into logs: add & move logs.
      *
      * @param array $view
      * @param array $logs

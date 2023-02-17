@@ -81,28 +81,49 @@ abstract class Template
         else return null;
     }
 
+    /**
+     * Gets templates by a given view root.
+     *
+     * @param int $viewRoot
+     * @return array
+     */
+    public static function getTemplatesByViewRoot(int $viewRoot): array
+    {
+        $typeClass = new ReflectionClass(TemplateType::class);
+        $types = array_values($typeClass->getConstants());
+
+        $templates = [];
+        foreach ($types as $type) {
+            $templateClass = "\\GameCourse\\Views\\Template\\" . ucfirst($type) . "Template";
+            $templatesOfType = array_map(function ($t) use ($templateClass, $type) {
+                $t = $templateClass::parse($t);
+                $t["type"] = $type . " template";
+                return $t;
+            }, Core::database()->selectMultiple($templateClass::TABLE_TEMPLATE, ["viewRoot" => $viewRoot]));
+            $templates = array_merge($templates, $templatesOfType);
+        }
+        return $templates;
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** --------------- Template Manipulation -------------- ***/
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Deletes a template from the database.
-     * Option to keep views linked (created by reference) or delete
-     * them as well.
+     * Deletes a template from the database and removes all its views.
+     * Option to keep views linked to template (created by reference)
+     * intact or to replace them by a placeholder view.
      *
      * @param int $id
-     * @param bool $keepViewsLinked
+     * @param bool $keepLinked
      * @return void
+     * @throws Exception
      */
-    protected static function deleteTemplate(int $id, bool $keepViewsLinked = true) {
+    protected static function deleteTemplate(int $id, bool $keepLinked = true) {
         $template = self::getTemplateById($id);
         if ($template) {
-            // TODO: go through each view linked to this template and either
-            //        replace by a copy (keep = true) or a default view
-
-            // Delete view tree
-            ViewHandler::deleteViewTree($template->getViewRoot());
+            ViewHandler::deleteViewTree($id, $template->getViewRoot(), $keepLinked);
         }
     }
 

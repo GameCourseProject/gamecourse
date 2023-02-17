@@ -81,28 +81,50 @@ abstract class Component
         else return null;
     }
 
+    /**
+     * Gets components by a given view root.
+     *
+     * @param int $viewRoot
+     * @return array
+     */
+    public static function getComponentsByViewRoot(int $viewRoot): array
+    {
+        $typeClass = new ReflectionClass(ComponentType::class);
+        $types = array_values($typeClass->getConstants());
+
+        $components = [];
+        foreach ($types as $type) {
+            $componentClass = "\\GameCourse\\Views\\Component\\" . ucfirst($type) . "Component";
+            $componentsOfType = array_map(function ($c) use ($componentClass, $type) {
+                $c = $componentClass::parse($c);
+                $c["type"] = $type . " component";
+                return $c;
+            }, Core::database()->selectMultiple($componentClass::TABLE_COMPONENT, ["viewRoot" => $viewRoot]));
+            $components = array_merge($components, $componentsOfType);
+        }
+        return $components;
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------- Component Manipulation -------------- ***/
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Deletes a component from the database.
-     * Option to keep views linked (created by reference) or delete
-     * them as well.
+     * Deletes a component from the database and removes all its views.
+     * Option to keep views linked to component (created by reference)
+     * intact or to replace them by a placeholder view.
      *
      * @param int $id
-     * @param bool $keepViewsLinked
+     * @param bool $keepLinked
      * @return void
+     * @throws Exception
      */
-    protected static function deleteComponent(int $id, bool $keepViewsLinked = true) {
+    protected static function deleteComponent(int $id, bool $keepLinked = true) {
         $component = self::getComponentById($id);
         if ($component) {
-            // TODO: go through each view linked to this component and either
-            //        replace by a copy (keep = true) or a default view
-
-            // Delete view tree
-            ViewHandler::deleteViewTree($component->getViewRoot());
+            // Delete component view tree
+            ViewHandler::deleteViewTree($id, $component->getViewRoot(), $keepLinked);
         }
     }
 

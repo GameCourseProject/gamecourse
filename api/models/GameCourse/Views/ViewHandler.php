@@ -6,6 +6,9 @@ use GameCourse\Core\Core;
 use GameCourse\Role\Role;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Component\Component;
+use GameCourse\Views\Component\ComponentType;
+use GameCourse\Views\Component\CoreComponent;
+use GameCourse\Views\Component\CustomComponent;
 use GameCourse\Views\Event\Event;
 use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\ExpressionLanguage\ExpressionEvaluatorBase;
@@ -15,7 +18,10 @@ use GameCourse\Views\Logging\AddLog;
 use GameCourse\Views\Logging\Logging;
 use GameCourse\Views\Logging\MoveLog;
 use GameCourse\Views\Page\Page;
+use GameCourse\Views\Template\CoreTemplate;
+use GameCourse\Views\Template\CustomTemplate;
 use GameCourse\Views\Template\Template;
+use GameCourse\Views\Template\TemplateType;
 use GameCourse\Views\Variable\Variable;
 use GameCourse\Views\ViewType\ViewType;
 use GameCourse\Views\Visibility\VisibilityType;
@@ -32,6 +38,7 @@ class ViewHandler
     const TABLE_VIEW_PARENT = "view_parent";
 
     const ROOT_VIEW = [["type" => "block"]];
+    const REPLACE_VIEW = [["type" => "text", "text" => "Element not found", "class" => "font-semibold text-error text-center"]];
 
 
     /*** ---------------------------------------------------- ***/
@@ -77,7 +84,8 @@ class ViewHandler
         $viewType = ViewType::getViewTypeById($view["type"]);
         $view = array_merge(self::parse($view), $viewType->get($id),
             ["variables" => Variable::getVariablesOfView($id)],
-            ["events" => Event::getEventsOfView($id)]);
+            ["events" => Event::getEventsOfView($id)]
+        );
 
         if ($onlyNonNull) return array_filter($view, function ($param) { return $param !== null; });
         return $view;
@@ -110,7 +118,11 @@ class ViewHandler
      */
     public static function getChildrenOfView(int $parentId, bool $onlyViewRoots = true): array
     {
-        $children = Core::database()->selectMultiple(self::TABLE_VIEW_PARENT, ["parent" => $parentId], "child, position", "position");
+        $children = array_map(function ($child) {
+            $child["child"] = intval($child["child"]);
+            $child["position"] = intval($child["position"]);
+            return $child;
+        }, Core::database()->selectMultiple(self::TABLE_VIEW_PARENT, ["parent" => $parentId], "child, position", "position"));
         if ($onlyViewRoots) return array_column($children, "child");
         return $children;
     }
@@ -228,21 +240,28 @@ class ViewHandler
 
     /**
      * Deletes the complete view tree in the database.
+     * Option to keep views linked to it (created by reference)
+     * intact or to replace them by a placeholder view.
      *
+     * @param int $itemId
      * @param int $viewRoot
+     * @param bool $keepLinked
      * @return void
+     * @throws Exception
      */
-    public static function deleteViewTree(int $viewRoot)
+    public static function deleteViewTree(int $itemId, int $viewRoot, bool $keepLinked = true)
     {
-        $viewsInfo = self::getAspectInfoOfViewRoot($viewRoot);
+        // Replace linked views
+        ViewHandler::replaceLinkedViews($itemId, $viewRoot, $keepLinked);
+
+        // Delete all aspects of view
+        $viewsInfo = Aspect::getAspectsInfoOfView($viewRoot);
         foreach ($viewsInfo as $info) {
             // Delete aspects of children
             $children = self::getChildrenOfView($info["view"]);
             if (!empty($children)) {
                 foreach ($children as $child) {
-                    // NOTE: make sure not to delete other views that are not exclusive of this view root
-                    if ($child != $viewRoot && !Component::isComponent($child) && !Template::isTemplate($viewRoot) &&
-                        !Page::isPage($viewRoot)) self::deleteViewTree($child);
+                    self::deleteViewTree($itemId, $child, $keepLinked);
                 }
             }
             self::deleteView($info["view"]);
@@ -339,17 +358,19 @@ class ViewHandler
     /**
      * Builds a view which creates the entire view tree that has
      * the view at its root.
-     * Option to build for a specific set of aspects.
+     * Option to build for a specific set of aspects or to simplify
+     * view tree by removing IDs and redundant params (e.g. for exporting).
      *
      * @param int $viewRoot
      * @param array|null $sortedAspects
+     * @param bool $simplify
      * @return array
      * @throws Exception
      */
-    public static function buildView(int $viewRoot, array $sortedAspects = null): array
+    public static function buildView(int $viewRoot, array $sortedAspects = null, bool $simplify = false): array
     {
         $viewTree = [];
-        $viewsInfo = self::getAspectInfoOfViewRoot($viewRoot);
+        $viewsInfo = Aspect::getAspectsInfoOfView($viewRoot);
 
         // Filter views by aspect
         if ($sortedAspects) {
@@ -363,7 +384,7 @@ class ViewHandler
 
             // Build view of a specific type
             $viewType = ViewType::getViewTypeById($view["type"]);
-            $viewType->build($view, $sortedAspects);
+            $viewType->build($view, $sortedAspects, $simplify);
 
             // Create param 'aspect' for view
             $viewAspect = Aspect::getAspectById($info["aspect"]);
@@ -377,6 +398,16 @@ class ViewHandler
             // Add params 'viewRoot' and 'aspect' immediately after ID
             $pos = 1;
             $view = array_slice($view, 0, $pos) + ["viewRoot" => $viewRoot] + ["aspect" => $viewAspect] + array_slice($view, $pos);
+
+            // Simplify view tree
+            if ($simplify) {
+                unset($view["id"]);
+                unset($view["viewRoot"]);
+                if (!$viewerRoleId && !$userRoleId) unset($view["aspect"]);
+                if ($view["visibilityType"] === VisibilityType::VISIBLE) unset($view["visibilityType"]);
+                if (empty($view["variables"])) unset($view["variables"]);
+                if (empty($view["events"])) unset($view["events"]);
+            }
 
             $viewTree[] = $view;
         }
@@ -401,7 +432,7 @@ class ViewHandler
         // Get view tree for each aspect of view root
         $viewTreeByAspect = [];
         $defaultAspect = Aspect::getAspectBySpecs($courseId, null, null);
-        $aspects = self::getAspectsInViewTree($viewRoot);
+        $aspects = Aspect::getAspectsInViewTree($viewRoot);
         foreach ($aspects as $aspect) {
             $viewTreeOfAspect = self::buildView($viewRoot, [$aspect, $defaultAspect]);
             $viewTreeByAspect[$aspect->getId()] = $viewTreeOfAspect;
@@ -586,7 +617,8 @@ class ViewHandler
     }
 
     /**
-     * Translates a view tree into logs.
+     * Translates a view tree (which is not yet in the database)
+     * into logs: add & move logs.
      *
      * @param array $viewTree
      * @param array|null $parent
@@ -622,65 +654,50 @@ class ViewHandler
     }
 
     /**
-     * Gets all aspects found in a view tree.
+     * Replaces views linked (created by reference) to a given view.
+     * Option to keep views linked intact or to replace them by a
+     * placeholder view.
      *
-     * @param int|null $viewRoot
-     * @param array|null $viewTree
-     * @param int|null $courseId
-     * @return array
+     * @param int $itemId
+     * @param int $viewRoot
+     * @param bool $keepLinked
+     * @return void
      * @throws Exception
      */
-    public static function getAspectsInViewTree(int $viewRoot = null, array $viewTree = null, int $courseId = null): array
+    public static function replaceLinkedViews(int $itemId, int $viewRoot, bool $keepLinked = true)
     {
-        if ($viewRoot === null && $viewTree === null)
-            throw new Exception("Need either view root or view tree to get aspects in a view tree.");
+        foreach (self::getLinkedViews($viewRoot) as $view) {
+            // NOTE: ignore item to which views are linked to
+            if ($view["id"] === $itemId) continue;
 
-        if ($viewTree && $courseId === null)
-            throw new Exception("Need course ID to get aspects in a view tree.");
+            if ($view["type"] === ComponentType::CORE . " component") {
+                $courseId = 0;
+                $table = CoreComponent::TABLE_COMPONENT;
 
-        $aspects = [];
+            } else if ($view["type"] === ComponentType::CUSTOM . " component") {
+                $courseId = $view["course"];
+                $table = CustomComponent::TABLE_COMPONENT;
 
-        if ($viewRoot) { // Get aspects of view root
-            $viewsInfo = self::getAspectInfoOfViewRoot($viewRoot);
-            foreach ($viewsInfo as $info) {
-                $aspects[] = Aspect::getAspectById($info["aspect"])->getData("id, viewerRole, userRole");
+            } else if ($view["type"] === TemplateType::CORE . " template") {
+                $courseId = 0;
+                $table = CoreTemplate::TABLE_TEMPLATE;
 
-                // Get aspects of children
-                $children = self::getChildrenOfView($info["view"]);
-                if (!empty($children)) {
-                    foreach ($children as $child) {
-                        $aspects = array_merge($aspects, self::getAspectsInViewTree($child));
-                    }
-                }
+            } else if ($view["type"] === TemplateType::CUSTOM . " template") {
+                $courseId = $view["course"];
+                $table = CustomTemplate::TABLE_TEMPLATE;
+
+            } else {
+                $courseId = $view["course"];
+                $table = Page::TABLE_PAGE;
             }
 
-        } else { // Get aspects of view tree
-            $parent = null;
-            self::traverseViewTree($viewTree, function ($view, $parent, &...$data) use ($courseId) {
-                $data[0][] = Aspect::getAspectInView($view, $courseId)->getData("id, viewerRole, userRole");
-            }, $parent, $aspects);
-        }
+            // Insert replacement into the database
+            $replacement = $keepLinked ? ViewHandler::buildView($viewRoot, null, true) : ViewHandler::REPLACE_VIEW;
+            $root = self::insertViewTree($replacement, $courseId);
 
-        return array_unique($aspects, SORT_REGULAR);
-    }
-
-    /**
-     * Picks the most specific aspect available in a view root.
-     * Returns null if there's no view for given aspects.
-     *
-     * @param array $viewsInfo
-     * @param array $aspectsSortedByMostSpecific
-     * @return array|null
-     */
-    private static function pickViewByAspect(array $viewsInfo, array $aspectsSortedByMostSpecific): ?array
-    {
-        foreach ($aspectsSortedByMostSpecific as $aspectInfo) {
-            foreach ($viewsInfo as $info) {
-                $aspect = Aspect::getAspectById($aspectInfo["id"]);
-                if ($aspect->equals(Aspect::getAspectById($info["aspect"]))) return $info;
-            }
+            // Replace with new view
+            Core::database()->update($table, ["viewRoot" => $root], ["id" => $view["id"]]);
         }
-        return null;
     }
 
 
@@ -720,8 +737,48 @@ class ViewHandler
         }
     }
 
-    private static function getAspectInfoOfViewRoot(int $viewRoot): array
+    /**
+     * Picks the most specific aspect available in a view root.
+     * Returns null if there's no view for given aspects.
+     *
+     * @param array $viewsInfo
+     * @param array $aspectsSortedByMostSpecific
+     * @return array|null
+     */
+    private static function pickViewByAspect(array $viewsInfo, array $aspectsSortedByMostSpecific): ?array
     {
-        return Core::database()->selectMultiple(self::TABLE_VIEW_ASPECT, ["viewRoot" => $viewRoot], "aspect, view", "aspect");
+        foreach ($aspectsSortedByMostSpecific as $aspectInfo) {
+            foreach ($viewsInfo as $info) {
+                $aspect = Aspect::getAspectById($aspectInfo["id"]);
+                if ($aspect->equals(Aspect::getAspectById($info["aspect"]))) return $info;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets views linked (created by reference) to a given view.
+     *
+     * NOTE: views linked are always either a component, a template or a page,
+     * otherwise they couldn't have been linked.
+     *
+     * @param int $viewRoot
+     * @return array
+     */
+    private static function getLinkedViews(int $viewRoot): array
+    {
+        // Get linked components
+        $linkedComponents = Component::getComponentsByViewRoot($viewRoot);
+
+        // Get linked templates
+        $linkedTemplates = Template::getTemplatesByViewRoot($viewRoot);
+
+        // Get linked pages
+        $linkedPages = array_map(function ($view) {
+            $view["type"] = "page";
+            return $view;
+        }, Page::getPagesByViewRoot($viewRoot));
+
+        return array_merge($linkedComponents, $linkedTemplates, $linkedPages);
     }
 }

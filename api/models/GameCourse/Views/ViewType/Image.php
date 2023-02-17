@@ -43,7 +43,7 @@ class Image extends ViewType
             CREATE TABLE IF NOT EXISTS " . self::TABLE_VIEW_IMAGE . "(
                 id                          bigint unsigned NOT NULL PRIMARY KEY,
                 src                         TEXT NOT NULL,
-                link                        TEXT,
+                link                        TEXT DEFAULT NULL,
 
                 FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
             );
@@ -92,9 +92,12 @@ class Image extends ViewType
         Core::database()->delete(self::TABLE_VIEW_IMAGE, ["id" => $viewId]);
     }
 
-    public function build(array &$view, array $sortedAspects = null)
+    public function build(array &$view, array $sortedAspects = null, bool $simplify = false)
     {
-        // Nothing to do here
+        // Simplify view image
+        if ($simplify) {
+            if (isset($view["link"]) && !$view["link"]) unset($view["link"]);
+        }
     }
 
     public function translate(array $view, array &$logs, array &$views, array $parent = null)

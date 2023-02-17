@@ -42,7 +42,7 @@ class Collapse extends ViewType
         Core::database()->executeQuery("
             CREATE TABLE IF NOT EXISTS " . self::TABLE_VIEW_COLLAPSE . "(
                 id                          bigint unsigned NOT NULL PRIMARY KEY,
-                icon                        ENUM ('arrow', 'plus'),
+                icon                        ENUM ('arrow', 'plus') DEFAULT NULL,
 
                 FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
             );
@@ -92,15 +92,20 @@ class Collapse extends ViewType
     /**
      * @throws Exception
      */
-    public function build(array &$view, array $sortedAspects = null)
+    public function build(array &$view, array $sortedAspects = null, bool $simplify = false)
     {
         // NOTE: can only have two children - header and content
         $children = ViewHandler::getChildrenOfView($view["id"]);
         if (!empty($children)) {
             foreach ($children as &$child) {
-                $child = ViewHandler::buildView($child, $sortedAspects);
+                $child = ViewHandler::buildView($child, $sortedAspects, $simplify);
                 if (!empty($child)) $view["children"][] = $child;
             }
+        }
+
+        // Simplify view collapse
+        if ($simplify) {
+            if (isset($view["icon"]) && !$view["icon"]) unset($view["icon"]);
         }
     }
 

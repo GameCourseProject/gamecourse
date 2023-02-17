@@ -92,14 +92,19 @@ class Block extends ViewType
     /**
      * @throws Exception
      */
-    public function build(array &$view, array $sortedAspects = null)
+    public function build(array &$view, array $sortedAspects = null, bool $simplify = false)
     {
         $children = ViewHandler::getChildrenOfView($view["id"]);
         if (!empty($children)) {
             foreach ($children as &$child) {
-                $child = ViewHandler::buildView($child, $sortedAspects);
+                $child = ViewHandler::buildView($child, $sortedAspects, $simplify);
                 if (!empty($child)) $view["children"][] = $child;
             }
+        }
+
+        // Simplify view block
+        if ($simplify) {
+            if (isset($view["direction"]) && $view["direction"] === "vertical") unset($view["direction"]);
         }
     }
 

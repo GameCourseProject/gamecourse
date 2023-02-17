@@ -7,6 +7,7 @@ use GameCourse\Course\Course;
 use GameCourse\User\User;
 use GameCourse\Views\Category\Category;
 use GameCourse\Views\CreationMode;
+use GameCourse\Views\Logging\Logging;
 use GameCourse\Views\ViewHandler;
 use Utils\Utils;
 
@@ -186,9 +187,9 @@ class CustomTemplate extends Template
 
         // Copy template
         $name = $templateInfo["name"] . " (Copy)";
-        return self::addTemplate($templateInfo["course"], $creationMode, $name,
-            $creationMode === CreationMode::BY_VALUE ? ViewHandler::buildView($templateInfo["viewRoot"]) : null,
-            $templateInfo["viewRoot"]);
+        $viewTree = $creationMode === CreationMode::BY_VALUE ? ViewHandler::buildView($templateInfo["viewRoot"], null, true) : null;
+        $viewRoot = $creationMode === CreationMode::BY_REFERENCE ? $templateInfo["viewRoot"] : null;
+        return self::addTemplate($templateInfo["course"], $creationMode, $name, $viewTree, $viewRoot);
     }
 
     /**
@@ -196,28 +197,41 @@ class CustomTemplate extends Template
      * Returns the edited custom template.
      *
      * @param string $name
+     * @param array|null $viewTreeChanges
      * @return CustomTemplate
      * @throws Exception
      */
-    public function editTemplate(string $name): CustomTemplate
+    public function editTemplate(string $name, ?array $viewTreeChanges = null): CustomTemplate
     {
         $this->setName($name);
+
+        // Update view tree, if changes were made
+        if ($viewTreeChanges) {
+            $logs = $viewTreeChanges["logs"];
+            $views = $viewTreeChanges["views"];
+            Logging::processLogs($logs, $views, $this->getCourse()->getId());
+        }
+
         return $this;
     }
 
     /**
-     * Deletes a custom template from the database.
-     * Option to keep views linked (created by reference) or delete
-     * them as well.
+     * Deletes a custom template from the database and removes all its views.
+     * Option to keep views linked to template (created by reference)
+     * intact or to replace them by a placeholder view.
      *
      * @param int $id
-     * @param bool $keepViewsLinked
+     * @param bool $keepLinked
      * @return void
+     * @throws Exception
      */
-    public static function deleteTemplate(int $id, bool $keepViewsLinked = true)
+    public static function deleteTemplate(int $id, bool $keepLinked = true)
     {
-        parent::deleteTemplate($id, $keepViewsLinked);
-        Core::database()->delete(self::TABLE_TEMPLATE, ["id" => $id]);
+        $template = self::getTemplateById($id);
+        if ($template) {
+            parent::deleteTemplate($id, $keepLinked);
+            Core::database()->delete(self::TABLE_TEMPLATE, ["id" => $id]);
+        }
     }
 
 
@@ -293,7 +307,7 @@ class CustomTemplate extends Template
      */
     public static function parse(array $template = null, $field = null, string $fieldName = null)
     {
-        $intValues = ["viewRoot", "course"];
+        $intValues = ["id", "viewRoot", "course"];
         return Utils::parse(["int" => $intValues], $template, $field, $fieldName);
     }
 
