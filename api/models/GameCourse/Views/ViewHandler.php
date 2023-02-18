@@ -721,9 +721,11 @@ class ViewHandler
 
     private static function insertVariablesInView(array $view)
     {
+        $notAllowed = ["course", "viewer", "user", "item", "index", "value"];
         if (isset($view["variables"])) {
             foreach ($view["variables"] as $variable) {
-                Variable::addVariable($view["id"], $variable["name"], $variable["value"], $variable["position"]);
+                if (!in_array($variable["name"], $notAllowed))
+                    Variable::addVariable($view["id"], $variable["name"], $variable["value"], $variable["position"]);
             }
         }
     }

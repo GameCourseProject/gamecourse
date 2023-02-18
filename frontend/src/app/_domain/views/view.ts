@@ -6,14 +6,14 @@ import {Event} from "./events/event";
 import {EventType} from "./events/event-type";
 
 import {buildEvent} from "./events/build-event";
-import {objectMap} from "../../_utils/misc/misc";
 
 export abstract class View {
   private _mode: ViewMode;
   private _type: ViewType;
 
-  private _id: number;            // Unique view ID
+  private _id: number;            // View ID (might be repeated for views w/ loopData)
   private _viewRoot: number;      // All aspects of view have the same viewRoot
+  private _uniqueId: number;      // Unique view ID on frontend
   private _parent: View;
   private _aspect: Aspect;
 
@@ -38,6 +38,7 @@ export abstract class View {
     this.mode = mode;
     this.type = type;
 
+    this.uniqueId = Math.round(Date.now() * Math.random());
     this.id = id;
     this.viewRoot = viewRoot;
     this.parent = parent;
@@ -87,6 +88,14 @@ export abstract class View {
 
   set viewRoot(value: number) {
     this._viewRoot = value;
+  }
+
+  get uniqueId(): number {
+    return this._uniqueId;
+  }
+
+  set uniqueId(value: number) {
+    this._uniqueId = value;
   }
 
   get parent(): View {

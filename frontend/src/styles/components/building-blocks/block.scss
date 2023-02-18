@@ -5,7 +5,7 @@
  */
 
 .bb-block {
-  @apply flex flex-wrap;
+  @apply flex;
 
   &.bb-block-vertical {
     @apply flex-col;

@@ -48,8 +48,8 @@ import { InputScheduleComponent } from './_components/inputs/date & time/input-s
 import { ThemeTogglerComponent } from './_components/inputs/misc/theme-toggler/theme-toggler.component';
 
 // Components: charts
-import { LineChartComponent } from "./_components/charts/line-chart/line-chart.component";
 import { BarChartComponent } from "./_components/charts/bar-chart/bar-chart.component";
+import { LineChartComponent } from "./_components/charts/line-chart/line-chart.component";
 import { ProgressChartComponent } from "./_components/charts/progress-chart/progress-chart.component";
 import { RadarChartComponent } from "./_components/charts/radar-chart/radar-chart.component";
 
@@ -205,8 +205,8 @@ import {
     InputScheduleComponent,
     ThemeTogglerComponent,
 
-    LineChartComponent,
     BarChartComponent,
+    LineChartComponent,
     ProgressChartComponent,
     RadarChartComponent,
 
@@ -283,8 +283,8 @@ import {
     InputScheduleComponent,
     ThemeTogglerComponent,
 
-    LineChartComponent,
     BarChartComponent,
+    LineChartComponent,
     ProgressChartComponent,
     RadarChartComponent,
 

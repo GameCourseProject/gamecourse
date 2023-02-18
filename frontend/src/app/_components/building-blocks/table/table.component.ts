@@ -42,18 +42,14 @@ export class BBTableComponent implements OnInit {
     lengthChange: true,
     paging: true,
     info: true,
-    columnDefs: [{orderable: true}]
+    columnDefs: [
+      {type: 'natural', targets: []},
+      {orderable: true}
+    ]
   };
 
   buildTable(): void {
     this.loading = true;
-
-    // Init table options
-    this.tableOptions['searching'] = this.view.searching;
-    this.tableOptions['lengthChange'] = this.view.lengthChange;
-    this.tableOptions['paging'] = this.view.paging;
-    this.tableOptions['info'] = this.view.info;
-    this.tableOptions['columnDefs'][0]['orderable'] = this.view.ordering;
 
     // Get headers
     if (this.view.headerRows?.length > 0) {
@@ -78,6 +74,14 @@ export class BBTableComponent implements OnInit {
       }
     }
     this.data = table;
+
+    // Init table options
+    this.tableOptions['searching'] = this.view.searching;
+    this.tableOptions['lengthChange'] = this.view.lengthChange;
+    this.tableOptions['paging'] = this.view.paging;
+    this.tableOptions['info'] = this.view.info;
+    this.tableOptions['columnDefs'][0]['targets'] = Array.from(Array(this.headers.length).keys())
+    this.tableOptions['columnDefs'][1]['orderable'] = this.view.ordering;
 
     this.loading = false;
 

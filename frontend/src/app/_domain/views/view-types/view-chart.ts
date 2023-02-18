@@ -7,18 +7,20 @@ import {Event} from "../events/event";
 
 export class ViewChart extends View {
   private _chartType: ChartType;
-  private _info: {[key: string]: any};
+  private _data: string | any;
+  private _options: {[key: string]: any};
 
 
-  constructor(mode: ViewMode, id: number, viewRoot: number, parent: View, aspect: Aspect, chartType: ChartType,
-              info: {[key: string]: any}, cssId?: string, classList?: string, styles?: string, visibilityType?: VisibilityType,
+  constructor(mode: ViewMode, id: number, viewRoot: number, parent: View, aspect: Aspect, chartType: ChartType, data: string | any,
+              options: {[key: string]: any}, cssId?: string, classList?: string, styles?: string, visibilityType?: VisibilityType,
               visibilityCondition?: string | boolean, loopData?: string, variables?: Variable[], events?: Event[]) {
 
     super(mode, ViewType.CHART, id, viewRoot, parent, aspect, cssId, classList, styles, visibilityType, visibilityCondition,
       loopData, variables, events);
 
     this.chartType = chartType;
-    this.info = info;
+    this.data = data;
+    this.options = options;
   }
 
 
@@ -30,12 +32,20 @@ export class ViewChart extends View {
     this._chartType = value;
   }
 
-  get info(): {[key: string]: any} {
-    return this._info;
+  get data(): string | any {
+    return this._data;
   }
 
-  set info(value: {[key: string]: any}) {
-    this._info = value;
+  set data(value: string | any) {
+    this._data = value;
+  }
+
+  get options(): {[key: string]: any} {
+    return this._options;
+  }
+
+  set options(value: {[key: string]: any}) {
+    this._options = value;
   }
 
 
@@ -106,7 +116,8 @@ export class ViewChart extends View {
     const obj = View.toJson(this);
     return Object.assign(obj, {
       chartType: this.chartType,
-      info: this.info,
+      data: this.data,
+      options: this.options,
     });
   }
 
@@ -122,7 +133,8 @@ export class ViewChart extends View {
       null,
       parsedObj.aspect,
       obj.chartType as ChartType,
-      obj.info,
+      obj.data,
+      obj.options,
       parsedObj.cssId,
       parsedObj.classList,
       parsedObj.styles,
@@ -136,13 +148,14 @@ export class ViewChart extends View {
 }
 
 export interface ViewChartDatabase extends ViewDatabase {
-  chartType: string;
-  info: {[key: string]: any};
+  chartType: ChartType;
+  data: string | any
+  options: {[key: string]: any};
 }
 
 export enum ChartType {
-  LINE = 'line',
   BAR = 'bar',
-  STAR = 'star',
-  PROGRESS = 'progress'
+  LINE = 'line',
+  PROGRESS = 'progress',
+  RADAR = 'radar'
 }

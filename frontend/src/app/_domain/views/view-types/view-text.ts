@@ -121,7 +121,7 @@ export class ViewText extends View {
       parsedObj.viewRoot,
       null,
       parsedObj.aspect,
-      obj.text,
+      obj.text.toString(),
       obj.link || null,
       parsedObj.cssId,
       parsedObj.classList,
@@ -136,6 +136,6 @@ export class ViewText extends View {
 }
 
 export interface ViewTextDatabase extends ViewDatabase {
-  text: string;
+  text: number | string;
   link?: string;
 }
