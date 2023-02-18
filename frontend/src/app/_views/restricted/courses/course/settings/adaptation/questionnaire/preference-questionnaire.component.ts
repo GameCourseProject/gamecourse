@@ -3,7 +3,6 @@ import {ApiHttpService} from "../../../../../../../_services/api/api-http.servic
 import {NgForm} from "@angular/forms";
 import {Course} from "../../../../../../../_domain/courses/course";
 import {User} from "../../../../../../../_domain/users/user";
-import {GameElement} from "../../../../../../../_domain/adaptation/GameElement";
 import {clearEmptyValues} from "../../../../../../../_utils/misc/misc";
 import {AlertService, AlertType} from "../../../../../../../_services/alert.service";
 import {ActivatedRoute} from "@angular/router";
@@ -17,7 +16,7 @@ export class PreferenceQuestionnaireComponent implements OnInit{
 
   @Input() course: Course;
   @Input() user: User;
-  @Input() gameElement: GameElement;
+  @Input() gameElement: string;
 
   @Input() questionnaires: QuestionnaireManageData[];
 
@@ -29,7 +28,7 @@ export class PreferenceQuestionnaireComponent implements OnInit{
   loading = { action:false };
   mode: 'questionnaire';
 
-  questionnaireToManage: QuestionnaireManageData;
+  questionnaireToManage: QuestionnaireManageData = this.initQuestionnaireToManage();
 
   constructor(
     private api: ApiHttpService,
@@ -39,13 +38,14 @@ export class PreferenceQuestionnaireComponent implements OnInit{
   ngOnInit(): void {
     this.route.parent.params.subscribe();
     this.questionnaireToManage = this.initQuestionnaireToManage();
-    this.questionnaireToManage.element = this.gameElement.module;
+    //this.questionnaireToManage.element = this.gameElement.module;
   }
 
   async submitQuestionnaire(){
     if ((this.questionnaireToManage.q1 === true && this.questionnaireToManage.q2 && this.questionnaireToManage.q3) ||
       this.questionnaireToManage.q1 === false)
     {
+      this.questionnaireToManage.element = this.gameElement;
       await this.api.submitGameElementQuestionnaire(clearEmptyValues(this.questionnaireToManage)).toPromise();
 
       const index = this.questionnaires.findIndex(q => q.element === this.questionnaireToManage.element);
@@ -67,7 +67,7 @@ export class PreferenceQuestionnaireComponent implements OnInit{
       q1: null,
       q2: null,
       q3: null,
-      element: "",
+      element: this.gameElement,
       isAnswered: false
     };
   }

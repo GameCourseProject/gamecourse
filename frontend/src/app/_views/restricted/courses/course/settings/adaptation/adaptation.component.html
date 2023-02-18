@@ -189,19 +189,20 @@
 
   <div *ngIf="isQuestionnaire === false" class="w-full flex-wrap flex mb-3 mt-14">
     <span class="w-full"><strong>Your questionnaires:</strong></span>
-    <app-table
-      class="w-full"
-      [id] = "'gameElements'"
-      [classList]="'mt-5'"
-      [headers] = "headers"
-      [data] = "data"
-      [options] = "tableOptions"
-      [loading] = "loading.table"
-      [hasColumnFiltering] = "false"
-      [hasFooters]="false"
-      (btnClicked)="doActionOnTable('answer questionnaire', $event.row, $event.col)">
-    </app-table>
   </div>
+
+  <app-table
+    class="w-full"
+    [id] = "'gameElements'"
+    [classList]="'mt-5'"
+    [headers] = "headers"
+    [data] = "data"
+    [options] = "tableOptions"
+    [loading] = "loading.table"
+    [hasColumnFiltering] = "false"
+    [hasFooters]="false"
+    (btnClicked)="doActionOnTable('answer questionnaire', $event.row, $event.col)">
+  </app-table>
 </ng-template>
 
 
@@ -209,7 +210,7 @@
   *ngIf="mode"
   [course] = "course"
   [user] = "user"
-  [gameElement]="gameElementToActOn"
+  [gameElement]="gameElementToActOn.module"
   [questionnaires]="questionnaires"
   (questionnairesAfterSubmit)="this.questionnaires = $event; doAction('prepare non-admin page')">
 </app-preference-questionnaire>

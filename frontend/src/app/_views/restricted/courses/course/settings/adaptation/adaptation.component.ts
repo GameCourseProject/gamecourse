@@ -44,7 +44,7 @@ export class AdaptationComponent implements OnInit {
   option: string;
   //message: string;
 
-  isQuestionnaire: boolean;
+  isQuestionnaire: boolean = true;
   mode: 'questionnaire';
   questionnaires: QuestionnaireManageData[] = [];
 
@@ -226,7 +226,7 @@ export class AdaptationComponent implements OnInit {
       await this.buildTable();
 
       let filteredQuestionnaires = this.questionnaires.filter(function (item) { return !item.isAnswered });
-      if (filteredQuestionnaires.length === 0) { ModalService.openModal('all-questionnaires-submitted'); } // FIXME: DEBUG ONLY
+      if (filteredQuestionnaires.length === 0) { ModalService.openModal('all-questionnaires-submitted'); }
 
     } else if (action === 'show game elements'){
       ModalService.closeModal('all-questionnaires-submitted');

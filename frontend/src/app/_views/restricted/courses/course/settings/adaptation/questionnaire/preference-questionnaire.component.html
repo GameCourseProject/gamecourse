@@ -5,7 +5,7 @@
            [headerMarginBottom]="false"
            [actionInProgress]="loading.action"
            (submitBtnClicked)="q.onSubmit(null); submitQuestionnaire()"
-           (onClose)="resetQuestionnaireManage()">
+           (onClose)="this.mode = null; this.q.resetForm();">
 </app-modal>
 
 <ng-template #PREFERENCE_QUESTIONNAIRE>
@@ -17,7 +17,7 @@
 
     <!-- Question 1 -->
     <div class="w-full flex flex-wrap mb-3">
-      <span class="font-semibold w-full">Have you noticed any changes regarding the <strong><i>{{questionnaireToManage.element}}</i></strong> element lately?
+      <span class="font-semibold w-full">Have you noticed any changes regarding the <strong><i>{{gameElement}}</i></strong> element lately?
         <span class="text-secondary ml-1">*</span>
       </span>
       <div class="md:w-1/6">
