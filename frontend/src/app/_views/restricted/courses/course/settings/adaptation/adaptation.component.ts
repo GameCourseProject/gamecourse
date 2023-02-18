@@ -42,7 +42,7 @@ export class AdaptationComponent implements OnInit {
 
   activeButton = null;
   option: string;
-  message: string;
+  //message: string;
 
   isQuestionnaire: boolean;
   mode: 'questionnaire';
@@ -242,7 +242,7 @@ export class AdaptationComponent implements OnInit {
       await this.getPreviousPreference(gameElement);
     }
     else{
-      this.message="undefined";
+      //this.message="undefined";
       this.previousPreference = null;
       this.gameElementChildren = null;
     }
@@ -257,11 +257,14 @@ export class AdaptationComponent implements OnInit {
     if (preference.indexOf(' ') >= 0)
     {
       this.previousPreference = "none";
-      this.message = preference;
+      this.option = this.gameElementChildren[0];
+      this.activeButton = 0;
+      //this.message = preference;
 
     } else{
-      this.message = null;
+      //this.message = null;
       this.previousPreference = preference;
+      console.log(this.previousPreference);
       this.option = preference;
       //this.activeButton = this.gameElementChildren.findIndex(el => el === this.previousPreference);
     }
@@ -282,19 +285,36 @@ export class AdaptationComponent implements OnInit {
         this.selectedGameElement, this.previousPreference, newPreference, date).toPromise();
 
       this.previousPreference = newPreference;
-      this.message = null;
+      //this.message = null;
       AlertService.showAlert(AlertType.SUCCESS, 'New preference saved');
 
     } else AlertService.showAlert(AlertType.ERROR, 'Please select a new preference to save');
+  }
+
+  discardPreference(){
+    if (this.activeButton !== null){
+      this.activeButton= null;
+      AlertService.showAlert(AlertType.INFO, 'Preferences discarded');
+    }
   }
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  getButtonColor(index: number){
-    if (this.activeButton === index){ return "active";}
-    else return "primary";
+  getButtonColor(index: number, gameElement: string){
+    let color;
+    if (this.activeButton === index){
+      color = "active";
+    }
+    else if (this.activeButton !== index){
+      color = "primary";
+
+    } if (this.previousPreference === gameElement){
+      color = color + " border-solid border-4 border-success"
+    }
+
+    return color;
   }
 
   setButtonActive(index : number){
