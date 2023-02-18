@@ -7,6 +7,7 @@ import {clearEmptyValues} from "../../../../../../../_utils/misc/misc";
 import {AlertService, AlertType} from "../../../../../../../_services/alert.service";
 import {ActivatedRoute} from "@angular/router";
 import {ModalService} from "../../../../../../../_services/modal.service";
+import {GameElement} from "../../../../../../../_domain/adaptation/GameElement";
 
 @Component({
   selector: 'app-preference-questionnaire',
@@ -16,7 +17,7 @@ export class PreferenceQuestionnaireComponent implements OnInit{
 
   @Input() course: Course;
   @Input() user: User;
-  @Input() gameElement: string;
+  @Input() gameElement: GameElement;
 
   @Input() questionnaires: QuestionnaireManageData[];
 
@@ -45,7 +46,7 @@ export class PreferenceQuestionnaireComponent implements OnInit{
     if ((this.questionnaireToManage.q1 === true && this.questionnaireToManage.q2 && this.questionnaireToManage.q3) ||
       this.questionnaireToManage.q1 === false)
     {
-      this.questionnaireToManage.element = this.gameElement;
+      this.questionnaireToManage.element = this.gameElement.module;
       await this.api.submitGameElementQuestionnaire(clearEmptyValues(this.questionnaireToManage)).toPromise();
 
       const index = this.questionnaires.findIndex(q => q.element === this.questionnaireToManage.element);
@@ -67,7 +68,7 @@ export class PreferenceQuestionnaireComponent implements OnInit{
       q1: null,
       q2: null,
       q3: null,
-      element: this.gameElement,
+      element: "",
       isAnswered: false
     };
   }

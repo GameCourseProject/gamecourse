@@ -184,7 +184,8 @@
   <div *ngIf="isQuestionnaire" class="w-full flex-wrap flex mb-6">
     <app-header class="w-full" [classList]="'mt-2'" [subHeader]="true" [title]="'Welcome to Adaptation page!'"></app-header>
     <span class="w-full">Here you will be able to <strong>custom</strong> different game elements in GameCourse.</span>
-    <span class="w-full">But first... you have some unanswered questionnaires!</span>
+    <span *ngIf="questionnaires.length > 0" class="w-full">But first... you have some unanswered questionnaires!</span>
+    <span *ngIf="questionnaires.length === 0" class="w-full">But there's nothing to see here yet. Come back later!</span>
   </div>
 
   <div *ngIf="isQuestionnaire === false" class="w-full flex-wrap flex mb-3 mt-14">
@@ -192,6 +193,7 @@
   </div>
 
   <app-table
+    *ngIf="questionnaires.length > 0"
     class="w-full"
     [id] = "'gameElements'"
     [classList]="'mt-5'"
@@ -210,7 +212,7 @@
   *ngIf="mode"
   [course] = "course"
   [user] = "user"
-  [gameElement]="gameElementToActOn.module"
+  [gameElement]="gameElementToActOn"
   [questionnaires]="questionnaires"
   (questionnairesAfterSubmit)="this.questionnaires = $event; doAction('prepare non-admin page')">
 </app-preference-questionnaire>
