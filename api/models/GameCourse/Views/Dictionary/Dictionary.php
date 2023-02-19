@@ -158,7 +158,7 @@ class Dictionary
 
         // Mock data
         $this->mockData = $mockData;
-        $this->faker = Factory::create();
+        $this->faker = Factory::create(); // Check out https://fakerphp.github.io/
 
         // Call function
         return $library->{$funcName}(...$args);

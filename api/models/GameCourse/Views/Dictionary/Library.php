@@ -93,7 +93,7 @@ abstract class Library
         preg_match($pattern, $contents, $matches);
         $functions = array_map(function ($f) {
             if (substr($f, -1) == ",") $f = substr($f, 0, strlen($f) - 1);
-            return $f;
+            return trim($f);
         }, array_filter(explode(",\n", $matches[4]), function ($f) { return !empty($f); }));
         $functions[] = "new DFunction(\"$name\",
             \t\"$description\",
@@ -134,7 +134,8 @@ abstract class Library
         $contents = preg_replace($pattern, "return [];", $contents);
 
         // Remove function from library
-        $pattern = "/[\s\n\t\r]*public function XPEvolution\((.|\n)*?return new ValueNode(.)*[\s\n\t\r]*}/";
+        $pattern = "/[\s\n\t\r]*public function $name\((.*\s*)*?return new ValueNode(.)*[\s\n\t\r]*}/";
+        preg_match($pattern, $contents, $matches);
         $contents = preg_replace($pattern, "", $contents);
 
         file_put_contents($libraryFile, $contents);

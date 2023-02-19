@@ -75,11 +75,11 @@ class Leaderboard extends Module
 
         } else {
             \$course = Core::dictionary()->getCourse();
-            if (!\$course) throw new Exception(\"Can't calculate XP evolution: no course found.\");
+            if (!\$course) throw new Exception(\"Can't calculate leaderboard evolution: no course found.\");
 
             \$courseDates = \$course->getData(\"startDate, endDate\");
-            if (!\$courseDates[\"startDate\"]) throw new Exception(\"Can't calculate XP evolution: course doesn't have a start date.\");
-            if (!\$courseDates[\"endDate\"]) throw new Exception(\"Can't calculate XP evolution: course doesn't have an end date.\");
+            if (!\$courseDates[\"startDate\"]) throw new Exception(\"Can't calculate leaderboard evolution: course doesn't have a start date.\");
+            if (!\$courseDates[\"endDate\"]) throw new Exception(\"Can't calculate leaderboard evolution: course doesn't have an end date.\");
 
             \$userIds = array_map(function (\$user) { if (is_array(\$user)) return \$user[\"id\"]; return \$user->getId(); },
                 \$course->getStudents(true));
@@ -135,6 +135,9 @@ class Leaderboard extends Module
                 \$leaderboardEvolution[0][\"data\"] = \$cacheValue[0][\"data\"];
 
             } else {
+                \$course = Core::dictionary()->getCourse();
+                if (!\$course) throw new Exception(\"Can't calculate XP evolution: no course found.\");
+
                 // Calculate elements over time
                 \$XPOverTime = [];
                 \$badgesOverTime = [];
@@ -207,6 +210,7 @@ class Leaderboard extends Module
         return new ValueNode(\$leaderboardEvolution, Core::dictionary()->getLibraryById(CollectionLibrary::ID));",
             "args" => ["int \$userId", "string \$time"]
         ];
+
         return [$leaderboardEvolution];
     }
 

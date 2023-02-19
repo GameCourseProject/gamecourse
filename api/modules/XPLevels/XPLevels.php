@@ -218,7 +218,135 @@ class XPLevels extends Module
         return new ValueNode(\$XPEvolution, Core::dictionary()->getLibraryById(CollectionLibrary::ID));",
             "args" => ["int \$userId", "string \$time", "array \$compareWith = []"]
         ];
-        return [$XPEvolution];
+
+        $XPDistribution = [
+            "name" => "XPDistribution",
+            "description" => "Provides a distribution of the total XP of given users. Option for interval to group XP, max. XP and whether to show an average of each interval group.",
+            "returnType" => ReturnType::COLLECTION,
+            "function" => "\$XPDistribution = [[\"name\" => \"XP Distribution\", \"type\" => \"column\", \"data\" => []]];
+        if (\$showAverage) \$XPDistribution[] = [\"name\" => \"Average\", \"type\" => \"line\", \"data\" => []];
+
+        if (Core::dictionary()->mockData()) {
+            if (is_null(\$max)) \$max = 20000;
+            for (\$i = (\$interval === 1 ? 0 : \$interval); \$i <= \$max; \$i += \$interval) {
+                \$XPDistribution[0][\"data\"][] = [\"x\" => \$i, \"y\" => Core::dictionary()->faker()->numberBetween(0, 50)];
+                if (\$showAverage) \$XPDistribution[1][\"data\"][] = [\"x\" => \$i, \"y\" => Core::dictionary()->faker()->numberBetween(0, 50)];
+            }
+
+        } else {
+            \$course = Core::dictionary()->getCourse();
+            if (!\$course) throw new Exception(\"Can't calculate XP distribution: no course found.\");
+
+            \$userIds = array_map(function (\$user) { if (is_array(\$user)) return \$user[\"id\"]; return \$user->getId(); }, \$users);
+            \$nrUsers = count(\$userIds);
+
+            if (\$nrUsers !== 0) {
+                // Get each user XP
+                \$XPByUser = [];
+                foreach (\$userIds as \$userId) {
+                    \$XPModule = new \GameCourse\Module\XPLevels\XPLevels(\$course);
+                    \$XPByUser[] = \$XPModule->getUserXP(\$userId);
+                }
+
+                // Initialize data
+                if (is_null(\$max)) \$max = ceil(max(\$XPByUser) / \$interval) * \$interval;
+                for (\$i = (\$interval === 1 ? 0 : \$interval); \$i <= \$max; \$i += \$interval) {
+                    \$XPDistribution[0][\"data\"][] = [\"x\" => \$i, \"y\" => 0];
+                    if (\$showAverage) \$XPDistribution[1][\"data\"][] = [\"x\" => \$i, \"y\" => 0];
+                }
+
+                // Process data
+                foreach (\$XPByUser as \$userXP) {
+                    \$i = \$interval === 1 ? \$userXP : (\$userXP === \$interval ? floor(\$userXP / \$interval) - 1 : floor(\$userXP / \$interval));
+                    \$XPDistribution[0][\"data\"][\$i][\"y\"] += 1;
+                    if (\$showAverage) {
+                        if (\$XPDistribution[1][\"data\"][\$i][\"y\"] === 0) \$XPDistribution[1][\"data\"][\$i][\"y\"] = round(\$userXP / \$nrUsers);
+                        else \$XPDistribution[1][\"data\"][\$i][\"y\"] += round(\$userXP / \$nrUsers);
+                    }
+                }
+            }
+        }
+
+        return new ValueNode(\$XPDistribution, Core::dictionary()->getLibraryById(CollectionLibrary::ID));",
+            "args" => ["array \$users", "int \$interval = 1", "int \$max = null", "bool \$showAverage = false"]
+        ];
+
+        $XPOverview = [
+            "name" => "XPOverview",
+            "description" => "Provides an XP overview for a given user. Award types must follow the format: 'type: label'. Option to compare overview with other users.",
+            "returnType" => ReturnType::COLLECTION,
+            "function" => "\$XPOverview = [[\"name\" => \"You\", \"data\" => []]];
+
+        // Parse award types
+        \$awardTypesParsed = array_map(\"trim\", explode(\",\", \$awardTypes));
+        \$awardTypes = [];
+        foreach (\$awardTypesParsed as \$awardType) {
+            \$awardTypeParsed = array_map(\"trim\", explode(\":\", \$awardType));
+            \$awardTypes[\$awardTypeParsed[0]] = \$awardTypeParsed[1];
+        }
+
+        if (Core::dictionary()->mockData()) {
+            foreach(\$awardTypes as \$type => \$label) {
+                \$XPOverview[0][\"data\"][] = [\"x\" => \$label, \"y\" => Core::dictionary()->faker()->numberBetween(0, 3000)];
+            }
+            if (!empty(\$compareWith)) {
+                \$XPOverview[] = [\"name\" => \"Others\", \"data\" => []];
+                foreach(\$awardTypes as \$type => \$label) {
+                    \$XPOverview[1][\"data\"][] = [\"x\" => \$label, \"y\" => Core::dictionary()->faker()->numberBetween(0, 3000)];
+                }
+            }
+
+        } else {
+            \$course = Core::dictionary()->getCourse();
+            if (!\$course) throw new Exception(\"Can't calculate XP overview: no course found.\");
+
+            // Get user awards
+            \$awardsModule = new \GameCourse\Module\Awards\Awards(\$course);
+            \$awards = \$awardsModule->getUserAwards(\$userId);
+
+            // Calculate XP for each award type
+            foreach(\$awardTypes as \$type => \$label) {
+                \$totalXP = array_sum(array_column(array_filter(\$awards, function (\$award) use (\$type) {
+                    return \$award[\"type\"] === \$type;
+                }), \"reward\"));
+                \$XPOverview[0][\"data\"][] = [\"x\" => \$label, \"y\" => \$totalXP];
+            }
+
+            // Calculate others' avg. overview
+            if (!empty(\$compareWith)) {
+                \$userIds = array_values(array_filter(
+                    array_map(function (\$user) { if (is_array(\$user)) return \$user[\"id\"]; return \$user->getId(); }, \$compareWith),
+                    function (\$uId) use (\$userId) { return \$uId !== \$userId; } // NOTE: ignore user to compare with
+                ));
+                \$nrUsers = count(\$userIds);
+
+                if (\$nrUsers !== 0) {
+                    \$XPOverview[] = [\"name\" => \"Others\", \"data\" => []];
+
+                    foreach (\$userIds as \$i => \$uId) {
+                        // Get user awards
+                        \$awards = \$awardsModule->getUserAwards(\$uId);
+
+                        // Calculate XP for each award type
+                        \$t = 0;
+                        foreach(\$awardTypes as \$type => \$label) {
+                            \$totalUserXP = array_sum(array_column(array_filter(\$awards, function (\$award) use (\$type) {
+                                return \$award[\"type\"] === \$type;
+                            }), \"reward\"));
+                            if (\$i == 0) \$XPOverview[1][\"data\"][\$t] = [\"x\" => \$label, \"y\" => round(\$totalUserXP / \$nrUsers)];
+                            else \$XPOverview[1][\"data\"][\$t][\"y\"] += round(\$totalUserXP / \$nrUsers);
+                            \$t++;
+                        }
+                    }
+                }
+            }
+        }
+
+        return new ValueNode(\$XPOverview, Core::dictionary()->getLibraryById(CollectionLibrary::ID));",
+            "args" => ["int \$userId", "string \$awardTypes = \"\"", "array \$compareWith = []"]
+        ];
+
+        return [$XPEvolution, $XPDistribution, $XPOverview];
     }
 
     /**

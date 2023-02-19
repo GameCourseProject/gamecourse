@@ -182,7 +182,7 @@
        [classList]="classes"
        [attr.style]="view.styles">
 
-    <app-line-chart
+    <app-radar-chart
       [id]="'v' + view.uniqueId.toString()"
       [series]="view.data"
       [classList]="view.classList"
@@ -206,6 +206,6 @@
       [sparkline]="view.options?.sparkline || undefined"
       [toolbar]="view.options?.toolbar || undefined"
       [toolbarActions]="view.options?.toolbarActions || []">
-    </app-line-chart>
+    </app-radar-chart>
   </div>
 </ng-template>
