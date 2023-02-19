@@ -1,6 +1,7 @@
 <!-- Display version -->
 <ng-container *ngIf="!edit">
   <ng-container *ngIf="view.chartType === ChartType.BAR" [ngTemplateOutlet]="DISPLAY_BAR"></ng-container>
+  <ng-container *ngIf="view.chartType === ChartType.COMBO" [ngTemplateOutlet]="DISPLAY_COMBO"></ng-container>
   <ng-container *ngIf="view.chartType === ChartType.LINE" [ngTemplateOutlet]="DISPLAY_LINE"></ng-container>
   <ng-container *ngIf="view.chartType === ChartType.PROGRESS" [ngTemplateOutlet]="DISPLAY_PROGRESS"></ng-container>
   <ng-container *ngIf="view.chartType === ChartType.RADAR" [ngTemplateOutlet]="DISPLAY_RADAR"></ng-container>
@@ -29,6 +30,7 @@
       [height]="view.options?.height || 'auto'"
       [width]="view.options?.width || '100%'"
       [colors]="view.options?.colors || undefined"
+      [dataLabels]="view.options?.dataLabels || undefined"
       [highlight]="view.options?.highlight || undefined"
       [XAxisGrid]="view.options?.XAxisGrid || undefined"
       [YAxisGrid]="view.options?.YAxisGrid || undefined"
@@ -51,10 +53,60 @@
       [YAxisTickAmount]="view.options?.YAxisTickAmount || undefined"
       [YAxisReversed]="view.options?.YAxisReversed || undefined"
       [orientation]="view.options?.orientation || undefined"
+      [borderRadius]="view.options?.borderRadius || 6"
       [sparkline]="view.options?.sparkline || undefined"
       [toolbar]="view.options?.toolbar || undefined"
       [toolbarActions]="view.options?.toolbarActions || []">
     </app-bar-chart>
+  </div>
+</ng-template>
+
+<ng-template #DISPLAY_COMBO>
+  <div [attr.id]="view.cssId"
+       [classList]="classes"
+       [attr.style]="view.styles">
+
+    <app-combo-chart
+      [id]="'v' + view.uniqueId.toString()"
+      [series]="view.data"
+      [classList]="view.classList"
+      [annotations]="view.options?.annotations || undefined"
+      [height]="view.options?.height || 'auto'"
+      [width]="view.options?.width || '100%'"
+      [colors]="view.options?.colors || undefined"
+      [dataLabels]="view.options?.dataLabels || undefined"
+      [highlightBars]="view.options?.highlightBars || undefined"
+      [XAxisGrid]="view.options?.XAxisGrid || undefined"
+      [YAxisGrid]="view.options?.YAxisGrid || undefined"
+      [stripedGrid]="view.options?.stripedGrid || undefined"
+      [legend]="view.options?.legend || undefined"
+      [legendPosition]="view.options?.legendPosition || 'bottom'"
+      [markersSize]="view.options?.markersSize || 0"
+      [strokeCurve]="view.options?.strokeCurve || 'smooth'"
+      [strokeLineCap]="view.options?.strokeLineCap || 'round'"
+      [strokeWidth]="view.options?.strokeWidth || 4"
+      [title]="view.options?.title || undefined"
+      [subtitle]="view.options?.subtitle || undefined"
+      [align]="view.options?.align || 'left'"
+      [tooltip]="exists(view.options?.tooltip) ? view.options?.tooltip : true"
+      [tooltipXFormatter]="view.options?.tooltipXFormatter || undefined"
+      [tooltipYFormatter]="view.options?.tooltipYFormatter || undefined"
+      [XAxisType]="view.options?.XAxisType || undefined"
+      [XAxisCategories]="view.options?.XAxisCategories || undefined"
+      [XAxisLabel]="view.options?.XAxisLabel || undefined"
+      [XAxisTickAmount]="view.options?.XAxisTickAmount || undefined"
+      [YAxisLabels]="view.options?.YAxisLabels || undefined"
+      [YAxisMin]="view.options?.YAxisMin || undefined"
+      [YAxisMax]="view.options?.YAxisMax || undefined"
+      [YAxisTickAmount]="view.options?.YAxisTickAmount || undefined"
+      [YAxisReversed]="view.options?.YAxisReversed || undefined"
+      [YAxisOpposite]="view.options?.YAxisOpposite || undefined"
+      [barsOrientation]="view.options?.barsOrientation || undefined"
+      [barsBorderRadius]="view.options?.barsBorderRadius || 6"
+      [sparkline]="view.options?.sparkline || undefined"
+      [toolbar]="view.options?.toolbar || undefined"
+      [toolbarActions]="view.options?.toolbarActions || []">
+    </app-combo-chart>
   </div>
 </ng-template>
 
@@ -71,6 +123,7 @@
       [height]="view.options?.height || 'auto'"
       [width]="view.options?.width || '100%'"
       [colors]="view.options?.colors || undefined"
+      [dataLabels]="view.options?.dataLabels || undefined"
       [XAxisGrid]="view.options?.XAxisGrid || undefined"
       [YAxisGrid]="view.options?.YAxisGrid || undefined"
       [stripedGrid]="view.options?.stripedGrid || undefined"
@@ -136,6 +189,7 @@
       [height]="view.options?.height || 'auto'"
       [width]="view.options?.width || '100%'"
       [colors]="view.options?.colors || undefined"
+      [dataLabels]="view.options?.dataLabels || undefined"
       [stripedGrid]="view.options?.stripedGrid || undefined"
       [legend]="view.options?.legend || undefined"
       [legendPosition]="view.options?.legendPosition || 'bottom'"

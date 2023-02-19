@@ -2,7 +2,7 @@ import {Component, Input, OnInit, ViewChild} from '@angular/core';
 
 import {
   annotations,
-  ChartAnnotation,
+  ChartAnnotation, dataLabels,
   general,
   grid,
   legend,
@@ -75,6 +75,11 @@ export class LineChartComponent implements OnInit {
   // Colors
   @Input() colors?: string[];                                               // Colors for data series
 
+  // DataLabels
+  @Input() dataLabels?: boolean;                                            // Show data labels
+  @Input() dataLabelsOnSeries?: number[];                                   // Show data labels only on specific series
+  @Input() dataLabelsFormatter?: string;                                    // Data labels formatter expression
+
   // Grid
   @Input() XAxisGrid?: boolean;                                             // Show grid on X-axis
   @Input() YAxisGrid?: boolean;                                             // Show grid on Y-axis
@@ -140,7 +145,7 @@ export class LineChartComponent implements OnInit {
       chart: general(this.CHART_TYPE, this.height, this.width, TextColor(theme), this.sparkline, this.toolbar, this.toolbarActions),
       annotations: !this.sparkline ? annotations(this.annotations) : undefined,
       colors: this.colors,
-      dataLabels: {enabled: false},
+      dataLabels: dataLabels(this.dataLabels, this.dataLabelsOnSeries, this.dataLabelsFormatter),
       grid: grid(this.XAxisGrid || this.YAxisGrid, this.XAxisGrid, this.YAxisGrid, LineColor(theme),
         this.stripedGrid, {dark: BGDarkColor(theme), light: BGLightColor(theme)}, this.sparkline),
       legend: legend(this.legend, this.legendPosition),
@@ -152,7 +157,7 @@ export class LineChartComponent implements OnInit {
         theme === Theme.DARK ? 'dark' : 'light'),
       xaxis: xaxis(this.XAxisType, this.XAxisCategories, LineColor(theme), this.XAxisLabel,
         this.XAxisTickAmount || (this.series[0].data.length > 20 ? 10 : undefined)),
-      yaxis: yaxis(this.YAxisReversed, this.YAxisTickAmount, this.YAxisMin, this.YAxisMax, this.YAxisLabel)
+      yaxis: yaxis(this.YAxisReversed, this.YAxisTickAmount, this.YAxisMin, this.YAxisMax, this.YAxisLabel, false)
     };
 
     // Whenever theme changes, update colors

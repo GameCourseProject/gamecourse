@@ -1,6 +1,6 @@
 import {Component, Input, OnInit, ViewChild} from '@angular/core';
 
-import {general, legend, markers, stroke, subtitle, title, tooltip, update, xaxis} from "../ChartOptions";
+import {dataLabels, general, legend, markers, stroke, subtitle, title, tooltip, update, xaxis} from "../ChartOptions";
 import {BGDarkColor, BGLightColor, LineColor, TextColor} from "../ChartColors";
 
 import {ThemingService} from "../../../_services/theming/theming.service";
@@ -50,6 +50,11 @@ export class RadarChartComponent implements OnInit {
 
   // Colors
   @Input() colors?: string[];                                               // Colors for data series
+
+  // DataLabels
+  @Input() dataLabels?: boolean;                                            // Show data labels
+  @Input() dataLabelsOnSeries?: number[];                                   // Show data labels only on specific series
+  @Input() dataLabelsFormatter?: string;                                    // Data labels formatter expression
 
   // Grid
   @Input() stripedGrid?: boolean;                                           // Show striped grid
@@ -102,7 +107,7 @@ export class RadarChartComponent implements OnInit {
       series: this.series,
       chart: general(this.CHART_TYPE, this.height, this.width, TextColor(theme), this.sparkline, this.toolbar, this.toolbarActions),
       colors: this.colors,
-      dataLabels: {enabled: false},
+      dataLabels: dataLabels(this.dataLabels, this.dataLabelsOnSeries, this.dataLabelsFormatter),
       legend: legend(this.legend, this.legendPosition),
       markers: markers(this.markersSize),
       plotOptions: {

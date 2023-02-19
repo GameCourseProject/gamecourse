@@ -2,11 +2,12 @@ import {Component, Input, OnInit, ViewChild} from '@angular/core';
 
 import {
   annotations,
-  ChartAnnotation,
-  dataLabels,
+  ChartAnnotation, dataLabels,
   general,
   grid,
   legend,
+  markers,
+  stroke,
   subtitle,
   title,
   tooltip,
@@ -24,12 +25,18 @@ import {
   ApexAxisChartSeries,
   ApexChart,
   ApexDataLabels,
-  ApexGrid, ApexLegend, ApexPlotOptions,
-  ApexTitleSubtitle, ApexTooltip,
-  ApexXAxis, ApexYAxis,
+  ApexGrid,
+  ApexLegend,
+  ApexMarkers, ApexPlotOptions,
+  ApexStroke,
+  ApexTitleSubtitle,
+  ApexTooltip,
+  ApexXAxis,
+  ApexYAxis,
   ChartComponent
 } from 'ng-apexcharts';
 import {Theme} from "../../../_services/theming/themes-available";
+import {exists} from "../../../_utils/misc/misc";
 
 export type ChartOptions = {
   series: ApexAxisChartSeries;
@@ -40,22 +47,25 @@ export type ChartOptions = {
   grid: ApexGrid;
   legend: ApexLegend;
   plotOptions: ApexPlotOptions;
+  markers: ApexMarkers;
+  stroke: ApexStroke;
   subtitle: ApexTitleSubtitle;
   title: ApexTitleSubtitle;
   tooltip: ApexTooltip;
   xaxis: ApexXAxis;
-  yaxis: ApexYAxis;
+  yaxis: ApexYAxis[];
 };
 
 @Component({
-  selector: 'app-bar-chart',
-  templateUrl: './bar-chart.component.html'
+  selector: 'app-combo-chart',
+  templateUrl: './combo-chart.component.html'
 })
-export class BarChartComponent implements OnInit {
+export class ComboChartComponent implements OnInit {
 
   // Essentials
   @Input() id: string;                                                      // Unique ID
-  @Input() series: ApexAxisChartSeries;                                     // Data series to plot
+  @Input() series: {name?: string, type: 'line' | 'column' | 'area',        // Data series to plot
+    color?: string, data: number[]}[];
   @Input() classList?: string;                                              // Classes to add
 
   // Annotations
@@ -67,7 +77,7 @@ export class BarChartComponent implements OnInit {
 
   // Colors
   @Input() colors?: string[];                                               // Colors for data series
-  @Input() highlight?: {color: string, value: number | string}[]            // Highlight specific bars (only for X-axis type 'category')
+  @Input() highlightBars?: {color: string, value: number | string}[]        // Highlight specific bars (only for X-axis type 'category')
 
   // DataLabels
   @Input() dataLabels?: boolean;                                            // Show data labels
@@ -82,6 +92,14 @@ export class BarChartComponent implements OnInit {
   // Legend
   @Input() legend?: boolean;                                                // Show legend
   @Input() legendPosition?: 'top' | 'right' | 'bottom' | 'left' = 'bottom'; // Legend position
+
+  // Markers
+  @Input() markersSize?: number = 0;                                        // Data points marker size
+
+  // Stroke
+  @Input() strokeCurve?: 'smooth' | 'straight' | 'stepline' = 'smooth';     // Whether to draw smooth or straight lines
+  @Input() strokeLineCap?: 'butt' | 'square' | 'round' = 'round';           // Sets the start and end points of stroke
+  @Input() strokeWidth?: number = 4;                                        // Stroke width
 
   // Title & Subtitle
   @Input() title?: string;                                                  // Title for chart
@@ -100,15 +118,16 @@ export class BarChartComponent implements OnInit {
   @Input() XAxisTickAmount?: number;                                        // Number of ticks for X-Axis
 
   // Y-Axis
-  @Input() YAxisLabel?: string;                                             // Y-axis label
-  @Input() YAxisMin?: number;                                               // Lowest value for Y-axis
-  @Input() YAxisMax?: number;                                               // Highest value for Y-axis
-  @Input() YAxisTickAmount?: number;                                        // Number of ticks for Y-Axis
-  @Input() YAxisReversed?: boolean;                                         // Reverse Y-axis
+  @Input() YAxisLabels?: string[];                                          // Y-axis label
+  @Input() YAxisMin?: number[];                                             // Lowest value for Y-axis
+  @Input() YAxisMax?: number[];                                             // Highest value for Y-axis
+  @Input() YAxisTickAmount?: number[];                                      // Number of ticks for Y-Axis
+  @Input() YAxisReversed?: boolean[];                                       // Reverse Y-axis
+  @Input() YAxisOpposite?: boolean[];                                       // Place Y-axis on the right side
 
   // Extras
-  @Input() orientation?: 'vertical' | 'horizontal';                         // Bars orientation
-  @Input() borderRadius?: number = 6;                                       // Bars radius
+  @Input() barsOrientation?: 'vertical' | 'horizontal';                     // Bars orientation
+  @Input() barsBorderRadius?: number = 6;                                   // Bars border radius
   @Input() sparkline?: boolean;                                             // Hide everything but primary paths
   @Input() toolbar?: boolean;                                               // Show toolbar with actions
   @Input() toolbarActions?: ('download' | 'selection' | 'zoom' |            // Toolbar actions available
@@ -117,7 +136,7 @@ export class BarChartComponent implements OnInit {
   @ViewChild("chart") chart: ChartComponent;
   public chartOptions: Partial<ChartOptions>;
 
-  readonly CHART_TYPE = 'bar';
+  readonly CHART_TYPE = 'line';
 
   constructor(
     private themeService: ThemingService,
@@ -139,29 +158,34 @@ export class BarChartComponent implements OnInit {
       legend: legend(this.legend, this.legendPosition),
       plotOptions: {
         bar: {
-          horizontal: this.orientation === 'horizontal',
-          borderRadius: this.borderRadius,
+          horizontal: this.barsOrientation === 'horizontal',
+          borderRadius: this.barsBorderRadius,
           borderRadiusApplication: 'end',
           columnWidth: "80%",
-          distributed: !!this.highlight,
+          distributed: !!this.highlightBars,
 
         },
       },
+      markers: markers(this.markersSize),
+      stroke: stroke(this.strokeCurve, this.strokeLineCap, this.strokeWidth),
       subtitle: subtitle(this.subtitle, this.align),
       title: title(this.title, this.align),
       tooltip: tooltip(!this.sparkline && this.tooltip, {xaxis: this.tooltipXFormatter, yaxis: this.tooltipYFormatter},
         theme === Theme.DARK ? 'dark' : 'light'),
       xaxis: xaxis(this.XAxisType, this.XAxisCategories, LineColor(theme), this.XAxisLabel,
         this.XAxisTickAmount || (this.series[0].data.length > 20 ? 10 : undefined)),
-      yaxis: yaxis(this.YAxisReversed, this.YAxisTickAmount, this.YAxisMin, this.YAxisMax, this.YAxisLabel, false)
+      yaxis: this.series.map((s, i) => yaxis(exists(this.YAxisReversed) ? this.YAxisReversed[i] : undefined,
+        exists(this.YAxisTickAmount) ? this.YAxisTickAmount[i] : undefined, exists(this.YAxisMin) ? this.YAxisMin[i] : undefined,
+        exists(this.YAxisMax) ? this.YAxisMax[i] : undefined, exists(this.YAxisLabels) ? this.YAxisLabels[i] : undefined,
+        exists(this.YAxisOpposite) ? this.YAxisOpposite[i] : undefined))
     };
 
     // Highlight bars
-    if (this.highlight) {
+    if (this.highlightBars) {
       const primaryColor = this.chartOptions.colors?.length > 0 ? this.chartOptions.colors[0] : '#008FFB';
       this.chartOptions.colors = Array.from(Array(this.chartOptions.series[0].data.length).fill(primaryColor));
 
-      this.highlight.forEach(h => {
+      this.highlightBars.forEach(h => {
         const index = this.chartOptions.xaxis.categories.findIndex(val => val == h.value);
         this.chartOptions.colors[index] = h.color;
       });
@@ -176,4 +200,5 @@ export class BarChartComponent implements OnInit {
       }
     });
   }
+
 }

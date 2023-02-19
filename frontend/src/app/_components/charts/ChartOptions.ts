@@ -1,6 +1,6 @@
 import {
   ApexAnnotations,
-  ApexChart,
+  ApexChart, ApexDataLabels,
   ApexGrid,
   ApexLegend,
   ApexMarkers, ApexStroke,
@@ -134,12 +134,13 @@ export function xaxis(type: 'category' | 'datetime' | 'numeric', categories: (st
   };
 }
 
-export function yaxis(reversed: boolean, tickAmount: number, min: number, max: number, label: string): ApexYAxis {
+export function yaxis(reversed: boolean, tickAmount: number, min: number, max: number, label: string, opposite: boolean): ApexYAxis {
   return {
     reversed,
     tickAmount,
     min,
     max,
+    opposite,
     title: {
       text: label,
       style: {
@@ -148,6 +149,25 @@ export function yaxis(reversed: boolean, tickAmount: number, min: number, max: n
       }
     }
   };
+}
+
+
+/*** --------------------------------------------- ***/
+/*** ---------------- DataLabels ----------------- ***/
+/*** --------------------------------------------- ***/
+
+export function dataLabels(show: boolean, showOnSeries: number[], formatter: string): ApexDataLabels {
+  const dataLabels = {
+    enabled: show,
+    enabledOnSeries: showOnSeries,
+    formatter: (val: string | number | number[], opts?: any) => val as string | number
+  };
+
+  if (formatter) dataLabels.formatter = (val: string | number | number[], opts?: any) => {
+    return evaluate(formatter, val, opts);
+  };
+
+  return dataLabels;
 }
 
 
@@ -242,29 +262,29 @@ export function tooltip(show: boolean, formatter: {xaxis: string, yaxis: string}
   };
 
   if (formatter.xaxis) tooltip.x = {formatter(val: number, opts?: any): string {
-    return evaluate(formatter.xaxis, val, opts);
+    return evaluate(formatter.xaxis, val, opts).toString();
   }};
   if (formatter.yaxis) tooltip.y = {formatter(val: number, opts?: any): string {
-    return evaluate(formatter.yaxis, val, opts);
+    return evaluate(formatter.yaxis, val, opts).toString();
   }};
 
   return tooltip;
+}
 
-  /**
-   * Evaluates a formatter expression.
-   * @example expr = 'After (?value) days', val = 2 --> 'After 2 days'
-   *
-   * @param expression
-   * @param val
-   * @param opts
-   */
-  function evaluate(expression: string, val: number, opts?: any): string {
-    const matches = expression.matchAll(/\(.*?\)/g);
-    for (const match of matches) {
-      const expr = match[0].substr(1, match[0].length - 2).replaceAll('?value', val.toString());
-      const value = eval(expr);
-      expression = expression.replaceAll(match[0], value.toString());
-    }
-    return expression;
+/**
+ * Evaluates a formatter expression.
+ * @example expr = 'After (?value) days', val = 2 --> 'After 2 days'
+ *
+ * @param expression
+ * @param val
+ * @param opts
+ */
+function evaluate(expression: string, val: string | number | number[], opts?: any): string | number {
+  const matches = expression.matchAll(/\(.*?\)/g);
+  for (const match of matches) {
+    const expr = match[0].substr(1, match[0].length - 2).replaceAll('?value', val.toString());
+    const value = eval(expr);
+    expression = expression.replaceAll(match[0], value.toString());
   }
+  return expression;
 }

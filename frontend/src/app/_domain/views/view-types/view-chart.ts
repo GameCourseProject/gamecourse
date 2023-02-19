@@ -155,6 +155,7 @@ export interface ViewChartDatabase extends ViewDatabase {
 
 export enum ChartType {
   BAR = 'bar',
+  COMBO = 'combo',
   LINE = 'line',
   PROGRESS = 'progress',
   RADAR = 'radar'
