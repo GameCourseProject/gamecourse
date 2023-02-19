@@ -134,7 +134,7 @@ abstract class Library
         $contents = preg_replace($pattern, "return [];", $contents);
 
         // Remove function from library
-        $pattern = "/[\s\n\t\r]*public function $name\((.|\n)*?\t}/";
+        $pattern = "/[\s\n\t\r]*public function XPEvolution\((.|\n)*?return new ValueNode(.)*[\s\n\t\r]*}/";
         $contents = preg_replace($pattern, "", $contents);
 
         file_put_contents($libraryFile, $contents);

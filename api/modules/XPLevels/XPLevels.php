@@ -17,6 +17,7 @@ use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\Skills\Skills;
 use GameCourse\Module\Streaks\Streaks;
+use GameCourse\Views\Dictionary\ReturnType;
 
 /**
  * This is the XP & Levels module, which serves as a compartimentalized
@@ -84,6 +85,7 @@ class XPLevels extends Module
         }
 
         $this->initEvents();
+        $this->initProviders();
     }
 
     public function initEvents()
@@ -100,6 +102,123 @@ class XPLevels extends Module
             if ($courseId == $this->course->getId())
                 Core::database()->delete(self::TABLE_XP, ["course" => $courseId, "user" => $studentId]);
         }, self::ID);
+    }
+
+    public function providers(): array
+    {
+        $XPEvolution =  [
+            "name" => "XPEvolution",
+            "description" => "Provides total XP of a given user over time. Time options: 'day', 'week', 'month'. Option to compare evolution with other users.",
+            "returnType" => ReturnType::COLLECTION,
+            "function" => "\$XPEvolution = [[\"name\" => \"You\", \"data\" => []]];
+
+        if (Core::dictionary()->mockData()) {
+            for (\$i = 0; \$i <= 10; \$i++) {
+                \$XPEvolution[0][\"data\"][] = [\"x\" => \$i, \"y\" => Core::dictionary()->faker()->numberBetween(\$i * 500, (\$i + 1) * 500)];
+            }
+            if (!empty(\$compareWith)) {
+                \$XPEvolution[] = [\"name\" => \"Others\", \"data\" => []];
+                for (\$i = 0; \$i <= 10; \$i++) {
+                    \$XPEvolution[1][\"data\"][] = [\"x\" => \$i, \"y\" => Core::dictionary()->faker()->numberBetween(\$i * 500, (\$i + 1) * 500)];
+                }
+            }
+
+        } else {
+            \$course = Core::dictionary()->getCourse();
+            if (!\$course) throw new Exception(\"Can't calculate XP evolution: no course found.\");
+
+            \$courseDates = \$course->getData(\"startDate, endDate\");
+            if (!\$courseDates[\"startDate\"]) throw new Exception(\"Can't calculate XP evolution: course doesn't have a start date.\");
+            if (!\$courseDates[\"endDate\"]) throw new Exception(\"Can't calculate XP evolution: course doesn't have an end date.\");
+
+            \$XPModule = new \GameCourse\Module\XPLevels\XPLevels(\$course);
+            \$userXP = \$XPModule->getUserXP(\$userId);
+
+            // Get time passed
+            \$baseline = \$courseDates[\"startDate\"];
+            \$now = date(\"Y-m-d H:i:s\", time());
+            \$timePassed = Time::timeBetween(\$baseline, Time::earliest(\$now, \$courseDates[\"endDate\"]), \$time);
+
+            // Get data from cache if exists and is updated
+            \$cacheId = \"xp_evolution_u\$userId\";
+            \$cacheValue = Cache::get(\$course->getId(), \$cacheId);
+
+            // Calculate user evolution
+            if (!is_null(\$cacheValue) && end(\$cacheValue[0][\"data\"])[\"x\"] === \$timePassed && \$userXP === end(\$cacheValue[0][\"data\"])[\"y\"]) {
+                \$XPEvolution[0][\"data\"] = \$cacheValue[0][\"data\"];
+
+            } else {
+                // Get user awards
+                \$awardsModule = new \GameCourse\Module\Awards\Awards(\$course);
+                \$awards = array_filter(\$awardsModule->getUserAwards(\$userId), function (\$award) {
+                    return \$award[\"type\"] !== \GameCourse\Module\Awards\AwardType::TOKENS;
+                });
+
+                \$totalXP = 0;
+                \$t = 0;
+
+                // Calculate XP over time
+                while (\$t <= \$timePassed) {
+                    \$awardsOfTime = array_filter(\$awards, function (\$award) use (\$baseline, \$t, \$time) {
+                        return Time::timeBetween(\$baseline, \$award[\"date\"], \$time) == \$t;
+                    });
+                    foreach (\$awardsOfTime as \$award) { \$totalXP += \$award[\"reward\"]; }
+                    \$XPEvolution[0][\"data\"][] = [\"x\" => \$t, \"y\" => \$totalXP];
+                    \$t++;
+                }
+            }
+
+            // Calculate others' avg. evolution
+            if (!empty(\$compareWith)) {
+                \$userIds = array_values(array_filter(
+                    array_map(function (\$user) { if (is_array(\$user)) return \$user[\"id\"]; return \$user->getId(); }, \$compareWith),
+                    function (\$uId) use (\$userId) { return \$uId !== \$userId; } // NOTE: ignore user to compare with
+                ));
+                \$nrUsers = count(\$userIds);
+
+                if (\$nrUsers !== 0) {
+                    \$XPEvolution[] = [\"name\" => \"Others\", \"data\" => []];
+                    \$totalXP = intval(Core::database()->executeQuery(\"SELECT SUM(xp) FROM \" . \GameCourse\Module\XPLevels\XPLevels::TABLE_XP .
+                        \" WHERE course = \" . Core::dictionary()->getCourse()->getId() . \" AND user IN (\" . implode(\", \", \$userIds) . \");\")->fetch()[0]);
+
+                    if (!is_null(\$cacheValue) && end(\$cacheValue[0][\"data\"])[\"x\"] === \$timePassed && \$totalXP === end(\$cacheValue[1][\"data\"])[\"y\"]) {
+                        \$XPEvolution[1][\"data\"] = \$cacheValue[1][\"data\"];
+
+                    } else {
+                        foreach (\$userIds as \$i => \$uId) {
+                            // Get user awards
+                            \$awardsModule = new \GameCourse\Module\Awards\Awards(\$course);
+                            \$awards = array_filter(\$awardsModule->getUserAwards(\$uId), function (\$award) {
+                                return \$award[\"type\"] !== \GameCourse\Module\Awards\AwardType::TOKENS;
+                            });
+
+                            \$totalUserXP = 0;
+                            \$t = 0;
+
+                            // Calculate XP over time
+                            while (\$t <= \$timePassed) {
+                                \$awardsOfTime = array_filter(\$awards, function (\$award) use (\$baseline, \$t, \$time) {
+                                    return Time::timeBetween(\$baseline, \$award[\"date\"], \$time) == \$t;
+                                });
+                                foreach (\$awardsOfTime as \$award) { \$totalUserXP += \$award[\"reward\"]; }
+                                if (\$i == 0) \$XPEvolution[1][\"data\"][\$t] = [\"x\" => \$t, \"y\" => round(\$totalUserXP / \$nrUsers)];
+                                else \$XPEvolution[1][\"data\"][\$t][\"y\"] += round(\$totalUserXP / \$nrUsers);
+                                \$t++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Store in cache
+            \$cacheValue = \$XPEvolution;
+            Cache::store(\$course->getId(), \$cacheId, \$cacheValue);
+        }
+
+        return new ValueNode(\$XPEvolution, Core::dictionary()->getLibraryById(CollectionLibrary::ID));",
+            "args" => ["int \$userId", "string \$time", "array \$compareWith = []"]
+        ];
+        return [$XPEvolution];
     }
 
     /**
@@ -123,10 +242,14 @@ class XPLevels extends Module
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function disable()
     {
         $this->cleanDatabase();
         $this->removeEvents();
+        $this->removeProviders();
     }
 
 
