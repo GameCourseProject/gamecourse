@@ -80,8 +80,9 @@ export class BBTableComponent implements OnInit {
     this.tableOptions['lengthChange'] = this.view.lengthChange;
     this.tableOptions['paging'] = this.view.paging;
     this.tableOptions['info'] = this.view.info;
-    this.tableOptions['columnDefs'][0]['targets'] = Array.from(Array(this.headers.length).keys())
+    this.tableOptions['columnDefs'][0]['targets'] = Array.from(Array(this.headers.length).keys());
     this.tableOptions['columnDefs'][1]['orderable'] = this.view.ordering;
+    if (!this.view.ordering) this.tableOptions['columnDefs'][1]['targets'] = Array.from(Array(this.headers.length).keys());
 
     this.loading = false;
 
