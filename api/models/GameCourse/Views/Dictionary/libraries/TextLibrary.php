@@ -1,7 +1,6 @@
 <?php
 namespace GameCourse\Views\Dictionary;
 
-use GameCourse\Core\Core;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
 use Utils\Utils;
 
@@ -29,14 +28,25 @@ class TextLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
+            new DFunction("strip",
+                "Removes all whitespace from a text.",
+                ReturnType::TEXT,
+                $this
+            )
         ];
     }
 
     // NOTE: add new library functions bellow & update its
     //       metadata in 'getFunctions' above
 
+    /**
+     * Removes all whitespace from a text.
+     *
+     * @param string $text
+     * @return ValueNode
+     */
     public function strip(string $text): ValueNode
     {
-        return new ValueNode(Utils::trimWhitespace($text), Core::dictionary()->getLibraryById(TextLibrary::ID));
+        return new ValueNode(Utils::trimWhitespace($text), $this);
     }
 }
