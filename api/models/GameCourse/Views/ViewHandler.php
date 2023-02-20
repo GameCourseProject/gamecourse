@@ -470,6 +470,13 @@ class ViewHandler
             }
         }
 
+        // Compile events
+        if (isset($view["events"])) {
+            foreach ($view["events"] as &$event) {
+                self::compileExpression($event["action"]);
+            }
+        }
+
         // Compile view of a specific type
         $viewType = ViewType::getViewTypeById($view["type"]);
         $viewType->compile($view);
@@ -521,6 +528,13 @@ class ViewHandler
         // Ignore invisible views
         if ($view["visibilityType"] === VisibilityType::INVISIBLE ||
             ($view["visibilityType"] === VisibilityType::CONDITIONAL && !$view["visibilityCondition"])) return;
+
+        // Evaluate events
+        if (isset($view["events"])) {
+            foreach ($view["events"] as &$event) {
+                self::evaluateNode($event["action"], $visitor);
+            }
+        }
 
         // Evaluate view of a specific type
         $viewType = ViewType::getViewTypeById($view["type"]);
