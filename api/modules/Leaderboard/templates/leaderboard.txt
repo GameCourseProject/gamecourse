@@ -1,74 +1,33 @@
 [
     {
         "type": "block",
+        "class": "card card w-full bg-base-100 shadow-xl",
         "children": [
             [
                 {
                     "type": "block",
-                    "class": "gap-3 items-center mb-4",
-                    "direction": "horizontal",
+                    "class": "card-body",
                     "children": [
                         [
                             {
-                                "type": "icon",
-                                "class": "text-primary",
-                                "icon": "tabler-trophy",
-                                "size": "1.8rem"
-                            }
-                        ],
-                        [
-                            {
-                                "type": "text",
-                                "class": "font-bold",
-                                "style": "font-size: 1.5rem",
-                                "text": "Leaderboard"
-                            }
-                        ]
-                    ]
-                }
-            ],
-            [
-                {
-                    "type": "table",
-                    "footers": false,
-                    "paging": false,
-                    "lengthChange": false,
-                    "info": false,
-                    "ordering": false,
-                    "children": [
-                        [
-                            {
-                                "type": "row",
-                                "rowType": "header",
+                                "type": "block",
+                                "class": "gap-3 items-center mb-4",
+                                "direction": "horizontal",
                                 "children": [
                                     [
                                         {
-                                            "type": "text",
-                                            "text": "#"
+                                            "type": "icon",
+                                            "class": "text-primary",
+                                            "icon": "tabler-trophy",
+                                            "size": "1.8rem"
                                         }
                                     ],
                                     [
                                         {
                                             "type": "text",
-                                            "text": "Student"
-                                        }
-                                    ],
-                                    [
-                                        {
-                                            "type": "text",
-                                            "text": "Experience"
-                                        }
-                                    ],
-                                    [
-                                        {
-                                            "type": "text",
-                                            "text": "Level"
-                                        }
-                                    ],
-                                    [
-                                        {
-                                            "type": "text",
-                                            "text": "Badges"
+                                            "class": "font-bold",
+                                            "style": "font-size: 1.5rem",
+                                            "text": "Leaderboard"
                                         }
                                     ]
                                 ]
@@ -76,57 +35,87 @@
                         ],
                         [
                             {
-                                "type": "row",
-                                "loopData": "{users.getStudents(true).sort(\"DESC: {%userXP}, DESC: badges.getUserBadges(%item.id).count(), ASC: %item.name\")}",
-                                "rowType": "body",
-                                "variables": [
-                                    {
-                                        "name": "userXP",
-                                        "value": "{xp.getUserXP(%item.id)}",
-                                        "position": 0
-                                    },
-                                    {
-                                        "name": "userLevel",
-                                        "value": "{xpLevel.getLevelByXP(%userXP)}",
-                                        "position": 1
-                                    }
-                                ],
+                                "type": "table",
+                                "footers": false,
+                                "paging": false,
+                                "lengthChange": false,
+                                "info": false,
+                                "ordering": false,
                                 "children": [
                                     [
                                         {
-                                            "type": "text",
-                                            "class": "w-full block font-medium text-center text-primary",
-                                            "text": "{%index + 1}{system.if(%index == 0, \"st\", system.if(%index == 1, \"nd\", system.if(%index == 2, \"rd\", \"th\")))}"
+                                            "type": "row",
+                                            "rowType": "header",
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "text",
+                                                        "text": "#"
+                                                    }
+                                                ],
+                                                [
+                                                    {
+                                                        "type": "text",
+                                                        "text": "Student"
+                                                    }
+                                                ],
+                                                [
+                                                    {
+                                                        "type": "text",
+                                                        "text": "Experience"
+                                                    }
+                                                ],
+                                                [
+                                                    {
+                                                        "type": "text",
+                                                        "text": "Level"
+                                                    }
+                                                ],
+                                                [
+                                                    {
+                                                        "type": "text",
+                                                        "text": "Badges"
+                                                    }
+                                                ]
+                                            ]
                                         }
                                     ],
                                     [
                                         {
-                                            "type": "block",
-                                            "class": "items-center space-x-3",
-                                            "direction": "horizontal",
+                                            "type": "row",
+                                            "loopData": "{users.getStudents(true).sort(\"DESC: {%userXP}, DESC: badges.getUserBadges(%item.id).count(), ASC: %item.name\")}",
+                                            "rowType": "body",
+                                            "variables": [
+                                                {
+                                                    "name": "userXP",
+                                                    "value": "{xp.getUserXP(%item.id)}",
+                                                    "position": 0
+                                                },
+                                                {
+                                                    "name": "userLevel",
+                                                    "value": "{xpLevel.getLevelByXP(%userXP)}",
+                                                    "position": 1
+                                                }
+                                            ],
                                             "children": [
                                                 [
                                                     {
-                                                        "type": "image",
-                                                        "class": "mask mask-circle w-12 h-12",
-                                                        "src": "{%item.image}",
-                                                        "events": [
-                                                            {
-                                                                "type": "click",
-                                                                "action": "{actions.goToPage(pages.getPageByName(\"Profile\").id, %item.id)}"
-                                                            }
-                                                        ]
+                                                        "type": "text",
+                                                        "class": "w-full block font-medium text-center text-primary",
+                                                        "text": "{%index + 1}{system.if(%index == 0, \"st\", system.if(%index == 1, \"nd\", system.if(%index == 2, \"rd\", \"th\")))}"
                                                     }
                                                 ],
                                                 [
                                                     {
                                                         "type": "block",
+                                                        "class": "items-center space-x-3",
+                                                        "direction": "horizontal",
                                                         "children": [
                                                             [
                                                                 {
-                                                                    "type": "text",
-                                                                    "class": "font-semibold",
-                                                                    "text": "{system.if(bool.not(%item.nickname), %item.name, %item.nickname)}",
+                                                                    "type": "image",
+                                                                    "class": "mask mask-circle w-12 h-12",
+                                                                    "src": "{%item.image}",
                                                                     "events": [
                                                                         {
                                                                             "type": "click",
@@ -137,109 +126,129 @@
                                                             ],
                                                             [
                                                                 {
-                                                                    "type": "text",
-                                                                    "class": "text-sm opacity-75",
-                                                                    "text": "{%item.major}"
+                                                                    "type": "block",
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "font-semibold",
+                                                                                "text": "{system.if(bool.not(%item.nickname), %item.name, %item.nickname)}",
+                                                                                "events": [
+                                                                                    {
+                                                                                        "type": "click",
+                                                                                        "action": "{actions.goToPage(pages.getPageByName(\"Profile\").id, %item.id)}"
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "text-sm opacity-75",
+                                                                                "text": "{%item.major}"
+                                                                            }
+                                                                        ]
+                                                                    ]
                                                                 }
                                                             ]
                                                         ]
                                                     }
-                                                ]
-                                            ]
-                                        }
-                                    ],
-                                    [
-                                        {
-                                            "type": "block",
-                                            "class": "items-center justify-center gap-3",
-                                            "direction": "horizontal",
-                                            "children": [
+                                                ],
                                                 [
                                                     {
-                                                        "type": "text",
-                                                        "class": "text-sm font-medium",
-                                                        "text": "{%userXP} XP"
+                                                        "type": "block",
+                                                        "class": "items-center justify-center gap-3",
+                                                        "direction": "horizontal",
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "text",
+                                                                    "class": "text-sm font-medium",
+                                                                    "text": "{%userXP} XP"
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "chart",
+                                                                    "class": "h-9 w-9 mt-4",
+                                                                    "chartType": "line",
+                                                                    "data": "{providers.XPEvolution(%item.id, \"day\")}",
+                                                                    "options": {
+                                                                        "sparkline": true,
+                                                                        "strokeWidth": 2,
+                                                                        "colors": [
+                                                                            "{courses.getCourseById(%course).color}"
+                                                                        ]
+                                                                    }
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ],
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "class": "text-sm gap-1",
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "text",
+                                                                    "class": "font-medium",
+                                                                    "text": "Lvl. {%userLevel.number} - {%userLevel.description}"
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "text",
+                                                                    "class": "opacity-75",
+                                                                    "visibilityType": "conditional",
+                                                                    "visibilityCondition": "{%userLevel.number < %nrLevels - 1}",
+                                                                    "text": "{%nextLevel.minXP - %userXP} XP for Lvl. {%userLevel.number + 1}",
+                                                                    "variables": [
+                                                                        {
+                                                                            "name": "nrLevels",
+                                                                            "value": "{xpLevel.getLevels().count}",
+                                                                            "position": 0
+                                                                        },
+                                                                        {
+                                                                            "name": "nextLevel",
+                                                                            "value": "{xpLevel.getLevelByNumber(%userLevel.number + 1)}",
+                                                                            "position": 1
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        ]
                                                     }
                                                 ],
                                                 [
                                                     {
                                                         "type": "chart",
-                                                        "class": "h-9 w-9 mt-4",
-                                                        "chartType": "line",
-                                                        "data": "{providers.XPEvolution(%item.id, \"day\")}",
+                                                        "style": "max-width: 7rem; margin: auto",
+                                                        "chartType": "progress",
+                                                        "data": {
+                                                            "value": "%userBadges",
+                                                            "max": "%nrBadges"
+                                                        },
                                                         "options": {
-                                                            "sparkline": true,
-                                                            "strokeWidth": 2,
-                                                            "colors": [
-                                                                "{courses.getCourseById(%course).color}"
-                                                            ]
-                                                        }
-                                                    }
-                                                ]
-                                            ]
-                                        }
-                                    ],
-                                    [
-                                        {
-                                            "type": "block",
-                                            "class": "text-sm gap-1",
-                                            "children": [
-                                                [
-                                                    {
-                                                        "type": "text",
-                                                        "class": "font-medium",
-                                                        "text": "Lvl. {%userLevel.number} - {%userLevel.description}"
-                                                    }
-                                                ],
-                                                [
-                                                    {
-                                                        "type": "text",
-                                                        "class": "opacity-75",
-                                                        "visibilityType": "conditional",
-                                                        "visibilityCondition": "{%userLevel.number < %nrLevels - 1}",
-                                                        "text": "{%nextLevel.minXP - %userXP} XP for Lvl. {%userLevel.number + 1}",
+                                                            "labelMiddle": "{%userBadges} out of {%nrBadges}",
+                                                            "tooltip": "relative",
+                                                            "progressColor": "{courses.getCourseById(%course).color}"
+                                                        },
                                                         "variables": [
                                                             {
-                                                                "name": "nrLevels",
-                                                                "value": "{xpLevel.getLevels().count}",
+                                                                "name": "userBadges",
+                                                                "value": "{badges.getUserBadges(%item.id).count}",
                                                                 "position": 0
                                                             },
                                                             {
-                                                                "name": "nextLevel",
-                                                                "value": "{xpLevel.getLevelByNumber(%userLevel.number + 1)}",
+                                                                "name": "nrBadges",
+                                                                "value": "{badges.getBadges(true).count}",
                                                                 "position": 1
                                                             }
                                                         ]
                                                     }
                                                 ]
-                                            ]
-                                        }
-                                    ],
-                                    [
-                                        {
-                                            "type": "chart",
-                                            "style": "max-width: 7rem; margin: auto",
-                                            "chartType": "progress",
-                                            "data": {
-                                                "value": "{badges.getUserBadges(%item.id).count}",
-                                                "max": "{badges.getBadges(true).count}"
-                                            },
-                                            "options": {
-                                                "labelMiddle": "{%userBadges} out of {%nrBadges}",
-                                                "tooltip": "relative",
-                                                "progressColor": "{courses.getCourseById(%course).color}"
-                                            },
-                                            "variables": [
-                                                {
-                                                    "name": "userBadges",
-                                                    "value": "{badges.getUserBadges(%item.id).count}",
-                                                    "position": 0
-                                                },
-                                                {
-                                                    "name": "nrBadges",
-                                                    "value": "{badges.getBadges(true).count}",
-                                                    "position": 1
-                                                }
                                             ]
                                         }
                                     ]
