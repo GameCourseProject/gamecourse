@@ -6,6 +6,7 @@ use Faker\Factory;
 use Faker\Generator;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
+use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use Utils\Utils;
 
 /**
@@ -105,12 +106,23 @@ class Dictionary
 
     // Global variables to be used inside dictionary functions
     private $course;
+    private $visitor;
     private $mockData;
     private $faker;
 
     public function getCourse(): ?Course
     {
         return $this->course;
+    }
+
+    public function getVisitor(): EvaluateVisitor
+    {
+        return $this->visitor;
+    }
+
+    public function setVisitor(EvaluateVisitor $visitor)
+    {
+        $this->visitor = $visitor;
     }
 
     public function mockData(): bool

@@ -508,7 +508,9 @@ abstract class Module
      * @return void
      */
     protected function initTemplates()
-    {}
+    {
+        // TODO
+    }
 
     /**
      * Sets events to listen to right from the start and their

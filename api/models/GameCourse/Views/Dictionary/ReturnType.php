@@ -14,6 +14,7 @@ class ReturnType
     const TEXT = "text";
     const NUMBER = "number";
     const COLLECTION = "collection";
+    const TIME = "time";
     const BOOLEAN = "boolean";
     const OBJECT = "object";
     const MIXED = "mixed";

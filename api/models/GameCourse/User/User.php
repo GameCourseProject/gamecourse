@@ -119,6 +119,7 @@ class User
         if ($field == "*") $fields = "u.*, a.username, a.auth_service, a.lastLogin";
         else $fields = str_replace("id", "u.id", $field);
         $data = Core::database()->select($table, $where, $fields);
+        if ($field == "*" || str_contains($field, "image")) $data["image"] = $this->getImage();
         return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
     }
 
@@ -376,7 +377,11 @@ class User
             "u.*, a.username, a.auth_service, a.lastLogin",
             "id"
         );
-        foreach ($users as &$user) { $user = self::parse($user); }
+        foreach ($users as &$user) {
+            $u = new User($user["id"]);
+            $user["image"] = $u->getImage();
+            $user = self::parse($user);
+        }
         return $users;
     }
 

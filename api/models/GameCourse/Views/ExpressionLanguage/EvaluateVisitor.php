@@ -4,6 +4,7 @@ namespace GameCourse\Views\ExpressionLanguage;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Views\Dictionary\CollectionLibrary;
 
 class EvaluateVisitor extends Visitor
 {
@@ -25,16 +26,9 @@ class EvaluateVisitor extends Visitor
         return $this->mockData;
     }
 
-    /**
-     * @throws Exception
-     */
     public function addParam(string $name, $value)
     {
-        // NOTE: a view and/or its children cannot have variables with same name
-        if (isset($this->params[$name]))
-            throw new Exception("Parameter with name '" . $name . "' already exists in visitor.");
-
-        $this->params[$name] = $value;
+        if (!isset($this->params[$name])) $this->params[$name] = $value;
     }
 
 
@@ -65,21 +59,34 @@ class EvaluateVisitor extends Visitor
         else $args = $node->getArgs()->accept($this)->getValue();
 
         $context = $node->getContext();
-        $libraryId = $node->getLib();
+        $library = $node->getLibrary();
 
         if ($context) {
             $context = $context->accept($this);
             $contextVal = $context->getValue();
 
             // If no library is set, gets the library of the context
-            if (!$libraryId) {
-                $libraryId = $context->getLibrary()->getId();
-                $node->setLib($libraryId);
+            if (!$library) {
+                $library = $context->getLibrary();
+                $node->setLibrary($library);
+            }
+
+            // If context is a collection, set libraries
+            if (is_array($contextVal) && array_key_exists(0, $contextVal)) {
+                // Set library of collection items
+                $contextVal = array_map(function ($item) use ($library) {
+                    $item["libraryOfItem"] = $library;
+                    return $item;
+                }, $contextVal);
+
+                // Set library of function
+                $library = Core::dictionary()->getLibraryById(CollectionLibrary::ID);
+                $node->setLibrary($library);
             }
         } else $contextVal = null;
 
         $course = $this->params["course"] ? Course::getCourseById($this->params["course"]) : null;
-        return Core::dictionary()->callFunction($course, $libraryId, $funcName, $args, $contextVal, $this->mockData);
+        return Core::dictionary()->callFunction($course, $library->getId(), $funcName, $args, $contextVal, $this->mockData);
     }
 
     /**

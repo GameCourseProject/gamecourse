@@ -1,17 +1,18 @@
 <?php
 namespace GameCourse\Views\ExpressionLanguage;
 
+use GameCourse\Core\Core;
+
 class FunctionOp extends Node {
     private $name;
     private $args;
     private $context;
-    private $libraryId;
 
     public function __construct(string $name, ?ArgumentSequence $args, ?string $libraryId, Node $context = null) {
         $this->name = $name;
         $this->args = $args;
         $this->context = $context;
-        $this->libraryId = $libraryId;
+        $this->setLibrary($libraryId ? Core::dictionary()->getLibraryById($libraryId) : null);
     }
 
     public function getName(): string
@@ -27,16 +28,6 @@ class FunctionOp extends Node {
     public function getContext(): ?Node
     {
         return $this->context;
-    }
-
-    public function getLib(): ?string
-    {
-        return $this->libraryId;
-    }
-
-    public function setLib(?string $libraryId): ?string
-    {
-        return $this->libraryId = $libraryId;
     }
 
     public function accept(Visitor $visitor): ValueNode {

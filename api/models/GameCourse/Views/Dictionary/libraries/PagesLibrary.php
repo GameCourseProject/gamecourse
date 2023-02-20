@@ -1,11 +1,12 @@
 <?php
 namespace GameCourse\Views\Dictionary;
 
+use Exception;
 use GameCourse\Core\Core;
-use GameCourse\Course\Course;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use GameCourse\Views\Page\Page;
 
-class CoursesLibrary extends Library
+class PagesLibrary extends Library
 {
     public function __construct()
     {
@@ -17,9 +18,9 @@ class CoursesLibrary extends Library
     /*** ------------------ Metadata ------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    const ID = "courses";    // NOTE: must match the name of the class
-    const NAME = "Courses";
-    const DESCRIPTION = "Provides access to information regarding courses.";
+    const ID = "pages";    // NOTE: must match the name of the class
+    const NAME = "Pages";
+    const DESCRIPTION = "Provides access to information regarding course pages.";
 
 
     /*** ----------------------------------------------- ***/
@@ -28,7 +29,9 @@ class CoursesLibrary extends Library
 
     public function getFunctions(): ?array
     {
-        return [];
+        return [
+            // TODO
+        ];
     }
 
     // NOTE: add new library functions bellow & update its
@@ -37,38 +40,39 @@ class CoursesLibrary extends Library
     /*** --------- Getters ---------- ***/
 
     /**
-     * Gets a given course's color.
+     * Gets a given page's ID in the system.
      *
-     * @param $course
+     * @param $page
      * @return ValueNode
-     * @throws \Exception
+     * @throws Exception
      */
-    public function color($course): ValueNode
+    public function id($page): ValueNode
     {
-        // NOTE: on mock data, course will be mocked
-        if (is_array($course)) $color = $course["color"];
-        else $color = $course->getColor();
-        return new ValueNode($color, Core::dictionary()->getLibraryById(TextLibrary::ID));
+        // NOTE: on mock data, user will be mocked
+        if (is_array($page)) $pageId = $page["id"];
+        else $pageId = $page->getId();
+        return new ValueNode($pageId, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
 
     /*** --------- General ---------- ***/
 
     /**
-     * Gets a course by its ID.
+     * Gets a page by its name.
      *
-     * @param int $courseId
+     * @param string $name
      * @return ValueNode
      */
-    public function getCourseById(int $courseId): ValueNode
+    public function getPageByName(string $name): ValueNode
     {
         if (Core::dictionary()->mockData()) {
-            // TODO: mock course
-            $course = [];
+            // TODO: mock page
+            $page = [];
 
         } else {
-            $course = Course::getCourseById($courseId);
+            $courseId = Core::dictionary()->getCourse()->getId();
+            $page = Page::getPageByName($courseId, $name);
         }
-        return new ValueNode($course, $this);
+        return new ValueNode($page, $this);
     }
 }

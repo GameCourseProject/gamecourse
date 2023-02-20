@@ -1060,7 +1060,7 @@ class Badges extends Module
     {
         $courseId = $this->getCourse()->getId();
 
-        $cacheId = "badge_progression_b" . $badgeId . "_u" . $userId;
+        $cacheId = "badge_progression_u" . $userId . "_b" . $badgeId;
         $cacheValue = Cache::get($courseId, $cacheId);
 
         if (AutoGame::isRunning($courseId) && !is_null($cacheValue)) {
@@ -1069,7 +1069,14 @@ class Badges extends Module
             return $cacheValue;
 
         } else {
-            // TODO
+            $progression = Core::database()->select(self::TABLE_BADGE_PROGRESSION,
+                ["user" => $userId, "badge" => $badgeId], "COUNT(*)");
+
+            // Store in cache
+            $cacheValue = $progression;
+            Cache::store($courseId, $cacheId, $cacheValue);
+
+            return $progression;
         }
     }
 

@@ -28,17 +28,27 @@ class MathLibrary extends Library
     {
         return [
             new DFunction("abs",
-                "Returns the absolute value of an integer.",
+                "Returns the absolute value of a number.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("min",
-                "Returns the smallest number between two integers.",
+                "Returns the smallest number between two numbers.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("max",
-                "Returns the greatest number between two integers.",
+                "Returns the greatest number between two numbers.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("floor",
+                "Returns the next lower number by rounding down if necessary.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("ceil",
+                "Returns the next highest number by rounding up if necessary.",
                 ReturnType::NUMBER,
                 $this
             )
@@ -49,11 +59,7 @@ class MathLibrary extends Library
     //       metadata in 'getFunctions' above
 
     /**
-     * Returns the absolute value of an integer.
-     *
-     * @example integer.abs(1) --> 1
-     * @example integer.abs(-1) --> 1
-     * @example integer.abs(0) --> 0
+     * Returns the absolute value of a number.
      *
      * @param int $value
      * @return ValueNode
@@ -64,10 +70,7 @@ class MathLibrary extends Library
     }
 
     /**
-     * Returns the smallest number between two integers.
-     *
-     * @example system.min(1, 2) --> 1
-     * @example system.min(2, 0) --> 0
+     * Returns the smallest number between two numbers.
      *
      * @param int $value1
      * @param int $value2
@@ -79,10 +82,7 @@ class MathLibrary extends Library
     }
 
     /**
-     * Returns the greatest number between two integers.
-     *
-     * @example system.max(1, 2) --> 2
-     * @example system.max(0, -3) --> -3
+     * Returns the greatest number between two numbers.
      *
      * @param int $value1
      * @param int $value2
@@ -91,5 +91,27 @@ class MathLibrary extends Library
     public function max(int $value1, int $value2): ValueNode
     {
         return new ValueNode(max($value1, $value2), $this);
+    }
+
+    /**
+     * Returns the next lower number by rounding down if necessary.
+     *
+     * @param int $value
+     * @return ValueNode
+     */
+    public function floor(int $value): ValueNode
+    {
+        return new ValueNode(floor($value), $this);
+    }
+
+    /**
+     * Returns the next highest number by rounding up if necessary.
+     *
+     * @param int $value
+     * @return ValueNode
+     */
+    public function ceil(int $value): ValueNode
+    {
+        return new ValueNode(ceil($value), $this);
     }
 }

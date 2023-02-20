@@ -50,6 +50,17 @@ class Level
         return $this->getData("description");
     }
 
+    public function getNumber(): int
+    {
+        $minXP = $this->getMinXP();
+
+        $levels = self::getLevels($this->getCourse()->getId(), "minXP DESC");
+        foreach ($levels as $level) {
+            if ($minXP >= $level["minXP"]) return $level["number"];
+        }
+        return 0;
+    }
+
     /**
      * Gets level data from the database.
      *
@@ -182,6 +193,22 @@ class Level
     }
 
     /**
+     * Gets a level by its number.
+     * Returns null if level doesn't exist.
+     *
+     * @param int $courseId
+     * @param int $number
+     * @return Level|null
+     */
+    public static function getLevelByNumber(int $courseId, int $number): ?Level
+    {
+        $levels = self::getLevels($courseId);
+        $level = new Level($levels[$number]["id"]);
+        if (!$level->exists()) return null;
+        else return $level;
+    }
+
+    /**
      * Gets level 0.
      *
      * @param int $courseId
@@ -207,8 +234,10 @@ class Level
     {
         $field = "id, minXP, description";
         $levels = Core::database()->selectMultiple(self::TABLE_LEVEL, ["course" => $courseId], $field, $orderBy);
+        $nrLevels = count($levels);
         foreach ($levels as $i => &$level) {
-            $level["number"] = $i;
+            $level["number"] = str_contains($orderBy, "minXP DESC") || str_contains($orderBy, "minXP desc") ?
+                $nrLevels - ($i + 1) : $i;
             $level = self::parse($level);
         }
         return $levels;

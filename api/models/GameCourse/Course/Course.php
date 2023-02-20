@@ -669,7 +669,11 @@ class Course
             "u.*, a.username, a.auth_service, a.lastLogin, cu.lastActivity, cu.isActive as isActiveInCourse",
             "u.id"
         );
-        foreach ($courseUsers as &$courseUser) { $courseUser = CourseUser::parse($courseUser); }
+        foreach ($courseUsers as &$courseUser) {
+            $cu = CourseUser::getCourseUserById($courseUser["id"], $this);
+            $courseUser["image"] = $cu->getImage();
+            $courseUser = CourseUser::parse($courseUser);
+        }
         return $courseUsers;
     }
 
@@ -701,7 +705,11 @@ class Course
             "u.*, a.username, a.auth_service, a.lastLogin, cu.lastActivity, cu.isActive as isActiveInCourse",
             "u.id"
         );
-        foreach ($courseUsers as &$courseUser) { $courseUser = CourseUser::parse($courseUser); }
+        foreach ($courseUsers as &$courseUser) {
+            $cu = CourseUser::getCourseUserById($courseUser["id"], $this);
+            $courseUser["image"] = $cu->getImage();
+            $courseUser = CourseUser::parse($courseUser);
+        }
         return $courseUsers;
     }
 
@@ -748,7 +756,11 @@ class Course
             "u.*, a.username, a.auth_service, a.lastLogin",
             "u.id"
         );
-        foreach ($users as &$user) { $user = User::parse($user); }
+        foreach ($users as &$user) {
+            $u = User::getUserById($user["id"]);
+            $user["image"] = $u->getImage();
+            $user = User::parse($user);
+        }
         return $users;
     }
 

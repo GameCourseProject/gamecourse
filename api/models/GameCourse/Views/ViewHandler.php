@@ -338,10 +338,12 @@ class ViewHandler
             // Evaluate each view
             $mockData = !is_array($populate);
             foreach ($viewTree as &$view) {
-                self::evaluateView($view, new EvaluateVisitor(
+                $visitor = new EvaluateVisitor(
                     $mockData ? ["course" => 0, "viewer" => 0, "user" => 0] : $populate,
                     $mockData
-                ));
+                );
+                Core::dictionary()->setVisitor($visitor);
+                self::evaluateView($view, $visitor);
             }
         }
 
@@ -511,10 +513,14 @@ class ViewHandler
         }
 
         // Evaluate basic parameters
-        $params = ["cssId", "class", "style", "visibilityCondition", "loopData"];
+        $params = ["cssId", "class", "style", "visibilityCondition"];
         foreach ($params as $param) {
             if (isset($view[$param])) self::evaluateNode($view[$param], $visitor);
         }
+
+        // Ignore invisible views
+        if ($view["visibilityType"] === VisibilityType::INVISIBLE ||
+            ($view["visibilityType"] === VisibilityType::CONDITIONAL && !$view["visibilityCondition"])) return;
 
         // Evaluate view of a specific type
         $viewType = ViewType::getViewTypeById($view["type"]);
@@ -542,8 +548,13 @@ class ViewHandler
      */
     public static function evaluateLoop(array &$view, EvaluateVisitor $visitor)
     {
-        // Get library of collection items
-        $library = Core::dictionary()->getLibraryById($view["loopData"]->getLib());
+        // Add variables as visitor params
+        // NOTE: needs to be 1st so that expressions that use any of the variables can be evaluated
+        if (isset($view["variables"])) {
+            foreach ($view["variables"] as $variable) {
+                $visitor->addParam($variable["name"], $variable["value"]);
+            }
+        }
 
         // Get collection to loop
         self::evaluateNode($view["loopData"], $visitor);
@@ -563,7 +574,7 @@ class ViewHandler
             $newVisitor = new EvaluateVisitor($visitor->getParams(), $visitor->mockData());
 
             // Update visitor params with %item and %index
-            $newVisitor->addParam("item", new ValueNode($collection[$i], $library));
+            $newVisitor->addParam("item", new ValueNode($collection[$i], $collection[$i]["libraryOfItem"]));
             $newVisitor->addParam("index", $i);
 
             // Evaluate new view
@@ -721,11 +732,12 @@ class ViewHandler
 
     private static function insertVariablesInView(array $view)
     {
-        $notAllowed = ["course", "viewer", "user", "item", "index", "value"];
+        // NOTE: a view and/or its children cannot have variables with same name
+        $notAllowed = ["course", "viewer", "user", "item", "index", "value", "sort"];
         if (isset($view["variables"])) {
-            foreach ($view["variables"] as $variable) {
-                if (!in_array($variable["name"], $notAllowed))
-                    Variable::addVariable($view["id"], $variable["name"], $variable["value"], $variable["position"]);
+            foreach ($view["variables"] as $i => $variable) {
+                if (!in_array($variable["name"], $notAllowed) && !str_starts_with($variable["name"], "sort"))
+                    Variable::addVariable($view["id"], $variable["name"], $variable["value"], $i);
             }
         }
     }

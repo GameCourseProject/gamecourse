@@ -1,11 +1,13 @@
 <?php
 namespace GameCourse\Views\ExpressionLanguage;
 
+use GameCourse\Views\Dictionary\Library;
+
 class GenericBinaryOp extends BinaryOp {
     private $op;
 
-    public function __construct($op, $lhs, $rhs) {
-        parent::__construct($lhs, $rhs);
+    public function __construct($op, $lhs, $rhs, ?Library $library = null) {
+        parent::__construct($lhs, $rhs, $library);
         $this->op = $op;
     }
 
