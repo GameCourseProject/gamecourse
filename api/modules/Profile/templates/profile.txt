@@ -1,5 +1,9 @@
 [
     {
+        "aspect" => {
+            "viewerRole": null,
+            "userRole": "Student"
+        },
         "type": "block",
         "class": "card bg-base-100 shadow-xl",
         "variables": [
@@ -472,7 +476,7 @@
                                                                                                             [
                                                                                                                 {
                                                                                                                     "type": "image",
-                                                                                                                    "class": "w-4 h-4 mt-1",
+                                                                                                                    "class": "w-4 h-4 mt-2",
                                                                                                                     "src": "{vc.getImage()}"
                                                                                                                 }
                                                                                                             ]
@@ -694,7 +698,7 @@
                                                                                                             [
                                                                                                                 {
                                                                                                                     "type": "image",
-                                                                                                                    "class": "w-4 h-4 mt-1",
+                                                                                                                    "class": "w-4 h-4 mt-2",
                                                                                                                     "src": "{vc.getImage()}"
                                                                                                                 }
                                                                                                             ]

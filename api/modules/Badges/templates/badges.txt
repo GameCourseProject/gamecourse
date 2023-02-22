@@ -1,5 +1,9 @@
 [
     {
+        "aspect" => {
+            "viewerRole": null,
+            "userRole": "Student"
+        },
         "type": "block",
         "class": "card bg-base-100 shadow-xl",
         "variables": [
