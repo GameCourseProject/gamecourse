@@ -1525,7 +1525,7 @@ tags:
         $this->assertIsArray($levels);
         $this->assertCount(3, $levels);
 
-        $keys = ["id", "number", "description", "goal", "reward", "tokens"];
+        $keys = ["id", "number", "description", "goal", "reward", "tokens", "number"];
         $nrKeys = count($keys);
 
         $lvl1 = $levels[0];

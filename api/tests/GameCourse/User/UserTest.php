@@ -478,7 +478,7 @@ class UserTest extends TestCase
         $this->assertEquals(["id" => intval(Core::database()->select(User::TABLE_USER, ["studentNumber" => 123456], "id")),
             "name" => "John Smith Doe", "username" => "ist123456", "auth_service" => AuthService::FENIX, "email" => "johndoe@email.com",
             "studentNumber" => 123456, "nickname" => "John Doe", "major" => "MEIC-A", "isAdmin" => false, "isActive" => true,
-            "lastLogin" => null, "theme" => null],
+            "lastLogin" => null, "theme" => null, "image" => null],
             $user->getData());
     }
 
@@ -820,7 +820,7 @@ class UserTest extends TestCase
             $user = new User(1);
             $this->assertEquals(["id" => 1, "name" => "Ana Gonçalves", "username" => "ist100000", "auth_service" => AuthService::FENIX,
                 "email" => "ana.goncalves@gmail.com", "studentNumber" => 10000, "nickname" => "Ana G", "major" => "MEIC-A",
-                "isAdmin" => false, "isActive" => false, "lastLogin" => null, "theme" => null], $user->getData());
+                "isAdmin" => false, "isActive" => false, "lastLogin" => null, "theme" => null, "image" => null], $user->getData());
         }
     }
 

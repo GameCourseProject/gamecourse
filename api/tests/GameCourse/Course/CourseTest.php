@@ -1615,7 +1615,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($courseUsers);
         $this->assertCount(3, $courseUsers);
 
-        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($courseUsers as $i => $courseUser) {

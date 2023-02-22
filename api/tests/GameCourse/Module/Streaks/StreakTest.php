@@ -1027,7 +1027,8 @@ class StreakTest extends TestCase
         $this->assertCount(2, $streaks);
 
         $keys = ["id", "course", "name", "description", "color", "goal", "periodicityGoal", "periodicityNumber",
-            "periodicityTime", "periodicityType", "reward", "tokens", "isRepeatable", "isExtra", "isActive", "rule", "image"];
+            "periodicityTime", "periodicityType", "reward", "tokens", "isRepeatable", "isExtra", "isActive", "rule", "image",
+            "svg", "isPeriodic"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($streaks as $i => $streak) {

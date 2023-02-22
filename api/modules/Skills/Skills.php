@@ -460,7 +460,10 @@ class Skills extends Module
                     $name = $skill->getName();
                     return $item["description"] === "Skill Tree, Re: $name";
                 })); // FIXME: create function to get attempts
-            $skillData["cost"] = $skill->getSkillCostForUser($userId);
+
+            $VCModule = new VirtualCurrency($course);
+            if ($VCModule->isEnabled()) $skillData["cost"] = $skill->getSkillCostForUser($userId);
+
             $skills[] = $skillData;
         }
         return $skills;

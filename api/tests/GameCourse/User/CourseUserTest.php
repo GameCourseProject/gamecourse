@@ -272,7 +272,7 @@ class CourseUserTest extends TestCase
         $this->assertEquals(["id" => 2, "name" => "Johanna Smith Doe", "username" => "ist654321", "auth_service" => AuthService::FENIX,
             "email" => "johannadoe@email.com", "studentNumber" => 654321, "nickname" => "Johanna Doe", "major" => "MEIC-A",
             "isAdmin" => false, "isActive" => true, "course" => 1, "lastActivity" => null, "isActiveInCourse" => true,
-            "lastLogin" => null, "theme" => null], $courseUser->getData());
+            "lastLogin" => null, "theme" => null, "image" => null], $courseUser->getData());
     }
 
     /**
