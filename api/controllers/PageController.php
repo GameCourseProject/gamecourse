@@ -100,7 +100,6 @@ class PageController
         API::requireCoursePermission($course);
 
         $userId = API::getValue("userId", "int");
-        $courseUser = API::verifyCourseUserExists($course, $userId);
 
         // Only course admins can access other users' pages
         if (Core::getLoggedUser()->getId() != $userId)
