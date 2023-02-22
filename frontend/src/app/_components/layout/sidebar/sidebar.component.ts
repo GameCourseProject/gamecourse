@@ -177,11 +177,11 @@ export class SidebarComponent implements OnInit {
       this.visibleUserPages = await this.api.getUserPages(courseID, this.user.id, true).toPromise();
       const isAdminOrTeacher = this.user.isAdmin || await this.api.isTeacher(courseID, this.user.id).toPromise();
 
-      this.courseNavigation = buildCourseNavigation(this.course, this.visibleUserPages, isAdminOrTeacher);
+      this.courseNavigation = buildCourseNavigation(this.course, this.user.id, this.visibleUserPages, isAdminOrTeacher);
     }
     return this.courseNavigation;
 
-    function buildCourseNavigation(course: Course, visiblePages: Page[], isAdminOrTeacher: boolean): Navigation[] {
+    function buildCourseNavigation(course: Course, userId: number, visiblePages: Page[], isAdminOrTeacher: boolean): Navigation[] {
       const path = '/courses/' + course.id + '/';
       let navigation: Navigation[] = [];
 
@@ -200,7 +200,7 @@ export class SidebarComponent implements OnInit {
           category: 'Course Pages',
           children: visiblePages.map(page => {
             return {
-              link: path + 'pages/' + page.id,
+              link: path + 'pages/' + page.id + '/user/' + userId,
               name: page.name
             };
           })

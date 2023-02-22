@@ -92,7 +92,7 @@
                   <div class="flex flex-col items-center">
                     <div class="flex items-center gap-2">
                       <div *ngFor="let step of steps(streak.progress || 0)" class="w-9 h-9" [style]="'color: ' + streak.color" [innerHTML]="streak.image | sanitizeHTML"></div>
-                      <div *ngFor="let step of steps(streak.goal - (streak.progress || 0))" class="w-9 h-9" [innerHTML]="streak.svg | sanitizeHTML"></div>
+                      <div *ngFor="let step of steps(streak.goal - (streak.progress || 0))" class="w-9 h-9 text-neutral/30" [innerHTML]="streak.svg | sanitizeHTML"></div>
                       <div class="tooltip" data-tip="Can be earned multiple times">
                         <button class="btn btn-circle btn-sm btn-ghost">
                           <ng-icon name="feather-repeat" size="1.2rem"></ng-icon>
