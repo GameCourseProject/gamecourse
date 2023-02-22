@@ -327,7 +327,7 @@ class Page
         $availablePagesForUser = [];
         foreach ($coursePages as $page) {
             // Try to build page for user
-            $viewTree = ViewHandler::buildView($page["viewRoot"], Aspect::getAspects($courseId, $userid));
+            $viewTree = ViewHandler::buildView($page["viewRoot"], Aspect::getAspects($courseId, $userid, true));
             if (!empty($viewTree)) $availablePagesForUser[] = $page;
         }
         return $availablePagesForUser;

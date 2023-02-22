@@ -1,12 +1,12 @@
 <ng-container *ngIf="!loading">
   <!-- Render page -->
   <div *ngIf="pageView" class="page">
-    <ng-container *ngIf="!skipPages.includes(page.id)"> <!-- FIXME: this is hard-coded -->
+    <ng-container *ngIf="page.name !== 'Skill Tree' && page.name !== 'Streaks'"> <!-- FIXME: this is hard-coded -->
       <bb-any [view]="pageView"></bb-any>
     </ng-container>
 
     <!-- FIXME: this is hard-coded -->
-    <ng-container *ngIf="page.id === skillTreePage"> <!-- Skill Tree -->
+    <ng-container *ngIf="page.name === 'Skill Tree'"> <!-- Skill Tree -->
       <div class="card w-full bg-base-100 shadow-xl">
         <div class="card-body overflow-x-auto">
 
@@ -14,6 +14,7 @@
           <app-header [title]="'Skill Tree'" [color]="course.color" [icon]="'tabler-bulb'"></app-header>
 
           <!-- Skill Tree -->
+          <h4 *ngIf="skillTrees[0].name" class="text-center font-semibold text-xl mb-2">{{skillTrees[0].name}}</h4>
           <div class="flex flex-col w-full lg:flex-row">
             <ng-container *ngFor="let tier of getSkillTreeInfo(skillTrees[0].id).tiers; let first = first; let last = last">
               <ng-container *ngIf="!tier.isActive"></ng-container>
@@ -69,7 +70,7 @@
       </div>
     </ng-container>
 
-    <ng-container *ngIf="page.id === streaksPage"> <!-- Streaks -->
+    <ng-container *ngIf="page.name === 'Streaks'"> <!-- Streaks -->
       <div class="card w-full bg-base-100 shadow-xl">
         <div class="card-body">
 
@@ -83,7 +84,7 @@
                 <!-- Streak Info -->
                 <div class="flex flex-wrap flex-col md:flex-row gap-6 md:items-center">
                   <div class="md:w-[20rem]">
-                    <p class="font-semibold" style="font-size: 1.1rem">{{streak.name}}</p>
+                    <p class="font-semibold" [style.font-size]="'1.1rem'" [style.color]="streak.color">{{streak.name}}</p>
                     <p class="text-neutral/75">{{streak.description}}</p>
                     <p class="font-medium text-sm mt-2" [style]="'color: ' + course.color">[{{streak.nrCompletions || 0 }} so far]</p>
                   </div>
@@ -105,7 +106,7 @@
 
                 <!-- Streak Reward -->
                 <div class="flex float-right items-center gap-3">
-                  <div>
+                  <div class="flex flex-col items-center">
                     <p class="font-semibold text-lg">{{streak.reward}} XP</p>
                     <p *ngIf="streak.isExtra" class="font-medium text-error text-sm">extra credit</p>
                   </div>
@@ -126,9 +127,9 @@
 
   <!-- Skill page -->
   <div *ngIf="skill" class="page skill-page">
-    <!-- Close preview btn -->
-    <div *ngIf="isPreview" class="tooltip float-right" data-tip="Close preview">
-      <button class="btn btn-sm btn-circle btn-outline btn-error" (click)="closePreview()">
+    <!-- Close btn -->
+    <div class="tooltip float-right" [attr.data-tip]="'Close ' + (isPreview ? 'preview' : 'skill page')">
+      <button class="btn btn-sm btn-circle btn-outline btn-error" (click)="goBack()">
         <ng-icon name="feather-x" size="1.2rem"></ng-icon>
       </button>
     </div>

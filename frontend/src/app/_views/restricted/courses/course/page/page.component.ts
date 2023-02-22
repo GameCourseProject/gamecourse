@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {ApiHttpService} from "../../../../../_services/api/api-http.service";
-import {ActivatedRoute, Router} from "@angular/router";
+import {ActivatedRoute, NavigationCancel, NavigationEnd, NavigationStart, Router} from "@angular/router";
 import {View} from "../../../../../_domain/views/view";
 import {Skill} from "../../../../../_domain/modules/config/personalized-config/skills/skill";
 import {ApiEndpointsService} from "../../../../../_services/api/api-endpoints.service";
@@ -30,11 +30,6 @@ export class PageComponent implements OnInit {
   pageView: View;
 
   // FIXME: hard-coded
-  skipPages = [126, 128];
-  skillTreePage = 126
-  streaksPage = 128;
-
-  // FIXME: hard-coded
   skillTrees: SkillTree[];
   skillTreesInfo: {
     skillTreeId: number,
@@ -50,7 +45,6 @@ export class PageComponent implements OnInit {
   vcIcon: string = environment.apiEndpoint + '/modules/VirtualCurrency/assets/default.png';
 
   streaksInfo: Streak[] = [];
-  streakImage: string = environment.apiEndpoint + '/modules/Streaks/icon.svg';
 
   skill: Skill;
   isPreview: boolean;
@@ -75,6 +69,7 @@ export class PageComponent implements OnInit {
     await this.getLoggedUser();
 
     this.route.parent.params.subscribe(async params => {
+
       // Get course information
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
@@ -101,6 +96,12 @@ export class PageComponent implements OnInit {
         }
         this.loading = false;
       });
+
+      // Whenever route changes, set loading as true
+      this.router.events.subscribe(event => {
+        if (event instanceof NavigationStart)
+          this.loading = true;
+      });
     });
   }
 
@@ -126,11 +127,11 @@ export class PageComponent implements OnInit {
     this.page = await this.api.getPageById(pageID).toPromise();
 
     // FIXME: hard-coded
-    if (this.page.id === this.skillTreePage) {
+    if (this.page.name === "Skill Tree") {
       await this.initSkillTreesInfo(this.course.id);
       this.availableWildcards = await this.api.getUserTotalAvailableWildcards(this.course.id, this.user.id, this.skillTrees[0].id).toPromise();
 
-    } else if (this.page.id === this.streaksPage) {
+    } else if (this.page.name === "Streaks") {
       this.streaksInfo = await this.api.getStreaks(this.course.id).toPromise();
       const info = await this.api.getUserStreaks(this.course.id, this.user.id).toPromise();
       this.streaksInfo = this.streaksInfo.map(streak => {
@@ -201,7 +202,7 @@ export class PageComponent implements OnInit {
   /*** ------------------- Skills ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  closePreview() {
+  goBack() {
     history.back();
   }
 

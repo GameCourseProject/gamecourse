@@ -32,7 +32,7 @@ class Event
             $page = Page::getPageById($pageId);
             $course = $page->getCourse();
 
-            if ($course->getCourseUserById($userId)->exists()) {
+            if ($course->getCourseUserById($viewerId)->exists() && $course->getCourseUserById($userId)->exists()) {
                 Core::database()->insert(Page::TABLE_PAGE_HISTORY, [
                     "course" => $course->getId(),
                     "page" => $pageId,
