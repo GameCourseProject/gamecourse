@@ -144,7 +144,7 @@ class XPLevels extends Module
             \$cacheValue = Cache::get(\$course->getId(), \$cacheId);
 
             // Calculate user evolution
-            if (!is_null(\$cacheValue) && end(\$cacheValue[0][\"data\"])[\"x\"] === \$timePassed && \$userXP === end(\$cacheValue[0][\"data\"])[\"y\"]) {
+            if (!is_null(\$cacheValue) && end(\$cacheValue[0][\"data\"])[\"x\"] === \$timePassed) {
                 \$XPEvolution[0][\"data\"] = \$cacheValue[0][\"data\"];
 
             } else {
@@ -181,7 +181,7 @@ class XPLevels extends Module
                     \$totalXP = intval(Core::database()->executeQuery(\"SELECT SUM(xp) FROM \" . \GameCourse\Module\XPLevels\XPLevels::TABLE_XP .
                         \" WHERE course = \" . Core::dictionary()->getCourse()->getId() . \" AND user IN (\" . implode(\", \", \$userIds) . \");\")->fetch()[0]);
 
-                    if (!is_null(\$cacheValue) && end(\$cacheValue[0][\"data\"])[\"x\"] === \$timePassed && \$totalXP === end(\$cacheValue[1][\"data\"])[\"y\"]) {
+                    if (!is_null(\$cacheValue) && \$totalXP === end(\$cacheValue[1][\"data\"])[\"y\"]) {
                         \$XPEvolution[1][\"data\"] = \$cacheValue[1][\"data\"];
 
                     } else {
