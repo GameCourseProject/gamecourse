@@ -119,6 +119,7 @@ class Event
     public static function stop(string $type, string $id)
     {
         unset(self::$events[$type][$id]);
+        if (count(self::$events[$type]) == 0) unset(self::$events[$type]);
         Cache::store(null, "events", self::$events);
     }
 

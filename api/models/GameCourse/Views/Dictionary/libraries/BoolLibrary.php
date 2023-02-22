@@ -31,6 +31,11 @@ class BoolLibrary extends Library
                 "Gets the opposite bool value of a given value.",
             ReturnType::BOOLEAN,
                 $this
+            ),
+            new DFunction("exists",
+                "Checks whether a given value exists.",
+                ReturnType::BOOLEAN,
+                $this
             )
         ];
     }
@@ -47,5 +52,16 @@ class BoolLibrary extends Library
     public function not($value): ValueNode
     {
         return new ValueNode(!$value, $this);
+    }
+
+    /**
+     * Checks whether a given value exists.
+     *
+     * @param $value
+     * @return ValueNode
+     */
+    public function exists($value): ValueNode
+    {
+        return new ValueNode(!!$value, $this);
     }
 }

@@ -1072,7 +1072,7 @@ class Badges extends Module
         $cacheId = "badge_progression_u" . $userId . "_b" . $badgeId;
         $cacheValue = Cache::get($courseId, $cacheId);
 
-        if (AutoGame::isRunning($courseId) && !is_null($cacheValue)) {
+        if (AutoGame::isRunning($courseId) && !empty($cacheValue)) {
             // NOTE: get value from cache while AutoGame is running
             //       since progression table is not stable
             return $cacheValue;
@@ -1101,10 +1101,10 @@ class Badges extends Module
     {
         $courseId = $this->getCourse()->getId();
 
-        $cacheId = "badge_progression_u" . $userId . "_b" . $badgeId;
+        $cacheId = "badge_progression_info_u" . $userId . "_b" . $badgeId;
         $cacheValue = Cache::get($courseId, $cacheId);
 
-        if (AutoGame::isRunning($courseId) && !is_null($cacheValue)) {
+        if (AutoGame::isRunning($courseId) && !empty($cacheValue)) {
             // NOTE: get value from cache while AutoGame is running
             //       since progression table is not stable
             return $cacheValue;

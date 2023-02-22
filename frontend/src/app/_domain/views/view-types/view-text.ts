@@ -111,10 +111,8 @@ export class ViewText extends View {
   }
 
   static fromDatabase(obj: ViewTextDatabase): ViewText {
-    if (obj.id == 1758406873607322) console.log(obj)
     // Parse common view params
     const parsedObj = View.parse(obj);
-    if (obj.id == 1758406873607322) console.log(obj)
 
     // Get a view of type text
     return new ViewText(
@@ -123,7 +121,7 @@ export class ViewText extends View {
       parsedObj.viewRoot,
       null,
       parsedObj.aspect,
-      obj.text.toString(),
+      obj.text?.toString(),
       obj.link || null,
       parsedObj.cssId,
       parsedObj.classList,

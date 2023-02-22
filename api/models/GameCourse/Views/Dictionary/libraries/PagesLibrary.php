@@ -62,6 +62,7 @@ class PagesLibrary extends Library
      *
      * @param string $name
      * @return ValueNode
+     * @throws Exception
      */
     public function getPageByName(string $name): ValueNode
     {
@@ -72,6 +73,7 @@ class PagesLibrary extends Library
         } else {
             $courseId = Core::dictionary()->getCourse()->getId();
             $page = Page::getPageByName($courseId, $name);
+            if (!$page) throw new Exception("Page '$name' doesn't exist in course with ID = $courseId");
         }
         return new ValueNode($page, $this);
     }

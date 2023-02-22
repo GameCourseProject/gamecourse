@@ -998,7 +998,7 @@ class Streaks extends Module
         $cacheId = "streak_progression_u" . $userId . "_s" . $streakId;
         $cacheValue = Cache::get($courseId, $cacheId);
 
-        if (AutoGame::isRunning($courseId) && !is_null($cacheValue)) {
+        if (AutoGame::isRunning($courseId) && !empty($cacheValue)) {
             // NOTE: get value from cache while AutoGame is running
             //       since progression table is not stable
             return $cacheValue;
