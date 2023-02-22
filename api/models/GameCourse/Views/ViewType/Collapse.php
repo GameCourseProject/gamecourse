@@ -144,13 +144,7 @@ class Collapse extends ViewType
     public function compile(array &$view)
     {
         // NOTE: can only have two children - header and content
-        if (isset($view["children"])) {
-            foreach ($view["children"] as &$vr) {
-                foreach ($vr as &$child) {
-                    ViewHandler::compileView($child);
-                }
-            }
-        }
+        $this->compileChildren($view);
     }
 
     /**
@@ -159,22 +153,7 @@ class Collapse extends ViewType
     public function evaluate(array &$view, EvaluateVisitor $visitor)
     {
         // NOTE: can only have two children - header and content
-        if (isset($view["children"])) {
-            $childrenEvaluated = [];
-            foreach ($view["children"] as &$vr) {
-                foreach ($vr as &$child) {
-                    if (isset($child["loopData"])) {
-                        ViewHandler::evaluateLoop($child, $visitor);
-                        $childrenEvaluated = array_merge($childrenEvaluated, $child);
-
-                    } else {
-                        ViewHandler::evaluateView($child, $visitor);
-                        $childrenEvaluated[] = $child;
-                    }
-                }
-            }
-            $view["children"] = $childrenEvaluated;
-        }
+        $this->evaluateChildren($view, $visitor);
     }
 
 

@@ -9,17 +9,22 @@ import {buildView} from "../build-view/build-view";
 
 export class ViewBlock extends View {
   private _direction: BlockDirection;
+  private _columns: number;
+  private _responsive: boolean;
   private _children: View[];
 
 
   constructor(mode: ViewMode, id: number, viewRoot: number, parent: View, aspect: Aspect, direction: BlockDirection,
-              children: View[], cssId?: string, classList?: string, styles?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: string | boolean, loopData?: string, variables?: Variable[], events?: Event[]) {
+              columns: number, responsive: boolean, children: View[], cssId?: string, classList?: string, styles?: string,
+              visibilityType?: VisibilityType, visibilityCondition?: string | boolean, loopData?: string,
+              variables?: Variable[], events?: Event[]) {
 
     super(mode, ViewType.BLOCK, id, viewRoot, parent, aspect, cssId, classList, styles, visibilityType, visibilityCondition,
       loopData, variables, events);
 
     this.direction = direction;
+    this.columns = columns;
+    this.responsive = responsive;
     this.children = children;
   }
 
@@ -30,6 +35,22 @@ export class ViewBlock extends View {
 
   set direction(value: BlockDirection) {
     this._direction = value;
+  }
+
+  get columns(): number {
+    return this._columns;
+  }
+
+  set columns(value: number) {
+    this._columns = value;
+  }
+
+  get responsive(): boolean {
+    return this._responsive;
+  }
+
+  set responsive(value: boolean) {
+    this._responsive = value;
   }
 
   get children(): View[] {
@@ -152,6 +173,8 @@ export class ViewBlock extends View {
     const obj = View.toJson(this);
     return Object.assign(obj, {
       direction: this.direction,
+      columns: this.columns,
+      responsive: this.responsive,
       children: this.children
     });
   }
@@ -168,6 +191,8 @@ export class ViewBlock extends View {
       null,
       parsedObj.aspect,
       (obj.direction || BlockDirection.VERTICAL) as BlockDirection,
+      obj.columns || null,
+      obj.responsive,
       obj.children ? obj.children.map(child => buildView(child)) : [],
       parsedObj.cssId,
       parsedObj.classList,
@@ -189,6 +214,8 @@ export class ViewBlock extends View {
 
 export interface ViewBlockDatabase extends ViewDatabase {
   direction: string,
+  columns?: number,
+  responsive?: boolean,
   children?: ViewDatabase[];
 }
 

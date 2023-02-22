@@ -44,6 +44,19 @@ class XPLibrary extends Library
      * @return ValueNode
      * @throws Exception
      */
+    public function isEnabled(): ValueNode
+    {
+        $course = Core::dictionary()->getCourse();
+        $isEnabled = $course->isModuleEnabled(XPLevels::ID);
+        return new ValueNode($isEnabled, Core::dictionary()->getLibraryById(BoolLibrary::ID));
+    }
+
+    /**
+     * TODO: description
+     *
+     * @return ValueNode
+     * @throws Exception
+     */
     public function getMaxXP(): ValueNode
     {
         if (Core::dictionary()->mockData()) {
@@ -94,6 +107,25 @@ class XPLibrary extends Library
             $userXP = $XPModule->getUserXP($userId);
         }
         return new ValueNode($userXP, Core::dictionary()->getLibraryById(MathLibrary::ID));
+    }
+
+    /**
+     * Gets total extra credit XP for a given user.
+     *
+     * @param int $userId
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getUserExtraCreditXP(int $userId): ValueNode
+    {
+        if (Core::dictionary()->mockData()) {
+            $extraCredit = Core::dictionary()->faker()->numberBetween(0, 3000);
+
+        } else {
+            $XPModule = new XPLevels(Core::dictionary()->getCourse());
+            $extraCredit = $XPModule->getUserExtraCreditXP($userId);
+        }
+        return new ValueNode($extraCredit, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
     /**
@@ -153,14 +185,14 @@ class XPLibrary extends Library
      * @return ValueNode
      * @throws Exception
      */
-    public function getUserSkillsXP(int $userId, bool $collab = null): ValueNode
+    public function getUserSkillsXP(int $userId, bool $extra = null): ValueNode
     {
         if (Core::dictionary()->mockData()) {
             $userSkillsXP = Core::dictionary()->faker()->numberBetween(0, 3000);
 
         } else {
             $XPModule = new XPLevels(Core::dictionary()->getCourse());
-            $userSkillsXP = $XPModule->getUserSkillsXP($userId, $collab);
+            $userSkillsXP = $XPModule->getUserSkillsXP($userId, $extra);
         }
         return new ValueNode($userSkillsXP, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }

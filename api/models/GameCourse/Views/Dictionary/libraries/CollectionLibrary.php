@@ -40,6 +40,11 @@ class CollectionLibrary extends Library
                 "Sorts a given collection. Order key pairs format: 'order: param'. Order options: 'ASC', 'DESC', 'asc', 'desc', 'ascending', 'descending'.",
             ReturnType::COLLECTION,
                 $this
+            ),
+            new DFunction("crop",
+                "Crops a given collection by only returning items between start and end indexes.",
+                ReturnType::COLLECTION,
+                $this
             )
         ];
     }
@@ -97,9 +102,10 @@ class CollectionLibrary extends Library
                     $visitor = Core::dictionary()->getVisitor();
                     foreach ($collection as &$item) {
                         $ky = $k;
-                        $itemVisitor = new EvaluateVisitor($visitor->getParams(), $visitor->mockData());
+                        $itemVisitor = $visitor->copy();
                         $itemVisitor->addParam("item", new ValueNode($item, $library));
                         $itemVisitor->addParam("index", $i);
+                        Core::dictionary()->setVisitor($itemVisitor);
                         ViewHandler::evaluateNode($ky, $itemVisitor);
                         $item["sort$i"] = $ky;
                     }
@@ -142,6 +148,21 @@ class CollectionLibrary extends Library
             });
         }
 
+        return new ValueNode($collection, $this);
+    }
+
+    /**
+     * Crops a given collection by only returning items
+     * between start and end indexes.
+     *
+     * @param array $collection
+     * @param int $start
+     * @param int $end
+     * @return ValueNode
+     */
+    public function crop(array $collection, int $start, int $end): ValueNode
+    {
+        $collection = array_slice($collection, $start, $end - $start + 1);
         return new ValueNode($collection, $this);
     }
 }

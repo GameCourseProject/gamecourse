@@ -156,7 +156,7 @@ export class LineChartComponent implements OnInit {
       tooltip: tooltip(!this.sparkline && this.tooltip, {xaxis: this.tooltipXFormatter, yaxis: this.tooltipYFormatter},
         theme === Theme.DARK ? 'dark' : 'light'),
       xaxis: xaxis(this.XAxisType, this.XAxisCategories, LineColor(theme), this.XAxisLabel,
-        this.XAxisTickAmount || (this.series[0].data.length > 20 ? 10 : undefined)),
+        this.XAxisTickAmount || (this.series[0].data.length > 10 ? 10 : undefined)),
       yaxis: yaxis(this.YAxisReversed, this.YAxisTickAmount, this.YAxisMin, this.YAxisMax, this.YAxisLabel, false)
     };
 

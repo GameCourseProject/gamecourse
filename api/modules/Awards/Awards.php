@@ -80,6 +80,51 @@ class Awards extends Module
     /*** --------------- Module Specific --------------- ***/
     /*** ----------------------------------------------- ***/
 
+    /*** ---------- Config ---------- ***/
+
+    /**
+     * Gets icon for a given type of award.
+     *
+     * @param string $type
+     * @return string
+     */
+    public function getIconOfType(string $type): string
+    {
+        if ($type === AwardType::ASSIGNMENT) $icon = "tabler-paperclip";
+        else if ($type === AwardType::BADGE) $icon = "tabler-award";
+        else  if ($type === AwardType::BONUS) $icon = "tabler-gift";
+        else if ($type === AwardType::EXAM) $icon = "tabler-book";
+        else if ($type === AwardType::LAB) $icon = "tabler-flask";
+        else if ($type === AwardType::POST) $icon = "tabler-message-2";
+        else if ($type === AwardType::PRESENTATION) $icon = "tabler-presentation";
+        else if ($type === AwardType::QUIZ) $icon = "tabler-clipboard-list";
+        else if ($type === AwardType::SKILL) $icon = "tabler-bulb";
+        else if ($type === AwardType::STREAK) $icon = "tabler-flame";
+        else  if ($type === AwardType::TOKENS) $icon = "tabler-coin";
+        else $icon = "tabler-star";
+        return $icon;
+    }
+
+    /**
+     * Gets image for a given type of award.
+     *
+     * @param string $type
+     * @param string $style
+     * @param string $extenstion
+     * @return string
+     */
+    public function getImageOfType(string $type, string $style = "outline" | "solid", string $extenstion = "jpg" | "svg"): string
+    {
+        $path = API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . self::ID . "/assets/award-types/";
+        if ($type === AwardType::ASSIGNMENT || $type === AwardType::BADGE || $type === AwardType::BONUS ||
+            $type === AwardType::EXAM || $type === AwardType::LAB || $type === AwardType::POST ||
+            $type === AwardType::PRESENTATION || $type === AwardType::QUIZ || $type === AwardType::SKILL ||
+            $type === AwardType::STREAK || $type === AwardType::TOKENS) $image = $path . $type . "_$style.$extenstion";
+        else $image = $path . "default_$style.$extenstion";
+        return $image;
+    }
+
+
     /*** ---------- Awards ---------- ***/
 
     /**

@@ -4,21 +4,23 @@
  * ----------------------------
  */
 
-.bb-any {
-  &.ev-click, &.ev-dblclick, &.ev-mouseover {
-    @apply cursor-pointer;
+bb-any {
+  .bb-any {
+    &.ev-click, &.ev-dblclick, &.ev-mouseover {
+      @apply cursor-pointer;
 
-    .bb-image > div {
-      @apply hover:ring hover:ring-primary hover:ring-4;
+      .bb-image > div {
+        @apply hover:ring hover:ring-primary hover:ring-4;
+      }
+
+      .bb-text {
+        @apply link hover:text-primary;
+      }
     }
 
-    .bb-text {
-      @apply link hover:text-primary;
+    &.ev-drag {
+      @apply cursor-grab;
     }
-  }
-
-  &.ev-drag {
-    @apply cursor-grab;
   }
 }
 

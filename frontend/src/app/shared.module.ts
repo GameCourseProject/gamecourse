@@ -78,6 +78,7 @@ import { SimpleHelperComponent } from './_components/helpers/simple-helper/simpl
 // Components: building blocks
 import { BBAnyComponent } from "./_components/building-blocks/any/any.component";
 import { BBBlockComponent } from './_components/building-blocks/block/block.component';
+import { BBButtonComponent } from './_components/building-blocks/button/button.component';
 import { BBChartComponent } from "./_components/building-blocks/chart/chart.component";
 import { BBCollapseComponent } from './_components/building-blocks/collapse/collapse.component';
 import { BBIconComponent } from './_components/building-blocks/icon/icon.component';
@@ -146,22 +147,38 @@ import {
   TablerArrowNarrowUp,
   TablerArrowNarrowDown,
   TablerAward,
+  TablerChartBar,
   TablerBarrierBlock,
   TablerBell,
   TablerBellRinging,
   TablerBellSchool,
+  TablerBook,
   TablerBooks,
+  TablerBulb,
   TablerCalendarTime,
   TablerCaretDown,
   TablerClipboardList,
   TablerCloudUpload,
+  TablerCoin,
   TablerColorSwatch,
+  TablerEye,
+  TablerFlame,
+  TablerFlask,
   TablerGavel,
+  TablerGift,
   TablerIdBadge2,
+  TablerListNumbers,
+  TablerMessage2,
+  TablerPaperclip,
   TablerPlug,
+  TablerPresentation,
   TablerPrompt,
   TablerQuestionMark,
-  TablerSchool
+  TablerSchool,
+  TablerStar,
+  TablerTimeline,
+  TablerTrophy,
+  TablerUserCircle
 } from "@ng-icons/tabler-icons";
 
 
@@ -229,6 +246,7 @@ import {
 
     BBAnyComponent,
     BBBlockComponent,
+    BBButtonComponent,
     BBChartComponent,
     BBCollapseComponent,
     BBIconComponent,
@@ -308,6 +326,7 @@ import {
 
     BBAnyComponent,
     BBBlockComponent,
+    BBButtonComponent,
     BBChartComponent,
     BBIconComponent,
     BBImageComponent,
@@ -370,22 +389,38 @@ import {
       TablerArrowNarrowUp,
       TablerArrowNarrowDown,
       TablerAward,
+      TablerChartBar,
       TablerBarrierBlock,
       TablerBell,
       TablerBellRinging,
       TablerBellSchool,
+      TablerBook,
       TablerBooks,
+      TablerBulb,
       TablerCalendarTime,
       TablerCaretDown,
       TablerClipboardList,
       TablerCloudUpload,
+      TablerCoin,
       TablerColorSwatch,
+      TablerEye,
+      TablerFlame,
+      TablerFlask,
       TablerGavel,
+      TablerGift,
       TablerIdBadge2,
+      TablerListNumbers,
+      TablerMessage2,
+      TablerPaperclip,
+      TablerPresentation,
       TablerPlug,
       TablerPrompt,
       TablerQuestionMark,
-      TablerSchool
+      TablerSchool,
+      TablerStar,
+      TablerTimeline,
+      TablerTrophy,
+      TablerUserCircle
     }),
     DataTablesModule,
     NgApexchartsModule,

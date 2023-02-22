@@ -506,6 +506,7 @@ class Badge
             $level["goal"] = intval($level["goal"]);
             $level["reward"] = intval($level["reward"]);
             $level["tokens"] = intval($level["tokens"]);
+            $level["image"] = $this->getImage(); // FIXME: add overlay on image
         }
         return $levels;
     }

@@ -1,7 +1,13 @@
 [
     {
         "type": "block",
-        "class": "card card w-full bg-base-100 shadow-xl",
+        "class": "card card bg-base-100 shadow-xl",
+        "variables": [
+            {
+                "name": "courseColor",
+                "value": "{courses.getCourseById(%course).color}"
+            }
+        ],
         "children": [
             [
                 {
@@ -17,8 +23,9 @@
                                     [
                                         {
                                             "type": "icon",
-                                            "class": "text-primary",
-                                            "icon": "tabler-trophy",
+                                            "class": "mt-1",
+                                            "style": "color: {%courseColor}",
+                                            "icon": "tabler-list-numbers",
                                             "size": "1.8rem"
                                         }
                                     ],
@@ -83,25 +90,28 @@
                                     [
                                         {
                                             "type": "row",
-                                            "loopData": "{users.getStudents(true).sort(\"DESC: {%userXP}, DESC: badges.getUserBadges(%item.id).count(), ASC: %item.name\")}",
+                                            "loopData": "{users.getStudents(true).sort(\"DESC: %userXP, DESC: %userBadges, ASC: %item.name\")}",
                                             "rowType": "body",
                                             "variables": [
                                                 {
                                                     "name": "userXP",
-                                                    "value": "{xp.getUserXP(%item.id)}",
-                                                    "position": 0
+                                                    "value": "{xp.getUserXP(%item.id)}"
+                                                },
+                                                {
+                                                    "name": "userBadges",
+                                                    "value": "{badges.getUserBadges(%item.id).count()}"
                                                 },
                                                 {
                                                     "name": "userLevel",
-                                                    "value": "{xpLevel.getLevelByXP(%userXP)}",
-                                                    "position": 1
+                                                    "value": "{xpLevel.getLevelByXP(%userXP)}"
                                                 }
                                             ],
                                             "children": [
                                                 [
                                                     {
                                                         "type": "text",
-                                                        "class": "w-full block font-medium text-center text-primary",
+                                                        "class": "w-full block font-medium text-center",
+                                                        "style": "color: %courseColor",
                                                         "text": "{%index + 1}{system.if(%index == 0, \"st\", system.if(%index == 1, \"nd\", system.if(%index == 2, \"rd\", \"th\")))}"
                                                     }
                                                 ],
@@ -177,7 +187,7 @@
                                                                         "sparkline": true,
                                                                         "strokeWidth": 2,
                                                                         "colors": [
-                                                                            "{courses.getCourseById(%course).color}"
+                                                                            "{%courseColor}"
                                                                         ]
                                                                     }
                                                                 }
@@ -207,13 +217,11 @@
                                                                     "variables": [
                                                                         {
                                                                             "name": "nrLevels",
-                                                                            "value": "{xpLevel.getLevels().count}",
-                                                                            "position": 0
+                                                                            "value": "{xpLevel.getLevels().count}"
                                                                         },
                                                                         {
                                                                             "name": "nextLevel",
-                                                                            "value": "{xpLevel.getLevelByNumber(%userLevel.number + 1)}",
-                                                                            "position": 1
+                                                                            "value": "{xpLevel.getLevelByNumber(%userLevel.number + 1)}"
                                                                         }
                                                                     ]
                                                                 }
@@ -233,18 +241,12 @@
                                                         "options": {
                                                             "labelMiddle": "{%userBadges} out of {%nrBadges}",
                                                             "tooltip": "relative",
-                                                            "progressColor": "{courses.getCourseById(%course).color}"
+                                                            "progressColor": "{%courseColor}"
                                                         },
                                                         "variables": [
                                                             {
-                                                                "name": "userBadges",
-                                                                "value": "{badges.getUserBadges(%item.id).count}",
-                                                                "position": 0
-                                                            },
-                                                            {
                                                                 "name": "nrBadges",
-                                                                "value": "{badges.getBadges(true).count}",
-                                                                "position": 1
+                                                                "value": "{badges.getBadges(true).count}"
                                                             }
                                                         ]
                                                     }

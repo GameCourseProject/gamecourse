@@ -990,7 +990,7 @@ class Streaks extends Module
     {
         $courseId = $this->getCourse()->getId();
 
-        $cacheId = "streak_progression_s" . $streakId . "_u" . $userId;
+        $cacheId = "streak_progression_u" . $userId . "_s" . $streakId;
         $cacheValue = Cache::get($courseId, $cacheId);
 
         if (AutoGame::isRunning($courseId) && !is_null($cacheValue)) {
@@ -999,7 +999,14 @@ class Streaks extends Module
             return $cacheValue;
 
         } else {
-            // TODO
+            $progression = Core::database()->select(self::TABLE_STREAK_PROGRESSION,
+                ["user" => $userId, "streak" => $streakId], "COUNT(*)");
+
+            // Store in cache
+            $cacheValue = $progression;
+            Cache::store($courseId, $cacheId, $cacheValue);
+
+            return $progression;
         }
     }
 

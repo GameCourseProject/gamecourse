@@ -304,6 +304,24 @@ abstract class ViewType
     abstract function compile(array &$view);
 
     /**
+     * Compiles the children of a view.
+     *
+     * @param array $view
+     * @return void
+     * @throws Exception
+     */
+    function compileChildren(array &$view)
+    {
+        if (isset($view["children"])) {
+            foreach ($view["children"] as &$vr) {
+                foreach ($vr as &$child) {
+                    ViewHandler::compileView($child);
+                }
+            }
+        }
+    }
+
+    /**
      * Evaluates a view of a specific type.
      * If view type has parameters that can contain expressions,
      * those parameters need to be evaluated.
@@ -313,6 +331,42 @@ abstract class ViewType
      * @return void
      */
     abstract function evaluate(array &$view, EvaluateVisitor $visitor);
+
+    /**
+     * Evaluates the children of a view.
+     *
+     * @param array $view
+     * @param EvaluateVisitor $visitor
+     * @return void
+     * @throws Exception
+     */
+    function evaluateChildren(array &$view, EvaluateVisitor $visitor)
+    {
+        if (isset($view["children"])) {
+            $childrenEvaluated = [];
+            foreach ($view["children"] as &$vr) {
+                foreach ($vr as &$child) {
+                    // Copy params
+                    $childVisitor = $visitor->copy(); // NOTE: ensures parent visitor is unaltered
+                    $viewIdsWithLoopData = Core::dictionary()->getViewIdsWithLoopData();
+
+                    if (isset($child["loopData"])) {
+                        ViewHandler::evaluateLoop($child, $childVisitor);
+                        $childrenEvaluated = array_merge($childrenEvaluated, $child);
+
+                    } else {
+                        ViewHandler::evaluateView($child, $childVisitor);
+                        if ($child) $childrenEvaluated[] = $child;
+                    }
+
+                    // Reset to original params
+                    Core::dictionary()->setVisitor($visitor);
+                    Core::dictionary()->setViewIdsWithLoopData($viewIdsWithLoopData);
+                }
+            }
+            $view["children"] = $childrenEvaluated;
+        }
+    }
 
 
     /*** ---------------------------------------------------- ***/

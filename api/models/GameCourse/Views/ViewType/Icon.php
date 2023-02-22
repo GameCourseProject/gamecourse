@@ -42,8 +42,8 @@ class Icon extends ViewType
         Core::database()->executeQuery("
             CREATE TABLE IF NOT EXISTS " . self::TABLE_VIEW_ICON . "(
                 id                          bigint unsigned NOT NULL PRIMARY KEY,
-                icon                        varchar(25) NOT NULL,
-                size                        varchar(10) DEFAULT NULL,
+                icon                        TEXT NOT NULL,
+                size                        TEXT DEFAULT NULL,
 
                 FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
             );

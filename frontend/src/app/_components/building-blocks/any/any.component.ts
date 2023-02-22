@@ -3,8 +3,9 @@ import {Component, Input, OnInit} from '@angular/core';
 import {View, ViewMode} from "../../../_domain/views/view";
 import {ViewType} from "../../../_domain/views/view-types/view-type";
 import {ViewBlock} from 'src/app/_domain/views/view-types/view-block';
+import {ViewButton} from 'src/app/_domain/views/view-types/view-button';
 import {ViewChart} from "../../../_domain/views/view-types/view-chart";
-import { ViewCollapse } from 'src/app/_domain/views/view-types/view-collapse';
+import {ViewCollapse} from 'src/app/_domain/views/view-types/view-collapse';
 import {ViewIcon} from 'src/app/_domain/views/view-types/view-icon';
 import {ViewImage} from 'src/app/_domain/views/view-types/view-image';
 import {ViewTable} from 'src/app/_domain/views/view-types/view-table';
@@ -55,6 +56,10 @@ export class BBAnyComponent implements OnInit {
 
   get ViewBlock(): typeof ViewBlock {
     return ViewBlock;
+  }
+
+  get ViewButton(): typeof ViewButton {
+    return ViewButton;
   }
 
   get ViewChart(): typeof ViewChart {

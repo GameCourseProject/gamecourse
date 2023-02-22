@@ -14,7 +14,7 @@ export class ProgressChartComponent implements OnInit, AfterViewInit {
   // Extras
   @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'sm';                             // Size
   @Input() classList?: string;                                                  // Classes to add
-  @Input() tooltip?: 'relative' | 'absolute';                                   // Show tooltip on hover:
+  @Input() tooltip?: 'relative' | 'absolute' | string;                          // Show tooltip on hover:
                                                                                 // -> relative: %progress | -> absolute: progress
   // Labels
   @Input() labelInside?: string;                                                // Label inside progress bar (only for sizes 'md' and 'lg')
@@ -67,7 +67,8 @@ export class ProgressChartComponent implements OnInit, AfterViewInit {
     if (Object.keys(ProgressOutlineColor).includes(this.progressColor)) classes += ' ' + ProgressOutlineColor[this.progressColor];
     else progress.style.outlineColor = this.progressColor;
     classes.split(' ').forEach(cl => progress.classList.add(cl.noWhiteSpace('')));
-    progress.setAttribute('data-tip', this.tooltip === 'relative' ? this.progress + '%' : this.value.toString());
+    progress.setAttribute('data-tip', this.tooltip === 'relative' ? this.progress + '%' :
+      this.tooltip === 'absolute' ? this.value.toString() : this.tooltip);
   }
 
 }

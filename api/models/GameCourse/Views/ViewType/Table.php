@@ -166,13 +166,7 @@ class Table extends ViewType
      */
     public function compile(array &$view)
     {
-        if (isset($view["children"])) {
-            foreach ($view["children"] as &$vr) {
-                foreach ($vr as &$child) {
-                    ViewHandler::compileView($child);
-                }
-            }
-        }
+        $this->compileChildren($view);
     }
 
     /**
@@ -180,22 +174,7 @@ class Table extends ViewType
      */
     public function evaluate(array &$view, EvaluateVisitor $visitor)
     {
-        if (isset($view["children"])) {
-            $childrenEvaluated = [];
-            foreach ($view["children"] as &$vr) {
-                foreach ($vr as &$child) {
-                    if (isset($child["loopData"])) {
-                        ViewHandler::evaluateLoop($child, $visitor);
-                        $childrenEvaluated = array_merge($childrenEvaluated, $child);
-
-                    } else {
-                        ViewHandler::evaluateView($child, $visitor);
-                        $childrenEvaluated[] = $child;
-                    }
-                }
-            }
-            $view["children"] = $childrenEvaluated;
-        }
+        $this->evaluateChildren($view, $visitor);
     }
 
 

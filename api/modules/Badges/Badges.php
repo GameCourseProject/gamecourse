@@ -13,6 +13,7 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\Module\Moodle\Moodle;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\Views\Dictionary\ReturnType;
@@ -75,6 +76,7 @@ class Badges extends Module
     {
         $this->initDatabase();
         $this->createDataFolder();
+        $this->initTemplates();
         $this->initRules();
         $this->initProviders();
 
@@ -90,6 +92,7 @@ class Badges extends Module
             "returnType" => ReturnType::COLLECTION,
             "function" => "\$badgeDistribution = [[\"name\" => \"Badge Distribution\", \"type\" => \"column\", \"data\" => []]];
         if (\$showAverage) \$badgeDistribution[] = [\"name\" => \"Average\", \"type\" => \"line\", \"data\" => []];
+        if (\$interval > \$max) \$interval = 1;
 
         if (Core::dictionary()->mockData()) {
             if (is_null(\$max)) \$max = 60;
@@ -167,6 +170,7 @@ class Badges extends Module
     {
         $this->cleanDatabase();
         $this->removeDataFolder();
+        $this->removeTemplates();
         $this->removeRules();
         $this->removeProviders();
     }
@@ -992,6 +996,11 @@ class Badges extends Module
         Core::database()->update(self::TABLE_BADGE_CONFIG, ["maxExtraCredit" => $max], ["course" => $this->course->getId()]);
     }
 
+    public function getBlankImage(): string
+    {
+        return API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . $this->id . "/assets/blank.png";
+    }
+
 
     /*** ---------- Badges ---------- ***/
 
@@ -1071,6 +1080,48 @@ class Badges extends Module
         } else {
             $progression = Core::database()->select(self::TABLE_BADGE_PROGRESSION,
                 ["user" => $userId, "badge" => $badgeId], "COUNT(*)");
+
+            // Store in cache
+            $cacheValue = $progression;
+            Cache::store($courseId, $cacheId, $cacheValue);
+
+            return $progression;
+        }
+    }
+
+    /**
+     * Gets user progression information on a given badge,
+     * e.g. description and links to posts.
+     *
+     * @param int $userId
+     * @param int $badgeId
+     * @return array
+     */
+    public function getUserBadgeProgressionInfo(int $userId, int $badgeId): array
+    {
+        $courseId = $this->getCourse()->getId();
+
+        $cacheId = "badge_progression_u" . $userId . "_b" . $badgeId;
+        $cacheValue = Cache::get($courseId, $cacheId);
+
+        if (AutoGame::isRunning($courseId) && !is_null($cacheValue)) {
+            // NOTE: get value from cache while AutoGame is running
+            //       since progression table is not stable
+            return $cacheValue;
+
+        } else {
+            $table = self::TABLE_BADGE_PROGRESSION . " bp LEFT JOIN " . AutoGame::TABLE_PARTICIPATION . " p on bp.participation=p.id";
+            $progression = array_map(function ($p) {
+                $info = ["description" => $p["description"]];
+                if ($p["post"]) {
+                    if ($p["source"] === Moodle::ID) {
+                        $moodleModule = new Moodle($this->course);
+                        $moodleURL = $moodleModule->getMoodleConfig()["moodleURL"];
+                        $info["link"] = $moodleURL . (substr($moodleURL, -1) !== "/" ? "/" : "") . $p["post"];
+                    }
+                }
+                return $info;
+            }, Core::database()->selectMultiple($table, ["bp.user" => $userId, "bp.badge" => $badgeId], "p.*"));
 
             // Store in cache
             $cacheValue = $progression;

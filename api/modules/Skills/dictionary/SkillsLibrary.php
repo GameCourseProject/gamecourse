@@ -30,34 +30,26 @@ class SkillsLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
-            new DFunction("hasWildcardAvailable",
-                "Checks whether a given user has at least one wildcard available to use.",
-                ReturnType::BOOLEAN,
-                $this
-            )
+            // TODO
         ];
     }
 
     // NOTE: add new library functions bellow & update its
     //       metadata in 'getFunctions' above
 
+
+    /*** ---------- Config ---------- ***/
+
     /**
-     * Checks whether a given user has at least one wildcard
-     * available to use on a Skill Tree.
+     * TODO: description
      *
-     * @example %user.hasWildcardAvailable(<skillTreeID>) --> true
-     * @example %user.hasWildcardAvailable(<skillTreeID>) --> false
-     *
-     * @param array $user
-     * @param int $skillTreeId
      * @return ValueNode
      * @throws Exception
      */
-    public function hasWildcardAvailable(array $user, int $skillTreeId): ValueNode
+    public function isEnabled(): ValueNode
     {
-        if (Core::dictionary()->mockData()) return new ValueNode(false);
-
-        $skillsModule = new Skills(Core::dictionary()->getCourse());
-        return new ValueNode($skillsModule->userHasWildcardAvailable($user["id"], $skillTreeId));
+        $course = Core::dictionary()->getCourse();
+        $isEnabled = $course->isModuleEnabled(Skills::ID);
+        return new ValueNode($isEnabled, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 }

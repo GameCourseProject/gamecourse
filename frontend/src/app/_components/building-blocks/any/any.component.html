@@ -5,6 +5,7 @@
      [showTooltip]="{event: getEvent(EventAction.SHOW_TOOLTIP) | as : ShowTooltipEvent, view}">
 
   <bb-block    *ngIf="view.type === ViewType.BLOCK"    [view]="view | as : ViewBlock"    [viewSelection]="view"></bb-block>
+  <bb-button   *ngIf="view.type === ViewType.BUTTON"   [view]="view | as : ViewButton"   [viewSelection]="view"></bb-button>
   <bb-chart    *ngIf="view.type === ViewType.CHART"    [view]="view | as : ViewChart"    [viewSelection]="view"></bb-chart>
   <bb-collapse *ngIf="view.type === ViewType.COLLAPSE" [view]="view | as : ViewCollapse" [viewSelection]="view"></bb-collapse>
   <bb-icon     *ngIf="view.type === ViewType.ICON"     [view]="view | as : ViewIcon"     [viewSelection]="view"></bb-icon>

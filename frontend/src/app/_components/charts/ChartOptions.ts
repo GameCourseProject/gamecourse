@@ -282,7 +282,9 @@ export function tooltip(show: boolean, formatter: {xaxis: string, yaxis: string}
 function evaluate(expression: string, val: string | number | number[], opts?: any): string | number {
   const matches = expression.matchAll(/\(.*?\)/g);
   for (const match of matches) {
-    const expr = match[0].substr(1, match[0].length - 2).replaceAll('?value', val.toString());
+    const expr = match[0].substr(1, match[0].length - 2)
+      .replaceAll('?value', val.toString())
+      .replaceAll('?seriesIndex', opts.seriesIndex.toString());
     const value = eval(expr);
     expression = expression.replaceAll(match[0], value.toString());
   }

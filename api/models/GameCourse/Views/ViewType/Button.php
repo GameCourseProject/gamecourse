@@ -7,15 +7,12 @@ use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\ViewHandler;
 
 /**
- * This is the Row view type, which represents a core view that
- * can contain other views in a horizontal order.
- *
- * It's similar to the Block view type but alike blocks, rows
- * can only be used inside tables as immediate children.
+ * This is the Button view type, which represents a core view for
+ * button elements.
  */
-class Row extends ViewType
+class Button extends ViewType
 {
-    const TABLE_VIEW_ROW = "view_row";
+    const TABLE_VIEW_BUTTON = "view_button";
 
     public function __construct()
     {
@@ -27,8 +24,8 @@ class Row extends ViewType
     /*** ------------------ Metadata ------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    const ID = "row";  // NOTE: must match the name of the class
-    const DESCRIPTION = "Wrapper element that can contain other elements in an horizontal order. Can only be used inside tables.";
+    const ID = "button";  // NOTE: must match the name of the class
+    const DESCRIPTION = "Displays a button.";
 
 
     /*** ----------------------------------------------- ***/
@@ -43,9 +40,11 @@ class Row extends ViewType
     protected function initDatabase()
     {
         Core::database()->executeQuery("
-            CREATE TABLE IF NOT EXISTS " . self::TABLE_VIEW_ROW . "(
+            CREATE TABLE IF NOT EXISTS " . self::TABLE_VIEW_BUTTON . "(
                 id                          bigint unsigned NOT NULL PRIMARY KEY,
-                rowType                     ENUM ('header', 'body') DEFAULT 'body',
+                text                        TEXT NOT NULL,
+                color                       TEXT DEFAULT NULL,
+                icon                        TEXT DEFAULT NULL,
 
                 FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
             );
@@ -59,7 +58,7 @@ class Row extends ViewType
 
     protected function cleanDatabase()
     {
-        Core::database()->executeQuery("DROP TABLE IF EXISTS " . self::TABLE_VIEW_ROW . ";");
+        Core::database()->executeQuery("DROP TABLE IF EXISTS " . self::TABLE_VIEW_BUTTON . ";");
     }
 
 
@@ -69,63 +68,51 @@ class Row extends ViewType
 
     public function get(int $viewId): array
     {
-        return ["rowType" => Core::database()->select(self::TABLE_VIEW_ROW, ["id" => $viewId], "rowType")];
+        return self::parse(Core::database()->select(self::TABLE_VIEW_BUTTON, ["id" => $viewId], "text, color, icon"));
     }
 
     public function insert(array $view)
     {
-        Core::database()->insert(self::TABLE_VIEW_ROW, [
+        Core::database()->insert(self::TABLE_VIEW_BUTTON, [
             "id" => $view["id"],
-            "rowType" => $view["rowType"] ?? "body"
+            "text" => $view["text"],
+            "color" => $view["color"] ?? null,
+            "icon" => $view["icon"] ?? null
         ]);
     }
 
     public function update(array $view)
     {
-        Core::database()->update(self::TABLE_VIEW_ROW, [
-            "rowType" => $view["rowType"] ?? "body"
+        Core::database()->update(self::TABLE_VIEW_BUTTON, [
+            "id" => $view["id"],
+            "text" => $view["text"],
+            "color" => $view["color"] ?? null,
+            "icon" => $view["icon"] ?? null,
         ], ["id" => $view["id"]]);
     }
 
     public function delete(int $viewId)
     {
-        Core::database()->delete(self::TABLE_VIEW_ROW, ["id" => $viewId]);
+        Core::database()->delete(self::TABLE_VIEW_BUTTON, ["id" => $viewId]);
     }
 
-    /**
-     * @throws Exception
-     */
     public function build(array &$view, array $sortedAspects = null, bool $simplify = false)
     {
-        $children = ViewHandler::getChildrenOfView($view["id"]);
-        if (!empty($children)) {
-            foreach ($children as &$child) {
-                $child = ViewHandler::buildView($child, $sortedAspects, $simplify);
-                if (!empty($child)) $view["children"][] = $child;
-            }
+        // Simplify view icon
+        if ($simplify) {
+            if (isset($view["color"]) && !$view["color"]) unset($view["color"]);
+            if (isset($view["icon"]) && !$view["icon"]) unset($view["icon"]);
         }
     }
 
     public function translate(array $view, array &$logs, array &$views, array $parent = null)
     {
-        if (isset($view["children"])) {
-            for ($i = 0; $i < count($view["children"]); $i++) {
-                $child = $view["children"][$i];
-                $translatedTree = ViewHandler::translateViewTree($child, ["parent" => $view["id"], "pos" => $i]);
-                $logs = array_merge($logs, $translatedTree["logs"]);
-                $views += $translatedTree["views"];
-            }
-        }
+        // Nothing to do here
     }
 
     public function traverse(array &$view, $func, &$parent, &...$data)
     {
         $func($view, $parent, ...$data);
-        if (isset($view["children"])) {
-            foreach ($view["children"] as &$child) {
-                ViewHandler::traverseViewTree($child, $func, $view,...$data);
-            }
-        }
     }
 
 
@@ -138,15 +125,16 @@ class Row extends ViewType
      */
     public function compile(array &$view)
     {
-        $this->compileChildren($view);
+        if (isset($view["color"])) ViewHandler::compileExpression($view["color"]);
+        if (isset($view["icon"])) ViewHandler::compileExpression($view["icon"]);
+        ViewHandler::compileExpression($view["text"]);
     }
 
-    /**
-     * @throws Exception
-     */
     public function evaluate(array &$view, EvaluateVisitor $visitor)
     {
-        $this->evaluateChildren($view, $visitor);
+        if (isset($view["color"])) ViewHandler::evaluateNode($view["color"], $visitor);
+        if (isset($view["icon"])) ViewHandler::evaluateNode($view["icon"], $visitor);
+        ViewHandler::evaluateNode($view["text"], $visitor);
     }
 
 

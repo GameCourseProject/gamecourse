@@ -225,6 +225,7 @@ class XPLevels extends Module
             "returnType" => ReturnType::COLLECTION,
             "function" => "\$XPDistribution = [[\"name\" => \"XP Distribution\", \"type\" => \"column\", \"data\" => []]];
         if (\$showAverage) \$XPDistribution[] = [\"name\" => \"Average\", \"type\" => \"line\", \"data\" => []];
+        if (\$interval > \$max) \$interval = 1;
 
         if (Core::dictionary()->mockData()) {
             if (is_null(\$max)) \$max = 20000;
@@ -693,6 +694,35 @@ class XPLevels extends Module
     }
 
     /**
+     * Gets total extra credit XP for a given user.
+     *
+     * @param int $userId
+     * @return int
+     * @throws Exception
+     */
+    public function getUserExtraCreditXP(int $userId): int
+    {
+        if (!$this->userHasXP($userId))
+            throw new Exception("User with ID = " . $userId . " doesn't have XP initialized.");
+
+        $totalExtraCredit = 0;
+
+        // Get badges extra credit
+        $badgesModule = new Badges($this->course);
+        if ($badgesModule->isEnabled()) $totalExtraCredit += $this->getUserBadgesXP($userId, true);
+
+        // Get skills extra credit
+        $skillsModule = new Skills($this->course);
+        if ($skillsModule->isEnabled()) $totalExtraCredit += $this->getUserSkillsXP($userId, true);
+
+        // Get streaks extra credit
+        $streaksModule = new Streaks($this->course);
+        if ($streaksModule->isEnabled()) $totalExtraCredit += $this->getUserStreaksXP($userId, true);
+
+        return $totalExtraCredit;
+    }
+
+    /**
      * Gets total XP for a given user of a specific type of award.
      * NOTE: types of awards in AwardType.php
      *
@@ -729,18 +759,18 @@ class XPLevels extends Module
      * Gets total skills XP for a given user.
      * Option for collaborative:
      *  - if null --> gets total XP for all skills
-     *  - if false --> gets total XP only for skills that are not collab
-     *  - if true --> gets total XP only for skills that are collab
+     *  - if false --> gets total XP only for skills that are not extra
+     *  - if true --> gets total XP only for skills that are extra
      *
      * @param int $userId
-     * @param bool|null $collab
+     * @param bool|null $extra
      * @return int
      * @throws Exception
      */
-    public function getUserSkillsXP(int $userId, bool $collab = null): int
+    public function getUserSkillsXP(int $userId, bool $extra = null): int
     {
         $awardsModule = new Awards($this->course);
-        return $awardsModule->getUserSkillsTotalReward($userId, $collab);
+        return $awardsModule->getUserSkillsTotalReward($userId, null, $extra);
     }
 
     /**

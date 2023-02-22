@@ -4,6 +4,7 @@ namespace GameCourse\Views\Dictionary;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use GameCourse\Views\ViewHandler;
 
 class SystemLibrary extends Library
 {
@@ -64,6 +65,19 @@ class SystemLibrary extends Library
     public function if(bool $condition, $ifTrue, $ifFalse): ValueNode
     {
         $value = $condition ? $ifTrue : $ifFalse;
+
+        // Compile and evaluate if expression
+        if (is_string($value)) {
+            preg_match_all("/({.*})/", $value, $matches);
+            foreach ($matches[1] as $match) {
+                $expression = $match;
+                ViewHandler::compileExpression($expression);
+                ViewHandler::evaluateNode($expression, Core::dictionary()->getVisitor());
+                $match = str_replace("(", "\(", $match);
+                $match = str_replace(")", "\)", $match);
+                $value = preg_replace("/" . $match . "/", "$expression", $value);
+            }
+        }
 
         $library = null;
         if (is_array($value)) $library = Core::dictionary()->getLibraryById(CollectionLibrary::ID);

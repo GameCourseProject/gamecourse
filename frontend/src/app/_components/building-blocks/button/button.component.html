@@ -14,12 +14,13 @@
 <!------------------------------------------------>
 
 <ng-template #DISPLAY_DEFAULT>
-  <div [attr.id]="view.cssId"
-       [classList]="classes + ' ' + view.classList"
-       [attr.style]="view.styles">
+  <button [attr.id]="view.cssId"
+          [classList]="classes + ' ' + view.classList"
+          [attr.style]="view.styles ?? '' + (view.color ? ' background-color: ' + view.color : '')">
 
-    <ng-icon [name]="view.icon || DEFAULT" [size]="view.size"></ng-icon>
-  </div>
+    <ng-icon [name]="view.icon || DEFAULT" [size]="'1.3rem'"></ng-icon>
+    {{view.text}}
+  </button>
 </ng-template>
 
 

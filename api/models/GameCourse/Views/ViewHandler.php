@@ -150,6 +150,7 @@ class ViewHandler
      * @param array $view
      * @param Aspect $aspect
      * @return void
+     * @throws Exception
      */
     public static function insertView(array $view, Aspect $aspect)
     {
@@ -202,6 +203,7 @@ class ViewHandler
      * @param array $view
      * @param Aspect $aspect
      * @return void
+     * @throws Exception
      */
     public static function updateView(array $view, Aspect $aspect)
     {
@@ -338,12 +340,10 @@ class ViewHandler
             // Evaluate each view
             $mockData = !is_array($populate);
             foreach ($viewTree as &$view) {
-                $visitor = new EvaluateVisitor(
+                self::evaluateView($view, new EvaluateVisitor(
                     $mockData ? ["course" => 0, "viewer" => 0, "user" => 0] : $populate,
                     $mockData
-                );
-                Core::dictionary()->setVisitor($visitor);
-                self::evaluateView($view, $visitor);
+                ));
             }
         }
 
@@ -408,6 +408,7 @@ class ViewHandler
                 if (!$viewerRoleId && !$userRoleId) unset($view["aspect"]);
                 if ($view["visibilityType"] === VisibilityType::VISIBLE) unset($view["visibilityType"]);
                 if (empty($view["variables"])) unset($view["variables"]);
+                else $view["variables"] = array_map(function ($v) { unset($v["position"]); return $v; }, $view["variables"]);
                 if (empty($view["events"])) unset($view["events"]);
             }
 
@@ -457,10 +458,24 @@ class ViewHandler
      */
     public static function compileView(array &$view)
     {
+        // Store view information on the dictionary
+        Core::dictionary()->storeView($view);
+
         // Compile basic parameters
         $params = ["cssId", "class", "style", "visibilityCondition", "loopData"];
         foreach ($params as $param) {
-            if (isset($view[$param])) self::compileExpression($view[$param]);
+            if (isset($view[$param])) {
+                // Ignore % that are not variables, e.g. 'width: 100%'
+                $pattern = "/(\d+)%/";
+                preg_match_all($pattern, $view[$param], $matches);
+                if (!empty($matches) && count($matches) == 2) {
+                    foreach ($matches[0] as $i => $v) {
+                        $view[$param] = preg_replace("/$v/", $matches[1][$i] . "?", $view[$param]);
+                    }
+                }
+
+                self::compileExpression($view[$param]);
+            }
         }
 
         // Compile variables
@@ -511,23 +526,26 @@ class ViewHandler
      */
     public static function evaluateView(array &$view, EvaluateVisitor $visitor)
     {
-        // Add variables as visitor params
-        // NOTE: needs to be 1st so that expressions that use any of the variables can be evaluated
-        if (isset($view["variables"])) {
-            foreach ($view["variables"] as $variable) {
-                $visitor->addParam($variable["name"], $variable["value"]);
-            }
+        self::prepareViewVisitor($view, $visitor);
+
+        // Remove invisible views
+        self::evaluateVisibility($view, $visitor);
+        if ($view["visibilityType"] === VisibilityType::INVISIBLE ||
+            ($view["visibilityType"] === VisibilityType::CONDITIONAL && !$view["visibilityCondition"])) {
+            $view = null;
+            return;
         }
 
         // Evaluate basic parameters
-        $params = ["cssId", "class", "style", "visibilityCondition"];
+        $params = ["cssId", "class", "style"];
         foreach ($params as $param) {
-            if (isset($view[$param])) self::evaluateNode($view[$param], $visitor);
-        }
+            if (isset($view[$param])) {
+                self::evaluateNode($view[$param], $visitor);
 
-        // Ignore invisible views
-        if ($view["visibilityType"] === VisibilityType::INVISIBLE ||
-            ($view["visibilityType"] === VisibilityType::CONDITIONAL && !$view["visibilityCondition"])) return;
+                // Replace % that are not variables, e.g. 'widht: 100%'
+                $view[$param] = str_replace("?", "%", $view[$param]);
+            }
+        }
 
         // Evaluate events
         if (isset($view["events"])) {
@@ -562,13 +580,8 @@ class ViewHandler
      */
     public static function evaluateLoop(array &$view, EvaluateVisitor $visitor)
     {
-        // Add variables as visitor params
-        // NOTE: needs to be 1st so that expressions that use any of the variables can be evaluated
-        if (isset($view["variables"])) {
-            foreach ($view["variables"] as $variable) {
-                $visitor->addParam($variable["name"], $variable["value"]);
-            }
-        }
+        Core::dictionary()->storeViewIdAsViewWithLoopData($view["id"]);
+        self::prepareViewVisitor($view, $visitor);
 
         // Get collection to loop
         self::evaluateNode($view["loopData"], $visitor);
@@ -585,17 +598,47 @@ class ViewHandler
         for ($i = 0; $i < count($collection); $i++) {
             // Copy view & visitor
             $newView = $view;
-            $newVisitor = new EvaluateVisitor($visitor->getParams(), $visitor->mockData());
+            $newVisitor = $visitor->copy();
+
+            // If inner loop, replace item params
+            if ($newVisitor->hasParam("item")) {
+                $viewIdsWithLoopData = Core::dictionary()->getViewIdsWithLoopData();
+                $newItemKey = "item" . str_repeat("N", count($viewIdsWithLoopData) - 1);
+                foreach (Core::dictionary()->getView($viewIdsWithLoopData[count($viewIdsWithLoopData) - 2])["variables"] as $variable) {
+                    $newValue = str_replace("%item", "%$newItemKey", $variable["value"]);
+                    self::compileExpression($newValue);
+                    $newVisitor->addParam($variable["name"], $newValue);
+                }
+                $newVisitor->addParam($newItemKey, $newVisitor->getParam("item"));
+            }
 
             // Update visitor params with %item and %index
             $newVisitor->addParam("item", new ValueNode($collection[$i], $collection[$i]["libraryOfItem"]));
             $newVisitor->addParam("index", $i);
+            Core::dictionary()->setVisitor($newVisitor);
 
             // Evaluate new view
             self::evaluateView($newView, $newVisitor);
-            $repeatedViews[] = $newView;
+            if ($newView) $repeatedViews[] = $newView;
         }
         $view = $repeatedViews;
+    }
+
+    /**
+     * Evaluates visibility of a given view.
+     *
+     * @param array $view
+     * @param EvaluateVisitor $visitor
+     * @return void
+     * @throws Exception
+     */
+    private static function evaluateVisibility(array &$view, EvaluateVisitor $visitor)
+    {
+        if ($view["visibilityType"] === VisibilityType::CONDITIONAL) {
+            if (!isset($view["visibilityCondition"]))
+                throw new Exception("View has a conditional visibility type but no condition was is set.");
+            self::evaluateNode($view["visibilityCondition"], $visitor);
+        }
     }
 
 
@@ -744,14 +787,39 @@ class ViewHandler
         ];
     }
 
+    private static function prepareViewVisitor(array $view, EvaluateVisitor $visitor)
+    {
+        // Add variables as visitor params
+        // NOTE: needs to be 1st so that expressions that use any of the variables can be evaluated
+        if (isset($view["variables"])) {
+            foreach ($view["variables"] as $variable) {
+                $visitor->addParam($variable["name"], $variable["value"]);
+            }
+        }
+
+        // Set dictionary visitor as the current view's visitor
+        Core::dictionary()->setVisitor($visitor);
+    }
+
+    /**
+     * @throws Exception
+     */
     private static function insertVariablesInView(array $view)
     {
-        // NOTE: a view and/or its children cannot have variables with same name
-        $notAllowed = ["course", "viewer", "user", "item", "index", "value", "sort"];
+        $notAllowed = ["course", "viewer", "user", "item", "index", "value", "seriesIndex", "sort"];
+        $notAllowedToStartWith = ["item", "sort"];
         if (isset($view["variables"])) {
             foreach ($view["variables"] as $i => $variable) {
-                if (!in_array($variable["name"], $notAllowed) && !str_starts_with($variable["name"], "sort"))
-                    Variable::addVariable($view["id"], $variable["name"], $variable["value"], $i);
+                $name = $variable["name"];
+                if (in_array($name, $notAllowed))
+                    throw new Exception("Variable with name '$name' is not allowed.");
+
+                foreach ($notAllowedToStartWith as $startWith) {
+                    if (str_starts_with($name, $startWith))
+                        throw new Exception("Variable with name '$name' can't start with '$startWith'");
+                }
+
+                Variable::addVariable($view["id"], $name, $variable["value"], $i);
             }
         }
     }

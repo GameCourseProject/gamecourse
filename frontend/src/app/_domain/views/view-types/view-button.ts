@@ -5,20 +5,22 @@ import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 
-export class ViewText extends View {
+export class ViewButton extends View {
   private _text: string;
-  private _link?: string;
+  private _color?: string;
+  private _icon?: string;
 
 
-  constructor(mode: ViewMode, id: number, viewRoot: number, parent: View, aspect: Aspect, text: string, link?: string,
-              cssId?: string, classList?: string, styles?: string, visibilityType?: VisibilityType, visibilityCondition?: string | boolean,
-              loopData?: string, variables?: Variable[], events?: Event[]) {
+  constructor(mode: ViewMode, id: number, viewRoot: number, parent: View, aspect: Aspect, text: string, color?: string,
+              icon?: string, cssId?: string, classList?: string, styles?: string, visibilityType?: VisibilityType,
+              visibilityCondition?: string | boolean, loopData?: string, variables?: Variable[], events?: Event[]) {
 
-    super(mode, ViewType.TEXT, id, viewRoot, parent, aspect, cssId, classList, styles, visibilityType, visibilityCondition,
+    super(mode, ViewType.BUTTON, id, viewRoot, parent, aspect, cssId, classList, styles, visibilityType, visibilityCondition,
       loopData, variables, events);
 
     this.text = text;
-    this.link = link;
+    this.color = color;
+    this.icon = icon;
   }
 
 
@@ -30,16 +32,24 @@ export class ViewText extends View {
     this._text = value;
   }
 
-  get link(): string {
-    return this._link;
+  get color(): string {
+    return this._color;
   }
 
-  set link(value: string) {
-    this._link = value;
+  set color(value: string) {
+    this._color = value;
+  }
+
+  get icon(): string {
+    return this._icon;
+  }
+
+  set icon(value: string) {
+    this._icon = value;
   }
 
 
-  updateView(newView: View): ViewText { // TODO: refactor view editor
+  updateView(newView: View): ViewButton { // TODO: refactor view editor
     // if (this.id === newView.id) {
     //   const copy = copyObject(newView);
     //   ViewSelectionService.unselect(copy);
@@ -88,9 +98,9 @@ export class ViewText extends View {
   }
 
   /**
-   * Gets a default text view.
+   * Gets a default button view.
    */
-  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewText { // TODO: refactor view editor
+  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewButton { // TODO: refactor view editor
     return null;
     // return new ViewText(id, id, parentId, role, ViewMode.EDIT, "", null, null, null, null,
     //   View.VIEW_CLASS + ' ' + this.TEXT_CLASS + (!!cl ? ' ' + cl : ''));
@@ -106,25 +116,25 @@ export class ViewText extends View {
     const obj = View.toJson(this);
     return Object.assign(obj, {
       text: this.text,
-      link: this.link,
+      color: this.color,
+      icon: this.icon,
     });
   }
 
-  static fromDatabase(obj: ViewTextDatabase): ViewText {
-    if (obj.id == 1758406873607322) console.log(obj)
+  static fromDatabase(obj: ViewButtonDatabase): ViewButton {
     // Parse common view params
     const parsedObj = View.parse(obj);
-    if (obj.id == 1758406873607322) console.log(obj)
 
     // Get a view of type text
-    return new ViewText(
+    return new ViewButton(
       parsedObj.mode,
       parsedObj.id,
       parsedObj.viewRoot,
       null,
       parsedObj.aspect,
-      obj.text.toString(),
-      obj.link || null,
+      obj.text,
+      obj.color || null,
+      obj.icon || null,
       parsedObj.cssId,
       parsedObj.classList,
       parsedObj.styles,
@@ -137,7 +147,8 @@ export class ViewText extends View {
   }
 }
 
-export interface ViewTextDatabase extends ViewDatabase {
-  text: number | string;
-  link?: string;
+export interface ViewButtonDatabase extends ViewDatabase {
+  text: string;
+  color?: string;
+  icon?: string;
 }
