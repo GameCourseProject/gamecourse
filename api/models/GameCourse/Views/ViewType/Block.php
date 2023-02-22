@@ -78,7 +78,7 @@ class Block extends ViewType
             "id" => $view["id"],
             "direction" => $view["direction"] ?? "vertical",
             "columns" => $view["columns"] ?? null,
-            "responsive" => $view["responsive"] ?? true
+            "responsive" => +($view["responsive"] ?? true)
         ]);
     }
 
@@ -87,7 +87,7 @@ class Block extends ViewType
         Core::database()->update(self::TABLE_VIEW_BLOCK, [
             "direction" => $view["direction"] ?? "vertical",
             "columns" => $view["columns"] ?? null,
-            "responsive" => $view["responsive"] ?? true
+            "responsive" => +($view["responsive"] ?? true)
         ], ["id" => $view["id"]]);
     }
 

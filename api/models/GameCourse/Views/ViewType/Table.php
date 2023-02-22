@@ -81,26 +81,26 @@ class Table extends ViewType
     {
         Core::database()->insert(self::TABLE_VIEW_TABLE, [
             "id" => $view["id"],
-            "footers" => $view["footers"] ?? true,
-            "searching" => $view["searching"] ?? true,
-            "columnFiltering" => $view["columnFiltering"] ?? true,
-            "paging" => $view["paging"] ?? true,
-            "lengthChange" => $view["lengthChange"] ?? true,
-            "info" => $view["info"] ?? true,
-            "ordering" => $view["ordering"] ?? true
+            "footers" => +($view["footers"] ?? true),
+            "searching" => +($view["searching"] ?? true),
+            "columnFiltering" => +($view["columnFiltering"] ?? true),
+            "paging" => +($view["paging"] ?? true),
+            "lengthChange" => +($view["lengthChange"] ?? true),
+            "info" => +($view["info"] ?? true),
+            "ordering" => +($view["ordering"] ?? true)
         ]);
     }
 
     public function update(array $view)
     {
         Core::database()->update(self::TABLE_VIEW_TABLE, [
-            "footers" => $view["footers"] ?? true,
-            "searching" => $view["searching"] ?? true,
-            "columnFiltering" => $view["columnFiltering"] ?? true,
-            "paging" => $view["paging"] ?? true,
-            "lengthChange" => $view["lengthChange"] ?? true,
-            "info" => $view["info"] ?? true,
-            "ordering" => $view["ordering"] ?? true
+            "footers" => +($view["footers"] ?? true),
+            "searching" => +($view["searching"] ?? true),
+            "columnFiltering" => +($view["columnFiltering"] ?? true),
+            "paging" => +($view["paging"] ?? true),
+            "lengthChange" => +($view["lengthChange"] ?? true),
+            "info" => +($view["info"] ?? true),
+            "ordering" => +($view["ordering"] ?? true)
         ], ["id" => $view["id"]]);
     }
 
