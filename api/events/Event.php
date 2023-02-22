@@ -30,12 +30,16 @@ class Event
     {
         Event::listen(EventType::PAGE_VIEWED, function (int $pageId, int $viewerId, int $userId) {
             $page = Page::getPageById($pageId);
-            Core::database()->insert(Page::TABLE_PAGE_HISTORY, [
-                "course" => $page->getCourse()->getId(),
-                "page" => $pageId,
-                "viewer" => $viewerId,
-                "user" => $userId
-            ]);
+            $course = $page->getCourse();
+
+            if ($course->getCourseUserById($userId)->exists()) {
+                Core::database()->insert(Page::TABLE_PAGE_HISTORY, [
+                    "course" => $course->getId(),
+                    "page" => $pageId,
+                    "viewer" => $viewerId,
+                    "user" => $userId
+                ]);
+            }
         });
     }
 

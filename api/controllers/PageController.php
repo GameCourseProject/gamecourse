@@ -149,9 +149,11 @@ class PageController
         $userId = API::getValue("userId", "int");
 
         // Verify page is visible for current user
-        $courseUser = API::verifyCourseUserExists($course, $viewerId);
-        if (!$courseUser->isTeacher() && !$page->isVisible())
-            API::error("Page with ID = " . $pageId . " is not visible for current user.", 403);
+        if (!Core::getLoggedUser()->isAdmin()) {
+            $courseUser = API::verifyCourseUserExists($course, $viewerId);
+            if (!$courseUser->isTeacher() && !$page->isVisible())
+                API::error("Page with ID = " . $pageId . " is not visible for current user.", 403);
+        }
 
         // Trigger page viewed event
         Event::trigger(EventType::PAGE_VIEWED, $pageId, $viewerId, $userId ?? $viewerId);
