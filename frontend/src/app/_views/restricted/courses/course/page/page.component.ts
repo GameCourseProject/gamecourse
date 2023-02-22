@@ -12,6 +12,7 @@ import {TableDataType} from "../../../../../_components/tables/table-data/table-
 import {Tier} from "../../../../../_domain/modules/config/personalized-config/skills/tier";
 import {SkillTree} from "../../../../../_domain/modules/config/personalized-config/skills/skill-tree";
 import {environment} from "../../../../../../environments/environment";
+import {Moment} from "moment";
 
 @Component({
   selector: 'app-page',
@@ -47,6 +48,9 @@ export class PageComponent implements OnInit {
   cost: {[key: number]: number};
   skillsCompleted: number[];
   vcIcon: string = environment.apiEndpoint + '/modules/VirtualCurrency/assets/default.png';
+
+  streaksInfo: Streak[] = [];
+  streakImage: string = environment.apiEndpoint + '/modules/Streaks/icon.svg';
 
   skill: Skill;
   isPreview: boolean;
@@ -89,7 +93,7 @@ export class PageComponent implements OnInit {
           this.pageView = null;
           const pageID = parseInt(params.id);
           const userID = parseInt(params.userId) || null;
-          this.user = await this.api.getUserById(userID).toPromise();
+          this.user = userID ? await this.api.getUserById(userID).toPromise() : null;
           await this.getPage(pageID);
 
           // Render page
@@ -125,6 +129,21 @@ export class PageComponent implements OnInit {
     if (this.page.id === this.skillTreePage) {
       await this.initSkillTreesInfo(this.course.id);
       this.availableWildcards = await this.api.getUserTotalAvailableWildcards(this.course.id, this.user.id, this.skillTrees[0].id).toPromise();
+
+    } else if (this.page.id === this.streaksPage) {
+      this.streaksInfo = await this.api.getStreaks(this.course.id).toPromise();
+      const info = await this.api.getUserStreaks(this.course.id, this.user.id).toPromise();
+      this.streaksInfo = this.streaksInfo.map(streak => {
+        for (const s of info) {
+          if (s.id === streak.id) {
+            streak.deadline = s.deadline;
+            streak.nrCompletions = s.nrCompletions;
+            streak.progress = s.progress;
+            return streak;
+          }
+        }
+        return streak;
+      });
     }
   }
 
@@ -209,4 +228,26 @@ export class PageComponent implements OnInit {
     return exists(this.lectureNr) && this.lectureNr > 0 && exists(this.typeOfClass);
   }
 
+  steps(goal: number): number[] {
+    return Array(goal);
+  }
+
+}
+
+export interface Streak {
+  id: number,
+  name: string,
+  description: string,
+  color: string,
+  image: string;
+  svg: string,
+  goal: number,
+  reward: number,
+  tokens: number,
+  isExtra: boolean,
+  isRepeatable: boolean,
+  isPeriodic: boolean,
+  nrCompletions: number,
+  progress: number,
+  deadline: Moment,
 }

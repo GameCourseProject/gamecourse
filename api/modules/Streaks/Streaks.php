@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\Module\Streaks;
 
+use API\API;
 use Exception;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
@@ -974,6 +975,8 @@ class Streaks extends Module
         foreach ($userStreakAwards as $streakId => $awards) {
             $streak = (new Streak($streakId))->getData();
             $streak["nrCompletions"] = count($awards);
+            $streak["progress"] = $this->getUserStreakProgression($userId, $streakId, $streak["nrCompletions"]);
+            if ((new Streak($streakId))->isPeriodic()) $streak["deadline"] = $this->getUserStreakDeadline($userId, $streakId);
             $streaks[] = $streak;
         }
         return $streaks;
@@ -984,9 +987,11 @@ class Streaks extends Module
      *
      * @param int $userId
      * @param int $streakId
+     * @param int|null $nrCompletions
      * @return int
+     * @throws Exception
      */
-    public function getUserStreakProgression(int $userId, int $streakId): int
+    public function getUserStreakProgression(int $userId, int $streakId, int $nrCompletions = null): int
     {
         $courseId = $this->getCourse()->getId();
 
@@ -999,8 +1004,9 @@ class Streaks extends Module
             return $cacheValue;
 
         } else {
+            if (is_null($nrCompletions)) $nrCompletions = $this->getUserStreakCompletions($userId, $streakId);
             $progression = Core::database()->select(self::TABLE_STREAK_PROGRESSION,
-                ["user" => $userId, "streak" => $streakId], "COUNT(*)");
+                ["user" => $userId, "streak" => $streakId, "repetition" => $nrCompletions + 1], "COUNT(*)");
 
             // Store in cache
             $cacheValue = $progression;

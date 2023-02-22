@@ -60,6 +60,7 @@ import {SetupData} from "../../_views/setup/setup/setup.component";
 import {
   DataSourceStatus
 } from "../../_views/restricted/courses/course/settings/modules/config/data-source-status/data-source-status.component";
+import { Streak } from 'src/app/_views/restricted/courses/course/page/page.component';
 
 @Injectable({
   providedIn: 'root'
@@ -2444,6 +2445,65 @@ export class ApiHttpService {
         const completed: number[] = info.map(skill => skill['id']);
         return {attempts, cost, completed};
       }));
+  }
+
+  public getStreaks(courseID: number): Observable<Streak[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'getStreaks');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => {
+        return {
+          id: obj.id,
+          name: obj.name,
+          description: obj.description,
+          color: obj.color,
+          image: obj.image,
+          svg: obj.svg,
+          goal: obj.goal,
+          reward: obj.reward,
+          tokens: obj.tokens,
+          isExtra: obj.isExtra,
+          isRepeatable: obj.isRepeatable,
+          isPeriodic: obj.isPeriodic
+        };
+      })));
+  }
+
+  public getUserStreaks(courseID: number, userID: number): Observable<Streak[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'getUserStreaks');
+      qs.push('courseId', courseID);
+      qs.push('userId', userID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => {
+        return {
+          id: obj.id,
+          name: obj.name,
+          description: obj.description,
+          color: obj.color,
+          image: obj.image,
+          goal: obj.goal,
+          reward: obj.reward,
+          tokens: obj.tokens,
+          isExtra: obj.isExtra,
+          isRepeatable: obj.isRepeatable,
+          isPeriodic: obj.isPeriodic,
+          nrCompletions: obj.nrCompletions,
+          progress: obj.progress,
+          deadline: dateFromDatabase(obj.deadline),
+        };
+      })));
   }
 
 

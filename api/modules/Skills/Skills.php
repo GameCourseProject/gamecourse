@@ -2,6 +2,7 @@
 namespace GameCourse\Module\Skills;
 
 use Exception;
+use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
@@ -12,6 +13,7 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\Module\Streaks\Streak;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 
@@ -452,7 +454,14 @@ class Skills extends Module
             if ($skill->getTier()->getSkillTree()->getId() != $skillTreeId)
                 continue;
 
-            $skills[] = $skill->getData();
+            $skillData = $skill->getData();
+            $skillData["attempts"] = count(array_filter(AutoGame::getParticipations($course->getId(), $userId, "graded post"),
+                function ($item) use ($skill) {
+                    $name = $skill->getName();
+                    return $item["description"] === "Skill Tree, Re: $name";
+                })); // FIXME: create function to get attempts
+            $skillData["cost"] = $skill->getSkillCostForUser($userId);
+            $skills[] = $skillData;
         }
         return $skills;
     }
