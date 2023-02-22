@@ -242,11 +242,14 @@ class UserController
      */
     public function editUser()
     {
-        API::requireAdminPermission();
         API::requireValues('userId', 'name', 'authService', 'studentNumber', 'email', 'nickname', 'username', 'major', 'image');
 
         $userId = API::getValue("userId", "int");
         $user = API::verifyUserExists($userId);
+
+        // Only admins can access other users' information
+        if (Core::getLoggedUser()->getId() !== $userId)
+            API::requireAdminPermission();
 
         // Get values
         $name = API::getValue("name");

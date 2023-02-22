@@ -68,7 +68,7 @@
           </div>
         </div>
 
-        <ng-container *ngIf="loggedUser.isAdmin" [ngTemplateOutlet]="ADMIN" [ngTemplateOutletContext]="{form: f}"></ng-container>
+        <ng-container *ngIf="loggedUser.isAdmin || isATeacher" [ngTemplateOutlet]="ADMIN" [ngTemplateOutletContext]="{form: f}"></ng-container>
         <ng-container *ngIf="!loggedUser.isAdmin" [ngTemplateOutlet]="NON_ADMIN" [ngTemplateOutletContext]="{form: f}"></ng-container>
 
         <!-- Action buttons -->
