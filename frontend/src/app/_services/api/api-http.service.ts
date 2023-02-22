@@ -2081,7 +2081,10 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => Page.fromDatabase(res['data'])) );
+      .pipe( map((res: any) => {
+        if (res['data']) return Page.fromDatabase(res['data']);
+        return null;
+      }) );
   }
 
   public getCoursePages(courseID: number, isVisible?: boolean): Observable<Page[]> {

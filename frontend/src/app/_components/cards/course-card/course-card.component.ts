@@ -29,11 +29,12 @@ export class CourseCardComponent implements OnInit {
 
   async getRedirectLink(): Promise<string> {
     const link = '/courses/' + this.course.id;
-    if (this.user.isAdmin) return link; // admins go to main page
+    if (this.user.isAdmin) return link + '/overview'; // admins go to overview page
 
     const userLandingPage = await this.api.getUserLandingPage(this.course.id, this.user.id).toPromise();
     const pageID = userLandingPage?.id || this.course.landingPage;
     if (pageID) return link + '/pages/' + pageID;
+    else if (await this.api.isTeacher(this.course.id, this.user.id).toPromise()) return link + '/overview';
     else return link;
   }
 
