@@ -1,1 +1,11 @@
-<p>TODO</p>
+<div *ngIf="!loading" class="prose">
+  <h2>Welcome to {{course.name ?? ''}}!</h2>
+  <p class="font-medium">Hello fellow player 👋.</p>
+  <p>Take a look around and explore the course's pages available on the sidebar to know which types of awards you can earn.</p>
+  <p></p>
+</div>
+
+<!-- Spinner -->
+<div *ngIf="loading" class="flex justify-center items-center">
+  <app-spinner></app-spinner>
+</div>
