@@ -402,6 +402,8 @@ class Streak
             // Get image
             $streak = new Streak($streakInfo["id"]);
             $streakInfo["image"] = $streak->getImage();
+            $streakInfo["svg"] = file_get_contents(MODULES_FOLDER . "/Streaks/icon.svg");
+            $streakInfo["isPeriodic"] = $streak->isPeriodic();
         }
         return $streaks;
     }
