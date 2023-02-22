@@ -157,6 +157,8 @@ import {
   TablerBulb,
   TablerCalendarTime,
   TablerCaretDown,
+  TablerChecks,
+  TablerCircleCheck,
   TablerClipboardList,
   TablerCloudUpload,
   TablerCoin,
@@ -174,11 +176,12 @@ import {
   TablerPresentation,
   TablerPrompt,
   TablerQuestionMark,
-  TablerSchool,
   TablerStar,
+  TablerSchool,
   TablerTimeline,
   TablerTrophy,
-  TablerUserCircle
+  TablerUserCircle,
+  TablerUsers
 } from "@ng-icons/tabler-icons";
 
 
@@ -399,6 +402,8 @@ import {
       TablerBulb,
       TablerCalendarTime,
       TablerCaretDown,
+      TablerChecks,
+      TablerCircleCheck,
       TablerClipboardList,
       TablerCloudUpload,
       TablerCoin,
@@ -420,7 +425,8 @@ import {
       TablerStar,
       TablerTimeline,
       TablerTrophy,
-      TablerUserCircle
+      TablerUserCircle,
+      TablerUsers
     }),
     DataTablesModule,
     NgApexchartsModule,

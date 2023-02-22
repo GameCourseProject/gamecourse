@@ -1,7 +1,77 @@
 <ng-container *ngIf="!loading">
   <!-- Render page -->
   <div *ngIf="pageView" class="page">
-    <bb-any [view]="pageView"></bb-any>
+    <ng-container *ngIf="!skipPages.includes(page.id)"> <!-- FIXME: this is hard-coded -->
+      <bb-any [view]="pageView"></bb-any>
+    </ng-container>
+
+    <!-- FIXME: this is hard-coded -->
+    <ng-container *ngIf="page.id === skillTreePage"> <!-- Skill Tree -->
+      <div class="card w-full bg-base-100 shadow-xl">
+        <div class="card-body overflow-x-auto">
+
+          <!-- Header -->
+          <app-header [title]="'Skill Tree'" [color]="course.color" [icon]="'tabler-bulb'"></app-header>
+
+          <!-- Skill Tree -->
+          <div class="flex flex-col w-full lg:flex-row">
+            <ng-container *ngFor="let tier of getSkillTreeInfo(skillTrees[0].id).tiers; let first = first; let last = last">
+              <ng-container *ngIf="!tier.isActive"></ng-container>
+
+              <ng-container *ngIf="tier.isActive">
+                <!-- Divider -->
+                <div *ngIf="!first" class="divider lg:divider-horizontal"></div>
+
+                <!-- Tier -->
+                <div class="grid flex-grow h-fit p-2 place-items-center">
+                  <span class="text-center font-semibold mb-2" [style]="'color: ' + course.color">{{tier.name}}: {{tier.reward}} XP</span>
+
+                  <!-- Skill -->
+                  <div class="flex flex-wrap flex-row justify-start items-start w-full lg:flex-col">
+                    <div *ngFor="let skill of filterSkillsByTier(getSkillTreeInfo(skillTrees[0].id).skills, tier.id)" class="flex flex-col justify-start m-2">
+
+                      <div class="flex justify-start gap-2 {{tier.position === 0 ? 'items-center' : ''}}">
+                        <div class="flex flex-col items-center">
+                          <!-- Skill box -->
+                          <div class="w-20 h-20 p-2 rounded-lg hover:cursor-pointer hover:outline hover:outline-offset-2 relative"
+                               [ngStyle]="{'background-color': skill.color, 'outline-color': skill.color}" (click)="goToSkillPage(skill)">
+                            <span class="block text-white font-semibold text-xs break-words">{{skill.name}}</span>
+                            <ng-icon *ngIf="skill.isCollab" class="absolute bottom-0 left-0 mr-2 mb-2 text-base-100" name="tabler-users" size="1.1rem"></ng-icon>
+                            <ng-icon *ngIf="skillsCompleted[skill.id]" class="absolute bottom-0 right-0 mr-2 mb-2 text-base-100" name="tabler-checks" size="1.1rem"></ng-icon>
+                          </div>
+                        </div>
+
+                        <!-- VC -->
+                        <div class="{{tier.position !== 0 ? 'mt-5' : ''}}">
+                          <p class="font-medium text-sm">Nr. attempts:<span class="ml-1">{{attempts[skill.id] ?? 0}}</span></p>
+                          <p class="font-medium text-sm flex items-center min-w-max">Cost to {{attempts[skill.id] > 0 ? 'retry' : 'try'}}:<span class="flex items-center gap-1 ml-1">{{cost[skill.id] ?? 0}}
+                            <img class="h-4 w-4 inline-block" [src]="vcIcon" alt=""></span></p>
+                        </div>
+                      </div>
+
+                      <!-- Skill dependencies -->
+                      <div *ngIf="skill.dependencies.length > 0" class="mt-1 lg:mb-5">
+                        <p *ngFor="let combo of skill.dependencies; let last = last" class="prose text-xs text-center" [ngClass]="{'mb-0.5': !last}">{{getComboText(combo)}}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Used Wildcards -->
+                  <p *ngIf="last" class="font-semibold mt-4">Wildcards available: {{availableWildcards}}</p>
+
+                </div>
+              </ng-container>
+
+            </ng-container>
+          </div>
+
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="page.id === streaksPage"> <!-- Streaks -->
+
+    </ng-container>
   </div>
 
   <!-- Skill page -->
@@ -15,7 +85,7 @@
 
     <!-- Page -->
     <app-header [title]="skill.name"></app-header>
-    <div [innerHTML]="skill.page | sanitizeHTML"></div>
+    <div class="prose max-w-[80ch]" [innerHTML]="skill.page | sanitizeHTML"></div>
   </div>
 
   <!-- QR participation page -->
