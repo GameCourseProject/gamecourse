@@ -92,8 +92,8 @@ export class PageComponent implements OnInit {
         } else { // Render page
           this.pageView = null;
           const pageID = parseInt(params.id);
-          const userID = parseInt(params.userId) || null;
-          this.user = userID ? await this.api.getUserById(userID).toPromise() : null;
+          const userID = parseInt(params.userId) || (await this.api.getLoggedUser().toPromise()).id;
+          this.user = await this.api.getUserById(userID).toPromise();
           await this.getPage(pageID);
 
           // Render page

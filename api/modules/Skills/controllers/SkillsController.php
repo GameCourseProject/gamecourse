@@ -39,7 +39,7 @@ class SkillsController
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
 
-        API::requireCourseAdminPermission($course);
+        API::requireCoursePermission($course);
 
         API::response(SkillTree::getSkillTrees($courseId));
     }
@@ -64,7 +64,7 @@ class SkillsController
         $active = API::getValue("active", "bool");
 
         $course = SkillTree::getSkillTreeById($skillTreeId)->getCourse();
-        API::requireCourseAdminPermission($course);
+        API::requireCoursePermission($course);
 
         API::response(Tier::getTiersOfSkillTree($skillTreeId, $active));
     }
@@ -184,7 +184,7 @@ class SkillsController
         $skillTreeId = API::getValue("skillTreeId", "int");
         $course = SkillTree::getSkillTreeById($skillTreeId)->getCourse();
 
-        API::requireCourseAdminPermission($course);
+        API::requireCoursePermission($course);
         $active = API::getValue("active", "bool");
         $extra = API::getValue("extra", "bool");
         $collab = API::getValue("collab", "bool");
