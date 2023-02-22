@@ -66,7 +66,7 @@ export class CoursesComponent implements OnInit {
 
   async getCourses(): Promise<void> {
     if (this.user.isAdmin) this.courses = await this.api.getCourses().toPromise();
-    if (await this.api.isATeacher(this.user.id)) this.courses = await this.api.getUserCourses(this.user.id).toPromise();
+    else if (await this.api.isATeacher(this.user.id)) this.courses = await this.api.getUserCourses(this.user.id).toPromise();
     else this.courses = await this.api.getUserCourses(this.user.id, null, true).toPromise();
   }
 
