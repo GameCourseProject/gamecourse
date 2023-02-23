@@ -8,15 +8,9 @@ CREATE TABLE IF NOT EXISTS googlesheets_config(
     authProvider                TEXT DEFAULT NULL,
     clientSecret                TEXT DEFAULT NULL,
     redirectUris                TEXT DEFAULT NULL,
-    authUrl                     TEXT DEFAULT NULL,
     accessToken                 TEXT DEFAULT NULL,
-    expiresIn                   TEXT DEFAULT NULL,
-    scope                       TEXT DEFAULT NULL,
-    tokenType                   TEXT DEFAULT NULL,
-    created                     TEXT DEFAULT NULL,
-    refreshToken                TEXT DEFAULT NULL,
     spreadsheetId               TEXT DEFAULT NULL,
-    sheetName                   TEXT DEFAULT NULL,
+    sheetsInfo                  TEXT DEFAULT NULL,
     frequency                   varchar(50) DEFAULT '*/10 * * * *',
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE

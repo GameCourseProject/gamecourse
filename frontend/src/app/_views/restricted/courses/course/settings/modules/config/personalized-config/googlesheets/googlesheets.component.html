@@ -1,129 +1,146 @@
-<!-- Authentication -->
-<div class="card w-full bg-base-100 shadow-xl">
-  <form #fAuth="ngForm" class="card-body" (ngSubmit)="authenticate()">
+<ng-container *ngIf="!loading.page">
+  <!-- Authentication -->
+  <div class="card w-full bg-base-100 shadow-xl">
+    <form #fAuth="ngForm" class="card-body" (ngSubmit)="authenticate()">
 
-    <!-- Header -->
-    <div class="flex items-center mb-3">
-      <h2 class="card-title mb-0">Authentication</h2>
-      <app-spinner *ngIf="loading.auth" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
-    </div>
+      <!-- Header -->
+      <div class="flex items-center mb-3">
+        <h2 class="card-title mb-0">Authentication</h2>
+        <app-spinner *ngIf="loading.auth" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+      </div>
 
-    <!-- Input file -->
-    <app-input-file
-      [id]="'credentials'"
-      [form]="fAuth"
-      [accept]="['.json']"
-      [size]="'xs'"
-      [color]="'accent'"
-      [classList]="''"
-      [label]="'Credentials'"
-      [helperText]="'File with credentials for Google script taken from Google Cloud console'"
-      [helperPosition]="'right'"
-      (valueChange)="onFileSelected($event)">
-    </app-input-file>
+      <!-- Requires authentication -->
+      <div class="alert {{needsAuthentication ? 'alert-error' : 'alert-success'}} shadow-lg py-2.5 px-3 mb-4">
+        <div>
+          <ng-icon [name]="needsAuthentication ? 'feather-x-circle' : 'feather-check-circle'" size="1rem"></ng-icon>
+          <span *ngIf="!needsAuthentication">Authenticated successfully</span>
+          <span *ngIf="needsAuthentication">Authentication required</span>
+        </div>
+      </div>
 
-    <!-- Action button -->
-    <div class="flex items-center justify-end mt-4">
-      <button type="submit" class="btn btn-accent" [disabled]="!canAuthenticate">
-
-        <!-- Spinner -->
-        <ng-container *ngIf="loading.auth">
-          <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
-        </ng-container>
-
-        Authenticate
-      </button>
-    </div>
-
-  </form>
-</div>
-
-<!-- Configuration -->
-<div class="card w-full bg-base-100 shadow-xl mt-5">
-  <form #fSheets="ngForm" class="card-body" (ngSubmit)="saveConfig()">
-
-    <!-- Header -->
-    <div class="flex items-center mb-3">
-      <h2 class="card-title mb-0">General</h2>
-      <app-spinner *ngIf="loading.action || loading.users" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
-    </div>
-
-    <!-- Spreadsheet ID -->
-    <div class="w-full md:w-1/2">
-      <app-input-text
-        [id]="'spreadsheet'"
-        [form]="fSheets"
-        [(value)]="spreadsheetID"
-        [placeholder]="'Spreadsheet ID'"
-        [topLabel]="'Spreadsheet ID'"
-        [helperText]="'Google Sheets spreadsheet ID to import data from'"
+      <!-- Input file -->
+      <app-input-file
+        [id]="'credentials'"
+        [form]="fAuth"
+        [accept]="['.json']"
+        [size]="'xs'"
+        [color]="'accent'"
+        [classList]="''"
+        [label]="'Credentials'"
+        [helperText]="'File with credentials for Google script taken from Google Cloud console'"
         [helperPosition]="'right'"
-        [required]="true">
-      </app-input-text>
-    </div>
+        (valueChange)="onFileSelected($event)">
+      </app-input-file>
 
-    <!-- Sheets -->
-    <div class="prose mt-5"><h4>Sheets</h4></div>
+      <!-- Action button -->
+      <div class="flex items-center justify-end mt-4">
+        <button type="submit" class="btn btn-accent" [disabled]="!canAuthenticate">
 
-    <div *ngFor="let sheet of sheets; let i = index" class="relative flex flex-wrap items-center w-[calc(100%+0.375rem-2.5rem)] -mx-1.5">
+          <!-- Spinner -->
+          <ng-container *ngIf="loading.auth">
+            <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+          </ng-container>
 
-      <!-- Sheet name -->
-      <div class="w-full w-1/2 px-1.5">
-        <app-input-text
-          [id]="'sheet-name-' + i"
-          [form]="fSheets"
-          [(value)]="sheets[i].name"
-          [placeholder]="'Sheet name'"
-          [topLabel]="'Name'"
-          [required]="true"
-          [helperText]="'Sheet name found at the bottom of the spreadsheet'"
-          [helperPosition]="'right'">
-        </app-input-text>
-      </div>
-
-      <!-- Sheet owner -->
-      <div class="w-full w-1/2 px-1.5">
-        <app-input-select
-          [id]="'sheet-owner-' + i"
-          [form]="fSheets"
-          [(value)]="sheets[i].owner"
-          [options]="users"
-          [placeholder]="'Select a sheet owner'"
-          [topLabel]="'Owner'"
-          [required]="true"
-          [helperText]="'GameCourse user who inputs data into the sheet'"
-          [helperPosition]="'left'">
-        </app-input-select>
-      </div>
-
-      <div class="tooltip absolute -right-[2.5rem] top-[3.1rem]" data-tip="Remove">
-        <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" (click)="removeSheet(sheet.name, sheet.owner)">
-          <ng-icon name="feather-x" size="1.5rem" class="text-error"></ng-icon>
+          Authenticate
         </button>
       </div>
 
-    </div>
+    </form>
+  </div>
 
-    <!-- Add button -->
-    <button type="button" class="btn btn-wide w-full gap-2 mt-3" (click)="addSheet()">
-      <ng-icon name="feather-plus-circle" size="1.5rem" class="text-neutral-content"></ng-icon>
-      Add sheet
-    </button>
+  <!-- Configuration -->
+  <div class="card w-full bg-base-100 shadow-xl mt-5">
+    <form #fSheets="ngForm" class="card-body" (ngSubmit)="saveConfig()">
 
+      <!-- Header -->
+      <div class="flex items-center mb-3">
+        <h2 class="card-title mb-0">General</h2>
+        <app-spinner *ngIf="loading.action" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+      </div>
 
-    <!-- Action buttons -->
-    <div class="flex items-center justify-end mt-4">
-      <button type="button" class="btn btn-ghost mr-2" (click)="discardChanges()">Discard changes</button>
-      <button type="submit" class="btn btn-primary">
+      <!-- Spreadsheet ID -->
+      <div class="w-full md:w-1/2">
+        <app-input-text
+          [id]="'spreadsheet'"
+          [form]="fSheets"
+          [(value)]="spreadsheetID"
+          [placeholder]="'Spreadsheet ID'"
+          [topLabel]="'Spreadsheet ID'"
+          [helperText]="'Google Sheets spreadsheet ID to import data from'"
+          [helperPosition]="'right'"
+          [required]="true">
+        </app-input-text>
+      </div>
 
-        <!-- Spinner -->
-        <ng-container *ngIf="loading.action">
-          <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
-        </ng-container>
+      <!-- Sheets -->
+      <div class="prose mt-5"><h4>Sheets</h4></div>
 
-        Save
+      <div *ngFor="let sheet of sheets; let i = index; let first = first" class="relative flex flex-wrap items-center w-[calc(100%+0.375rem-2.5rem)]">
+
+        <!-- Sheet name -->
+        <div class="w-full w-1/2 pr-1.5">
+          <app-input-text
+            [id]="'sheet-name-' + i"
+            [form]="fSheets"
+            [(value)]="sheets[i].name"
+            [placeholder]="'Sheet name'"
+            [topLabel]="'Name'"
+            [required]="true"
+            [helperText]="'Sheet name found at the bottom of the spreadsheet'"
+            [helperPosition]="'right'">
+          </app-input-text>
+        </div>
+
+        <!-- Sheet owner -->
+        <div class="w-full w-1/2 pl-1.5">
+          <app-input-select
+            [id]="'sheet-owner-' + i"
+            [form]="fSheets"
+            [(value)]="sheets[i].owner"
+            [options]="users"
+            [placeholder]="'Select a sheet owner'"
+            [topLabel]="'Owner'"
+            [required]="first"
+            [helperText]="'GameCourse user who inputs data into the sheet'"
+            [helperPosition]="'left'">
+          </app-input-select>
+        </div>
+
+        <div class="tooltip absolute -right-[2.5rem] top-[3.1rem]" data-tip="Remove">
+          <button type="button" class="btn btn-sm btn-ghost btn-circle h-10 w-10" [disabled]="first"
+                  (click)="removeSheet(sheet.name, sheet.owner)">
+            <ng-icon name="feather-x" size="1.5rem" class="text-error"></ng-icon>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Add button -->
+      <button type="button" class="btn btn-wide w-full gap-2 mt-3" (click)="addSheet()">
+        <ng-icon name="feather-plus-circle" size="1.5rem" class="text-neutral-content"></ng-icon>
+        Add sheet
       </button>
-    </div>
 
-  </form>
+
+      <!-- Action buttons -->
+      <div class="flex items-center justify-end mt-4">
+        <button type="button" class="btn btn-ghost mr-2" (click)="discardChanges()">Discard changes</button>
+        <button type="submit" class="btn btn-primary">
+
+          <!-- Spinner -->
+          <ng-container *ngIf="loading.action">
+            <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+          </ng-container>
+
+          Save
+        </button>
+      </div>
+
+    </form>
+  </div>
+</ng-container>
+
+<!-- Spinner -->
+<div *ngIf="loading.page" class="flex justify-center items-center">
+  <app-spinner></app-spinner>
 </div>

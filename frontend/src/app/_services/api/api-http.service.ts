@@ -1281,7 +1281,7 @@ export class ApiHttpService {
 
   // Google Sheets
 
-  public getGoogleSheetsConfig(courseID: number): Observable<GoogleSheetsConfig> {
+  public getGoogleSheetsConfig(courseID: number): Observable<{config: GoogleSheetsConfig, needsAuth: boolean}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.GOOGLESHEETS);
       qs.push('request', 'getConfig');
