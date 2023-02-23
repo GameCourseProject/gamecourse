@@ -10,7 +10,7 @@
       </div>
 
       <!-- Requires authentication -->
-      <div class="alert {{needsAuthentication ? 'alert-error' : 'alert-success'}} shadow-lg py-2.5 px-3 mb-4">
+      <div class="alert {{needsAuthentication ? 'alert-error' : 'alert-success'}} shadow-lg py-2.5 px-3 mb-4 rounded-lg">
         <div>
           <ng-icon [name]="needsAuthentication ? 'feather-x-circle' : 'feather-check-circle'" size="1rem"></ng-icon>
           <span *ngIf="!needsAuthentication">Authenticated successfully</span>
@@ -75,7 +75,8 @@
       <!-- Sheets -->
       <div class="prose mt-5"><h4>Sheets</h4></div>
 
-      <div *ngFor="let sheet of sheets; let i = index; let first = first" class="relative flex flex-wrap items-center w-[calc(100%+0.375rem-2.5rem)]">
+      <div *ngFor="let sheet of sheets; let i = index; let first = first" class="relative flex flex-wrap items-center w-[calc(100%+0.375rem-2.5rem)]"
+        [ngClass]="{'mt-2': !first}">
 
         <!-- Sheet name -->
         <div class="w-full w-1/2 pr-1.5">

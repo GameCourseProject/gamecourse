@@ -188,7 +188,7 @@ class CourseUser extends User
      */
     public static function getCourseUserByUsername(string $username, Course $course, string $authService = null): ?CourseUser
     {
-        $table = self::TABLE_COURSE_USER . " cu LEFT JOIN " . Auth::TABLE_AUTH . " a on cu.id=a.user";
+        $table = self::TABLE_COURSE_USER . " cu LEFT JOIN " . Auth::TABLE_AUTH . " a on cu.id=a.user AND cu.course=" . $course->getId();
         if (!$authService) {
             $userIds = array_column(Core::database()->selectMultiple($table, ["username" => $username], "a.user"), "user");
             $nrCourseUsersWithUsername = count($userIds);
