@@ -341,7 +341,7 @@ CREATE TABLE notification(
      id             int unsigned PRIMARY KEY AUTO_INCREMENT,
      course         int unsigned DEFAULT NULL,
      user           int unsigned NOT NULL,
-     message        varchar(150) NOT NULL,
+     message        TEXT NOT NULL,
      isShowed       boolean NOT NULL DEFAULT FALSE,
 
      FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,

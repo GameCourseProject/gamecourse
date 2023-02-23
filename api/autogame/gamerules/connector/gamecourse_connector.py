@@ -1046,7 +1046,7 @@ def award_assignment_grade(target, logs, max_xp=1, max_grade=1):
         reward = (int(log[config.RATING_COL]) / max_grade) * max_xp
         award(target, "assignment", name, reward)
 
-def award_badge(target, name, lvl, logs, progress = None):
+def award_badge(target, name, lvl, logs, progress=None):
     """
     Awards a given level to a specific target.
 
@@ -1063,9 +1063,9 @@ def award_badge(target, name, lvl, logs, progress = None):
 
     if module_enabled("Badges"):
         # Get badge info
-         query = "SELECT bl.badge, bl.number, bl.reward, bl.tokens, b.isExtra, bl.goal, b.description, bl.description " \
-                  "FROM badge_level bl LEFT JOIN badge b on b.id = bl.badge " \
-                  "WHERE b.course = %s AND b.name = '%s' ORDER BY number;" % (config.COURSE, name)
+        query = "SELECT bl.badge, bl.number, bl.reward, bl.tokens, b.isExtra, bl.goal, b.description, bl.description " \
+                "FROM badge_level bl LEFT JOIN badge b on b.id = bl.badge " \
+                "WHERE b.course = %s AND b.name = '%s' ORDER BY number;" % (config.COURSE, name)
         table_badge = db.data_broker.get(db, config.COURSE, query)
         badge_id = table_badge[0][0]
 
@@ -1122,7 +1122,7 @@ def award_badge(target, name, lvl, logs, progress = None):
                 # Get goal and description of specific level award
                 for i in range(0, len(table_badge)):
                     if table_badge[i][1] == lvl:
-                        goal = table_badge[i][5]
+                        goal = int(table_badge[i][5])
                         badge_description = table_badge[i][6]        # e.g. Show up for theoretical lectures!
                         level_description = table_badge[i][7]        # e.g. be there for 50% of lectures
                         break
@@ -1273,27 +1273,6 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
                 query = "INSERT INTO skill_progression (course, user, skill, participation) VALUES (%s, %s, %s, %s);"
                 db.execute_query(query, (config.COURSE, target, skill_id, log[0]), "commit")
 
-        # check if dependencies are missing to create notification
-        if not dependencies:
-            query = "SELECT s.name" \
-                    " FROM skill s JOIN skill_dependency sd JOIN skill_dependency_combo sdc " \
-                    "ON s.id = sd.skill AND sd.id = sdc.dependency " \
-                    "WHERE sdc.skill = %s;" % skill_id
-            dependencies_names = db.data_broker.get(db, config.COURSE, query)
-
-            # removes duplicates
-            dependencies_names_unique = list(dict.fromkeys(dependencies_names))
-
-            # Transform array into string with commas
-            dependencies_names_string = ','.join(dependencies_names_unique)
-
-            message = "You can't be rewarded yet... Almost there! There are some dependencies missing: " \
-                      + dependencies_names_string
-
-            # Add notification to table
-            query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s,%s,%s,%s);"
-            db.execute_query(query, (config.COURSE, target, message, 0), "commit")
-
         # Rating is not enough to win the award or dependencies haven't been met
         if rating < min_rating or not dependencies:
             # Get awards given for skill
@@ -1345,6 +1324,27 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
                 if attempt_cost > 0:
                     description = get_attempt_description(attempt)
                     spend_tokens(target, description, attempt_cost, 1)
+
+        # Check if rating is enough to win the award, but dependencies are missing (create notification)
+        if rating >= min_rating and not dependencies:
+            query = "SELECT s.name " \
+                    "FROM skill s JOIN skill_dependency sd JOIN skill_dependency_combo sdc " \
+                    "ON s.id = sd.skill AND sd.id = sdc.dependency " \
+                    "WHERE sdc.skill = %s;" % skill_id
+            dependencies_names = db.data_broker.get(db, config.COURSE, query)
+
+            # Removes duplicates
+            dependencies_names_unique = list(set([el[0].decode() for el in dependencies_names]))
+
+            # Transform array into string with commas
+            dependencies_names_string = ','.join(dependencies_names_unique)
+
+            message = "You can't be rewarded yet... Almost there! There are some dependencies missing: " \
+                      + dependencies_names_string
+
+            # Add notification to table
+            query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s,%s,%s,%s);"
+            db.execute_query(query, (config.COURSE, target, message, 0), "commit")
 
 def award_streak(target, name, logs):
     """

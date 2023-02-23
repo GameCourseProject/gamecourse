@@ -94,9 +94,9 @@ def log_end():
 ### ------------------------------------------------------ ###
 
 # This python script will be invoked from the php side.
-# CLI prompt: python3 run_autogame.py [courseId] [all/new/targets] [rules_path] [logs_file] [dbName] [dbUser] [dbPass]
+# CLI prompt: python3 run_autogame.py [courseId] [all/new/targets] [rules_path] [logs_file] [dbHost] [dbName] [dbUser] [dbPass]
 if __name__ == "__main__":
-    if len(sys.argv) != 8:
+    if len(sys.argv) != 9:
         error_msg = "ERROR: AutoGame didn't receive all the information."
         sys.exit(error_msg)
 
@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
     # Initialize GameCourse connector
     from gamerules.connector.db_connector import connect_to_gamecourse_db
-    connect_to_gamecourse_db(sys.argv[5], sys.argv[6], sys.argv[7])
+    connect_to_gamecourse_db(sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8])
     from gamerules.connector.gamecourse_connector import *
 
     try:
@@ -120,7 +120,7 @@ if __name__ == "__main__":
             mdl_host, mdl_database, mdl_username, mdl_password = db.execute_query(query, (config.COURSE,))[0]
             if mdl_password:
                 from gamerules.connector.db_connector import connect_to_moodle_db
-                connect_to_moodle_db(mdl_host, mdl_database, mdl_username, mdl_password)
+                connect_to_moodle_db(mdl_host.decode(), mdl_database.decode(), mdl_username.decode(), mdl_password.decode())
 
         # Initialize AutoGame
         last_activity = autogame_init(course)

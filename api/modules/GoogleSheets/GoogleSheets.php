@@ -571,6 +571,7 @@ class GoogleSheets extends Module
 
                 switch ($action) {
                     case "initial bonus":
+                    case "initial tokens":
                     case "presentation grade":
                         if (!self::rowIsValid($row, [self::COL_XP])) break;
                         $xp = $row[self::COL_XP];
