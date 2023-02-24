@@ -2,6 +2,7 @@
 namespace API;
 
 use Exception;
+use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Skills\Skill;
 use GameCourse\Module\Skills\Skills;
 use GameCourse\Module\Skills\SkillTree;
@@ -308,7 +309,7 @@ class SkillsController
         API::response(Streak::getStreaks($courseId));
     }
 
-    public function getUserStreaks()
+    public function getUserStreaksInfo()
     {
         API::requireValues("courseId", "userId");
 
@@ -318,7 +319,25 @@ class SkillsController
         API::requireCoursePermission($course);
 
         $userId = API::getValue("userId", "int");
+        $awardsModule = new Awards($course);
+        $userStreakAwards = $awardsModule->getUserStreaksAwards($userId);
+
+        $userStreaks = [];
         $streaksModule = new Streaks($course);
-        API::response($streaksModule->getUserStreaks($userId));
+        foreach (Streak::getStreaks($courseId, true) as $streak) {
+            $streakId = $streak["id"];
+            $nrCompletions = count(array_filter($userStreakAwards, function ($award) use ($streak) { return $award["moduleInstance"] === $streak["id"]; }));
+            $progress = $streaksModule->getUserStreakProgression($userId, $streak["id"], $nrCompletions);
+            $dealine = (new Streak($streakId))->isPeriodic() ? $streaksModule->getUserStreakDeadline($userId, $streakId) : null;
+
+            $userStreaks[] = [
+                "id" => $streak["id"],
+                "nrCompletions" => $nrCompletions,
+                "progress" => $progress,
+                "deadline" => $dealine
+            ];
+        }
+
+        API::response($userStreaks);
     }
 }

@@ -44,7 +44,8 @@ export class PageComponent implements OnInit {
   skillsCompleted: number[];
   vcIcon: string = environment.apiEndpoint + '/modules/VirtualCurrency/assets/default.png';
 
-  streaksInfo: Streak[] = [];
+  streaks: Streak[] = [];
+  userStreaksInfo: {id: number, nrCompletions: number, progress: number, deadline: Moment}[];
 
   skill: Skill;
   isPreview: boolean;
@@ -132,19 +133,8 @@ export class PageComponent implements OnInit {
       this.availableWildcards = await this.api.getUserTotalAvailableWildcards(this.course.id, this.user.id, this.skillTrees[0].id).toPromise();
 
     } else if (this.page.name === "Streaks") {
-      this.streaksInfo = await this.api.getStreaks(this.course.id).toPromise();
-      const info = await this.api.getUserStreaks(this.course.id, this.user.id).toPromise();
-      this.streaksInfo = this.streaksInfo.map(streak => {
-        for (const s of info) {
-          if (s.id === streak.id) {
-            streak.deadline = s.deadline;
-            streak.nrCompletions = s.nrCompletions;
-            streak.progress = s.progress;
-            return streak;
-          }
-        }
-        return streak;
-      });
+      this.streaks = await this.api.getStreaks(this.course.id).toPromise();
+      this.userStreaksInfo = await this.api.getUserStreaksInfo(this.course.id, this.user.id).toPromise();
     }
   }
 

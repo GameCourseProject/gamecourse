@@ -25,6 +25,6 @@ try {
     $newData = $moodle->importData();
     if ($newData) AutoGame::setToRun($courseId);
 
-} catch (Exception $e) {
-    Moodle::log($courseId, $e->getMessage());
+} catch (Throwable $e) {
+    Moodle::log($courseId, $e->getMessage(), "ERROR");
 }

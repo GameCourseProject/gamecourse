@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import config
+import config, re
 
 from decorators import rule_function, rule_effect
 from gamerules.connector import gamecourse_connector as connector
@@ -95,7 +95,7 @@ def get_page_view_logs(target, name=None):
     return connector.get_page_view_logs(target, name)
 
 @rule_function
-def get_participation_lecture_logs(target, lecture_nr):
+def get_participation_lecture_logs(target, lecture_nr=None):
     """
     Gets all lecture participation logs for a specific target.
 
@@ -105,7 +105,7 @@ def get_participation_lecture_logs(target, lecture_nr):
     return connector.get_participation_lecture_logs(target, lecture_nr)
 
 @rule_function
-def get_participation_invited_lecture_logs(target, lecture_nr):
+def get_participation_invited_lecture_logs(target, lecture_nr=None):
     """
     Gets all invited lecture participation logs for a specific target.
 
@@ -175,12 +175,12 @@ def get_skill_logs(target, name=None, rating=None):
     return connector.get_skill_logs(target, name, rating)
 
 @rule_function
-def get_skill_tier_logs(target, tier):
+def get_skill_tier_logs(target, tier, only_min_rating=True):
     """
     Gets skill tier logs for a specific target.
     """
 
-    return connector.get_skill_tier_logs(target, tier)
+    return connector.get_skill_tier_logs(target, tier, only_min_rating)
 
 @rule_function
 def get_url_view_logs(target, name=None):
@@ -191,6 +191,104 @@ def get_url_view_logs(target, name=None):
     """
 
     return connector.get_url_view_logs(target, name)
+
+
+### Getting consecutive & periodic logs
+
+@rule_function
+def get_consecutive_logs(logs):
+    """
+    Gets consecutive logs on a set of logs.
+
+    The order is defined by the log 1st number in description:
+        > "1" -> order 1
+        > "Quiz 1" -> order 1
+        > "Quiz 1 (22/01/2023)" -> order 1
+        > "1 - Quiz" -> order 1
+        > "1 - Quiz (22/01/2023)" -> order 1
+        > "Quiz (22/01/2023) - 1" -> will raise error
+        > "Quiz" -> will raise error
+    """
+
+    def find_order(description):
+        if description.isnumeric():
+            return int(description)
+
+        else:
+            order = re.findall(r'\d+', description)
+
+            if len(order) == 0:
+                raise Exception("Found no possible order for description '%s'." % description)
+
+            if len(order) > 1:
+                raise Exception("Found more than one possible order for description '%s'." % description)
+
+            return int(order[0])
+
+    def is_consecutive(order, last_order):
+        return last_order is not None and order > last_order and order - last_order == 1
+
+    consecutive_logs = []
+    last_order = None
+
+    for log in logs:
+        order = find_order(log[config.LOG_DESCRIPTION_COL])
+        if is_consecutive(order, last_order):
+            consecutive_logs[-1].append(log)
+        else:
+            consecutive_logs.append([log])
+        last_order = order
+
+    return consecutive_logs
+
+@rule_function
+def get_consecutive_rating_logs(logs, min_rating):
+    """
+    Gets consecutive logs on a set of logs with a min. rating.
+    """
+
+    def is_consecutive(rating, last_rating):
+        return last_rating is not None and last_rating >= min_rating and rating >= min_rating
+
+    consecutive_logs = []
+    last_rating = None
+
+    for log in logs:
+        rating = log[config.LOG_RATING_COL]
+        if rating < min_rating:
+            last_rating = None
+            continue
+
+        if is_consecutive(rating, last_rating):
+            consecutive_logs[-1].append(log)
+        else:
+            consecutive_logs.append([log])
+        last_rating = rating
+
+    return consecutive_logs
+
+@rule_function
+def get_consecutive_peergrading_logs(target):
+    """
+    Gets consecutive peergrading logs done by target.
+    """
+
+    return connector.get_consecutive_peergrading_logs(target)
+
+@rule_function
+def get_periodic_logs(logs, number, time, type):
+    """
+    Gets periodic logs on a set of logs.
+
+    There are two options for periodicity:
+        > absolute -> check periodicity in equal periods,
+                    beginning at course start date until end date.
+
+        > relative -> check periodicity starting on the
+                    first entry for streak
+    """
+
+    return connector.get_periodic_logs(logs, number, time, type)
 
 
 ### Getting total reward
@@ -318,8 +416,8 @@ def filter_logs_by_description(logs, with_descriptions=None, without_description
         without_descriptions = [without_descriptions]
 
     return [log for log in logs if
-            with_descriptions is not None and log[config.LOG_DESCRIPTION_COL].decode() in with_descriptions or
-            without_descriptions is not None and log[config.LOG_DESCRIPTION_COL].decode() not in without_descriptions]
+            with_descriptions is not None and log[config.LOG_DESCRIPTION_COL] in with_descriptions or
+            without_descriptions is not None and log[config.LOG_DESCRIPTION_COL] not in without_descriptions]
 
 @rule_function
 def filter_logs_by_rating(logs, min_rating=None, max_rating=None):
@@ -431,15 +529,15 @@ def has_wildcard_available(target, skill_tree_id, wildcard_tier):
 ### Awarding items
 
 @rule_effect
-def award(target, type, description, reward, instance=None):
+def award(target, type, description, reward, instance=None, unique=True):
     """
     Awards a single prize to a specific target.
 
-    NOTE: will not retract, but will not award twice.
+    NOTE: will not retract, but will not award twice if unique.
     Updates award if reward has changed.
     """
 
-    connector.award(target, type, description, reward, instance)
+    connector.award(target, type, description, reward, instance, unique)
 
 @rule_effect
 def award_assignment_grade(target, logs, max_xp=1, max_grade=1):
@@ -535,3 +633,101 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
     """
 
     connector.award_skill(target, name, rating, logs, dependencies, use_wildcard)
+
+@rule_effect
+def award_streak(target, name, logs):
+    """
+    Awards a given streak to a specific target.
+
+    NOTE: will retract if streak changed.
+    Updates award if reward has changed.
+    """
+
+    connector.award_streak(target, name, logs)
+
+@rule_effect
+def award_tokens(target, name, reward, repetitions=1, instance=None):
+    """
+    Awards given tokens to a specific target.
+    """
+
+    connector.award_tokens(target, name, reward, repetitions, instance)
+
+
+### Spend items
+
+@rule_effect
+def spend_tokens(target, name, amount, repetitions=1):
+    """
+    Spends a single item of a specific target.
+
+    NOTE: will not retract, but will not spend twice if is unique.
+    Updates if amount has changed.
+    """
+
+    connector.spend_tokens(target, name, amount, repetitions)
+
+
+### ------------------------------------------------------ ###
+###	----------------- GameCourse Wrapper ----------------- ###
+### ------------------------------------------------------ ###
+
+@rule_function
+def gc(library, name, *args):
+    """
+    This is a wrapper that handles GameCourse specific functions.
+
+    Every rule with a function that has syntax:
+        GC.library.function(arg1, arg2)
+
+    will be mapped on the parser to function:
+        gc("library", "function", arg1, arg2)
+
+    This wrapper will handle the function request and pass it to PHP.
+    """
+
+    from ..connector.gamecourse_connector import call_gamecourse
+
+    if True:
+        data = call_gamecourse(config.COURSE, library, name, list(args))
+
+    return data
+
+
+### ------------------------------------------------------ ###
+###	-------------------- Used in tests ------------------- ###
+### ------------------------------------------------------ ###
+
+@rule_function
+def effect_unlocked(val, target=None):
+    """
+    Returns True if the target has unlocked the given effect.
+    """
+
+    from ..namespace import rule_system as rs
+
+    if target is None:
+        from ..namespace import target as t
+        target = t
+
+    try:
+        to = rs.__data__.target_data.target_outputs(target)
+
+    except Exception:
+        return False
+
+    else:
+        for output in to:
+            for effect in output.effects():
+                if effect.val() == val:
+                    return True
+        return False
+
+@rule_effect
+def transform(val):
+    """
+    Wraps any value into a rule effect, this way it will be
+    part of the rule output.
+    """
+
+    return val

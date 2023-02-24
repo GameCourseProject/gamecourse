@@ -1,7 +1,6 @@
 <?php
 namespace GameCourse\Module\Streaks;
 
-use API\API;
 use Exception;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;

@@ -71,21 +71,27 @@ def log_end():
         return _info[:(_max - _gap)] + "..." if len(_info) > _max else _info
 
     # Process targets name and student number
-    targets_info = list(
-        map(lambda s: truncate("(" + str(s["studentNumber"]) + ") " + first_and_last_name(s["name"]), 25, 2),
-            sorted(students.values(), key=lambda s: s["name"])))
+    if len(students) > 5:
+        targets_info = list(
+            map(lambda s: truncate("(" + str(s["studentNumber"]) + ") " + first_and_last_name(s["name"]), 25, 2),
+                sorted(students.values(), key=lambda s: s["name"])))
 
-    # Divide targets info into columns
-    col = 3
-    targets_info = [targets_info[i:i+col] for i in range(0, len(targets_info), col)]
+        # Divide targets info into columns
+        col = 3
+        targets_info = [targets_info[i:i+col] for i in range(0, len(targets_info), col)]
 
-    fill_with_empty = col - len(targets_info[-1])
-    for i in range(fill_with_empty):
-        targets_info[-1].append("")
+        fill_with_empty = col - len(targets_info[-1])
+        for i in range(fill_with_empty):
+            targets_info[-1].append("")
 
-    targets_str = ""
-    for _info in targets_info:
-        targets_str += "{: <27} {: <27} {: <27}\n".format(*_info)
+        targets_str = ""
+        for _info in targets_info:
+            targets_str += "{: <27} {: <27} {: <27}\n".format(*_info)
+
+    else:
+        targets_str = "\n".join(list(
+            map(lambda s: "(" + str(s["studentNumber"]) + ") " + first_and_last_name(s["name"]),
+                sorted(students.values(), key=lambda s: s["name"]))))
 
     # Log info
     logging.info("AutoGame finished running.\n\n" +

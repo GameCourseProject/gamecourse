@@ -11,7 +11,6 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GoogleHandler;
-use Throwable;
 use Utils\CronJob;
 use Utils\Utils;
 
@@ -193,7 +192,7 @@ class GoogleSheets extends Module
     public function saveGoogleSheetsConfig(string $spreadsheetId, array $sheetNames, array $ownerNames)
     {
         // Check connection to Google sheet
-        self::checkConnection($spreadsheetId, $sheetNames);
+        $this->checkConnection($spreadsheetId, $sheetNames);
 
         // Parse sheets and owners names
         $sheetsInfo = "";
@@ -519,10 +518,6 @@ class GoogleSheets extends Module
 
             self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
             return $newData;
-
-        } catch (Throwable $exception) {
-            self::log($this->course->getId(), $exception->getMessage(), "ERROR");
-            return false;
 
         } finally {
             $this->setIsRunning(false);
