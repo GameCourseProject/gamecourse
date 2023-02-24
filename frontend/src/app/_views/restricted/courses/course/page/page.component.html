@@ -79,28 +79,28 @@
 
           <!-- Streaks -->
           <div class="flex flex-col gap-3">
-            <div *ngFor="let streak of streaksInfo" class="p-4 border-base-300 bg-base-200 border-2 rounded-xl">
+            <div *ngFor="let streak of streaks; let i = index" class="p-4 border-base-300 bg-base-200 border-2 rounded-xl">
               <div class="flex flex-wrap justify-between gap-6">
                 <!-- Streak Info -->
                 <div class="flex flex-wrap flex-col md:flex-row gap-6 md:items-center">
                   <div class="md:w-[20rem]">
                     <p class="font-semibold" [style.font-size]="'1.1rem'" [style.color]="streak.color">{{streak.name}}</p>
                     <p class="text-neutral/75">{{streak.description}}</p>
-                    <p class="font-medium text-sm mt-2" [style]="'color: ' + course.color">[{{streak.nrCompletions || 0 }} so far]</p>
+                    <p class="font-medium text-sm mt-2" [style]="'color: ' + course.color">[{{userStreaksInfo[i].nrCompletions || 0 }} so far]</p>
                   </div>
 
                   <!-- Streak Progression -->
                   <div class="flex flex-col items-center">
                     <div class="flex items-center gap-2">
-                      <div *ngFor="let step of steps(streak.progress || 0)" class="w-9 h-9" [style]="'color: ' + streak.color" [innerHTML]="streak.image | sanitizeHTML"></div>
-                      <div *ngFor="let step of steps(streak.goal - (streak.progress || 0))" class="w-9 h-9 text-neutral/30" [innerHTML]="streak.svg | sanitizeHTML"></div>
+                      <div *ngFor="let step of steps(userStreaksInfo[i].progress || 0)" class="w-9 h-9" [style]="'color: ' + streak.color" [innerHTML]="streak.svg | sanitizeHTML"></div>
+                      <div *ngFor="let step of steps(streak.goal - (userStreaksInfo[i].progress || 0))" class="w-9 h-9 text-neutral/30" [innerHTML]="streak.svg | sanitizeHTML"></div>
                       <div class="tooltip" data-tip="Can be earned multiple times">
                         <button class="btn btn-circle btn-sm btn-ghost">
                           <ng-icon name="feather-repeat" size="1.2rem"></ng-icon>
                         </button>
                       </div>
                     </div>
-                    <span *ngIf="streak.deadline" class="text-sm text-error mt-2 font-medium">Deadline: {{streak.deadline.format('DD/MM/YYYY HH:mm')}}</span>
+                    <span *ngIf="userStreaksInfo[i].deadline" class="text-sm text-error mt-2 font-medium">Deadline: {{userStreaksInfo[i].deadline.format('DD/MM/YYYY HH:mm')}}</span>
                   </div>
                 </div>
 

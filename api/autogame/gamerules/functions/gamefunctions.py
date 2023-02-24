@@ -232,7 +232,7 @@ def get_consecutive_logs(logs):
     last_order = None
 
     for log in logs:
-        order = find_order(log[config.LOG_DESCRIPTION_COL].decode())
+        order = find_order(log[config.LOG_DESCRIPTION_COL])
         if is_consecutive(order, last_order):
             consecutive_logs[-1].append(log)
         else:
@@ -416,8 +416,8 @@ def filter_logs_by_description(logs, with_descriptions=None, without_description
         without_descriptions = [without_descriptions]
 
     return [log for log in logs if
-            with_descriptions is not None and log[config.LOG_DESCRIPTION_COL].decode() in with_descriptions or
-            without_descriptions is not None and log[config.LOG_DESCRIPTION_COL].decode() not in without_descriptions]
+            with_descriptions is not None and log[config.LOG_DESCRIPTION_COL] in with_descriptions or
+            without_descriptions is not None and log[config.LOG_DESCRIPTION_COL] not in without_descriptions]
 
 @rule_function
 def filter_logs_by_rating(logs, min_rating=None, max_rating=None):

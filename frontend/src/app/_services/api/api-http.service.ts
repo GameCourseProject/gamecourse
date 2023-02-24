@@ -2478,10 +2478,10 @@ export class ApiHttpService {
       })));
   }
 
-  public getUserStreaks(courseID: number, userID: number): Observable<Streak[]> {
+  public getUserStreaksInfo(courseID: number, userID: number): Observable<{id: number, nrCompletions: number, progress: number, deadline: Moment}[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'getUserStreaks');
+      qs.push('request', 'getUserStreaksInfo');
       qs.push('courseId', courseID);
       qs.push('userId', userID);
     };
@@ -2492,16 +2492,6 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(obj => {
         return {
           id: obj.id,
-          name: obj.name,
-          description: obj.description,
-          color: obj.color,
-          image: obj.image,
-          goal: obj.goal,
-          reward: obj.reward,
-          tokens: obj.tokens,
-          isExtra: obj.isExtra,
-          isRepeatable: obj.isRepeatable,
-          isPeriodic: obj.isPeriodic,
           nrCompletions: obj.nrCompletions,
           progress: obj.progress,
           deadline: dateFromDatabase(obj.deadline),

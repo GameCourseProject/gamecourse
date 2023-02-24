@@ -933,12 +933,12 @@ def get_consecutive_peergrading_logs(target):
     mdl_prefix = mdl_prefix.decode()
 
     # Get peergrading assigned to target
-    query = "SELECT pa.expired " \
-            "FROM " + mdl_prefix + "peerforum_time_assigned pa JOIN " + mdl_prefix + " peerforum_posts fp on pa.itemid=fp.id " \
+    query = "SELECT pa.expired, pa.timemodified " \
+            "FROM " + mdl_prefix + "peerforum_time_assigned pa JOIN " + mdl_prefix + "peerforum_posts fp on pa.itemid=fp.id " \
             "JOIN " + mdl_prefix + "peerforum_discussions fd on fd.id=fp.discussion " \
             "JOIN " + mdl_prefix + "peerforum f on f.id=fd.peerforum " \
             "JOIN " + mdl_prefix + "user u on pa.userid=u.id " \
-            "WHERE f.course = %s AND u.username = %s" \
+            "WHERE f.course = %s AND u.username = %s " \
             "ORDER BY pa.timeassigned;"
     logs = moodle_db.execute_query(query, (mdl_course, username))
 
@@ -948,12 +948,14 @@ def get_consecutive_peergrading_logs(target):
 
     for log in logs:
         expired = int(log[0])
+        date = log[1]
         peergraded = not expired
 
         if not peergraded:
             last_peergrading = None
             continue
 
+        log = (None, target, config.COURSE, None, None, None, None, date, None, None)
         if last_peergrading is not None:
             consecutive_logs[-1].append(log)
         else:
@@ -1514,7 +1516,7 @@ def award_streak(target, name, logs):
                 if last and total > 0 and nr_valid < total:
                     last_date = group[-1][config.LOG_DATE_COL]
                     deadline = get_deadline(last_date, period_type, period_number, period_time)
-                    if deadline > datetime.now():
+                    if deadline is None or deadline > datetime.now():
                         nr_valid = total
 
             for index in range(0, nr_valid):
