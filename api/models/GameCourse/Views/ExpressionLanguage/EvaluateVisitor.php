@@ -2,8 +2,10 @@
 namespace GameCourse\Views\ExpressionLanguage;
 
 use Exception;
+use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Views\Dictionary\Dictionary;
+use GameCourse\Views\Dictionary\CollectionLibrary;
+use Utils\Utils;
 
 class EvaluateVisitor extends Visitor
 {
@@ -20,21 +22,34 @@ class EvaluateVisitor extends Visitor
         return $this->params;
     }
 
+    /**
+     * @throws Exception
+     */
+    public function getParam(string $name)
+    {
+        if (!$this->hasParam($name))
+            throw new Exception("Param '$name' doesn't exist on visitor.");
+        return $this->params[$name];
+    }
+
+    public function addParam(string $name, $value)
+    {
+        $this->params[$name] = $value;
+    }
+
+    public function hasParam(string $name): bool
+    {
+        return array_key_exists($name, $this->params);
+    }
+
     public function mockData(): bool
     {
         return $this->mockData;
     }
 
-    /**
-     * @throws Exception
-     */
-    public function addParam(string $name, $value)
+    public function copy(): EvaluateVisitor
     {
-        // NOTE: a view and/or its children cannot have variables with same name
-        if (isset($this->params[$name]))
-            throw new Exception("Parameter with name '" . $name . "' already exists in visitor.");
-
-        $this->params[$name] = $value;
+        return new EvaluateVisitor($this->params, $this->mockData);
     }
 
 
@@ -65,31 +80,35 @@ class EvaluateVisitor extends Visitor
         else $args = $node->getArgs()->accept($this)->getValue();
 
         $context = $node->getContext();
-        $libraryId = $node->getLib();
+        $library = $node->getLibrary();
 
         if ($context) {
-            $contextVal = $context->accept($this)->getValue();
-            if (!$libraryId) {
-                // gets the lib name of the previous function
-                // ex: %user.name in the function 'name' gets users lib
-                if (is_array($contextVal)) {
-                    if (empty($contextVal))
-                        throw new Exception("Tried to call function '" . $funcName . "' on an empty array.");
+            $context = $context->accept($this);
+            $contextVal = $context->getValue();
 
-                    if ($contextVal["type"] == "object")
-                        $libraryId = $contextVal["value"]["libraryOfVariable"];
-                    else { //type == collection
-                        if (!empty($contextVal["value"]))
-                            $libraryId = $contextVal["value"][0]["libraryOfVariable"];
-                    }
-                    $node->setLib($libraryId);
-                }
+            // If no library is set, gets the library of the context
+            if (!$library) {
+                if (is_array($contextVal) && (empty($contextVal) || Utils::isSequentialArray($contextVal)))
+                    $library = Core::dictionary()->getLibraryById(CollectionLibrary::ID);
+                else $library = $context->getLibrary();
+                $node->setLibrary($library);
             }
         } else $contextVal = null;
 
-        $course = $this->mockData ? null : Course::getCourseById($this->params["course"]);
-        $dictionary = Dictionary::get();
-        return $dictionary->callFunction($course, $libraryId, $funcName, $args, $contextVal, $this->mockData);
+        // Call function
+        $course = $this->params["course"] ? Course::getCourseById($this->params["course"]) : null;
+        $result = Core::dictionary()->callFunction($course, $library->getId(), $funcName, $args, $contextVal, $this->mockData);
+
+        // If result is a collection, set library on each item
+        // NOTE: important for functions in the collection library
+        if (is_array($result->getValue()) && Utils::isSequentialArray($result->getValue())) {
+            $collection = array_map(function ($item) use ($result) {
+                if (!isset($item["libraryOfItem"])) $item["libraryOfItem"] = $result->getLibrary();
+                return $item;
+            }, $result->getValue());
+            $result = new ValueNode($collection, $result->getLibrary());
+        }
+        return $result;
     }
 
     /**
@@ -156,14 +175,8 @@ class EvaluateVisitor extends Visitor
         if (!array_key_exists($variableName, $this->params))
             throw new Exception('Unknown variable: ' . $variableName);
 
-        $key = $node->getKey();
-        if ($key == null) {
-            return new ValueNode($this->params[$variableName]);
-
-        } else {
-            if (!is_string($key)) $key= $key->getValue();
-            return new ValueNode($this->params[$variableName][$key]);
-        }
+        $param = $this->params[$variableName];
+        return $param instanceof Node ? $param->accept($this) : new ValueNode($param);
     }
 
     /**

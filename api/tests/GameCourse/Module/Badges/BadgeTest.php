@@ -1231,7 +1231,7 @@ tags:
             $this->fail("Error should have been thrown on 'addBadgeDuplicateName'");
 
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertCount(1, Badge::getBadges($this->courseId));
             $this->assertEquals(1, Utils::getDirectorySize((new Badges(new Course($this->courseId)))->getDataFolder()));
             $this->assertCount(1, Section::getSectionByName($this->courseId, Badges::RULE_SECTION)->getRules());
@@ -1360,7 +1360,7 @@ tags:
             $this->fail("Error should have been thrown on 'addBadgeDuplicateName'");
 
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertEquals("Badge2", $badge->getName());
             $this->assertTrue(file_exists($badge->getDataFolder(true, "Badge2")));
             $this->assertEquals($this->trim("rule: Badge2
@@ -1525,7 +1525,7 @@ tags:
         $this->assertIsArray($levels);
         $this->assertCount(3, $levels);
 
-        $keys = ["id", "number", "description", "goal", "reward", "tokens"];
+        $keys = ["id", "number", "description", "goal", "reward", "tokens", "number"];
         $nrKeys = count($keys);
 
         $lvl1 = $levels[0];

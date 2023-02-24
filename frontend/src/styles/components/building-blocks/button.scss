@@ -1,0 +1,26 @@
+/**
+ * ----------------------------
+ * DISPLAY VERSION
+ * ----------------------------
+ */
+
+.bb-button {
+  &.bb-button-colored {
+    @apply text-base-100 hover:brightness-110;
+  }
+
+  &.bb-button-icon {
+    @apply gap-2;
+  }
+}
+
+
+/**
+ * ----------------------------
+ * EDITOR VERSION
+ * ----------------------------
+ */
+
+.page-editor {
+  /* TODO */
+}

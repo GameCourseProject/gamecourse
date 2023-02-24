@@ -1,0 +1,30 @@
+<!-- Display version -->
+<ng-container *ngIf="!edit">
+  <ng-container [ngTemplateOutlet]="DISPLAY_DEFAULT"></ng-container>
+</ng-container>
+
+<!-- Edit version -->
+<ng-container *ngIf="edit">
+  <!-- TODO -->
+</ng-container>
+
+
+<!------------------------------------------------>
+<!-------------- DISPLAY VARIATIONS -------------->
+<!------------------------------------------------>
+
+<ng-template #DISPLAY_DEFAULT>
+  <div [attr.id]="view.cssId"
+       [classList]="classes + ' ' + view.classList"
+       [attr.style]="view.styles">
+
+    <ng-icon [name]="view.icon || DEFAULT" [size]="view.size"></ng-icon>
+  </div>
+</ng-template>
+
+
+<!------------------------------------------------>
+<!---------------- EDIT VARIATIONS --------------->
+<!------------------------------------------------>
+
+<!-- TODO -->

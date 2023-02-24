@@ -32,7 +32,6 @@ export class MainComponent implements OnInit {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
 
-      await this.redirectAdmins();
       this.loading = false;
     });
   }
@@ -48,17 +47,5 @@ export class MainComponent implements OnInit {
 
   async getCourse(courseID: number): Promise<void> {
     this.course = await this.api.getCourseById(courseID).toPromise();
-  }
-
-  async redirectAdmins(): Promise<void> {
-    let redirect: boolean = false;
-
-    if (this.user.isAdmin) redirect = true;
-    else {
-      const isTeacher = await this.api.isTeacher(this.course.id, this.user.id).toPromise();
-      if (isTeacher) redirect = true;
-    }
-
-    if (redirect) this.router.navigate(['overview'], {relativeTo: this.route.parent});
   }
 }

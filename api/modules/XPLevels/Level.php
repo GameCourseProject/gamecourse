@@ -50,6 +50,17 @@ class Level
         return $this->getData("description");
     }
 
+    public function getNumber(): int
+    {
+        $minXP = $this->getMinXP();
+
+        $levels = self::getLevels($this->getCourse()->getId(), "minXP DESC");
+        foreach ($levels as $level) {
+            if ($minXP >= $level["minXP"]) return $level["number"];
+        }
+        return 0;
+    }
+
     /**
      * Gets level data from the database.
      *
@@ -101,11 +112,14 @@ class Level
      */
     public function setData(array $fieldValues)
     {
+        $courseId = $this->getCourse()->getId();
+
         // Trim values
         self::trim($fieldValues);
 
         // Validate data
         if (key_exists("minXP", $fieldValues)) {
+            self::validateMinXP($courseId, $fieldValues["minXP"], $this->id);
             $previousMinXP = self::getMinXP();
             $newMinXP = intval($fieldValues["minXP"]);
             if ($previousMinXP !== 0 && $newMinXP <= 0)
@@ -179,6 +193,22 @@ class Level
     }
 
     /**
+     * Gets a level by its number.
+     * Returns null if level doesn't exist.
+     *
+     * @param int $courseId
+     * @param int $number
+     * @return Level|null
+     */
+    public static function getLevelByNumber(int $courseId, int $number): ?Level
+    {
+        $levels = self::getLevels($courseId);
+        $level = new Level($levels[$number]["id"]);
+        if (!$level->exists()) return null;
+        else return $level;
+    }
+
+    /**
      * Gets level 0.
      *
      * @param int $courseId
@@ -204,8 +234,10 @@ class Level
     {
         $field = "id, minXP, description";
         $levels = Core::database()->selectMultiple(self::TABLE_LEVEL, ["course" => $courseId], $field, $orderBy);
+        $nrLevels = count($levels);
         foreach ($levels as $i => &$level) {
-            $level["number"] = $i;
+            $level["number"] = str_contains($orderBy, "minXP DESC") || str_contains($orderBy, "minXP desc") ?
+                $nrLevels - ($i + 1) : $i;
             $level = self::parse($level);
         }
         return $levels;
@@ -229,7 +261,7 @@ class Level
     public static function addLevel(int $courseId, int $minXP, ?string $description): Level
     {
         self::trim($description);
-        self::validateLevel($description);
+        self::validateLevel($courseId, $minXP, $description);
         $id = Core::database()->insert(self::TABLE_LEVEL, [
             "course" => $courseId,
             "minXP" => $minXP,
@@ -264,16 +296,16 @@ class Level
      * @return void
      * @throws Exception
      */
-    public function copyLevel(Course $copyTo)
+    public function copyLevel(Course $copyTo): Level
     {
         $minXP = $this->getMinXP();
         $description = $this->getDescription();
 
         if ($minXP == 0) {
             $copiedLevel0 = self::getLevelZero($copyTo->getId());
-            $copiedLevel0->editLevel($minXP, $description);
+            return $copiedLevel0->editLevel($minXP, $description);
 
-        } else self::addLevel($copyTo->getId(), $minXP, $description);
+        } else return self::addLevel($copyTo->getId(), $minXP, $description);
     }
 
     /**
@@ -426,13 +458,36 @@ class Level
     /**
      * Validates level parameters.
      *
+     * @param int $courseId
+     * @param $minXP
      * @param $description
      * @return void
      * @throws Exception
      */
-    private static function validateLevel($description)
+    private static function validateLevel(int $courseId, $minXP, $description)
     {
+        self::validateMinXP($courseId, $minXP);
         self::validateDescription($description);
+    }
+
+    /**
+     * Validates level minimum XP.
+     *
+     * @param int $courseId
+     * @param $minXP
+     * @param int|null $levelId
+     * @return void
+     * @throws Exception
+     */
+    private static function validateMinXP(int $courseId, $minXP, int $levelId = null)
+    {
+        if (!is_numeric($minXP) || (empty($minXP) && $minXP !== 0))
+            throw new Exception("Level minimum XP can't be null neither empty.");
+
+        $whereNot = [];
+        if ($levelId) $whereNot[] = ["id", $levelId];
+        if (!empty(Core::database()->select(self::TABLE_LEVEL, ["course" => $courseId, "minXP" => $minXP], "*", null, $whereNot)))
+            throw new Exception("Duplicate minimum XP value: '$minXP'");
     }
 
     /**

@@ -3,8 +3,11 @@ namespace API;
 
 use Exception;
 use GameCourse\Module\Skills\Skill;
+use GameCourse\Module\Skills\Skills;
 use GameCourse\Module\Skills\SkillTree;
 use GameCourse\Module\Skills\Tier;
+use GameCourse\Module\Streaks\Streak;
+use GameCourse\Module\Streaks\Streaks;
 
 /**
  * This is the Skills controller, which holds API endpoints for
@@ -36,7 +39,7 @@ class SkillsController
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
 
-        API::requireCourseAdminPermission($course);
+        API::requireCoursePermission($course);
 
         API::response(SkillTree::getSkillTrees($courseId));
     }
@@ -61,7 +64,7 @@ class SkillsController
         $active = API::getValue("active", "bool");
 
         $course = SkillTree::getSkillTreeById($skillTreeId)->getCourse();
-        API::requireCourseAdminPermission($course);
+        API::requireCoursePermission($course);
 
         API::response(Tier::getTiersOfSkillTree($skillTreeId, $active));
     }
@@ -181,7 +184,7 @@ class SkillsController
         $skillTreeId = API::getValue("skillTreeId", "int");
         $course = SkillTree::getSkillTreeById($skillTreeId)->getCourse();
 
-        API::requireCourseAdminPermission($course);
+        API::requireCoursePermission($course);
         $active = API::getValue("active", "bool");
         $extra = API::getValue("extra", "bool");
         $collab = API::getValue("collab", "bool");
@@ -256,5 +259,66 @@ class SkillsController
 
         $skillId = API::getValue("skillId", "int");
         Skill::deleteSkill($skillId);
+    }
+
+
+    // FIXME: hard-coded
+
+    public function getUserTotalAvailableWildcards()
+    {
+        API::requireValues("courseId", "userId", "skillTreeId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $userId = API::getValue("userId", "int");
+        $skillTreeId = API::getValue("skillTreeId", "int");
+
+        $skillsModule = new Skills($course);
+        API::response($skillsModule->getUserTotalAvailableWildcards($userId, $skillTreeId));
+    }
+
+    public function getSkillsExtraInfo()
+    {
+        API::requireValues("courseId", "userId", "skillTreeId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $userId = API::getValue("userId", "int");
+        $skillTreeId = API::getValue("skillTreeId", "int");
+
+        $skillsModule = new Skills($course);
+        API::response($skillsModule->getUserSkills($userId, $skillTreeId));
+    }
+
+    public function getStreaks()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        API::response(Streak::getStreaks($courseId));
+    }
+
+    public function getUserStreaks()
+    {
+        API::requireValues("courseId", "userId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $userId = API::getValue("userId", "int");
+        $streaksModule = new Streaks($course);
+        API::response($streaksModule->getUserStreaks($userId));
     }
 }

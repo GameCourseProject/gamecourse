@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, OnInit, Type, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {NgForm} from "@angular/forms";
 
@@ -367,7 +367,7 @@ export class ConfigComponent implements OnInit {
 
   // PERSONALIZED CONFIG
 
-  get PersonalizedConfig() {
+  get PersonalizedConfig(): Type<any> {
     if (this.personalizedConfig) {
       if (this.module.id === ApiHttpService.GOOGLESHEETS) return GooglesheetsComponent;
       if (this.module.id === ApiHttpService.PROFILING) return ProfilingComponent;
@@ -394,9 +394,10 @@ export class ConfigComponent implements OnInit {
     }, 0);
   }
 
-  async onFileSelected(files: FileList, artifact: ConfigInputItem, accept: string): Promise<void> {
+  async onFileSelected(files: FileList, artifact: ConfigInputItem, accept: string[]): Promise<void> {
     // FIXME: should be more general than this (create input-image component)
-    const isImage = accept.containsWord('image') || accept.containsWord('svg') || accept.containsWord('png') || accept.containsWord('jpg');
+    const acceptStr = accept?.join(',') || '';
+    const isImage = acceptStr.containsWord('image') || acceptStr.containsWord('svg') || acceptStr.containsWord('png') || acceptStr.containsWord('jpg');
     if (isImage) await ResourceManager.getBase64(files.item(0)).then(data => this.setItemToManage(artifact, data));
     else await ResourceManager.getText(files.item(0)).then(data => this.setItemToManage(artifact, data));
   }

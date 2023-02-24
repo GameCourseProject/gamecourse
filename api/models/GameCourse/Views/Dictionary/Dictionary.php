@@ -2,8 +2,12 @@
 namespace GameCourse\Views\Dictionary;
 
 use Exception;
+use Faker\Factory;
+use Faker\Generator;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
+use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
+use GameCourse\Views\ExpressionLanguage\ValueNode;
 use Utils\Utils;
 
 /**
@@ -19,6 +23,68 @@ class Dictionary
     {
         if (self::$instance == null) self::$instance = new Dictionary();
         return self::$instance;
+    }
+
+
+    private $course;
+    private $views = [];
+    private $viewIdsWithLoopData = [];
+    private $visitor;
+
+    public function getCourse(): ?Course
+    {
+        return $this->course;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getView(int $viewId): array
+    {
+        if (!in_array($viewId, array_keys($this->views)))
+            throw new Exception("View with ID = $viewId is not stored in the dictionary.");
+        return $this->views[$viewId];
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function storeView(array $view)
+    {
+        $viewId = $view["id"];
+        if (in_array($viewId, array_keys($this->views)))
+            throw new Exception("View with ID = $viewId is already stored in the dictionary.");
+        $this->views[$viewId] = $view;
+    }
+
+    public function getViewIdsWithLoopData(): array
+    {
+        return $this->viewIdsWithLoopData;
+    }
+
+    public function setViewIdsWithLoopData(array $viewIds)
+    {
+        $this->viewIdsWithLoopData = $viewIds;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function storeViewIdAsViewWithLoopData(int $viewId)
+    {
+        if (in_array($viewId, array_keys($this->viewIdsWithLoopData)))
+            throw new Exception("View with ID = $viewId is already stored in the dictionary as a view with loop data.");
+        $this->viewIdsWithLoopData[] = $viewId;
+    }
+
+    public function getVisitor(): EvaluateVisitor
+    {
+        return $this->visitor;
+    }
+
+    public function setVisitor(EvaluateVisitor $visitor)
+    {
+        $this->visitor = $visitor;
     }
 
 
@@ -101,6 +167,20 @@ class Dictionary
     /*** ------------------ Functions ------------------ ***/
     /*** ----------------------------------------------- ***/
 
+    private $mockData;
+    private $faker;
+
+    public function mockData(): bool
+    {
+        return $this->mockData;
+    }
+
+    public function faker(): Generator
+    {
+        return $this->faker;
+    }
+
+
     /**
      * Calls a dictionary function defined in a given library.
      *
@@ -116,10 +196,10 @@ class Dictionary
      * @param array $args
      * @param null $context
      * @param bool $mockData
-     * @return mixed
+     * @return ValueNode
      * @throws Exception
      */
-    public function callFunction(?Course $course, string $libraryId, string $funcName, array $args, $context = null, bool $mockData = false)
+    public function callFunction(?Course $course, string $libraryId, string $funcName, array $args, $context = null, bool $mockData = false): ValueNode
     {
         $library = $this->getLibraryById($libraryId, $course);
 
@@ -131,10 +211,11 @@ class Dictionary
         if ($context !== null) array_unshift($args, $context);
 
         // Add course
-        if ($course) array_unshift($args, $course);
+        if ($course) $this->course = $course;
 
         // Mock data
-        array_unshift($args, $mockData);
+        $this->mockData = $mockData;
+        $this->faker = Factory::create(); // Check out https://fakerphp.github.io/
 
         // Call function
         return $library->{$funcName}(...$args);

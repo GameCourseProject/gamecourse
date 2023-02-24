@@ -1,0 +1,398 @@
+[
+    {
+        "aspect" => {
+            "viewerRole": null,
+            "userRole": "Student"
+        },
+        "type": "block",
+        "class": "card bg-base-100 shadow-xl",
+        "variables": [
+            {
+                "name": "pageUser",
+                "value": "{users.getUserById(%user)}"
+            },
+            {
+                "name": "courseColor",
+                "value": "{courses.getCourseById(%course).color}"
+            },
+            {
+                "name": "userBadges",
+                "value": "{awards.getUserBadgesAwards(%user).count}"
+            },
+            {
+                "name": "totalBadges",
+                "value": "{badges.getBadges(true).count}"
+            },
+            {
+                "name": "blankBadge",
+                "value": "{badges.getBlankImage()}"
+            }
+        ],
+        "children": [
+            [
+                {
+                    "type": "block",
+                    "class": "card-body",
+                    "children": [
+                        [
+                            {
+                                "type": "block",
+                                "class": "gap-3 items-center mb-4",
+                                "direction": "horizontal",
+                                "children": [
+                                    [
+                                        {
+                                            "type": "icon",
+                                            "class": "mt-1",
+                                            "style": "color: {%courseColor}",
+                                            "icon": "tabler-award",
+                                            "size": "1.8rem"
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "type": "text",
+                                            "class": "font-bold",
+                                            "style": "font-size: 1.5rem",
+                                            "text": "Badges"
+                                        }
+                                    ]
+                                ]
+                            }
+                        ],
+                        [
+                            {
+                                "type": "block",
+                                "class": "gap-3",
+                                "children": [
+                                    [
+                                        {
+                                            "type": "collapse",
+                                            "class": "border-base-300 bg-base-200 border-2 rounded-xl",
+                                            "loopData": "{badges.getBadges(true).sort(\"ASC: name\")}",
+                                            "icon": "arrow",
+                                            "variables": [
+                                                {
+                                                    "name": "badge",
+                                                    "value": "{%item}"
+                                                },
+                                                {
+                                                    "name": "badgeLevels",
+                                                    "value": "{%badge.levels}"
+                                                },
+                                                {
+                                                    "name": "userLevel",
+                                                    "value": "{badges.getUserBadgeLevel(%user, %badge.id)}"
+                                                },
+                                                {
+                                                    "name": "userNextLevel",
+                                                    "value": "{badges.getUserBadgeNextLevel(%user, %badge.id)}"
+                                                },
+                                                {
+                                                    "name": "userProgression",
+                                                    "value": "{badges.getUserBadgeProgression(%user, %badge.id)}"
+                                                },
+                                                {
+                                                    "name": "finished",
+                                                    "value": "{%userLevel == %badgeLevels.count}"
+                                                }
+                                            ],
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "class": "gap-6 items-center",
+                                                        "direction": "horizontal",
+                                                        "columns": 3,
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "direction": "horizontal",
+                                                                    "columns": 3,
+                                                                    "responsive": false,
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "w-fit gap-1",
+                                                                                "loopData": "{%badgeLevels}",
+                                                                                "variables": [
+                                                                                    {
+                                                                                        "name": "level",
+                                                                                        "value": "{%item}"
+                                                                                    }
+                                                                                ],
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "image",
+                                                                                            "class": "h-20 w-20",
+                                                                                            "visibilityType": "conditional",
+                                                                                            "visibilityCondition": "{%level.number <= %userLevel}",
+                                                                                            "src": "{%level.image}"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "image",
+                                                                                            "class": "h-20 w-20",
+                                                                                            "visibilityType": "conditional",
+                                                                                            "visibilityCondition": "{%level.number > %userLevel}",
+                                                                                            "src": "{%blankBadge}"
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "font-semibold",
+                                                                                "style": "font-size: 1.1rem",
+                                                                                "text": "{%badge.name}"
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "text-neutral\/75",
+                                                                                "text": "{%badge.description}"
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "font-medium text-sm mt-2",
+                                                                                "variables": [
+                                                                                    {
+                                                                                        "name": "nextLevel",
+                                                                                        "value": "{badgeLevels.getLevelByNumber(%userNextLevel, %badge.id)}"
+                                                                                    }
+                                                                                ],
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "text",
+                                                                                            "visibilityType": "conditional",
+                                                                                            "visibilityCondition": "{!(%finished)}",
+                                                                                            "text": "Lvl. {%nextLevel.number}: {%nextLevel.description}"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "text",
+                                                                                            "style": "color: {%courseColor}",
+                                                                                            "text": "[{%userProgression} so far]"
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "float-right items-center gap-3",
+                                                                    "visibilityType": "conditional",
+                                                                    "visibilityCondition": "{!(%finished)}",
+                                                                    "direction": "horizontal",
+                                                                    "variables": [
+                                                                        {
+                                                                            "name": "nextLevel",
+                                                                            "value": "{badgeLevels.getLevelByNumber(%userNextLevel, %badge.id)}"
+                                                                        }
+                                                                    ],
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "text-center",
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "text",
+                                                                                            "class": "font-semibold text-lg",
+                                                                                            "text": "{%nextLevel.reward} XP"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "text",
+                                                                                            "class": "font-medium text-error text-sm",
+                                                                                            "visibilityType": "conditional",
+                                                                                            "visibilityCondition": "{%badge.isExtra}",
+                                                                                            "text": "extra credit"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "text",
+                                                                                            "class": "font-medium text-success text-sm",
+                                                                                            "visibilityType": "conditional",
+                                                                                            "visibilityCondition": "{%badge.isBragging}",
+                                                                                            "text": "bragging rights"
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "text-sm font-medium",
+                                                                                "visibilityType": "conditional",
+                                                                                "visibilityCondition": "{%nextLevel.tokens}",
+                                                                                "text": "+"
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "gap-1 items-center",
+                                                                                "visibilityType": "conditional",
+                                                                                "visibilityCondition": "{%nextLevel.tokens}",
+                                                                                "direction": "horizontal",
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "text",
+                                                                                            "class": "font-semibold text-lg",
+                                                                                            "text": "{%nextLevel.tokens}"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "image",
+                                                                                            "class": "h-5 w-5",
+                                                                                            "src": "{vc.getImage()}"
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ],
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "gap-1 flex-wrap",
+                                                                    "direction": "horizontal",
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "text-sm",
+                                                                                "loopData": "{badges.getUserBadgeProgressionInfo(%user, %badge.id)}",
+                                                                                "text": "[{%progression.description}]",
+                                                                                "link": "{system.if(!%progression.link, null, %progression.link)}",
+                                                                                "variables": [
+                                                                                    {
+                                                                                        "name": "progression",
+                                                                                        "value": "{%item}"
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "mt-4",
+                                                                    "loopData": "{%badgeLevels}",
+                                                                    "variables": [
+                                                                        {
+                                                                            "name": "level",
+                                                                            "value": "{%item}"
+                                                                        },
+                                                                        {
+                                                                            "name": "usersWithLevel",
+                                                                            "value": "{badges.getUsersWithBadge(%badge.id, %level.number)}"
+                                                                        }
+                                                                    ],
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "font-semibold",
+                                                                                "text": "Lvl. {%level.number}: {%level.description}"
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "text-neutral\/75 text-sm",
+                                                                                "text": "Reward: {%level.reward} XP {system.if(!%level.tokens, \"\", \"+ {%level.tokens} {vc.getVCName()}\")}"
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "gap-2 flex-wrap mt-2",
+                                                                                "visibilityType": "conditional",
+                                                                                "visibilityCondition": "{%usersWithLevel.count > 0}",
+                                                                                "loopData": "{%usersWithLevel}",
+                                                                                "direction": "horizontal",
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "image",
+                                                                                            "class": "mask mask-circle h-9 w-9",
+                                                                                            "src": "{%item.image}",
+                                                                                            "events": [
+                                                                                                {
+                                                                                                    "type": "click",
+                                                                                                    "action": "{actions.goToPage(pages.getPageByName(\"Profile\").id, %item.id)}"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "text-error text-sm italic",
+                                                                                "visibilityType": "conditional",
+                                                                                "visibilityCondition": "{%usersWithLevel.count == 0}",
+                                                                                "text": "No one reached this level yet. Be the first!"
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                ]
+                            }
+                        ]
+                    ]
+                }
+            ]
+        ]
+    }
+]

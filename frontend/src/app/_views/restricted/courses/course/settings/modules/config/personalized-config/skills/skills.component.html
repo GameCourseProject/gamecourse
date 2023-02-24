@@ -375,6 +375,7 @@
                   <div class="w-20 h-20 p-2 rounded-lg hover:cursor-pointer hover:outline hover:outline-offset-2"
                        [ngStyle]="{'background-color': skill.color, 'outline-color': skill.color}" (click)="goToSkillPage(skill)">
                     <span class="block text-white font-semibold text-xs break-words">{{skill.name}}</span>
+                    <ng-icon *ngIf="skill.isCollab" class="absolute bottom-0 right-0 mr-2 mb-2 text-base-100" name="tabler-users" size="1.1rem"></ng-icon>
                   </div>
                 </div>
 

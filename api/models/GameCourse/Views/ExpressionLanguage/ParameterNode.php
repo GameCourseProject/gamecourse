@@ -1,21 +1,18 @@
 <?php
 namespace GameCourse\Views\ExpressionLanguage;
 
+use GameCourse\Views\Dictionary\Library;
+
 class ParameterNode extends Node {
     private $param;
-    private $key; // param may be an array with key
 
-    public function __construct($param, $key = null) {
+    public function __construct(string $param, ?Library $library = null) {
         $this->param = $param;
-        $this->key = $key;
+        $this->setLibrary($library);
     }
 
-    public function getParameter() {
+    public function getParameter(): string {
         return $this->param;
-    }
-    
-    public function getKey() {
-        return $this->key;
     }
 
     public function accept(Visitor $visitor): ValueNode {

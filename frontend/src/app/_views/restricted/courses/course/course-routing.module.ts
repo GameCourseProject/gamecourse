@@ -14,7 +14,7 @@ import { ComingSoonComponent } from "../../../../_components/misc/pages/coming-s
 
 const routes: Routes = [
   {
-    path: '',
+    path: 'main',
     component: MainComponent
   },
   {
@@ -84,7 +84,8 @@ const routes: Routes = [
   {
     path: 'participation/:key',
     component: PageComponent
-  }
+  },
+  { path: '', redirectTo: 'main', pathMatch: 'full' }
 ];
 
 @NgModule({

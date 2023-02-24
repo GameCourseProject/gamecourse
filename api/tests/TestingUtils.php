@@ -45,6 +45,7 @@ class TestingUtils
         if (file_exists(CACHE_FOLDER)) Utils::copyDirectory(CACHE_FOLDER . "/", CACHE_FOLDER . "_copy/");
         Utils::copyDirectory(AUTOGAME_FOLDER . "/imported-functions/", AUTOGAME_FOLDER . "/imported-functions_copy/", ["defaults.py"]);
         Utils::copyDirectory(AUTOGAME_FOLDER . "/config/", AUTOGAME_FOLDER . "/config_copy/", ["samples"]);
+        Utils::copyDirectory(ROOT_PATH . "models/GameCourse/Views/Dictionary/libraries/", ROOT_PATH . "models/GameCourse/Views/Dictionary/libraries_copy/");
 
         // Clean file structure
         self::cleanFileStructure();
@@ -74,6 +75,7 @@ class TestingUtils
         if (file_exists(CACHE_FOLDER . "_copy")) Utils::copyDirectory(CACHE_FOLDER . "_copy/", CACHE_FOLDER . "/", [], true);
         Utils::copyDirectory(AUTOGAME_FOLDER . "/imported-functions_copy/", AUTOGAME_FOLDER . "/imported-functions/", [], true);
         Utils::copyDirectory(AUTOGAME_FOLDER . "/config_copy/", AUTOGAME_FOLDER . "/config/", [], true);
+        Utils::copyDirectory(ROOT_PATH . "models/GameCourse/Views/Dictionary/libraries_copy/", ROOT_PATH . "models/GameCourse/Views/Dictionary/libraries/", [], true);
 
         // Remove Mocks
         Mockery::close();

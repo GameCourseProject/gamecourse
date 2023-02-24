@@ -10,10 +10,9 @@ import { SanitizeHTMLPipe } from "./_pipes/sanitize-html.pipe";
 // Directives
 import { ClickedOutsideDirective } from "./_directives/clicked-outside.directive";
 import { ViewSelectionDirective } from "./_directives/view-selection.directive";
-import { GoToPageDirective } from "./_directives/events/go-to-page.directive";
-import { HideViewDirective } from "./_directives/events/hide-view.directive";
-import { ShowViewDirective } from "./_directives/events/show-view.directive";
-import { ToggleViewDirective } from "./_directives/events/toggle-view.directive";
+import { GoToPageDirective } from "./_directives/views/events/actions/go-to-page.directive";
+import { ShowTooltipDirective } from "./_directives/views/events/actions/show-tooltip.directive";
+import { TableDataCustomDirective } from './_components/tables/table-data/table-data-custom.directive';
 
 // Components: layout
 import { NavbarComponent } from './_components/layout/navbar/navbar.component';
@@ -49,8 +48,9 @@ import { InputScheduleComponent } from './_components/inputs/date & time/input-s
 import { ThemeTogglerComponent } from './_components/inputs/misc/theme-toggler/theme-toggler.component';
 
 // Components: charts
-import { LineChartComponent } from "./_components/charts/line-chart/line-chart.component";
 import { BarChartComponent } from "./_components/charts/bar-chart/bar-chart.component";
+import { ComboChartComponent } from './_components/charts/combo-chart/combo-chart.component';
+import { LineChartComponent } from "./_components/charts/line-chart/line-chart.component";
 import { ProgressChartComponent } from "./_components/charts/progress-chart/progress-chart.component";
 import { RadarChartComponent } from "./_components/charts/radar-chart/radar-chart.component";
 
@@ -78,11 +78,13 @@ import { SimpleHelperComponent } from './_components/helpers/simple-helper/simpl
 // Components: building blocks
 import { BBAnyComponent } from "./_components/building-blocks/any/any.component";
 import { BBBlockComponent } from './_components/building-blocks/block/block.component';
-import { BBTextComponent } from './_components/building-blocks/text/text.component';
-import { BBImageComponent } from './_components/building-blocks/image/image.component';
-import { BBHeaderComponent } from './_components/building-blocks/header/header.component';
-import { BBTableComponent } from './_components/building-blocks/table/table.component';
+import { BBButtonComponent } from './_components/building-blocks/button/button.component';
 import { BBChartComponent } from "./_components/building-blocks/chart/chart.component";
+import { BBCollapseComponent } from './_components/building-blocks/collapse/collapse.component';
+import { BBIconComponent } from './_components/building-blocks/icon/icon.component';
+import { BBImageComponent } from './_components/building-blocks/image/image.component';
+import { BBTableComponent } from './_components/building-blocks/table/table.component';
+import { BBTextComponent } from './_components/building-blocks/text/text.component';
 
 // Components: misc
 import { AutoGameToastComponent } from './_components/misc/autogame-toast/auto-game-toast.component';
@@ -145,21 +147,41 @@ import {
   TablerArrowNarrowUp,
   TablerArrowNarrowDown,
   TablerAward,
+  TablerChartBar,
   TablerBarrierBlock,
+  TablerBell,
+  TablerBellRinging,
   TablerBellSchool,
+  TablerBook,
   TablerBooks,
+  TablerBulb,
   TablerCalendarTime,
   TablerCaretDown,
+  TablerChecks,
+  TablerCircleCheck,
   TablerClipboardList,
   TablerCloudUpload,
+  TablerCoin,
   TablerColorSwatch,
+  TablerEye,
+  TablerFlame,
+  TablerFlask,
   TablerGavel,
+  TablerGift,
   TablerIdBadge2,
+  TablerListNumbers,
+  TablerMessage2,
+  TablerPaperclip,
   TablerPlug,
+  TablerPresentation,
   TablerPrompt,
+  TablerQuestionMark,
+  TablerStar,
   TablerSchool,
-  TablerBellRinging,
-  TablerBell,
+  TablerTimeline,
+  TablerTrophy,
+  TablerUserCircle,
+  TablerUsers
 } from "@ng-icons/tabler-icons";
 
 
@@ -171,9 +193,8 @@ import {
     ClickedOutsideDirective,
     ViewSelectionDirective,
     GoToPageDirective,
-    HideViewDirective,
-    ShowViewDirective,
-    ToggleViewDirective,
+    ShowTooltipDirective,
+    TableDataCustomDirective,
 
     NavbarComponent,
     SidebarComponent,
@@ -205,8 +226,9 @@ import {
     InputScheduleComponent,
     ThemeTogglerComponent,
 
-    LineChartComponent,
     BarChartComponent,
+    ComboChartComponent,
+    LineChartComponent,
     ProgressChartComponent,
     RadarChartComponent,
 
@@ -227,11 +249,13 @@ import {
 
     BBAnyComponent,
     BBBlockComponent,
-    BBTextComponent,
-    BBImageComponent,
-    BBHeaderComponent,
-    BBTableComponent,
+    BBButtonComponent,
     BBChartComponent,
+    BBCollapseComponent,
+    BBIconComponent,
+    BBImageComponent,
+    BBTableComponent,
+    BBTextComponent,
 
     AutoGameToastComponent,
     HeaderComponent,
@@ -249,9 +273,8 @@ import {
     ClickedOutsideDirective,
     ViewSelectionDirective,
     GoToPageDirective,
-    HideViewDirective,
-    ShowViewDirective,
-    ToggleViewDirective,
+    ShowTooltipDirective,
+    TableDataCustomDirective,
 
     NavbarComponent,
     SidebarComponent,
@@ -283,8 +306,9 @@ import {
     InputScheduleComponent,
     ThemeTogglerComponent,
 
-    LineChartComponent,
     BarChartComponent,
+    ComboChartComponent,
+    LineChartComponent,
     ProgressChartComponent,
     RadarChartComponent,
 
@@ -305,11 +329,12 @@ import {
 
     BBAnyComponent,
     BBBlockComponent,
-    BBTextComponent,
-    BBImageComponent,
-    BBHeaderComponent,
-    BBTableComponent,
+    BBButtonComponent,
     BBChartComponent,
+    BBIconComponent,
+    BBImageComponent,
+    BBTableComponent,
+    BBTextComponent,
 
     AutoGameToastComponent,
     HeaderComponent,
@@ -367,21 +392,41 @@ import {
       TablerArrowNarrowUp,
       TablerArrowNarrowDown,
       TablerAward,
+      TablerChartBar,
       TablerBarrierBlock,
+      TablerBell,
+      TablerBellRinging,
       TablerBellSchool,
+      TablerBook,
       TablerBooks,
+      TablerBulb,
       TablerCalendarTime,
       TablerCaretDown,
+      TablerChecks,
+      TablerCircleCheck,
       TablerClipboardList,
       TablerCloudUpload,
+      TablerCoin,
       TablerColorSwatch,
+      TablerEye,
+      TablerFlame,
+      TablerFlask,
       TablerGavel,
+      TablerGift,
       TablerIdBadge2,
+      TablerListNumbers,
+      TablerMessage2,
+      TablerPaperclip,
+      TablerPresentation,
       TablerPlug,
       TablerPrompt,
+      TablerQuestionMark,
       TablerSchool,
-      TablerBellRinging,
-      TablerBell,
+      TablerStar,
+      TablerTimeline,
+      TablerTrophy,
+      TablerUserCircle,
+      TablerUsers
     }),
     DataTablesModule,
     NgApexchartsModule,

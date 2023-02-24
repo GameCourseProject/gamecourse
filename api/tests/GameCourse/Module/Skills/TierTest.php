@@ -956,7 +956,7 @@ class TierTest extends TestCase
         try {
             Tier::addTier($this->skillTreeId, "Tier", 200);
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $tiers = Tier::getTiersOfSkillTree($this->skillTreeId);
             $this->assertCount(2, $tiers);
         }

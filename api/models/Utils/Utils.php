@@ -382,6 +382,25 @@ class Utils
 
 
     /*** ---------------------------------------------------- ***/
+    /*** ---------------- Array Manipulation ---------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Checks whether a given array is sequential.
+     * NOTE: sequential --> [0 => x1, 1 => x2, ...]
+     *       associative --> ["key1" => x1, "key2" => x2, ...]
+     *
+     * @param array $array
+     * @return bool
+     */
+    public static function isSequentialArray(array $array): bool
+    {
+        if (empty($array)) return false;
+        return array_keys($array) === range(0, count($array) - 1);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
     /*** ----------------------- CSV ------------------------ ***/
     /*** ---------------------------------------------------- ***/
 

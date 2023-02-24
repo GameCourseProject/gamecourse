@@ -20,7 +20,7 @@
         <div class="full" style="margin-top: 20px">
           <app-input-file
             [id]="'input-file'"
-            [accept]="type"
+            [accept]="type.split(', ')"
             (valueChange)="onFileSelected($event)">
           </app-input-file>
 

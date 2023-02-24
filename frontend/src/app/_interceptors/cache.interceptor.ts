@@ -34,10 +34,10 @@ export class CacheInterceptor implements HttpInterceptor {
     this.dependencies[ApiHttpService.AUTOGAME] = [ApiHttpService.COURSE];
     this.dependencies[ApiHttpService.COURSE] = [ApiHttpService.USER, ApiHttpService.MODULE];
     this.dependencies[ApiHttpService.DOCS] = [];
-    this.dependencies[ApiHttpService.MODULE] = [ApiHttpService.COURSE, ApiHttpService.VIEWS];
+    this.dependencies[ApiHttpService.MODULE] = [ApiHttpService.COURSE, ApiHttpService.PAGE];
     this.dependencies[ApiHttpService.THEME] = [];
-    this.dependencies[ApiHttpService.USER] = [ApiHttpService.COURSE, ApiHttpService.VIEWS];
-    this.dependencies[ApiHttpService.VIEWS] = [];
+    this.dependencies[ApiHttpService.USER] = [ApiHttpService.COURSE, ApiHttpService.PAGE];
+    this.dependencies[ApiHttpService.PAGE] = [];
     // NOTE: add new dependencies here
 
     // Add modules with requests

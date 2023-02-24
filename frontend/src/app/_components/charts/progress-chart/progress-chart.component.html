@@ -1,4 +1,21 @@
-<div>{{value}} out of {{max}}</div>
-<div style="height: 5px; border: 2px solid #555; padding: 0; width: 80px;">
-  <div style="height: 100%; background-color: #555;" [ngStyle]="{'width': value * 100 / max + '%'}"></div>
+<div [id]="id" [classList]="classList">
+  <!-- Top Label -->
+  <div *ngIf="labelLeft || labelMiddle || labelRight" class="flex mb-1"
+       [ngClass]="{'justify-between': labelLeft && labelRight, 'justify-end': !labelLeft && labelRight, 'justify-center': labelMiddle}">
+
+    <span *ngIf="labelLeft" class="text-sm font-semibold">{{labelLeft}}</span>
+    <span *ngIf="labelMiddle" class="text-sm font-semibold">{{labelMiddle}}</span>
+    <span *ngIf="labelRight" class="text-sm font-medium">{{labelRight}}</span>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="progress-track w-full rounded-full {{ProgressSize[size]}}">
+    <div class="progress-bar rounded-full flex items-center justify-center text-xs font-medium p-0.5 {{ProgressSize[size]}}"
+         [ngStyle]="{'width': progress + '%'}">
+
+      <!-- Inside Label -->
+      {{labelInside && (size == 'md' || size == 'lg') ? labelInside : ''}}
+    </div>
+  </div>
 </div>
+

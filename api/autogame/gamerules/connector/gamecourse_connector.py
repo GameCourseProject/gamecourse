@@ -3,6 +3,7 @@ import socket, logging
 import mysql.connector
 import math
 from datetime import datetime, timedelta
+import fnmatch
 
 from io import StringIO
 from course.logline import *
@@ -13,6 +14,8 @@ achievements = read_achievements()
 tree_awards = read_tree()
 
 from gamerules.connector.db_connector import gc_db as db
+preloaded_logs = {}
+preloaded_awards = {}
 
 
 ### ------------------------------------------------------ ###
@@ -48,7 +51,7 @@ def autogame_terminate(course, start_date, finish_date):
 
     # Terminate AutoGame
     if not config.TEST_MODE:
-        query = "UPDATE autogame SET startedRunning = %s, finishedRunning = %s, isRunning = %s WHERE course = %s;"
+        query = "UPDATE autogame SET startedRunning = %s, finishedRunning = %s, isRunning = %s, runNext = 0 WHERE course = %s;"
         db.execute_query(query, (start_date, finish_date, False, course), "commit")
 
     # Check how many courses are running
@@ -78,6 +81,105 @@ def autogame_terminate(course, start_date, finish_date):
                 exit()
     return
 
+
+### Preload information
+
+def preload_logs(targets_ids):
+    """
+    Preloads logs for all targets.
+    Ensures the database is accessed only once to retrieve logs.
+    """
+
+    global preloaded_logs
+
+    query = "SELECT * FROM participation WHERE course = %s" % config.COURSE
+    query += " AND user IN (%s)" % (', '.join([str(el) for el in targets_ids]))
+    query += " ORDER BY date ASC;"
+    logs = db.execute_query(query)
+
+    preloaded_logs = {target_id: [] for target_id in targets_ids}
+    for log in logs:
+        log = (log[0], log[1], log[2], log[config.LOG_SOURCE_COL].decode() if log[config.LOG_SOURCE_COL] is not None else None,
+               log[config.LOG_DESCRIPTION_COL].decode() if log[config.LOG_DESCRIPTION_COL] is not None else None,
+               log[config.LOG_TYPE_COL].decode() if log[config.LOG_TYPE_COL] is not None else None,
+               log[config.LOG_POST_COL].decode() if log[config.LOG_POST_COL] is not None else None, log[config.LOG_DATE_COL],
+               log[config.LOG_RATING_COL], log[config.LOG_EVALUATOR_COL])
+
+        target_id = log[1]
+        if target_id in preloaded_logs:
+            preloaded_logs[target_id].append(log)
+        else:
+            preloaded_logs[target_id] = [log]
+
+def preload_awards(targets_ids):
+    """
+    Preloads awards for all targets.
+    Ensures the database is accessed only once to retrieve awards.
+    """
+
+    global preloaded_awards
+
+    query = "SELECT * FROM " + get_awards_table() + " WHERE course = %s" % config.COURSE
+    query += " AND user IN (%s)" % (', '.join([str(el) for el in targets_ids]))
+    awards = db.execute_query(query)
+
+    preloaded_awards = {target_id: [] for target_id in targets_ids}
+    for award in awards:
+        award = (award[0], award[1], award[2], award[config.AWARD_DESCRIPTION_COL].decode() if award[config.AWARD_DESCRIPTION_COL] is not None else None,
+                 award[config.AWARD_TYPE_COL].decode() if award[config.AWARD_TYPE_COL] is not None else None,
+                 award[config.AWARD_INSTANCE_COL], award[config.AWARD_REWARD_COL], award[config.LOG_DATE_COL])
+
+        target_id = award[1]
+        if target_id in preloaded_awards:
+            preloaded_awards[target_id].append(award)
+        else:
+            preloaded_awards[target_id] = [award]
+
+def get_preloaded_award(target, description=None, type=None, instance=None, reward=None):
+    global preloaded_awards
+
+    awards = [award for award in preloaded_awards[target] if
+            (compare_with_wildcards(award[config.AWARD_DESCRIPTION_COL],
+                                    description) if description is not None else True) and
+            (award[config.AWARD_TYPE_COL] == type if type is not None else True) and
+            (award[config.AWARD_INSTANCE_COL] == instance if instance is not None else True) and
+            (award[config.AWARD_REWARD_COL] == reward if reward is not None else True)]
+    nr_awards = len(awards)
+
+    if nr_awards > 1:
+        raise Exception("Couldn't get preloaded award: more than one award found.")
+
+    elif nr_awards == 0:
+        return None
+
+    else:
+        return awards[0]
+
+def get_preloaded_awards(target, description=None, type=None, instance=None, reward=None):
+    global preloaded_awards
+
+    return [award for award in preloaded_awards[target] if
+              (compare_with_wildcards(award[config.AWARD_DESCRIPTION_COL], description) if description is not None else True) and
+              (award[config.AWARD_TYPE_COL] == type if type is not None else True) and
+              (award[config.AWARD_INSTANCE_COL] == instance if instance is not None else True) and
+              (award[config.AWARD_REWARD_COL] == reward if reward is not None else True)]
+
+def add_preloaded_award(target, award, index=None):
+    global preloaded_awards
+
+    if index is None:
+        preloaded_awards[target].append(award)
+    else:
+        preloaded_awards[target].insert(index, award)
+
+def remove_preloaded_award(target, index):
+    global preloaded_awards
+
+    preloaded_awards[target] = preloaded_awards[target][:index] + preloaded_awards[target][index + 1:]
+
+def update_preloaded_award(target, index, award):
+    add_preloaded_award(target, index, award)
+    remove_preloaded_award(target, index + 1)
 
 ### Clearing progression
 
@@ -152,6 +254,7 @@ def give_award(target, type, description, reward, instance=None):
     table = get_awards_table()
     query = "INSERT INTO " + table + " (user, course, description, type, moduleInstance, reward) VALUES (%s, %s, %s, %s, %s, %s);"
     db.execute_query(query, (target, config.COURSE, description, type, instance, reward), "commit")
+    add_preloaded_award(target, (None, target, config.COURSE, description, type, instance, reward, None))
 
 def count_awards(course):
     """
@@ -177,12 +280,7 @@ def award_received(target, description, type):
     already been received by a specific target.
     """
 
-    table = get_awards_table()
-    query = "SELECT COUNT(*) FROM " + table + " WHERE course = %s AND user = %s AND type = %s AND description LIKE %s;"
-    nr_awards = db.execute_query(query, (config.COURSE, target, type, description))[0][0]
-
-    return nr_awards > 0
-
+    return get_preloaded_award(target, description, type) is not None
 
 ### Calculating rewards
 
@@ -493,6 +591,9 @@ def get_dates_of_period(date, number, time, precise=True):
 
     return start, end
 
+def compare_with_wildcards(text_1, text_2):
+    return fnmatch.fnmatch(text_1, text_2.replace("%", "*"))
+
 def call_gamecourse(course, library, function, args):
     """
     Calls GameCourse on PHP to handle dictionary functions.
@@ -604,32 +705,32 @@ def get_logs(target=None, type=None, rating=None, evaluator=None, start_date=Non
     Option to get logs for a specific target, type, rating,
     evaluator, and/or description, as well as an initial and/or end date.
     """
-
-    query = "SELECT * FROM participation WHERE course = %s" % config.COURSE
+    global preloaded_logs
 
     if target is not None:
-        query += " AND user = %s" % target
+        logs = preloaded_logs[target]
+    else:
+        logs = [item for sublist in preloaded_logs.values() for item in sublist]
 
     if type is not None:
-        query += " AND type = '%s'" % type
+        logs = [log for log in logs if log[config.LOG_TYPE_COL] == type]
 
     if rating is not None:
-        query += " AND rating = %s" % rating
+        logs = [log for log in logs if int(log[config.LOG_RATING_COL]) == type]
 
     if evaluator is not None:
-        query += " AND evaluator = %s" % evaluator
+        logs = [log for log in logs if int(log[config.LOG_EVALUATOR_COL]) == type]
 
     if start_date is not None:
-        query += " AND date >= '%s'" % start_date
+        logs = [log for log in logs if log[config.LOG_DATE_COL] >= start_date]
 
     if end_date is not None:
-        query += " AND date <= '%s'" % end_date
+        logs = [log for log in logs if log[config.LOG_DATE_COL] <= end_date]
 
     if description is not None:
-        query += " AND description LIKE '%s'" % description
+        logs = [log for log in logs if compare_with_wildcards(log[config.LOG_DESCRIPTION_COL], description)]
 
-    query += " ORDER BY date ASC;"
-    return db.execute_query(query)
+    return logs
 
 def get_assignment_logs(target, name=None):
     """
@@ -881,12 +982,12 @@ def get_periodic_logs(logs, number, time, type):
         start_date, end_date = get_dates_of_period(course_start_date, number, time, False)
 
     else:
-        start_date, end_date = get_dates_of_period(logs[0][config.DATE_COL], number, time)
+        start_date, end_date = get_dates_of_period(logs[0][config.LOG_DATE_COL], number, time)
 
     periodic_logs = []
 
     for log in logs:
-        date = log[config.DATE_COL]
+        date = log[config.LOG_DATE_COL]
         if start_date <= date <= end_date:
             nr_periods = len(periodic_logs)
             if nr_periods == 0:
@@ -907,7 +1008,7 @@ def get_periodic_logs(logs, number, time, type):
             periodic_logs.append([log])
 
         if type == "relative":
-            start_date, end_date = get_dates_of_period(log[config.DATE_COL], number, time)
+            start_date, end_date = get_dates_of_period(log[config.LOG_DATE_COL], number, time)
 
     return periodic_logs
 
@@ -919,14 +1020,11 @@ def get_total_reward(target, type=None):
     Gets total reward for a given target of a specific type.
     """
 
-    awards_table = get_awards_table()
-
-    query = "SELECT IFNULL(SUM(reward), 0) FROM " + awards_table + " WHERE course = %s AND user = %s"
-    if type is not None:
-        query += " AND type = '%s'" % type
-    query += ";"
-
-    return int(db.execute_query(query, (config.COURSE, target))[0][0])
+    global preloaded_awards
+    total_reward = 0
+    for award in get_preloaded_awards(target, None, type):
+        total_reward += int(award[config.AWARD_REWARD_COL])
+    return total_reward
 
 def get_total_assignment_reward(target):
     """
@@ -1009,28 +1107,27 @@ def award(target, type, description, reward, instance=None, unique=True):
     Updates award if reward has changed.
     """
 
-    table = get_awards_table()
-    query = "SELECT reward FROM " + table + " WHERE course = %s AND user = %s AND type = %s AND description = %s"
-    if instance is not None:
-        query += " AND moduleInstance = %s" % instance
-    query += ";"
-    results = db.execute_query(query, (config.COURSE, target, type, description))
-    awards_given = len(results)
+    global preloaded_awards
+    awards_given = get_preloaded_awards(target, description, type, instance)
+    nr_awards_given = len(awards_given)
 
-    if unique and awards_given > 1:
+    if unique and nr_awards_given > 1:
         logging.warning("Award '%s' has been awarded more than once for target with ID = %s." % (description, target))
         return
 
-    if awards_given == 0 or not unique:  # Award
+    if nr_awards_given == 0 or not unique:  # Award
         reward = calculate_reward(target, type, reward)
         give_award(target, type, description, reward, instance)
 
     elif unique:  # Update award, if changed
-        old_reward = int(results[0][0])
+        old_reward = int(awards_given[0][config.AWARD_REWARD_COL])
         reward = calculate_reward(target, type, reward, old_reward)
         if reward != old_reward:
-            query = "UPDATE " + table + " SET reward = %s WHERE course = %s AND user = %s AND type = %s AND description = %s;"
+            query = "UPDATE " + get_awards_table() + " SET reward = %s WHERE course = %s AND user = %s AND type = %s AND description = %s;"
             db.execute_query(query, (reward, config.COURSE, target, type, description), "commit")
+
+            award = get_preloaded_award(target, description, type)
+            update_preloaded_award(target, awards_given.index(award), (None, target, config.COURSE, description, type, instance, reward, award[config.AWARD_DATE_COL]))
 
 def award_assignment_grade(target, logs, max_xp=1, max_grade=1):
     """
@@ -1042,11 +1139,11 @@ def award_assignment_grade(target, logs, max_xp=1, max_grade=1):
     """
 
     for log in logs:
-        name = log[config.DESCRIPTION_COL].decode()
-        reward = (int(log[config.RATING_COL]) / max_grade) * max_xp
+        name = log[config.LOG_DESCRIPTION_COL]
+        reward = (int(log[config.LOG_RATING_COL]) / max_grade) * max_xp
         award(target, "assignment", name, reward)
 
-def award_badge(target, name, lvl, logs, progress = None):
+def award_badge(target, name, lvl, logs, progress=None):
     """
     Awards a given level to a specific target.
 
@@ -1058,14 +1155,15 @@ def award_badge(target, name, lvl, logs, progress = None):
         lvl_info = " (level %s)" % lvl
         return name + lvl_info
 
+    global preloaded_awards
     type = "badge"
     awards_table = get_awards_table()
 
     if module_enabled("Badges"):
         # Get badge info
-         query = "SELECT bl.badge, bl.number, bl.reward, bl.tokens, b.isExtra, bl.goal, b.description, bl.description " \
-                  "FROM badge_level bl LEFT JOIN badge b on b.id = bl.badge " \
-                  "WHERE b.course = %s AND b.name = '%s' ORDER BY number;" % (config.COURSE, name)
+        query = "SELECT bl.badge, bl.number, bl.reward, bl.tokens, b.isExtra, bl.goal, b.description, bl.description " \
+                "FROM badge_level bl LEFT JOIN badge b on b.id = bl.badge " \
+                "WHERE b.course = %s AND b.name = '%s' ORDER BY number;" % (config.COURSE, name)
         table_badge = db.data_broker.get(db, config.COURSE, query)
         badge_id = table_badge[0][0]
 
@@ -1076,8 +1174,8 @@ def award_badge(target, name, lvl, logs, progress = None):
                 db.execute_query(query, (config.COURSE, target, badge_id, log[0]), "commit")
 
         # Get awards given for badge
-        query = "SELECT COUNT(*) FROM " + awards_table + " WHERE course = %s AND user = %s AND type = %s AND description LIKE %s;"
-        nr_awards = int(db.execute_query(query, (config.COURSE, target, type, name + "%"))[0][0])
+        badge_awards = get_preloaded_awards(target, name + "%", type)
+        nr_awards = len(badge_awards)
 
         # Lvl is zero and there are no awards to be removed
         # Simply return right away
@@ -1093,6 +1191,7 @@ def award_badge(target, name, lvl, logs, progress = None):
                 description = get_description(name, level)
                 query = "DELETE FROM " + awards_table + " WHERE course = %s AND user = %s AND type = %s AND description = %s AND moduleInstance = %s;"
                 db.execute_query(query, (config.COURSE, target, type, description, badge_id), "commit")
+                remove_preloaded_award(target, badge_awards.index(get_preloaded_award(target, description, type, badge_id)))
 
                 # Remove tokens
                 query = "DELETE FROM " + awards_table + " WHERE course = %s AND user = %s AND type = 'tokens' AND description = %s AND moduleInstance = %s;"
@@ -1122,7 +1221,7 @@ def award_badge(target, name, lvl, logs, progress = None):
                 # Get goal and description of specific level award
                 for i in range(0, len(table_badge)):
                     if table_badge[i][1] == lvl:
-                        goal = table_badge[i][5]
+                        goal = int(table_badge[i][5])
                         badge_description = table_badge[i][6]        # e.g. Show up for theoretical lectures!
                         level_description = table_badge[i][7]        # e.g. be there for 50% of lectures
                         break
@@ -1137,7 +1236,6 @@ def award_badge(target, name, lvl, logs, progress = None):
 
                     query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s, %s, %s,%s);"
                     db.execute_query(query, (config.COURSE, target, message, 0), "commit")
-
 
 def award_bonus(target, name, reward):
     """
@@ -1163,9 +1261,9 @@ def award_lab_grade(target, logs, max_xp=1, max_grade=1):
     """
 
     for log in logs:
-        lab_nr = int(log[config.DESCRIPTION_COL])
+        lab_nr = int(log[config.LOG_DESCRIPTION_COL])
         name = "Lab %s" % lab_nr
-        reward = (int(log[config.RATING_COL]) / max_grade) * max_xp
+        reward = (int(log[config.LOG_RATING_COL]) / max_grade) * max_xp
         award(target, "labs", name, reward, lab_nr)
 
 def award_post_grade(target, logs, max_xp=1, max_grade=1):
@@ -1178,8 +1276,8 @@ def award_post_grade(target, logs, max_xp=1, max_grade=1):
     """
 
     for log in logs:
-        name = log[config.DESCRIPTION_COL].decode().split(",")[0]
-        reward = (int(log[config.RATING_COL]) / max_grade) * max_xp
+        name = log[config.LOG_DESCRIPTION_COL].split(",")[0]
+        reward = (int(log[config.LOG_RATING_COL]) / max_grade) * max_xp
         award(target, "post", name, reward)
 
 def award_presentation_grade(target, name, reward):
@@ -1199,8 +1297,8 @@ def award_quiz_grade(target, logs, max_xp=1, max_grade=1):
     """
 
     for log in logs:
-        name = log[config.DESCRIPTION_COL].decode()
-        reward = (int(log[config.RATING_COL]) / max_grade) * max_xp
+        name = log[config.LOG_DESCRIPTION_COL]
+        reward = (int(log[config.LOG_RATING_COL]) / max_grade) * max_xp
         award(target, "quiz", name, reward)
 
 def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=False):
@@ -1221,7 +1319,7 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
 
         else:
             attempt_logs = logs[0: attempt_nr - 1]
-            nr_attempts = len([log for log in attempt_logs if int(log[config.RATING_COL]) >= tier_cost_info["minRating"]])
+            nr_attempts = len([log for log in attempt_logs if int(log[config.LOG_RATING_COL]) >= tier_cost_info["minRating"]])
             return tier_cost_info["cost"] + tier_cost_info["increment"] * nr_attempts
 
     def get_attempt_description(attempt):
@@ -1243,12 +1341,15 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
             db.execute_query(query, (award_id,), "commit")
 
     def calculate_skill_tree_reward(target, reward, skill_tree_max_reward):
-        query = "SELECT IFNULL(SUM(reward), 0) FROM " + awards_table + \
-                " WHERE course = %s AND user = %s AND type = %s AND moduleInstance != %s;"
-        target_skill_tree_reward = int(db.execute_query(query, (config.COURSE, target, type, skill_id))[0][0])
+        global preloaded_awards
 
+        target_skill_tree_reward = 0
+        for award in get_preloaded_awards(target, None, type):
+            if award[config.AWARD_INSTANCE_COL != skill_id]:
+                target_skill_tree_reward += award[config.AWARD_REWARD_COL]
         return max(min(skill_tree_max_reward - target_skill_tree_reward, reward), 0)
 
+    global preloaded_awards
     type = "skill"
     awards_table = get_awards_table()
 
@@ -1273,38 +1374,18 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
                 query = "INSERT INTO skill_progression (course, user, skill, participation) VALUES (%s, %s, %s, %s);"
                 db.execute_query(query, (config.COURSE, target, skill_id, log[0]), "commit")
 
-        # check if dependencies are missing to create notification
-        if not dependencies:
-            query = "SELECT s.name" \
-                    " FROM skill s JOIN skill_dependency sd JOIN skill_dependency_combo sdc " \
-                    "ON s.id = sd.skill AND sd.id = sdc.dependency " \
-                    "WHERE sdc.skill = %s;" % skill_id
-            dependencies_names = db.data_broker.get(db, config.COURSE, query)
-
-            # removes duplicates
-            dependencies_names_unique = list(dict.fromkeys(dependencies_names))
-
-            # Transform array into string with commas
-            dependencies_names_string = ','.join(dependencies_names_unique)
-
-            message = "You can't be rewarded yet... Almost there! There are some dependencies missing: " \
-                      + dependencies_names_string
-
-            # Add notification to table
-            query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s,%s,%s,%s);"
-            db.execute_query(query, (config.COURSE, target, message, 0), "commit")
-
         # Rating is not enough to win the award or dependencies haven't been met
         if rating < min_rating or not dependencies:
             # Get awards given for skill
-            query = "SELECT COUNT(*) FROM " + awards_table + " WHERE course = %s AND user = %s AND type = %s AND description = %s;"
-            nr_awards = int(db.execute_query(query, (config.COURSE, target, type, name))[0][0])
+            skill_awards = get_preloaded_awards(target, name, type)
+            nr_awards = len(skill_awards)
 
             # Delete invalid skill
             if nr_awards > 0:
                 # Delete award
                 query = "DELETE FROM " + awards_table + " WHERE course = %s AND user = %s AND type = %s AND description = %s AND moduleInstance = %s;"
                 db.execute_query(query, (config.COURSE, target, type, name, skill_id), "commit")
+                remove_preloaded_award(target, skill_awards.index(get_preloaded_award(target, name, type, skill_id)))
 
                 # Give tokens back
                 if module_enabled("VirtualCurrency"):
@@ -1346,6 +1427,27 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
                     description = get_attempt_description(attempt)
                     spend_tokens(target, description, attempt_cost, 1)
 
+        # Check if rating is enough to win the award, but dependencies are missing (create notification)
+        if rating >= min_rating and not dependencies:
+            query = "SELECT s.name " \
+                    "FROM skill s JOIN skill_dependency sd JOIN skill_dependency_combo sdc " \
+                    "ON s.id = sd.skill AND sd.id = sdc.dependency " \
+                    "WHERE sdc.skill = %s;" % skill_id
+            dependencies_names = db.data_broker.get(db, config.COURSE, query)
+
+            # Removes duplicates
+            dependencies_names_unique = list(set([el[0].decode() for el in dependencies_names]))
+
+            # Transform array into string with commas
+            dependencies_names_string = ','.join(dependencies_names_unique)
+
+            message = "You can't be rewarded yet... Almost there! There are some dependencies missing: " \
+                      + dependencies_names_string
+
+            # Add notification to table
+            query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s,%s,%s,%s);"
+            db.execute_query(query, (config.COURSE, target, message, 0), "commit")
+
 def award_streak(target, name, logs):
     """
     Awards a given streak to a specific target.
@@ -1366,6 +1468,7 @@ def award_streak(target, name, logs):
         deadline = get_dates_of_period(last_date, period_number, period_time, not period_type == "absolute")[1]
         return course_end_date if deadline >= course_end_date else deadline
 
+    global preloaded_awards
     type = "streak"
     awards_table = get_awards_table()
 
@@ -1383,8 +1486,8 @@ def award_streak(target, name, logs):
         period_goal = int(table_streak[0][2]) if table_streak[0][2] is not None else None
 
         # Get awards given for streak
-        query = "SELECT COUNT(*) FROM " + awards_table + " WHERE course = %s AND user = %s AND type = %s AND description LIKE %s;"
-        nr_awards = int(db.execute_query(query, (config.COURSE, target, type, name + "%"))[0][0])
+        streak_awards = get_preloaded_awards(target, name + "%", type)
+        nr_awards = len(streak_awards)
 
         # No streaks reached and there are no awards to be removed
         # Simply return right away
@@ -1401,7 +1504,7 @@ def award_streak(target, name, logs):
 
             nr_valid = 0
             if is_periodic and period_type == "absolute":   # periodic (absolute)
-                if total >= period_goal or (last and total > 0 and get_deadline(group[-1][config.DATE_COL], period_type, period_number, period_time) > datetime.now()):
+                if total >= period_goal or (last and total > 0 and get_deadline(group[-1][config.LOG_DATE_COL], period_type, period_number, period_time) > datetime.now()):
                     nr_valid = total
                 else:
                     progression = []
@@ -1409,7 +1512,7 @@ def award_streak(target, name, logs):
             else:   # consecutive & periodic (relative)
                 nr_valid = math.floor(total / goal) * goal
                 if last and total > 0 and nr_valid < total:
-                    last_date = group[-1][config.DATE_COL]
+                    last_date = group[-1][config.LOG_DATE_COL]
                     deadline = get_deadline(last_date, period_type, period_number, period_time)
                     if deadline > datetime.now():
                         nr_valid = total
@@ -1437,7 +1540,7 @@ def award_streak(target, name, logs):
             if steps == 0:
                 last_date = datetime.now() if period_type == "absolute" else None
             else:
-                last_date = progression[-1][config.DATE_COL]
+                last_date = progression[-1][config.LOG_DATE_COL]
 
             query = "SELECT deadline FROM streak_deadline WHERE course = %s AND user = %s AND streak = %s;"
             old_deadline = db.execute_query(query, (config.COURSE, target, streak_id))
@@ -1481,6 +1584,7 @@ def award_streak(target, name, logs):
                 description = get_description(name, repetition)
                 query = "DELETE FROM " + awards_table + " WHERE course = %s AND user = %s AND type = %s AND description = %s AND moduleInstance = %s;"
                 db.execute_query(query, (config.COURSE, target, type, description, streak_id), "commit")
+                remove_preloaded_award(target, streak_awards.index(get_preloaded_award(target, description, type, streak_id)))
 
                 # Remove tokens
                 query = "DELETE FROM " + awards_table + " WHERE course = %s AND user = %s AND type = 'tokens' AND description = %s AND moduleInstance = %s;"

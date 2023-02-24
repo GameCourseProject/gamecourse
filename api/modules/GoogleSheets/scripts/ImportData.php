@@ -25,6 +25,6 @@ try {
     $newData = $googlesheets->importData();
     if ($newData) AutoGame::setToRun($courseId);
 
-} catch (Exception $e) {
-    GoogleSheets::log($courseId, $e->getMessage());
+} catch (Throwable $e) {
+    GoogleSheets::log($courseId, $e->getMessage(), "ERROR");
 }

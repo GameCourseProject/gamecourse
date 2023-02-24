@@ -1,15 +1,18 @@
-<div [id]="id">
-  <apx-chart
+<div [id]="id" [classList]="classList">
+  <apx-chart #chart
+    [id]="id"
     [series]="chartOptions.series"
     [chart]="chartOptions.chart"
-    [xaxis]="chartOptions.xaxis"
-    [yaxis]="chartOptions.yaxis"
+    [annotations]="chartOptions.annotations"
+    [colors]="chartOptions.colors"
     [dataLabels]="chartOptions.dataLabels"
     [grid]="chartOptions.grid"
+    [legend]="chartOptions.legend"
+    [plotOptions]="chartOptions.plotOptions"
+    [subtitle]="chartOptions.subtitle"
     [title]="chartOptions.title"
     [tooltip]="chartOptions.tooltip"
-    [plotOptions]="chartOptions.plotOptions"
-    [colors]="chartOptions.colors"
-    [legend]="chartOptions.legend"
+    [xaxis]="chartOptions.xaxis"
+    [yaxis]="chartOptions.yaxis"
   ></apx-chart>
 </div>

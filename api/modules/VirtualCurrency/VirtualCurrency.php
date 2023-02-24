@@ -233,7 +233,7 @@ class VirtualCurrency extends Module
                                     "scope" => ActionScope::ALL,
                                     "id" => "image",
                                     "options" => [
-                                        "accept" => ".svg, .png, .jpg, .jpeg",
+                                        "accept" => [".svg", ".png", ".jpg", ".jpeg"],
                                         "size" => "xs",
                                         "color" => "primary",
                                         "label" => "Image"

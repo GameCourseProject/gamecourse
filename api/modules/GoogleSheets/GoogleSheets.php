@@ -167,13 +167,13 @@ class GoogleSheets extends Module
 
     public function getGoogleSheetsConfig(): array
     {
-        $config = Core::database()->select(self::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->course->getId()], "spreadsheetId, sheetName");
+        $config = Core::database()->select(self::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->course->getId()], "spreadsheetId, sheetsInfo");
 
         // Parse sheets and owners names
         $sheetNames = [];
         $ownerNames = [];
-        if ($config["sheetName"]) {
-            foreach(explode(";", $config["sheetName"]) as $name) {
+        if ($config["sheetsInfo"]) {
+            foreach(explode(";", $config["sheetsInfo"]) as $name) {
                 $processedName = explode(",", trim($name));
                 $sheetNames[] = trim($processedName[0]);
                 if (count($processedName) > 1) $ownerNames[] = trim($processedName[1]);
@@ -193,25 +193,22 @@ class GoogleSheets extends Module
     public function saveGoogleSheetsConfig(string $spreadsheetId, array $sheetNames, array $ownerNames)
     {
         // Check connection to Google sheet
-        if (!self::canConnect($spreadsheetId, $sheetNames))
-            throw new Exception("Connection to Google sheet failed.");
+        self::checkConnection($spreadsheetId, $sheetNames);
 
         // Parse sheets and owners names
-        $sheetInfo = "";
+        $sheetsInfo = "";
         foreach ($sheetNames as $i => $sheetName) {
             if (!empty($sheetName)) {
                 $owner = $ownerNames[$i];
-                $sheetInfo .= "$sheetName,$owner";
-                if ($i != sizeof($sheetNames) - 1) $sheetInfo .= ";";
+                $sheetsInfo .= "$sheetName,$owner";
+                if ($i != sizeof($sheetNames) - 1) $sheetsInfo .= ";";
             }
         }
 
         Core::database()->update(self::TABLE_GOOGLESHEETS_CONFIG, [
             "spreadsheetId" => $spreadsheetId,
-            "sheetName" => $sheetInfo
+            "sheetsInfo" => $sheetsInfo
         ], ["course" => $this->getCourse()->getId()]);
-
-        $this->saveToken();
     }
 
 
@@ -231,11 +228,6 @@ class GoogleSheets extends Module
 
 
     /*** ------- Credentials -------- ***/
-
-    public function getAuthURL(): ?string
-    {
-        return Core::database()->select(self::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->course->getId()], "authUrl");
-    }
 
     public function getCredentials(): ?array
     {
@@ -259,30 +251,32 @@ class GoogleSheets extends Module
     /**
      * @throws Exception
      */
-    public function saveCredentials(array $credentials)
-   {
+    public function saveCredentials(array $credentials): string
+    {
        self::validateCredentials($credentials);
 
-       $credentialKey = key($credentials);
-       $credentials = $credentials[$credentialKey];
-
        // Save credentials
+       $credentialKey = key($credentials);
        Core::database()->update(self::TABLE_GOOGLESHEETS_CONFIG, [
            "key_" => $credentialKey,
-           "clientId" => $credentials["client_id"],
-           "projectId" => $credentials["project_id"],
-           "authUri" => $credentials["auth_uri"],
-           "tokenUri" => $credentials["token_uri"],
-           "authProvider" => $credentials["auth_provider_x509_cert_url"],
-           "clientSecret" => $credentials["client_secret"],
-           "redirectUris" => implode(";", $credentials["redirect_uris"])
+           "clientId" => $credentials[$credentialKey]["client_id"],
+           "projectId" => $credentials[$credentialKey]["project_id"],
+           "authUri" => $credentials[$credentialKey]["auth_uri"],
+           "tokenUri" => $credentials[$credentialKey]["token_uri"],
+           "authProvider" => $credentials[$credentialKey]["auth_provider_x509_cert_url"],
+           "clientSecret" => $credentials[$credentialKey]["client_secret"],
+           "redirectUris" => implode(";", $credentials[$credentialKey]["redirect_uris"])
        ], ["course" => $this->course->getId()]);
 
        // Create auth URL
-       $client = GoogleHandler::setCredentials($this->getCredentials(), $this->course->getId());
-       Core::database()->update(self::TABLE_GOOGLESHEETS_CONFIG, [
-           "authUrl" => $client->createAuthUrl()
-       ], ["course" => $this->course->getId()]);
+       try {
+           $client = GoogleHandler::getGoogleSheetsClient($this->course->getId(), $credentials);
+           $authURL = $client->createAuthUrl();
+
+       } catch (\Google\Exception $exception) {
+           throw new Exception("Couldn't create auth URL: " . $exception->getMessage());
+       }
+       return $authURL;
    }
 
     /**
@@ -292,64 +286,61 @@ class GoogleSheets extends Module
     {
         $invalid = false;
 
-        if (!is_array($credentials) || empty($credentials))
+        if (!is_array($credentials) || empty($credentials)) {
             $invalid = true;
 
-        $keys = ["client_id", "project_id", "auth_uri", "token_uri", "auth_provider_x509_cert_url", "client_secret", "redirect_uris"];
-        foreach ($keys as $key) {
-            if (!array_key_exists($key, $credentials[key($credentials)]))
-                $invalid = true;
+        } else {
+            $keys = ["client_id", "project_id", "auth_uri", "token_uri", "auth_provider_x509_cert_url", "client_secret", "redirect_uris"];
+            foreach ($keys as $key) {
+                if (!array_key_exists($key, $credentials[key($credentials)]))
+                    $invalid = true;
+            }
         }
 
-        if ($invalid)
-            throw new Exception("Google credentials format is invalid.");
+        if ($invalid) throw new Exception("Google credentials format is invalid.");
     }
 
 
-    /*** ----------- Token ---------- ***/
+    /*** ----------- Access Token ---------- ***/
 
-    public function getToken(): ?array
+    /**
+     * @throws \Google\Exception
+     */
+    public function getAccessToken(): ?array
     {
-        $accessToken = Core::database()->select(self::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->course->getId()], "accessToken");
+        $accessToken = json_decode(Core::database()->select(self::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->course->getId()], "accessToken"), true);
         if (!$accessToken) return null;
 
-        $config = Core::database()->select(self::TABLE_GOOGLESHEETS_CONFIG, ["course" => $this->course->getId()]);
-        return [
-            "access_token" => $config["accessToken"],
-            "expires_in" => $config["expiresIn"],
-            "scope" => $config["scope"],
-            "token_type" => $config["tokenType"],
-            "created" => $config["created"],
-            "refresh_token" => $config["refreshToken"]
-        ];
+        // Refresh access token if expired
+        $credentials = $this->getCredentials();
+        $client = GoogleHandler::getGoogleSheetsClient($this->course->getId(), $credentials, $accessToken);
+        if ($client->isAccessTokenExpired()) {
+            $refreshToken = $client->getRefreshToken();
+            if (!$refreshToken) { // needs to request authorization again
+                $accessToken = null;
+
+            } else { // simply refresh
+                $client->fetchAccessTokenWithRefreshToken($refreshToken);
+                $accessToken = $client->getAccessToken();
+            }
+            Core::database()->update(self::TABLE_GOOGLESHEETS_CONFIG, ["accessToken" => json_encode($accessToken)], ["course" => $this->course->getId()]);
+        }
+        return $accessToken;
     }
 
     /**
      * @throws Exception
      */
-    public function saveToken(?string $authCode = null)
-    {
-        $responde = $this->handleToken($authCode)["access_token"];
-        if (!$responde) return;
-
-        Core::database()->update(self::TABLE_GOOGLESHEETS_CONFIG, [
-            "accessToken" => $responde["access_token"],
-            "expiresIn" => $responde["expires_in"],
-            "scope" => $responde["scope"],
-            "tokenType" => $responde["token_type"],
-            "created" => $responde["created"],
-            "refreshToken" => $responde["refresh_token"]
-        ], ["course" => $this->course->getId()]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function handleToken(?string $authCode = null): array
+    public function createAccessToken(string $authCode)
     {
         $credentials = $this->getCredentials();
-        $token = json_encode($this->getToken());
-        return GoogleHandler::checkToken($credentials, $token, $authCode, $this->course->getId());
+        $client = GoogleHandler::getGoogleSheetsClient($this->course->getId(), $credentials);
+        $accessToken = GoogleHandler::createAccessToken($client, $authCode);
+
+        if (!$accessToken) throw new Exception("Couldn't create access token.");
+        Core::database()->update(self::TABLE_GOOGLESHEETS_CONFIG, [
+            "accessToken" => json_encode($accessToken)
+        ], ["course" => $this->course->getId()]);
     }
 
 
@@ -434,7 +425,7 @@ class GoogleSheets extends Module
      * @param string $type
      * @return void
      */
-    public static function log(int $courseId, string $message, string $type = "ERROR")
+    public static function log(int $courseId, string $message, string $type)
     {
         $logsFile = self::getLogsFile($courseId, false);
         Utils::addLog($logsFile, $message, $type);
@@ -457,7 +448,7 @@ class GoogleSheets extends Module
 
     /*** ------ Importing Data ------ ***/
 
-    private static $GoogleSheetsService;
+    private static $GSService;
 
     const COL_STUDENT_NUMBER = 0;
     const COL_STUDENT_NAME = 1;
@@ -471,26 +462,21 @@ class GoogleSheets extends Module
      *
      * @param string $spreadsheetId
      * @param array $sheetNames
-     * @return bool
+     * @return void
+     * @throws Exception
      */
-    private function canConnect(string $spreadsheetId, array $sheetNames): bool
+    private function checkConnection(string $spreadsheetId, array $sheetNames)
     {
-        try {
-            $credentials = $this->getCredentials();
-            if (!$credentials) return false;
+        $credentials = $this->getCredentials();
+        if (!$credentials) throw new Exception("Connection to Google sheet failed: no credentials found.");
 
-            $token = json_encode($this->getToken());
-            if (!$token) return false;
+        $accessToken = $this->getAccessToken();
+        if (!$accessToken) throw new Exception("Connection to Google sheet failed: no access token found.");
 
-            $service = GoogleHandler::getGoogleSheets($credentials, $token, null, $this->course->getId());
-            foreach ($sheetNames as $sheetName) {
-                $service->spreadsheets_values->get($spreadsheetId, $sheetName);
-            }
-
-            return true;
-
-        } catch (Throwable $e) {
-            return false;
+        $client = GoogleHandler::getGoogleSheetsClient($this->course->getId(), $credentials, $accessToken);
+        $service = GoogleHandler::getGoogleSheetsService($client);
+        foreach ($sheetNames as $sheetName) {
+            $service->spreadsheets_values->get($spreadsheetId, $sheetName);
         }
     }
 
@@ -514,8 +500,9 @@ class GoogleSheets extends Module
 
         try {
             $credentials = $this->getCredentials();
-            $token = json_encode($this->getToken());
-            self::$GoogleSheetsService = GoogleHandler::getGoogleSheets($credentials, $token, null, $this->course->getId());
+            $accessToken = $this->getAccessToken();
+            $client = GoogleHandler::getGoogleSheetsClient($this->course->getId(), $credentials, $accessToken);
+            self::$GSService = GoogleHandler::getGoogleSheetsService($client);
 
             $newData = false;
             $config = $this->getGoogleSheetsConfig();
@@ -523,15 +510,23 @@ class GoogleSheets extends Module
                 $prof = $this->course->getCourseUserByUsername($config["ownerNames"][$i]);
                 if ($prof) {
                     $data = $this->getSheetData($config["spreadsheetId"], $sheetName);
-                    if ($this->saveSheetData($data, $prof->getId())) $newData = true;
+                    if ($this->saveSheetData($data, $prof->getId())) {
+                        $newData = true;
+                        self::log($this->course->getId(), "Imported new data from " . self::NAME . ".", "SUCCESS");
+                    }
                 }
             }
+
+            self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
             return $newData;
+
+        } catch (Throwable $exception) {
+            self::log($this->course->getId(), $exception->getMessage(), "ERROR");
+            return false;
 
         } finally {
             $this->setIsRunning(false);
             $this->setFinishedRunning(date("Y-m-d H:i:s", time()));
-            self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
         }
     }
 
@@ -544,7 +539,7 @@ class GoogleSheets extends Module
      */
     public function getSheetData(string $spreadsheetId, string $sheetName): array
     {
-        $rows = self::$GoogleSheetsService->spreadsheets_values->get($spreadsheetId, $sheetName)->getValues();
+        $rows = self::$GSService->spreadsheets_values->get($spreadsheetId, $sheetName)->getValues();
         return array_splice($rows, 1); // NOTE: 1st row is header
     }
 
@@ -576,6 +571,7 @@ class GoogleSheets extends Module
 
                 switch ($action) {
                     case "initial bonus":
+                    case "initial tokens":
                     case "presentation grade":
                         if (!self::rowIsValid($row, [self::COL_XP])) break;
                         $xp = $row[self::COL_XP];

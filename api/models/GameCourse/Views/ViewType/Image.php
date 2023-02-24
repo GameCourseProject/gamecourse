@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\Views\ViewType;
 
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\ViewHandler;
@@ -41,8 +42,8 @@ class Image extends ViewType
         Core::database()->executeQuery("
             CREATE TABLE IF NOT EXISTS " . self::TABLE_VIEW_IMAGE . "(
                 id                          bigint unsigned NOT NULL PRIMARY KEY,
-                src                         varchar(200) NOT NULL,
-                link                        varchar(200),
+                src                         TEXT NOT NULL,
+                link                        TEXT DEFAULT NULL,
 
                 FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
             );
@@ -91,9 +92,12 @@ class Image extends ViewType
         Core::database()->delete(self::TABLE_VIEW_IMAGE, ["id" => $viewId]);
     }
 
-    public function build(array &$view, array $sortedAspects = null)
+    public function build(array &$view, array $sortedAspects = null, bool $simplify = false)
     {
-        // Nothing to do here
+        // Simplify view image
+        if ($simplify) {
+            if (isset($view["link"]) && !$view["link"]) unset($view["link"]);
+        }
     }
 
     public function translate(array $view, array &$logs, array &$views, array $parent = null)
@@ -111,6 +115,9 @@ class Image extends ViewType
     /*** -------------------- Dictionary -------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function compile(array &$view)
     {
         if (isset($view["link"])) ViewHandler::compileExpression($view["link"]);

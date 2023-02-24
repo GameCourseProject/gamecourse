@@ -208,7 +208,7 @@
     <app-input-file
       [id]="'import-file'"
       [form]="fImport"
-      [accept]="itemToManage.list[Action.IMPORT]?.extensions.join(', ')"
+      [accept]="itemToManage.list[Action.IMPORT]?.extensions"
       [size]="'sm'"
       [color]="'primary'"
       [required]="true"
@@ -516,7 +516,6 @@
           [form]="form"
           [accept]="$any(artifact.options.accept) ?? null"
           [multiple]="$any(artifact.options.multiple) ?? null"
-          [camera]="$any(artifact.options.camera) ?? null"
           [size]="$any(artifact.options.size) ?? 'md'"
           [color]="$any(artifact.options.color) ?? null"
           [classList]="$any(artifact.options.classList) ?? null"

@@ -1,6 +1,9 @@
-import { Injectable } from '@angular/core';
-import {ApiHttpService} from "../api/api-http.service";
+import {Injectable} from '@angular/core';
+
 import {Theme} from "./themes-available";
+
+import {ApiHttpService} from "../api/api-http.service";
+import {UpdateService, UpdateType} from "../update.service";
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +12,10 @@ export class ThemingService {
 
   private theme: Theme;
 
-  constructor(private api: ApiHttpService) { }
+  constructor(
+    private api: ApiHttpService,
+    private updateManager: UpdateService,
+  ) { }
 
   getTheme(): Theme {
     return this.theme;
@@ -52,6 +58,7 @@ export class ThemingService {
   private apply(theme: Theme) {
     const html = document.querySelector('html');
     html.setAttribute('data-theme', theme);
+    this.updateManager.triggerUpdate(UpdateType.THEME);
   }
 
   private prefersDark(): boolean {

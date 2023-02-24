@@ -1,0 +1,28 @@
+/**
+ * ----------------------------
+ * DISPLAY VERSION
+ * ----------------------------
+ */
+
+.bb-collapse {
+  @apply collapse;
+
+  &.bb-collapse-arrow {
+    @apply collapse-arrow;
+  }
+
+  &.bb-collapse-plus {
+    @apply collapse-plus;
+  }
+}
+
+
+/**
+ * ----------------------------
+ * EDITOR VERSION
+ * ----------------------------
+ */
+
+.page-editor {
+  /* TODO */
+}

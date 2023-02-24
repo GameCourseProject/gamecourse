@@ -626,7 +626,7 @@ tags:
             $this->fail("Error should have been thrown on 'addActionDuplicateName'");
 
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertCount(1, AutoAction::getActions($this->courseId));
             $this->assertCount(1, Section::getSectionByName($this->courseId, VirtualCurrency::RULE_SECTION)->getRules());
         }
@@ -695,7 +695,7 @@ tags:
             $this->fail("Error should have been thrown on 'editActionDuplicateName'");
 
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertEquals("Action2", $action->getName());
             $this->assertEquals("Action2", $action->getRule()->getName());
         }

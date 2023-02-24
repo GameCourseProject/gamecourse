@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\Views\ViewType;
 
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\ViewHandler;
@@ -91,12 +92,15 @@ class Row extends ViewType
         Core::database()->delete(self::TABLE_VIEW_ROW, ["id" => $viewId]);
     }
 
-    public function build(array &$view, array $sortedAspects = null)
+    /**
+     * @throws Exception
+     */
+    public function build(array &$view, array $sortedAspects = null, bool $simplify = false)
     {
         $children = ViewHandler::getChildrenOfView($view["id"]);
         if (!empty($children)) {
             foreach ($children as &$child) {
-                $child = ViewHandler::buildView($child, $sortedAspects);
+                $child = ViewHandler::buildView($child, $sortedAspects, $simplify);
                 if (!empty($child)) $view["children"][] = $child;
             }
         }
@@ -129,35 +133,20 @@ class Row extends ViewType
     /*** -------------------- Dictionary -------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function compile(array &$view)
     {
-        if (isset($view["children"])) {
-            foreach ($view["children"] as &$vr) {
-                foreach ($vr as &$child) {
-                    ViewHandler::compileView($child);
-                }
-            }
-        }
+        $this->compileChildren($view);
     }
 
+    /**
+     * @throws Exception
+     */
     public function evaluate(array &$view, EvaluateVisitor $visitor)
     {
-        if (isset($view["children"])) {
-            $childrenEvaluated = [];
-            foreach ($view["children"] as &$vr) {
-                foreach ($vr as &$child) {
-                    if (isset($child["loopData"])) {
-                        ViewHandler::evaluateLoop($child, $visitor);
-                        $childrenEvaluated = array_merge($childrenEvaluated, $child);
-
-                    } else {
-                        ViewHandler::evaluateView($child, $visitor);
-                        $childrenEvaluated[] = $child;
-                    }
-                }
-            }
-            $view["children"] = $childrenEvaluated;
-        }
+        $this->evaluateChildren($view, $visitor);
     }
 
 

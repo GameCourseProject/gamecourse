@@ -30,12 +30,16 @@ class Event
     {
         Event::listen(EventType::PAGE_VIEWED, function (int $pageId, int $viewerId, int $userId) {
             $page = Page::getPageById($pageId);
-            Core::database()->insert(Page::TABLE_PAGE_HISTORY, [
-                "course" => $page->getCourse()->getId(),
-                "page" => $pageId,
-                "viewer" => $viewerId,
-                "user" => $userId
-            ]);
+            $course = $page->getCourse();
+
+            if ($course->getCourseUserById($viewerId)->exists() && $course->getCourseUserById($userId)->exists()) {
+                Core::database()->insert(Page::TABLE_PAGE_HISTORY, [
+                    "course" => $course->getId(),
+                    "page" => $pageId,
+                    "viewer" => $viewerId,
+                    "user" => $userId
+                ]);
+            }
         });
     }
 
@@ -115,6 +119,7 @@ class Event
     public static function stop(string $type, string $id)
     {
         unset(self::$events[$type][$id]);
+        if (count(self::$events[$type]) == 0) unset(self::$events[$type]);
         Cache::store(null, "events", self::$events);
     }
 

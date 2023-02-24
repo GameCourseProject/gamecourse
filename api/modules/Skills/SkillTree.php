@@ -101,11 +101,13 @@ class SkillTree
      */
     public function setData(array $fieldValues)
     {
+        $courseId = $this->getCourse()->getId();
+
         // Trim values
         self::trim($fieldValues);
 
         // Validate data
-        if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
+        if (key_exists("name", $fieldValues)) self::validateName($courseId, $fieldValues["name"], $this->id);
 
         // Update data
         if (count($fieldValues) != 0)
@@ -180,7 +182,7 @@ class SkillTree
     public static function addSkillTree(int $courseId, ?string $name, int $maxReward): SkillTree
     {
         self::trim($name);
-        self::validateName($name);
+        self::validateName($courseId, $name);
         $id = Core::database()->insert(self::TABLE_SKILL_TREE, [
             "course" => $courseId,
             "name" => $name,
@@ -215,7 +217,7 @@ class SkillTree
      * @return void
      * @throws Exception
      */
-    public function copySkillTree(Course $copyTo)
+    public function copySkillTree(Course $copyTo): SkillTree
     {
         // Copy skill tree
         $skillTreeInfo = $this->getData();
@@ -233,6 +235,8 @@ class SkillTree
             if ($tier->isWildcard()) continue;
             $tier->copyTier($copiedSkillTree);
         }
+
+        return $copiedSkillTree;
     }
 
     /**
@@ -365,7 +369,7 @@ class SkillTree
 
         // Create zip archive to store skill trees' info
         // NOTE: This zip will be automatically deleted after download is complete
-        $zipPath = $tempFolder . "/" . ($course->getShort() ?? $course->getName()) . "-skillTrees.zip";
+        $zipPath = $tempFolder . "/" . Utils::strip($course->getShort() ?? $course->getName(), '_') . "-skillTrees.zip";
         $zip = new ZipArchive();
         if (!$zip->open($zipPath, ZipArchive::CREATE))
             throw new Exception("Failed to create zip archive.");
@@ -397,11 +401,13 @@ class SkillTree
     /**
      * Validates skill tree name.
      *
+     * @param int $courseId
      * @param $name
+     * @param int|null $skillTreeId
      * @return void
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName(int $courseId, $name, int $skillTreeId = null)
     {
         if (is_null($name)) return;
 
@@ -410,6 +416,12 @@ class SkillTree
 
         if (iconv_strlen($name) > 50)
             throw new Exception("Skill tree name is too long: maximum of 50 characters.");
+
+        $whereNot = [];
+        if ($skillTreeId) $whereNot[] = ["id", $skillTreeId];
+        $skillTreeNames = array_column(Core::database()->selectMultiple(self::TABLE_SKILL_TREE, ["course" => $courseId], "name", null, $whereNot), "name");
+        if (in_array($name, $skillTreeNames))
+            throw new Exception("Duplicate skill tree name: '$name'");
     }
 
 

@@ -1,6 +1,10 @@
 <?php
 namespace GameCourse\Views\Dictionary;
 
+use GameCourse\Core\Core;
+use GameCourse\Course\Course;
+use GameCourse\Views\ExpressionLanguage\ValueNode;
+
 class CoursesLibrary extends Library
 {
     public function __construct()
@@ -24,10 +28,47 @@ class CoursesLibrary extends Library
 
     public function getFunctions(): ?array
     {
-        return [
-        ];
+        return [];
     }
 
     // NOTE: add new library functions bellow & update its
     //       metadata in 'getFunctions' above
+
+    /*** --------- Getters ---------- ***/
+
+    /**
+     * Gets a given course's color.
+     *
+     * @param $course
+     * @return ValueNode
+     * @throws \Exception
+     */
+    public function color($course): ValueNode
+    {
+        // NOTE: on mock data, course will be mocked
+        if (is_array($course)) $color = $course["color"];
+        else $color = $course->getColor();
+        return new ValueNode($color, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+
+    /*** --------- General ---------- ***/
+
+    /**
+     * Gets a course by its ID.
+     *
+     * @param int $courseId
+     * @return ValueNode
+     */
+    public function getCourseById(int $courseId): ValueNode
+    {
+        if (Core::dictionary()->mockData()) {
+            // TODO: mock course
+            $course = [];
+
+        } else {
+            $course = Course::getCourseById($courseId);
+        }
+        return new ValueNode($course, $this);
+    }
 }

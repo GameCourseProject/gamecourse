@@ -1,0 +1,1144 @@
+[
+    {
+        "aspect" => {
+            "viewerRole": null,
+            "userRole": "Student"
+        },
+        "type": "block",
+        "class": "card bg-base-100 shadow-xl",
+        "variables": [
+            {
+                "name": "pageUser",
+                "value": "{users.getUserById(%user)}"
+            },
+            {
+                "name": "courseColor",
+                "value": "{courses.getCourseById(%course).color}"
+            },
+            {
+                "name": "userXP",
+                "value": "{xp.getUserXP(%user)}"
+            },
+            {
+                "name": "compareWith",
+                "value": "{users.getStudents(true)}"
+            }
+        ],
+        "children": [
+            [
+                {
+                    "type": "block",
+                    "class": "card-body",
+                    "children": [
+                        [
+                            {
+                                "type": "block",
+                                "class": "gap-3 items-center mb-4",
+                                "direction": "horizontal",
+                                "children": [
+                                    [
+                                        {
+                                            "type": "icon",
+                                            "class": "mt-1",
+                                            "style": "color: {%courseColor}",
+                                            "icon": "tabler-user-circle",
+                                            "size": "1.8rem"
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "type": "text",
+                                            "class": "font-bold",
+                                            "style": "font-size: 1.5rem",
+                                            "text": "Profile Summary"
+                                        }
+                                    ]
+                                ]
+                            }
+                        ],
+                        [
+                            {
+                                "type": "block",
+                                "class": "gap-3",
+                                "direction": "horizontal",
+                                "columns": 3,
+                                "children": [
+                                    [
+                                        {
+                                            "type": "block",
+                                            "class": "card bg-base-100 shadow-xl border-base-300 border-2",
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "class": "relative",
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "bg-opacity-75 h-32 rounded-t-2xl",
+                                                                    "style": "background-color: {%courseColor}"
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "image",
+                                                                    "class": "mask mask-circle",
+                                                                    "style": "position: absolute; top: 50%; display: flex; justify-content: center; width: 100%; height: 8.5rem",
+                                                                    "src": "{%pageUser.image}"
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ],
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "class": "card-body p-6 items-center text-center mt-14",
+                                                        "style": "height: 13.5rem;",
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "text",
+                                                                    "class": "font-semibold text-xl",
+                                                                    "text": "{system.if(bool.not(%pageUser.nickname), %pageUser.name, %pageUser.nickname)}"
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "items-center justify-around gap-6",
+                                                                    "direction": "horizontal",
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "items-center",
+                                                                                "direction": "horizontal",
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "icon",
+                                                                                            "class": "mr-1.5 mt-1",
+                                                                                            "style": "color: {%courseColor}",
+                                                                                            "icon": "tabler-id-badge-2",
+                                                                                            "size": "1.3rem"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "text",
+                                                                                            "text": "{%pageUser.studentNumber}"
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "items-center",
+                                                                                "direction": "horizontal",
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "icon",
+                                                                                            "class": "mr-1.5 mt-1",
+                                                                                            "style": "color: {%courseColor}",
+                                                                                            "icon": "tabler-school",
+                                                                                            "size": "1.3rem"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "text",
+                                                                                            "text": "{%pageUser.major}"
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "text",
+                                                                    "class": "font-bold mt-6",
+                                                                    "style": "font-size: 1.5rem; color: {%courseColor}",
+                                                                    "text": "{%userXP} XP"
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "text",
+                                                                    "class": "font-medium opacity-75",
+                                                                    "text": "Lvl. {%userLevel.number} - {%userLevel.description}",
+                                                                    "variables": [
+                                                                        {
+                                                                            "name": "userLevel",
+                                                                            "value": "{xpLevel.getLevelByXP(%userXP)}"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "type": "block",
+                                            "class": "card bg-base-100 shadow-xl border-base-300 border-2",
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "class": "card-body p-6",
+                                                        "style": "height: 25rem;",
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "gap-3 items-center",
+                                                                    "direction": "horizontal",
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "icon",
+                                                                                "class": "text-neutral\/75 mt-1",
+                                                                                "icon": "tabler-clipboard-list",
+                                                                                "size": "1.8rem"
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "font-bold",
+                                                                                "style": "font-size: 1.3rem",
+                                                                                "text": "Progress"
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "gap-3 mt-6 mb-2",
+                                                                    "direction": "horizontal",
+                                                                    "columns": 2,
+                                                                    "responsive": false,
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "gap-2",
+                                                                                "visibilityType": "conditional",
+                                                                                "visibilityCondition": "{badges.isEnabled()}",
+                                                                                "direction": "horizontal",
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "icon",
+                                                                                            "class": "text-neutral\/75",
+                                                                                            "style": "color: {%courseColor}",
+                                                                                            "icon": "{awards.getIconOfType(\"badge\")}",
+                                                                                            "size": "1.5rem"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "block",
+                                                                                            "children": [
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "class": "font-semibold",
+                                                                                                        "text": "Badges"
+                                                                                                    }
+                                                                                                ],
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "class": "text-neutral\/75",
+                                                                                                        "text": "{awards.getUserBadgesTotalReward(%user)} XP"
+                                                                                                    }
+                                                                                                ]
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "gap-2",
+                                                                                "direction": "horizontal",
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "icon",
+                                                                                            "class": "text-neutral\/75",
+                                                                                            "style": "color: {%courseColor}",
+                                                                                            "icon": "{awards.getIconOfType(\"labs\")}",
+                                                                                            "size": "1.5rem"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "block",
+                                                                                            "children": [
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "class": "font-semibold",
+                                                                                                        "text": "Labs"
+                                                                                                    }
+                                                                                                ],
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "class": "text-neutral\/75",
+                                                                                                        "text": "{awards.getUserTotalRewardByType(%user, \"labs\")} XP"
+                                                                                                    }
+                                                                                                ]
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "gap-2",
+                                                                                "direction": "horizontal",
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "icon",
+                                                                                            "class": "text-neutral\/75",
+                                                                                            "style": "color: {%courseColor}",
+                                                                                            "icon": "{awards.getIconOfType(\"quiz\")}",
+                                                                                            "size": "1.5rem"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "block",
+                                                                                            "children": [
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "class": "font-semibold",
+                                                                                                        "text": "Quizzes"
+                                                                                                    }
+                                                                                                ],
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "class": "text-neutral\/75",
+                                                                                                        "text": "{awards.getUserTotalRewardByType(%user, \"quiz\")} XP"
+                                                                                                    }
+                                                                                                ]
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "gap-2",
+                                                                                "visibilityType": "conditional",
+                                                                                "visibilityCondition": "{skills.isEnabled()}",
+                                                                                "direction": "horizontal",
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "icon",
+                                                                                            "class": "text-neutral\/75",
+                                                                                            "style": "color: {%courseColor}",
+                                                                                            "icon": "{awards.getIconOfType(\"skill\")}",
+                                                                                            "size": "1.5rem"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "block",
+                                                                                            "children": [
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "class": "font-semibold",
+                                                                                                        "text": "Skills"
+                                                                                                    }
+                                                                                                ],
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "class": "text-neutral\/75",
+                                                                                                        "text": "{awards.getUserSkillsTotalReward(%user)} XP"
+                                                                                                    }
+                                                                                                ]
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "gap-2",
+                                                                                "visibilityType": "conditional",
+                                                                                "visibilityCondition": "{streaks.isEnabled()}",
+                                                                                "direction": "horizontal",
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "icon",
+                                                                                            "class": "text-neutral\/75",
+                                                                                            "style": "color: {%courseColor}",
+                                                                                            "icon": "{awards.getIconOfType(\"streak\")}",
+                                                                                            "size": "1.5rem"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "block",
+                                                                                            "children": [
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "class": "font-semibold",
+                                                                                                        "text": "Streaks"
+                                                                                                    }
+                                                                                                ],
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "class": "text-neutral\/75",
+                                                                                                        "text": "{awards.getUserStreaksTotalReward(%user)} XP"
+                                                                                                    }
+                                                                                                ]
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "gap-2",
+                                                                                "visibilityType": "conditional",
+                                                                                "visibilityCondition": "{vc.isEnabled()}",
+                                                                                "direction": "horizontal",
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "icon",
+                                                                                            "class": "text-neutral\/75",
+                                                                                            "style": "color: {%courseColor}",
+                                                                                            "icon": "{awards.getIconOfType(\"tokens\")}",
+                                                                                            "size": "1.5rem"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "block",
+                                                                                            "children": [
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "class": "font-semibold",
+                                                                                                        "text": "{vc.getVCName()}"
+                                                                                                    }
+                                                                                                ],
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "block",
+                                                                                                        "class": "justify-center items-center gap-1",
+                                                                                                        "direction": "horizontal",
+                                                                                                        "children": [
+                                                                                                            [
+                                                                                                                {
+                                                                                                                    "type": "text",
+                                                                                                                    "text": "{awards.getUserTotalRewardByType(%user, \"tokens\")}"
+                                                                                                                }
+                                                                                                            ],
+                                                                                                            [
+                                                                                                                {
+                                                                                                                    "type": "image",
+                                                                                                                    "class": "w-4 h-4 mt-2",
+                                                                                                                    "src": "{vc.getImage()}"
+                                                                                                                }
+                                                                                                            ]
+                                                                                                        ]
+                                                                                                    }
+                                                                                                ]
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "chart",
+                                                                                "class": "mt-4",
+                                                                                "visibilityType": "conditional",
+                                                                                "visibilityCondition": "{!!(%maxExtraCredit)}",
+                                                                                "chartType": "progress",
+                                                                                "data": {
+                                                                                    "value": "{%userExtraCredit}",
+                                                                                    "max": "{%maxExtraCredit}"
+                                                                                },
+                                                                                "options": {
+                                                                                    "labelLeft": "Extra Credit",
+                                                                                    "labelRight": "{%maxExtraCredit} XP",
+                                                                                    "tooltip": "{%userExtraCredit} XP",
+                                                                                    "progressColor": "{%courseColor}"
+                                                                                },
+                                                                                "variables": [
+                                                                                    {
+                                                                                        "name": "userExtraCredit",
+                                                                                        "value": "{xp.getUserExtraCreditXP(%user)}"
+                                                                                    },
+                                                                                    {
+                                                                                        "name": "maxExtraCredit",
+                                                                                        "value": "{xp.getMaxExtraCredit()}"
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "chart",
+                                                                                "class": "mt-6",
+                                                                                "visibilityType": "conditional",
+                                                                                "visibilityCondition": "{!!(%maxSkillTreeXP)}",
+                                                                                "chartType": "progress",
+                                                                                "data": {
+                                                                                    "value": "{%userSkillTreeXP}",
+                                                                                    "max": "{%maxSkillTreeXP}"
+                                                                                },
+                                                                                "options": {
+                                                                                    "labelLeft": "Skill Tree",
+                                                                                    "labelRight": "{%maxSkillTreeXP} XP",
+                                                                                    "tooltip": "{%userSkillTreeXP} XP",
+                                                                                    "progressColor": "{%courseColor}"
+                                                                                },
+                                                                                "variables": [
+                                                                                    {
+                                                                                        "name": "userSkillTreeXP",
+                                                                                        "value": "{xp.getUserSkillsXP(%user)}"
+                                                                                    },
+                                                                                    {
+                                                                                        "name": "maxSkillTreeXP",
+                                                                                        "value": "{tree.getSkillTreeByName(\"Skill Tree\").maxReward}"
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "type": "block",
+                                            "class": "card bg-base-100 shadow-xl border-base-300 border-2",
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "class": "card-body p-6",
+                                                        "style": "height: 25rem;",
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "gap-3 items-center",
+                                                                    "direction": "horizontal",
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "icon",
+                                                                                "class": "text-neutral\/75 mt-1",
+                                                                                "icon": "tabler-trophy",
+                                                                                "size": "1.8rem"
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "font-bold",
+                                                                                "style": "font-size: 1.3rem",
+                                                                                "text": "Latest Awards"
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "table",
+                                                                    "class": "mt-6",
+                                                                    "footers": false,
+                                                                    "searching": false,
+                                                                    "columnFiltering": false,
+                                                                    "paging": false,
+                                                                    "lengthChange": false,
+                                                                    "info": false,
+                                                                    "ordering": false,
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "row",
+                                                                                "rowType": "header",
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "text",
+                                                                                            "text": "Award"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "text",
+                                                                                            "text": "Reward"
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "row",
+                                                                                "loopData": "{awards.getUserAwards(%user).sort(\"DESC: date\").crop(0, 3)}",
+                                                                                "rowType": "body",
+                                                                                "variables": [
+                                                                                    {
+                                                                                        "name": "award",
+                                                                                        "value": "{%item}"
+                                                                                    }
+                                                                                ],
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "block",
+                                                                                            "class": "items-center gap-2",
+                                                                                            "direction": "horizontal",
+                                                                                            "children": [
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "icon",
+                                                                                                        "class": "text-neutral\/75 mt-1",
+                                                                                                        "icon": "{%award.icon}",
+                                                                                                        "size": "1.5rem"
+                                                                                                    }
+                                                                                                ],
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "class": "overflow-hidden whitespace-nowrap",
+                                                                                                        "style": "max-width: 150px; text-overflow: ellipsis",
+                                                                                                        "text": "{%award.description}"
+                                                                                                    }
+                                                                                                ]
+                                                                                            ]
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "block",
+                                                                                            "children": [
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "class": "text-center",
+                                                                                                        "visibilityType": "conditional",
+                                                                                                        "visibilityCondition": "{!(%award.type == \"tokens\")}",
+                                                                                                        "text": "{%award.reward} XP"
+                                                                                                    }
+                                                                                                ],
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "block",
+                                                                                                        "class": "justify-center items-center gap-1",
+                                                                                                        "visibilityType": "conditional",
+                                                                                                        "visibilityCondition": "{%award.type == \"tokens\"}",
+                                                                                                        "direction": "horizontal",
+                                                                                                        "children": [
+                                                                                                            [
+                                                                                                                {
+                                                                                                                    "type": "text",
+                                                                                                                    "text": "{%award.reward}"
+                                                                                                                }
+                                                                                                            ],
+                                                                                                            [
+                                                                                                                {
+                                                                                                                    "type": "image",
+                                                                                                                    "class": "w-4 h-4 mt-2",
+                                                                                                                    "src": "{vc.getImage()}"
+                                                                                                                }
+                                                                                                            ]
+                                                                                                        ]
+                                                                                                    }
+                                                                                                ]
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "type": "block",
+                                            "class": "card bg-base-100 shadow-xl border-base-300 border-2",
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "class": "card-body p-6",
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "gap-3 items-center",
+                                                                    "direction": "horizontal",
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "icon",
+                                                                                "class": "text-neutral\/75 mt-1",
+                                                                                "icon": "tabler-eye",
+                                                                                "size": "1.8rem"
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "font-bold",
+                                                                                "style": "font-size: 1.3rem",
+                                                                                "text": "Overview"
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "chart",
+                                                                    "class": "mt-6",
+                                                                    "chartType": "radar",
+                                                                    "data": "{providers.XPOverview(%user, \"presentation: Presentaion, labs: Labs, badge: Badges, streak: Streaks, skill: Skills, quiz: Quizzes\", %compareWith)}",
+                                                                    "options": {
+                                                                        "height": "300",
+                                                                        "colors": [
+                                                                            "{%courseColor}",
+                                                                            "#448AFF"
+                                                                        ],
+                                                                        "legend": true,
+                                                                        "stripedGrid": true,
+                                                                        "markersSize": 4,
+                                                                        "tooltipYFormatter": "(?value) XP"
+                                                                    }
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "type": "block",
+                                            "class": "card bg-base-100 shadow-xl border-base-300 border-2",
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "class": "card-body p-6",
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "gap-3 items-center",
+                                                                    "direction": "horizontal",
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "icon",
+                                                                                "class": "text-neutral\/75 mt-1",
+                                                                                "icon": "tabler-timeline",
+                                                                                "size": "1.8rem"
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "font-bold",
+                                                                                "style": "font-size: 1.3rem",
+                                                                                "text": "XP Evolution"
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "chart",
+                                                                    "class": "mt-6",
+                                                                    "chartType": "line",
+                                                                    "data": "{providers.XPEvolution(%user, \"day\", %compareWith)}",
+                                                                    "options": {
+                                                                        "height": "300",
+                                                                        "colors": [
+                                                                            "{%courseColor}",
+                                                                            "#448AFF"
+                                                                        ],
+                                                                        "XAxisGrid": "true",
+                                                                        "YAxisGrid": "true",
+                                                                        "stripedGrid": "horizontal",
+                                                                        "legend": true,
+                                                                        "tooltipXFormatter": "After (?value) days",
+                                                                        "tooltipYFormatter": "(?value) XP",
+                                                                        "XAxisLabel": "Time (days)",
+                                                                        "YAxisLabel": "XP"
+                                                                    }
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "type": "block",
+                                            "class": "card bg-base-100 shadow-xl border-base-300 border-2",
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "class": "card-body p-6",
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "gap-3 items-center",
+                                                                    "direction": "horizontal",
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "icon",
+                                                                                "class": "text-neutral\/75 mt-1",
+                                                                                "icon": "tabler-list-numbers",
+                                                                                "size": "1.8rem"
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "font-bold",
+                                                                                "style": "font-size: 1.3rem",
+                                                                                "text": "Leaderboard Evolution"
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "chart",
+                                                                    "class": "mt-6",
+                                                                    "chartType": "line",
+                                                                    "data": "{providers.leaderboardEvolution(%user, \"day\")}",
+                                                                    "options": {
+                                                                        "height": "300",
+                                                                        "colors": [
+                                                                            "{%courseColor}"
+                                                                        ],
+                                                                        "XAxisGrid": "true",
+                                                                        "YAxisGrid": "true",
+                                                                        "stripedGrid": "horizontal",
+                                                                        "legend": true,
+                                                                        "tooltipXFormatter": "After (?value) days",
+                                                                        "tooltipYFormatter": "#(?value)",
+                                                                        "XAxisLabel": "Time (days)",
+                                                                        "YAxisLabel": "Position",
+                                                                        "YAxisMin": 1,
+                                                                        "YAxisMax": "{%compareWith.count}",
+                                                                        "YAxisReversed": true
+                                                                    }
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                ]
+                            }
+                        ],
+                        [
+                            {
+                                "type": "block",
+                                "class": "gap-3 mt-3",
+                                "direction": "horizontal",
+                                "columns": 2,
+                                "children": [
+                                    [
+                                        {
+                                            "type": "block",
+                                            "class": "card bg-base-100 shadow-xl border-base-300 border-2",
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "class": "card-body p-6",
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "gap-3 items-center",
+                                                                    "direction": "horizontal",
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "icon",
+                                                                                "class": "text-neutral\/75 mt-1",
+                                                                                "icon": "tabler-chart-bar",
+                                                                                "size": "1.8rem"
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "font-bold",
+                                                                                "style": "font-size: 1.3rem",
+                                                                                "text": "XP Distribution"
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "chart",
+                                                                    "class": "mt-6",
+                                                                    "chartType": "combo",
+                                                                    "data": "{providers.XPDistribution(%compareWith, 2000, 20000, true)}",
+                                                                    "options": {
+                                                                        "height": "300",
+                                                                        "colors": [
+                                                                            "#448AFF",
+                                                                            "#25E6A5"
+                                                                        ],
+                                                                        "highlightBars": [
+                                                                            {
+                                                                                "color": "{%courseColor}",
+                                                                                "value": "{math.floor(%userXP \/ 2000) * 2000}"
+                                                                            }
+                                                                        ],
+                                                                        "dataLabels": true,
+                                                                        "dataLabelsOnSeries": [
+                                                                            1
+                                                                        ],
+                                                                        "XAxisGrid": "true",
+                                                                        "YAxisGrid": "true",
+                                                                        "stripedGrid": "horizontal",
+                                                                        "legend": true,
+                                                                        "tooltipXFormatter": "(?value * 2000 - 2000)-(?value * 2000) XP",
+                                                                        "tooltipYFormatter": "(?value) (?seriesIndex === 0 ? \"players\" : \"XP\")",
+                                                                        "XAxisLabel": "XP",
+                                                                        "YAxisLabel": "# Players",
+                                                                        "YAxisOpposite": [
+                                                                            false,
+                                                                            true
+                                                                        ]
+                                                                    }
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "type": "block",
+                                            "class": "card bg-base-100 shadow-xl border-base-300 border-2",
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "class": "card-body p-6",
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "gap-3 items-center",
+                                                                    "direction": "horizontal",
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "icon",
+                                                                                "class": "text-neutral\/75 mt-1",
+                                                                                "icon": "tabler-chart-bar",
+                                                                                "size": "1.8rem"
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "font-bold",
+                                                                                "style": "font-size: 1.3rem",
+                                                                                "text": "Badges Distribution"
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "chart",
+                                                                    "class": "mt-6",
+                                                                    "chartType": "combo",
+                                                                    "data": "{providers.badgeDistribution(%compareWith, 5, %totalBadges)}",
+                                                                    "options": {
+                                                                        "height": "300",
+                                                                        "colors": [
+                                                                            "#448AFF",
+                                                                            "#25E6A5"
+                                                                        ],
+                                                                        "highlightBars": [
+                                                                            {
+                                                                                "color": "{%courseColor}",
+                                                                                "value": "{math.floor(%userBadges \/ 5) * 5}"
+                                                                            }
+                                                                        ],
+                                                                        "XAxisGrid": "true",
+                                                                        "YAxisGrid": "true",
+                                                                        "stripedGrid": "horizontal",
+                                                                        "legend": true,
+                                                                        "tooltipXFormatter": "Between (?value * 5 - 5) and (?value * 5) badges",
+                                                                        "tooltipYFormatter": "(?value) players",
+                                                                        "XAxisLabel": "Badges",
+                                                                        "YAxisLabel": "# Players"
+                                                                    },
+                                                                    "variables": [
+                                                                        {
+                                                                            "name": "userBadges",
+                                                                            "value": "{awards.getUserBadgesAwards(%user).count}"
+                                                                        },
+                                                                        {
+                                                                            "name": "totalBadges",
+                                                                            "value": "{badges.getBadges(true).count}"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                ]
+                            }
+                        ],
+                        [
+                            {
+                                "type": "block",
+                                "class": "gap-6 mt-6",
+                                "direction": "horizontal",
+                                "columns": 3,
+                                "children": [
+                                    [
+                                        {
+                                            "type": "button",
+                                            "class": "btn-block",
+                                            "text": "Badges",
+                                            "color": "{%courseColor}",
+                                            "icon": "{awards.getIconOfType(\"badge\")}",
+                                            "events": [
+                                                {
+                                                    "type": "click",
+                                                    "action": "{actions.goToPage(pages.getPageByName(\"Badges\").id, %user)}"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "type": "button",
+                                            "class": "btn-block",
+                                            "text": "Skill Tree",
+                                            "color": "{%courseColor}",
+                                            "icon": "{awards.getIconOfType(\"skill\")}",
+                                            "events": [
+                                                {
+                                                    "type": "click",
+                                                    "action": "{actions.goToPage(pages.getPageByName(\"Skill Tree\").id, %user)}"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "type": "button",
+                                            "class": "btn-block",
+                                            "text": "Streaks",
+                                            "color": "{%courseColor}",
+                                            "icon": "{awards.getIconOfType(\"streak\")}",
+                                            "events": [
+                                                {
+                                                    "type": "click",
+                                                    "action": "{actions.goToPage(pages.getPageByName(\"Streaks\").id, %user)}"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                ]
+                            }
+                        ]
+                    ]
+                }
+            ]
+        ]
+    }
+]

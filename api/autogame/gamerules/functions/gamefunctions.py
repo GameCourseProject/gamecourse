@@ -232,7 +232,7 @@ def get_consecutive_logs(logs):
     last_order = None
 
     for log in logs:
-        order = find_order(log[config.DESCRIPTION_COL].decode())
+        order = find_order(log[config.LOG_DESCRIPTION_COL].decode())
         if is_consecutive(order, last_order):
             consecutive_logs[-1].append(log)
         else:
@@ -254,7 +254,7 @@ def get_consecutive_rating_logs(logs, min_rating):
     last_rating = None
 
     for log in logs:
-        rating = log[config.RATING_COL]
+        rating = log[config.LOG_RATING_COL]
         if rating < min_rating:
             last_rating = None
             continue
@@ -416,8 +416,8 @@ def filter_logs_by_description(logs, with_descriptions=None, without_description
         without_descriptions = [without_descriptions]
 
     return [log for log in logs if
-            with_descriptions is not None and log[config.DESCRIPTION_COL].decode() in with_descriptions or
-            without_descriptions is not None and log[config.DESCRIPTION_COL].decode() not in without_descriptions]
+            with_descriptions is not None and log[config.LOG_DESCRIPTION_COL].decode() in with_descriptions or
+            without_descriptions is not None and log[config.LOG_DESCRIPTION_COL].decode() not in without_descriptions]
 
 @rule_function
 def filter_logs_by_rating(logs, min_rating=None, max_rating=None):
@@ -426,8 +426,8 @@ def filter_logs_by_rating(logs, min_rating=None, max_rating=None):
     """
 
     return [log for log in logs if
-            (int(log[config.RATING_COL]) >= min_rating if min_rating is not None else True) and
-            (int(log[config.RATING_COL]) <= max_rating if max_rating is not None else True)]
+            (int(log[config.LOG_RATING_COL]) >= min_rating if min_rating is not None else True) and
+            (int(log[config.LOG_RATING_COL]) <= max_rating if max_rating is not None else True)]
 
 
 ### Computing values
@@ -469,7 +469,7 @@ def compute_rating(logs):
     Sums the ratings of a set of logs.
     """
 
-    return sum([log[config.RATING_COL] for log in logs])
+    return sum([log[config.LOG_RATING_COL] for log in logs])
 
 
 ### Utils
@@ -488,7 +488,7 @@ def get_description(log):
     Returns the description of a logline.
     """
 
-    return log[config.DESCRIPTION_COL]
+    return log[config.LOG_DESCRIPTION_COL]
 
 @rule_function
 def get_rating(logs):
@@ -502,7 +502,7 @@ def get_rating(logs):
     """
 
     nr_logs = len(logs)
-    return 0 if nr_logs == 0 else int(logs[nr_logs - 1][config.RATING_COL])
+    return 0 if nr_logs == 0 else int(logs[nr_logs - 1][config.LOG_RATING_COL])
 
 @rule_function
 def skill_completed(target, name):
