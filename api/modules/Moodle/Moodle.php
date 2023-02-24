@@ -12,7 +12,6 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use PDO;
-use PDOException;
 use Utils\CronJob;
 use Utils\Utils;
 
@@ -341,8 +340,7 @@ class Moodle extends Module
     public function saveMoodleConfig(string $dbServer, string $dbUser, ?string $dbPass, string $dbName, int $dbPort, string $tablesPrefix)
     {
         // Check connection to Moodle database
-        if (!self::canConnect($dbServer, $dbUser, $dbPass, $dbName, $dbPort))
-            throw new Exception("Connection to Moodle database failed.");
+        $this->checkConnection($dbServer, $dbUser, $dbPass, $dbName, $dbPort);
 
         Core::database()->update(self::TABLE_MOODLE_CONFIG, [
             "dbServer" => $dbServer,
@@ -462,7 +460,7 @@ class Moodle extends Module
      * @param string $type
      * @return void
      */
-    public static function log(int $courseId, string $message, string $type = "ERROR")
+    public static function log(int $courseId, string $message, string $type)
     {
         $logsFile = self::getLogsFile($courseId, false);
         Utils::addLog($logsFile, $message, $type);
@@ -524,19 +522,13 @@ class Moodle extends Module
      * @param string|null $dbPass
      * @param string $dbName
      * @param int $dbPort
-     * @return bool
+     * @return void
      * @throws Exception
      */
-    private static function canConnect(string $dbServer, string $dbUser, ?string $dbPass, string $dbName, int $dbPort): bool
+    private static function checkConnection(string $dbServer, string $dbUser, ?string $dbPass, string $dbName, int $dbPort)
     {
-        try {
-            if (!$dbPass) return false;
-            new Database($dbServer, $dbUser, $dbPass, $dbName, $dbPort);
-            return true;
-
-        } catch (Exception | PDOException $e) {
-            return false;
-        }
+        if (!$dbPass) throw new Exception("Connection to Moodle failed: no database password set.");
+        new Database($dbServer, $dbUser, $dbPass, $dbName, $dbPort);
     }
 
     /**
@@ -560,19 +552,25 @@ class Moodle extends Module
         try {
             $timestamps = []; // Timestamps of last record imported on each item
 
+            // Initialize Moodle database
+            $this->database();
+
             $import = ["Logs", "ForumGrades", "Peergrades", "QuizGrades", "AssignmentGrades"];
             foreach ($import as $item) {
-                $timestamp = $this->${"import".$item}();
+                $timestamp = $this->{"import".$item}();
                 if ($timestamp) $timestamps[] = $timestamp;
             }
-
             $this->setCheckpoint(date("Y-m-d H:i:s", max($timestamps)));
-            return !empty($timestamps);
+
+            $newData = !empty($timestamps);
+            if ($newData) self::log($this->course->getId(), "Imported new data from " . self::NAME . ".", "SUCCESS");
+
+            self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
+            return $newData;
 
         } finally {
             $this->setIsRunning(false);
             $this->setFinishedRunning(date("Y-m-d H:i:s", time()));
-            self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
         }
     }
 
@@ -944,7 +942,7 @@ class Moodle extends Module
 
         // Others
         $where .= " AND l.courseid=" . self::$courseId;
-        if (!is_null(self::$checkpoint)) $where .= " AND l.timecreated > " . self::$checkpoint;
+        if (!is_null(self::$checkpoint)) $where .= " AND l.timecreated > '" . self::$checkpoint . "'";
 
         // Order by
         $orderBy = " ORDER BY l.timecreated;";
@@ -1304,7 +1302,7 @@ class Moodle extends Module
 
             case "user_enrolment";
                 $description = $log["target"];
-                $url = "../enrol/users.php?id=" . $log['courseid'];
+                $url = "../enrol/users.php?id=" . $log['cmid'];
                 if ($log['action'] == 'created') $action = "course enrol user";
                 else if ($log['action'] == 'deleted') $action = "course unenrol user";
                 break;
