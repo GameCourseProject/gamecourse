@@ -1,6 +1,8 @@
 <?php
 namespace GameCourse\Module\Profile;
 
+use Exception;
+use GameCourse\Adaptation\GameElement;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Badges\Badges;
@@ -50,14 +52,23 @@ class Profile extends Module
 
     const RESOURCES = [];
 
+    const ADAPTATION_PROFILE = ["Profile" => ["P001", "P002"]];
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function init()
     {
         $this->initTemplates();
+
+        // Add adaptation roles
+        $this->addAdaptationRolesToCourse(self::ADAPTATION_PROFILE);
+        // initEvents(); // FIXME: Debug only
+        GameElement::addGameElement($this->course->getId(), self::ID);
     }
 
     public function copyTo(Course $copyTo)
@@ -65,8 +76,13 @@ class Profile extends Module
         // Nothing to do here
     }
 
+    /**
+     * @throws Exception
+     */
     public function disable()
     {
+        $this->removeAdaptationRolesFromCourse(self::ADAPTATION_PROFILE);
+        GameElement::removeGameElement($this->course->getId(), self::ID);
         $this->removeTemplates();
     }
 }

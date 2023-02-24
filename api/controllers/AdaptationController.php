@@ -183,6 +183,29 @@ class AdaptationController
     }
 
     /**
+     * Translates profiling roles to adaptation roles and assigns them to students
+     * Prepares preferences for future edition
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function profilingToAdaptationRole()
+    {
+        API::requireValues('courseId', 'userId');
+
+        $courseId = API::getValue('courseId', "int");
+        $course = API::verifyCourseExists($courseId);
+
+        $userId = API::getValue('user', "int");
+        $user = API::verifyUserExists($userId);
+
+        // TODO
+
+    }
+
+
+
+    /**
      * Gets previous user preference of specific GameElement
      *
      * @return void

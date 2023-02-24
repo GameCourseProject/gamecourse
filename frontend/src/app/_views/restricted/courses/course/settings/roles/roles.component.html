@@ -47,18 +47,18 @@
       <div class="flex items-center mb-3">
 
         <div class="flex items-center w-[calc(100%-6rem)]">
-            <!-- Move -->
-            <div *ngIf="!isDefaultRole(role.name) && !isAdaptationRole(role.name)" class="tooltip align-middle absolute -left-10" data-tip="Move">
-              <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative">
-                <ng-icon name="feather-move" size="1.2rem"></ng-icon>
-                <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
-              </button>
-            </div>
+          <!-- Move -->
+          <div *ngIf="!isDefaultRole(role.name) && !isAdaptationRole(role.name)" class="tooltip align-middle absolute -left-10" data-tip="Move">
+            <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative">
+              <ng-icon name="feather-move" size="1.2rem"></ng-icon>
+              <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
+            </button>
+          </div>
 
-            <!-- Role -->
-            <div class="dd-content" [ngClass]="{'!border-primary !border-opacity-75 text-primary font-semibold': isDefaultRole(role.name) || isAdaptationRole(role.name)}">
-              {{role.name}}
-            </div>
+          <!-- Role -->
+          <div class="dd-content" [ngClass]="{'!border-primary !border-opacity-75 text-primary font-semibold': isDefaultRole(role.name) || isAdaptationRole(role.name)}">
+            {{role.name}}
+          </div>
         </div>
 
         <!-- Actions -->
@@ -82,7 +82,7 @@
 
           <div *ngIf="!isDefaultRole(role.name) && !isAdaptationRole(role.name) && !isAdaptationTitle(role.name)"
                class="tooltip align-middle" data-tip="Delete"
-            (click)="removeRole(role)">
+               (click)="removeRole(role)">
 
             <button class="btn btn-sm btn-ghost btn-circle">
               <ng-icon name="jam-trash-f" size="1.5rem" class="text-error"></ng-icon>
@@ -93,8 +93,8 @@
       </div>
 
       <ng-container *ngIf="role.children"
-        [ngTemplateOutlet]="LIST"
-        [ngTemplateOutletContext]="{rolesHierarchy: role.children}">
+                    [ngTemplateOutlet]="LIST"
+                    [ngTemplateOutletContext]="{rolesHierarchy: role.children}">
       </ng-container>
     </li>
   </ol>
@@ -104,14 +104,14 @@
 
 <!-- New / Edit Modal -->
 <app-modal *ngIf="mode && roleToManage"
-   [id]="'manage'"
-   [templateRef]="MANAGE"
-   [header]="mode?.capitalize() + ' role'"
-   [closeBtnText]="'Discard ' + (mode === 'add' ? 'role' : 'changes')"
-   [submitBtnText]="mode === 'add' ? mode?.capitalize() + ' role' : 'Save'"
-   [actionInProgress]="loading.action"
-   (submitBtnClicked)="f.onSubmit(null); mode === 'add' ? addRole() : editRole()"
-   (onClose)="resetManage()">
+           [id]="'manage'"
+           [templateRef]="MANAGE"
+           [header]="mode?.capitalize() + ' role'"
+           [closeBtnText]="'Discard ' + (mode === 'add' ? 'role' : 'changes')"
+           [submitBtnText]="mode === 'add' ? mode?.capitalize() + ' role' : 'Save'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="f.onSubmit(null); mode === 'add' ? addRole() : editRole()"
+           (onClose)="resetManage()">
 </app-modal>
 
 <ng-template #MANAGE>
@@ -133,13 +133,13 @@
 
     <!-- Landing Page -->
     <app-input-select *ngIf="activePages.length > 0"
-      [id]="'role-page'"
-      [form]="f"
-      [(value)]="roleToManage.landingPage"
-      [options]="activePages"
-      [placeholder]="'Select a landing page'"
-      [classList]="'mt-3'"
-      [topLabel]="'Landing Page'">
+                      [id]="'role-page'"
+                      [form]="f"
+                      [(value)]="roleToManage.landingPage"
+                      [options]="activePages"
+                      [placeholder]="'Select a landing page'"
+                      [classList]="'mt-3'"
+                      [topLabel]="'Landing Page'">
     </app-input-select>
 
   </form>

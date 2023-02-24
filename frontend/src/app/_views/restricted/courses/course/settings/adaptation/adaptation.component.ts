@@ -87,7 +87,7 @@ export class AdaptationComponent implements OnInit {
     }
 
     // NON-ADMIN
-    else { //FIXME:DEBUG ONLY
+    else {
       // all available game elements
       this.availableGameElements = await this.api.getGameElements(courseID, true).toPromise();
 
@@ -103,9 +103,8 @@ export class AdaptationComponent implements OnInit {
         }
         this.questionnaires.push(questionnaireData);
         this.availableGameElementsSelect.push({value: this.availableGameElements[i].module, text: this.availableGameElements[i].module});
-
-        await this.doAction('prepare non-admin page');
       }
+      await this.doAction('prepare non-admin page');
     }
   }
 
@@ -222,11 +221,21 @@ export class AdaptationComponent implements OnInit {
       this.option = gameElement;
 
     } else if (action === 'prepare non-admin page') {
+      if (this.questionnaires.length === 0){
+        return;
+      }
+
       this.mode = null;
       await this.buildTable();
 
       let filteredQuestionnaires = this.questionnaires.filter(function (item) { return !item.isAnswered });
-      if (filteredQuestionnaires.length === 0) { ModalService.openModal('all-questionnaires-submitted'); }
+      if (filteredQuestionnaires.length === 0) {
+        // update user roles (Translate profiling roles to adaptation roles)
+        // And prepares preferences for future use
+        await this.api.profilingToAdaptationRole(this.course.id, this.user.id).toPromise();
+
+        ModalService.openModal('all-questionnaires-submitted');
+      }
 
     } else if (action === 'show game elements'){
       ModalService.closeModal('all-questionnaires-submitted');
@@ -281,6 +290,9 @@ export class AdaptationComponent implements OnInit {
       let date = new Date();
       if (this.previousPreference === "none") { this.previousPreference = null; }
 
+      console.log(this.selectedGameElement);
+      console.log(this.previousPreference);
+      console.log(newPreference);
       await this.api.updateUserPreference(this.course.id, this.user.id,
         this.selectedGameElement, this.previousPreference, newPreference, date).toPromise();
 

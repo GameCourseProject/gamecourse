@@ -174,14 +174,12 @@ export class RolesComponent implements OnInit {
     await this.api.updateRoles(this.course.id, getRoles(hierarchy, []), hierarchy).toPromise();
     this.originalRolesHierarchy = this.course.roleHierarchy;
 
-    this.loading.action = false;
-    AlertService.showAlert(AlertType.SUCCESS, 'Roles saved');
-
     function getRoles(hierarchy: Role[], roles: Role[]) {
       for (const role of hierarchy) {
         role['landingPage'] = role['landingpage'];
         delete role['landingpage'];
 
+        // @ts-ignore
         const copiedRole = _.cloneDeep(role);
         delete role['id'];
         delete role['landingPage'];
@@ -192,6 +190,10 @@ export class RolesComponent implements OnInit {
       }
       return roles;
     }
+
+    this.loading.action = false;
+    AlertService.showAlert(AlertType.SUCCESS, 'Roles saved');
+
   }
 
 

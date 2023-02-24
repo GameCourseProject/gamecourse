@@ -840,7 +840,6 @@ export class ApiHttpService {
   }
 
   public submitGameElementQuestionnaire(questionnaireData: QuestionnaireManageData): Observable<void>{
-    console.log(questionnaireData.element);
     const data = {
       course: questionnaireData.course,
       user: questionnaireData.user,
@@ -872,6 +871,23 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']) );
+  }
+
+  public profilingToAdaptationRole(courseID: number, userID: number): Observable<void> {
+    const data = {
+      courseId: courseID,
+      userId: userID
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'profilingToAdaptationRole');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res));
+
   }
 
   public getPreviousPreference(courseID: number, userID: number, module: string): Observable<string> {
