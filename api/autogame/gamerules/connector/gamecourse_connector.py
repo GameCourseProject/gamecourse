@@ -51,7 +51,7 @@ def autogame_terminate(course, start_date, finish_date):
 
     # Terminate AutoGame
     if not config.TEST_MODE:
-        query = "UPDATE autogame SET startedRunning = %s, finishedRunning = %s, isRunning = %s WHERE course = %s;"
+        query = "UPDATE autogame SET startedRunning = %s, finishedRunning = %s, isRunning = %s, runNext = 0 WHERE course = %s;"
         db.execute_query(query, (start_date, finish_date, False, course), "commit")
 
     # Check how many courses are running

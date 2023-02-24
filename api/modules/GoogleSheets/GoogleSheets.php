@@ -323,7 +323,7 @@ class GoogleSheets extends Module
                 $client->fetchAccessTokenWithRefreshToken($refreshToken);
                 $accessToken = $client->getAccessToken();
             }
-            Core::database()->update(self::TABLE_GOOGLESHEETS_CONFIG, ["accessToken" => $accessToken], ["course" => $this->course->getId()]);
+            Core::database()->update(self::TABLE_GOOGLESHEETS_CONFIG, ["accessToken" => json_encode($accessToken)], ["course" => $this->course->getId()]);
         }
         return $accessToken;
     }
