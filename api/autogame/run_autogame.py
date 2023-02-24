@@ -7,6 +7,11 @@ from gamerules.functions.utils import import_functions_from_rulepath
 
 # TODO find a mechanism to test socket before opening dat files, get rid of basic inconsistency
 
+
+### ------------------------------------------------------ ###
+###	------------------ Helper Functions ------------------ ###
+### ------------------------------------------------------ ###
+
 def process_args(_course, _rules_path, _targets):
     _all_targets = False
     _targets_list = None
@@ -145,6 +150,10 @@ if __name__ == "__main__":
             # Save the start date
             start_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
             log_start()
+
+            # Preload logs from the database
+            preload_logs(students.keys())
+            preload_awards(students.keys())
 
             # Fire Rule System
             rs = RuleSystem(config.RULES_PATH, config.AUTOSAVE)
