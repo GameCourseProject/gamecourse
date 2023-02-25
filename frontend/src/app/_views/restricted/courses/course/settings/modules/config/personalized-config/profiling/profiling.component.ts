@@ -1,14 +1,18 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {ApiHttpService} from "../../../../../../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
 import {finalize} from "rxjs/operators";
 
+import {Action} from 'src/app/_domain/modules/config/Action';
 import * as Highcharts from 'highcharts';
 import * as moment from "moment";
 import {Moment} from "moment";
 import {TableDataType} from "../../../../../../../../../_components/tables/table-data/table-data.component";
 import {dateFromDatabase} from "../../../../../../../../../_utils/misc/misc";
 import {User} from "../../../../../../../../../_domain/users/user";
+import {ModalService} from "../../../../../../../../../_services/modal.service";
+import {NgForm} from "@angular/forms";
+import {AlertService, AlertType} from "../../../../../../../../../_services/alert.service";
 
 declare var require: any;
 let Sankey = require('highcharts/modules/sankey');
@@ -65,7 +69,9 @@ export class ProfilingComponent implements OnInit {
     {name: "Elbow method", char: "e"},
     {name: "Silhouette method", char: "s"}
   ];
-  methodSelected: string = this.methods[0].char;
+  methodSelected: string = null;
+  @ViewChild('fPrediction', { static: false }) fPrediction: NgForm;
+  @ViewChild('fImport', { static: false }) fImport: NgForm;
 
   isImportModalOpen: boolean;
   importedFile: File;
@@ -90,6 +96,10 @@ export class ProfilingComponent implements OnInit {
 
   get TableDataType(): typeof TableDataType {
     return TableDataType;
+  }
+
+  get Action(): typeof Action {
+    return Action;
   }
 
   async getHistory() {
@@ -305,6 +315,39 @@ export class ProfilingComponent implements OnInit {
     // reader.readAsDataURL(this.importedFile);
   }
 
+  async doAction(action: string): Promise<void> {
+    if (action === 'choose prediction method'){
+      this.isPredictModalOpen = true;
+      ModalService.openModal('prediction-method');
+
+    } else if (action === 'run predictor'){
+      if (this.methodSelected !== null){
+        await this.runPredictor();
+        this.isPredictModalOpen = false;
+        this.resetPredictionMethod();
+      } else AlertService.showAlert(AlertType.ERROR, "Invalid method");
+
+    } else if (action === Action.IMPORT){
+      this.isImportModalOpen = true;
+      ModalService.openModal('import-modal');
+
+    } else if (action === 'submit import') {
+      // FIXME : something else missing ?
+      // FIXME -- NAO CHEGA AQUI
+      this.isImportModalOpen = false;
+      ModalService.closeModal('import-modal');
+
+    } else if (action === 'close import modal'){
+      this.importedFile = null;
+      this.isImportModalOpen = false;
+      ModalService.closeModal('import-modal');
+    }
+  }
+
+  resetPredictionMethod(){
+    this.methodSelected = null;
+    ModalService.closeModal('prediction-method');
+  }
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
@@ -312,11 +355,20 @@ export class ProfilingComponent implements OnInit {
 
   onFileSelected(files: FileList): void {
     this.importedFile = files.item(0);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      // FIXME
+      // this.import = JSON.parse(reader.result as string);
+    }
+    reader.readAsText(this.importedFile);
   }
 
   getEditableResults(): {name: string, cluster: string}[] {
     return Object.values(this.clusters).sort((a, b) => a.name.localeCompare(b.name));
   }
+
+
+
 }
 
 export interface ProfilingHistory {

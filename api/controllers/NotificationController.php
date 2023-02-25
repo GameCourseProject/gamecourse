@@ -41,8 +41,6 @@ class NotificationController
     /**
      * Gets notifications by its user ID
      *
-     * @param int $userId
-     *
      * @throws Exception
      */
     public function getNotificationsByUser()

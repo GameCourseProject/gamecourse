@@ -40,7 +40,8 @@
           [helperText]="'TODO'"
           [helperPosition]="'right'"
           [required]="true"
-          [minValue]="4">
+          [minValue]="4"
+          (btnClicked)="doAction('choose prediction method')">
         </app-input-number>
       </div>
 
@@ -69,14 +70,15 @@
 
     <!-- Action button -->
     <div class="flex items-center justify-end mt-4">
-      <button type="submit" class="btn btn-primary">Run profiler</button>
+      <button type="submit" class="btn btn-primary" (click)="runProfiler()">Run profiler</button>
     </div>
 
   </div>
 </div>
 
 <!-- Overview -->
-<div *ngIf="data?.length > 0" class="card w-full bg-base-100 shadow-xl mt-5">
+<!-- *ngIf="data?.length > 0" -->
+<div class="card w-full bg-base-100 shadow-xl mt-5">
   <div class="card-body">
 
     <!-- Header -->
@@ -84,12 +86,19 @@
       <h2 class="card-title mb-0">Overview</h2>
     </div>
 
+    <app-top-actions
+      [leftActions]="[
+        {action: Action.IMPORT, icon:'jam-download'},
+        {action: Action.EXPORT, icon:'jam-upload'}]"
+      (btnClicked)="doAction($event)">
+    </app-top-actions>
+
     <!-- Results Graph -->
     <figure class="highcharts-figure">
       <div id="overview" class="w-full"></div>
     </figure>
 
-    
+
     <!-- Results Table -->
     <app-table
       [id]="'clusters'"
@@ -102,6 +111,82 @@
 
   </div>
 </div>
+
+<!-- Prediction method modal -->
+<app-modal *ngIf="isPredictModalOpen"
+           [id]="'prediction-method'"
+           [templateRef]="PREDICTION_METHOD"
+           [size]="'sm'"
+           [header]="'Prediction method'"
+           [closeBtnText]="'Cancel'"
+           [submitBtnText]="'Predict'"
+           [actionInProgress]="loadingAction"
+           (submitBtnClicked)="doAction('run predictor')"
+           (onClose)="resetPredictionMethod()">
+</app-modal>
+
+<ng-template #PREDICTION_METHOD>
+  <form #fPrediction="ngForm">
+    <div class="w-full flex flex-wrap mb-3">
+      <span class="font-semibold w-full">Choose one of the following prediction methods<span class="text-secondary ml-1">*</span>
+      </span>
+      <div class="md:w-1/2">
+        <app-input-radio
+          [id]="'elbow-method'"
+          [group] = "'prediction-method'"
+          [form] = "fPrediction"
+          [optionValue] = "methods[0].char"
+          [color]="'secondary'"
+          [classList]="'mt-2'"
+          [label]="'Elbow method'"
+          [labelPosition]="'right'"
+          [(value)]="methodSelected"
+        ></app-input-radio>
+      </div>
+      <div class="md:w-1/2">
+        <app-input-radio
+          [id]="'silhouette-method'"
+          [group] = "'prediction-method'"
+          [form] = "fPrediction"
+          [optionValue] = "methods[1].char"
+          [color]="'secondary'"
+          [classList]="'mt-2'"
+          [label]="'Silhouette method'"
+          [labelPosition]="'right'"
+          [(value)]="methodSelected"
+        ></app-input-radio>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Import modal -->
+<app-modal *ngIf="isImportModalOpen"
+           [id]="'import-modal'"
+           [templateRef]="IMPORT_MODAL"
+           [size]="'md'"
+           [header]="'TODO'"
+           [closeBtnText]="'Cancel'"
+           [submitBtnText]="Action.IMPORT"
+           [actionInProgress]="loadingAction"
+           (submitBtnClicked)="doAction('submit import')"
+           (onClose)="doAction('close import modal')">
+</app-modal>
+
+<ng-template #IMPORT_MODAL>
+  <app-input-file
+    [id]="'import'"
+    [form]="fImport"
+    [accept]="['.cvs', '.txt']"
+    [size]="'xs'"
+    [color]="'accent'"
+    [classList]="''"
+    [label]="'TODO'"
+    [helperPosition]="'right'"
+    [helperText]="'TODO'"
+    (valueChange)="onFileSelected($event)">
+  </app-input-file>
+</ng-template>
 
 <!--&lt;!&ndash; Loader &ndash;&gt;-->
 <!--<div class="w-full flex justify-center">-->

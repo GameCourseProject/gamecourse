@@ -1,6 +1,7 @@
 <?php
 namespace API;
 
+use Exception;
 use GameCourse\Module\Profiling\Profiling;
 use GameCourse\Role\Role;
 
@@ -98,6 +99,10 @@ class ProfilingController
         API::response($profiling->getLastRun());
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     public function runProfiler()
     {
         API::requireValues("courseId", "nrClusters", "minSize", "endDate");
