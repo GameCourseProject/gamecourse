@@ -716,10 +716,10 @@ def get_logs(target=None, type=None, rating=None, evaluator=None, start_date=Non
         logs = [log for log in logs if log[config.LOG_TYPE_COL] == type]
 
     if rating is not None:
-        logs = [log for log in logs if int(log[config.LOG_RATING_COL]) == type]
+        logs = [log for log in logs if int(log[config.LOG_RATING_COL]) == rating]
 
     if evaluator is not None:
-        logs = [log for log in logs if int(log[config.LOG_EVALUATOR_COL]) == type]
+        logs = [log for log in logs if int(log[config.LOG_EVALUATOR_COL]) == evaluator]
 
     if start_date is not None:
         logs = [log for log in logs if log[config.LOG_DATE_COL] >= start_date]
@@ -932,30 +932,46 @@ def get_consecutive_peergrading_logs(target):
     mdl_prefix, mdl_course = db.data_broker.get(db, config.COURSE, query)[0]
     mdl_prefix = mdl_prefix.decode()
 
-    # Get peergrading assigned to target
-    query = "SELECT pa.expired, pa.timemodified " \
+    # Get peergrades assigned to target
+    query = "SELECT f.name as forumName, fd.id as discussionId, fp.subject, g.itemId as peergradeId, u.username, " \
+            "g.peergrade as grade, ug.username as grader, pa.expired " \
             "FROM " + mdl_prefix + "peerforum_time_assigned pa JOIN " + mdl_prefix + "peerforum_posts fp on pa.itemid=fp.id " \
             "JOIN " + mdl_prefix + "peerforum_discussions fd on fd.id=fp.discussion " \
             "JOIN " + mdl_prefix + "peerforum f on f.id=fd.peerforum " \
-            "JOIN " + mdl_prefix + "user u on pa.userid=u.id " \
-            "WHERE f.course = %s AND u.username = %s " \
-            "ORDER BY pa.timeassigned;"
-    logs = moodle_db.execute_query(query, (mdl_course, username))
+            "JOIN " + mdl_prefix + "user u on fp.userid=u.id " \
+            "JOIN " + mdl_prefix + "user ug on pa.userid=ug.id " \
+            "JOIN " + mdl_prefix + "peerforum_peergrade g on g.userid=ug.id " \
+            "JOIN " + mdl_prefix + "course c on f.course=c.id " \
+            "WHERE f.course = %s AND ug.username = '%s' " \
+            "ORDER BY pa.timeassigned;" % (mdl_course, username)
+    peergrades = moodle_db.execute_query(query)
 
     # Get consecutive peergrading logs
     consecutive_logs = []
     last_peergrading = None
 
-    for log in logs:
-        expired = int(log[0])
-        date = log[1]
+    for peergrade in peergrades:
+        expired = bool(peergrade[7])
         peergraded = not expired
 
         if not peergraded:
             last_peergrading = None
             continue
 
-        log = (None, target, config.COURSE, None, None, None, None, date, None, None)
+        # Get GC user id of peergrade
+        query = "SELECT user FROM auth WHERE username = '%s';" % peergrade[4].decode()
+        user_id = int(db.data_broker.get(db, target, query, "user")[0][0])
+
+        # Get actual GC log
+        logs = get_logs(user_id, "peergraded post", int(peergrade[5]), target, None, None, peergrade[0].decode() + ", Re: " + peergrade[2].decode())
+        nr_logs = len(logs)
+        if nr_logs > 1:
+            log = [log for log in logs if compare_with_wildcards(log[6].decode(), "%peerforum%?d=" + str(peergrade[1]) + "#p" + str(peergrade[3]))][0]
+        elif nr_logs == 1:
+            log = logs[0]
+        else:
+            raise Exception("Getting consecutive peergrading logs: unable to match a peergrade with a log")
+
         if last_peergrading is not None:
             consecutive_logs[-1].append(log)
         else:
