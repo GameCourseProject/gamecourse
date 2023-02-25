@@ -77,7 +77,7 @@ export class RolesComponent implements OnInit {
     this.defaultRoleNames = await this.api.getDefaultRoles(courseID).toPromise();
 
     // adaptation roles
-    this.adaptationRoleNames = await this.api.getAdaptationRoles(courseID, false, true).toPromise();
+    this.adaptationRoleNames = await this.api.getAdaptationRoles(courseID, false).toPromise();
     this.adaptationTitle = await this.api.getAdaptationGeneralParent(courseID).toPromise();
 
     this.originalRolesHierarchy = _.cloneDeep(this.course.roleHierarchy);

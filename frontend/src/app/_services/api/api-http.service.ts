@@ -928,13 +928,12 @@ export class ApiHttpService {
 
   // Roles
 
-  public getAdaptationRoles(courseID: number, onlyParents?: boolean, onlyNames?: boolean): Observable<string[]>{
+  public getAdaptationRoles(courseID: number, onlyParents?: boolean): Observable<string[]>{
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
       qs.push('request', 'getAdaptationRoles');
       qs.push('courseId', courseID);
       if (onlyParents !== undefined) qs.push('onlyParents', onlyParents);
-      if (onlyNames !== undefined) qs.push('onlyNames', onlyNames);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

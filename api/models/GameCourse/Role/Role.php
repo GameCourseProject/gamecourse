@@ -224,16 +224,16 @@ class Role
     /**
      * Gets all adaptation roles.
      * If $onlyParents is true then it only returns parents of adaptation roles ["Badges", "Leaderboard"]
-     * Default: Gets all adaptation roles ["Badges", "B001", "B002", "Leaderboard", "LB001", "LB002"]
+     * Default: Gets all adaptation roles (First parents then children)
+     * ["Badges", "Leaderboard", "B001", "B002", "LB001", "LB002"]
      *
      * @param int $courseId
      * @param bool $onlyParents (optional)
-     * @param bool $onlyNames (optional)
      * @return array
      * @throws Exception
      */
-    public static function getAdaptationCourseRoles(int $courseId, bool $onlyParents = false, bool $onlyNames = false): array {
-        $response = GameElement::getGameElements($courseId, null, $onlyNames);
+    public static function getAdaptationCourseRoles(int $courseId, bool $onlyParents = false): array {
+        $response = GameElement::getGameElements($courseId, null);
 
         if (!$onlyParents) {
            $roles = self::getCourseRoles($courseId, false, true);
@@ -246,8 +246,7 @@ class Role
 
                        if ($value["module"] && $value["children"]) {
                            foreach ($value["children"] as $child){
-                               if ($onlyNames) { array_push($response, $child["name"]); }
-                               else { array_push($response, $child); }
+                               array_push($response, $child["name"]);
                            }
                        }
                    }

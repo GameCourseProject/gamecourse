@@ -581,9 +581,8 @@ class CourseController
         API::requireCourseAdminPermission($course);
 
         $onlyParents = API::getValue("onlyParents", "bool") ?? false;
-        $onlyNames = API::getValue("onlyNames", "bool") ?? false;
 
-        $roles = Role::getAdaptationCourseRoles($courseId, $onlyParents, $onlyNames);
+        $roles = Role::getAdaptationCourseRoles($courseId, $onlyParents);
         API::response($roles);
     }
 
