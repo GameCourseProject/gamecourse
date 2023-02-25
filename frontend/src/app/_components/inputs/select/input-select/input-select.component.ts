@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
 import {Observable} from "rxjs";
 
@@ -11,7 +11,7 @@ import SlimSelect from "slim-select";
   selector: 'app-input-select',
   templateUrl: './input-select.component.html'
 })
-export class InputSelectComponent implements OnInit {
+export class InputSelectComponent implements OnInit, OnChanges {
 
   // Essentials
   @Input() id: string;                                                              // Unique ID

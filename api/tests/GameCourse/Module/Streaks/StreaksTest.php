@@ -314,7 +314,7 @@ class StreaksTest extends TestCase
         $this->insertAward($this->course->getId(), $user3->getId(), $streak2->getId(), "Award 4", 500);
 
         $keys = ["id", "course", "name", "description", "color", "goal", "periodicityGoal", "periodicityNumber",
-            "periodicityTime", "periodicityType", "reward", "tokens", "isExtra", "isRepeatable", "isActive", "rule", "nrCompletions"];
+            "periodicityTime", "periodicityType", "reward", "tokens", "isExtra", "isRepeatable", "isActive", "rule", "nrCompletions", "progress"];
         $nrKeys = count($keys);
 
         // Has streaks

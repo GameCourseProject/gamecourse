@@ -16,7 +16,7 @@ import { AdaptationComponent } from "./settings/adaptation/adaptation.component"
 
 const routes: Routes = [
   {
-    path: '',
+    path: 'main',
     component: MainComponent
   },
   {
@@ -90,7 +90,8 @@ const routes: Routes = [
   {
     path: 'participation/:key',
     component: PageComponent
-  }
+  },
+  { path: '', redirectTo: 'main', pathMatch: 'full' }
 ];
 
 @NgModule({

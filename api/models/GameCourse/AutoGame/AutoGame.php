@@ -258,7 +258,7 @@ abstract class AutoGame
             $cmd .= "new ";
         }
 
-        $cmd .= "\"$rulesFolder\" \"$logsFile\" " . DB_NAME . " " . DB_USER . " \"" . DB_PASSWORD . "\"";
+        $cmd .= "\"$rulesFolder\" \"$logsFile\" \"" . DB_HOST . "\" \"" . DB_NAME . "\" \"" . DB_USER . "\" \"" . DB_PASSWORD . "\"";
         $cmd .= " &"; // NOTE: this will run autogame in the background
         system($cmd);
     }

@@ -536,7 +536,7 @@ class SectionTest extends TestCase
             Section::addSection($this->courseId, "Section Name");
             $this->fail("Exception should have been thrown on 'addSectionDuplicateName'");
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $sections = Section::getSections($this->courseId);
             $this->assertCount(1, $sections);
         }
@@ -620,7 +620,7 @@ class SectionTest extends TestCase
         try {
             $section2->editSection("Section1", 1);
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertEquals("Section2", $section2->getName());
             $this->assertEquals(2, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
             $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-Section1.txt"));

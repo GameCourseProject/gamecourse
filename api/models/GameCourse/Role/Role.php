@@ -9,7 +9,6 @@ use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Page\Page;
-use PDOException;
 use Utils\Utils;
 
 /**
@@ -53,11 +52,12 @@ class Role
      * @param string $roleName
      * @param int $courseId
      * @return int
+     * @throws Exception
      */
     public static function getRoleId(string $roleName, int $courseId): int
     {
         $id = intval(Core::database()->select(self::TABLE_ROLE, ["course" => $courseId, "name" => $roleName], "id"));
-        if (!$id) throw new PDOException("Role with name '" . $roleName . "' doesn't exist for course with ID = " . $courseId . ".");
+        if (!$id) throw new Exception("Role with name '" . $roleName . "' doesn't exist for course with ID = " . $courseId . ".");
         return $id;
     }
 
@@ -66,11 +66,12 @@ class Role
      *
      * @param int $roleId
      * @return string
+     * @throws Exception
      */
     public static function getRoleName(int $roleId): string
     {
         $roleName = Core::database()->select(self::TABLE_ROLE, ["id" => $roleId], "name");
-        if (!$roleName) throw new PDOException("Role with ID = " . $roleId . " doesn't exist.");
+        if (!$roleName) throw new Exception("Role with ID = " . $roleId . " doesn't exist.");
         return $roleName;
     }
 
@@ -79,11 +80,12 @@ class Role
      *
      * @param int|null $roleId
      * @return Page
+     * @throws Exception
      */
     public static function getRoleLandingPage(int $roleId = null): ?Page
     {
         $pageId = Core::database()->select(self::TABLE_ROLE, ["id" => $roleId], "landingPage");
-        if ($pageId === false) throw new PDOException("Role with ID = " . $roleId . " doesn't exist.");
+        if ($pageId === false) throw new Exception("Role with ID = " . $roleId . " doesn't exist.");
         return $pageId ? Page::getPageById($pageId) : null;
     }
 
@@ -376,9 +378,10 @@ class Role
     public static function addRoleToCourse(int $courseId, string $roleName, string $landingPageName = null, int $landingPageId = null, string $moduleId = null)
     {
         self::trim($roleName);
-        self::validateRoleName($roleName);
 
         if (!self::courseHasRole($courseId, $roleName)) {
+            self::validateRoleName($courseId, $roleName);
+
             // Add role
             $data = ["course" => $courseId, "name" => $roleName];
             if ($landingPageName !== null) $landingPageId = Page::getPageByName($courseId, $landingPageName)->getId();
@@ -425,6 +428,7 @@ class Role
         // Update roles
         foreach ($roles as $role) {
             if (isset($role["id"])) { // update
+                self::validateRoleName($courseId, trim($role["name"]), $role["id"]);
                 Core::database()->update(self::TABLE_ROLE, [
                     "name" => trim($role["name"]),
                     "landingPage" => $role["landingPage"] ?? null
@@ -587,7 +591,7 @@ class Role
         // Check if roles exist in course
         foreach ($rolesNames as $roleName) {
             if (!self::courseHasRole($courseId, $roleName))
-                throw new PDOException("Role with name '" . $roleName . "' doesn't exist in course with ID = " . $courseId . ".");
+                throw new Exception("Role with name '" . $roleName . "' doesn't exist in course with ID = " . $courseId . ".");
         }
 
         // Remove all user roles
@@ -616,7 +620,7 @@ class Role
             throw new Exception("Need either role name or ID to add new role to a user.");
 
         if (!self::courseHasRole($courseId, $roleName, $roleId))
-            throw new PDOException("Role with " . ($roleName ? "name '" . $roleName . "'" : "ID = " . $roleId) . " doesn't exist in course with ID = " . $courseId . ".");
+            throw new Exception("Role with " . ($roleName ? "name '" . $roleName . "'" : "ID = " . $roleId) . " doesn't exist in course with ID = " . $courseId . ".");
 
         if (!self::userHasRole($userId, $courseId, $roleName, $roleId)) {
             if (!$roleId) $roleId = self::getRoleId($roleName, $courseId);
@@ -691,17 +695,25 @@ class Role
     /**
      * Validates role name.
      *
+     * @param int $courseId
      * @param $roleName
+     * @param int|null $roleId
      * @return void
      * @throws Exception
      */
-    private static function validateRoleName($roleName)
+    private static function validateRoleName(int $courseId, $roleName, int $roleId = null)
     {
         if (!is_string($roleName) || strpos($roleName, " ") !== false)
             throw new Exception("Role name '" . $roleName . "' is invalid. Role names can't be empty or have white spaces.");
 
         if (iconv_strlen($roleName) > 50)
             throw new Exception("Role name is too long: maximum of 50 characters.");
+
+        $whereNot = [];
+        if ($roleId) $whereNot[] = ["id", $roleId];
+        $roleNames = array_column(Core::database()->selectMultiple(self::TABLE_ROLE, ["course" => $courseId], "name", null, $whereNot), "name");
+        if (in_array($roleName, $roleNames))
+            throw new Exception("Duplicate role name: '$roleName'");
     }
 
 

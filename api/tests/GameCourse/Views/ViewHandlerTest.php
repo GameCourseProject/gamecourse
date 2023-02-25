@@ -88,7 +88,7 @@ class ViewHandlerTest extends TestCase
 
         // Then
         $this->assertNotEmpty($viewInDB);
-        $this->assertCount(4, $viewInDB);
+        $this->assertCount(7, $viewInDB);
         $this->assertEquals($view["id"], $viewInDB["id"]);
         $this->assertEquals($view["type"], $viewInDB["type"]);
         $this->assertEquals(VisibilityType::VISIBLE, $viewInDB["visibilityType"]);
@@ -114,7 +114,7 @@ class ViewHandlerTest extends TestCase
 
         // Then
         $this->assertNotEmpty($viewInDB);
-        $this->assertCount(11, $viewInDB);
+        $this->assertCount(13, $viewInDB);
         $this->assertEquals($view["id"], $viewInDB["id"]);
         $this->assertEquals($view["type"], $viewInDB["type"]);
         $this->assertEquals("vertical", $viewInDB["direction"]);
@@ -149,7 +149,7 @@ class ViewHandlerTest extends TestCase
         // Then
         $this->assertCount(2, $views);
         foreach ($views as $view) {
-            $this->assertCount(4, $view);
+            $this->assertCount(7, $view);
             $this->assertEquals(Block::ID, $view["type"]);
             $this->assertEquals(VisibilityType::VISIBLE, $view["visibilityType"]);
             $this->assertEquals("vertical", $view["direction"]);
@@ -174,7 +174,7 @@ class ViewHandlerTest extends TestCase
         // Then
         $this->assertCount(2, $views);
         foreach ($views as $view) {
-            $this->assertCount(11, $view);
+            $this->assertCount(13, $view);
             $this->assertEquals(Block::ID, $view["type"]);
             $this->assertEquals(VisibilityType::VISIBLE, $view["visibilityType"]);
             $this->assertEquals("vertical", $view["direction"]);
@@ -228,7 +228,7 @@ class ViewHandlerTest extends TestCase
         // Then
         $views = ViewHandler::getViews(false);
         $this->assertCount(1, $views);
-        $this->assertCount(11, $views[0]);
+        $this->assertCount(13, $views[0]);
         foreach (["id", "type", "cssId", "class", "style", "visibilityCondition", "loopData"] as $param) {
             $this->assertEquals($view[$param] ?? null, $views[0][$param]);
         }
@@ -272,7 +272,7 @@ class ViewHandlerTest extends TestCase
         // Then
         $views = ViewHandler::getViews();
         $this->assertCount(1, $views);
-        $this->assertCount(11, $views[0]);
+        $this->assertCount(12, $views[0]);
         foreach (["id", "type", "cssId", "class", "style", "visibilityType", "visibilityCondition", "loopData"] as $param) {
             $this->assertEquals($view[$param] ?? null, $views[0][$param]);
         }
@@ -380,7 +380,7 @@ class ViewHandlerTest extends TestCase
         // Then
         $views = ViewHandler::getViews(false);
         $this->assertCount(1, $views);
-        $this->assertCount(11, $views[0]);
+        $this->assertCount(13, $views[0]);
         foreach (["id", "type", "cssId", "class", "style", "visibilityCondition", "loopData"] as $param) {
             $this->assertEquals($newView[$param] ?? null, $views[0][$param]);
         }
@@ -418,7 +418,7 @@ class ViewHandlerTest extends TestCase
         // Then
         $views = ViewHandler::getViews(false);
         $this->assertCount(1, $views);
-        $this->assertCount(11, $views[0]);
+        $this->assertCount(13, $views[0]);
         foreach (["id", "type", "cssId", "class", "style", "visibilityCondition", "loopData"] as $param) {
             $this->assertEquals($newView[$param] ?? null, $views[0][$param]);
         }
@@ -455,7 +455,7 @@ class ViewHandlerTest extends TestCase
         // Then
         $views = ViewHandler::getViews(false);
         $this->assertCount(1, $views);
-        $this->assertCount(11, $views[0]);
+        $this->assertCount(13, $views[0]);
         foreach (["id", "type", "cssId", "class", "style", "visibilityCondition", "loopData"] as $param) {
             $this->assertEquals($view[$param] ?? null, $views[0][$param]);
         }
@@ -499,7 +499,7 @@ class ViewHandlerTest extends TestCase
         // Then
         $views = ViewHandler::getViews(false);
         $this->assertCount(1, $views);
-        $this->assertCount(11, $views[0]);
+        $this->assertCount(13, $views[0]);
         foreach (["id", "type", "cssId", "class", "style", "visibilityCondition", "loopData"] as $param) {
             $this->assertEquals($view[$param] ?? null, $views[0][$param]);
         }
@@ -542,7 +542,7 @@ class ViewHandlerTest extends TestCase
         // Then
         $views = ViewHandler::getViews(false);
         $this->assertCount(1, $views);
-        $this->assertCount(11, $views[0]);
+        $this->assertCount(13, $views[0]);
         foreach (["id", "type", "cssId", "class", "style", "visibilityCondition", "loopData"] as $param) {
             $this->assertEquals($view[$param] ?? null, $views[0][$param]);
         }

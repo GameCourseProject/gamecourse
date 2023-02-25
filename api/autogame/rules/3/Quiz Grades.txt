@@ -1,0 +1,10 @@
+rule: Quiz Grades
+# Gives grades from quizzes
+
+    when:
+        logs = get_quiz_logs(target)
+        flogs = filter_logs(logs, None, ["Dry Run", "Exam"])
+        len(flogs) > 0
+
+    then:
+        award_quiz_grade(target, logs)

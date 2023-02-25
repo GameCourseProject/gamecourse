@@ -1,10 +1,8 @@
 import {Event} from "./event";
 import {EventType} from "./event-type";
 import {EventAction} from "./event-action";
-import {EventGoToPage} from "./event-go-to-page";
-import {EventHideView} from "./event-hide-view";
-import {EventShowView} from "./event-show-view";
-import {EventToggleView} from "./event-toggle-view";
+import {GoToPageEvent} from "./actions/go-to-page-event";
+import {ShowTooltipEvent} from "./actions/show-tooltip-event";
 
 /**
  * Builds an event from its type and description according to whatever
@@ -19,14 +17,13 @@ import {EventToggleView} from "./event-toggle-view";
  * @private
  */
 export function buildEvent(type: EventType, eventStr: string): Event {
-  eventStr = eventStr.replace(/([{}]|\bactions.\b)/g, '');
-  const action = eventStr.split('(')[0];
-  const args = eventStr.split('(')[1].split(',').map(arg => arg.noWhiteSpace('').replace(')', ''));
+  eventStr = eventStr.replace(/[{}]|\bactions.\b/g, '');
+  const action: EventAction = eventStr.split('(')[0] as EventAction;
+  const args: string[] = eventStr.split('(')[1].split(',').map(arg => arg.noWhiteSpace('').replace(')', ''));
 
-  if (action === EventAction.GO_TO_PAGE) return new EventGoToPage(type, args[0], args[1] || null);
-  else if (action === EventAction.HIDE_VIEW) return new EventHideView(type, args[0]);
-  else if (action === EventAction.SHOW_VIEW) return new EventShowView(type, args[0]);
-  else if (action === EventAction.TOGGLE_VIEW) return new EventToggleView(type, args[0]);
+  if (action === EventAction.GO_TO_PAGE) return new GoToPageEvent(type, args[0], args[1] || null);
+  if (action === EventAction.SHOW_TOOLTIP) return new ShowTooltipEvent(type, args[0], args[1]);
+  // NOTE: insert here other types of event actions
 
   return null;
 }

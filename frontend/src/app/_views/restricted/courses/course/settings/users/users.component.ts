@@ -340,6 +340,7 @@ export class UsersComponent implements OnInit {
     await this.api.deleteCourseUser(this.course.id, user.id).toPromise();
     const index = this.courseUsers.findIndex(el => el.id === user.id);
     this.courseUsers.removeAtIndex(index);
+    if (!this.nonCourseUsers) await this.getUsersNotInCourse(this.course.id);
     this.nonCourseUsers.push({value: 'id-' + user.id, text: user.name});
     this.nonCourseUsers.sort((a, b) => a.text.localeCompare(b.text))
     this.buildTable();

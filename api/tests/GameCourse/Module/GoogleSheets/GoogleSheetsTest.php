@@ -10,7 +10,6 @@ use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
-use Utils\Time;
 
 /**
  * NOTE: only run tests outside the production environment as

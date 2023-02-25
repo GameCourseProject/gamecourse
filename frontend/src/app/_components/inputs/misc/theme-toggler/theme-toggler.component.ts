@@ -4,8 +4,7 @@ import {Theme} from "../../../../_services/theming/themes-available";
 
 @Component({
   selector: 'app-theme-toggler',
-  templateUrl: './theme-toggler.component.html',
-  styleUrls: ['./theme-toggler.component.scss']
+  templateUrl: './theme-toggler.component.html'
 })
 export class ThemeTogglerComponent implements OnInit {
 

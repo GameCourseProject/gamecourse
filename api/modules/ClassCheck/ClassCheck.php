@@ -132,8 +132,7 @@ class ClassCheck extends Module
                                 "value" => $this->getTSVCode(),
                                 "placeholder" => "TSV code",
                                 "options" => [
-                                    "topLabel" => "TSV code",
-                                    "maxLength" => 200
+                                    "topLabel" => "TSV code"
                                 ],
                                 "helper" => "Classcheck TSV code URL"
                             ]
@@ -195,8 +194,7 @@ class ClassCheck extends Module
     public function saveTSVCode(?string $tsvCode)
     {
         // Check connection to ClassCheck
-        if (!self::canConnect($tsvCode))
-            throw new Exception("Connection to ClassCheck failed.");
+        $this->checkConnection($tsvCode);
 
         Core::database()->update(self::TABLE_CLASSCHECK_CONFIG, [
             "tsvCode" => $tsvCode,
@@ -327,17 +325,13 @@ class ClassCheck extends Module
      * Checks connection to ClassCheck attendances.
      *
      * @param string|null $tsvCode
-     * @return bool
+     * @return void
+     * @throws Exception
      */
-    private static function canConnect(?string $tsvCode): bool
+    private function checkConnection(?string $tsvCode)
     {
-        try {
-            if (!$tsvCode) return false;
-            return !!fopen($tsvCode, "r");
-
-        } catch (Throwable $e) {
-            return false;
-        }
+        if (!$tsvCode) throw new Exception("Connection to " . self::NAME . " failed: no TSV code found.");
+        fopen($tsvCode, "r");
     }
 
     /**
@@ -360,12 +354,15 @@ class ClassCheck extends Module
 
         try {
             $tsvCode = $this->getTSVCode();
-            return $this->saveAttendance($tsvCode);
+            $newData = $this->saveAttendance($tsvCode);
+
+            if ($newData) self::log($this->course->getId(), "Imported new data from " . self::NAME . ".", "SUCCESS");
+            self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
+            return $newData;
 
         } finally {
             $this->setIsRunning(false);
             $this->setFinishedRunning(date("Y-m-d H:i:s", time()));
-            self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
         }
     }
 

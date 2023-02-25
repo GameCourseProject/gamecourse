@@ -6,15 +6,15 @@ import {ApiHttpService} from "../../../../../../../_services/api/api-http.servic
 import {ErrorService} from "../../../../../../../_services/error.service";
 import {UpdateService, UpdateType} from "../../../../../../../_services/update.service";
 
-import {Page} from "../../../../../../../_domain/pages & templates/page";
-import {Template} from "../../../../../../../_domain/pages & templates/template";
+import {Page} from "../../../../../../../_domain/views/pages/page";
+import {Template} from "../../../../../../../_domain/views/templates/template";
 import {RoleType} from "../../../../../../../_domain/roles/role-type";
 import {Reduce} from "../../../../../../../_utils/lists/reduce";
 import {exists} from "../../../../../../../_utils/misc/misc";
 import {DownloadManager} from "../../../../../../../_utils/download/download-manager";
 
 @Component({
-  selector: 'app-views',
+  selector: 'app-building-blocks',
   templateUrl: './views.component.html',
   styleUrls: ['./views.component.scss']
 })
@@ -233,7 +233,7 @@ export class ViewsComponent implements OnInit {
 
   useGlobal(template: Template): void {
     // TODO: update from GameCourse v1
-    ErrorService.set('Error: This action still needs to be updated to the current version. (views.component.ts::useGlobal(template))')
+    ErrorService.set('Error: This action still needs to be updated to the current version. (building-blocks.component.ts::useGlobal(template))')
   }
 
   importTemplate(): void {

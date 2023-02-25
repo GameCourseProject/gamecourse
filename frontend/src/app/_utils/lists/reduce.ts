@@ -1,8 +1,8 @@
 import {Course} from "../../_domain/courses/course";
 import {User} from "../../_domain/users/user";
 import {Module} from "../../_domain/modules/module";
-import {Page} from "../../_domain/pages & templates/page";
-import {Template} from "../../_domain/pages & templates/template";
+import {Page} from "../../_domain/views/pages/page";
+import {Template} from "../../_domain/views/templates/template";
 import {exists} from "../misc/misc";
 import {CourseUser} from "../../_domain/users/course-user";
 

@@ -5,9 +5,13 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Views\Aspect\Aspect;
+use GameCourse\Views\CreationMode;
+use GameCourse\Views\Logging\Logging;
 use GameCourse\Views\ViewHandler;
 use Utils\CronJob;
+use Utils\Time;
 use Utils\Utils;
+use ZipArchive;
 
 /**
  * This is the Page model, which implements the necessary methods
@@ -17,6 +21,10 @@ class Page
 {
     const TABLE_PAGE = "page";
     const TABLE_PAGE_HISTORY = "user_page_history";
+
+    const HEADERS = [   // headers for import/export functionality
+        "name", "viewRoot"
+    ];
 
     protected $id;
 
@@ -185,11 +193,13 @@ class Page
      */
     public function setData(array $fieldValues)
     {
+        $courseId = $this->getCourse()->getId();
+
         // Trim values
         self::trim($fieldValues);
 
         // Validate data
-        if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
+        if (key_exists("name", $fieldValues)) self::validateName($courseId, $fieldValues["name"], $this->id);
         if (key_exists("visibleFrom", $fieldValues)) {
             self::validateDateTime($fieldValues["visibleFrom"]);
             $visibleUntil = key_exists("visibleUntil", $fieldValues) ? $fieldValues["visibleUntil"] : $this->getVisibleUntil();
@@ -199,6 +209,11 @@ class Page
             self::validateDateTime($fieldValues["visibleUntil"]);
             $visibleFrom = key_exists("visibleFrom", $fieldValues) ? $fieldValues["visibleFrom"] : $this->getVisibleFrom();
             if ($visibleFrom) self::validateVisibleFromAndUntilDates($visibleFrom, $fieldValues["visibleUntil"]);
+        }
+        if (key_exists("position", $fieldValues)) {
+            $newPosition = $fieldValues["position"];
+            $oldPosition = $this->getPosition();
+            Utils::updateItemPosition($oldPosition, $newPosition, self::TABLE_PAGE, "position", $this->id, self::getPages($courseId));
         }
 
         // Update data
@@ -271,13 +286,51 @@ class Page
      * @param bool|null $visible
      * @return array
      */
-    public static function getPagesOfCourse(int $courseId, ?bool $visible = null): array
+    public static function getPages(int $courseId, ?bool $visible = null): array
     {
         $where = ["course" => $courseId];
         if ($visible !== null) $where["isVisible"] = $visible;
         $pages = Core::database()->selectMultiple(self::TABLE_PAGE, $where, "*", "id");
         foreach ($pages as &$page) { $page = self::parse($page); }
         return $pages;
+    }
+
+    /**
+     * Gets pages by a given view root.
+     *
+     * @param int $viewRoot
+     * @return array
+     */
+    public static function getPagesByViewRoot(int $viewRoot): array
+    {
+        $pages = Core::database()->selectMultiple(self::TABLE_PAGE, ["viewRoot" => $viewRoot], "*", "id");
+        foreach ($pages as &$page) { $page = self::parse($page); }
+        return $pages;
+    }
+
+    /**
+     * Gets course pages available for a given user according to their roles.
+     * Option for 'visible'.
+     *
+     * @param int $courseId
+     * @param int $userid
+     * @param bool|null $visible
+     * @return array
+     * @throws Exception
+     */
+    public static function getUserPages(int $courseId, int $userid, ?bool $visible = null): array
+    {
+        // Get course pages
+        $coursePages = self::getPages($courseId, $visible);
+
+        // Filter pages based on user roles and aspects defined for each page
+        $availablePagesForUser = [];
+        foreach ($coursePages as $page) {
+            // Try to build page for user
+            $viewTree = ViewHandler::buildView($page["viewRoot"], Aspect::getAspects($courseId, $userid, true));
+            if (!empty($viewTree)) $availablePagesForUser[] = $page;
+        }
+        return $availablePagesForUser;
     }
 
     /**
@@ -301,30 +354,48 @@ class Page
      * Returns the newly created page.
      *
      * @param int $courseId
+     * @param string $creationMode
      * @param string $name
      * @param array|null $viewTree
+     * @param int|null $viewRoot
      * @param string|null $visibleFrom
      * @param string|null $visibleUntil
      * @return Page
      * @throws Exception
      */
-    public static function addPage(int $courseId, string $name, array $viewTree = null, ?string $visibleFrom = null,
-                                   ?string $visibleUntil = null): Page
+    public static function addPage(int $courseId, string $creationMode, string $name, array $viewTree = null,
+                                   int $viewRoot = null, ?string $visibleFrom = null, ?string $visibleUntil = null): Page
     {
         self::trim($name, $visibleFrom, $visibleUntil);
-        self::validatePage($name, false, $visibleFrom, $visibleUntil);
+        self::validatePage($courseId, $name, false, $visibleFrom, $visibleUntil);
 
-        // Add view tree of page
-        $viewRoot = ViewHandler::insertViewTree($viewTree ?? ViewHandler::ROOT_VIEW, $courseId);
+        if ($creationMode == CreationMode::BY_VALUE) {
+            if (!$viewTree) $viewTree = ViewHandler::ROOT_VIEW;
+            $viewRoot = ViewHandler::insertViewTree($viewTree, $courseId);
+
+        } else if ($creationMode == CreationMode::BY_REFERENCE) {
+            if (is_null($viewRoot))
+                throw new Exception("Can't add page by reference: no view root given.");
+        }
+
 
         // Insert in database
+        $now = date("Y-m-d H:i:s", time());
+        $isVisible = ($visibleFrom && Time::isBefore($visibleFrom, $now)) && (!$visibleUntil || Time::isAfter($visibleUntil, $now));
         $id = Core::database()->insert(self::TABLE_PAGE, [
             "course" => $courseId,
             "name" => $name,
+            "isVisible" => +$isVisible,
             "viewRoot" => $viewRoot,
             "visibleFrom" => $visibleFrom,
             "visibleUntil" => $visibleUntil
         ]);
+
+        // Set position
+        if ($isVisible) {
+            $coursePages = self::getPages($courseId);
+            Utils::updateItemPosition(null, count($coursePages), self::TABLE_PAGE, "position", $id, $coursePages);
+        }
 
         // Set automations
         $page = new Page($id);
@@ -335,27 +406,25 @@ class Page
     }
 
     /**
-     * Adds a page to the database by copying from another
-     * existing page.
+     * Copies an existing page.
      *
-     * @param int $copyFrom
+     * @param string $creationMode
      * @return Page
      * @throws Exception
      */
-    public static function copyPage(int $copyFrom): Page
+    public function copyPage(string $creationMode): Page
     {
-        $pageToCopy = Page::getPageById($copyFrom);
-        if (!$pageToCopy) throw new Exception("Page to copy from with ID = " . $copyFrom . " doesn't exist.");
-        $pageInfo = $pageToCopy->getData();
+        $pageInfo = $this->getData();
 
-        // Create copy
+        // Copy page
         $name = $pageInfo["name"] . " (Copy)";
-        $viewTree = ViewHandler::buildView($pageInfo["viewRoot"]);
-        return self::addPage($pageInfo["course"], $name, $viewTree, $pageInfo["visibleFrom"], $pageInfo["visibleUntil"]);
+        $viewTree = $creationMode === CreationMode::BY_VALUE ? ViewHandler::buildView($pageInfo["viewRoot"], null, true) : null;
+        $viewRoot = $creationMode === CreationMode::BY_REFERENCE ? $pageInfo["viewRoot"] : null;
+        return self::addPage($pageInfo["course"], $creationMode, $name, $viewTree, $viewRoot);
     }
 
     /**
-     * Edits an existing page in database.
+     * Edits an existing page in the database.
      * Returns the edited page.
      *
      * @param string $name
@@ -363,11 +432,12 @@ class Page
      * @param string|null $visibleFrom
      * @param string|null $visibleUntil
      * @param int|null $position
+     * @param array|null $viewTreeChanges
      * @return Page
      * @throws Exception
      */
     public function editPage(string $name, bool $isVisible, ?string $visibleFrom = null, ?string $visibleUntil = null,
-                             ?int $position = null): Page
+                             ?int $position = null, ?array $viewTreeChanges = null): Page
     {
         $this->setData([
             "name" => $name,
@@ -376,25 +446,46 @@ class Page
             "visibleUntil" => $visibleUntil,
             "position" => $position
         ]);
-        $this->refreshUpdateTimestamp();
+
+        // Update view tree, if changes were made
+        if ($viewTreeChanges) {
+            $logs = $viewTreeChanges["logs"];
+            $views = $viewTreeChanges["views"];
+            Logging::processLogs($logs, $views, $this->getCourse()->getId());
+        }
 
         // Update automations
         $this->setAutomation("AutoEnabling", $visibleFrom);
         $this->setAutomation("AutoDisabling", $visibleUntil);
 
+        $this->refreshUpdateTimestamp();
         return $this;
     }
 
     /**
      * Deletes a page from the database and removes all its views.
+     * Option to keep views linked to page (created by reference)
+     * intact or to replace them by a placeholder view.
      *
      * @param int $pageId
+     * @param bool $keepLinked
      * @return void
+     * @throws Exception
      */
-    public static function deletePage(int $pageId)
+    public static function deletePage(int $pageId, bool $keepLinked = true)
     {
         $page = Page::getPageById($pageId);
-        ViewHandler::deleteViewTree($page->getViewRoot());
+        if ($page) {
+            // Delete page view tree
+            ViewHandler::deleteViewTree($pageId, $page->getViewRoot(), $keepLinked);
+
+            // Remove automations
+            $page->setAutomation("AutoEnabling", null);
+            $page->setAutomation("AutoDisabling", null);
+
+            // Delete from database
+            Core::database()->delete(self::TABLE_PAGE, ["id" => $pageId]);
+        }
     }
 
     /**
@@ -425,18 +516,22 @@ class Page
 
     /**
      * Renders a page for a given viewer and user.
+     * Option to render page with mocked data instead.
      *
      * @param int $viewerId
      * @param int|null $userId
+     * @param bool $mockedData
      * @return array
      * @throws Exception
      */
-    public function renderPage(int $viewerId, int $userId = null): array
+    public function renderPage(int $viewerId, int $userId = null, bool $mockedData = false): array
     {
+        // NOTE: user defaults as viewer if no user directly passed
         $userId = $userId ?? $viewerId;
+
         $pageInfo = $this->getData("course, viewRoot");
-        $paramsToPopulate = ["course" => $pageInfo["course"], "viewer" => $viewerId, "user" => $userId];
         $sortedAspects = Aspect::getAspectsByViewerAndUser($pageInfo["course"], $viewerId, $userId, true);
+        $paramsToPopulate = $mockedData ? true : ["course" => $pageInfo["course"], "viewer" => $viewerId, "user" => $userId];
         return ViewHandler::renderView($pageInfo["viewRoot"], $sortedAspects, $paramsToPopulate);
     }
 
@@ -466,12 +561,14 @@ class Page
             throw new Exception("Need either viewer ID or an aspect to preview a page.");
 
         // Render for a specific viewer and user
-        if ($viewerId) return $this->renderPage($viewerId, $userId);
+        if ($viewerId) return $this->renderPage($viewerId, $userId, true);
 
         // Render for a specific aspect
         $pageInfo = $this->getData("course, viewRoot");
+        $aspectParams = "id, viewerRole, userRole";
         $defaultAspect = Aspect::getAspectBySpecs($pageInfo["course"], null, null);
-        return ViewHandler::renderView($pageInfo["viewRoot"], [$aspect, $defaultAspect], true);
+        $sortedAspects = [$aspect->getData($aspectParams), $defaultAspect->getData($aspectParams)];
+        return ViewHandler::renderView($pageInfo["viewRoot"], $sortedAspects, true);
     }
 
 
@@ -487,7 +584,7 @@ class Page
      * @return void
      * @throws Exception
      */
-    private function setAutomation(string $script, ...$data)
+    public function setAutomation(string $script, ...$data)
     {
         switch ($script) {
             case "AutoEnabling":
@@ -511,9 +608,9 @@ class Page
      * @return void
      * @throws Exception
      */
-    private function setAutoEnabling(?string $startDate)
+    public function setAutoEnabling(?string $startDate)
     {
-        $script = ROOT_PATH . "models/GameCourse/Views/Page/AutoEnablingScript.php";
+        $script = ROOT_PATH . "models/GameCourse/Views/Page/scripts/AutoEnablingScript.php";
         if ($startDate) new CronJob($script, CronJob::dateToExpression($startDate), $this->id);
         else CronJob::removeCronJob($script, $this->id);
     }
@@ -526,11 +623,116 @@ class Page
      * @return void
      * @throws Exception
      */
-    private function setAutoDisabling(?string $endDate)
+    public function setAutoDisabling(?string $endDate)
     {
-        $script = ROOT_PATH . "models/GameCourse/Views/Page/AutoDisablingScript.php";
+        $script = ROOT_PATH . "models/GameCourse/Views/Page/scripts/AutoDisablingScript.php";
         if ($endDate) new CronJob($script, CronJob::dateToExpression($endDate), $this->id);
         else CronJob::removeCronJob($script, $this->id);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------ Import/Export ------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Imports pages into a given course from a .zip file.
+     * Returns the nr. of pages imported.
+     *
+     * @param int $courseId
+     * @param string $contents
+     * @param bool $replace
+     * @return int
+     * @throws Exception
+     */
+    public static function importPages(int $courseId, string $contents, bool $replace = true): int
+    {
+        // Create a temporary folder to work with
+        $tempFolder = ROOT_PATH . "temp/" . time();
+        mkdir($tempFolder, 0777, true);
+
+        // Extract contents
+        $zipPath = $tempFolder . "/pages.zip";
+        Utils::uploadFile($tempFolder, $contents, "pages.zip");
+        $zip = new ZipArchive();
+        if (!$zip->open($zipPath)) throw new Exception("Failed to create zip archive.");
+        $zip->extractTo($tempFolder);
+        $zip->close();
+        Utils::deleteFile($tempFolder, "pages.zip");
+
+        // Import pages
+        $nrPagesImported = 0;
+        $files = Utils::getDirectoryContents($tempFolder . "/");
+        foreach ($files as $fileInfo) {
+            $pageName = str_replace($fileInfo["extension"], "", $fileInfo["name"]);
+            $viewTree = json_decode(file_get_contents($tempFolder . "/" . $fileInfo["name"]), true);
+
+            $page = self::getPageByName($courseId, $pageName);
+            if ($page) { // page already exists
+                if ($replace) { // replace
+                    // Set invisible
+                    $page->setVisible(false);
+                    $page->setVisibleFrom(null);
+                    $page->setVisibleUntil(null);
+
+                    // Reset timestamps
+                    $now = date("Y/m/d H:i:s", time());
+                    $page->setCreationTimestamp($now);
+                    $page->setUpdateTimestamp($now);
+
+                    // Replace view tree
+                    $oldRoot = $page->getViewRoot();
+                    $root = ViewHandler::insertViewTree($viewTree, $courseId);
+                    $page->setViewRoot($root);
+                    ViewHandler::deleteViewTree($page->id, $oldRoot);
+                }
+
+            } else { // page doesn't exist
+                Page::addPage($courseId, CreationMode::BY_VALUE, $pageName, $viewTree);
+                $nrPagesImported++;
+            }
+        }
+
+        // Remove temporary folder
+        Utils::deleteDirectory($tempFolder);
+        if (Utils::getDirectorySize(ROOT_PATH . "temp") == 0)
+            Utils::deleteDirectory(ROOT_PATH . "temp");
+
+        return $nrPagesImported;
+    }
+
+    /**
+     * Exports pages of a given course to a .zip file containing
+     * each of their view trees.
+     *
+     * @param int $courseId
+     * @param array $pageIds
+     * @return array
+     * @throws Exception
+     */
+    public static function exportPages(int $courseId, array $pageIds): array
+    {
+        $course = new Course($courseId);
+
+        // Create a temporary folder to work with
+        $tempFolder = ROOT_PATH . "temp/" . time();
+        mkdir($tempFolder, 0777, true);
+
+        // Create zip archive to store pages' view trees
+        // NOTE: This zip will be automatically deleted after download is complete
+        $zipPath = $tempFolder . "/" . Utils::strip($course->getShort() ?? $course->getName(), "_") . "-pages.zip";
+        $zip = new ZipArchive();
+        if (!$zip->open($zipPath, ZipArchive::CREATE))
+            throw new Exception("Failed to create zip archive.");
+
+        $pagesToExport = array_values(array_filter(self::getPages($courseId), function ($page) use ($pageIds) { return in_array($page["id"], $pageIds); }));
+        foreach ($pagesToExport as $pageInfo) {
+            $viewTree = ViewHandler::buildView($pageInfo["viewRoot"], null, true);
+            $zip->addFromString($pageInfo["name"] . ".txt", json_encode($viewTree, JSON_PRETTY_PRINT));
+        }
+
+        $zip->close();
+        return ["extension" => ".zip", "path" => str_replace(ROOT_PATH, API_URL . "/", $zipPath)];
     }
 
 
@@ -541,6 +743,7 @@ class Page
     /**
      * Validates page parameters.
      *
+     * @param int $courseId
      * @param $name
      * @param $isVisible
      * @param $visibleFrom
@@ -548,9 +751,9 @@ class Page
      * @return void
      * @throws Exception
      */
-    private static function validatePage($name, $isVisible, $visibleFrom, $visibleUntil)
+    private static function validatePage(int $courseId, $name, $isVisible, $visibleFrom, $visibleUntil)
     {
-        self::validateName($name);
+        self::validateName($courseId, $name);
         self::validateDateTime($visibleFrom);
         self::validateDateTime($visibleUntil);
         self::validateVisibleFromAndUntilDates($visibleFrom, $visibleUntil);
@@ -564,13 +767,19 @@ class Page
      *
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName(int $courseId, $name, int $pageId = null)
     {
         if (!is_string($name) || empty($name))
             throw new Exception("Page name can't be null neither empty.");
 
-        if (iconv_strlen($name) > 25)
-            throw new Exception("Page name is too long: maximum of 25 characters.");
+        if (iconv_strlen($name) > 100)
+            throw new Exception("Page name is too long: maximum of 100 characters.");
+
+        $whereNot = [];
+        if ($pageId) $whereNot[] = ["id", $pageId];
+        $pageNames = array_column(Core::database()->selectMultiple(self::TABLE_PAGE, ["course" => $courseId], "name", null, $whereNot), "name");
+        if (in_array($name, $pageNames))
+            throw new Exception("Duplicate page name: '$name'");
     }
 
     /**

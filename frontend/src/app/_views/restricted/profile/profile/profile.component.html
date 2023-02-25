@@ -8,7 +8,7 @@
 
         <div class="relative">
           <!-- Background -->
-          <div class="bg-accent bg-opacity-75 h-40"></div>
+          <div class="bg-accent bg-opacity-75 h-40 rounded-t-2xl"></div>
 
           <!-- Profile picture -->
           <div class="absolute top-1/2 h-[9.5rem] flex flex-wrap justify-center w-full">
@@ -59,8 +59,7 @@
             <app-input-file
               [id]="'user-photo'"
               [form]="f"
-              [accept]="'.png, .jpg, .jpeg'"
-              [camera]="true"
+              [accept]="['.png', '.jpg', '.jpeg']"
               [size]="'xs'"
               [color]="'primary'"
               [classList]="'w-full'"
@@ -69,7 +68,7 @@
           </div>
         </div>
 
-        <ng-container *ngIf="loggedUser.isAdmin" [ngTemplateOutlet]="ADMIN" [ngTemplateOutletContext]="{form: f}"></ng-container>
+        <ng-container *ngIf="loggedUser.isAdmin || isATeacher" [ngTemplateOutlet]="ADMIN" [ngTemplateOutletContext]="{form: f}"></ng-container>
         <ng-container *ngIf="!loggedUser.isAdmin" [ngTemplateOutlet]="NON_ADMIN" [ngTemplateOutletContext]="{form: f}"></ng-container>
 
         <!-- Action buttons -->

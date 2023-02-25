@@ -14,6 +14,7 @@ import {User} from "../../../_domain/users/user";
 import {Course} from 'src/app/_domain/courses/course';
 import {ResourceManager} from "../../../_utils/resources/resource-manager";
 import {Notification} from '../../../_domain/notifications/notification';
+import {Theme} from "../../../_services/theming/themes-available";
 
 
 @Component({
@@ -28,6 +29,8 @@ export class NavbarComponent implements OnInit {
 
   notifications: Notification[] = [];
   mode: "new" | "notNew";
+
+  theme: Theme;
 
   // FIXME: navbar space should be configurable in modules
   hasTokensEnabled: boolean;
@@ -71,6 +74,7 @@ export class NavbarComponent implements OnInit {
         this.getLoggedUser();
       }
     });
+    this.theme = this.themeService.getTheme();
   }
 
 
@@ -140,8 +144,10 @@ export class NavbarComponent implements OnInit {
 
   bgColor(notification?: Notification){
     if (!notification || this.isShowed(notification)){
-      return "bg-gray-50";
-    } else {return "bg-rose-100 text-black hover:bg-rose-200";}
+      return this.theme === Theme.DARK ? "bg-gray-500 text-gray-300" : "bg-gray-200";
+    } else {
+      return "bg-rose-200 text-black hover:bg-rose-300";
+    }
   }
 
   getCount(){

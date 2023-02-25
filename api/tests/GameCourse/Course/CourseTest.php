@@ -13,6 +13,7 @@ use GameCourse\Module\Module;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
+use GameCourse\Views\CreationMode;
 use GameCourse\Views\Page\Page;
 use GameCourse\Views\ViewHandler;
 use PDOException;
@@ -355,7 +356,7 @@ class CourseTest extends TestCase
     {
         $course = Course::addCourse("Multimedia Content Production", "MCP", "2021-2022", "#ffffff",
             null, null, true, true);
-        $page = Page::addPage($course->getId(), "Landing Page");
+        $page = Page::addPage($course->getId(), CreationMode::BY_VALUE, "Landing Page");
         $course->setLandingPage($page->getId());
         $this->assertEquals($page, $course->getLandingPage());
     }
@@ -626,7 +627,7 @@ class CourseTest extends TestCase
     {
         $course = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
-        $page = Page::addPage($course->getId(), "Landing Page");
+        $page = Page::addPage($course->getId(), CreationMode::BY_VALUE, "Landing Page");
 
         $course->setLandingPage($page->getId());
         $this->assertEquals($page, $course->getLandingPage());
@@ -646,7 +647,7 @@ class CourseTest extends TestCase
         $course2 = Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2022-2023", "#ffffff",
             null, null, true, false);
 
-        $page = Page::addPage($course1->getId(), "Landing Page");
+        $page = Page::addPage($course1->getId(), CreationMode::BY_VALUE, "Landing Page");
 
         $this->expectException(Exception::class);
         try {
@@ -803,7 +804,7 @@ class CourseTest extends TestCase
             $course->setData(["name" => "Produção de Conteúdos Multimédia"]);
             $this->fail("Exception should have been thrown on 'setDataDuplicateNameAndYear'");
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertEquals("Multimedia Content Production", $course->getName());
             $this->assertTrue(file_exists($course->getDataFolder(true, "Multimedia Content Production")));
             $this->assertFalse(file_exists($course->getDataFolder(true, "Produção de Conteúdos Multimédia")));
@@ -1097,7 +1098,7 @@ class CourseTest extends TestCase
     {
         Course::addCourse("Produção de Conteúdos Multimédia", "MCP", "2021-2022", "#000000",
             null, null, true, false);
-        $this->expectException(PDOException::class);
+        $this->expectException(Exception::class);
         Course::addCourse("Produção de Conteúdos Multimédia", "PCM", "2021-2022", "#ffffff",
             null, null, true, false);
     }
@@ -1168,7 +1169,7 @@ class CourseTest extends TestCase
             null, null, true, false);
         $course = Course::addCourse("Computação Móvel e Ubíqua", "CMU", "2020-2021", "#000000",
             null, null, true, false);
-        $this->expectException(PDOException::class);
+        $this->expectException(Exception::class);
         $course->editCourse("Produção de Conteúdos Multimédia", "CMU", "2021-2022", "#000000", null,
         null, true, false);
     }
@@ -1614,7 +1615,7 @@ class CourseTest extends TestCase
         $this->assertIsArray($courseUsers);
         $this->assertCount(3, $courseUsers);
 
-        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive", "lastActivity", "isActiveInCourse", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($courseUsers as $i => $courseUser) {

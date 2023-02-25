@@ -468,7 +468,7 @@ class LevelTest extends TestCase
         try {
             Level::addLevel($this->courseId, 0, null);
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertCount(1, Level::getLevels($this->courseId));
         }
     }
@@ -515,7 +515,7 @@ class LevelTest extends TestCase
         try {
             $level->editLevel(2000, "Some description");
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertEquals(5000, $level->getMinXP());
         }
     }

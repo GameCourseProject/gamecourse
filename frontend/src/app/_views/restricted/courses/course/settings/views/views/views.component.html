@@ -237,7 +237,7 @@
   <div class="warning">Please select a .txt file to be imported</div>
   <app-input-file
     [id]="'import_template'"
-    [accept]="'.txt'"
+    [accept]="['.txt']"
     [classList]="'config_input'"
     (valueChange)="onFileSelected($event)">
   </app-input-file>

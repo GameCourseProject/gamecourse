@@ -31,7 +31,7 @@ class GoogleSheetsController
         API::requireCourseAdminPermission($course);
 
         $googleSheets = new GoogleSheets($course);
-        API::response($googleSheets->getGoogleSheetsConfig());
+        API::response(["config" => $googleSheets->getGoogleSheetsConfig(), "needsAuth" => !$googleSheets->getAccessToken()]);
     }
 
     public function saveConfig()
@@ -44,8 +44,8 @@ class GoogleSheetsController
         API::requireCourseAdminPermission($course);
 
         $spreadsheetId = API::getValue("spreadsheetId");
-        $sheetNames = API::getValue("sheetNames");
-        $ownerNames = API::getValue("ownerNames");
+        $sheetNames = API::getValue("sheetNames", "array");
+        $ownerNames = API::getValue("ownerNames", "array");
 
         $googleSheets = new GoogleSheets($course);
         $googleSheets->saveGoogleSheetsConfig($spreadsheetId, $sheetNames, $ownerNames);
@@ -68,7 +68,7 @@ class GoogleSheetsController
         $credentials = API::getValue("credentials");
         $googleSheets = new GoogleSheets($course);
 
-        $googleSheets->saveCredentials($credentials);
-        API::response($googleSheets->getAuthURL());
+        $authURL = $googleSheets->saveCredentials($credentials);
+        API::response($authURL);
     }
 }

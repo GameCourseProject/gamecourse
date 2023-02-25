@@ -16,9 +16,11 @@ use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\Module\Moodle\Moodle;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 use Google\Service\DriveActivity\Edit;
+use GameCourse\Views\Dictionary\ReturnType;
 use Utils\Cache;
 use Utils\Utils;
 
@@ -79,7 +81,9 @@ class Badges extends Module
     {
         $this->initDatabase();
         $this->createDataFolder();
+        $this->initTemplates();
         $this->initRules();
+        $this->initProviders();
 
         // Init config
         Core::database()->insert(self::TABLE_BADGE_CONFIG, ["course" => $this->course->getId()]);
@@ -88,6 +92,64 @@ class Badges extends Module
         $this->addAdaptationRolesToCourse(self::ADAPTATION_BADGES);
         //initEvents(); // FIXME: Debug only
         GameElement::addGameElement($this->course->getId(), self::ID);
+    }
+
+    public function providers(): array
+    {
+        $badgeDistribution =  [
+            "name" => "badgeDistribution",
+            "description" => "Provides a distribution of the total number of badges of given users. Option for interval to group badges, max. number of badges and whether to show an average of each interval group.",
+            "returnType" => ReturnType::COLLECTION,
+            "function" => "\$badgeDistribution = [[\"name\" => \"Badge Distribution\", \"type\" => \"column\", \"data\" => []]];
+        if (\$showAverage) \$badgeDistribution[] = [\"name\" => \"Average\", \"type\" => \"line\", \"data\" => []];
+        if (\$interval > \$max) \$interval = 1;
+
+        if (Core::dictionary()->mockData()) {
+            if (is_null(\$max)) \$max = 60;
+            for (\$i = (\$interval === 1 ? 0 : \$interval); \$i <= \$max; \$i += \$interval) {
+                \$badgeDistribution[0][\"data\"][] = [\"x\" => \$i, \"y\" => Core::dictionary()->faker()->numberBetween(0, 50)];
+                if (\$showAverage) \$badgeDistribution[1][\"data\"][] = [\"x\" => \$i, \"y\" => Core::dictionary()->faker()->numberBetween(0, 50)];
+            }
+
+        } else {
+            \$course = Core::dictionary()->getCourse();
+            if (!\$course) throw new Exception(\"Can't calculate badge distribution: no course found.\");
+
+            \$userIds = array_map(function (\$user) { if (is_array(\$user)) return \$user[\"id\"]; return \$user->getId(); }, \$users);
+            \$nrUsers = count(\$userIds);
+
+            if (\$nrUsers !== 0) {
+                // Get each user #badges
+                \$badgesByUser = [];
+                foreach (\$userIds as \$userId) {
+                    \$badgesModules = new \GameCourse\Module\Badges\Badges(\$course);
+                    \$badgesByUser[] = count(\$badgesModules->getUserBadges(\$userId));
+                }
+
+                // Initialize data
+                if (is_null(\$max)) \$max = ceil(max(\$badgesByUser) / \$interval) * \$interval;
+                for (\$i = (\$interval === 1 ? 0 : \$interval); \$i <= \$max; \$i += \$interval) {
+                    \$badgeDistribution[0][\"data\"][] = [\"x\" => \$i, \"y\" => 0];
+                    if (\$showAverage) \$badgeDistribution[1][\"data\"][] = [\"x\" => \$i, \"y\" => 0];
+                }
+
+                // Process data
+                foreach (\$badgesByUser as \$userBadges) {
+                    \$i = \$interval === 1 ? \$userBadges : (\$userBadges === \$interval ? floor(\$userBadges / \$interval) - 1 : floor(\$userBadges / \$interval));
+                    \$badgeDistribution[0][\"data\"][\$i][\"y\"] += 1;
+                    if (\$showAverage) {
+                        if (\$badgeDistribution[1][\"data\"][\$i][\"y\"] === 0) \$badgeDistribution[1][\"data\"][\$i][\"y\"] = round(\$userBadges / \$nrUsers);
+                        else \$badgeDistribution[1][\"data\"][\$i][\"y\"] += round(\$userBadges / \$nrUsers);
+                    }
+                }
+            }
+        }
+
+        return new ValueNode(\$badgeDistribution, Core::dictionary()->getLibraryById(CollectionLibrary::ID));",
+            "args" => ["array \$users", "int \$interval = 1", "int \$max = null", "bool \$showAverage = false"]
+        ];
+
+        return [$badgeDistribution];
     }
 
     /**
@@ -120,7 +182,9 @@ class Badges extends Module
         GameElement::removeGameElement($this->course->getId(), self::ID);
         $this->cleanDatabase();
         $this->removeDataFolder();
+        $this->removeTemplates();
         $this->removeRules();
+        $this->removeProviders();
     }
 
 
@@ -295,7 +359,7 @@ class Badges extends Module
                                     "type" => InputType::FILE,
                                     "id" => "image",
                                     "options" => [
-                                        "accept" => ".svg, .png, .jpg, .jpeg",
+                                        "accept" => [".svg", ".png", ".jpg", ".jpeg"],
                                         "size" => "xs",
                                         "color" => "primary",
                                         "label" => "Image"
@@ -520,7 +584,7 @@ class Badges extends Module
                                     "scope" => ActionScope::ALL,
                                     "id" => "image",
                                     "options" => [
-                                        "accept" => ".svg, .png, .jpg, .jpeg",
+                                        "accept" => [".svg", ".png", ".jpg", ".jpeg"],
                                         "size" => "xs",
                                         "color" => "primary",
                                         "label" => "Image"
@@ -944,6 +1008,11 @@ class Badges extends Module
         Core::database()->update(self::TABLE_BADGE_CONFIG, ["maxExtraCredit" => $max], ["course" => $this->course->getId()]);
     }
 
+    public function getBlankImage(): string
+    {
+        return API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . $this->id . "/assets/blank.png";
+    }
+
 
     /*** ---------- Badges ---------- ***/
 
@@ -1012,16 +1081,65 @@ class Badges extends Module
     {
         $courseId = $this->getCourse()->getId();
 
-        $cacheId = "badge_progression_b" . $badgeId . "_u" . $userId;
+        $cacheId = "badge_progression_u" . $userId . "_b" . $badgeId;
         $cacheValue = Cache::get($courseId, $cacheId);
 
-        if (AutoGame::isRunning($courseId) && !is_null($cacheValue)) {
+        if (AutoGame::isRunning($courseId) && !empty($cacheValue)) {
             // NOTE: get value from cache while AutoGame is running
             //       since progression table is not stable
             return $cacheValue;
 
         } else {
-            // TODO
+            $progression = Core::database()->select(self::TABLE_BADGE_PROGRESSION,
+                ["user" => $userId, "badge" => $badgeId], "COUNT(*)");
+
+            // Store in cache
+            $cacheValue = $progression;
+            Cache::store($courseId, $cacheId, $cacheValue);
+
+            return $progression;
+        }
+    }
+
+    /**
+     * Gets user progression information on a given badge,
+     * e.g. description and links to posts.
+     *
+     * @param int $userId
+     * @param int $badgeId
+     * @return array
+     */
+    public function getUserBadgeProgressionInfo(int $userId, int $badgeId): array
+    {
+        $courseId = $this->getCourse()->getId();
+
+        $cacheId = "badge_progression_info_u" . $userId . "_b" . $badgeId;
+        $cacheValue = Cache::get($courseId, $cacheId);
+
+        if (AutoGame::isRunning($courseId) && !empty($cacheValue)) {
+            // NOTE: get value from cache while AutoGame is running
+            //       since progression table is not stable
+            return $cacheValue;
+
+        } else {
+            $table = self::TABLE_BADGE_PROGRESSION . " bp LEFT JOIN " . AutoGame::TABLE_PARTICIPATION . " p on bp.participation=p.id";
+            $progression = array_map(function ($p) {
+                $info = ["description" => $p["description"]];
+                if ($p["post"]) {
+                    if ($p["source"] === Moodle::ID) {
+                        $moodleModule = new Moodle($this->course);
+                        $moodleURL = $moodleModule->getMoodleConfig()["moodleURL"];
+                        $info["link"] = $moodleURL . (substr($moodleURL, -1) !== "/" ? "/" : "") . $p["post"];
+                    }
+                }
+                return $info;
+            }, Core::database()->selectMultiple($table, ["bp.user" => $userId, "bp.badge" => $badgeId], "p.*"));
+
+            // Store in cache
+            $cacheValue = $progression;
+            Cache::store($courseId, $cacheId, $cacheValue);
+
+            return $progression;
         }
     }
 

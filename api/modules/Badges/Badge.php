@@ -214,6 +214,7 @@ class Badge
      */
     public function setData(array $fieldValues)
     {
+        $courseId = $this->getCourse()->getId();
         $rule = $this->getRule();
 
         // Trim values
@@ -222,7 +223,7 @@ class Badge
         // Validate data
         if (key_exists("name", $fieldValues)) {
             $newName = $fieldValues["name"];
-            self::validateName($newName);
+            self::validateName($courseId, $newName, $this->id);
             $oldName = $this->getName();
         }
         if (key_exists("description", $fieldValues)) {
@@ -363,7 +364,7 @@ class Badge
                                     bool $isBragging, bool $isCount, bool $isPost, bool $isPoint, array $levels): Badge
     {
         self::trim($name, $description);
-        self::validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels);
+        self::validateBadge($courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels);
 
         // Create badge rule
         $rule = self::addRule($courseId, $name, $description, $isPoint, $levels);
@@ -431,7 +432,7 @@ class Badge
      * @return void
      * @throws Exception
      */
-    public function copyBadge(Course $copyTo)
+    public function copyBadge(Course $copyTo): Badge
     {
         $badgeInfo = $this->getData();
 
@@ -451,6 +452,8 @@ class Badge
 
         // Copy rule
         $this->getRule()->mirrorRule($copiedBadge->getRule());
+
+        return $copiedBadge;
     }
 
     /**
@@ -504,6 +507,7 @@ class Badge
             $level["goal"] = intval($level["goal"]);
             $level["reward"] = intval($level["reward"]);
             $level["tokens"] = intval($level["tokens"]);
+            $level["image"] = $this->getImage(); // FIXME: add overlay on image
         }
         return $levels;
     }
@@ -829,7 +833,7 @@ class Badge
 
         // Create zip archive to store badges' info
         // NOTE: This zip will be automatically deleted after download is complete
-        $zipPath = $tempFolder . "/" . ($course->getShort() ?? $course->getName()) . "-badges.zip";
+        $zipPath = $tempFolder . "/" . Utils::strip($course->getShort() ?? $course->getName(), '_') . "-badges.zip";
         $zip = new ZipArchive();
         if (!$zip->open($zipPath, ZipArchive::CREATE))
             throw new Exception("Failed to create zip archive.");
@@ -875,6 +879,7 @@ class Badge
     /**
      * Validates badge parameters.
      *
+     * @param int $courseId
      * @param $name
      * @param $description
      * @param $isExtra
@@ -886,9 +891,9 @@ class Badge
      * @return void
      * @throws Exception
      */
-    private static function validateBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels)
+    private static function validateBadge(int $courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels)
     {
-        self::validateName($name);
+        self::validateName($courseId, $name);
         self::validateDescription($description);
         if (!is_bool($isExtra)) throw new Exception("'isExtra' must be either true or false.");
         if (!is_bool($isBragging)) throw new Exception("'isBragging' must be either true or false.");
@@ -901,11 +906,13 @@ class Badge
     /**
      * Validates badge name.
      *
+     * @param int $courseId
      * @param $name
+     * @param int|null $badgeId
      * @return void
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName(int $courseId, $name, int $badgeId = null)
     {
         if (!is_string($name) || empty(trim($name)))
             throw new Exception("Badge name can't be null neither empty.");
@@ -916,6 +923,12 @@ class Badge
 
         if (iconv_strlen($name) > 50)
             throw new Exception("Badge name is too long: maximum of 50 characters.");
+
+        $whereNot = [];
+        if ($badgeId) $whereNot[] = ["id", $badgeId];
+        $badgeNames = array_column(Core::database()->selectMultiple(self::TABLE_BADGE, ["course" => $courseId], "name", null, $whereNot), "name");
+        if (in_array($name, $badgeNames))
+            throw new Exception("Duplicate badge name: '$name'");
     }
 
     /**

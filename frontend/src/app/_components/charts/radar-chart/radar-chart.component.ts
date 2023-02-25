@@ -1,118 +1,141 @@
 import {Component, Input, OnInit, ViewChild} from '@angular/core';
+
+import {dataLabels, general, legend, markers, stroke, subtitle, title, tooltip, update, xaxis} from "../ChartOptions";
+import {BGDarkColor, BGLightColor, LineColor, TextColor} from "../ChartColors";
+
+import {ThemingService} from "../../../_services/theming/theming.service";
+import {UpdateService, UpdateType} from "../../../_services/update.service";
+
 import {
   ApexAxisChartSeries,
   ApexChart,
-  ApexDataLabels, ApexFill,
-  ApexGrid, ApexMarkers, ApexPlotOptions,
+  ApexDataLabels,
+  ApexLegend, ApexMarkers, ApexPlotOptions,
   ApexStroke, ApexTitleSubtitle, ApexTooltip,
   ApexXAxis,
   ApexYAxis, ChartComponent
 } from "ng-apexcharts";
-import {exists} from "../../../_utils/misc/misc";
-import * as _ from "lodash";
+import {Theme} from "../../../_services/theming/themes-available";
 
 export type ChartOptions = {
   series: ApexAxisChartSeries;
   chart: ApexChart;
-  xaxis: ApexXAxis;
-  yaxis: ApexYAxis;
+  colors: string[];
   dataLabels: ApexDataLabels;
-  grid: ApexGrid;
-  stroke: ApexStroke;
-  title: ApexTitleSubtitle;
-  tooltip: ApexTooltip;
-  fill: ApexFill;
+  legend: ApexLegend;
   markers: ApexMarkers;
   plotOptions: ApexPlotOptions;
-  colors: string[];
+  stroke: ApexStroke;
+  subtitle: ApexTitleSubtitle;
+  title: ApexTitleSubtitle;
+  tooltip: ApexTooltip;
+  xaxis: ApexXAxis;
+  yaxis: ApexYAxis;
 };
 
 @Component({
   selector: 'app-radar-chart',
-  templateUrl: './radar-chart.component.html',
-  styleUrls: ['./radar-chart.component.scss']
+  templateUrl: './radar-chart.component.html'
 })
 export class RadarChartComponent implements OnInit {
 
   // Essentials
-  @Input() id: string;                                                      // Chart ID
-  @Input() series: any[];                                                   // Actual data
-  @Input() xAxisType: 'category' | 'datetime' | 'numeric';                  // Type of X-axis
-  @Input() categories: any[];                                               // X-axis
-  @Input() axisMax: number[];                                               // Max values for axis
+  @Input() id: string;                                                      // Unique ID
+  @Input() series: ApexAxisChartSeries;                                     // Data series to plot
+  @Input() classList?: string;                                              // Classes to add
 
   // Size
-  @Input() width?: number;                                                  // Chart width
-  @Input() height?: number;                                                 // Chart height
+  @Input() height?: string = 'auto';                                         // Chart height
+  @Input() width?: string = '100%';                                          // Chart width
+
+  // Colors
+  @Input() colors?: string[];                                               // Colors for data series
+
+  // DataLabels
+  @Input() dataLabels?: boolean;                                            // Show data labels
+  @Input() dataLabelsOnSeries?: number[];                                   // Show data labels only on specific series
+  @Input() dataLabelsFormatter?: string;                                    // Data labels formatter expression
+
+  // Grid
+  @Input() stripedGrid?: boolean;                                           // Show striped grid
+
+  // Legend
+  @Input() legend?: boolean;                                                // Show legend
+  @Input() legendPosition?: 'top' | 'right' | 'bottom' | 'left' = 'bottom'; // Legend position
+
+  // Markers
+  @Input() markersSize?: number = 6;                                        // Data points marker size
+
+  // Stroke
+  @Input() strokeWidth?: number = 3;                                        // Stroke width
+
+  // Title & Subtitle
+  @Input() title?: string;                                                  // Title for chart
+  @Input() subtitle?: string;                                               // Subtitle for chart
+  @Input() align?: 'left' | 'center' | 'right' = 'left';                    // Title and subtitle alignment
+
+  // Tooltip
+  @Input() tooltip?: boolean = true;                                        // Data points tooltip
+  @Input() tooltipXFormatter?: string;                                      // Tooltip formatter expression for X values
+  @Input() tooltipYFormatter?: string;                                      // Tooltip formatter expression for Y values
+
+  // X-Axis
+  @Input() XAxisType?: 'category' | 'datetime' | 'numeric';                 // Type of X-axis
+  @Input() XAxisCategories?: (string | number)[];                           // Categories for X-axis
 
   // Extras
-  @Input() sparkline?: boolean = false;                                     // Hide everything but primary paths
-  @Input() toolbar?: boolean = false;                                       // Show toolbar with actions
+  @Input() sparkline?: boolean;                                             // Hide everything but primary paths
+  @Input() toolbar?: boolean;                                               // Show toolbar with actions
+  @Input() toolbarActions?: ('download' | 'selection' | 'zoom' |            // Toolbar actions available
+    'zoomin' | 'zoomout' | 'pan' | 'reset')[] = []
 
   @ViewChild("chart") chart: ChartComponent;
   public chartOptions: Partial<ChartOptions>;
 
   readonly CHART_TYPE = 'radar';
 
-  constructor() { }
-
-  originalSeries;
+  constructor(
+    private themeService: ThemingService,
+    private updateManager: UpdateService
+  ) { }
 
   ngOnInit(): void {
-    this.scale();
+    const theme = this.themeService.getTheme();
+
+    // Set chart options
     this.chartOptions = {
       series: this.series,
-      chart: {
-        type: this.CHART_TYPE,
-        sparkline: { enabled: this.sparkline },
-        toolbar: { show: this.toolbar },
-        zoom: { enabled: false }
+      chart: general(this.CHART_TYPE, this.height, this.width, TextColor(theme), this.sparkline, this.toolbar, this.toolbarActions),
+      colors: this.colors,
+      dataLabels: dataLabels(this.dataLabels, this.dataLabelsOnSeries, this.dataLabelsFormatter),
+      legend: legend(this.legend, this.legendPosition),
+      markers: markers(this.markersSize),
+      plotOptions: {
+        radar: {
+          polygons: {
+            strokeColors: !this.sparkline ? LineColor(theme) : 'transparent',
+            connectorColors: !this.sparkline ? LineColor(theme) : 'transparent',
+            fill: {
+              colors: !this.sparkline && this.stripedGrid ? [BGDarkColor(theme), BGLightColor(theme)] : undefined
+            }
+          }
+        }
       },
-      colors: ['#00e396', '#008ffb'],
-      fill: {
-        opacity: 0.3
-      },
-      markers: {
-        strokeColors: ["transparent", "transparent"],
-        fillOpacity: 0.3
-      },
-      grid: {
-        show: false
-      },
-      dataLabels: {
-        enabled: false
-      },
-      xaxis: {
-        type: this.xAxisType,
-        categories: this.categories,
-      },
-      yaxis: {
-        show: false,
-      },
-      tooltip: { }
+      stroke: stroke('smooth', 'round', this.strokeWidth),
+      subtitle: subtitle(this.subtitle, this.align),
+      title: title(this.title, this.align),
+      tooltip: tooltip(!this.sparkline && this.tooltip, {xaxis: this.tooltipXFormatter, yaxis: this.tooltipYFormatter},
+        theme === Theme.DARK ? 'dark' : 'light'),
+      xaxis: xaxis(this.XAxisType, this.XAxisCategories, LineColor(theme))
     };
 
-    if (exists(this.height)) this.chartOptions.chart.height = this.height;
-    if (exists(this.width)) this.chartOptions.chart.width = this.width;
-
-    const that = this;
-    this.chartOptions.tooltip.y = { formatter(val: number, opts?: any): string {
-        return Math.round(that.unscale(val, opts.dataPointIndex)).toString();
+    // Whenever theme changes, update colors
+    this.updateManager.update.subscribe(type => {
+      if (type === UpdateType.THEME) {
+        const theme = this.themeService.getTheme();
+        update(this.chart, this.chartOptions, theme === Theme.DARK ? 'dark' : 'light', this.stripedGrid,
+          {text: TextColor(theme), line: LineColor(theme), bg: {dark: BGDarkColor(theme), light: BGLightColor(theme)}})
       }
-    }
+    });
   }
-
-  scale() {
-    this.originalSeries = _.cloneDeep(this.series);
-    for (let i = 0; i < this.series.length; i++) {
-      for (let j = 0; j < this.series[i]['data'].length; j++) {
-        this.series[i]['data'][j] = this.series[i]['data'][j] * 100 / this.axisMax[j];
-      }
-    }
-  }
-
-  unscale(val: number, index: number) {
-    return val * this.axisMax[index] / 100;
-  }
-
 }

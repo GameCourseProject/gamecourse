@@ -1,198 +1,215 @@
-<ng-container
-  [ngTemplateOutlet]="edit ? EMPTY : view.chartType === ChartType.LINE ? LINE : view.chartType === ChartType.BAR ? BAR :
-                      view.chartType === ChartType.STAR ? STAR : PROGRESS">
+<!-- Display version -->
+<ng-container *ngIf="!edit">
+  <ng-container *ngIf="view.chartType === ChartType.BAR" [ngTemplateOutlet]="DISPLAY_BAR"></ng-container>
+  <ng-container *ngIf="view.chartType === ChartType.COMBO" [ngTemplateOutlet]="DISPLAY_COMBO"></ng-container>
+  <ng-container *ngIf="view.chartType === ChartType.LINE" [ngTemplateOutlet]="DISPLAY_LINE"></ng-container>
+  <ng-container *ngIf="view.chartType === ChartType.PROGRESS" [ngTemplateOutlet]="DISPLAY_PROGRESS"></ng-container>
+  <ng-container *ngIf="view.chartType === ChartType.RADAR" [ngTemplateOutlet]="DISPLAY_RADAR"></ng-container>
+</ng-container>
+
+<!-- Edit version -->
+<ng-container *ngIf="edit">
+  <!-- TODO -->
 </ng-container>
 
 
 <!------------------------------------------------>
-<!------------------ VARIATIONS ------------------>
+<!-------------- DISPLAY VARIATIONS -------------->
 <!------------------------------------------------>
 
-<ng-template #LINE>
+<ng-template #DISPLAY_BAR>
   <div [attr.id]="view.cssId"
-       [classList]="view.class"
-       [attr.style]="view.style"
-       [attr.data-id]="view.id"
-       [attr.data-viewId]="view.viewId"
-       [attr.data-label]="view.label"
-       [attr.data-role]="edit ? view.role : null"
-       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
-       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
-       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
-       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
-       [mode]="view.mode">
+       [classList]="classes"
+       [attr.style]="view.styles">
 
-    <!-- FIXME: some values are hard-coded -->
-
-    <!-- XP Evolution -->
-    <ng-container *ngIf="chartType === 'xpEvolution'">
-      <app-line-chart
-        [id]="'chart-xpEvolution'"
-        [height]="view.info['spark'] ? 20 : 300"
-        [width]="view.info['spark'] ? 50 : 500"
-        [data]="view.info['values'].y"
-        [name]="view.info['labelY']"
-        [xAxisType]="'category'"
-        [categories]="view.info['values'].x"
-        [yAxisMin]="0"
-        [yAxisMax]="20000"
-        [yAxisTickAmount]="10"
-        [xAxisTickAmount]="view.info['values'].x.length > 20 ? 10 : null"
-        [xAxisLabel]="view.info['labelX']"
-        [yAxisLabel]="view.info['labelY']"
-        [sparkline]="!!view.info['spark']">
-      </app-line-chart>
-    </ng-container>
-
-    <!-- Leaderboard Evolution -->
-    <ng-container *ngIf="chartType === 'leaderboardEvolution'">
-      <app-line-chart
-        [id]="'chart-leaderboardEvolution'"
-        [height]="300"
-        [width]="500"
-        [data]="view.info['values'].y"
-        [name]="view.info['labelY']"
-        [xAxisType]="'category'"
-        [categories]="view.info['values'].x"
-        [yAxisMin]="1"
-        [yAxisMax]="view.info['domainY'][1]"
-        [yAxisTickAmount]="10"
-        [xAxisTickAmount]="view.info['values'].x.length > 20 ? 10 : null"
-        [xAxisLabel]="view.info['labelX']"
-        [yAxisLabel]="view.info['labelY']"
-        [yAxisReversed]="true">
-      </app-line-chart>
-    </ng-container>
+    <app-bar-chart
+      [id]="'v' + view.uniqueId.toString()"
+      [series]="view.data"
+      [classList]="view.classList"
+      [annotations]="view.options?.annotations || undefined"
+      [height]="view.options?.height || 'auto'"
+      [width]="view.options?.width || '100%'"
+      [colors]="view.options?.colors || undefined"
+      [dataLabels]="view.options?.dataLabels || undefined"
+      [dataLabelsOnSeries]="view.options?.dataLabelsOnSeries || undefined"
+      [dataLabelsFormatter]="view.options?.dataLabelsFormatter || undefined"
+      [highlight]="view.options?.highlight || undefined"
+      [XAxisGrid]="view.options?.XAxisGrid || undefined"
+      [YAxisGrid]="view.options?.YAxisGrid || undefined"
+      [stripedGrid]="view.options?.stripedGrid || undefined"
+      [legend]="view.options?.legend || undefined"
+      [legendPosition]="view.options?.legendPosition || 'bottom'"
+      [title]="view.options?.title || undefined"
+      [subtitle]="view.options?.subtitle || undefined"
+      [align]="view.options?.align || 'left'"
+      [tooltip]="exists(view.options?.tooltip) ? view.options?.tooltip : true"
+      [tooltipXFormatter]="view.options?.tooltipXFormatter || undefined"
+      [tooltipYFormatter]="view.options?.tooltipYFormatter || undefined"
+      [XAxisType]="view.options?.XAxisType || undefined"
+      [XAxisCategories]="view.options?.XAxisCategories || undefined"
+      [XAxisLabel]="view.options?.XAxisLabel || undefined"
+      [XAxisTickAmount]="view.options?.XAxisTickAmount || undefined"
+      [YAxisLabel]="view.options?.YAxisLabel || undefined"
+      [YAxisMin]="view.options?.YAxisMin || undefined"
+      [YAxisMax]="view.options?.YAxisMax || undefined"
+      [YAxisTickAmount]="view.options?.YAxisTickAmount || undefined"
+      [YAxisReversed]="view.options?.YAxisReversed || undefined"
+      [orientation]="view.options?.orientation || undefined"
+      [borderRadius]="view.options?.borderRadius || 6"
+      [sparkline]="view.options?.sparkline || undefined"
+      [toolbar]="view.options?.toolbar || undefined"
+      [toolbarActions]="view.options?.toolbarActions || []">
+    </app-bar-chart>
   </div>
 </ng-template>
 
-<ng-template #BAR>
+<ng-template #DISPLAY_COMBO>
   <div [attr.id]="view.cssId"
-       [classList]="view.class"
-       [attr.style]="view.style"
-       [attr.data-id]="view.id"
-       [attr.data-viewId]="view.viewId"
-       [attr.data-label]="view.label"
-       [attr.data-role]="edit ? view.role : null"
-       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
-       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
-       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
-       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
-       [mode]="view.mode">
+       [classList]="classes"
+       [attr.style]="view.styles">
 
-    <!-- FIXME: some values are hard-coded -->
-
-    <!-- XP World -->
-    <ng-container *ngIf="chartType === 'xpWorld'">
-      <app-bar-chart
-        [id]="'chart-xpWorld'"
-        [height]="300"
-        [width]="500"
-        [data]="view.info['values'].y"
-        [name]="view.info['labelY']"
-        [xAxisType]="'category'"
-        [categories]="view.info['domainX']"
-        [yAxisMin]="0"
-        [yAxisTickAmount]="10"
-        [xAxisLabel]="view.info['labelX']"
-        [yAxisLabel]="view.info['labelY']"
-        [highlightedValue]="view.info['highlightValue']">
-      </app-bar-chart>
-    </ng-container>
-
-    <!-- Badge World -->
-    <ng-container *ngIf="chartType === 'badgeWorld'">
-      <app-bar-chart
-        [id]="'chart-badgeWorld'"
-        [height]="300"
-        [width]="500"
-        [data]="view.info['values'].y"
-        [name]="view.info['labelY']"
-        [xAxisType]="'category'"
-        [categories]="view.info['domainX']"
-        [yAxisMin]="0"
-        [yAxisTickAmount]="10"
-        [xAxisLabel]="view.info['labelX']"
-        [yAxisLabel]="view.info['labelY']"
-        [highlightedValue]="view.info['highlightValue']">
-      </app-bar-chart>
-    </ng-container>
+    <app-combo-chart
+      [id]="'v' + view.uniqueId.toString()"
+      [series]="view.data"
+      [classList]="view.classList"
+      [annotations]="view.options?.annotations || undefined"
+      [height]="view.options?.height || 'auto'"
+      [width]="view.options?.width || '100%'"
+      [colors]="view.options?.colors || undefined"
+      [dataLabels]="view.options?.dataLabels || undefined"
+      [dataLabelsOnSeries]="view.options?.dataLabelsOnSeries || undefined"
+      [dataLabelsFormatter]="view.options?.dataLabelsFormatter || undefined"
+      [highlightBars]="view.options?.highlightBars || undefined"
+      [XAxisGrid]="view.options?.XAxisGrid || undefined"
+      [YAxisGrid]="view.options?.YAxisGrid || undefined"
+      [stripedGrid]="view.options?.stripedGrid || undefined"
+      [legend]="view.options?.legend || undefined"
+      [legendPosition]="view.options?.legendPosition || 'bottom'"
+      [markersSize]="view.options?.markersSize || 0"
+      [strokeCurve]="view.options?.strokeCurve || 'smooth'"
+      [strokeLineCap]="view.options?.strokeLineCap || 'round'"
+      [strokeWidth]="view.options?.strokeWidth || 4"
+      [title]="view.options?.title || undefined"
+      [subtitle]="view.options?.subtitle || undefined"
+      [align]="view.options?.align || 'left'"
+      [tooltip]="exists(view.options?.tooltip) ? view.options?.tooltip : true"
+      [tooltipXFormatter]="view.options?.tooltipXFormatter || undefined"
+      [tooltipYFormatter]="view.options?.tooltipYFormatter || undefined"
+      [XAxisType]="view.options?.XAxisType || undefined"
+      [XAxisCategories]="view.options?.XAxisCategories || undefined"
+      [XAxisLabel]="view.options?.XAxisLabel || undefined"
+      [XAxisTickAmount]="view.options?.XAxisTickAmount || undefined"
+      [YAxisLabels]="view.options?.YAxisLabels || undefined"
+      [YAxisMin]="view.options?.YAxisMin || undefined"
+      [YAxisMax]="view.options?.YAxisMax || undefined"
+      [YAxisTickAmount]="view.options?.YAxisTickAmount || undefined"
+      [YAxisReversed]="view.options?.YAxisReversed || undefined"
+      [YAxisOpposite]="view.options?.YAxisOpposite || undefined"
+      [barsOrientation]="view.options?.barsOrientation || undefined"
+      [barsBorderRadius]="view.options?.barsBorderRadius || 6"
+      [sparkline]="view.options?.sparkline || undefined"
+      [toolbar]="view.options?.toolbar || undefined"
+      [toolbarActions]="view.options?.toolbarActions || []">
+    </app-combo-chart>
   </div>
 </ng-template>
 
-<ng-template #STAR>
+<ng-template #DISPLAY_LINE>
   <div [attr.id]="view.cssId"
-       [classList]="view.class"
-       [attr.style]="view.style"
-       [attr.data-id]="view.id"
-       [attr.data-viewId]="view.viewId"
-       [attr.data-label]="view.label"
-       [attr.data-role]="edit ? view.role : null"
-       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
-       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
-       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
-       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
-       [mode]="view.mode">
+       [classList]="classes"
+       [attr.style]="view.styles">
 
-    <!-- FIXME: some values are hard-coded -->
-
-    <!-- Star Plot -->
-    <app-radar-chart
-      [id]="'radar-chart'"
-      [height]="250"
-      [width]="250"
-      [series]="view.info['average'] !== null ? [
-        {
-          name: 'You',
-          data: view.info['user']
-        },
-        {
-          name: 'World',
-          data: view.info['average']
-        }
-      ] : [{name: '', data: view.info['user']}]"
-      [axisMax]="parseAxisMax(view.info['params'])"
-      [xAxisType]="'category'"
-      [categories]="parseCategories(view.info['params'])"
-      [toolbar]="false">
-    </app-radar-chart>
+    <app-line-chart
+      [id]="'v' + view.uniqueId.toString()"
+      [series]="view.data"
+      [classList]="view.classList"
+      [annotations]="view.options?.annotations || undefined"
+      [height]="view.options?.height || 'auto'"
+      [width]="view.options?.width || '100%'"
+      [colors]="view.options?.colors || undefined"
+      [dataLabels]="view.options?.dataLabels || undefined"
+      [XAxisGrid]="view.options?.XAxisGrid || undefined"
+      [YAxisGrid]="view.options?.YAxisGrid || undefined"
+      [stripedGrid]="view.options?.stripedGrid || undefined"
+      [legend]="view.options?.legend || undefined"
+      [legendPosition]="view.options?.legendPosition || 'bottom'"
+      [markersSize]="view.options?.markersSize || 0"
+      [strokeCurve]="view.options?.strokeCurve || 'smooth'"
+      [strokeLineCap]="view.options?.strokeLineCap || 'round'"
+      [strokeWidth]="view.options?.strokeWidth || 4"
+      [title]="view.options?.title || undefined"
+      [subtitle]="view.options?.subtitle || undefined"
+      [align]="view.options?.align || 'left'"
+      [tooltip]="exists(view.options?.tooltip) ? view.options?.tooltip : true"
+      [tooltipXFormatter]="view.options?.tooltipXFormatter || undefined"
+      [tooltipYFormatter]="view.options?.tooltipYFormatter || undefined"
+      [XAxisType]="view.options?.XAxisType || undefined"
+      [XAxisCategories]="view.options?.XAxisCategories || undefined"
+      [XAxisLabel]="view.options?.XAxisLabel || undefined"
+      [XAxisTickAmount]="view.options?.XAxisTickAmount || undefined"
+      [YAxisLabel]="view.options?.YAxisLabel || undefined"
+      [YAxisMin]="view.options?.YAxisMin || undefined"
+      [YAxisMax]="view.options?.YAxisMax || undefined"
+      [YAxisTickAmount]="view.options?.YAxisTickAmount || undefined"
+      [YAxisReversed]="view.options?.YAxisReversed || undefined"
+      [sparkline]="view.options?.sparkline || undefined"
+      [toolbar]="view.options?.toolbar || undefined"
+      [toolbarActions]="view.options?.toolbarActions || []">
+    </app-line-chart>
   </div>
 </ng-template>
 
-<ng-template #PROGRESS>
+<ng-template #DISPLAY_PROGRESS>
   <div [attr.id]="view.cssId"
-       [classList]="view.class"
-       [attr.style]="view.style"
-       [attr.data-id]="view.id"
-       [attr.data-viewId]="view.viewId"
-       [attr.data-label]="view.label"
-       [attr.data-role]="edit ? view.role : null"
-       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
-       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
-       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
-       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
-       [mode]="view.mode">
+       [classList]="classes"
+       [attr.style]="view.styles">
 
     <app-progress-chart
-      [value]="view.info['value']"
-      [max]="view.info['max']">
+      [id]="'v' + view.uniqueId.toString()"
+      [value]="view.data.value"
+      [max]="view.data.max"
+      [size]="view.options?.size || 'sm'"
+      [classList]="view.classList"
+      [tooltip]="view.options?.tooltip || undefined"
+      [labelInside]="view.options?.labelInside || undefined"
+      [labelLeft]="view.options?.labelLeft || undefined"
+      [labelMiddle]="view.options?.labelMiddle || undefined"
+      [labelRight]="view.options?.labelRight || undefined"
+      [progressColor]="view.options?.progressColor || 'neutral'"
+      [trackColor]="view.options?.trackColor || 'neutral'">
     </app-progress-chart>
   </div>
 </ng-template>
 
-<ng-template #EMPTY>
+<ng-template #DISPLAY_RADAR>
   <div [attr.id]="view.cssId"
-       [classList]="view.class + ' placeholder'"
-       [attr.style]="view.style"
-       [attr.data-id]="view.id"
-       [attr.data-viewId]="view.viewId"
-       [attr.data-label]="view.label"
-       [attr.data-role]="edit ? view.role : null"
-       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
-       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
-       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
-       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
-       [mode]="view.mode">
-    <span>{{DEFAULT}}</span>
+       [classList]="classes"
+       [attr.style]="view.styles">
+
+    <app-radar-chart
+      [id]="'v' + view.uniqueId.toString()"
+      [series]="view.data"
+      [classList]="view.classList"
+      [height]="view.options?.height || 'auto'"
+      [width]="view.options?.width || '100%'"
+      [colors]="view.options?.colors || undefined"
+      [dataLabels]="view.options?.dataLabels || undefined"
+      [stripedGrid]="view.options?.stripedGrid || undefined"
+      [legend]="view.options?.legend || undefined"
+      [legendPosition]="view.options?.legendPosition || 'bottom'"
+      [markersSize]="view.options?.markersSize || 6"
+      [strokeWidth]="view.options?.strokeWidth || 3"
+      [title]="view.options?.title || undefined"
+      [subtitle]="view.options?.subtitle || undefined"
+      [align]="view.options?.align || 'left'"
+      [tooltip]="exists(view.options?.tooltip) ? view.options?.tooltip : true"
+      [tooltipXFormatter]="view.options?.tooltipXFormatter || undefined"
+      [tooltipYFormatter]="view.options?.tooltipYFormatter || undefined"
+      [XAxisType]="view.options?.XAxisType || undefined"
+      [XAxisCategories]="view.options?.XAxisCategories || undefined"
+      [sparkline]="view.options?.sparkline || undefined"
+      [toolbar]="view.options?.toolbar || undefined"
+      [toolbarActions]="view.options?.toolbarActions || []">
+    </app-radar-chart>
   </div>
 </ng-template>

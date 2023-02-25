@@ -7,6 +7,11 @@ from gamerules.functions.utils import import_functions_from_rulepath
 
 # TODO find a mechanism to test socket before opening dat files, get rid of basic inconsistency
 
+
+### ------------------------------------------------------ ###
+###	------------------ Helper Functions ------------------ ###
+### ------------------------------------------------------ ###
+
 def process_args(_course, _rules_path, _targets):
     _all_targets = False
     _targets_list = None
@@ -66,21 +71,27 @@ def log_end():
         return _info[:(_max - _gap)] + "..." if len(_info) > _max else _info
 
     # Process targets name and student number
-    targets_info = list(
-        map(lambda s: truncate("(" + str(s["studentNumber"]) + ") " + first_and_last_name(s["name"]), 25, 2),
-            sorted(students.values(), key=lambda s: s["name"])))
+    if len(students) > 5:
+        targets_info = list(
+            map(lambda s: truncate("(" + str(s["studentNumber"]) + ") " + first_and_last_name(s["name"]), 25, 2),
+                sorted(students.values(), key=lambda s: s["name"])))
 
-    # Divide targets info into columns
-    col = 3
-    targets_info = [targets_info[i:i+col] for i in range(0, len(targets_info), col)]
+        # Divide targets info into columns
+        col = 3
+        targets_info = [targets_info[i:i+col] for i in range(0, len(targets_info), col)]
 
-    fill_with_empty = col - len(targets_info[-1])
-    for i in range(fill_with_empty):
-        targets_info[-1].append("")
+        fill_with_empty = col - len(targets_info[-1])
+        for i in range(fill_with_empty):
+            targets_info[-1].append("")
 
-    targets_str = ""
-    for _info in targets_info:
-        targets_str += "{: <27} {: <27} {: <27}\n".format(*_info)
+        targets_str = ""
+        for _info in targets_info:
+            targets_str += "{: <27} {: <27} {: <27}\n".format(*_info)
+
+    else:
+        targets_str = "\n".join(list(
+            map(lambda s: "(" + str(s["studentNumber"]) + ") " + first_and_last_name(s["name"]),
+                sorted(students.values(), key=lambda s: s["name"]))))
 
     # Log info
     logging.info("AutoGame finished running.\n\n" +
@@ -94,9 +105,9 @@ def log_end():
 ### ------------------------------------------------------ ###
 
 # This python script will be invoked from the php side.
-# CLI prompt: python3 run_autogame.py [courseId] [all/new/targets] [rules_path] [logs_file] [dbName] [dbUser] [dbPass]
+# CLI prompt: python3 run_autogame.py [courseId] [all/new/targets] [rules_path] [logs_file] [dbHost] [dbName] [dbUser] [dbPass]
 if __name__ == "__main__":
-    if len(sys.argv) != 8:
+    if len(sys.argv) != 9:
         error_msg = "ERROR: AutoGame didn't receive all the information."
         sys.exit(error_msg)
 
@@ -106,7 +117,7 @@ if __name__ == "__main__":
 
     # Initialize GameCourse connector
     from gamerules.connector.db_connector import connect_to_gamecourse_db
-    connect_to_gamecourse_db(sys.argv[5], sys.argv[6], sys.argv[7])
+    connect_to_gamecourse_db(sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8])
     from gamerules.connector.gamecourse_connector import *
 
     try:
@@ -120,7 +131,7 @@ if __name__ == "__main__":
             mdl_host, mdl_database, mdl_username, mdl_password = db.execute_query(query, (config.COURSE,))[0]
             if mdl_password:
                 from gamerules.connector.db_connector import connect_to_moodle_db
-                connect_to_moodle_db(mdl_host, mdl_database, mdl_username, mdl_password)
+                connect_to_moodle_db(mdl_host.decode(), mdl_database.decode(), mdl_username.decode(), mdl_password.decode())
 
         # Initialize AutoGame
         last_activity = autogame_init(course)
@@ -145,6 +156,10 @@ if __name__ == "__main__":
             # Save the start date
             start_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
             log_start()
+
+            # Preload logs from the database
+            preload_logs(students.keys())
+            preload_awards(students.keys())
 
             # Fire Rule System
             rs = RuleSystem(config.RULES_PATH, config.AUTOSAVE)

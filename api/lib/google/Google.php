@@ -40,6 +40,11 @@ class GoogleHandler
         return self::$INSTANCE;
     }
 
+
+    /*** --------------------------------------------- ***/
+    /*** ------------------ Account ------------------ ***/
+    /*** --------------------------------------------- ***/
+
     public function getAuthUrl(): string
     {
         $client = new Google_Client();
@@ -82,7 +87,7 @@ class GoogleHandler
         $client->addScope("profile");
         $client->setAccessToken($this->accessToken);
 
-        $google_oauth = new \Google_Service_Oauth2($client);
+        $google_oauth = new Google_Service_Oauth2($client);
         $google_account_info = $google_oauth->userinfo->get();
         return (object) array("username" => $google_account_info->email, "name" => $google_account_info->name, "email" => $google_account_info->email, "pictureUrl" => $google_account_info->picture);
     }
@@ -95,49 +100,36 @@ class GoogleHandler
         file_put_contents($path, $img);
     }
 
-    public static function setCredentials(array $credentials, int $courseId): Google_Client
+
+    /*** --------------------------------------------- ***/
+    /*** --------------- Google Sheets --------------- ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * @throws \Google\Exception
+     */
+    public static function getGoogleSheetsClient(int $courseId, array $credentials, array $accessToken = null): Google_Client
     {
         $client = new Google_Client();
         $client->setApplicationName('spreadsheets');
         $client->setScopes([Sheets::SPREADSHEETS]);
         $client->setAuthConfig($credentials);
+        if ($accessToken) $client->setAccessToken($accessToken);
         $client->setState($courseId);
         $client->setAccessType('offline');
         $client->setPrompt('select_account consent');
         return $client;
     }
 
-    public static function checkToken(array $credentials, ?string $token, ?string $authCode, int $courseId)
+    public static function getGoogleSheetsService(Google_Client $client): Sheets
     {
-        $client = GoogleHandler::setCredentials($credentials, $courseId);
-        if ($token) {
-            $accessToken = $token;
-            $client->setAccessToken($accessToken);
-            return array("access_token" => $client->getAccessToken(), "auth_url" => null, "client" => $client);
-        }
-
-        if ($authCode) {
-            $accessToken = $client->fetchAccessTokenWithAuthCode($authCode);
-            $client->setAccessToken($accessToken);
-            return array("access_token" => $client->getAccessToken(), "auth_url" => null, "client" => $client);
-        }
-
-        if ($client->isAccessTokenExpired()) {
-            // Refresh the token if possible, else fetch a new one.
-            if ($client->getRefreshToken()) {
-                $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
-                return array("access_token" => $client->getAccessToken(), "auth_url" => null, "client" => $client);
-            } else {
-                // Request authorization from the user.
-                $authUrl = $client->createAuthUrl();
-                return array("access_token" => null, "auth_url" => $authUrl, "client" => $client);
-            }
-        }
+        return new Sheets($client);
     }
 
-    public static function getGoogleSheets(array $credentials, string $token, ?string $authCode, int $courseId): Sheets
+    public static function createAccessToken(Google_Client $client, string $authCode): array
     {
-        $result = GoogleHandler::checkToken($credentials, $token, $authCode, $courseId);
-        return new Sheets($result["client"]);
+        $accessToken = $client->fetchAccessTokenWithAuthCode($authCode);
+        $client->setAccessToken($accessToken);
+        return $accessToken;
     }
 }

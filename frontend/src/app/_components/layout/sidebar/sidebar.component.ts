@@ -7,7 +7,7 @@ import { SidebarService } from "../../../_services/sidebar.service";
 
 import { User } from "../../../_domain/users/user";
 import { Course } from "../../../_domain/courses/course";
-import { Page } from "../../../_domain/pages & templates/page";
+import { Page } from "../../../_domain/views/pages/page";
 
 import {Theme} from "../../../_services/theming/themes-available";
 import {ThemingService} from "../../../_services/theming/theming.service";
@@ -30,7 +30,7 @@ export class SidebarComponent implements OnInit {
   isCourseAdmin: boolean;
 
   course: Course;
-  activePages: Page[];
+  visibleUserPages: Page[];
 
   constructor(
     private api: ApiHttpService,
@@ -58,7 +58,7 @@ export class SidebarComponent implements OnInit {
     // Whenever updates are received
     this.updateManager.update.subscribe(type => {
       if (type === UpdateType.ACTIVE_PAGES) {
-        this.activePages = null;
+        this.visibleUserPages = null;
         this.initNavigations();
       }
     });
@@ -170,25 +170,25 @@ export class SidebarComponent implements OnInit {
   }
 
   async getCourseNavigation(): Promise<Navigation[]> {
-    if (!this.course || this.course.id !== this.getCourseIDFromURL() || !this.activePages) {
+    if (!this.course || this.course.id !== this.getCourseIDFromURL() || !this.visibleUserPages) {
       const courseID = this.getCourseIDFromURL();
 
       this.course = await this.api.getCourseById(courseID).toPromise();
-      this.activePages = []; // FIXME: get pages for user
+      this.visibleUserPages = await this.api.getUserPages(courseID, this.user.id, true).toPromise();
       const isAdminOrTeacher = this.user.isAdmin || await this.api.isTeacher(courseID, this.user.id).toPromise();
 
-      this.courseNavigation = buildCourseNavigation(this.course, this.activePages, isAdminOrTeacher);
+      this.courseNavigation = buildCourseNavigation(this.course, this.user.id, this.visibleUserPages, isAdminOrTeacher);
     }
     return this.courseNavigation;
 
-    function buildCourseNavigation(course: Course, activePages: Page[], isAdminOrTeacher: boolean): Navigation[] {
+    function buildCourseNavigation(course: Course, userId: number, visiblePages: Page[], isAdminOrTeacher: boolean): Navigation[] {
       const path = '/courses/' + course.id + '/';
       let navigation: Navigation[] = [];
 
       // Get started (students)
       if (!isAdminOrTeacher) {
         navigation.push({
-          link: path,
+          link: path + 'main',
           name: 'Get Started',
           icon: 'tabler-bell-school'
         });
@@ -198,9 +198,9 @@ export class SidebarComponent implements OnInit {
       navigation.push(
         {
           category: 'Course Pages',
-          children: activePages.map(page => {
+          children: visiblePages.map(page => {
             return {
-              link: path + 'pages/' + page.id,
+              link: path + 'pages/' + page.id + '/user/' + userId,
               name: page.name
             };
           })

@@ -291,6 +291,7 @@ class Streak
      */
     public function setData(array $fieldValues)
     {
+        $courseId = $this->getCourse()->getId();
         $rule = $this->getRule();
 
         // Trim values
@@ -299,7 +300,7 @@ class Streak
         // Validate data
         if (key_exists("name", $fieldValues)) {
             $newName = $fieldValues["name"];
-            self::validateName($newName);
+            self::validateName($courseId, $newName, $this->id);
         }
         if (key_exists("description", $fieldValues)) {
             $newDescription = $fieldValues["description"];
@@ -401,6 +402,8 @@ class Streak
             // Get image
             $streak = new Streak($streakInfo["id"]);
             $streakInfo["image"] = $streak->getImage();
+            $streakInfo["svg"] = file_get_contents(MODULES_FOLDER . "/Streaks/icon.svg");
+            $streakInfo["isPeriodic"] = $streak->isPeriodic();
         }
         return $streaks;
     }
@@ -435,8 +438,8 @@ class Streak
                                      ?string $periodicityType, int $reward, int $tokens, bool $isExtra, bool $isRepeatable): Streak
     {
         self::trim($name, $description, $color, $periodicityTime, $periodicityType);
-        self::validateStreak($name, $description, $color, $goal, $periodicityGoal, $periodicityNumber, $periodicityTime,
-            $periodicityType, $reward, $tokens, $isExtra, $isRepeatable);
+        self::validateStreak($courseId, $name, $description, $color, $goal, $periodicityGoal, $periodicityNumber,
+            $periodicityTime, $periodicityType, $reward, $tokens, $isExtra, $isRepeatable);
 
         // Create streak rule
         $rule = self::addRule($courseId, $name, $description, $periodicityNumber, $periodicityTime, $periodicityType);
@@ -510,7 +513,7 @@ class Streak
      * @return void
      * @throws Exception
      */
-    public function copyStreak(Course $copyTo)
+    public function copyStreak(Course $copyTo): Streak
     {
         $streakInfo = $this->getData();
 
@@ -522,6 +525,8 @@ class Streak
 
         // Copy rule
         $this->getRule()->mirrorRule($copiedStreak->getRule());
+
+        return $copiedStreak;
     }
 
     /**
@@ -777,6 +782,7 @@ class Streak
     /**
      * Validates streak parameters.
      *
+     * @param int $courseId
      * @param $name
      * @param $description
      * @param $color
@@ -792,10 +798,10 @@ class Streak
      * @return void
      * @throws Exception
      */
-    private static function validateStreak($name, $description, $color, $goal, $periodicityGoal, $periodicityNumber,
+    private static function validateStreak(int $courseId, $name, $description, $color, $goal, $periodicityGoal, $periodicityNumber,
                                            $periodicityTime, $periodicityType, $reward, $tokens, $isExtra, $isRepeatable)
     {
-        self::validateName($name);
+        self::validateName($courseId, $name);
         self::validateDescription($description);
         self::validateColor($color);
         self::validateInteger("goal", $goal);
@@ -812,11 +818,13 @@ class Streak
     /**
      * Validates streak name.
      *
+     * @param int $courseId
      * @param $name
+     * @param int|null $streakId
      * @return void
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName(int $courseId, $name, int $streakId = null)
     {
         if (!is_string($name) || empty(trim($name)))
             throw new Exception("Streak name can't be null neither empty.");
@@ -827,6 +835,12 @@ class Streak
 
         if (iconv_strlen($name) > 50)
             throw new Exception("Streak name is too long: maximum of 50 characters.");
+
+        $whereNot = [];
+        if ($streakId) $whereNot[] = ["id", $streakId];
+        $streakNames = array_column(Core::database()->selectMultiple(self::TABLE_STREAK, ["course" => $courseId], "name", null, $whereNot), "name");
+        if (in_array($name, $streakNames))
+            throw new Exception("Duplicate streak name: '$name'");
     }
 
     /**

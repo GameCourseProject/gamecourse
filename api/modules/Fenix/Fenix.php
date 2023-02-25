@@ -91,7 +91,7 @@ class Fenix extends Module
                                 "id" => "studentsFile",
                                 "value" => null,
                                 "options" => [
-                                    "accept" => ".csv",
+                                    "accept" => [".csv"],
                                     "size" => "sm",
                                     "color" => "primary",
                                     "label" => "Upload file",

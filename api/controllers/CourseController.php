@@ -222,7 +222,6 @@ class CourseController
         $courseUsers = $course->getCourseUsers($active);
         foreach ($courseUsers as &$courseUserInfo) {
             $courseUser = $course->getCourseUserById($courseUserInfo["id"]);
-            $courseUserInfo["image"] = $courseUser->getImage();
             $courseUserInfo["roles"] = $courseUser->getRoles(false);
         }
         API::response($courseUsers);

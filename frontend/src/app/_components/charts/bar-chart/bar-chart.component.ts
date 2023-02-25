@@ -1,6 +1,26 @@
 import {Component, Input, OnInit, ViewChild} from '@angular/core';
 
 import {
+  annotations,
+  ChartAnnotation,
+  dataLabels,
+  general,
+  grid,
+  legend,
+  subtitle,
+  title,
+  tooltip,
+  update,
+  xaxis,
+  yaxis
+} from "../ChartOptions";
+import {BGDarkColor, BGLightColor, LineColor, TextColor} from "../ChartColors";
+
+import {ThemingService} from "../../../_services/theming/theming.service";
+import {UpdateService, UpdateType} from "../../../_services/update.service";
+
+import {
+  ApexAnnotations,
   ApexAxisChartSeries,
   ApexChart,
   ApexDataLabels,
@@ -9,139 +29,151 @@ import {
   ApexXAxis, ApexYAxis,
   ChartComponent
 } from 'ng-apexcharts';
-import {exists} from "../../../_utils/misc/misc";
+import {Theme} from "../../../_services/theming/themes-available";
 
 export type ChartOptions = {
   series: ApexAxisChartSeries;
   chart: ApexChart;
-  xaxis: ApexXAxis;
-  yaxis: ApexYAxis;
+  annotations: ApexAnnotations;
+  colors: string[];
   dataLabels: ApexDataLabels;
   grid: ApexGrid;
+  legend: ApexLegend;
+  plotOptions: ApexPlotOptions;
+  subtitle: ApexTitleSubtitle;
   title: ApexTitleSubtitle;
   tooltip: ApexTooltip;
-  plotOptions: ApexPlotOptions;
-  colors: any;
-  legend: ApexLegend;
+  xaxis: ApexXAxis;
+  yaxis: ApexYAxis;
 };
 
 @Component({
   selector: 'app-bar-chart',
-  templateUrl: './bar-chart.component.html',
-  styleUrls: ['./bar-chart.component.scss']
+  templateUrl: './bar-chart.component.html'
 })
 export class BarChartComponent implements OnInit {
 
   // Essentials
-  @Input() id: string;                                                      // Chart ID
-  @Input() data: any[];                                                     // Actual data
-  @Input() name: string;                                                    // What is the data about
-  @Input() xAxisType: 'category' | 'datetime' | 'numeric';                  // Type of X-axis
-  @Input() categories?: any[];                                              // X-axis categories
+  @Input() id: string;                                                      // Unique ID
+  @Input() series: ApexAxisChartSeries;                                     // Data series to plot
+  @Input() classList?: string;                                              // Classes to add
+
+  // Annotations
+  @Input() annotations?: ChartAnnotation[];                                 // Annotations on specific axis values
 
   // Size
-  @Input() width?: number;                                                  // Chart width
-  @Input() height?: number;                                                 // Chart height
-
-  // Axis
-  @Input() yAxisMin?: number;                                               // Lowest value for Y-axis
-  @Input() yAxisMax?: number;                                               // Highest value for Y-axis
-  @Input() yAxisTickAmount?: number = 6;                                    // Number of ticks for Y-Axis
-  @Input() xAxisLabel?: string;                                             // X-axis label
-  @Input() yAxisLabel?: string;                                             // Y-axis label
-  @Input() yAxisReversed?: boolean = false;                                 // Reverse Y-axis
+  @Input() height?: string = 'auto';                                        // Chart height
+  @Input() width?: string = '100%';                                         // Chart width
 
   // Colors
-  @Input() primaryColor?: string = '#a33c30';                               // Primary color
-  @Input() highlightColor?: string = 'steelblue';                           // Highlight color
-  @Input() highlightedValue?: any;                                          // Value to highlight
+  @Input() colors?: string[];                                               // Colors for data series
+  @Input() highlight?: {color: string, value: number | string}[]            // Highlight specific bars (only for X-axis type 'category')
+
+  // DataLabels
+  @Input() dataLabels?: boolean;                                            // Show data labels
+  @Input() dataLabelsOnSeries?: number[];                                   // Show data labels only on specific series
+  @Input() dataLabelsFormatter?: string;                                    // Data labels formatter expression
+
+  // Grid
+  @Input() XAxisGrid?: boolean;                                             // Show grid on X-axis
+  @Input() YAxisGrid?: boolean;                                             // Show grid on Y-axis
+  @Input() stripedGrid?: 'vertical' | 'horizontal';                         // Show striped grid
+
+  // Legend
+  @Input() legend?: boolean;                                                // Show legend
+  @Input() legendPosition?: 'top' | 'right' | 'bottom' | 'left' = 'bottom'; // Legend position
+
+  // Title & Subtitle
+  @Input() title?: string;                                                  // Title for chart
+  @Input() subtitle?: string;                                               // Subtitle for chart
+  @Input() align?: 'left' | 'center' | 'right' = 'left';                    // Title and subtitle alignment
+
+  // Tooltip
+  @Input() tooltip?: boolean = true;                                        // Data points tooltip
+  @Input() tooltipXFormatter?: string;                                      // Tooltip formatter expression for X values
+  @Input() tooltipYFormatter?: string;                                      // Tooltip formatter expression for Y values
+
+  // X-Axis
+  @Input() XAxisType?: 'category' | 'datetime' | 'numeric';                 // Type of X-axis
+  @Input() XAxisCategories?: (string | number)[];                           // Categories for X-axis
+  @Input() XAxisLabel?: string;                                             // X-axis label
+  @Input() XAxisTickAmount?: number;                                        // Number of ticks for X-Axis
+
+  // Y-Axis
+  @Input() YAxisLabel?: string;                                             // Y-axis label
+  @Input() YAxisMin?: number;                                               // Lowest value for Y-axis
+  @Input() YAxisMax?: number;                                               // Highest value for Y-axis
+  @Input() YAxisTickAmount?: number;                                        // Number of ticks for Y-Axis
+  @Input() YAxisReversed?: boolean;                                         // Reverse Y-axis
 
   // Extras
-  @Input() sparkline?: boolean = false;                                     // Hide everything but primary paths
-  @Input() toolbar?: boolean = false;                                       // Show toolbar with actions
+  @Input() orientation?: 'vertical' | 'horizontal';                         // Bars orientation
+  @Input() borderRadius?: number = 6;                                       // Bars radius
+  @Input() sparkline?: boolean;                                             // Hide everything but primary paths
+  @Input() toolbar?: boolean;                                               // Show toolbar with actions
+  @Input() toolbarActions?: ('download' | 'selection' | 'zoom' |            // Toolbar actions available
+    'zoomin' | 'zoomout' | 'pan' | 'reset')[] = []
 
   @ViewChild("chart") chart: ChartComponent;
   public chartOptions: Partial<ChartOptions>;
 
   readonly CHART_TYPE = 'bar';
 
-  constructor() { }
+  constructor(
+    private themeService: ThemingService,
+    private updateManager: UpdateService
+  ) { }
 
   ngOnInit(): void {
+    const theme = this.themeService.getTheme();
+
+    // Set chart options
     this.chartOptions = {
-      series: [
-        {
-          name: this.name,
-          data: this.data
-        }
-      ],
-      chart: {
-        type: this.CHART_TYPE,
-        sparkline: { enabled: this.sparkline },
-        toolbar: { show: this.toolbar },
-        zoom: { enabled: false }
-      },
+      series: this.series,
+      chart: general(this.CHART_TYPE, this.height, this.width, TextColor(theme), this.sparkline, this.toolbar, this.toolbarActions),
+      annotations: !this.sparkline ? annotations(this.annotations) : undefined,
+      colors: this.colors,
+      dataLabels: dataLabels(this.dataLabels, this.dataLabelsOnSeries, this.dataLabelsFormatter),
+      grid: grid(this.XAxisGrid || this.YAxisGrid, this.XAxisGrid, this.YAxisGrid, LineColor(theme),
+        this.stripedGrid, {dark: BGDarkColor(theme), light: BGLightColor(theme)}, this.sparkline),
+      legend: legend(this.legend, this.legendPosition),
       plotOptions: {
         bar: {
-          columnWidth: "90%",
-          distributed: true
-        }
+          horizontal: this.orientation === 'horizontal',
+          borderRadius: this.borderRadius,
+          borderRadiusApplication: 'end',
+          columnWidth: "80%",
+          distributed: !!this.highlight,
+
+        },
       },
-      dataLabels: {
-        enabled: false
-      },
-      grid: {
-        show: false
-      },
-      legend: {
-        show: false
-      },
-      xaxis: {
-        type: this.xAxisType,
-        tickAmount: 10
-      },
-      yaxis: {
-        tickAmount: this.yAxisTickAmount,
-        reversed: this.yAxisReversed,
-      },
-      tooltip: { }
+      subtitle: subtitle(this.subtitle, this.align),
+      title: title(this.title, this.align),
+      tooltip: tooltip(!this.sparkline && this.tooltip, {xaxis: this.tooltipXFormatter, yaxis: this.tooltipYFormatter},
+        theme === Theme.DARK ? 'dark' : 'light'),
+      xaxis: xaxis(this.XAxisType, this.XAxisCategories, LineColor(theme), this.XAxisLabel,
+        this.XAxisTickAmount || (this.series[0].data.length > 20 ? 10 : undefined)),
+      yaxis: yaxis(this.YAxisReversed, this.YAxisTickAmount, this.YAxisMin, this.YAxisMax, this.YAxisLabel, false)
     };
 
-    if (this.xAxisType === 'category') this.chartOptions.xaxis.categories = this.categories;
-    if (exists(this.height)) this.chartOptions.chart.height = this.height;
-    if (exists(this.width)) this.chartOptions.chart.width = this.width;
-    if (exists(this.yAxisMin)) this.chartOptions.yaxis.min = this.yAxisMin;
-    if (exists(this.yAxisMax)) this.chartOptions.yaxis.max = this.yAxisMax;
-    if (exists(this.xAxisLabel)) this.chartOptions.xaxis.title = { text: this.xAxisLabel };
-    if (exists(this.yAxisLabel)) this.chartOptions.yaxis.title = { text: this.yAxisLabel };
+    // Highlight bars
+    if (this.highlight) {
+      const primaryColor = this.chartOptions.colors?.length > 0 ? this.chartOptions.colors[0] : '#008FFB';
+      this.chartOptions.colors = Array.from(Array(this.chartOptions.series[0].data.length).fill(primaryColor));
 
-    // FIXME: should be general
-    this.chartOptions.colors = Array.from(Array(this.categories.length).fill(this.primaryColor));
-    const index = this.categories.findIndex(el => el === this.highlightedValue);
-    this.chartOptions.colors[index] = this.highlightColor;
-
-    this.chartOptions.tooltip.y = { formatter(val: number, opts?: any): string {
-        return Math.round(val).toString();
-      }
-    }
-    this.chartOptions.yaxis.labels = { formatter(val: number, opts?: any): string | string[] {
-        return Math.round(val).toString();
-      }
+      this.highlight.forEach(h => {
+        const index = this.chartOptions.xaxis.categories.findIndex(val => val == h.value);
+        this.chartOptions.colors[index] = h.color;
+      });
     }
 
-    if (exists(this.xAxisLabel) && this.xAxisLabel === 'XP') {
-      this.chartOptions.tooltip.x = { formatter(val: number, opts?: any): string {
-          return val + '-' + (val + 500)  + ' XP';
-        }
+    // Whenever theme changes, update colors
+    this.updateManager.update.subscribe(type => {
+      if (type === UpdateType.THEME) {
+        const theme = this.themeService.getTheme();
+        update(this.chart, this.chartOptions, theme === Theme.DARK ? 'dark' : 'light', this.chartOptions.grid.show ? this.stripedGrid : false,
+          {text: TextColor(theme), line: LineColor(theme), bg: {dark: BGDarkColor(theme), light: BGLightColor(theme)}})
       }
-    }
-
-    if (exists(this.xAxisLabel) && this.xAxisLabel === 'Badges') {
-      this.chartOptions.tooltip.x = { formatter(val: number, opts?: any): string {
-          return val + ' Badges';
-        }
-      }
-    }
+    });
   }
-
 }

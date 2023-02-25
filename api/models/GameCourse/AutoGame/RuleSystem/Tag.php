@@ -97,11 +97,13 @@ class Tag
      */
     public function setData(array $fieldValues)
     {
+        $courseId = $this->getCourse()->getId();
+
         // Trim values
         self::trim($fieldValues);
 
         // Validate data
-        if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
+        if (key_exists("name", $fieldValues)) self::validateName($courseId, $fieldValues["name"], $this->id);
         if (key_exists("color", $fieldValues)) self::validateColor($fieldValues["color"]);
 
         // Update data
@@ -199,7 +201,7 @@ class Tag
     public static function addTag(int $courseId, string $name, string $color): Tag
     {
         self::trim($name, $color);
-        self::validateTag($name, $color);
+        self::validateTag($courseId, $name, $color);
         $id = Core::database()->insert(self::TABLE_RULE_TAG, [
             "course" => $courseId,
             "name" => $name,
@@ -280,25 +282,28 @@ class Tag
     /**
      * Validates tag parameters.
      *
+     * @param int $courseId
      * @param $name
      * @param $color
      * @return void
      * @throws Exception
      */
-    private static function validateTag($name, $color)
+    private static function validateTag(int $courseId, $name, $color)
     {
-        self::validateName($name);
+        self::validateName($courseId, $name);
         self::validateColor($color);
     }
 
     /**
      * Validates tag name.
      *
+     * @param int $courseId
      * @param $name
+     * @param int|null $tagId
      * @return void
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName(int $courseId, $name, int $tagId = null)
     {
         if (!is_string($name) || empty($name))
             throw new Exception("Tag name can't be null neither empty.");
@@ -309,6 +314,12 @@ class Tag
 
         if (iconv_strlen($name) > 50)
             throw new Exception("Tag name is too long: maximum of 50 characters.");
+
+        $whereNot = [];
+        if ($tagId) $whereNot[] = ["id", $tagId];
+        $tagNames = array_column(Core::database()->selectMultiple(self::TABLE_RULE_TAG, ["course" => $courseId], "name", null, $whereNot), "name");
+        if (in_array($name, $tagNames))
+            throw new Exception("Duplicate tag name: '$name'");
     }
 
     /**

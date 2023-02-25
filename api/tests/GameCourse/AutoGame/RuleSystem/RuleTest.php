@@ -884,7 +884,7 @@ tags:
             Rule::addRule($this->courseId, $this->sectionId, "Rule Name", null, "when", "then", 0);
             $this->fail("Exception should have been thrown on 'addRuleDuplicateName'");
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $rules = Rule::getRules($this->courseId);
             $this->assertCount(1, $rules);
         }
