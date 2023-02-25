@@ -11,6 +11,7 @@ use GameCourse\Course\Course;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\User\User;
 use PDO;
 use Utils\CronJob;
 use Utils\Utils;
@@ -1003,7 +1004,7 @@ class Moodle extends Module
                     }
                     $lastRecordTimestamp = max($log["timestamp"], $lastRecordTimestamp);
 
-                } else self::log($this->course->getId(), "No user with username '" . $log["username"] . "' enrolled in the course.", "WARNING");
+                } else if (!User::getUserByUsername($log["username"])->isAdmin()) self::log($this->course->getId(), "No user with username '" . $log["username"] . "' enrolled in the course.", "WARNING");
             }
         }
 
