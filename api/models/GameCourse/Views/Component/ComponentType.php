@@ -13,6 +13,5 @@ class ComponentType
 
     const CORE = "core";
     const CUSTOM = "custom";
-    const GLOBAL = "global";
     // NOTE: insert here new component types
 }

@@ -641,7 +641,7 @@ class BadgeTest extends TestCase
         $this->assertFalse(file_exists($badge->getDataFolder(true, "Badge")));
 
         $this->assertEquals($name, $badge->getRule()->getName());
-        $this->assertEquals("award_badge(target, \"" . $name . "\", lvl, logs)", $badge->getRule()->getThen());
+        $this->assertEquals("award_badge(target, \"" . $name . "\", lvl, logs, progress)", $badge->getRule()->getThen());
     }
 
     /**
@@ -664,7 +664,7 @@ class BadgeTest extends TestCase
             $this->assertEquals("Badge", $badge->getName());
             $this->assertTrue(file_exists($badge->getDataFolder(true, "Badge")));
             $this->assertEquals("Badge", $badge->getRule()->getName());
-            $this->assertEquals("award_badge(target, \"Badge\", lvl, logs)", $badge->getRule()->getThen());
+            $this->assertEquals("award_badge(target, \"Badge\", lvl, logs, progress)", $badge->getRule()->getThen());
         }
     }
 
@@ -692,7 +692,7 @@ class BadgeTest extends TestCase
             $this->assertEquals("Badge2", $badge2->getName());
             $this->assertTrue(file_exists($badge2->getDataFolder(true, "Badge2")));
             $this->assertEquals("Badge2", $badge2->getRule()->getName());
-            $this->assertEquals("award_badge(target, \"Badge2\", lvl, logs)", $badge2->getRule()->getThen());
+            $this->assertEquals("award_badge(target, \"Badge2\", lvl, logs, progress)", $badge2->getRule()->getThen());
         }
     }
 
@@ -1190,7 +1190,7 @@ tags:
 		lvl = compute_lvl(progress, " . $lvl1["goal"] . ($size >= 2 ? ", " . $lvl2["goal"] : "") . ($size == 3 ? ", " . $lvl3["goal"] : "") . ")
 
 	then:
-		award_badge(target, \"$name\", lvl, logs)"), $this->trim($rule->getText()));
+		award_badge(target, \"$name\", lvl, logs, progress)"), $this->trim($rule->getText()));
     }
 
     /**
@@ -1231,7 +1231,7 @@ tags:
             $this->fail("Error should have been thrown on 'addBadgeDuplicateName'");
 
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertCount(1, Badge::getBadges($this->courseId));
             $this->assertEquals(1, Utils::getDirectorySize((new Badges(new Course($this->courseId)))->getDataFolder()));
             $this->assertCount(1, Section::getSectionByName($this->courseId, Badges::RULE_SECTION)->getRules());
@@ -1309,7 +1309,7 @@ tags:
 		lvl = compute_lvl(progress, " . $lvl1["goal"] . ($size >= 2 ? ", " . $lvl2["goal"] : "") . ($size == 3 ? ", " . $lvl3["goal"] : "") . ")
 
 	then:
-		award_badge(target, \"$name\", lvl, logs)"), $this->trim($badge->getRule()->getText()));
+		award_badge(target, \"$name\", lvl, logs, progress)"), $this->trim($badge->getRule()->getText()));
     }
 
     /**
@@ -1360,7 +1360,7 @@ tags:
             $this->fail("Error should have been thrown on 'addBadgeDuplicateName'");
 
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertEquals("Badge2", $badge->getName());
             $this->assertTrue(file_exists($badge->getDataFolder(true, "Badge2")));
             $this->assertEquals($this->trim("rule: Badge2
@@ -1379,7 +1379,7 @@ tags:
 		lvl = compute_lvl(progress, 1, 2, 3)
 
 	then:
-		award_badge(target, \"Badge2\", lvl, logs)"), $this->trim($badge->getRule()->getText()));
+		award_badge(target, \"Badge2\", lvl, logs, progress)"), $this->trim($badge->getRule()->getText()));
         }
     }
 
@@ -1525,7 +1525,7 @@ tags:
         $this->assertIsArray($levels);
         $this->assertCount(3, $levels);
 
-        $keys = ["id", "number", "description", "goal", "reward", "tokens"];
+        $keys = ["id", "number", "description", "goal", "reward", "tokens", "number"];
         $nrKeys = count($keys);
 
         $lvl1 = $levels[0];
@@ -1701,7 +1701,7 @@ lvl = compute_lvl(progress, " . $levels[0]["goal"] . (count($levels) >= 2 ? ", "
 
         // Then
         $this->assertTrue(isset($params["then"]));
-        $this->assertEquals("award_badge(target, \"$name\", lvl, logs)", $params["then"]);
+        $this->assertEquals("award_badge(target, \"$name\", lvl, logs, progress)", $params["then"]);
     }
 
     /**

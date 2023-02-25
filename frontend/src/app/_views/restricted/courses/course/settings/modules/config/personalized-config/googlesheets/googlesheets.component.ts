@@ -4,6 +4,7 @@ import {NgForm} from "@angular/forms";
 
 import {ApiHttpService} from "../../../../../../../../../_services/api/api-http.service";
 import {AlertService, AlertType} from "../../../../../../../../../_services/alert.service";
+import {PopupService} from "../../../../../../../../../_services/popup.service";
 
 @Component({
   selector: 'app-googlesheets',
@@ -12,14 +13,15 @@ import {AlertService, AlertType} from "../../../../../../../../../_services/aler
 export class GooglesheetsComponent implements OnInit {
 
   loading = {
+    page: true,
     auth: false,
-    action: false,
-    users: false
+    action: false
   }
 
   courseID: number;
 
   credentials: Credentials;
+  needsAuthentication: boolean
   canAuthenticate: boolean;
   @ViewChild('fAuth', { static: false }) fAuth: NgForm;
 
@@ -37,6 +39,8 @@ export class GooglesheetsComponent implements OnInit {
     this.route.parent.params.subscribe(async params => {
       this.courseID = parseInt(params.id);
       await this.getConfig();
+      await this.getUsers();
+      this.loading.page = false;
     });
   }
 
@@ -46,23 +50,26 @@ export class GooglesheetsComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async getConfig() {
-    const config = await this.api.getGoogleSheetsConfig(this.courseID).toPromise();
+    const {config, needsAuth} = await this.api.getGoogleSheetsConfig(this.courseID).toPromise();
     this.spreadsheetID = config.spreadsheetId;
     this.sheets = [];
     for (let i = 0; i < config.sheetNames.length; i++) {
       this.sheets.push({name: config.sheetNames[i], owner: config.ownerNames[i]});
     }
+
+    // Must have one sheet
+    if (this.sheets.length === 0) {
+      this.sheets.push({name: undefined, owner: undefined});
+    }
+
+    this.needsAuthentication = needsAuth;
   }
 
   async getUsers(): Promise<void> {
-    this.loading.users = true;
-
     const users = (await this.api.getUsers().toPromise()).sort((a, b) => a.name.localeCompare(b.name));
     this.users = users.map(user => {
-      return {value: user.username, text: user.nickname ?? user.name};
+      return {value: user.username, text: user.name};
     });
-
-    this.loading.users = false;
   }
 
 
@@ -76,12 +83,11 @@ export class GooglesheetsComponent implements OnInit {
 
       try {
         const authURL = await this.api.authenticateGoogleSheets(this.courseID, this.credentials).toPromise();
+
+        // Open Google authentication window
         const width = 550;
         const height = 650;
-        const top = (window.screen.availHeight + (window.screen.availHeight / 2)) - (height / 2);
-        const left = (window.screen.availWidth + (window.screen.availWidth / 2)) - (width / 2);
-        window.open(authURL, 'Authenticate', 'toolbar=no, location=no, directories=no, status=no, menubar=no, ' +
-          'scrollbars=no, resizable=no, copyhistory=no, width=' + width + ', height=' + height + ', top=' + top + ', left=' + left);
+        PopupService.openPopUp(authURL, 'Authenticate', width, height);
 
         this.loading.auth = false;
 
@@ -117,7 +123,6 @@ export class GooglesheetsComponent implements OnInit {
   }
 
   async addSheet() {
-    if (!this.users) await this.getUsers();
     this.sheets.push({name: '', owner: ''});
   }
 

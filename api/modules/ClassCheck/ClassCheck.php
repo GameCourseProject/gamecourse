@@ -65,7 +65,7 @@ class ClassCheck extends Module
         Core::database()->insert(self::TABLE_CLASSCHECK_STATUS, ["course" => $this->getCourse()->getId()]);
 
         // Setup logging
-        $logsFile = self::getLogsFile($this->getCourse()->getId());
+        $logsFile = self::getLogsFile($this->getCourse()->getId(), false);
         Utils::initLogging($logsFile);
 
         $this->initEvents();
@@ -97,7 +97,7 @@ class ClassCheck extends Module
         $this->setAutoImporting(false);
 
         // Remove logging info
-        $logsFile = self::getLogsFile($this->getCourse()->getId());
+        $logsFile = self::getLogsFile($this->getCourse()->getId(), false);
         Utils::removeLogging($logsFile);
 
         $this->cleanDatabase();
@@ -132,8 +132,7 @@ class ClassCheck extends Module
                                 "value" => $this->getTSVCode(),
                                 "placeholder" => "TSV code",
                                 "options" => [
-                                    "topLabel" => "TSV code",
-                                    "maxLength" => 200
+                                    "topLabel" => "TSV code"
                                 ],
                                 "helper" => "Classcheck TSV code URL"
                             ]
@@ -195,8 +194,7 @@ class ClassCheck extends Module
     public function saveTSVCode(?string $tsvCode)
     {
         // Check connection to ClassCheck
-        if (!self::canConnect($tsvCode))
-            throw new Exception("Connection to ClassCheck failed.");
+        $this->checkConnection($tsvCode);
 
         Core::database()->update(self::TABLE_CLASSCHECK_CONFIG, [
             "tsvCode" => $tsvCode,
@@ -274,7 +272,7 @@ class ClassCheck extends Module
 
     public function setIsRunning(bool $status)
     {
-        Core::database()->update(self::TABLE_CLASSCHECK_STATUS, ["isRunning" => $status], ["course" => $this->getCourse()->getId()]);
+        Core::database()->update(self::TABLE_CLASSCHECK_STATUS, ["isRunning" => +$status], ["course" => $this->getCourse()->getId()]);
     }
 
 
@@ -288,7 +286,7 @@ class ClassCheck extends Module
      */
     public static function getRunningLogs(int $courseId): string
     {
-        $logsFile = self::getLogsFile($courseId);
+        $logsFile = self::getLogsFile($courseId, false);
         return Utils::getLogs($logsFile);
     }
 
@@ -302,7 +300,7 @@ class ClassCheck extends Module
      */
     public static function log(int $courseId, string $message, string $type = "ERROR")
     {
-        $logsFile = self::getLogsFile($courseId);
+        $logsFile = self::getLogsFile($courseId, false);
         Utils::addLog($logsFile, $message, $type);
     }
 
@@ -315,9 +313,9 @@ class ClassCheck extends Module
      */
     private static function getLogsFile(int $courseId, bool $fullPath = true): string
     {
-        $filename = "classcheck_$courseId.txt";
-        if ($fullPath) return self::LOGS_FOLDER . "/" . $filename;
-        else return $filename;
+        $path = self::LOGS_FOLDER . "/" . "classcheck_$courseId.txt";
+        if ($fullPath) return LOGS_FOLDER . "/" . $path;
+        else return $path;
     }
 
 
@@ -327,17 +325,13 @@ class ClassCheck extends Module
      * Checks connection to ClassCheck attendances.
      *
      * @param string|null $tsvCode
-     * @return bool
+     * @return void
+     * @throws Exception
      */
-    private static function canConnect(?string $tsvCode): bool
+    private function checkConnection(?string $tsvCode)
     {
-        try {
-            if (!$tsvCode) return false;
-            return !!fopen($tsvCode, "r");
-
-        } catch (Throwable $e) {
-            return false;
-        }
+        if (!$tsvCode) throw new Exception("Connection to " . self::NAME . " failed: no TSV code found.");
+        fopen($tsvCode, "r");
     }
 
     /**
@@ -349,15 +343,22 @@ class ClassCheck extends Module
      */
     public function importData(): bool
     {
-        if ($this->isRunning())
-            throw new Exception("Already importing data from ClassCheck.");
+        if ($this->isRunning()) {
+            self::log($this->course->getId(), "Already importing data from " . self::NAME . ".", "WARNING");
+            return false;
+        }
 
         $this->setStartedRunning(date("Y-m-d H:i:s", time()));
         $this->setIsRunning(true);
+        self::log($this->course->getId(), "Importing data from " . self::NAME . "...", "INFO");
 
         try {
             $tsvCode = $this->getTSVCode();
-            return $this->saveAttendance($tsvCode);
+            $newData = $this->saveAttendance($tsvCode);
+
+            if ($newData) self::log($this->course->getId(), "Imported new data from " . self::NAME . ".", "SUCCESS");
+            self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
+            return $newData;
 
         } finally {
             $this->setIsRunning(false);

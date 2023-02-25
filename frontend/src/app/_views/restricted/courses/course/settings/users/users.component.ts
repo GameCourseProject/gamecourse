@@ -172,7 +172,7 @@ export class UsersComponent implements OnInit {
     columnDefs: [
       { type: 'natural', targets: [0, 1, 2, 3, 4, 5] },
       { orderData: 4,   targets: 5 },
-      { searchable: false, targets: [4, 6, 7]},
+      { searchable: false, targets: [4, 7]},
       { orderable: false, targets: [1, 6, 7] }
     ]
   }
@@ -290,6 +290,7 @@ export class UsersComponent implements OnInit {
       const userIDs = this.selection.usersToAdd.map(id => parseInt(id.substring(3)));
       const newUsers = await this.api.addUsersToCourse(this.course.id, userIDs, this.selection.roleNames).toPromise();
       this.courseUsers = this.courseUsers.concat(newUsers);
+      this.nonCourseUsers = this.nonCourseUsers.filter(user => !userIDs.includes(parseInt(user.value.substring(3))));
       this.buildTable();
 
       this.loading.action = false;
@@ -339,6 +340,9 @@ export class UsersComponent implements OnInit {
     await this.api.deleteCourseUser(this.course.id, user.id).toPromise();
     const index = this.courseUsers.findIndex(el => el.id === user.id);
     this.courseUsers.removeAtIndex(index);
+    if (!this.nonCourseUsers) await this.getUsersNotInCourse(this.course.id);
+    this.nonCourseUsers.push({value: 'id-' + user.id, text: user.name});
+    this.nonCourseUsers.sort((a, b) => a.text.localeCompare(b.text))
     this.buildTable();
 
     this.loading.action = false;

@@ -141,6 +141,7 @@ class AutoAction
      */
     public function setData(array $fieldValues)
     {
+        $courseId = $this->getCourse()->getId();
         $rule = $this->getRule();
 
         // Trim values
@@ -149,7 +150,7 @@ class AutoAction
         // Validate data
         if (key_exists("name", $fieldValues)) {
             $newName = $fieldValues["name"];
-            self::validateName($newName);
+            self::validateName($courseId, $newName, $this->id);
             $oldName = $this->getName();
         }
         if (key_exists("description", $fieldValues)) {
@@ -237,7 +238,7 @@ class AutoAction
     {
         $where = ["course" => $courseId];
         if ($active !== null) $where["isActive"] = $active;
-        $actions = Core::database()->selectMultiple(self::TABLE_VC_AUTO_ACTION, $where, "*", $orderBy);
+        $actions = Core::database()->selectMultiple(self::TABLE_VC_AUTO_ACTION, $where, "id, name, description, type, amount, isActive, rule", $orderBy);
         foreach ($actions as &$actionInfo) { $actionInfo = self::parse($actionInfo); }
         return $actions;
     }
@@ -262,7 +263,7 @@ class AutoAction
     public static function addAction(int $courseId, string $name, string $description, string $type, int $amount): AutoAction
     {
         self::trim($name, $description, $type);
-        self::validateAction($name, $description, $type);
+        self::validateAction($courseId, $name, $description, $type);
 
         // Create action rule
         $rule = self::addRule($courseId, $name, $description, $type, $amount);
@@ -310,7 +311,7 @@ class AutoAction
      * @return void
      * @throws Exception
      */
-    public function copyAction(Course $copyTo)
+    public function copyAction(Course $copyTo): AutoAction
     {
         $actionInfo = $this->getData();
 
@@ -321,6 +322,8 @@ class AutoAction
 
         // Copy rule
         $this->getRule()->mirrorRule($copiedAction->getRule());
+
+        return $copiedAction;
     }
 
     /**
@@ -509,15 +512,16 @@ class AutoAction
     /**
      * Validates action parameters.
      *
+     * @param int $courseId
      * @param $name
      * @param $description
      * @param $type
      * @return void
      * @throws Exception
      */
-    private static function validateAction($name, $description, $type)
+    private static function validateAction(int $courseId, $name, $description, $type)
     {
-        self::validateName($name);
+        self::validateName($courseId, $name);
         self::validateDescription($description);
         self::validateType($type);
     }
@@ -525,11 +529,13 @@ class AutoAction
     /**
      * Validates action name.
      *
+     * @param int $courseId
      * @param $name
+     * @param int|null $actionId
      * @return void
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName(int $courseId, $name, int $actionId = null)
     {
         if (!is_string($name) || empty(trim($name)))
             throw new Exception("Action name can't be null neither empty.");
@@ -540,6 +546,12 @@ class AutoAction
 
         if (iconv_strlen($name) > 50)
             throw new Exception("Action name is too long: maximum of 50 characters.");
+
+        $whereNot = [];
+        if ($actionId) $whereNot[] = ["id", $actionId];
+        $actionNames = array_column(Core::database()->selectMultiple(self::TABLE_VC_AUTO_ACTION, ["course" => $courseId], "name", null, $whereNot), "name");
+        if (in_array($name, $actionNames))
+            throw new Exception("Duplicate action name: '$name'");
     }
 
     /**
@@ -558,7 +570,7 @@ class AutoAction
             throw new Exception("Action description can't be composed of only numbers.");
 
         if (iconv_strlen($description) > 150)
-            throw new Exception("Badge description is too long: maximum of 150 characters.");
+            throw new Exception("Action description is too long: maximum of 150 characters.");
     }
 
     /**

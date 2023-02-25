@@ -3,10 +3,8 @@ import {
   Component,
   EventEmitter,
   Input,
-  OnChanges,
   OnInit,
   Output,
-  SimpleChanges,
   ViewChild
 } from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
@@ -19,14 +17,13 @@ import {InputGroupSize, InputSize } from '../../InputSizes';
   selector: 'app-input-file',
   templateUrl: './input-file.component.html'
 })
-export class InputFileComponent implements OnInit, AfterViewInit, OnChanges {
+export class InputFileComponent implements OnInit, AfterViewInit {
 
   // Essentials
   @Input() id: string;                                                // Unique ID
   @Input() form: NgForm;                                              // Form it's part of
-  @Input() accept?: string;                                           // Types of files to accept
+  @Input() accept?: string[];                                         // Types of files to accept
   @Input() multiple?: boolean;                                        // Accept multiple files
-  @Input() camera?: boolean;                                          // Accept camera input
 
   // Extras
   @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';                   // Size
@@ -62,12 +59,6 @@ export class InputFileComponent implements OnInit, AfterViewInit, OnChanges {
     if (this.form) this.form.addControl(this.inputFile);
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (this.camera && changes?.accept && changes?.accept.currentValue.includes('image')) {
-      this.accept += ';capture=camera';
-    }
-  }
-
   onFilesSelected(event) {
     this.files = event.target.files;
 
@@ -101,12 +92,12 @@ export class InputFileComponent implements OnInit, AfterViewInit, OnChanges {
     };
 
     let formats: string[] = [];
-    if (this.accept.containsWord('image/*')) formats = formats.concat(types.image);
-    if (this.accept.containsWord('video/*')) formats = formats.concat(types.video);
-    if (this.accept.containsWord('audio/*')) formats = formats.concat(types.audio);
+    if (this.accept.includes('image/*')) formats = formats.concat(types.image);
+    if (this.accept.includes('video/*')) formats = formats.concat(types.video);
+    if (this.accept.includes('audio/*')) formats = formats.concat(types.audio);
 
-    const singleTypes = this.accept.removeWord('image/*').removeWord('video/*').removeWord('audio/*').removeWord('capture=camera');
-    const parts = singleTypes.split(',').map(part => part.trim().substring(1).toUpperCase()).filter(part => !!part);
+    const singleTypes = this.accept.filter(a => a !== 'image/*' && a !== 'video/*' && a !== 'audio/*');
+    const parts = singleTypes.map(part => part.trim().substring(1).toUpperCase()).filter(part => !!part);
     formats = [...new Set(formats.concat(parts))]; // unique formats
     return formats.length >= 2 ? (formats.slice(0, -1).join(', ') + ' or ' + formats.slice(-1)) : formats[0];
   }

@@ -43,7 +43,7 @@ if ($nrArgs >= 0) {
             }
         }
 
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         AutoGame::log($courseId, $e->getMessage());
     }
 

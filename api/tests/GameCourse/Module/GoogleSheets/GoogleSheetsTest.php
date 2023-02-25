@@ -10,7 +10,6 @@ use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
-use Utils\Time;
 
 /**
  * NOTE: only run tests outside the production environment as
@@ -123,6 +122,28 @@ class GoogleSheetsTest extends TestCase
             if ($key === "frequency") $this->assertEquals("*/10 * * * *", $value);
             else $this->assertNull($value);
         }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function copy()
+    {
+        // Given
+        $copyTo = Course::addCourse("Course Copy", "CPY", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        $googlesheetsModule = new GoogleSheets($copyTo);
+        $googlesheetsModule->setEnabled(true);
+
+        $this->module->saveSchedule("* * * * *");
+
+        // When
+        $this->module->copyTo($copyTo);
+
+        // Then
+        $this->assertEquals($this->module->getSchedule(), $googlesheetsModule->getSchedule());
     }
 
     /**

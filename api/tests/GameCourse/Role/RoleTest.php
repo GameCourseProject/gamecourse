@@ -8,6 +8,7 @@ use GameCourse\Course\Course;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
 use GameCourse\Views\Aspect\Aspect;
+use GameCourse\Views\CreationMode;
 use GameCourse\Views\Page\Page;
 use GameCourse\Views\ViewHandler;
 use PDOException;
@@ -146,7 +147,7 @@ class RoleTest extends TestCase
      */
     public function getRoleIdRoleDoesntExist()
     {
-        $this->expectException(PDOException::class);
+        $this->expectException(Exception::class);
         Role::getRoleId("role_doesnt_exist", $this->course->getId());
     }
 
@@ -166,7 +167,7 @@ class RoleTest extends TestCase
      */
     public function getRoleNameRoleDoesntExist()
     {
-        $this->expectException(PDOException::class);
+        $this->expectException(Exception::class);
         Role::getRoleName(100);
     }
 
@@ -178,7 +179,7 @@ class RoleTest extends TestCase
     {
         // Given
         $roleId = Role::getRoleId("Teacher", $this->course->getId());
-        $page = Page::addPage($this->course->getId(), "Landing Page");
+        $page = Page::addPage($this->course->getId(), CreationMode::BY_VALUE, "Landing Page");
         Core::database()->update(Role::TABLE_ROLE, ["landingPage" => $page->getId()], ["id" => $roleId]);
 
         // Then
@@ -519,7 +520,7 @@ class RoleTest extends TestCase
      */
     public function addRoleToCourseWithLandingPageName()
     {
-        $page = Page::addPage($this->course->getId(), "Landing Page");
+        $page = Page::addPage($this->course->getId(), CreationMode::BY_VALUE, "Landing Page");
         Role::addRoleToCourse($this->course->getId(), "NewRole", "Landing Page");
         $roles = Role::getCourseRoles($this->course->getId());
         $this->assertCount(6, $roles);
@@ -537,7 +538,7 @@ class RoleTest extends TestCase
      */
     public function addRoleToCourseWithLandingPageId()
     {
-        $page = Page::addPage($this->course->getId(), "Landing Page");
+        $page = Page::addPage($this->course->getId(), CreationMode::BY_VALUE, "Landing Page");
         Role::addRoleToCourse($this->course->getId(), "NewRole", null, $page->getId());
         $roles = Role::getCourseRoles($this->course->getId());
         $this->assertCount(6, $roles);
@@ -862,7 +863,7 @@ class RoleTest extends TestCase
             Role::setUserRoles($this->courseUser->getId(), $this->course->getId(), ["Student", "StudentC"]);
             $this->fail("Exception should have been thrown in 'setUserRolesByNamesRolesDontExist'");
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $rolesNames = Role::getUserRoles($this->courseUser->getId(), $this->course->getId());
             $this->assertIsArray($rolesNames);
             $this->assertCount(2, $rolesNames);
@@ -915,7 +916,7 @@ class RoleTest extends TestCase
      */
     public function addRoleToUserRoleNotInCourse()
     {
-        $this->expectException(PDOException::class);
+        $this->expectException(Exception::class);
         Role::addRoleToUser($this->courseUser->getId(), $this->course->getId(), "NewRole");
     }
 

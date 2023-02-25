@@ -165,18 +165,18 @@ CREATE TABLE aspect(
 
 CREATE TABLE view_type(
     id                          varchar(50) NOT NULL PRIMARY KEY,
-    description                 varchar(125) NOT NULL
+    description                 TEXT NOT NULL
 );
 
 CREATE TABLE view(
     id                          bigint unsigned NOT NULL PRIMARY KEY,
     type                        varchar(50) NOT NULL,
     cssId                       varchar(50) DEFAULT NULL,
-    class                       varchar(200) DEFAULT NULL,
-    style                       varchar(255) DEFAULT NULL,
+    class                       TEXT DEFAULT NULL,
+    style                       TEXT DEFAULT NULL,
     visibilityType              ENUM ('visible', 'invisible', 'conditional') DEFAULT 'visible',
-    visibilityCondition         varchar(200) DEFAULT NULL,
-    loopData                    varchar(500) DEFAULT NULL,
+    visibilityCondition         TEXT DEFAULT NULL,
+    loopData                    TEXT DEFAULT NULL,
 
     FOREIGN key(type) REFERENCES view_type(id) ON DELETE CASCADE
 );
@@ -194,7 +194,7 @@ CREATE TABLE view_aspect(
 CREATE TABLE view_variable(
     view                        bigint unsigned NOT NULL,
     name                        varchar(50) NOT NULL,
-    value                       varchar(200) NOT NULL,
+    value                       TEXT NOT NULL,
     position                    int unsigned,
 
     UNIQUE key(view, name),
@@ -205,7 +205,7 @@ CREATE TABLE view_variable(
 CREATE TABLE view_event(
     view                        bigint unsigned NOT NULL,
     type                        ENUM ('click', 'dblclick', 'mouseover', 'mouseout', 'mouseup', 'wheel', 'drag') NOT NULL,
-    action                      varchar(200) NOT NULL,
+    action                      TEXT NOT NULL,
 
     UNIQUE key(view, type),
     FOREIGN key(view) REFERENCES view(id) ON DELETE CASCADE
@@ -238,10 +238,11 @@ CREATE TABLE view_category_order(
 );
 
 CREATE TABLE component_core(
-    viewRoot                    bigint unsigned PRIMARY KEY,
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    viewRoot                    bigint unsigned NOT NULL,
     description                 varchar(70) DEFAULT NULL,
     category                    int unsigned NOT NULL,
-    position                    int unsigned NOT NULL,
+    position                    int unsigned,
     module                      varchar(50) DEFAULT NULL,
 
     UNIQUE key(category, position),
@@ -251,36 +252,36 @@ CREATE TABLE component_core(
 );
 
 CREATE TABLE component_custom(
-    viewRoot                    bigint unsigned PRIMARY KEY,
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    viewRoot                    bigint unsigned NOT NULL,
     name                        varchar(25) NOT NULL,
     creationTimestamp           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updateTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     course                      int unsigned NOT NULL,
-    module                      varchar(50) DEFAULT NULL,
 
     UNIQUE key(course, name),
     FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
-    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
-    FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
-CREATE TABLE component_global(
-    viewRoot                    bigint unsigned PRIMARY KEY,
+CREATE TABLE component_custom_shared(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
     description                 varchar(70) DEFAULT NULL,
     category                    int unsigned NOT NULL,
     sharedBy                    int unsigned NOT NULL,
     sharedTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+    FOREIGN key(id) REFERENCES component_custom(id) ON DELETE CASCADE,
     FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
     FOREIGN key(sharedBy) REFERENCES user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE template_core(
-    viewRoot                    bigint unsigned PRIMARY KEY,
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    viewRoot                    bigint unsigned NOT NULL,
     name                        varchar(50) NOT NULL,
     category                    int unsigned NOT NULL,
-    position                    int unsigned NOT NULL,
+    position                    int unsigned,
     module                      varchar(50) DEFAULT NULL,
 
     UNIQUE key(category, position),
@@ -289,14 +290,27 @@ CREATE TABLE template_core(
     FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
 );
 
-CREATE TABLE template_global(
-    viewRoot                    bigint unsigned PRIMARY KEY,
+CREATE TABLE template_custom(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    viewRoot                    bigint unsigned NOT NULL,
     name                        varchar(50) NOT NULL,
+    creationTimestamp           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updateTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    course                      int unsigned NOT NULL,
+
+    UNIQUE key(course, name),
+    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+);
+
+CREATE TABLE template_custom_shared(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    description                 varchar(70) DEFAULT NULL,
     category                    int unsigned NOT NULL,
     sharedBy                    int unsigned NOT NULL,
     sharedTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+    FOREIGN key(id) REFERENCES component_custom(id) ON DELETE CASCADE,
     FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
     FOREIGN key(sharedBy) REFERENCES user(id) ON DELETE CASCADE
 );
@@ -304,14 +318,14 @@ CREATE TABLE template_global(
 CREATE TABLE page(
     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
     course                      int unsigned NOT NULL,
-    name                        varchar(25) NOT NULL,
+    name                        varchar(100) NOT NULL,
     isVisible                   boolean DEFAULT FALSE,
     viewRoot                    bigint unsigned NOT NULL,
     creationTimestamp           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updateTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     visibleFrom                 TIMESTAMP NULL DEFAULT NULL,
     visibleUntil                TIMESTAMP NULL DEFAULT NULL,
-    position                    int unsigned NULL DEFAULT NULL,
+    position                    int unsigned DEFAULT NULL,
 
     UNIQUE key(course, name),
     UNIQUE key(course, position),
@@ -327,7 +341,7 @@ CREATE TABLE notification(
      id             int unsigned PRIMARY KEY AUTO_INCREMENT,
      course         int unsigned DEFAULT NULL,
      user           int unsigned NOT NULL,
-     message        varchar(150) NOT NULL,
+     message        TEXT NOT NULL,
      isShowed       boolean NOT NULL DEFAULT FALSE,
 
      FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
@@ -409,9 +423,9 @@ CREATE TABLE participation(
     user 	                    int unsigned NOT NULL,
     course 	                    int unsigned NOT NULL,
     source                      varchar(50) NOT NULL DEFAULT 'GameCourse',
-    description                 varchar(500) NOT NULL,
+    description                 TEXT NOT NULL,
     type 	                    varchar(50) NOT NULL,
-    post 	                    varchar(255) DEFAULT NULL,
+    post 	                    TEXT DEFAULT NULL,
     date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     rating                      int DEFAULT NULL,
     evaluator                   int unsigned DEFAULT NULL,

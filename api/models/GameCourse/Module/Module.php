@@ -10,6 +10,7 @@ use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Views\Dictionary\ProvidersLibrary;
 use Utils\Utils;
 
 /**
@@ -137,6 +138,16 @@ abstract class Module
             ["module" => $this->id, "course" => $this->course->getId()],
             "isEnabled"
         ));
+    }
+
+    /**
+     * Gets the number of courses module is enabled in.
+     *
+     * @return int
+     */
+    public function isEnabledIn(): int
+    {
+        return Core::database()->select(self::TABLE_COURSE_MODULE, ["module" => $this->id, "isEnabled" => true], "COUNT(*)");
     }
 
     /**
@@ -497,7 +508,9 @@ abstract class Module
      * @return void
      */
     protected function initTemplates()
-    {}
+    {
+        // TODO
+    }
 
     /**
      * Sets events to listen to right from the start and their
@@ -506,8 +519,7 @@ abstract class Module
      * @return void
      */
     protected function initEvents()
-    {
-    }
+    {}
 
     /**
      * Creates Rule System section for module rules.
@@ -518,6 +530,24 @@ abstract class Module
     protected function initRules()
     {
         RuleSystem::addSection($this->course->getId(), $this::RULE_SECTION, 0, $this->id);
+    }
+
+    /**
+     * Sets new data providers on providers library to be
+     * available for charts to use.
+     *
+     * @return void
+     * @throws Exception
+     */
+    protected function initProviders()
+    {
+        $providersLibrary = Core::dictionary()->getLibraryById(ProvidersLibrary::ID);
+        foreach ($this->providers() as $provider) {
+            if (!$providersLibrary->hasFunction($provider["name"])) {
+                $providersLibrary->addFunction($provider["name"], $provider["description"], $provider["returnType"],
+                    $provider["function"], $provider["args"] ?? []);
+            }
+        }
     }
 
 
@@ -540,28 +570,20 @@ abstract class Module
      */
     protected function cleanDatabase()
     {
-        if (empty(Core::database()->select(self::TABLE_COURSE_MODULE, ["module" => $this->id, "isEnabled" => true]))) {
+        if ($this->isEnabledIn() === 0) {
             // Drop module tables if is not enabled in any course
             $sql = file_get_contents(MODULES_FOLDER . "/" . $this->id . "/sql/delete.sql");
             Core::database()->executeQuery($sql);
 
         } else {
             // Delete module entries
-            $this->deleteEntries();
-        }
-    }
-
-    /**
-     * Deletes entries related to the module from module tables.
-     */
-    protected function deleteEntries()
-    {
-        $sql = file_get_contents(MODULES_FOLDER . "/" . $this->id . "/sql/create.sql");
-        preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
-        $tables = $matches[2];
-        foreach ($tables as $table) {
-            if (Core::database()->columnExists($table, "course"))
-                Core::database()->delete($table, ["course" => $this->course->getId()]);
+            $sql = file_get_contents(MODULES_FOLDER . "/" . $this->id . "/sql/create.sql");
+            preg_match_all("/CREATE TABLE (IF NOT EXISTS )*(.*)\(/i", $sql, $matches);
+            $tables = $matches[2];
+            foreach ($tables as $table) {
+                if (Core::database()->columnExists($table, "course"))
+                    Core::database()->delete($table, ["course" => $this->course->getId()]);
+            }
         }
     }
 
@@ -576,7 +598,7 @@ abstract class Module
      */
     protected function removeEvents()
     {
-        if (empty(Core::database()->select(self::TABLE_COURSE_MODULE, ["module" => $this->id, "isEnabled" => true])))
+        if ($this->isEnabledIn() === 0)
             Event::stopAll($this->id);
     }
 
@@ -590,6 +612,23 @@ abstract class Module
     {
         $sectionId = Section::getSectionByName($this->course->getId(), $this::RULE_SECTION)->getId();
         RuleSystem::deleteSection($sectionId);
+    }
+
+    /**
+     * Removes data providers for module if not enabled in any course.
+     *
+     * @return void
+     * @throws Exception
+     */
+    protected function removeProviders()
+    {
+        if ($this->isEnabledIn() === 0) {
+            $providersLibrary = Core::dictionary()->getLibraryById(ProvidersLibrary::ID);
+            foreach ($this->providers() as $provider) {
+                if ($providersLibrary->hasFunction($provider["name"]))
+                    $providersLibrary->removeFunction($provider["name"]);
+            }
+        }
     }
 
 
@@ -769,6 +808,24 @@ abstract class Module
      * @return array
      */
     protected function generateRuleParams(...$args): array
+    {
+        return [];
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------ Data Providers ------------------ ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets data providers' available on module.
+     *
+     * This is only used to define new providers in modules and
+     * initialize them when enabled.
+     *
+     * @return array
+     */
+    protected function providers(): array
     {
         return [];
     }

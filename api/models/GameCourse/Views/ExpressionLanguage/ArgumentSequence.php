@@ -1,13 +1,16 @@
 <?php
 namespace GameCourse\Views\ExpressionLanguage;
 
+use GameCourse\Views\Dictionary\Library;
+
 class ArgumentSequence extends Node {
     private $node;
     private $next;
 
-    public function __construct(Node $node, Node $next = null) {
+    public function __construct(Node $node, Node $next = null, ?Library $library = null) {
         $this->node = $node;
         $this->next = $next;
+        $this->setLibrary($library);
     }
 
     public function getNode(): Node

@@ -59,6 +59,9 @@ class Profiling extends Module
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function init()
     {
         $this->initDatabase();
@@ -72,6 +75,12 @@ class Profiling extends Module
         $studentIndex = array_search("Student", Role::DEFAULT_ROLES);
         $hierarchy[$studentIndex]["children"][] = ["name" => self::PROFILING_ROLE];
         $this->course->setRolesHierarchy($hierarchy);
+
+        // NOTE: add role to system, otherwise transferring views w/
+        //       this role's aspects will fail
+        Core::database()->setForeignKeyChecks(false);
+        (new Course(0))->addRole(self::PROFILING_ROLE, null, null, self::ID);
+        Core::database()->setForeignKeyChecks(true);
     }
 
     public function copyTo(Course $copyTo)
@@ -79,6 +88,9 @@ class Profiling extends Module
         // Nothing to do here
     }
 
+    /**
+     * @throws Exception
+     */
     public function disable()
     {
         $this->cleanDatabase();
@@ -94,6 +106,10 @@ class Profiling extends Module
         }
         $this->course->setRolesHierarchy($hierarchy);
         $this->course->removeRole(null, null, self::ID);
+
+        // Remove profiling roles from system if not enabled in any course
+        if(empty(Core::database()->select(self::TABLE_COURSE_MODULE, ["module" => $this->id, "isEnabled" => true])))
+            (new Course(0))->removeRole(null, null, self::ID);
 
         // Remove logs
         if (file_exists($this->getPredictorLogsPath())) unlink($this->getPredictorLogsPath());
@@ -474,8 +490,14 @@ class Profiling extends Module
         $clusterNames = $this->getClusterNames();
         foreach ($clusterNames as $name) {
             if (!$this->course->hasRole($name)) {
-                $this->course->addRole($name);
+                $this->course->addRole($name, null, null, $this->id);
                 $hierarchy[$studentIndex]["children"][$profilingIndex]["children"][] = ["name" => $name];
+
+                // NOTE: add role to system, otherwise transferring views w/
+                //       this role's aspects will fail
+                Core::database()->setForeignKeyChecks(false);
+                (new Course(0))->addRole($name, null, null, $this->id);
+                Core::database()->setForeignKeyChecks(true);
             }
         }
         $this->course->setRolesHierarchy($hierarchy);

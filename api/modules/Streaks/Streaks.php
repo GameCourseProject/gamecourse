@@ -224,8 +224,7 @@ class Streaks extends Module
                     "order" => [[0, "asc"]],
                     "columnDefs" => [
                         ["type" => "natural", "targets" => [0, 1]],
-                        ["searchable" => false, "targets" => [2, 3, 4, 5]],
-                        ["orderable" => false, "targets" => [2, 3, 4, 5]]
+                        ["orderable" => false, "targets" => [2, 3, 4]]
                     ]
                 ],
                 "items" => $streaks,
@@ -749,9 +748,9 @@ class Streaks extends Module
                 ["label" => "Reward (" . $VCName . ")", "align" => "middle"],
             ]);
             array_splice($lists[0]["options"]["columnDefs"][0]["targets"], 2, 0, 2);
-            $lists[0]["options"]["columnDefs"][2]["targets"] = array_map(function ($target) {
+            $lists[0]["options"]["columnDefs"][1]["targets"] = array_map(function ($target) {
                 return $target + 1;
-            }, $lists[0]["options"]["columnDefs"][2]["targets"]);
+            }, $lists[0]["options"]["columnDefs"][1]["targets"]);
             $lists[0]["data"] = array_map(function (&$row, $index) use ($streaks) {
                 array_splice($row, 2, 0, [
                     ["type" => DataType::NUMBER, "content" => ["value" => $streaks[$index]["tokens"], "valueFormat" => "default"]],
@@ -975,6 +974,8 @@ class Streaks extends Module
         foreach ($userStreakAwards as $streakId => $awards) {
             $streak = (new Streak($streakId))->getData();
             $streak["nrCompletions"] = count($awards);
+            $streak["progress"] = $this->getUserStreakProgression($userId, $streakId, $streak["nrCompletions"]);
+            if ((new Streak($streakId))->isPeriodic()) $streak["deadline"] = $this->getUserStreakDeadline($userId, $streakId);
             $streaks[] = $streak;
         }
         return $streaks;
@@ -985,22 +986,32 @@ class Streaks extends Module
      *
      * @param int $userId
      * @param int $streakId
+     * @param int|null $nrCompletions
      * @return int
+     * @throws Exception
      */
-    public function getUserStreakProgression(int $userId, int $streakId): int
+    public function getUserStreakProgression(int $userId, int $streakId, int $nrCompletions = null): int
     {
         $courseId = $this->getCourse()->getId();
 
-        $cacheId = "streak_progression_s" . $streakId . "_u" . $userId;
+        $cacheId = "streak_progression_u" . $userId . "_s" . $streakId;
         $cacheValue = Cache::get($courseId, $cacheId);
 
-        if (AutoGame::isRunning($courseId) && !is_null($cacheValue)) {
+        if (AutoGame::isRunning($courseId) && !empty($cacheValue)) {
             // NOTE: get value from cache while AutoGame is running
             //       since progression table is not stable
             return $cacheValue;
 
         } else {
-            // TODO
+            if (is_null($nrCompletions)) $nrCompletions = $this->getUserStreakCompletions($userId, $streakId);
+            $progression = Core::database()->select(self::TABLE_STREAK_PROGRESSION,
+                ["user" => $userId, "streak" => $streakId, "repetition" => $nrCompletions + 1], "COUNT(*)");
+
+            // Store in cache
+            $cacheValue = $progression;
+            Cache::store($courseId, $cacheId, $cacheValue);
+
+            return $progression;
         }
     }
 

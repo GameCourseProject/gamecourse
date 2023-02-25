@@ -1,18 +1,11 @@
-<div style="position: relative">
-  <div *ngIf="!loading" id="wrapper" class="smaller_window">
-    <!-- conteudo da página -->
-    <div id="content-wrapper">
-      <div><div class="page-block">
-        <div class="header">
-          <img src="assets/icons/awards.svg">
-          <span>{{course.name}}</span>
-        </div>
-      </div></div>
-    </div>
-  </div>
+<div *ngIf="!loading" class="prose">
+  <h2>Welcome to {{course.name ?? ''}}!</h2>
+  <p class="font-medium">Hello fellow player 👋.</p>
+  <p>Take a look around and explore the course's pages available on the sidebar to know which types of awards you can earn.</p>
+  <p></p>
+</div>
 
-  <!-- Loader -->
-  <div *ngIf="loading" id="page-loading">
-    <img src="assets/loader/loader.gif" alt="loader">
-  </div>
+<!-- Spinner -->
+<div *ngIf="loading" class="flex justify-center items-center">
+  <app-spinner></app-spinner>
 </div>

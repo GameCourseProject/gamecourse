@@ -1,9 +1,11 @@
 <?php
 namespace GameCourse\Views\ViewType;
 
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\ViewHandler;
+use Utils\Utils;
 
 /**
  * This is the Block view type, which represents a core view that
@@ -42,6 +44,8 @@ class Block extends ViewType
             CREATE TABLE IF NOT EXISTS " . self::TABLE_VIEW_BLOCK . "(
                 id                          bigint unsigned NOT NULL PRIMARY KEY,
                 direction                   ENUM ('vertical', 'horizontal') DEFAULT 'vertical',
+                columns                     int unsigned DEFAULT NULL,
+                responsive                  boolean NOT NULL DEFAULT TRUE,
 
                 FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
             );
@@ -65,21 +69,25 @@ class Block extends ViewType
 
     public function get(int $viewId): array
     {
-        return ["direction" => Core::database()->select(self::TABLE_VIEW_BLOCK, ["id" => $viewId], "direction")];
+        return self::parse(Core::database()->select(self::TABLE_VIEW_BLOCK, ["id" => $viewId], "direction, columns, responsive"));
     }
 
     public function insert(array $view)
     {
         Core::database()->insert(self::TABLE_VIEW_BLOCK, [
             "id" => $view["id"],
-            "direction" => $view["direction"] ?? "vertical"
+            "direction" => $view["direction"] ?? "vertical",
+            "columns" => $view["columns"] ?? null,
+            "responsive" => +($view["responsive"] ?? true)
         ]);
     }
 
     public function update(array $view)
     {
         Core::database()->update(self::TABLE_VIEW_BLOCK, [
-            "direction" => $view["direction"] ?? "vertical"
+            "direction" => $view["direction"] ?? "vertical",
+            "columns" => $view["columns"] ?? null,
+            "responsive" => +($view["responsive"] ?? true)
         ], ["id" => $view["id"]]);
     }
 
@@ -88,14 +96,24 @@ class Block extends ViewType
         Core::database()->delete(self::TABLE_VIEW_BLOCK, ["id" => $viewId]);
     }
 
-    public function build(array &$view, array $sortedAspects = null)
+    /**
+     * @throws Exception
+     */
+    public function build(array &$view, array $sortedAspects = null, bool $simplify = false)
     {
         $children = ViewHandler::getChildrenOfView($view["id"]);
         if (!empty($children)) {
             foreach ($children as &$child) {
-                $child = ViewHandler::buildView($child, $sortedAspects);
+                $child = ViewHandler::buildView($child, $sortedAspects, $simplify);
                 if (!empty($child)) $view["children"][] = $child;
             }
+        }
+
+        // Simplify view block
+        if ($simplify) {
+            if (isset($view["direction"]) && $view["direction"] === "vertical") unset($view["direction"]);
+            if (isset($view["columns"]) && !$view["columns"]) unset($view["columns"]);
+            if (isset($view["responsive"]) && $view["responsive"]) unset($view["responsive"]);
         }
     }
 
@@ -126,35 +144,20 @@ class Block extends ViewType
     /*** -------------------- Dictionary -------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function compile(array &$view)
     {
-        if (isset($view["children"])) {
-            foreach ($view["children"] as &$vr) {
-                foreach ($vr as &$child) {
-                    ViewHandler::compileView($child);
-                }
-            }
-        }
+        $this->compileChildren($view);
     }
 
+    /**
+     * @throws Exception
+     */
     public function evaluate(array &$view, EvaluateVisitor $visitor)
     {
-        if (isset($view["children"])) {
-            $childrenEvaluated = [];
-            foreach ($view["children"] as &$vr) {
-                foreach ($vr as &$child) {
-                    if (isset($child["loopData"])) {
-                        ViewHandler::evaluateLoop($child, $visitor);
-                        $childrenEvaluated = array_merge($childrenEvaluated, $child);
-
-                    } else {
-                        ViewHandler::evaluateView($child, $visitor);
-                        $childrenEvaluated[] = $child;
-                    }
-                }
-            }
-            $view["children"] = $childrenEvaluated;
-        }
+        $this->evaluateChildren($view, $visitor);
     }
 
 
@@ -164,7 +167,8 @@ class Block extends ViewType
 
     public function parse(array $view = null, $field = null, string $fieldName = null)
     {
-        if ($view) return $view;
-        else return $field;
+        $intValues = ["columns"];
+        $boolValues = ["responsive"];
+        return Utils::parse(["int" => $intValues, "bool" => $boolValues], $view, $field, $fieldName);
     }
 }

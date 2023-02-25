@@ -16,6 +16,7 @@ import {ResourceManager} from "../../../_utils/resources/resource-manager";
 import {Notification} from '../../../_domain/notifications/notification';
 import {Theme} from "../../../_services/theming/themes-available";
 
+
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html'

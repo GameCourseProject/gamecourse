@@ -124,6 +124,28 @@ class ClassCheckTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function copy()
+    {
+        // Given
+        $copyTo = Course::addCourse("Course Copy", "CPY", "2021-2022", "#ffffff",
+            null, null, false, false);
+
+        $classcheckModule = new ClassCheck($copyTo);
+        $classcheckModule->setEnabled(true);
+
+        $this->module->saveSchedule("* * * * *");
+
+        // When
+        $this->module->copyTo($copyTo);
+
+        // Then
+        $this->assertEquals($this->module->getSchedule(), $classcheckModule->getSchedule());
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function disable()
     {
         // When
@@ -350,13 +372,11 @@ class ClassCheckTest extends TestCase
         $this->module->setIsRunning(true);
 
         // Then
-        $this->expectException(Exception::class);
-        $this->module->importData();
+        $this->assertFalse($this->module->importData());
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertEmpty($participations);
 
-        $this->assertFalse($this->module->isRunning());
         $this->assertNull($this->module->getStartedRunning());
         $this->assertNull($this->module->getFinishedRunning());
 

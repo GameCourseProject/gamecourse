@@ -23,6 +23,6 @@ try {
     $run = boolval(Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $courseId], "runNext"));
     if ($run) AutoGame::run($courseId);
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
     AutoGame::log($courseId, $e->getMessage());
 }

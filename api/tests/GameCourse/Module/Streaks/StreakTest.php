@@ -1027,7 +1027,8 @@ class StreakTest extends TestCase
         $this->assertCount(2, $streaks);
 
         $keys = ["id", "course", "name", "description", "color", "goal", "periodicityGoal", "periodicityNumber",
-            "periodicityTime", "periodicityType", "reward", "tokens", "isRepeatable", "isExtra", "isActive", "rule", "image"];
+            "periodicityTime", "periodicityType", "reward", "tokens", "isRepeatable", "isExtra", "isActive", "rule", "image",
+            "svg", "isPeriodic"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($streaks as $i => $streak) {
@@ -1162,7 +1163,7 @@ class StreakTest extends TestCase
             $this->fail("Error should have been thrown on 'addStreakDuplicateName'");
 
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertCount(1, Streak::getStreaks($this->courseId));
             $this->assertCount(1, Section::getSectionByName($this->courseId, Streaks::RULE_SECTION)->getRules());
         }
@@ -1251,7 +1252,7 @@ class StreakTest extends TestCase
             $this->fail("Error should have been thrown on 'editStreakDuplicateName'");
 
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertEquals("Streak2", $streak->getName());
         }
     }

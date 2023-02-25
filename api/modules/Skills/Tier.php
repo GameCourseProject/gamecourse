@@ -221,7 +221,8 @@ class Tier
 
         // Validate data
         if (key_exists("name", $fieldValues)) {
-            self::validateName($fieldValues["name"]);
+            $skillTreeId = $this->getSkillTree()->getId();
+            self::validateName($skillTreeId, $fieldValues["name"], $this->id);
             if ($this->isWildcard() && $fieldValues["name"] != self::WILDCARD)
                 throw new Exception("Can't change name of '" . self::WILDCARD . "' tier.");
         }
@@ -377,7 +378,7 @@ class Tier
                                    int $increment = null, int $minRating = null): Tier
     {
         self::trim($name);
-        self::validateName($name);
+        self::validateName($skillTreeId, $name);
         $id = Core::database()->insert(self::TABLE_SKILL_TIER, [
             "skillTree" => $skillTreeId,
             "name" => $name,
@@ -439,7 +440,7 @@ class Tier
      * @return void
      * @throws Exception
      */
-    public function copyTier(SkillTree $copyTo)
+    public function copyTier(SkillTree $copyTo): Tier
     {
         // Copy tier
         $tierInfo = $this->getData();
@@ -465,6 +466,8 @@ class Tier
             $skill = new Skill($skill["id"]);
             $skill->copySkill($copiedTier);
         }
+
+        return $copiedTier;
     }
 
     /**
@@ -604,17 +607,25 @@ class Tier
     /**
      * Validates tier name.
      *
+     * @param int $skillTreeId
      * @param $name
+     * @param int|null $tierId
      * @return void
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName(int $skillTreeId, $name, int $tierId = null)
     {
         if (!is_string($name) || empty($name))
             throw new Exception("Tier name can't be null neither empty.");
 
         if (iconv_strlen($name) > 50)
             throw new Exception("Tier name is too long: maximum of 50 characters.");
+
+        $whereNot = [];
+        if ($tierId) $whereNot[] = ["id", $tierId];
+        $tierNames = array_column(Core::database()->selectMultiple(self::TABLE_SKILL_TIER, ["skillTree" => $skillTreeId], "name", null, $whereNot), "name");
+        if (in_array($name, $tierNames))
+            throw new Exception("Duplicate tier name on skill tree: '$name'");
     }
 
 

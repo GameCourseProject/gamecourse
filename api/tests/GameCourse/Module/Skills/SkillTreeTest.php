@@ -417,7 +417,7 @@ class SkillTreeTest extends TestCase
         try {
             SkillTree::addSkillTree($this->courseId, "Skill Tree", 1000);
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $skillTrees = SkillTree::getSkillTrees($this->courseId);
             $this->assertCount(1, $skillTrees);
             $this->assertEquals($skillTree->getId(), $skillTrees[0]["id"]);
@@ -467,7 +467,7 @@ class SkillTreeTest extends TestCase
         try {
             $skillTree->editSkillTree("Skill Tree1", 2000);
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->assertEquals("Skill Tree2", $skillTree->getName());
         }
     }

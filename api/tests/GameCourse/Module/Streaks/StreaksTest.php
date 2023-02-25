@@ -130,10 +130,7 @@ class StreaksTest extends TestCase
             null, null, false, false);
 
         (new Awards($copyTo))->setEnabled(true);
-        $xpLevels = (new XPLevels($copyTo));
-        $xpLevels->setEnabled(true);
-        $xpLevels->updateMaxXP(2000);
-        $xpLevels->updateMaxExtraCredit(1000);
+        (new XPLevels($copyTo))->setEnabled(true);
         $streaksModule = new Streaks($copyTo);
         $streaksModule->setEnabled(true);
 
@@ -317,7 +314,7 @@ class StreaksTest extends TestCase
         $this->insertAward($this->course->getId(), $user3->getId(), $streak2->getId(), "Award 4", 500);
 
         $keys = ["id", "course", "name", "description", "color", "goal", "periodicityGoal", "periodicityNumber",
-            "periodicityTime", "periodicityType", "reward", "tokens", "isExtra", "isRepeatable", "isActive", "rule", "nrCompletions"];
+            "periodicityTime", "periodicityType", "reward", "tokens", "isExtra", "isRepeatable", "isActive", "rule", "nrCompletions", "progress"];
         $nrKeys = count($keys);
 
         // Has streaks

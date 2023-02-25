@@ -47,18 +47,18 @@ export class ViewSelectionService {
 
   private isSelected(view: View): boolean {
     return this.selected && view.id === this.selected.id &&
-      view.class.containsWord(ViewSelectionService.SELECTION_CLASS);
+      view.classList.containsWord(ViewSelectionService.SELECTION_CLASS);
   }
 
   private static select(view: View): void {
-    view.class += ' ' + ViewSelectionService.SELECTION_CLASS;
+    view.classList += ' ' + ViewSelectionService.SELECTION_CLASS;
   }
 
   public static unselect(view: View): void {
-    const split = view.class.split(' ');
+    const split = view.classList.split(' ');
     const index = split.findIndex(cl => cl === ViewSelectionService.SELECTION_CLASS);
     split.splice(index, 1);
-    view.class = split.join(' ');
+    view.classList = split.join(' ');
   }
 
   public toggleState(): void {

@@ -81,6 +81,7 @@
 
   .sorting_disabled {
     padding-right: 10px !important;
+    cursor: text !important;
 
     &::before,
     &::after {

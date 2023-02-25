@@ -132,10 +132,7 @@ class SkillsTest extends TestCase
             null, null, false, false);
 
         (new Awards($copyTo))->setEnabled(true);
-        $xpLevels = (new XPLevels($copyTo));
-        $xpLevels->setEnabled(true);
-        $xpLevels->updateMaxXP(2000);
-        $xpLevels->updateMaxExtraCredit(1000);
+        (new XPLevels($copyTo))->setEnabled(true);
         $skillsModule = new Skills($copyTo);
         $skillsModule->setEnabled(true);
 
@@ -179,6 +176,10 @@ class SkillsTest extends TestCase
                 $this->assertEquals($t["reward"], $copiedTiers[$j]["reward"]);
                 $this->assertEquals($t["position"], $copiedTiers[$j]["position"]);
                 $this->assertEquals($t["isActive"], $copiedTiers[$j]["isActive"]);
+                $this->assertEquals($t["costType"], $copiedTiers[$j]["costType"]);
+                $this->assertEquals($t["cost"], $copiedTiers[$j]["cost"]);
+                $this->assertEquals($t["increment"], $copiedTiers[$j]["increment"]);
+                $this->assertEquals($t["minRating"], $copiedTiers[$j]["minRating"]);
 
                 $skills = (new Tier($t["id"]))->getSkills();
                 $copiedSkills = (new Tier($copiedTiers[$j]["id"]))->getSkills();
@@ -189,6 +190,7 @@ class SkillsTest extends TestCase
                     $this->assertEquals($s["isCollab"], $copiedSkills[$k]["isCollab"]);
                     $this->assertEquals($s["isExtra"], $copiedSkills[$k]["isExtra"]);
                     $this->assertEquals($s["isActive"], $copiedSkills[$k]["isActive"]);
+                    $this->assertEquals($s["position"], $copiedSkills[$k]["position"]);
 
                     $copiedSkill = new Skill($copiedSkills[$k]["id"]);
                     $courseDataFolder = API_URL . "/" . $copyTo->getDataFolder(false);

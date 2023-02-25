@@ -123,13 +123,15 @@ class Section
      */
     public function setData(array $fieldValues)
     {
+        $courseId = $this->getCourse()->getId();
+
         // Trim values
         self::trim($fieldValues);
 
         // Validate data
         if (key_exists("name", $fieldValues)) {
             $newName = trim($fieldValues["name"]);
-            self::validateName($newName);
+            self::validateName($courseId, $newName, $this->id);
             $oldName = $this->getName();
         }
         if (key_exists("position", $fieldValues)) {
@@ -245,7 +247,7 @@ class Section
     public static function addSection(int $courseId, string $name, int $position = null, string $moduleId = null): Section
     {
         self::trim($name);
-        self::validateSection($name);
+        self::validateSection($courseId, $name);
 
         // Insert in database
         if (is_null($position)) $position = 0;
@@ -294,7 +296,7 @@ class Section
      * @return void
      * @throws Exception
      */
-    public function copySection(Course $copyTo)
+    public function copySection(Course $copyTo): Section
     {
         // Copy section
         $copiedSection = self::addSection($copyTo->getId(), $this->getName(), $this->getPosition(),
@@ -305,6 +307,8 @@ class Section
             $rule = new Rule($rule["id"]);
             $rule->copyRule($copiedSection);
         }
+
+        return $copiedSection;
     }
 
     /**
@@ -456,23 +460,26 @@ class Section
     /**
      * Validates section parameters.
      *
+     * @param int $courseId
      * @param $name
      * @return void
      * @throws Exception
      */
-    private static function validateSection($name)
+    private static function validateSection(int $courseId, $name)
     {
-        self::validateName($name);
+        self::validateName($courseId, $name);
     }
 
     /**
      * Validates section name.
      *
+     * @param int $courseId
      * @param $name
+     * @param int|null $sectionId
      * @return void
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName(int $courseId, $name, int $sectionId = null)
     {
         if (!is_string($name) || empty($name))
             throw new Exception("Section name can't be null neither empty.");
@@ -483,6 +490,12 @@ class Section
 
         if (iconv_strlen($name) > 50)
             throw new Exception("Section name is too long: maximum of 50 characters.");
+
+        $whereNot = [];
+        if ($sectionId) $whereNot[] = ["id", $sectionId];
+        $sectionNames = array_column(Core::database()->selectMultiple(self::TABLE_RULE_SECTION, ["course" => $courseId], "name", null, $whereNot), "name");
+        if (in_array($name, $sectionNames))
+            throw new Exception("Duplicate section name: '$name'");
     }
 
 

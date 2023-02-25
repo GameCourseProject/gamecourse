@@ -43,7 +43,7 @@ class CronJob
      */
     public static function removeCronJob(string $script, ...$args)
     {
-        self::updateCronTab($script, null, $args);
+        self::updateCronTab($script, null, ...$args);
     }
 
     /**
@@ -78,7 +78,7 @@ class CronJob
         if ($expression) $cronjobs[] = implode(" ", array_merge([$expression, "/usr/bin/php", $script], $args));
 
         // Save scheduled cron jobs
-        file_put_contents(self::CRONFILE, implode("\n", $cronjobs));
+        file_put_contents(self::CRONFILE, implode("\n", $cronjobs) . "\n"); // NOTE: must end with newline
         echo exec('crontab ' . self::CRONFILE);
     }
 

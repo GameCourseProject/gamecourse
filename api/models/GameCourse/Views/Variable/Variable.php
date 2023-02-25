@@ -65,7 +65,7 @@ class Variable
     public static function getVariableByName(int $viewId, string $name): ?Variable
     {
         $data = Core::database()->select(self::TABLE_VARIABLE, ["view" => $viewId, "name" => $name]);
-        if ($data) return new Variable($viewId, $name, $data["value"], $data["position"]);
+        if ($data) return new Variable($viewId, $name, $data["value"], intval($data["position"]));
         else return null;
     }
 
@@ -77,7 +77,10 @@ class Variable
      */
     public static function getVariablesOfView(int $viewId): array
     {
-        return Core::database()->selectMultiple(self::TABLE_VARIABLE, ["view" => $viewId], "name, value, position", "position");
+        return array_map(function ($variable) {
+            $variable["position"] = intval($variable["position"]);
+            return $variable;
+        }, Core::database()->selectMultiple(self::TABLE_VARIABLE, ["view" => $viewId], "name, value, position", "position"));
     }
 
 

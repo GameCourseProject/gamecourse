@@ -58,7 +58,7 @@
   <div class="target">If importing a module with an existing name, it will be replaced.</div>
   <app-input-file
     [id]="'import_module'"
-    [accept]="'.zip'"
+    [accept]="['.zip']"
     [classList]="'config_input'"
     (valueChange)="onFileSelected($event)">
   </app-input-file>

@@ -1,7 +1,7 @@
 import {View} from "../view";
 import {exists} from "../../../_utils/misc/misc";
 
-export let viewsAdded: Map<number, View>;     // Holds views that have already been added to the tree
+export let viewsAdded: Map<number, View>;     // Holds building-blocks that have already been added to the tree
 export let viewTree: any[];                   // The view tree being built
 export let baseFakeId: number;                // The minimum fake ID in the beginning; serves as a base
 

@@ -37,6 +37,7 @@ config.production.php
 setup.done
 /crontab.txt
 /modules/composer.json
+/models/GameCourse/Views/Dictionary/libraries/ProvidersLibrary.php
 
 # System Files
 .DS_Store
@@ -57,4 +58,3 @@ autogame/imported-functions/*/
 /autogame/config/**
 !/autogame/config/samples
 !/autogame/config/samples/**
-/autogame/test_log.txt

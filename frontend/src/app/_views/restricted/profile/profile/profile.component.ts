@@ -29,6 +29,7 @@ export class ProfileComponent implements OnInit {
   }
 
   loggedUser: User;
+  isATeacher: boolean;
   user: User;
   userPhoto: ResourceManager;
   userToManage: UserManageData;
@@ -62,6 +63,7 @@ export class ProfileComponent implements OnInit {
 
   async getLoggedUser(): Promise<void> {
     this.loggedUser = await this.api.getLoggedUser().toPromise();
+    this.isATeacher = await this.api.isATeacher(this.loggedUser.id).toPromise();
   }
 
   async getUser(userID: number): Promise<void> {

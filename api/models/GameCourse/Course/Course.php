@@ -235,7 +235,7 @@ class Course
         // Validate data
         if (key_exists("name", $fieldValues)) {
             $newName = $fieldValues["name"];
-            self::validateName($newName);
+            self::validateName($newName, key_exists("year", $fieldValues) ? $fieldValues["year"] : $this->getYear(), $this->id);
             $oldName = $this->getName();
         }
         if (key_exists("short", $fieldValues)) self::validateShort($fieldValues["short"]);
@@ -445,6 +445,10 @@ class Course
         $course->setRolesHierarchy($courseToCopy->getRolesHierarchy());
         $course->setRoles($courseToCopy->getRoles());
 
+        // Make user a teacher
+        $courseUser = $course->getCourseUserById(Core::getLoggedUser()->getId());
+        $courseUser->addRole("Teacher");
+
         // Copy modules info
         // NOTE: module dependencies are copied before the module
         $modulesEnabled = $courseToCopy->getModules(true, true);
@@ -534,23 +538,53 @@ class Course
      */
     public static function deleteCourse(int $courseId)
     {
-        // Remove data folder
-        Course::removeDataFolder($courseId);
+        $course = Course::getCourseById($courseId);
+        if ($course) {
+            // Disable modules
+            // NOTE: module dependants are disabled before the module
+            $modulesEnabled = $course->getModules(true, true);
+            $modulesDisabled = [];
+            while (count($modulesDisabled) != count($modulesEnabled)) {
+                foreach ($modulesEnabled as $moduleId) {
+                    if (in_array($moduleId, $modulesDisabled)) // already disabled
+                        continue;
 
-        // Disable autogame & remove info
-        AutoGame::setAutoGame($courseId, false);
-        AutoGame::deleteAutoGameInfo($courseId);
+                    // Check if dependants have already been disabled
+                    $allDependantsDisabled = true;
+                    foreach (($course->getModuleById($moduleId))->getDependants(DependencyMode::HARD, true) as $dependantId) {
+                        $dependant = $course->getModuleById($dependantId);
+                        if ($dependant->isEnabled()) {
+                            $allDependantsDisabled = false;
+                            break;
+                        }
+                    }
 
-        // Remove automations
-        $course = new Course($courseId);
-        $course->setAutomation("AutoEnabling", null);
-        $course->setAutomation("AutoDisabling", null);
+                    // Disable module
+                    if ($allDependantsDisabled) {
+                        $module = $course->getModuleById($moduleId);
+                        $module->setEnabled(false);
+                        $modulesDisabled[] = $moduleId;
+                    }
+                }
+            }
 
-        // Delete cache
-        Cache::clean($courseId);
+            // Remove data folder
+            Course::removeDataFolder($courseId);
 
-        // Delete from database
-        Core::database()->delete(self::TABLE_COURSE, ["id" => $courseId]);
+            // Disable autogame & remove info
+            AutoGame::setAutoGame($courseId, false);
+            AutoGame::deleteAutoGameInfo($courseId);
+
+            // Remove automations
+            $course->setAutomation("AutoEnabling", null);
+            $course->setAutomation("AutoDisabling", null);
+
+            // Delete cache
+            Cache::clean($courseId);
+
+            // Delete from database
+            Core::database()->delete(self::TABLE_COURSE, ["id" => $courseId]);
+        }
     }
 
     /**
@@ -635,7 +669,11 @@ class Course
             "u.*, a.username, a.auth_service, a.lastLogin, cu.lastActivity, cu.isActive as isActiveInCourse",
             "u.id"
         );
-        foreach ($courseUsers as &$courseUser) { $courseUser = CourseUser::parse($courseUser); }
+        foreach ($courseUsers as &$courseUser) {
+            $cu = CourseUser::getCourseUserById($courseUser["id"], $this);
+            $courseUser["image"] = $cu->getImage();
+            $courseUser = CourseUser::parse($courseUser);
+        }
         return $courseUsers;
     }
 
@@ -667,7 +705,11 @@ class Course
             "u.*, a.username, a.auth_service, a.lastLogin, cu.lastActivity, cu.isActive as isActiveInCourse",
             "u.id"
         );
-        foreach ($courseUsers as &$courseUser) { $courseUser = CourseUser::parse($courseUser); }
+        foreach ($courseUsers as &$courseUser) {
+            $cu = CourseUser::getCourseUserById($courseUser["id"], $this);
+            $courseUser["image"] = $cu->getImage();
+            $courseUser = CourseUser::parse($courseUser);
+        }
         return $courseUsers;
     }
 
@@ -714,7 +756,11 @@ class Course
             "u.*, a.username, a.auth_service, a.lastLogin",
             "u.id"
         );
-        foreach ($users as &$user) { $user = User::parse($user); }
+        foreach ($users as &$user) {
+            $u = User::getUserById($user["id"]);
+            $user["image"] = $u->getImage();
+            $user = User::parse($user);
+        }
         return $users;
     }
 
@@ -969,7 +1015,7 @@ class Course
      */
     public function getPages(?bool $visible = null): array
     {
-        return Page::getPagesOfCourse($this->id, $visible);
+        return Page::getPages($this->id, $visible);
     }
 
     /**
@@ -1173,7 +1219,7 @@ class Course
      * @return void
      * @throws Exception
      */
-    private function setAutomation(string $script, ...$data)
+    public function setAutomation(string $script, ...$data)
     {
         switch ($script) {
             case "AutoEnabling":
@@ -1197,11 +1243,14 @@ class Course
      * @return void
      * @throws Exception
      */
-    private function setAutoEnabling(?string $startDate)
+    public function setAutoEnabling(?string $startDate)
     {
-        $script = ROOT_PATH . "models/GameCourse/Course/AutoEnablingScript.php";
-        if ($startDate) new CronJob($script, CronJob::dateToExpression($startDate), $this->id);
-        else CronJob::removeCronJob($script, $this->id);
+        $script = ROOT_PATH . "models/GameCourse/Course/scripts/AutoEnablingScript.php";
+        if ($startDate) {
+            // Check if date is in the future
+            if (date("Y-m-d H:i:s", strtotime($startDate)) > date("Y-m-d H:i:s", time()))
+                new CronJob($script, CronJob::dateToExpression($startDate), $this->id);
+        } else CronJob::removeCronJob($script, $this->id);
     }
 
     /**
@@ -1212,11 +1261,15 @@ class Course
      * @return void
      * @throws Exception
      */
-    private function setAutoDisabling(?string $endDate)
+    public function setAutoDisabling(?string $endDate)
     {
-        $script = ROOT_PATH . "models/GameCourse/Course/AutoDisablingScript.php";
-        if ($endDate) new CronJob($script, CronJob::dateToExpression($endDate), $this->id);
-        else CronJob::removeCronJob($script, $this->id);
+        $script = ROOT_PATH . "models/GameCourse/Course/scripts/AutoDisablingScript.php";
+        if ($endDate) {
+            // Check if date is in the future
+            if (date("Y-m-d H:i:s", strtotime($endDate)) > date("Y-m-d H:i:s", time()))
+                new CronJob($script, CronJob::dateToExpression($endDate), $this->id);
+
+        } else CronJob::removeCronJob($script, $this->id);
     }
 
 
@@ -1408,10 +1461,10 @@ class Course
      */
     private static function validateCourse($name, $short, $color, $year, $startDate, $endDate, $isActive, $isVisible)
     {
-        self::validateName($name);
+        self::validateYear($year);
+        self::validateName($name, $year);
         self::validateShort($short);
         self::validateColor($color);
-        self::validateYear($year);
         self::validateDateTime($startDate);
         self::validateDateTime($endDate);
         self::validateStartAndEndDates($startDate, $endDate);
@@ -1425,7 +1478,7 @@ class Course
      *
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName($name, $year, int $courseId = null)
     {
         if (!is_string($name) || empty(trim($name)))
             throw new Exception("Course name can't be null neither empty.");
@@ -1436,6 +1489,11 @@ class Course
 
         if (iconv_strlen($name) > 100)
             throw new Exception("Course name is too long: maximum of 100 characters.");
+
+        $whereNot = [];
+        if ($courseId) $whereNot[] = ["id", $courseId];
+        if (!empty(Core::database()->select(self::TABLE_COURSE, ["name" => $name, "year" => $year], "*", null, $whereNot)))
+            throw new Exception("Duplicate course '$name' for academic year '$year'.");
     }
 
     /**

@@ -19,10 +19,11 @@ if (array_key_exists("state", $_GET)) {
     $courseId = intval($_GET["state"]);
     $authCode = $_GET["code"];
 
-    if ($courseId && $authCode) {
-        $googleSheets = new GoogleSheets(new Course($courseId));
-        $googleSheets->saveToken($authCode);
-    }
+    if (!$courseId) throw new Exception("Authentication failed: no course ID found.");
+    if (!$authCode) throw new Exception("Authentication failed: no authentication code found");
+
+    $googleSheets = new GoogleSheets(new Course($courseId));
+    $googleSheets->createAccessToken($authCode);
 
     // Close authentication window
     echo "<script>window.close();window.opener.location.reload(false);</script>";

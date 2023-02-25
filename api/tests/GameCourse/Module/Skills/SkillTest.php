@@ -1707,6 +1707,7 @@ tags:
             $this->assertEquals($skill["isCollab"], $copiedSkills[$i]["isCollab"]);
             $this->assertEquals($skill["isExtra"], $copiedSkills[$i]["isExtra"]);
             $this->assertEquals($skill["isActive"], $copiedSkills[$i]["isActive"]);
+            $this->assertEquals($skill["position"], $copiedSkills[$i]["position"]);
 
             $copiedSkill = new Skill($copiedSkills[$i]["id"]);
             $courseDataFolder = API_URL . "/" . $copyTo->getDataFolder(false);

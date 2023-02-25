@@ -42,7 +42,7 @@ abstract class AutoGame
         RuleSystem::initRuleSystem($courseId);
 
         // Setup logging
-        $logsFile = self::getLogsFile($courseId);
+        $logsFile = self::getLogsFile($courseId, false);
         Utils::initLogging($logsFile);
     }
 
@@ -75,7 +75,7 @@ abstract class AutoGame
         RuleSystem::deleteRuleSystemInfo($courseId);
 
         // Remove logging info
-        $logsFile = self::getLogsFile($courseId);
+        $logsFile = self::getLogsFile($courseId, false);
         Utils::removeLogging($logsFile);
     }
 
@@ -258,8 +258,8 @@ abstract class AutoGame
             $cmd .= "new ";
         }
 
-        $cmd .= "\"$rulesFolder\" \"$logsFile\" " . DB_NAME . " " . DB_USER . " \"" . DB_PASSWORD . "\"";
-        $cmd .= " >> " . ROOT_PATH . "autogame/test_log.txt &";
+        $cmd .= "\"$rulesFolder\" \"$logsFile\" \"" . DB_HOST . "\" \"" . DB_NAME . "\" \"" . DB_USER . "\" \"" . DB_PASSWORD . "\"";
+        $cmd .= " &"; // NOTE: this will run autogame in the background
         system($cmd);
     }
 
@@ -376,7 +376,7 @@ abstract class AutoGame
      */
     public static function getLogs(int $courseId): string
     {
-        $logsFile = self::getLogsFile($courseId);
+        $logsFile = self::getLogsFile($courseId, false);
         return Utils::getLogs($logsFile);
     }
 
@@ -390,7 +390,7 @@ abstract class AutoGame
      */
     public static function log(int $courseId, string $message, string $type = "ERROR")
     {
-        $logsFile = self::getLogsFile($courseId);
+        $logsFile = self::getLogsFile($courseId, false);
         Utils::addLog($logsFile, $message, $type);
     }
 
@@ -403,9 +403,9 @@ abstract class AutoGame
      */
     private static function getLogsFile(int $courseId, bool $fullPath = true): string
     {
-        $filename = "autogame_$courseId.txt";
-        if ($fullPath) return self::LOGS_FOLDER . "/" . $filename;
-        else return $filename;
+        $path = self::LOGS_FOLDER . "/" . "autogame_$courseId.txt";
+        if ($fullPath) return LOGS_FOLDER . "/" . $path;
+        else return $path;
     }
 
 

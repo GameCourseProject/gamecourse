@@ -956,7 +956,7 @@ class TierTest extends TestCase
         try {
             Tier::addTier($this->skillTreeId, "Tier", 200);
 
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $tiers = Tier::getTiersOfSkillTree($this->skillTreeId);
             $this->assertCount(2, $tiers);
         }
@@ -1072,6 +1072,10 @@ class TierTest extends TestCase
             $this->assertEquals($tier["reward"], $copiedTiers[$i]["reward"]);
             $this->assertEquals($tier["position"], $copiedTiers[$i]["position"]);
             $this->assertEquals($tier["isActive"], $copiedTiers[$i]["isActive"]);
+            $this->assertEquals($tier["costType"], $copiedTiers[$i]["costType"]);
+            $this->assertEquals($tier["cost"], $copiedTiers[$i]["cost"]);
+            $this->assertEquals($tier["increment"], $copiedTiers[$i]["increment"]);
+            $this->assertEquals($tier["minRating"], $copiedTiers[$i]["minRating"]);
         }
 
         $skills = $tier2->getSkills();
@@ -1083,6 +1087,7 @@ class TierTest extends TestCase
             $this->assertEquals($skill["isCollab"], $copiedSkills[$i]["isCollab"]);
             $this->assertEquals($skill["isExtra"], $copiedSkills[$i]["isExtra"]);
             $this->assertEquals($skill["isActive"], $copiedSkills[$i]["isActive"]);
+            $this->assertEquals($skill["position"], $copiedSkills[$i]["position"]);
 
             $copiedSkill = new Skill($copiedSkills[$i]["id"]);
             $courseDataFolder = API_URL . "/" . $copyTo->getDataFolder(false);

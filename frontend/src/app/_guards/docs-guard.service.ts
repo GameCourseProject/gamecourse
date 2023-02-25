@@ -26,9 +26,11 @@ export class DocsGuard implements CanActivate {
 
   async check() {
     const user = await this.api.getLoggedUser().toPromise();
-    const isATeacher = await this.api.isATeacher(user.id).toPromise();
+    if (user.isAdmin) return true;
 
-    if (user.isAdmin || isATeacher) return true;
-    else return this.router.parseUrl('/no-access');
+    const isATeacher = await this.api.isATeacher(user.id).toPromise();
+    if (isATeacher) return true;
+
+    return this.router.parseUrl('/no-access');
   }
 }

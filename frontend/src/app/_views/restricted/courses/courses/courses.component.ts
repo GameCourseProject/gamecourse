@@ -34,6 +34,7 @@ export class CoursesComponent implements OnInit {
   @ViewChild('f', { static: false }) f: NgForm;
 
   yearOptions: {value: string, text: string}[] = this.initYearOptions();
+  editYearOptions: {value: string, text: string}[] = this.initYearOptions();
 
   importedFile: File;
 
@@ -65,6 +66,7 @@ export class CoursesComponent implements OnInit {
 
   async getCourses(): Promise<void> {
     if (this.user.isAdmin) this.courses = await this.api.getCourses().toPromise();
+    else if (await this.api.isATeacher(this.user.id)) this.courses = await this.api.getUserCourses(this.user.id).toPromise();
     else this.courses = await this.api.getUserCourses(this.user.id, null, true).toPromise();
   }
 
@@ -92,7 +94,7 @@ export class CoursesComponent implements OnInit {
       { type: 'natural', targets: [0, 1, 2, 3, 4, 5, 6] },
       { orderData: 3,   targets: 4 },
       { orderData: 5,   targets: 6 },
-      { searchable: false, targets: [3, 5, 7, 8, 9]},
+      { searchable: false, targets: [3, 5, 9]},
       { orderable: false, targets: [7, 8, 9] }
     ]
   }
@@ -132,7 +134,7 @@ export class CoursesComponent implements OnInit {
     this.loading.table = false;
   }
 
-  doActionOnTable(action: string, row: number, col: number, value?: any): void {
+  async doActionOnTable(action: string, row: number, col: number, value?: any): Promise<void> {
     const courseToActOn = this.courses[row];
 
     if (action === 'value changed') {
@@ -140,7 +142,7 @@ export class CoursesComponent implements OnInit {
       else if (col === 8) this.toggleVisible(courseToActOn);
 
     } else if (action === Action.VIEW) {
-      const redirectLink = this.getRedirectLink(courseToActOn);
+      const redirectLink = await this.getRedirectLink(courseToActOn);
       this.router.navigate([redirectLink]);
 
     } else if (action === Action.DUPLICATE) {
@@ -149,6 +151,9 @@ export class CoursesComponent implements OnInit {
     } else if (action === Action.EDIT) {
       this.mode = 'edit';
       this.courseToManage = this.initCourseToManage(courseToActOn);
+      this.editYearOptions = this.initYearOptions();
+      if (this.courseToManage.year && !this.editYearOptions.find(year => year.value === this.courseToManage.year))
+        this.editYearOptions.unshift({value: this.courseToManage.year, text: this.courseToManage.year});
       ModalService.openModal('manage');
 
     } else if (action === Action.DELETE) {
@@ -329,12 +334,14 @@ export class CoursesComponent implements OnInit {
     return years;
   }
 
-  getRedirectLink(course: Course): string {
+  async getRedirectLink(course: Course): Promise<string> {
     const link = '/courses/' + course.id;
-    if (this.user.isAdmin) return link; // admins go to main page
+    if (this.user.isAdmin) return link + '/overview'; // admins go to overview page
 
-    const pageID = course.landingPage; // FIXME: landing page per user role
+    const userLandingPage = await this.api.getUserLandingPage(course.id, this.user.id).toPromise();
+    const pageID = userLandingPage?.id || course.landingPage;
     if (pageID) return link + '/pages/' + pageID;
+    else if (await this.api.isTeacher(course.id, this.user.id).toPromise()) return link + '/overview';
     else return link;
   }
 

@@ -7,7 +7,8 @@ module.exports = {
   content: [
     './src/**/*.{html,ts}',
     './src/index.html',
-    '../api/modules/**/*.php'
+    '../api/modules/**/*.php',
+    '../api/models/GameCourse/Views/**/*.php'
   ],
   plugins: [
     require('@tailwindcss/typography'),

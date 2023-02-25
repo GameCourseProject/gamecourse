@@ -8,7 +8,6 @@ use GameCourse\Course\Course;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
-use Mockery;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
@@ -232,7 +231,7 @@ class QRTest extends TestCase
     {
         // Given
         $student = new CourseUser($this->course->getStudents(true)[0]["id"], $this->course);
-        $QRCode = $this->module->generateQRCodes(1)[0];
+        $QRCode = $this->module->generateQRCodes()[0];
 
         // When
         $this->module->addQRParticipation($student->getId(), 1, ClassType::LECTURE, $QRCode["key"]);

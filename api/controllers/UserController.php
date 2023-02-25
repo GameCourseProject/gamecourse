@@ -120,7 +120,6 @@ class UserController
     {
         $user = Core::getLoggedUser();
         $userInfo = $user->getData();
-        $userInfo["image"] = $user->getImage();
         API::response($userInfo);
     }
 
@@ -143,9 +142,8 @@ class UserController
 
         $loggedUser = Core::getLoggedUser();
         if ($loggedUser->getId() != $user->getId() && !$loggedUser->isAdmin())
-            $userInfo = $user->getData("name, major, nickname, studentNumber, username, auth_service");
+            $userInfo = $user->getData("name, major, nickname, studentNumber, username, auth_service, image");
         else $userInfo = $user->getData();
-        $userInfo["image"] = $user->getImage();
 
         API::response($userInfo);
     }
@@ -166,7 +164,6 @@ class UserController
         $users = User::getUsers($isActive, $isAdmin);
         foreach ($users as &$userInfo) {
             $user = User::getUserById($userInfo["id"]);
-            $userInfo["image"] = $user->getImage();
             $userInfo["nrCourses"] = count($user->getCourses());
         }
 
@@ -236,7 +233,6 @@ class UserController
         if ($image) $user->setImage($image);
 
         $userInfo = $user->getData();
-        $userInfo["image"] = $user->getImage();
         $userInfo["nrCourses"] = count($user->getCourses());
         API::response($userInfo);
     }
@@ -246,11 +242,14 @@ class UserController
      */
     public function editUser()
     {
-        API::requireAdminPermission();
         API::requireValues('userId', 'name', 'authService', 'studentNumber', 'email', 'nickname', 'username', 'major', 'image');
 
         $userId = API::getValue("userId", "int");
         $user = API::verifyUserExists($userId);
+
+        // Only admins can access other users' information
+        if (Core::getLoggedUser()->getId() !== $userId)
+            API::requireAdminPermission();
 
         // Get values
         $name = API::getValue("name");
@@ -269,7 +268,6 @@ class UserController
         if ($image) $user->setImage($image);
 
         $userInfo = $user->getData();
-        $userInfo["image"] = $user->getImage();
         $userInfo["nrCourses"] = count($user->getCourses());
         API::response($userInfo);
     }

@@ -1,14 +1,14 @@
 <?php
 namespace GameCourse\Views\Component;
 
-
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\Module\Module;
+use GameCourse\User\User;
+use GameCourse\Views\Category\Category;
 use GameCourse\Views\CreationMode;
+use GameCourse\Views\Logging\Logging;
 use GameCourse\Views\ViewHandler;
-use PDOException;
 use Utils\Utils;
 
 /**
@@ -17,7 +17,8 @@ use Utils\Utils;
  */
 class CustomComponent extends Component
 {
-    const TABLE_CUSTOM_COMPONENT = 'component_custom';
+    const TABLE_COMPONENT = 'component_custom';
+    const TABLE_COMPONENT_SHARED = 'component_custom_shared';
 
 
     /*** ---------------------------------------------------- ***/
@@ -44,37 +45,22 @@ class CustomComponent extends Component
         return Course::getCourseById($this->getData("course"));
     }
 
-    public function getModule(): ?Module
-    {
-        return Module::getModuleById($this->getData("module"), $this->getCourse());
-    }
-
-    /**
-     * Gets custom component data from the database.
-     *
-     * @example getData() --> gets all custom component data
-     * @example getData("name") --> gets custom component name
-     * @example getData("name, course") --> gets custom component name & course
-     *
-     * @param string $field
-     * @return array|int|null
-     */
-    public function getData(string $field = "*")
-    {
-        $data = Core::database()->select(self::TABLE_CUSTOM_COMPONENT, ["viewRoot" => $this->viewRoot], $field);
-        return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
-    }
-
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- Setters --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function setName(string $name)
     {
         $this->setData(["name" => $name]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function setCreationTimestamp(string $timestamp)
     {
         $this->setData(["creationTimestamp" => $timestamp]);
@@ -90,11 +76,6 @@ class CustomComponent extends Component
         $this->setData(["course" => $course->getId()]);
     }
 
-    public function setModule(?Module $module)
-    {
-        $this->setData(["module" => $module ? $module->getId() : null]);
-    }
-
     /**
      * Sets custom component data on the database.
      *
@@ -107,15 +88,19 @@ class CustomComponent extends Component
      */
     public function setData(array $fieldValues)
     {
+        $courseId = $this->getCourse()->getId();
+
         // Trim values
         self::trim($fieldValues);
 
         // Validate data
-        if (key_exists("name", $fieldValues)) self::validateName($fieldValues["name"]);
+        if (key_exists("name", $fieldValues)) self::validateName($courseId, $fieldValues["name"], $this->id);
 
         // Update data
         if (count($fieldValues) != 0)
-            Core::database()->update(self::TABLE_CUSTOM_COMPONENT, $fieldValues, ["viewRoot" => $this->viewRoot]);
+            Core::database()->update(self::TABLE_COMPONENT, $fieldValues, ["id" => $this->id]);
+
+        $this->refreshUpdateTimestamp();
     }
 
 
@@ -126,16 +111,13 @@ class CustomComponent extends Component
     /**
      * Gets custom components of a given course.
      *
-     * @param int|null $courseId
+     * @param int $courseId
      * @return array
      * @throws Exception
      */
-    public static function getComponents(int $courseId = null): array
+    public static function getComponents(int $courseId): array
     {
-        if ($courseId === null)
-            throw new Exception("Can't get custom components of course: no course given.");
-
-        $components = Core::database()->selectMultiple(self::TABLE_CUSTOM_COMPONENT, ["course" => $courseId]);
+        $components = Core::database()->selectMultiple(self::TABLE_COMPONENT, ["course" => $courseId], "*", "name");
         foreach ($components as &$component) { $component = self::parse($component); }
         return $components;
     }
@@ -165,95 +147,124 @@ class CustomComponent extends Component
      * @param int $courseId
      * @param int|null $viewRoot
      * @param array|null $viewTree
-     * @param string|null $moduleId
      * @return CustomComponent
      * @throws Exception
      */
-    public static function addComponent(string $creationMode, string $name, int $courseId, int $viewRoot = null,
-                                        ?array $viewTree = null, string $moduleId = null): CustomComponent
+    public static function addComponent(int $courseId, string $creationMode, string $name, array $viewTree = null,
+                                        int $viewRoot = null): CustomComponent
     {
         self::trim($name);
-        self::validateName($name);
+        self::validateName($courseId, $name);
 
         if ($creationMode == CreationMode::BY_VALUE) {
-            if ($viewTree) {
-                // Verify view tree only has course aspects
-                try {
-                    ViewHandler::getAspectsInViewTree(null, $viewTree, $courseId);
-
-                } catch (PDOException $e) {
-                    $error = $e->getMessage();
-                    preg_match("/Role with name '(.+)' doesn't exist/", $error, $matches);
-                    if (!empty($matches)) {
-                        $roleName = $matches[1];
-                        throw new Exception("Role with name '" . $roleName . "' not found in course with ID = " . $courseId . "." .
-                            "Add this role to the course first before adding this custom component.");
-                    }
-                }
-            } else $viewTree = ViewHandler::ROOT_VIEW;
-
-            // Add view tree of component
+            if (!$viewTree) $viewTree = ViewHandler::ROOT_VIEW;
             $viewRoot = ViewHandler::insertViewTree($viewTree, $courseId);
 
         } else if ($creationMode == CreationMode::BY_REFERENCE) {
-            if ($viewRoot === null)
+            if (is_null($viewRoot))
                 throw new Exception("Can't add custom component by reference: no view root given.");
         }
 
-        // Create new component
-        Core::database()->insert(self::TABLE_CUSTOM_COMPONENT, [
+        // Insert in database
+        $id = Core::database()->insert(self::TABLE_COMPONENT, [
             "viewRoot" => $viewRoot,
             "name" => $name,
-            "course" => $courseId,
-            "module" => $moduleId
+            "course" => $courseId
         ]);
-        return new CustomComponent($viewRoot);
+        return new CustomComponent($id);
     }
 
     /**
-     * Adds a custom component to the database by copying from another
-     * existing custom component.
+     * Copies an existing custom component.
      *
-     * @param int $copyFrom
+     * @param string $creationMode
      * @return CustomComponent
      * @throws Exception
      */
-    public static function copyComponent(int $copyFrom): CustomComponent
+    public function copyComponent(string $creationMode): CustomComponent
     {
-        $componentToCopy = self::getComponentByViewRoot(ComponentType::CORE, $copyFrom);
-        if (!$componentToCopy) throw new Exception("Component to copy from with view root = " . $copyFrom . " doesn't exist.");
-        $componentInfo = $componentToCopy->getData();
+        $componentInfo = $this->getData();
 
-        // Create copy
+        // Copy component
         $name = $componentInfo["name"] . " (Copy)";
-        $viewTree = ViewHandler::buildView($componentInfo["viewRoot"]);
-        return self::addComponent(CreationMode::BY_VALUE, $name, $componentInfo["course"], null, $viewTree);
+        $viewTree = $creationMode === CreationMode::BY_VALUE ? ViewHandler::buildView($componentInfo["viewRoot"], null, true) : null;
+        $viewRoot = $creationMode === CreationMode::BY_REFERENCE ? $componentInfo["viewRoot"] : null;
+        return self::addComponent($componentInfo["course"], $creationMode, $name, $viewTree, $viewRoot);
     }
 
     /**
-     * Edits an existing custom components in database.
+     * Edits an existing custom component in the database.
      * Returns the edited custom component.
      *
      * @param string $name
-     * @return $this
+     * @param array|null $viewTreeChanges
+     * @return CustomComponent
      * @throws Exception
      */
-    public function editComponent(string $name): CustomComponent
+    public function editComponent(string $name, ?array $viewTreeChanges = null): CustomComponent
     {
         $this->setName($name);
-        $this->refreshUpdateTimestamp();
+
+        // Update view tree, if changes were made
+        if ($viewTreeChanges) {
+            $logs = $viewTreeChanges["logs"];
+            $views = $viewTreeChanges["views"];
+            Logging::processLogs($logs, $views, $this->getCourse()->getId());
+        }
+
         return $this;
     }
 
     /**
-     * Deletes a custom component from the database.
+     * Deletes a custom component from the database and removes all its views.
+     * Option to keep views linked to component (created by reference)
+     * intact or to replace them by a placeholder view.
      *
-     * @param int $viewRoot
+     * @param int $id
+     * @param bool $keepLinked
      * @return void
+     * @throws Exception
      */
-    public static function deleteComponent(int $viewRoot) {
-        ViewHandler::deleteViewTree($viewRoot);
+    public static function deleteComponent(int $id, bool $keepLinked = true)
+    {
+        $component = self::getComponentById($id);
+        if ($component) {
+            parent::deleteComponent($id, $keepLinked);
+            Core::database()->delete(self::TABLE_COMPONENT, ["id" => $id]);
+        }
     }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------------- Sharing --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    public function isShared(): bool
+    {
+        return !empty(Core::database()->select(self::TABLE_COMPONENT_SHARED, ["id" => $this->id]));
+    }
+
+    public function getSharedDescription(): string
+    {
+        return Core::database()->select(self::TABLE_COMPONENT_SHARED, ["id" => $this->id], "description");
+    }
+
+    public function getSharedCategory(): Category
+    {
+        return Category::getCategoryById(Core::database()->select(self::TABLE_COMPONENT_SHARED, ["id" => $this->id], "category"));
+    }
+
+    public function getSharedBy(): User
+    {
+        return User::getUserById(Core::database()->select(self::TABLE_COMPONENT_SHARED, ["id" => $this->id], "sharedBy"));
+    }
+
+    public function getSharedTimestamp(): string
+    {
+        return Core::database()->select(self::TABLE_COMPONENT_SHARED, ["id" => $this->id], "sharedTimestamp");
+    }
+
+    // TODO: share component
 
 
     /*** ---------------------------------------------------- ***/
@@ -265,13 +276,19 @@ class CustomComponent extends Component
      *
      * @throws Exception
      */
-    private static function validateName($name)
+    private static function validateName(int $courseId, $name, int $componentId = null)
     {
         if (!is_string($name) || empty($name))
             throw new Exception("Component name can't be null neither empty.");
 
         if (iconv_strlen($name) > 25)
             throw new Exception("Component name is too long: maximum of 25 characters.");
+
+        $whereNot = [];
+        if ($componentId) $whereNot[] = ["id", $componentId];
+        $componentNames = array_column(Core::database()->selectMultiple(self::TABLE_COMPONENT, ["course" => $courseId], "name", null, $whereNot), "name");
+        if (in_array($name, $componentNames))
+            throw new Exception("Duplicate component name: '$name'");
     }
 
 
@@ -286,12 +303,11 @@ class CustomComponent extends Component
      * @param array|null $component
      * @param $field
      * @param string|null $fieldName
-     * @return array|bool|int|mixed|null
+     * @return mixed
      */
-    private static function parse(array $component = null, $field = null, string $fieldName = null)
+    public static function parse(array $component = null, $field = null, string $fieldName = null)
     {
-        $intValues = ["viewRoot", "course"];
-
+        $intValues = ["id", "viewRoot", "course"];
         return Utils::parse(["int" => $intValues], $component, $field, $fieldName);
     }
 
@@ -301,7 +317,7 @@ class CustomComponent extends Component
      * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values)
+    protected static function trim(&...$values)
     {
         $params = ["name", "creationTimestamp", "updateTimestamp"];
         Utils::trim($params, ...$values);

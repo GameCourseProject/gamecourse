@@ -25,6 +25,6 @@ try {
     $newData = $classCheck->importData();
     if ($newData) AutoGame::setToRun($courseId);
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
     ClassCheck::log($courseId, $e->getMessage());
 }

@@ -1094,6 +1094,24 @@ class UtilsTest extends TestCase
     }
 
 
+    // Array manipulation
+
+    /**
+     * @test
+     */
+    public function isSequentialArray()
+    {
+        // True
+        $this->assertTrue(Utils::isSequentialArray([1]));
+        $this->assertTrue(Utils::isSequentialArray([1, 2, 3]));
+
+        // False
+        $this->assertFalse(Utils::isSequentialArray([]));
+        $this->assertFalse(Utils::isSequentialArray(["a" => 1]));
+        $this->assertFalse(Utils::isSequentialArray(["a" => 1, "b" => 2]));
+    }
+
+
     // Import from CSV
 
     /**

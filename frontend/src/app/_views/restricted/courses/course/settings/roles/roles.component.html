@@ -49,7 +49,7 @@
         <div class="flex items-center w-[calc(100%-6rem)]">
             <!-- Move -->
             <div *ngIf="!isDefaultRole(role.name)" class="tooltip align-middle absolute -left-10" data-tip="Move">
-              <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative">
+              <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
                 <ng-icon name="feather-move" size="1.2rem"></ng-icon>
                 <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
               </button>
@@ -130,11 +130,11 @@
     </app-input-text>
 
     <!-- Landing Page -->
-    <app-input-select *ngIf="activePages.length > 0"
+    <app-input-select *ngIf="visiblePages.length > 0"
       [id]="'role-page'"
       [form]="f"
       [(value)]="roleToManage.landingPage"
-      [options]="activePages"
+      [options]="visiblePages"
       [placeholder]="'Select a landing page'"
       [classList]="'mt-3'"
       [topLabel]="'Landing Page'">

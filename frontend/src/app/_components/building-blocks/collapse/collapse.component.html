@@ -1,0 +1,41 @@
+<!-- Display version -->
+<ng-container *ngIf="!edit">
+  <ng-container [ngTemplateOutlet]="DISPLAY_DEFAULT"></ng-container>
+</ng-container>
+
+<!-- Edit version -->
+<ng-container *ngIf="edit">
+  <ng-container [ngTemplateOutlet]="EDIT_DEFAULT"></ng-container>
+</ng-container>
+
+
+<!------------------------------------------------>
+<!-------------- DISPLAY VARIATIONS -------------->
+<!------------------------------------------------>
+
+<ng-template #DISPLAY_DEFAULT>
+  <div [attr.id]="view.cssId"
+       [classList]="classes + ' ' + view.classList"
+       [attr.style]="view.styles">
+
+    <!-- Title -->
+    <input type="checkbox" />
+    <div class="collapse-title">
+      <bb-any [view]="view.header"></bb-any>
+    </div>
+
+    <!-- Content -->
+    <div class="collapse-content">
+      <bb-any [view]="view.content"></bb-any>
+    </div>
+  </div>
+</ng-template>
+
+
+<!------------------------------------------------>
+<!---------------- EDIT VARIATIONS --------------->
+<!------------------------------------------------>
+
+<ng-template #EDIT_DEFAULT>
+  <!-- TODO -->
+</ng-template>

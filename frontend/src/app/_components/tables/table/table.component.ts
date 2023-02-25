@@ -10,8 +10,10 @@ import {
   SimpleChanges,
   ViewContainerRef
 } from '@angular/core';
-import {getValue, isFilterable, isSelectable, TableData, TableDataType} from "../table-data/table-data.component";
+
 import {Action} from "../../../_domain/modules/config/Action";
+import {getValue, isFilterable, isSelectable, TableData, TableDataType} from "../table-data/table-data.component";
+
 import * as _ from 'lodash';
 
 @Component({
@@ -24,7 +26,7 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() classList: string;
 
   @Input() headers: {label: string, align?: 'left' | 'middle' | 'right'}[];
-  @Input() footers?: string[];
+  footers?: string[];
 
   @Input() hasColumnFiltering?: boolean = true;
   @Input() hasFooters?: boolean = true;

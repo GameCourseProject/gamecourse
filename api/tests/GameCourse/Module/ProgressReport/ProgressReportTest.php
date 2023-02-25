@@ -135,6 +135,8 @@ class ProgressReportTest extends TestCase
         $this->assertTrue(file_exists($this->module->getLogsPath()));
     }
 
+    // TODO: copy
+
     /**
      * @test
      * @throws Exception
