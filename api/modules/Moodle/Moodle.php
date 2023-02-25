@@ -632,34 +632,38 @@ class Moodle extends Module
         $lastRecordTimestamp = null;
 
         foreach ($assignmentGrades as $assignmentGrade) {
+            self::parseAssignmentGrade($assignmentGrade);
             $courseUser = $this->course->getCourseUserByUsername($assignmentGrade["username"]);
             if ($courseUser) {
-                self::parseAssignmentGrade($assignmentGrade);
                 $grader = $this->course->getCourseUserByUsername($assignmentGrade["grader"]);
-                if (!$this->hasAssignmentGrade($courseUser->getId(), $assignmentGrade["assignmentId"])) { // new assignment grade
-                    $params = [
-                        $courseUser->getId(),
-                        $this->getCourse()->getId(),
-                        "\"" . $this->id . "\"",
-                        "\"" . $assignmentGrade["assignmentName"] . "\"",
-                        "\"assignment grade\"",
-                        "\"mod/assign/view.php?id=" . $assignmentGrade["assignmentId"] . "\"",
-                        "\"" . date("Y-m-d H:i:s", $assignmentGrade["submissionTimestamp"]) . "\"",
-                        $assignmentGrade["grade"],
-                        $grader ? $grader->getId() : null
-                    ];
-                    $values[] = "(" . implode(", ", $params) . ")";
+                if ($grader) {
+                    if (!$this->hasAssignmentGrade($courseUser->getId(), $assignmentGrade["assignmentId"], $grader->getId())) { // new assignment grade
+                        $params = [
+                            $courseUser->getId(),
+                            $this->getCourse()->getId(),
+                            "\"" . $this->id . "\"",
+                            "\"" . $assignmentGrade["assignmentName"] . "\"",
+                            "\"assignment grade\"",
+                            "\"mod/assign/view.php?id=" . $assignmentGrade["assignmentId"] . "\"",
+                            "\"" . date("Y-m-d H:i:s", $assignmentGrade["submissionTimestamp"]) . "\"",
+                            $assignmentGrade["grade"],
+                            $grader->getId()
+                        ];
+                        $values[] = "(" . implode(", ", $params) . ")";
 
-                } else { // already has assignment grade
-                    Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
-                        "description" => $assignmentGrade["assignmentName"],
-                        "date" => date("Y-m-d H:i:s", $assignmentGrade["submissionTimestamp"]),
-                        "rating" => $assignmentGrade["grade"],
-                        "evaluator" => $grader ? $grader->getId() : null
-                    ], ["id" => $this->getAssignmentGradeParticipationId($courseUser->getId(), $assignmentGrade["assignmentId"])]);
-                }
-                $lastRecordTimestamp = max($assignmentGrade["gradeTimestamp"], $lastRecordTimestamp);
-            }
+                    } else { // already has assignment grade
+                        Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
+                            "description" => $assignmentGrade["assignmentName"],
+                            "date" => date("Y-m-d H:i:s", $assignmentGrade["submissionTimestamp"]),
+                            "rating" => $assignmentGrade["grade"],
+                            "evaluator" => $grader->getId()
+                        ], ["id" => $this->getAssignmentGradeParticipationId($courseUser->getId(), $assignmentGrade["assignmentId"], $grader->getId())]);
+                    }
+                    $lastRecordTimestamp = max($assignmentGrade["gradeTimestamp"], $lastRecordTimestamp);
+
+                } else self::log($this->course->getId(), "No user with username '" . $assignmentGrade["grader"] . "' enrolled in the course.", "WARNING");
+
+            } self::log($this->course->getId(), "No user with username '" . $assignmentGrade["username"] . "' enrolled in the course.", "WARNING");
         }
 
         if (!empty($values)) {
@@ -675,15 +679,17 @@ class Moodle extends Module
      *
      * @param int $userId
      * @param int $assignmentId
+     * @param int $graderId
      * @return int|null
      */
-    private function getAssignmentGradeParticipationId(int $userId, int $assignmentId): ?int
+    private function getAssignmentGradeParticipationId(int $userId, int $assignmentId, int $graderId): ?int
     {
         $id = Core::database()->select(AutoGame::TABLE_PARTICIPATION, [
             "user" => $userId,
             "course" => $this->getCourse()->getId(),
             "source" => $this->id,
             "type" => "assignment grade",
+            "evaluator" => $graderId
         ], "id", null, [], [], ["post" => "%assign%id=$assignmentId"]);
         if ($id) return $id;
         return null;
@@ -694,11 +700,12 @@ class Moodle extends Module
      *
      * @param int $userId
      * @param int $assignmentId
+     * @param int $graderId
      * @return bool
      */
-    private function hasAssignmentGrade(int $userId, int $assignmentId): bool
+    private function hasAssignmentGrade(int $userId, int $assignmentId, int $graderId): bool
     {
-        return !!$this->getAssignmentGradeParticipationId($userId, $assignmentId);
+        return !!$this->getAssignmentGradeParticipationId($userId, $assignmentId, $graderId);
     }
 
     /**
@@ -798,34 +805,38 @@ class Moodle extends Module
         $lastRecordTimestamp = null;
 
         foreach ($forumGrades as $forumGrade) {
+            self::parseForumGrade($forumGrade);
             $courseUser = $this->course->getCourseUserByUsername($forumGrade["username"]);
             if ($courseUser) {
-                self::parseForumGrade($forumGrade);
                 $grader = $this->course->getCourseUserByUsername($forumGrade["grader"]);
-                if (!$this->hasForumGrade($courseUser->getId(), $forumGrade["discussionId"], $forumGrade["gradeId"], $grader->getId())) { // new grade
-                    $params = [
-                        $courseUser->getId(),
-                        $this->getCourse()->getId(),
-                        "\"" . $this->id . "\"",
-                        "\"" . $forumGrade["forumName"] . ", Re: " . $forumGrade["subject"] . "\"",
-                        "\"graded post\"",
-                        "\"mod/" . ($peerForum ? "peerforum" : "forum") . "/discuss.php?d=" . $forumGrade["discussionId"] . "#p" . $forumGrade["gradeId"] . "\"",
-                        "\"" . date("Y-m-d H:i:s", $forumGrade["submissionTimestamp"]) . "\"",
-                        $forumGrade["grade"],
-                        $grader->getId()
-                    ];
-                    $values[] = "(" . implode(", ", $params) . ")";
+                if ($grader) {
+                    if (!$this->hasForumGrade($courseUser->getId(), $forumGrade["discussionId"], $forumGrade["gradeId"], $grader->getId())) { // new grade
+                        $params = [
+                            $courseUser->getId(),
+                            $this->getCourse()->getId(),
+                            "\"" . $this->id . "\"",
+                            "\"" . $forumGrade["forumName"] . ", Re: " . $forumGrade["subject"] . "\"",
+                            "\"graded post\"",
+                            "\"mod/" . ($peerForum ? "peerforum" : "forum") . "/discuss.php?d=" . $forumGrade["discussionId"] . "#p" . $forumGrade["gradeId"] . "\"",
+                            "\"" . date("Y-m-d H:i:s", $forumGrade["submissionTimestamp"]) . "\"",
+                            $forumGrade["grade"],
+                            $grader->getId()
+                        ];
+                        $values[] = "(" . implode(", ", $params) . ")";
 
-                } else { // already has grade
-                    Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
-                        "description" => $forumGrade["forumName"] . ", Re: " . $forumGrade["subject"],
-                        "date" => date("Y-m-d H:i:s", $forumGrade["submissionTimestamp"]),
-                        "rating" => $forumGrade["grade"],
-                        "evaluator" => $grader->getId()
-                    ], ["id" => $this->getForumGradeParticipationId($courseUser->getId(), $forumGrade["discussionId"], $forumGrade["gradeId"], $grader->getId())]);
-                }
-                $lastRecordTimestamp = max($forumGrade["gradeTimestamp"], $lastRecordTimestamp);
-            }
+                    } else { // already has grade
+                        Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
+                            "description" => $forumGrade["forumName"] . ", Re: " . $forumGrade["subject"],
+                            "date" => date("Y-m-d H:i:s", $forumGrade["submissionTimestamp"]),
+                            "rating" => $forumGrade["grade"],
+                            "evaluator" => $grader->getId()
+                        ], ["id" => $this->getForumGradeParticipationId($courseUser->getId(), $forumGrade["discussionId"], $forumGrade["gradeId"], $grader->getId())]);
+                    }
+                    $lastRecordTimestamp = max($forumGrade["gradeTimestamp"], $lastRecordTimestamp);
+
+                } else self::log($this->course->getId(), "No user with username '" . $forumGrade["grader"] . "' enrolled in the course.", "WARNING");
+
+            } self::log($this->course->getId(), "No user with username '" . $forumGrade["username"] . "' enrolled in the course.", "WARNING");
         }
 
         if (!empty($values)) {
@@ -991,7 +1002,8 @@ class Moodle extends Module
                         $values[] = "(" . implode(", ", $params) . ")";
                     }
                     $lastRecordTimestamp = max($log["timestamp"], $lastRecordTimestamp);
-                }
+
+                } else self::log($this->course->getId(), "No user with username '" . $log["username"] . "' enrolled in the course.", "WARNING");
             }
         }
 
@@ -1381,34 +1393,38 @@ class Moodle extends Module
         $lastRecordTimestamp = null;
 
         foreach ($peergrades as $peergrade) {
+            self::parsePeergrade($peergrade);
             $courseUser = $this->course->getCourseUserByUsername($peergrade["username"]);
             if ($courseUser) {
-                self::parsePeergrade($peergrade);
                 $grader = $this->course->getCourseUserByUsername($peergrade["grader"]);
-                if (!$this->hasPeergrade($courseUser->getId(), $peergrade["discussionId"], $peergrade["peergradeId"], $grader->getId())) { // new peergrade
-                    $params = [
-                        $courseUser->getId(),
-                        $this->getCourse()->getId(),
-                        "\"" . $this->id . "\"",
-                        "\"" . $peergrade["forumName"] . ", Re: " . $peergrade["subject"] . "\"",
-                        "\"peergraded post\"",
-                        "\"mod/peerforum/discuss.php?d=" . $peergrade["discussionId"] . "#p" . $peergrade["peergradeId"] . "\"",
-                        "\"" . date("Y-m-d H:i:s", $peergrade["timestamp"]) . "\"",
-                        $peergrade["grade"],
-                        $grader->getId()
-                    ];
-                    $values[] = "(" . implode(", ", $params) . ")";
+                if ($grader) {
+                    if (!$this->hasPeergrade($courseUser->getId(), $peergrade["discussionId"], $peergrade["peergradeId"], $grader->getId())) { // new peergrade
+                        $params = [
+                            $courseUser->getId(),
+                            $this->getCourse()->getId(),
+                            "\"" . $this->id . "\"",
+                            "\"" . $peergrade["forumName"] . ", Re: " . $peergrade["subject"] . "\"",
+                            "\"peergraded post\"",
+                            "\"mod/peerforum/discuss.php?d=" . $peergrade["discussionId"] . "#p" . $peergrade["peergradeId"] . "\"",
+                            "\"" . date("Y-m-d H:i:s", $peergrade["timestamp"]) . "\"",
+                            $peergrade["grade"],
+                            $grader->getId()
+                        ];
+                        $values[] = "(" . implode(", ", $params) . ")";
 
-                } else { // already has peergrade
-                    Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
-                        "description" => $peergrade["forumName"] . ", Re: " . $peergrade["subject"],
-                        "date" => date("Y-m-d H:i:s", $peergrade["timestamp"]),
-                        "rating" => $peergrade["grade"],
-                        "evaluator" => $grader->getId()
-                    ], ["id" => $this->getPeergradeParticipationId($courseUser->getId(), $peergrade["discussionId"], $peergrade["peergradeId"], $grader->getId())]);
-                }
-                $lastRecordTimestamp = max($peergrade["timestamp"], $lastRecordTimestamp);
-            }
+                    } else { // already has peergrade
+                        Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
+                            "description" => $peergrade["forumName"] . ", Re: " . $peergrade["subject"],
+                            "date" => date("Y-m-d H:i:s", $peergrade["timestamp"]),
+                            "rating" => $peergrade["grade"],
+                            "evaluator" => $grader->getId()
+                        ], ["id" => $this->getPeergradeParticipationId($courseUser->getId(), $peergrade["discussionId"], $peergrade["peergradeId"], $grader->getId())]);
+                    }
+                    $lastRecordTimestamp = max($peergrade["timestamp"], $lastRecordTimestamp);
+
+                } else self::log($this->course->getId(), "No user with username '" . $peergrade["grader"] . "' enrolled in the course.", "WARNING");
+
+            } self::log($this->course->getId(), "No user with username '" . $peergrade["username"] . "' enrolled in the course.", "WARNING");
         }
 
         if (!empty($values)) {
@@ -1524,9 +1540,9 @@ class Moodle extends Module
         $lastRecordTimestamp = null;
 
         foreach ($quizGrades as $quizGrade) {
+            self::parseQuizGrade($quizGrade);
             $courseUser = $this->course->getCourseUserByUsername($quizGrade["username"]);
             if ($courseUser) {
-                self::parseQuizGrade($quizGrade);
                 if (!$this->hasQuizGrade($courseUser->getId(), $quizGrade["quizzId"])) { // new quiz grade
                     $params = [
                         $courseUser->getId(),
@@ -1548,7 +1564,8 @@ class Moodle extends Module
                     ], ["id" => $this->getQuizGradeParticipationId($courseUser->getId(), $quizGrade["quizzId"])]);
                 }
                 $lastRecordTimestamp = max($quizGrade["timestamp"], $lastRecordTimestamp);
-            }
+
+            } self::log($this->course->getId(), "No user with username '" . $quizGrade["username"] . "' enrolled in the course.", "WARNING");
         }
 
         if (!empty($values)) {

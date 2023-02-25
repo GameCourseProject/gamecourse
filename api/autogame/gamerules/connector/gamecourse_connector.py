@@ -1435,15 +1435,15 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
             # Spend wildcard
             spend_wildcard(award_id, use_wildcard)
 
-        # Spend tokens, if virtual currency enabled
-        if module_enabled("VirtualCurrency") and nr_attempts > 0 and dependencies:
-            tier_cost_info = {"costType": table_skill[4], "cost": int(table_skill[5]), "increment": int(table_skill[6]),
-                              "minRating": int(table_skill[7])}
-            for attempt in range(1, nr_attempts + 1):
-                attempt_cost = get_attempt_cost(tier_cost_info, attempt)
-                if attempt_cost > 0:
-                    description = get_attempt_description(attempt)
-                    spend_tokens(target, description, attempt_cost, 1)
+            # Spend tokens, if virtual currency enabled
+            if module_enabled("VirtualCurrency") and nr_attempts > 0 and dependencies:
+                tier_cost_info = {"costType": table_skill[4], "cost": int(table_skill[5]), "increment": int(table_skill[6]),
+                                  "minRating": int(table_skill[7])}
+                for attempt in range(1, nr_attempts + 1):
+                    attempt_cost = get_attempt_cost(tier_cost_info, attempt)
+                    if attempt_cost > 0:
+                        description = get_attempt_description(attempt)
+                        spend_tokens(target, description, attempt_cost, 1)
 
         # Check if rating is enough to win the award, but dependencies are missing (create notification)
         if rating >= min_rating and not dependencies:
