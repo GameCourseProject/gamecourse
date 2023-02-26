@@ -662,9 +662,9 @@ class Moodle extends Module
                     }
                     $lastRecordTimestamp = max($assignmentGrade["gradeTimestamp"], $lastRecordTimestamp);
 
-                } else self::log($this->course->getId(), "No user with username '" . $assignmentGrade["grader"] . "' enrolled in the course.", "WARNING");
+                } else self::log($this->course->getId(), "(While importing assignment grades) No user with username '" . $assignmentGrade["grader"] . "' enrolled in the course.", "WARNING");
 
-            } self::log($this->course->getId(), "No user with username '" . $assignmentGrade["username"] . "' enrolled in the course.", "WARNING");
+            } else self::log($this->course->getId(), "(While importing assignment grades) No user with username '" . $assignmentGrade["username"] . "' enrolled in the course.", "WARNING");
         }
 
         if (!empty($values)) {
@@ -835,9 +835,9 @@ class Moodle extends Module
                     }
                     $lastRecordTimestamp = max($forumGrade["gradeTimestamp"], $lastRecordTimestamp);
 
-                } else self::log($this->course->getId(), "No user with username '" . $forumGrade["grader"] . "' enrolled in the course.", "WARNING");
+                } else self::log($this->course->getId(), "(While importing forum grades) No user with username '" . $forumGrade["grader"] . "' enrolled in the course.", "WARNING");
 
-            } self::log($this->course->getId(), "No user with username '" . $forumGrade["username"] . "' enrolled in the course.", "WARNING");
+            } else self::log($this->course->getId(), "(While importing forum grades) No user with username '" . $forumGrade["username"] . "' enrolled in the course.", "WARNING");
         }
 
         if (!empty($values)) {
@@ -1004,7 +1004,14 @@ class Moodle extends Module
                     }
                     $lastRecordTimestamp = max($log["timestamp"], $lastRecordTimestamp);
 
-                } else if (!User::getUserByUsername($log["username"])->isAdmin()) self::log($this->course->getId(), "No user with username '" . $log["username"] . "' enrolled in the course.", "WARNING");
+                } else if ($log["username"] !== "admin") {
+                    // Ignore admins that are not enrolled in course
+                    $user = User::getUserByUsername($log["username"]);
+                    if ($user && !$user->isAdmin())
+                        self::log($this->course->getId(), "(While importing logs) No user with username '" . $log["username"] . "' enrolled in the course.", "WARNING");
+                    else if (!$user)
+                        self::log($this->course->getId(), "(While importing logs) No user with username '" . $log["username"] . "' on GameCourse.", "WARNING");
+                }
             }
         }
 
@@ -1021,11 +1028,11 @@ class Moodle extends Module
      *
      * @param int $userId
      * @param string $type
-     * @param string $description
-     * @param string $post
+     * @param string|null $description
+     * @param string|null $post
      * @return int|null
      */
-    private function getLogParticipationId(int $userId, string $type, string $description, string $post): ?int
+    private function getLogParticipationId(int $userId, string $type, ?string $description, ?string $post): ?int
     {
         $id = Core::database()->select(AutoGame::TABLE_PARTICIPATION, [
             "user" => $userId,
@@ -1044,11 +1051,11 @@ class Moodle extends Module
      *
      * @param int $userId
      * @param string $type
-     * @param string $description
-     * @param string $post
+     * @param string|null $description
+     * @param string|null $post
      * @return bool
      */
-    private function hasLog(int $userId, string $type, string $description, string $post): bool
+    private function hasLog(int $userId, string $type, ?string $description, ?string $post): bool
     {
         return !!$this->getLogParticipationId($userId, $type, $description, $post);
     }
@@ -1423,9 +1430,9 @@ class Moodle extends Module
                     }
                     $lastRecordTimestamp = max($peergrade["timestamp"], $lastRecordTimestamp);
 
-                } else self::log($this->course->getId(), "No user with username '" . $peergrade["grader"] . "' enrolled in the course.", "WARNING");
+                } else self::log($this->course->getId(), "(While importing peergrades) No user with username '" . $peergrade["grader"] . "' enrolled in the course.", "WARNING");
 
-            } self::log($this->course->getId(), "No user with username '" . $peergrade["username"] . "' enrolled in the course.", "WARNING");
+            } else self::log($this->course->getId(), "(While importing peergrades) No user with username '" . $peergrade["username"] . "' enrolled in the course.", "WARNING");
         }
 
         if (!empty($values)) {
@@ -1566,7 +1573,7 @@ class Moodle extends Module
                 }
                 $lastRecordTimestamp = max($quizGrade["timestamp"], $lastRecordTimestamp);
 
-            } self::log($this->course->getId(), "No user with username '" . $quizGrade["username"] . "' enrolled in the course.", "WARNING");
+            } else self::log($this->course->getId(), "(While importing quiz grades) No user with username '" . $quizGrade["username"] . "' enrolled in the course.", "WARNING");
         }
 
         if (!empty($values)) {

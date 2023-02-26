@@ -298,7 +298,7 @@ class ClassCheck extends Module
      * @param string $type
      * @return void
      */
-    public static function log(int $courseId, string $message, string $type = "ERROR")
+    public static function log(int $courseId, string $message, string $type)
     {
         $logsFile = self::getLogsFile($courseId, false);
         Utils::addLog($logsFile, $message, $type);

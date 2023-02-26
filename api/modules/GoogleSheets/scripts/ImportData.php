@@ -26,5 +26,5 @@ try {
     if ($newData) AutoGame::setToRun($courseId);
 
 } catch (Throwable $e) {
-    GoogleSheets::log($courseId, $e->getMessage(), "ERROR");
+    GoogleSheets::log($courseId, $e->getMessage() . "\n" . $e->getTraceAsString(), "ERROR");
 }
