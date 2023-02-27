@@ -816,7 +816,7 @@ class Moodle extends Module
                             $courseUser->getId(),
                             $this->getCourse()->getId(),
                             "\"" . $this->id . "\"",
-                            "\"" . $forumGrade["forumName"] . ", Re: " . $forumGrade["subject"] . "\"",
+                            "\"" . $forumGrade["forumName"] . ", " . $forumGrade["subject"] . "\"",
                             "\"graded post\"",
                             "\"mod/" . ($peerForum ? "peerforum" : "forum") . "/discuss.php?d=" . $forumGrade["discussionId"] . "#p" . $forumGrade["gradeId"] . "\"",
                             "\"" . date("Y-m-d H:i:s", $forumGrade["submissionTimestamp"]) . "\"",
@@ -827,7 +827,7 @@ class Moodle extends Module
 
                     } else { // already has grade
                         Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
-                            "description" => $forumGrade["forumName"] . ", Re: " . $forumGrade["subject"],
+                            "description" => $forumGrade["forumName"] . ", " . $forumGrade["subject"],
                             "date" => date("Y-m-d H:i:s", $forumGrade["submissionTimestamp"]),
                             "rating" => $forumGrade["grade"],
                             "evaluator" => $grader->getId()
@@ -1411,7 +1411,7 @@ class Moodle extends Module
                             $courseUser->getId(),
                             $this->getCourse()->getId(),
                             "\"" . $this->id . "\"",
-                            "\"" . $peergrade["forumName"] . ", Re: " . $peergrade["subject"] . "\"",
+                            "\"" . $peergrade["forumName"] . ", " . $peergrade["subject"] . "\"",
                             "\"peergraded post\"",
                             "\"mod/peerforum/discuss.php?d=" . $peergrade["discussionId"] . "#p" . $peergrade["peergradeId"] . "\"",
                             "\"" . date("Y-m-d H:i:s", $peergrade["timestamp"]) . "\"",
@@ -1422,7 +1422,7 @@ class Moodle extends Module
 
                     } else { // already has peergrade
                         Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
-                            "description" => $peergrade["forumName"] . ", Re: " . $peergrade["subject"],
+                            "description" => $peergrade["forumName"] . ", " . $peergrade["subject"],
                             "date" => date("Y-m-d H:i:s", $peergrade["timestamp"]),
                             "rating" => $peergrade["grade"],
                             "evaluator" => $grader->getId()
