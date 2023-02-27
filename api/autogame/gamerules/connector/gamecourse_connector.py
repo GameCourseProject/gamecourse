@@ -933,16 +933,14 @@ def get_consecutive_peergrading_logs(target):
     mdl_prefix = mdl_prefix.decode()
 
     # Get peergrades assigned to target
-    query = "SELECT f.name as forumName, fd.id as discussionId, fp.subject, g.itemId as peergradeId, u.username, " \
-            "g.peergrade as grade, ug.username as grader, pa.expired " \
+    query = "SELECT f.name as forumName, fd.id as discussionId, fp.subject, fp.id as postId, u.username, pa.expired, pa.peergraded " \
             "FROM " + mdl_prefix + "peerforum_time_assigned pa JOIN " + mdl_prefix + "peerforum_posts fp on pa.itemid=fp.id " \
             "JOIN " + mdl_prefix + "peerforum_discussions fd on fd.id=fp.discussion " \
             "JOIN " + mdl_prefix + "peerforum f on f.id=fd.peerforum " \
             "JOIN " + mdl_prefix + "user u on fp.userid=u.id " \
             "JOIN " + mdl_prefix + "user ug on pa.userid=ug.id " \
-            "JOIN " + mdl_prefix + "peerforum_peergrade g on g.userid=ug.id " \
             "JOIN " + mdl_prefix + "course c on f.course=c.id " \
-            "WHERE f.course = %s AND ug.username = '%s' " \
+            "WHERE f.course = %s AND ug.username = '%s'" \
             "ORDER BY pa.timeassigned;" % (mdl_course, username)
     peergrades = moodle_db.execute_query(query)
 
@@ -951,8 +949,9 @@ def get_consecutive_peergrading_logs(target):
     last_peergrading = None
 
     for peergrade in peergrades:
-        expired = bool(peergrade[7])
-        peergraded = not expired
+        expired = bool(peergrade[5])
+        peergrade_id = int(peergrade[6])
+        peergraded = not expired and peergrade_id > 0
 
         if not peergraded:
             last_peergrading = None
@@ -962,11 +961,19 @@ def get_consecutive_peergrading_logs(target):
         query = "SELECT user FROM auth WHERE username = '%s';" % peergrade[4].decode()
         user_id = int(db.data_broker.get(db, target, query, "user")[0][0])
 
+        # Get peergrade info
+        query = "SELECT peergrade as grade FROM " + mdl_prefix + "peerforum_peergrade WHERE id = %s;" % peergrade_id
+        grade = int(moodle_db.execute_query(query)[0][0])
+
         # Get actual GC log
-        logs = get_logs(user_id, "peergraded post", int(peergrade[5]), target, None, None, peergrade[0].decode() + ", Re: " + peergrade[2].decode())
+        forum_name = peergrade[0].decode()
+        thread = peergrade[2].decode()
+        logs = get_logs(user_id, "peergraded post", grade, target, None, None, forum_name + ", " + thread)
         nr_logs = len(logs)
         if nr_logs > 1:
-            log = [log for log in logs if compare_with_wildcards(log[6].decode(), "%peerforum%?d=" + str(peergrade[1]) + "#p" + str(peergrade[3]))][0]
+            discussion_id = str(peergrade[1])
+            post_id = str(peergrade[3])
+            log = [log for log in logs if compare_with_wildcards(log[6], "%peerforum%?d=" + discussion_id + "#p" + post_id)][0]
         elif nr_logs == 1:
             log = logs[0]
         else:

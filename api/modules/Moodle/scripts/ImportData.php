@@ -26,5 +26,5 @@ try {
     if ($newData) AutoGame::setToRun($courseId);
 
 } catch (Throwable $e) {
-    Moodle::log($courseId, $e->getMessage(), "ERROR");
+    Moodle::log($courseId, $e->getMessage() . "\n" . $e->getTraceAsString(), "ERROR");
 }

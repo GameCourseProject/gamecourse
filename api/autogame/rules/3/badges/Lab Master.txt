@@ -1,8 +1,8 @@
 rule: Lab Master
 # Excel at the labs
-#   lvl.1: top grade in four labs
-#   lvl.2: top grade in six labs
-#   lvl.3: top grade in all labs
+#   lvl.1: get top grade in 50% of labs
+#   lvl.2: get top grade in 75% of labs
+#   lvl.3: get top grade in all labs
 
     when:
         labs = METADATA["labs"]
@@ -21,4 +21,4 @@ rule: Lab Master
         lvl = compute_lvl(progress, 4, 6, labs)
 
     then:
-        award_badge(target, "Lab Master", lvl, logs, progress)
+        award_badge(target, "Lab Master", lvl, flogs, progress)

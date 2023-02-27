@@ -11,6 +11,7 @@ use GameCourse\Course\Course;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\User\User;
 use PDO;
 use Utils\CronJob;
 use Utils\Utils;
@@ -661,9 +662,9 @@ class Moodle extends Module
                     }
                     $lastRecordTimestamp = max($assignmentGrade["gradeTimestamp"], $lastRecordTimestamp);
 
-                } else self::log($this->course->getId(), "No user with username '" . $assignmentGrade["grader"] . "' enrolled in the course.", "WARNING");
+                } else self::log($this->course->getId(), "(While importing assignment grades) No user with username '" . $assignmentGrade["grader"] . "' enrolled in the course.", "WARNING");
 
-            } self::log($this->course->getId(), "No user with username '" . $assignmentGrade["username"] . "' enrolled in the course.", "WARNING");
+            } else self::log($this->course->getId(), "(While importing assignment grades) No user with username '" . $assignmentGrade["username"] . "' enrolled in the course.", "WARNING");
         }
 
         if (!empty($values)) {
@@ -815,7 +816,7 @@ class Moodle extends Module
                             $courseUser->getId(),
                             $this->getCourse()->getId(),
                             "\"" . $this->id . "\"",
-                            "\"" . $forumGrade["forumName"] . ", Re: " . $forumGrade["subject"] . "\"",
+                            "\"" . $forumGrade["forumName"] . ", " . $forumGrade["subject"] . "\"",
                             "\"graded post\"",
                             "\"mod/" . ($peerForum ? "peerforum" : "forum") . "/discuss.php?d=" . $forumGrade["discussionId"] . "#p" . $forumGrade["gradeId"] . "\"",
                             "\"" . date("Y-m-d H:i:s", $forumGrade["submissionTimestamp"]) . "\"",
@@ -826,7 +827,7 @@ class Moodle extends Module
 
                     } else { // already has grade
                         Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
-                            "description" => $forumGrade["forumName"] . ", Re: " . $forumGrade["subject"],
+                            "description" => $forumGrade["forumName"] . ", " . $forumGrade["subject"],
                             "date" => date("Y-m-d H:i:s", $forumGrade["submissionTimestamp"]),
                             "rating" => $forumGrade["grade"],
                             "evaluator" => $grader->getId()
@@ -834,9 +835,9 @@ class Moodle extends Module
                     }
                     $lastRecordTimestamp = max($forumGrade["gradeTimestamp"], $lastRecordTimestamp);
 
-                } else self::log($this->course->getId(), "No user with username '" . $forumGrade["grader"] . "' enrolled in the course.", "WARNING");
+                } else self::log($this->course->getId(), "(While importing forum grades) No user with username '" . $forumGrade["grader"] . "' enrolled in the course.", "WARNING");
 
-            } self::log($this->course->getId(), "No user with username '" . $forumGrade["username"] . "' enrolled in the course.", "WARNING");
+            } else self::log($this->course->getId(), "(While importing forum grades) No user with username '" . $forumGrade["username"] . "' enrolled in the course.", "WARNING");
         }
 
         if (!empty($values)) {
@@ -1003,7 +1004,14 @@ class Moodle extends Module
                     }
                     $lastRecordTimestamp = max($log["timestamp"], $lastRecordTimestamp);
 
-                } else self::log($this->course->getId(), "No user with username '" . $log["username"] . "' enrolled in the course.", "WARNING");
+                } else if ($log["username"] !== "admin") {
+                    // Ignore admins that are not enrolled in course
+                    $user = User::getUserByUsername($log["username"]);
+                    if ($user && !$user->isAdmin())
+                        self::log($this->course->getId(), "(While importing logs) No user with username '" . $log["username"] . "' enrolled in the course.", "WARNING");
+                    else if (!$user)
+                        self::log($this->course->getId(), "(While importing logs) No user with username '" . $log["username"] . "' on GameCourse.", "WARNING");
+                }
             }
         }
 
@@ -1020,11 +1028,11 @@ class Moodle extends Module
      *
      * @param int $userId
      * @param string $type
-     * @param string $description
-     * @param string $post
+     * @param string|null $description
+     * @param string|null $post
      * @return int|null
      */
-    private function getLogParticipationId(int $userId, string $type, string $description, string $post): ?int
+    private function getLogParticipationId(int $userId, string $type, ?string $description, ?string $post): ?int
     {
         $id = Core::database()->select(AutoGame::TABLE_PARTICIPATION, [
             "user" => $userId,
@@ -1043,11 +1051,11 @@ class Moodle extends Module
      *
      * @param int $userId
      * @param string $type
-     * @param string $description
-     * @param string $post
+     * @param string|null $description
+     * @param string|null $post
      * @return bool
      */
-    private function hasLog(int $userId, string $type, string $description, string $post): bool
+    private function hasLog(int $userId, string $type, ?string $description, ?string $post): bool
     {
         return !!$this->getLogParticipationId($userId, $type, $description, $post);
     }
@@ -1403,7 +1411,7 @@ class Moodle extends Module
                             $courseUser->getId(),
                             $this->getCourse()->getId(),
                             "\"" . $this->id . "\"",
-                            "\"" . $peergrade["forumName"] . ", Re: " . $peergrade["subject"] . "\"",
+                            "\"" . $peergrade["forumName"] . ", " . $peergrade["subject"] . "\"",
                             "\"peergraded post\"",
                             "\"mod/peerforum/discuss.php?d=" . $peergrade["discussionId"] . "#p" . $peergrade["peergradeId"] . "\"",
                             "\"" . date("Y-m-d H:i:s", $peergrade["timestamp"]) . "\"",
@@ -1414,7 +1422,7 @@ class Moodle extends Module
 
                     } else { // already has peergrade
                         Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
-                            "description" => $peergrade["forumName"] . ", Re: " . $peergrade["subject"],
+                            "description" => $peergrade["forumName"] . ", " . $peergrade["subject"],
                             "date" => date("Y-m-d H:i:s", $peergrade["timestamp"]),
                             "rating" => $peergrade["grade"],
                             "evaluator" => $grader->getId()
@@ -1422,9 +1430,9 @@ class Moodle extends Module
                     }
                     $lastRecordTimestamp = max($peergrade["timestamp"], $lastRecordTimestamp);
 
-                } else self::log($this->course->getId(), "No user with username '" . $peergrade["grader"] . "' enrolled in the course.", "WARNING");
+                } else self::log($this->course->getId(), "(While importing peergrades) No user with username '" . $peergrade["grader"] . "' enrolled in the course.", "WARNING");
 
-            } self::log($this->course->getId(), "No user with username '" . $peergrade["username"] . "' enrolled in the course.", "WARNING");
+            } else self::log($this->course->getId(), "(While importing peergrades) No user with username '" . $peergrade["username"] . "' enrolled in the course.", "WARNING");
         }
 
         if (!empty($values)) {
@@ -1565,7 +1573,7 @@ class Moodle extends Module
                 }
                 $lastRecordTimestamp = max($quizGrade["timestamp"], $lastRecordTimestamp);
 
-            } self::log($this->course->getId(), "No user with username '" . $quizGrade["username"] . "' enrolled in the course.", "WARNING");
+            } else self::log($this->course->getId(), "(While importing quiz grades) No user with username '" . $quizGrade["username"] . "' enrolled in the course.", "WARNING");
         }
 
         if (!empty($values)) {

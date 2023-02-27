@@ -26,5 +26,5 @@ try {
     if ($newData) AutoGame::setToRun($courseId);
 
 } catch (Throwable $e) {
-    ClassCheck::log($courseId, $e->getMessage());
+    ClassCheck::log($courseId, $e->getMessage() . "\n" . $e->getTraceAsString(), "ERROR");
 }

@@ -32,7 +32,7 @@ if ($nrArgs >= 0) {
         if ($newData) AutoGame::setToRun($courseId);
 
     } catch (Throwable $e) {
-        ClassCheck::log($courseId, $e->getMessage(), "ERROR");
+        ClassCheck::log($courseId, $e->getMessage() . "\n" . $e->getTraceAsString(), "ERROR");
     }
 
 } else {

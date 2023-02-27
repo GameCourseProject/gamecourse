@@ -1,8 +1,8 @@
 rule: Quiz Master
 # Excel at the quizzes
-#   lvl.1: top grade in three quizzes
-#   lvl.2: top grade in five quizzes
-#   lvl.3: top grade in six quizzes
+#	lvl.1: get top grade in 50% of quizzes
+#	lvl.2: get top grade in 75% of quizzes
+#	lvl.3: get top grade in all quizzes
 
     when:
         max_grade = METADATA["max_quiz_grade"]
@@ -16,4 +16,4 @@ rule: Quiz Master
         lvl = compute_lvl(progress, 3, 5, 6)
 
     then:
-        award_badge(target, "Quiz Master", lvl, logs, progress)
+        award_badge(target, "Quiz Master", lvl, flogs, progress)
