@@ -11,6 +11,7 @@ use GameCourse\Module\ModuleType;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
+use Utils\Utils;
 
 /**
  * This is the Profiling module, which serves as a compartimentalized
@@ -54,6 +55,8 @@ class Profiling extends Module
 
     const RESOURCES = [];
 
+    const LOGS_FOLDER = "profiling";
+
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -81,6 +84,13 @@ class Profiling extends Module
         Core::database()->setForeignKeyChecks(false);
         (new Course(0))->addRole(self::PROFILING_ROLE, null, null, self::ID);
         Core::database()->setForeignKeyChecks(true);
+
+
+        // Set up logs folder
+        $pathPredictor = self::getPredictorLogsPath(false);
+        $pathProfiler = self::getProfilerLogsPath(false);
+        Utils::initLogging($pathPredictor);
+        Utils::initLogging($pathProfiler);
     }
 
     public function copyTo(Course $copyTo)
@@ -287,9 +297,12 @@ class Profiling extends Module
 
     /*** -------- Predictor --------- ***/
 
-    public function getPredictorLogsPath(): string
+    public function getPredictorLogsPath(bool $fullPath = true): string
     {
-        return LOGS_FOLDER . "/profiling_prediction_" . $this->course->getId() . ".txt";
+        $path = self::LOGS_FOLDER . "/profiling_prediction_" . $this->course->getId() . ".txt";
+
+        if ($fullPath) return LOGS_FOLDER . "/" . $path;
+        return $path;
     }
 
     public function runPredictor(string $method, string $endDate)
@@ -303,7 +316,7 @@ class Profiling extends Module
         $predictorPath = MODULES_FOLDER . "/" . self::ID . "/scripts/predictor.py";
         $logsPath = $this->getPredictorLogsPath();
 
-        $cmd = "python3 $predictorPath $courseId $method \"$endDate\" $logsPath $dbHost $dbName $dbUser \" $dbPass \" > /dev/null &";
+        $cmd = "python3 \"$predictorPath\" $courseId \"$method\" \"$endDate\" \"$logsPath\" \"$dbHost\" \"$dbName\" \"$dbUser\" \" $dbPass \" > /dev/null &";
         system($cmd);
     }
 
@@ -345,9 +358,12 @@ class Profiling extends Module
         return Core::database()->select(self::TABLE_PROFILING_CONFIG, ["course" => $this->course->getId()], "lastRun");
     }
 
-    public function getProfilerLogsPath(): string
+    public function getProfilerLogsPath(bool $fullPath = true): string
     {
-        return LOGS_FOLDER . "/profiling_results_" . $this->course->getId() . ".txt";
+        $path = self::LOGS_FOLDER . "/profiling_results_" . $this->course->getId() . ".txt";
+
+        if ($fullPath) return LOGS_FOLDER . "/" . $path;
+        return $path;
     }
 
     public function runProfiler(int $nrClusters, int $minClusterSize, string $endDate)
@@ -361,7 +377,7 @@ class Profiling extends Module
         $profilerPath = MODULES_FOLDER . "/" . self::ID . "/scripts/profiler.py";
         $logsPath = $this->getProfilerLogsPath();
 
-        $cmd = "python3 $profilerPath $courseId $nrClusters $minClusterSize \"$endDate\" $logsPath $dbHost $dbName $dbUser \" $dbPass \" > /dev/null &";
+        $cmd = "python3 \"$profilerPath\" $courseId $nrClusters $minClusterSize \"$endDate\" \"$logsPath\" \"$dbHost\" \"$dbName\" \"$dbUser\" \" $dbPass \" > /dev/null &";
         system($cmd);
     }
 

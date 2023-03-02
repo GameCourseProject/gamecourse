@@ -70,7 +70,7 @@ def get_awards(course, end_date):
 	"""
     cursor = connector.cursor
     query = "SELECT * FROM award WHERE course = %s AND date <= %s ORDER BY date;"
-    args = (course,end_date,)
+    args = (course,end_date)
 
     cursor.execute(query, args)
     table = cursor.fetchall()
@@ -83,7 +83,7 @@ def get_participations(course, end_date):
 	"""
     cursor = connector.cursor
     query = "SELECT user, type, date FROM participation WHERE course = %s AND date <= %s AND type != 'lab grade' AND type not like 'attended %' AND type != 'initial bonus' AND type != 'quiz grade' AND type != 'graded post' AND type != 'suggested presentation subject' AND type != 'participated in lecture' ORDER BY date;"
-    args = (course,end_date,)
+    args = (course,end_date)
 
     cursor.execute(query, args)
     table = cursor.fetchall()
