@@ -531,7 +531,7 @@ def get_targets(course, datetime=None, all_targets=False, targets_list=None):
 
             else:
                 # Running for targets w/ new data in course
-                query += " AND date > %s;"
+                query += " AND p.date > %s;"
                 table = db.execute_query(query, (course, datetime))
 
     targets = {}
@@ -707,10 +707,12 @@ def get_logs(target=None, type=None, rating=None, evaluator=None, start_date=Non
     """
     global preloaded_logs
 
-    if target is not None:
+    if target is not None and target in preloaded_logs:
         logs = preloaded_logs[target]
     else:
         logs = [item for sublist in preloaded_logs.values() for item in sublist]
+        if target is not None:
+            logs = [log for log in logs if int(log[config.LOG_USER_COL]) == target]
 
     if type is not None:
         logs = [log for log in logs if log[config.LOG_TYPE_COL] == type]
@@ -969,15 +971,16 @@ def get_consecutive_peergrading_logs(target):
         forum_name = peergrade[0].decode()
         thread = peergrade[2].decode()
         logs = get_logs(user_id, "peergraded post", grade, target, None, None, forum_name + ", " + thread)
-        nr_logs = len(logs)
-        if nr_logs > 1:
+        if len(logs) > 1:
             discussion_id = str(peergrade[1])
             post_id = str(peergrade[3])
-            log = [log for log in logs if compare_with_wildcards(log[6], "%peerforum%?d=" + discussion_id + "#p" + post_id)][0]
-        elif nr_logs == 1:
+            logs = [log for log in logs if compare_with_wildcards(log[6], "%peerforum%?d=" + discussion_id + "#p" + post_id)]
+
+        if len(logs) == 1:
             log = logs[0]
         else:
-            raise Exception("Getting consecutive peergrading logs: unable to match a peergrade with a log")
+            last_peergrading = None
+            continue
 
         if last_peergrading is not None:
             consecutive_logs[-1].append(log)
