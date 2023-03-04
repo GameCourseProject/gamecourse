@@ -323,7 +323,7 @@ class GoogleSheetsTest extends TestCase
         ];
 
         // When
-        $newData = $this->module->saveSheetData($data, $teacher->getId());
+        $newData = $this->module->saveSheetData("Test", $data, $teacher->getId());
 
         // Then
         $this->assertTrue($newData);
@@ -374,7 +374,7 @@ class GoogleSheetsTest extends TestCase
         ];
 
         // When
-        $newData = $this->module->saveSheetData($data, $teacher->getId());
+        $newData = $this->module->saveSheetData("Test", $data, $teacher->getId());
 
         // Then
         $this->assertTrue($newData);
@@ -423,7 +423,7 @@ class GoogleSheetsTest extends TestCase
         ];
 
         // When
-        $newData = $this->module->saveSheetData($data, $teacher->getId());
+        $newData = $this->module->saveSheetData("Test", $data, $teacher->getId());
 
         // Then
         $this->assertFalse($newData);

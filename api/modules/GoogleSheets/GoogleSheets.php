@@ -509,11 +509,11 @@ class GoogleSheets extends Module
                 $prof = $this->course->getCourseUserByUsername($config["ownerNames"][$i]);
                 if ($prof) {
                     $data = $this->getSheetData($config["spreadsheetId"], $sheetName);
-                    if ($this->saveSheetData($data, $prof->getId())) {
+                    if ($this->saveSheetData($sheetName, $data, $prof->getId())) {
                         $newData = true;
-                        self::log($this->course->getId(), "Imported new data from " . self::NAME . ".", "SUCCESS");
+                        self::log($this->course->getId(), "Imported new data from sheet '" . $sheetName . "'.", "SUCCESS");
                     }
-                }
+                } else self::log($this->course->getId(), "No teacher with username '" . $config["ownerNames"][$i] . "' enrolled in the course.", "WARNING");
             }
 
             self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
@@ -541,12 +541,12 @@ class GoogleSheets extends Module
     /**
      * Saves data from Google sheet into the system.
      *
+     * @param string $sheetName
      * @param array $data
      * @param int $profId
      * @return bool
-     * @throws Exception
      */
-    public function saveSheetData(array $data, int $profId): bool
+    public function saveSheetData(string $sheetName, array $data, int $profId): bool
     {
         // NOTE: it's better performance-wise to do only one big insert
         //       as opposed to multiple small inserts
@@ -554,7 +554,7 @@ class GoogleSheets extends Module
         $values = [];
         $newData = false;
 
-        foreach ($data as $row) {
+        foreach ($data as $i => $row) {
             if (!self::rowIsValid($row, [self::COL_STUDENT_NUMBER, self::COL_ACTION])) continue;
 
             $courseUser = $this->course->getCourseUserByStudentNumber($row[self::COL_STUDENT_NUMBER]);
@@ -568,7 +568,10 @@ class GoogleSheets extends Module
                     case "initial bonus":
                     case "initial tokens":
                     case "presentation grade":
-                        if (!self::rowIsValid($row, [self::COL_XP])) break;
+                        if (!self::rowIsValid($row, [self::COL_XP])) {
+                            self::log($this->course->getId(), "Row #" . ($i + 1) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            break;
+                        }
                         $xp = $row[self::COL_XP];
 
                         $result = Core::database()->select(AutoGame::TABLE_PARTICIPATION, ["user" => $userId, "course" => $courseId, "type" => $action]);
@@ -596,7 +599,10 @@ class GoogleSheets extends Module
                     case "attended lecture (late)":
                     case "attended lab":
                     case "replied to questionnaires":
-                        if (!self::rowIsValid($row, [self::COL_INFO])) break;
+                        if (!self::rowIsValid($row, [self::COL_INFO])) {
+                            self::log($this->course->getId(), "Row #" . ($i + 1) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            break;
+                        }
                         $info  = $row[self::COL_INFO];
 
                         $result = Core::database()->select(AutoGame::TABLE_PARTICIPATION, ["user" => $userId, "course" => $courseId, "type" => $action, "description" => $info]);
@@ -643,7 +649,10 @@ class GoogleSheets extends Module
 
                     case "quiz grade":
                     case "lab grade":
-                        if (!self::rowIsValid($row, [self::COL_XP, self::COL_INFO])) break;
+                        if (!self::rowIsValid($row, [self::COL_XP, self::COL_INFO])) {
+                            self::log($this->course->getId(), "Row #" . ($i + 1) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            break;
+                        }
                         $info  = $row[self::COL_INFO];
                         $xp = $row[self::COL_XP];
 
@@ -670,7 +679,10 @@ class GoogleSheets extends Module
 
                     case "popular choice award (presentation)":
                     case "golden star award":
-                        if (!self::rowIsValid($row, [self::COL_INFO])) break;
+                        if (!self::rowIsValid($row, [self::COL_INFO])) {
+                            self::log($this->course->getId(), "Row #" . ($i + 1) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            break;
+                        }
                         $info  = $row[self::COL_INFO];
 
                         $result = Core::database()->select(AutoGame::TABLE_PARTICIPATION, ["user" => $userId, "course" => $courseId, "type" => $action]);
@@ -695,7 +707,10 @@ class GoogleSheets extends Module
                         break;
 
                     case "hall of fame":
-                        if (!self::rowIsValid($row, [self::COL_INFO])) break;
+                        if (!self::rowIsValid($row, [self::COL_INFO])) {
+                            self::log($this->course->getId(), "Row #" . ($i + 1) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            break;
+                        }
                         $info  = $row[self::COL_INFO];
 
                         $result = Core::database()->select(AutoGame::TABLE_PARTICIPATION, ["user" => $userId, "course" => $courseId, "type" => $action, "description"=> $info]);
@@ -716,7 +731,7 @@ class GoogleSheets extends Module
                     default:
                         break;
                 }
-            }
+            } else self::log($this->course->getId(), "No user with student nr. '" . $row[self::COL_STUDENT_NUMBER] . "' enrolled in the course.", "WARNING");
         }
 
         if (!empty($values)) {
