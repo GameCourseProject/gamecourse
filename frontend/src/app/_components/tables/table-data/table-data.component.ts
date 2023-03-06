@@ -111,6 +111,16 @@ export class TableData implements OnInit {
       'neutral' | 'info' | 'success' | 'warning' | 'error',
     disabled?: boolean})[];
 
+  // Type: SELECT
+  selectId?: string;                                                                    // Select id
+  selectValue?: any;                                                                   // Select value
+  selectOptions?: ({value: string, text: string, innerHTML?: string} |                 // Select options
+    {label: string, options: {value: string, text: string, innerHTML?: string}[]})[];
+  selectMultiple?: boolean;                                                            // Select allow multiple
+  selectRequire?: boolean;                                                             // Select require answer
+  selectPlaceholder?: string;                                                          // Select placeholder
+  selectSearch?: boolean;                                                              // Select allow search
+
   // Type: CUSTOM
   html?: string;                                                // Custom HTML
   component?: Type<any>;                                        // Custom component
@@ -238,6 +248,16 @@ export class TableData implements OnInit {
     } else if (this.type === TableDataType.ACTIONS) {
       this.actions = this.data.actions;
 
+    } else if (this.type === TableDataType.SELECT){
+
+        this.selectId = this.data.selectId;
+        this.selectValue = this.data.selectValue;
+        this.selectOptions = this.data.selectOptions;
+        this.selectMultiple = this.data.selectMultiple;
+        this.selectRequire = this.data.selectRequire;
+        this.selectPlaceholder = this.data.selectPlaceholder;
+        this.selectSearch = this.data.selectSearch;
+
     } else if (this.type === TableDataType.CUSTOM) {
       if (this.data.html) this.html = this.data.html;
       if (this.data.component) {
@@ -299,6 +319,8 @@ export enum TableDataType {
   RADIO = 'radio',          // params -> radioId: string, radioGroup: string, radioOptionValue: any, radioValue: any, radioColor?: string, radioDisabled?: boolean
   TOGGLE = 'toggle',        // params -> toggleId: string, toggleValue: boolean, toggleColor?: string, toggleDisabled?: boolean
   ACTIONS = 'actions',      // params -> actions: (Action|{action: Action, icon?: string, color?: string, disabled?: boolean})[]
+  SELECT = 'select',        // params -> selectId: string, selectValue?: any, selectOptions?: {value: string, text: string, innerHTML?: string} |
+                            // {label: string, options: {value: string, text: string, innerHTML?: string}[]}, selectMultiple?: boolean, selectRequire?: boolean, selectPlaceholder?: string, selectSearch?: boolean
   CUSTOM = 'custom'         // params -> html?: string, component?: Type<any>, componentData?: {[key: string]: any}, searchBy?: string
 }
 
@@ -314,6 +336,7 @@ export function getValue(data: {type: TableDataType, content: any}): string {
   else if (data.type === TableDataType.CHECKBOX) return data.content['checkboxValue'].toString();
   else if (data.type === TableDataType.RADIO) return data.content['radioValue'].toString();
   else if (data.type === TableDataType.TOGGLE) return data.content['toggleValue'].toString();
+  else if (data.type === TableDataType.SELECT) return data.content['selectValue'];
   else if (data.type === TableDataType.CUSTOM) return data.content['searchBy'] ?? '';
   return '';
 }

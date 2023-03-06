@@ -12,18 +12,20 @@
       [classList]="'mb-5'"
       [headers]="[
         {label: 'Last run', align: 'middle'},
-        {label: 'Status', align: 'middle'}
+        {label: 'Status', align: 'middle'},
+        {label: 'Actions'}
       ]"
       [data]="[[
         {type: TableDataType.DATETIME, content: {datetime: lastRun}},
-        {type: TableDataType.COLOR, content: {color: profilerIsRunning ? '#36D399' : '#EF6060'}}
+        {type: TableDataType.COLOR, content: {color: profilerIsRunning ? '#36D399' : '#EF6060', colorLabel: profilerIsRunning ? 'Running' : 'Not running'}},
+        {type: TableDataType.ACTIONS, content: {actions: [{action: 'Refresh', icon: 'feather-refresh-ccw'}]}}
       ]]"
       [options]="{
         searching: false,
         lengthChange: false,
         paging: false,
         info: false,
-        columnDefs: [{orderable: false, targets: [0, 1]}]
+        columnDefs: [{orderable: false, targets: [0, 1, 2]}]
       }"
       [hasColumnFiltering]="false"
       [hasFooters]="false">
@@ -61,7 +63,7 @@
         <app-input-datetime
           [id]="'end-date'"
           [topLabel]="'Run until'"
-          [helperText]="'TODO'"
+          [helperText]="'Profiling will run with students\' data until'"
           [helperPosition]="'left'"
           [required]="true">
         </app-input-datetime>
@@ -77,8 +79,7 @@
 </div>
 
 <!-- Overview -->
-<!-- *ngIf="data?.length > 0" -->
-<div class="card w-full bg-base-100 shadow-xl mt-5">
+<div *ngIf="data?.length > 0" class="card w-full bg-base-100 shadow-xl mt-5">
   <div class="card-body">
 
     <!-- Header -->
@@ -86,28 +87,50 @@
       <h2 class="card-title mb-0">Overview</h2>
     </div>
 
-    <app-top-actions
-      [leftActions]="[
-        {action: Action.IMPORT, icon:'jam-download'},
-        {action: Action.EXPORT, icon:'jam-upload'}]"
-      (btnClicked)="doAction($event)">
-    </app-top-actions>
-
     <!-- Results Graph -->
     <figure class="highcharts-figure">
       <div id="overview" class="w-full"></div>
     </figure>
 
+    <div >
+      <!-- Import / Export actions -->
+      <app-top-actions
+        [leftActions]="[
+          {action: Action.IMPORT, icon:'jam-download'},
+          {action: Action.EXPORT, icon:'jam-upload'}]"
+        (btnClicked)="doAction($event)">
+      </app-top-actions>
 
-    <!-- Results Table -->
-    <app-table
-      [id]="'clusters'"
-      [classList]="'mt-5'"
-      [headers]="table.headers"
-      [data]="table.data"
-      [options]="table.options"
-      [loading]="table.loading">
-    </app-table>
+      <!-- Results Table -->
+      <app-table
+        [id]="'clusters'"
+        [classList]="'mt-5'"
+        [headers]="table.headers"
+        [data]="table.data"
+        [options]="table.options"
+        [loading]="table.loading"
+        (valueChanged)="selectCluster($event, $event.row)">   <!-- NOTE: Only considers one type of action in entire table -->
+      </app-table>
+    </div>
+
+    <!-- Actions -->
+    <div class="card-actions justify-end mt-5">
+      <button type="button" class="btn btn-ghost mr-2" (click)="deleteSavedClusters()">Cancel</button>
+      <button type="submit" class="btn btn-secondary" (click)="saveClusters()">
+        <!-- Spinner -->
+        <ng-container *ngIf="loadingAction">
+          <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+        </ng-container>
+        Save draft
+      </button>
+      <button type="submit" class="btn btn-primary" (click)="commitClusters()">
+        <!-- Spinner -->
+        <ng-container *ngIf="loadingAction">
+          <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+        </ng-container>
+        Commit to Database
+      </button>
+    </div>
 
   </div>
 </div>
@@ -165,7 +188,7 @@
            [id]="'import-modal'"
            [templateRef]="IMPORT_MODAL"
            [size]="'md'"
-           [header]="'Import'"
+           [header]="'Import Profiling Results'"
            [closeBtnText]="'Cancel'"
            [submitBtnText]="Action.IMPORT"
            [actionInProgress]="loadingAction"
@@ -181,9 +204,9 @@
     [size]="'xs'"
     [color]="'accent'"
     [classList]="''"
-    [label]="'Import profiling results'"
+    [label]="'File to Import'"
     [helperPosition]="'right'"
-    [helperText]="'Students\' profiling results'"
+    [helperText]="'File to import students\' profiling results'"
     (valueChange)="onFileSelected($event)">
   </app-input-file>
 </ng-template>

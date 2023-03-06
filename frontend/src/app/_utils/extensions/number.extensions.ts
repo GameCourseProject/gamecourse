@@ -13,7 +13,8 @@ interface Number {
 Number.prototype.format = function (type: string): string {
   switch (type) {
     case 'none':
-      return this.toString();
+      let res = this.toString();
+      return res;
 
     case 'money':
       return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(this);

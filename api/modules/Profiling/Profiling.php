@@ -87,10 +87,7 @@ class Profiling extends Module
 
 
         // Set up logs folder
-        $pathPredictor = self::getPredictorLogsPath(false);
-        $pathProfiler = self::getProfilerLogsPath(false);
-        Utils::initLogging($pathPredictor);
-        Utils::initLogging($pathProfiler);
+        mkdir(LOGS_FOLDER . "/" . self::LOGS_FOLDER . "/");
     }
 
     public function copyTo(Course $copyTo)
