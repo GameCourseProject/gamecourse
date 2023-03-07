@@ -30,8 +30,8 @@ def autogame_init(course):
     Checks AutoGame status for a given course and initializes it.
     """
 
-    query = "SELECT startedRunning, isRunning FROM autogame WHERE course = %s;"
-    last_activity, is_running = db.execute_query(query, course)[0]
+    query = "SELECT checkpoint, isRunning FROM autogame WHERE course = %s;"
+    checkpoint, is_running = db.execute_query(query, course)[0]
 
     # Check AutoGame status
     if is_running:
@@ -41,7 +41,7 @@ def autogame_init(course):
     query = "UPDATE autogame SET isRunning = %s WHERE course = %s;"
     db.execute_query(query, (True, course), "commit")
 
-    return last_activity
+    return checkpoint
 
 def autogame_terminate(course, start_date, finish_date):
     """

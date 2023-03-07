@@ -1583,7 +1583,7 @@ tags:
         $this->assertIsArray($levels);
         $this->assertCount(3, $levels);
 
-        $keys = ["id", "number", "description", "goal", "reward", "tokens"];
+        $keys = ["id", "number", "description", "goal", "reward", "tokens", "image"];
         $nrKeys = count($keys);
 
         $lvl1 = $levels[0];
@@ -1593,11 +1593,15 @@ tags:
         $this->assertArrayHasKey("description", $lvl1);
         $this->assertArrayHasKey("goal", $lvl1);
         $this->assertArrayHasKey("reward", $lvl1);
+        $this->assertArrayHasKey("tokens", $lvl1);
+        $this->assertArrayHasKey("image", $lvl1);
         $this->assertEquals(1, $lvl1["number"]);
         $this->assertEquals("one time", $lvl1["description"]);
         $this->assertEquals(1, $lvl1["goal"]);
         $this->assertEquals(100, $lvl1["reward"]);
         $this->assertEquals(10, $lvl1["tokens"]);
+        $this->assertEquals(API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . Badges::ID . "/assets/" .
+            Badge::DEFAULT_IMAGE, $lvl1["image"]);
 
         $lvl2 = $levels[1];
         $this->assertCount($nrKeys, $lvl2);
@@ -1606,11 +1610,15 @@ tags:
         $this->assertArrayHasKey("description", $lvl2);
         $this->assertArrayHasKey("goal", $lvl2);
         $this->assertArrayHasKey("reward", $lvl2);
+        $this->assertArrayHasKey("tokens", $lvl1);
+        $this->assertArrayHasKey("image", $lvl1);
         $this->assertEquals(2, $lvl2["number"]);
         $this->assertEquals("two times", $lvl2["description"]);
         $this->assertEquals(2, $lvl2["goal"]);
         $this->assertEquals(100, $lvl2["reward"]);
         $this->assertEquals(10, $lvl2["tokens"]);
+        $this->assertEquals(API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . Badges::ID . "/assets/" .
+            Badge::DEFAULT_IMAGE, $lvl1["image"]);
 
         $lvl3 = $levels[2];
         $this->assertCount($nrKeys, $lvl3);
@@ -1619,11 +1627,15 @@ tags:
         $this->assertArrayHasKey("description", $lvl3);
         $this->assertArrayHasKey("goal", $lvl3);
         $this->assertArrayHasKey("reward", $lvl3);
+        $this->assertArrayHasKey("tokens", $lvl1);
+        $this->assertArrayHasKey("image", $lvl1);
         $this->assertEquals(3, $lvl3["number"]);
         $this->assertEquals("three times", $lvl3["description"]);
         $this->assertEquals(3, $lvl3["goal"]);
         $this->assertEquals(100, $lvl3["reward"]);
         $this->assertEquals(10, $lvl3["tokens"]);
+        $this->assertEquals(API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . Badges::ID . "/assets/" .
+            Badge::DEFAULT_IMAGE, $lvl1["image"]);
     }
 
     /**

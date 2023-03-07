@@ -801,7 +801,7 @@ class UserTest extends TestCase
         $user = User::addUser("Ana Gonçalves", "ist100000", AuthService::FENIX, "ana.goncalves@gmail.com",
             10000, "Ana G", "MEIC-A", 0, 0);
         $user->setData($fieldValues);
-        $this->assertEquals($user->getData(), array_merge($fieldValues, ["id" => $user->getId(), "theme" => null]));
+        $this->assertEquals($user->getData(), array_merge($fieldValues, ["id" => $user->getId(), "theme" => null, "image" => null]));
     }
 
     /**
@@ -842,7 +842,7 @@ class UserTest extends TestCase
             $user = new User(2);
             $this->assertEquals(["id" => "2", "name" => "Rita Alves", "username" => "ist200000", "auth_service" => AuthService::FENIX,
                 "email" => "rita.alves@gmail.com", "studentNumber" => 20000, "nickname" => "Rita A.", "major" => "MEIC-A",
-                "isAdmin" => false, "isActive" => false, "lastLogin" => null, "theme" => null], $user->getData());
+                "isAdmin" => false, "isActive" => false, "lastLogin" => null, "theme" => null, "image" => null], $user->getData());
         }
     }
 
@@ -864,7 +864,7 @@ class UserTest extends TestCase
             $user = new User(2);
             $this->assertEquals(["id" => "2", "name" => "Rita Alves", "username" => "ist200000", "auth_service" => AuthService::FENIX,
                 "email" => "rita.alves@gmail.com", "studentNumber" => 20000, "nickname" => "Rita A.", "major" => "MEIC-A",
-                "isAdmin" => false, "isActive" => false, "lastLogin" => null, "theme" => null], $user->getData());
+                "isAdmin" => false, "isActive" => false, "lastLogin" => null, "theme" => null, "image" => null], $user->getData());
         }
     }
 
@@ -886,7 +886,7 @@ class UserTest extends TestCase
             $user = new User(2);
             $this->assertEquals(["id" => "2", "name" => "Rita Alves", "username" => "ist200000", "auth_service" => AuthService::FENIX,
                 "email" => "rita.alves@gmail.com", "studentNumber" => 20000, "nickname" => "Rita A.", "major" => "MEIC-A",
-                "isAdmin" => false, "isActive" => false, "lastLogin" => null, "theme" => null], $user->getData());
+                "isAdmin" => false, "isActive" => false, "lastLogin" => null, "theme" => null, "image" => null], $user->getData());
         }
     }
 
@@ -1035,13 +1035,14 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(2, $users);
 
-        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertSame($user[$key], ${"user".($i+1)}->getData($key));
+                if ($key === "image") $this->assertNull(${"user".($i+1)}->getImage());
+                else $this->assertSame($user[$key], ${"user".($i+1)}->getData($key));
             }
         }
     }
@@ -1061,13 +1062,14 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(1, $users);
 
-        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertSame($user[$key], $user2->getData($key));
+                if ($key === "image") $this->assertNull($user2->getImage());
+                else $this->assertSame($user[$key], $user2->getData($key));
             }
         }
     }
@@ -1087,13 +1089,14 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(1, $users);
 
-        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertSame($user[$key], $user1->getData($key));
+                if ($key === "image") $this->assertNull($user1->getImage());
+                else $this->assertSame($user[$key], $user1->getData($key));
             }
         }
     }
@@ -1137,13 +1140,14 @@ class UserTest extends TestCase
         $this->assertIsArray($users);
         $this->assertCount(2, $users);
 
-        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive"];
+        $keys = ["id", "name", "username", "auth_service", "lastLogin", "email", "studentNumber", "theme", "nickname", "major", "isAdmin", "isActive", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertSame($user[$key], ${"user".($i+1)}->getData($key));
+                if ($key === "image") $this->assertNull(${"user".($i+1)}->getImage());
+                else $this->assertSame($user[$key], ${"user".($i+1)}->getData($key));
             }
         }
     }
@@ -1896,24 +1900,25 @@ class UserTest extends TestCase
 
         $user1 = ["id" => 1, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956", "theme" => null,
-            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null, "image" => null];
         $user2 = ["id" => 2, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => null, "studentNumber" => 87664, "username" => "ist187664", "theme" => null,
-            "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null, "image" => null];
         $user3 = ["id" => 3, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => null,
             "nickname" => null, "studentNumber" => 84715, "username" => "ist426015", "theme" => null,
-            "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null, "image" => null];
         $user4 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893", "theme" => null,
-            "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
+            "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null, "image" => null];
 
-        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertSame($user[$key], ${"user".($i+1)}[$key]);
+                if ($key === "image") $this->assertNull(${"user".($i+1)}[$key]);
+                else $this->assertSame($user[$key], ${"user".($i+1)}[$key]);
             }
         }
     }
@@ -1944,24 +1949,25 @@ class UserTest extends TestCase
 
         $user0 = ["id" => 1, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015", "theme" => null,
-            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false, "lastLogin" => null];
+            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false, "lastLogin" => null, "image" => null];
         $user1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956", "theme" => null,
-            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null, "image" => null];
         $user2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => null, "studentNumber" => 87664, "username" => "ist187664", "theme" => null,
-            "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null, "image" => null];
         $user3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893", "theme" => null,
-            "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
+            "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null, "image" => null];
 
-        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertSame($user[$key], ${"user".$i}[$key]);
+                if ($key === "image") $this->assertNull(${"user".$i}[$key]);
+                else $this->assertSame($user[$key], ${"user".$i}[$key]);
             }
         }
     }
@@ -1992,24 +1998,25 @@ class UserTest extends TestCase
 
         $user0 = ["id" => 1, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => null,
             "nickname" => null, "studentNumber" => 84715, "username" => "ist426015", "theme" => null,
-            "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null, "image" => null];
         $user1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956", "theme" => null,
-            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null, "image" => null];
         $user2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => null, "studentNumber" => 87664, "username" => "ist187664", "theme" => null,
-            "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null, "image" => null];
         $user3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893", "theme" => null,
-            "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
+            "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null, "image" => null];
 
-        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertSame($user[$key], ${"user".$i}[$key]);
+                if ($key === "image") $this->assertNull(${"user".$i}[$key]);
+                else $this->assertSame($user[$key], ${"user".$i}[$key]);
             }
         }
     }
@@ -2036,24 +2043,25 @@ class UserTest extends TestCase
 
         $user1 = ["id" => 1, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956", "theme" => null,
-            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null, "image" => null];
         $user2 = ["id" => 2, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => null, "studentNumber" => 87664, "username" => "ist187664", "theme" => null,
-            "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null, "image" => null];
         $user3 = ["id" => 3, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => null,
             "nickname" => null, "studentNumber" => 84715, "username" => "ist426015", "theme" => null,
-            "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null, "image" => null];
         $user4 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893", "theme" => null,
-            "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
+            "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null, "image" => null];
 
-        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertSame($user[$key], ${"user".($i+1)}[$key]);
+                if ($key === "image") $this->assertNull(${"user".($i+1)}[$key]);
+                else $this->assertSame($user[$key], ${"user".($i+1)}[$key]);
             }
         }
     }
@@ -2083,24 +2091,25 @@ class UserTest extends TestCase
 
         $user0 = ["id" => 1, "name" => "Filipe José Zillo Colaço", "email" => "fijozico@hotmail.com", "major" => null,
             "nickname" => null, "studentNumber" => 84715, "username" => "ist426015", "theme" => null,
-            "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::GOOGLE, "isAdmin" => false, "isActive" => true, "lastLogin" => null, "image" => null];
         $user1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956", "theme" => null,
-            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null, "image" => null];
         $user2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => null, "studentNumber" => 87664, "username" => "ist187664", "theme" => null,
-            "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null, "image" => null];
         $user3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893", "theme" => null,
-            "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
+            "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null, "image" => null];
 
-        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertSame($user[$key], ${"user".$i}[$key]);
+                if ($key === "image") $this->assertNull(${"user".$i}[$key]);
+                else $this->assertSame($user[$key], ${"user".$i}[$key]);
             }
         }
     }
@@ -2130,24 +2139,25 @@ class UserTest extends TestCase
 
         $user0 = ["id" => 1, "name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "major" => "MEIC-A",
             "nickname" => "Ana G", "studentNumber" => 84715, "username" => "ist426015", "theme" => null,
-            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false, "lastLogin" => null];
+            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => false, "lastLogin" => null, "image" => null];
         $user1 = ["id" => 2, "name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "major" => "MEIC-T",
             "nickname" => "Sabri M'Barki", "studentNumber" => 100956, "username" => "ist1100956", "theme" => null,
-            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::FENIX, "isAdmin" => true, "isActive" => true, "lastLogin" => null, "image" => null];
         $user2 = ["id" => 3, "name" => "Inês Albano", "email" => "ines.albano@tecnico.ulisboa.pt", "major" => "MEIC-A",
             "nickname" => null, "studentNumber" => 87664, "username" => "ist187664", "theme" => null,
-            "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null];
+            "auth_service" => AuthService::LINKEDIN, "isAdmin" => false, "isActive" => true, "lastLogin" => null, "image" => null];
         $user3 = ["id" => 4, "name" => "Mariana Wong Brandão", "email" => "marianawbrandao@icloud.com", "major" => "MEMec",
             "nickname" => "Mariana Brandão", "studentNumber" => 86893, "username" => "ist186893", "theme" => null,
-            "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null];
+            "auth_service" => AuthService::FACEBOOK, "isAdmin" => false, "isActive" => false, "lastLogin" => null, "image" => null];
 
-        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin"];
+        $keys = ["id", "name", "email", "major", "nickname", "studentNumber", "theme", "username", "auth_service", "isAdmin", "isActive", "lastLogin", "image"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($users as $i => $user) {
                 $this->assertCount($nrKeys, array_keys($user));
                 $this->assertArrayHasKey($key, $user);
-                $this->assertSame($user[$key], ${"user".$i}[$key]);
+                if ($key === "image") $this->assertNull(${"user".$i}[$key]);
+                else $this->assertSame($user[$key], ${"user".$i}[$key]);
             }
         }
     }

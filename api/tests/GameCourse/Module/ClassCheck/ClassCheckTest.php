@@ -333,10 +333,11 @@ class ClassCheckTest extends TestCase
         $this->module->saveTSVCode($attendanceFile);
 
         // When
-        $newData = $this->module->importData();
+        $checkpoint = $this->module->importData();
 
         // Then
-        $this->assertTrue($newData);
+        $this->assertNotNull($checkpoint);
+        $this->assertTrue(strtotime($checkpoint) <= time());
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertIsArray($participations);
@@ -372,11 +373,12 @@ class ClassCheckTest extends TestCase
         $this->module->setIsRunning(true);
 
         // Then
-        $this->assertFalse($this->module->importData());
+        $this->assertNull($this->module->importData());
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertEmpty($participations);
 
+        $this->assertTrue($this->module->isRunning());
         $this->assertNull($this->module->getStartedRunning());
         $this->assertNull($this->module->getFinishedRunning());
 
@@ -388,7 +390,7 @@ class ClassCheckTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function importDataCaughtError()
+    public function importDataInvalidData()
     {
         // Given
         $attendanceFile = __DIR__ . "/attendance.txt";
@@ -396,15 +398,14 @@ class ClassCheckTest extends TestCase
         $this->module->saveTSVCode($attendanceFile);
 
         // Then
-        $this->expectException(Exception::class);
-        $this->module->importData();
+        $this->assertNull($this->module->importData());
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertEmpty($participations);
 
         $this->assertFalse($this->module->isRunning());
-        $this->assertNull($this->module->getStartedRunning());
-        $this->assertNull($this->module->getFinishedRunning());
+        $this->assertNotNull($this->module->getStartedRunning());
+        $this->assertNotNull($this->module->getFinishedRunning());
 
         // Clean up
         unlink($attendanceFile);
@@ -431,10 +432,11 @@ class ClassCheckTest extends TestCase
         file_put_contents($attendanceFile, $file);
 
         // When
-        $newData = $this->module->saveAttendance($attendanceFile);
+        $oldestRecordTimestamp = $this->module->saveAttendance($attendanceFile);
 
         // Then
-        $this->assertTrue($newData);
+        $this->assertIsInt($oldestRecordTimestamp);
+        $this->assertTrue($oldestRecordTimestamp <= time());
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertIsArray($participations);
@@ -501,10 +503,10 @@ class ClassCheckTest extends TestCase
 
         // When
         $this->module->saveAttendance($attendanceFile);
-        $newData = $this->module->saveAttendance($attendanceFile);
+        $oldestRecordTimestamp = $this->module->saveAttendance($attendanceFile);
 
         // Then
-        $this->assertFalse($newData);
+        $this->assertNull($oldestRecordTimestamp);
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertIsArray($participations);

@@ -481,12 +481,13 @@ class GoogleSheets extends Module
 
     /**
      * Imports data from a Google sheet into the system.
-     * Returns true if new data was imported, false otherwise.
+     * Returns the datetime of the oldest record imported
+     * if new data was imported, null otherwise.
      *
-     * @return bool
+     * @return string|null
      * @throws Exception
      */
-    public function importData(): bool
+    public function importData(): ?string
     {
         if ($this->isRunning()) {
             self::log($this->course->getId(), "Already importing data from " . self::NAME . ".", "WARNING");
@@ -498,26 +499,29 @@ class GoogleSheets extends Module
         self::log($this->course->getId(), "Importing data from " . self::NAME . "...", "INFO");
 
         try {
+            // NOTE: AutoGame will run for targets with new data after checkpoint
+            $AutoGameCheckpoint = null; // Timestamp of oldest record imported
+
             $credentials = $this->getCredentials();
             $accessToken = $this->getAccessToken();
             $client = GoogleHandler::getGoogleSheetsClient($this->course->getId(), $credentials, $accessToken);
             self::$GSService = GoogleHandler::getGoogleSheetsService($client);
 
-            $newData = false;
             $config = $this->getGoogleSheetsConfig();
             foreach ($config["sheetNames"] as $i => $sheetName) {
                 $prof = $this->course->getCourseUserByUsername($config["ownerNames"][$i]);
                 if ($prof) {
                     $data = $this->getSheetData($config["spreadsheetId"], $sheetName);
-                    if ($this->saveSheetData($sheetName, $data, $prof->getId())) {
-                        $newData = true;
+                    $checkpoint = $this->saveSheetData($sheetName, $data, $prof->getId());
+                    if ($checkpoint) {
+                        $AutoGameCheckpoint = min($AutoGameCheckpoint, $checkpoint) ?? $checkpoint;
                         self::log($this->course->getId(), "Imported new data from sheet '" . $sheetName . "'.", "SUCCESS");
                     }
                 } else self::log($this->course->getId(), "No teacher with username '" . $config["ownerNames"][$i] . "' enrolled in the course.", "WARNING");
             }
 
             self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
-            return $newData;
+            return $AutoGameCheckpoint ? date("Y-m-d H:i:s", $AutoGameCheckpoint) : null;
 
         } finally {
             $this->setIsRunning(false);
@@ -544,15 +548,16 @@ class GoogleSheets extends Module
      * @param string $sheetName
      * @param array $data
      * @param int $profId
-     * @return bool
+     * @return int|null
      */
-    public function saveSheetData(string $sheetName, array $data, int $profId): bool
+    public function saveSheetData(string $sheetName, array $data, int $profId): ?int
     {
         // NOTE: it's better performance-wise to do only one big insert
         //       as opposed to multiple small inserts
         $sql = "INSERT INTO " . AutoGame::TABLE_PARTICIPATION . " (user, course, source, description, type, rating, evaluator) VALUES ";
         $values = [];
-        $newData = false;
+
+        $oldestRecordTimestamp = null; // Timestamp of the oldest record imported
 
         foreach ($data as $i => $row) {
             if (!self::rowIsValid($row, [self::COL_STUDENT_NUMBER, self::COL_ACTION])) continue;
@@ -591,7 +596,8 @@ class GoogleSheets extends Module
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
                                 "rating" => intval(round($xp)),
                             ], ["user" => $userId, "course" => $courseId, "type" => $action]);
-                            $newData = true;
+                            $recordTimeStamp = strtotime($result["date"]);
+                            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordTimeStamp) ?? $recordTimeStamp;
                         }
                         break;
 
@@ -624,7 +630,8 @@ class GoogleSheets extends Module
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
                                 "description" => $info
                             ], ["user" => $userId, "course" => $courseId, "type" => $action]);
-                            $newData = true;
+                            $recordTimeStamp = strtotime($result["date"]);
+                            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordTimeStamp) ?? $recordTimeStamp;
                         }
                         break;
 
@@ -675,7 +682,8 @@ class GoogleSheets extends Module
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
                                 "rating" =>  intval(round($xp))
                             ], ["user" => $userId, "course" => $courseId, "description" => $info, "type" =>  $action]);
-                            $newData = true;
+                            $recordTimeStamp = strtotime($result["date"]);
+                            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordTimeStamp) ?? $recordTimeStamp;
                         }
                         break;
 
@@ -705,7 +713,8 @@ class GoogleSheets extends Module
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
                                 "description" => $info
                             ], ["user" => $userId, "course" => $courseId, "type" =>  $action]);
-                            $newData = true;
+                            $recordTimeStamp = strtotime($result["date"]);
+                            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordTimeStamp) ?? $recordTimeStamp;
                         }
                         break;
 
@@ -740,9 +749,10 @@ class GoogleSheets extends Module
         if (!empty($values)) {
             $sql .= implode(", ", $values);
             Core::database()->executeQuery($sql);
-            $newData = true;
+            $recordsTimestamp = time();
+            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordsTimestamp) ?? $recordsTimestamp;
         }
-        return $newData;
+        return $oldestRecordTimestamp;
     }
 
     /**

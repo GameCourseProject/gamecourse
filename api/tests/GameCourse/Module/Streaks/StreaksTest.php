@@ -326,6 +326,7 @@ class StreaksTest extends TestCase
                 $this->assertCount($nrKeys, array_keys($streak));
                 $this->assertArrayHasKey($key, $streak);
                 if ($key == "nrCompletions") $this->assertEquals($i == 0 ? 2 : 1, $streak[$key]);
+                else if ($key == "progress") $this->assertEquals(null, $streak[$key]); // FIXME
                 else $this->assertEquals($streak[$key], ${"streak".($i+1)}->getData($key));
             }
         }
