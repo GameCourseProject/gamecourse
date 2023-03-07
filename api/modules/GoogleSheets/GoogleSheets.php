@@ -569,7 +569,7 @@ class GoogleSheets extends Module
                     case "initial tokens":
                     case "presentation grade":
                         if (!self::rowIsValid($row, [self::COL_XP])) {
-                            self::log($this->course->getId(), "Row #" . ($i + 1) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            self::log($this->course->getId(), "Row #" . ($i + 2) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
                             break;
                         }
                         $xp = $row[self::COL_XP];
@@ -598,9 +598,11 @@ class GoogleSheets extends Module
                     case "attended lecture":
                     case "attended lecture (late)":
                     case "attended lab":
+                    case "guild master":
+                    case "guild warrior":
                     case "replied to questionnaires":
                         if (!self::rowIsValid($row, [self::COL_INFO])) {
-                            self::log($this->course->getId(), "Row #" . ($i + 1) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            self::log($this->course->getId(), "Row #" . ($i + 2) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
                             break;
                         }
                         $info  = $row[self::COL_INFO];
@@ -650,7 +652,7 @@ class GoogleSheets extends Module
                     case "quiz grade":
                     case "lab grade":
                         if (!self::rowIsValid($row, [self::COL_XP, self::COL_INFO])) {
-                            self::log($this->course->getId(), "Row #" . ($i + 1) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            self::log($this->course->getId(), "Row #" . ($i + 2) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
                             break;
                         }
                         $info  = $row[self::COL_INFO];
@@ -679,8 +681,9 @@ class GoogleSheets extends Module
 
                     case "popular choice award (presentation)":
                     case "golden star award":
+                    case "great video":
                         if (!self::rowIsValid($row, [self::COL_INFO])) {
-                            self::log($this->course->getId(), "Row #" . ($i + 1) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            self::log($this->course->getId(), "Row #" . ($i + 2) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
                             break;
                         }
                         $info  = $row[self::COL_INFO];
@@ -708,7 +711,7 @@ class GoogleSheets extends Module
 
                     case "hall of fame":
                         if (!self::rowIsValid($row, [self::COL_INFO])) {
-                            self::log($this->course->getId(), "Row #" . ($i + 1) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            self::log($this->course->getId(), "Row #" . ($i + 2) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
                             break;
                         }
                         $info  = $row[self::COL_INFO];
