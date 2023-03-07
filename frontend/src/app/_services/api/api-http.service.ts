@@ -2425,7 +2425,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']));
   }
 
-  public getSkillsExtraInfo(courseID: number, userID: number, skillTreeID: number): Observable<{attempts: {[key: number]: number}, cost: {[key: number]: number}, completed: number[]}> {
+  public getSkillsExtraInfo(courseID: number, userID: number, skillTreeID: number): Observable<{[skillID: number]: {attempts: number, cost: number, completed: boolean}}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.SKILLS);
       qs.push('request', 'getSkillsExtraInfo');
@@ -2437,17 +2437,7 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => {
-        const info = res['data'];
-        const attempts: {[key: number]: number} = {};
-        const cost: {[key: number]: number} = {};
-        for (const i of info) {
-          attempts[i['id']] = i['attempts'];
-          cost[i['id']] = i['cost'];
-        }
-        const completed: number[] = info.map(skill => skill['id']);
-        return {attempts, cost, completed};
-      }));
+      .pipe( map((res: any) => res['data']));
   }
 
   public getStreaks(courseID: number): Observable<Streak[]> {
