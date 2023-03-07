@@ -7,4 +7,4 @@ rule: Quiz Grades
         len(flogs) > 0
 
     then:
-        award_quiz_grade(target, logs)
+        award_quiz_grade(target, flogs)
