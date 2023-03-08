@@ -1586,6 +1586,19 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].hasOwnProperty('predicting') ? res['data']['predicting'] : parseInt(res['data']['nrClusters'])) );
   }
 
+  public getClusterNames(courseID: number): Observable<string[]>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PROFILING);
+      qs.push('request', 'getClusterNames');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
 
   // QR
 

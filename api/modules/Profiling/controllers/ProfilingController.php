@@ -23,6 +23,10 @@ class ProfilingController
     /*** ----------------- Overview ------------------ ***/
     /*** --------------------------------------------- ***/
 
+    /**
+     *
+     * @throws Exception
+     */
     public function getHistory()
     {
         API::requireValues("courseId");
@@ -49,6 +53,10 @@ class ProfilingController
     /*** ----------------- Predictor ----------------- ***/
     /*** --------------------------------------------- ***/
 
+    /**
+     *
+     * @throws Exception
+     */
     public function runPredictor()
     {
         API::requireValues("courseId", "method", "endDate");
@@ -65,6 +73,10 @@ class ProfilingController
         $profiling->runPredictor($method, $endDate);
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     public function checkPredictorStatus()
     {
         API::requireValues("courseId");
@@ -86,6 +98,10 @@ class ProfilingController
     /*** ----------------- Profiler ------------------ ***/
     /*** --------------------------------------------- ***/
 
+    /**
+     *
+     * @throws Exception
+     */
     public function getLastRun()
     {
         API::requireValues("courseId");
@@ -120,6 +136,10 @@ class ProfilingController
         $profiling->runProfiler($nrClusters, $minSize, $endDate);
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     public function checkProfilerStatus()
     {
         API::requireValues("courseId");
@@ -192,6 +212,10 @@ class ProfilingController
         $profiling->deleteSavedClusters();
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     public function commitClusters()
     {
         API::requireValues("courseId", "clusters");
@@ -201,8 +225,24 @@ class ProfilingController
 
         API::requireCourseAdminPermission($course);
 
-        $clusters = API::getValue("clusters");
+        $clusters = API::getValue("clusters", "array");
         $profiling = new Profiling($course);
         $profiling->commitClusters($clusters);
+    }
+
+    /**
+     *
+     * @throws Exception
+     */
+    public function getClusterNames(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $profiling = new Profiling($course);
+        API::response($profiling->getClusterNames());
     }
 }

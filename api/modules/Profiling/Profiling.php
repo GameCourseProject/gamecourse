@@ -175,7 +175,7 @@ class Profiling extends Module
             foreach ($days as $day) {
                 // Get records of day
                 $table = "(SELECT u.name as name, cu.id as id FROM " . CourseUser::TABLE_COURSE_USER . " cu JOIN " .
-                    User::TABLE_USER . " u on cu.id=u.id JOIN " . Role::TABLE_USER_ROLE . " ur on ur.id=u.id JOIN " .
+                    User::TABLE_USER . " u on cu.id=u.id JOIN " . Role::TABLE_USER_ROLE . " ur on ur.user=u.id JOIN " .
                     Role::TABLE_ROLE . " r on ur.role = r.id WHERE r.name = \"Student\" and cu.course = $courseId and 
                     ur.course = $courseId and cu.isActive=true) a LEFT JOIN (SELECT p.user as user, r1.name as cluster FROM " .
                     self::TABLE_PROFILING_USER_PROFILE . " p LEFT JOIN " . Role::TABLE_ROLE . " r1 on p.cluster = r1.id " .
@@ -520,6 +520,8 @@ class Profiling extends Module
         // Update students cluster
         $date = date("Y-m-d H:i:s");
         $students = $this->course->getStudents();
+
+        // $clusters = $this->parseClusters($clusters);
         foreach ($students as $student) {
             $student = $this->course->getCourseUserById($student["id"]);
 
@@ -533,12 +535,13 @@ class Profiling extends Module
             // Assign new cluster
             if ($student->isActive()) {
                 $newCluster = $clusters[$student->getId()];
-                $student->addRole(null, $newCluster);
+                $newClusterId = Role::getRoleId($newCluster, $this->course->getId());
+                $student->addRole(null, $newClusterId);
                 Core::database()->insert(self::TABLE_PROFILING_USER_PROFILE, [
                     "course" => $this->course->getId(),
                     "user" => $student->getId(),
                     "date" => $date,
-                    "cluster" => $newCluster
+                    "cluster" => $newClusterId
                 ]);
             }
         }
@@ -565,9 +568,24 @@ class Profiling extends Module
     }
 
     /**
+     * Receives array of type { 0 => { 123: "Achiever"}, 1 => { 124: "Halfhearted" } }
+     * Returns { 123 => "Achiever", 124 => "Halfhearted }
+     *
+     * @param array $clusters
+     * @return array
      * @throws Exception
      */
-    private function getClusterNames(bool $all = true): array
+    private function parseClusters(array $clusters): array {
+        $response = [];
+        foreach ($clusters as $clr){
+        }
+        return $response;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getClusterNames(bool $all = true): array
     {
         $hierarchy = $this->course->getRolesHierarchy();
         $children = Role::getChildrenNamesOfRole($hierarchy, self::PROFILING_ROLE, null, !$all);

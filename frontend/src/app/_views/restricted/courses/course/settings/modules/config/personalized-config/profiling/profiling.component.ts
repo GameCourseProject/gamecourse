@@ -32,53 +32,61 @@ Accessibility(Highcharts)
 })
 export class ProfilingComponent implements OnInit {
 
-  loading: boolean = true;
-  loadingAction: boolean;
-  courseID: number;
-
-  nrClusters: number = 4;
-  minClusterSize: number = 4;
-  endDate: string = moment().format('YYYY-MM-DDTHH:mm:ss');
-  clusterNamesSelect: { value: string, text: string }[] = [];
-  clusters: {[studentId: string]: {name: string, cluster: string}};
-  select: {[studentId: number]: string}[];
-  prevStateSelect: {[studentId: number]: string}[];
-  prevStateClusters: {[studentId: string]: {name: string, cluster: string}};
-
-  lastRun: Moment;
-  predictorIsRunning: boolean;
-  profilerIsRunning: boolean;
-
-  history: ProfilingHistory[];
-  nodes: ProfilingNode[];
-  data: (string|number)[][];
-  days: string[];
-
+  loading = {
+    page: true,
+    action: false,
+    table: false
+  }
+  running = {
+    predictor: false,
+    profiler: false
+  }
   table: {
-    loading: boolean,
     headers: {label: string, align?: 'left' | 'middle' | 'right'}[],
     data: {type: TableDataType, content: any}[][],
     options: any
   } = {
-    loading: true,
     headers: null,
     data: null,
     options: null
   }
 
-  isPredictModalOpen: boolean;
+  courseID: number;
+  students: {[userID: number]: User} = {};
+
+  mode: "predict" | "save" | "import";
+
+  // PREDICTOR
   methods: {name: string, char: string}[] = [
     {name: "Elbow method", char: "e"},
     {name: "Silhouette method", char: "s"}
   ];
   methodSelected: string = null;
+
+  nrClusters: number = 4;
+  minClusterSize: number = 4;
+  endDate: string = moment().format('YYYY-MM-DDTHH:mm:ss');
+
+  // PROFILER
+  newClusters: {[studentId: number]: string}[] | {[studentId: string]: {name: string, cluster: string}};
+  clusters: {[studentId: string]: {name: string, cluster: string}};
+  select: {[studentId: number]: string}[];                              // draft (uncommitted changes)
+  // prevStateSelect: {[studentId: number]: string}[];
+  // prevStateClusters: {[studentId: string]: {name: string, cluster: string}};
+
+  clusterNamesSelect: { value: string, text: string }[];
+  lastRun: Moment;
+
+  // CHART
+  history: ProfilingHistory[];
+  nodes: ProfilingNode[];
+  data: (string|number)[][];
+  days: string[];
+
   @ViewChild('fPrediction', { static: false }) fPrediction: NgForm;
   @ViewChild('fImport', { static: false }) fImport: NgForm;
 
-  isImportModalOpen: boolean;
   importedFile: File;
-
-  students: {[userID: number]: User} = {};
 
   constructor(
     private api: ApiHttpService,
@@ -91,8 +99,11 @@ export class ProfilingComponent implements OnInit {
       await this.getStudents();
       await this.getHistory();
       await this.getLastRun();
-      await this.getSavedClusters();
-      this.loading = false;
+
+      await this.checkPredictorStatus();
+      await this.getClusters();
+      //await this.getSavedClusters();
+      this.loading.page = false;
     });
   }
 
@@ -105,8 +116,8 @@ export class ProfilingComponent implements OnInit {
   }
 
   async getHistory() {
-    //const res = await this.api.getHistory(this.courseID).toPromise();
-    const res = {
+    const res = await this.api.getHistory(this.courseID).toPromise();
+    /*const res = {
       "days": [
         "2022-03-15 22:31:32",
         "2022-03-20 12:12:27",
@@ -128,7 +139,7 @@ export class ProfilingComponent implements OnInit {
           "2022-04-26 19:31:44": "Halfhearted",
           "2022-05-05 17:26:32": "Halfhearted"
         },
-        /*{
+        {
           "id": "114",
           "name": "Paulo Cabeças",
           "2022-03-15 22:31:32": "Halfhearted",
@@ -292,8 +303,8 @@ export class ProfilingComponent implements OnInit {
           "2022-04-19 13:00:42": "Achiever",
           "2022-04-26 19:31:44": "Regular_achieverlike",
           "2022-05-05 17:26:32": "Regular"
-        },*/
-        /*{
+        },
+        {
           "id": "134",
           "name": "Tomás Costa",
           "2022-03-15 22:31:32": "Halfhearted",
@@ -303,8 +314,8 @@ export class ProfilingComponent implements OnInit {
           "2022-04-19 13:00:42": "Halfhearted",
           "2022-04-26 19:31:44": "Halfhearted",
           "2022-05-05 17:26:32": "Halfhearted"
-        },*/
-        /*{
+        },
+        {
           "id": "135",
           "name": "Tomás Costa",
           "2022-03-15 22:31:32": "Achiever",
@@ -974,7 +985,7 @@ export class ProfilingComponent implements OnInit {
           "2022-04-19 13:00:42": "Regular_halfheartedlike",
           "2022-04-26 19:31:44": "Regular_halfheartedlike",
           "2022-05-05 17:26:32": "Achiever"
-        }*/
+        }
       ],
       "nodes": [
         {
@@ -2695,7 +2706,7 @@ export class ProfilingComponent implements OnInit {
           0
         ]
       ]
-    }
+    }*/
     this.history = res.history;
     this.nodes = res.nodes;
     this.data = res.data;
@@ -4364,88 +4375,452 @@ export class ProfilingComponent implements OnInit {
     this.lastRun = await this.api.getLastRun(this.courseID).toPromise();
   }
 
+  async getClusters(){
+    const drafts = await this.api.getSavedClusters(this.courseID).toPromise();        // returns "saved" (uncommitted changes) and "names" (cluster names)
+    //const profiler = await this.api.checkProfilerStatus(this.courseID).toPromise();   // returns answers from profiler: { studentId: {name, cluster} }
+
+    const profiler =  {
+      "clusters": {
+        "135": {
+          "name": "David Ribeiro",
+          "cluster": "Halfhearted"
+        },
+        /*"114": {
+          "name": "Paulo Cabeças",
+          "cluster": "Halfhearted"
+        },
+        "115": {
+          "name": "Pedro Teixeira",
+          "cluster": "Halfhearted"
+        },
+        "116": {
+          "name": "Guilherme Serpa",
+          "cluster": "Underachiever"
+        },
+        "117": {
+          "name": "Rafael Pires",
+          "cluster": "Regular"
+        },
+        "120": {
+          "name": "André Santos",
+          "cluster": "Regular"
+        },
+        "121": {
+          "name": "António Santos",
+          "cluster": "Underachiever"
+        },
+        "123": {
+          "name": "João Pimenta",
+          "cluster": "Halfhearted"
+        },
+        "124": {
+          "name": "Pedro Santos",
+          "cluster": "Underachiever"
+        },
+        "125": {
+          "name": "Alexandre Rodrigues",
+          "cluster": "Achiever"
+        },
+        "126": {
+          "name": "Miguel Coelho",
+          "cluster": "Underachiever"
+        },
+        "127": {
+          "name": "Pedro Matono",
+          "cluster": "Regular"
+        },
+        "129": {
+          "name": "Rodrigo Nunes",
+          "cluster": "Halfhearted"
+        },
+        "130": {
+          "name": "Afonso Vasconcelos",
+          "cluster": "Halfhearted"
+        },
+        "132": {
+          "name": "Guilherme Carlota",
+          "cluster": "Regular"
+        },
+        "133": {
+          "name": "Rodrigo Rosa",
+          "cluster": "Regular"
+        },
+        "134": {
+          "name": "Tomás Costa",
+          "cluster": "Halfhearted"
+        },
+        "135": {
+          "name": "Tomás Costa",
+          "cluster": "Achiever"
+        },
+        "136": {
+          "name": "Carolina Pereira",
+          "cluster": "Achiever"
+        },
+        "137": {
+          "name": "Daniela Castanho",
+          "cluster": "Achiever"
+        },
+        "138": {
+          "name": "Francisco Marques",
+          "cluster": "Achiever"
+        },
+        "139": {
+          "name": "Guilherme Fernandes",
+          "cluster": "Regular"
+        },
+        "140": {
+          "name": "Laura Baeta",
+          "cluster": "Halfhearted"
+        },
+        "141": {
+          "name": "Lúcia Silva",
+          "cluster": "Halfhearted"
+        },
+        "142": {
+          "name": "Paulina Wykowska",
+          "cluster": "Achiever"
+        },
+        "143": {
+          "name": "Pedro Nora",
+          "cluster": "Halfhearted"
+        },
+        "144": {
+          "name": "Tomás Saraiva",
+          "cluster": "Regular"
+        },
+        "145": {
+          "name": "Tomás Sequeira",
+          "cluster": "Regular"
+        },
+        "146": {
+          "name": "Vítor Vale",
+          "cluster": "Achiever"
+        },
+        "147": {
+          "name": "Leonor Morgado",
+          "cluster": "Achiever"
+        },
+        "148": {
+          "name": "Lucas Piper",
+          "cluster": "Achiever"
+        },
+        "149": {
+          "name": "Mariana Garcia",
+          "cluster": "Achiever"
+        },
+        "150": {
+          "name": "Patrícia Vilão",
+          "cluster": "Achiever"
+        },
+        "151": {
+          "name": "Tomás Coheur",
+          "cluster": "Halfhearted"
+        },
+        "152": {
+          "name": "Bernardo Quinteiro",
+          "cluster": "Regular"
+        },
+        "153": {
+          "name": "Catarina Sousa",
+          "cluster": "Achiever"
+        },
+        "154": {
+          "name": "Diogo Lopes",
+          "cluster": "Regular"
+        },
+        "155": {
+          "name": "Diogo Mendonça",
+          "cluster": "Regular"
+        },
+        "156": {
+          "name": "Francisco Rodrigues",
+          "cluster": "Regular"
+        },
+        "157": {
+          "name": "Guilherme Saraiva",
+          "cluster": "Regular"
+        },
+        "158": {
+          "name": "Maria Ribeiro",
+          "cluster": "Achiever"
+        },
+        "159": {
+          "name": "Miguel Silva",
+          "cluster": "Regular"
+        },
+        "160": {
+          "name": "Ricardo Subtil",
+          "cluster": "Regular"
+        },
+        "161": {
+          "name": "Sara Ferreira",
+          "cluster": "Regular"
+        },
+        "162": {
+          "name": "Miguel Gonçalves",
+          "cluster": "Regular"
+        },
+        "164": {
+          "name": "María Legaza",
+          "cluster": "Underachiever"
+        },
+        "165": {
+          "name": "Thor-Herman Eggelen",
+          "cluster": "Regular"
+        },
+        "166": {
+          "name": "Shima Bakhtiyari",
+          "cluster": "Underachiever"
+        },
+        "168": {
+          "name": "Solveig Grimstad",
+          "cluster": "Halfhearted"
+        },
+        "169": {
+          "name": "Louis Dutheil",
+          "cluster": "Regular"
+        },
+        "170": {
+          "name": "María García",
+          "cluster": "Underachiever"
+        },
+        "171": {
+          "name": "Paulo Cardoso",
+          "cluster": "Underachiever"
+        },
+        "172": {
+          "name": "João Marto",
+          "cluster": "Halfhearted"
+        },
+        "173": {
+          "name": "Maria Gomes",
+          "cluster": "Regular"
+        },
+        "174": {
+          "name": "Pedro Bento",
+          "cluster": "Achiever"
+        },
+        "175": {
+          "name": "Raquel Chin",
+          "cluster": "Achiever"
+        },
+        "176": {
+          "name": "Miguel Keim",
+          "cluster": "Halfhearted"
+        },
+        "177": {
+          "name": "Marina Martins",
+          "cluster": "Achiever"
+        },
+        "178": {
+          "name": "Julian Holzegger",
+          "cluster": "Regular"
+        },
+        "180": {
+          "name": "Jaakko Väkevä",
+          "cluster": "Halfhearted"
+        },
+        "181": {
+          "name": "Pierre Corbay",
+          "cluster": "Halfhearted"
+        },
+        "182": {
+          "name": "Annika Gerigoorian",
+          "cluster": "Halfhearted"
+        },
+        "183": {
+          "name": "Maha Kloub",
+          "cluster": "Halfhearted"
+        },
+        "184": {
+          "name": "Ingrid Nordlund",
+          "cluster": "Halfhearted"
+        },
+        "185": {
+          "name": "Valentin Mehnert",
+          "cluster": "Halfhearted"
+        },
+        "186": {
+          "name": "Maria Jacobson",
+          "cluster": "Halfhearted"
+        },
+        "209": {
+          "name": "Larissa Tomaz",
+          "cluster": "Achiever"
+        },
+        "210": {
+          "name": "Raphaël Colcombet",
+          "cluster": "Halfhearted"
+        },
+        "289": {
+          "name": "Saif Abdoelrazak",
+          "cluster": "Halfhearted"
+        },
+        "290": {
+          "name": "Luís Ferreira",
+          "cluster": "Regular"
+        },
+        "291": {
+          "name": "Marc Jelkic",
+          "cluster": "Underachiever"
+        },
+        "292": {
+          "name": "David Fontoura",
+          "cluster": "Halfhearted"
+        },
+        "293": {
+          "name": "Miguel Santos",
+          "cluster": "Halfhearted"
+        },
+        "294": {
+          "name": "Laura Acela",
+          "cluster": "Regular"
+        },
+        "367": {
+          "name": "Ebba Rovig",
+          "cluster": "Halfhearted"
+        },
+        "368": {
+          "name": "Rodrigo Fernandes",
+          "cluster": "Regular"
+        },
+        "369": {
+          "name": "Felix Schöllhammer",
+          "cluster": "Halfhearted"
+        },
+        "370": {
+          "name": "Francisca Paiva",
+          "cluster": "Achiever"
+        }*/
+      }
+    }; // FIXME - Debug only
+
+    if (drafts) {
+      this.select = drafts.saved;
+      this.newClusters = this.select;
+    }
+    if (profiler) {
+      this.loading.action = true;
+      if (typeof profiler == 'boolean'){ this.running.profiler = profiler; }
+      else {
+        this.clusters = profiler.clusters;
+        this.newClusters = this.clusters;
+        this.select = [];
+        this.running.profiler = false;
+      }
+      this.loading.action = false;
+    }
+
+    const names = await this.api.getClusterNames(this.courseID).toPromise();
+    this.clusterNamesSelect = names.map(element => {return {value: element, text: element}});
+    this.buildResultsTable();
+  }
+
   async getSavedClusters() {
     const res = await this.api.getSavedClusters(this.courseID).toPromise(); // returns "saved" (uncommitted changes) and "names" (cluster names)
 
-    this.clusterNamesSelect = res.names.map(name => {return {value: name, text: name}});
-    this.select = res.saved;
-    this.prevStateSelect = this.select;
+    if (res){
+      //this.clusterNamesSelect = res.names.map(name => {return {value: name, text: name}});
+      this.select = res.saved;
 
-    console.log(this.select);
-    console.log(this.clusterNamesSelect);
-    await this.checkPredictorStatus();
+      // '{ [studentId: string]: { name: string; cluster: string; }; }'.
+      // this.prevStateSelect = this.select; FIXME
+    }
+
     await this.checkProfilerStatus();
     this.buildResultsTable();
 
   }
 
   async runPredictor() {
-    this.loadingAction = true;
-    this.predictorIsRunning = true;
+    this.loading.action = true;
+    this.running.predictor = true;
 
     const endDate = moment(this.endDate).format("YYYY-MM-DD HH:mm:ss");
     await this.api.runPredictor(this.courseID, this.methodSelected, endDate).toPromise();
-    this.loadingAction = false;
+    this.loading.action = false;
   }
 
   async runProfiler() {
-    this.loadingAction = true;
-    this.profilerIsRunning = true;
+    this.loading.action = true;
+    this.running.profiler = true;
 
     const endDate = moment(this.endDate).format("YYYY-MM-DD HH:mm:ss");
     await this.api.runProfiler(this.courseID, this.nrClusters, this.minClusterSize, endDate).toPromise();
-    this.loadingAction = false;
+    this.loading.action = false;
   }
 
   async saveClusters() {
-    this.loadingAction = true;
+    this.loading.action = true;
 
     const cls = {}
-    for (const user of Object.keys(this.clusters)) {
-      cls[user] = this.clusters[user].cluster;
+    // writing in profiler results
+    if (this.clusters) {
+      for (const user of Object.keys(this.newClusters)) {
+        cls[user] = this.newClusters[user].cluster;
+      }
+    }
+    // writing in draft
+    else if (Object.keys(this.select).length > 0){
+      for (const user of Object.keys(this.newClusters)) {
+        cls[user] = this.newClusters[user];
+      }
     }
 
-    console.log(cls);
     await this.api.saveClusters(this.courseID, cls).toPromise();
-    this.loadingAction = false;
+    this.loading.action = false;
     AlertService.showAlert(AlertType.SUCCESS, "Draft saved successfully");
   }
 
   async commitClusters() {
-    this.loadingAction = true;
+    this.loading.action = true;
 
     const cls = {}
-    for (const user of Object.keys(this.clusters)) {
-      cls[user] = this.clusters[user].cluster;
+    // committing profiler results
+    if (this.clusters) {
+      for (const user of Object.keys(this.newClusters)) {
+        cls[user] = this.newClusters[user].cluster;
+      }
+    }
+    // committing drafts
+    else if (Object.keys(this.select).length > 0){
+      for (const user of Object.keys(this.newClusters)) {
+        cls[user] = this.newClusters[user];
+      }
     }
 
+    console.log(cls);
     await this.api.commitClusters(this.courseID, cls).toPromise();
+    await this.getClusters();
     await this.getHistory();
+    this.buildResultsTable();
 
 
-    AlertService.showAlert(AlertType.SUCCESS, "Changes successfully committed to Database");
-    this.clusters = null;
-    this.loadingAction = false;
+    //AlertService.showAlert(AlertType.SUCCESS, "Changes successfully committed to Database");
+    // this.clusters = null;
+    this.loading.action = false;
   }
 
+  // FIXME - refactor
   async deleteSavedClusters() {
-    this.loadingAction = true;
+    this.loading.action = true;
 
     if (this.clusters) {
-      this.clusters = this.prevStateClusters;
+      //this.clusters = this.prevStateClusters;
     } else if (Object.keys(this.select).length > 0){
-      this.select = this.prevStateSelect;
+      //this.select = this.prevStateSelect;
       await this.api.deleteSavedClusters(this.courseID).toPromise();
     }
 
     this.buildResultsTable();
     //this.clusters = null;
     //this.select = null;
-    this.loadingAction = false;
+    this.loading.action = false;
   }
 
   async checkProfilerStatus() {
-    this.loadingAction = true;
+    this.loading.action = true;
 
     const status = await this.api.checkProfilerStatus(this.courseID).toPromise();
     /*const status =  {  //  response to running profiler
@@ -4785,32 +5160,32 @@ export class ProfilingComponent implements OnInit {
       ]
     };*/
     if (typeof status == 'boolean') {
-      this.profilerIsRunning = status;
+      this.running.profiler = status;
 
     } else { // got clusters as result
       this.clusters = status.clusters;
-      this.prevStateClusters = this.clusters;
-      this.clusterNamesSelect = status.names.map(clusterName => {return {value: clusterName, text: clusterName}}); // FIXME: (DEBUG ONLY) change clusterName.name to name
-      this.profilerIsRunning = false;
+      // this.prevStateClusters = this.clusters; // FIXME
+      //this.clusterNamesSelect = status.names.map(clusterName => {return {value: clusterName, text: clusterName}}); // FIXME: (DEBUG ONLY) change clusterName.name to name
+      this.running.profiler = false;
     }
 
-    this.loadingAction = false;
+    this.loading.action = false;
   }
 
   async checkPredictorStatus() {
-    this.loadingAction = true;
+    this.loading.action = true;
 
     const status = await this.api.checkPredictorStatus(this.courseID).toPromise();
     if (typeof status == 'boolean') {
-      this.predictorIsRunning = status;
+      this.running.predictor = status;
 
     } else { // got nrClusters as result
       this.nrClusters = status;
       this.minClusterSize = Math.min(this.minClusterSize, this.nrClusters);
-      this.predictorIsRunning = false;
+      this.running.predictor = false;
     }
 
-    this.loadingAction = false;
+    this.loading.action = false;
   }
 
   buildChart() {
@@ -4841,7 +5216,7 @@ export class ProfilingComponent implements OnInit {
   }
 
   buildResultsTable() {
-    this.table.loading = true;
+    this.loading.table = true;
 
     this.table.headers = [
       {label: 'Name (sorting)', align: 'left'},
@@ -4878,18 +5253,18 @@ export class ProfilingComponent implements OnInit {
         data.push({type: TableDataType.TEXT, content: {text: studentHistory[day]}});
       }
 
-     if (Object.keys(this.select).length > 0 || this.clusters) { // See if there's uncommitted changes or profiles shows results from running
+      if (Object.keys(this.select).length > 0 || this.clusters) { // See if there's uncommitted changes or profiles shows results from running
         let aux = (student.id).toString();
         aux = "cluster-" + aux;
-          data.push({type: TableDataType.SELECT, content: {
-              selectId: aux,
-              selectValue: this.clusters ? this.clusters[student.id].cluster : this.select[student.id],
-              selectOptions: this.clusterNamesSelect,
-              selectMultiple: false,
-              selectRequire: true,
-              selectPlaceholder: "Select cluster",
-              selectSearch: false
-            }});
+        data.push({type: TableDataType.SELECT, content: {
+            selectId: aux,
+            selectValue: this.clusters ? this.clusters[student.id].cluster : this.select[student.id],
+            selectOptions: this.clusterNamesSelect,
+            selectMultiple: false,
+            selectRequire: true,
+            selectPlaceholder: "Select cluster",
+            selectSearch: false
+          }});
      }
 
       // for table legibility
@@ -4905,9 +5280,10 @@ export class ProfilingComponent implements OnInit {
     }
 
     if (Object.keys(this.select).length > 0 || this.clusters) {
-      this.table.headers.push({label: 'Current', align: 'middle'});
+      this.table.headers.push({label: this.clusters ? 'Current results' : 'Current (draft)', align: 'middle'});
       this.table.options.columnDefs[0].targets.push(this.table.headers.length - 1);
     }
+
 
     // for table legibility
     if (this.days.length > 3){
@@ -4918,13 +5294,13 @@ export class ProfilingComponent implements OnInit {
       this.table.options.columnDefs[0].targets.push(this.table.headers.length - 1);
     }
 
-    this.table.loading = false;
+    this.loading.table = false;
   }
 
   exportItem() { // FIXME
-    this.loadingAction = true;
+    this.loading.action = true;
     this.api.exportModuleItems(this.courseID, ApiHttpService.PROFILING, null)
-      .pipe( finalize(() => this.loadingAction = false) )
+      .pipe( finalize(() => this.loading.action = false) )
       .subscribe(res => {})
   }
 
@@ -4952,29 +5328,29 @@ export class ProfilingComponent implements OnInit {
 
   async doAction(action: string): Promise<void> {
     if (action === 'choose prediction method'){
-      this.isPredictModalOpen = true;
+      this.mode = "predict";
       ModalService.openModal('prediction-method');
 
     } else if (action === 'run predictor'){
       if (this.methodSelected !== null){
         await this.runPredictor();
-        this.isPredictModalOpen = false;
+        this.mode = null;
         this.resetPredictionMethod();
       } else AlertService.showAlert(AlertType.ERROR, "Invalid method");
 
     } else if (action === Action.IMPORT){
-      this.isImportModalOpen = true;
+      this.mode = "import";
       ModalService.openModal('import-modal');
 
     } else if (action === 'submit import') {
       // FIXME : something else missing ?
       // FIXME -- NAO CHEGA AQUI
-      this.isImportModalOpen = false;
+      this.mode = null;
       ModalService.closeModal('import-modal');
 
     } else if (action === 'close import modal'){
       this.importedFile = null;
-      this.isImportModalOpen = false;
+      this.mode = null;
       ModalService.closeModal('import-modal');
     }
   }
@@ -4992,7 +5368,8 @@ export class ProfilingComponent implements OnInit {
     let studentHistory = this.history[row];
     const student: User = this.students[studentHistory.id];
 
-    this.clusters[student.id].cluster = event.value;
+    if (this.clusters) { this.newClusters[student.id].cluster = event.value;}
+    else if (Object.keys(this.select).length > 0){ this.newClusters[student.id] = event.value; }
   }
 
   onFileSelected(files: FileList): void {
@@ -5009,8 +5386,6 @@ export class ProfilingComponent implements OnInit {
   getEditableResults(): {name: string, cluster: string}[] {
     return Object.values(this.clusters).sort((a, b) => a.name.localeCompare(b.name));
   }*/
-
-
 
 }
 

@@ -17,7 +17,7 @@
       ]"
       [data]="[[
         {type: TableDataType.DATETIME, content: {datetime: lastRun}},
-        {type: TableDataType.COLOR, content: {color: profilerIsRunning ? '#36D399' : '#EF6060', colorLabel: profilerIsRunning ? 'Running' : 'Not running'}},
+        {type: TableDataType.COLOR, content: {color: running.profiler ? '#36D399' : '#EF6060', colorLabel: running.profiler ? 'Running' : 'Not running'}},
         {type: TableDataType.ACTIONS, content: {actions: [{action: 'Refresh', icon: 'feather-refresh-ccw'}]}}
       ]]"
       [options]="{
@@ -108,7 +108,7 @@
         [headers]="table.headers"
         [data]="table.data"
         [options]="table.options"
-        [loading]="table.loading"
+        [loading]="loading.table"
         (valueChanged)="selectCluster($event, $event.row)">   <!-- NOTE: Only considers one type of action in entire table -->
       </app-table>
     </div>
@@ -118,14 +118,14 @@
       <button type="button" class="btn btn-ghost mr-2" (click)="deleteSavedClusters()">Discard</button>
       <button type="submit" class="btn btn-secondary" (click)="saveClusters()">
         <!-- Spinner -->
-        <ng-container *ngIf="loadingAction">
+        <ng-container *ngIf="loading.action">
           <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
         </ng-container>
         Save draft
       </button>
       <button type="submit" class="btn btn-primary" (click)="commitClusters()">
         <!-- Spinner -->
-        <ng-container *ngIf="loadingAction">
+        <ng-container *ngIf="loading.action">
           <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
         </ng-container>
         Commit to Database
@@ -136,14 +136,14 @@
 </div>
 
 <!-- Prediction method modal -->
-<app-modal *ngIf="isPredictModalOpen"
+<app-modal *ngIf="mode === 'predict'"
            [id]="'prediction-method'"
            [templateRef]="PREDICTION_METHOD"
            [size]="'sm'"
            [header]="'Prediction method'"
            [closeBtnText]="'Cancel'"
            [submitBtnText]="'Predict'"
-           [actionInProgress]="loadingAction"
+           [actionInProgress]="loading.action"
            (submitBtnClicked)="doAction('run predictor')"
            (onClose)="resetPredictionMethod()">
 </app-modal>
@@ -184,14 +184,14 @@
 </ng-template>
 
 <!-- Import modal -->
-<app-modal *ngIf="isImportModalOpen"
+<app-modal *ngIf="mode === 'import'"
            [id]="'import-modal'"
            [templateRef]="IMPORT_MODAL"
            [size]="'md'"
            [header]="'Import Profiling Results'"
            [closeBtnText]="'Cancel'"
            [submitBtnText]="Action.IMPORT"
-           [actionInProgress]="loadingAction"
+           [actionInProgress]="loading.action"
            (submitBtnClicked)="doAction('submit import')"
            (onClose)="doAction('close import modal')">
 </app-modal>
