@@ -462,9 +462,11 @@ class Profiling extends Module
         foreach ($clusters as $key => $value) {
             $entry = Core::database()->select(self::TABLE_PROFILING_SAVED_USER_PROFILE, ["course" => $this->course->getId(), "user" => $key]);
             if (!$entry) // new
-                Core::database()->insert(self::TABLE_PROFILING_SAVED_USER_PROFILE, ["cluster" => $value, "course" => $this->course->getId(), "user" => $key]);
+                Core::database()->insert(self::TABLE_PROFILING_SAVED_USER_PROFILE,
+                    ["course" => $this->course->getId(), "user" => $key, "cluster" => $value]);
             else // update
-                Core::database()->update(self::TABLE_PROFILING_SAVED_USER_PROFILE, ["cluster" => $value], ["course" => $this->course->getId(), "user" => $key]);
+                Core::database()->update(self::TABLE_PROFILING_SAVED_USER_PROFILE,
+                    ["cluster" => $value], ["course" => $this->course->getId(), "user" => $key]);
         }
     }
 

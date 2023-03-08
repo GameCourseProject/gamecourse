@@ -41,11 +41,13 @@ export class ProfilingComponent implements OnInit {
   endDate: string = moment().format('YYYY-MM-DDTHH:mm:ss');
   clusterNamesSelect: { value: string, text: string }[] = [];
   clusters: {[studentId: string]: {name: string, cluster: string}};
+  select: {[studentId: number]: string}[];
+  prevStateSelect: {[studentId: number]: string}[];
+  prevStateClusters: {[studentId: string]: {name: string, cluster: string}};
 
   lastRun: Moment;
   predictorIsRunning: boolean;
   profilerIsRunning: boolean;
-  select: {[studentId: number]: string}[];
 
   history: ProfilingHistory[];
   nodes: ProfilingNode[];
@@ -116,7 +118,7 @@ export class ProfilingComponent implements OnInit {
       ],
       "history": [
         {
-          "id": "113",
+          "id": "135",
           "name": "David Ribeiro",
           "2022-03-15 22:31:32": "Regular",
           "2022-03-20 12:12:27": "Regular_achieverlike",
@@ -126,7 +128,7 @@ export class ProfilingComponent implements OnInit {
           "2022-04-26 19:31:44": "Halfhearted",
           "2022-05-05 17:26:32": "Halfhearted"
         },
-        {
+        /*{
           "id": "114",
           "name": "Paulo Cabeças",
           "2022-03-15 22:31:32": "Halfhearted",
@@ -290,8 +292,8 @@ export class ProfilingComponent implements OnInit {
           "2022-04-19 13:00:42": "Achiever",
           "2022-04-26 19:31:44": "Regular_achieverlike",
           "2022-05-05 17:26:32": "Regular"
-        },
-        {
+        },*/
+        /*{
           "id": "134",
           "name": "Tomás Costa",
           "2022-03-15 22:31:32": "Halfhearted",
@@ -301,8 +303,8 @@ export class ProfilingComponent implements OnInit {
           "2022-04-19 13:00:42": "Halfhearted",
           "2022-04-26 19:31:44": "Halfhearted",
           "2022-05-05 17:26:32": "Halfhearted"
-        },
-        {
+        },*/
+        /*{
           "id": "135",
           "name": "Tomás Costa",
           "2022-03-15 22:31:32": "Achiever",
@@ -972,7 +974,7 @@ export class ProfilingComponent implements OnInit {
           "2022-04-19 13:00:42": "Regular_halfheartedlike",
           "2022-04-26 19:31:44": "Regular_halfheartedlike",
           "2022-05-05 17:26:32": "Achiever"
-        }
+        }*/
       ],
       "nodes": [
         {
@@ -2702,8 +2704,9 @@ export class ProfilingComponent implements OnInit {
   }
 
   async getStudents() {
-    //let students = await this.api.getCourseUsersWithRole(this.courseID, "Student").toPromise();
-    let students = [
+    let students = await this.api.getCourseUsersWithRole(this.courseID, "Student").toPromise();
+
+    /*let students = [
       {
         "id": "4",
         "name": "Joaquim Jorge",
@@ -4350,7 +4353,7 @@ export class ProfilingComponent implements OnInit {
         "isActive": "1",
         "hasImage": true
       }
-    ];
+    ];*/
 
     for (const student of students) {
       this.students[student.id] = student;
@@ -4366,7 +4369,10 @@ export class ProfilingComponent implements OnInit {
 
     this.clusterNamesSelect = res.names.map(name => {return {value: name, text: name}});
     this.select = res.saved;
+    this.prevStateSelect = this.select;
 
+    console.log(this.select);
+    console.log(this.clusterNamesSelect);
     await this.checkPredictorStatus();
     await this.checkProfilerStatus();
     this.buildResultsTable();
@@ -4399,8 +4405,10 @@ export class ProfilingComponent implements OnInit {
       cls[user] = this.clusters[user].cluster;
     }
 
+    console.log(cls);
     await this.api.saveClusters(this.courseID, cls).toPromise();
     this.loadingAction = false;
+    AlertService.showAlert(AlertType.SUCCESS, "Draft saved successfully");
   }
 
   async commitClusters() {
@@ -4414,25 +4422,35 @@ export class ProfilingComponent implements OnInit {
     await this.api.commitClusters(this.courseID, cls).toPromise();
     await this.getHistory();
 
-    this.clusters = null
+
+    AlertService.showAlert(AlertType.SUCCESS, "Changes successfully committed to Database");
+    this.clusters = null;
     this.loadingAction = false;
   }
 
   async deleteSavedClusters() {
     this.loadingAction = true;
-    await this.api.deleteSavedClusters(this.courseID).toPromise();
-    this.clusters = null;
-    this.select = null;
+
+    if (this.clusters) {
+      this.clusters = this.prevStateClusters;
+    } else if (Object.keys(this.select).length > 0){
+      this.select = this.prevStateSelect;
+      await this.api.deleteSavedClusters(this.courseID).toPromise();
+    }
+
+    this.buildResultsTable();
+    //this.clusters = null;
+    //this.select = null;
     this.loadingAction = false;
   }
 
   async checkProfilerStatus() {
     this.loadingAction = true;
 
-    //const status = await this.api.checkProfilerStatus(this.courseID).toPromise();
-    const status =  {  //  response to running profiler
+    const status = await this.api.checkProfilerStatus(this.courseID).toPromise();
+    /*const status =  {  //  response to running profiler
       "clusters": {
-        "113": {
+        "135": {
           "name": "David Ribeiro",
           "cluster": "Halfhearted"
         },
@@ -4765,15 +4783,16 @@ export class ProfilingComponent implements OnInit {
           "name": "Underachiever"
         }
       ]
-    };
-    //if (typeof status == 'boolean') {
-    //  this.profilerIsRunning = status;
+    };*/
+    if (typeof status == 'boolean') {
+      this.profilerIsRunning = status;
 
-    //} else { // got clusters as result
+    } else { // got clusters as result
       this.clusters = status.clusters;
-      this.clusterNamesSelect = status.names.map(clusterName => {return {value: clusterName.name, text: clusterName.name}}); // FIXME: (DEBUG ONLY) change clusterName.name to name
+      this.prevStateClusters = this.clusters;
+      this.clusterNamesSelect = status.names.map(clusterName => {return {value: clusterName, text: clusterName}}); // FIXME: (DEBUG ONLY) change clusterName.name to name
       this.profilerIsRunning = false;
-    //}
+    }
 
     this.loadingAction = false;
   }
@@ -4791,7 +4810,7 @@ export class ProfilingComponent implements OnInit {
       this.predictorIsRunning = false;
     }
 
-    this.loadingAction = false
+    this.loadingAction = false;
   }
 
   buildChart() {
@@ -4859,21 +4878,19 @@ export class ProfilingComponent implements OnInit {
         data.push({type: TableDataType.TEXT, content: {text: studentHistory[day]}});
       }
 
-     if (this.select.length > 0) { // See if there's uncommitted changes
-        data.push({type: TableDataType.TEXT, content: {text: this.select[student.id]}});
-      } else if (this.clusters){ // else shows profiler results from running
+     if (Object.keys(this.select).length > 0 || this.clusters) { // See if there's uncommitted changes or profiles shows results from running
         let aux = (student.id).toString();
         aux = "cluster-" + aux;
           data.push({type: TableDataType.SELECT, content: {
               selectId: aux,
-              selectValue: this.clusters[student.id].cluster,
+              selectValue: this.clusters ? this.clusters[student.id].cluster : this.select[student.id],
               selectOptions: this.clusterNamesSelect,
               selectMultiple: false,
               selectRequire: true,
               selectPlaceholder: "Select cluster",
               selectSearch: false
             }});
-      }
+     }
 
       // for table legibility
       if (this.days.length > 3){
@@ -4887,7 +4904,7 @@ export class ProfilingComponent implements OnInit {
       this.table.data.push(data);
     }
 
-    if (this.select.length > 0 || this.clusters) {
+    if (Object.keys(this.select).length > 0 || this.clusters) {
       this.table.headers.push({label: 'Current', align: 'middle'});
       this.table.options.columnDefs[0].targets.push(this.table.headers.length - 1);
     }
@@ -4975,7 +4992,7 @@ export class ProfilingComponent implements OnInit {
     let studentHistory = this.history[row];
     const student: User = this.students[studentHistory.id];
 
-    this.clusters[student.id].cluster = event;
+    this.clusters[student.id].cluster = event.value;
   }
 
   onFileSelected(files: FileList): void {

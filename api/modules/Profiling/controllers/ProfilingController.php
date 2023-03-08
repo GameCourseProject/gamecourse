@@ -141,6 +141,10 @@ class ProfilingController
     /*** ----------------- Clusters ------------------ ***/
     /*** --------------------------------------------- ***/
 
+    /**
+     *
+     * @throws Exception
+     */
     public function getSavedClusters()
     {
         API::requireValues("courseId");
@@ -156,6 +160,10 @@ class ProfilingController
         API::response(["saved" => $savedClusters, "names" => $names]);
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     public function saveClusters()
     {
         API::requireValues("courseId", "clusters");
@@ -165,7 +173,8 @@ class ProfilingController
 
         API::requireCourseAdminPermission($course);
 
-        $clusters = API::getValue("clusters");
+        $clusters = API::getValue("clusters", "array");
+
         $profiling = new Profiling($course);
         $profiling->saveClusters($clusters);
     }
