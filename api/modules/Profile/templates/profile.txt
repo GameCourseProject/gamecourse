@@ -1,6 +1,6 @@
 [
     {
-        "aspect" => {
+        "aspect": {
             "viewerRole": null,
             "userRole": "Student"
         },
