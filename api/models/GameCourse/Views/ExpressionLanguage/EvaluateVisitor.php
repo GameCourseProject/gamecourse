@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Views\Dictionary\CollectionLibrary;
+use Utils\Cache;
 use Utils\Utils;
 
 class EvaluateVisitor extends Visitor
@@ -82,6 +83,11 @@ class EvaluateVisitor extends Visitor
         $context = $node->getContext();
         $library = $node->getLibrary();
 
+        // Check if function result is in cache before calling it
+        $cacheId = $this->getNodeCacheId($node);
+        $cacheValue = Cache::getFromViewsCache($cacheId);
+        if ($cacheValue) return $cacheValue;
+
         if ($context) {
             $context = $context->accept($this);
             $contextVal = $context->getValue();
@@ -108,6 +114,8 @@ class EvaluateVisitor extends Visitor
             }, $result->getValue());
             $result = new ValueNode($collection, $result->getLibrary());
         }
+
+        Cache::storeInViewsCache($cacheId, $result);
         return $result;
     }
 
@@ -207,5 +215,60 @@ class EvaluateVisitor extends Visitor
     public function visitValueNode(ValueNode $node): ValueNode
     {
         return $node;
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------------- Helpers --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets cache ID for a given node.
+     *
+     * Some identifiers for a node are the node itself and all
+     * visitor parameters used by it. These parameters can be
+     * general variables like 'course', 'viewer', 'user', etc, or
+     * any variables defined by the user.
+     *
+     * We can then serialize both the node and its parameters
+     * used and after hashing all of it we get a unique identifier
+     * for the node which will be its cache ID.
+     *
+     * @param Node $node
+     * @return string
+     */
+    private function getNodeCacheId(Node $node): string
+    {
+        // Get all visitor params the node uses
+        $nodeParams = [];
+        $this->findNodeParams($node, $nodeParams);
+
+        // Create a unique identifier for the node
+        return hash("sha256", serialize($node) . serialize($nodeParams));
+    }
+
+    /**
+     * Finds all visitor parameters used by a given node.
+     *
+     * @param Node $node
+     * @param array $nodeParams
+     * @return void
+     */
+    private function findNodeParams(Node $node, array &$nodeParams)
+    {
+        // Do a REGEX search on a string representation of the node
+        $pattern = "/[\"']param[\"'] => [\"'](.*)[\"']|%(\w+)/";
+        preg_match_all($pattern, var_export($node, true), $matches);
+
+        // Add all params found
+        foreach (array_merge($matches[1], $matches[2]) as $match) {
+            if (!empty($match) && !isset($nodeParams[$match]) && isset($this->params[$match])) {
+                $nodeParams[$match] = $this->params[$match];
+
+                // Continue searching if param found is itself a Node
+                if ($this->params[$match] instanceof Node)
+                    $this->findNodeParams($this->params[$match], $nodeParams);
+            }
+        }
     }
 }
