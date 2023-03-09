@@ -115,17 +115,17 @@
 
     <!-- Actions -->
     <div class="card-actions justify-end mt-5">
-      <button type="button" class="btn btn-ghost mr-2" (click)="deleteSavedClusters()">Discard</button>
+      <button type="button" class="btn btn-ghost mr-2" (click)="doAction('discard changes')">Discard</button>
       <button type="submit" class="btn btn-secondary" (click)="saveClusters()">
         <!-- Spinner -->
-        <ng-container *ngIf="loading.action">
+        <ng-container *ngIf="loading.save">
           <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
         </ng-container>
         Save draft
       </button>
       <button type="submit" class="btn btn-primary" (click)="commitClusters()">
         <!-- Spinner -->
-        <ng-container *ngIf="loading.action">
+        <ng-container *ngIf="loading.commit">
           <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
         </ng-container>
         Commit to Database
@@ -193,7 +193,7 @@
            [submitBtnText]="Action.IMPORT"
            [actionInProgress]="loading.action"
            (submitBtnClicked)="doAction('submit import')"
-           (onClose)="doAction('close import modal')">
+           (onClose)="resetImportModal()">
 </app-modal>
 
 <ng-template #IMPORT_MODAL>
@@ -210,6 +210,23 @@
     (valueChange)="onFileSelected($event)">
   </app-input-file>
 </ng-template>
+
+<!-- Discard modal -->
+<app-modal *ngIf="mode === 'discard'"
+           [id] = "'discard-changes'"
+           [templateRef]="DISCARD_CHANGES"
+           [size]="'sm'"
+           [header]="'Discard all current changes?'"
+           [submitBtnText]="mode.capitalize()"
+           [actionInProgress]="loading.action"
+           (closeBtnClicked)="resetDiscardModal()"
+           (submitBtnClicked)="deleteClusters()">
+</app-modal>
+
+<ng-template #DISCARD_CHANGES>
+  <span class="w-full">Are you sure? The following action cannot be undone.</span>
+</ng-template>
+
 
 <!--&lt;!&ndash; Loader &ndash;&gt;-->
 <!--<div class="w-full flex justify-center">-->

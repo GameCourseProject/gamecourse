@@ -568,21 +568,6 @@ class Profiling extends Module
     }
 
     /**
-     * Receives array of type { 0 => { 123: "Achiever"}, 1 => { 124: "Halfhearted" } }
-     * Returns { 123 => "Achiever", 124 => "Halfhearted }
-     *
-     * @param array $clusters
-     * @return array
-     * @throws Exception
-     */
-    private function parseClusters(array $clusters): array {
-        $response = [];
-        foreach ($clusters as $clr){
-        }
-        return $response;
-    }
-
-    /**
      * @throws Exception
      */
     public function getClusterNames(bool $all = true): array
