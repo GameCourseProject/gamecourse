@@ -99,7 +99,7 @@
                                                 },
                                                 {
                                                     "name": "userBadges",
-                                                    "value": "{badges.getUserBadges(%item.id).count()}"
+                                                    "value": "{badges.getUserBadges(%item.id).count}"
                                                 },
                                                 {
                                                     "name": "userLevel",

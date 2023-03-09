@@ -14,6 +14,9 @@ class Cache
     /*** ------------------ General ------------------ ***/
     /*** --------------------------------------------- ***/
 
+    // NOTE: the main cache uses files as a way to store data.
+    //      This way, it ensures the cache persists even after
+    //      the request is over.
 
     /**
      * Gets data from cache.
@@ -67,6 +70,40 @@ class Cache
             Utils::deleteFile(CACHE_FOLDER, $cacheId . ".txt");
         else if (!is_null($courseId) && !is_null($cacheId) && file_exists(CACHE_FOLDER . "/c$courseId/" . $cacheId . ".txt"))
             Utils::deleteFile(CACHE_FOLDER . "/c$courseId", $cacheId . ".txt");
+    }
+
+
+    /*** --------------------------------------------- ***/
+    /*** ------------------- Views ------------------- ***/
+    /*** --------------------------------------------- ***/
+
+    // NOTE: the views cache uses a variable as a way to store data.
+    //      This way, retrieving and storing data is much faster as
+    //      there is no need to persist the cache after the request is over.
+
+    private static $viewsCache = [];
+
+    /**
+     * Gets data from views cache.
+     *
+     * @param string $cacheId
+     * @return mixed|null
+     */
+    public static function getFromViewsCache(string $cacheId)
+    {
+        return self::$viewsCache[$cacheId] ?? null;
+    }
+
+    /**
+     * Stores data in views cache.
+     *
+     * @param string $cacheId
+     * @param $data
+     * @return void
+     */
+    public static function storeInViewsCache(string $cacheId, $data)
+    {
+        self::$viewsCache[$cacheId] = $data;
     }
 
 

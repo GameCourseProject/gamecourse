@@ -542,7 +542,7 @@ class ViewHandler
             if (isset($view[$param])) {
                 self::evaluateNode($view[$param], $visitor);
 
-                // Replace % that are not variables, e.g. 'widht: 100%'
+                // Replace % that are not variables, e.g. 'width: 100%'
                 $view[$param] = str_replace("?", "%", $view[$param]);
             }
         }
