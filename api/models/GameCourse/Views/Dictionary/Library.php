@@ -1,6 +1,8 @@
 <?php
 namespace GameCourse\Views\Dictionary;
 
+use Exception;
+
 /**
  * This is the Library model, which implements the necessary methods
  * to interact with dictionary libraries.
@@ -151,5 +153,18 @@ abstract class Library
     {
         $libraryMethods = get_class_methods($this);
         return in_array($funcName, $libraryMethods);
+    }
+
+    /**
+     * Throws errors inside functions.
+     *
+     * @param string $funcName
+     * @param string $errorMsg
+     * @return mixed
+     * @throws Exception
+     */
+    public function throwError(string $funcName, string $errorMsg)
+    {
+        throw new Exception("On '$funcName' function in " . $this->name . " library: $errorMsg.");
     }
 }

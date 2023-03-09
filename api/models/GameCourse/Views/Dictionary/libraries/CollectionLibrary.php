@@ -3,9 +3,9 @@ namespace GameCourse\Views\Dictionary;
 
 use Exception;
 use GameCourse\Core\Core;
-use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
 use GameCourse\Views\ViewHandler;
+use Utils\Utils;
 
 class CollectionLibrary extends Library
 {
@@ -31,6 +31,16 @@ class CollectionLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
+            new DFunction("item",
+                "Gets a given collection's item on a specific index.",
+                ReturnType::MIXED,
+                $this
+            ),
+            new DFunction("index",
+                "Gets the index of an item on a given collection. For items that are not basic types like text, numbers, etc., a search key should be given.",
+                ReturnType::NUMBER,
+                $this
+            ),
             new DFunction("count",
                 "Counts the number of elements in a given collection.",
                 ReturnType::NUMBER,
@@ -45,12 +55,69 @@ class CollectionLibrary extends Library
                 "Crops a given collection by only returning items between start and end indexes.",
                 ReturnType::COLLECTION,
                 $this
+            ),
+            new DFunction("getKNeighbors",
+                "Crops a given collection by only returning an item and its K neighbors.",
+                ReturnType::COLLECTION,
+                $this
             )
         ];
     }
 
     // NOTE: add new library functions bellow & update its
     //       metadata in 'getFunctions' above
+
+    /**
+     * Gets a given collection's item on a specific index.
+     *
+     * @param array $collection
+     * @param int $index
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function item(array $collection, int $index): ValueNode
+    {
+        if ($index < 0) $this->throwError("item", "index can't be smaller than 0");
+
+        $size = count($collection);
+        if ($index > $size - 1) $this->throwError("item", "index can't be bigger than " . ($size - 1));
+
+        if ($size === 0) return new ValueNode(null);
+        return new ValueNode($collection[$index], $collection[0]["libraryOfItem"]);
+    }
+
+    /**
+     * Gets the index of an item on a given collection.
+     * For items that are not basic types like text, numbers,
+     * etc., a search key should be given.
+     *
+     * @param array $collection
+     * @param $item
+     * @param string|null $key
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function index(array $collection, $item, string $key = null): ValueNode
+    {
+        $size = count($collection);
+        if ($size > 0 && is_array(array_values($collection)[0])) { // Collection of non-basic types
+            if (!$key) $this->throwError("index", "non-basic items require a key to search on collection");
+            $index = 0;
+            foreach ($collection as $value) {
+                if ($value[$key] == $item) break;
+                $index++;
+            }
+            if ($index > $size - 1) $index = false;
+
+        } else { // Collection of basic types
+            if (!Utils::isSequentialArray($collection))
+                $index = array_search(array_search($item, $collection), array_keys($collection));
+            else $index = array_search($item, $collection);
+        }
+
+        if ($index === false) $this->throwError("index", "couldn't find item in collection");
+        return new ValueNode($index, Core::dictionary()->getLibraryById(MathLibrary::ID));
+    }
 
     /**
      * Counts the number of elements in a given collection.
@@ -110,7 +177,13 @@ class CollectionLibrary extends Library
                         $item["sort$i"] = $ky;
                     }
 
-                    $orderKeyPairs["sort$i"] = $order;
+                    // Update order key
+                    $keyIndex = array_search($key, array_keys($orderKeyPairs));
+                    $orderKeyPairs = array_merge(
+                        array_splice($orderKeyPairs, 0, $keyIndex),
+                        ["sort$i" => $order],
+                        array_slice($orderKeyPairs, $keyIndex)
+                    );
                     unset($orderKeyPairs[$key]);
                 }
                 $i++;
@@ -129,7 +202,7 @@ class CollectionLibrary extends Library
                             if ($a[$key] == $b[$key]) continue;
                             return $a[$key] - $b[$key];
 
-                        } else throw new Exception("Can't sort collection: value is neither string nor integer.");
+                        } else $this->throwError("sort", "sorting value is neither string nor integer");
 
                     } else if ($order === "desc" || $order === "descending") {
                         if (is_string($a[$key]) && is_string($b[$key])) { // string
@@ -140,9 +213,9 @@ class CollectionLibrary extends Library
                             if ($a[$key] == $b[$key]) continue;
                             return $b[$key] - $a[$key];
 
-                        } else throw new Exception("Can't sort collection: value is neither string nor integer.");
+                        } else $this->throwError("sort", "sorting value is neither string nor integer");
 
-                    } else throw new Exception("Can't sort collection: order '$order' not available.");
+                    } else $this->throwError("sort", "order '$order' not available");
                 }
                 return 0;
             });
@@ -159,10 +232,31 @@ class CollectionLibrary extends Library
      * @param int $start
      * @param int $end
      * @return ValueNode
+     * @throws Exception
      */
     public function crop(array $collection, int $start, int $end): ValueNode
     {
+        if ($start < 0) $this->throwError("crop", "start index can't be smaller than 0");
+
+        $size = count($collection);
+        if ($end > $size - 1) $this->throwError("crop", "end index can't be bigger than " . ($size - 1));
+
         $collection = array_slice($collection, $start, $end - $start + 1);
         return new ValueNode($collection, $this);
+    }
+
+    /**
+     * Crops a given collection by only returning an item
+     * and its K neighbors.
+     *
+     * @param array $collection
+     * @param int $index
+     * @param int $k
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getKNeighbors(array $collection, int $index, int $k): ValueNode
+    {
+        return $this->crop($collection, max($index - $k, 0), min($index + $k, count($collection) - 1));
     }
 }
