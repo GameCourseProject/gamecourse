@@ -98,6 +98,8 @@
         [leftActions]="[
           {action: Action.IMPORT, icon:'jam-download'},
           {action: Action.EXPORT, icon:'jam-upload'}]"
+        [rightActions]="[{action: 'reset fields', icon: 'feather-x-circle', color: 'primary'}]"
+
         (btnClicked)="doAction($event)">
       </app-top-actions>
 
@@ -216,7 +218,7 @@
            [id] = "'discard-changes'"
            [templateRef]="DISCARD_CHANGES"
            [size]="'sm'"
-           [header]="'Discard all current changes?'"
+           [header]="'Discard current results?'"
            [submitBtnText]="mode.capitalize()"
            [actionInProgress]="loading.action"
            (closeBtnClicked)="resetDiscardModal()"

@@ -14,7 +14,6 @@ import {ModalService} from "../../../../../../../../../_services/modal.service";
 import {NgForm} from "@angular/forms";
 import {AlertService, AlertType} from "../../../../../../../../../_services/alert.service";
 import {CourseUser} from "../../../../../../../../../_domain/users/course-user";
-import {DownloadManager} from "../../../../../../../../../_utils/download/download-manager";
 import {Course} from "../../../../../../../../../_domain/courses/course";
 
 declare var require: any;
@@ -46,14 +45,26 @@ export class ProfilingComponent implements OnInit {
     predictor: false,
     profiler: false
   }
+
+  targets: number[] = [0,1,2];
   table: {
     headers: {label: string, align?: 'left' | 'middle' | 'right'}[],
     data: {type: TableDataType, content: any}[][],
     options: any
   } = {
-    headers: null,
+    headers: [
+      {label: 'Name (sorting)', align: 'left'},
+      {label: 'Student', align: 'left'},
+      {label: 'Student Nr', align: 'middle'}
+    ],
     data: null,
-    options: null
+    options: {
+      order: [[ 0, 'asc' ]], // default order,
+      columnDefs: [
+        { type: 'natural', targets: this.targets },
+        { orderData: 0,   targets: 1 }
+      ]
+    }
   }
 
   course: Course;
@@ -103,6 +114,7 @@ export class ProfilingComponent implements OnInit {
       await this.getStudents();
       await this.getHistory();
       await this.getLastRun();
+      await this.getClusterNames();
 
       await this.checkPredictorStatus();
       await this.getClusters();
@@ -128,6 +140,7 @@ export class ProfilingComponent implements OnInit {
 
   async getHistory() {
     const res = await this.api.getHistory(this.course.id).toPromise();
+
     /*const res = {
       "days": [
         "2022-03-15 22:31:32",
@@ -4382,14 +4395,21 @@ export class ProfilingComponent implements OnInit {
     this.lastRun = await this.api.getLastRun(this.course.id).toPromise();
   }
 
+  async getClusterNames(){
+    const names = await this.api.getClusterNames(this.course.id).toPromise();
+    this.clusterNamesSelect = names.map(element => {return {value: element, text: element}});
+  }
+
+  /*** --------------------------------------------------- ***/
+  /*** --------------------- Profiler -------------------- ***/
+  /*** --------------------------------------------------- ***/
+
   async getClusters(){
     await this.getSavedClusters();        // { "saved" (uncommitted changes), "names" (cluster names) }
     await this.checkProfilerStatus();     // { "clusters": { studentId: {name, cluster} }, "names" (cluster names -> not sure?) }
 
-    this.newClusters = this.results;      // prepare in case of discard action
+    this.newClusters = JSON.parse(JSON.stringify(this.results));       // prepare in case of discard action
 
-    const names = await this.api.getClusterNames(this.course.id).toPromise();
-    this.clusterNamesSelect = names.map(element => {return {value: element, text: element}});
     this.buildResultsTable();
   }
 
@@ -4402,84 +4422,11 @@ export class ProfilingComponent implements OnInit {
     }
   }
 
-  async runPredictor() {
-    this.loading.action = true;
-    this.running.predictor = true;
-
-    const endDate = moment(this.endDate).format("YYYY-MM-DD HH:mm:ss");
-    await this.api.runPredictor(this.course.id, this.methodSelected, endDate).toPromise();
-    this.loading.action = false;
-  }
-
-  async runProfiler() {
-    this.loading.action = true;
-    this.running.profiler = true;
-
-    const endDate = moment(this.endDate).format("YYYY-MM-DD HH:mm:ss");
-    await this.api.runProfiler(this.course.id, this.nrClusters, this.minClusterSize, endDate).toPromise();
-    this.loading.action = false;
-  }
-
-  async saveClusters() {
-    this.loading.save = true;
-
-    try {
-      const cls = {}
-        for (const user of Object.keys(this.newClusters)) {
-        cls[user] = this.newClusters[user].cluster;
-      }
-        await this.api.saveClusters(this.course.id, cls).toPromise();
-        this.loading.save = false;
-        AlertService.showAlert(AlertType.SUCCESS, "Draft saved successfully");
-    } catch (error) { // FIXME - CHECK IF WORKS
-      AlertService.showAlert(AlertType.ERROR, "Unable to save");
-    }
-  }
-
-  async commitClusters() {
-    this.loading.commit = true;
-
-    try {
-      const cls = {}
-      for (const user of Object.keys(this.newClusters)) {
-        cls[user] = this.newClusters[user].cluster;
-      }
-
-      await this.api.commitClusters(this.course.id, cls).toPromise();
-
-      this.results = null;
-      this.newClusters = null;
-      await this.getClusters();
-      await this.getHistory();
-      this.buildResultsTable();
-      AlertService.showAlert(AlertType.SUCCESS, "Changes successfully committed to Database");
-
-    } catch (error) {
-      AlertService.showAlert(AlertType.ERROR, "Unable to commit changes");
-    }
-
-    this.loading.commit = false;
-  }
-
-  async deleteClusters() {
-    this.loading.action = true;
-
-    // see if entries on table come from drafts
-    if (this.origin === "drafts"){
-      await this.api.deleteSavedClusters(this.course.id).toPromise();
-    }
-
-    this.newClusters = this.results;
-    this.buildResultsTable();
-    await this.doAction("close discard changes");
-    this.loading.action = false;
-  }
-
   async checkProfilerStatus() {
     this.loading.action = true;
 
-    //const profiler = await this.api.checkProfilerStatus(this.course.id).toPromise();
-    const profiler =  {
+    const profiler = await this.api.checkProfilerStatus(this.course.id).toPromise()
+    /*const profiler =  {
       "clusters": {
         "135": {
           "name": "David Ribeiro",
@@ -4795,7 +4742,6 @@ export class ProfilingComponent implements OnInit {
         }
       }
     };*/ // FIXME - Debug only
-      }}
 
     if (typeof profiler == 'boolean') { this.running.profiler = profiler; }
     else { // got clusters as result
@@ -4811,6 +4757,90 @@ export class ProfilingComponent implements OnInit {
       this.running.profiler = false;
     }
 
+    this.loading.action = false;
+  }
+
+  async runProfiler() {
+    this.loading.action = true;
+    this.running.profiler = true;
+
+    const endDate = moment(this.endDate).format("YYYY-MM-DD HH:mm:ss");
+    await this.api.runProfiler(this.course.id, this.nrClusters, this.minClusterSize, endDate).toPromise();
+    this.loading.action = false;
+  }
+
+  async saveClusters() {
+    this.loading.save = true;
+
+    try {
+      const cls = {}
+
+      for (const user of Object.keys(this.newClusters)) {
+        cls[user] = this.newClusters[user];
+      }
+
+        await this.api.saveClusters(this.course.id, cls).toPromise();
+        this.loading.save = false;
+        AlertService.showAlert(AlertType.SUCCESS, "Draft saved successfully");
+
+    } catch (error) {
+      AlertService.showAlert(AlertType.ERROR, "Unable to save");
+    }
+  }
+
+  async commitClusters() {
+    this.loading.commit = true;
+
+    try {
+      const cls = {}
+      for (const user of Object.keys(this.newClusters)) {
+        cls[user] = this.newClusters[user];
+      }
+
+      await this.api.commitClusters(this.course.id, cls).toPromise();
+
+      // reset variables
+      await this.resetData();
+
+      // get info for table
+      await this.getHistory();
+      await this.getClusters();
+      AlertService.showAlert(AlertType.SUCCESS, "Changes successfully committed to Database");
+
+    } catch (error) {
+      AlertService.showAlert(AlertType.ERROR, "Unable to commit changes");
+    }
+
+    this.loading.commit = false;
+  }
+
+  async deleteClusters() {
+    this.loading.action = true;
+
+    console.log(this.table);
+    // see if entries on table come from drafts and deletes them
+    if (this.origin === "drafts"){
+      //await this.api.deleteSavedClusters(this.course.id).toPromise();
+    }
+
+    await this.resetData();
+    console.log(this.table);
+    this.buildResultsTable();
+    console.log(this.table);
+    this.resetDiscardModal();
+    this.loading.action = false;
+  }
+
+  /*** --------------------------------------------------- ***/
+  /*** -------------------- Predictor  ------------------- ***/
+  /*** --------------------------------------------------- ***/
+
+  async runPredictor() {
+    this.loading.action = true;
+    this.running.predictor = true;
+
+    const endDate = moment(this.endDate).format("YYYY-MM-DD HH:mm:ss");
+    await this.api.runPredictor(this.course.id, this.methodSelected, endDate).toPromise();
     this.loading.action = false;
   }
 
@@ -4857,48 +4887,46 @@ export class ProfilingComponent implements OnInit {
     }, 0);
   }
 
+  /*** --------------------------------------------------- ***/
+  /*** ----------------------- Table --------------------- ***/
+  /*** --------------------------------------------------- ***/
+
   buildResultsTable() {
     this.loading.table = true;
 
-    this.table.headers = [
-      {label: 'Name (sorting)', align: 'left'},
-      {label: 'Student', align: 'left'},
-      {label: 'Student Nr', align: 'middle'}
-    ];
-    this.table.options = {
-      order: [[ 0, 'asc' ]], // default order,
-      columnDefs: [
-        { type: 'natural', targets: [0, 1, 2] },
-        { orderData: 0,   targets: 1 }
-      ]
-    };
-
-    let i = 0;
     for (const day of this.days) {
-      this.table.headers.push({label: day === 'Current' ? day : dateFromDatabase(day).format('DD/MM/YYYY HH:mm:ss'), align: 'middle'});
-      this.table.options.columnDefs[0].targets.push(i+3);
-      i++;
+      this.table.headers.push({label: dateFromDatabase(day).format('DD/MM/YYYY HH:mm:ss'), align: 'middle'});
+      this.targets.push(this.targets.length);
     }
 
-    if (!this.table.data) this.table.data = [];
+    if (Object.keys(this.newClusters).length > 0) {
+      console.log("AQUI");
+      this.table.headers.push({label: 'Current', align: 'middle'});
+      this.targets.push(this.targets.length);
+    }
+
+    // this.addLegibility("headers");
+
+    let data: { type: TableDataType, content: any }[][] = [];
     for (const studentHistory of this.history) {
       const student = this.students.find(el => el.id === parseInt(studentHistory.id));
-      const data: { type: TableDataType, content: any }[] = [
-        {type: TableDataType.TEXT, content: {text: (student.nickname !== null && student.nickname !== "") ? student.nickname : student.name}},
+      data.push([{type: TableDataType.TEXT, content: {text: (student.nickname !== null && student.nickname !== "") ? student.nickname : student.name}},
         {type: TableDataType.AVATAR, content: {
           avatarSrc: student.photoUrl,
           avatarTitle: (student.nickname !== null && student.nickname !== "") ? student.nickname : student.name,
           avatarSubtitle: student.major}},
-        {type: TableDataType.NUMBER, content: {value: parseInt(String(student.studentNumber)), valueFormat: 'none'}}
-      ];
+        {type: TableDataType.NUMBER, content: {value: parseInt(String(student.studentNumber)), valueFormat: 'none'}}]);
+
       for (const day of this.days) {
-        data.push({type: TableDataType.TEXT, content: {text: studentHistory[day]}});
+        data[data.length - 1].push({type: TableDataType.TEXT, content: {text: studentHistory[day]}});
       }
 
-      if (this.newClusters) { // See if there's uncommitted changes or profiles shows results from running
+      // See if there's uncommitted changes or profiles shows results from running
+      if (Object.keys(this.newClusters).length > 0) {
+        console.log("AQUI2");
         let aux = (student.id).toString();
         aux = "cluster-" + aux;
-        data.push({type: TableDataType.SELECT, content: {
+        data[data.length - 1].push({type: TableDataType.SELECT, content: {
               selectId: aux,
               selectValue: this.newClusters[student.id],
               selectOptions: this.clusterNamesSelect,
@@ -4911,37 +4939,38 @@ export class ProfilingComponent implements OnInit {
      }
 
       // for table legibility
-      this.addLegibility("data", student, data);
-      this.table.data.push(data);
+      // this.addLegibility("data", student, data);
+      this.table.data = data;
+      console.log(this.table.options);
     }
 
-    if (this.newClusters) {
-      this.table.headers.push({label: 'Current', align: 'middle'});
-      this.table.options.columnDefs[0].targets.push(this.table.headers.length - 1);
-    }
-
-    this.addLegibility("headers");
+    console.log(this.table);
     this.loading.table = false;
   }
 
-  addLegibility(mode: string, student?: User, data?: { type: TableDataType, content: any }[]){
+  addLegibility(mode: string, student?: User, data?: { type: TableDataType, content: any }[][],
+                headers?: {label: string, align?: 'left' | 'middle' | 'right'}[]){
     if (this.days.length > 3){
       if (mode === 'headers'){
-        this.table.headers.push(this.table.headers[2]);
-        this.table.options.columnDefs[0].targets.push(this.table.headers.length - 1);
+        headers.push(headers[2]);
+        this.targets.push(this.targets.length);
 
-        this.table.headers.push(this.table.headers[1]);
-        this.table.options.columnDefs[0].targets.push(this.table.headers.length - 1);
+        headers.push(headers[1]);
+        this.targets.push(this.targets.length);
 
       } else if (mode === 'data'){
-        data.push({type: TableDataType.NUMBER, content: {value: parseInt(String(student.studentNumber)), valueFormat: 'none'}});
-        data.push({type: TableDataType.AVATAR, content: {
+        data[0].push({type: TableDataType.NUMBER, content: {value: parseInt(String(student.studentNumber)), valueFormat: 'none'}});
+        data[0].push({type: TableDataType.AVATAR, content: {
             avatarSrc: student.photoUrl,
             avatarTitle: (student.nickname !== null && student.nickname !== "") ? student.nickname : student.name,
             avatarSubtitle: student.major}});
       }
     }
   }
+
+  /*** --------------------------------------------------- ***/
+  /*** ----------------- Import/ Export ------------------ ***/
+  /*** --------------------------------------------------- ***/
 
   exportItem() { // FIXME
     if (this.newClusters.length === 0){
@@ -4952,10 +4981,8 @@ export class ProfilingComponent implements OnInit {
 
       // FIXME -- SHOULD RETURN STRING? (see users example)
       const contents = this.api.exportModuleItems(this.course.id, ApiHttpService.PROFILING, null)
-        .pipe( finalize(() => this.loading.action = false) )
-        .subscribe(res => {});
+        .pipe( finalize(() => this.loading.action = false) ).subscribe(res => {});
       // DownloadManager.downloadAsCSV((this.course.short ?? this.course.name) + '-profiler results', contents);
-
 
       this.loading.action = false;
     }
@@ -5006,11 +5033,25 @@ export class ProfilingComponent implements OnInit {
       this.resetImportModal();
 
     } else if (action === 'discard changes'){
-      this.mode = "discard";
-      ModalService.openModal('discard-changes');
-
+      if (this.origin === 'profiler' || this.origin === 'drafts'){
+          this.mode = "discard";
+          ModalService.openModal('discard-changes');
+        } else {
+          AlertService.showAlert(AlertType.WARNING, "Nothing to discard");
+        }
+    } else if (action === 'reset fields'){
+      if (this.newClusters !== this.results){
+        this.loading.action = true;
+        this.newClusters = this.results;
+        this.buildResultsTable();
+        this.loading.action = false;
+      }
     }
   }
+
+  /*** ----------------------------------------------- ***/
+  /*** ------------------ Resetters ------------------ ***/
+  /*** ----------------------------------------------- ***/
 
   resetPredictionMethod(){
     this.mode = null;
@@ -5029,13 +5070,24 @@ export class ProfilingComponent implements OnInit {
     ModalService.closeModal('discard-changes');
   }
 
+  async resetData(){
+    // FIXME -- Should be different depending from where its called
+    // 2 -> three first headers with student name ,...
+    // this.days.length - 1 -> last day result (info to remove)
+    // let index = 2 + this.days.length
+    this.targets = [0,1,2];
+    this.results = [];
+    this.newClusters = [];
+    this.origin = null;
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
   selectCluster(event: any, row: number){
     let studentHistory = this.history[row];
-    const student: User = this.students[studentHistory.id];
+    const student = this.students.find(el => el.id === parseInt(studentHistory.id));
     this.newClusters[student.id] = event.value;
   }
 
