@@ -80,7 +80,7 @@ export class ProfilingComponent implements OnInit {
   ];
   methodSelected: string = null;
 
-  // FIXME - REFACTOR (add to new exported interface?)
+  // TODO - REFACTOR (add to new exported interface?)
   nrClusters: number = 4;
   minClusterSize: number = 4;
   endDate: string = moment().format('YYYY-MM-DDTHH:mm:ss');
@@ -113,7 +113,6 @@ export class ProfilingComponent implements OnInit {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
       await this.getStudents();
-      console.log(this.students);
       await this.getHistory();
       await this.getLastRun();
       await this.getClusterNames();
@@ -4411,14 +4410,12 @@ export class ProfilingComponent implements OnInit {
 
     this.newClusters = JSON.parse(JSON.stringify(this.results));       // prepare in case of discard action
 
-    console.log(this.newClusters);
     this.buildResultsTable();
   }
 
   async getSavedClusters() {
     const drafts = await this.api.getSavedClusters(this.course.id).toPromise();
 
-    console.log(drafts);
     if (drafts){
       this.results = drafts.saved;
       this.origin = "drafts";
@@ -4429,7 +4426,6 @@ export class ProfilingComponent implements OnInit {
     this.loading.action = true;
 
     const profiler = await this.api.checkProfilerStatus(this.course.id).toPromise()
-    console.log(profiler);
     /*const profiler =  {
       "clusters": {
         "135": {
@@ -4823,7 +4819,7 @@ export class ProfilingComponent implements OnInit {
 
     // see if entries on table come from drafts and deletes them
     if (this.origin === "drafts"){
-      //await this.api.deleteSavedClusters(this.course.id).toPromise();
+      //await this.api.deleteSavedClusters(this.course.id).toPromise(); // FIXME - Debug only
     }
 
     await this.resetData();
@@ -4950,7 +4946,6 @@ export class ProfilingComponent implements OnInit {
       this.addLegibility("data", student, data);
       this.table.headers = this.headers;
     }
-    console.log(data);
     this.table.data = data;
     this.loading.table = false;
   }
@@ -4985,7 +4980,7 @@ export class ProfilingComponent implements OnInit {
     } else {
       this.loading.action = true;
 
-      // FIXME -- SHOULD RETURN STRING? (see users example)
+      // FIXME -- SHOULD RETURN STRING? (see users example?)
       const contents = this.api.exportModuleItems(this.course.id, ApiHttpService.PROFILING, null)
         .pipe( finalize(() => this.loading.action = false) ).subscribe(res => {});
       // DownloadManager.downloadAsCSV((this.course.short ?? this.course.name) + '-profiler results', contents);
@@ -5017,7 +5012,6 @@ export class ProfilingComponent implements OnInit {
     // reader.readAsDataURL(this.importedFile);
   }
 
-  // FIXME - REFACTOR
   async doAction(action: string): Promise<void> {
     if (action === 'choose prediction method'){
       this.mode = "predict";
