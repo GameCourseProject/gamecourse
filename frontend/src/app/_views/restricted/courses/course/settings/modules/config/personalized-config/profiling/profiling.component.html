@@ -15,11 +15,7 @@
         {label: 'Status', align: 'middle'},
         {label: 'Actions'}
       ]"
-      [data]="[[
-        {type: TableDataType.DATETIME, content: {datetime: lastRun}},
-        {type: TableDataType.COLOR, content: {color: running.profiler ? '#36D399' : '#EF6060', colorLabel: running.profiler ? 'Running' : 'Not running'}},
-        {type: TableDataType.ACTIONS, content: {actions: [{action: 'Refresh', icon: 'feather-refresh-ccw'}]}}
-      ]]"
+      [data]="overviewData"
       [options]="{
         searching: false,
         lengthChange: false,
@@ -28,7 +24,8 @@
         columnDefs: [{orderable: false, targets: [0, 1, 2]}]
       }"
       [hasColumnFiltering]="false"
-      [hasFooters]="false">
+      [hasFooters]="false"
+      (btnClicked)="doActionOnTable($event.type)">
     </app-table>
 
     <div class="flex flex-wrap md:flex-nowrap -mx-3">

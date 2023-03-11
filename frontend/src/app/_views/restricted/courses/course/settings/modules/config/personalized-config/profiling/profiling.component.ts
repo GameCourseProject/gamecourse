@@ -103,6 +103,8 @@ export class ProfilingComponent implements OnInit {
 
   importedFile: ProfilerResults;
 
+  overviewData: {type: TableDataType, content: any}[][];
+
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute
@@ -117,6 +119,7 @@ export class ProfilingComponent implements OnInit {
       await this.getLastRun();
       await this.getClusterNames();
 
+      this.buildOverviewTable();
       await this.checkPredictorStatus();
       await this.getClusters();
       this.loading.page = false;
@@ -4408,8 +4411,6 @@ export class ProfilingComponent implements OnInit {
     await this.getSavedClusters();        // { "saved" (uncommitted changes), "names" (cluster names) }
     await this.checkProfilerStatus();     // { "clusters": { studentId: {name, cluster} }, "names" (cluster names -> not sure?) }
 
-    this.newClusters = JSON.parse(JSON.stringify(this.results));       // prepare in case of discard action
-
     this.buildResultsTable();
   }
 
@@ -4419,6 +4420,7 @@ export class ProfilingComponent implements OnInit {
     if (drafts){
       this.results = drafts.saved;
       this.origin = "drafts";
+      this.newClusters = JSON.parse(JSON.stringify(this.results));       // prepare in case of discard action
     }
   }
 
@@ -4432,7 +4434,12 @@ export class ProfilingComponent implements OnInit {
           "name": "David Ribeiro",
           "cluster": "Halfhearted"
         },
-        /*"114": {
+        "137": {
+          "name": "monica",
+          "cluster": "Halfhearted"
+        }
+      }}
+        "114": {
           "name": "Paulo Cabeças",
           "cluster": "Halfhearted"
         },
@@ -4754,6 +4761,7 @@ export class ProfilingComponent implements OnInit {
 
       this.results = results;
       this.origin = "profiler";
+      this.newClusters = JSON.parse(JSON.stringify(this.results));       // prepare in case of discard action
       this.running.profiler = false;
     }
 
@@ -4800,7 +4808,7 @@ export class ProfilingComponent implements OnInit {
       await this.api.commitClusters(this.course.id, cls).toPromise();
 
       // reset variables
-      await this.resetData(false);
+      this.resetData(false);
 
       // get info for table
       await this.getHistory();
@@ -4822,7 +4830,7 @@ export class ProfilingComponent implements OnInit {
       //await this.api.deleteSavedClusters(this.course.id).toPromise(); // FIXME - Debug only
     }
 
-    await this.resetData();
+    this.resetData();
     this.buildResultsTable();
     this.resetDiscardModal();
     this.loading.action = false;
@@ -4906,6 +4914,7 @@ export class ProfilingComponent implements OnInit {
     }
 
     if (Object.keys(this.newClusters).length > 0) {
+      console.log("HEREEEEEE");
       this.headers.push({label: 'Current', align: 'middle'});
       this.targets.push(this.targets.length);
     }
@@ -4966,6 +4975,34 @@ export class ProfilingComponent implements OnInit {
             avatarTitle: (student.nickname !== null && student.nickname !== "") ? student.nickname : student.name,
             avatarSubtitle: student.major}});
       }
+    }
+  }
+
+  buildOverviewTable(){
+    this.loading.table = true;
+
+    this.overviewData = [[
+      {type: TableDataType.DATETIME, content: {datetime: this.lastRun}},
+      {type: TableDataType.COLOR, content: {color: this.running.profiler ? '#36D399' : '#EF6060', colorLabel: this.running.profiler ? 'Running' : 'Not running'}},
+      {type: TableDataType.ACTIONS, content: {actions: [{action: 'Refresh', icon: 'feather-refresh-ccw'}]}}
+    ]];
+
+    this.loading.table = false;
+  }
+
+  async doActionOnTable(action: string): Promise<void>{
+    if (action === 'Refresh'){
+      this.loading.action = true;
+
+      await this.checkProfilerStatus();
+      this.buildOverviewTable();
+      if (Object.keys(this.newClusters).length > 0){
+        this.headers = null;
+        this.targets = null;
+      }
+      this.buildResultsTable();
+
+      this.loading.action = false;
     }
   }
 
@@ -5070,7 +5107,7 @@ export class ProfilingComponent implements OnInit {
     ModalService.closeModal('discard-changes');
   }
 
-  async resetData(resetAll: boolean = true){
+  resetData(resetAll: boolean = true){
 
     if (resetAll) {
       // reset table properties

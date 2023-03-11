@@ -150,7 +150,17 @@ class ProfilingController
         API::requireCourseAdminPermission($course);
 
         $profiling = new Profiling($course);
-        $status = $profiling->checkProfilerStatus();
+
+        $status = ["clusters" => [
+        "135"=> [
+            "name" => "David Ribeiro",
+          "cluster" => "Halfhearted"
+        ],
+        "137" => [
+            "name" => "monica",
+          "cluster" => "Halfhearted"]]];
+
+        //$status = $profiling->checkProfilerStatus();
         if (array_key_exists("error", $status))
             API::error($status["error"]);
         API::response($status);

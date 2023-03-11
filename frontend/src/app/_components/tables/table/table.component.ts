@@ -208,6 +208,7 @@ export class TableComponent implements OnInit, OnChanges {
           that.datatable.search(value).draw();
         })
     }, 0);
+
   }
 
   getAlign(align: 'left' | 'middle' | 'right'): string {

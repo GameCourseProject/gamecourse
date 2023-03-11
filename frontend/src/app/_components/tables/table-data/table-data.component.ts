@@ -350,5 +350,5 @@ export function isFilterable(type: TableDataType, options, index): boolean {
 }
 
 export function isSelectable(type: TableDataType): boolean {
-  return type === TableDataType.CHECKBOX || type === TableDataType.RADIO || type === TableDataType.TOGGLE;
+  return type === TableDataType.CHECKBOX || type === TableDataType.RADIO || type === TableDataType.TOGGLE || type === TableDataType.SELECT;
 }
