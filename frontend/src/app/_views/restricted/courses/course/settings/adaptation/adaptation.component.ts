@@ -82,7 +82,7 @@ export class AdaptationComponent implements OnInit {
 
   async getGameElements(courseID: number): Promise<void> {
     // ADMIN
-    if (!this.user.isAdmin){
+    if (this.user.isAdmin){
       this.availableGameElements = await this.api.getGameElements(courseID).toPromise();
     }
 
@@ -145,7 +145,7 @@ export class AdaptationComponent implements OnInit {
 
     const table: {type: TableDataType, content: any}[][] = [];
 
-    if (!this.user.isAdmin){  //FIXME: DEBUG ONLY
+    if (this.user.isAdmin){  //FIXME: DEBUG ONLY
       this.availableGameElements.forEach(gameElement => {
         table.push([
           {type: TableDataType.TEXT, content: {text: gameElement.module}},

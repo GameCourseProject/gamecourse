@@ -5,12 +5,11 @@
 
   <ng-container *ngIf="!loading.page">
     <!-- Admin Template -->
-    <ng-container *ngIf="false" [ngTemplateOutlet]="ADMIN"></ng-container>
+    <ng-container *ngIf="true" [ngTemplateOutlet]="ADMIN"></ng-container>
 
     <!-- Non-Admin Template -->
-    <ng-container *ngIf="true" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
+    <ng-container *ngIf="false" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
   </ng-container>
-
 </div>
 
 <!-- Admin Template -->

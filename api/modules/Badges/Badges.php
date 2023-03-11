@@ -83,7 +83,7 @@ class Badges extends Module
         $this->createDataFolder();
         $this->initTemplates();
         $this->initRules();
-        $this->initProviders();
+        //$this->initProviders(); // FIXME - DEBUG ONLY (Library missing)
 
         // Init config
         Core::database()->insert(self::TABLE_BADGE_CONFIG, ["course" => $this->course->getId()]);

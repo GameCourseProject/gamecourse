@@ -52,7 +52,7 @@ class Profile extends Module
 
     const RESOURCES = [];
 
-    const ADAPTATION_PROFILE = ["Profile" => ["P001", "P002"]];
+    const ADAPTATION_PROFILE = ["Profile" => ["P001", "P002", "P003"]];
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
