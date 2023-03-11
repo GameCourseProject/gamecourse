@@ -8,7 +8,7 @@ import * as Highcharts from 'highcharts';
 import * as moment from "moment";
 import {Moment} from "moment";
 import {TableDataType} from "../../../../../../../../../_components/tables/table-data/table-data.component";
-import {dateFromDatabase} from "../../../../../../../../../_utils/misc/misc";
+import {copyObject, dateFromDatabase} from "../../../../../../../../../_utils/misc/misc";
 import {User} from "../../../../../../../../../_domain/users/user";
 import {ModalService} from "../../../../../../../../../_services/modal.service";
 import {NgForm} from "@angular/forms";
@@ -46,17 +46,25 @@ export class ProfilingComponent implements OnInit {
     profiler: false
   }
 
+  headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
+    {label: 'Name (sorting)', align: 'left'},
+    {label: 'Student', align: 'left'},
+    {label: 'Student Nr', align: 'middle'}
+  ];
   targets: number[] = [0,1,2];
+  options: any = {
+    order: [[ 0, 'asc' ]], // default order,
+    columnDefs: [
+      { type: 'natural', targets: [0,1,2] },
+      { orderData: 0,   targets: 1 }
+    ]
+  };
   table: {
     headers: {label: string, align?: 'left' | 'middle' | 'right'}[],
     data: {type: TableDataType, content: any}[][],
     options: any
   } = {
-    headers: [
-      {label: 'Name (sorting)', align: 'left'},
-      {label: 'Student', align: 'left'},
-      {label: 'Student Nr', align: 'middle'}
-    ],
+    headers: this.headers,
     data: null,
     options: {
       order: [[ 0, 'asc' ]], // default order,
@@ -4800,7 +4808,7 @@ export class ProfilingComponent implements OnInit {
       await this.api.commitClusters(this.course.id, cls).toPromise();
 
       // reset variables
-      await this.resetData();
+      await this.resetData(false);
 
       // get info for table
       await this.getHistory();
@@ -4895,17 +4903,17 @@ export class ProfilingComponent implements OnInit {
     this.loading.table = true;
 
     for (const day of this.days) {
-      this.table.headers.push({label: dateFromDatabase(day).format('DD/MM/YYYY HH:mm:ss'), align: 'middle'});
-      this.targets.push(this.targets.length);
+      this.headers.push({label: dateFromDatabase(day).format('DD/MM/YYYY HH:mm:ss'), align: 'middle'});
+      this.options.columnDefs[0].targets.push(this.options.columnDefs[0].targets.length);
     }
 
     if (Object.keys(this.newClusters).length > 0) {
-      console.log("AQUI");
-      this.table.headers.push({label: 'Current', align: 'middle'});
-      this.targets.push(this.targets.length);
+      console.log("HEREEE");
+      this.headers.push({label: 'Current', align: 'middle'});
+      this.options.columnDefs[0].targets.push(this.options.columnDefs[0].targets.length);
     }
 
-    // this.addLegibility("headers");
+    this.addLegibility("headers");
 
     let data: { type: TableDataType, content: any }[][] = [];
     for (const studentHistory of this.history) {
@@ -4923,7 +4931,6 @@ export class ProfilingComponent implements OnInit {
 
       // See if there's uncommitted changes or profiles shows results from running
       if (Object.keys(this.newClusters).length > 0) {
-        console.log("AQUI2");
         let aux = (student.id).toString();
         aux = "cluster-" + aux;
         data[data.length - 1].push({type: TableDataType.SELECT, content: {
@@ -4939,8 +4946,10 @@ export class ProfilingComponent implements OnInit {
      }
 
       // for table legibility
-      // this.addLegibility("data", student, data);
+      this.addLegibility("data", student, data);
       this.table.data = data;
+      this.table.headers = this.headers;
+      this.table.options = this.options;
       console.log(this.table.options);
     }
 
@@ -4948,15 +4957,14 @@ export class ProfilingComponent implements OnInit {
     this.loading.table = false;
   }
 
-  addLegibility(mode: string, student?: User, data?: { type: TableDataType, content: any }[][],
-                headers?: {label: string, align?: 'left' | 'middle' | 'right'}[]){
+  addLegibility(mode: string, student?: User, data?: { type: TableDataType, content: any }[][]){
     if (this.days.length > 3){
       if (mode === 'headers'){
-        headers.push(headers[2]);
-        this.targets.push(this.targets.length);
+        this.headers.push(this.table.headers[2]);
+        this.options.columnDefs[0].targets.push(this.options.columnDefs[0].targets.length);
 
-        headers.push(headers[1]);
-        this.targets.push(this.targets.length);
+        this.headers.push(this.table.headers[1]);
+        this.options.columnDefs[0].targets.push(this.options.columnDefs[0].targets.length);
 
       } else if (mode === 'data'){
         data[0].push({type: TableDataType.NUMBER, content: {value: parseInt(String(student.studentNumber)), valueFormat: 'none'}});
@@ -5070,12 +5078,25 @@ export class ProfilingComponent implements OnInit {
     ModalService.closeModal('discard-changes');
   }
 
-  async resetData(){
-    // FIXME -- Should be different depending from where its called
-    // 2 -> three first headers with student name ,...
-    // this.days.length - 1 -> last day result (info to remove)
-    // let index = 2 + this.days.length
-    this.targets = [0,1,2];
+  async resetData(resetAll: boolean = true){
+
+    if (resetAll) {
+      // reset table properties
+      this.headers = [
+        {label: 'Name (sorting)', align: 'left'},
+        {label: 'Student', align: 'left'},
+        {label: 'Student Nr', align: 'middle'}
+      ];
+
+      this.options = {
+        order: [[ 0, 'asc' ]], // default order,
+        columnDefs: [
+          { type: 'natural', targets: [0,1,2] },
+          { orderData: 0,   targets: 1 }
+        ]
+      };
+    }
+
     this.results = [];
     this.newClusters = [];
     this.origin = null;
