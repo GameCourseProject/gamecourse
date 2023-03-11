@@ -113,6 +113,7 @@ export class ProfilingComponent implements OnInit {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
       await this.getStudents();
+      console.log(this.students);
       await this.getHistory();
       await this.getLastRun();
       await this.getClusterNames();
@@ -141,7 +142,6 @@ export class ProfilingComponent implements OnInit {
 
   async getHistory() {
     const res = await this.api.getHistory(this.course.id).toPromise();
-
     /*const res = {
       "days": [
         "2022-03-15 22:31:32",
@@ -4411,12 +4411,14 @@ export class ProfilingComponent implements OnInit {
 
     this.newClusters = JSON.parse(JSON.stringify(this.results));       // prepare in case of discard action
 
+    console.log(this.newClusters);
     this.buildResultsTable();
   }
 
   async getSavedClusters() {
     const drafts = await this.api.getSavedClusters(this.course.id).toPromise();
 
+    console.log(drafts);
     if (drafts){
       this.results = drafts.saved;
       this.origin = "drafts";
@@ -4427,6 +4429,7 @@ export class ProfilingComponent implements OnInit {
     this.loading.action = true;
 
     const profiler = await this.api.checkProfilerStatus(this.course.id).toPromise()
+    console.log(profiler);
     /*const profiler =  {
       "clusters": {
         "135": {
@@ -4818,16 +4821,13 @@ export class ProfilingComponent implements OnInit {
   async deleteClusters() {
     this.loading.action = true;
 
-    console.log(this.table);
     // see if entries on table come from drafts and deletes them
     if (this.origin === "drafts"){
       //await this.api.deleteSavedClusters(this.course.id).toPromise();
     }
 
     await this.resetData();
-    console.log(this.table);
     this.buildResultsTable();
-    console.log(this.table);
     this.resetDiscardModal();
     this.loading.action = false;
   }
@@ -4895,13 +4895,21 @@ export class ProfilingComponent implements OnInit {
   buildResultsTable() {
     this.loading.table = true;
 
+    if (this.targets === null && this.headers === null) {
+      this.targets = [0,1,2];
+      this.headers = [
+        {label: 'Name (sorting)', align: 'left'},
+        {label: 'Student', align: 'left'},
+        {label: 'Student Nr', align: 'middle'}
+      ];
+    }
+
     for (const day of this.days) {
       this.headers.push({label: dateFromDatabase(day).format('DD/MM/YYYY HH:mm:ss'), align: 'middle'});
       this.targets.push(this.targets.length);
     }
 
     if (Object.keys(this.newClusters).length > 0) {
-      console.log("HEREEE");
       this.headers.push({label: 'Current', align: 'middle'});
       this.targets.push(this.targets.length);
     }
@@ -4940,12 +4948,10 @@ export class ProfilingComponent implements OnInit {
 
       // for table legibility
       this.addLegibility("data", student, data);
-      this.table.data = data;
       this.table.headers = this.headers;
-      console.log(this.table.options);
     }
-
-    console.log(this.table);
+    console.log(data);
+    this.table.data = data;
     this.loading.table = false;
   }
 
@@ -4959,8 +4965,8 @@ export class ProfilingComponent implements OnInit {
         this.targets.push(this.targets.length);
 
       } else if (mode === 'data'){
-        data[0].push({type: TableDataType.NUMBER, content: {value: parseInt(String(student.studentNumber)), valueFormat: 'none'}});
-        data[0].push({type: TableDataType.AVATAR, content: {
+        data[data.length - 1].push({type: TableDataType.NUMBER, content: {value: parseInt(String(student.studentNumber)), valueFormat: 'none'}});
+        data[data.length - 1].push({type: TableDataType.AVATAR, content: {
             avatarSrc: student.photoUrl,
             avatarTitle: (student.nickname !== null && student.nickname !== "") ? student.nickname : student.name,
             avatarSubtitle: student.major}});
@@ -5042,7 +5048,7 @@ export class ProfilingComponent implements OnInit {
     } else if (action === 'reset fields'){
       if (this.newClusters !== this.results){
         this.loading.action = true;
-        this.newClusters = this.results;
+        this.newClusters = JSON.parse(JSON.stringify(this.results));
         this.buildResultsTable();
         this.loading.action = false;
       }
@@ -5074,13 +5080,8 @@ export class ProfilingComponent implements OnInit {
 
     if (resetAll) {
       // reset table properties
-      this.headers = [
-        {label: 'Name (sorting)', align: 'left'},
-        {label: 'Student', align: 'left'},
-        {label: 'Student Nr', align: 'middle'}
-      ];
-
-      this.targets = JSON.parse(JSON.stringify([0,1,2]));
+      this.headers = null;
+      this.targets = null;
     }
 
     this.results = [];
