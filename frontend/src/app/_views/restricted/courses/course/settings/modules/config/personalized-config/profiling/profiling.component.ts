@@ -15,6 +15,7 @@ import {NgForm} from "@angular/forms";
 import {AlertService, AlertType} from "../../../../../../../../../_services/alert.service";
 import {CourseUser} from "../../../../../../../../../_domain/users/course-user";
 import {Course} from "../../../../../../../../../_domain/courses/course";
+import {ResourceManager} from "../../../../../../../../../_utils/resources/resource-manager";
 
 declare var require: any;
 let Sankey = require('highcharts/modules/sankey');
@@ -101,7 +102,7 @@ export class ProfilingComponent implements OnInit {
   @ViewChild('fPrediction', { static: false }) fPrediction: NgForm;
   @ViewChild('fImport', { static: false }) fImport: NgForm;
 
-  importedFile: ProfilerResults;
+  importedFile: { file: File, replace: boolean } = {file: null, replace: true};
 
   overviewData: {type: TableDataType, content: any}[][];
 
@@ -5027,7 +5028,7 @@ export class ProfilingComponent implements OnInit {
 
   }
 
-  importItems(replace: boolean): void { // FIXME
+  //importItems(replace: boolean): void { // FIXME
     // this.loadingAction = true;
     //
     // const reader = new FileReader();
@@ -5047,6 +5048,16 @@ export class ProfilingComponent implements OnInit {
     //       })
     // }
     // reader.readAsDataURL(this.importedFile);
+  //}
+
+  async importItems(): Promise<void>{
+    if (this.fImport.valid){
+      this.loading.action = true;
+
+      const file = await ResourceManager.getText(this.importedFile.file);
+      //const nrResultsImported = await this.api.importModuleItems(this.course.id, ApiHttpService.PROFILING, file, this.importedFile.replace).toPromise();
+
+    }  else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
   async doAction(action: string): Promise<void> {
@@ -5065,6 +5076,7 @@ export class ProfilingComponent implements OnInit {
       ModalService.openModal('import-modal');
 
     } else if (action === 'submit import') {
+
       // FIXME : something else missing ?
       // FIXME -- NAO CHEGA AQUI
       this.resetImportModal();
@@ -5153,8 +5165,3 @@ export interface ProfilingNode {
   color: string
 }
 
-export interface ProfilerResults {
-  [key: string]: {
-
-  }
-}
