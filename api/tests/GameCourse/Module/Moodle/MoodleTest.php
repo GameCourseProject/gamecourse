@@ -351,11 +351,16 @@ class MoodleTest extends TestCase
         ];
 
         // When
-        $lastRecordTimestamp = $this->module->saveAssignmentGrades($assignmentGrades);
+        $info = $this->module->saveAssignmentGrades($assignmentGrades);
 
         // Then
-        $this->assertIsInt($lastRecordTimestamp);
-        $this->assertEquals(1662138988, $lastRecordTimestamp);
+        $this->assertIsArray($info);
+        $this->assertArrayHasKey("oldestRecordTimestamp", $info);
+        $this->assertArrayHasKey("lastRecordTimestamp", $info);
+        $this->assertIsInt($info["oldestRecordTimestamp"]);
+        $this->assertIsInt($info["lastRecordTimestamp"]);
+        $this->assertEquals(1662138960, $info["oldestRecordTimestamp"]);
+        $this->assertEquals(1662138988, $info["lastRecordTimestamp"]);
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertIsArray($participations);
@@ -392,11 +397,16 @@ class MoodleTest extends TestCase
         ];
 
         // When
-        $lastRecordTimestamp = $this->module->saveForumGrades($forumGrades);
+        $info = $this->module->saveForumGrades($forumGrades);
 
         // Then
-        $this->assertIsInt($lastRecordTimestamp);
-        $this->assertEquals(1662138988, $lastRecordTimestamp);
+        $this->assertIsArray($info);
+        $this->assertArrayHasKey("oldestRecordTimestamp", $info);
+        $this->assertArrayHasKey("lastRecordTimestamp", $info);
+        $this->assertIsInt($info["oldestRecordTimestamp"]);
+        $this->assertIsInt($info["lastRecordTimestamp"]);
+        $this->assertEquals(1662138980, $info["oldestRecordTimestamp"]);
+        $this->assertEquals(1662138988, $info["lastRecordTimestamp"]);
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertIsArray($participations);
@@ -408,11 +418,16 @@ class MoodleTest extends TestCase
             "date" => date("Y-m-d H:i:s", 1662138980), "rating" => 3, "evaluator" => 1], $p1);
 
         // When
-        $lastRecordTimestamp = $this->module->saveForumGrades($peerForumGrades, true);
+        $info = $this->module->saveForumGrades($peerForumGrades, true);
 
         // Then
-        $this->assertIsInt($lastRecordTimestamp);
-        $this->assertEquals(1662138968, $lastRecordTimestamp);
+        $this->assertIsArray($info);
+        $this->assertArrayHasKey("oldestRecordTimestamp", $info);
+        $this->assertArrayHasKey("lastRecordTimestamp", $info);
+        $this->assertIsInt($info["oldestRecordTimestamp"]);
+        $this->assertIsInt($info["lastRecordTimestamp"]);
+        $this->assertEquals(1662138960, $info["oldestRecordTimestamp"]);
+        $this->assertEquals(1662138968, $info["lastRecordTimestamp"]);
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertIsArray($participations);
@@ -442,11 +457,16 @@ class MoodleTest extends TestCase
         ];
 
         // When
-        $lastRecordTimestamp = $this->module->savePeergrades($peergrades);
+        $info = $this->module->savePeergrades($peergrades);
 
         // Then
-        $this->assertIsInt($lastRecordTimestamp);
-        $this->assertEquals(1662138988, $lastRecordTimestamp);
+        $this->assertIsArray($info);
+        $this->assertArrayHasKey("oldestRecordTimestamp", $info);
+        $this->assertArrayHasKey("lastRecordTimestamp", $info);
+        $this->assertIsInt($info["oldestRecordTimestamp"]);
+        $this->assertIsInt($info["lastRecordTimestamp"]);
+        $this->assertEquals(1662138968, $info["oldestRecordTimestamp"]);
+        $this->assertEquals(1662138988, $info["lastRecordTimestamp"]);
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertIsArray($participations);
@@ -481,11 +501,16 @@ class MoodleTest extends TestCase
         ];
 
         // When
-        $lastRecordTimestamp = $this->module->saveQuizGrades($quizGrades);
+        $info = $this->module->saveQuizGrades($quizGrades);
 
         // Then
-        $this->assertIsInt($lastRecordTimestamp);
-        $this->assertEquals(1662138988, $lastRecordTimestamp);
+        $this->assertIsArray($info);
+        $this->assertArrayHasKey("oldestRecordTimestamp", $info);
+        $this->assertArrayHasKey("lastRecordTimestamp", $info);
+        $this->assertIsInt($info["oldestRecordTimestamp"]);
+        $this->assertIsInt($info["lastRecordTimestamp"]);
+        $this->assertEquals(1662138968, $info["oldestRecordTimestamp"]);
+        $this->assertEquals(1662138988, $info["lastRecordTimestamp"]);
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertIsArray($participations);

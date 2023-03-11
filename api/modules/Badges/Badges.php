@@ -113,7 +113,7 @@ class Badges extends Module
 
         } else {
             \$course = Core::dictionary()->getCourse();
-            if (!\$course) throw new Exception(\"Can't calculate badge distribution: no course found.\");
+            if (!\$course) \$this->throwError(\"badgeDistribution\", \"no course found\");
 
             \$userIds = array_map(function (\$user) { if (is_array(\$user)) return \$user[\"id\"]; return \$user->getId(); }, \$users);
             \$nrUsers = count(\$userIds);

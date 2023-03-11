@@ -126,11 +126,11 @@ class XPLevels extends Module
 
         } else {
             \$course = Core::dictionary()->getCourse();
-            if (!\$course) throw new Exception(\"Can't calculate XP evolution: no course found.\");
+            if (!\$course) \$this->throwError(\"XPEvolution\", \"no course found\");
 
             \$courseDates = \$course->getData(\"startDate, endDate\");
-            if (!\$courseDates[\"startDate\"]) throw new Exception(\"Can't calculate XP evolution: course doesn't have a start date.\");
-            if (!\$courseDates[\"endDate\"]) throw new Exception(\"Can't calculate XP evolution: course doesn't have an end date.\");
+            if (!\$courseDates[\"startDate\"]) \$this->throwError(\"XPEvolution\", \"course doesn't have a start date\");
+            if (!\$courseDates[\"endDate\"]) \$this->throwError(\"XPEvolution\", \"course doesn't have an end date\");
 
             \$XPModule = new \GameCourse\Module\XPLevels\XPLevels(\$course);
             \$userXP = \$XPModule->getUserXP(\$userId);
@@ -237,7 +237,7 @@ class XPLevels extends Module
 
         } else {
             \$course = Core::dictionary()->getCourse();
-            if (!\$course) throw new Exception(\"Can't calculate XP distribution: no course found.\");
+            if (!\$course) \$this->throwError(\"XPDistribution\", \"no course found\");
 
             \$userIds = array_map(function (\$user) { if (is_array(\$user)) return \$user[\"id\"]; return \$user->getId(); }, \$users);
             \$nrUsers = count(\$userIds);
@@ -300,7 +300,7 @@ class XPLevels extends Module
 
         } else {
             \$course = Core::dictionary()->getCourse();
-            if (!\$course) throw new Exception(\"Can't calculate XP overview: no course found.\");
+            if (!\$course) \$this->throwError(\"XPOverview\", \"no course found\");
 
             // Get user awards
             \$awardsModule = new \GameCourse\Module\Awards\Awards(\$course);

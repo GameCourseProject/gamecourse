@@ -90,9 +90,13 @@
                                     [
                                         {
                                             "type": "row",
-                                            "loopData": "{users.getStudents(true).sort(\"DESC: %userXP, DESC: %userBadges, ASC: %item.name\")}",
+                                            "loopData": "{%students.getKNeighbors(%students.index(%viewer, \"id\"), 3)}",
                                             "rowType": "body",
                                             "variables": [
+                                                {
+                                                    "name": "students",
+                                                    "value": "{users.getStudents(true).sort(\"DESC: %userXP, DESC: %userBadges, ASC: %item.name\")}"
+                                                },
                                                 {
                                                     "name": "userXP",
                                                     "value": "{xp.getUserXP(%item.id)}"

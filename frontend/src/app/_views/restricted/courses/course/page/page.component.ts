@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {ApiHttpService} from "../../../../../_services/api/api-http.service";
-import {ActivatedRoute, NavigationCancel, NavigationEnd, NavigationStart, Router} from "@angular/router";
+import {ActivatedRoute, NavigationStart, Router} from "@angular/router";
 import {View} from "../../../../../_domain/views/view";
 import {Skill} from "../../../../../_domain/modules/config/personalized-config/skills/skill";
 import {ApiEndpointsService} from "../../../../../_services/api/api-endpoints.service";
@@ -39,9 +39,7 @@ export class PageComponent implements OnInit {
     skills: Skill[]
   }[] = [];
   availableWildcards: number;
-  attempts: {[key: number]: number};
-  cost: {[key: number]: number};
-  skillsCompleted: number[];
+  info: {[skillID: number]: {attempts: number, cost: number, completed: boolean}};
   vcIcon: string = environment.apiEndpoint + '/modules/VirtualCurrency/assets/default.png';
 
   streaks: Streak[] = [];
@@ -151,10 +149,7 @@ export class PageComponent implements OnInit {
       // Get info
       const tiers = await this.api.getTiersOfSkillTree(skillTree.id, null).toPromise();
       const skills = await this.api.getSkillsOfSkillTree(skillTree.id, null, null, null).toPromise();
-      const info = await this.api.getSkillsExtraInfo(this.course.id, this.user.id, this.skillTrees[0].id).toPromise();
-      this.attempts = info.attempts;
-      this.cost = info.cost;
-      this.skillsCompleted = info.completed;
+      this.info = await this.api.getSkillsExtraInfo(this.course.id, this.user.id, this.skillTrees[0].id).toPromise();
       this.skillTreesInfo.push({skillTreeId: skillTree.id, loading: {tiers: false, skills: false}, data: {tiers: [], skills: []}, tiers, skills});
     }
   }

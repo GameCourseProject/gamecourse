@@ -10,7 +10,6 @@ use GameCourse\Course\Course;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
-use Throwable;
 use Utils\CronJob;
 use Utils\Utils;
 
@@ -298,7 +297,7 @@ class ClassCheck extends Module
      * @param string $type
      * @return void
      */
-    public static function log(int $courseId, string $message, string $type = "ERROR")
+    public static function log(int $courseId, string $message, string $type)
     {
         $logsFile = self::getLogsFile($courseId, false);
         Utils::addLog($logsFile, $message, $type);
@@ -321,6 +320,14 @@ class ClassCheck extends Module
 
     /*** ------ Importing Data ------ ***/
 
+    const COL_EVALUATOR_USERNAME = 0;
+    const COL_STUDENT_USERNAME = 2;
+    const COL_STUDENT_NAME = 3;
+    const COL_ACTION = 4;
+    const COL_ATTENDANCE_TYPE = 5;
+    const COL_LECTURE_NR = 6;
+    const COL_SHIFT = 7;
+
     /**
      * Checks connection to ClassCheck attendances.
      *
@@ -331,21 +338,22 @@ class ClassCheck extends Module
     private function checkConnection(?string $tsvCode)
     {
         if (!$tsvCode) throw new Exception("Connection to " . self::NAME . " failed: no TSV code found.");
-        fopen($tsvCode, "r");
+        if (!fopen($tsvCode, "r")) throw new Exception("Connection to " . self::NAME . " failed: couldn't open TSV code file.");
     }
 
     /**
      * Imports ClassCheck data into the system.
-     * Returns true if new data was imported, false otherwise.
+     * Returns the datetime of the oldest record imported
+     * if new data was imported, null otherwise.
      *
-     * @return bool
+     * @return string|null
      * @throws Exception
      */
-    public function importData(): bool
+    public function importData(): ?string
     {
         if ($this->isRunning()) {
             self::log($this->course->getId(), "Already importing data from " . self::NAME . ".", "WARNING");
-            return false;
+            return null;
         }
 
         $this->setStartedRunning(date("Y-m-d H:i:s", time()));
@@ -353,12 +361,19 @@ class ClassCheck extends Module
         self::log($this->course->getId(), "Importing data from " . self::NAME . "...", "INFO");
 
         try {
-            $tsvCode = $this->getTSVCode();
-            $newData = $this->saveAttendance($tsvCode);
+            // NOTE: AutoGame will run for targets with new data after checkpoint
+            $AutoGameCheckpoint = null; // Timestamp of oldest record imported
 
-            if ($newData) self::log($this->course->getId(), "Imported new data from " . self::NAME . ".", "SUCCESS");
+            $tsvCode = $this->getTSVCode();
+            $checkpoint = $this->saveAttendance($tsvCode);
+
+            if ($checkpoint) {
+                $AutoGameCheckpoint = min($AutoGameCheckpoint, $checkpoint) ?? $checkpoint;
+                self::log($this->course->getId(), "Imported new data from " . self::NAME . ".", "SUCCESS");
+            }
+
             self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
-            return $newData;
+            return $AutoGameCheckpoint ? date("Y-m-d H:i:s", $AutoGameCheckpoint) : null;
 
         } finally {
             $this->setIsRunning(false);
@@ -370,58 +385,64 @@ class ClassCheck extends Module
      * Saves ClassCheck attendance into the system.
      *
      * @param string $tsvCode
-     * @return bool
+     * @return int|null
      * @throws Exception
      */
-    public function saveAttendance(string $tsvCode): bool
+    public function saveAttendance(string $tsvCode): ?int
     {
         // NOTE: it's better performance-wise to do only one big insert
         //       as opposed to multiple small inserts
         $sql = "INSERT INTO " . AutoGame::TABLE_PARTICIPATION . " (user, course, source, description, type) VALUES ";
         $values = [];
 
+        $oldestRecordTimestamp = null; // Timestamp of the oldest record imported
+
+        $lineNr = 1;
         $file = fopen($tsvCode, "r");
         while (!feof($file)) {
             $line = fgets($file);
             $attendance = str_getcsv($line, "\t");
-            if (count($attendance) < 8) {
-                // to do : file returns extra info, source should be fixed
-                // if len of line is too small, do not parse
-                throw new Exception("Incorrect file format.");
+            if (!self::attendanceIsValid($attendance)) {
+                self::log($this->course->getId(), "Line #$lineNr is in an invalid format.", "WARNING");
+                $lineNr++;
+                continue;
             }
             self::parseAttendance($attendance);
 
-            $profUsername = $attendance[0];
-            $studentUsername = $attendance[2];
-            $studentName = $attendance[3];
-            $action = $attendance[4];
-            $attendanceType = $attendance[5];
-            $classNumber = $attendance[6];
-            $shift = $attendance[7];
+            $profUsername = $attendance[self::COL_EVALUATOR_USERNAME];
+            $studentUsername = $attendance[self::COL_STUDENT_USERNAME];
+            $action = $attendance[self::COL_ACTION];
+            $lectureNr = $attendance[self::COL_LECTURE_NR];
 
             $prof = $this->course->getCourseUserByUsername($profUsername);
-            $student = $this->course->getCourseUserByUsername($studentUsername);
+            if ($prof) {
+                $student = $this->course->getCourseUserByUsername($studentUsername);
+                if ($student) {
+                    if (!$this->hasAttendance($student->getId(), $lectureNr)) {
+                        $params = [
+                            $student->getId(),
+                            $this->getCourse()->getId(),
+                            "\"" . $this->id . "\"",
+                            "\"$lectureNr\"",
+                            "\"$action\""
+                        ];
+                        $values[] = "(" . implode(", ", $params) . ")";
+                    }
 
-            if ($student && $prof) {
-                if (!$this->hasAttendance($student->getId(), $classNumber)) {
-                    $params = [
-                        $student->getId(),
-                        $this->getCourse()->getId(),
-                        "\"" . $this->id . "\"",
-                        "\"$classNumber\"",
-                        "\"$action\""
-                    ];
-                    $values[] = "(" . implode(", ", $params) . ")";
-                }
-            }
+                } else self::log($this->course->getId(), "No student with username '$studentUsername' enrolled in the course.", "WARNING");
+
+            } else self::log($this->course->getId(), "No teacher with username '$profUsername' enrolled in the course.", "WARNING");
+
+            $lineNr++;
         }
 
-        $newData = !empty($values);
-        if ($newData) {
+        if (!empty($values)) {
             $sql .= implode(", ", $values);
             Core::database()->executeQuery($sql);
+            $recordsTimestamp = time();
+            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordsTimestamp) ?? $recordsTimestamp;
         }
-        return $newData;
+        return $oldestRecordTimestamp;
     }
 
     /**
@@ -464,6 +485,20 @@ class ClassCheck extends Module
      */
     private static function parseAttendance(array &$attendance)
     {
-        if (isset($attendance[6])) $attendance[6] = intval($attendance[6]);
+        if (isset($attendance[self::COL_LECTURE_NR])) $attendance[self::COL_LECTURE_NR] = intval($attendance[self::COL_LECTURE_NR]);
+    }
+
+    /**
+     * Checks whether a given attendance is valid.
+     *
+     * @param array $attendance
+     * @return bool
+     */
+    private static function attendanceIsValid(array $attendance): bool
+    {
+        if (count($attendance) !== 8) return false;
+        if (!in_array($attendance[self::COL_ACTION], ["attended lecture", "attended lecture (late)"])) return false;
+        if (!ctype_digit($attendance[self::COL_LECTURE_NR])) return false;
+        return true;
     }
 }

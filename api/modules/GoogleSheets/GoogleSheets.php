@@ -481,12 +481,13 @@ class GoogleSheets extends Module
 
     /**
      * Imports data from a Google sheet into the system.
-     * Returns true if new data was imported, false otherwise.
+     * Returns the datetime of the oldest record imported
+     * if new data was imported, null otherwise.
      *
-     * @return bool
+     * @return string|null
      * @throws Exception
      */
-    public function importData(): bool
+    public function importData(): ?string
     {
         if ($this->isRunning()) {
             self::log($this->course->getId(), "Already importing data from " . self::NAME . ".", "WARNING");
@@ -498,26 +499,29 @@ class GoogleSheets extends Module
         self::log($this->course->getId(), "Importing data from " . self::NAME . "...", "INFO");
 
         try {
+            // NOTE: AutoGame will run for targets with new data after checkpoint
+            $AutoGameCheckpoint = null; // Timestamp of oldest record imported
+
             $credentials = $this->getCredentials();
             $accessToken = $this->getAccessToken();
             $client = GoogleHandler::getGoogleSheetsClient($this->course->getId(), $credentials, $accessToken);
             self::$GSService = GoogleHandler::getGoogleSheetsService($client);
 
-            $newData = false;
             $config = $this->getGoogleSheetsConfig();
             foreach ($config["sheetNames"] as $i => $sheetName) {
                 $prof = $this->course->getCourseUserByUsername($config["ownerNames"][$i]);
                 if ($prof) {
                     $data = $this->getSheetData($config["spreadsheetId"], $sheetName);
-                    if ($this->saveSheetData($data, $prof->getId())) {
-                        $newData = true;
-                        self::log($this->course->getId(), "Imported new data from " . self::NAME . ".", "SUCCESS");
+                    $checkpoint = $this->saveSheetData($sheetName, $data, $prof->getId());
+                    if ($checkpoint) {
+                        $AutoGameCheckpoint = min($AutoGameCheckpoint, $checkpoint) ?? $checkpoint;
+                        self::log($this->course->getId(), "Imported new data from sheet '" . $sheetName . "'.", "SUCCESS");
                     }
-                }
+                } else self::log($this->course->getId(), "No teacher with username '" . $config["ownerNames"][$i] . "' enrolled in the course.", "WARNING");
             }
 
             self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
-            return $newData;
+            return $AutoGameCheckpoint ? date("Y-m-d H:i:s", $AutoGameCheckpoint) : null;
 
         } finally {
             $this->setIsRunning(false);
@@ -541,20 +545,21 @@ class GoogleSheets extends Module
     /**
      * Saves data from Google sheet into the system.
      *
+     * @param string $sheetName
      * @param array $data
      * @param int $profId
-     * @return bool
-     * @throws Exception
+     * @return int|null
      */
-    public function saveSheetData(array $data, int $profId): bool
+    public function saveSheetData(string $sheetName, array $data, int $profId): ?int
     {
         // NOTE: it's better performance-wise to do only one big insert
         //       as opposed to multiple small inserts
         $sql = "INSERT INTO " . AutoGame::TABLE_PARTICIPATION . " (user, course, source, description, type, rating, evaluator) VALUES ";
         $values = [];
-        $newData = false;
 
-        foreach ($data as $row) {
+        $oldestRecordTimestamp = null; // Timestamp of the oldest record imported
+
+        foreach ($data as $i => $row) {
             if (!self::rowIsValid($row, [self::COL_STUDENT_NUMBER, self::COL_ACTION])) continue;
 
             $courseUser = $this->course->getCourseUserByStudentNumber($row[self::COL_STUDENT_NUMBER]);
@@ -568,7 +573,10 @@ class GoogleSheets extends Module
                     case "initial bonus":
                     case "initial tokens":
                     case "presentation grade":
-                        if (!self::rowIsValid($row, [self::COL_XP])) break;
+                        if (!self::rowIsValid($row, [self::COL_XP])) {
+                            self::log($this->course->getId(), "Row #" . ($i + 2) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            break;
+                        }
                         $xp = $row[self::COL_XP];
 
                         $result = Core::database()->select(AutoGame::TABLE_PARTICIPATION, ["user" => $userId, "course" => $courseId, "type" => $action]);
@@ -588,15 +596,21 @@ class GoogleSheets extends Module
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
                                 "rating" => intval(round($xp)),
                             ], ["user" => $userId, "course" => $courseId, "type" => $action]);
-                            $newData = true;
+                            $recordTimeStamp = strtotime($result["date"]);
+                            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordTimeStamp) ?? $recordTimeStamp;
                         }
                         break;
 
                     case "attended lecture":
                     case "attended lecture (late)":
                     case "attended lab":
+                    case "guild master":
+                    case "guild warrior":
                     case "replied to questionnaires":
-                        if (!self::rowIsValid($row, [self::COL_INFO])) break;
+                        if (!self::rowIsValid($row, [self::COL_INFO])) {
+                            self::log($this->course->getId(), "Row #" . ($i + 2) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            break;
+                        }
                         $info  = $row[self::COL_INFO];
 
                         $result = Core::database()->select(AutoGame::TABLE_PARTICIPATION, ["user" => $userId, "course" => $courseId, "type" => $action, "description" => $info]);
@@ -616,7 +630,8 @@ class GoogleSheets extends Module
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
                                 "description" => $info
                             ], ["user" => $userId, "course" => $courseId, "type" => $action]);
-                            $newData = true;
+                            $recordTimeStamp = strtotime($result["date"]);
+                            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordTimeStamp) ?? $recordTimeStamp;
                         }
                         break;
 
@@ -643,7 +658,10 @@ class GoogleSheets extends Module
 
                     case "quiz grade":
                     case "lab grade":
-                        if (!self::rowIsValid($row, [self::COL_XP, self::COL_INFO])) break;
+                        if (!self::rowIsValid($row, [self::COL_XP, self::COL_INFO])) {
+                            self::log($this->course->getId(), "Row #" . ($i + 2) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            break;
+                        }
                         $info  = $row[self::COL_INFO];
                         $xp = $row[self::COL_XP];
 
@@ -664,13 +682,18 @@ class GoogleSheets extends Module
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
                                 "rating" =>  intval(round($xp))
                             ], ["user" => $userId, "course" => $courseId, "description" => $info, "type" =>  $action]);
-                            $newData = true;
+                            $recordTimeStamp = strtotime($result["date"]);
+                            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordTimeStamp) ?? $recordTimeStamp;
                         }
                         break;
 
                     case "popular choice award (presentation)":
                     case "golden star award":
-                        if (!self::rowIsValid($row, [self::COL_INFO])) break;
+                    case "great video":
+                        if (!self::rowIsValid($row, [self::COL_INFO])) {
+                            self::log($this->course->getId(), "Row #" . ($i + 2) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            break;
+                        }
                         $info  = $row[self::COL_INFO];
 
                         $result = Core::database()->select(AutoGame::TABLE_PARTICIPATION, ["user" => $userId, "course" => $courseId, "type" => $action]);
@@ -690,12 +713,16 @@ class GoogleSheets extends Module
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
                                 "description" => $info
                             ], ["user" => $userId, "course" => $courseId, "type" =>  $action]);
-                            $newData = true;
+                            $recordTimeStamp = strtotime($result["date"]);
+                            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordTimeStamp) ?? $recordTimeStamp;
                         }
                         break;
 
                     case "hall of fame":
-                        if (!self::rowIsValid($row, [self::COL_INFO])) break;
+                        if (!self::rowIsValid($row, [self::COL_INFO])) {
+                            self::log($this->course->getId(), "Row #" . ($i + 2) . " on sheet '" . $sheetName . "' is in an invalid format.", "WARNING");
+                            break;
+                        }
                         $info  = $row[self::COL_INFO];
 
                         $result = Core::database()->select(AutoGame::TABLE_PARTICIPATION, ["user" => $userId, "course" => $courseId, "type" => $action, "description"=> $info]);
@@ -716,15 +743,16 @@ class GoogleSheets extends Module
                     default:
                         break;
                 }
-            }
+            } else self::log($this->course->getId(), "No user with student nr. '" . $row[self::COL_STUDENT_NUMBER] . "' enrolled in the course.", "WARNING");
         }
 
         if (!empty($values)) {
             $sql .= implode(", ", $values);
             Core::database()->executeQuery($sql);
-            $newData = true;
+            $recordsTimestamp = time();
+            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordsTimestamp) ?? $recordsTimestamp;
         }
-        return $newData;
+        return $oldestRecordTimestamp;
     }
 
     /**

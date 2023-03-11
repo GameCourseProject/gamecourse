@@ -7,10 +7,10 @@ rule: Popular Choice Award
     when:
         # Get target progress in badge
         logs = get_logs(target, "popular choice award (presentation)")
-        ranking = int(get_description(log[0])) if len(logs) == 1 else 0
+        ranking = int(get_description(log[0])) if len(logs) == 1 else 4
 
         # Compute badge level the target deserves
         lvl = 4 - ranking
-		
+
     then:
         award_badge(target, "Popular Choice Award", lvl, logs)

@@ -28,11 +28,11 @@ if ($nrArgs >= 0) {
         $classcheck = $course->getModuleById(ClassCheck::ID);
 
         // Import new data
-        $newData = $classcheck->importData();
-        if ($newData) AutoGame::setToRun($courseId);
+        $checkpoint = $classcheck->importData();
+        if ($checkpoint) AutoGame::setToRun($courseId, $checkpoint);
 
     } catch (Throwable $e) {
-        ClassCheck::log($courseId, $e->getMessage(), "ERROR");
+        ClassCheck::log($courseId, $e->getMessage() . "\n" . $e->getTraceAsString(), "ERROR");
     }
 
 } else {

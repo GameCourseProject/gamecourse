@@ -22,9 +22,9 @@ try {
     $moodle = $course->getModuleById(Moodle::ID);
 
     // Import new data
-    $newData = $moodle->importData();
-    if ($newData) AutoGame::setToRun($courseId);
+    $checkpoint = $moodle->importData();
+    if ($checkpoint) AutoGame::setToRun($courseId, $checkpoint);
 
 } catch (Throwable $e) {
-    Moodle::log($courseId, $e->getMessage(), "ERROR");
+    Moodle::log($courseId, $e->getMessage() . "\n" . $e->getTraceAsString(), "ERROR");
 }

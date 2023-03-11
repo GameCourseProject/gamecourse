@@ -124,64 +124,67 @@ if __name__ == "__main__":
         # Process arguments
         (course, all_targets, targets_list) = process_args(sys.argv[1], sys.argv[3], sys.argv[2])
 
-        # Initialize Moodle connector
-        if module_enabled("Moodle"):
-            mdl_table = "moodle_config"
-            query = "SELECT dbServer, dbName, dbUser, dbPass FROM " + mdl_table + " WHERE course = %s;"
-            mdl_host, mdl_database, mdl_username, mdl_password = db.execute_query(query, (config.COURSE,))[0]
-            if mdl_password:
-                from gamerules.connector.db_connector import connect_to_moodle_db
-                connect_to_moodle_db(mdl_host.decode(), mdl_database.decode(), mdl_username.decode(), mdl_password.decode())
-
         # Initialize AutoGame
-        last_activity = autogame_init(course)
+        checkpoint = autogame_init(course)
 
         # Get targets to run
-        students = get_targets(course, last_activity, all_targets, targets_list)
+        students = get_targets(course, checkpoint, all_targets, targets_list)
+        if students:
 
-        # Clear all progression before calculating again
-        for el in students.keys():
-            clear_progression(el)
+            # Clear all progression before calculating again
+            for el in students.keys():
+                clear_progression(el)
 
-        # Import custom course functions
-        # FIXME: doesn't seem to be doing anything
-        functions_path = os.path.join(config.IMPORTED_FUNCTIONS_FOLDER, course)
-        functions, fpaths, info = import_functions_from_rulepath(functions_path, info=True)
+            # Import custom course functions
+            # FIXME: doesn't seem to be doing anything
+            functions_path = os.path.join(config.IMPORTED_FUNCTIONS_FOLDER, course)
+            functions, fpaths, info = import_functions_from_rulepath(functions_path, info=True)
 
-        # Read and set Metadata
-        METADATA = get_metadata()
-        scope, logs = {"METADATA": METADATA, "null": None}, {}
+            # Read and set Metadata
+            METADATA = get_metadata()
+            scope, logs = {"METADATA": METADATA, "null": None}, {}
 
-        try:
-            # Save the start date
-            start_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-            log_start()
+            # Initialize Moodle connector
+            if module_enabled("Moodle"):
+                mdl_table = "moodle_config"
+                query = "SELECT dbServer, dbName, dbUser, dbPass FROM " + mdl_table + " WHERE course = %s;"
+                mdl_host, mdl_database, mdl_username, mdl_password = db.execute_query(query, (config.COURSE,))[0]
+                if mdl_password:
+                    from gamerules.connector.db_connector import connect_to_moodle_db
 
-            # Preload logs from the database
-            preload_logs(students.keys())
-            preload_awards(students.keys())
-
-            # Fire Rule System
-            rs = RuleSystem(config.RULES_PATH, config.AUTOSAVE)
-            rs_output = rs.fire(students, logs, scope)
+                    connect_to_moodle_db(mdl_host.decode(), mdl_database.decode(), mdl_username.decode(),
+                                         mdl_password.decode())
 
             try:
-                # Terminate AutoGame
-                finish_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-                autogame_terminate(course, start_date, finish_date)
-                log_end()
+                # Save the start date
+                start_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+                log_start()
 
-                # Calculate new grade for each target
-                for el in students.keys():
-                    calculate_grade(el)
+                # Preload logs from the database
+                preload_logs(students.keys())
+                preload_awards(students.keys())
+
+                # Fire Rule System
+                rs = RuleSystem(config.RULES_PATH, config.AUTOSAVE)
+                rs_output = rs.fire(students, logs, scope)
+
+                try:
+                    # Terminate AutoGame
+                    finish_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+                    autogame_terminate(course, start_date, finish_date)
+                    log_end()
+
+                    # Calculate new grade for each target
+                    for el in students.keys():
+                        calculate_grade(el)
+
+                except Exception as e:
+                    error_msg = str(e)
+                    raise
 
             except Exception as e:
-                error_msg = str(e)
+                error_msg = "Exception raised when firing Rule System."
                 raise
-
-        except Exception as e:
-            error_msg = "Exception raised when firing Rule System."
-            raise
 
     except Exception as e:
         error_msg = str(e)

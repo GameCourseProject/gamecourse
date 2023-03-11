@@ -38,14 +38,14 @@
                                [ngStyle]="{'background-color': skill.color, 'outline-color': skill.color}" (click)="goToSkillPage(skill)">
                             <span class="block text-white font-semibold text-xs break-words">{{skill.name}}</span>
                             <ng-icon *ngIf="skill.isCollab" class="absolute bottom-0 left-0 mr-2 mb-2 text-base-100" name="tabler-users" size="1.1rem"></ng-icon>
-                            <ng-icon *ngIf="skillsCompleted[skill.id]" class="absolute bottom-0 right-0 mr-2 mb-2 text-base-100" name="tabler-checks" size="1.1rem"></ng-icon>
+                            <ng-icon *ngIf="info[skill.id].completed" class="absolute bottom-0 right-0 mr-2 mb-2 text-base-100" name="tabler-checks" size="1.1rem"></ng-icon>
                           </div>
                         </div>
 
                         <!-- VC -->
                         <div class="{{tier.position !== 0 ? 'mt-5' : ''}}">
-                          <p class="font-medium text-sm">Nr. attempts:<span class="ml-1">{{attempts[skill.id] ?? 0}}</span></p>
-                          <p class="font-medium text-sm flex items-center min-w-max">Cost to {{attempts[skill.id] > 0 ? 'retry' : 'try'}}:<span class="flex items-center gap-1 ml-1">{{cost[skill.id] ?? 0}}
+                          <p class="font-medium text-sm">Nr. attempts:<span class="ml-1">{{info[skill.id].attempts}}</span></p>
+                          <p class="font-medium text-sm flex items-center min-w-max">Cost to {{info[skill.id].attempts > 0 ? 'retry' : 'try'}}:<span class="flex items-center gap-1 ml-1">{{info[skill.id].cost}}
                             <img class="h-4 w-4 inline-block" [src]="vcIcon" alt=""></span></p>
                         </div>
                       </div>

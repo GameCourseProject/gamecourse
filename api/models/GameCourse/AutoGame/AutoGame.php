@@ -136,14 +136,19 @@ abstract class AutoGame
     }
 
     /**
-     * Triggers AutoGame to run on the next iteration.
+     * Triggers AutoGame to run on the next iteration for targets
+     * with new data after a given checkpoint.
      *
      * @param int $courseId
+     * @param string $checkpoint
      * @return void
      */
-    public static function setToRun(int $courseId)
+    public static function setToRun(int $courseId, string $checkpoint)
     {
-        Core::database()->update(self::TABLE_AUTOGAME, ["runNext" => 1], ["course" => $courseId]);
+        Core::database()->update(self::TABLE_AUTOGAME, [
+            "runNext" => 1,
+            "checkpoint" => $checkpoint
+        ], ["course" => $courseId]);
     }
 
     /**
