@@ -52,13 +52,6 @@ export class ProfilingComponent implements OnInit {
     {label: 'Student Nr', align: 'middle'}
   ];
   targets: number[] = [0,1,2];
-  options: any = {
-    order: [[ 0, 'asc' ]], // default order,
-    columnDefs: [
-      { type: 'natural', targets: [0,1,2] },
-      { orderData: 0,   targets: 1 }
-    ]
-  };
   table: {
     headers: {label: string, align?: 'left' | 'middle' | 'right'}[],
     data: {type: TableDataType, content: any}[][],
@@ -4904,13 +4897,13 @@ export class ProfilingComponent implements OnInit {
 
     for (const day of this.days) {
       this.headers.push({label: dateFromDatabase(day).format('DD/MM/YYYY HH:mm:ss'), align: 'middle'});
-      this.options.columnDefs[0].targets.push(this.options.columnDefs[0].targets.length);
+      this.targets.push(this.targets.length);
     }
 
     if (Object.keys(this.newClusters).length > 0) {
       console.log("HEREEE");
       this.headers.push({label: 'Current', align: 'middle'});
-      this.options.columnDefs[0].targets.push(this.options.columnDefs[0].targets.length);
+      this.targets.push(this.targets.length);
     }
 
     this.addLegibility("headers");
@@ -4949,7 +4942,6 @@ export class ProfilingComponent implements OnInit {
       this.addLegibility("data", student, data);
       this.table.data = data;
       this.table.headers = this.headers;
-      this.table.options = this.options;
       console.log(this.table.options);
     }
 
@@ -4961,10 +4953,10 @@ export class ProfilingComponent implements OnInit {
     if (this.days.length > 3){
       if (mode === 'headers'){
         this.headers.push(this.table.headers[2]);
-        this.options.columnDefs[0].targets.push(this.options.columnDefs[0].targets.length);
+        this.targets.push(this.targets.length);
 
         this.headers.push(this.table.headers[1]);
-        this.options.columnDefs[0].targets.push(this.options.columnDefs[0].targets.length);
+        this.targets.push(this.targets.length);
 
       } else if (mode === 'data'){
         data[0].push({type: TableDataType.NUMBER, content: {value: parseInt(String(student.studentNumber)), valueFormat: 'none'}});
@@ -5088,13 +5080,7 @@ export class ProfilingComponent implements OnInit {
         {label: 'Student Nr', align: 'middle'}
       ];
 
-      this.options = {
-        order: [[ 0, 'asc' ]], // default order,
-        columnDefs: [
-          { type: 'natural', targets: [0,1,2] },
-          { orderData: 0,   targets: 1 }
-        ]
-      };
+      this.targets = JSON.parse(JSON.stringify([0,1,2]));
     }
 
     this.results = [];
