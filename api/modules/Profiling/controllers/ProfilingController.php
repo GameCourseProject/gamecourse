@@ -151,16 +151,7 @@ class ProfilingController
 
         $profiling = new Profiling($course);
 
-        $status = ["clusters" => [
-        "2"=> [
-            "name" => "joao",
-          "cluster" => "Halfhearted"
-        ],
-        "3" => [
-            "name" => "monica",
-          "cluster" => "Halfhearted"]]];
-
-        //$status = $profiling->checkProfilerStatus();
+        $status = $profiling->checkProfilerStatus();
         if (array_key_exists("error", $status))
             API::error($status["error"]);
         API::response($status);
