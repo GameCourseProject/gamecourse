@@ -88,8 +88,8 @@ export class ProfilingComponent implements OnInit {
 
   // PROFILER
   origin: "profiler" | "drafts";
-  newClusters: {[studentId: number]: string}[];
-  results: {[studentId: number]: string}[];
+  newClusters: {[studentId: number]: string};
+  results: {[studentId: number]: string};
   clusterNamesSelect: { value: string, text: string }[];
   lastRun: Moment;
 
@@ -4753,9 +4753,10 @@ export class ProfilingComponent implements OnInit {
 
     if (typeof profiler == 'boolean') { this.running.profiler = profiler; }
     else { // got clusters as result
-      let results = [];
+      let results = {};
 
       // parse results to match this.results type
+      //{[studentId: number]: string}[]
       for (const element of Object.keys(profiler.clusters)){
         results[element] = profiler.clusters[element].cluster;
       }
@@ -4915,7 +4916,6 @@ export class ProfilingComponent implements OnInit {
     }
 
     if (Object.keys(this.newClusters).length > 0) {
-      console.log("HEREEEEEE");
       this.headers.push({label: 'Current', align: 'middle'});
       this.targets.push(this.targets.length);
     }
@@ -4954,9 +4954,9 @@ export class ProfilingComponent implements OnInit {
 
       // for table legibility
       this.addLegibility("data", student, data);
-      this.table.headers = this.headers;
     }
     this.table.data = data;
+    this.table.headers = this.headers;
     this.loading.table = false;
   }
 
@@ -5012,7 +5012,7 @@ export class ProfilingComponent implements OnInit {
   /*** --------------------------------------------------- ***/
 
   exportItem() { // FIXME
-    if (this.newClusters.length === 0){
+    if (Object.keys(this.newClusters).length === 0){
       AlertService.showAlert(AlertType.WARNING, 'There are no profiler results to export');
 
     } else {
@@ -5120,16 +5120,17 @@ export class ProfilingComponent implements OnInit {
   }
 
   resetData(resetAll: boolean = true){
-
+    this.loading.table = true;
     if (resetAll) {
       // reset table properties
       this.headers = null;
       this.targets = null;
     }
 
-    this.results = [];
-    this.newClusters = [];
+    this.results = {};
+    this.newClusters = {};
     this.origin = null;
+    this.loading.table = false;
   }
 
   /*** --------------------------------------------- ***/

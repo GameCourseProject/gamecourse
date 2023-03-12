@@ -152,11 +152,11 @@ class ProfilingController
         $profiling = new Profiling($course);
 
         $status = ["clusters" => [
-        "135"=> [
-            "name" => "David Ribeiro",
+        "2"=> [
+            "name" => "joao",
           "cluster" => "Halfhearted"
         ],
-        "137" => [
+        "3" => [
             "name" => "monica",
           "cluster" => "Halfhearted"]]];
 

@@ -1459,7 +1459,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => dateFromDatabase(res['data'])) );
   }
 
-  public getSavedClusters(courseID: number): Observable<{names: string[], saved: {[studentId: number]: string}[]}> {
+  public getSavedClusters(courseID: number): Observable<{names: string[], saved: {[studentId: number]: string}}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PROFILING);
       qs.push('request', 'getSavedClusters');
