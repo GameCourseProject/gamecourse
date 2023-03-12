@@ -145,10 +145,6 @@ export class ProfilingComponent implements OnInit {
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  myDate(){
-    console.log(this.endDate);
-  }
-
   async getCourse(courseID: number): Promise<void> {
     this.course = await this.api.getCourseById(courseID).toPromise();
   }
@@ -278,7 +274,6 @@ export class ProfilingComponent implements OnInit {
     this.running.profiler = true;
 
     const endDate = moment(this.endDate, "YYYY-MM-DDTHH:mm").format("YYYY-MM-DD HH:mm:ss");
-    console.log(endDate);
     await this.api.runProfiler(this.course.id, this.nrClusters, this.minClusterSize, endDate).toPromise();
     this.loading.action = false;
   }
@@ -368,7 +363,6 @@ export class ProfilingComponent implements OnInit {
     this.running.predictor = true;
 
     const endDate = moment(this.endDate, "YYYY-MM-DDTHH:mm").format("YYYY-MM-DD HH:mm:ss");
-    console.log(endDate);
     await this.api.runPredictor(this.course.id, this.methodSelected, endDate).toPromise();
     this.loading.action = false;
   }
