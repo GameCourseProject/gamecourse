@@ -60,7 +60,7 @@ import {SetupData} from "../../_views/setup/setup/setup.component";
 import {
   DataSourceStatus
 } from "../../_views/restricted/courses/course/settings/modules/config/data-source-status/data-source-status.component";
-import { Streak } from 'src/app/_views/restricted/courses/course/page/page.component';
+import { Streak } from 'src/app/_views/restricted/courses/course/pages/course-page/course-page.component';
 
 @Injectable({
   providedIn: 'root'
@@ -2116,12 +2116,10 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(obj => Page.fromDatabase(obj))) );
   }
 
-  // TODO: refactor
-  public renderPage(courseID: number, pageID: number,  userID: number = null): Observable<View> {
+  public renderPage(pageID: number, userID?: number): Observable<View> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'renderPage');
-      qs.push('courseId', courseID);
       qs.push('pageId', pageID);
       if (exists(userID)) qs.push('userId', userID);
     };
