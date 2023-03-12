@@ -11,6 +11,7 @@ use GameCourse\Module\ModuleType;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
+use Utils\Utils;
 
 /**
  * This is the Profiling module, which serves as a compartimentalized
@@ -54,6 +55,8 @@ class Profiling extends Module
 
     const RESOURCES = [];
 
+    const LOGS_FOLDER = "profiling";
+
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -81,6 +84,10 @@ class Profiling extends Module
         Core::database()->setForeignKeyChecks(false);
         (new Course(0))->addRole(self::PROFILING_ROLE, null, null, self::ID);
         Core::database()->setForeignKeyChecks(true);
+
+        // Setup logging
+        $logsFile = self::getLogsFile($this->getCourse()->getId(), false);
+        Utils::initLogging($logsFile);
     }
 
     public function copyTo(Course $copyTo)
@@ -168,8 +175,8 @@ class Profiling extends Module
             foreach ($days as $day) {
                 // Get records of day
                 $table = "(SELECT u.name as name, cu.id as id FROM " . CourseUser::TABLE_COURSE_USER . " cu JOIN " .
-                    User::TABLE_USER . " u on cu.id=u.id JOIN " . Role::TABLE_USER_ROLE . " ur on ur.id=u.id JOIN " .
-                    Role::TABLE_ROLE . " r on ur.role = r.id WHERE r.name = \"Student\" and cu.course = $courseId and 
+                    User::TABLE_USER . " u on cu.id=u.id JOIN " . Role::TABLE_USER_ROLE . " ur on ur.user=u.id JOIN " .
+                    Role::TABLE_ROLE . " r on ur.role = r.id WHERE r.name = \"Student\" and cu.course = $courseId and
                     ur.course = $courseId and cu.isActive=true) a LEFT JOIN (SELECT p.user as user, r1.name as cluster FROM " .
                     self::TABLE_PROFILING_USER_PROFILE . " p LEFT JOIN " . Role::TABLE_ROLE . " r1 on p.cluster = r1.id " .
                     "WHERE p.course = $courseId and r1.course = $courseId and date = \"$day\") b on a.id=b.user";
@@ -287,9 +294,12 @@ class Profiling extends Module
 
     /*** -------- Predictor --------- ***/
 
-    public function getPredictorLogsPath(): string
+    public function getPredictorLogsPath(bool $fullPath = true): string
     {
-        return LOGS_FOLDER . "/profiling_prediction_" . $this->course->getId() . ".txt";
+        $path = self::LOGS_FOLDER . "/profiling_prediction_" . $this->course->getId() . ".txt";
+
+        if ($fullPath) return LOGS_FOLDER . "/" . $path;
+        return $path;
     }
 
     public function runPredictor(string $method, string $endDate)
@@ -303,7 +313,7 @@ class Profiling extends Module
         $predictorPath = MODULES_FOLDER . "/" . self::ID . "/scripts/predictor.py";
         $logsPath = $this->getPredictorLogsPath();
 
-        $cmd = "python3 $predictorPath $courseId $method \"$endDate\" $logsPath $dbHost $dbName $dbUser \" $dbPass \" > /dev/null &";
+        $cmd = "python3 \"$predictorPath\" $courseId \"$method\" \"$endDate\" \"$logsPath\" \"$dbHost\" \"$dbName\" \"$dbUser\" \" $dbPass \" > /dev/null &";
         system($cmd);
     }
 
@@ -345,9 +355,12 @@ class Profiling extends Module
         return Core::database()->select(self::TABLE_PROFILING_CONFIG, ["course" => $this->course->getId()], "lastRun");
     }
 
-    public function getProfilerLogsPath(): string
+    public function getProfilerLogsPath(bool $fullPath = true): string
     {
-        return LOGS_FOLDER . "/profiling_results_" . $this->course->getId() . ".txt";
+        $path = self::LOGS_FOLDER . "/profiling_results_" . $this->course->getId() . ".txt";
+
+        if ($fullPath) return LOGS_FOLDER . "/" . $path;
+        return $path;
     }
 
     public function runProfiler(int $nrClusters, int $minClusterSize, string $endDate)
@@ -361,7 +374,7 @@ class Profiling extends Module
         $profilerPath = MODULES_FOLDER . "/" . self::ID . "/scripts/profiler.py";
         $logsPath = $this->getProfilerLogsPath();
 
-        $cmd = "python3 $profilerPath $courseId $nrClusters $minClusterSize \"$endDate\" $logsPath $dbHost $dbName $dbUser \" $dbPass \" > /dev/null &";
+        $cmd = "python3 \"$profilerPath\" $courseId $nrClusters $minClusterSize \"$endDate\" \"$logsPath\" \"$dbHost\" \"$dbName\" \"$dbUser\" \" $dbPass \" > /dev/null &";
         system($cmd);
     }
 
@@ -449,10 +462,16 @@ class Profiling extends Module
         foreach ($clusters as $key => $value) {
             $entry = Core::database()->select(self::TABLE_PROFILING_SAVED_USER_PROFILE, ["course" => $this->course->getId(), "user" => $key]);
             if (!$entry) // new
-                Core::database()->insert(self::TABLE_PROFILING_SAVED_USER_PROFILE, ["cluster" => $value, "course" => $this->course->getId(), "user" => $key]);
+                Core::database()->insert(self::TABLE_PROFILING_SAVED_USER_PROFILE,
+                    ["course" => $this->course->getId(), "user" => $key, "cluster" => $value]);
             else // update
-                Core::database()->update(self::TABLE_PROFILING_SAVED_USER_PROFILE, ["cluster" => $value], ["course" => $this->course->getId(), "user" => $key]);
+                Core::database()->update(self::TABLE_PROFILING_SAVED_USER_PROFILE,
+                    ["cluster" => $value], ["course" => $this->course->getId(), "user" => $key]);
         }
+
+        // Delete profiling results
+        $resultsPath = $this->getProfilerLogsPath();
+        if (file_exists($resultsPath)) unlink($resultsPath);
     }
 
     public function deleteSavedClusters()
@@ -505,6 +524,8 @@ class Profiling extends Module
         // Update students cluster
         $date = date("Y-m-d H:i:s");
         $students = $this->course->getStudents();
+
+        // $clusters = $this->parseClusters($clusters);
         foreach ($students as $student) {
             $student = $this->course->getCourseUserById($student["id"]);
 
@@ -518,12 +539,13 @@ class Profiling extends Module
             // Assign new cluster
             if ($student->isActive()) {
                 $newCluster = $clusters[$student->getId()];
-                $student->addRole(null, $newCluster);
+                $newClusterId = Role::getRoleId($newCluster, $this->course->getId());
+                $student->addRole(null, $newClusterId);
                 Core::database()->insert(self::TABLE_PROFILING_USER_PROFILE, [
                     "course" => $this->course->getId(),
                     "user" => $student->getId(),
                     "date" => $date,
-                    "cluster" => $newCluster
+                    "cluster" => $newClusterId
                 ]);
             }
         }
@@ -552,12 +574,55 @@ class Profiling extends Module
     /**
      * @throws Exception
      */
-    private function getClusterNames(bool $all = true): array
+    public function getClusterNames(bool $all = true): array
     {
         $hierarchy = $this->course->getRolesHierarchy();
         $children = Role::getChildrenNamesOfRole($hierarchy, self::PROFILING_ROLE, null, !$all);
 
         if (empty($children)) return self::BASE_CLUSTER_NAMES;
         return $children;
+    }
+
+
+    /*** --------- Logging ---------- ***/
+
+    /**
+     * Gets Profiling logs for a given course.
+     *
+     * @param int $courseId
+     * @return string
+     */
+    public static function getRunningLogs(int $courseId): string
+    {
+        $logsFile = self::getLogsFile($courseId, false);
+        return Utils::getLogs($logsFile);
+    }
+
+    /**
+     * Creates a new Profiling log on a given course.
+     *
+     * @param int $courseId
+     * @param string $message
+     * @param string $type
+     * @return void
+     */
+    public static function log(int $courseId, string $message, string $type)
+    {
+        $logsFile = self::getLogsFile($courseId, false);
+        Utils::addLog($logsFile, $message, $type);
+    }
+
+    /**
+     * Gets Profiling logs file for a given course.
+     *
+     * @param int $courseId
+     * @param bool $fullPath
+     * @return string
+     */
+    private static function getLogsFile(int $courseId, bool $fullPath = true): string
+    {
+        $path = self::LOGS_FOLDER . "/" . "profiling_$courseId.txt";
+        if ($fullPath) return LOGS_FOLDER . "/" . $path;
+        else return $path;
     }
 }

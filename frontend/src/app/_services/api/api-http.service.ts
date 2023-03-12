@@ -1459,7 +1459,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => dateFromDatabase(res['data'])) );
   }
 
-  public getSavedClusters(courseID: number): Observable<{names: string[], saved: {[studentId: number]: string}[]}> {
+  public getSavedClusters(courseID: number): Observable<{names: string[], saved: {[studentId: number]: string}}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PROFILING);
       qs.push('request', 'getSavedClusters');
@@ -1554,7 +1554,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public checkProfilerStatus(courseID: number): Observable<boolean | {clusters: {[studentNr: string]: {name: string, cluster: string}}, names: string[]}> {
+  public checkProfilerStatus(courseID: number): Observable<boolean | {[studentNr: string]: {name: string, cluster: string}}> {
     const data = {
       courseId: courseID
     }
@@ -1584,6 +1584,19 @@ export class ApiHttpService {
 
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data'].hasOwnProperty('predicting') ? res['data']['predicting'] : parseInt(res['data']['nrClusters'])) );
+  }
+
+  public getClusterNames(courseID: number): Observable<string[]>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PROFILING);
+      qs.push('request', 'getClusterNames');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
   }
 
 
