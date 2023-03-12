@@ -1554,7 +1554,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public checkProfilerStatus(courseID: number): Observable<boolean | {clusters: {[studentNr: string]: {name: string, cluster: string}}, names: string[]}> {
+  public checkProfilerStatus(courseID: number): Observable<boolean | {[studentNr: string]: {name: string, cluster: string}}> {
     const data = {
       courseId: courseID
     }

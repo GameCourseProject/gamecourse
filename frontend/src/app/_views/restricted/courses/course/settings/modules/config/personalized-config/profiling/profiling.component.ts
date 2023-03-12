@@ -249,15 +249,15 @@ export class ProfilingComponent implements OnInit {
   async checkProfilerStatus() {
     this.loading.action = true;
 
-    const profiler = await this.api.checkProfilerStatus(this.course.id).toPromise()
+    const profiler = await this.api.checkProfilerStatus(this.course.id).toPromise();
 
     if (typeof profiler == 'boolean') { this.running.profiler = profiler; }
     else { // got clusters as result
       let results = {};
 
       // parse results to match this.results type
-      for (const element of Object.keys(profiler.clusters)){
-        results[element] = profiler.clusters[element].cluster;
+      for (const element of Object.keys(profiler)){
+        results[element] = profiler[element].cluster;
       }
 
       this.results = results;
