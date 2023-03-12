@@ -1,6 +1,7 @@
 <?php
 namespace API;
 
+use Exception;
 use GameCourse\Module\Profiling\Profiling;
 use GameCourse\Role\Role;
 
@@ -22,6 +23,10 @@ class ProfilingController
     /*** ----------------- Overview ------------------ ***/
     /*** --------------------------------------------- ***/
 
+    /**
+     *
+     * @throws Exception
+     */
     public function getHistory()
     {
         API::requireValues("courseId");
@@ -48,6 +53,10 @@ class ProfilingController
     /*** ----------------- Predictor ----------------- ***/
     /*** --------------------------------------------- ***/
 
+    /**
+     *
+     * @throws Exception
+     */
     public function runPredictor()
     {
         API::requireValues("courseId", "method", "endDate");
@@ -64,6 +73,10 @@ class ProfilingController
         $profiling->runPredictor($method, $endDate);
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     public function checkPredictorStatus()
     {
         API::requireValues("courseId");
@@ -85,6 +98,10 @@ class ProfilingController
     /*** ----------------- Profiler ------------------ ***/
     /*** --------------------------------------------- ***/
 
+    /**
+     *
+     * @throws Exception
+     */
     public function getLastRun()
     {
         API::requireValues("courseId");
@@ -98,6 +115,10 @@ class ProfilingController
         API::response($profiling->getLastRun());
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     public function runProfiler()
     {
         API::requireValues("courseId", "nrClusters", "minSize", "endDate");
@@ -115,6 +136,10 @@ class ProfilingController
         $profiling->runProfiler($nrClusters, $minSize, $endDate);
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     public function checkProfilerStatus()
     {
         API::requireValues("courseId");
@@ -125,6 +150,7 @@ class ProfilingController
         API::requireCourseAdminPermission($course);
 
         $profiling = new Profiling($course);
+
         $status = $profiling->checkProfilerStatus();
         if (array_key_exists("error", $status))
             API::error($status["error"]);
@@ -136,6 +162,10 @@ class ProfilingController
     /*** ----------------- Clusters ------------------ ***/
     /*** --------------------------------------------- ***/
 
+    /**
+     *
+     * @throws Exception
+     */
     public function getSavedClusters()
     {
         API::requireValues("courseId");
@@ -151,6 +181,10 @@ class ProfilingController
         API::response(["saved" => $savedClusters, "names" => $names]);
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     public function saveClusters()
     {
         API::requireValues("courseId", "clusters");
@@ -160,7 +194,8 @@ class ProfilingController
 
         API::requireCourseAdminPermission($course);
 
-        $clusters = API::getValue("clusters");
+        $clusters = API::getValue("clusters", "array");
+
         $profiling = new Profiling($course);
         $profiling->saveClusters($clusters);
     }
@@ -178,6 +213,10 @@ class ProfilingController
         $profiling->deleteSavedClusters();
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     public function commitClusters()
     {
         API::requireValues("courseId", "clusters");
@@ -187,8 +226,24 @@ class ProfilingController
 
         API::requireCourseAdminPermission($course);
 
-        $clusters = API::getValue("clusters");
+        $clusters = API::getValue("clusters", "array");
         $profiling = new Profiling($course);
         $profiling->commitClusters($clusters);
+    }
+
+    /**
+     *
+     * @throws Exception
+     */
+    public function getClusterNames(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $profiling = new Profiling($course);
+        API::response($profiling->getClusterNames());
     }
 }
