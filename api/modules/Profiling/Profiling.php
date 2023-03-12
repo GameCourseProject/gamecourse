@@ -85,9 +85,9 @@ class Profiling extends Module
         (new Course(0))->addRole(self::PROFILING_ROLE, null, null, self::ID);
         Core::database()->setForeignKeyChecks(true);
 
-
-        // Set up logs folder
-        mkdir(LOGS_FOLDER . "/" . self::LOGS_FOLDER . "/");
+        // Setup logging
+        $logsFile = self::getLogsFile($this->getCourse()->getId(), false);
+        Utils::initLogging($logsFile);
     }
 
     public function copyTo(Course $copyTo)
@@ -176,7 +176,7 @@ class Profiling extends Module
                 // Get records of day
                 $table = "(SELECT u.name as name, cu.id as id FROM " . CourseUser::TABLE_COURSE_USER . " cu JOIN " .
                     User::TABLE_USER . " u on cu.id=u.id JOIN " . Role::TABLE_USER_ROLE . " ur on ur.user=u.id JOIN " .
-                    Role::TABLE_ROLE . " r on ur.role = r.id WHERE r.name = \"Student\" and cu.course = $courseId and 
+                    Role::TABLE_ROLE . " r on ur.role = r.id WHERE r.name = \"Student\" and cu.course = $courseId and
                     ur.course = $courseId and cu.isActive=true) a LEFT JOIN (SELECT p.user as user, r1.name as cluster FROM " .
                     self::TABLE_PROFILING_USER_PROFILE . " p LEFT JOIN " . Role::TABLE_ROLE . " r1 on p.cluster = r1.id " .
                     "WHERE p.course = $courseId and r1.course = $courseId and date = \"$day\") b on a.id=b.user";
@@ -577,5 +577,48 @@ class Profiling extends Module
 
         if (empty($children)) return self::BASE_CLUSTER_NAMES;
         return $children;
+    }
+
+
+    /*** --------- Logging ---------- ***/
+
+    /**
+     * Gets Profiling logs for a given course.
+     *
+     * @param int $courseId
+     * @return string
+     */
+    public static function getRunningLogs(int $courseId): string
+    {
+        $logsFile = self::getLogsFile($courseId, false);
+        return Utils::getLogs($logsFile);
+    }
+
+    /**
+     * Creates a new Profiling log on a given course.
+     *
+     * @param int $courseId
+     * @param string $message
+     * @param string $type
+     * @return void
+     */
+    public static function log(int $courseId, string $message, string $type)
+    {
+        $logsFile = self::getLogsFile($courseId, false);
+        Utils::addLog($logsFile, $message, $type);
+    }
+
+    /**
+     * Gets Profiling logs file for a given course.
+     *
+     * @param int $courseId
+     * @param bool $fullPath
+     * @return string
+     */
+    private static function getLogsFile(int $courseId, bool $fullPath = true): string
+    {
+        $path = self::LOGS_FOLDER . "/" . "profiling_$courseId.txt";
+        if ($fullPath) return LOGS_FOLDER . "/" . $path;
+        else return $path;
     }
 }
