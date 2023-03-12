@@ -41,6 +41,7 @@
           [helperPosition]="'right'"
           [required]="true"
           [minValue]="4"
+          [(value)]="nrClusters"
           (btnClicked)="doAction('choose prediction method')">
         </app-input-number>
       </div>
@@ -53,7 +54,8 @@
           [helperText]="'Minimum cluster size to run profiler'"
           [helperPosition]="'top'"
           [required]="true"
-          [minValue]="4">
+          [minValue]="4"
+          [(value)]="minClusterSize">
         </app-input-number>
       </div>
 
@@ -63,7 +65,9 @@
           [topLabel]="'Run until'"
           [helperText]="'Profiling will run with students\' data until'"
           [helperPosition]="'left'"
-          [required]="true">
+          [required]="true"
+          [(value)]="endDate"
+          (valueChange)="myDate()">
         </app-input-datetime>
       </div>
     </div>

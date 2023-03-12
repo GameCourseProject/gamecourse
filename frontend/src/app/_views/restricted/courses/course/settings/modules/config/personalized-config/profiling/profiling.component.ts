@@ -90,7 +90,7 @@ export class ProfilingComponent implements OnInit {
   status: {type: TableDataType, content: any}[][];
   nrClusters: number = 4;
   minClusterSize: number = 4;
-  endDate: string = moment().format('YYYY-MM-DDTHH:mm:ss');
+  endDate: string = moment().format('YYYY-MM-DDTHH:mm');
 
   // PROFILER
   origin: "profiler" | "drafts";
@@ -144,6 +144,10 @@ export class ProfilingComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
+
+  myDate(){
+    console.log(this.endDate);
+  }
 
   async getCourse(courseID: number): Promise<void> {
     this.course = await this.api.getCourseById(courseID).toPromise();
@@ -273,7 +277,8 @@ export class ProfilingComponent implements OnInit {
     this.loading.action = true;
     this.running.profiler = true;
 
-    const endDate = moment(this.endDate).format("YYYY-MM-DD HH:mm:ss");
+    const endDate = moment(this.endDate, "YYYY-MM-DDTHH:mm").format("YYYY-MM-DD HH:mm:ss");
+    console.log(endDate);
     await this.api.runProfiler(this.course.id, this.nrClusters, this.minClusterSize, endDate).toPromise();
     this.loading.action = false;
   }
@@ -362,7 +367,8 @@ export class ProfilingComponent implements OnInit {
     this.loading.action = true;
     this.running.predictor = true;
 
-    const endDate = moment(this.endDate).format("YYYY-MM-DD HH:mm:ss");
+    const endDate = moment(this.endDate, "YYYY-MM-DDTHH:mm").format("YYYY-MM-DD HH:mm:ss");
+    console.log(endDate);
     await this.api.runPredictor(this.course.id, this.methodSelected, endDate).toPromise();
     this.loading.action = false;
   }
