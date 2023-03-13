@@ -12,21 +12,21 @@
       [classList]="'mb-5'"
       [headers]="[
         {label: 'Last run', align: 'middle'},
-        {label: 'Status', align: 'middle'}
+        {label: 'Status', align: 'middle'},
+        {label: 'Actions'}
       ]"
-      [data]="[[
-        {type: TableDataType.DATETIME, content: {datetime: lastRun}},
-        {type: TableDataType.COLOR, content: {color: profilerIsRunning ? '#36D399' : '#EF6060'}}
-      ]]"
+      [data]="status"
       [options]="{
         searching: false,
         lengthChange: false,
         paging: false,
         info: false,
-        columnDefs: [{orderable: false, targets: [0, 1]}]
+        columnDefs: [{orderable: false, targets: [0, 1, 2]}]
       }"
       [hasColumnFiltering]="false"
-      [hasFooters]="false">
+      [hasFooters]="false"
+      [loading]="loading.table.status"
+      (btnClicked)="doActionOnTable($event.type)">
     </app-table>
 
     <div class="flex flex-wrap md:flex-nowrap -mx-3">
@@ -37,10 +37,11 @@
           [placeholder]="'Number of clusters'"
           [topLabel]="'Number of clusters'"
           [btnText]="'Predict'"
-          [helperText]="'TODO'"
+          [helperText]="'Predictor\'s number of clusters'"
           [helperPosition]="'right'"
           [required]="true"
-          [minValue]="4">
+          [minValue]="4"
+          (btnClicked)="doAction('choose prediction method')">
         </app-input-number>
       </div>
 
@@ -49,7 +50,7 @@
           [id]="'min-cluster-size'"
           [placeholder]="'Minimum cluster size'"
           [topLabel]="'Min. cluster size'"
-          [helperText]="'TODO'"
+          [helperText]="'Minimum cluster size to run profiler'"
           [helperPosition]="'top'"
           [required]="true"
           [minValue]="4">
@@ -60,7 +61,7 @@
         <app-input-datetime
           [id]="'end-date'"
           [topLabel]="'Run until'"
-          [helperText]="'TODO'"
+          [helperText]="'Profiling will run with students\' data until'"
           [helperPosition]="'left'"
           [required]="true">
         </app-input-datetime>
@@ -69,38 +70,166 @@
 
     <!-- Action button -->
     <div class="flex items-center justify-end mt-4">
-      <button type="submit" class="btn btn-primary">Run profiler</button>
+      <button type="submit" class="btn btn-primary" (click)="runProfiler()">Run profiler</button>
     </div>
 
   </div>
 </div>
 
 <!-- Overview -->
-<div *ngIf="data?.length > 0" class="card w-full bg-base-100 shadow-xl mt-5">
-  <div class="card-body">
+<div class="card w-full bg-base-100 shadow-xl mt-5">
+    <div class="card-body">
 
-    <!-- Header -->
-    <div class="flex items-center mb-3">
-      <h2 class="card-title mb-0">Overview</h2>
+      <!-- Header -->
+      <div class="flex items-center mb-3">
+        <h2 class="card-title mb-0">Overview</h2>
+      </div>
+
+      <!-- Results Graph -->
+      <figure *ngIf="data?.length > 0" class="highcharts-figure">
+        <div id="overview" class="w-full"></div>
+      </figure>
+
+      <!-- Import / Export actions -->
+      <app-top-actions
+        [leftActions]="[
+        {action: Action.IMPORT, icon:'jam-download'},
+        {action: Action.EXPORT, icon:'jam-upload'}]"
+        [rightActions]="keys(newClusters)?.length > 0 ? [{action: 'reset fields', icon: 'feather-x-circle', color: 'primary'}] : []"
+        (btnClicked)="doAction($event)">
+      </app-top-actions>
+
+      <!-- Results Table -->
+      <ng-container *ngIf="!refreshing">
+        <app-table
+          [id]="'clusters'"
+          [classList]="'mt-5'"
+          [headers]="table.headers"
+          [data]="table.data"
+          [options]="table.options"
+          [loading]="loading.table.results"
+          (valueChanged)="selectCluster($event, $event.row)">   <!-- NOTE: Only considers one type of action in entire table -->
+        </app-table>
+      </ng-container>
+
+      <!-- Spinner -->
+      <div *ngIf="refreshing" class="flex justify-center items-center">
+        <app-spinner></app-spinner>
+      </div>
+
+      <!-- Actions -->
+      <div *ngIf="keys(newClusters)?.length > 0" class="card-actions justify-end mt-5">
+        <button type="button" class="btn btn-ghost mr-2" (click)="doAction('discard changes')">Discard</button>
+        <button type="submit" class="btn btn-secondary" (click)="saveClusters()">
+          <!-- Spinner -->
+          <ng-container *ngIf="loading.save">
+            <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+          </ng-container>
+          Save draft
+        </button>
+        <button type="submit" class="btn btn-primary" (click)="commitClusters()">
+          <!-- Spinner -->
+          <ng-container *ngIf="loading.commit">
+            <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+          </ng-container>
+          Commit to Database
+        </button>
+      </div>
+
     </div>
-
-    <!-- Results Graph -->
-    <figure class="highcharts-figure">
-      <div id="overview" class="w-full"></div>
-    </figure>
-
-    <!-- Results Table -->
-    <app-table
-      [id]="'clusters'"
-      [classList]="'mt-5'"
-      [headers]="table.headers"
-      [data]="table.data"
-      [options]="table.options"
-      [loading]="table.loading">
-    </app-table>
-
   </div>
-</div>
+
+<!-- Prediction method modal -->
+<app-modal *ngIf="mode === 'predict'"
+           [id]="'prediction-method'"
+           [templateRef]="PREDICTION_METHOD"
+           [size]="'sm'"
+           [header]="'Prediction method'"
+           [closeBtnText]="'Cancel'"
+           [submitBtnText]="'Predict'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="doAction('run predictor')"
+           (onClose)="resetPredictionMethod()">
+</app-modal>
+
+<ng-template #PREDICTION_METHOD>
+  <form #fPrediction="ngForm">
+    <div class="w-full flex flex-wrap mb-3">
+      <span class="font-semibold w-full">Choose one of the following prediction methods<span class="text-secondary ml-1">*</span>
+      </span>
+      <div class="md:w-1/2">
+        <app-input-radio
+          [id]="'elbow-method'"
+          [group] = "'prediction-method'"
+          [form] = "fPrediction"
+          [optionValue] = "methods[0].char"
+          [color]="'secondary'"
+          [classList]="'mt-2'"
+          [label]="'Elbow method'"
+          [labelPosition]="'right'"
+          [(value)]="methodSelected"
+        ></app-input-radio>
+      </div>
+      <div class="md:w-1/2">
+        <app-input-radio
+          [id]="'silhouette-method'"
+          [group] = "'prediction-method'"
+          [form] = "fPrediction"
+          [optionValue] = "methods[1].char"
+          [color]="'secondary'"
+          [classList]="'mt-2'"
+          [label]="'Silhouette method'"
+          [labelPosition]="'right'"
+          [(value)]="methodSelected"
+        ></app-input-radio>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Import modal -->
+<app-modal *ngIf="mode === 'import'"
+           [id]="'import-modal'"
+           [templateRef]="IMPORT_MODAL"
+           [size]="'md'"
+           [header]="'Import Profiling Results'"
+           [closeBtnText]="'Cancel'"
+           [submitBtnText]="Action.IMPORT"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="doAction('submit import')"
+           (onClose)="resetImportModal()">
+</app-modal>
+
+<ng-template #IMPORT_MODAL>
+  <app-input-file
+    [id]="'import'"
+    [form]="fImport"
+    [accept]="['.cvs', '.txt']"
+    [size]="'xs'"
+    [color]="'accent'"
+    [classList]="''"
+    [label]="'File to Import'"
+    [helperPosition]="'right'"
+    [helperText]="'File to import students\' profiling results'"
+    (valueChange)="onFileSelected($event)">
+  </app-input-file>
+</ng-template>
+
+<!-- Discard modal -->
+<app-modal *ngIf="mode === 'discard'"
+           [id] = "'discard-changes'"
+           [templateRef]="DISCARD_CHANGES"
+           [size]="'sm'"
+           [header]="'Discard current results?'"
+           [submitBtnText]="mode.capitalize()"
+           [actionInProgress]="loading.action"
+           (closeBtnClicked)="resetDiscardModal()"
+           (submitBtnClicked)="deleteClusters()">
+</app-modal>
+
+<ng-template #DISCARD_CHANGES>
+  <span class="w-full">Are you sure? The following action cannot be undone.</span>
+</ng-template>
 
 <!--&lt;!&ndash; Loader &ndash;&gt;-->
 <!--<div class="w-full flex justify-center">-->

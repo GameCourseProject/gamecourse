@@ -82,8 +82,12 @@ export class TableComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.loading && !changes.loading.currentValue) this.buildDatatable();
-    else if (!changes.loading && changes.data) this.buildDatatable();
+    if (changes.loading && !changes.loading.currentValue){
+      this.buildDatatable();
+    }
+    else if (!changes.loading && changes.data) {
+      this.buildDatatable();
+    }
   }
 
   buildDatatable(): void {
@@ -208,6 +212,7 @@ export class TableComponent implements OnInit, OnChanges {
           that.datatable.search(value).draw();
         })
     }, 0);
+
   }
 
   getAlign(align: 'left' | 'middle' | 'right'): string {
