@@ -25,7 +25,7 @@ export class GoToPageDirective {
   goToPage(pageId: string, userId?: string): void {
     let path = 'pages/' + pageId;
     if (userId) path += '/user/' + userId;
-    this.router.navigate([path], {relativeTo: this.route.parent});
+    this.router.navigate([path], {relativeTo: this.route.parent.parent});
   }
 
   @HostListener('click', ['$event'])

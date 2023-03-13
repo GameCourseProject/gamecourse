@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute, NavigationStart, Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 
 import {Course} from "../../../../../../../../_domain/courses/course";
 import {Skill} from "../../../../../../../../_domain/modules/config/personalized-config/skills/skill";
@@ -38,12 +38,6 @@ export class SkillPageComponent implements OnInit {
 
         this.isPreview = this.router.url.includes('preview');
         this.loading = false;
-      });
-
-      // Whenever route changes, set loading as true
-      this.router.events.subscribe(event => {
-        if (event instanceof NavigationStart)
-          this.loading = true;
       });
     });
   }
