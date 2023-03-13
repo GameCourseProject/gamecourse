@@ -24,14 +24,26 @@ export class LoginGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
 
-    return this.check();
+    return this.check(state.url);
   }
 
-  check() {
+  check(requestedURL: string) {
     return this.api.isLoggedIn().pipe(
       map(
         isLoggedIn => {
-          if (isLoggedIn) return true;
+          if (isLoggedIn) {
+            // Redirect to requested URL before login
+            requestedURL = window.localStorage.getItem('redirect_after_login');
+            if (requestedURL) {
+              this.router.navigateByUrl(requestedURL);
+              window.localStorage.removeItem('redirect_after_login');
+            }
+
+            return true;
+          }
+
+          // Save requested URL to redirect after login
+          window.localStorage.setItem('redirect_after_login', requestedURL)
           return this.router.parseUrl('/login');
         },
         error => {
