@@ -262,8 +262,9 @@ class AutoGameTest extends TestCase
         Core::database()->setForeignKeyChecks(true);
 
         $this->assertFalse(boolval(Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $courseId], "runNext")));
-        AutoGame::setToRun($courseId);
+        AutoGame::setToRun($courseId, "2023-03-07 19:59:00");
         $this->assertTrue(boolval(Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $courseId], "runNext")));
+        $this->assertEquals("2023-03-07 19:59:00", Core::database()->select(AutoGame::TABLE_AUTOGAME, ["course" => $courseId], "checkpoint"));
     }
 
     /**

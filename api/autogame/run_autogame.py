@@ -125,10 +125,10 @@ if __name__ == "__main__":
         (course, all_targets, targets_list) = process_args(sys.argv[1], sys.argv[3], sys.argv[2])
 
         # Initialize AutoGame
-        last_activity = autogame_init(course)
+        checkpoint = autogame_init(course)
 
         # Get targets to run
-        students = get_targets(course, last_activity, all_targets, targets_list)
+        students = get_targets(course, checkpoint, all_targets, targets_list)
         if students:
 
             # Clear all progression before calculating again

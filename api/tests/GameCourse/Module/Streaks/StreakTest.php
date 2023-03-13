@@ -1035,6 +1035,8 @@ class StreakTest extends TestCase
                 $this->assertCount($nrKeys, array_keys($streak));
                 $this->assertArrayHasKey($key, $streak);
                 if ($key == "image") $this->assertEquals($streak[$key], ${"streak".($i+1)}->getImage());
+                else if ($key == "svg") $this->assertEquals($streak[$key], file_get_contents(MODULES_FOLDER . "/Streaks/icon.svg"));
+                else if ($key == "isPeriodic") $this->assertEquals($streak[$key], ${"streak".($i+1)}->isPeriodic());
                 else $this->assertEquals($streak[$key], ${"streak".($i+1)}->getData($key));
             }
         }
@@ -1059,13 +1061,16 @@ class StreakTest extends TestCase
         $this->assertCount(1, $streaks);
 
         $keys = ["id", "course", "name", "description", "color", "goal", "periodicityGoal", "periodicityNumber",
-            "periodicityTime", "periodicityType", "reward", "tokens", "isRepeatable", "isExtra", "isActive", "rule", "image"];
+            "periodicityTime", "periodicityType", "reward", "tokens", "isRepeatable", "isExtra", "isActive", "rule", "image",
+            "svg", "isPeriodic"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($streaks as $streak) {
                 $this->assertCount($nrKeys, array_keys($streak));
                 $this->assertArrayHasKey($key, $streak);
                 if ($key == "image") $this->assertEquals($streak[$key], $streak1->getImage());
+                else if ($key == "svg") $this->assertEquals($streak[$key], file_get_contents(MODULES_FOLDER . "/Streaks/icon.svg"));
+                else if ($key == "isPeriodic") $this->assertEquals($streak[$key], $streak1->isPeriodic());
                 else $this->assertEquals($streak[$key], $streak1->getData($key));
             }
         }
@@ -1090,13 +1095,16 @@ class StreakTest extends TestCase
         $this->assertCount(1, $streaks);
 
         $keys = ["id", "course", "name", "description", "color", "goal", "periodicityGoal", "periodicityNumber",
-            "periodicityTime", "periodicityType", "reward", "tokens", "isRepeatable", "isExtra", "isActive", "rule", "image"];
+            "periodicityTime", "periodicityType", "reward", "tokens", "isRepeatable", "isExtra", "isActive", "rule", "image",
+            "svg", "isPeriodic"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($streaks as $streak) {
                 $this->assertCount($nrKeys, array_keys($streak));
                 $this->assertArrayHasKey($key, $streak);
                 if ($key == "image") $this->assertEquals($streak[$key], $streak2->getImage());
+                else if ($key == "svg") $this->assertEquals($streak[$key], file_get_contents(MODULES_FOLDER . "/Streaks/icon.svg"));
+                else if ($key == "isPeriodic") $this->assertEquals($streak[$key], $streak2->isPeriodic());
                 else $this->assertEquals($streak[$key], $streak2->getData($key));
             }
         }
@@ -1121,6 +1129,8 @@ class StreakTest extends TestCase
         $streakDB = Streak::getStreaks($this->courseId)[0];
         $streakInfo = $streak->getData();
         $streakInfo["image"] = $streak->getImage();
+        $streakInfo["svg"] = file_get_contents(MODULES_FOLDER . "/Streaks/icon.svg");
+        $streakInfo["isPeriodic"] = $streak->isPeriodic();
         $this->assertEquals($streakInfo, $streakDB);
 
         // Check rule was created

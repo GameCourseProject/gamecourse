@@ -323,10 +323,11 @@ class GoogleSheetsTest extends TestCase
         ];
 
         // When
-        $newData = $this->module->saveSheetData("Test", $data, $teacher->getId());
+        $oldestRecordTimestamp = $this->module->saveSheetData("Test", $data, $teacher->getId());
 
         // Then
-        $this->assertTrue($newData);
+        $this->assertIsInt($oldestRecordTimestamp);
+        $this->assertTrue($oldestRecordTimestamp <= time());
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertCount(2, $participations);
 
@@ -374,10 +375,11 @@ class GoogleSheetsTest extends TestCase
         ];
 
         // When
-        $newData = $this->module->saveSheetData("Test", $data, $teacher->getId());
+        $oldestRecordTimestamp = $this->module->saveSheetData("Test", $data, $teacher->getId());
 
         // Then
-        $this->assertTrue($newData);
+        $this->assertIsInt($oldestRecordTimestamp);
+        $this->assertTrue($oldestRecordTimestamp <= time());
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertCount(2, $participations);
 
@@ -423,10 +425,10 @@ class GoogleSheetsTest extends TestCase
         ];
 
         // When
-        $newData = $this->module->saveSheetData("Test", $data, $teacher->getId());
+        $oldestRecordTimestamp = $this->module->saveSheetData("Test", $data, $teacher->getId());
 
         // Then
-        $this->assertFalse($newData);
+        $this->assertNull($oldestRecordTimestamp);
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertEmpty($participations);
     }

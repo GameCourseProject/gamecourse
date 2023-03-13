@@ -28,8 +28,8 @@ if ($nrArgs >= 0) {
         $googlesheets = $course->getModuleById(GoogleSheets::ID);
 
         // Import new data
-        $newData = $googlesheets->importData();
-        if ($newData) AutoGame::setToRun($courseId);
+        $checkpoint = $googlesheets->importData();
+        if ($checkpoint) AutoGame::setToRun($courseId, $checkpoint);
 
     } catch (Throwable $e) {
         GoogleSheets::log($courseId, $e->getMessage() . "\n" . $e->getTraceAsString(), "ERROR");
