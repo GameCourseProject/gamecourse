@@ -468,11 +468,19 @@ class Profiling extends Module
                 Core::database()->update(self::TABLE_PROFILING_SAVED_USER_PROFILE,
                     ["cluster" => $value], ["course" => $this->course->getId(), "user" => $key]);
         }
+
+        // Delete profiling results
+        $resultsPath = $this->getProfilerLogsPath();
+        if (file_exists($resultsPath)) unlink($resultsPath);
     }
 
     public function deleteSavedClusters()
     {
         Core::database()->delete(self::TABLE_PROFILING_SAVED_USER_PROFILE, ["course" => $this->course->getId()]);
+
+        // Delete profiling results
+        $resultsPath = $this->getProfilerLogsPath();
+        if (file_exists($resultsPath)) unlink($resultsPath);
     }
 
     /**

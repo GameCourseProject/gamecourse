@@ -41,6 +41,7 @@
           [helperPosition]="'right'"
           [required]="true"
           [minValue]="4"
+          [(value)]="nrClusters"
           (btnClicked)="doAction('choose prediction method')">
         </app-input-number>
       </div>
@@ -53,7 +54,8 @@
           [helperText]="'Minimum cluster size to run profiler'"
           [helperPosition]="'top'"
           [required]="true"
-          [minValue]="4">
+          [minValue]="4"
+          [(value)]="minClusterSize">
         </app-input-number>
       </div>
 
@@ -63,7 +65,8 @@
           [topLabel]="'Run until'"
           [helperText]="'Profiling will run with students\' data until'"
           [helperPosition]="'left'"
-          [required]="true">
+          [required]="true"
+          [(value)]="endDate">
         </app-input-datetime>
       </div>
     </div>
@@ -78,66 +81,66 @@
 
 <!-- Overview -->
 <div class="card w-full bg-base-100 shadow-xl mt-5">
-    <div class="card-body">
+  <div class="card-body">
 
-      <!-- Header -->
-      <div class="flex items-center mb-3">
-        <h2 class="card-title mb-0">Overview</h2>
-      </div>
+    <!-- Header -->
+    <div class="flex items-center mb-3">
+      <h2 class="card-title mb-0">Overview</h2>
+    </div>
 
-      <!-- Results Graph -->
-      <figure *ngIf="data?.length > 0" class="highcharts-figure">
-        <div id="overview" class="w-full"></div>
-      </figure>
+    <!-- Results Graph -->
+    <figure *ngIf="data?.length > 0" class="highcharts-figure">
+      <div id="overview" class="w-full"></div>
+    </figure>
 
-      <!-- Import / Export actions -->
-      <app-top-actions
-        [leftActions]="[
+    <!-- Import / Export actions -->
+    <app-top-actions
+      [leftActions]="[
         {action: Action.IMPORT, icon:'jam-download'},
         {action: Action.EXPORT, icon:'jam-upload'}]"
-        [rightActions]="keys(newClusters)?.length > 0 ? [{action: 'reset fields', icon: 'feather-x-circle', color: 'primary'}] : []"
-        (btnClicked)="doAction($event)">
-      </app-top-actions>
+      [rightActions]="keys(newClusters)?.length > 0 ? [{action: 'reset fields', icon: 'feather-x-circle', color: 'primary'}] : []"
+      (btnClicked)="doAction($event)">
+    </app-top-actions>
 
-      <!-- Results Table -->
-      <ng-container *ngIf="!refreshing">
-        <app-table
-          [id]="'clusters'"
-          [classList]="'mt-5'"
-          [headers]="table.headers"
-          [data]="table.data"
-          [options]="table.options"
-          [loading]="loading.table.results"
-          (valueChanged)="selectCluster($event, $event.row)">   <!-- NOTE: Only considers one type of action in entire table -->
-        </app-table>
-      </ng-container>
+    <!-- Results Table -->
+    <ng-container *ngIf="!refreshing">
+      <app-table
+        [id]="'clusters'"
+        [classList]="'mt-5'"
+        [headers]="table.headers"
+        [data]="table.data"
+        [options]="table.options"
+        [loading]="loading.table.results"
+        (valueChanged)="selectCluster($event, $event.row)">   <!-- NOTE: Only considers one type of action in entire table -->
+      </app-table>
+    </ng-container>
 
-      <!-- Spinner -->
-      <div *ngIf="refreshing" class="flex justify-center items-center">
-        <app-spinner></app-spinner>
-      </div>
-
-      <!-- Actions -->
-      <div *ngIf="keys(newClusters)?.length > 0" class="card-actions justify-end mt-5">
-        <button type="button" class="btn btn-ghost mr-2" (click)="doAction('discard changes')">Discard</button>
-        <button type="submit" class="btn btn-secondary" (click)="saveClusters()">
-          <!-- Spinner -->
-          <ng-container *ngIf="loading.save">
-            <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
-          </ng-container>
-          Save draft
-        </button>
-        <button type="submit" class="btn btn-primary" (click)="commitClusters()">
-          <!-- Spinner -->
-          <ng-container *ngIf="loading.commit">
-            <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
-          </ng-container>
-          Commit to Database
-        </button>
-      </div>
-
+    <!-- Spinner -->
+    <div *ngIf="refreshing" class="flex justify-center items-center">
+      <app-spinner></app-spinner>
     </div>
+
+    <!-- Actions -->
+    <div *ngIf="keys(newClusters)?.length > 0" class="card-actions justify-end mt-5">
+      <button type="button" class="btn btn-ghost mr-2" (click)="doAction('discard changes')">Discard</button>
+      <button type="submit" class="btn btn-secondary" (click)="saveClusters()">
+        <!-- Spinner -->
+        <ng-container *ngIf="loading.save">
+          <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+        </ng-container>
+        Save draft
+      </button>
+      <button type="submit" class="btn btn-primary" (click)="commitClusters()">
+        <!-- Spinner -->
+        <ng-container *ngIf="loading.commit">
+          <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+        </ng-container>
+        Commit to Database
+      </button>
+    </div>
+
   </div>
+</div>
 
 <!-- Prediction method modal -->
 <app-modal *ngIf="mode === 'predict'"

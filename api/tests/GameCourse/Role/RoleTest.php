@@ -11,7 +11,6 @@ use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\CreationMode;
 use GameCourse\Views\Page\Page;
 use GameCourse\Views\ViewHandler;
-use PDOException;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;

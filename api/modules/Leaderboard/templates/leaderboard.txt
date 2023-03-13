@@ -44,7 +44,6 @@
                             {
                                 "type": "table",
                                 "footers": false,
-                                "paging": false,
                                 "lengthChange": false,
                                 "info": false,
                                 "ordering": false,
