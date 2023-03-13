@@ -666,6 +666,24 @@ class VirtualCurrency extends Module
         return null;
     }
 
+    /**
+     * @throws Exception
+     */
+    public function importListingItems(string $listName, string $file, bool $replace = true): ?int
+    {
+        if ($listName == "Automated actions") return AutoAction::importActions($this->course->getId(), $file, $replace);
+        return null;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function exportListingItems(string $listName, array $items): ?array
+    {
+        if ($listName == "Automated actions") return AutoAction::exportActions($this->course->getId(), $items);
+        return null;
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ----------------- Rule System ----------------- ***/
