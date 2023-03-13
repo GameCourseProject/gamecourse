@@ -460,6 +460,9 @@ class CourseUser extends User
             $isActive = self::parse(null, Utils::nullify($user[$indexes["isActive"]]), "isActive");
             $isActiveInCourse = self::parse(null, Utils::nullify($user[$indexes["isActiveInCourse"]]), "isActiveInCourse");
             $roles = Utils::nullify($user[$indexes["roles"]]);
+            if ($roles) $roles = array_filter(array_map("trim", preg_split("/\s+/", $roles)), function ($role) use ($course) {
+                return $course->hasRole($role);
+            });
 
             // Add/update user in the system
             $user = self::getUserByUsername($username, $authService) ?? self::getUserByStudentNumber($studentNumber);
@@ -477,14 +480,12 @@ class CourseUser extends User
                 if ($replace) { // replace
                     $courseUser->setLastActivity(null);
                     $courseUser->setActive($isActiveInCourse);
-                    if ($roles) // set user roles in course
-                        $courseUser->setRoles(array_map("trim", preg_split("/\s+/", $roles)));
+                    if (!empty($roles)) $courseUser->setRoles($roles);
                 }
 
             } else { // user not yet added to course
                 $courseUser = $course->addUserToCourse($user->getId(), null, null, $isActiveInCourse);
-                if ($roles) // set user roles in course
-                    $courseUser->setRoles(array_map("trim", preg_split("/\s+/", $roles)));
+                if (!empty($roles)) $courseUser->setRoles($roles);
                 return 1;
             }
             return 0;
