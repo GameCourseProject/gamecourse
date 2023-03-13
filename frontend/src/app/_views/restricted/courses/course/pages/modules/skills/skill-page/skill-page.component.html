@@ -1,0 +1,17 @@
+<div *ngIf="!loading">
+  <!-- Close btn -->
+  <div class="tooltip float-right" [attr.data-tip]="'Close ' + (isPreview ? 'preview' : 'page')">
+    <button class="btn btn-sm btn-circle btn-outline btn-error" (click)="goBack()">
+      <ng-icon name="feather-x" size="1.2rem"></ng-icon>
+    </button>
+  </div>
+
+  <!-- Skill Page -->
+  <app-header [title]="skill.name"></app-header>
+  <div class="prose max-w-[80ch]" [innerHTML]="skill.page | sanitizeHTML"></div>
+</div>
+
+<!-- Spinner -->
+<div *ngIf="loading" class="flex justify-center items-center">
+  <app-spinner></app-spinner>
+</div>

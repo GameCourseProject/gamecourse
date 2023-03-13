@@ -405,7 +405,6 @@ class Profiling extends Module
                         $array[$pair[0]] = str_replace([" "], "", $pair[1]);
                     }
                     if(krsort($array)){
-
                         $names = $this->getClusterNames(false);
 
                         // assign cluster names by replacing key with cluster name

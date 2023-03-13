@@ -491,17 +491,17 @@ class AutoAction
      *
      * @param int $courseId
      * @param array $actionIds
-     * @return string
+     * @return array
      */
-    public static function exportActions(int $courseId, array $actionIds): string
+    public static function exportActions(int $courseId, array $actionIds): array
     {
         $actionsToExport = array_values(array_filter(self::getActions($courseId), function ($action) use ($actionIds) { return in_array($action["id"], $actionIds); }));
-        return Utils::exportToCSV(
+        return ["extension" => ".csv", "file" => Utils::exportToCSV(
             $actionsToExport,
             function ($action) {
                 return [$action["name"], $action["description"], $action["type"], $action["amount"], +$action["isActive"]];
             },
-            self::HEADERS);
+            self::HEADERS)];
     }
 
 
