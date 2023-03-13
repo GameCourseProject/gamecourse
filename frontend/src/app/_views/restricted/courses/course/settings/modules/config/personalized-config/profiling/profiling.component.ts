@@ -18,8 +18,6 @@ import {Course} from "../../../../../../../../../_domain/courses/course";
 import {ResourceManager} from "../../../../../../../../../_utils/resources/resource-manager";
 
 import * as _ from 'lodash';
-import {Theme} from "../../../../../../../../../_services/theming/themes-available";
-import {ThemingService} from "../../../../../../../../../_services/theming/theming.service";
 
 declare var require: any;
 let Sankey = require('highcharts/modules/sankey');
@@ -113,9 +111,7 @@ export class ProfilingComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private route: ActivatedRoute,
-
-    private themeService: ThemingService
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
@@ -212,7 +208,7 @@ export class ProfilingComponent implements OnInit {
       Highcharts.chart('overview', {
         chart: {
           marginRight: 40,
-          backgroundColor: this.themeService.getTheme() === Theme.DARK ? 'dark' : ''
+          backgroundColor: null
         },
         title: {
           text: ""
@@ -281,6 +277,7 @@ export class ProfilingComponent implements OnInit {
     const endDate = moment(this.endDate, "YYYY-MM-DDTHH:mm").format("YYYY-MM-DD HH:mm:ss");
     await this.api.runProfiler(this.course.id, this.nrClusters, this.minClusterSize, endDate).toPromise();
 
+    await this.getLastRun();
     // updates table with new status of profiler
     await this.buildStatusTable();
 
@@ -462,6 +459,7 @@ export class ProfilingComponent implements OnInit {
   async refreshResults() {
     this.loading.action = true;
 
+    await this.getLastRun();
     await this.buildStatusTable();
     this.resetData();
     await this.getClusters();
