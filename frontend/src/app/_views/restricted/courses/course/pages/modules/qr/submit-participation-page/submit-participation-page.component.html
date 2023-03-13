@@ -1,21 +1,56 @@
-<div *ngIf="participationKey" class="page participation-page">
-  <h1>In-class participation</h1>
-  <h4 *ngIf="course">{{course.name}} - {{course.year}}</h4>
+<div *ngIf="!loading.page" class="prose">
+  <h2>In-class participation</h2>
+  <p>Fill-in the following form to register your participation in class.</p>
 
-  <p>Fill-in the following form to register your participation in class:</p>
+  <!-- Form -->
+  <form #f="ngForm" (ngSubmit)="submitParticipation()">
+    <div class="w-full flex flex-wrap">
 
-  <div class="row">
-    <div class="input-wrapper" style="width: 230px; margin-bottom: 20px;">
-      <span class="label">Lecture Nr.</span>
-      <input type="number" id="lecture-nr" name="lecture-nr" min="1" class="input" [(ngModel)]="lectureNr">
+      <!-- Class Nr. -->
+      <div class="w-full sm:w-1/2 sm:pr-3">
+        <app-input-number
+          [id]="'class-nr'"
+          [form]="f"
+          [(value)]="classNr"
+          [placeholder]="'Class number'"
+          [topLabel]="'Class'"
+          [required]="true"
+          [minValue]="1"
+          [helperText]="'Class number of your participation. If you are unsure about this field ask a teacher for help.'"
+          [helperPosition]="'right'">
+        </app-input-number>
+      </div>
+
+      <!-- Type of Class -->
+      <div class="w-full sm:w-1/2">
+        <app-input-select
+          [id]="'class-type'"
+          [form]="f"
+          [(value)]="typeOfClass"
+          [options]="typesOfClasses"
+          [placeholder]="'Select a class type'"
+          [search]="false"
+          [classList]="'mt-3 sm:mt-0'"
+          [topLabel]="'Class type'"
+          [required]="true"
+          [helperText]="'Class type of your participation. If you are unsure about this field ask a teacher for help.'">
+        </app-input-select>
+      </div>
     </div>
 
-    <select class="form__input" id="type-of-class" style="width: 230px" [(ngModel)]="typeOfClass">
-      <option disabled [value]="undefined">Select a type of class</option>
-      <option *ngFor="let type of typesOfClass" [label]="type" [value]="type">{{type}}</option>
-    </select>
+    <button class="btn btn-primary btn-block mt-5" [disabled]="!isReadyToSubmitParticipation()" type="submit">
 
-    <button class="button" [disabled]="!isReadyToSubmitParticipation()" style="display: block; width: 230px" (click)="submitParticipation()">Submit</button>
-    <p class="success_msg"></p>
-  </div>
+      <!-- Spinner -->
+      <ng-container *ngIf="loading.action">
+        <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+      </ng-container>
+
+      Submit participation
+    </button>
+  </form>
+</div>
+
+<!-- Spinner -->
+<div *ngIf="loading.page" class="flex justify-center items-center">
+  <app-spinner></app-spinner>
 </div>
