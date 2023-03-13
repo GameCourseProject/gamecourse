@@ -477,6 +477,10 @@ class Profiling extends Module
     public function deleteSavedClusters()
     {
         Core::database()->delete(self::TABLE_PROFILING_SAVED_USER_PROFILE, ["course" => $this->course->getId()]);
+
+        // Delete profiling results
+        $resultsPath = $this->getProfilerLogsPath();
+        if (file_exists($resultsPath)) unlink($resultsPath);
     }
 
     /**

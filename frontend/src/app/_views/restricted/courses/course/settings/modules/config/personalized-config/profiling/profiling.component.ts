@@ -288,9 +288,9 @@ export class ProfilingComponent implements OnInit {
         cls[user] = this.newClusters[user];
       }
 
-        await this.api.saveClusters(this.course.id, cls).toPromise();
-        this.loading.save = false;
-        AlertService.showAlert(AlertType.SUCCESS, "Draft saved successfully");
+      await this.api.saveClusters(this.course.id, cls).toPromise();
+      this.loading.save = false;
+      AlertService.showAlert(AlertType.SUCCESS, "Draft saved successfully");
 
     } catch (error) {
       AlertService.showAlert(AlertType.ERROR, "Unable to save");
@@ -326,10 +326,7 @@ export class ProfilingComponent implements OnInit {
   async deleteClusters() {
     this.loading.action = true;
 
-    // see if entries on table come from drafts and deletes them
-    if (this.origin === "drafts"){
-      await this.api.deleteSavedClusters(this.course.id).toPromise();
-    }
+    await this.api.deleteSavedClusters(this.course.id).toPromise();
 
     this.resetData();
     this.buildResultsTable();
@@ -399,9 +396,9 @@ export class ProfilingComponent implements OnInit {
       const student = this.students.find(el => el.id === parseInt(studentHistory.id));
       data.push([{type: TableDataType.TEXT, content: {text: (student.nickname !== null && student.nickname !== "") ? student.nickname : student.name}},
         {type: TableDataType.AVATAR, content: {
-          avatarSrc: student.photoUrl,
-          avatarTitle: (student.nickname !== null && student.nickname !== "") ? student.nickname : student.name,
-          avatarSubtitle: student.major}},
+            avatarSrc: student.photoUrl,
+            avatarTitle: (student.nickname !== null && student.nickname !== "") ? student.nickname : student.name,
+            avatarSubtitle: student.major}},
         {type: TableDataType.NUMBER, content: {value: parseInt(String(student.studentNumber)), valueFormat: 'none'}}]);
 
       for (const day of this.days) {
@@ -416,16 +413,16 @@ export class ProfilingComponent implements OnInit {
         let aux = (student.id).toString();
         aux = "cluster-" + aux;
         data[data.length - 1].push({type: TableDataType.SELECT, content: {
-              selectId: aux,
-              selectValue: this.newClusters[student.id],
-              selectOptions: this.clusterNamesSelect,
-              selectMultiple: false,
-              selectRequire: true,
-              selectPlaceholder: "Select cluster",
-              selectSearch: false
+            selectId: aux,
+            selectValue: this.newClusters[student.id],
+            selectOptions: this.clusterNamesSelect,
+            selectMultiple: false,
+            selectRequire: true,
+            selectPlaceholder: "Select cluster",
+            selectSearch: false
           }}
         );
-     }
+      }
 
       // for table legibility
       this.addLegibility("data", student, data);
@@ -486,25 +483,25 @@ export class ProfilingComponent implements OnInit {
   }
 
   //importItems(replace: boolean): void { // FIXME
-    // this.loadingAction = true;
-    //
-    // const reader = new FileReader();
-    // reader.onload = (e) => {
-    //   const importedItems = reader.result;
-    //   this.api.importModuleItems(this.course.id, ApiHttpService.PROFILING, importedItems, replace)
-    //     .pipe( finalize(() => {
-    //       this.isImportModalOpen = false;
-    //       this.loadingAction = false;
-    //     }) )
-    //     .subscribe(
-    //       nrItems => {
-    //         const successBox = $('#action_completed');
-    //         successBox.empty();
-    //         successBox.append("Items imported");
-    //         successBox.show().delay(3000).fadeOut();
-    //       })
-    // }
-    // reader.readAsDataURL(this.importedFile);
+  // this.loadingAction = true;
+  //
+  // const reader = new FileReader();
+  // reader.onload = (e) => {
+  //   const importedItems = reader.result;
+  //   this.api.importModuleItems(this.course.id, ApiHttpService.PROFILING, importedItems, replace)
+  //     .pipe( finalize(() => {
+  //       this.isImportModalOpen = false;
+  //       this.loadingAction = false;
+  //     }) )
+  //     .subscribe(
+  //       nrItems => {
+  //         const successBox = $('#action_completed');
+  //         successBox.empty();
+  //         successBox.append("Items imported");
+  //         successBox.show().delay(3000).fadeOut();
+  //       })
+  // }
+  // reader.readAsDataURL(this.importedFile);
   //}
 
   async importItems(): Promise<void>{
@@ -540,11 +537,11 @@ export class ProfilingComponent implements OnInit {
 
     } else if (action === 'discard changes'){
       if (this.origin === 'profiler' || this.origin === 'drafts'){
-          this.mode = "discard";
-          ModalService.openModal('discard-changes');
-        } else {
-          AlertService.showAlert(AlertType.WARNING, "Nothing to discard");
-        }
+        this.mode = "discard";
+        ModalService.openModal('discard-changes');
+      } else {
+        AlertService.showAlert(AlertType.WARNING, "Nothing to discard");
+      }
     } else if (action === 'reset fields'){
       if (this.newClusters !== this.results){
         this.loading.action = true;
@@ -629,4 +626,3 @@ export interface ProfilingNode {
   name: string,
   color: string
 }
-
