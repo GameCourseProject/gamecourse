@@ -6,6 +6,7 @@ import {finalize} from "rxjs/operators";
 import {Action} from 'src/app/_domain/modules/config/Action';
 import * as Highcharts from 'highcharts';
 import * as moment from "moment";
+import {Moment} from "moment";
 import {TableDataType} from "../../../../../../../../../_components/tables/table-data/table-data.component";
 import {dateFromDatabase} from "../../../../../../../../../_utils/misc/misc";
 import {User} from "../../../../../../../../../_domain/users/user";
@@ -17,7 +18,8 @@ import {Course} from "../../../../../../../../../_domain/courses/course";
 import {ResourceManager} from "../../../../../../../../../_utils/resources/resource-manager";
 
 import * as _ from 'lodash';
-import {Moment} from "moment";
+import {Theme} from "../../../../../../../../../_services/theming/themes-available";
+import {ThemingService} from "../../../../../../../../../_services/theming/theming.service";
 
 declare var require: any;
 let Sankey = require('highcharts/modules/sankey');
@@ -111,7 +113,9 @@ export class ProfilingComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+
+    private themeService: ThemingService
   ) { }
 
   ngOnInit(): void {
@@ -207,7 +211,8 @@ export class ProfilingComponent implements OnInit {
       // @ts-ignore
       Highcharts.chart('overview', {
         chart: {
-          marginRight: 40
+          marginRight: 40,
+          backgroundColor: this.themeService.getTheme() === Theme.DARK ? 'dark' : ''
         },
         title: {
           text: ""
@@ -275,6 +280,10 @@ export class ProfilingComponent implements OnInit {
 
     const endDate = moment(this.endDate, "YYYY-MM-DDTHH:mm").format("YYYY-MM-DD HH:mm:ss");
     await this.api.runProfiler(this.course.id, this.nrClusters, this.minClusterSize, endDate).toPromise();
+
+    // updates table with new status of profiler
+    await this.buildStatusTable();
+
     this.loading.action = false;
   }
 

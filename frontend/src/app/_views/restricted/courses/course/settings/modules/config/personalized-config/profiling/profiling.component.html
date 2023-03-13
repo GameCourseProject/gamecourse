@@ -7,6 +7,14 @@
       <h2 class="card-title mb-0">Profiler</h2>
     </div>
 
+    <!-- Warning message -->
+    <div *ngIf="running.profiler" class="alert alert-warning shadow-lg py-2.5 px-3 mb-4 rounded-lg">
+      <div>
+        <ng-icon [name]="'feather-alert-triangle'" size="1rem"></ng-icon>
+        <span><strong>Profiler is running.</strong> Hold on! Results might take a while to appear (refresh table to see if new results have arrived).</span>
+      </div>
+    </div>
+
     <app-table
       [id]="'status'"
       [classList]="'mb-5'"
@@ -37,7 +45,7 @@
           [placeholder]="'Number of clusters'"
           [topLabel]="'Number of clusters'"
           [btnText]="'Predict'"
-          [helperText]="'Predictor\'s number of clusters'"
+          [helperText]="'Nº of clusters predictor will divide students into'"
           [helperPosition]="'right'"
           [required]="true"
           [minValue]="4"
@@ -51,7 +59,7 @@
           [id]="'min-cluster-size'"
           [placeholder]="'Minimum cluster size'"
           [topLabel]="'Min. cluster size'"
-          [helperText]="'Minimum cluster size to run profiler'"
+          [helperText]="'Minimum number of students per cluster'"
           [helperPosition]="'top'"
           [required]="true"
           [minValue]="4"
@@ -73,7 +81,8 @@
 
     <!-- Action button -->
     <div class="flex items-center justify-end mt-4">
-      <button type="submit" class="btn btn-primary" (click)="runProfiler()">Run profiler</button>
+      <button type="submit" class="btn btn-primary {{running.profiler ? 'btn-disabled' : ''}}"
+              (click)="runProfiler()">Run profiler</button>
     </div>
 
   </div>
