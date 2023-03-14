@@ -202,6 +202,14 @@ CREATE TABLE element_user(
      FOREIGN KEY (user) REFERENCES course_user(id) ON DELETE CASCADE
 );
 
+CREATE TABLE element_versions_description (
+    element         int unsigned NOT NULL,
+    description     varchar(50) NOT NULL,
+
+    PRIMARY KEY (element),
+    FOREIGN KEY (element) REFERENCES role(id) ON DELETE CASCADE
+)
+
 /*** ---------------------------------------------------- ***/
 /*** ------------------- Views tables ------------------- ***/
 /*** ---------------------------------------------------- ***/

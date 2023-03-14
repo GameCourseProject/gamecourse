@@ -140,13 +140,15 @@ class GameElement
      * @param bool $isActive (optional)
      * @return array
      */
-    public static function getGameElements(int $courseId, ?bool $isActive = null): array{
+    public static function getGameElements(int $courseId, ?bool $isActive = null, ?bool $onlyNames = true): array{
         $table = self::TABLE_GAME_ELEMENT;
         $where = ["course" => $courseId];
         if ($isActive !== null) $where["isActive"] = $isActive;
         $gameElements = Core::database()->selectMultiple($table, $where, "*", "id");
 
-        return array_column($gameElements,"module");
+        if ($onlyNames){
+            return array_column($gameElements,"module");
+        } else return $gameElements;
 
     }
 

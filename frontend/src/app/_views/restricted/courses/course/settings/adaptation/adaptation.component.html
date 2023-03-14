@@ -5,10 +5,10 @@
 
   <ng-container *ngIf="!loading.page">
     <!-- Admin Template -->
-    <ng-container *ngIf="true" [ngTemplateOutlet]="ADMIN"></ng-container>
+    <ng-container *ngIf="false" [ngTemplateOutlet]="ADMIN"></ng-container>
 
     <!-- Non-Admin Template -->
-    <ng-container *ngIf="false" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
+    <ng-container *ngIf="true" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
   </ng-container>
 </div>
 
@@ -46,11 +46,14 @@
   <form #f="ngForm">
     <div class="w-full flex flex-wrap mt-3">
       <span>By doing so:<br>- <i>{{gameElementToManage.module}} Preference Questionnaire </i> <strong>will
-        <span *ngIf="gameElementToManage.isActive"> no longer</span> be available</strong> to students.<br>
-        - {{gameElementToManage.module}} will be <strong *ngIf="!gameElementToManage.isActive">open</strong>
-        <strong *ngIf="gameElementToManage.isActive">closed</strong> to customization.
+        <span *ngIf="(this.gameElementToManage.isActive).toString() !== '0' && this.gameElementToManage.isActive !== false">
+          no longer</span> be available</strong> to students.<br>
+        - {{gameElementToManage.module}} will be
+        <strong *ngIf="(this.gameElementToManage.isActive).toString() !== '1' && this.gameElementToManage.isActive !== true">open</strong>
+        <strong *ngIf="(this.gameElementToManage.isActive).toString() !== '0' && this.gameElementToManage.isActive !== false">closed</strong>
+        to customization.
       </span>
-      <div *ngIf="!gameElementToManage.isActive">
+      <div *ngIf="(this.gameElementToManage.isActive).toString() !== '1' && this.gameElementToManage.isActive !== true">
         <!-- Notification -->
         <div class="sm:pr-7 w-full">
           <app-input-checkbox
@@ -107,8 +110,8 @@
                   </div>
                 </div>
               </div>
-              <div *ngIf="selectedGameElement" class="w-full justify-center flex">
-                <img src="assets/imgs/adaptation/{{selectedGameElement}}-{{option}}.png" alt="">
+              <div *ngIf="selectedGameElement" class="justify-center flex">
+                <img class="w-8/12 pt-3 pb-3"  src="assets/imgs/adaptation/{{selectedGameElement}}-{{option}}-{{getTheme()}}.png" alt="">
               </div>
             </div>
             <!-- Actions -->

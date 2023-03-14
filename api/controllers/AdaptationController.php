@@ -99,7 +99,6 @@ class AdaptationController
         $onlyNames = API::getValue("onlyNames", "bool") ?? false;
         $gameElements = GameElement::getGameElements($courseId, $isActive, $onlyNames);
 
-        // var_dump($gameElements);
         foreach ($gameElements as &$gameElementInfo) {
             $gameElement = GameElement::getGameElementById($gameElementInfo["id"]);
         }

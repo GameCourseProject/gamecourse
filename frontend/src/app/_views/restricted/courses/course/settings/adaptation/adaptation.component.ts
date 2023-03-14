@@ -8,6 +8,7 @@ import {GameElement} from "../../../../../../_domain/adaptation/GameElement";
 import {ModalService} from "../../../../../../_services/modal.service";
 import {NgForm} from "@angular/forms";
 import {AlertService, AlertType} from "../../../../../../_services/alert.service";
+import {ThemingService} from "../../../../../../_services/theming/theming.service";
 
 @Component({
   selector: 'app-adaptation',
@@ -51,7 +52,8 @@ export class AdaptationComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private themeService: ThemingService
   ) { }
 
   ngOnInit(): void {
@@ -82,7 +84,7 @@ export class AdaptationComponent implements OnInit {
 
   async getGameElements(courseID: number): Promise<void> {
     // ADMIN
-    if (this.user.isAdmin){
+    if (!this.user.isAdmin){
       this.availableGameElements = await this.api.getGameElements(courseID).toPromise();
     }
 
@@ -145,11 +147,16 @@ export class AdaptationComponent implements OnInit {
 
     const table: {type: TableDataType, content: any}[][] = [];
 
-    if (this.user.isAdmin){  //FIXME: DEBUG ONLY
+    if (!this.user.isAdmin){  //FIXME: DEBUG ONLY
       this.availableGameElements.forEach(gameElement => {
+
+        let isActive = gameElement.isActive;
+        if (isActive.toString() === '0' || isActive.toString() === '1'){
+          isActive = (gameElement.isActive).toString() === '1';
+        }
         table.push([
           {type: TableDataType.TEXT, content: {text: gameElement.module}},
-          {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: gameElement.isActive}},
+          {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: isActive}},
           {type: TableDataType.ACTIONS, content: {actions: [
                 {action: 'Questionnaire statistics', icon: 'tabler-chart-pie', color: 'primary'},
                 {action: 'Export questionnaire answers', icon: 'jam-upload', color: 'primary'}]}
@@ -177,11 +184,12 @@ export class AdaptationComponent implements OnInit {
     this.gameElementToActOn = this.availableGameElements[row];
 
     if (action === 'value changed game element' && col === 1){
-      if (this.gameElementToActOn.isActive) {
+      if ((this.gameElementToActOn.isActive).toString() !== '0' && this.gameElementToActOn.isActive !== false) {
         this.adminMode = 'deactivate';
       } else this.adminMode = 'activate';
 
       this.gameElementToManage = this.initGameElementToManage(this.gameElementToActOn);
+      console.log(this.gameElementToManage.notify);
       ModalService.openModal('manage-game-element');
 
     } else if (action === 'answer questionnaire') {
@@ -199,11 +207,18 @@ export class AdaptationComponent implements OnInit {
   async toggleActive(){
     this.loading.action = true;
 
-    this.gameElementToManage.isActive = !this.gameElementToManage.isActive;
+    if ((this.gameElementToManage.isActive).toString() === 'true' || (this.gameElementToManage.isActive).toString() === 'false'){
+      this.gameElementToManage.isActive = !this.gameElementToManage.isActive;
+    }
+    else if ((this.gameElementToManage.isActive).toString() === '0' || (this.gameElementToManage.isActive).toString() === '1'){
+      this.gameElementToManage.isActive = (this.gameElementToManage.isActive).toString() !== '1';
+    }
+
+    console.log("notify ", this.gameElementToManage.notify);
     const gameElement = await this.api.setGameElementActive(this.course.id, this.gameElementToManage.module,
       this.gameElementToManage.isActive, this.gameElementToManage.notify).toPromise();
 
-    const index = this.availableGameElements.findIndex(gameElement => gameElement.id === gameElement.id);
+    const index = this.availableGameElements.findIndex(element => (element.id).toString() === (gameElement.id).toString());
     this.availableGameElements.removeAtIndex(index);
     this.availableGameElements.push(gameElement);
 
@@ -273,7 +288,6 @@ export class AdaptationComponent implements OnInit {
     } else{
       //this.message = null;
       this.previousPreference = preference;
-      console.log(this.previousPreference);
       this.option = preference;
       //this.activeButton = this.gameElementChildren.findIndex(el => el === this.previousPreference);
     }
@@ -290,9 +304,6 @@ export class AdaptationComponent implements OnInit {
       let date = new Date();
       if (this.previousPreference === "none") { this.previousPreference = null; }
 
-      console.log(this.selectedGameElement);
-      console.log(this.previousPreference);
-      console.log(newPreference);
       await this.api.updateUserPreference(this.course.id, this.user.id,
         this.selectedGameElement, this.previousPreference, newPreference, date).toPromise();
 
@@ -313,6 +324,10 @@ export class AdaptationComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  getTheme(){
+    return this.themeService.getTheme();
+  }
 
   getButtonColor(index: number, gameElement: string){
     let color;
