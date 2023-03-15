@@ -63,26 +63,24 @@ export class CoursePageComponent implements OnInit {
       await this.getCourse(courseID);
 
       // Get page information
-      this.route.parent.params.subscribe(async params => {
+      this.route.params.subscribe(async params => {
         const pageID = parseInt(params.id);
         await this.getPage(pageID);
 
-        this.route.params.subscribe(async params => {
-          const userID = parseInt(params.userId) || null;
-          if (userID) this.user = await this.api.getUserById(userID).toPromise();
+        const userID = parseInt(params.userId) || null;
+        if (userID) this.user = await this.api.getUserById(userID).toPromise();
 
-          // Render page
-          this.pageView = null; // NOTE: forces view to completely refresh
-          await this.renderPage(pageID, userID);
-          this.loading = false;
-        });
+        // Render page
+        this.pageView = null; // NOTE: forces view to completely refresh
+        await this.renderPage(pageID, userID);
+        this.loading = false;
       });
+    });
 
-      // Whenever route changes, set loading as true
-      this.router.events.subscribe(event => {
-        if (event instanceof NavigationStart)
-          this.loading = true;
-      });
+    // Whenever route changes, set loading as true
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationStart)
+        this.loading = true;
     });
   }
 
@@ -110,11 +108,11 @@ export class CoursePageComponent implements OnInit {
     // FIXME: hard-coded
     if (this.page.name === "Skill Tree") {
       await this.initSkillTreesInfo(this.course.id);
-      this.availableWildcards = await this.api.getUserTotalAvailableWildcards(this.course.id, this.user.id, this.skillTrees[0].id).toPromise();
+      this.availableWildcards = await this.api.getUserTotalAvailableWildcards(this.course.id, this.user?.id || this.viewer.id, this.skillTrees[0].id).toPromise();
 
     } else if (this.page.name === "Streaks") {
       this.streaks = await this.api.getStreaks(this.course.id).toPromise();
-      this.userStreaksInfo = await this.api.getUserStreaksInfo(this.course.id, this.user.id).toPromise();
+      this.userStreaksInfo = await this.api.getUserStreaksInfo(this.course.id, this.user?.id || this.viewer.id).toPromise();
     }
   }
 
@@ -132,7 +130,7 @@ export class CoursePageComponent implements OnInit {
       // Get info
       const tiers = await this.api.getTiersOfSkillTree(skillTree.id, null).toPromise();
       const skills = await this.api.getSkillsOfSkillTree(skillTree.id, null, null, null).toPromise();
-      this.info = await this.api.getSkillsExtraInfo(this.course.id, this.user.id, this.skillTrees[0].id).toPromise();
+      this.info = await this.api.getSkillsExtraInfo(this.course.id, this.user?.id || this.viewer.id, this.skillTrees[0].id).toPromise();
       this.skillTreesInfo.push({skillTreeId: skillTree.id, loading: {tiers: false, skills: false}, data: {tiers: [], skills: []}, tiers, skills});
     }
   }
@@ -153,7 +151,7 @@ export class CoursePageComponent implements OnInit {
   }
 
   goToSkillPage(skill: Skill) { // FIXME: hard-coded
-    this.router.navigate(['./skills', skill.id], {relativeTo: this.route.parent})
+    this.router.navigate(['./skills', skill.id], {relativeTo: this.route.parent.parent})
   }
 
   getComboText(combo: Skill[]): string { // FIXME: hard-coded

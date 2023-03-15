@@ -1,5 +1,5 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {ActivatedRoute, NavigationStart, Router} from "@angular/router";
+import {ActivatedRoute} from "@angular/router";
 import {NgForm} from "@angular/forms";
 
 import {Course} from "../../../../../../../../_domain/courses/course";
@@ -30,8 +30,7 @@ export class SubmitParticipationPageComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private route: ActivatedRoute,
-    private router: Router
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
@@ -47,12 +46,6 @@ export class SubmitParticipationPageComponent implements OnInit {
       this.route.params.subscribe(async params => {
         this.key = params.key;
         this.loading.page = false;
-      });
-
-      // Whenever route changes, set loading as true
-      this.router.events.subscribe(event => {
-        if (event instanceof NavigationStart)
-          this.loading.page = true;
       });
     });
   }
