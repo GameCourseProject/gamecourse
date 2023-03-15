@@ -151,7 +151,7 @@ export class CoursePageComponent implements OnInit {
   }
 
   goToSkillPage(skill: Skill) { // FIXME: hard-coded
-    this.router.navigate(['./skills', skill.id], {relativeTo: this.route.parent})
+    this.router.navigate(['./skills', skill.id], {relativeTo: this.route.parent.parent})
   }
 
   getComboText(combo: Skill[]): string { // FIXME: hard-coded
