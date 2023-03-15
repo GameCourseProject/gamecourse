@@ -2,6 +2,8 @@
 namespace GameCourse\Adaptation;
 
 use Exception;
+use GameCourse\Course\Course;
+use GameCourse\Module\Module;
 use GameCourse\NotificationSystem\Notification;
 use GameCourse\Role\Role;
 use GameCourse\Core\Core;
@@ -15,6 +17,7 @@ class GameElement
     const TABLE_ELEMENT_USER = "element_user";
     const TABLE_USER_GAME_ELEMENT_PREFERENCES = "user_game_element_preferences";
     const TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS = "preferences_questionnaire_answers";
+    const TABLE_ELEMENT_VERSIONS_DESCRIPTIONS="element_versions_descriptions";
 
     protected $id;
 
@@ -97,7 +100,7 @@ class GameElement
      * @return void
      * @throws Exception
      */
-    // TODO
+    // TODO - check if incomplete
     public function setData(array $fieldValues){
         // Trim values
         self::trim($fieldValues);
@@ -138,6 +141,7 @@ class GameElement
      *
      * @param int $courseId
      * @param bool $isActive (optional)
+     * @param bool $onlyNames (optional)
      * @return array
      */
     public static function getGameElements(int $courseId, ?bool $isActive = null, ?bool $onlyNames = true): array{
@@ -379,6 +383,50 @@ class GameElement
             Core::database()->insert(self::TABLE_ELEMENT_USER, ["element" => $gameElement->getId(), "user" => $studentId]);
         }
     }
+
+    /**
+     * Adds description regarding the different game element versions into the database
+     *
+     * @param int $id
+     * @param string $description
+     * @return void
+     * @throws Exception
+     */
+    public static function addGameElementDescription(int $id, string $description){
+        $table = self::TABLE_ELEMENT_VERSIONS_DESCRIPTIONS;
+        $entry = Core::database()->select($table, ["element" => $id, "description" => $description]);
+        if (!$entry) // new
+            Core::database()->insert($table, ["element" => $id, "description" => $description]);
+    }
+
+    /**
+     * Clears descriptions regarding the different game element versions into the database
+     * (See if all modules have been disconnected?) -- FIXME
+     *
+     * @param int $id
+     * @param string $description
+     * @return void
+     * @throws Exception
+     */
+    public static function removeGameElementDescription(int $id, string $description){
+        $table = self::TABLE_ELEMENT_VERSIONS_DESCRIPTIONS;
+
+        // check if no other course is using this description
+        $courses = Course::getCourses();
+        foreach ($courses as $course){
+            $courseId = $course->getId();
+
+
+            $modules = Module::getModulesInCourse($courseId, true);
+//  FIXME--incomplete
+        }
+
+        $entry = Core::database()->select($table, ["element" => $id, "description" => $description]);
+        if (!$entry) // new
+            Core::database()->insert($table, ["element" => $id, "description" => $description]);
+    }
+
+
 
     /**
      * Removes student from table element_user

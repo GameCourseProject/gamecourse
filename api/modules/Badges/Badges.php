@@ -68,7 +68,7 @@ class Badges extends Module
     const DATA_FOLDER = 'badges';
     const RULE_SECTION = "Badges";
 
-    const ADAPTATION_BADGES = [ "Badges" => ["B001", "B002"]];
+    const ADAPTATION_BADGES = [ "Badges" => ["B001" => "Badges displayed in alphabetic order", "B002" => "Badges displayed with achieved first"]];
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -92,7 +92,6 @@ class Badges extends Module
         $this->addAdaptationRolesToCourse(self::ADAPTATION_BADGES);
         //initEvents(); // FIXME: Debug only
         $gameElement = GameElement::addGameElement($this->course->getId(), self::ID);
-        //GameElement::addGameElementDescriptions($gameElement->getGameElementChildren(), );
     }
 
     public function providers(): array

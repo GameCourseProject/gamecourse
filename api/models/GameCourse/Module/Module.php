@@ -564,7 +564,7 @@ abstract class Module
     }
 
     /**
-     * Adds adaptation roles from the specific module to a course
+     * Adds adaptation roles from the specific module to a course and their respective description for the adaptation versions
      *
      * @param array $roles
      * @return void
@@ -573,10 +573,16 @@ abstract class Module
     protected function addAdaptationRolesToCourse(array $roles){
 
         $parent = array_keys($roles)[0];
-        $children = array_values($roles)[0];
+        $children = array_keys($roles[$parent]);
 
         Role::addAdaptationRolesToCourse($this->course->getId(), $this->id, $parent, $children);
+        foreach ($children as $child){
+            $roleId = Role::getRoleId($child, $this->course->getId());
+            GameElement::addGameElementDescription($roleId, $roles[$parent][$child]);
+        }
     }
+
+
     /**
      * Sets new data providers on providers library to be
      * available for charts to use.

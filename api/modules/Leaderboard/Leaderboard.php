@@ -46,7 +46,9 @@ class Leaderboard extends Module
 
     const RESOURCES = [];
 
-    const ADAPTATION_LEADERBOARD = [ "Leaderboard" => ["LB001", "LB002"]];
+    const ADAPTATION_LEADERBOARD = [ "Leaderboard" =>
+        ["LB001" => "Shows entire leaderboard",
+         "LB002" => "Leaderboard is snapped and shows 5 people above and below you"]];
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
