@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { CourseRoutingModule } from './course-routing.module';
 import { SharedModule } from "../../../../shared.module";
 
-import { PageComponent } from './page/page.component';
+import { CoursePageComponent } from './pages/course-page/course-page.component';
 import { UsersComponent } from './settings/users/users.component';
 import { RolesComponent } from "./settings/roles/roles.component";
 import { RulesComponent } from "./settings/rules/rules.component";
@@ -23,6 +23,8 @@ import { QrComponent } from './settings/modules/config/personalized-config/qr/qr
 import { ProgressReportComponent } from './settings/modules/config/personalized-config/progress-report/progress-report.component';
 import { ProfilingComponent } from './settings/modules/config/personalized-config/profiling/profiling.component';
 import { DataSourceStatusComponent } from "./settings/modules/config/data-source-status/data-source-status.component";
+import { SubmitParticipationPageComponent } from './pages/modules/qr/submit-participation-page/submit-participation-page.component';
+import { SkillPageComponent } from './pages/modules/skills/skill-page/skill-page.component';
 
 
 @NgModule({
@@ -35,7 +37,7 @@ import { DataSourceStatusComponent } from "./settings/modules/config/data-source
     RulesComponent,
     ViewsComponent,
     ViewsEditorComponent,
-    PageComponent,
+    CoursePageComponent,
     ConfigComponent,
     SkillsComponent,
     GooglesheetsComponent,
@@ -45,7 +47,9 @@ import { DataSourceStatusComponent } from "./settings/modules/config/data-source
     AdaptationComponent,
     PreferenceQuestionnaireComponent,
     ProfilingComponent,
-    DataSourceStatusComponent
+    DataSourceStatusComponent,
+    SubmitParticipationPageComponent,
+    SkillPageComponent
   ],
   imports: [
     CommonModule,

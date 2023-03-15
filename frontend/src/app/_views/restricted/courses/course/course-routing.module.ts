@@ -9,9 +9,13 @@ import { RolesComponent } from "./settings/roles/roles.component";
 import { ModulesComponent } from "./settings/modules/modules/modules.component";
 import { RulesComponent } from "./settings/rules/rules.component";
 import { ViewsEditorComponent } from "./settings/views/views-editor/views-editor.component";
-import { PageComponent } from "./page/page.component";
+import { CoursePageComponent } from "./pages/course-page/course-page.component";
 import { ConfigComponent } from "./settings/modules/config/config/config.component";
 import { ComingSoonComponent } from "../../../../_components/misc/pages/coming-soon/coming-soon.component";
+import { SkillPageComponent } from "./pages/modules/skills/skill-page/skill-page.component";
+import {
+  SubmitParticipationPageComponent
+} from "./pages/modules/qr/submit-participation-page/submit-participation-page.component";
 import { AdaptationComponent } from "./settings/adaptation/adaptation.component";
 
 const routes: Routes = [
@@ -20,12 +24,9 @@ const routes: Routes = [
     component: MainComponent
   },
   {
-    path: 'pages/:id',
-    component: PageComponent
-  },
-  {
-    path: 'pages/:id/user/:userId',
-    component: PageComponent
+    path: 'overview',
+    component: ComingSoonComponent,
+    canActivate: [CourseAdminGuard]
   },
   {
     path: 'settings',
@@ -74,22 +75,35 @@ const routes: Routes = [
     ]
   },
   {
-    path: 'overview',
-    component: ComingSoonComponent,
-    canActivate: [CourseAdminGuard]
+    path: 'pages/:id',
+    children: [
+      {
+        path: '',
+        component: CoursePageComponent
+      },
+      {
+        path: 'user/:userId',
+        component: CoursePageComponent
+      }
+    ]
   },
   {
     path: 'skills/:id',
-    component: PageComponent
-  },
-  {
-    path: 'skills/:id/preview',
-    component: PageComponent,
-    canActivate: [CourseAdminGuard]
+    children: [
+      {
+        path: '',
+        component: SkillPageComponent
+      },
+      {
+        path: 'preview',
+        component: SkillPageComponent,
+        canActivate: [CourseAdminGuard]
+      }
+    ]
   },
   {
     path: 'participation/:key',
-    component: PageComponent
+    component: SubmitParticipationPageComponent
   },
   { path: '', redirectTo: 'main', pathMatch: 'full' }
 ];

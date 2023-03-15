@@ -760,7 +760,7 @@
                                                                     "type": "chart",
                                                                     "class": "mt-6",
                                                                     "chartType": "radar",
-                                                                    "data": "{providers.XPOverview(%user, \"presentation: Presentaion, labs: Labs, badge: Badges, streak: Streaks, skill: Skills, quiz: Quizzes\", %compareWith)}",
+                                                                    "data": "{providers.XPOverview(%user, \"presentation: Presentation, labs: Labs, badge: Badges, streak: Streaks, skill: Skills, quiz: Quizzes\", %compareWith)}",
                                                                     "options": {
                                                                         "height": "300",
                                                                         "colors": [

@@ -765,7 +765,7 @@ class GoogleSheets extends Module
     private static function rowIsValid(array $row, array $columns): bool
     {
         foreach ($columns as $column) {
-            if (!array_key_exists($column, $row) || empty(trim($row[$column]))) return false;
+            if (!array_key_exists($column, $row) || strlen(trim($row[$column])) === 0) return false;
 
             $value = $row[$column];
             if ($column == self::COL_STUDENT_NUMBER && !ctype_digit($value)) return false;

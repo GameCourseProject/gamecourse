@@ -118,7 +118,7 @@ class XPLevels extends Module
                 \$XPEvolution[0][\"data\"][] = [\"x\" => \$i, \"y\" => Core::dictionary()->faker()->numberBetween(\$i * 500, (\$i + 1) * 500)];
             }
             if (!empty(\$compareWith)) {
-                \$XPEvolution[] = [\"name\" => \"Others\", \"data\" => []];
+                \$XPEvolution[] = [\"name\" => \$compareWithLabel, \"data\" => []];
                 for (\$i = 0; \$i <= 10; \$i++) {
                     \$XPEvolution[1][\"data\"][] = [\"x\" => \$i, \"y\" => Core::dictionary()->faker()->numberBetween(\$i * 500, (\$i + 1) * 500)];
                 }
@@ -178,7 +178,7 @@ class XPLevels extends Module
                 \$nrUsers = count(\$userIds);
 
                 if (\$nrUsers !== 0) {
-                    \$XPEvolution[] = [\"name\" => \"Others\", \"data\" => []];
+                    \$XPEvolution[] = [\"name\" => \$compareWithLabel, \"data\" => []];
                     \$totalXP = intval(Core::database()->executeQuery(\"SELECT SUM(xp) FROM \" . \GameCourse\Module\XPLevels\XPLevels::TABLE_XP .
                         \" WHERE course = \" . Core::dictionary()->getCourse()->getId() . \" AND user IN (\" . implode(\", \", \$userIds) . \");\")->fetch()[0]);
 
@@ -217,7 +217,7 @@ class XPLevels extends Module
         }
 
         return new ValueNode(\$XPEvolution, Core::dictionary()->getLibraryById(CollectionLibrary::ID));",
-            "args" => ["int \$userId", "string \$time", "array \$compareWith = []"]
+            "args" => ["int \$userId", "string \$time", "array \$compareWith = []", "string \$compareWithLabel = \"Others\""]
         ];
 
         $XPDistribution = [
@@ -292,7 +292,7 @@ class XPLevels extends Module
                 \$XPOverview[0][\"data\"][] = [\"x\" => \$label, \"y\" => Core::dictionary()->faker()->numberBetween(0, 3000)];
             }
             if (!empty(\$compareWith)) {
-                \$XPOverview[] = [\"name\" => \"Others\", \"data\" => []];
+                \$XPOverview[] = [\"name\" => \$compareWithLabel, \"data\" => []];
                 foreach(\$awardTypes as \$type => \$label) {
                     \$XPOverview[1][\"data\"][] = [\"x\" => \$label, \"y\" => Core::dictionary()->faker()->numberBetween(0, 3000)];
                 }
@@ -323,7 +323,7 @@ class XPLevels extends Module
                 \$nrUsers = count(\$userIds);
 
                 if (\$nrUsers !== 0) {
-                    \$XPOverview[] = [\"name\" => \"Others\", \"data\" => []];
+                    \$XPOverview[] = [\"name\" => \$compareWithLabel, \"data\" => []];
 
                     foreach (\$userIds as \$i => \$uId) {
                         // Get user awards
@@ -345,7 +345,7 @@ class XPLevels extends Module
         }
 
         return new ValueNode(\$XPOverview, Core::dictionary()->getLibraryById(CollectionLibrary::ID));",
-            "args" => ["int \$userId", "string \$awardTypes = \"\"", "array \$compareWith = []"]
+            "args" => ["int \$userId", "string \$awardTypes = \"\"", "array \$compareWith = []", "string \$compareWithLabel = \"Others\""]
         ];
 
         return [$XPEvolution, $XPDistribution, $XPOverview];

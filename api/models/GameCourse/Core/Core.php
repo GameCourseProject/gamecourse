@@ -6,8 +6,6 @@ use Database\Database;
 use Event\Event;
 use Exception;
 use Facebook;
-use Faker\Factory;
-use Faker\Generator;
 use FenixEdu;
 use FenixEduException;
 use GameCourse\User\User;

@@ -209,6 +209,22 @@
   </div>
 </ng-container>
 
+<!-- Type: SELECT -->
+<ng-container *ngIf="type === DataType.SELECT">
+  <div class="items-center {{Align}}">
+    <app-input-select
+      [id]="selectId"
+      [(value)]="selectValue"
+      [options]="selectOptions"
+      [multiple]="selectMultiple"
+      [required]="selectRequire"
+      [placeholder]="selectPlaceholder"
+      [search]="selectSearch"
+      (valueChange)="valueChanged.emit($event)">
+    </app-input-select>
+  </div>
+</ng-container>
+
 <!-- Type: CUSTOM -->
 <ng-container *ngIf="type === DataType.CUSTOM">
   <div *ngIf="html" [innerHTML]="html | sanitizeHTML"></div>
