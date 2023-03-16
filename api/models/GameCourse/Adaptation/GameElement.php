@@ -172,13 +172,14 @@ class GameElement
         return $users;
     }
 
+    /* FIXME -- delete later
     /**
      * Gets all gameElements that a specific user is allowed to edit in the system given a course
      *
      * @param int $courseId
      * @param int $userId
      * @return array
-     */
+     *
     public static function gameElementsUserCanEdit(int $courseId, int $userId): array{
         $table = self::TABLE_ELEMENT_USER . " eu JOIN " . self::TABLE_GAME_ELEMENT . " ge on eu.element=ge.id";
         $where = ["ge.course" => $courseId, "eu.user" => $userId];
@@ -189,7 +190,7 @@ class GameElement
         }
         return $elements;
     }
-
+*/
     /**
      * Gets a GameElement given a course and module.
      *
@@ -222,7 +223,11 @@ class GameElement
                     if ($value["module"] == $module && in_array("children", array_keys($value))){
                         // iterates through children and saves the names
                         foreach ($value["children"] as $child) {
-                            array_push($response, $child["name"]);
+                            $roleId = Role::getRoleId($child["name"],$this->getCourse());
+                            $where = ["element" => $roleId];
+                            $description = Core::database()->select(self::TABLE_ELEMENT_VERSIONS_DESCRIPTIONS, $where, "description");
+                            $response[$child["name"]] = $description;
+                            //array_push($response, $child["name"]);
                         }
                         break;
                     }
@@ -394,14 +399,11 @@ class GameElement
      */
     public static function addGameElementDescription(int $id, string $description){
         $table = self::TABLE_ELEMENT_VERSIONS_DESCRIPTIONS;
-        $entry = Core::database()->select($table, ["element" => $id, "description" => $description]);
-        if (!$entry) // new
-            Core::database()->insert($table, ["element" => $id, "description" => $description]);
+        Core::database()->insert($table, ["element" => $id, "description" => $description]);
     }
 
     /**
      * Clears descriptions regarding the different game element versions into the database
-     * (See if all modules have been disconnected?) -- FIXME
      *
      * @param int $id
      * @param string $description
@@ -410,20 +412,7 @@ class GameElement
      */
     public static function removeGameElementDescription(int $id, string $description){
         $table = self::TABLE_ELEMENT_VERSIONS_DESCRIPTIONS;
-
-        // check if no other course is using this description
-        $courses = Course::getCourses();
-        foreach ($courses as $course){
-            $courseId = $course->getId();
-
-
-            $modules = Module::getModulesInCourse($courseId, true);
-//  FIXME--incomplete
-        }
-
-        $entry = Core::database()->select($table, ["element" => $id, "description" => $description]);
-        if (!$entry) // new
-            Core::database()->insert($table, ["element" => $id, "description" => $description]);
+        Core::database()->delete($table, ["element" => $id, "description" => $description]);
     }
 
 

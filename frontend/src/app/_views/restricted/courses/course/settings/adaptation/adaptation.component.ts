@@ -92,6 +92,7 @@ export class AdaptationComponent implements OnInit {
     else {
       // all available game elements
       this.availableGameElements = await this.api.getGameElements(courseID, true).toPromise();
+      console.log(this.availableGameElements);
 
       for (let i = 0; i < this.availableGameElements.length; i++){
         let questionnaireData: QuestionnaireManageData = {
@@ -294,6 +295,9 @@ export class AdaptationComponent implements OnInit {
   }
 
   async getChildren(gameElement: string) {
+    // FIXME -- RETURN TYPE IS WRONG
+    // returns object { "element" => "description"} --> or at least it should (check this!)
+    // example {"B001" => "Badges ordered ..."}
     this.gameElementChildren =  await this.api.getChildrenGameElement(this.course.id, gameElement).toPromise();
   }
 

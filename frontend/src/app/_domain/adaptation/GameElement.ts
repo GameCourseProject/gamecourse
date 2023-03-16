@@ -4,13 +4,15 @@ export class GameElement {
   private _module: string;
   private _isActive: boolean;
   private _notify: boolean;
+  private _description: string;
 
-  constructor(id: number, course: number, module: string, isActive: boolean, notify: boolean) {
+  constructor(id: number, course: number, module: string, isActive: boolean, notify: boolean, description: string) {
     this._id = id;
     this._course = course;
     this._module = module;
     this._isActive = isActive;
     this._notify = notify;
+    this._description = description;
   }
 
   get id(): number {
@@ -53,13 +55,22 @@ export class GameElement {
     this._notify = value;
   }
 
+  get description(): string {
+    return this._description;
+  }
+
+  set description(value: string){
+    this._description = value;
+  }
+
   static fromDatabase(obj: GameElementDatabase): GameElement {
     return new GameElement(
       obj.id,
       obj.course,
       obj.module,
       obj.isActive,
-      obj.notify
+      obj.notify,
+      obj.description
     );
   }
 }
@@ -69,5 +80,6 @@ interface GameElementDatabase {
   course: number,
   module: string,
   isActive: boolean,
-  notify: boolean
+  notify: boolean,
+  description: string
 }

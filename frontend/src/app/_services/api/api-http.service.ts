@@ -779,20 +779,6 @@ export class ApiHttpService {
       .pipe(map((res: any) => res['data'].map(obj => GameElement.fromDatabase(obj))));
   }
 
-  public getGameElementsUserCanEdit(courseID: number, userID: number): Observable<GameElement[]>{
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
-      qs.push('request', 'gameElementsUserCanEdit');
-      qs.push('courseId', courseID);
-      qs.push('userId', userID);
-    }
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data'].map(obj => GameElement.fromDatabase(obj))));
-  }
-
   public getGameElementUsers(courseID: number, moduleID: string): Observable<User[]>{
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);

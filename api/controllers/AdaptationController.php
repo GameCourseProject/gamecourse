@@ -13,6 +13,7 @@ class AdaptationController
     /*** --------------- Game Elements --------------- ***/
     /*** --------------------------------------------- ***/
 
+/* FIXME - delete later
 
     public function gameElementsUserCanEdit(){
         API::requireValues('courseId', 'userId');
@@ -34,7 +35,7 @@ class AdaptationController
         API::response($gameElements);
 
     }
-
+*/
     /**
      * Gets all users allowed to edit a specific GameElement
      * @throws Exception

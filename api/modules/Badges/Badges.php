@@ -91,7 +91,7 @@ class Badges extends Module
         // Add adaptation roles
         $this->addAdaptationRolesToCourse(self::ADAPTATION_BADGES);
         //initEvents(); // FIXME: Debug only
-        $gameElement = GameElement::addGameElement($this->course->getId(), self::ID);
+        GameElement::addGameElement($this->course->getId(), self::ID);
     }
 
     public function providers(): array

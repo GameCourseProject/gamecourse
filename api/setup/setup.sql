@@ -204,7 +204,7 @@ CREATE TABLE element_user(
 
 CREATE TABLE element_versions_descriptions (
     element         int unsigned NOT NULL,
-    description     varchar(50) NOT NULL,
+    description     varchar(150) NOT NULL,
 
     PRIMARY KEY (element),
     FOREIGN KEY (element) REFERENCES role(id) ON DELETE CASCADE
