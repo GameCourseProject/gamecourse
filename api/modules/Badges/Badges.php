@@ -68,8 +68,11 @@ class Badges extends Module
     const DATA_FOLDER = 'badges';
     const RULE_SECTION = "Badges";
 
-    const ADAPTATION_BADGES = [ "Badges" => ["B001" => "Badges displayed in alphabetic order", "B002" => "Badges displayed with achieved first"]];
-
+    // FIXME -> Maybe add this to a .txt instead of php file?
+    // Structure is: [ Game_element => [ "VersionA" => [ description, profiling_adaptation_role_connection ] ] ]
+    const ADAPTATION_BADGES = [ "Badges" => [
+        "B001" => ["Badges displayed in alphabetic order", [ "Regular", "Achiever" ]],
+        "B002" => ["Badges displayed with achieved first", [ "Halfhearted", "Underachiever" ] ] ] ];
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/

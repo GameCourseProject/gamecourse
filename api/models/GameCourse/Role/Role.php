@@ -458,7 +458,7 @@ class Role
             throw new Exception("Need either role name, role ID or module ID to remove roles from course.");
 
         if ($moduleId) {
-            Core::database()->delete(self::TABLE_ROLE, ["module" => $moduleId]);
+            Core::database()->delete(self::TABLE_ROLE, ["course" => $courseId, "module" => $moduleId]);
             return;
         }
 

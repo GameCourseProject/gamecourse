@@ -97,19 +97,20 @@
               <div class="btn-group flex justify-start">
                 <!-- TODO: add helper info ? -->
                 <span>Versions available:</span>
-                <div *ngFor="let option of gameElementChildren; let i = index" class="pl-4">
+                <div *ngFor="let option of getVersions(); let i = index" class="pl-4">
                   <div class="indicator">
                   <span *ngIf="option === previousPreference"
                         class="indicator-item badge badge-xs badge-success text-white border border-2 border-green-900 py-1.5">
                     <strong>✓</strong>
                   </span>
                     <input type = "button"
-                           class="btn-sm rounded-lg btn-{{getButtonColor(i, option)}} px-2 text-white"
+                           class="btn-sm rounded-lg btn-{{getButtonColor(option)}} px-2 text-white"
                            value="{{option}}"
-                           (click) = "setButtonActive(i); doAction('set option', option)"/>
+                           (click) = "setButtonActive(option); doAction('set option', option)"/>
                   </div>
                 </div>
               </div>
+              <span *ngIf="option === activeButton">{{gameElementChildren[option]}}</span>
               <div *ngIf="selectedGameElement" class="justify-center flex">
                 <img class="w-8/12 pt-3 pb-3"  src="assets/imgs/adaptation/{{selectedGameElement}}-{{option}}-{{getTheme()}}.png" alt="">
               </div>
@@ -231,6 +232,7 @@
   [headerMarginBottom]="false"
   [closeBtn]="false"
   [xButton]="false"
+  [static]="true"
 ></app-modal>
 
 <ng-template #ALL_QUESTIONNAIRES_SUBMITTED>

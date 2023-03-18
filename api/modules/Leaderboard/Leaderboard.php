@@ -46,9 +46,11 @@ class Leaderboard extends Module
 
     const RESOURCES = [];
 
+    // FIXME -> Maybe add this to a .txt instead of php file?
+    // Structure is: [ Game_element => [ "VersionA" => [ description, profiling_adaptation_role_connection ] ] ]
     const ADAPTATION_LEADERBOARD = [ "Leaderboard" =>
-        ["LB001" => "Shows entire leaderboard",
-         "LB002" => "Leaderboard is snapped and shows 5 people above and below you"]];
+        ["LB001" => ["Shows entire leaderboard", [ "Regular", "Achiever" ]],
+         "LB002" => ["Leaderboard is snapped and shows 5 people above and below you", [ "Halfhearted", "Underachiever" ]]]];
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/

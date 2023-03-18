@@ -36,12 +36,12 @@ export class AdaptationComponent implements OnInit {
 
   /** -- NON-ADMIN VARIABLES -- **/
   selectedGameElement: string;
-  gameElementChildren: string[];
+  gameElementChildren: {[gameElement: string]: {version: string}}[];
   previousPreference: string;
 
   availableGameElementsSelect: { value: string, text: string }[] = [];
 
-  activeButton = null;
+  activeButton: string = null;
   option: string;
   //message: string;
 
@@ -92,7 +92,6 @@ export class AdaptationComponent implements OnInit {
     else {
       // all available game elements
       this.availableGameElements = await this.api.getGameElements(courseID, true).toPromise();
-      console.log(this.availableGameElements);
 
       for (let i = 0; i < this.availableGameElements.length; i++){
         let questionnaireData: QuestionnaireManageData = {
@@ -190,7 +189,6 @@ export class AdaptationComponent implements OnInit {
       } else this.adminMode = 'activate';
 
       this.gameElementToManage = this.initGameElementToManage(this.gameElementToActOn);
-      console.log(this.gameElementToManage.notify);
       ModalService.openModal('manage-game-element');
 
     } else if (action === 'answer questionnaire') {
@@ -215,7 +213,6 @@ export class AdaptationComponent implements OnInit {
       this.gameElementToManage.isActive = (this.gameElementToManage.isActive).toString() !== '1';
     }
 
-    console.log("notify ", this.gameElementToManage.notify);
     const gameElement = await this.api.setGameElementActive(this.course.id, this.gameElementToManage.module,
       this.gameElementToManage.isActive, this.gameElementToManage.notify).toPromise();
 
@@ -282,8 +279,8 @@ export class AdaptationComponent implements OnInit {
     if (preference.indexOf(' ') >= 0)
     {
       this.previousPreference = "none";
-      this.option = this.gameElementChildren[0];
-      this.activeButton = 0;
+      this.option = Object.keys(this.gameElementChildren)[0];
+      this.activeButton = gameElement;
       //this.message = preference;
 
     } else{
@@ -295,14 +292,11 @@ export class AdaptationComponent implements OnInit {
   }
 
   async getChildren(gameElement: string) {
-    // FIXME -- RETURN TYPE IS WRONG
-    // returns object { "element" => "description"} --> or at least it should (check this!)
-    // example {"B001" => "Badges ordered ..."}
     this.gameElementChildren =  await this.api.getChildrenGameElement(this.course.id, gameElement).toPromise();
   }
 
   async updatePreference(): Promise<void> {
-    const newPreference = this.gameElementChildren[this.activeButton];
+    const newPreference = this.activeButton;
 
     if (newPreference && newPreference !== this.previousPreference){
       let date = new Date();
@@ -311,6 +305,9 @@ export class AdaptationComponent implements OnInit {
       await this.api.updateUserPreference(this.course.id, this.user.id,
         this.selectedGameElement, this.previousPreference, newPreference, date).toPromise();
 
+
+      console.log(newPreference);
+      console.log(this.gameElementChildren);
       this.previousPreference = newPreference;
       //this.message = null;
       AlertService.showAlert(AlertType.SUCCESS, 'New preference saved');
@@ -333,12 +330,12 @@ export class AdaptationComponent implements OnInit {
     return this.themeService.getTheme();
   }
 
-  getButtonColor(index: number, gameElement: string){
+  getButtonColor(gameElement: string){
     let color;
-    if (this.activeButton === index){
+    if (this.activeButton === gameElement){
       color = "active";
     }
-    else if (this.activeButton !== index){
+    else if (this.activeButton !== gameElement){
       color = "primary";
 
     } if (this.previousPreference === gameElement){
@@ -348,8 +345,8 @@ export class AdaptationComponent implements OnInit {
     return color;
   }
 
-  setButtonActive(index : number){
-    this.activeButton = index;
+  setButtonActive(gameElement :string){
+    this.activeButton = gameElement;
   }
 
   initGameElementToManage(gameElement? : GameElement): GameElementManageData{
@@ -369,6 +366,10 @@ export class AdaptationComponent implements OnInit {
     this.gameElementToManage = this.initGameElementToManage();
     this.gameElementToActOn = null;
     this.f.resetForm();
+  }
+
+  getVersions(): string[]{
+    return Object.keys(this.gameElementChildren);
   }
 
 }

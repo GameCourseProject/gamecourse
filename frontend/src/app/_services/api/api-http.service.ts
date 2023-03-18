@@ -847,7 +847,7 @@ export class ApiHttpService {
       .pipe(map((res:any) => res));
   }
 
-  public getChildrenGameElement(courseID: number, module: string): Observable<string[]>{
+  public getChildrenGameElement(courseID: number, module: string): Observable<{[gameElement: string]: {version: string}}[]>{
     const params = (qs:QueryStringParameters) => {
       qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
       qs.push('request', 'getChildrenGameElement');

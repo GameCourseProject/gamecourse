@@ -415,7 +415,30 @@ class GameElement
         Core::database()->delete($table, ["element" => $id, "description" => $description]);
     }
 
+    /**
+     * Creates connection between roles given by the profiler module and adaptation ones to allow
+     * students edit their own game elements in the future
+     *
+     * @param int $idRole
+     * @param int $idRoleAdaptation
+     * @return void
+     * @throws Exception
+     */
+    public static function addAdaptationAndRoleConnection(int $idRole, int $idRoleAdaptation){
 
+    }
+
+    /**
+     * Removes connection between roles given by the profiler module and adaptation ones
+     *
+     * @param int $idRole
+     * @param int $idRoleAdaptation
+     * @return void
+     * @throws Exception
+     */
+    public static function removeAdaptationAndRoleConnection(int $idRole, int $idRoleAdaptation){
+
+    }
 
     /**
      * Removes student from table element_user

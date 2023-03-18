@@ -210,6 +210,15 @@ CREATE TABLE element_versions_descriptions (
     FOREIGN KEY (element) REFERENCES role(id) ON DELETE CASCADE
 );
 
+CREATE TABLE roles_adaptation_connection (
+    version         int unsigned NOT NULL,
+    role            int unsigned NOT NULL,
+
+    PRIMARY KEY (version, role),
+    FOREIGN KEY (version) REFERENCES role(id) ON DELETE CASCADE,
+    FOREIGN KEY (role) REFERENCES role(id) ON DELETE CASCADE
+);
+
 /*** ---------------------------------------------------- ***/
 /*** ------------------- Views tables ------------------- ***/
 /*** ---------------------------------------------------- ***/

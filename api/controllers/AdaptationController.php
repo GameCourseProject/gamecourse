@@ -249,11 +249,13 @@ class AdaptationController
         $module = API::verifyModuleExists($moduleId, $course);
 
         // Get rest of the values
-        $previousPreference = API::getValue('previousPreference');
         $newPreference = API::getValue('newPreference');
         $date = API::getValue('date') ?? date("Y-m-d h:i:sa");
 
         $newPreferenceArg = Role::getRoleId($newPreference, $courseId);
+
+        // FIXME -- Change later
+        $previousPreference = API::getValue('previousPreference') ?? $newPreferenceArg;
         GameElement::updateUserPreference($courseId, $userId, $moduleId, $previousPreference, $newPreferenceArg, $date);
     }
 }

@@ -53,9 +53,9 @@ class Profile extends Module
     const RESOURCES = [];
 
     const ADAPTATION_PROFILE = ["Profile" =>
-        ["P001" => "Profile displays graphs comparing yourself vs. everyone else",
-         "P002" => "Profile displays graphs comparing yourself vs. people with similar progress as you",
-         "P003" => "Profile displays graphs with your progress (not comparing with anyone else)"]];
+        ["P001" => ["Profile displays graphs comparing yourself vs. everyone else", [ "Regular", "Achiever" ]],
+         "P002" => ["Profile displays graphs comparing yourself vs. people with similar progress as you", ["Halfhearted"]],
+         "P003" => ["Profile displays graphs with your progress (not comparing with anyone else)", ["Underachiever"]]]];
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
