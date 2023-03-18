@@ -43,7 +43,6 @@ export class AdaptationComponent implements OnInit {
 
   activeButton: string = null;
   option: string;
-  //message: string;
 
   isQuestionnaire: boolean = true;
   mode: 'questionnaire';
@@ -224,7 +223,7 @@ export class AdaptationComponent implements OnInit {
     this.loading.action = false;
     this.resetGameElementManage();
     ModalService.closeModal('manage-game-element');
-    AlertService.showAlert(AlertType.SUCCESS, 'Game element \'' + gameElement.module + '\'' + this.adminMode + 'd');
+    AlertService.showAlert(AlertType.SUCCESS, 'Game element \'' + gameElement.module + '\' ' + this.adminMode + 'd');
 
   }
 
@@ -243,10 +242,6 @@ export class AdaptationComponent implements OnInit {
 
       let filteredQuestionnaires = this.questionnaires.filter(function (item) { return !item.isAnswered });
       if (filteredQuestionnaires.length === 0) {
-        // update user roles (Translate profiling roles to adaptation roles)
-        // And prepares preferences for future use
-        await this.api.profilingToAdaptationRole(this.course.id, this.user.id).toPromise();
-
         ModalService.openModal('all-questionnaires-submitted');
       }
 
@@ -264,7 +259,6 @@ export class AdaptationComponent implements OnInit {
       await this.getPreviousPreference(gameElement);
     }
     else{
-      //this.message="undefined";
       this.previousPreference = null;
       this.gameElementChildren = null;
     }
@@ -279,15 +273,13 @@ export class AdaptationComponent implements OnInit {
     if (preference.indexOf(' ') >= 0)
     {
       this.previousPreference = "none";
-      this.option = Object.keys(this.gameElementChildren)[0];
-      this.activeButton = gameElement;
-      //this.message = preference;
+      this.option = null;
+      this.activeButton = null;
 
     } else{
-      //this.message = null;
       this.previousPreference = preference;
       this.option = preference;
-      //this.activeButton = this.gameElementChildren.findIndex(el => el === this.previousPreference);
+      this.activeButton = preference;
     }
   }
 
@@ -298,28 +290,22 @@ export class AdaptationComponent implements OnInit {
   async updatePreference(): Promise<void> {
     const newPreference = this.activeButton;
 
-    if (newPreference && newPreference !== this.previousPreference){
-      let date = new Date();
-      if (this.previousPreference === "none") { this.previousPreference = null; }
+    if (newPreference) {
+      if (newPreference == this.previousPreference){
+        AlertService.showAlert(AlertType.WARNING, 'Nothing new to update');
 
-      await this.api.updateUserPreference(this.course.id, this.user.id,
-        this.selectedGameElement, this.previousPreference, newPreference, date).toPromise();
+      } else {
+        let date = new Date();
+        if (this.previousPreference === "none") { this.previousPreference = null; }
 
+        await this.api.updateUserPreference(this.course.id, this.user.id,
+          this.selectedGameElement, this.previousPreference, newPreference, date).toPromise();
 
-      console.log(newPreference);
-      console.log(this.gameElementChildren);
-      this.previousPreference = newPreference;
-      //this.message = null;
-      AlertService.showAlert(AlertType.SUCCESS, 'New preference saved');
+        this.previousPreference = newPreference;
+        AlertService.showAlert(AlertType.SUCCESS, 'New preference saved');
+      }
 
     } else AlertService.showAlert(AlertType.ERROR, 'Please select a new preference to save');
-  }
-
-  discardPreference(){
-    if (this.activeButton !== null){
-      this.activeButton= null;
-      AlertService.showAlert(AlertType.INFO, 'Preferences discarded');
-    }
   }
 
   /*** --------------------------------------------- ***/
@@ -369,7 +355,8 @@ export class AdaptationComponent implements OnInit {
   }
 
   getVersions(): string[]{
-    return Object.keys(this.gameElementChildren);
+    if (this.gameElementChildren) { return Object.keys(this.gameElementChildren); }
+    else return [];
   }
 
 }

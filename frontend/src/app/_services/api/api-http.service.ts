@@ -861,23 +861,6 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  public profilingToAdaptationRole(courseID: number, userID: number): Observable<void> {
-    const data = {
-      courseId: courseID,
-      userId: userID
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
-      qs.push('request', 'profilingToAdaptationRole');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res));
-
-  }
-
   public getPreviousPreference(courseID: number, userID: number, module: string): Observable<string> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);

@@ -166,15 +166,14 @@ CREATE TABLE user_game_element_preferences(
     course                      int unsigned NOT NULL,
     user                        int unsigned NOT NULL,
     module                      varchar(50) NOT NULL,
-    previousPreference          int unsigned NOT NULL,
+    previousPreference          int unsigned,
     newPreference               int unsigned NOT NULL,
     date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    UNIQUE key(user, date),
+    UNIQUE key(user, previousPreference, date),
     FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
     FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE,
     FOREIGN KEY (module) REFERENCES module(id) ON DELETE CASCADE,
-    FOREIGN KEY (previousPreference) REFERENCES role(id) ON DELETE CASCADE,
     FOREIGN KEY (newPreference) REFERENCES role(id) ON DELETE CASCADE
 );
 
@@ -210,14 +209,6 @@ CREATE TABLE element_versions_descriptions (
     FOREIGN KEY (element) REFERENCES role(id) ON DELETE CASCADE
 );
 
-CREATE TABLE roles_adaptation_connection (
-    version         int unsigned NOT NULL,
-    role            int unsigned NOT NULL,
-
-    PRIMARY KEY (version, role),
-    FOREIGN KEY (version) REFERENCES role(id) ON DELETE CASCADE,
-    FOREIGN KEY (role) REFERENCES role(id) ON DELETE CASCADE
-);
 
 /*** ---------------------------------------------------- ***/
 /*** ------------------- Views tables ------------------- ***/

@@ -9,6 +9,7 @@ use GameCourse\Module\Badges\Badges;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\Module\Profiling\Profiling;
 use GameCourse\Module\Skills\Skills;
 use GameCourse\Module\Streaks\Streaks;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
@@ -52,6 +53,9 @@ class Profile extends Module
 
     const RESOURCES = [];
 
+    // FIXME -> Change later (profiling_adaptation_role_connection should not be hardcoded)
+    // NOTE: profiling_adaptation_role_connection not really used at the moment
+    // Structure is: [ Game_element => [ "VersionA" => [ description, profiling_adaptation_role_connection ] ] ]
     const ADAPTATION_PROFILE = ["Profile" =>
         ["P001" => ["Profile displays graphs comparing yourself vs. everyone else", [ "Regular", "Achiever" ]],
          "P002" => ["Profile displays graphs comparing yourself vs. people with similar progress as you", ["Halfhearted"]],

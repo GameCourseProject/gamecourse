@@ -17,6 +17,7 @@ use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\Moodle\Moodle;
+use GameCourse\Module\Profiling\Profiling;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 use Google\Service\DriveActivity\Edit;
@@ -68,11 +69,13 @@ class Badges extends Module
     const DATA_FOLDER = 'badges';
     const RULE_SECTION = "Badges";
 
-    // FIXME -> Maybe add this to a .txt instead of php file?
+    // FIXME -> Change later (profiling_adaptation_role_connection should not be hardcoded)
+    // NOTE: profiling_adaptation_role_connection not really used at the moment
     // Structure is: [ Game_element => [ "VersionA" => [ description, profiling_adaptation_role_connection ] ] ]
     const ADAPTATION_BADGES = [ "Badges" => [
         "B001" => ["Badges displayed in alphabetic order", [ "Regular", "Achiever" ]],
         "B002" => ["Badges displayed with achieved first", [ "Halfhearted", "Underachiever" ] ] ] ];
+
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/

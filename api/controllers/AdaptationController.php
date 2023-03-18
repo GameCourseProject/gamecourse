@@ -181,29 +181,8 @@ class AdaptationController
         $gameElementId = $gameElement->getId();
 
         GameElement::submitGameElementQuestionnaire($courseId, $userId, $q1, $q2, $q3, $gameElementId);
-    }
-
-    /**
-     * Translates profiling roles to adaptation roles and assigns them to students
-     * Prepares preferences for future edition
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function profilingToAdaptationRole()
-    {
-        API::requireValues('courseId', 'userId');
-
-        $courseId = API::getValue('courseId', "int");
-        $course = API::verifyCourseExists($courseId);
-
-        $userId = API::getValue('user', "int");
-        $user = API::verifyUserExists($userId);
-
-        // TODO
 
     }
-
 
 
     /**
@@ -249,13 +228,13 @@ class AdaptationController
         $module = API::verifyModuleExists($moduleId, $course);
 
         // Get rest of the values
+        $previousPreference = API::getValue('previousPreference');
         $newPreference = API::getValue('newPreference');
         $date = API::getValue('date') ?? date("Y-m-d h:i:sa");
 
+        if ($previousPreference) { $previousPreference = Role::getRoleId($previousPreference, $courseId);}
         $newPreferenceArg = Role::getRoleId($newPreference, $courseId);
 
-        // FIXME -- Change later
-        $previousPreference = API::getValue('previousPreference') ?? $newPreferenceArg;
         GameElement::updateUserPreference($courseId, $userId, $moduleId, $previousPreference, $newPreferenceArg, $date);
     }
 }

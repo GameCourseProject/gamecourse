@@ -573,16 +573,12 @@ abstract class Module
     protected function addAdaptationRolesToCourse(array $roles){
 
         $parent = array_keys($roles)[0];
-        $children = array_keys($roles[$parent]);
+        $versions = array_keys($roles[$parent]);
 
-        Role::addAdaptationRolesToCourse($this->course->getId(), $this->id, $parent, $children);
-        foreach ($children as $child){
-            $roleId = Role::getRoleId($child[0], $this->course->getId());
-            GameElement::addGameElementDescription($roleId, $child[0]);
-            foreach ($child[1] as $value){
-                $roleIdAdaptation = Role::getRoleId($value, $this->course->getId());
-                GameElement::addAdaptationAndRoleConnection($roleId, $roleIdAdaptation);
-            }
+        Role::addAdaptationRolesToCourse($this->course->getId(), $this->id, $parent, $versions);
+        foreach ($roles[$parent] as $key => $value){
+            $roleId = Role::getRoleId($key, $this->course->getId());
+            GameElement::addGameElementDescription($roleId, $value[0]);
         }
     }
 
@@ -679,10 +675,6 @@ abstract class Module
         foreach($children as $child){
             $roleId = Role::getRoleId($child[0], $this->course->getId());
             GameElement::removeGameElementDescription($roleId, $child[0]);
-            foreach ($child[1] as $value){
-                $roleIdAdaptation = Role::getRoleId($value, $this->course->getId());
-                GameElement::removeAdaptationAndRoleConnection($roleId, $roleIdAdaptation);
-            }
         }
 
         Role::removeAdaptationRolesFromCourse($this->course->getId(), $this->id, $parent);

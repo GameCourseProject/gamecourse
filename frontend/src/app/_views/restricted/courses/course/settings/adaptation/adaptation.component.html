@@ -96,7 +96,7 @@
             <div class="mt-3">
               <div class="btn-group flex justify-start">
                 <!-- TODO: add helper info ? -->
-                <span>Versions available:</span>
+                <span>Options available:</span>
                 <div *ngFor="let option of getVersions(); let i = index" class="pl-4">
                   <div class="indicator">
                   <span *ngIf="option === previousPreference"
@@ -105,20 +105,19 @@
                   </span>
                     <input type = "button"
                            class="btn-sm rounded-lg btn-{{getButtonColor(option)}} px-2 text-white"
-                           value="{{option}}"
+                           value="Option {{i+1}}"
                            (click) = "setButtonActive(option); doAction('set option', option)"/>
                   </div>
                 </div>
               </div>
               <span *ngIf="option === activeButton">{{gameElementChildren[option]}}</span>
-              <div *ngIf="selectedGameElement" class="justify-center flex">
+              <div *ngIf="activeButton" class="justify-center flex">
                 <img class="w-8/12 pt-3 pb-3"  src="assets/imgs/adaptation/{{selectedGameElement}}-{{option}}-{{getTheme()}}.png" alt="">
               </div>
             </div>
 
             <!-- Actions -->
             <div class="card-actions justify-end">
-              <button type="button" class="btn btn-ghost mr-2" (click)="discardPreference()">Discard</button>
               <button type="submit" class="btn btn-primary" (click)="updatePreference()">
                 <!-- Spinner -->
                 <ng-container *ngIf="loading.action">
@@ -127,7 +126,7 @@
                 Save preferences
               </button>
             </div>
-            <p class="flex text-xs mt-2 justify-end">Above actions will only affect the current game element</p>
+            <p class="flex text-xs mt-2 justify-end">Above action will only affect the current game element</p>
           </div>
         </div>
       </div>

@@ -327,7 +327,7 @@ class GameElement
     public static function getPreviousUserPreference(int $courseId, int $userId, string $moduleId): string{
         $table = self::TABLE_USER_GAME_ELEMENT_PREFERENCES;
         $where = ["course" => $courseId, "user" => $userId, "module" => $moduleId];
-        $preferences = Core::database()->selectMultiple($table, $where, "*", "date");
+        $preferences = Core::database()->selectMultiple($table, $where, "*", "date desc");
 
         if (count($preferences)){
             $response = $preferences[0]["newPreference"];
@@ -345,31 +345,27 @@ class GameElement
      * @param int $courseId
      * @param int $userId
      * @param string $module
-     * @param int $previousPreference
+     * @param int|null $previousPreference
      * @param int $newPreference
      * @param string $date
      * @return void
-     * @throws Exception
      */
-    public static function updateUserPreference(int $courseId, int $userId, string $module, int $previousPreference, int $newPreference, string $date){
+    public static function updateUserPreference(int $courseId, int $userId, string $module, ?int $previousPreference, int $newPreference, string $date){
         $table = self::TABLE_USER_GAME_ELEMENT_PREFERENCES;
         $where = ["course" => $courseId, "user" => $userId, "newPreference" => $previousPreference];
 
-        $lastPreference = Core::database()->select($table, $where, "*", "date desc");
+        $data = ["course" => $courseId, "user" => $userId, "module" => $module, "previousPreference" =>  $previousPreference, "newPreference" => $newPreference, "date" => $date];
 
-        // if lastPreference date was less than 1 day ago
-        if ($lastPreference["date"]){
-            if (strtotime('-1 day') < strtotime($lastPreference["date"])){
-                Core::database()->delete($table, ["id" => $lastPreference["id"]]);
+        $lastPreference = Core::database()->select($table, $where, "*", "date desc");
+        // NOTE: if lastPreference date was less than 1 day ago and student had already chosen something: it does not save another entry, just updates it
+        if ($lastPreference["date"]) {
+            if (strtotime('-1 day') < strtotime($lastPreference["date"]) && !is_null($lastPreference["previousPreference"])) {
+                Core::database()->update($table, $data, ["id" => $lastPreference["id"]]);
+                return;
             }
         }
-        Core::database()->insert($table, [
-            "course" => $courseId,
-            "user" => $userId,
-            "module" => $module,
-            "previousPreference" =>  $previousPreference,
-            "newPreference" => $newPreference,
-            "date" => $date]);
+
+        Core::database()->insert($table, $data); // add to db
 
     }
 
@@ -413,31 +409,6 @@ class GameElement
     public static function removeGameElementDescription(int $id, string $description){
         $table = self::TABLE_ELEMENT_VERSIONS_DESCRIPTIONS;
         Core::database()->delete($table, ["element" => $id, "description" => $description]);
-    }
-
-    /**
-     * Creates connection between roles given by the profiler module and adaptation ones to allow
-     * students edit their own game elements in the future
-     *
-     * @param int $idRole
-     * @param int $idRoleAdaptation
-     * @return void
-     * @throws Exception
-     */
-    public static function addAdaptationAndRoleConnection(int $idRole, int $idRoleAdaptation){
-
-    }
-
-    /**
-     * Removes connection between roles given by the profiler module and adaptation ones
-     *
-     * @param int $idRole
-     * @param int $idRoleAdaptation
-     * @return void
-     * @throws Exception
-     */
-    public static function removeAdaptationAndRoleConnection(int $idRole, int $idRoleAdaptation){
-
     }
 
     /**
