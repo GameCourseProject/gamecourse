@@ -225,6 +225,8 @@ export class AdaptationComponent implements OnInit {
     } else if (action === 'Questionnaire statistics' && col === 2){
       this.loading.action = true;
       this.gameElementToManage = this.initGameElementToManage(this.gameElementToActOn);
+      const q1 = await this.api.getQuestionStatistics(this.course.id, this.gameElementToManage.id, 1).toPromise();
+      const q2 = await this.api.getQuestionStatistics(this.course.id, this.gameElementToManage.id, 2).toPromise();
       const q3 = await this.api.getQuestionStatistics(this.course.id, this.gameElementToManage.id, 3).toPromise();
 
       let response: number[] = [];

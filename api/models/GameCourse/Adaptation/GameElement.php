@@ -281,21 +281,33 @@ class GameElement
     /**
      * Gets questions statistics for data presentation on frontend
      *
-     * @param int $course
+     * @param Course $course
      * @param int $gameElement
      * @param int $questionNr
      * @return array
      * @throws Exception
      */
-    public static function getQuestionStatistics(int $course, int $gameElement, int $questionNr): array{
+    public static function getQuestionStatistics(Course $course, int $gameElement, int $questionNr): array{
         $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
-        $where = ["course" => $course, "element" => $gameElement];
+        $where = ["course" => $course->getId(), "element" => $gameElement];
 
         $response = [];
         if ($questionNr === 1){
-            // TODO
+            $nrStudents = count($course->getStudents());
+            if ($nrStudents == 0) $nrStudents = 1;
+
+            $isFalse = "0";
+            $where["question1"] = $isFalse;
+            $entries = Core::database()->select($table, $where, "count(*)");
+            $response["false"] = ($entries / $nrStudents) * 100;
+
+            $isTrue = "1";
+            $where["question1"] = $isTrue;
+            $entries = Core::database()->select($table, $where, "count(*)");
+            $response["true"] = ($entries / $nrStudents) * 100;
+
         } else if ($questionNr === 2){
-            // TODO
+            $response = Core::database()->selectMultiple($table, $where, "question2");
         } else if ($questionNr === 3) {
             for ($i = 1; $i <= 10; $i++) {
                 $where["question3"] = $i;

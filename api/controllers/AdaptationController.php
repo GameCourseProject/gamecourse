@@ -260,7 +260,7 @@ class AdaptationController
         $gameElementId = API::getValue('gameElementId', "int");
         $questionNr = API::getValue('question', "int");
 
-        $statistics = GameElement::getQuestionStatistics($courseId, $gameElementId, $questionNr);
+        $statistics = GameElement::getQuestionStatistics($course, $gameElementId, $questionNr);
         API::response($statistics);
     }
 
