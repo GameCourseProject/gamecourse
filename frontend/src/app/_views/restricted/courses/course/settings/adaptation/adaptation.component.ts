@@ -9,6 +9,7 @@ import {ModalService} from "../../../../../../_services/modal.service";
 import {NgForm} from "@angular/forms";
 import {AlertService, AlertType} from "../../../../../../_services/alert.service";
 import {ThemingService} from "../../../../../../_services/theming/theming.service";
+import {Action} from "../../../../../../_domain/modules/config/Action";
 
 @Component({
   selector: 'app-adaptation',
@@ -33,6 +34,33 @@ export class AdaptationComponent implements OnInit {
   /** -- ADMIN VARIABLES -- **/
   gameElementToManage: GameElementManageData = this.initGameElementToManage();
   adminMode: 'questionnaire statistics' | 'activate' | 'deactivate';
+
+  //q1s: boolean[];
+  //q2s: string[];
+
+  // FIXME: add colors later
+  q3 = { series: [
+    {
+      name: "Nº of students",
+      data: null
+    }]};
+
+  /*q3color: {color: string, value: number}[] =[
+    {color: "#DF1D3D", value: 1},
+    {color: "#EE603B", value: 2},
+    {color: "#F88A3B", value: 3},
+    {color: "#FBAD37", value: 3},
+    {color: "#FFC92A", value: 5},
+    {color: "#F9DF1D", value: 6},
+    {color: "#D6D83F", value: 7},
+    {color: "#AED257", value: 8},
+    {color: "#8BC972", value: 9},
+    {color: "#61BE88", value: 10}
+  ];
+
+  q3colors: ["#F88A3B",  "#FBAD37", "#FFC92A",
+    "#F9DF1D", "#D6D83F", "#AED257", "#8BC972",  "#61BE88"
+  ];*/
 
   /** -- NON-ADMIN VARIABLES -- **/
   selectedGameElement: string;
@@ -69,6 +97,10 @@ export class AdaptationComponent implements OnInit {
     });
   }
 
+  get Action(): typeof Action {
+    return Action;
+  }
+
   /*** --------------------------------------------- ***/
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
@@ -83,7 +115,7 @@ export class AdaptationComponent implements OnInit {
 
   async getGameElements(courseID: number): Promise<void> {
     // ADMIN
-    if (!this.user.isAdmin){
+    if (this.user.isAdmin){
       this.availableGameElements = await this.api.getGameElements(courseID).toPromise();
     }
 
@@ -146,7 +178,7 @@ export class AdaptationComponent implements OnInit {
 
     const table: {type: TableDataType, content: any}[][] = [];
 
-    if (!this.user.isAdmin){  //FIXME: DEBUG ONLY
+    if (this.user.isAdmin){  //FIXME: DEBUG ONLY
       this.availableGameElements.forEach(gameElement => {
 
         let isActive = gameElement.isActive;
@@ -190,9 +222,29 @@ export class AdaptationComponent implements OnInit {
       this.gameElementToManage = this.initGameElementToManage(this.gameElementToActOn);
       ModalService.openModal('manage-game-element');
 
-    } else if (action === 'answer questionnaire') {
+    } else if (action === 'Questionnaire statistics' && col === 2){
+      this.loading.action = true;
+      this.gameElementToManage = this.initGameElementToManage(this.gameElementToActOn);
+      const q3 = await this.api.getQuestionStatistics(this.course.id, this.gameElementToManage.id, 3).toPromise();
+
+      let response: number[] = [];
+      for (const element of Object.keys(q3)){
+        response.push(parseInt(q3[element]));
+      }
+
+      this.q3.series[0].data = response;
+
+      this.adminMode = 'questionnaire statistics';
+      this.loading.action = false;
+      ModalService.openModal('questionnaire-statistics');
+
+    } else if (action === 'Export questionnaire answers' && col === 2){
+      // TODO
+
+    } else if (action === 'answer questionnaire' && col === 1) {
       ModalService.openModal('questionnaire');
       this.mode = 'questionnaire';
+
     }
   }
 

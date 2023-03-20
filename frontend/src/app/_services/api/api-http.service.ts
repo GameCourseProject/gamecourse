@@ -896,6 +896,22 @@ export class ApiHttpService {
       .pipe(map((res: any) => res));
   }
 
+  // FIXME: change return type
+  public getQuestionStatistics(courseID: number, gameElementID: number, question: number): Observable<{parameter: string, value: number} | string[]>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'getQuestionStatistics');
+      qs.push('courseId', courseID);
+      qs.push('gameElementId', gameElementID);
+      qs.push('question', question);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map ((res: any) => res['data']));
+  }
+
 
   // Roles
 

@@ -278,6 +278,35 @@ class GameElement
         ]);
     }
 
+    /**
+     * Gets questions statistics for data presentation on frontend
+     *
+     * @param int $course
+     * @param int $gameElement
+     * @param int $questionNr
+     * @return array
+     * @throws Exception
+     */
+    public static function getQuestionStatistics(int $course, int $gameElement, int $questionNr): array{
+        $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
+        $where = ["course" => $course, "element" => $gameElement];
+
+        $response = [];
+        if ($questionNr === 1){
+            // TODO
+        } else if ($questionNr === 2){
+            // TODO
+        } else if ($questionNr === 3) {
+            for ($i = 1; $i <= 10; $i++) {
+                $where["question3"] = $i;
+                $entries = Core::database()->select($table, $where, "count(*)");
+                $response[$i] = $entries;
+            }
+        }
+
+        return $response;
+    }
+
     /*** ---------------------------------------------------- ***/
     /*** ------------ GameElement Manipulation -------------- ***/
     /*** ---------------------------------------------------- ***/
@@ -327,10 +356,10 @@ class GameElement
     public static function getPreviousUserPreference(int $courseId, int $userId, string $moduleId): string{
         $table = self::TABLE_USER_GAME_ELEMENT_PREFERENCES;
         $where = ["course" => $courseId, "user" => $userId, "module" => $moduleId];
-        $preferences = Core::database()->selectMultiple($table, $where, "*", "date desc");
+        $preferences = Core::database()->select($table, $where, "*", "date desc");
 
-        if (count($preferences)){
-            $response = $preferences[0]["newPreference"];
+        if ($preferences){
+            $response = $preferences["newPreference"];
 
         } else{
             return "No data for current preference.";

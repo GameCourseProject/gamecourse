@@ -5,10 +5,10 @@
 
   <ng-container *ngIf="!loading.page">
     <!-- Admin Template -->
-    <ng-container *ngIf="false" [ngTemplateOutlet]="ADMIN"></ng-container>
+    <ng-container *ngIf="true" [ngTemplateOutlet]="ADMIN"></ng-container>
 
     <!-- Non-Admin Template -->
-    <ng-container *ngIf="true" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
+    <ng-container *ngIf="false" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
   </ng-container>
 </div>
 
@@ -72,6 +72,30 @@
 
   </form>
 </ng-template>
+
+<app-modal *ngIf="adminMode && gameElementToManage"
+  [id]="'questionnaire-statistics'"
+  [templateRef]="QUESTIONNAIRES_STATISTICS"
+  [size]="'md'"
+  [header]="gameElementToManage.module + ' ' + adminMode?.toLowerCase()"
+  [actionInProgress]="loading.action"
+  [submitBtnText]="'Done'"
+  [closeBtn]="false"
+></app-modal>
+
+<ng-template #QUESTIONNAIRES_STATISTICS>
+  <app-bar-chart
+    [id]="'q3s'"
+    [title]="'Question 3'"
+    [subtitle]="'How many students thought about \'' + gameElementToManage.module + '\' per enjoyment level (1-lowest, 10-highest)'"
+    [series]="q3.series"
+    [XAxisLabel]="'Level of enjoyment'"
+    [YAxisLabel]="'Number of students'"
+    [dataLabels]="true"
+    [XAxisGrid]="true"
+    ></app-bar-chart>
+</ng-template>
+
 
 <!-- Non-Admin Template -->
 <ng-template #NON_ADMIN>
@@ -209,7 +233,6 @@
     (btnClicked)="doActionOnTable('answer questionnaire', $event.row, $event.col)">
   </app-table>
 </ng-template>
-
 
 <app-preference-questionnaire
   *ngIf="mode"

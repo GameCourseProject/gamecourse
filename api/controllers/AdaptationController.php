@@ -129,6 +129,10 @@ class AdaptationController
         API::response($children);
     }
 
+    /*** -------------------------------------------------------- ***/
+    /*** --------------- Adaptation Questionnaire --------------- ***/
+    /*** -------------------------------------------------------- ***/
+
     /**
      * Sees whether a specific user in a course has answered the preferences questionnaire or not
      *
@@ -184,6 +188,9 @@ class AdaptationController
 
     }
 
+    /*** -------------------------------------------------------- ***/
+    /*** ---------------- Adaptation Preferences ---------------- ***/
+    /*** -------------------------------------------------------- ***/
 
     /**
      * Gets previous user preference of specific GameElement
@@ -237,4 +244,24 @@ class AdaptationController
 
         GameElement::updateUserPreference($courseId, $userId, $moduleId, $previousPreference, $newPreferenceArg, $date);
     }
+
+    /**
+     * Gets questions statistics for data presentation on frontend
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getQuestionStatistics(){
+        API::requireValues('courseId', 'gameElementId', 'question');
+
+        $courseId = API::getValue('courseId', "int");
+        $course = API::verifyCourseExists($courseId);
+
+        $gameElementId = API::getValue('gameElementId', "int");
+        $questionNr = API::getValue('question', "int");
+
+        $statistics = GameElement::getQuestionStatistics($courseId, $gameElementId, $questionNr);
+        API::response($statistics);
+    }
+
 }
