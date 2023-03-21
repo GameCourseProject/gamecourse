@@ -252,15 +252,14 @@ class AdaptationController
      * @throws Exception
      */
     public function getQuestionStatistics(){
-        API::requireValues('courseId', 'gameElementId', 'question');
+        API::requireValues('courseId', 'gameElementId');
 
         $courseId = API::getValue('courseId', "int");
         $course = API::verifyCourseExists($courseId);
 
         $gameElementId = API::getValue('gameElementId', "int");
-        $questionNr = API::getValue('question', "int");
 
-        $statistics = GameElement::getQuestionStatistics($course, $gameElementId, $questionNr);
+        $statistics = GameElement::getQuestionStatistics($course, $gameElementId);
         API::response($statistics);
     }
 

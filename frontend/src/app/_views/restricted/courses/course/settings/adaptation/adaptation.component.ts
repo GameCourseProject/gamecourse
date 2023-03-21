@@ -31,20 +31,41 @@ export class AdaptationComponent implements OnInit {
   gameElementToActOn: GameElement;
   availableGameElements: GameElement[];
 
+  readonly tableType: string[] = ['overall', 'question2'];
+
   /** -- ADMIN VARIABLES -- **/
   gameElementToManage: GameElementManageData = this.initGameElementToManage();
   adminMode: 'questionnaire statistics' | 'activate' | 'deactivate';
 
-  //q1s: boolean[];
-  //q2s: string[];
+  // FIXME: add colors later to q3
+  statistics = {
+    q1: { series: null,
+          colors: ["#C53B55", "#65E59F"],
+          labels: ["Yes", "No"],
+          title: "Question 1:",
+          subtitle: "Percentage of students that noticed differences in their interface."
+    },
+    q2: { tableData:null,
+          tableHeaders: [{label: 'Description'}],
+          tableOptions: {
+            order: [0, 'asc'],
+            columnDefs: [
+              { type: 'natural', targets: [0] },
+              { orderable: true, targets: [0] },
+              { searchable: false, targets: [0] }
+            ]
+          },
+          data: null,
+          title: "Question 2:",
+          subtitle: "Descriptions of what students saw different regarding this game element." },
+    q3: { series: [{ name: "Nº of students", data: null}],
+          colors: [],
+          title: "Question 3:",
+          subtitle: "How many students thought about this game element per enjoyment level (1-lowest, 10-highest)."
+    }
+  }
 
-  // FIXME: add colors later
-  q3 = { series: [
-    {
-      name: "Nº of students",
-      data: null
-    }]};
-
+  // FIXME - q3 colors
   /*q3color: {color: string, value: number}[] =[
     {color: "#DF1D3D", value: 1},
     {color: "#EE603B", value: 2},
@@ -76,7 +97,6 @@ export class AdaptationComponent implements OnInit {
   mode: 'questionnaire';
   questionnaires: QuestionnaireManageData[] = [];
 
-
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
@@ -92,7 +112,7 @@ export class AdaptationComponent implements OnInit {
       await this.getGameElements(courseID);
       this.loading.page = false;
 
-      await this.buildTable();
+      await this.buildTable(this.tableType[0]);
 
     });
   }
@@ -141,9 +161,9 @@ export class AdaptationComponent implements OnInit {
     }
   }
 
-  /*** --------------------------------------------- ***/
-  /*** ----------------- Table  -------------------- ***/
-  /*** --------------------------------------------- ***/
+  /*** -------------------------------------------- ***/
+  /*** ----------------- Table -------------------- ***/
+  /*** -------------------------------------------- ***/
 
   data: {type: TableDataType, content: any}[][];
 
@@ -156,10 +176,10 @@ export class AdaptationComponent implements OnInit {
   tableOptionsAdmin = {
     order: [0, 'asc'],
     columnDefs: [
-      { type: 'natural', targets: [0] },
+      { type: 'string', targets: [0] },
       { orderable: false, targets: [1] }
     ]
-  }
+  };
 
   /* NON-ADMIN */
   headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
@@ -173,41 +193,50 @@ export class AdaptationComponent implements OnInit {
     ]
   }
 
-  async buildTable() {
+  async buildTable(tableType: string) {
     this.loading.table = true;
 
     const table: {type: TableDataType, content: any}[][] = [];
 
-    if (this.user.isAdmin){  //FIXME: DEBUG ONLY
-      this.availableGameElements.forEach(gameElement => {
+    if (tableType === this.tableType[0]){
+      if (this.user.isAdmin){  //FIXME: DEBUG ONLY
+        this.availableGameElements.forEach(gameElement => {
 
-        let isActive = gameElement.isActive;
-        if (isActive.toString() === '0' || isActive.toString() === '1'){
-          isActive = (gameElement.isActive).toString() === '1';
-        }
-        table.push([
-          {type: TableDataType.TEXT, content: {text: gameElement.module}},
-          {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: isActive}},
-          {type: TableDataType.ACTIONS, content: {actions: [
-                {action: 'Questionnaire statistics', icon: 'tabler-chart-pie', color: 'primary'},
-                {action: 'Export questionnaire answers', icon: 'jam-upload', color: 'primary'}]}
+          let isActive = gameElement.isActive;
+          if (isActive.toString() === '0' || isActive.toString() === '1'){
+            isActive = (gameElement.isActive).toString() === '1';
           }
-        ]);
-      });
-    } else{
-      for (const questionnaire of this.questionnaires) {
-        table.push([
-          {type: TableDataType.TEXT, content: {text: questionnaire.element}},
-          {type: TableDataType.BUTTON, content: {
-            buttonText: questionnaire.isAnswered ? 'Answered' : 'Answer',
-            buttonColor: questionnaire.isAnswered ? '' : 'success',
-            buttonStyle: 'outline',
-            buttonDisable: questionnaire.isAnswered}},
-        ]);
+          table.push([
+            {type: TableDataType.TEXT, content: {text: gameElement.module}},
+            {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: isActive}},
+            {type: TableDataType.ACTIONS, content: {actions: [
+                  {action: 'Questionnaire statistics', icon: 'tabler-chart-pie', color: 'primary'},
+                  {action: 'Export questionnaire answers', icon: 'jam-upload', color: 'primary'}]}
+            }
+          ]);
+        });
+      } else{
+        for (const questionnaire of this.questionnaires) {
+          table.push([
+            {type: TableDataType.TEXT, content: {text: questionnaire.element}},
+            {type: TableDataType.BUTTON, content: {
+                buttonText: questionnaire.isAnswered ? 'Answered' : 'Answer',
+                buttonColor: questionnaire.isAnswered ? '' : 'success',
+                buttonStyle: 'outline',
+                buttonDisable: questionnaire.isAnswered}},
+          ]);
+        }
       }
+      this.data = table;
+    } else if (tableType === this.tableType[1]){
+      for (let i = 0; i < this.statistics.q2.data.length; i++){
+        if (this.statistics.q2.data[i] !== null){
+          table.push([{type: TableDataType.TEXT, content: {text: this.statistics.q2.data[i]}}]);
+        }
+      }
+      this.statistics.q2.tableData = table;
     }
 
-    this.data = table;
     this.loading.table = false;
   }
 
@@ -225,16 +254,9 @@ export class AdaptationComponent implements OnInit {
     } else if (action === 'Questionnaire statistics' && col === 2){
       this.loading.action = true;
       this.gameElementToManage = this.initGameElementToManage(this.gameElementToActOn);
-      const q1 = await this.api.getQuestionStatistics(this.course.id, this.gameElementToManage.id, 1).toPromise();
-      const q2 = await this.api.getQuestionStatistics(this.course.id, this.gameElementToManage.id, 2).toPromise();
-      const q3 = await this.api.getQuestionStatistics(this.course.id, this.gameElementToManage.id, 3).toPromise();
 
-      let response: number[] = [];
-      for (const element of Object.keys(q3)){
-        response.push(parseInt(q3[element]));
-      }
-
-      this.q3.series[0].data = response;
+      // setting up data for statistics modal
+      await this.setUpData(await this.api.getQuestionStatistics(this.course.id, this.gameElementToManage.id).toPromise());
 
       this.adminMode = 'questionnaire statistics';
       this.loading.action = false;
@@ -273,12 +295,17 @@ export class AdaptationComponent implements OnInit {
     this.availableGameElements.removeAtIndex(index);
     this.availableGameElements.push(gameElement);
 
-    await this.buildTable();
+    await this.buildTable(this.tableType[0]);
     this.loading.action = false;
     this.resetGameElementManage();
     ModalService.closeModal('manage-game-element');
     AlertService.showAlert(AlertType.SUCCESS, 'Game element \'' + gameElement.module + '\' ' + this.adminMode + 'd');
 
+  }
+
+  closeStatistics(){
+    ModalService.closeModal('questionnaire-statistics');
+    this.resetGameElementManage();
   }
 
   /** -- NON-ADMIN ACTIONS -- **/
@@ -292,7 +319,7 @@ export class AdaptationComponent implements OnInit {
       }
 
       this.mode = null;
-      await this.buildTable();
+      await this.buildTable(this.tableType[0]);
 
       let filteredQuestionnaires = this.questionnaires.filter(function (item) { return !item.isAnswered });
       if (filteredQuestionnaires.length === 0) {
@@ -365,6 +392,20 @@ export class AdaptationComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  async setUpData(statistics: { questionNr: { parameter: string, value: number }[] | string[] })
+  {
+    // Question 1 data
+    this.statistics.q1.labels = Object.keys(statistics["question1"]).map(element => { return element.capitalize() });
+    this.statistics.q1.series = Object.values(statistics["question1"]);
+    // Question 2 data
+    this.statistics.q2.data = Object.values(statistics["question2"]);
+    // Question 3 data
+    this.statistics.q3.series[0].data = (Object.values(statistics["question3"])).map(element => {return parseInt(<string>element);});
+
+    await this.buildTable(this.tableType[1]);
+  }
+
 
   getTheme(){
     return this.themeService.getTheme();

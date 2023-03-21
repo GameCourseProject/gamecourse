@@ -283,37 +283,36 @@ class GameElement
      *
      * @param Course $course
      * @param int $gameElement
-     * @param int $questionNr
      * @return array
      * @throws Exception
      */
-    public static function getQuestionStatistics(Course $course, int $gameElement, int $questionNr): array{
+    public static function getQuestionStatistics(Course $course, int $gameElement): array{
         $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
-        $where = ["course" => $course->getId(), "element" => $gameElement];
-
         $response = [];
-        if ($questionNr === 1){
-            $nrStudents = count($course->getStudents());
-            if ($nrStudents == 0) $nrStudents = 1;
 
-            $isFalse = "0";
-            $where["question1"] = $isFalse;
-            $entries = Core::database()->select($table, $where, "count(*)");
-            $response["false"] = ($entries / $nrStudents) * 100;
+        // Statistics question 1
+        $nrStudents = count($course->getStudents());
+        if ($nrStudents == 0) $nrStudents = 1;
 
-            $isTrue = "1";
-            $where["question1"] = $isTrue;
-            $entries = Core::database()->select($table, $where, "count(*)");
-            $response["true"] = ($entries / $nrStudents) * 100;
+        $entries = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "0"], "count(*)");
+        $response["question1"]["false"] = ($entries / $nrStudents) * 100;
 
-        } else if ($questionNr === 2){
-            $response = Core::database()->selectMultiple($table, $where, "question2");
-        } else if ($questionNr === 3) {
-            for ($i = 1; $i <= 10; $i++) {
-                $where["question3"] = $i;
-                $entries = Core::database()->select($table, $where, "count(*)");
-                $response[$i] = $entries;
-            }
+        $entries = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "1"], "count(*)");
+        $response["question1"]["true"] = ($entries / $nrStudents) * 100;
+
+        // Statistics question 2
+        $aux = Core::database()->selectMultiple($table, ["course" => $course->getId(), "element" => $gameElement], "question2");
+
+        $final = [];
+        foreach ($aux as $description){
+            array_push($final, $description["question2"]);
+        }
+        $response["question2"] = $final;
+
+        // Statistics question 3
+        for ($i = 1; $i <= 10; $i++) {
+            $entries = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question3" => $i], "count(*)");
+            $response["question3"][$i] = $entries;
         }
 
         return $response;

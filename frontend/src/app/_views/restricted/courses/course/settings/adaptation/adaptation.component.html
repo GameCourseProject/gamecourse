@@ -39,7 +39,7 @@
    [submitBtnText]="adminMode?.capitalize()"
    [actionInProgress]="loading.action"
    (submitBtnClicked)="f.onSubmit(null); toggleActive()"
-   (onClose)="resetGameElementManage(); buildTable()">
+   (onClose)="resetGameElementManage(); buildTable(tableType[0])">
 </app-modal>
 
 <ng-template #MANAGE_GAME_ELEMENT>
@@ -81,23 +81,53 @@
   [actionInProgress]="loading.action"
   [submitBtnText]="'Done'"
   [closeBtn]="false"
+  (submitBtnClicked)="closeStatistics()"
 ></app-modal>
 
 <ng-template #QUESTIONNAIRES_STATISTICS>
-  <app-pie-chart>
-    <!-- TODO -->
-  </app-pie-chart>
 
-  <app-bar-chart
-    [id]="'q3s'"
-    [title]="'Question 3'"
-    [subtitle]="'How many students thought about \'' + gameElementToManage.module + '\' per enjoyment level (1-lowest, 10-highest)'"
-    [series]="q3.series"
-    [XAxisLabel]="'Level of enjoyment'"
-    [YAxisLabel]="'Number of students'"
-    [dataLabels]="true"
-    [XAxisGrid]="true"
+  <div class="w-full mb-6">
+    <span class="w-full text-sm -mt-5"><strong>{{statistics.q1.title}} </strong> {{statistics.q1.subtitle}}</span>
+    <app-pie-chart
+      [id]="'question1'"
+      [classList]="'justify-center flex mt-4'"
+      [series]="statistics.q1.series"
+      [labels]="statistics.q1.labels"
+      [colors]="statistics.q1.colors"
+      [legend]="true"
+      [legendPosition]="'right'"
+    ></app-pie-chart>
+  </div>
+
+  <div class="w-full mb-6">
+    <span class="w-full text-sm -mt-5"><strong>{{statistics.q2.title}} </strong> {{statistics.q2.subtitle}}</span>
+    <app-table
+      [id]="'question2'"
+      [classList]="'mt-4'"
+      [headers]="statistics.q2.tableHeaders"
+      [options]="statistics.q2.tableOptions"
+      [data]="statistics.q2.tableData"
+      [loading]="loading.table"
+      (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
+    ></app-table>
+  </div>
+
+  <div class="w-full mb-6">
+    <span class="w-full text-sm -mt-5"><strong>{{statistics.q3.title}} </strong> {{statistics.q3.subtitle}}</span>
+    <app-bar-chart
+      [id]="'question3'"
+      [classList]="'justify-center px-10 mt-4'"
+      [series]="statistics.q3.series"
+      [XAxisLabel]="'Level of enjoyment'"
+      [YAxisLabel]="'Number of students'"
+      [dataLabels]="true"
+      [XAxisGrid]="true"
     ></app-bar-chart>
+  </div>
+
+
+  <!-- Loader -->
+  <app-loader [loading] = "loading.page"></app-loader>
 </ng-template>
 
 
