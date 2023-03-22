@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os, sys, config, logging
-from datetime import datetime
 
 from gamerules import *
 from gamerules.functions.utils import import_functions_from_rulepath
@@ -46,11 +45,10 @@ def get_metadata():
 
     try:
         with open(metadata_path, 'r') as f:
-            lines = f.read()
-            data = lines.split("\n")
+            lines = f.read().split("\n")
             metadata = {}
-            for el in data:
-                parts = el.split(":")
+            for line in lines:
+                parts = line.split(":")
                 if len(parts) == 2:
                     [key, val] = parts
                     metadata[key] = int(val)
@@ -131,10 +129,6 @@ if __name__ == "__main__":
         students = get_targets(course, checkpoint, all_targets, targets_list)
         if students:
 
-            # Clear all progression before calculating again
-            for el in students.keys():
-                clear_progression(el)
-
             # Import custom course functions
             # FIXME: doesn't seem to be doing anything
             functions_path = os.path.join(config.IMPORTED_FUNCTIONS_FOLDER, course)
@@ -157,26 +151,31 @@ if __name__ == "__main__":
 
             try:
                 # Save the start date
-                start_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+                start_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 log_start()
 
-                # Preload logs from the database
-                preload_logs(students.keys())
-                preload_awards(students.keys())
+                # Preload information from the database
+                preload_info(students.keys())
+
+                # Clear all progression before calculating again
+                clear_progression(students.keys())
 
                 # Fire Rule System
                 rs = RuleSystem(config.RULES_PATH, config.AUTOSAVE)
                 rs_output = rs.fire(students, logs, scope)
 
                 try:
-                    # Terminate AutoGame
-                    finish_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-                    autogame_terminate(course, start_date, finish_date)
-                    log_end()
+                    # Update all progression
+                    update_progression()
 
                     # Calculate new grade for each target
-                    for el in students.keys():
-                        calculate_grade(el)
+                    for student in students.keys():
+                        calculate_grade(student)
+
+                    # Terminate AutoGame
+                    finish_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    autogame_terminate(course, start_date, finish_date)
+                    log_end()
 
                 except Exception as e:
                     error_msg = str(e)

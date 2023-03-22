@@ -438,13 +438,14 @@ class AutoAction
     public static function generateRuleParams(string $name, string $description, string $type, int $amount): array
     {
         // Generate when clause
-        $logs = "get_logs(" . ($type !== "peergraded post" ? "target" : "None") . ", \"$type\"" . ($type === "peergraded post" ? ", None, target" : "") . ")";
-        $when = str_replace("<logs>", $logs, file_get_contents(__DIR__ . "/rules/when_template.txt"));
+        $logsArgs = [$type !== "peergraded post" ? "target" : "None", "\"$type\""];
+        if ($type === "peergraded post") $logsArgs = array_merge($logsArgs, ["None", "target"]);
+        $when = str_replace("<logs-args>", implode(", ", $logsArgs), file_get_contents(__DIR__ . "/rules/when_template.txt"));
 
         // Generate then clause
         $then = str_replace("<action>", $amount > 0 ? "award" : "spend", file_get_contents(__DIR__ . "/rules/then_template.txt"));
-        $then = str_replace("<name>", "\"$description\"", $then);
-        $then = str_replace("<amount>", abs($amount), $then);
+        $actionArgs = array_merge(["target", "\"$description\""], $amount > 0 ? ["logs", abs($amount), "None", "False"] : [abs($amount), "False"]);
+        $then = str_replace("<action-args>", implode(", ", $actionArgs), $then);
 
         return ["name" => $name, "description" => $description, "when" => $when, "then" => $then];
     }

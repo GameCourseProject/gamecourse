@@ -785,7 +785,7 @@ class Moodle extends Module
     public function getForumGrades(): array
     {
         $fields = "f.name as forumName, fd.id as discussionId, fp.subject, g.itemId as gradeId, u.username, g.rating as grade, 
-                   ug.username as grader, fp.modified as submissionTimestamp, g.timemodified as gradeTimestamp";
+                   ug.username as grader, fp.created as submissionTimestamp, g.timemodified as gradeTimestamp";
         $table = self::$prefix . "forum f JOIN " . self::$prefix . "forum_discussions fd on fd.forum=f.id JOIN " .
             self::$prefix . "forum_posts fp on fp.discussion=fd.id JOIN " . self::$prefix . "rating g on g.itemId=fp.id JOIN " .
             self::$prefix . "user u on fp.userid=u.id JOIN " . self::$prefix . "user ug on g.userid=ug.id JOIN " .
@@ -806,7 +806,7 @@ class Moodle extends Module
     public function getPeergradedForumGrades(): array
     {
         $fields = "f.name as forumName, fd.id as discussionId, fp.subject, g.itemId as gradeId, u.username, g.rating as grade, 
-                   ug.username as grader, fp.modified as submissionTimestamp, g.timemodified as gradeTimestamp";
+                   ug.username as grader, fp.created as submissionTimestamp, g.timemodified as gradeTimestamp";
         $table = self::$prefix . "peerforum f JOIN " . self::$prefix . "peerforum_discussions fd on fd.peerforum=f.id JOIN " .
             self::$prefix . "peerforum_posts fp on fp.discussion=fd.id JOIN " . self::$prefix . "rating g on g.itemId=fp.id JOIN " .
             self::$prefix . "user u on fp.userid=u.id JOIN " . self::$prefix . "user ug on g.userid=ug.id JOIN " .
