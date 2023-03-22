@@ -6,6 +6,7 @@ import {finalize} from "rxjs/operators";
 import {Action} from 'src/app/_domain/modules/config/Action';
 import * as Highcharts from 'highcharts';
 import * as moment from "moment";
+import {Moment} from "moment";
 import {TableDataType} from "../../../../../../../../../_components/tables/table-data/table-data.component";
 import {dateFromDatabase} from "../../../../../../../../../_utils/misc/misc";
 import {User} from "../../../../../../../../../_domain/users/user";
@@ -17,7 +18,6 @@ import {Course} from "../../../../../../../../../_domain/courses/course";
 import {ResourceManager} from "../../../../../../../../../_utils/resources/resource-manager";
 
 import * as _ from 'lodash';
-import {Moment} from "moment";
 
 declare var require: any;
 let Sankey = require('highcharts/modules/sankey');
@@ -170,6 +170,7 @@ export class ProfilingComponent implements OnInit {
 
   async getLastRun() {
     this.lastRun = await this.api.getLastRun(this.course.id).toPromise();
+    this.lastRun = moment(this.lastRun);
   }
 
   /*** --------------------------------------------------- ***/
@@ -180,7 +181,7 @@ export class ProfilingComponent implements OnInit {
     this.loading.table.status = true;
 
     this.status = [[
-      {type: TableDataType.DATETIME, content: {datetime: await this.getLastRun()}},
+      {type: TableDataType.DATETIME, content: {datetime: this.lastRun, datetimeFormat: "YYYY-MM-DD HH:mm:ss"}},
       {type: TableDataType.COLOR,
         content: {
           color: this.running.profiler ? '#36D399' : '#EF6060',
@@ -207,7 +208,8 @@ export class ProfilingComponent implements OnInit {
       // @ts-ignore
       Highcharts.chart('overview', {
         chart: {
-          marginRight: 40
+          marginRight: 40,
+          backgroundColor: null
         },
         title: {
           text: ""
@@ -275,6 +277,11 @@ export class ProfilingComponent implements OnInit {
 
     const endDate = moment(this.endDate, "YYYY-MM-DDTHH:mm").format("YYYY-MM-DD HH:mm:ss");
     await this.api.runProfiler(this.course.id, this.nrClusters, this.minClusterSize, endDate).toPromise();
+
+    await this.getLastRun();
+    // updates table with new status of profiler
+    await this.buildStatusTable();
+
     this.loading.action = false;
   }
 
@@ -453,6 +460,7 @@ export class ProfilingComponent implements OnInit {
   async refreshResults() {
     this.loading.action = true;
 
+    await this.getLastRun();
     await this.buildStatusTable();
     this.resetData();
     await this.getClusters();
