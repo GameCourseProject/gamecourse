@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, ViewChild} from '@angular/core';
+import {Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
 
 import {dataLabels, general, legend, markers, stroke, subtitle, title, tooltip, update, xaxis} from "../ChartOptions";
 import {BGDarkColor, BGLightColor, LineColor, TextColor} from "../ChartColors";
@@ -37,11 +37,12 @@ export type ChartOptions = {
   selector: 'app-radar-chart',
   templateUrl: './radar-chart.component.html'
 })
-export class RadarChartComponent implements OnInit {
+export class RadarChartComponent implements OnInit, OnChanges {
 
   // Essentials
   @Input() id: string;                                                      // Unique ID
   @Input() series: ApexAxisChartSeries;                                     // Data series to plot
+  @Input() normalized: boolean = false;                                     // Whether to normalize series
   @Input() classList?: string;                                              // Classes to add
 
   // Size
@@ -82,6 +83,9 @@ export class RadarChartComponent implements OnInit {
   // X-Axis
   @Input() XAxisType?: 'category' | 'datetime' | 'numeric';                 // Type of X-axis
   @Input() XAxisCategories?: (string | number)[];                           // Categories for X-axis
+
+  // Y-Axis
+  @Input() YAxisMax?: number[];                                             // Max. values for each Y-axis (mandatory for normalizing)
 
   // Extras
   @Input() sparkline?: boolean;                                             // Hide everything but primary paths
@@ -125,7 +129,7 @@ export class RadarChartComponent implements OnInit {
       subtitle: subtitle(this.subtitle, this.align),
       title: title(this.title, this.align),
       tooltip: tooltip(!this.sparkline && this.tooltip, {xaxis: this.tooltipXFormatter, yaxis: this.tooltipYFormatter},
-        theme === Theme.DARK ? 'dark' : 'light'),
+        this.normalized ? {xaxisMax: null, yaxisMax: this.YAxisMax} : false, theme === Theme.DARK ? 'dark' : 'light'),
       xaxis: xaxis(this.XAxisType, this.XAxisCategories, LineColor(theme))
     };
 
@@ -137,5 +141,20 @@ export class RadarChartComponent implements OnInit {
           {text: TextColor(theme), line: LineColor(theme), bg: {dark: BGDarkColor(theme), light: BGLightColor(theme)}})
       }
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.series && this.normalized) this.normalize();
+  }
+
+  normalize() {
+    // Normalize series between 0-1
+    for (let i = 0; i < this.series.length; i++) {
+      for (let j = 0; j < this.series[i]['data'].length; j++) {
+        if (this.series[i]['data'][j].hasOwnProperty('y'))
+          this.series[i]['data'][j]['y'] = this.series[i]['data'][j]['y'] * 100 / this.YAxisMax[j];
+        else this.series[i]['data'][j] = (this.series[i]['data'][j] as number) * 100 / this.YAxisMax[j];
+      }
+    }
   }
 }

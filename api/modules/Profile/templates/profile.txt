@@ -762,6 +762,7 @@
                                                                     "chartType": "radar",
                                                                     "data": "{providers.XPOverview(%user, \"presentation: Presentation, labs: Labs, badge: Badges, streak: Streaks, skill: Skills, quiz: Quizzes\", %compareWith)}",
                                                                     "options": {
+                                                                        "normalized": true,
                                                                         "height": "300",
                                                                         "colors": [
                                                                             "{%courseColor}",
@@ -770,7 +771,8 @@
                                                                         "legend": true,
                                                                         "stripedGrid": true,
                                                                         "markersSize": 4,
-                                                                        "tooltipYFormatter": "(?value) XP"
+                                                                        "tooltipYFormatter": "(?value) XP",
+                                                                        "YAxisMax": [3000, 3000, 1500, 1500, 6500, 6000]
                                                                     }
                                                                 }
                                                             ]

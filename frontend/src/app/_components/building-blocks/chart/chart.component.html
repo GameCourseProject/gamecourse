@@ -189,6 +189,7 @@
     <app-radar-chart
       [id]="'v' + view.uniqueId.toString()"
       [series]="view.data"
+      [normalized]="view.options?.normalized"
       [classList]="view.classList"
       [height]="view.options?.height || 'auto'"
       [width]="view.options?.width || '100%'"
@@ -207,6 +208,7 @@
       [tooltipYFormatter]="view.options?.tooltipYFormatter || undefined"
       [XAxisType]="view.options?.XAxisType || undefined"
       [XAxisCategories]="view.options?.XAxisCategories || undefined"
+      [YAxisMax]="view.options?.YAxisMax || undefined"
       [sparkline]="view.options?.sparkline || undefined"
       [toolbar]="view.options?.toolbar || undefined"
       [toolbarActions]="view.options?.toolbarActions || []">
