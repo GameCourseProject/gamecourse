@@ -896,7 +896,6 @@ export class ApiHttpService {
       .pipe(map((res: any) => res));
   }
 
-  // FIXME: change return type
   public getQuestionStatistics(courseID: number, gameElementID: number): Observable<{ questionNr: { parameter: string, value: number }[] | string[] }> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
@@ -911,6 +910,32 @@ export class ApiHttpService {
       .pipe(map ((res: any) => res['data']));
   }
 
+  public getNrAnswersQuestionnaire(courseID: number, gameElementID: number): Observable<number> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'getNrAnswersQuestionnaire');
+      qs.push('courseId', courseID);
+      qs.push('gameElementId', gameElementID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map ((res: any) => res['data']));
+  }
+
+  public exportAnswersQuestionnaire(courseID: number, gameElementID: number): Observable<string>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'exportAnswersQuestionnaire');
+      qs.push('courseId', courseID);
+      qs.push('gameElementId', gameElementID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, null, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data'])) );
+  }
 
   // Roles
 

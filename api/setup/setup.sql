@@ -185,6 +185,7 @@ CREATE TABLE preferences_questionnaire_answers(
     question2   varchar(250),   /* default here is null */
     question3   int unsigned,   /* default here is 0 */
     element     int unsigned NOT NULL,
+    date        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     UNIQUE(course, user, element),
     FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,

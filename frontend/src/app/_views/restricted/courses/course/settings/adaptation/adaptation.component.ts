@@ -10,6 +10,7 @@ import {NgForm} from "@angular/forms";
 import {AlertService, AlertType} from "../../../../../../_services/alert.service";
 import {ThemingService} from "../../../../../../_services/theming/theming.service";
 import {Action} from "../../../../../../_domain/modules/config/Action";
+import {DownloadManager} from "../../../../../../_utils/download/download-manager";
 
 @Component({
   selector: 'app-adaptation',
@@ -21,8 +22,10 @@ export class AdaptationComponent implements OnInit {
   loading = {
     page: true,
     action: false,
-    table: false
+    table: false,
+    refreshStatistics: false
   }
+  refreshing: boolean = true;
 
   course: Course;
   user: User;
@@ -34,6 +37,7 @@ export class AdaptationComponent implements OnInit {
   readonly tableType: string[] = ['overall', 'question2'];
 
   /** -- ADMIN VARIABLES -- **/
+  nrAnswers: number = 0;
   gameElementToManage: GameElementManageData = this.initGameElementToManage();
   adminMode: 'questionnaire statistics' | 'activate' | 'deactivate';
 
@@ -59,6 +63,7 @@ export class AdaptationComponent implements OnInit {
           title: "Question 2:",
           subtitle: "Descriptions of what students saw different regarding this game element." },
     q3: { series: [{ name: "Nº of students", data: null}],
+          categories: [ "10", "9", "8", "7", "6", "5", "4", "3", "2", "1"],
           colors: [],
           title: "Question 3:",
           subtitle: "How many students thought about this game element per enjoyment level (1-lowest, 10-highest)."
@@ -263,7 +268,7 @@ export class AdaptationComponent implements OnInit {
       ModalService.openModal('questionnaire-statistics');
 
     } else if (action === 'Export questionnaire answers' && col === 2){
-      // TODO
+      this.exportAnswers(this.gameElementToActOn);
 
     } else if (action === 'answer questionnaire' && col === 1) {
       ModalService.openModal('questionnaire');
@@ -304,8 +309,28 @@ export class AdaptationComponent implements OnInit {
   }
 
   closeStatistics(){
+    this.statistics.q1.series = null;
+    this.statistics.q2.tableData = null;
+    this.statistics.q2.data = null;
+    this.statistics.q3.series[0].data = null;
+    this.nrAnswers = 0;
     ModalService.closeModal('questionnaire-statistics');
     this.resetGameElementManage();
+  }
+
+  async exportAnswers(gameElement: GameElement): Promise<void>{
+    this.nrAnswers = await this.api.getNrAnswersQuestionnaire(this.course.id, this.gameElementToManage.id).toPromise();
+    if (this.nrAnswers === 0) {
+      AlertService.showAlert(AlertType.WARNING, 'There are no answers to export regarding this game element');
+
+    } else {
+      this.loading.action = true;
+
+      const contents = await this.api.exportAnswersQuestionnaire(this.course.id, gameElement.id).toPromise();
+      DownloadManager.downloadAsCSV((this.course.short ?? this.course.name) + '-' + gameElement.module + 'QuestionnaireAnswers', contents);
+
+      this.loading.action = false;
+    }
   }
 
   /** -- NON-ADMIN ACTIONS -- **/
@@ -395,13 +420,19 @@ export class AdaptationComponent implements OnInit {
 
   async setUpData(statistics: { questionNr: { parameter: string, value: number }[] | string[] })
   {
+    // NOTE: forces table to update
+    this.refreshing = true;
+    setTimeout(() => this.refreshing = false, 0);
+
+    this.nrAnswers = await this.api.getNrAnswersQuestionnaire(this.course.id, this.gameElementToManage.id).toPromise();
+
     // Question 1 data
     this.statistics.q1.labels = Object.keys(statistics["question1"]).map(element => { return element.capitalize() });
     this.statistics.q1.series = Object.values(statistics["question1"]);
     // Question 2 data
     this.statistics.q2.data = Object.values(statistics["question2"]);
     // Question 3 data
-    this.statistics.q3.series[0].data = (Object.values(statistics["question3"])).map(element => {return parseInt(<string>element);});
+    this.statistics.q3.series[0].data = ((Object.values(statistics["question3"])).map(element => {return parseInt(<string>element);})).reverse();
 
     await this.buildTable(this.tableType[1]);
   }

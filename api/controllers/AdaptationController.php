@@ -35,11 +35,11 @@ class AdaptationController
         API::response($gameElements);
 
     }
-*/
+
     /**
      * Gets all users allowed to edit a specific GameElement
      * @throws Exception
-     */
+     *
     public function getGameElementUsers(){
         API::requireAdminPermission();
         API::requireValues('courseId', 'moduleId');
@@ -54,6 +54,7 @@ class AdaptationController
 
         API::response($users);
     }
+*/
 
     /**
      * Makes GameElement active true/false
@@ -69,6 +70,7 @@ class AdaptationController
 
         $courseId = API::getValue('courseId', "int");
         $course = API::verifyCourseExists($courseId);
+        API::requireCourseAdminPermission($course);
 
         $moduleId = API::getValue('moduleId');
         $module = API::verifyModuleExists($moduleId, $course);
@@ -256,11 +258,51 @@ class AdaptationController
 
         $courseId = API::getValue('courseId', "int");
         $course = API::verifyCourseExists($courseId);
+        API::requireCourseAdminPermission($course);
 
         $gameElementId = API::getValue('gameElementId', "int");
 
         $statistics = GameElement::getQuestionStatistics($course, $gameElementId);
         API::response($statistics);
+    }
+
+    /**
+     * Gets number of answers in questionnaire given a course and a gameElement
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getNrAnswersQuestionnaire(){
+        API::requireValues('courseId', 'gameElementId');
+
+        $courseId = API::getValue('courseId', "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCourseAdminPermission($course);
+
+        $gameElementId = API::getValue('gameElementId', "int");
+
+        $statistics = GameElement::getNrAnswersQuestionnaire($course, $gameElementId);
+        API::response($statistics);
+    }
+
+    /**
+     * Export questionnaires answers of a specific game element given a course and game element id into a .csv file.
+     *
+     * @param $courseId
+     * @param $gameElementId
+     * @throws Exception
+     */
+    public function exportAnswersQuestionnaire(){
+        API::requireValues('courseId', 'gameElementId');
+
+        $courseId = API::getValue('courseId', "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCourseAdminPermission($course);
+
+        $gameElementId = API::getValue('gameElementId', "int");
+        $csv = GameElement::exportAnswersQuestionnaire($courseId, $gameElementId);
+
+        API::response($csv);
     }
 
 }

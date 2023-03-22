@@ -76,7 +76,7 @@
 <app-modal *ngIf="adminMode && gameElementToManage"
   [id]="'questionnaire-statistics'"
   [templateRef]="QUESTIONNAIRES_STATISTICS"
-  [size]="'md'"
+  [size]="'lg'"
   [header]="gameElementToManage.module + ' ' + adminMode?.toLowerCase()"
   [actionInProgress]="loading.action"
   [submitBtnText]="'Done'"
@@ -86,45 +86,62 @@
 
 <ng-template #QUESTIONNAIRES_STATISTICS>
 
-  <div class="w-full mb-6">
-    <span class="w-full text-sm -mt-5"><strong>{{statistics.q1.title}} </strong> {{statistics.q1.subtitle}}</span>
-    <app-pie-chart
-      [id]="'question1'"
-      [classList]="'justify-center flex mt-4'"
-      [series]="statistics.q1.series"
-      [labels]="statistics.q1.labels"
-      [colors]="statistics.q1.colors"
-      [legend]="true"
-      [legendPosition]="'right'"
-    ></app-pie-chart>
+  <div class="alert shadow-md mb-6">
+    <div>
+      <ng-icon name="feather-users" size="1rem" class="{{nrAnswers === course.nrStudents ? 'text-success' : 'text-info'}}"></ng-icon>
+      <span class="{{nrAnswers === course.nrStudents ? 'text-success' : ''}}"><strong>So far: {{nrAnswers}}/{{course.nrStudents}} answers</strong></span>
+    </div>
   </div>
 
-  <div class="w-full mb-6">
-    <span class="w-full text-sm -mt-5"><strong>{{statistics.q2.title}} </strong> {{statistics.q2.subtitle}}</span>
-    <app-table
-      [id]="'question2'"
-      [classList]="'mt-4'"
-      [headers]="statistics.q2.tableHeaders"
-      [options]="statistics.q2.tableOptions"
-      [data]="statistics.q2.tableData"
-      [loading]="loading.table"
-      (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
-    ></app-table>
+  <div *ngIf="nrAnswers > 0">
+    <div class="w-full mb-6" *ngIf="!refreshing">
+      <span class="w-full"><strong>{{statistics.q1.title}} </strong> {{statistics.q1.subtitle}}</span>
+      <app-pie-chart
+        [id]="'question1'"
+        [classList]="'justify-center flex mt-4 scale-110'"
+        [series]="statistics.q1.series"
+        [labels]="statistics.q1.labels"
+        [colors]="statistics.q1.colors"
+        [legend]="true"
+        [legendPosition]="'right'"
+      ></app-pie-chart>
+    </div>
+
+    <div class="w-full mb-6">
+      <span class="w-full"><strong>{{statistics.q2.title}} </strong> {{statistics.q2.subtitle}}</span>
+      <div class="px-28">
+        <app-table
+          [id]="'question2'"
+          [classList]="'mt-4'"
+          [headers]="statistics.q2.tableHeaders"
+          [options]="statistics.q2.tableOptions"
+          [data]="statistics.q2.tableData"
+          [hasColumnFiltering]="false"
+          [loading]="loading.table"
+          (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
+        ></app-table>
+      </div>
+    </div>
+
+    <div class="w-full" *ngIf="!refreshing">
+      <span class="w-full"><strong>{{statistics.q3.title}} </strong> {{statistics.q3.subtitle}}</span>
+      <app-bar-chart
+        [id]="'question3'"
+        [classList]="'justify-center px-10 scale-90'"
+        [series]="statistics.q3.series"
+        [XAxisCategories]="statistics.q3.categories"
+        [XAxisLabel]="'Number of students'"
+        [YAxisLabel]="'Level of enjoyment'"
+        [orientation]="'horizontal'"
+        [dataLabels]="true"
+        [XAxisGrid]="true"
+      ></app-bar-chart>
+    </div>
   </div>
 
-  <div class="w-full mb-6">
-    <span class="w-full text-sm -mt-5"><strong>{{statistics.q3.title}} </strong> {{statistics.q3.subtitle}}</span>
-    <app-bar-chart
-      [id]="'question3'"
-      [classList]="'justify-center px-10 mt-4'"
-      [series]="statistics.q3.series"
-      [XAxisLabel]="'Level of enjoyment'"
-      [YAxisLabel]="'Number of students'"
-      [dataLabels]="true"
-      [XAxisGrid]="true"
-    ></app-bar-chart>
+  <div *ngIf="nrAnswers === 0">
+    <span class="text-gray-300 justify-center flex">No data to show for now.</span>
   </div>
-
 
   <!-- Loader -->
   <app-loader [loading] = "loading.page"></app-loader>

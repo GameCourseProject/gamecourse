@@ -3,7 +3,6 @@ namespace GameCourse\Adaptation;
 
 use Exception;
 use GameCourse\Course\Course;
-use GameCourse\Module\Module;
 use GameCourse\NotificationSystem\Notification;
 use GameCourse\Role\Role;
 use GameCourse\Core\Core;
@@ -18,6 +17,10 @@ class GameElement
     const TABLE_USER_GAME_ELEMENT_PREFERENCES = "user_game_element_preferences";
     const TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS = "preferences_questionnaire_answers";
     const TABLE_ELEMENT_VERSIONS_DESCRIPTIONS="element_versions_descriptions";
+
+    const HEADERS = [ // headers for import/export functionality
+        "course", "", "" // FIXME- incomplete
+    ];
 
     protected $id;
 
@@ -295,10 +298,10 @@ class GameElement
         if ($nrStudents == 0) $nrStudents = 1;
 
         $entries = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "0"], "count(*)");
-        $response["question1"]["false"] = ($entries / $nrStudents) * 100;
+        $response["question1"]["false"] = ($entries / $nrStudents);
 
         $entries = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "1"], "count(*)");
-        $response["question1"]["true"] = ($entries / $nrStudents) * 100;
+        $response["question1"]["true"] = ($entries / $nrStudents);
 
         // Statistics question 2
         $aux = Core::database()->selectMultiple($table, ["course" => $course->getId(), "element" => $gameElement], "question2");
@@ -317,6 +320,38 @@ class GameElement
 
         return $response;
     }
+
+    /**
+     * Gets number of answers in questionnaire given a course and a gameElement
+     *
+     * @param Course $course
+     * @param int $gameElement
+     * @return int
+     * @throws Exception
+     */
+    public static function getNrAnswersQuestionnaire(Course $course, int $gameElement): int {
+        $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
+        $where = ["course" => $course->getId(), "element" => $gameElement];
+        return Core::database()->select($table, $where, "count(*)");
+    }
+
+    /**
+     * Export questionnaires answers of a specific game element given a course and game element id into a .csv file.
+     *
+     * @param $courseId
+     * @param $gameElementId
+     * @return string
+     * @throws Exception
+     */
+    public static function exportAnswersQuestionnaire($courseId, int $gameElement): string {
+        $course = new Course($courseId);
+        if (!$course->exists())
+            throw new Exception("Course with ID = " . $courseId . " doesn't exist.");
+
+        $
+
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ------------ GameElement Manipulation -------------- ***/
