@@ -39,7 +39,7 @@ def autogame_init(course):
 
     return checkpoint
 
-def autogame_terminate(course, start_date, finish_date):
+def autogame_terminate(course, checkpoint, start_date=None, finish_date=None):
     """
     Finishes execution of AutoGame and notifies server to
     close the socket.
@@ -47,10 +47,17 @@ def autogame_terminate(course, start_date, finish_date):
 
     # Terminate AutoGame
     if not config.TEST_MODE:
-        query = "UPDATE autogame " \
-                "SET startedRunning = %s, finishedRunning = %s, isRunning = %s, runNext = %s " \
-                "WHERE course = %s;"
-        db.execute_query(query, (start_date, finish_date, False, False, course), "commit")
+        # Verify if checkpoint changed while AutoGame was running
+        query = "SELECT checkpoint FROM autogame WHERE course = %s;"
+        old_checkpoint = db.execute_query(query, course)[0][0]
+
+        query = "UPDATE autogame SET isRunning = 0"
+        if old_checkpoint == checkpoint:
+            query += ", runNext = 0"
+        if start_date is not None and finish_date is not None:
+            query += ", startedRunning = '%s', finishedRunning = '%s'" % (start_date, finish_date)
+        query += " WHERE course = %s;"
+        db.execute_query(query, (course,), "commit")
 
     # Check how many courses are running
     query = "SELECT COUNT(*) from autogame WHERE isRunning = %s AND course != %s;"
