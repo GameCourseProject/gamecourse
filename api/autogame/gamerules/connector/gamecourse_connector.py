@@ -397,13 +397,16 @@ def clear_badge_progression(targets_ids):
     rules for badges.
     """
 
-    # Check if there are any badges active
-    query = "SELECT COUNT(*) FROM badge WHERE course = %s AND isActive = True;" % config.COURSE
-    nr_badges_active = int(db.data_broker.get(db, config.COURSE, query)[0][0])
+    # Get badges with active rules
+    query = "SELECT b.id FROM badge b JOIN rule r on b.rule = r.id " \
+            "WHERE b.course = %s AND r.isActive = True;" % config.COURSE
+    badges_ids = [item for sublist in db.data_broker.get(db, config.COURSE, query) for item in sublist]
 
-    if nr_badges_active > 0:
-        query = "DELETE FROM badge_progression WHERE course = %s AND user IN (%s);"
-        db.execute_query(query, (config.COURSE, ', '.join([str(el) for el in targets_ids])), "commit")
+    # Clear badge progression
+    if len(badges_ids) > 0:
+        query = "DELETE FROM badge_progression WHERE course = %s AND user IN (%s) AND badge IN (%s);" \
+                % (config.COURSE, ', '.join([str(el) for el in targets_ids]), ', '.join([str(e) for e in badges_ids]))
+        db.execute_query(query, (), "commit")
 
 def clear_skill_progression(targets_ids):
     """
@@ -414,13 +417,16 @@ def clear_skill_progression(targets_ids):
     rules for skills.
     """
 
-    # Check if there are any skills active
-    query = "SELECT COUNT(*) FROM skill WHERE course = %s AND isActive = True;" % config.COURSE
-    nr_skills_active = int(db.data_broker.get(db, config.COURSE, query)[0][0])
+    # Get skills with active rules
+    query = "SELECT s.id FROM skill s JOIN rule r on s.rule = r.id " \
+            "WHERE s.course = %s AND r.isActive = True;" % config.COURSE
+    skills_ids = [item for sublist in db.data_broker.get(db, config.COURSE, query) for item in sublist]
 
-    if nr_skills_active > 0:
-        query = "DELETE FROM skill_progression WHERE course = %s AND user IN (%s);"
-        db.execute_query(query, (config.COURSE, ', '.join([str(el) for el in targets_ids])), "commit")
+    # Clear skill progression
+    if (len(skills_ids) > 0):
+        query = "DELETE FROM skill_progression WHERE course = %s AND user IN (%s) AND skill IN (%s);" \
+                % (config.COURSE, ', '.join([str(el) for el in targets_ids]), ', '.join([str(el) for el in skills_ids]))
+        db.execute_query(query, (), "commit")
 
 def clear_streak_progression(targets_ids):
     """
@@ -431,13 +437,16 @@ def clear_streak_progression(targets_ids):
     rules for streaks.
     """
 
-    # Check if there are any streaks active
-    query = "SELECT COUNT(*) FROM streak WHERE course = %s AND isActive = True;" % config.COURSE
-    nr_streaks_active = int(db.data_broker.get(db, config.COURSE, query)[0][0])
+    # Get streaks with active rules
+    query = "SELECT s.id FROM streak s JOIN rule r on s.rule = r.id " \
+            "WHERE s.course = %s AND r.isActive = True;" % config.COURSE
+    streaks_ids = [item for sublist in db.data_broker.get(db, config.COURSE, query) for item in sublist]
 
-    if nr_streaks_active > 0:
-        query = "DELETE FROM streak_progression WHERE course = %s and user IN (%s);"
-        db.execute_query(query, (config.COURSE, ', '.join([str(el) for el in targets_ids])), "commit")
+    # Clear streak progression
+    if (len(streaks_ids) > 0):
+        query = "DELETE FROM streak_progression WHERE course = %s AND user IN (%s) AND streak IN (%s);" \
+                % (config.COURSE, ', '.join([str(el) for el in targets_ids]), ', '.join([str(el) for el in streaks_ids]))
+        db.execute_query(query, (), "commit")
 
 def update_progression():
     """
