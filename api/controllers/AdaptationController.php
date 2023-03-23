@@ -253,7 +253,7 @@ class AdaptationController
      * @return void
      * @throws Exception
      */
-    public function getQuestionStatistics(){
+    public function getElementStatistics(){
         API::requireValues('courseId', 'gameElementId');
 
         $courseId = API::getValue('courseId', "int");
@@ -262,7 +262,7 @@ class AdaptationController
 
         $gameElementId = API::getValue('gameElementId', "int");
 
-        $statistics = GameElement::getQuestionStatistics($course, $gameElementId);
+        $statistics = GameElement::getElementStatistics($course, $gameElementId);
         API::response($statistics);
     }
 

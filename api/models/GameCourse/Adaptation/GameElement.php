@@ -19,7 +19,7 @@ class GameElement
     const TABLE_ELEMENT_VERSIONS_DESCRIPTIONS="element_versions_descriptions";
 
     const HEADERS = [ // headers for import/export functionality
-        "course", "", "" // FIXME- incomplete
+        "course", "user", "question1", "question2", "question3", "element", "date"
     ];
 
     protected $id;
@@ -289,7 +289,7 @@ class GameElement
      * @return array
      * @throws Exception
      */
-    public static function getQuestionStatistics(Course $course, int $gameElement): array{
+    public static function getElementStatistics(Course $course, int $gameElement): array{
         $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
         $response = [];
 
@@ -338,21 +338,25 @@ class GameElement
     /**
      * Export questionnaires answers of a specific game element given a course and game element id into a .csv file.
      *
-     * @param $courseId
-     * @param $gameElementId
+     * @param int $courseId
+     * @param int $gameElement
      * @return string
      * @throws Exception
      */
-    public static function exportAnswersQuestionnaire($courseId, int $gameElement): string {
+    public static function exportAnswersQuestionnaire(int $courseId, int $gameElement): string {
         $course = new Course($courseId);
         if (!$course->exists())
             throw new Exception("Course with ID = " . $courseId . " doesn't exist.");
 
-        $
-
+        $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
+        $where = ["course" => $courseId, "element" => $gameElement];
+        $response = Core::database()->selectMultiple($table, $where);
+        return Utils::exportToCSV($response, function ($element) {
+                return [$element["course"], $element["user"], $element["question1"], $element["question2"],
+                    $element["question3"], $element["element"], $element["date"]];
+                }, self::HEADERS);
     }
-
-
+    
     /*** ---------------------------------------------------- ***/
     /*** ------------ GameElement Manipulation -------------- ***/
     /*** ---------------------------------------------------- ***/

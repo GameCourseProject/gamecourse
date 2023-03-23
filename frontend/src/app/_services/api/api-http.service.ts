@@ -896,10 +896,10 @@ export class ApiHttpService {
       .pipe(map((res: any) => res));
   }
 
-  public getQuestionStatistics(courseID: number, gameElementID: number): Observable<{ questionNr: { parameter: string, value: number }[] | string[] }> {
+  public getElementStatistics(courseID: number, gameElementID: number): Observable<{ questionNr: { parameter: string, value: number }[] | string[] }> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
-      qs.push('request', 'getQuestionStatistics');
+      qs.push('request', 'getElementStatistics');
       qs.push('courseId', courseID);
       qs.push('gameElementId', gameElementID);
     };

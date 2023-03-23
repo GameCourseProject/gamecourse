@@ -261,7 +261,7 @@ export class AdaptationComponent implements OnInit {
       this.gameElementToManage = this.initGameElementToManage(this.gameElementToActOn);
 
       // setting up data for statistics modal
-      await this.setUpData(await this.api.getQuestionStatistics(this.course.id, this.gameElementToManage.id).toPromise());
+      await this.setUpData(await this.api.getElementStatistics(this.course.id, this.gameElementToManage.id).toPromise());
 
       this.adminMode = 'questionnaire statistics';
       this.loading.action = false;
@@ -319,7 +319,7 @@ export class AdaptationComponent implements OnInit {
   }
 
   async exportAnswers(gameElement: GameElement): Promise<void>{
-    this.nrAnswers = await this.api.getNrAnswersQuestionnaire(this.course.id, this.gameElementToManage.id).toPromise();
+    this.nrAnswers = await this.api.getNrAnswersQuestionnaire(this.course.id, this.gameElementToActOn.id).toPromise();
     if (this.nrAnswers === 0) {
       AlertService.showAlert(AlertType.WARNING, 'There are no answers to export regarding this game element');
 
