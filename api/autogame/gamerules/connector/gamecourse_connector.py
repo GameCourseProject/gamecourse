@@ -1651,6 +1651,23 @@ def award_badge(target, name, lvl, logs, progress=None):
         awards_given = get_awards(target, name + "%", award_type, badge_id)
         nr_awards_given = len(awards_given)
 
+        # Notification
+        if progress is not None and progress > 0 and lvl < len(table_badge):
+            goal = int(table_badge[lvl][5])
+            badge_description = table_badge[lvl][6].decode()  # e.g. Show up for theoretical lectures!
+            level_description = table_badge[lvl][7].decode()  # e.g. be there for 50% of lectures
+
+            # Check if give notification
+            instances = goal - progress
+
+            # Threshold to limit notifications and avoid spamming
+            if 1 < instances <= 2:
+                message = "You are " + str(instances) + " events away from achieving '" + name + "' badge! : " \
+                          + badge_description + " - " + level_description
+
+                query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s, %s, %s,%s);"
+                db.execute_query(query, (config.COURSE, target, message, 0), "commit")
+
         # Lvl is zero and there are no awards to be removed
         # Simply return right away
         if lvl == 0 and nr_awards_given == 0:
@@ -1685,31 +1702,6 @@ def award_badge(target, name, lvl, logs, progress=None):
             badge_tokens = int(table_badge[level - 1][3])
             if module_enabled("VirtualCurrency") and badge_tokens > 0:
                 award_tokens(target, description, [level], badge_tokens, badge_id)
-
-            # Notification
-            if progress:
-                goal = 0
-                badge_description = ""
-                level_description = ""
-
-                # Get goal and description of specific level award
-                for i in range(0, len(table_badge)):
-                    if table_badge[i][1] == lvl:
-                        goal = int(table_badge[i][5])
-                        badge_description = table_badge[i][6]        # e.g. Show up for theoretical lectures!
-                        level_description = table_badge[i][7]        # e.g. be there for 50% of lectures
-                        break
-
-                # Check if give notification
-                instances = goal - progress
-
-                # threshold to limit notifications and avoid spamming
-                if 1 < instances <= 2:
-                    message = "You are " + instances + " events away from achieving " + name + " badge! : " \
-                            + badge_description + " - " + level_description
-
-                    query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s, %s, %s,%s);"
-                    db.execute_query(query, (config.COURSE, target, message, 0), "commit")
 
 def award_bonus(target, name, logs, reward=None, instance=None, unique=True):
     """
