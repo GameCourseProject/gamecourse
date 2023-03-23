@@ -154,14 +154,15 @@ def get_quiz_logs(target, name=None):
     return connector.get_quiz_logs(target, name)
 
 @rule_function
-def get_resource_view_logs(target, name=None):
+def get_resource_view_logs(target, name=None, unique=True):
     """
     Gets all resource view logs for a specific target.
 
-    Option to get a specific resource view by name.
+    Option to get a specific resource view by name and
+    to get only one resource view log per description.
     """
 
-    return connector.get_resource_view_logs(target, name)
+    return connector.get_resource_view_logs(target, name, unique)
 
 @rule_function
 def get_skill_logs(target, name=None, rating=None):
@@ -175,12 +176,12 @@ def get_skill_logs(target, name=None, rating=None):
     return connector.get_skill_logs(target, name, rating)
 
 @rule_function
-def get_skill_tier_logs(target, tier, only_min_rating=True):
+def get_skill_tier_logs(target, tier, only_min_rating=True, only_latest=True):
     """
     Gets skill tier logs for a specific target.
     """
 
-    return connector.get_skill_tier_logs(target, tier, only_min_rating)
+    return connector.get_skill_tier_logs(target, tier, only_min_rating, only_latest)
 
 @rule_function
 def get_url_view_logs(target, name=None):

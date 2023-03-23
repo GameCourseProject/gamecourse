@@ -1231,14 +1231,26 @@ def get_quiz_logs(target, name=None):
 
     return get_logs(target, "quiz grade", None, None, None, None, name)
 
-def get_resource_view_logs(target, name=None):
+def get_resource_view_logs(target, name=None, unique=True):
     """
     Gets all resource view logs for a specific target.
 
-    Option to get a specific resource view by name.
+    Option to get a specific resource view by name and
+    to get only one resource view log per description.
     """
 
-    return get_logs(target, "resource view", None, None, None, None, name)
+    logs = get_logs(target, "resource view", None, None, None, None, name)
+
+    if unique:
+        unique_logs = []
+        descriptions = []
+        for log in logs:
+            if log[config.LOG_DESCRIPTION_COL] not in descriptions:
+                unique_logs.append(log)
+                descriptions.append(log[config.LOG_DESCRIPTION_COL])
+        logs = unique_logs
+
+    return logs
 
 def get_skill_logs(target, name=None, rating=None):
     """
@@ -1294,30 +1306,34 @@ def get_skill_logs(target, name=None, rating=None):
     else:
         return logs
 
-def get_skill_tier_logs(target, tier, only_min_rating=True):
+def get_skill_tier_logs(target, tier, only_min_rating=True, only_latest=True):
     """
     Gets skill tier logs for a specific target.
     """
 
     if module_enabled("Skills"):
-        award_type = "skill"
-        table = get_awards_table()
-
         # Get min. rating
         query = "SELECT minRating FROM skills_config WHERE course = %s;" % config.COURSE
         min_rating = int(db.data_broker.get(db, config.COURSE, query)[0][0])
 
+        # Get skill names of tier
+        query = "SELECT s.name " \
+                "FROM skill s JOIN skill_tier t on s.tier = t.id " \
+                "WHERE s.course = %s AND t.position = %s" % (config.COURSE, tier - 1)
+        skill_names = [item.decode() for sublist in db.data_broker.get(db, config.COURSE, query) for item in sublist]
+
         # Get logs
-        query = "SELECT p.* " \
-                "FROM " + table + " a LEFT JOIN skill s on a.moduleInstance = s.id " \
-                "LEFT JOIN skill_tier t on s.tier = t.id " \
-                "LEFT JOIN skill_progression sp on sp.skill = s.id " \
-                "LEFT JOIN participation p on sp.participation = p.id " \
-                "WHERE a.course = %s AND a.user = %s AND a.type = %s AND t.position = %s"
-        if only_min_rating:
-            query += " AND p.rating >= %s" % min_rating
-        query += " ORDER BY p.date ASC;"
-        return db.execute_query(query, (config.COURSE, target, award_type, tier - 1))
+        logs = []
+        for name in skill_names:
+            skill_logs = get_skill_logs(target, name)
+
+            # Filter by rating, if only min. rating
+            skill_logs = [log for log in skill_logs if not only_min_rating or int(log[config.LOG_RATING_COL]) >= min_rating]
+
+            nr_skill_logs = len(skill_logs)
+            if nr_skill_logs > 0:
+                logs += [skill_logs[nr_skill_logs - 1]] if only_latest else skill_logs
+        return logs
 
     return []
 
@@ -1615,27 +1631,28 @@ def award_badge(target, name, lvl, logs, progress=None):
         for log in logs:
             badge_progression.append('(%s, %s, %s, %s)' % (config.COURSE, target, badge_id, log[config.LOG_ID_COL]))
 
-        # Get awards given for badge
-        badge_awards = get_awards(target, name + "%", award_type)
-        nr_awards = len(badge_awards)
+        # Get awards already given
+        awards_given = get_awards(target, name + "%", award_type, badge_id)
+        nr_awards_given = len(awards_given)
 
         # Lvl is zero and there are no awards to be removed
         # Simply return right away
-        if lvl == 0 and nr_awards == 0:
+        if lvl == 0 and nr_awards_given == 0:
             return
 
         # The rule/data sources have been updated, the 'award' table
         # has badge levels attributed which are no longer valid.
         # All levels no longer valid must be deleted
-        if nr_awards > lvl:
-            for level in range(lvl + 1, nr_awards + 1):
+        if nr_awards_given > lvl:
+            for level in range(lvl + 1, nr_awards_given + 1):
                 description = get_description(name, level)
 
                 # Delete award
                 remove_award(target, award_type, description, badge_id)
 
                 # Remove tokens
-                remove_award(target, 'tokens', description, badge_id)
+                if len(get_awards(target, description, 'tokens', badge_id)) > 0:
+                    remove_award(target, 'tokens', description, badge_id)
 
         # Award and/or update badge levels
         for level in range(1, lvl + 1):
@@ -1658,6 +1675,7 @@ def award_badge(target, name, lvl, logs, progress=None):
                 goal = 0
                 badge_description = ""
                 level_description = ""
+
                 # Get goal and description of specific level award
                 for i in range(0, len(table_badge)):
                     if table_badge[i][1] == lvl:

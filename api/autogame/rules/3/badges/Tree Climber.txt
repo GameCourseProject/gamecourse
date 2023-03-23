@@ -10,7 +10,7 @@ rule: Tree Climber
 
         reached_tier_2 = len(tier_2_logs) > 0
         reached_tier_3 = len(tier_3_logs) > 0
-        logs = tier_3_logs if reached_tier_3 else tier_2_logs if reached_tier_2 else []
+        logs = tier_2_logs + tier_3_logs if reached_tier_3 else tier_2_logs if reached_tier_2 else []
         progress = 2 if reached_tier_3 else 1 if reached_tier_2 else 0
 
         # Compute badge level the target deserves
