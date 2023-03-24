@@ -190,7 +190,7 @@ class DocsController
         Page::addPage(9, CreationMode::BY_VALUE, "Leaderboard", $leaderboard);
         Page::addPage(9, CreationMode::BY_VALUE, "Profile", $profile);
         Page::addPage(9, CreationMode::BY_VALUE, "Badges", $badges);
-        Page::addPage(9, CreationMode::BY_VALUE, "Skill Tree", $badges);
-        Page::addPage(9, CreationMode::BY_VALUE, "Streaks", $badges);
+        Page::addPage(9, CreationMode::BY_VALUE, "Skill Tree", [["aspect" => ["viewerRole" => null, "userRole" => "Student"], "type" => "block"]]);
+        Page::addPage(9, CreationMode::BY_VALUE, "Streaks", [["aspect" => ["viewerRole" => null, "userRole" => "Student"], "type" => "block"]]);
     }
 }
