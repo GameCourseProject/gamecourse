@@ -140,7 +140,7 @@ export class AdaptationComponent implements OnInit {
 
   async getGameElements(courseID: number): Promise<void> {
     // ADMIN
-    if (this.user.isAdmin){
+    if (!this.user.isAdmin){
       this.availableGameElements = await this.api.getGameElements(courseID).toPromise();
     }
 
@@ -204,7 +204,7 @@ export class AdaptationComponent implements OnInit {
     const table: {type: TableDataType, content: any}[][] = [];
 
     if (tableType === this.tableType[0]){
-      if (this.user.isAdmin){  //FIXME: DEBUG ONLY
+      if (!this.user.isAdmin){  //FIXME: DEBUG ONLY
         this.availableGameElements.forEach(gameElement => {
 
           let isActive = gameElement.isActive;
@@ -268,7 +268,7 @@ export class AdaptationComponent implements OnInit {
       ModalService.openModal('questionnaire-statistics');
 
     } else if (action === 'Export questionnaire answers' && col === 2){
-      this.exportAnswers(this.gameElementToActOn);
+      await this.exportAnswers(this.gameElementToActOn);
 
     } else if (action === 'answer questionnaire' && col === 1) {
       ModalService.openModal('questionnaire');

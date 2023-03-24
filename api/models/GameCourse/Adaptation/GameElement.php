@@ -356,7 +356,7 @@ class GameElement
                     $element["question3"], $element["element"], $element["date"]];
                 }, self::HEADERS);
     }
-    
+
     /*** ---------------------------------------------------- ***/
     /*** ------------ GameElement Manipulation -------------- ***/
     /*** ---------------------------------------------------- ***/
