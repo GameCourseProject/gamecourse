@@ -43,6 +43,18 @@
     }
   }
 
+  &.bb-block-cols-5 {
+    & > .bb-block-children {
+      @apply grid grid-cols-5;
+    }
+  }
+
+  &.bb-block-cols-6 {
+    & > .bb-block-children {
+      @apply grid grid-cols-6;
+    }
+  }
+
   &.bb-block-responsive {
     &.bb-block-cols-2 {
       & > .bb-block-children {
@@ -59,6 +71,18 @@
     &.bb-block-cols-4 {
       & > .bb-block-children {
         @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+      }
+    }
+
+    &.bb-block-cols-5 {
+      & > .bb-block-children {
+        @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5;
+      }
+    }
+
+    &.bb-block-cols-6 {
+      & > .bb-block-children {
+        @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6;
       }
     }
   }

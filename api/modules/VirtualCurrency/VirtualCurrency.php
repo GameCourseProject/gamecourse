@@ -77,6 +77,7 @@ class VirtualCurrency extends Module
     {
         $this->initDatabase();
         $this->createDataFolder();
+        $this->initTemplates();
         $this->initRules();
 
         // Init config
@@ -138,6 +139,7 @@ class VirtualCurrency extends Module
     {
         $this->cleanDatabase();
         $this->removeDataFolder();
+        $this->removeTemplates();
         $this->removeRules();
         $this->removeEvents();
     }
@@ -848,6 +850,28 @@ class VirtualCurrency extends Module
     public function userHasWallet(int $userId): bool
     {
         return !empty(Core::database()->select(self::TABLE_WALLET, ["course" => $this->course->getId(), "user" => $userId]));
+    }
+
+
+    /*** -------- Spending --------- ***/
+
+    /**
+     * Gets spending for a given user.
+     *
+     * @param int $userId
+     * @return array
+     */
+    public function getUserSpending(int $userId): array
+    {
+        $spending = Core::database()->selectMultiple(self::TABLE_VC_SPENDING, [
+            "course" => $this->course->getId(),
+            "user" => $userId
+        ], "*", "date");
+        foreach ($spending as &$s) {
+            $intValues = ["id", "user", "course", "amount"];
+            $s = Utils::parse(["int" => $intValues], $s);
+        }
+        return $spending;
     }
 
 

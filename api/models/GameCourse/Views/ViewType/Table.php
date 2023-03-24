@@ -51,6 +51,7 @@ class Table extends ViewType
                 lengthChange                boolean NOT NULL DEFAULT TRUE,
                 info                        boolean NOT NULL DEFAULT TRUE,
                 ordering                    boolean NOT NULL DEFAULT TRUE,
+                orderingBy                  TEXT NOT NULL DEFAULT 'ASC: 0',
 
                 FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
             );
@@ -74,7 +75,7 @@ class Table extends ViewType
 
     public function get(int $viewId): array
     {
-        return self::parse(Core::database()->select(self::TABLE_VIEW_TABLE, ["id" => $viewId], "footers, searching, columnFiltering, paging, lengthChange, info, ordering"));
+        return self::parse(Core::database()->select(self::TABLE_VIEW_TABLE, ["id" => $viewId], "footers, searching, columnFiltering, paging, lengthChange, info, ordering, orderingBy"));
     }
 
     public function insert(array $view)
@@ -87,7 +88,8 @@ class Table extends ViewType
             "paging" => +($view["paging"] ?? true),
             "lengthChange" => +($view["lengthChange"] ?? true),
             "info" => +($view["info"] ?? true),
-            "ordering" => +($view["ordering"] ?? true)
+            "ordering" => +($view["ordering"] ?? true),
+            "orderingBy" => $view["orderingBy"] ?? "ASC: 0"
         ]);
     }
 
@@ -100,7 +102,8 @@ class Table extends ViewType
             "paging" => +($view["paging"] ?? true),
             "lengthChange" => +($view["lengthChange"] ?? true),
             "info" => +($view["info"] ?? true),
-            "ordering" => +($view["ordering"] ?? true)
+            "ordering" => +($view["ordering"] ?? true),
+            "orderingBy" => $view["orderingBy"] ?? "ASC: 0"
         ], ["id" => $view["id"]]);
     }
 
@@ -131,6 +134,7 @@ class Table extends ViewType
             if (isset($view["lengthChange"]) && $view["lengthChange"]) unset($view["lengthChange"]);
             if (isset($view["info"]) && $view["info"]) unset($view["info"]);
             if (isset($view["ordering"]) && $view["ordering"]) unset($view["ordering"]);
+            if (isset($view["orderingBy"]) && $view["orderingBy"] == "ASC: 0") unset($view["orderingBy"]);
         }
     }
 

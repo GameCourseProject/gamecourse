@@ -45,7 +45,7 @@ export class ProgressChartComponent implements OnInit, AfterViewInit {
   }
 
   get progress(): number {
-    return Math.round(this.value * 100 / this.max);
+    return this.max > 0 ? Math.round(this.value * 100 / this.max) : 0;
   }
 
   setColor(el: 'bar' | 'track', color: string) {

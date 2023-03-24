@@ -1,0 +1,180 @@
+[
+  {
+    "aspect": {
+      "viewerRole": null,
+      "userRole": "Student"
+    },
+    "type": "block",
+    "class": "card card bg-base-100 shadow-xl",
+    "variables": [
+      {
+        "name": "courseColor",
+        "value": "{courses.getCourseById(%course).color}"
+      }
+    ],
+    "children": [
+      [
+        {
+          "type": "block",
+          "class": "card-body",
+          "children": [
+            [
+              {
+                "type": "block",
+                "class": "gap-3 items-center mb-4",
+                "direction": "horizontal",
+                "children": [
+                  [
+                    {
+                      "type": "icon",
+                      "class": "mt-1",
+                      "style": "color: {%courseColor}",
+                      "icon": "tabler-trophy",
+                      "size": "1.8rem"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "class": "font-bold",
+                      "style": "font-size: 1.5rem",
+                      "text": "Awards"
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              {
+                "type": "table",
+                "orderingBy": "DESC: 2",
+                "children": [
+                  [
+                    {
+                      "type": "row",
+                      "rowType": "header",
+                      "children": [
+                        [
+                          {
+                            "type": "text",
+                            "text": "Award"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "text",
+                            "text": "Reward"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "text",
+                            "text": "Date"
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "type": "row",
+                      "loopData": "{awards.getUserAwards(%user).sort(\"DESC: date\")}",
+                      "rowType": "body",
+                      "variables": [
+                        {
+                          "name": "award",
+                          "value": "{%item}"
+                        }
+                      ],
+                      "children": [
+                        [
+                          {
+                            "type": "block",
+                            "class": "items-center gap-2",
+                            "direction": "horizontal",
+                            "children": [
+                              [
+                                {
+                                  "type": "block",
+                                  "class": "items-center gap-2",
+                                  "direction": "horizontal",
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "icon",
+                                        "class": "text-neutral/75 mt-1",
+                                        "icon": "{%award.icon}",
+                                        "size": "1.5rem"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "text": "{%award.description}"
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "type": "block",
+                            "children": [
+                              [
+                                {
+                                  "type": "text",
+                                  "class": "text-center",
+                                  "visibilityType": "conditional",
+                                  "visibilityCondition": "{!(%award.type == \"tokens\")}",
+                                  "text": "{%award.reward} XP"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "block",
+                                  "class": "justify-center items-center gap-1",
+                                  "visibilityType": "conditional",
+                                  "visibilityCondition": "{%award.type == \"tokens\"}",
+                                  "direction": "horizontal",
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "text",
+                                        "text": "{%award.reward}"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "image",
+                                        "class": "w-4 h-4 mt-2",
+                                        "src": "{vc.getImage()}"
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "type": "text",
+                            "class": "text-center",
+                            "text": "{%award.date}"
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    ]
+  }
+]

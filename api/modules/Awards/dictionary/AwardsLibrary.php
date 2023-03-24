@@ -120,7 +120,7 @@ class AwardsLibrary extends Library
     public function date($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
-        $date = $award["reward"];
+        $date = $award["date"];
         return new ValueNode($date, Core::dictionary()->getLibraryById(TimeLibrary::ID));
     }
 

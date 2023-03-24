@@ -8,6 +8,8 @@ import {ViewText} from "../../../_domain/views/view-types/view-text";
 import {BBAnyComponent} from "../any/any.component";
 import {ViewBlock} from "../../../_domain/views/view-types/view-block";
 
+import {dateFromDatabase} from "../../../_utils/misc/misc";
+
 @Component({
   selector: 'bb-table',
   templateUrl: './table.component.html'
@@ -42,8 +44,10 @@ export class BBTableComponent implements OnInit {
     lengthChange: true,
     paging: true,
     info: true,
+    order: [[ 0, 'asc' ]], // default order
     columnDefs: [
       {type: 'natural', targets: []},
+      {searchable: false, targets: []},
       {orderable: true}
     ]
   };
@@ -62,14 +66,50 @@ export class BBTableComponent implements OnInit {
     // Get data
     let table: { type: TableDataType, content: any }[][] = [];
     if (this.view.bodyRows?.length > 0) {
-      for (const row of this.view.bodyRows) {
-        const rowData: { type: TableDataType, content: any}[] = [];
-        row.children.forEach(cell => {
-          rowData.push({
-            type: TableDataType.CUSTOM,
-            content: {component: BBAnyComponent, componentData: {view: cell}, searchBy: getSearchBy(cell, '')}
-          });
+      for (let i = 0; i < this.view.bodyRows.length; i++) {
+        const row = this.view.bodyRows[i];
+        let rowData: { type: TableDataType, content: any}[] = [];
+        const sortingData: { type: TableDataType, content: any}[] = [];
+        row.children.forEach((cell, index) => {
+          const dataType = getDataType(cell);
+          if (dataType !== TableDataType.TEXT) {
+            if (i == 0) {
+              this.headers.push({label: this.headers[index] + ' (sorting)'});
+              this.tableOptions['columnDefs'][1]['targets'].push(this.headers.length - 1);
+              this.tableOptions['columnDefs'].push({orderData: this.headers.length - 1, targets: index});
+            }
+            sortingData.push({
+              type: TableDataType.NUMBER,
+              content: {value: dateFromDatabase((cell as ViewText).text).unix()}
+            });
+          }
+
+          if (dataType === TableDataType.DATE) {
+            rowData.push({
+              type: TableDataType.DATETIME,
+              content: {date: dateFromDatabase((cell as ViewText).text), dateFormat: 'DD/MM/YYYY'}
+            });
+
+          } else if (dataType === TableDataType.TIME) {
+            rowData.push({
+              type: TableDataType.TIME,
+              content: {time: dateFromDatabase((cell as ViewText).text), timeFormat: 'HH:mm'}
+            });
+
+          } else if (dataType === TableDataType.DATETIME) {
+            rowData.push({
+              type: TableDataType.DATETIME,
+              content: {datetime: dateFromDatabase((cell as ViewText).text), datetimeFormat: 'DD/MM/YYYY HH:mm'}
+            });
+
+          } else {
+            rowData.push({
+              type: TableDataType.CUSTOM,
+              content: {component: BBAnyComponent, componentData: {view: cell}, searchBy: getSearchBy(cell, '')}
+            });
+          }
         });
+        rowData = rowData.concat(sortingData);
         table.push(rowData);
       }
     }
@@ -81,10 +121,34 @@ export class BBTableComponent implements OnInit {
     this.tableOptions['paging'] = this.view.paging;
     this.tableOptions['info'] = this.view.info;
     this.tableOptions['columnDefs'][0]['targets'] = Array.from(Array(this.headers.length).keys());
-    this.tableOptions['columnDefs'][1]['orderable'] = this.view.ordering;
-    if (!this.view.ordering) this.tableOptions['columnDefs'][1]['targets'] = Array.from(Array(this.headers.length).keys());
+    this.tableOptions['columnDefs'][2]['orderable'] = this.view.ordering;
+    if (!this.view.ordering) this.tableOptions['columnDefs'][2]['targets'] = Array.from(Array(this.headers.length).keys());
+    this.tableOptions['order'] = this.view.orderingBy.split(',').map(o => {
+      const parts = o.trim().split(':');
+      return [parseInt(parts[1].trim()), parts[0].trim().toLowerCase()];
+    });
 
     this.loading = false;
+
+    function getDataType(view: View): TableDataType {
+      if (view.type === ViewType.TEXT) {
+        const text = (view as ViewText).text;
+
+        // Date
+        let FORMAT = /^\d{4}-\d{2}-\d{2}$/g;
+        if (FORMAT.test(text)) return TableDataType.DATE;
+
+        // Time
+        FORMAT = /^\d{2}:\d{2}:\d{2}$/g;
+        if (FORMAT.test(text)) return TableDataType.TIME;
+
+        // Datetime
+        FORMAT = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/g;
+        if (FORMAT.test(text)) return TableDataType.DATETIME;
+      }
+
+      return TableDataType.TEXT;
+    }
 
     function getSearchBy(view: View, searchBy: string): string {
       if (view.type === ViewType.TEXT) return (view as ViewText).text;

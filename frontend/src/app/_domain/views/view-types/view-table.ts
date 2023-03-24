@@ -21,9 +21,10 @@ export class ViewTable extends View {
   private _lengthChange: boolean;
   private _info: boolean;
   private _ordering: boolean;
+  private _orderingBy: string;
 
   constructor(mode: ViewMode, id: number, viewRoot: number, parent: View, aspect: Aspect, footers: boolean, searching: boolean,
-              columnFiltering: boolean, paging: boolean, lengthChange: boolean, info: boolean, ordering: boolean,
+              columnFiltering: boolean, paging: boolean, lengthChange: boolean, info: boolean, ordering: boolean, orderingBy: string,
               children: View[], cssId?: string, classList?: string, styles?: string, visibilityType?: VisibilityType,
               visibilityCondition?: string | boolean, loopData?: string, variables?: Variable[], events?: Event[]) {
 
@@ -45,6 +46,7 @@ export class ViewTable extends View {
     this.lengthChange = lengthChange;
     this.info = info;
     this.ordering = ordering;
+    this.orderingBy = orderingBy;
 
     function check(headerRows: ViewRow[], rows: ViewRow[]) {
       const nrHeaders = headerRows.length;
@@ -130,6 +132,14 @@ export class ViewTable extends View {
 
   set ordering(value: boolean) {
     this._ordering = value;
+  }
+
+  get orderingBy(): string {
+    return this._orderingBy;
+  }
+
+  set orderingBy(value: string) {
+    this._orderingBy = value;
   }
 
 
@@ -374,6 +384,7 @@ export class ViewTable extends View {
       lengthChange: this.lengthChange,
       info: this.info,
       ordering: this.ordering,
+      orderingBy: this.orderingBy,
       children: [...this.headerRows, ...this.bodyRows]
     });
   }
@@ -396,6 +407,7 @@ export class ViewTable extends View {
       obj.lengthChange,
       obj.info,
       obj.ordering,
+      obj.orderingBy,
       obj.children ? obj.children.map(child => buildView(child)) : [],
       parsedObj.cssId,
       parsedObj.classList,
@@ -426,5 +438,6 @@ export interface ViewTableDatabase extends ViewDatabase {
   lengthChange: boolean;
   info: boolean;
   ordering: boolean;
+  orderingBy: string;
   children?: ViewDatabase[];
 }

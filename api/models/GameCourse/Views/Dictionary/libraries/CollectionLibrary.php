@@ -239,7 +239,9 @@ class CollectionLibrary extends Library
         if ($start < 0) $this->throwError("crop", "start index can't be smaller than 0");
 
         $size = count($collection);
-        if ($end > $size - 1) $this->throwError("crop", "end index can't be bigger than " . ($size - 1));
+        if ($size < $end + 1) $end = $size - 1;
+        else if ($end > $size - 1)
+            $this->throwError("crop", "end index can't be bigger than " . ($size - 1));
 
         $collection = array_slice($collection, $start, $end - $start + 1);
         return new ValueNode($collection, $this);

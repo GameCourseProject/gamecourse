@@ -1,0 +1,136 @@
+[
+  {
+    "aspect": {
+      "viewerRole": null,
+      "userRole": "Student"
+    },
+    "type": "block",
+    "class": "card card bg-base-100 shadow-xl",
+    "variables": [
+      {
+        "name": "courseColor",
+        "value": "{courses.getCourseById(%course).color}"
+      }
+    ],
+    "children": [
+      [
+        {
+          "type": "block",
+          "class": "card-body",
+          "children": [
+            [
+              {
+                "type": "block",
+                "class": "gap-3 items-center mb-4",
+                "direction": "horizontal",
+                "children": [
+                  [
+                    {
+                      "type": "icon",
+                      "class": "mt-1",
+                      "style": "color: {%courseColor}",
+                      "icon": "tabler-coin",
+                      "size": "1.8rem"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "class": "font-bold",
+                      "style": "font-size: 1.5rem",
+                      "text": "Spendings"
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              {
+                "type": "table",
+                "orderingBy": "DESC: 2",
+                "children": [
+                  [
+                    {
+                      "type": "row",
+                      "rowType": "header",
+                      "children": [
+                        [
+                          {
+                            "type": "text",
+                            "text": "Spending"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "text",
+                            "text": "Amount"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "text",
+                            "text": "Date"
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "type": "row",
+                      "loopData": "{vc.getUserSpending(%user).sort(\"DESC: date\")}",
+                      "rowType": "body",
+                      "variables": [
+                        {
+                          "name": "spending",
+                          "value": "{%item}"
+                        }
+                      ],
+                      "children": [
+                        [
+                          {
+                            "type": "text",
+                            "text": "{%spending.description}"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "block",
+                            "class": "justify-center items-center gap-1",
+                            "direction": "horizontal",
+                            "children": [
+                              [
+                                {
+                                  "type": "text",
+                                  "text": "{%spending.amount}"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "image",
+                                  "class": "w-4 h-4 mt-2",
+                                  "src": "{vc.getImage()}"
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "type": "text",
+                            "class": "text-center",
+                            "text": "{%spending.date}"
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    ]
+  }
+]
