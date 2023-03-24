@@ -1665,8 +1665,12 @@ def award_badge(target, name, lvl, logs, progress=None):
                 message = "You are " + str(instances) + " events away from achieving '" + name + "' badge! : " \
                           + badge_description + " - " + level_description
 
-                query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s, %s, %s,%s);"
-                db.execute_query(query, (config.COURSE, target, message, 0), "commit")
+                query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s;"
+                already_sent = int(db.execute_query(query, (config.COURSE, target, message))) > 0
+
+                if not already_sent:
+                    query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s, %s, %s,%s);"
+                    db.execute_query(query, (config.COURSE, target, message, 0), "commit")
 
         # Lvl is zero and there are no awards to be removed
         # Simply return right away
@@ -2016,9 +2020,13 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
             message = "You can't be awarded skill '%s' yet... Almost there! There are some dependencies missing: %s" \
                       % (name, dependencies_names_string)
 
+            query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s;"
+            already_sent = int(db.execute_query(query, (config.COURSE, target, message))) > 0
+
             # Add notification to table
-            query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s,%s,%s,%s);"
-            db.execute_query(query, (config.COURSE, target, message, 0), "commit")
+            if not already_sent:
+                query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s,%s,%s,%s);"
+                db.execute_query(query, (config.COURSE, target, message, 0), "commit")
 
 def award_streak(target, name, logs):
     """
