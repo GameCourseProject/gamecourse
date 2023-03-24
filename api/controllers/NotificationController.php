@@ -186,13 +186,14 @@ class NotificationController
      */
     public function setShowed()
     {
-        API::requireValues("notificationId", "isShowed");
+        API::requireValues("notificationId", "isShowed", "date");
 
         $notificationId = API::getValue("notificationId", "int");
         $notification = Notification::getNotificationById($notificationId);
 
         $isShowed = API::getValue("isShowed", "bool");
-        $notification->setShowed($isShowed);
+        $date = API::getValue("date");
+        $notification->setShowed($isShowed, $date);
 
         $notificationInfo = $notification->getData();
         API::response($notificationInfo);
