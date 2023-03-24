@@ -149,7 +149,7 @@ abstract class AutoGame
         $runNext = boolval($autogameInfo["runNext"]);
         $previousCheckpoint = $autogameInfo["checkpoint"];
 
-        if (!$runNext || strtotime($checkpoint) < strtotime($previousCheckpoint)) {
+        if (!$runNext || is_null($previousCheckpoint) || strtotime($checkpoint) < strtotime($previousCheckpoint)) {
             Core::database()->update(self::TABLE_AUTOGAME, [
                 "runNext" => 1,
                 "checkpoint" => $checkpoint
