@@ -339,7 +339,7 @@ class SkillsTest extends TestCase
         $this->insertAward($this->course->getId(), $user1->getId(), $skill1->getId(), "Award 1", 100);
         $this->insertAward($this->course->getId(), $user1->getId(), $skill2->getId(), "Award 3", 100);
 
-        $keys = ["id", "course", "tier", "name", "color", "page", "isCollab", "isExtra", "isActive", "position", "rule"];
+        $keys = ["id", "course", "tier", "name", "color", "page", "isCollab", "isExtra", "isActive", "position", "rule", "attempts"];
         $nrKeys = count($keys);
 
         // Has skills
@@ -350,7 +350,7 @@ class SkillsTest extends TestCase
             foreach ($skills as $i => $skill) {
                 $this->assertCount($nrKeys, array_keys($skill));
                 $this->assertArrayHasKey($key, $skill);
-                $this->assertEquals($skill[$key], ${"skill".($i+1)}->getData($key));
+                if ($key !== "attempts") $this->assertEquals($skill[$key], ${"skill".($i+1)}->getData($key));
             }
         }
 

@@ -46,7 +46,7 @@ class SkillTree
         return $this->getData("name");
     }
 
-    public function getMaxReward(): int
+    public function getMaxReward(): ?int
     {
         return $this->getData("maxReward");
     }
@@ -85,7 +85,7 @@ class SkillTree
     /**
      * @throws Exception
      */
-    public function setMaxReward(int $maxReward)
+    public function setMaxReward(?int $maxReward)
     {
         $this->setData(["maxReward" => $maxReward]);
     }
@@ -175,11 +175,11 @@ class SkillTree
      *
      * @param int $courseId
      * @param string|null $name
-     * @param int $maxReward
+     * @param int|null $maxReward
      * @return SkillTree
      * @throws Exception
      */
-    public static function addSkillTree(int $courseId, ?string $name, int $maxReward): SkillTree
+    public static function addSkillTree(int $courseId, ?string $name, ?int $maxReward): SkillTree
     {
         self::trim($name);
         self::validateName($courseId, $name);
@@ -197,11 +197,11 @@ class SkillTree
      * Returns the edited skill tree.
      *
      * @param string|null $name
-     * @param int $maxReward
+     * @param int|null $maxReward
      * @return SkillTree
      * @throws Exception
      */
-    public function editSkillTree(?string $name, int $maxReward): SkillTree
+    public function editSkillTree(?string $name, ?int $maxReward): SkillTree
     {
         $this->setData([
             "name" => $name,

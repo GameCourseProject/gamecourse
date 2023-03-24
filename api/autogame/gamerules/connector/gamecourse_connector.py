@@ -423,7 +423,7 @@ def clear_skill_progression(targets_ids):
     skills_ids = [item for sublist in db.data_broker.get(db, config.COURSE, query) for item in sublist]
 
     # Clear skill progression
-    if (len(skills_ids) > 0):
+    if len(skills_ids) > 0:
         query = "DELETE FROM skill_progression WHERE course = %s AND user IN (%s) AND skill IN (%s);" \
                 % (config.COURSE, ', '.join([str(el) for el in targets_ids]), ', '.join([str(el) for el in skills_ids]))
         db.execute_query(query, (), "commit")
@@ -443,7 +443,7 @@ def clear_streak_progression(targets_ids):
     streaks_ids = [item for sublist in db.data_broker.get(db, config.COURSE, query) for item in sublist]
 
     # Clear streak progression
-    if (len(streaks_ids) > 0):
+    if len(streaks_ids) > 0:
         query = "DELETE FROM streak_progression WHERE course = %s AND user IN (%s) AND streak IN (%s);" \
                 % (config.COURSE, ', '.join([str(el) for el in targets_ids]), ', '.join([str(el) for el in streaks_ids]))
         db.execute_query(query, (), "commit")
@@ -743,63 +743,93 @@ def filter_logs_by_cost(target, logs, costs):
 
 ### Calculating rewards
 
-def calculate_reward(target, award_type, reward, old_reward=0):
+def calculate_reward(target, award_type, reward_to_give, reward_given=0):
     """
-    Calculates reward for a given target based on max. values.
+    Calculates reward for a given target
+    based on max. values.
     """
 
-    reward = int(reward)
-    old_reward = int(old_reward)
-
-    def calculate_by_type(a_t):
-        return a_t == "badge" or a_t == "skill" or a_t == "streak"
+    reward_to_give = int(reward_to_give)
+    reward_given = int(reward_given)
 
     def get_max_xp():
         query = "SELECT maxXP FROM xp_config WHERE course = %s;" % config.COURSE
         result = db.data_broker.get(db, config.COURSE, query)[0][0]
         return int(result) if result else None
 
-    def get_max_xp_by_type(a_t):
-        query = "SELECT maxXP FROM %s WHERE course = %s;" % (a_t + "s_config", config.COURSE)
+    def get_max_xp_by_type():
+        query = "SELECT maxXP FROM %s WHERE course = %s;" % (award_type + "s_config", config.COURSE)
         result = db.data_broker.get(db, config.COURSE, query)[0][0]
         return int(result) if result else None
 
+    def get_target_xp():
+        xp = {"total": 0}
+
+        # Get badges XP
+        if module_enabled("Badges"):
+            badges_total = get_total_badge_reward(target)
+            xp["badges"] = badges_total
+            xp["total"] += badges_total
+
+        # Get skills XP
+        if module_enabled("Skills"):
+            skills_total = get_total_skill_reward(target)
+            xp["skills"] = skills_total
+            xp["total"] += skills_total
+
+        # Get streaks extra credit
+        if module_enabled("Streaks"):
+            streaks_total = get_total_streak_reward(target)
+            xp["streaks"] = streaks_total
+            xp["total"] += streaks_total
+
+        return xp
+
+    def calculate_by_type():
+        return award_type == 'badge' or award_type == 'skill' or award_type == 'streak'
+
     if module_enabled("XPLevels"):
-        # Get max XP info
+        # Get max. XP
         max_xp = get_max_xp()
-        max_xp_for_type = get_max_xp_by_type(award_type) if calculate_by_type(award_type) else None
+        max_xp_for_type = get_max_xp_by_type() if calculate_by_type() else None
+
+        # No max. threshold set, nothing to calculate
+        if max_xp is None and max_xp_for_type is None:
+            return reward_to_give
 
         # Calculate reward
+        target_xp = get_target_xp()
         if max_xp is not None:
-            reward = max(min(max_xp - (get_total_reward(target) - old_reward), reward), 0)
+            reward_to_give = max(min(max_xp - (target_xp['total'] - reward_given), reward_to_give), 0)
+            reward_given = reward_to_give
 
         if max_xp_for_type is not None:
-            reward = max(min(max_xp_for_type - (get_total_reward(target, award_type) - old_reward), reward), 0)
+            reward_to_give = max(min(max_xp_for_type - (target_xp[award_type + "s"] - reward_given), reward_to_give), 0)
 
-        return reward
+        return reward_to_give
 
     return 0
 
-def calculate_extra_credit_reward(target, reward, award_type, instance):
+def calculate_extra_credit_reward(target, award_type, reward_to_give, reward_given=0):
     """
     Calculates reward of a certain type for a given target
     based on max. extra credit values.
     """
 
-    reward = int(reward)
-    instance = int(instance)
+    reward_to_give = int(reward_to_give)
+    reward_given = int(reward_given)
 
     def get_max_extra_credit():
         query = "SELECT maxExtraCredit FROM xp_config WHERE course = %s;" % config.COURSE
         result = db.data_broker.get(db, config.COURSE, query)[0][0]
         return int(result) if result else None
 
-    def get_max_extra_credit_by_type(a_t):
-        query = "SELECT maxExtraCredit FROM %s WHERE course = %s;" % (a_t + "s_config", config.COURSE)
+    def get_max_extra_credit_by_type():
+        query = "SELECT maxExtraCredit FROM %s WHERE course = %s;" % (award_type + "s_config", config.COURSE)
         result = db.data_broker.get(db, config.COURSE, query)[0][0]
         return int(result) if result else None
 
-    def get_target_extra_credit(t, a_t, i):
+    def get_target_extra_credit():
         extra_credit = {"total": 0}
 
         # Get badges extra credit
@@ -810,13 +840,9 @@ def calculate_extra_credit_reward(target, reward, award_type, instance):
 
             # Calculate badges extra credit already awarded
             badges_total = 0
-            for a in get_awards(t, None, "badge"):
+            for a in get_awards(target, None, "badge"):
                 # Ignore badges which are not extra credit
                 if a[config.AWARD_INSTANCE_COL] not in badges_ids:
-                    continue
-
-                # Ignore award being calculated
-                if a_t == "badge" and a[config.AWARD_INSTANCE_COL] == i:
                     continue
 
                 badges_total += a[config.AWARD_REWARD_COL]
@@ -832,13 +858,9 @@ def calculate_extra_credit_reward(target, reward, award_type, instance):
 
             # Calculate skills extra credit already awarded
             skills_total = 0
-            for a in get_awards(t, None, "skill"):
+            for a in get_awards(target, None, "skill"):
                 # Ignore skills which are not extra credit
                 if a[config.AWARD_INSTANCE_COL] not in skills_ids:
-                    continue
-
-                # Ignore award being calculated
-                if a_t == "skill" and a[config.AWARD_INSTANCE_COL] == i:
                     continue
 
                 skills_total += a[config.AWARD_REWARD_COL]
@@ -854,13 +876,9 @@ def calculate_extra_credit_reward(target, reward, award_type, instance):
 
             # Calculate streaks extra credit already awarded
             streaks_total = 0
-            for a in get_awards(t, None, "streak"):
+            for a in get_awards(target, None, "streak"):
                 # Ignore streaks which are not extra credit
                 if a[config.AWARD_INSTANCE_COL] not in streaks_ids:
-                    continue
-
-                # Ignore award being calculated
-                if a_t == "streak" and a[config.AWARD_INSTANCE_COL] == i:
                     continue
 
                 streaks_total += a[config.AWARD_REWARD_COL]
@@ -870,21 +888,28 @@ def calculate_extra_credit_reward(target, reward, award_type, instance):
 
         return extra_credit
 
+    def calculate_by_type():
+        return award_type == 'badge' or award_type == 'skill' or award_type == 'streak'
+
     if module_enabled("XPLevels"):
-        # Get max extra credit
+        # Get max. extra credit
         max_extra_credit = get_max_extra_credit()
-        max_extra_credit_for_type = get_max_extra_credit_by_type(award_type)
-        target_extra_credit = get_target_extra_credit(target, award_type, instance) if \
-            (max_extra_credit is not None or max_extra_credit_for_type is not None) else None
+        max_extra_credit_for_type = get_max_extra_credit_by_type() if calculate_by_type() else None
+
+        # No max. thresholds set, nothing to calculate
+        if max_extra_credit is None and max_extra_credit_for_type is None:
+            return reward_to_give
 
         # Calculate reward
+        target_extra_credit = get_target_extra_credit()
         if max_extra_credit is not None:
-            reward = max(min(max_extra_credit - target_extra_credit["total"], reward), 0)
+            reward_to_give = max(min(max_extra_credit - (target_extra_credit['total'] - reward_given), reward_to_give), 0)
+            reward_given = reward_to_give
 
         if max_extra_credit_for_type is not None:
-            reward = max(min(max_extra_credit_for_type - target_extra_credit[award_type + "s"], reward), 0)
+            reward_to_give = max(min(max_extra_credit_for_type - (target_extra_credit[award_type + "s"] - reward_given), reward_to_give), 0)
 
-        return reward
+        return reward_to_give
 
     return 0
 
@@ -1666,7 +1691,7 @@ def award_badge(target, name, lvl, logs, progress=None):
                           + badge_description + " - " + level_description
 
                 query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s;"
-                already_sent = int(db.execute_query(query, (config.COURSE, target, message))) > 0
+                already_sent = int(db.execute_query(query, (config.COURSE, target, message))[0][0]) > 0
 
                 if not already_sent:
                     query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s, %s, %s,%s);"
@@ -1693,13 +1718,15 @@ def award_badge(target, name, lvl, logs, progress=None):
 
         # Award and/or update badge levels
         for level in range(1, lvl + 1):
+            description = get_description(name, level)
+
             # Calculate reward
             is_extra = table_badge[level - 1][4]
             badge_reward = int(table_badge[level - 1][2])
-            reward = calculate_extra_credit_reward(target, badge_reward, award_type, badge_id) if is_extra else badge_reward
+            award_given = get_award(target, description, award_type, badge_id)
+            reward = calculate_extra_credit_reward(target, award_type, badge_reward, award_given[config.AWARD_REWARD_COL] if award_given is not None else 0) if is_extra else badge_reward
 
             # Award badge
-            description = get_description(name, level)
             award(target, award_type, description, reward, badge_id)
 
             # Award tokens
@@ -1882,12 +1909,21 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
     Updates award if reward has changed.
     """
 
-    def calculate_skill_tree_reward(t, rwd, s_t_max_reward):
-        target_skill_tree_reward = 0
-        for a in get_awards(t, None, award_type):
-            if a[config.AWARD_INSTANCE_COL != skill_id]:
-                target_skill_tree_reward += a[config.AWARD_REWARD_COL]
-        return max(min(s_t_max_reward - target_skill_tree_reward, rwd), 0)
+    def calculate_skill_tree_reward(reward_to_give, reward_given=0):
+        reward_to_give = int(reward_to_give)
+        reward_given = int(reward_given)
+
+        # Get max. skill tree reward
+        max_skill_tree_reward = int(table_skill[3]) if table_skill[3] else None
+
+        # No max. threshold set, nothing to calculate
+        if max_skill_tree_reward is None:
+            return reward_to_give
+
+        # Calculate reward
+        target_skill_tree_reward = get_total_skill_reward(target)
+        reward_to_give = max(min(max_skill_tree_reward - (target_skill_tree_reward - reward_given), reward_to_give), 0)
+        return reward_to_give
 
     def spend_wildcard(a_id, nr_wildcards_to_spend=1):
         q = "SELECT nrWildcardsUsed FROM award_wildcard WHERE award = %s;"
@@ -1961,10 +1997,10 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
         else:
             # Calculate reward
             is_extra = table_skill[2]
-            skill_tree_max_reward = int(table_skill[3])
             skill_reward = int(table_skill[1])
-            reward = calculate_extra_credit_reward(target, skill_reward, award_type, skill_id) if is_extra else skill_reward
-            reward = calculate_skill_tree_reward(target, reward, skill_tree_max_reward)
+            award_given = get_award(target, name, award_type, skill_id)
+            reward = calculate_extra_credit_reward(target, award_type, skill_reward, award_given[config.AWARD_REWARD_COL] if award_given is not None else 0) if is_extra else skill_reward
+            reward = calculate_skill_tree_reward(reward, reward if award_given is not None else 0)
 
             # Award skill
             award(target, award_type, name, reward, skill_id)
@@ -2021,7 +2057,7 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
                       % (name, dependencies_names_string)
 
             query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s;"
-            already_sent = int(db.execute_query(query, (config.COURSE, target, message))) > 0
+            already_sent = int(db.execute_query(query, (config.COURSE, target, message))[0][0]) > 0
 
             # Add notification to table
             if not already_sent:
@@ -2137,13 +2173,15 @@ def award_streak(target, name, logs):
         # Award and/or update streaks
         nr_repetitions = math.floor(steps / goal)
         for repetition in range(1, nr_repetitions + 1):
+            description = get_description(name, repetition)
+
             # Calculate reward
             is_extra = table_streak[0][8]
             streak_reward = int(table_streak[0][6])
-            reward = calculate_extra_credit_reward(target, streak_reward, award_type, streak_id) if is_extra else streak_reward
+            award_given = get_award(target, description, award_type, streak_id)
+            reward = calculate_extra_credit_reward(target, award_type, streak_reward, award_given[config.AWARD_REWARD_COL] if award_given is not None else 0) if is_extra else streak_reward
 
             # Award streak
-            description = get_description(name, repetition)
             award(target, award_type, description, reward, streak_id)
 
             # Award tokens
