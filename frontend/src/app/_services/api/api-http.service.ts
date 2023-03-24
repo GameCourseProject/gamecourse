@@ -1075,10 +1075,11 @@ export class ApiHttpService {
       .pipe(map((res:any) => res['data'].map(obj => Notification.fromDatabase(obj))));
   }
 
-  public notificationSetShowed(notificationID: number, isShowed: boolean): Observable<Notification> {
+  public notificationSetShowed(notificationID: number, isShowed: boolean, date: string): Observable<Notification> {
     const data = {
       notificationId: notificationID,
-      isShowed: isShowed
+      isShowed: isShowed,
+      date: date
     }
 
     const params = (qs: QueryStringParameters) => {

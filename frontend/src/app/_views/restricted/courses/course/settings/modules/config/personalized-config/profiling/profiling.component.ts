@@ -181,7 +181,7 @@ export class ProfilingComponent implements OnInit {
     this.loading.table.status = true;
 
     this.status = [[
-      {type: TableDataType.DATETIME, content: {datetime: this.lastRun, datetimeFormat: "YYYY-MM-DD HH:mm:ss"}},
+      {type: TableDataType.DATETIME, content: {datetime: this.lastRun, datetimeFormat: "DD/MM/YYYY HH:mm"}},
       {type: TableDataType.COLOR,
         content: {
           color: this.running.profiler ? '#36D399' : '#EF6060',

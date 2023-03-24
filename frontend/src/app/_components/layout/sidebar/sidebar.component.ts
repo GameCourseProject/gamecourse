@@ -254,6 +254,11 @@ export class SidebarComponent implements OnInit {
                 icon: 'feather-layout'
               },
               {
+                link: path + 'settings/notifications',
+                name: 'Notifications',
+                icon: 'tabler-bell'
+              },
+              {
                 link: path + 'settings/themes',
                 name: 'Themes',
                 icon: 'tabler-color-swatch'
