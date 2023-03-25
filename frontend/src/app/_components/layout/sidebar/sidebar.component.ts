@@ -242,6 +242,11 @@ export class SidebarComponent implements OnInit {
                 link: path + 'settings/modules',
                 name: 'Modules',
                 icon: 'tabler-plug'
+              },
+              {
+                link: path + 'settings/notifications',
+                name: 'Notifications',
+                icon: 'tabler-bell'
               }
             ]
           },
@@ -252,11 +257,6 @@ export class SidebarComponent implements OnInit {
                 link: path + 'settings/pages',
                 name: 'Pages',
                 icon: 'feather-layout'
-              },
-              {
-                link: path + 'settings/notifications',
-                name: 'Notifications',
-                icon: 'tabler-bell'
               },
               {
                 link: path + 'settings/themes',
