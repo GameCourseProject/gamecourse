@@ -237,7 +237,7 @@
                                         "type": "block",
                                         "class": "gap-2",
                                         "visibilityType": "conditional",
-                                        "visibilityCondition": "{badges.isEnabled()}",
+                                        "visibilityCondition": "{modules.isEnabled(\"Badges\")}",
                                         "direction": "horizontal",
                                         "children": [
                                           [
@@ -356,7 +356,7 @@
                                         "type": "block",
                                         "class": "gap-2",
                                         "visibilityType": "conditional",
-                                        "visibilityCondition": "{skills.isEnabled()}",
+                                        "visibilityCondition": "{modules.isEnabled(\"Skills\")}",
                                         "direction": "horizontal",
                                         "children": [
                                           [
@@ -397,7 +397,7 @@
                                         "type": "block",
                                         "class": "gap-2",
                                         "visibilityType": "conditional",
-                                        "visibilityCondition": "{streaks.isEnabled()}",
+                                        "visibilityCondition": "{modules.isEnabled(\"Streaks\")}",
                                         "direction": "horizontal",
                                         "children": [
                                           [
@@ -438,7 +438,7 @@
                                         "type": "block",
                                         "class": "gap-2",
                                         "visibilityType": "conditional",
-                                        "visibilityCondition": "{vc.isEnabled()}",
+                                        "visibilityCondition": "{modules.isEnabled(\"VirtualCurrency\")}",
                                         "direction": "horizontal",
                                         "children": [
                                           [
@@ -1176,6 +1176,8 @@
                     {
                       "type": "button",
                       "class": "btn-block",
+                      "visibilityType": "conditional",
+                      "visibilityCondition": "{modules.isEnabled(\"VirtualCurrency\")}",
                       "text": "Spendings",
                       "color": "{%courseColor}",
                       "icon": "tabler-coin",

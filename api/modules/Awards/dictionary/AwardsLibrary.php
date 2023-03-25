@@ -162,19 +162,6 @@ class AwardsLibrary extends Library
     /**
      * TODO: description
      *
-     * @return ValueNode
-     * @throws Exception
-     */
-    public function isEnabled(): ValueNode
-    {
-        $course = Core::dictionary()->getCourse();
-        $isEnabled = $course->isModuleEnabled(Awards::ID);
-        return new ValueNode($isEnabled, Core::dictionary()->getLibraryById(BoolLibrary::ID));
-    }
-
-    /**
-     * TODO: description
-     *
      * @param string $type
      * @return ValueNode
      * @throws Exception

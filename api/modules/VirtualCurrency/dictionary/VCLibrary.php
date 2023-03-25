@@ -3,7 +3,6 @@ namespace GameCourse\Views\Dictionary;
 
 use Exception;
 use GameCourse\Core\Core;
-use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
 
@@ -40,19 +39,6 @@ class VCLibrary extends Library
 
 
     /*** ---------- Config ---------- ***/
-
-    /**
-     * TODO: description
-     *
-     * @return ValueNode
-     * @throws Exception
-     */
-    public function isEnabled(): ValueNode
-    {
-        $course = Core::dictionary()->getCourse();
-        $isEnabled = $course->isModuleEnabled(VirtualCurrency::ID);
-        return new ValueNode($isEnabled, Core::dictionary()->getLibraryById(BoolLibrary::ID));
-    }
 
     /**
      * Gets Virtual Currency name.

@@ -46,19 +46,6 @@ class StreaksLibrary extends Library
      * @return ValueNode
      * @throws Exception
      */
-    public function isEnabled(): ValueNode
-    {
-        $course = Core::dictionary()->getCourse();
-        $isEnabled = $course->isModuleEnabled(Streaks::ID);
-        return new ValueNode($isEnabled, Core::dictionary()->getLibraryById(BoolLibrary::ID));
-    }
-
-    /**
-     * TODO: description
-     *
-     * @return ValueNode
-     * @throws Exception
-     */
     public function getMaxXP(): ValueNode
     {
         if (Core::dictionary()->mockData()) {
