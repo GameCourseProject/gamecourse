@@ -6,7 +6,12 @@ use Exception;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Awards\Awards;
+use GameCourse\Module\Badges\Badges;
+use GameCourse\Module\Leaderboard\Leaderboard;
 use GameCourse\Module\Module;
+use GameCourse\Module\Profile\Profile;
+use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\Role\Role;
 use GameCourse\User\User;
 use PHPUnit\Framework\TestCase;
@@ -17,7 +22,9 @@ class GameElementTest extends TestCase
 {
     private $course;
     private $courseUser;
-    private $module;
+    private $badgesModule;
+    private $leaderboardModule;
+    private $profileModule;
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------- Setup & Tear Down ----------------- ***/
@@ -36,7 +43,7 @@ class GameElementTest extends TestCase
      */
     protected function setUp(): void
     {
-        // Set logged user
+        // Set logged user (admin)
         $loggedUser = User::addUser("John Smith Doe", "ist123456", AuthService::FENIX, "johndoe@email.com",
             123456, "John Doe", "MEIC-A", true, true);
         Core::setLoggedUser($loggedUser);
@@ -52,8 +59,23 @@ class GameElementTest extends TestCase
         $courseUser = $course->addUserToCourse($user->getId(), "Student");
         $this->courseUser = $courseUser;
 
-        // Enable module
-        // TODO
+        // Enable modules with adaptation roles (and their dependencies)
+        $awards = new Awards($course);
+        $awards->setEnabled(true);
+
+        $XPAndPoints = new XPLevels($course);
+        $XPAndPoints->setEnabled(true);
+
+        $this->badgesModule = new Badges($course);
+        $this->badgesModule->setEnabled(true);
+
+        $this->leaderboardModule = new Leaderboard($course);
+        $this->leaderboardModule->setEnabled(true);
+
+        $this->profileModule = new Profile($course);
+        $this->profileModule->setEnabled(true);
+
+
 
     }
 

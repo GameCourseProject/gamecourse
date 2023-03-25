@@ -297,11 +297,11 @@ class GameElement
         $nrStudents = count($course->getStudents());
         if ($nrStudents == 0) $nrStudents = 1;
 
-        $entries = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "0"], "count(*)");
-        $response["question1"]["false"] = ($entries / $nrStudents);
+        $entriesTrue = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "0"], "count(*)");
+        $entriesFalse = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "1"], "count(*)");
+        $response["question1"]["false"] = $entriesTrue;
 
-        $entries = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "1"], "count(*)");
-        $response["question1"]["true"] = ($entries / $nrStudents);
+        $response["question1"]["true"] = $entriesFalse;
 
         // Statistics question 2
         $aux = Core::database()->selectMultiple($table, ["course" => $course->getId(), "element" => $gameElement], "question2");

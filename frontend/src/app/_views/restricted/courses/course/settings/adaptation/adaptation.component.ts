@@ -41,7 +41,6 @@ export class AdaptationComponent implements OnInit {
   gameElementToManage: GameElementManageData = this.initGameElementToManage();
   adminMode: 'questionnaire statistics' | 'activate' | 'deactivate';
 
-  // FIXME: add colors later to q3
   statistics = {
     q1: { series: null,
           colors: ["#C53B55", "#65E59F"],
@@ -64,7 +63,7 @@ export class AdaptationComponent implements OnInit {
           subtitle: "Descriptions of what students saw different regarding this game element." },
     q3: { series: [{ name: "Nº of students", data: null}],
           categories: [ "10", "9", "8", "7", "6", "5", "4", "3", "2", "1"],
-          colors: [],
+          colors: [ "#61BE88", "#8BC972", "#AED257", "#D6D83F", "#F9DF1D", "#FFC92A", "#FBAD37", "#F88A3B", "#EE603B", "#DF1D3D"],
           title: "Question 3:",
           subtitle: "How many students thought about this game element per enjoyment level (1-lowest, 10-highest)."
     }
@@ -140,7 +139,7 @@ export class AdaptationComponent implements OnInit {
 
   async getGameElements(courseID: number): Promise<void> {
     // ADMIN
-    if (!this.user.isAdmin){
+    if (this.user.isAdmin){
       this.availableGameElements = await this.api.getGameElements(courseID).toPromise();
     }
 
@@ -204,7 +203,7 @@ export class AdaptationComponent implements OnInit {
     const table: {type: TableDataType, content: any}[][] = [];
 
     if (tableType === this.tableType[0]){
-      if (!this.user.isAdmin){  //FIXME: DEBUG ONLY
+      if (this.user.isAdmin){  //FIXME: DEBUG ONLY
         this.availableGameElements.forEach(gameElement => {
 
           let isActive = gameElement.isActive;
