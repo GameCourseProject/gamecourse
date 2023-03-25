@@ -109,7 +109,6 @@ export class BarChartComponent implements OnInit {
 
   // Extras
   @Input() orientation?: 'vertical' | 'horizontal';                         // Bars orientation
-  @Input() distributed?: boolean = false;
   @Input() borderRadius?: number = 6;                                       // Bars radius
   @Input() sparkline?: boolean;                                             // Hide everything but primary paths
   @Input() toolbar?: boolean;                                               // Show toolbar with actions
@@ -145,7 +144,7 @@ export class BarChartComponent implements OnInit {
           borderRadius: this.borderRadius,
           borderRadiusApplication: 'end',
           columnWidth: "80%",
-          distributed: this.distributed
+          distributed: !!this.highlight
         },
       },
       subtitle: subtitle(this.subtitle, this.align),

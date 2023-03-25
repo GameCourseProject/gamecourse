@@ -81,6 +81,7 @@
   [actionInProgress]="loading.action"
   [submitBtnText]="'Done'"
   [closeBtn]="false"
+  (onClose)="closeStatistics()"
   (submitBtnClicked)="closeStatistics()"
 ></app-modal>
 
@@ -135,8 +136,7 @@
         [orientation]="'horizontal'"
         [dataLabels]="true"
         [XAxisGrid]="true"
-        [distributed]="true"
-        [colors]="statistics.q3.colors"
+        [highlight]="statistics.q3.highlights"
       ></app-bar-chart>
     </div>
   </div>

@@ -63,29 +63,22 @@ export class AdaptationComponent implements OnInit {
           subtitle: "Descriptions of what students saw different regarding this game element." },
     q3: { series: [{ name: "Nº of students", data: null}],
           categories: [ "10", "9", "8", "7", "6", "5", "4", "3", "2", "1"],
-          colors: [ "#61BE88", "#8BC972", "#AED257", "#D6D83F", "#F9DF1D", "#FFC92A", "#FBAD37", "#F88A3B", "#EE603B", "#DF1D3D"],
+          highlights: [
+            { color: "#61BE88", value: "10"},
+            { color: "#8BC972", value: "9" },
+            { color: "#AED257", value: "8" },
+            { color: "#D6D83F", value: "7" },
+            { color: "#F9DF1D", value: "6" },
+            { color: "#FFC92A", value: "5" },
+            { color: "#FBAD37", value: "4" },
+            { color: "#F88A3B", value: "3" },
+            { color: "#EE603B", value: "2" },
+            { color: "#DF1D3D", value: "1"}
+          ],
           title: "Question 3:",
           subtitle: "How many students thought about this game element per enjoyment level (1-lowest, 10-highest)."
     }
   }
-
-  // FIXME - q3 colors
-  /*q3color: {color: string, value: number}[] =[
-    {color: "#DF1D3D", value: 1},
-    {color: "#EE603B", value: 2},
-    {color: "#F88A3B", value: 3},
-    {color: "#FBAD37", value: 3},
-    {color: "#FFC92A", value: 5},
-    {color: "#F9DF1D", value: 6},
-    {color: "#D6D83F", value: 7},
-    {color: "#AED257", value: 8},
-    {color: "#8BC972", value: 9},
-    {color: "#61BE88", value: 10}
-  ];
-
-  q3colors: ["#F88A3B",  "#FBAD37", "#FFC92A",
-    "#F9DF1D", "#D6D83F", "#AED257", "#8BC972",  "#61BE88"
-  ];*/
 
   /** -- NON-ADMIN VARIABLES -- **/
   selectedGameElement: string;
@@ -419,7 +412,8 @@ export class AdaptationComponent implements OnInit {
 
   async setUpData(statistics: { questionNr: { parameter: string, value: number }[] | string[] })
   {
-    // NOTE: forces table to update
+    console.log(statistics);
+    // NOTE: forces graphs to update
     this.refreshing = true;
     setTimeout(() => this.refreshing = false, 0);
 
@@ -427,7 +421,7 @@ export class AdaptationComponent implements OnInit {
 
     // Question 1 data
     this.statistics.q1.labels = Object.keys(statistics["question1"]).map(element => { return element.capitalize() });
-    this.statistics.q1.series = Object.values(statistics["question1"]);
+    this.statistics.q1.series = Object.values(statistics["question1"]).map(element => {return parseInt(String(element))});
     // Question 2 data
     this.statistics.q2.data = Object.values(statistics["question2"]);
     // Question 3 data
