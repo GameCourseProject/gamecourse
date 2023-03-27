@@ -2437,7 +2437,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']));
   }
 
-  public getSkillsExtraInfo(courseID: number, userID: number, skillTreeID: number): Observable<{[skillID: number]: {attempts: number, cost: number, completed: boolean}}> {
+  public getSkillsExtraInfo(courseID: number, userID: number, skillTreeID: number): Observable<{[skillID: number]: {available: boolean, attempts: number, cost: number, completed: boolean}}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.SKILLS);
       qs.push('request', 'getSkillsExtraInfo');

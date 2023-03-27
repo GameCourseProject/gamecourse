@@ -299,7 +299,9 @@ class SkillsController
         $userSkillAwards = (new Awards($course))->getUserSkillsAwards($userId);
         foreach (SkillTree::getSkillTreeById($skillTreeId)->getSkills(true) as $skill) {
             $skill = Skill::getSkillById($skill["id"]);
+            $dependencies = $skill->getDependencies();
             $info[$skill->getId()] = [
+                "available" => empty($dependencies) || $this->dependenciesMet($course, $userId, $skillTreeId, $userSkillAwards, $dependencies),
                 "attempts" => count(array_filter(AutoGame::getParticipations($courseId, $userId, "graded post"),
                     function ($item) use ($skill) { return $item["description"] === "Skill Tree, Re: " . $skill->getName(); })),
                 "cost" => $skill->getSkillCostForUser($userId),
@@ -309,6 +311,34 @@ class SkillsController
             ];
         }
         API::response($info);
+    }
+
+    private function dependenciesMet($course, $userId, $skillTreeId, $userSkillAwards, $dependencies) // FIXME: create proper function
+    {
+        $wildcardTier = Tier::getWildcard($skillTreeId)->getId();
+        foreach ($dependencies as $dependency) {
+            $completed = true;
+            foreach ($dependency as $skill) {
+                if ($skill["tier"] === $wildcardTier) {
+                    $hasWildcard = (new Skills($course))->userHasWildcardAvailable($userId, $skillTreeId);
+                    if (!$hasWildcard) {
+                        $completed = false;
+                        break;
+                    }
+
+                } else {
+                    $skillCompleted = !empty(array_filter($userSkillAwards, function ($award) use ($skill) {
+                        return $award["type"] === AwardType::SKILL && $award["description"] == $skill["name"] && $award["moduleInstance"] == $skill["id"];
+                    }));
+                    if (!$skillCompleted) {
+                        $completed = false;
+                        break;
+                    }
+                }
+            }
+            if ($completed) return true;
+        }
+        return false;
     }
 
     public function getStreaks()
