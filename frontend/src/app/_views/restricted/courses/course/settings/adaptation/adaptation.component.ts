@@ -22,8 +22,7 @@ export class AdaptationComponent implements OnInit {
   loading = {
     page: true,
     action: false,
-    table: false,
-    refreshStatistics: false
+    table: false
   }
   refreshing: boolean = true;
 
@@ -132,7 +131,7 @@ export class AdaptationComponent implements OnInit {
 
   async getGameElements(courseID: number): Promise<void> {
     // ADMIN
-    if (this.user.isAdmin){
+    if (!this.user.isAdmin){
       this.availableGameElements = await this.api.getGameElements(courseID).toPromise();
     }
 
@@ -196,7 +195,7 @@ export class AdaptationComponent implements OnInit {
     const table: {type: TableDataType, content: any}[][] = [];
 
     if (tableType === this.tableType[0]){
-      if (this.user.isAdmin){  //FIXME: DEBUG ONLY
+      if (!this.user.isAdmin){  //FIXME: DEBUG ONLY
         this.availableGameElements.forEach(gameElement => {
 
           let isActive = gameElement.isActive;
@@ -272,7 +271,6 @@ export class AdaptationComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
-
 
   /** -- ADMIN ACTIONS -- **/
   async toggleActive(){
@@ -412,7 +410,6 @@ export class AdaptationComponent implements OnInit {
 
   async setUpData(statistics: { questionNr: { parameter: string, value: number }[] | string[] })
   {
-    console.log(statistics);
     // NOTE: forces graphs to update
     this.refreshing = true;
     setTimeout(() => this.refreshing = false, 0);

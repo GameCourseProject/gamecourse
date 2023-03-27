@@ -75,8 +75,6 @@ class GameElementTest extends TestCase
         $this->profileModule = new Profile($course);
         $this->profileModule->setEnabled(true);
 
-
-
     }
 
     /**
@@ -156,8 +154,7 @@ class GameElementTest extends TestCase
      * @throws Exception
      */
     public function getId(){
-        // TODO
-        // $gameElement = GameElement::addGameElement($this->course->getId(), );
+        $gameElement = GameElement::addGameElement($this->course->getId(), $this->badgesModule->getId());
     }
 
 }

@@ -5,10 +5,10 @@
 
   <ng-container *ngIf="!loading.page">
     <!-- Admin Template -->
-    <ng-container *ngIf="true" [ngTemplateOutlet]="ADMIN"></ng-container>
+    <ng-container *ngIf="false" [ngTemplateOutlet]="ADMIN"></ng-container>
 
     <!-- Non-Admin Template -->
-    <ng-container *ngIf="false" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
+    <ng-container *ngIf="true" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
   </ng-container>
 </div>
 
@@ -157,7 +157,9 @@
       <!-- md:w-1/2 lg:w-3/5 -->
       <div class="card w-full bg-base-100 shadow-xl">
         <div class="card-body">
-          <div class="card-title"><h2>Customize your own game elements</h2></div>
+          <div class="card-title">
+            <app-simple-helper [text]="'Select game elements and customize them by choosing one of the available options!'" [position]="'right'"></app-simple-helper>
+            <h2>Customize your own game elements</h2></div>
           <div class="mt-4 w-full">
             <app-input-select
               [id]="'game-elements'"
@@ -172,9 +174,8 @@
           <div *ngIf="selectedGameElement && selectedGameElement !== 'undefined'">
             <div class="mt-3">
               <div class="btn-group flex justify-start">
-                <!-- TODO: add helper info ? -->
-                <span>Options available:</span>
-                <div *ngFor="let option of getVersions(); let i = index" class="pl-4">
+                <span><strong>Options available:</strong></span>
+                <div *ngFor="let option of getVersions(); let i = index" class="pl-4 mb-3">
                   <div class="indicator">
                   <span *ngIf="option === previousPreference"
                         class="indicator-item badge badge-xs badge-success text-white border border-2 border-green-900 py-1.5">
@@ -187,7 +188,7 @@
                   </div>
                 </div>
               </div>
-              <span *ngIf="option === activeButton">{{gameElementChildren[option]}}</span>
+              <span *ngIf="option === activeButton && activeButton" class="mt-3"><strong>Description:</strong> {{gameElementChildren[option]}}</span>
               <div *ngIf="activeButton" class="justify-center flex">
                 <img class="w-8/12 pt-3 pb-3"  src="assets/imgs/adaptation/{{selectedGameElement}}-{{option}}-{{getTheme()}}.png" alt="">
               </div>
