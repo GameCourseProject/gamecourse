@@ -50,9 +50,9 @@ class TreeLibrary extends Library
     public function maxReward($skillTree): ValueNode
     {
         // NOTE: on mock data, skill tree will be mocked
-        if (is_array($skillTree)) $maxreward = $skillTree["maxReward"];
-        else $maxreward = $skillTree->getMaxReward();
-        return new ValueNode($maxreward, Core::dictionary()->getLibraryById(MathLibrary::ID));
+        if (is_array($skillTree)) $maxReward = $skillTree["maxReward"];
+        else $maxReward = $skillTree->getMaxReward();
+        return new ValueNode($maxReward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
 

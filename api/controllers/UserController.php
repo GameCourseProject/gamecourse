@@ -141,9 +141,10 @@ class UserController
         $user = API::verifyUserExists($userId);
 
         $loggedUser = Core::getLoggedUser();
-        if ($loggedUser->getId() != $user->getId() && !$loggedUser->isAdmin())
-            $userInfo = $user->getData("name, major, nickname, studentNumber, username, auth_service, image");
-        else $userInfo = $user->getData();
+        if ($loggedUser->getId() != $user->getId() && !$loggedUser->isAdmin()) {
+            $userInfo = $user->getData("name, major, nickname, studentNumber, username, auth_service");
+            $userInfo["image"] = $user->getImage();
+        } else $userInfo = $user->getData();
 
         API::response($userInfo);
     }

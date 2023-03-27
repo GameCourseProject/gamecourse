@@ -57,6 +57,10 @@ const routes: Routes = [
         component: ConfigComponent
       },
       {
+        path: 'notifications',
+        component: ComingSoonComponent
+      },
+      {
         path: 'pages',
         component: ComingSoonComponent,
       },

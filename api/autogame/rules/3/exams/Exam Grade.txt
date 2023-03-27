@@ -3,11 +3,10 @@ rule: Exam Grade
 
     when:
         logs = get_quiz_logs(target, "Exam")
-        len(logs) == 1
 
         exam_grade = get_rating(logs)
-        quizzes_grade = get_total_quiz_reward(target)
+        quizzes_grade = compute_rating(filter_logs(get_quiz_logs(target), None, ["Dry Run", "Exam"]))
         rating = max(exam_grade - quizzes_grade, 0)
 
     then:
-        award_exam_grade(target, "Exam", rating)
+        award_exam_grade(target, "Exam", logs, rating)

@@ -108,6 +108,7 @@
                                                             [
                                                                 {
                                                                     "type": "block",
+                                                                    "style": "max-width: 17rem",
                                                                     "direction": "horizontal",
                                                                     "columns": 3,
                                                                     "responsive": false,
@@ -350,13 +351,13 @@
                                                                                 "class": "gap-2 flex-wrap mt-2",
                                                                                 "visibilityType": "conditional",
                                                                                 "visibilityCondition": "{%usersWithLevel.count > 0}",
-                                                                                "loopData": "{%usersWithLevel}",
                                                                                 "direction": "horizontal",
                                                                                 "children": [
                                                                                     [
                                                                                         {
                                                                                             "type": "image",
                                                                                             "class": "mask mask-circle h-9 w-9",
+                                                                                            "loopData": "{%usersWithLevel}",
                                                                                             "src": "{%item.image}",
                                                                                             "events": [
                                                                                                 {

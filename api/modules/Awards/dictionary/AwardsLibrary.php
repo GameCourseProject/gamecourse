@@ -120,7 +120,7 @@ class AwardsLibrary extends Library
     public function date($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
-        $date = $award["reward"];
+        $date = $award["date"];
         return new ValueNode($date, Core::dictionary()->getLibraryById(TimeLibrary::ID));
     }
 
@@ -158,19 +158,6 @@ class AwardsLibrary extends Library
 
 
     /*** ---------- Config ---------- ***/
-
-    /**
-     * TODO: description
-     *
-     * @return ValueNode
-     * @throws Exception
-     */
-    public function isEnabled(): ValueNode
-    {
-        $course = Core::dictionary()->getCourse();
-        $isEnabled = $course->isModuleEnabled(Awards::ID);
-        return new ValueNode($isEnabled, Core::dictionary()->getLibraryById(BoolLibrary::ID));
-    }
 
     /**
      * TODO: description

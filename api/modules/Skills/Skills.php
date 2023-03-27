@@ -261,7 +261,6 @@ class Skills extends Module
                                     "placeholder" => "Skill tree maximum reward",
                                     "options" => [
                                         "topLabel" => "Max. reward (XP)",
-                                        "required" => true,
                                         "minValue" => 0
                                     ],
                                     "helper" => "Maximum XP that can be earned with skill tree"
@@ -299,7 +298,6 @@ class Skills extends Module
                                     "placeholder" => "Skill tree maximum reward",
                                     "options" => [
                                         "topLabel" => "Max. reward (XP)",
-                                        "required" => true,
                                         "minValue" => 0
                                     ],
                                     "helper" => "Maximum XP that can be earned with skill tree"
@@ -322,10 +320,10 @@ class Skills extends Module
     {
         $courseId = $this->course->getId();
         if ($listName == "Skill Trees") {   // Skill Trees
-            if ($action == Action::NEW) SkillTree::addSkillTree($courseId, $item["name"] ?? null, $item["maxReward"]);
+            if ($action == Action::NEW) SkillTree::addSkillTree($courseId, $item["name"] ?? null, $item["maxReward"] ?? null);
             elseif ($action == Action::EDIT) {
                 $skillTree = new SkillTree($item["id"]);
-                $skillTree->editSkillTree($item["name"], $item["maxReward"]);
+                $skillTree->editSkillTree($item["name"] ?? null, $item["maxReward"] ?? null);
             } elseif ($action == Action::DELETE) SkillTree::deleteSkillTree($item["id"]);
         }
 

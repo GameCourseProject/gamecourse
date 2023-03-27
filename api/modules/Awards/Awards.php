@@ -63,6 +63,7 @@ class Awards extends Module
     public function init()
     {
         $this->initDatabase();
+        $this->initTemplates();
     }
 
     public function copyTo(Course $copyTo)
@@ -73,6 +74,7 @@ class Awards extends Module
     public function disable()
     {
         $this->cleanDatabase();
+        $this->removeTemplates();
     }
 
 

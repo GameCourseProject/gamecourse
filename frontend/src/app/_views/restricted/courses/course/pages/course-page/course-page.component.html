@@ -27,22 +27,25 @@
                 <span class="text-center font-semibold mb-2" [style]="'color: ' + course.color">{{tier.name}}: {{tier.reward}} XP</span>
 
                 <!-- Skill -->
-                <div class="flex flex-wrap flex-row justify-start items-start w-full lg:flex-col">
-                  <div *ngFor="let skill of filterSkillsByTier(getSkillTreeInfo(skillTrees[0].id).skills, tier.id)" class="flex flex-col justify-start m-2">
+                <div class="flex flex-wrap flex-row justify-center items-start w-full lg:flex-col">
+                  <div *ngFor="let skill of filterSkillsByTier(getSkillTreeInfo(skillTrees[0].id).skills, tier.id)" class="flex flex-col justify-start"
+                    [ngClass]="{'items-center w-full my-2': !info[skill.id].available, 'm-2': info[skill.id].available}">
 
-                    <div class="flex justify-start gap-2 {{tier.position === 0 ? 'items-center' : ''}}">
+                    <div class="flex justify-center gap-2" [ngClass]="{'items-center': !info[skill.id].available}">
                       <div class="flex flex-col items-center">
                         <!-- Skill box -->
                         <div class="w-20 h-20 p-2 rounded-lg hover:cursor-pointer hover:outline hover:outline-offset-2 relative"
-                             [ngStyle]="{'background-color': skill.color, 'outline-color': skill.color}" (click)="goToSkillPage(skill)">
+                             [ngStyle]="{'background-color': info[skill.id].available ? skill.color : '#607D8B',
+                                        'outline-color': info[skill.id].available ? skill.color : '#607D8B',
+                                        'opacity': info[skill.id].available ? 1 : 0.75}" (click)="goToSkillPage(skill)">
                           <span class="block text-white font-semibold text-xs break-words">{{skill.name}}</span>
                           <ng-icon *ngIf="skill.isCollab" class="absolute bottom-0 left-0 mr-2 mb-2 text-base-100" name="tabler-users" size="1.1rem"></ng-icon>
-                          <ng-icon *ngIf="info[skill.id].completed" class="absolute bottom-0 right-0 mr-2 mb-2 text-base-100" name="tabler-checks" size="1.1rem"></ng-icon>
+                          <ng-icon *ngIf="info[skill.id].completed" class="absolute bottom-0 right-0 mr-2 mb-2 text-white" name="tabler-checks" size="1.1rem"></ng-icon>
                         </div>
                       </div>
 
                       <!-- VC -->
-                      <div class="{{tier.position !== 0 ? 'mt-5' : ''}}">
+                      <div *ngIf="info[skill.id].available" class="mt-5">
                         <p class="font-medium text-sm">Nr. attempts:<span class="ml-1">{{info[skill.id].attempts}}</span></p>
                         <p class="font-medium text-sm flex items-center min-w-max">Cost to {{info[skill.id].attempts > 0 ? 'retry' : 'try'}}:<span class="flex items-center gap-1 ml-1">{{info[skill.id].cost}}
                           <img class="h-4 w-4 inline-block" [src]="vcIcon" alt=""></span></p>
@@ -86,21 +89,21 @@
                 <div class="md:w-[20rem]">
                   <p class="font-semibold" [style.font-size]="'1.1rem'" [style.color]="streak.color">{{streak.name}}</p>
                   <p class="text-neutral/75">{{streak.description}}</p>
-                  <p class="font-medium text-sm mt-2" [style]="'color: ' + course.color">[{{userStreaksInfo[i].nrCompletions || 0 }} so far]</p>
+                  <p class="font-medium text-sm mt-2" [style]="'color: ' + course.color">[{{userStreaksInfo[i]?.nrCompletions || 0 }} so far]</p>
                 </div>
 
                 <!-- Streak Progression -->
                 <div class="flex flex-col items-center">
                   <div class="flex items-center gap-2">
-                    <div *ngFor="let step of steps(userStreaksInfo[i].progress || 0)" class="w-9 h-9" [style]="'color: ' + streak.color" [innerHTML]="streak.svg | sanitizeHTML"></div>
-                    <div *ngFor="let step of steps(streak.goal - (userStreaksInfo[i].progress || 0))" class="w-9 h-9 text-neutral/30" [innerHTML]="streak.svg | sanitizeHTML"></div>
+                    <div *ngFor="let step of steps(userStreaksInfo[i]?.progress || 0)" class="w-9 h-9" [style]="'color: ' + streak.color" [innerHTML]="streak.svg | sanitizeHTML"></div>
+                    <div *ngFor="let step of steps(streak.goal - (userStreaksInfo[i]?.progress || 0))" class="w-9 h-9 text-neutral/30" [innerHTML]="streak.svg | sanitizeHTML"></div>
                     <div class="tooltip" data-tip="Can be earned multiple times">
                       <button class="btn btn-circle btn-sm btn-ghost">
                         <ng-icon name="feather-repeat" size="1.2rem"></ng-icon>
                       </button>
                     </div>
                   </div>
-                  <span *ngIf="userStreaksInfo[i].deadline" class="text-sm text-error mt-2 font-medium">Deadline: {{userStreaksInfo[i].deadline.format('DD/MM/YYYY HH:mm')}}</span>
+                  <span *ngIf="userStreaksInfo[i]?.deadline" class="text-sm text-error mt-2 font-medium">Deadline: {{userStreaksInfo[i]?.deadline.format('DD/MM/YYYY HH:mm')}}</span>
                 </div>
               </div>
 

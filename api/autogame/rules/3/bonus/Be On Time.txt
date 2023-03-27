@@ -1,0 +1,8 @@
+rule: Be On Time
+# Attributed when arriving to class on time
+
+    when:
+        logs = get_attendance_lecture_logs(target)
+
+    then:
+        award_bonus(target, "Be On Time", logs, 10, None, False)

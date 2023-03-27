@@ -40,7 +40,7 @@ export class CoursePageComponent implements OnInit {
     skills: Skill[]
   }[] = [];
   availableWildcards: number;
-  info: {[skillID: number]: {attempts: number, cost: number, completed: boolean}};
+  info: {[skillID: number]: {available: boolean, attempts: number, cost: number, completed: boolean}};
   vcIcon: string = environment.apiEndpoint + '/modules/VirtualCurrency/assets/default.png';
 
   // FIXME: hard-coded Streaks
@@ -64,11 +64,11 @@ export class CoursePageComponent implements OnInit {
 
       // Get page information
       this.route.params.subscribe(async params => {
-        const pageID = parseInt(params.id);
-        await this.getPage(pageID);
-
         const userID = parseInt(params.userId) || null;
         if (userID) this.user = await this.api.getUserById(userID).toPromise();
+
+        const pageID = parseInt(params.id);
+        await this.getPage(pageID);
 
         // Render page
         this.pageView = null; // NOTE: forces view to completely refresh

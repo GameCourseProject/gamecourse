@@ -3,10 +3,9 @@ namespace GameCourse\Views\Dictionary;
 
 use Exception;
 use GameCourse\Core\Core;
-use GameCourse\Module\Skills\Skills;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
 
-class SkillsLibrary extends Library
+class ModulesLibrary extends Library
 {
     public function __construct()
     {
@@ -18,9 +17,9 @@ class SkillsLibrary extends Library
     /*** ------------------ Metadata ------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    const ID = "skills";    // NOTE: must match the name of the class
-    const NAME = "Skills";
-    const DESCRIPTION = "Provides access to information regarding skills.";
+    const ID = "modules";    // NOTE: must match the name of the class
+    const NAME = "Modules";
+    const DESCRIPTION = "Provides access to information regarding modules.";
 
 
     /*** ----------------------------------------------- ***/
@@ -30,10 +29,28 @@ class SkillsLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
-            // TODO
+            new DFunction("isEnabled",
+                "Checks whether a given module is enabled.",
+                ReturnType::BOOLEAN,
+                $this
+            ),
         ];
     }
 
     // NOTE: add new library functions bellow & update its
     //       metadata in 'getFunctions' above
+
+    /**
+     * Checks whether a given module is enabled.
+     *
+     * @param string $moduleId
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function isEnabled(string $moduleId): ValueNode
+    {
+        $course = Core::dictionary()->getCourse();
+        $isEnabled = $course->isModuleEnabled($moduleId);
+        return new ValueNode($isEnabled, Core::dictionary()->getLibraryById(BoolLibrary::ID));
+    }
 }

@@ -253,7 +253,8 @@ export function subtitle(subtitle: string, align: 'left' | 'center' | 'right'): 
 /*** ------------------ Tooltip ------------------ ***/
 /*** --------------------------------------------- ***/
 
-export function tooltip(show: boolean, formatter: {xaxis: string, yaxis: string}, theme: 'light' | 'dark'): ApexTooltip {
+export function tooltip(show: boolean, formatter: {xaxis: string, yaxis: string}, normalize: {xaxisMax: number[], yaxisMax: number[]} | false,
+                        theme: 'light' | 'dark'): ApexTooltip {
   const tooltip = {
     enabled: show,
     theme,
@@ -262,9 +263,11 @@ export function tooltip(show: boolean, formatter: {xaxis: string, yaxis: string}
   };
 
   if (formatter.xaxis) tooltip.x = {formatter(val: number, opts?: any): string {
+    if (normalize) val = val * normalize['xaxisMax'][opts.dataPointIndex] / 100;
     return evaluate(formatter.xaxis, val, opts).toString();
   }};
   if (formatter.yaxis) tooltip.y = {formatter(val: number, opts?: any): string {
+    if (normalize) val = val * normalize['yaxisMax'][opts.dataPointIndex] / 100;
     return evaluate(formatter.yaxis, val, opts).toString();
   }};
 

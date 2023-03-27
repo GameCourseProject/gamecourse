@@ -590,11 +590,10 @@ tags:
 
 	when:
 		logs = get_logs(target, \"$type\")
-		repetitions = len(logs)
-		repetitions > 0
 
 	then:
-		" . ($amount > 0 ? "award" : "spend") . "_tokens(target, \"$description\", " . abs($amount) . ", repetitions)"), $this->trim($rule->getText()));
+		" . ($amount > 0 ? "award" : "spend") . "_tokens(target, \"$description\", " . ($amount > 0 ? "logs, " : "") .
+            abs($amount) . ", " . ($amount > 0 ? "None, False" : "False") . ")"), $this->trim($rule->getText()));
     }
 
     /**
@@ -657,11 +656,10 @@ tags:
 
 	when:
 		logs = get_logs(target, \"$type\")
-		repetitions = len(logs)
-		repetitions > 0
 
 	then:
-		" . ($amount > 0 ? "award" : "spend") . "_tokens(target, \"$description\", " . abs($amount) . ", repetitions)"), $this->trim($action->getRule()->getText()));
+		" . ($amount > 0 ? "award" : "spend") . "_tokens(target, \"$description\", " . ($amount > 0 ? "logs, " : "") .
+            abs($amount) . ", " . ($amount > 0 ? "None, False" : "False") . ")"), $this->trim($action->getRule()->getText()));
     }
 
     /**
@@ -809,13 +807,12 @@ tags:
 
         // When
         $this->assertTrue(isset($params["when"]));
-        $this->assertEquals("logs = get_logs(target, \"$type\")
-repetitions = len(logs)
-repetitions > 0", $params["when"]);
+        $this->assertEquals("logs = get_logs(target, \"$type\")", $params["when"]);
 
         // Then
         $this->assertTrue(isset($params["then"]));
-        $this->assertEquals(($amount > 0 ? "award" : "spend") . "_tokens(target, \"$description\", " . abs($amount) . ", repetitions)", $params["then"]);
+        $this->assertEquals(($amount > 0 ? "award" : "spend") . "_tokens(target, \"$description\", " .
+            ($amount > 0 ? "logs, " : "") . abs($amount) . ", " . ($amount > 0 ? "None, False" : "False") . ")", $params["then"]);
     }
 
 

@@ -242,6 +242,11 @@ export class SidebarComponent implements OnInit {
                 link: path + 'settings/modules',
                 name: 'Modules',
                 icon: 'tabler-plug'
+              },
+              {
+                link: path + 'settings/notifications',
+                name: 'Notifications',
+                icon: 'tabler-bell'
               }
             ]
           },

@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS skill_tree(
     id 		                    int unsigned AUTO_INCREMENT PRIMARY KEY,
     course                      int unsigned NOT NULL,
     name                        varchar(50),
-    maxReward                   int unsigned NOT NULL DEFAULT 0,
+    maxReward                   int unsigned DEFAULT NULL,
 
     UNIQUE key(course, name),
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS skill_tier_cost(
     costType                    ENUM ('fixed', 'variable') NOT NULL DEFAULT 'fixed',
     cost                        int unsigned NOT NULL DEFAULT 0,
     increment                   int unsigned NOT NULL DEFAULT 0,
-    minRating                   int unsigned NOT NULL DEFAULT 3, /* min. rating to start increment the cost */
+    minRating                   int unsigned NOT NULL DEFAULT 3, /* min. rating to start incrementing the cost */
 
     FOREIGN key(tier) REFERENCES skill_tier(id) ON DELETE CASCADE
 );

@@ -671,7 +671,7 @@ class Moodle extends Module
                         ], ["id" => $this->getAssignmentGradeParticipationId($courseUser->getId(), $assignmentGrade["assignmentId"], $grader->getId())]);
                     }
                     $oldestRecordTimestamp = min($oldestRecordTimestamp, $assignmentGrade["submissionTimestamp"]) ?? $assignmentGrade["submissionTimestamp"];
-                    $lastRecordTimestamp = max($assignmentGrade["gradeTimestamp"], $lastRecordTimestamp);
+                    $lastRecordTimestamp = max($assignmentGrade["submissionTimestamp"], $lastRecordTimestamp);
 
                 } else self::log($this->course->getId(), "(While importing assignment grades) No user with username '" . $assignmentGrade["grader"] . "' enrolled in the course.", "WARNING");
 
@@ -785,7 +785,7 @@ class Moodle extends Module
     public function getForumGrades(): array
     {
         $fields = "f.name as forumName, fd.id as discussionId, fp.subject, g.itemId as gradeId, u.username, g.rating as grade, 
-                   ug.username as grader, fp.modified as submissionTimestamp, g.timemodified as gradeTimestamp";
+                   ug.username as grader, fp.created as submissionTimestamp, g.timemodified as gradeTimestamp";
         $table = self::$prefix . "forum f JOIN " . self::$prefix . "forum_discussions fd on fd.forum=f.id JOIN " .
             self::$prefix . "forum_posts fp on fp.discussion=fd.id JOIN " . self::$prefix . "rating g on g.itemId=fp.id JOIN " .
             self::$prefix . "user u on fp.userid=u.id JOIN " . self::$prefix . "user ug on g.userid=ug.id JOIN " .
@@ -806,7 +806,7 @@ class Moodle extends Module
     public function getPeergradedForumGrades(): array
     {
         $fields = "f.name as forumName, fd.id as discussionId, fp.subject, g.itemId as gradeId, u.username, g.rating as grade, 
-                   ug.username as grader, fp.modified as submissionTimestamp, g.timemodified as gradeTimestamp";
+                   ug.username as grader, fp.created as submissionTimestamp, g.timemodified as gradeTimestamp";
         $table = self::$prefix . "peerforum f JOIN " . self::$prefix . "peerforum_discussions fd on fd.peerforum=f.id JOIN " .
             self::$prefix . "peerforum_posts fp on fp.discussion=fd.id JOIN " . self::$prefix . "rating g on g.itemId=fp.id JOIN " .
             self::$prefix . "user u on fp.userid=u.id JOIN " . self::$prefix . "user ug on g.userid=ug.id JOIN " .
@@ -867,7 +867,7 @@ class Moodle extends Module
                         ], ["id" => $this->getForumGradeParticipationId($courseUser->getId(), $forumGrade["discussionId"], $forumGrade["gradeId"], $grader->getId())]);
                     }
                     $oldestRecordTimestamp = min($oldestRecordTimestamp, $forumGrade["submissionTimestamp"]) ?? $forumGrade["submissionTimestamp"];
-                    $lastRecordTimestamp = max($forumGrade["gradeTimestamp"], $lastRecordTimestamp);
+                    $lastRecordTimestamp = max($forumGrade["submissionTimestamp"], $lastRecordTimestamp);
 
                 } else self::log($this->course->getId(), "(While importing forum grades) No user with username '" . $forumGrade["grader"] . "' enrolled in the course.", "WARNING");
 

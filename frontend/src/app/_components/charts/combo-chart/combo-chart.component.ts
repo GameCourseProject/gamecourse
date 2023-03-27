@@ -171,7 +171,7 @@ export class ComboChartComponent implements OnInit {
       subtitle: subtitle(this.subtitle, this.align),
       title: title(this.title, this.align),
       tooltip: tooltip(!this.sparkline && this.tooltip, {xaxis: this.tooltipXFormatter, yaxis: this.tooltipYFormatter},
-        theme === Theme.DARK ? 'dark' : 'light'),
+        false, theme === Theme.DARK ? 'dark' : 'light'),
       xaxis: xaxis(this.XAxisType, this.XAxisCategories, LineColor(theme), this.XAxisLabel,
         this.XAxisTickAmount || (this.series[0].data.length > 20 ? 10 : undefined)),
       yaxis: this.series.map((s, i) => yaxis(exists(this.YAxisReversed) ? this.YAxisReversed[i] : undefined,

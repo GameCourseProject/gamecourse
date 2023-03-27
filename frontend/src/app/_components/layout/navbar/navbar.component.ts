@@ -15,6 +15,7 @@ import {Course} from 'src/app/_domain/courses/course';
 import {ResourceManager} from "../../../_utils/resources/resource-manager";
 import {Notification} from '../../../_domain/notifications/notification';
 import {Theme} from "../../../_services/theming/themes-available";
+import * as moment from "moment";
 
 
 @Component({
@@ -118,7 +119,8 @@ export class NavbarComponent implements OnInit {
 
   async notificationSetShowed(notification: Notification): Promise<void> {
     if (!this.isShowed(notification)){
-      const notificationEdited = await this.api.notificationSetShowed(notification.id, true).toPromise();
+      const date = moment().format("YYYY-MM-DD HH:mm:ss");
+      const notificationEdited = await this.api.notificationSetShowed(notification.id, true, date).toPromise();
       const index = this.notifications.findIndex(notification => notification.id === notificationEdited.id);
       this.notifications.splice(index, 1, notificationEdited);
     }

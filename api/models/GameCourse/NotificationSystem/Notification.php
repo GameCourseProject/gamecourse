@@ -65,8 +65,8 @@ class Notification
     /**
      * @throws Exception
      */
-    public function setShowed(bool $isShowed){
-        $this->setData(["isShowed" => +$isShowed]);
+    public function setShowed(bool $isShowed, string $date){
+        $this->setData(["isShowed" => +$isShowed, "dateSeen" => $date]);
     }
 
     /**

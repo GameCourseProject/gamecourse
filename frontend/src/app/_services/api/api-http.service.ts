@@ -1287,10 +1287,11 @@ export class ApiHttpService {
       .pipe(map((res:any) => res['data'].map(obj => Notification.fromDatabase(obj))));
   }
 
-  public notificationSetShowed(notificationID: number, isShowed: boolean): Observable<Notification> {
+  public notificationSetShowed(notificationID: number, isShowed: boolean, date: string): Observable<Notification> {
     const data = {
       notificationId: notificationID,
-      isShowed: isShowed
+      isShowed: isShowed,
+      date: date
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -2894,7 +2895,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']));
   }
 
-  public getSkillsExtraInfo(courseID: number, userID: number, skillTreeID: number): Observable<{[skillID: number]: {attempts: number, cost: number, completed: boolean}}> {
+  public getSkillsExtraInfo(courseID: number, userID: number, skillTreeID: number): Observable<{[skillID: number]: {available: boolean, attempts: number, cost: number, completed: boolean}}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.SKILLS);
       qs.push('request', 'getSkillsExtraInfo');

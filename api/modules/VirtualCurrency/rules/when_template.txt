@@ -1,3 +1,1 @@
-logs = <logs>
-repetitions = len(logs)
-repetitions > 0
+logs = get_logs(<logs-args>)

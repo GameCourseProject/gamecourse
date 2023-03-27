@@ -145,10 +145,16 @@ abstract class AutoGame
      */
     public static function setToRun(int $courseId, string $checkpoint)
     {
-        Core::database()->update(self::TABLE_AUTOGAME, [
-            "runNext" => 1,
-            "checkpoint" => $checkpoint
-        ], ["course" => $courseId]);
+        $autogameInfo = Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "runNext, checkpoint");
+        $runNext = boolval($autogameInfo["runNext"]);
+        $previousCheckpoint = $autogameInfo["checkpoint"];
+
+        if (!$runNext || is_null($previousCheckpoint) || strtotime($checkpoint) < strtotime($previousCheckpoint)) {
+            Core::database()->update(self::TABLE_AUTOGAME, [
+                "runNext" => 1,
+                "checkpoint" => $checkpoint
+            ], ["course" => $courseId]);
+        }
     }
 
     /**
@@ -186,7 +192,7 @@ abstract class AutoGame
      * When errors are thrown during the execution of AutoGame,
      * the log file ends without a proper separator.
      *
-     * @param int $courdeId
+     * @param int $courseId
      * @return bool
      */
     private static function isStuck(int $courseId): bool
@@ -256,7 +262,7 @@ abstract class AutoGame
 
         } else if (!is_null($targets)) {
             // Running for certain targets
-            $cmd .= "[" . implode(",", $targets) . "] ";
+            $cmd .= "\"[" . implode(",", $targets) . "]\" ";
 
         } else {
             // Running only for targets w/ new data
@@ -302,7 +308,7 @@ abstract class AutoGame
 
             while (true) {
                 $connection = stream_socket_accept($socket);
-                if (!$connection){
+                if (!$connection) {
                     self::log($courseId, "No connections received on the socket.", "WARNING");
                     return;
                 }

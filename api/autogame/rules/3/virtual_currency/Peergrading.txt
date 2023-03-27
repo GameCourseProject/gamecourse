@@ -1,0 +1,8 @@
+rule: Peergrading Tokens
+# Peergraded colleague's post
+
+    when:
+        logs = get_logs(None, "peergraded post", None, target)
+		
+    then:
+        award_tokens(target, "Peergraded colleague's post", logs, 10, None, False)

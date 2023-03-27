@@ -2,9 +2,7 @@ rule: Initial Tokens
 # Attributed to everyone in the beginning of course
 
     when:
-        tokens = METADATA["initial_tokens"]
         logs = get_logs(target, "initial tokens")
-        len(logs) == 1
 		
     then:
-        award_tokens(target, "Initial Gold", tokens)
+        award_tokens(target, "Initial Gold", logs)

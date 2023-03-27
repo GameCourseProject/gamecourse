@@ -41,19 +41,6 @@ class VCLibrary extends Library
     /*** ---------- Config ---------- ***/
 
     /**
-     * TODO: description
-     *
-     * @return ValueNode
-     * @throws Exception
-     */
-    public function isEnabled(): ValueNode
-    {
-        $course = Core::dictionary()->getCourse();
-        $isEnabled = $course->isModuleEnabled(VirtualCurrency::ID);
-        return new ValueNode($isEnabled, Core::dictionary()->getLibraryById(BoolLibrary::ID));
-    }
-
-    /**
      * Gets Virtual Currency name.
      *
      * @return ValueNode
@@ -97,6 +84,70 @@ class VCLibrary extends Library
             $userTokens = $VCModule->getUserTokens($userId);
         }
         return new ValueNode($userTokens, Core::dictionary()->getLibraryById(MathLibrary::ID));
+    }
+
+
+    /*** --------- Spending --------- ***/
+
+    /**
+     * Gets a given spending's description.
+     *
+     * @param $spending
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function description($spending): ValueNode
+    {
+        // NOTE: on mock data, spending will be mocked
+        $description = $spending["description"];
+        return new ValueNode($description, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given spending's reward.
+     *
+     * @param $spending
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function amount($spending): ValueNode
+    {
+        // NOTE: on mock data, spending will be mocked
+        $amount = $spending["amount"];
+        return new ValueNode($amount, Core::dictionary()->getLibraryById(MathLibrary::ID));
+    }
+
+    /**
+     * Gets a given spending's date.
+     *
+     * @param $spending
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function date($spending): ValueNode
+    {
+        // NOTE: on mock data, spending will be mocked
+        $date = $spending["date"];
+        return new ValueNode($date, Core::dictionary()->getLibraryById(TimeLibrary::ID));
+    }
+
+    /**
+     * Gets spending for a given user.
+     *
+     * @param int $userId
+     * @return ValueNode
+     */
+    public function getUserSpending(int $userId): ValueNode
+    {
+        if (Core::dictionary()->mockData()) {
+            // TODO: mock spending
+            $spending = [];
+
+        } else {
+            $VCModule = new VirtualCurrency(Core::dictionary()->getCourse());
+            $spending = $VCModule->getUserSpending($userId);
+        }
+        return new ValueNode($spending, $this);
     }
 
 

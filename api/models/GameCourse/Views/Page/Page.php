@@ -290,7 +290,7 @@ class Page
     {
         $where = ["course" => $courseId];
         if ($visible !== null) $where["isVisible"] = $visible;
-        $pages = Core::database()->selectMultiple(self::TABLE_PAGE, $where, "*", "id");
+        $pages = Core::database()->selectMultiple(self::TABLE_PAGE, $where, "*", "position");
         foreach ($pages as &$page) { $page = self::parse($page); }
         return $pages;
     }

@@ -407,6 +407,8 @@ CREATE TABLE notification(
      user           int unsigned NOT NULL,
      message        TEXT NOT NULL,
      isShowed       boolean NOT NULL DEFAULT FALSE,
+     dateCreated    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     dateSeen       TIMESTAMP NULL DEFAULT NULL,
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
     FOREIGN key(user) REFERENCES user(id) ON DELETE CASCADE
