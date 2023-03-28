@@ -79,6 +79,10 @@ const routes: Routes = [
     ]
   },
   {
+    path: 'adaptation',
+    component: AdaptationComponent
+  },
+  {
     path: 'pages/:id',
     children: [
       {
@@ -109,6 +113,7 @@ const routes: Routes = [
     path: 'participation/:key',
     component: SubmitParticipationPageComponent
   },
+
   { path: '', redirectTo: 'main', pathMatch: 'full' }
 ];
 

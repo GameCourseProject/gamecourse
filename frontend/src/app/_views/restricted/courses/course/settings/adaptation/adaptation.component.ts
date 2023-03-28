@@ -28,6 +28,7 @@ export class AdaptationComponent implements OnInit {
 
   course: Course;
   user: User;
+  isAdminOrTeacher: boolean = false;
   @ViewChild('f', {static: false}) f: NgForm;       // (de)activation form (admin)
 
   gameElementToActOn: GameElement;
@@ -127,11 +128,13 @@ export class AdaptationComponent implements OnInit {
 
   async getUser(): Promise<void> {
     this.user = await this.api.getLoggedUser().toPromise();
+
+    this.isAdminOrTeacher = this.user.isAdmin || await this.api.isTeacher(this.course.id, this.user.id).toPromise();
   }
 
   async getGameElements(courseID: number): Promise<void> {
     // ADMIN
-    if (!this.user.isAdmin){
+    if (this.isAdminOrTeacher){
       this.availableGameElements = await this.api.getGameElements(courseID).toPromise();
     }
 
@@ -194,8 +197,9 @@ export class AdaptationComponent implements OnInit {
 
     const table: {type: TableDataType, content: any}[][] = [];
 
+
     if (tableType === this.tableType[0]){
-      if (!this.user.isAdmin){  //FIXME: DEBUG ONLY
+      if (this.isAdminOrTeacher){
         this.availableGameElements.forEach(gameElement => {
 
           let isActive = gameElement.isActive;

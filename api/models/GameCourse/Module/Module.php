@@ -525,14 +525,14 @@ abstract class Module
         Event::listen(EventType::MODULE_ENABLED, function (int $courseId, int $moduleId) {
             if ($courseId == $this->course->getId() && $moduleId == $this->id){
                 // When a module is enabled the game element of the module is made editable
-                // This function adds this game elements to the table editable_game_element table
+                // This function adds this game elements to the table adaptation_game_element table
                 GameElement::addGameElement($courseId, $moduleId);
             }
         }, $this->id);
 
         Event::listen(EventType::MODULE_DISABLED, function (int $courseId, int $moduleId){
             if ($courseId == $this->course->getId() && $moduleId == $this->id) {
-                // When a module is disabled, this game element ceased to exist and is deleted from table editable_game_element
+                // When a module is disabled, this game element ceased to exist and is deleted from table adaptation_game_element
                 GameElement::removeGameElement($courseId, $moduleId);
             }
         }, $this->id);

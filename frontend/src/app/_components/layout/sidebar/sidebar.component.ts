@@ -275,12 +275,13 @@ export class SidebarComponent implements OnInit {
       }
 
       const adaptation: Navigation = {
-        link: path + 'settings/adaptation',
+        link: isAdminOrTeacher ? path + 'settings/adaptation' : 'adaptation',
         name: 'Adaptation',
         icon: 'tabler-puzzle'
-      }
+      };
+
       if (isAdminOrTeacher) navigation[3].children.splice(2, 0, adaptation);
-      else navigation.concat({
+      else navigation.push({
         category: 'User Interface',
         children: [adaptation]
       });

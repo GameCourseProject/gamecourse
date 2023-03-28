@@ -12,11 +12,11 @@ use Utils\Utils;
 
 class GameElement
 {
-    const TABLE_GAME_ELEMENT = "game_element";
-    const TABLE_ELEMENT_USER = "element_user";
-    const TABLE_USER_GAME_ELEMENT_PREFERENCES = "user_game_element_preferences";
-    const TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS = "preferences_questionnaire_answers";
-    const TABLE_ELEMENT_VERSIONS_DESCRIPTIONS="element_versions_descriptions";
+    const TABLE_ADAPTATION_GAME_ELEMENT = "adaptation_game_element";
+    const TABLE_ADAPTATION_USER_NOTIFICATION = "adaptation_user_notification";
+    const TABLE_ADAPTATION_USER_PREFERENCES = "adaptation_user_preferences";
+    const TABLE_ADAPTATION_QUESTIONNAIRE_ANSWERS = "adaptation_questionnaire_answers";
+    const TABLE_ADAPTATION_ELEMENT_DESCRIPTIONS ="adaptation_element_descriptions";
 
     const HEADERS = [ // headers for import/export functionality
         "course", "user", "question1", "question2", "question3", "element", "date"
@@ -68,7 +68,7 @@ class GameElement
      */
     public function getData(string $field = "*")
     {
-        $table = self::TABLE_GAME_ELEMENT;
+        $table = self::TABLE_ADAPTATION_GAME_ELEMENT;
         $where = ["id" => $this->id];
         $res = Core::database()->select($table, $where, $field);
         return is_array($res) ? self::parse($res) : self::parse(null, $res, $field);
@@ -120,7 +120,7 @@ class GameElement
 
         // Update values
         if (count($fieldValues) != 0)
-            Core::database()->update(self::TABLE_GAME_ELEMENT, $fieldValues, ["id" => $this->id]);
+            Core::database()->update(self::TABLE_ADAPTATION_GAME_ELEMENT, $fieldValues, ["id" => $this->id]);
     }
 
     /*** ---------------------------------------------------- ***/
@@ -148,7 +148,7 @@ class GameElement
      * @return array
      */
     public static function getGameElements(int $courseId, ?bool $isActive = null, ?bool $onlyNames = true): array{
-        $table = self::TABLE_GAME_ELEMENT;
+        $table = self::TABLE_ADAPTATION_GAME_ELEMENT;
         $where = ["course" => $courseId];
         if ($isActive !== null) $where["isActive"] = $isActive;
         $gameElements = Core::database()->selectMultiple($table, $where, "*", "id");
@@ -160,41 +160,6 @@ class GameElement
     }
 
     /**
-     * Gets all users allowed to answer questionnaire + customize a specific gameElement in the system given a course
-     *
-     * @param int $courseId
-     * @param string $moduleId
-     * @return array
-     */
-    public static function getGameElementUsers(int $courseId, string $moduleId): array {
-        $table = self::TABLE_GAME_ELEMENT . " ge JOIN " . self::TABLE_ELEMENT_USER . " eu on ge.id=eu.element JOIN " . User::TABLE_USER . " u on eu.user=u.id";
-        $where = ["course" => $courseId, "module" => $moduleId];
-        $users = Core::database()->selectMultiple($table, $where, "u.*");
-
-        foreach ($users as &$user) { $user = User::parse($user); }
-        return $users;
-    }
-
-    /* FIXME -- delete later
-    /**
-     * Gets all gameElements that a specific user is allowed to edit in the system given a course
-     *
-     * @param int $courseId
-     * @param int $userId
-     * @return array
-     *
-    public static function gameElementsUserCanEdit(int $courseId, int $userId): array{
-        $table = self::TABLE_ELEMENT_USER . " eu JOIN " . self::TABLE_GAME_ELEMENT . " ge on eu.element=ge.id";
-        $where = ["ge.course" => $courseId, "eu.user" => $userId];
-        $elements = Core::database()->selectMultiple($table, $where, "ge.*");
-
-        foreach($elements as &$elementInfo){
-            $elementInfo = self::parse($elementInfo);
-        }
-        return $elements;
-    }
-*/
-    /**
      * Gets a GameElement given a course and module.
      *
      * @param int $course
@@ -203,7 +168,7 @@ class GameElement
      */
     public static function getGameElementByModule(int $course, string $moduleId): ?GameElement{
         $gameElementId = intval(Core::database()->select(
-            self::TABLE_GAME_ELEMENT, ["course" => $course, "module" => $moduleId], "id"));
+            self::TABLE_ADAPTATION_GAME_ELEMENT, ["course" => $course, "module" => $moduleId], "id"));
         if (!$gameElementId) return null;
         else return new GameElement($gameElementId);
     }
@@ -228,9 +193,8 @@ class GameElement
                         foreach ($value["children"] as $child) {
                             $roleId = Role::getRoleId($child["name"],$this->getCourse());
                             $where = ["element" => $roleId];
-                            $description = Core::database()->select(self::TABLE_ELEMENT_VERSIONS_DESCRIPTIONS, $where, "description");
+                            $description = Core::database()->select(self::TABLE_ADAPTATION_ELEMENT_DESCRIPTIONS, $where, "description");
                             $response[$child["name"]] = $description;
-                            //array_push($response, $child["name"]);
                         }
                         break;
                     }
@@ -250,7 +214,7 @@ class GameElement
      * @throws Exception
      */
     public static function isQuestionnaireAnswered(int $courseId, int $userId, int $gameElementId): bool {
-        $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
+        $table = self::TABLE_ADAPTATION_QUESTIONNAIRE_ANSWERS;
         $where = ["course" => $courseId, "user" => $userId, "element" => $gameElementId];
         $response = Core::database()->select($table, $where);
 
@@ -270,7 +234,7 @@ class GameElement
      * @return void
      */
     public static function submitGameElementQuestionnaire(int $course, int $user, bool $q1, ?string $q2, ?int $q3, int $element){
-        $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
+        $table = self::TABLE_ADAPTATION_QUESTIONNAIRE_ANSWERS;
         Core::database()->insert($table,[
             "course" => $course,
             "user" => $user,
@@ -290,7 +254,7 @@ class GameElement
      * @throws Exception
      */
     public static function getElementStatistics(Course $course, int $gameElement): array{
-        $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
+        $table = self::TABLE_ADAPTATION_QUESTIONNAIRE_ANSWERS;
         $response = [];
 
         // Statistics question 1
@@ -330,7 +294,7 @@ class GameElement
      * @throws Exception
      */
     public static function getNrAnswersQuestionnaire(Course $course, int $gameElement): int {
-        $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
+        $table = self::TABLE_ADAPTATION_QUESTIONNAIRE_ANSWERS;
         $where = ["course" => $course->getId(), "element" => $gameElement];
         return Core::database()->select($table, $where, "count(*)");
     }
@@ -348,7 +312,7 @@ class GameElement
         if (!$course->exists())
             throw new Exception("Course with ID = " . $courseId . " doesn't exist.");
 
-        $table = self::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS;
+        $table = self::TABLE_ADAPTATION_QUESTIONNAIRE_ANSWERS;
         $where = ["course" => $courseId, "element" => $gameElement];
         $response = Core::database()->selectMultiple($table, $where);
         return Utils::exportToCSV($response, function ($element) {
@@ -372,7 +336,7 @@ class GameElement
      * @throws Exception
      */
     public static function addGameElement(int $course, string $moduleId, bool $isActive = false): GameElement{
-        $table = self::TABLE_GAME_ELEMENT;
+        $table = self::TABLE_ADAPTATION_GAME_ELEMENT;
         $id = Core::database()->insert($table, [
             "course" => $course,
             "module" => $moduleId,
@@ -390,7 +354,7 @@ class GameElement
      * @throws Exception
      */
     public static function removeGameElement(int $courseId, string $moduleId){
-        $table = self::TABLE_GAME_ELEMENT;
+        $table = self::TABLE_ADAPTATION_GAME_ELEMENT;
         Core::database()->delete($table, ["course" => $courseId, "module" => $moduleId]);
     }
 
@@ -404,7 +368,7 @@ class GameElement
      * @throws Exception
      */
     public static function getPreviousUserPreference(int $courseId, int $userId, string $moduleId): string{
-        $table = self::TABLE_USER_GAME_ELEMENT_PREFERENCES;
+        $table = self::TABLE_ADAPTATION_USER_PREFERENCES;
         $where = ["course" => $courseId, "user" => $userId, "module" => $moduleId];
         $preferences = Core::database()->select($table, $where, "*", "date desc");
 
@@ -419,7 +383,7 @@ class GameElement
     }
 
     /**
-     * Updates user's preference regarding GameElement custom
+     * Updates user's preference regarding GameElement customization
      *
      * @param int $courseId
      * @param int $userId
@@ -430,7 +394,7 @@ class GameElement
      * @return void
      */
     public static function updateUserPreference(int $courseId, int $userId, string $module, ?int $previousPreference, int $newPreference, string $date){
-        $table = self::TABLE_USER_GAME_ELEMENT_PREFERENCES;
+        $table = self::TABLE_ADAPTATION_USER_PREFERENCES;
         $where = ["course" => $courseId, "user" => $userId, "newPreference" => $previousPreference];
 
         $data = ["course" => $courseId, "user" => $userId, "module" => $module, "previousPreference" =>  $previousPreference, "newPreference" => $newPreference, "date" => $date];
@@ -449,22 +413,6 @@ class GameElement
     }
 
     /**
-     * Adds a new student to table element_user to allow him/her to edit game element
-     *
-     * @param int $courseId
-     * @param int $studentId
-     * @return void
-     * @throws Exception
-     */
-    public static function addStudentToEdit(int $courseId, int $studentId){
-        $gameElements = self::getGameElements($courseId);
-
-        foreach ($gameElements as $gameElement){
-            Core::database()->insert(self::TABLE_ELEMENT_USER, ["element" => $gameElement->getId(), "user" => $studentId]);
-        }
-    }
-
-    /**
      * Adds description regarding the different game element versions into the database
      *
      * @param int $id
@@ -473,7 +421,7 @@ class GameElement
      * @throws Exception
      */
     public static function addGameElementDescription(int $id, string $description){
-        $table = self::TABLE_ELEMENT_VERSIONS_DESCRIPTIONS;
+        $table = self::TABLE_ADAPTATION_ELEMENT_DESCRIPTIONS;
         Core::database()->insert($table, ["element" => $id, "description" => $description]);
     }
 
@@ -486,8 +434,24 @@ class GameElement
      * @throws Exception
      */
     public static function removeGameElementDescription(int $id, string $description){
-        $table = self::TABLE_ELEMENT_VERSIONS_DESCRIPTIONS;
+        $table = self::TABLE_ADAPTATION_ELEMENT_DESCRIPTIONS;
         Core::database()->delete($table, ["element" => $id, "description" => $description]);
+    }
+
+    /**
+     * Adds a new student to table element_user to allow him/her to edit game element
+     *
+     * @param int $courseId
+     * @param int $studentId
+     * @return void
+     * @throws Exception
+     */
+    public static function addStudentToEdit(int $courseId, int $studentId){
+        $gameElements = self::getGameElements($courseId);
+
+        foreach ($gameElements as $gameElement){
+            Core::database()->insert(self::TABLE_ADAPTATION_USER_NOTIFICATION, ["element" => $gameElement->getId(), "user" => $studentId]);
+        }
     }
 
     /**
@@ -498,7 +462,7 @@ class GameElement
      * @throws Exception
      */
     public static function removeStudentToEdit(int $studentId){
-        $table = self::TABLE_ELEMENT_USER;
+        $table = self::TABLE_ADAPTATION_USER_NOTIFICATION;
         $where = ["user" => $studentId];
         Core::database()->delete($table, $where);
     }
@@ -526,7 +490,7 @@ class GameElement
     public function sendNotification(){
         if ($this->isActive()){
             $message = $this->getModule() . " Preference Questionnaire is available! Go to 'Adaptation' tab for more";
-            $users = Core::database()->selectMultiple(self::TABLE_ELEMENT_USER, ["element" => $this->id], "user");
+            $users = Core::database()->selectMultiple(self::TABLE_ADAPTATION_USER_NOTIFICATION, ["element" => $this->id], "user");
             $users = array_map(function ($user) {return $user["user"];}, $users);
 
             foreach ($users as $user){
@@ -540,7 +504,7 @@ class GameElement
     /**
      * Updates users that are allowed to answer questionnaire + custom game elements
      *
-     * If game element is active => all users in course can answer questionnaire and custom that game element
+     * If game element is active => all courseUsers can answer questionnaire and custom that game element
      * If game element is not active => users are removed from answering questionnaire and custom that game element
      *
      * @return void
@@ -554,14 +518,14 @@ class GameElement
         // add all courseUsers to table element_user
         if ($isActive) {
             foreach ($users as $user){
-                Core::database()->insert(self::TABLE_ELEMENT_USER, ["element" => $gameElement, "user" => $user["id"]]);
+                Core::database()->insert(self::TABLE_ADAPTATION_USER_NOTIFICATION, ["element" => $gameElement, "user" => $user["id"]]);
             }
         }
 
         // remove all courseUsers from table element_user
         else {
             foreach ($users as $user){
-                Core::database()->delete(self::TABLE_ELEMENT_USER, ["element" => $gameElement, "user" => $user["id"]]);
+                Core::database()->delete(self::TABLE_ADAPTATION_USER_NOTIFICATION, ["element" => $gameElement, "user" => $user["id"]]);
             }
         }
     }
@@ -588,7 +552,6 @@ class GameElement
         if (iconv_strlen($module) > 50)
             throw new Exception("Module name is too long: maximum of 50 characters.");
     }
-
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Utils ---------------------- ***/

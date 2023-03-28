@@ -149,7 +149,7 @@ CREATE TABLE course_module(
 /*** -------------- Adaptation tables ------------------- ***/
 /*** ---------------------------------------------------- ***/
 
-CREATE TABLE game_element(
+CREATE TABLE adaptation_game_element(
     id          int unsigned AUTO_INCREMENT PRIMARY KEY,
     course      int unsigned NOT NULL,
     module      varchar(50) NOT NULL,
@@ -161,7 +161,7 @@ CREATE TABLE game_element(
     FOREIGN KEY (module) REFERENCES module(id) ON DELETE CASCADE
 );
 
-CREATE TABLE user_game_element_preferences(
+CREATE TABLE adaptation_user_preferences(
     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
     course                      int unsigned NOT NULL,
     user                        int unsigned NOT NULL,
@@ -177,7 +177,7 @@ CREATE TABLE user_game_element_preferences(
     FOREIGN KEY (newPreference) REFERENCES role(id) ON DELETE CASCADE
 );
 
-CREATE TABLE preferences_questionnaire_answers(
+CREATE TABLE adaptation_questionnaire_answers(
     id          int unsigned AUTO_INCREMENT PRIMARY KEY,
     course      int unsigned NOT NULL,
     user        int unsigned NOT NULL,
@@ -190,19 +190,19 @@ CREATE TABLE preferences_questionnaire_answers(
     UNIQUE(course, user, element),
     FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
     FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE,
-    FOREIGN KEY (element) REFERENCES game_element(id) ON DELETE CASCADE
+    FOREIGN KEY (element) REFERENCES adaptation_game_element(id) ON DELETE CASCADE
 );
 
-CREATE TABLE element_user(
+CREATE TABLE adaptation_user_notification(
      element     int unsigned NOT NULL,
      user        int unsigned NOT NULL,
 
      PRIMARY key(element, user),
-     FOREIGN KEY (element) REFERENCES game_element(id) ON DELETE CASCADE,
+     FOREIGN KEY (element) REFERENCES adaptation_game_element(id) ON DELETE CASCADE,
      FOREIGN KEY (user) REFERENCES course_user(id) ON DELETE CASCADE
 );
 
-CREATE TABLE element_versions_descriptions (
+CREATE TABLE adaptation_element_descriptions(
     element         int unsigned NOT NULL,
     description     varchar(150) NOT NULL,
 

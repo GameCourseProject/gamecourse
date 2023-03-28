@@ -53,9 +53,7 @@ class Profile extends Module
 
     const RESOURCES = [];
 
-    // FIXME -> Change later (profiling_adaptation_role_connection should not be hardcoded)
-    // NOTE: profiling_adaptation_role_connection not really used at the moment
-    // Structure is: [ Game_element => [ "VersionA" => [ description, profiling_adaptation_role_connection ] ] ]
+    // FIXME -> Change later
     const ADAPTATION_PROFILE = ["Profile" =>
         ["P001" => ["Profile displays graphs comparing yourself vs. everyone else", [ "Regular", "Achiever" ]],
          "P002" => ["Profile displays graphs comparing yourself vs. people with similar progress as you", ["Halfhearted"]],
@@ -73,9 +71,10 @@ class Profile extends Module
         $this->initTemplates();
 
         // Add adaptation roles
-        $this->addAdaptationRolesToCourse(self::ADAPTATION_PROFILE);
+        // FIXME: Debug only
+         $this->addAdaptationRolesToCourse(self::ADAPTATION_PROFILE);
         // initEvents(); // FIXME: Debug only
-        GameElement::addGameElement($this->course->getId(), self::ID);
+         GameElement::addGameElement($this->course->getId(), self::ID);
     }
 
     public function copyTo(Course $copyTo)

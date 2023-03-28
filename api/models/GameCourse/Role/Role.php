@@ -148,24 +148,44 @@ class Role
     public static function addAdaptationRolesToCourse(int $courseId, string $moduleId, string $parent, array $children = null)
     {
         $course = new Course($courseId);
-
         $rolesNames = self::getCourseRoles($courseId);
+
+        $hierarchy = $course->getRolesHierarchy();
+        $studentIndex = array_search("Student", self::DEFAULT_ROLES);
+
         if (!in_array(self::ADAPTATION_ROLE, $rolesNames)){
             self::addRoleToCourse($courseId, self::ADAPTATION_ROLE); // Add adaptation role to course
 
             // Update hierarchy
-            $hierarchy = $course->getRolesHierarchy();
-            array_push($hierarchy, ["name" => self::ADAPTATION_ROLE]);
+            $hierarchy[$studentIndex]["children"][] = ["name" => self::ADAPTATION_ROLE];
             $course->setRolesHierarchy($hierarchy);
         }
 
-        // Add parent
-        self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
+        // Add parent and update hierarchy
+        $adaptationIndex = array_search(self::ADAPTATION_ROLE, $hierarchy[$studentIndex]["children"]);
+        if (!$course->hasRole($parent)) {
+            self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
 
-        // Add children
-        foreach ($children as $child){
-            self::addRoleToCourse($courseId, $child, null, null, $moduleId);
+            // Update hierarchy
+            $hierarchy = $course->getRolesHierarchy();
+            $hierarchy[$studentIndex]["children"][$adaptationIndex]["children"][] = ["name" => $parent];
+            $course->setRolesHierarchy($hierarchy);
         }
+
+        // Add children and update hierarchy
+        $hierarchy = $course->getRolesHierarchy();
+        $parentIndex = array_search($parent, $hierarchy[$studentIndex]["children"][$adaptationIndex]["children"]);
+        foreach ($children as $child){
+            if (!$course->hasRole($child)){
+                self::addRoleToCourse($courseId, $child, null, null, $moduleId);
+
+                $hierarchy[$studentIndex]["children"][$adaptationIndex]["children"][$parentIndex]["children"][] = ["name" => $child];
+            }
+        }
+        $course->setRolesHierarchy($hierarchy);
+
+        /* FIXME: Delete later
+        $course->setRolesHierarchy($hierarchy);
 
         // Update roles hierarchy
         $hierarchy = $course->getRolesHierarchy();
@@ -177,7 +197,7 @@ class Role
                 break;
             }
         }
-        $course->setRolesHierarchy($hierarchy);
+        $course->setRolesHierarchy($hierarchy);*/
 
     }
 
@@ -199,7 +219,24 @@ class Role
 
         // Update hierarchy
         $hierarchy = $course->getRolesHierarchy();
+        $studentIndex = array_search("Student", self::DEFAULT_ROLES);
+        $adaptationIndex = array_search(self::ADAPTATION_ROLE, $hierarchy[$studentIndex]["children"]);
 
+        // sees if adaptation roles has children
+        if ($adaptationIndex && in_array("children", $hierarchy[$studentIndex]["children"][$adaptationIndex])){
+            foreach($hierarchy[$studentIndex]["children"][$adaptationIndex]["children"] as $i => $child){
+                if ($child["name"] == $parent){
+                    array_splice($hierarchy[$studentIndex]["children"][$adaptationIndex]["children"], $i, 1);
+                    break;
+                }
+            }
+            $course->setRolesHierarchy($hierarchy);
+        } else if ($adaptationIndex) {
+            // if there are no children inside Adaptation role then remove children array
+            array_splice($hierarchy[$studentIndex]["children"][$adaptationIndex], 1, 1);
+        }
+
+        /*
         foreach ($hierarchy as $k => $value){
             // sees if adaptation roles has children
             if ($value["name"] == self::ADAPTATION_ROLE && in_array("children", array_keys($value))){
@@ -220,7 +257,7 @@ class Role
             }
         }
 
-        $course->setRolesHierarchy($hierarchy);
+        $course->setRolesHierarchy($hierarchy);*/
     }
 
     /**
@@ -235,12 +272,26 @@ class Role
      * @throws Exception
      */
     public static function getAdaptationCourseRoles(int $courseId, bool $onlyParents = false): array {
-        $response = GameElement::getGameElements($courseId, null);
+        $response = GameElement::getGameElements($courseId);
 
         if (!$onlyParents) {
-           $roles = self::getCourseRoles($courseId, false, true);
+           //$roles = self::getCourseRoles($courseId, false, true);
 
-           foreach ($roles as $role) {
+           $course = new Course($courseId);
+           $hierarchy = $course->getRolesHierarchy();
+           $studentIndex = array_search("Student", self::DEFAULT_ROLES);
+           $adaptationIndex = array_search(self::ADAPTATION_ROLE, $hierarchy[$studentIndex]["children"]);
+
+           if ($adaptationIndex && in_array("children", $hierarchy[$studentIndex]["children"][$adaptationIndex])){
+               foreach ($hierarchy[$studentIndex]["children"][$adaptationIndex]["children"] as $parents){
+                   foreach ($parents["children"] as $child){
+                       array_push($response, $child["name"]);
+                   }
+               }
+           }
+
+           /*
+            foreach ($roles as $role) {
                $personalizationIndex = array_search(self::ADAPTATION_ROLE, $role);
 
                if ($personalizationIndex && in_array("children", array_keys($role))) {
@@ -254,7 +305,7 @@ class Role
                    }
                    break;
                }
-           }
+           }*/
         }
         return $response;
     }

@@ -89,15 +89,16 @@ class Badges extends Module
         $this->createDataFolder();
         $this->initTemplates();
         $this->initRules();
-        $this->initProviders(); // FIXME - DEBUG ONLY (Library missing)
+        $this->initProviders();
 
         // Init config
         Core::database()->insert(self::TABLE_BADGE_CONFIG, ["course" => $this->course->getId()]);
 
         // Add adaptation roles
-        $this->addAdaptationRolesToCourse(self::ADAPTATION_BADGES);
-        //initEvents(); // FIXME: Debug only
-        GameElement::addGameElement($this->course->getId(), self::ID);
+        // FIXME: Debug only
+         $this->addAdaptationRolesToCourse(self::ADAPTATION_BADGES);
+        // initEvents(); // FIXME: Debug only
+         GameElement::addGameElement($this->course->getId(), self::ID);
     }
 
     public function providers(): array

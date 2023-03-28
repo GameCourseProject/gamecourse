@@ -13,49 +13,6 @@ class AdaptationController
     /*** --------------- Game Elements --------------- ***/
     /*** --------------------------------------------- ***/
 
-/* FIXME - delete later
-
-    public function gameElementsUserCanEdit(){
-        API::requireValues('courseId', 'userId');
-
-        $courseId = API::getValue('courseId', "int");
-        $course = API::verifyCourseExists($courseId);
-
-        $userId = API::getValue("userId", "int");
-
-        API::verifyUserExists($userId);
-        API::verifyCourseUserExists($course, $userId);
-
-        $gameElements = GameElement::gameElementsUserCanEdit($courseId, $userId);
-
-        foreach ($gameElements as &$gameElementInfo) {
-            $gameElement = GameElement::getGameElementById($gameElementInfo["id"]);
-        }
-
-        API::response($gameElements);
-
-    }
-
-    /**
-     * Gets all users allowed to edit a specific GameElement
-     * @throws Exception
-     *
-    public function getGameElementUsers(){
-        API::requireAdminPermission();
-        API::requireValues('courseId', 'moduleId');
-
-        $courseId = API::getValue('courseId', "int");
-        $course = API::verifyCourseExists($courseId);
-
-        $moduleId = API::getValue('moduleId');
-        $module = API::verifyModuleExists($moduleId, $course);
-
-        $users = GameElement::getGameElementUsers($courseId, $moduleId);
-
-        API::response($users);
-    }
-*/
-
     /**
      * Makes GameElement active true/false
      * Also sends notifications to users if desired
@@ -148,16 +105,22 @@ class AdaptationController
         $course = API::verifyCourseExists($courseId);
 
         $userId = API::getValue("userId", "int");
-        API::verifyUserExists($userId);
+        $user = API::verifyUserExists($userId);
+        API::verifyCourseUserExists($course, $userId);
 
-        $gameElementId = API::getValue("gameElementId", "int");
-        $gameElement = GameElement::getGameElementById($gameElementId);
-        $moduleId = $gameElement->getModule();
-        $module = Module::getModuleById($moduleId, $course);
-        API::verifyModuleExists($module->getId(), $course);
+        if ($user->isAStudent()){
+            $gameElementId = API::getValue("gameElementId", "int");
+            $gameElement = GameElement::getGameElementById($gameElementId);
+            $moduleId = $gameElement->getModule();
+            $module = Module::getModuleById($moduleId, $course);
+            API::verifyModuleExists($module->getId(), $course);
 
-        $response = GameElement::isQuestionnaireAnswered($courseId, $userId, $gameElementId);
-        API::response($response);
+            $response = GameElement::isQuestionnaireAnswered($courseId, $userId, $gameElementId);
+            API::response($response);
+
+        } else { throw new Exception('Unable to perform this action. User not a student'); }
+
+
     }
 
     /**
@@ -174,19 +137,23 @@ class AdaptationController
 
         $userId = API::getValue('user', "int");
         $user = API::verifyUserExists($userId);
+        API::verifyCourseUserExists($course, $userId);
 
-        $q1 = API::getValue('q1', "bool");
-        $q2 = API::getValue('q2') ?? null;
-        $q3 = API::getValue('q3', "int") ?? null;
-        $element = API::getValue('element');
+        if ($user->isAStudent()){
+            $q1 = API::getValue('q1', "bool");
+            $q2 = API::getValue('q2') ?? null;
+            $q3 = API::getValue('q3', "int") ?? null;
+            $element = API::getValue('element');
 
-        $module = Module::getModuleById($element, $course);
-        API::verifyModuleExists($module->getId(), $course);
+            $module = Module::getModuleById($element, $course);
+            API::verifyModuleExists($module->getId(), $course);
 
-        $gameElement = GameElement::getGameElementByModule($courseId, $element);
-        $gameElementId = $gameElement->getId();
+            $gameElement = GameElement::getGameElementByModule($courseId, $element);
+            $gameElementId = $gameElement->getId();
 
-        GameElement::submitGameElementQuestionnaire($courseId, $userId, $q1, $q2, $q3, $gameElementId);
+            GameElement::submitGameElementQuestionnaire($courseId, $userId, $q1, $q2, $q3, $gameElementId);
+
+        } else { throw new Exception('Unable to perform this action. User not a student'); }
 
     }
 

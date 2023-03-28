@@ -64,8 +64,9 @@ class Leaderboard extends Module
     public function init()
     {
         $this->initTemplates();
+        // FIXME: Debug only
         $this->addAdaptationRolesToCourse(self::ADAPTATION_LEADERBOARD);
-         //parent::initEvents();  // FIXME: Debug only
+        // parent::initEvents();  // FIXME: Debug only
         GameElement::addGameElement($this->course->getId(), self::ID);
 
         $this->initProviders();

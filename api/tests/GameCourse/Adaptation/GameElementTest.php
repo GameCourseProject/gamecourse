@@ -84,19 +84,19 @@ class GameElementTest extends TestCase
     {
         TestingUtils::cleanTables([Course::TABLE_COURSE,
             User::TABLE_USER,
-            GameElement::TABLE_GAME_ELEMENT,
-            GameElement::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS,
-            GameElement::TABLE_ELEMENT_USER,
-            GameElement::TABLE_USER_GAME_ELEMENT_PREFERENCES,
+            GameElement::TABLE_ADAPTATION_GAME_ELEMENT,
+            GameElement::TABLE_ADAPTATION_QUESTIONNAIRE_ANSWERS,
+            GameElement::TABLE_ADAPTATION_USER_NOTIFICATION,
+            GameElement::TABLE_ADAPTATION_USER_PREFERENCES,
             Role::TABLE_ROLE,
             Role::TABLE_USER_ROLE]);
         TestingUtils::resetAutoIncrement([
             Course::TABLE_COURSE,
             User::TABLE_USER,
-            GameElement::TABLE_GAME_ELEMENT,
-            GameElement::TABLE_PREFERENCES_QUESTIONNAIRE_ANSWERS,
-            GameElement::TABLE_ELEMENT_USER,
-            GameElement::TABLE_USER_GAME_ELEMENT_PREFERENCES,
+            GameElement::TABLE_ADAPTATION_GAME_ELEMENT,
+            GameElement::TABLE_ADAPTATION_QUESTIONNAIRE_ANSWERS,
+            GameElement::TABLE_ADAPTATION_USER_NOTIFICATION,
+            GameElement::TABLE_ADAPTATION_USER_PREFERENCES,
             Role::TABLE_ROLE,
             Role::TABLE_USER_ROLE]);
         TestingUtils::cleanFileStructure();
