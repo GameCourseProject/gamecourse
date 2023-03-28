@@ -161,25 +161,22 @@ class Role
             $course->setRolesHierarchy($hierarchy);
         }
 
-        // Add parent and update hierarchy
-        $adaptationIndex = array_search(self::ADAPTATION_ROLE, $hierarchy[$studentIndex]["children"]);
-        if (!$course->hasRole($parent)) {
-            self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
+        // Add parent
+        self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
 
-            // Update hierarchy
-            $hierarchy = $course->getRolesHierarchy();
-            $hierarchy[$studentIndex]["children"][$adaptationIndex]["children"][] = ["name" => $parent];
-            $course->setRolesHierarchy($hierarchy);
+        // Add children
+        foreach ($children as $child){
+            self::addRoleToCourse($courseId, $child, null, null, $moduleId);
         }
 
-        // Add children and update hierarchy
+        // Update roles hierarchy
         $hierarchy = $course->getRolesHierarchy();
-        $parentIndex = array_search($parent, $hierarchy[$studentIndex]["children"][$adaptationIndex]["children"]);
-        foreach ($children as $child){
-            if (!$course->hasRole($child)){
-                self::addRoleToCourse($courseId, $child, null, null, $moduleId);
 
-                $hierarchy[$studentIndex]["children"][$adaptationIndex]["children"][$parentIndex]["children"][] = ["name" => $child];
+        foreach ($hierarchy[$studentIndex]["children"] as $key => $value) {
+            if ($value["name"] == self::ADAPTATION_ROLE){
+                $hierarchy[$studentIndex]["children"][$key]["children"][] = ["name" => $parent,
+                    "children" => array_map(function ($child) {return ["name" => $child]; }, $children)];
+                break;
             }
         }
         $course->setRolesHierarchy($hierarchy);
@@ -218,24 +215,30 @@ class Role
         $course = new Course($courseId);
 
         // Update hierarchy
-        $hierarchy = $course->getRolesHierarchy();
         $studentIndex = array_search("Student", self::DEFAULT_ROLES);
-        $adaptationIndex = array_search(self::ADAPTATION_ROLE, $hierarchy[$studentIndex]["children"]);
+        $hierarchy = $course->getRolesHierarchy();
 
-        // sees if adaptation roles has children
-        if ($adaptationIndex && in_array("children", $hierarchy[$studentIndex]["children"][$adaptationIndex])){
-            foreach($hierarchy[$studentIndex]["children"][$adaptationIndex]["children"] as $i => $child){
-                if ($child["name"] == $parent){
-                    array_splice($hierarchy[$studentIndex]["children"][$adaptationIndex]["children"], $i, 1);
-                    break;
+        foreach ($hierarchy[$studentIndex]["children"] as $k => $value){
+            // sees if adaptation roles has children
+            if ($value["name"] == self::ADAPTATION_ROLE && in_array("children", array_keys($value))){
+
+                // iterates through children (at this point will be game elements "badges", "leaderboard" etc
+                foreach ($value["children"] as $key => $item){
+                    // if item is the desired adaptation role to remove then splice
+                    if ($item["name"] == $parent){
+                        array_splice($hierarchy[$studentIndex]["children"][$k]["children"], $key, 1);
+                        break;
+                    }
+                }
+
+                // if there are no children inside Adaptation role then remove children array
+                if (count($hierarchy[$studentIndex]["children"][$k]["children"]) == 0){
+                    array_splice($hierarchy[$k], 1, 1);
                 }
             }
-            $course->setRolesHierarchy($hierarchy);
-        } else if ($adaptationIndex) {
-            // if there are no children inside Adaptation role then remove children array
-            array_splice($hierarchy[$studentIndex]["children"][$adaptationIndex], 1, 1);
         }
 
+        $course->setRolesHierarchy($hierarchy);
         /*
         foreach ($hierarchy as $k => $value){
             // sees if adaptation roles has children
@@ -275,37 +278,26 @@ class Role
         $response = GameElement::getGameElements($courseId);
 
         if (!$onlyParents) {
-           //$roles = self::getCourseRoles($courseId, false, true);
+            $roles = self::getCourseRoles($courseId, false, true);
 
-           $course = new Course($courseId);
-           $hierarchy = $course->getRolesHierarchy();
-           $studentIndex = array_search("Student", self::DEFAULT_ROLES);
-           $adaptationIndex = array_search(self::ADAPTATION_ROLE, $hierarchy[$studentIndex]["children"]);
-
-           if ($adaptationIndex && in_array("children", $hierarchy[$studentIndex]["children"][$adaptationIndex])){
-               foreach ($hierarchy[$studentIndex]["children"][$adaptationIndex]["children"] as $parents){
-                   foreach ($parents["children"] as $child){
-                       array_push($response, $child["name"]);
-                   }
-               }
-           }
-
-           /*
             foreach ($roles as $role) {
-               $personalizationIndex = array_search(self::ADAPTATION_ROLE, $role);
+                $studentIndex = array_search("Student", $role);
+                if ($studentIndex && in_array("children", array_keys($role))){
+                    $personalizationIndex = array_search(self::ADAPTATION_ROLE, $role);
 
-               if ($personalizationIndex && in_array("children", array_keys($role))) {
-                   foreach ($role["children"] as $value) {
+                    if ($personalizationIndex && in_array("children", array_keys($role))) {
+                        foreach ($role["children"] as $value) {
 
-                       if ($value["module"] && $value["children"]) {
-                           foreach ($value["children"] as $child){
-                               array_push($response, $child["name"]);
-                           }
-                       }
-                   }
-                   break;
-               }
-           }*/
+                            if ($value["module"] && $value["children"]) {
+                                foreach ($value["children"] as $child){
+                                    array_push($response, $child["name"]);
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
         }
         return $response;
     }

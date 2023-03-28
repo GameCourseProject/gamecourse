@@ -670,11 +670,10 @@ abstract class Module
      */
     public function removeAdaptationRolesFromCourse(array $roles){
         $parent = array_keys($roles)[0];
-        $children = array_keys($roles[$parent]);
 
-        foreach($children as $child){
-            $roleId = Role::getRoleId($child[0], $this->course->getId());
-            GameElement::removeGameElementDescription($roleId, $child[0]);
+        foreach ($roles[$parent] as $key => $value){
+            $roleId = Role::getRoleId($key, $this->course->getId());
+            GameElement::removeGameElementDescription($roleId, $value[0]);
         }
 
         Role::removeAdaptationRolesFromCourse($this->course->getId(), $this->id, $parent);
