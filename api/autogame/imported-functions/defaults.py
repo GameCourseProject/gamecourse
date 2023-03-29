@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import config, re
 
-from decorators import rule_function, rule_effect
+from .utils import rule_effect, rule_function
 from gamerules.connector import gamecourse_connector as connector
 
 
@@ -13,7 +13,7 @@ from gamerules.connector import gamecourse_connector as connector
 ### Getting logs
 
 @rule_function
-def get_logs(target=None, type=None, rating=None, evaluator=None, start_date=None, end_date=None, description=None):
+def get_logs(target=None, log_type=None, rating=None, evaluator=None, start_date=None, end_date=None, description=None):
     """
     Gets all logs under certain conditions.
 
@@ -21,7 +21,7 @@ def get_logs(target=None, type=None, rating=None, evaluator=None, start_date=Non
     evaluator, and/or description, as well as an initial and/or end date.
     """
 
-    return connector.get_logs(target, type, rating, evaluator, start_date, end_date, description)
+    return connector.get_logs(target, log_type, rating, evaluator, start_date, end_date, description)
 
 @rule_function
 def get_assignment_logs(target, name=None):
@@ -154,33 +154,40 @@ def get_quiz_logs(target, name=None):
     return connector.get_quiz_logs(target, name)
 
 @rule_function
-def get_resource_view_logs(target, name=None):
+def get_resource_view_logs(target, name=None, unique=True):
     """
     Gets all resource view logs for a specific target.
 
-    Option to get a specific resource view by name.
+    Option to get a specific resource view by name and
+    to get only one resource view log per description.
     """
 
-    return connector.get_resource_view_logs(target, name)
+    return connector.get_resource_view_logs(target, name, unique)
 
 @rule_function
-def get_skill_logs(target, name=None, rating=None):
+def get_skill_logs(target, name=None, rating=None, only_min_rating=False, only_latest=False):
     """
     Gets skill logs for a specific target.
 
     Options to get logs for a specific skill by name,
     as well as with a certain rating.
+
+    Additional options to get only logs that meet the minimum
+    rating, as well as only the latest log for each skill.
     """
 
-    return connector.get_skill_logs(target, name, rating)
+    return connector.get_skill_logs(target, name, rating, only_min_rating, only_latest)
 
 @rule_function
-def get_skill_tier_logs(target, tier, only_min_rating=True):
+def get_skill_tier_logs(target, tier, only_min_rating=True, only_latest=True):
     """
     Gets skill tier logs for a specific target.
+
+    Options to get only logs that meet the minimum rating,
+    as well as only the latest log for each skill.
     """
 
-    return connector.get_skill_tier_logs(target, tier, only_min_rating)
+    return connector.get_skill_tier_logs(target, tier, only_min_rating, only_latest)
 
 @rule_function
 def get_url_view_logs(target, name=None):
@@ -200,12 +207,12 @@ def get_consecutive_logs(logs):
     """
     Gets consecutive logs on a set of logs.
 
-    The order is defined by the log 1st number in description:
+    The order is defined by the log's 1st number in description:
         > "1" -> order 1
         > "Quiz 1" -> order 1
-        > "Quiz 1 (22/01/2023)" -> order 1
         > "1 - Quiz" -> order 1
-        > "1 - Quiz (22/01/2023)" -> order 1
+        > "Quiz 1 (22/01/2023)" -> will raise error
+        > "1 - Quiz (22/01/2023)" -> will raise error
         > "Quiz (22/01/2023) - 1" -> will raise error
         > "Quiz" -> will raise error
     """
@@ -215,55 +222,100 @@ def get_consecutive_logs(logs):
             return int(description)
 
         else:
-            order = re.findall(r'\d+', description)
+            log_order = re.findall(r'\d+', description)
+            nr_nums = len(log_order)
 
-            if len(order) == 0:
+            if nr_nums == 0:
                 raise Exception("Found no possible order for description '%s'." % description)
 
-            if len(order) > 1:
+            if nr_nums > 1:
                 raise Exception("Found more than one possible order for description '%s'." % description)
 
-            return int(order[0])
+            return int(log_order[0])
 
-    def is_consecutive(order, last_order):
-        return last_order is not None and order > last_order and order - last_order == 1
+    def is_consecutive(o, last_o):
+        return last_o is not None and o > last_o and o - last_o == 1
 
     consecutive_logs = []
-    last_order = None
 
-    for log in logs:
-        order = find_order(log[config.LOG_DESCRIPTION_COL])
-        if is_consecutive(order, last_order):
-            consecutive_logs[-1].append(log)
-        else:
-            consecutive_logs.append([log])
-        last_order = order
+    # If not consecutive logs already, put in required format
+    if len(logs) > 0 and isinstance(logs[0], tuple):
+        logs = [logs]
+
+    for group in logs:
+        last_order = None
+
+        # Sort logs by order
+        group.sort(key=lambda lg: find_order(lg[config.LOG_DESCRIPTION_COL]))
+
+        for log in group:
+            order = find_order(log[config.LOG_DESCRIPTION_COL])
+            if is_consecutive(order, last_order):
+                consecutive_logs[-1].append(log)
+            else:
+                consecutive_logs.append([log])
+            last_order = order
 
     return consecutive_logs
 
 @rule_function
-def get_consecutive_rating_logs(logs, min_rating):
+def get_consecutive_rating_logs(logs, min_rating=None, max_rating=None, exact_rating=None, custom_rating=None):
     """
-    Gets consecutive logs on a set of logs with a min. rating.
+    Gets consecutive logs on a set of logs that meet
+    certain rating specifications.
+
+    Options:
+     > min_rating --> rating must be bigger or equal to a value
+     > max_rating --> rating must be smaller or equal to a value
+     > exact_rating --> rating must be exactly a value
+     > custom_rating --> different ratings based on description
+       e.g. {'1': {'min': 100, 'max': None, 'exact': None}, '2': {'min': 100, 'max': None, 'exact': None},
+             '3': {'min': 200, 'ma'x': None, 'exact': None}, '4': {'min': 300, 'max': None, 'exact': None}, ...}
     """
 
-    def is_consecutive(rating, last_rating):
-        return last_rating is not None and last_rating >= min_rating and rating >= min_rating
+    def is_consecutive(r, d, last_r, last_d):
+        return last_r is not None and \
+            (last_r >= min_rating and r >= min_rating if min_rating is not None else True) and \
+            (last_r <= max_rating and r <= max_rating if max_rating is not None else True) and \
+            (last_r == exact_rating and r == exact_rating if exact_rating is not None else True) and \
+            (last_r >= custom_rating[last_d]['min'] and r >= custom_rating[d]['min'] if custom_rating is not None and 'min' in custom_rating[d] and custom_rating[d]['min'] is not None else True) and \
+            (last_r <= custom_rating[last_d]['max'] and r <= custom_rating[d]['max'] if custom_rating is not None and 'max' in custom_rating[d] and custom_rating[d]['max'] is not None else True) and \
+            (last_r == custom_rating[last_d]['exact'] and r == custom_rating[d]['exact'] if custom_rating is not None and 'exact' in custom_rating[d] and custom_rating[d]['exact'] is not None else True)
 
     consecutive_logs = []
-    last_rating = None
 
-    for log in logs:
-        rating = log[config.LOG_RATING_COL]
-        if rating < min_rating:
-            last_rating = None
-            continue
+    # If not consecutive logs already, put in required format
+    if len(logs) > 0 and isinstance(logs[0], tuple):
+        logs = [logs]
 
-        if is_consecutive(rating, last_rating):
-            consecutive_logs[-1].append(log)
-        else:
-            consecutive_logs.append([log])
-        last_rating = rating
+    # Get consecutive logs
+    for group in logs:
+        last_description = None
+        last_rating = None
+
+        for log in group:
+            description = log[config.LOG_DESCRIPTION_COL]
+            rating = log[config.LOG_RATING_COL]
+            if (min_rating is not None and rating < min_rating) or (max_rating is not None and rating > max_rating) or \
+                    (exact_rating is not None and rating != exact_rating) or (custom_rating is not None and (
+                    ('min' in custom_rating[description] and custom_rating[description]['min'] is not None and rating < custom_rating[description]['min']) or
+                    ('max' in custom_rating[description] and custom_rating[description]['max'] is not None and rating > custom_rating[description]['max']) or
+                    ('exact' in custom_rating[description] and custom_rating[description]['exact'] is not None and rating != custom_rating[description]['exact']))):
+                last_description = None
+                last_rating = None
+                continue
+
+            if is_consecutive(rating, description, last_rating, last_description):
+                consecutive_logs[-1].append(log)
+            else:
+                consecutive_logs.append([log])
+            last_description = description
+            last_rating = rating
+
+    # If last log doesn't fit the specifications, add empty group
+    # NOTE: this ensures the progress is 0 instead of the last group's length
+    if len(consecutive_logs) > 0 and consecutive_logs[-1][-1][config.LOG_ID_COL] != logs[-1][-1][config.LOG_ID_COL]:
+        consecutive_logs.append([])
 
     return consecutive_logs
 
@@ -276,30 +328,31 @@ def get_consecutive_peergrading_logs(target):
     return connector.get_consecutive_peergrading_logs(target)
 
 @rule_function
-def get_periodic_logs(logs, number, time, type):
+def get_periodic_logs(logs, number, time, log_type):
     """
     Gets periodic logs on a set of logs.
 
     There are two options for periodicity:
         > absolute -> check periodicity in equal periods,
-                    beginning at course start date until end date.
+                    beginning at course start date until end date
 
         > relative -> check periodicity starting on the
                     first entry for streak
     """
 
-    return connector.get_periodic_logs(logs, number, time, type)
+    return connector.get_periodic_logs(logs, number, time, log_type)
 
 
 ### Getting total reward
 
 @rule_function
-def get_total_reward(target, type):
+def get_total_reward(target, award_type=None):
     """
-    Gets total reward for a given target of a specific type.
+    Gets total reward for a given target.
+    Option to filter by a specific award type.
     """
 
-    return connector.get_total_reward(target, type)
+    return connector.get_total_reward(target, award_type)
 
 @rule_function
 def get_total_assignment_reward(target):
@@ -385,7 +438,7 @@ def get_total_tokens_reward(target):
 ### Filtering logs
 
 @rule_function
-def filter_logs(logs, with_descriptions=None, without_descriptions=None, min_rating=None, max_rating=None):
+def filter_logs(logs, with_descriptions=None, without_descriptions=None, min_rating=None, max_rating=None, exact_rating=None):
     """
     Filters logs by a set of descriptions and/or ratings.
     """
@@ -394,7 +447,7 @@ def filter_logs(logs, with_descriptions=None, without_descriptions=None, min_rat
     logs = filter_logs_by_description(logs, with_descriptions, without_descriptions)
 
     # Filter by rating
-    logs = filter_logs_by_rating(logs, min_rating, max_rating)
+    logs = filter_logs_by_rating(logs, min_rating, max_rating, exact_rating)
 
     return logs
 
@@ -420,14 +473,15 @@ def filter_logs_by_description(logs, with_descriptions=None, without_description
             without_descriptions is not None and log[config.LOG_DESCRIPTION_COL] not in without_descriptions]
 
 @rule_function
-def filter_logs_by_rating(logs, min_rating=None, max_rating=None):
+def filter_logs_by_rating(logs, min_rating=None, max_rating=None, exact_rating=None):
     """
     Filters logs by rating.
     """
 
     return [log for log in logs if
             (int(log[config.LOG_RATING_COL]) >= min_rating if min_rating is not None else True) and
-            (int(log[config.LOG_RATING_COL]) <= max_rating if max_rating is not None else True)]
+            (int(log[config.LOG_RATING_COL]) <= max_rating if max_rating is not None else True) and
+            (int(log[config.LOG_RATING_COL] == exact_rating if exact_rating is not None else True))]
 
 
 ### Computing values
@@ -529,7 +583,7 @@ def has_wildcard_available(target, skill_tree_id, wildcard_tier):
 ### Awarding items
 
 @rule_effect
-def award(target, type, description, reward, instance=None, unique=True):
+def award(target, award_type, description, reward, instance=None, unique=True, award_id=None):
     """
     Awards a single prize to a specific target.
 
@@ -537,7 +591,7 @@ def award(target, type, description, reward, instance=None, unique=True):
     Updates award if reward has changed.
     """
 
-    connector.award(target, type, description, reward, instance, unique)
+    connector.award(target, award_type, description, reward, instance, unique, award_id)
 
 @rule_effect
 def award_assignment_grade(target, logs, max_xp=1, max_grade=1):
@@ -545,14 +599,17 @@ def award_assignment_grade(target, logs, max_xp=1, max_grade=1):
     Awards assignment grades to a specific target.
 
     Option to calculate how many XP should be awarded:
-     > max_xp ==> max. XP per assignment
-     > max_grade ==> max. grade per assignment
+     > max_xp --> maximum XP per assignment
+     > max_grade --> maximum grade per assignment
+
+    NOTE: will NOT retract if grade removed.
+    Updates award if reward has changed.
     """
 
     connector.award_assignment_grade(target, logs, max_xp, max_grade)
 
 @rule_effect
-def award_badge(target, name, lvl, logs, progress = None):
+def award_badge(target, name, lvl, logs, progress=None):
     """
     Awards a given level to a specific target.
 
@@ -563,20 +620,30 @@ def award_badge(target, name, lvl, logs, progress = None):
     connector.award_badge(target, name, lvl, logs, progress)
 
 @rule_effect
-def award_bonus(target, name, reward):
+def award_bonus(target, name, logs, reward=None, instance=None, unique=True):
     """
-    Awards a given bonus to a specific target.
+    Awards given bonus to a specific target.
+
+    NOTE: will retract if bonus removed.
+    Updates award if reward has changed.
     """
 
-    connector.award_bonus(target, name, reward)
+    connector.award_bonus(target, name, logs, reward, instance, unique)
 
 @rule_effect
-def award_exam_grade(target, name, reward):
+def award_exam_grade(target, name, logs, reward, max_xp=1, max_grade=1):
     """
-    Awards a given exam grade to a specific target.
+    Awards exam grades to a specific target.
+
+    Option to calculate how many XP should be awarded:
+     > max_xp --> maximum XP for exam
+     > max_grade --> maximum grade for exam
+
+    NOTE: will retract if grade removed.
+    Updates award if reward has changed.
     """
 
-    connector.award_exam_grade(target, name, reward)
+    connector.award_exam_grade(target, name, logs, reward, max_xp, max_grade)
 
 @rule_effect
 def award_lab_grade(target, logs, max_xp=1, max_grade=1):
@@ -584,8 +651,11 @@ def award_lab_grade(target, logs, max_xp=1, max_grade=1):
     Awards lab grades to a specific target.
 
     Option to calculate how many XP should be awarded:
-     > max_xp ==> max. XP per lab
-     > max_grade ==> max. grade per lab
+     > max_xp --> maximum XP per lab
+     > max_grade --> maximum grade per lab
+
+    NOTE: will NOT retract if grade removed.
+    Updates award if reward has changed.
     """
 
     connector.award_lab_grade(target, logs, max_xp, max_grade)
@@ -596,19 +666,29 @@ def award_post_grade(target, logs, max_xp=1, max_grade=1):
     Awards post grades to a specific target.
 
     Option to calculate how many XP should be awarded:
-     > max_xp ==> max. XP per post
-     > max_grade ==> max. grade per post
+     > max_xp --> maximum XP per post
+     > max_grade --> maximum grade per post
+
+    NOTE: will NOT retract if grade removed.
+    Updates award if reward has changed.
     """
 
     connector.award_post_grade(target, logs, max_xp, max_grade)
 
 @rule_effect
-def award_presentation_grade(target, name, reward):
+def award_presentation_grade(target, name, logs, max_xp=1, max_grade=1):
     """
-    Awards a given presentation grade to a specific target.
+    Awards presentation grades to a specific target.
+
+    Option to calculate how many XP should be awarded:
+     > max_xp --> maximum XP for presentation
+     > max_grade --> maximum grade for presentation
+
+    NOTE: will retract if grade removed.
+    Updates award if reward has changed.
     """
 
-    connector.award_presentation_grade(target, name, reward)
+    connector.award_presentation_grade(target, name, logs, max_xp, max_grade)
 
 @rule_effect
 def award_quiz_grade(target, logs, max_xp=1, max_grade=1):
@@ -616,8 +696,11 @@ def award_quiz_grade(target, logs, max_xp=1, max_grade=1):
     Awards quiz grades to a specific target.
 
     Option to calculate how many XP should be awarded:
-     > max_xp ==> max. XP per quiz
-     > max_grade ==> max. grade per quiz
+     > max_xp --> maximum XP per quiz
+     > max_grade --> maximum grade per quiz
+
+    NOTE: will NOT retract if grade removed.
+    Updates award if reward has changed.
     """
 
     connector.award_quiz_grade(target, logs, max_xp, max_grade)
@@ -646,12 +729,15 @@ def award_streak(target, name, logs):
     connector.award_streak(target, name, logs)
 
 @rule_effect
-def award_tokens(target, name, reward, repetitions=1, instance=None):
+def award_tokens(target, name, logs, reward=None, instance=None, unique=True):
     """
     Awards given tokens to a specific target.
+
+    NOTE: will retract if tokens removed.
+    Updates award if reward has changed.
     """
 
-    connector.award_tokens(target, name, reward, repetitions, instance)
+    connector.award_tokens(target, name, logs, reward, instance, unique)
 
 
 ### Spend items

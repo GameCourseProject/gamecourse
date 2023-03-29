@@ -1293,12 +1293,15 @@ def get_resource_view_logs(target, name=None, unique=True):
 
     return logs
 
-def get_skill_logs(target, name=None, rating=None):
+def get_skill_logs(target, name=None, rating=None, only_min_rating=False, only_latest=False):
     """
     Gets skill logs for a specific target.
 
     Options to get logs for a specific skill by name,
     as well as with a certain rating.
+
+    Additional options to get only logs that meet the minimum
+    rating, as well as only the latest log for each skill.
     """
 
     def get_attempt_cost(attempt_nr):
@@ -1316,7 +1319,7 @@ def get_skill_logs(target, name=None, rating=None):
     logs = get_forum_logs(target, "Skill Tree", name, rating) if module_enabled("Skills") else []
 
     # Filter skill logs which couldn't be paid
-    if module_enabled('Skills') and module_enabled('VirtualCurrency'):
+    if module_enabled('VirtualCurrency'):
         filtered_logs = []
         skills_done = []
 
@@ -1341,22 +1344,46 @@ def get_skill_logs(target, name=None, rating=None):
             filtered_logs += filter_logs_by_cost(target, skill_logs, costs)
             skills_done.append(skill_name)
 
-        filtered_logs.sort(key=lambda lg: lg[config.LOG_DATE_COL])
-        return filtered_logs
+        logs = filtered_logs
 
-    else:
-        return logs
-
-def get_skill_tier_logs(target, tier, only_min_rating=True, only_latest=True):
-    """
-    Gets skill tier logs for a specific target.
-    """
-
-    if module_enabled("Skills"):
+    # Get only logs that meet the minimum rating
+    if only_min_rating:
         # Get min. rating
         query = "SELECT minRating FROM skills_config WHERE course = %s;" % config.COURSE
         min_rating = int(db.data_broker.get(db, config.COURSE, query)[0][0])
 
+        # Filter by minimum rating
+        logs = [log for log in logs if int(log[config.LOG_RATING_COL]) >= min_rating]
+
+    # Get only the latest log for each skill
+    if only_latest:
+        # Group logs by skill
+        logs_by_skill = {}
+        for log in logs:
+            skill_name = log[config.LOG_DESCRIPTION_COL].replace('Skill Tree, Re: ', '')
+            if skill_name in logs_by_skill:
+                logs_by_skill[skill_name].append(log)
+            else:
+                logs_by_skill[skill_name] = [log]
+
+        # Get the latest log for each skill
+        logs = []
+        for skill_name in logs_by_skill.keys():
+            nr_skill_logs = len(logs_by_skill[skill_name])
+            logs += [logs_by_skill[skill_name][nr_skill_logs - 1]]
+
+    logs.sort(key=lambda lg: lg[config.LOG_DATE_COL])
+    return logs
+
+def get_skill_tier_logs(target, tier, only_min_rating=True, only_latest=True):
+    """
+    Gets skill tier logs for a specific target.
+
+    Options to get only logs that meet the minimum rating,
+    as well as only the latest log for each skill.
+    """
+
+    if module_enabled("Skills"):
         # Get skill names of tier
         query = "SELECT s.name " \
                 "FROM skill s JOIN skill_tier t on s.tier = t.id " \
@@ -1366,14 +1393,7 @@ def get_skill_tier_logs(target, tier, only_min_rating=True, only_latest=True):
         # Get logs
         logs = []
         for name in skill_names:
-            skill_logs = get_skill_logs(target, name)
-
-            # Filter by rating, if only min. rating
-            skill_logs = [log for log in skill_logs if not only_min_rating or int(log[config.LOG_RATING_COL]) >= min_rating]
-
-            nr_skill_logs = len(skill_logs)
-            if nr_skill_logs > 0:
-                logs += [skill_logs[nr_skill_logs - 1]] if only_latest else skill_logs
+            logs += get_skill_logs(target, name, None, only_min_rating, only_latest)
         return logs
 
     return []
@@ -2091,27 +2111,18 @@ def award_streak(target, name, logs):
         # Get streak info
         query = "SELECT id, goal, periodicityGoal, periodicityNumber, periodicityTime, periodicityType, reward, tokens, isExtra, isRepeatable " \
                 "FROM streak WHERE course = %s AND name = '%s';" % (config.COURSE, name)
-        table_streak = db.data_broker.get(db, config.COURSE, query)
-        streak_id = table_streak[0][0]
-        goal = int(table_streak[0][1])
-        period_number = int(table_streak[0][3]) if table_streak[0][3] is not None else None
-        period_time = table_streak[0][4].decode() if table_streak[0][4] is not None else None
+        table_streak = db.data_broker.get(db, config.COURSE, query)[0]
+        streak_id = table_streak[0]
+        goal = int(table_streak[1])
+        period_number = int(table_streak[3]) if table_streak[3] is not None else None
+        period_time = table_streak[4].decode() if table_streak[4] is not None else None
         is_periodic = period_number is not None and period_time is not None
-        period_type = table_streak[0][5].decode() if table_streak[0][5] is not None else None
-        period_goal = int(table_streak[0][2]) if table_streak[0][2] is not None else None
-
-        # Get awards given for streak
-        streak_awards = get_awards(target, name + "%", award_type)
-        nr_awards = len(streak_awards)
-
-        # No streaks reached and there are no awards to be removed
-        # Simply return right away
-        nr_groups = len(logs)
-        if nr_groups == 0 and nr_awards == 0:
-            return
+        period_type = table_streak[5].decode() if table_streak[5] is not None else None
+        period_goal = int(table_streak[2]) if table_streak[2] is not None else None
 
         # Get target progression in streak
         progression = []
+        nr_groups = len(logs)
         for group_index in range(0, nr_groups):
             group = logs[group_index]
             last = group_index == nr_groups - 1
@@ -2136,7 +2147,7 @@ def award_streak(target, name, logs):
                 progression.append(group[index])
 
         # If not repeatable, only allow one repetition of streak
-        is_repeatable = table_streak[0][9]
+        is_repeatable = table_streak[9]
         if not is_repeatable:
             progression = progression[:goal]
 
@@ -2170,28 +2181,19 @@ def award_streak(target, name, logs):
                 query = "DELETE FROM streak_deadline WHERE course = %s AND user = %s and streak = %s;"
                 db.execute_query(query, (config.COURSE, target, streak_id), "commit")
 
-        # Award and/or update streaks
-        nr_repetitions = math.floor(steps / goal)
-        for repetition in range(1, nr_repetitions + 1):
-            description = get_description(name, repetition)
+        # Get awards already given
+        awards_given = get_awards(target, name + "%", award_type, streak_id)
+        nr_awards = len(awards_given)
 
-            # Calculate reward
-            is_extra = table_streak[0][8]
-            streak_reward = int(table_streak[0][6])
-            award_given = get_award(target, description, award_type, streak_id)
-            reward = calculate_extra_credit_reward(target, award_type, streak_reward, award_given[config.AWARD_REWARD_COL] if award_given is not None else 0) if is_extra else streak_reward
-
-            # Award streak
-            award(target, award_type, description, reward, streak_id)
-
-            # Award tokens
-            streak_tokens = int(table_streak[0][7])
-            if module_enabled("VirtualCurrency") and streak_tokens > 0:
-                award_tokens(target, description, [repetition], streak_tokens, streak_id)
+        # No streaks reached and there are no awards to be removed
+        # Simply return right away
+        if nr_groups == 0 and nr_awards == 0:
+            return
 
         # The rule/data sources have been updated, the 'award' table
         # has streaks attributed which are no longer valid.
         # All streaks no longer valid must be deleted
+        nr_repetitions = math.floor(steps / goal)
         if nr_awards > nr_repetitions:
             for repetition in range(nr_repetitions + 1, nr_awards + 1):
                 description = get_description(name, repetition)
@@ -2201,6 +2203,24 @@ def award_streak(target, name, logs):
 
                 # Remove tokens
                 remove_award(target, 'tokens', description, streak_id)
+
+        # Award and/or update streaks
+        for repetition in range(1, nr_repetitions + 1):
+            description = get_description(name, repetition)
+
+            # Calculate reward
+            is_extra = table_streak[8]
+            streak_reward = int(table_streak[6])
+            award_given = get_award(target, description, award_type, streak_id)
+            reward = calculate_extra_credit_reward(target, award_type, streak_reward, award_given[config.AWARD_REWARD_COL] if award_given is not None else 0) if is_extra else streak_reward
+
+            # Award streak
+            award(target, award_type, description, reward, streak_id)
+
+            # Award tokens
+            streak_tokens = int(table_streak[7])
+            if module_enabled("VirtualCurrency") and streak_tokens > 0:
+                award_tokens(target, description, [repetition], streak_tokens, streak_id)
 
 def award_tokens(target, name, logs, reward=None, instance=None, unique=True):
     """

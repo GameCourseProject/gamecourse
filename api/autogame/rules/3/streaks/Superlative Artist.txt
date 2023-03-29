@@ -3,7 +3,7 @@ rule: Superlative Artist
 
     when:
         # Get target progress in streak
-        logs = get_skill_logs(target)
+        logs = get_skill_logs(target, None, None, False, True)
 
         # Get only consecutive progress
         clogs = get_consecutive_rating_logs(logs, 4)

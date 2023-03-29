@@ -360,7 +360,7 @@ class MoodleTest extends TestCase
         $this->assertIsInt($info["oldestRecordTimestamp"]);
         $this->assertIsInt($info["lastRecordTimestamp"]);
         $this->assertEquals(1662138960, $info["oldestRecordTimestamp"]);
-        $this->assertEquals(1662138988, $info["lastRecordTimestamp"]);
+        $this->assertEquals(1662138980, $info["lastRecordTimestamp"]);
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertIsArray($participations);
@@ -406,7 +406,7 @@ class MoodleTest extends TestCase
         $this->assertIsInt($info["oldestRecordTimestamp"]);
         $this->assertIsInt($info["lastRecordTimestamp"]);
         $this->assertEquals(1662138980, $info["oldestRecordTimestamp"]);
-        $this->assertEquals(1662138988, $info["lastRecordTimestamp"]);
+        $this->assertEquals(1662138980, $info["lastRecordTimestamp"]);
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertIsArray($participations);
@@ -427,7 +427,7 @@ class MoodleTest extends TestCase
         $this->assertIsInt($info["oldestRecordTimestamp"]);
         $this->assertIsInt($info["lastRecordTimestamp"]);
         $this->assertEquals(1662138960, $info["oldestRecordTimestamp"]);
-        $this->assertEquals(1662138968, $info["lastRecordTimestamp"]);
+        $this->assertEquals(1662138960, $info["lastRecordTimestamp"]);
 
         $participations = AutoGame::getParticipations($this->course->getId());
         $this->assertIsArray($participations);

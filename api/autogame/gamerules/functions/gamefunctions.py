@@ -165,20 +165,26 @@ def get_resource_view_logs(target, name=None, unique=True):
     return connector.get_resource_view_logs(target, name, unique)
 
 @rule_function
-def get_skill_logs(target, name=None, rating=None):
+def get_skill_logs(target, name=None, rating=None, only_min_rating=False, only_latest=False):
     """
     Gets skill logs for a specific target.
 
     Options to get logs for a specific skill by name,
     as well as with a certain rating.
+
+    Additional options to get only logs that meet the minimum
+    rating, as well as only the latest log for each skill.
     """
 
-    return connector.get_skill_logs(target, name, rating)
+    return connector.get_skill_logs(target, name, rating, only_min_rating, only_latest)
 
 @rule_function
 def get_skill_tier_logs(target, tier, only_min_rating=True, only_latest=True):
     """
     Gets skill tier logs for a specific target.
+
+    Options to get only logs that meet the minimum rating,
+    as well as only the latest log for each skill.
     """
 
     return connector.get_skill_tier_logs(target, tier, only_min_rating, only_latest)
@@ -231,20 +237,29 @@ def get_consecutive_logs(logs):
         return last_o is not None and o > last_o and o - last_o == 1
 
     consecutive_logs = []
-    last_order = None
 
-    for log in logs:
-        order = find_order(log[config.LOG_DESCRIPTION_COL])
-        if is_consecutive(order, last_order):
-            consecutive_logs[-1].append(log)
-        else:
-            consecutive_logs.append([log])
-        last_order = order
+    # If not consecutive logs already, put in required format
+    if len(logs) > 0 and isinstance(logs[0], tuple):
+        logs = [logs]
+
+    for group in logs:
+        last_order = None
+
+        # Sort logs by order
+        group.sort(key=lambda lg: find_order(lg[config.LOG_DESCRIPTION_COL]))
+
+        for log in group:
+            order = find_order(log[config.LOG_DESCRIPTION_COL])
+            if is_consecutive(order, last_order):
+                consecutive_logs[-1].append(log)
+            else:
+                consecutive_logs.append([log])
+            last_order = order
 
     return consecutive_logs
 
 @rule_function
-def get_consecutive_rating_logs(logs, min_rating=None, max_rating=None, exact_rating=None):
+def get_consecutive_rating_logs(logs, min_rating=None, max_rating=None, exact_rating=None, custom_rating=None):
     """
     Gets consecutive logs on a set of logs that meet
     certain rating specifications.
@@ -253,29 +268,54 @@ def get_consecutive_rating_logs(logs, min_rating=None, max_rating=None, exact_ra
      > min_rating --> rating must be bigger or equal to a value
      > max_rating --> rating must be smaller or equal to a value
      > exact_rating --> rating must be exactly a value
+     > custom_rating --> different ratings based on description
+       e.g. {'1': {'min': 100, 'max': None, 'exact': None}, '2': {'min': 100, 'max': None, 'exact': None},
+             '3': {'min': 200, 'ma'x': None, 'exact': None}, '4': {'min': 300, 'max': None, 'exact': None}, ...}
     """
 
-    def is_consecutive(r, last_r):
+    def is_consecutive(r, d, last_r, last_d):
         return last_r is not None and \
             (last_r >= min_rating and r >= min_rating if min_rating is not None else True) and \
             (last_r <= max_rating and r <= max_rating if max_rating is not None else True) and \
-            (last_r == exact_rating and r == exact_rating if exact_rating is not None else True)
+            (last_r == exact_rating and r == exact_rating if exact_rating is not None else True) and \
+            (last_r >= custom_rating[last_d]['min'] and r >= custom_rating[d]['min'] if custom_rating is not None and 'min' in custom_rating[d] and custom_rating[d]['min'] is not None else True) and \
+            (last_r <= custom_rating[last_d]['max'] and r <= custom_rating[d]['max'] if custom_rating is not None and 'max' in custom_rating[d] and custom_rating[d]['max'] is not None else True) and \
+            (last_r == custom_rating[last_d]['exact'] and r == custom_rating[d]['exact'] if custom_rating is not None and 'exact' in custom_rating[d] and custom_rating[d]['exact'] is not None else True)
 
     consecutive_logs = []
-    last_rating = None
 
-    for log in logs:
-        rating = log[config.LOG_RATING_COL]
-        if (min_rating is not None and rating < min_rating) or (max_rating is not None and rating > max_rating) or \
-                (exact_rating is not None and rating != exact_rating):
-            last_rating = None
-            continue
+    # If not consecutive logs already, put in required format
+    if len(logs) > 0 and isinstance(logs[0], tuple):
+        logs = [logs]
 
-        if is_consecutive(rating, last_rating):
-            consecutive_logs[-1].append(log)
-        else:
-            consecutive_logs.append([log])
-        last_rating = rating
+    # Get consecutive logs
+    for group in logs:
+        last_description = None
+        last_rating = None
+
+        for log in group:
+            description = log[config.LOG_DESCRIPTION_COL]
+            rating = log[config.LOG_RATING_COL]
+            if (min_rating is not None and rating < min_rating) or (max_rating is not None and rating > max_rating) or \
+                    (exact_rating is not None and rating != exact_rating) or (custom_rating is not None and (
+                    ('min' in custom_rating[description] and custom_rating[description]['min'] is not None and rating < custom_rating[description]['min']) or
+                    ('max' in custom_rating[description] and custom_rating[description]['max'] is not None and rating > custom_rating[description]['max']) or
+                    ('exact' in custom_rating[description] and custom_rating[description]['exact'] is not None and rating != custom_rating[description]['exact']))):
+                last_description = None
+                last_rating = None
+                continue
+
+            if is_consecutive(rating, description, last_rating, last_description):
+                consecutive_logs[-1].append(log)
+            else:
+                consecutive_logs.append([log])
+            last_description = description
+            last_rating = rating
+
+    # If last log doesn't fit the specifications, add empty group
+    # NOTE: this ensures the progress is 0 instead of the last group's length
+    if len(consecutive_logs) > 0 and consecutive_logs[-1][-1][config.LOG_ID_COL] != logs[-1][-1][config.LOG_ID_COL]:
+        consecutive_logs.append([])
 
     return consecutive_logs
 
