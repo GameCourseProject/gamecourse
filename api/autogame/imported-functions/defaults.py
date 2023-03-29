@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import config, re
 
-from .utils import rule_effect, rule_function
+from decorators import rule_function, rule_effect
 from gamerules.connector import gamecourse_connector as connector
 
 
