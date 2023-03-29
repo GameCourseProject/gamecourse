@@ -275,7 +275,7 @@ export class SidebarComponent implements OnInit {
       }
 
       const adaptation: Navigation = {
-        link: isAdminOrTeacher ? path + 'settings/adaptation' : 'adaptation',
+        link: isAdminOrTeacher ? path + 'settings/adaptation' : path + 'adaptation',
         name: 'Adaptation',
         icon: 'tabler-puzzle'
       };

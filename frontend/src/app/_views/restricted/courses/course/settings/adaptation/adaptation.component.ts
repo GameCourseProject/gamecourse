@@ -243,7 +243,7 @@ export class AdaptationComponent implements OnInit {
   async doActionOnTable(action: string, row: number, col: number, value?: any) {
     this.gameElementToActOn = this.availableGameElements[row];
 
-    if (action === 'value changed game element' && col === 1){
+    if (action === 'value changed game element' && col === 1 && this.isAdminOrTeacher){
       if ((this.gameElementToActOn.isActive).toString() !== '0' && this.gameElementToActOn.isActive !== false) {
         this.adminMode = 'deactivate';
       } else this.adminMode = 'activate';
@@ -251,7 +251,7 @@ export class AdaptationComponent implements OnInit {
       this.gameElementToManage = this.initGameElementToManage(this.gameElementToActOn);
       ModalService.openModal('manage-game-element');
 
-    } else if (action === 'Questionnaire statistics' && col === 2){
+    } else if (action === 'Questionnaire statistics' && col === 2 && this.isAdminOrTeacher){
       this.loading.action = true;
       this.gameElementToManage = this.initGameElementToManage(this.gameElementToActOn);
 
@@ -262,7 +262,7 @@ export class AdaptationComponent implements OnInit {
       this.loading.action = false;
       ModalService.openModal('questionnaire-statistics');
 
-    } else if (action === 'Export questionnaire answers' && col === 2){
+    } else if (action === 'Export questionnaire answers' && col === 2 && this.isAdminOrTeacher){
       await this.exportAnswers(this.gameElementToActOn);
 
     } else if (action === 'answer questionnaire' && col === 1) {
@@ -412,8 +412,7 @@ export class AdaptationComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  async setUpData(statistics: { questionNr: { parameter: string, value: number }[] | string[] })
-  {
+  async setUpData(statistics: { questionNr: { parameter: string, value: number }[] | string[] }){
     // NOTE: forces graphs to update
     this.refreshing = true;
     setTimeout(() => this.refreshing = false, 0);

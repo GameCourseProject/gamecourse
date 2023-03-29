@@ -29,7 +29,7 @@ export class PreferenceQuestionnaireComponent implements OnInit{
   loading = { action:false };
   mode: 'questionnaire';
 
-  questionnaireToManage: QuestionnaireManageData = this.initQuestionnaireToManage();
+  questionnaireToManage: QuestionnaireManageData;
 
   constructor(
     private api: ApiHttpService,
@@ -63,8 +63,8 @@ export class PreferenceQuestionnaireComponent implements OnInit{
 
   initQuestionnaireToManage(): QuestionnaireManageData{
     return {
-      course: 1,
-      user: 1,
+      course: this.course.id,
+      user: this.user.id,
       q1: null,
       q2: null,
       q3: null,

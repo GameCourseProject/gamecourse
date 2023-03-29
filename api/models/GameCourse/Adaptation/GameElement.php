@@ -180,18 +180,23 @@ class GameElement
      * @throws Exception
      */
     public function getGameElementChildren(): array{
-        $roles = Role::getCourseRoles($this->getCourse(), false, true);
+        $course = new Course($this->getCourse());
+        $studentIndex = array_search("Student", Role::DEFAULT_ROLES);
         $module = $this->getModule();
 
         $response = [];
-        foreach ($roles as $role){
-            if ($role["name"] == Role::ADAPTATION_ROLE && in_array("children", array_keys($role))){
-                foreach ($role["children"] as $value){
-                    // role belongs to the module and has children
-                    if ($value["module"] == $module && in_array("children", array_keys($value))){
+        // Iterate through hierarchy
+        $hierarchy = $course->getRolesHierarchy();
+        foreach($hierarchy[$studentIndex]["children"] as $value){
+            // Sees if adaptation role has children
+            if ($value["name"] == Role::ADAPTATION_ROLE && in_array("children", array_keys($value))){
+
+                // Iterates through children (at this point will be game elements "badges", "leaderboard" etc)
+                foreach ($value["children"] as $item){
+                    if ($item["name"] == $module && in_array("children", array_keys($item))){
                         // iterates through children and saves the names
-                        foreach ($value["children"] as $child) {
-                            $roleId = Role::getRoleId($child["name"],$this->getCourse());
+                        foreach ($item["children"] as $child) {
+                            $roleId = Role::getRoleId($child["name"],$course->getId());
                             $where = ["element" => $roleId];
                             $description = Core::database()->select(self::TABLE_ADAPTATION_ELEMENT_DESCRIPTIONS, $where, "description");
                             $response[$child["name"]] = $description;
@@ -199,9 +204,11 @@ class GameElement
                         break;
                     }
                 }
+                break;
             }
         }
         return $response;
+
     }
 
     /**
@@ -392,8 +399,13 @@ class GameElement
      * @param int $newPreference
      * @param string $date
      * @return void
+     * @throws Exception
      */
     public static function updateUserPreference(int $courseId, int $userId, string $module, ?int $previousPreference, int $newPreference, string $date){
+        $course = new Course($courseId);
+        $courseUser = $course->getCourseUserById($userId);
+        $userRoles = Role::getUserRoles($userId, $courseId);
+
         $table = self::TABLE_ADAPTATION_USER_PREFERENCES;
         $where = ["course" => $courseId, "user" => $userId, "newPreference" => $previousPreference];
 
@@ -402,14 +414,23 @@ class GameElement
         $lastPreference = Core::database()->select($table, $where, "*", "date desc");
         // NOTE: if lastPreference date was less than 1 day ago and student had already chosen something: it does not save another entry, just updates it
         if ($lastPreference["date"]) {
-            if (strtotime('-1 day') < strtotime($lastPreference["date"]) && !is_null($lastPreference["previousPreference"])) {
+            if (strtotime('-1 day') < strtotime($lastPreference["date"])) {
                 Core::database()->update($table, $data, ["id" => $lastPreference["id"]]);
+
+                // Updates roles of user
+                $roleName = Role::getRoleName($previousPreference);
+                $oldRoleIndex = array_search($roleName, $userRoles);
+                array_splice($userRoles, $oldRoleIndex, 1, Role::getRoleName($newPreference));
+                $courseUser->setRoles($userRoles);
+
                 return;
             }
         }
 
         Core::database()->insert($table, $data); // add to db
-
+        $roleName = Role::getRoleName($newPreference);
+        array_push($userRoles, $roleName);
+        $courseUser->setRoles($userRoles);
     }
 
     /**
