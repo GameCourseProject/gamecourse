@@ -390,7 +390,7 @@ class GameElement
     }
 
     /**
-     * Updates user's preference regarding GameElement customization
+     * Updates user's preference regarding GameElement customization and their adaptation roles accordingly
      *
      * @param int $courseId
      * @param int $userId
@@ -418,8 +418,7 @@ class GameElement
                 Core::database()->update($table, $data, ["id" => $lastPreference["id"]]);
 
                 // Updates roles of user
-                $roleName = Role::getRoleName($previousPreference);
-                $oldRoleIndex = array_search($roleName, $userRoles);
+                $oldRoleIndex = array_search(Role::getRoleName($previousPreference), $userRoles);
                 array_splice($userRoles, $oldRoleIndex, 1, Role::getRoleName($newPreference));
                 $courseUser->setRoles($userRoles);
 
@@ -428,8 +427,7 @@ class GameElement
         }
 
         Core::database()->insert($table, $data); // add to db
-        $roleName = Role::getRoleName($newPreference);
-        array_push($userRoles, $roleName);
+        array_push($userRoles, Role::getRoleName($newPreference));
         $courseUser->setRoles($userRoles);
     }
 
