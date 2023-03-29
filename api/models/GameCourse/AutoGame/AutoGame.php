@@ -461,7 +461,7 @@ abstract class AutoGame
         // Parse
         foreach ($participations as &$participation) {
             $participation["id"] = intval($participation["id"]);
-            $participation["user"] = (new User($participation["user"]))->getData();
+            $participation["user"] = intval($participation["user"]);
             $participation["course"] = intval($participation["course"]);
             if (isset($participation["rating"])) $participation["rating"] = intval($participation["rating"]);
             if (isset($participation["evaluator"])) $participation["evaluator"] = intval($participation["evaluator"]);

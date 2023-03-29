@@ -508,10 +508,14 @@ class GoogleSheets extends Module
             self::$GSService = GoogleHandler::getGoogleSheetsService($client);
 
             $config = $this->getGoogleSheetsConfig();
+
+            // Import or update data in each sheet
+            $GSData = [];
             foreach ($config["sheetNames"] as $i => $sheetName) {
                 $prof = $this->course->getCourseUserByUsername($config["ownerNames"][$i]);
                 if ($prof) {
                     $data = $this->getSheetData($config["spreadsheetId"], $sheetName);
+                    $GSData[$sheetName] = $data;
                     $checkpoint = $this->saveSheetData($sheetName, $data, $prof->getId());
                     if ($checkpoint) {
                         $AutoGameCheckpoint = min($AutoGameCheckpoint, $checkpoint) ?? $checkpoint;
@@ -519,6 +523,9 @@ class GoogleSheets extends Module
                     }
                 } else self::log($this->course->getId(), "No teacher with username '" . $config["ownerNames"][$i] . "' enrolled in the course.", "WARNING");
             }
+
+            // Remove deleted data from the database
+            $this->removeDeletedData($GSData, $config["sheetNames"], $config["ownerNames"]);
 
             self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
             return $AutoGameCheckpoint ? date("Y-m-d H:i:s", $AutoGameCheckpoint) : null;
@@ -753,6 +760,113 @@ class GoogleSheets extends Module
             $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordsTimestamp) ?? $recordsTimestamp;
         }
         return $oldestRecordTimestamp;
+    }
+
+    /**
+     * Removes data from the database that has since been deleted
+     * from the GoogleSheet.
+     *
+     * @param array $sheetData
+     * @param array $sheetNames
+     * @param array $ownerNames
+     * @return void
+     */
+    private function removeDeletedData(array $sheetData, array $sheetNames, array $ownerNames)
+    {
+        $courseId = $this->getCourse()->getId();
+
+        // Get all GoogleSheet participations on the database
+        $GSParticipations = AutoGame::getParticipations($courseId, null, null, null, null,
+            null, null, $this->id);
+
+        // Go over each participation and remove it if not found on the sheet
+        $dataRemoved = [];
+        foreach ($GSParticipations as $p) {
+            $profUsername = $this->course->getCourseUserById($p["evaluator"])->getUsername();
+            $studentNumber = $this->course->getCourseUserById($p["user"])->getStudentNumber();
+
+            $sheetName = null;
+            foreach ($sheetNames as $i => $sName) {
+                if ($ownerNames[$i] == $profUsername) {
+                    $sheetName = $sName;
+                    break;
+                }
+            }
+
+            switch ($p["type"]) {
+                case "initial bonus":
+                case "initial tokens":
+                case "presentation grade":
+                    if (!self::foundInSheet($sheetData[$sheetName], $studentNumber, $p["type"], $p["rating"])) {
+                        AutoGame::removeParticipation($p["id"]);
+                        $dataRemoved[$sheetName] = isset($dataRemoved[$sheetName]) ? $dataRemoved[$sheetName] + 1 : 1;
+                    }
+                    break;
+
+                case "attended lecture":
+                case "attended lecture (late)":
+                case "attended lab":
+                case "guild master":
+                case "guild warrior":
+                case "replied to questionnaires":
+                case "popular choice award (presentation)":
+                case "golden star award":
+                case "great video":
+                    if (!self::foundInSheet($sheetData[$sheetName], $studentNumber, $p["type"], null, $p["description"])) {
+                        AutoGame::removeParticipation($p["id"]);
+                        $dataRemoved[$sheetName] = isset($dataRemoved[$sheetName]) ? $dataRemoved[$sheetName] + 1 : 1;
+                    }
+                    break;
+
+                case "presentation king":
+                case "lab king":
+                case "quiz king":
+                case "course emperor":
+                case "suggested presentation subject":
+                case "participated in focus groups":
+                case "hall of fame":
+                    if (!self::foundInSheet($sheetData[$sheetName], $studentNumber, $p["type"])) {
+                        AutoGame::removeParticipation($p["id"]);
+                        $dataRemoved[$sheetName] = isset($dataRemoved[$sheetName]) ? $dataRemoved[$sheetName] + 1 : 1;
+                    }
+                    break;
+
+                case "quiz grade":
+                case "lab grade":
+                    if (!self::foundInSheet($sheetData[$sheetName], $studentNumber, $p["type"], $p["rating"], $p["description"])) {
+                        AutoGame::removeParticipation($p["id"]);
+                        $dataRemoved[$sheetName] = isset($dataRemoved[$sheetName]) ? $dataRemoved[$sheetName] + 1 : 1;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        foreach ($dataRemoved as $sheetName => $nrRemoved) {
+            self::log($this->course->getId(), "Removed $nrRemoved line" . ($nrRemoved != 1 ? "s" : "") . " from sheet '" . $sheetName . "'.", "WARNING");
+        }
+    }
+
+    /**
+     * Checks whether a given piece of data exists on a sheet.
+     *
+     * @param array $sheetData
+     * @param int $studentNumber
+     * @param string $action
+     * @param int|null $xp
+     * @param string|null $info
+     * @return bool
+     */
+    private function foundInSheet(array $sheetData, int $studentNumber, string $action, ?int $xp = null, ?string $info = null): bool
+    {
+        foreach ($sheetData as $row) {
+            if (intval($row[self::COL_STUDENT_NUMBER]) == $studentNumber && $row[self::COL_ACTION] == $action &&
+                (is_null($xp) || intval($row[self::COL_XP]) == $xp) && (is_null($info) || $row[self::COL_INFO] == $info))
+                return true;
+        }
+        return false;
     }
 
     /**

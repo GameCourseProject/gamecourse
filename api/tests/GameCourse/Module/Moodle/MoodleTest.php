@@ -367,12 +367,12 @@ class MoodleTest extends TestCase
         $this->assertCount(2, $participations);
 
         $p1 = $participations[0];
-        $this->assertEquals(["id" => 2, "user" => (new User($student1->getId()))->getData(), "course" => $this->course->getId(),
+        $this->assertEquals(["id" => 2, "user" => $student1->getId(), "course" => $this->course->getId(),
             "source" => $this->module->getId(), "description" => "Assignment 1", "type" => "assignment grade", "post" => "mod/assign/view.php?id=1",
             "date" => date("Y-m-d H:i:s", 1662138980), "rating" => 3, "evaluator" => 1], $p1);
 
         $p2 = $participations[1];
-        $this->assertEquals(["id" => 1, "user" => (new User($student2->getId()))->getData(), "course" => $this->course->getId(),
+        $this->assertEquals(["id" => 1, "user" => $student2->getId(), "course" => $this->course->getId(),
             "source" => $this->module->getId(), "description" => "Assignment 1", "type" => "assignment grade", "post" => "mod/assign/view.php?id=1",
             "date" => date("Y-m-d H:i:s", 1662138960), "rating" => 6, "evaluator" => 1], $p2);
     }
@@ -413,7 +413,7 @@ class MoodleTest extends TestCase
         $this->assertCount(1, $participations);
 
         $p1 = $participations[0];
-        $this->assertEquals(["id" => 1, "user" => (new User($student1->getId()))->getData(), "course" => $this->course->getId(),
+        $this->assertEquals(["id" => 1, "user" => $student1->getId(), "course" => $this->course->getId(),
             "source" => $this->module->getId(), "description" => "Skill Tree, Re: Looping GIF", "type" => "graded post", "post" => "mod/forum/discuss.php?d=123#p6418",
             "date" => date("Y-m-d H:i:s", 1662138980), "rating" => 3, "evaluator" => 1], $p1);
 
@@ -434,7 +434,7 @@ class MoodleTest extends TestCase
         $this->assertCount(2, $participations);
 
         $p2 = $participations[1];
-        $this->assertEquals(["id" => 2, "user" => (new User($student2->getId()))->getData(), "course" => $this->course->getId(),
+        $this->assertEquals(["id" => 2, "user" => $student2->getId(), "course" => $this->course->getId(),
             "source" => $this->module->getId(), "description" => "Bugs Forum, Re: Pixel Art", "type" => "graded post", "post" => "mod/peerforum/discuss.php?d=245#p6537",
             "date" => date("Y-m-d H:i:s", 1662138960), "rating" => 5, "evaluator" => 1], $p2);
     }
@@ -473,12 +473,12 @@ class MoodleTest extends TestCase
         $this->assertCount(2, $participations);
 
         $p1 = $participations[0];
-        $this->assertEquals(["id" => 2, "user" => (new User($student1->getId()))->getData(), "course" => $this->course->getId(),
+        $this->assertEquals(["id" => 2, "user" => $student1->getId(), "course" => $this->course->getId(),
             "source" => $this->module->getId(), "description" => "Skill Tree, Re: Looping GIF", "type" => "peergraded post", "post" => "mod/peerforum/discuss.php?d=123#p6418",
             "date" => date("Y-m-d H:i:s", 1662138988), "rating" => 3, "evaluator" => 1], $p1);
 
         $p2 = $participations[1];
-        $this->assertEquals(["id" => 1, "user" => (new User($student2->getId()))->getData(), "course" => $this->course->getId(),
+        $this->assertEquals(["id" => 1, "user" => $student2->getId(), "course" => $this->course->getId(),
             "source" => $this->module->getId(), "description" => "Skill Tree, Re: Pixel Art", "type" => "peergraded post", "post" => "mod/peerforum/discuss.php?d=245#p6537",
             "date" => date("Y-m-d H:i:s", 1662138968), "rating" => 5, "evaluator" => 1], $p2);
     }
@@ -517,12 +517,12 @@ class MoodleTest extends TestCase
         $this->assertCount(2, $participations);
 
         $p1 = $participations[0];
-        $this->assertEquals(["id" => 2, "user" => (new User($student1->getId()))->getData(), "course" => $this->course->getId(),
+        $this->assertEquals(["id" => 2, "user" => $student1->getId(), "course" => $this->course->getId(),
             "source" => $this->module->getId(), "description" => "Quiz 1", "type" => "quiz grade", "post" => "mod/quiz/view.php?id=1",
             "date" => date("Y-m-d H:i:s", 1662138988), "rating" => 3, "evaluator" => null], $p1);
 
         $p2 = $participations[1];
-        $this->assertEquals(["id" => 1, "user" => (new User($student2->getId()))->getData(), "course" => $this->course->getId(),
+        $this->assertEquals(["id" => 1, "user" => $student2->getId(), "course" => $this->course->getId(),
             "source" => $this->module->getId(), "description" => "Quiz 1", "type" => "quiz grade", "post" => "mod/quiz/view.php?id=1",
             "date" => date("Y-m-d H:i:s", 1662138968), "rating" => 6, "evaluator" => null], $p2);
     }

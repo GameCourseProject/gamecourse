@@ -333,7 +333,7 @@ class GoogleSheetsTest extends TestCase
 
         $p1 = $participations[0];
         $this->assertEquals(1, $p1["id"]);
-        $this->assertEquals((new User($student1->getId()))->getData(), $p1["user"]);
+        $this->assertEquals($student1->getId(), $p1["user"]);
         $this->assertEquals($this->course->getId(), $p1["course"]);
         $this->assertEquals($this->module->getId(), $p1["source"]);
         $this->assertEquals("", $p1["description"]);
@@ -345,7 +345,7 @@ class GoogleSheetsTest extends TestCase
 
         $p2 = $participations[1];
         $this->assertEquals(2, $p2["id"]);
-        $this->assertEquals((new User($student2->getId()))->getData(), $p2["user"]);
+        $this->assertEquals($student2->getId(), $p2["user"]);
         $this->assertEquals($this->course->getId(), $p2["course"]);
         $this->assertEquals($this->module->getId(), $p2["source"]);
         $this->assertEquals("2", $p2["description"]);
@@ -385,7 +385,7 @@ class GoogleSheetsTest extends TestCase
 
         $p1 = $participations[0];
         $this->assertEquals(1, $p1["id"]);
-        $this->assertEquals((new User($student1->getId()))->getData(), $p1["user"]);
+        $this->assertEquals($student1->getId(), $p1["user"]);
         $this->assertEquals($this->course->getId(), $p1["course"]);
         $this->assertEquals($this->module->getId(), $p1["source"]);
         $this->assertEquals("", $p1["description"]);
@@ -397,7 +397,7 @@ class GoogleSheetsTest extends TestCase
 
         $p2 = $participations[1];
         $this->assertEquals(2, $p2["id"]);
-        $this->assertEquals((new User($student2->getId()))->getData(), $p2["user"]);
+        $this->assertEquals($student2->getId(), $p2["user"]);
         $this->assertEquals($this->course->getId(), $p2["course"]);
         $this->assertEquals($this->module->getId(), $p2["source"]);
         $this->assertEquals("2", $p2["description"]);

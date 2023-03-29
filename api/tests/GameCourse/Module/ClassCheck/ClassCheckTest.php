@@ -444,7 +444,7 @@ class ClassCheckTest extends TestCase
 
         $p1 = $participations[0];
         $this->assertEquals(1, $p1["id"]);
-        $this->assertEquals((new User($student1->getId()))->getData(), $p1["user"]);
+        $this->assertEquals($student1->getId(), $p1["user"]);
         $this->assertEquals($this->course->getId(), $p1["course"]);
         $this->assertEquals($this->module->getId(), $p1["source"]);
         $this->assertEquals("1", $p1["description"]);
@@ -456,7 +456,7 @@ class ClassCheckTest extends TestCase
 
         $p2 = $participations[1];
         $this->assertEquals(2, $p2["id"]);
-        $this->assertEquals((new User($student2->getId()))->getData(), $p2["user"]);
+        $this->assertEquals($student2->getId(), $p2["user"]);
         $this->assertEquals($this->course->getId(), $p2["course"]);
         $this->assertEquals($this->module->getId(), $p2["source"]);
         $this->assertEquals("1", $p2["description"]);
@@ -468,7 +468,7 @@ class ClassCheckTest extends TestCase
 
         $p3 = $participations[2];
         $this->assertEquals(3, $p3["id"]);
-        $this->assertEquals((new User($student1->getId()))->getData(), $p3["user"]);
+        $this->assertEquals($student1->getId(), $p3["user"]);
         $this->assertEquals($this->course->getId(), $p3["course"]);
         $this->assertEquals($this->module->getId(), $p3["source"]);
         $this->assertEquals("2", $p3["description"]);
