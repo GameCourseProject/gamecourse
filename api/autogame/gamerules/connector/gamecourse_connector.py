@@ -251,12 +251,12 @@ def preload_info(targets_ids):
     preload_awards(targets_ids)
 
     if module_enabled("VirtualCurrency"):
-        # Calculate available tokens
-        global available_tokens
-        available_tokens = {target_id: get_total_tokens_reward(target_id) for target_id in targets_ids}
-
         # Preload tokens' spending
         preload_spending(targets_ids)
+
+        # Filter skill logs whose cost couldn't be paid
+        if module_enabled("Skills"):
+            filter_preloaded_skill_logs(targets_ids)
 
 def preload_logs(targets_ids):
     """
@@ -360,6 +360,78 @@ def preload_spending(targets_ids):
         else:
             preloaded_spending[target_id] = [s]
 
+def filter_preloaded_skill_logs(targets_ids):
+    """
+    Filters skill logs whose cost couldn't be paid
+
+    FIXME: very much hard-coded to work for MCP 22/23
+           where only skills deduct tokens
+    """
+
+    def get_skill_rule_order(s_name):
+        q = "SELECT r.position FROM skill s JOIN rule r on s.rule = r.id WHERE s.course = %s AND s.name = '%s';" % (config.COURSE, s_name)
+        return int(db.data_broker.get(db, config.COURSE, q)[0][0])
+
+    def get_attempt_cost(attempt_nr):
+        # Fixed cost
+        if tier_cost_info["costType"] == "fixed":
+            return tier_cost_info["cost"]
+
+        # Variable cost
+        else:
+            attempt_logs = logs[0: attempt_nr - 1]
+            attempts = len([attempt_log for attempt_log in attempt_logs if
+                            int(attempt_log[config.LOG_RATING_COL]) >= tier_cost_info["minRating"]])
+            return tier_cost_info["cost"] + tier_cost_info["increment"] * attempts
+
+    global preloaded_logs
+
+    for target in targets_ids:
+        # Get total tokens received
+        tokens_received = get_total_tokens_reward(target)
+
+        # Get skill logs sorted by their running order in the AutoGame
+        logs = get_skill_logs(target)
+        logs.sort(key=lambda lg: get_skill_rule_order(lg[config.LOG_DESCRIPTION_COL].replace('Skill Tree, Re: ', '')))
+
+        # Organize logs by skill
+        logs_by_skill = {}
+        for log in logs:
+            skill_name = log[config.LOG_DESCRIPTION_COL].replace('Skill Tree, Re: ', '')
+            if skill_name in logs_by_skill:
+                logs_by_skill[skill_name].append(log)
+            else:
+                logs_by_skill[skill_name] = [log]
+
+        # Filter logs which couldn't be paid
+        for skill_name in logs_by_skill.keys():
+            skill_logs = logs_by_skill[skill_name]
+
+            # Get cost info
+            query = "SELECT tc.costType, tc.cost, tc.increment, tc.minRating " \
+                    "FROM skill s LEFT JOIN skill_tier t on s.tier = t.id " \
+                    "LEFT JOIN skill_tier_cost tc on tc.tier = t.id " \
+                    "LEFT JOIN skill_tree st on t.skillTree = st.id " \
+                    "WHERE s.course = %s AND s.name = '%s';" % (config.COURSE, skill_name)
+            table_skill = db.data_broker.get(db, config.COURSE, query)[0]
+            tier_cost_info = {"costType": table_skill[0], "cost": int(table_skill[1]),
+                              "increment": int(table_skill[2]), "minRating": int(table_skill[3])}
+            costs = [get_attempt_cost(attempt) for attempt in range(1, len(skill_logs) + 1)]
+
+            filtered_logs, tokens_received = filter_logs_by_cost(skill_logs, costs, tokens_received)
+            logs_by_skill[skill_name] = filtered_logs
+
+        # Update preloaded logs
+        for log in logs:
+            skill_name = log[config.LOG_DESCRIPTION_COL].replace('Skill Tree, Re: ', '')
+
+            # Filter out from preloaded logs
+            if log not in logs_by_skill[skill_name]:
+                index = get_logs(target).index(log)
+                preloaded_logs[target] = preloaded_logs[target][:index] + preloaded_logs[target][index + 1:]
+
+        # Sort everything by date again
+        preloaded_logs[target].sort(key=lambda lg: lg[config.LOG_DATE_COL])
 
 ### Progression
 
@@ -569,11 +641,6 @@ def give_award(target, award_type, description, reward, instance=None):
                         reward, award_given[config.AWARD_DATE_COL])
     preloaded_awards[target].append(award_to_preload)
 
-    # Add to available tokens, if virtual currency enabled
-    if module_enabled('VirtualCurrency') and award_type == 'tokens':
-        global available_tokens
-        available_tokens[target] += reward
-
 def remove_award(target, award_type, description, instance=None, award_id=None):
     """
     Removes an award from a specific target.
@@ -591,14 +658,8 @@ def remove_award(target, award_type, description, instance=None, award_id=None):
     db.execute_query(query, (config.COURSE, target, award_type, description), "commit")
 
     # Remove award from preloaded awards
-    award_to_remove = get_award(target, description, award_type, instance, None, award_id)
-    index = get_awards(target).index(award_to_remove)
+    index = get_awards(target).index(get_award(target, description, award_type, instance, None, award_id))
     preloaded_awards[target] = preloaded_awards[target][:index] + preloaded_awards[target][index + 1:]
-
-    # Remove from available tokens, if virtual currency enabled
-    if module_enabled('VirtualCurrency') and award_type == 'tokens':
-        global available_tokens
-        available_tokens[target] -= award_to_remove[config.AWARD_REWARD_COL]
 
 def update_award(target, award_type, description, new_reward, instance=None, award_id=None):
     """
@@ -625,11 +686,6 @@ def update_award(target, award_type, description, new_reward, instance=None, awa
     preloaded_awards[target].insert(index, new_award)
     preloaded_awards[target] = preloaded_awards[target][:index + 1] + preloaded_awards[target][index + 2:]
 
-    # Update available tokens, if virtual currency enabled
-    if module_enabled('VirtualCurrency') and award_type == 'tokens':
-        global available_tokens
-        available_tokens[target] += new_reward - a[config.AWARD_REWARD_COL]
-
 def award_received(target, award_type, description, instance=None, award_id=None):
     """
     Checks whether a given award has already been received
@@ -640,8 +696,6 @@ def award_received(target, award_type, description, instance=None, award_id=None
 
 
 ### Tokens' spending
-
-available_tokens = {}  # Ensures spending is only done when there are enough tokens for it
 
 def get_spending(target, description=None, amount=None, spending_id=None):
     global preloaded_spending
@@ -719,12 +773,10 @@ def update_spending(target, description, new_amount, spending_id=None):
     preloaded_spending[target].insert(index, new_spending)
     preloaded_spending[target] = preloaded_spending[target][:index + 1] + preloaded_spending[target][index + 2:]
 
-def filter_logs_by_cost(target, logs, costs):
+def filter_logs_by_cost(logs, costs, available_tokens):
     """
     Filters logs whose cost couldn't be paid.
     """
-
-    global available_tokens
 
     nr_logs = len(logs)
     if nr_logs > len(costs):
@@ -732,13 +784,13 @@ def filter_logs_by_cost(target, logs, costs):
 
     filtered_logs = []
     for i in range(0, nr_logs):
-        if available_tokens[target] - costs[i] < 0:  # Not enough tokens
+        if available_tokens - costs[i] < 0:  # Not enough tokens
             break
         else:  # Enough tokens
-            available_tokens[target] -= costs[i]
+            available_tokens -= costs[i]
             filtered_logs.append(logs[i])
 
-    return filtered_logs
+    return filtered_logs, available_tokens
 
 
 ### Calculating rewards
@@ -1304,47 +1356,7 @@ def get_skill_logs(target, name=None, rating=None, only_min_rating=False, only_l
     rating, as well as only the latest log for each skill.
     """
 
-    def get_attempt_cost(attempt_nr):
-        # Fixed cost
-        if tier_cost_info["costType"] == "fixed":
-            return tier_cost_info["cost"]
-
-        # Variable cost
-        else:
-            attempt_logs = logs[0: attempt_nr - 1]
-            attempts = len([attempt_log for attempt_log in attempt_logs if
-                            int(attempt_log[config.LOG_RATING_COL]) >= tier_cost_info["minRating"]])
-            return tier_cost_info["cost"] + tier_cost_info["increment"] * attempts
-
     logs = get_forum_logs(target, "Skill Tree", name, rating) if module_enabled("Skills") else []
-
-    # Filter skill logs which couldn't be paid
-    if module_enabled('VirtualCurrency'):
-        filtered_logs = []
-        skills_done = []
-
-        for log in logs:
-            skill_name = log[config.LOG_DESCRIPTION_COL].replace('Skill Tree, Re: ', '')
-            if skill_name in skills_done:
-                continue
-            skill_logs = [lg for lg in logs if lg[config.LOG_DESCRIPTION_COL] == log[config.LOG_DESCRIPTION_COL]]
-
-            # Get cost info
-            query = "SELECT tc.costType, tc.cost, tc.increment, tc.minRating " \
-                    "FROM skill s LEFT JOIN skill_tier t on s.tier = t.id " \
-                    "LEFT JOIN skill_tier_cost tc on tc.tier = t.id " \
-                    "LEFT JOIN skill_tree st on t.skillTree = st.id " \
-                    "WHERE s.course = %s AND s.name = '%s';" % (config.COURSE, skill_name)
-            table_skill = db.data_broker.get(db, config.COURSE, query)[0]
-            tier_cost_info = {"costType": table_skill[0], "cost": int(table_skill[1]), "increment": int(table_skill[2]),
-                              "minRating": int(table_skill[3])}
-            costs = [get_attempt_cost(attempt) for attempt in range(1, len(skill_logs) + 1)]
-
-            # Filter logs which can't be paid
-            filtered_logs += filter_logs_by_cost(target, skill_logs, costs)
-            skills_done.append(skill_name)
-
-        logs = filtered_logs
 
     # Get only logs that meet the minimum rating
     if only_min_rating:
