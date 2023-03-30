@@ -109,18 +109,19 @@ class GameElement
         self::trim($fieldValues);
 
         // Validate data
-        if (key_exists("isActive", $fieldValues)){
+        if (key_exists("isActive", $fieldValues) && key_exists("notify", $fieldValues)){
             $newStatus = $fieldValues["isActive"];
-            $oldStatus = $this->isActive();
-        }
-        if (key_exists("notify", $fieldValues)){
             $newNotify = $fieldValues["notify"];
-            $oldNotify = $this->notify();
+
+            if (!$newStatus && $newNotify){
+                throw new Exception("Cannot set game element as inactive and still notify");
+            }
         }
 
         // Update values
-        if (count($fieldValues) != 0)
+        if (count($fieldValues) != 0){
             Core::database()->update(self::TABLE_ADAPTATION_GAME_ELEMENT, $fieldValues, ["id" => $this->id]);
+        }
     }
 
     /*** ---------------------------------------------------- ***/

@@ -22,9 +22,11 @@ class GameElementTest extends TestCase
 {
     private $course;
     private $courseUser;
-    private $badgesModule;
-    private $leaderboardModule;
-    private $profileModule;
+
+    private $badgesGameElement;
+    private $leaderboardGameElement;
+    private $profileGameElement;
+
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------- Setup & Tear Down ----------------- ***/
@@ -66,15 +68,28 @@ class GameElementTest extends TestCase
         $XPAndPoints = new XPLevels($course);
         $XPAndPoints->setEnabled(true);
 
-        $this->badgesModule = new Badges($course);
-        $this->badgesModule->setEnabled(true);
+        Role::addDefaultRolesToCourse($course->getId());
 
-        $this->leaderboardModule = new Leaderboard($course);
-        $this->leaderboardModule->setEnabled(true);
+        $badgesModule = new Badges($course);
+        $rolesB = Badges::ADAPTATION_BADGES;
+        $parent = array_keys($rolesB)[0];
+        $children = array_keys($rolesB[$parent]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $badgesModule->getId(), $parent, $children);
+        $this->badgesGameElement = GameElement::addGameElement($this->course->getId(), $badgesModule->getId());
 
-        $this->profileModule = new Profile($course);
-        $this->profileModule->setEnabled(true);
+        $leaderboardModule = new Leaderboard($course);
+        $rolesLB = Leaderboard::ADAPTATION_LEADERBOARD;
+        $parent = array_keys($rolesLB)[0];
+        $children = array_keys($rolesLB[$parent]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $leaderboardModule->getId(), $parent, $children);
+        $this->leaderboardGameElement = GameElement::addGameElement($this->course->getId(), $leaderboardModule->getId());
 
+        $profileModule = new Profile($course);
+        $rolesP = Profile::ADAPTATION_PROFILE;
+        $parent = array_keys($rolesP)[0];
+        $children = array_keys($rolesP[$parent]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $profileModule->getId(), $parent, $children);
+        $this->profileGameElement = GameElement::addGameElement($this->course->getId(), $profileModule->getId());
     }
 
     /**
@@ -121,7 +136,7 @@ class GameElementTest extends TestCase
     /*** ------------------ Data Providers ------------------ ***/
     /*** ---------------------------------------------------- ***/
 
-    public function gameElementSuccessProvider(): array
+    public function gameElementDataSuccessProvider(): array
     {
         return [
             "default" => [false, false],
@@ -130,7 +145,7 @@ class GameElementTest extends TestCase
             ];
     }
 
-    public function gameElementFailureProvider(): array
+    public function gameElementDataFailureProvider(): array
     {
         return [
             "not active but notify" => [false, true]
@@ -151,10 +166,158 @@ class GameElementTest extends TestCase
 
     /**
      * @test
+     */
+    public function getGameElementId(){
+        $this->assertEquals(1, $this->badgesGameElement->getId());
+        $this->assertEquals(2, $this->leaderboardGameElement->getId());
+        $this->assertEquals(3, $this->profileGameElement->getId());
+    }
+
+    /**
+     * @test
+     */
+    public function getGameElementCourse(){
+        $this->assertEquals(1, $this->badgesGameElement->getCourse());
+        $this->assertEquals(1, $this->leaderboardGameElement->getCourse());
+        $this->assertEquals(1, $this->profileGameElement->getCourse());
+    }
+
+    /**
+     * @test
+     */
+    public function getGameElementModule(){
+        $this->assertEquals("Badges", $this->badgesGameElement->getModule());
+        $this->assertEquals("Leaderboard", $this->leaderboardGameElement->getModule());
+        $this->assertEquals("Profile", $this->profileGameElement->getModule());
+    }
+
+    /**
+     * @test
+     */
+    public function getGameElementIsActive(){
+        $this->assertEquals(false, $this->badgesGameElement->isActive());
+        $this->assertEquals(false, $this->leaderboardGameElement->isActive());
+        $this->assertEquals(false, $this->profileGameElement->isActive());
+    }
+
+    /**
+     * @test
+     */
+    public function getGameElementNotify(){
+        $this->assertEquals(false, $this->badgesGameElement->notify());
+        $this->assertEquals(false, $this->leaderboardGameElement->notify());
+        $this->assertEquals(false, $this->profileGameElement->notify());
+    }
+
+    /**
+     * @test
+     * @dataProvider gameElementDataSuccessProvider
      * @throws Exception
      */
-    public function getId(){
-        $gameElement = GameElement::addGameElement($this->course->getId(), $this->badgesModule->getId());
+    public function setDataSuccess(bool $active, bool $notify){
+        $fieldValues = ["isActive" => $active, "notify" => $notify];
+
+        $this->badgesGameElement->setData($fieldValues);
+        $fieldValues["course"] = $this->badgesGameElement->getCourse();
+        $fieldValues["id"] = $this->badgesGameElement->getId();
+        $fieldValues["module"] = $this->badgesGameElement->getModule();
+        $this->assertEquals($this->badgesGameElement->getData(), $fieldValues);
+
+       // sets everything in default values
+       $this->badgesGameElement->setData(["isActive" => false, "notify" => false]);
     }
+
+    /**
+     * @test
+     * @dataProvider gameElementDataFailureProvider
+     * @throws Exception
+     */
+    public function setDataFailure(bool $active, bool $notify){
+        $fieldValues = ["isActive" => $active, "notify" => $notify];
+        try{
+            $this->badgesGameElement->setData($fieldValues);
+            $this->fail("Exception should have been thrown on 'SetDataFailure'");
+        } catch (Exception $e){
+            $this->assertEquals([
+                "id" => $this->badgesGameElement->getId(),
+                "course" => $this->badgesGameElement->getCourse(),
+                "module" => $this->badgesGameElement->getModule(),
+                "isActive" => false,
+                "notify" => false], $this->badgesGameElement->getData());
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setActive()
+    {
+        $this->badgesGameElement->setActive(true);
+        $this->leaderboardGameElement->setActive(true);
+        $this->profileGameElement->setActive(true);
+
+        $this->assertTrue($this->badgesGameElement->isActive());
+        $this->assertTrue($this->leaderboardGameElement->isActive());
+        $this->assertTrue($this->profileGameElement->isActive());
+
+        // FIXME --> Incomplete
+        // Should also see updateUsers() function
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function setNotActive(){
+        $this->badgesGameElement->setActive(false);
+        $this->leaderboardGameElement->setActive(false);
+        $this->profileGameElement->setActive(false);
+
+        $this->assertFalse($this->badgesGameElement->isActive());
+        $this->assertFalse($this->leaderboardGameElement->isActive());
+        $this->assertFalse($this->profileGameElement->isActive());
+
+        // FIXME --> Incomplete
+        // Should also see updateUsers() function
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    // FIXME --> SHOULD HAVE IN CONSIDERATION FAILURE DATA PROVIDER AS WELL (in gameElement.php too)
+    public function setNotify(){
+        $this->badgesGameElement->setNotify(true);
+        $this->leaderboardGameElement->setNotify(true);
+        $this->profileGameElement->setNotify(true);
+
+        $this->assertTrue($this->badgesGameElement->notify());
+        $this->assertTrue($this->leaderboardGameElement->notify());
+        $this->assertTrue($this->profileGameElement->notify());
+
+        // FIXME -- Incomplete
+        // Should see sendNotification() function as well
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    // FIXME --> SHOULD HAVE IN CONSIDERATION FAILURE DATA PROVIDER AS WELL (in gameElement.php too)
+    public function setNotNotify(){
+        $this->badgesGameElement->setNotify(false);
+        $this->leaderboardGameElement->setNotify(false);
+        $this->profileGameElement->setNotify(false);
+
+        $this->assertFalse($this->badgesGameElement->notify());
+        $this->assertFalse($this->leaderboardGameElement->notify());
+        $this->assertFalse($this->profileGameElement->notify());
+
+        // FIXME -- Incomplete
+        // Should see sendNotification() function as well
+    }
+
+    
 
 }
