@@ -3,7 +3,10 @@
 import config, re
 
 from .utils import rule_effect, rule_function
-from gamerules.connector import gamecourse_connector as connector
+from gamerules.connector import gamecourse_connector
+
+if gamecourse_connector.module_enabled('Moodle'):
+    from gamerules.connector import moodle_connector
 
 
 ### ------------------------------------------------------ ###
@@ -21,7 +24,7 @@ def get_logs(target=None, log_type=None, rating=None, evaluator=None, start_date
     evaluator, and/or description, as well as an initial and/or end date.
     """
 
-    return connector.get_logs(target, log_type, rating, evaluator, start_date, end_date, description)
+    return gamecourse_connector.get_logs(target, log_type, rating, evaluator, start_date, end_date, description)
 
 @rule_function
 def get_assignment_logs(target, name=None):
@@ -31,7 +34,7 @@ def get_assignment_logs(target, name=None):
     Option to get a specific assignment by name.
     """
 
-    return connector.get_assignment_logs(target, name)
+    return gamecourse_connector.get_assignment_logs(target, name)
 
 @rule_function
 def get_attendance_lab_logs(target, lab_nr=None):
@@ -41,7 +44,7 @@ def get_attendance_lab_logs(target, lab_nr=None):
     Option to get a specific lab by number.
     """
 
-    return connector.get_attendance_lab_logs(target, lab_nr)
+    return gamecourse_connector.get_attendance_lab_logs(target, lab_nr)
 
 @rule_function
 def get_attendance_lecture_logs(target, lecture_nr=None):
@@ -51,7 +54,7 @@ def get_attendance_lecture_logs(target, lecture_nr=None):
     Option to get a specific lecture by number.
     """
 
-    return connector.get_attendance_lecture_logs(target, lecture_nr)
+    return gamecourse_connector.get_attendance_lecture_logs(target, lecture_nr)
 
 @rule_function
 def get_attendance_lecture_late_logs(target, lecture_nr=None):
@@ -61,7 +64,7 @@ def get_attendance_lecture_late_logs(target, lecture_nr=None):
     Option to get a specific lecture by number.
     """
 
-    return connector.get_attendance_lecture_late_logs(target, lecture_nr)
+    return gamecourse_connector.get_attendance_lecture_late_logs(target, lecture_nr)
 
 @rule_function
 def get_forum_logs(target, forum=None, thread=None, rating=None):
@@ -72,7 +75,7 @@ def get_forum_logs(target, forum=None, thread=None, rating=None):
     as well as with a certain rating.
     """
 
-    return connector.get_forum_logs(target, forum, thread, rating)
+    return gamecourse_connector.get_forum_logs(target, forum, thread, rating)
 
 @rule_function
 def get_lab_logs(target, lab_nr=None):
@@ -82,7 +85,7 @@ def get_lab_logs(target, lab_nr=None):
     Option to get a specific lab by number.
     """
 
-    return connector.get_lab_logs(target, lab_nr)
+    return gamecourse_connector.get_lab_logs(target, lab_nr)
 
 @rule_function
 def get_page_view_logs(target, name=None):
@@ -92,7 +95,7 @@ def get_page_view_logs(target, name=None):
     Option to get a specific page view by name.
     """
 
-    return connector.get_page_view_logs(target, name)
+    return gamecourse_connector.get_page_view_logs(target, name)
 
 @rule_function
 def get_participation_lecture_logs(target, lecture_nr=None):
@@ -102,7 +105,7 @@ def get_participation_lecture_logs(target, lecture_nr=None):
     Option to get a specific participation by lecture number.
     """
 
-    return connector.get_participation_lecture_logs(target, lecture_nr)
+    return gamecourse_connector.get_participation_lecture_logs(target, lecture_nr)
 
 @rule_function
 def get_participation_invited_lecture_logs(target, lecture_nr=None):
@@ -112,7 +115,7 @@ def get_participation_invited_lecture_logs(target, lecture_nr=None):
     Option to get a specific participation by lecture number.
     """
 
-    return connector.get_participation_invited_lecture_logs(target, lecture_nr)
+    return gamecourse_connector.get_participation_invited_lecture_logs(target, lecture_nr)
 
 @rule_function
 def get_peergrading_logs(target, forum=None, thread=None, rating=None):
@@ -123,7 +126,7 @@ def get_peergrading_logs(target, forum=None, thread=None, rating=None):
     as well as with a certain rating.
     """
 
-    return connector.get_peergrading_logs(target, forum, thread, rating)
+    return gamecourse_connector.get_peergrading_logs(target, forum, thread, rating)
 
 @rule_function
 def get_presentation_logs(target):
@@ -131,7 +134,7 @@ def get_presentation_logs(target):
     Gets presentation logs for a specific target.
     """
 
-    return connector.get_presentation_logs(target)
+    return gamecourse_connector.get_presentation_logs(target)
 
 @rule_function
 def get_questionnaire_logs(target, name=None):
@@ -141,7 +144,7 @@ def get_questionnaire_logs(target, name=None):
     Option to get a specific questionnaire by name.
     """
 
-    return connector.get_questionnaire_logs(target, name)
+    return gamecourse_connector.get_questionnaire_logs(target, name)
 
 @rule_function
 def get_quiz_logs(target, name=None):
@@ -151,7 +154,7 @@ def get_quiz_logs(target, name=None):
     Option to get a specific quiz by name.
     """
 
-    return connector.get_quiz_logs(target, name)
+    return gamecourse_connector.get_quiz_logs(target, name)
 
 @rule_function
 def get_resource_view_logs(target, name=None, unique=True):
@@ -162,7 +165,7 @@ def get_resource_view_logs(target, name=None, unique=True):
     to get only one resource view log per description.
     """
 
-    return connector.get_resource_view_logs(target, name, unique)
+    return gamecourse_connector.get_resource_view_logs(target, name, unique)
 
 @rule_function
 def get_skill_logs(target, name=None, rating=None, only_min_rating=False, only_latest=False):
@@ -176,7 +179,7 @@ def get_skill_logs(target, name=None, rating=None, only_min_rating=False, only_l
     rating, as well as only the latest log for each skill.
     """
 
-    return connector.get_skill_logs(target, name, rating, only_min_rating, only_latest)
+    return gamecourse_connector.get_skill_logs(target, name, rating, only_min_rating, only_latest)
 
 @rule_function
 def get_skill_tier_logs(target, tier, only_min_rating=True, only_latest=True):
@@ -187,7 +190,7 @@ def get_skill_tier_logs(target, tier, only_min_rating=True, only_latest=True):
     as well as only the latest log for each skill.
     """
 
-    return connector.get_skill_tier_logs(target, tier, only_min_rating, only_latest)
+    return gamecourse_connector.get_skill_tier_logs(target, tier, only_min_rating, only_latest)
 
 @rule_function
 def get_url_view_logs(target, name=None):
@@ -197,7 +200,7 @@ def get_url_view_logs(target, name=None):
     Option to get a specific URL view by name.
     """
 
-    return connector.get_url_view_logs(target, name)
+    return gamecourse_connector.get_url_view_logs(target, name)
 
 
 ### Getting consecutive & periodic logs
@@ -325,7 +328,7 @@ def get_consecutive_peergrading_logs(target):
     Gets consecutive peergrading logs done by target.
     """
 
-    return connector.get_consecutive_peergrading_logs(target)
+    return moodle_connector.get_consecutive_peergrading_logs(target)
 
 @rule_function
 def get_periodic_logs(logs, number, time, log_type):
@@ -340,7 +343,7 @@ def get_periodic_logs(logs, number, time, log_type):
                     first entry for streak
     """
 
-    return connector.get_periodic_logs(logs, number, time, log_type)
+    return gamecourse_connector.get_periodic_logs(logs, number, time, log_type)
 
 
 ### Getting total reward
@@ -352,7 +355,7 @@ def get_total_reward(target, award_type=None):
     Option to filter by a specific award type.
     """
 
-    return connector.get_total_reward(target, award_type)
+    return gamecourse_connector.get_total_reward(target, award_type)
 
 @rule_function
 def get_total_assignment_reward(target):
@@ -360,7 +363,7 @@ def get_total_assignment_reward(target):
     Gets total reward for a given target from assignments.
     """
 
-    return connector.get_total_assignment_reward(target)
+    return gamecourse_connector.get_total_assignment_reward(target)
 
 @rule_function
 def get_total_badge_reward(target):
@@ -368,7 +371,7 @@ def get_total_badge_reward(target):
     Gets total reward for a given target from badges.
     """
 
-    return connector.get_total_badge_reward(target)
+    return gamecourse_connector.get_total_badge_reward(target)
 
 @rule_function
 def get_total_bonus_reward(target):
@@ -376,7 +379,7 @@ def get_total_bonus_reward(target):
     Gets total reward for a given target from bonus.
     """
 
-    return connector.get_total_bonus_reward(target)
+    return gamecourse_connector.get_total_bonus_reward(target)
 
 @rule_function
 def get_total_exam_reward(target):
@@ -384,7 +387,7 @@ def get_total_exam_reward(target):
     Gets total reward for a given target from exams.
     """
 
-    return connector.get_total_exam_reward(target)
+    return gamecourse_connector.get_total_exam_reward(target)
 
 @rule_function
 def get_total_lab_reward(target):
@@ -392,7 +395,7 @@ def get_total_lab_reward(target):
     Gets total reward for a given target from labs.
     """
 
-    return connector.get_total_lab_reward(target)
+    return gamecourse_connector.get_total_lab_reward(target)
 
 @rule_function
 def get_total_presentation_reward(target):
@@ -400,7 +403,7 @@ def get_total_presentation_reward(target):
     Gets total reward for a given target from presentations.
     """
 
-    return connector.get_total_presentation_reward(target)
+    return gamecourse_connector.get_total_presentation_reward(target)
 
 @rule_function
 def get_total_quiz_reward(target):
@@ -408,7 +411,7 @@ def get_total_quiz_reward(target):
     Gets total reward for a given target from quizzes.
     """
 
-    return connector.get_total_quiz_reward(target)
+    return gamecourse_connector.get_total_quiz_reward(target)
 
 @rule_function
 def get_total_skill_reward(target):
@@ -416,7 +419,7 @@ def get_total_skill_reward(target):
     Gets total reward for a given target from skills.
     """
 
-    return connector.get_total_skill_reward(target)
+    return gamecourse_connector.get_total_skill_reward(target)
 
 @rule_function
 def get_total_streak_reward(target):
@@ -424,7 +427,7 @@ def get_total_streak_reward(target):
     Gets total reward for a given target from streaks.
     """
 
-    return connector.get_total_streak_reward(target)
+    return gamecourse_connector.get_total_streak_reward(target)
 
 @rule_function
 def get_total_tokens_reward(target):
@@ -432,7 +435,7 @@ def get_total_tokens_reward(target):
     Gets total reward for a given target from tokens.
     """
 
-    return connector.get_total_tokens_reward(target)
+    return gamecourse_connector.get_total_tokens_reward(target)
 
 
 ### Filtering logs
@@ -565,7 +568,7 @@ def skill_completed(target, name):
     to a specific target.
     """
 
-    return connector.skill_completed(target, name)
+    return gamecourse_connector.skill_completed(target, name)
 
 @rule_function
 def has_wildcard_available(target, skill_tree_id, wildcard_tier):
@@ -573,7 +576,7 @@ def has_wildcard_available(target, skill_tree_id, wildcard_tier):
     Checks whether a given target has wildcards available to use.
     """
 
-    return connector.has_wildcard_available(target, skill_tree_id, wildcard_tier)
+    return gamecourse_connector.has_wildcard_available(target, skill_tree_id, wildcard_tier)
 
 
 ### ------------------------------------------------------ ###
@@ -591,7 +594,7 @@ def award(target, award_type, description, reward, instance=None, unique=True, a
     Updates award if reward has changed.
     """
 
-    connector.award(target, award_type, description, reward, instance, unique, award_id)
+    gamecourse_connector.award(target, award_type, description, reward, instance, unique, award_id)
 
 @rule_effect
 def award_assignment_grade(target, logs, max_xp=1, max_grade=1):
@@ -606,7 +609,7 @@ def award_assignment_grade(target, logs, max_xp=1, max_grade=1):
     Updates award if reward has changed.
     """
 
-    connector.award_assignment_grade(target, logs, max_xp, max_grade)
+    gamecourse_connector.award_assignment_grade(target, logs, max_xp, max_grade)
 
 @rule_effect
 def award_badge(target, name, lvl, logs, progress=None):
@@ -617,7 +620,7 @@ def award_badge(target, name, lvl, logs, progress=None):
     Updates award if reward has changed.
     """
 
-    connector.award_badge(target, name, lvl, logs, progress)
+    gamecourse_connector.award_badge(target, name, lvl, logs, progress)
 
 @rule_effect
 def award_bonus(target, name, logs, reward=None, instance=None, unique=True):
@@ -628,7 +631,7 @@ def award_bonus(target, name, logs, reward=None, instance=None, unique=True):
     Updates award if reward has changed.
     """
 
-    connector.award_bonus(target, name, logs, reward, instance, unique)
+    gamecourse_connector.award_bonus(target, name, logs, reward, instance, unique)
 
 @rule_effect
 def award_exam_grade(target, name, logs, reward, max_xp=1, max_grade=1):
@@ -643,7 +646,7 @@ def award_exam_grade(target, name, logs, reward, max_xp=1, max_grade=1):
     Updates award if reward has changed.
     """
 
-    connector.award_exam_grade(target, name, logs, reward, max_xp, max_grade)
+    gamecourse_connector.award_exam_grade(target, name, logs, reward, max_xp, max_grade)
 
 @rule_effect
 def award_lab_grade(target, logs, max_xp=1, max_grade=1):
@@ -658,7 +661,7 @@ def award_lab_grade(target, logs, max_xp=1, max_grade=1):
     Updates award if reward has changed.
     """
 
-    connector.award_lab_grade(target, logs, max_xp, max_grade)
+    gamecourse_connector.award_lab_grade(target, logs, max_xp, max_grade)
 
 @rule_effect
 def award_post_grade(target, logs, max_xp=1, max_grade=1):
@@ -673,7 +676,7 @@ def award_post_grade(target, logs, max_xp=1, max_grade=1):
     Updates award if reward has changed.
     """
 
-    connector.award_post_grade(target, logs, max_xp, max_grade)
+    gamecourse_connector.award_post_grade(target, logs, max_xp, max_grade)
 
 @rule_effect
 def award_presentation_grade(target, name, logs, max_xp=1, max_grade=1):
@@ -688,7 +691,7 @@ def award_presentation_grade(target, name, logs, max_xp=1, max_grade=1):
     Updates award if reward has changed.
     """
 
-    connector.award_presentation_grade(target, name, logs, max_xp, max_grade)
+    gamecourse_connector.award_presentation_grade(target, name, logs, max_xp, max_grade)
 
 @rule_effect
 def award_quiz_grade(target, logs, max_xp=1, max_grade=1):
@@ -703,7 +706,7 @@ def award_quiz_grade(target, logs, max_xp=1, max_grade=1):
     Updates award if reward has changed.
     """
 
-    connector.award_quiz_grade(target, logs, max_xp, max_grade)
+    gamecourse_connector.award_quiz_grade(target, logs, max_xp, max_grade)
 
 @rule_effect
 def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=False):
@@ -715,7 +718,7 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
     Updates award if reward has changed.
     """
 
-    connector.award_skill(target, name, rating, logs, dependencies, use_wildcard)
+    gamecourse_connector.award_skill(target, name, rating, logs, dependencies, use_wildcard)
 
 @rule_effect
 def award_streak(target, name, logs):
@@ -726,7 +729,7 @@ def award_streak(target, name, logs):
     Updates award if reward has changed.
     """
 
-    connector.award_streak(target, name, logs)
+    gamecourse_connector.award_streak(target, name, logs)
 
 @rule_effect
 def award_tokens(target, name, logs, reward=None, instance=None, unique=True):
@@ -737,7 +740,7 @@ def award_tokens(target, name, logs, reward=None, instance=None, unique=True):
     Updates award if reward has changed.
     """
 
-    connector.award_tokens(target, name, logs, reward, instance, unique)
+    gamecourse_connector.award_tokens(target, name, logs, reward, instance, unique)
 
 
 ### Spend items
@@ -751,7 +754,7 @@ def spend_tokens(target, name, amount, repetitions=1):
     Updates if amount has changed.
     """
 
-    connector.spend_tokens(target, name, amount, repetitions)
+    gamecourse_connector.spend_tokens(target, name, amount, repetitions)
 
 
 ### ------------------------------------------------------ ###

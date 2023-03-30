@@ -8,7 +8,7 @@ from io import StringIO
 from course.logline import *
 import config
 
-from gamerules.connector.db_connector import gc_db as db
+from gamerules.connector.db_connector import gc_db
 
 
 ### ------------------------------------------------------ ###
@@ -22,12 +22,12 @@ def autogame_init(course):
     """
     Checks AutoGame status for a given course and initializes it.
 
-    Returns Autogame's checkpoint which is used to find targets
+    Returns AutoGame's checkpoint which is used to find targets
     to run - targets with new data after checkpoint.
     """
 
     query = "SELECT checkpoint, isRunning FROM autogame WHERE course = %s;"
-    checkpoint, is_running = db.execute_query(query, course)[0]
+    checkpoint, is_running = gc_db.execute_query(query, course)[0]
 
     # Check AutoGame status
     if is_running:
@@ -35,7 +35,7 @@ def autogame_init(course):
 
     # Initialize AutoGame
     query = "UPDATE autogame SET isRunning = %s WHERE course = %s;"
-    db.execute_query(query, (True, course), "commit")
+    gc_db.execute_query(query, (True, course), "commit")
 
     return checkpoint
 
@@ -49,7 +49,7 @@ def autogame_terminate(course, checkpoint, start_date=None, finish_date=None):
     if not config.TEST_MODE:
         # Verify if checkpoint changed while AutoGame was running
         query = "SELECT checkpoint FROM autogame WHERE course = %s;"
-        old_checkpoint = db.execute_query(query, course)[0][0]
+        old_checkpoint = gc_db.execute_query(query, course)[0][0]
 
         query = "UPDATE autogame SET isRunning = 0"
         if old_checkpoint == checkpoint:
@@ -57,11 +57,11 @@ def autogame_terminate(course, checkpoint, start_date=None, finish_date=None):
         if start_date is not None and finish_date is not None:
             query += ", startedRunning = '%s', finishedRunning = '%s'" % (start_date, finish_date)
         query += " WHERE course = %s;"
-        db.execute_query(query, (course,), "commit")
+        gc_db.execute_query(query, (course,), "commit")
 
     # Check how many courses are running
     query = "SELECT COUNT(*) from autogame WHERE isRunning = %s AND course != %s;"
-    courses_running = db.execute_query(query, (True, 0))[0][0]
+    courses_running = gc_db.execute_query(query, (True, 0))[0][0]
 
     # Close socket if no course is running
     if courses_running == 0:
@@ -78,13 +78,12 @@ def autogame_terminate(course, checkpoint, start_date=None, finish_date=None):
                 s.send(end_message.encode())
                 s.send("\n".encode())
 
-            except socket.timeout as e:
-                print("\nError: Socket timeout, operation took longer than 3 minutes.")
+            except socket.timeout:
+                raise Exception('Socket timeout — operation took longer than 3 minutes.')
 
             except KeyboardInterrupt:
                 print("\nInterrupt: You pressed CTRL+C!")
                 exit()
-    return
 
 def get_targets(course, checkpoint=None, all_targets=False, targets_list=None):
     """
@@ -97,7 +96,7 @@ def get_targets(course, checkpoint=None, all_targets=False, targets_list=None):
 
         # Running for certain targets
         query = "SELECT id, name, studentNumber FROM user WHERE id IN (%s);" % ", ".join(targets_list)
-        table = db.execute_query(query)
+        table = gc_db.execute_query(query)
 
     else:
         if all_targets:
@@ -107,7 +106,7 @@ def get_targets(course, checkpoint=None, all_targets=False, targets_list=None):
                     "LEFT JOIN course_user cu on ur.user = cu.id " \
                     "LEFT JOIN user u on ur.user = u.id " \
                     "WHERE ur.course = %s AND cu.isActive = 1 AND r.name = 'Student';"
-            table = db.execute_query(query, course)
+            table = gc_db.execute_query(query, course)
 
         else:
             query = "SELECT u.id, u.name, u.studentNumber " \
@@ -120,12 +119,12 @@ def get_targets(course, checkpoint=None, all_targets=False, targets_list=None):
             if checkpoint is None:
                 # Running for targets w/ data in course
                 query += ";"
-                table = db.execute_query(query, course)
+                table = gc_db.execute_query(query, course)
 
             else:
                 # Running for targets w/ new data in course
                 query += " AND p.date >= %s;"
-                table = db.execute_query(query, (course, checkpoint))
+                table = gc_db.execute_query(query, (course, checkpoint))
 
     targets = {}
     for row in table:
@@ -270,7 +269,7 @@ def preload_logs(targets_ids):
     query += " AND (user IN (%s)" % (', '.join([str(el) for el in targets_ids]))
     query += " OR evaluator IN (%s))" % (', '.join([str(el) for el in targets_ids]))
     query += " ORDER BY date ASC;"
-    logs = db.execute_query(query)
+    logs = gc_db.execute_query(query)
 
     # Initialize preloaded logs
     preloaded_logs = {target_id: [] for target_id in targets_ids}
@@ -306,7 +305,7 @@ def preload_awards(targets_ids):
     query = "SELECT * FROM " + get_awards_table() + " WHERE course = %s" % config.COURSE
     query += " AND user IN (%s)" % (', '.join([str(el) for el in targets_ids]))
     query += " ORDER BY date ASC;"
-    awards = db.execute_query(query)
+    awards = gc_db.execute_query(query)
 
     # Initialize preloaded awards
     preloaded_awards = {target_id: [] for target_id in targets_ids}
@@ -340,7 +339,7 @@ def preload_spending(targets_ids):
     query = "SELECT * FROM virtual_currency_spending WHERE course = %s" % config.COURSE
     query += " AND user IN (%s)" % (', '.join([str(el) for el in targets_ids]))
     query += " ORDER BY date ASC;"
-    spending = db.execute_query(query)
+    spending = gc_db.execute_query(query)
 
     # Initialize preloaded spending
     preloaded_spending = {target_id: [] for target_id in targets_ids}
@@ -370,7 +369,7 @@ def filter_preloaded_skill_logs(targets_ids):
 
     def get_skill_rule_order(s_name):
         q = "SELECT r.position FROM skill s JOIN rule r on s.rule = r.id WHERE s.course = %s AND s.name = '%s';" % (config.COURSE, s_name)
-        return int(db.data_broker.get(db, config.COURSE, q)[0][0])
+        return int(gc_db.data_broker.get(gc_db, config.COURSE, q)[0][0])
 
     def get_attempt_cost(attempt_nr):
         # Fixed cost
@@ -413,7 +412,7 @@ def filter_preloaded_skill_logs(targets_ids):
                     "LEFT JOIN skill_tier_cost tc on tc.tier = t.id " \
                     "LEFT JOIN skill_tree st on t.skillTree = st.id " \
                     "WHERE s.course = %s AND s.name = '%s';" % (config.COURSE, skill_name)
-            table_skill = db.data_broker.get(db, config.COURSE, query)[0]
+            table_skill = gc_db.data_broker.get(gc_db, config.COURSE, query)[0]
             tier_cost_info = {"costType": table_skill[0], "cost": int(table_skill[1]),
                               "increment": int(table_skill[2]), "minRating": int(table_skill[3])}
             costs = [get_attempt_cost(attempt) for attempt in range(1, len(skill_logs) + 1)]
@@ -472,13 +471,13 @@ def clear_badge_progression(targets_ids):
     # Get badges with active rules
     query = "SELECT b.id FROM badge b JOIN rule r on b.rule = r.id " \
             "WHERE b.course = %s AND r.isActive = True;" % config.COURSE
-    badges_ids = [item for sublist in db.data_broker.get(db, config.COURSE, query) for item in sublist]
+    badges_ids = [item for sublist in gc_db.data_broker.get(gc_db, config.COURSE, query) for item in sublist]
 
     # Clear badge progression
     if len(badges_ids) > 0:
         query = "DELETE FROM badge_progression WHERE course = %s AND user IN (%s) AND badge IN (%s);" \
                 % (config.COURSE, ', '.join([str(el) for el in targets_ids]), ', '.join([str(e) for e in badges_ids]))
-        db.execute_query(query, (), "commit")
+        gc_db.execute_query(query, (), "commit")
 
 def clear_skill_progression(targets_ids):
     """
@@ -492,13 +491,13 @@ def clear_skill_progression(targets_ids):
     # Get skills with active rules
     query = "SELECT s.id FROM skill s JOIN rule r on s.rule = r.id " \
             "WHERE s.course = %s AND r.isActive = True;" % config.COURSE
-    skills_ids = [item for sublist in db.data_broker.get(db, config.COURSE, query) for item in sublist]
+    skills_ids = [item for sublist in gc_db.data_broker.get(gc_db, config.COURSE, query) for item in sublist]
 
     # Clear skill progression
     if len(skills_ids) > 0:
         query = "DELETE FROM skill_progression WHERE course = %s AND user IN (%s) AND skill IN (%s);" \
                 % (config.COURSE, ', '.join([str(el) for el in targets_ids]), ', '.join([str(el) for el in skills_ids]))
-        db.execute_query(query, (), "commit")
+        gc_db.execute_query(query, (), "commit")
 
 def clear_streak_progression(targets_ids):
     """
@@ -512,13 +511,13 @@ def clear_streak_progression(targets_ids):
     # Get streaks with active rules
     query = "SELECT s.id FROM streak s JOIN rule r on s.rule = r.id " \
             "WHERE s.course = %s AND r.isActive = True;" % config.COURSE
-    streaks_ids = [item for sublist in db.data_broker.get(db, config.COURSE, query) for item in sublist]
+    streaks_ids = [item for sublist in gc_db.data_broker.get(gc_db, config.COURSE, query) for item in sublist]
 
     # Clear streak progression
     if len(streaks_ids) > 0:
         query = "DELETE FROM streak_progression WHERE course = %s AND user IN (%s) AND streak IN (%s);" \
                 % (config.COURSE, ', '.join([str(el) for el in targets_ids]), ', '.join([str(el) for el in streaks_ids]))
-        db.execute_query(query, (), "commit")
+        gc_db.execute_query(query, (), "commit")
 
 def update_progression():
     """
@@ -547,7 +546,7 @@ def update_badge_progression():
 
     if len(badge_progression) > 0:
         query = "INSERT INTO badge_progression (course, user, badge, participation) VALUES %s;" % ", ".join(badge_progression)
-        db.execute_query(query, (), "commit")
+        gc_db.execute_query(query, (), "commit")
 
 def update_skill_progression():
     """
@@ -558,7 +557,7 @@ def update_skill_progression():
 
     if len(skill_progression) > 0:
         query = "INSERT INTO skill_progression (course, user, skill, participation) VALUES %s;" % ", ".join(skill_progression)
-        db.execute_query(query, (), "commit")
+        gc_db.execute_query(query, (), "commit")
 
 def update_streak_progression():
     """
@@ -569,7 +568,7 @@ def update_streak_progression():
 
     if len(streak_progression) > 0:
         query = "INSERT INTO streak_progression (course, user, streak, repetition, participation) VALUES %s;" % ", ".join(streak_progression)
-        db.execute_query(query, (), "commit")
+        gc_db.execute_query(query, (), "commit")
 
 
 ### Awards
@@ -627,14 +626,14 @@ def give_award(target, award_type, description, reward, instance=None):
     # Add award to database
     query = "INSERT INTO " + get_awards_table() + " (user, course, description, type, moduleInstance, reward) " \
             "VALUES (%s, %s, %s, %s, %s, %s);"
-    db.execute_query(query, (target, config.COURSE, description, award_type, instance, reward), "commit")
+    gc_db.execute_query(query, (target, config.COURSE, description, award_type, instance, reward), "commit")
 
     # Get award info
     query = "SELECT LAST_INSERT_ID();"
-    award_id = db.execute_query(query)[0][0]
+    award_id = gc_db.execute_query(query)[0][0]
 
     query = "SELECT * FROM " + get_awards_table() + " WHERE id = %s;"
-    award_given = db.execute_query(query, (award_id,))[0]
+    award_given = gc_db.execute_query(query, (award_id,))[0]
 
     # Add award to preloaded awards
     award_to_preload = (award_given[config.AWARD_ID_COL], target, config.COURSE, description, award_type, instance,
@@ -655,7 +654,7 @@ def remove_award(target, award_type, description, instance=None, award_id=None):
     if award_id is not None:
         query += " AND id = %s" % award_id
     query += ";"
-    db.execute_query(query, (config.COURSE, target, award_type, description), "commit")
+    gc_db.execute_query(query, (config.COURSE, target, award_type, description), "commit")
 
     # Remove award from preloaded awards
     index = get_awards(target).index(get_award(target, description, award_type, instance, None, award_id))
@@ -676,7 +675,7 @@ def update_award(target, award_type, description, new_reward, instance=None, awa
     if award_id is not None:
         query += " AND id = %s" % award_id
     query += ";"
-    db.execute_query(query, (new_reward, config.COURSE, target, award_type, description), "commit")
+    gc_db.execute_query(query, (new_reward, config.COURSE, target, award_type, description), "commit")
 
     # Update award in preloaded awards
     a = get_award(target, description, award_type, instance, None, award_id)
@@ -720,14 +719,14 @@ def do_spending(target, description, amount):
 
     # Add spending to database
     query = "INSERT INTO virtual_currency_spending (user, course, description, amount) VALUES (%s, %s, %s, %s);"
-    db.execute_query(query, (target, config.COURSE, description, amount), "commit")
+    gc_db.execute_query(query, (target, config.COURSE, description, amount), "commit")
 
     # Get spending info
     query = "SELECT LAST_INSERT_ID();"
-    spending_id = db.execute_query(query)[0][0]
+    spending_id = gc_db.execute_query(query)[0][0]
 
     query = "SELECT * FROM virtual_currency_spending WHERE id = %s;"
-    spending_given = db.execute_query(query, (spending_id,))[0]
+    spending_given = gc_db.execute_query(query, (spending_id,))[0]
 
     # Add spending to preloaded spending
     spending_to_preload = (spending_given[config.SPENDING_ID_COL], target, config.COURSE, description, amount, spending_given[config.SPENDING_DATE_COL])
@@ -745,7 +744,7 @@ def remove_spending(target, description, spending_id=None):
     if spending_id is not None:
         query += " AND id = %s" % spending_id
     query += ";"
-    db.execute_query(query, (config.COURSE, target, description), "commit")
+    gc_db.execute_query(query, (config.COURSE, target, description), "commit")
 
     # Remove spending from preloaded spending
     index = get_spending(target).index(get_spending(target, description, None, spending_id)[0])
@@ -763,7 +762,7 @@ def update_spending(target, description, new_amount, spending_id=None):
     if spending_id is not None:
         query += " AND id = %s" % spending_id
     query += ";"
-    db.execute_query(query, (new_amount, config.COURSE, target, description), "commit")
+    gc_db.execute_query(query, (new_amount, config.COURSE, target, description), "commit")
 
     # Update spending in preloaded spending
     s = get_spending(target, description, None, spending_id)[0]
@@ -806,12 +805,12 @@ def calculate_reward(target, award_type, reward_to_give, reward_given=0):
 
     def get_max_xp():
         query = "SELECT maxXP FROM xp_config WHERE course = %s;" % config.COURSE
-        result = db.data_broker.get(db, config.COURSE, query)[0][0]
+        result = gc_db.data_broker.get(gc_db, config.COURSE, query)[0][0]
         return int(result) if result else None
 
     def get_max_xp_by_type():
         query = "SELECT maxXP FROM %s WHERE course = %s;" % (award_type + "s_config", config.COURSE)
-        result = db.data_broker.get(db, config.COURSE, query)[0][0]
+        result = gc_db.data_broker.get(gc_db, config.COURSE, query)[0][0]
         return int(result) if result else None
 
     def get_target_xp():
@@ -873,12 +872,12 @@ def calculate_extra_credit_reward(target, award_type, reward_to_give, reward_giv
 
     def get_max_extra_credit():
         query = "SELECT maxExtraCredit FROM xp_config WHERE course = %s;" % config.COURSE
-        result = db.data_broker.get(db, config.COURSE, query)[0][0]
+        result = gc_db.data_broker.get(gc_db, config.COURSE, query)[0][0]
         return int(result) if result else None
 
     def get_max_extra_credit_by_type():
         query = "SELECT maxExtraCredit FROM %s WHERE course = %s;" % (award_type + "s_config", config.COURSE)
-        result = db.data_broker.get(db, config.COURSE, query)[0][0]
+        result = gc_db.data_broker.get(gc_db, config.COURSE, query)[0][0]
         return int(result) if result else None
 
     def get_target_extra_credit():
@@ -888,7 +887,7 @@ def calculate_extra_credit_reward(target, award_type, reward_to_give, reward_giv
         if module_enabled("Badges"):
             # Get badges IDs which are extra credit
             query = "SELECT id FROM badge WHERE course = %s AND isExtra = True;" % config.COURSE
-            badges_ids = [item for sublist in db.data_broker.get(db, config.COURSE, query) for item in sublist]
+            badges_ids = [item for sublist in gc_db.data_broker.get(gc_db, config.COURSE, query) for item in sublist]
 
             # Calculate badges extra credit already awarded
             badges_total = 0
@@ -906,7 +905,7 @@ def calculate_extra_credit_reward(target, award_type, reward_to_give, reward_giv
         if module_enabled("Skills"):
             # Get skill IDs which are extra credit
             query = "SELECT id FROM skill WHERE course = %s AND isExtra = True;" % config.COURSE
-            skills_ids = [item for sublist in db.data_broker.get(db, config.COURSE, query) for item in sublist]
+            skills_ids = [item for sublist in gc_db.data_broker.get(gc_db, config.COURSE, query) for item in sublist]
 
             # Calculate skills extra credit already awarded
             skills_total = 0
@@ -924,7 +923,7 @@ def calculate_extra_credit_reward(target, award_type, reward_to_give, reward_giv
         if module_enabled("Streaks"):
             # Get streaks IDs which are extra credit
             query = "SELECT id FROM streak WHERE course = %s AND isExtra = True;" % config.COURSE
-            streaks_ids = [item for sublist in db.data_broker.get(db, config.COURSE, query) for item in sublist]
+            streaks_ids = [item for sublist in gc_db.data_broker.get(gc_db, config.COURSE, query) for item in sublist]
 
             # Calculate streaks extra credit already awarded
             streaks_total = 0
@@ -993,7 +992,7 @@ def calculate_xp(target):
     def get_level(xp):
         # Get levels in course
         qry = "SELECT * FROM level WHERE course = %s ORDER BY minXP;" % config.COURSE
-        levels = db.data_broker.get(db, config.COURSE, qry)
+        levels = gc_db.data_broker.get(gc_db, config.COURSE, qry)
 
         # Find current level
         current_lvl = int(levels[0][0])
@@ -1015,7 +1014,7 @@ def calculate_xp(target):
 
     # Update target total XP and level
     query = "UPDATE user_xp SET xp = %s, level = %s WHERE course = %s AND user = %s;"
-    db.execute_query(query, (total_xp, current_level, config.COURSE, target), "commit")
+    gc_db.execute_query(query, (total_xp, current_level, config.COURSE, target), "commit")
 
 def calculate_team_xp(target):
     """
@@ -1024,21 +1023,21 @@ def calculate_team_xp(target):
 
     # Get target team
     query = "SELECT teamId FROM teams_members WHERE memberId = %s;"
-    table = db.execute_query(query, target)
+    table = gc_db.execute_query(query, target)
     team = table[0][0] if len(table) == 1 else None
 
     if team is not None:
         # Calculate team total
         query = "SELECT IFNULL(SUM(reward), 0) FROM award_teams WHERE course = %s AND team = %s GROUP BY team;"
-        team_xp = int(db.execute_query(query, (config.COURSE, team))[0][0])
+        team_xp = int(gc_db.execute_query(query, (config.COURSE, team))[0][0])
 
         # Get new level
         query = "SELECT id FROM level WHERE course = %s AND minXP <= %s GROUP BY id ORDER BY minXP DESC limit 1;"
-        current_level = db.execute_query(query, (config.COURSE, team_xp))[0][0]
+        current_level = gc_db.execute_query(query, (config.COURSE, team_xp))[0][0]
 
         # Update team total XP and level
         query = "UPDATE teams_xp SET xp = %s, level = %s WHERE course = %s AND teamId = %s;"
-        db.execute_query(query, (team_xp, current_level, config.COURSE, team), "commit")
+        gc_db.execute_query(query, (team_xp, current_level, config.COURSE, team), "commit")
 
 def calculate_tokens(target):
     """
@@ -1056,7 +1055,7 @@ def calculate_tokens(target):
 
     # Update target wallet
     query = "UPDATE user_wallet SET tokens = %s WHERE course = %s AND user = %s;"
-    db.execute_query(query, (total_received - total_spent, config.COURSE, target), "commit")
+    gc_db.execute_query(query, (total_received - total_spent, config.COURSE, target), "commit")
 
 
 ### Utils
@@ -1067,7 +1066,7 @@ def course_exists(course):
     """
 
     query = "SELECT isActive FROM course WHERE id = %s;" % course
-    table = db.data_broker.get(db, course, query)
+    table = gc_db.data_broker.get(gc_db, course, query)
 
     return table[0][0] if len(table) == 1 else False
 
@@ -1077,7 +1076,7 @@ def get_course_dates(course):
     """
 
     query = "SELECT startDate, endDate FROM course WHERE id = %s;" % course
-    return [date for date in db.data_broker.get(db, course, query)[0]]
+    return [date for date in gc_db.data_broker.get(gc_db, course, query)[0]]
 
 def module_enabled(module):
     """
@@ -1085,7 +1084,7 @@ def module_enabled(module):
     """
 
     query = "SELECT isEnabled FROM course_module WHERE course = %s AND module = '%s';" % (config.COURSE, module)
-    table = db.data_broker.get(db, config.COURSE, query)
+    table = gc_db.data_broker.get(gc_db, config.COURSE, query)
 
     return table[0][0] if len(table) == 1 else False
 
@@ -1362,7 +1361,7 @@ def get_skill_logs(target, name=None, rating=None, only_min_rating=False, only_l
     if only_min_rating:
         # Get min. rating
         query = "SELECT minRating FROM skills_config WHERE course = %s;" % config.COURSE
-        min_rating = int(db.data_broker.get(db, config.COURSE, query)[0][0])
+        min_rating = int(gc_db.data_broker.get(gc_db, config.COURSE, query)[0][0])
 
         # Filter by minimum rating
         logs = [log for log in logs if int(log[config.LOG_RATING_COL]) >= min_rating]
@@ -1400,7 +1399,7 @@ def get_skill_tier_logs(target, tier, only_min_rating=True, only_latest=True):
         query = "SELECT s.name " \
                 "FROM skill s JOIN skill_tier t on s.tier = t.id " \
                 "WHERE s.course = %s AND t.position = %s" % (config.COURSE, tier - 1)
-        skill_names = [item.decode() for sublist in db.data_broker.get(db, config.COURSE, query) for item in sublist]
+        skill_names = [item.decode() for sublist in gc_db.data_broker.get(gc_db, config.COURSE, query) for item in sublist]
 
         # Get logs
         logs = []
@@ -1418,85 +1417,6 @@ def get_url_view_logs(target, name=None):
     """
 
     return get_logs(target, "url viewed", None, None, None, None, name)
-
-
-### Getting consecutive & periodic logs
-
-def get_consecutive_peergrading_logs(target):
-    """
-    Gets consecutive peergrading logs done by target.
-    """
-
-    if module_enabled("Moodle"):
-        from gamerules.connector.db_connector import moodle_db
-    else:
-        raise Exception("Can't get consecutive peergrading logs: Moodle is not enabled.")
-
-    # Get target username
-    # NOTE: target GC username = target Moodle username
-    query = "SELECT username FROM auth WHERE user = %s;" % target
-    username = (db.data_broker.get(db, target, query, "user")[0][0]).decode()
-
-    # Get Moodle info
-    query = "SELECT tablesPrefix, moodleCourse FROM moodle_config WHERE course = %s;" % config.COURSE
-    mdl_prefix, mdl_course = db.data_broker.get(db, config.COURSE, query)[0]
-    mdl_prefix = mdl_prefix.decode()
-
-    # Get peergrades assigned to target
-    query = "SELECT f.name as forumName, fd.id as discussionId, fp.subject, fp.id as postId, u.username, pa.expired, pa.peergraded " \
-            "FROM " + mdl_prefix + "peerforum_time_assigned pa JOIN " + mdl_prefix + "peerforum_posts fp on pa.itemid=fp.id " \
-            "JOIN " + mdl_prefix + "peerforum_discussions fd on fd.id=fp.discussion " \
-            "JOIN " + mdl_prefix + "peerforum f on f.id=fd.peerforum " \
-            "JOIN " + mdl_prefix + "user u on fp.userid=u.id " \
-            "JOIN " + mdl_prefix + "user ug on pa.userid=ug.id " \
-            "JOIN " + mdl_prefix + "course c on f.course=c.id " \
-            "WHERE f.course = %s AND ug.username = '%s'" \
-            "ORDER BY pa.timeassigned;" % (mdl_course, username)
-    peergrades = moodle_db.execute_query(query)
-
-    # Get consecutive peergrading logs
-    consecutive_logs = []
-    last_peergrading = None
-
-    for peergrade in peergrades:
-        expired = bool(peergrade[5])
-        peergrade_id = int(peergrade[6])
-        peergraded = not expired and peergrade_id > 0
-
-        if not peergraded:
-            last_peergrading = None
-            continue
-
-        # Get GC user id of peergrade
-        query = "SELECT user FROM auth WHERE username = '%s';" % peergrade[4].decode()
-        user_id = int(db.data_broker.get(db, target, query, "user")[0][0])
-
-        # Get peergrade info
-        query = "SELECT peergrade as grade FROM " + mdl_prefix + "peerforum_peergrade WHERE id = %s;" % peergrade_id
-        grade = int(moodle_db.execute_query(query)[0][0])
-
-        # Get actual GC log
-        forum_name = peergrade[0].decode()
-        thread = peergrade[2].decode()
-        logs = get_logs(user_id, "peergraded post", grade, target, None, None, forum_name + ", " + thread)
-        if len(logs) > 1:
-            discussion_id = str(peergrade[1])
-            post_id = str(peergrade[3])
-            logs = [log for log in logs if compare_with_wildcards(log[config.LOG_POST_COL], "%peerforum%?d=" + discussion_id + "#p" + post_id)]
-
-        if len(logs) == 1:
-            log = logs[0]
-        else:
-            last_peergrading = None
-            continue
-
-        if last_peergrading is not None:
-            consecutive_logs[-1].append(log)
-        else:
-            consecutive_logs.append([log])
-        last_peergrading = peergraded
-
-    return consecutive_logs
 
 def get_periodic_logs(logs, number, time, log_type):
     """
@@ -1697,7 +1617,7 @@ def award_badge(target, name, lvl, logs, progress=None):
         query = "SELECT bl.badge, bl.number, bl.reward, bl.tokens, b.isExtra, bl.goal, b.description, bl.description " \
                 "FROM badge_level bl LEFT JOIN badge b on b.id = bl.badge " \
                 "WHERE b.course = %s AND b.name = '%s' ORDER BY number;" % (config.COURSE, name)
-        table_badge = db.data_broker.get(db, config.COURSE, query)
+        table_badge = gc_db.data_broker.get(gc_db, config.COURSE, query)
         badge_id = table_badge[0][0]
 
         # Update badge progression
@@ -1723,11 +1643,11 @@ def award_badge(target, name, lvl, logs, progress=None):
                           + badge_description + " - " + level_description
 
                 query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s;"
-                already_sent = int(db.execute_query(query, (config.COURSE, target, message))[0][0]) > 0
+                already_sent = int(gc_db.execute_query(query, (config.COURSE, target, message))[0][0]) > 0
 
                 if not already_sent:
                     query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s, %s, %s,%s);"
-                    db.execute_query(query, (config.COURSE, target, message, 0), "commit")
+                    gc_db.execute_query(query, (config.COURSE, target, message, 0), "commit")
 
         # Lvl is zero and there are no awards to be removed
         # Simply return right away
@@ -1959,17 +1879,17 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
 
     def spend_wildcard(a_id, nr_wildcards_to_spend=1):
         q = "SELECT nrWildcardsUsed FROM award_wildcard WHERE award = %s;"
-        res = db.execute_query(q, (a_id,))
+        res = gc_db.execute_query(q, (a_id,))
         nr_wildcards_used = int(res[0][0]) if len(res) > 0 else 0
 
         if nr_wildcards_used != nr_wildcards_to_spend:
             # Use wildcards to pay for skill
             if len(res) > 0:
                 q = "UPDATE award_wildcard SET nrWildcardsUsed = %s WHERE award = %s;"
-                db.execute_query(q, (nr_wildcards_to_spend, a_id), "commit")
+                gc_db.execute_query(q, (nr_wildcards_to_spend, a_id), "commit")
             else:
                 q = "INSERT INTO award_wildcard (award, nrWildcardsUsed) VALUES (%s, %s);"
-                db.execute_query(q, (a_id, nr_wildcards_to_spend), "commit")
+                gc_db.execute_query(q, (a_id, nr_wildcards_to_spend), "commit")
 
     def get_attempt_cost(attempt_nr):
         if attempt_nr < 1:
@@ -1995,7 +1915,7 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
     if module_enabled("Skills"):
         # Get min. rating
         query = "SELECT minRating FROM skills_config WHERE course = %s;" % config.COURSE
-        min_rating = int(db.data_broker.get(db, config.COURSE, query)[0][0])
+        min_rating = int(gc_db.data_broker.get(gc_db, config.COURSE, query)[0][0])
 
         # Get skill info
         query = "SELECT s.id, t.reward, s.isExtra, st.maxReward, tc.costType, tc.cost, tc.increment, tc.minRating " \
@@ -2003,7 +1923,7 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
                 "LEFT JOIN skill_tier_cost tc on tc.tier = t.id " \
                 "LEFT JOIN skill_tree st on t.skillTree = st.id " \
                 "WHERE s.course = %s AND s.name = '%s';" % (config.COURSE, name)
-        table_skill = db.data_broker.get(db, config.COURSE, query)[0]
+        table_skill = gc_db.data_broker.get(gc_db, config.COURSE, query)[0]
         skill_id = table_skill[0]
 
         # Update skill progression
@@ -2043,7 +1963,7 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
                 if skill_award is None:
                     query = "SELECT id FROM " + get_awards_table() + " " \
                             "WHERE course = %s AND user = %s AND type = %s AND description = %s AND moduleInstance = %s;"
-                    award_id = db.execute_query(query, (config.COURSE, target, award_type, name, skill_id))[0][0]
+                    award_id = gc_db.execute_query(query, (config.COURSE, target, award_type, name, skill_id))[0][0]
                 else:
                     award_id = skill_award[config.AWARD_ID_COL]
                 spend_wildcard(award_id)
@@ -2077,7 +1997,7 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
                         "JOIN skill_dependency_combo sdc on sdc.dependency = sd.id " \
                         "WHERE s.id = %s" \
                     ");" % skill_id
-            dependencies_names = db.data_broker.get(db, config.COURSE, query)
+            dependencies_names = gc_db.data_broker.get(gc_db, config.COURSE, query)
 
             # Removes duplicates
             dependencies_names_unique = list(set([el[0].decode() for el in dependencies_names]))
@@ -2089,12 +2009,12 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
                       % (name, dependencies_names_string)
 
             query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s;"
-            already_sent = int(db.execute_query(query, (config.COURSE, target, message))[0][0]) > 0
+            already_sent = int(gc_db.execute_query(query, (config.COURSE, target, message))[0][0]) > 0
 
             # Add notification to table
             if not already_sent:
                 query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s,%s,%s,%s);"
-                db.execute_query(query, (config.COURSE, target, message, 0), "commit")
+                gc_db.execute_query(query, (config.COURSE, target, message, 0), "commit")
 
 def award_streak(target, name, logs):
     """
@@ -2123,7 +2043,7 @@ def award_streak(target, name, logs):
         # Get streak info
         query = "SELECT id, goal, periodicityGoal, periodicityNumber, periodicityTime, periodicityType, reward, tokens, isExtra, isRepeatable " \
                 "FROM streak WHERE course = %s AND name = '%s';" % (config.COURSE, name)
-        table_streak = db.data_broker.get(db, config.COURSE, query)[0]
+        table_streak = gc_db.data_broker.get(gc_db, config.COURSE, query)[0]
         streak_id = table_streak[0]
         goal = int(table_streak[1])
         period_number = int(table_streak[3]) if table_streak[3] is not None else None
@@ -2178,20 +2098,20 @@ def award_streak(target, name, logs):
                 last_date = progression[-1][config.LOG_DATE_COL]
 
             query = "SELECT deadline FROM streak_deadline WHERE course = %s AND user = %s AND streak = %s;"
-            old_deadline = db.execute_query(query, (config.COURSE, target, streak_id))
+            old_deadline = gc_db.execute_query(query, (config.COURSE, target, streak_id))
             new_deadline = get_deadline(last_date, period_type, period_number, period_time)
 
             if not old_deadline and new_deadline:
                 query = "INSERT INTO streak_deadline (course, user, streak, deadline) VALUES (%s, %s, %s, %s);"
-                db.execute_query(query, (config.COURSE, target, streak_id, new_deadline), "commit")
+                gc_db.execute_query(query, (config.COURSE, target, streak_id, new_deadline), "commit")
 
             elif old_deadline and new_deadline and new_deadline != old_deadline:
                 query = "UPDATE streak_deadline SET deadline = %s WHERE course = %s AND user = %s AND streak = %s;"
-                db.execute_query(query, (new_deadline, config.COURSE, target, streak_id), "commit")
+                gc_db.execute_query(query, (new_deadline, config.COURSE, target, streak_id), "commit")
 
             elif old_deadline and not new_deadline:
                 query = "DELETE FROM streak_deadline WHERE course = %s AND user = %s and streak = %s;"
-                db.execute_query(query, (config.COURSE, target, streak_id), "commit")
+                gc_db.execute_query(query, (config.COURSE, target, streak_id), "commit")
 
         # Get awards already given
         awards_given = get_awards(target, name + "%", award_type, streak_id)
@@ -2322,7 +2242,7 @@ def has_wildcard_available(target, skill_tree_id, wildcard_tier):
     # Get all wildcard skill IDs
     query = "SELECT s.id FROM skill s LEFT JOIN skill_tier t on s.tier = t.id " \
             "WHERE s.course = %s AND t.skillTree = %s AND t.name = '%s';" % (config.COURSE, skill_tree_id, wildcard_tier)
-    wildcards_ids = [item for sublist in db.data_broker.get(db, config.COURSE, query) for item in sublist]
+    wildcards_ids = [item for sublist in gc_db.data_broker.get(gc_db, config.COURSE, query) for item in sublist]
 
     # Get completed skill wildcards
     nr_completed_wildcards = 0
@@ -2334,7 +2254,7 @@ def has_wildcard_available(target, skill_tree_id, wildcard_tier):
     query = "SELECT IFNULL(SUM(aw.nrWildcardsUsed), 0) " \
             "FROM " + get_awards_table() + " a LEFT JOIN award_wildcard aw on a.id = aw.award " \
             "WHERE a.course = %s AND a.user = %s AND a.type = %s;"
-    nr_used_wildcards = int(db.execute_query(query, (config.COURSE, target, award_type))[0][0])
+    nr_used_wildcards = int(gc_db.execute_query(query, (config.COURSE, target, award_type))[0][0])
 
     return nr_completed_wildcards > 0 and nr_used_wildcards <= nr_completed_wildcards
 
@@ -2347,8 +2267,8 @@ def get_team(target):
     # Gets team id from target
     # -----------------------------------------------------------
 
-    cursor = db.cursor
-    connect = db.connection
+    cursor = gc_db.cursor
+    connect = gc_db.connection
 
     course = config.COURSE
 
@@ -2374,8 +2294,8 @@ def award_team_grade(target, item, contributions=None, extra=None):
     # skill. Will not retract effects, but will not award twice
     # -----------------------------------------------------------
 
-    cursor = db.cursor
-    connect = db.connection
+    cursor = gc_db.cursor
+    connect = gc_db.connection
 
     course = config.COURSE
 
