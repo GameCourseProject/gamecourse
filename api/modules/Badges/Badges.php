@@ -1078,8 +1078,12 @@ class Badges extends Module
             return $cacheValue;
 
         } else {
-            $progression = Core::database()->select(self::TABLE_BADGE_PROGRESSION,
-                ["user" => $userId, "badge" => $badgeId], "COUNT(*)");
+            $badge = new Badge($badgeId);
+            if ($badge->isPoint()) {
+                $progression = Core::database()->select(self::TABLE_BADGE_PROGRESSION . " bp JOIN " . AutoGame::TABLE_PARTICIPATION . " p on bp.participation=p.id",
+                    ["bp.user" => $userId, "bp.badge" => $badgeId], "SUM(rating)") ?? 0;
+
+            } else $progression = Core::database()->select(self::TABLE_BADGE_PROGRESSION, ["user" => $userId, "badge" => $badgeId], "COUNT(*)");
 
             // Store in cache
             $cacheValue = $progression;
