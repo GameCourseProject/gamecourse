@@ -170,7 +170,6 @@ export class ProfilingComponent implements OnInit {
 
   async getLastRun() {
     this.lastRun = await this.api.getLastRun(this.course.id).toPromise();
-    this.lastRun = moment(this.lastRun);
   }
 
   /*** --------------------------------------------------- ***/
@@ -181,7 +180,7 @@ export class ProfilingComponent implements OnInit {
     this.loading.table.status = true;
 
     this.status = [[
-      {type: TableDataType.DATETIME, content: {datetime: this.lastRun, datetimeFormat: "DD/MM/YYYY HH:mm"}},
+      {type: this.lastRun ? TableDataType.DATETIME : TableDataType.TEXT, content: this.lastRun ? {datetime: this.lastRun, datetimeFormat: "DD/MM/YYYY HH:mm"} : {text: "Never"}},
       {type: TableDataType.COLOR,
         content: {
           color: this.running.profiler ? '#36D399' : '#EF6060',
