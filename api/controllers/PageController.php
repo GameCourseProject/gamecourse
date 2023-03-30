@@ -156,7 +156,7 @@ class PageController
         }
 
         // Trigger page viewed event
-        Event::trigger(EventType::PAGE_VIEWED, $pageId, $viewerId, $userId ?? $viewerId);
+        Event::trigger(EventType::PAGE_VIEWED, $pageId, $viewerId, $userId);
 
         API::response($page->renderPage($viewerId, $userId));
     }
