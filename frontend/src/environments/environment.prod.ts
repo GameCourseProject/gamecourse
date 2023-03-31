@@ -2,6 +2,7 @@ import { config } from "./config";
 
 export const environment = {
   production: true,
+  url: config.URL,
   apiEndpoint: config.API_URL,
   userPicture: {
     light: 'assets/imgs/user-light.png',

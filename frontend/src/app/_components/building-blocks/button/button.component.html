@@ -1,6 +1,6 @@
 <!-- Display version -->
 <ng-container *ngIf="!edit">
-  <ng-container [ngTemplateOutlet]="DISPLAY_DEFAULT"></ng-container>
+  <ng-container [ngTemplateOutlet]="link ? DISPLAY_LINK : DISPLAY_DEFAULT"></ng-container>
 </ng-container>
 
 <!-- Edit version -->
@@ -21,6 +21,12 @@
     <ng-icon [name]="view.icon || DEFAULT" [size]="'1.3rem'"></ng-icon>
     {{view.text}}
   </button>
+</ng-template>
+
+<ng-template #DISPLAY_LINK>
+  <a [href]="link" [target]="externalLink(link) ? '_blank' : '_self'">
+    <ng-container [ngTemplateOutlet]="DISPLAY_DEFAULT"></ng-container>
+  </a>
 </ng-template>
 
 

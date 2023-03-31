@@ -4,5 +4,6 @@
  */
 
 export const config = {
+  URL: '<URL>',
   API_URL: '<API_URL>',
 };

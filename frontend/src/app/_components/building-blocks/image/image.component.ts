@@ -39,8 +39,7 @@ export class BBImageComponent implements OnInit {
     const goToPageEventIndex = this.view.events.findIndex(ev => ev.action === EventAction.GO_TO_PAGE);
     if (goToPageEventIndex !== -1) {
       const goToPageEvent: GoToPageEvent = this.view.events[goToPageEventIndex] as GoToPageEvent;
-      const baseURL = (new URL(window.location.href)).origin;
-      this.view.link = baseURL + '/#/' + this.router.url.split('/').slice(1, 4).join('/') + '/' +
+      this.view.link = environment.url + '/#/' + this.router.url.split('/').slice(1, 4).join('/') + '/' +
         goToPageEvent.pageId + (goToPageEvent.userId ? '/user/' + goToPageEvent.userId : '');
       this.view.events.splice(goToPageEventIndex, 1);
     }
@@ -59,7 +58,6 @@ export class BBImageComponent implements OnInit {
   }
 
   externalLink(link: string): boolean {
-    const baseURL = (new URL(window.location.href)).origin;
-    return !link.containsWord(baseURL);
+    return !link.containsWord(environment.url);
   }
 }
