@@ -7,7 +7,6 @@ import { MainComponent } from "./main/main.component";
 import { UsersComponent } from "./settings/users/users.component";
 import { RolesComponent } from "./settings/roles/roles.component";
 import { ModulesComponent } from "./settings/modules/modules/modules.component";
-import { RulesComponent } from "./settings/rules/rules.component";
 import { ViewsEditorComponent } from "./settings/views/views-editor/views-editor.component";
 import { CoursePageComponent } from "./pages/course-page/course-page.component";
 import { ConfigComponent } from "./settings/modules/config/config/config.component";
@@ -46,7 +45,7 @@ const routes: Routes = [
       },
       {
         path: 'rule-system',
-        component: RulesComponent
+        component: ComingSoonComponent
       },
       {
         path: 'modules',

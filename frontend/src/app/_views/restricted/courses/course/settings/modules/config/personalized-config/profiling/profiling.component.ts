@@ -538,8 +538,7 @@ export class ProfilingComponent implements OnInit {
 
     } else if (action === 'submit import') {
 
-      // FIXME : something else missing ?
-      // FIXME -- NAO CHEGA AQUI
+      // FIXME : incomplete
       this.resetImportModal();
 
     } else if (action === 'discard changes'){

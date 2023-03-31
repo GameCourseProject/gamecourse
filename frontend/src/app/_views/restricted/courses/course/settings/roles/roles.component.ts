@@ -24,6 +24,7 @@ export class RolesComponent implements OnInit {
     action: false
   }
 
+  showAlert: boolean = false;
   course: Course;
   originalRolesHierarchy: Role[];
 
@@ -81,7 +82,6 @@ export class RolesComponent implements OnInit {
 
     // adaptation roles
     this.adaptationRoleNames = await this.api.getAdaptationRoles(courseID, false).toPromise();
-    console.log(this.adaptationRoleNames);
     this.adaptationTitle = await this.api.getAdaptationGeneralParent(courseID).toPromise();
 
     this.originalRolesHierarchy = _.cloneDeep(this.course.roleHierarchy);
@@ -166,6 +166,7 @@ export class RolesComponent implements OnInit {
   discard() {
     this.course.roleHierarchy = _.cloneDeep(this.originalRolesHierarchy);
     this.initRolesHierarchySmart();
+    this.showAlert = false;
   }
 
   async save(): Promise<void> {
@@ -175,29 +176,52 @@ export class RolesComponent implements OnInit {
     // @ts-ignore
     const hierarchy = list.nestable('serialize');
 
-    await this.api.updateRoles(this.course.id, getRoles(hierarchy, []), hierarchy).toPromise();
-    this.originalRolesHierarchy = this.course.roleHierarchy;
+    if (this.adaptationTitle) {
+      let adaptationInStudent = false;
 
-    function getRoles(hierarchy: Role[], roles: Role[]) {
-      for (const role of hierarchy) {
-        role['landingPage'] = role['landingpage'];
-        delete role['landingpage'];
+      for (let i = 0; i < hierarchy.length; i++){
+        if (hierarchy[i].name === "Student"){
 
-        // @ts-ignore
-        const copiedRole = _.cloneDeep(role);
-        delete role['id'];
-        delete role['landingPage'];
-
-        roles.push(copiedRole);
-        if (role.children?.length > 0)
-          roles = [...new Set(roles.concat(getRoles(role.children, roles)))]
+          if (!hierarchy[i].children){ break; }
+          for (let j = 0; j < Object.keys(hierarchy[i].children).length; j++){
+            if (this.isAdaptationTitle(hierarchy[i].children[j].name)){
+              adaptationInStudent = true;
+              break;
+            }
+          }
+          break;
+        }
       }
-      return roles;
+
+      if (!adaptationInStudent){
+        this.showAlert = true;
+      }
+    } else {
+      if (this.showAlert) {this.showAlert = false;}
+      await this.api.updateRoles(this.course.id, getRoles(hierarchy, []), hierarchy).toPromise();
+      this.originalRolesHierarchy = this.course.roleHierarchy;
+
+      function getRoles(hierarchy: Role[], roles: Role[]) {
+        for (const role of hierarchy) {
+          role['landingPage'] = role['landingpage'];
+          delete role['landingpage'];
+
+          // @ts-ignore
+          const copiedRole = _.cloneDeep(role);
+          delete role['id'];
+          delete role['landingPage'];
+
+          roles.push(copiedRole);
+          if (role.children?.length > 0)
+            roles = [...new Set(roles.concat(getRoles(role.children, roles)))]
+        }
+        return roles;
+      }
+
+      AlertService.showAlert(AlertType.SUCCESS, 'Roles saved');
     }
 
     this.loading.action = false;
-    AlertService.showAlert(AlertType.SUCCESS, 'Roles saved');
-
   }
 
 

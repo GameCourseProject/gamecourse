@@ -215,14 +215,36 @@ class Role
                     }
                 }
 
-                // if there are no children inside Adaptation role then remove children array
+                // if there are no children inside Adaptation role then adaptation
                 if (count($hierarchy[$studentIndex]["children"][$k]["children"]) == 0){
-                    array_splice($hierarchy[$k], 1, 1);
+                    self::removeRoleFromCourse($courseId, self::ADAPTATION_ROLE);
+                    array_splice($hierarchy[$studentIndex]["children"], $k, 1);
                 }
             }
         }
 
         $course->setRolesHierarchy($hierarchy);
+    }
+
+    /**
+     * @param int $courseId
+     * @return string
+     */
+    public static function getAdaptationGeneralParent(int $courseId): string
+    {
+        $course = new Course($courseId);
+
+        $studentIndex = array_search("Student", self::DEFAULT_ROLES);
+        $hierarchy = $course->getRolesHierarchy();
+
+        if (in_array("children", array_keys($hierarchy[$studentIndex]))){
+            foreach ($hierarchy[$studentIndex]["children"] as $k => $value){
+                if ($value["name"] == self::ADAPTATION_ROLE){
+                    return self::ADAPTATION_ROLE;
+                }
+            }
+        }
+        return "";
     }
 
     /**
@@ -246,21 +268,23 @@ class Role
 
             // Iterate through hierarchy
             $hierarchy = $course->getRolesHierarchy();
-            foreach ($hierarchy[$studentIndex]["children"] as $value) {
-                // Sees if adaptation role has children
-                if ($value["name"] == Role::ADAPTATION_ROLE && in_array("children", array_keys($value))) {
+            if (in_array("children", array_keys($hierarchy[$studentIndex]))){
+                foreach ($hierarchy[$studentIndex]["children"] as $value) {
+                    // Sees if adaptation role has children
+                    if ($value["name"] == Role::ADAPTATION_ROLE && in_array("children", array_keys($value))) {
 
-                    // Iterates through children (at this point will be game elements "badges", "leaderboard" etc)
-                    foreach ($value["children"] as $item) {
-                        // if item has children
-                        if (in_array("children", array_keys($item))) {
+                        // Iterates through children (at this point will be game elements "badges", "leaderboard" etc)
+                        foreach ($value["children"] as $item) {
+                            // if item has children
+                            if (in_array("children", array_keys($item))) {
                                 // Iterate through item to get all children
                                 foreach ($item["children"] as $child) {
                                     array_push($response, $child["name"]);
                                 }
+                            }
                         }
+                        break;
                     }
-                    break;
                 }
             }
         }

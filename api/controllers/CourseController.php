@@ -595,7 +595,9 @@ class CourseController
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
         API::requireCourseAdminPermission($course);
-        API::response(Role::ADAPTATION_ROLE);
+
+        $response = Role::getAdaptationGeneralParent($courseId);
+        API::response($response);
     }
 
     /**

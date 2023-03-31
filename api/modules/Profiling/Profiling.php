@@ -81,14 +81,21 @@ class Profiling extends Module
 
         // Create cluster roles
         $hierarchy = $this->course->getRolesHierarchy();
-        $profilingIndex = array_search(self::PROFILING_ROLE, $hierarchy[$studentIndex]["children"]);
+        //$profilingIndex = array_search(self::PROFILING_ROLE, $hierarchy[$studentIndex]["children"]);
         $clusterNames = $this->getClusterNames();
         $profilingInCourses = Core::database()->select(self::TABLE_COURSE_MODULE, ["module" => $this->id, "isEnabled" => true], "count(course)");
 
         foreach ($clusterNames as $name) {
             if (!$this->course->hasRole($name)) {
                 $this->course->addRole($name, null, null, $this->id);
-                $hierarchy[$studentIndex]["children"][$profilingIndex]["children"][] = ["name" => $name];
+
+                // Update hierarchy
+                foreach($hierarchy[$studentIndex]["children"] as $key => $value){
+                    if ($value["name"] == self::PROFILING_ROLE){
+                        $hierarchy[$studentIndex]["children"][$key]["children"][] = ["name" => $name];
+                        break;
+                    }
+                }
 
                 // add profiling clusters to system if not enabled in any course
                 if (intval($profilingInCourses) <= 1) {
