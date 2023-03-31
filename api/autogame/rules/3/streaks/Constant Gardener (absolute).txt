@@ -3,7 +3,7 @@ rule: Constant Gardener
 
     when:
         # Get target progress in streak
-        logs = get_skill_logs(target)
+        logs = get_skill_logs(target, None, None, True, True)
 
         # Get only periodic progress
         plogs = get_periodic_logs(logs, 1, "week", "absolute")

@@ -170,8 +170,8 @@ export class ProfilingComponent implements OnInit {
 
   async getLastRun() {
     this.lastRun = await this.api.getLastRun(this.course.id).toPromise();
-    this.lastRun = moment(this.lastRun);
   }
+
 
   /*** --------------------------------------------------- ***/
   /*** ---------------------- Status --------------------- ***/
@@ -181,7 +181,7 @@ export class ProfilingComponent implements OnInit {
     this.loading.table.status = true;
 
     this.status = [[
-      {type: TableDataType.DATETIME, content: {datetime: this.lastRun, datetimeFormat: "DD/MM/YYYY HH:mm"}},
+      {type: this.lastRun ? TableDataType.DATETIME : TableDataType.TEXT, content: this.lastRun ? {datetime: this.lastRun, datetimeFormat: "DD/MM/YYYY HH:mm"} : {text: "Never"}},
       {type: TableDataType.COLOR,
         content: {
           color: this.running.profiler ? '#36D399' : '#EF6060',
@@ -384,9 +384,7 @@ export class ProfilingComponent implements OnInit {
     this.loading.table.results = true;
 
     for (const day of this.days) {
-      if (day === 'Current' && Object.keys(this.newClusters).length > 0){
-        continue;
-      }
+      if (day === 'Current' && Object.keys(this.newClusters).length > 0) continue;
       this.table.headers.push({label: day === 'Current' ? day : dateFromDatabase(day).format('DD/MM/YYYY HH:mm:ss'), align: 'middle'});
       (this.table.options.columnDefs[0].targets).push((this.table.options.columnDefs[0].targets).length);
     }
@@ -401,17 +399,18 @@ export class ProfilingComponent implements OnInit {
     let data: { type: TableDataType, content: any }[][] = [];
     for (const studentHistory of this.history) {
       const student = this.students.find(el => el.id === parseInt(studentHistory.id));
-      data.push([{type: TableDataType.TEXT, content: {text: (student.nickname !== null && student.nickname !== "") ? student.nickname : student.name}},
+      data.push([
+        {type: TableDataType.TEXT, content: {text: (student.nickname !== null && student.nickname !== "") ? student.nickname : student.name}},
         {type: TableDataType.AVATAR, content: {
             avatarSrc: student.photoUrl,
             avatarTitle: (student.nickname !== null && student.nickname !== "") ? student.nickname : student.name,
-            avatarSubtitle: student.major}},
-        {type: TableDataType.NUMBER, content: {value: parseInt(String(student.studentNumber)), valueFormat: 'none'}}]);
+            avatarSubtitle: student.major
+        }},
+        {type: TableDataType.NUMBER, content: {value: parseInt(String(student.studentNumber)), valueFormat: 'none'}}
+      ]);
 
       for (const day of this.days) {
-        if (studentHistory[day] === 'None' && Object.keys(this.newClusters).length > 0){
-          continue;
-        }
+        if (day === 'Current' && studentHistory[day] === 'None' && Object.keys(this.newClusters).length > 0) continue;
         data[data.length - 1].push({type: TableDataType.TEXT, content: {text: studentHistory[day]}});
       }
 

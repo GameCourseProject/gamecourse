@@ -8,12 +8,13 @@ rule: Practitioner
 
         # Get target progress in streak
         logs = get_lab_logs(target)
-        flogs = filter_logs(logs, ["1", "2"], None, tier_1)
-        flogs += filter_logs(logs, ["3", "5", "7", "9", "11"], None, tier_2)
-        flogs += filter_logs(logs, ["4", "6", "8", "10", "12"], None, tier_3)
+
+        # Construct custom rating filter
+        custom_rating = {"1": {"min": tier_1}, "2": {"min": tier_1}, "3": {"min": tier_2}, "4": {"min": tier_3}, "5": {"min": tier_2}, "6": {"min": tier_3}, "7": {"min": tier_2}, "8": {"min": tier_3}, "9": {"min": tier_2}, "10": {"min": tier_3}, "11": {"min": tier_2}, "12": {"min": tier_3}}
 
         # Get only consecutive progress
-        clogs = get_consecutive_logs(flogs)
+        clogs = get_consecutive_logs(logs)
+        clogs = get_consecutive_rating_logs(clogs, None, None, None, custom_rating)
 
     then:
         award_streak(target, "Practitioner", clogs)

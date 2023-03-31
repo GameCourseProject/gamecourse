@@ -6,8 +6,8 @@ rule: Artist
 
     when:
         # Get target progress in badge
-        logs = get_forum_logs(target, "Skill Tree", None, 4)
-        logs += get_forum_logs(target, "Skill Tree", None, 5)
+        logs = get_skill_logs(target, None, 4, False, True)
+        logs += get_skill_logs(target, None, 5, False, True)
         progress = len(logs)
 
         # Compute badge level the target deserves

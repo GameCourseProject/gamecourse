@@ -9,7 +9,8 @@ rule: Sage
         flogs = filter_logs(logs, None, ["Dry Run", "Exam"])
 
         # Get only consecutive progress
-        clogs = get_consecutive_rating_logs(flogs, max_grade)
+        clogs = get_consecutive_logs(flogs)
+        clogs = get_consecutive_rating_logs(clogs, max_grade)
 
     then:
         award_streak(target, "Sage", clogs)

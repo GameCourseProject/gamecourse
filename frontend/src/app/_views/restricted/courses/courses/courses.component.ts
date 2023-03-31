@@ -340,7 +340,7 @@ export class CoursesComponent implements OnInit {
 
     const userLandingPage = await this.api.getUserLandingPage(course.id, this.user.id).toPromise();
     const pageID = userLandingPage?.id || course.landingPage;
-    if (pageID) return link + '/pages/' + pageID;
+    if (pageID) return link + '/pages/' + pageID + '/user/' + this.user.id;
     else if (await this.api.isTeacher(course.id, this.user.id).toPromise()) return link + '/overview';
     else return link;
   }

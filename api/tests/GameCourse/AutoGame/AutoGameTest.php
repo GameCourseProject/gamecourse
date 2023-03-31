@@ -475,7 +475,7 @@ class AutoGameTest extends TestCase
 
         $participations = AutoGame::getParticipations($course->getId());
         $this->assertCount(1, $participations);
-        $this->assertEquals(["id" => 1, "user" => $user1->getData(), "course" => $course->getId(), "source" => "GameCourse",
+        $this->assertEquals(["id" => 1, "user" => $user1->getId(), "course" => $course->getId(), "source" => "GameCourse",
             "description" => "Participation", "type" => "testing", "post" => null, "date" => "2022-09-02 19:23:00", "rating" => 3,
             "evaluator" => null], $participations[0]);
     }
@@ -510,7 +510,7 @@ class AutoGameTest extends TestCase
 
         $participations = AutoGame::getParticipations($course->getId());
         $this->assertCount(1, $participations);
-        $this->assertEquals(["id" => 1, "user" => $user1->getData(), "course" => $course->getId(), "source" => "GameCourse",
+        $this->assertEquals(["id" => 1, "user" => $user1->getId(), "course" => $course->getId(), "source" => "GameCourse",
             "description" => "Participation", "type" => "testing", "post" => null, "date" => "2022-09-02 19:23:00", "rating" => 3,
             "evaluator" => null], $participations[0]);
     }

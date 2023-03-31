@@ -27,8 +27,7 @@ def process_args(_course, _rules_path, _targets):
         return _course, _all_targets, _targets_list
 
     else:
-        db.close()
-        sys.exit("ERROR: Course is not active or does not exist.")
+        raise Exception('Course is not active or does not exist.')
 
 def configure_logging(logs_file):
     sep = "=" * 80
@@ -105,20 +104,22 @@ def log_end():
 # This python script will be invoked from the php side.
 # CLI prompt: python3 run_autogame.py [courseId] [all/new/targets] [rules_path] [logs_file] [dbHost] [dbName] [dbUser] [dbPass]
 if __name__ == "__main__":
-    if len(sys.argv) != 9:
-        error_msg = "ERROR: AutoGame didn't receive all the information."
-        sys.exit(error_msg)
-
-    # Configure logging
-    configure_logging(sys.argv[4])
+    # General variables
     error_msg = None
-
-    # Initialize GameCourse connector
-    from gamerules.connector.db_connector import connect_to_gamecourse_db
-    connect_to_gamecourse_db(sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8])
-    from gamerules.connector.gamecourse_connector import *
+    course, checkpoint, start_date, finish_date = None, None, None, None
 
     try:
+        if len(sys.argv) != 9:
+            raise Exception('AutoGame didn\'t receive all the information.')
+
+        # Configure logging
+        configure_logging(sys.argv[4])
+
+        # Initialize GameCourse connector
+        from gamerules.connector.db_connector import connect_to_gamecourse_db
+        connect_to_gamecourse_db(sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8])
+        from gamerules.connector.gamecourse_connector import *
+
         # Process arguments
         (course, all_targets, targets_list) = process_args(sys.argv[1], sys.argv[3], sys.argv[2])
 
@@ -143,12 +144,12 @@ if __name__ == "__main__":
             if module_enabled("Moodle"):
                 mdl_table = "moodle_config"
                 query = "SELECT dbServer, dbName, dbUser, dbPass FROM " + mdl_table + " WHERE course = %s;"
-                mdl_host, mdl_database, mdl_username, mdl_password = db.execute_query(query, (config.COURSE,))[0]
+                mdl_host, mdl_database, mdl_username, mdl_password = gc_db.execute_query(query, (config.COURSE,))[0]
                 if mdl_password:
                     from gamerules.connector.db_connector import connect_to_moodle_db
-
                     connect_to_moodle_db(mdl_host.decode(), mdl_database.decode(), mdl_username.decode(),
                                          mdl_password.decode())
+                    from gamerules.connector.moodle_connector import *
 
             # Save the start date
             start_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -160,14 +161,9 @@ if __name__ == "__main__":
             # Clear all progression before calculating again
             clear_progression(students.keys())
 
-            try:
-                # Fire Rule System
-                rs = RuleSystem(config.RULES_PATH, config.AUTOSAVE)
-                rs_output = rs.fire(students, logs, scope)
-
-            except Exception as e:
-                error_msg = "Exception raised when firing Rule System."
-                raise
+            # Fire Rule System
+            rs = RuleSystem(config.RULES_PATH, config.AUTOSAVE)
+            rs_output = rs.fire(students, logs, scope)
 
             # Update all progression
             update_progression()
@@ -180,15 +176,20 @@ if __name__ == "__main__":
             finish_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             log_end()
 
-        # Terminate AutoGame
-        autogame_terminate(course, checkpoint, start_date, finish_date)
-
     except Exception as e:
         error_msg = str(e)
         raise
 
     finally:
-        db.close()
+        # Terminate AutoGame
+        if course:
+            autogame_terminate(course, checkpoint, start_date, finish_date)
+
+        # Close database connections
+        from gamerules.connector.db_connector import close_all_connections
+        close_all_connections()
+
+        # Log errors found
         if error_msg is not None:
             logging.exception(error_msg)
             sys.exit("ERROR: " + error_msg)

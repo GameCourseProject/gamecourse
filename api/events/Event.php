@@ -28,11 +28,11 @@ class Event
      */
     public static function setupEvents()
     {
-        Event::listen(EventType::PAGE_VIEWED, function (int $pageId, int $viewerId, int $userId) {
+        Event::listen(EventType::PAGE_VIEWED, function (int $pageId, int $viewerId, ?int $userId) {
             $page = Page::getPageById($pageId);
             $course = $page->getCourse();
 
-            if ($course->getCourseUserById($viewerId)->exists() && $course->getCourseUserById($userId)->exists()) {
+            if ($course->getCourseUserById($viewerId) && (is_null($userId) || $course->getCourseUserById($userId))) {
                 Core::database()->insert(Page::TABLE_PAGE_HISTORY, [
                     "course" => $course->getId(),
                     "page" => $pageId,

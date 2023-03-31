@@ -1414,7 +1414,7 @@ logs = [] # COMPLETE THIS: get appropriate logs for this streak
 # Get only consecutive progress
 # NOTE: available functions
 #   > get_consecutive_logs(logs) [default] --> gets consecutive logs on a set of logs
-#   > get_consecutive_rating_logs(logs, min_rating, max_rating, exact_rating) --> gets consecutive logs on a set of logs that meet certain rating specifications
+#   > get_consecutive_rating_logs(logs, min_rating, max_rating, exact_rating, custom_rating) --> gets consecutive logs on a set of logs that meet certain rating specifications
 #   > get_consecutive_peergrading_logs(target) --> gets consecutive peergrading logs done by target
 clogs = get_consecutive_logs(logs)", $params["when"]);
         }
@@ -1600,7 +1600,7 @@ logs = [] # COMPLETE THIS: get appropriate logs for this streak
 # Get only consecutive progress
 # NOTE: available functions
 #   > get_consecutive_logs(logs) [default] --> gets consecutive logs on a set of logs
-#   > get_consecutive_rating_logs(logs, min_rating, max_rating, exact_rating) --> gets consecutive logs on a set of logs that meet certain rating specifications
+#   > get_consecutive_rating_logs(logs, min_rating, max_rating, exact_rating, custom_rating) --> gets consecutive logs on a set of logs that meet certain rating specifications
 #   > get_consecutive_peergrading_logs(target) --> gets consecutive peergrading logs done by target
 clogs = get_consecutive_logs(logs)", $params["when"]);
 
