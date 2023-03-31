@@ -23,7 +23,7 @@
 </ng-template>
 
 <ng-template #DISPLAY_LINK>
-  <a [href]="view.link" [target]="'_blank'"
+  <a [href]="view.link" [target]="externalLink(view.link) ? '_blank' : '_self'"
      [attr.id]="view.cssId"
      [classList]="classes + ' ' + view.classList"
      [attr.style]="view.styles">

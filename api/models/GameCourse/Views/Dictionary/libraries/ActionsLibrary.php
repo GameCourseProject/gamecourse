@@ -49,7 +49,7 @@ class ActionsLibrary extends Library
      * @param int|null $userId
      * @return ValueNode
      */
-    public function goToPage(int $pageId, int $userId = null): ValueNode
+    public function goToPage(int $pageId, ?int $userId = null): ValueNode
     {
         $args = [$pageId];
         if (!is_null($userId)) $args[] = $userId;

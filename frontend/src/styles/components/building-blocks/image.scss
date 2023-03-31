@@ -6,7 +6,7 @@
 
 .bb-image {
   &.bb-image-link > div {
-    @apply hover:ring hover:ring-primary hover:ring-4;
+    @apply hover:ring hover:ring-primary;
   }
 }
 

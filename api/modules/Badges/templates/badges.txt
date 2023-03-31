@@ -356,7 +356,7 @@
                                                                                     [
                                                                                         {
                                                                                             "type": "image",
-                                                                                            "class": "mask mask-circle h-9 w-9",
+                                                                                            "class": "rounded-full h-9 w-9",
                                                                                             "loopData": "{%usersWithLevel}",
                                                                                             "src": "{%item.image}",
                                                                                             "events": [

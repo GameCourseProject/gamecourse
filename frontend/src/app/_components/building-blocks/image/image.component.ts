@@ -1,7 +1,10 @@
 import {Component, Input, OnInit} from '@angular/core';
+import {Router} from "@angular/router";
 
 import {ViewImage} from "../../../_domain/views/view-types/view-image";
 import {ViewMode} from "../../../_domain/views/view";
+import {GoToPageEvent} from "../../../_domain/views/events/actions/go-to-page-event";
+import {EventAction} from "../../../_domain/views/events/event-action";
 
 import {Theme} from "../../../_services/theming/themes-available";
 import {ThemingService} from "../../../_services/theming/theming.service";
@@ -25,11 +28,22 @@ export class BBImageComponent implements OnInit {
 
   constructor(
     private themeService: ThemingService,
-    private updateManager: UpdateService
+    private updateManager: UpdateService,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
     this.edit = this.view.mode === ViewMode.EDIT;
+
+    // Transform goToPage event into a link
+    const goToPageEventIndex = this.view.events.findIndex(ev => ev.action === EventAction.GO_TO_PAGE);
+    if (goToPageEventIndex !== -1) {
+      const goToPageEvent: GoToPageEvent = this.view.events[goToPageEventIndex] as GoToPageEvent;
+      const baseURL = (new URL(window.location.href)).origin;
+      this.view.link = baseURL + '/#/' + this.router.url.split('/').slice(1, 4).join('/') + '/' +
+        goToPageEvent.pageId + (goToPageEvent.userId ? '/user/' + goToPageEvent.userId : '');
+      this.view.events.splice(goToPageEventIndex, 1);
+    }
     this.classes = 'bb-image' + (this.view.link ? ' bb-image-link' : '');
 
     this.imageURL = !exists(this.view.src) ? this.DEFAULT : this.view.src;
@@ -42,5 +56,10 @@ export class BBImageComponent implements OnInit {
         this.imageURL = !exists(this.view.src) ? this.DEFAULT : this.view.src;
       }
     });
+  }
+
+  externalLink(link: string): boolean {
+    const baseURL = (new URL(window.location.href)).origin;
+    return !link.containsWord(baseURL);
   }
 }
