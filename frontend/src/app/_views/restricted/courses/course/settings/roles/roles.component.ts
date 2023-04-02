@@ -176,26 +176,24 @@ export class RolesComponent implements OnInit {
     // @ts-ignore
     const hierarchy = list.nestable('serialize');
 
-    if (this.adaptationTitle) {
-      let adaptationInStudent = false;
 
-      for (let i = 0; i < hierarchy.length; i++){
-        if (hierarchy[i].name === "Student"){
+    let adaptationInStudent = false;
+    for (let i = 0; i < hierarchy.length; i++){
+      if (hierarchy[i].name === "Student"){
 
-          if (!hierarchy[i].children){ break; }
-          for (let j = 0; j < Object.keys(hierarchy[i].children).length; j++){
-            if (this.isAdaptationTitle(hierarchy[i].children[j].name)){
-              adaptationInStudent = true;
-              break;
-            }
+        if (!hierarchy[i].children){ break; }
+        for (let j = 0; j < Object.keys(hierarchy[i].children).length; j++){
+          if (this.isAdaptationTitle(hierarchy[i].children[j].name)){
+            adaptationInStudent = true;
+            break;
           }
-          break;
         }
+        break;
       }
+    }
 
-      if (!adaptationInStudent){
-        this.showAlert = true;
-      }
+    if (this.adaptationTitle && !adaptationInStudent){
+      this.showAlert = true;
     } else {
       if (this.showAlert) {this.showAlert = false;}
       await this.api.updateRoles(this.course.id, getRoles(hierarchy, []), hierarchy).toPromise();
