@@ -218,7 +218,7 @@ class DocsController
 
     public function createAdaptationRoles()
     {
-        $course = new Course(2);
+        $course = new Course(9);
 
         $this->addAdaptation(Badges::ADAPTATION_BADGES, $course->getId(), Badges::ID);
         GameElement::addGameElement($course->getId(), Badges::ID);
