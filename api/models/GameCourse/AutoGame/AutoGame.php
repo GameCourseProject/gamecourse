@@ -145,11 +145,12 @@ abstract class AutoGame
      */
     public static function setToRun(int $courseId, string $checkpoint)
     {
-        $autogameInfo = Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "runNext, checkpoint");
+        $autogameInfo = Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "isRunning, runNext, checkpoint");
+        $isRunning = boolval($autogameInfo["isRunning"]);
         $runNext = boolval($autogameInfo["runNext"]);
         $previousCheckpoint = $autogameInfo["checkpoint"];
 
-        if (!$runNext || is_null($previousCheckpoint) || strtotime($checkpoint) < strtotime($previousCheckpoint)) {
+        if ($isRunning || !$runNext || is_null($previousCheckpoint) || strtotime($checkpoint) < strtotime($previousCheckpoint)) {
             Core::database()->update(self::TABLE_AUTOGAME, [
                 "runNext" => 1,
                 "checkpoint" => $checkpoint

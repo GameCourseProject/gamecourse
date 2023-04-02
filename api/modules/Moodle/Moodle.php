@@ -1408,7 +1408,7 @@ class Moodle extends Module
     public function getPeergrades(): array
     {
         $fields = "f.name as forumName, fd.id as discussionId, fp.subject, g.itemId as peergradeId, u.username, g.peergrade as grade, 
-                   ug.username as grader, g.timemodified as timestamp";
+                   ug.username as grader, g.timecreated as timestamp";
         $table = self::$prefix . "peerforum f JOIN " . self::$prefix . "peerforum_discussions fd on fd.peerforum=f.id JOIN " .
             self::$prefix . "peerforum_posts fp on fp.discussion=fd.id JOIN " . self::$prefix . "peerforum_peergrade g on g.itemId=fp.id JOIN " .
             self::$prefix . "user u on fp.userid=u.id JOIN " . self::$prefix . "user ug on g.userid=ug.id JOIN " .
