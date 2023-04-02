@@ -195,13 +195,13 @@ class DocsController
         $profile = json_decode(file_get_contents(ROOT_PATH . "/temp/profile.txt"), true);
         $badges = json_decode(file_get_contents(ROOT_PATH . "/temp/badges.txt"), true);
 
-        Page::addPage(1, CreationMode::BY_VALUE, "Leaderboard", $leaderboard);
-        Page::addPage(1, CreationMode::BY_VALUE, "Awards", $awards);
-        Page::addPage(1, CreationMode::BY_VALUE, "Spendings", $spendings);
-        Page::addPage(1, CreationMode::BY_VALUE, "Profile", $profile);
-        Page::addPage(1, CreationMode::BY_VALUE, "Badges", $badges);
-        Page::addPage(1, CreationMode::BY_VALUE, "Skill Tree", [["aspect" => ["viewerRole" => null, "userRole" => "Student"], "type" => "block"]]);
-        Page::addPage(1, CreationMode::BY_VALUE, "Streaks", [["aspect" => ["viewerRole" => null, "userRole" => "Student"], "type" => "block"]]);
+        Page::addPage(9, CreationMode::BY_VALUE, "Leaderboard", $leaderboard);
+        Page::addPage(9, CreationMode::BY_VALUE, "Awards", $awards);
+        Page::addPage(9, CreationMode::BY_VALUE, "Spendings", $spendings);
+        Page::addPage(9, CreationMode::BY_VALUE, "Profile", $profile);
+        Page::addPage(9, CreationMode::BY_VALUE, "Badges", $badges);
+        Page::addPage(9, CreationMode::BY_VALUE, "Skill Tree", [["aspect" => ["viewerRole" => null, "userRole" => "Student"], "type" => "block"]]);
+        Page::addPage(9, CreationMode::BY_VALUE, "Streaks", [["aspect" => ["viewerRole" => null, "userRole" => "Student"], "type" => "block"]]);
     }
 
 
