@@ -993,11 +993,12 @@ class Streaks extends Module
     public function getUserStreakProgression(int $userId, int $streakId, int $nrCompletions = null): int
     {
         $courseId = $this->getCourse()->getId();
+        $AutoGameIsRunning = AutoGame::isRunning($courseId);
 
         $cacheId = "streak_progression_u" . $userId . "_s" . $streakId;
         $cacheValue = Cache::get($courseId, $cacheId);
 
-        if (AutoGame::isRunning($courseId) && !empty($cacheValue)) {
+        if ($AutoGameIsRunning && !empty($cacheValue)) {
             // NOTE: get value from cache while AutoGame is running
             //       since progression table is not stable
             return $cacheValue;
@@ -1008,8 +1009,10 @@ class Streaks extends Module
                 ["user" => $userId, "streak" => $streakId, "repetition" => $nrCompletions + 1], "COUNT(*)");
 
             // Store in cache
-            $cacheValue = $progression;
-            Cache::store($courseId, $cacheId, $cacheValue);
+            if (!$AutoGameIsRunning) {
+                $cacheValue = $progression;
+                Cache::store($courseId, $cacheId, $cacheValue);
+            }
 
             return $progression;
         }

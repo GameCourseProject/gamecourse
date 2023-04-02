@@ -1087,11 +1087,12 @@ class Badges extends Module
     public function getUserBadgeProgression(int $userId, int $badgeId): int
     {
         $courseId = $this->getCourse()->getId();
+        $AutoGameIsRunning = AutoGame::isRunning($courseId);
 
         $cacheId = "badge_progression_u" . $userId . "_b" . $badgeId;
         $cacheValue = Cache::get($courseId, $cacheId);
 
-        if (AutoGame::isRunning($courseId) && !empty($cacheValue)) {
+        if ($AutoGameIsRunning && !empty($cacheValue)) {
             // NOTE: get value from cache while AutoGame is running
             //       since progression table is not stable
             return $cacheValue;
@@ -1105,8 +1106,10 @@ class Badges extends Module
             } else $progression = Core::database()->select(self::TABLE_BADGE_PROGRESSION, ["user" => $userId, "badge" => $badgeId], "COUNT(*)");
 
             // Store in cache
-            $cacheValue = $progression;
-            Cache::store($courseId, $cacheId, $cacheValue);
+            if (!$AutoGameIsRunning) {
+                $cacheValue = $progression;
+                Cache::store($courseId, $cacheId, $cacheValue);
+            }
 
             return $progression;
         }
@@ -1123,11 +1126,12 @@ class Badges extends Module
     public function getUserBadgeProgressionInfo(int $userId, int $badgeId): array
     {
         $courseId = $this->getCourse()->getId();
+        $AutoGameIsRunning = AutoGame::isRunning($courseId);
 
         $cacheId = "badge_progression_info_u" . $userId . "_b" . $badgeId;
         $cacheValue = Cache::get($courseId, $cacheId);
 
-        if (AutoGame::isRunning($courseId) && !empty($cacheValue)) {
+        if ($AutoGameIsRunning && !empty($cacheValue)) {
             // NOTE: get value from cache while AutoGame is running
             //       since progression table is not stable
             return $cacheValue;
@@ -1147,8 +1151,10 @@ class Badges extends Module
             }, Core::database()->selectMultiple($table, ["bp.user" => $userId, "bp.badge" => $badgeId], "p.*"));
 
             // Store in cache
-            $cacheValue = $progression;
-            Cache::store($courseId, $cacheId, $cacheValue);
+            if (!$AutoGameIsRunning) {
+                $cacheValue = $progression;
+                Cache::store($courseId, $cacheId, $cacheValue);
+            }
 
             return $progression;
         }
