@@ -5,11 +5,13 @@ use Error;
 use Event\Event;
 use Event\EventType;
 use Exception;
+use GameCourse\Adaptation\GameElement;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Role\Role;
 use GameCourse\Views\Dictionary\ProvidersLibrary;
 use Utils\Utils;
 
@@ -186,6 +188,7 @@ abstract class Module
 
         if ($isEnabled) $this->init();
         else $this->disable();
+
 
         Event::trigger($isEnabled ? EventType::MODULE_ENABLED : EventType::MODULE_DISABLED, $this->course->getId(), $this->id);
     }
@@ -516,10 +519,38 @@ abstract class Module
      * Sets events to listen to right from the start and their
      * callback functions.
      *
-     * @return void
      */
     protected function initEvents()
-    {}
+    {
+        Event::listen(EventType::MODULE_ENABLED, function (int $courseId, int $moduleId) {
+            if ($courseId == $this->course->getId() && $moduleId == $this->id){
+                // When a module is enabled the game element of the module is made editable
+                // This function adds this game elements to the table adaptation_game_element table
+                GameElement::addGameElement($courseId, $moduleId);
+            }
+        }, $this->id);
+
+        Event::listen(EventType::MODULE_DISABLED, function (int $courseId, int $moduleId){
+            if ($courseId == $this->course->getId() && $moduleId == $this->id) {
+                // When a module is disabled, this game element ceased to exist and is deleted from table adaptation_game_element
+                GameElement::removeGameElement($courseId, $moduleId);
+            }
+        }, $this->id);
+
+        Event::listen(EventType::STUDENT_ADDED_TO_COURSE, function (int $courseId, int $studentId){
+            if ($courseId == $this->course->getId())
+                GameElement::addStudentToEdit($courseId, $studentId);
+        }, $this->id);
+
+        Event::listen(EventType::STUDENT_REMOVED_FROM_COURSE, function (int $courseId, int $studentId){
+            // NOTE: this event targets cases where the course user only changed roles and
+            //       is not longer a student; there's no need for an event when a user is
+            //       completely removed from the course, as SQL 'ON DELETE CASCADE' will do it
+            if ($courseId == $this->course->getId())
+                GameElement::removeStudentToEdit($studentId);
+        }, $this->id);
+
+    }
 
     /**
      * Creates Rule System section for module rules.
@@ -531,6 +562,26 @@ abstract class Module
     {
         RuleSystem::addSection($this->course->getId(), $this::RULE_SECTION, 0, $this->id);
     }
+
+    /**
+     * Adds adaptation roles from the specific module to a course and their respective description for the adaptation versions
+     *
+     * @param array $roles
+     * @return void
+     * @throws Exception
+     */
+    protected function addAdaptationRolesToCourse(array $roles){
+
+        $parent = array_keys($roles)[0];
+        $versions = array_keys($roles[$parent]);
+
+        Role::addAdaptationRolesToCourse($this->course->getId(), $this->id, $parent, $versions);
+        foreach ($roles[$parent] as $key => $value){
+            $roleId = Role::getRoleId($key, $this->course->getId());
+            GameElement::addGameElementDescription($roleId, $value[0]);
+        }
+    }
+
 
     /**
      * Sets new data providers on providers library to be
@@ -612,6 +663,20 @@ abstract class Module
     {
         $sectionId = Section::getSectionByName($this->course->getId(), $this::RULE_SECTION)->getId();
         RuleSystem::deleteSection($sectionId);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function removeAdaptationRolesFromCourse(array $roles){
+        $parent = array_keys($roles)[0];
+
+        foreach ($roles[$parent] as $key => $value){
+            $roleId = Role::getRoleId($key, $this->course->getId());
+            GameElement::removeGameElementDescription($roleId, $value[0]);
+        }
+
+        Role::removeAdaptationRolesFromCourse($this->course->getId(), $this->id, $parent);
     }
 
     /**

@@ -1,12 +1,15 @@
 <?php
 namespace GameCourse\Module\Profile;
 
+use Exception;
+use GameCourse\Adaptation\GameElement;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Badges\Badges;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\Module\Profiling\Profiling;
 use GameCourse\Module\Skills\Skills;
 use GameCourse\Module\Streaks\Streaks;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
@@ -50,14 +53,28 @@ class Profile extends Module
 
     const RESOURCES = [];
 
+    // FIXME -> Change later
+    const ADAPTATION_PROFILE = ["Profile" =>
+        ["P001" => ["Profile displays graphs comparing yourself vs. everyone else", [ "Regular", "Achiever" ]],
+         "P002" => ["Profile displays graphs comparing yourself vs. people with similar progress as you", ["Halfhearted"]],
+         "P003" => ["Profile displays graphs with your progress (not comparing with anyone else)", ["Underachiever"]]]];
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/
 
+    /**
+     * @throws Exception
+     */
     public function init()
     {
         $this->initTemplates();
+
+        // Add adaptation roles
+        // FIXME: Debug only
+         $this->addAdaptationRolesToCourse(self::ADAPTATION_PROFILE);
+        // initEvents(); // FIXME: Debug only
+         GameElement::addGameElement($this->course->getId(), self::ID);
     }
 
     public function copyTo(Course $copyTo)
@@ -65,8 +82,13 @@ class Profile extends Module
         // Nothing to do here
     }
 
+    /**
+     * @throws Exception
+     */
     public function disable()
     {
+        $this->removeAdaptationRolesFromCourse(self::ADAPTATION_PROFILE);
+        GameElement::removeGameElement($this->course->getId(), self::ID);
         $this->removeTemplates();
     }
 }

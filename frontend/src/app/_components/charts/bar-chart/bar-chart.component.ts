@@ -45,6 +45,7 @@ export type ChartOptions = {
   tooltip: ApexTooltip;
   xaxis: ApexXAxis;
   yaxis: ApexYAxis;
+  distributed: boolean
 };
 
 @Component({
@@ -143,8 +144,7 @@ export class BarChartComponent implements OnInit {
           borderRadius: this.borderRadius,
           borderRadiusApplication: 'end',
           columnWidth: "80%",
-          distributed: !!this.highlight,
-
+          distributed: !!this.highlight
         },
       },
       subtitle: subtitle(this.subtitle, this.align),
@@ -153,7 +153,7 @@ export class BarChartComponent implements OnInit {
         false, theme === Theme.DARK ? 'dark' : 'light'),
       xaxis: xaxis(this.XAxisType, this.XAxisCategories, LineColor(theme), this.XAxisLabel,
         this.XAxisTickAmount || (this.series[0].data.length > 20 ? 10 : undefined)),
-      yaxis: yaxis(this.YAxisReversed, this.YAxisTickAmount, this.YAxisMin, this.YAxisMax, this.YAxisLabel, false)
+      yaxis: yaxis(this.YAxisReversed, this.YAxisTickAmount, this.YAxisMin, this.YAxisMax, this.YAxisLabel, false),
     };
 
     // Highlight bars

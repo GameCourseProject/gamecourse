@@ -102,6 +102,7 @@ class XPLevels extends Module
             if ($courseId == $this->course->getId())
                 Core::database()->delete(self::TABLE_XP, ["course" => $courseId, "user" => $studentId]);
         }, self::ID);
+
     }
 
     public function providers(): array

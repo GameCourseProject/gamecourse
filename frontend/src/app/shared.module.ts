@@ -53,7 +53,7 @@ import { ComboChartComponent } from './_components/charts/combo-chart/combo-char
 import { LineChartComponent } from "./_components/charts/line-chart/line-chart.component";
 import { ProgressChartComponent } from "./_components/charts/progress-chart/progress-chart.component";
 import { RadarChartComponent } from "./_components/charts/radar-chart/radar-chart.component";
-
+import { PieChartComponent } from "./_components/charts/pie-chart/pie-chart.component";
 // Components: tables
 import { TableComponent } from "./_components/tables/table/table.component";
 import { TableData } from "./_components/tables/table-data/table-data.component";
@@ -138,14 +138,18 @@ import {
   JamPlus,
   JamStopSign,
   JamTrashF,
-  JamUpload
+  JamUpload,
+  JamBox
 } from "@ng-icons/jam-icons";
 
 import {
+  TablerAlertTriangle,
   TablerArchive,
   TablerArrowBackUp,
-  TablerArrowNarrowUp,
+  TablerArrowNarrowRight,
   TablerArrowNarrowDown,
+  TablerArrowNarrowUp,
+  TablerArrowsUpDown,
   TablerAward,
   TablerChartBar,
   TablerBarrierBlock,
@@ -157,12 +161,14 @@ import {
   TablerBulb,
   TablerCalendarTime,
   TablerCaretDown,
+  TablerChartPie,
   TablerChecks,
   TablerCircleCheck,
   TablerClipboardList,
   TablerCloudUpload,
   TablerCoin,
   TablerColorSwatch,
+  TablerCopy,
   TablerEye,
   TablerFlame,
   TablerFlask,
@@ -175,9 +181,11 @@ import {
   TablerPlug,
   TablerPresentation,
   TablerPrompt,
+  TablerPuzzle,
   TablerQuestionMark,
   TablerStar,
   TablerSchool,
+  TablerNewSection,
   TablerTimeline,
   TablerTrophy,
   TablerUserCircle,
@@ -231,6 +239,7 @@ import {
     LineChartComponent,
     ProgressChartComponent,
     RadarChartComponent,
+    PieChartComponent,
 
     TableComponent,
     TableData,
@@ -311,6 +320,7 @@ import {
     LineChartComponent,
     ProgressChartComponent,
     RadarChartComponent,
+    PieChartComponent,
 
     TableComponent,
     TableData,
@@ -375,6 +385,7 @@ import {
       FeatherX,
       FeatherXCircle,
 
+
       JamDownload,
       JamEyeF,
       JamGoogle,
@@ -386,11 +397,15 @@ import {
       JamStopSign,
       JamTrashF,
       JamUpload,
+      JamBox,
 
+      TablerAlertTriangle,
       TablerArchive,
       TablerArrowBackUp,
-      TablerArrowNarrowUp,
+      TablerArrowNarrowRight,
       TablerArrowNarrowDown,
+      TablerArrowNarrowUp,
+      TablerArrowsUpDown,
       TablerAward,
       TablerChartBar,
       TablerBarrierBlock,
@@ -402,26 +417,30 @@ import {
       TablerBulb,
       TablerCalendarTime,
       TablerCaretDown,
+      TablerChartPie,
       TablerChecks,
       TablerCircleCheck,
       TablerClipboardList,
       TablerCloudUpload,
       TablerCoin,
       TablerColorSwatch,
+      TablerCopy,
       TablerEye,
       TablerFlame,
       TablerFlask,
       TablerGavel,
       TablerGift,
       TablerIdBadge2,
+      TablerNewSection,
       TablerListNumbers,
       TablerMessage2,
       TablerPaperclip,
       TablerPresentation,
       TablerPlug,
       TablerPrompt,
-      TablerQuestionMark,
+      TablerPuzzle,
       TablerSchool,
+      TablerQuestionMark,
       TablerStar,
       TablerTimeline,
       TablerTrophy,

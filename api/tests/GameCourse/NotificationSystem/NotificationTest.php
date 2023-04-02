@@ -84,8 +84,6 @@ class NotificationTest extends TestCase
     /*** ------------------ Data Providers ------------------ ***/
     /*** ---------------------------------------------------- ***/
 
-    // TODO: Complete with functions add, edit, delete -> Even if not used, makes code more generic and modular for future changes
-
     public function notificationMessageSuccessProvider(): array
     {
         return [

@@ -262,17 +262,29 @@ export class SidebarComponent implements OnInit {
                 link: path + 'settings/themes',
                 name: 'Themes',
                 icon: 'tabler-color-swatch'
+              },
+              {
+                link: path + 'overview',
+                name: 'Overview',
+                icon: 'feather-info'
               }
             ]
-          },
-          {
-            link: path + 'overview',
-            name: 'Overview',
-            icon: 'feather-info'
           }
         ];
         navigation = navigation.concat(fixed);
       }
+
+      const adaptation: Navigation = {
+        link: isAdminOrTeacher ? path + 'settings/adaptation' : path + 'adaptation',
+        name: 'Adaptation',
+        icon: 'tabler-puzzle'
+      };
+
+      if (isAdminOrTeacher) navigation[3].children.splice(2, 0, adaptation);
+      else navigation.push({
+        category: 'User Interface',
+        children: [adaptation]
+      });
 
       return navigation;
     }

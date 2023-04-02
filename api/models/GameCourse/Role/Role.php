@@ -4,6 +4,7 @@ namespace GameCourse\Role;
 use Event\Event;
 use Event\EventType;
 use Exception;
+use GameCourse\Adaptation\GameElement;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Views\Aspect\Aspect;
@@ -19,8 +20,10 @@ class Role
     const TABLE_ROLE = "role";
     const TABLE_USER_ROLE = "user_role";
 
+
     const DEFAULT_ROLES = ["Teacher", "Student", "Watcher"];  // default roles for each course
 
+    const ADAPTATION_ROLE = "Adaptation";
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Setup ---------------------- ***/
@@ -38,7 +41,6 @@ class Role
         self::setCourseRoles(0, self::DEFAULT_ROLES);
         Core::database()->setForeignKeyChecks(true);
     }
-
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- General --------------------- ***/
@@ -113,7 +115,6 @@ class Role
         return $rolesNames;
     }
 
-
     /*** ---------------------------------------------------- ***/
     /*** ------------------ Course related ------------------ ***/
     /*** ---------------------------------------------------- ***/
@@ -135,6 +136,162 @@ class Role
     }
 
     /**
+     * Adds adaptation roles to a given course - comes from each module
+     * Notice: array $roles should only have 1 parent!
+     *
+     * @param int $courseId
+     * @param string $moduleId
+     * @param string $parent
+     * @param array|null $children
+     * @throws Exception
+     */
+    public static function addAdaptationRolesToCourse(int $courseId, string $moduleId, string $parent, array $children = null)
+    {
+        $course = new Course($courseId);
+        $rolesNames = self::getCourseRoles($courseId);
+
+        $hierarchy = $course->getRolesHierarchy();
+        $studentIndex = array_search("Student", self::DEFAULT_ROLES);
+
+        if (!in_array(self::ADAPTATION_ROLE, $rolesNames)){
+            self::addRoleToCourse($courseId, self::ADAPTATION_ROLE); // Add adaptation role to course
+
+            // Update hierarchy
+            $hierarchy[$studentIndex]["children"][] = ["name" => self::ADAPTATION_ROLE];
+            $course->setRolesHierarchy($hierarchy);
+        }
+
+        // Add parent
+        self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
+
+        // Add children
+        foreach ($children as $child){
+            self::addRoleToCourse($courseId, $child, null, null, $moduleId);
+        }
+
+        // Update roles hierarchy
+        $hierarchy = $course->getRolesHierarchy();
+
+        foreach ($hierarchy[$studentIndex]["children"] as $key => $value) {
+            if ($value["name"] == self::ADAPTATION_ROLE){
+                $hierarchy[$studentIndex]["children"][$key]["children"][] = ["name" => $parent,
+                    "children" => array_map(function ($child) {return ["name" => $child]; }, $children)];
+                break;
+            }
+        }
+        $course->setRolesHierarchy($hierarchy);
+    }
+
+    /**
+     * Removes adaptation roles from a course, including its children.
+     * NOTE: it doesn't update roles hierarchy
+     *
+     * @param int $courseId
+     * @param string|null $moduleId
+     * @param string $parent
+     * @return void
+     * @throws Exception
+     */
+    public static function removeAdaptationRolesFromCourse(int $courseId, string $moduleId, string $parent){
+
+        self::removeRoleFromCourse($courseId, null, null, $moduleId);
+
+        $course = new Course($courseId);
+
+        // Update hierarchy
+        $studentIndex = array_search("Student", self::DEFAULT_ROLES);
+        $hierarchy = $course->getRolesHierarchy();
+
+        foreach ($hierarchy[$studentIndex]["children"] as $k => $value){
+            // sees if adaptation roles has children
+            if ($value["name"] == self::ADAPTATION_ROLE && in_array("children", array_keys($value))){
+
+                // iterates through children (at this point will be game elements "badges", "leaderboard" etc)
+                foreach ($value["children"] as $key => $item){
+                    // if item is the desired adaptation role to remove then splice
+                    if ($item["name"] == $parent){
+                        array_splice($hierarchy[$studentIndex]["children"][$k]["children"], $key, 1);
+                        break;
+                    }
+                }
+
+                // if there are no children inside Adaptation role then adaptation
+                if (count($hierarchy[$studentIndex]["children"][$k]["children"]) == 0){
+                    self::removeRoleFromCourse($courseId, self::ADAPTATION_ROLE);
+                    array_splice($hierarchy[$studentIndex]["children"], $k, 1);
+                }
+            }
+        }
+
+        $course->setRolesHierarchy($hierarchy);
+    }
+
+    /**
+     * @param int $courseId
+     * @return string
+     */
+    public static function getAdaptationGeneralParent(int $courseId): string
+    {
+        $course = new Course($courseId);
+
+        $studentIndex = array_search("Student", self::DEFAULT_ROLES);
+        $hierarchy = $course->getRolesHierarchy();
+
+        if (in_array("children", array_keys($hierarchy[$studentIndex]))){
+            foreach ($hierarchy[$studentIndex]["children"] as $k => $value){
+                if ($value["name"] == self::ADAPTATION_ROLE){
+                    return self::ADAPTATION_ROLE;
+                }
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Gets all adaptation roles.
+     * If $onlyParents is true then it only returns parents of adaptation roles ["Badges", "Leaderboard"]
+     * Default: Gets all adaptation roles (First parents then children)
+     * ["Badges", "Leaderboard", "B001", "B002", "LB001", "LB002"]
+     *
+     * @param int $courseId
+     * @param bool $onlyParents (optional)
+     * @return array
+     * @throws Exception
+     */
+    public static function getAdaptationCourseRoles(int $courseId, bool $onlyParents = false): array {
+        $response = GameElement::getGameElements($courseId);
+
+        if (!$onlyParents) {
+
+            $course = new Course($courseId);
+            $studentIndex = array_search("Student", Role::DEFAULT_ROLES);
+
+            // Iterate through hierarchy
+            $hierarchy = $course->getRolesHierarchy();
+            if (in_array("children", array_keys($hierarchy[$studentIndex]))){
+                foreach ($hierarchy[$studentIndex]["children"] as $value) {
+                    // Sees if adaptation role has children
+                    if ($value["name"] == Role::ADAPTATION_ROLE && in_array("children", array_keys($value))) {
+
+                        // Iterates through children (at this point will be game elements "badges", "leaderboard" etc)
+                        foreach ($value["children"] as $item) {
+                            // if item has children
+                            if (in_array("children", array_keys($item))) {
+                                // Iterate through item to get all children
+                                foreach ($item["children"] as $child) {
+                                    array_push($response, $child["name"]);
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        return $response;
+    }
+
+    /**
      * Gets course's roles. Option to retrieve only roles' names and/or to
      * sort them hierarchly. Sorting works like this:
      *  - if only names --> with the more specific roles first, followed
@@ -148,9 +305,9 @@ class Role
      *          getCourseRoles(<courseID>, false) --> [
      *                                                  ["name" => "Watcher", "id" => 3, "landingPage" => null, "module" => null],
      *                                                  ["name" => "Student", "id" => 2, "landingPage" => null, "module" => null],
-     *                                                  ["name" => "StudentB", "id" => 5, "landingPage" => null"module" => null],
-     *                                                  ["name" => "StudentA", "id" => 4, "landingPage" => null"module" => null],
-     *                                                  ["name" => "Teacher", "id" => 1, "landingPage" => null"module" => null]
+     *                                                  ["name" => "StudentB", "id" => 5, "landingPage" => null, "module" => null],
+     *                                                  ["name" => "StudentA", "id" => 4, "landingPage" => null, "module" => null],
+     *                                                  ["name" => "Teacher", "id" => 1, "landingPage" => null, "module" => null]
      *                                                ] (no fixed order)
      *
      * @example Course Roles: Teacher, Student, StudentA, StudentB, Watcher
@@ -333,7 +490,7 @@ class Role
             throw new Exception("Need either role name, role ID or module ID to remove roles from course.");
 
         if ($moduleId) {
-            Core::database()->delete(self::TABLE_ROLE, ["module" => $moduleId]);
+            Core::database()->delete(self::TABLE_ROLE, ["course" => $courseId, "module" => $moduleId]);
             return;
         }
 

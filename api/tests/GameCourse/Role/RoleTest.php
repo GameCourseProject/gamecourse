@@ -2,9 +2,13 @@
 namespace GameCourse\Role;
 
 use Exception;
+use GameCourse\Adaptation\GameElement;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Badges\Badges;
+use GameCourse\Module\Leaderboard\Leaderboard;
+use GameCourse\Module\Profile\Profile;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
 use GameCourse\Views\Aspect\Aspect;
@@ -209,7 +213,6 @@ class RoleTest extends TestCase
         }
     }
 
-
     /**
      * @test
      * @throws Exception
@@ -240,6 +243,341 @@ class RoleTest extends TestCase
         ], $hierarchy);
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function addBadgesAdaptationRolesToCourse()
+    {
+        // Given
+        $array = [];
+        $this->course->setRolesHierarchy([]);
+        $this->course->setRoles([]);
+        Core::database()->resetAutoIncrement(Role::TABLE_ROLE);
+        Role::addDefaultRolesToCourse($this->course->getId());
+
+        // When
+        $moduleId = Badges::ID;
+        $roles = Badges::ADAPTATION_BADGES;
+        $parent = array_keys($roles)[0];
+        $children = array_keys($roles[$parent]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $moduleId, $parent, $children);
+
+        // Then
+        $rolesNames = $this->course->getRoles();
+
+        array_push($array, Role::DEFAULT_ROLES[0]);
+        array_push($array, Role::DEFAULT_ROLES[1]);
+        array_push($array, Role::DEFAULT_ROLES[2]);
+        array_push($array, Role::ADAPTATION_ROLE);
+        array_push($array, $parent);
+        array_push($array, $children[0]);
+        array_push($array, $children[1]);
+
+        $this->assertIsArray($rolesNames);
+        $this->assertCount(count($array), $rolesNames);
+        $this->assertEquals([
+            0 => Role::DEFAULT_ROLES[0],
+            1 => Role::DEFAULT_ROLES[1],
+            2 => Role::DEFAULT_ROLES[2],
+            3 => Role::ADAPTATION_ROLE,
+            4 => array_keys(Badges::ADAPTATION_BADGES)[0],
+            5 => array_keys(Badges::ADAPTATION_BADGES[array_keys(Badges::ADAPTATION_BADGES)[0]])[0],
+            6 => array_keys(Badges::ADAPTATION_BADGES[array_keys(Badges::ADAPTATION_BADGES)[0]])[1]
+        ], $rolesNames);
+
+        $hierarchy = $this->course->getRolesHierarchy();
+        $this->assertEquals([
+            ["name" => Role::DEFAULT_ROLES[0]],
+            ["name" => Role::DEFAULT_ROLES[1],
+             "children" => [ [ "name" => Role::ADAPTATION_ROLE,
+                               "children" => [["name" => array_keys(Badges::ADAPTATION_BADGES)[0],
+                                               "children" => [
+                                                   ["name" => array_keys(Badges::ADAPTATION_BADGES[array_keys(Badges::ADAPTATION_BADGES)[0]])[0]],
+                                                   ["name" => array_keys(Badges::ADAPTATION_BADGES[array_keys(Badges::ADAPTATION_BADGES)[0]])[1]]]
+                                            ]]
+                           ] ]
+            ],
+            ["name" => Role::DEFAULT_ROLES[2]]
+        ], $hierarchy);
+
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function addLeaderboardAdaptationRolesToCourse()
+    {
+        // Given
+        $array = [];
+        $this->course->setRolesHierarchy([]);
+        $this->course->setRoles([]);
+        Core::database()->resetAutoIncrement(Role::TABLE_ROLE);
+        Role::addDefaultRolesToCourse($this->course->getId());
+
+        // When
+        $moduleId = Leaderboard::ID;
+        $roles = Leaderboard::ADAPTATION_LEADERBOARD;
+        $parent = array_keys($roles)[0];
+        $children = array_keys($roles[$parent]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $moduleId, $parent, $children);
+
+        // Then
+        $rolesNames = $this->course->getRoles();
+
+        array_push($array, Role::DEFAULT_ROLES[0]);
+        array_push($array, Role::DEFAULT_ROLES[1]);
+        array_push($array, Role::DEFAULT_ROLES[2]);
+        array_push($array, Role::ADAPTATION_ROLE);
+        array_push($array, $parent);
+        array_push($array, $children[0]);
+        array_push($array, $children[1]);
+
+        $this->assertIsArray($rolesNames);
+        $this->assertCount(count($array), $rolesNames);
+        $this->assertEquals([
+            0 => Role::DEFAULT_ROLES[0],
+            1 => Role::DEFAULT_ROLES[1],
+            2 => Role::DEFAULT_ROLES[2],
+            3 => Role::ADAPTATION_ROLE,
+            4 => array_keys(Leaderboard::ADAPTATION_LEADERBOARD)[0],
+            5 => array_keys(Leaderboard::ADAPTATION_LEADERBOARD[array_keys(Leaderboard::ADAPTATION_LEADERBOARD)[0]])[0],
+            6 => array_keys(Leaderboard::ADAPTATION_LEADERBOARD[array_keys(Leaderboard::ADAPTATION_LEADERBOARD)[0]])[1]
+        ], $rolesNames);
+
+        $hierarchy = $this->course->getRolesHierarchy();
+        $this->assertEquals([
+            ["name" => Role::DEFAULT_ROLES[0]],
+            ["name" => Role::DEFAULT_ROLES[1],
+                "children" => [ [ "name" => Role::ADAPTATION_ROLE,
+                    "children" => [["name" => array_keys(Leaderboard::ADAPTATION_LEADERBOARD)[0],
+                        "children" => [
+                            ["name" => array_keys(Leaderboard::ADAPTATION_LEADERBOARD[array_keys(Leaderboard::ADAPTATION_LEADERBOARD)[0]])[0]],
+                            ["name" => array_keys(Leaderboard::ADAPTATION_LEADERBOARD[array_keys(Leaderboard::ADAPTATION_LEADERBOARD)[0]])[1]]]
+                    ]]
+                ] ]
+            ],
+            ["name" => Role::DEFAULT_ROLES[2]]
+        ], $hierarchy);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function addProfileAdaptationRolesToCourse()
+    {
+        // Given
+        $array = [];
+        $this->course->setRolesHierarchy([]);
+        $this->course->setRoles([]);
+        Core::database()->resetAutoIncrement(Role::TABLE_ROLE);
+        Role::addDefaultRolesToCourse($this->course->getId());
+
+        // When
+        $moduleId = Profile::ID;
+        $roles = Profile::ADAPTATION_PROFILE;
+        $parent = array_keys($roles)[0];
+        $children = array_keys($roles[$parent]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $moduleId, $parent, $children);
+
+        // Then
+        $rolesNames = $this->course->getRoles();
+
+        array_push($array, Role::DEFAULT_ROLES[0]);
+        array_push($array, Role::DEFAULT_ROLES[1]);
+        array_push($array, Role::DEFAULT_ROLES[2]);
+        array_push($array, Role::ADAPTATION_ROLE);
+        array_push($array, $parent);
+        array_push($array, $children[0]);
+        array_push($array, $children[1]);
+        array_push($array, $children[2]);
+
+        $this->assertIsArray($rolesNames);
+        $this->assertCount(count($array), $rolesNames);
+        $this->assertEquals([
+            0 => Role::DEFAULT_ROLES[0],
+            1 => Role::DEFAULT_ROLES[1],
+            2 => Role::DEFAULT_ROLES[2],
+            3 => Role::ADAPTATION_ROLE,
+            4 => array_keys(Profile::ADAPTATION_PROFILE)[0],
+            5 => array_keys(Profile::ADAPTATION_PROFILE[array_keys(Profile::ADAPTATION_PROFILE)[0]])[0],
+            6 => array_keys(Profile::ADAPTATION_PROFILE[array_keys(Profile::ADAPTATION_PROFILE)[0]])[1],
+            7 => array_keys(Profile::ADAPTATION_PROFILE[array_keys(Profile::ADAPTATION_PROFILE)[0]])[2]
+        ], $rolesNames);
+
+        $hierarchy = $this->course->getRolesHierarchy();
+        $this->assertEquals([
+            ["name" => Role::DEFAULT_ROLES[0]],
+            ["name" => Role::DEFAULT_ROLES[1],
+                "children" => [ [ "name" => Role::ADAPTATION_ROLE,
+                    "children" => [["name" => array_keys(Profile::ADAPTATION_PROFILE)[0],
+                        "children" => [
+                            ["name" => array_keys(Profile::ADAPTATION_PROFILE[array_keys(Profile::ADAPTATION_PROFILE)[0]])[0]],
+                            ["name" => array_keys(Profile::ADAPTATION_PROFILE[array_keys(Profile::ADAPTATION_PROFILE)[0]])[1]],
+                            ["name" => array_keys(Profile::ADAPTATION_PROFILE[array_keys(Profile::ADAPTATION_PROFILE)[0]])[2]]]
+                    ]]
+                ] ]
+            ],
+            ["name" => Role::DEFAULT_ROLES[2]]
+        ], $hierarchy);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getAdaptationCourseRoles(){
+        // Given
+        $this->course->setRolesHierarchy([]);
+        $this->course->setRoles([]);
+        Core::database()->resetAutoIncrement(Role::TABLE_ROLE);
+        Role::addDefaultRolesToCourse($this->course->getId());
+
+        $moduleLeaderboard = Leaderboard::ID;
+        $rolesLB = Leaderboard::ADAPTATION_LEADERBOARD;
+        $parentLB = array_keys($rolesLB)[0];
+        $children = array_keys($rolesLB[$parentLB]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $moduleLeaderboard, $parentLB, $children);
+        GameElement::addGameElement($this->course->getId(), Leaderboard::ID);
+
+        $moduleBadges = Badges::ID;
+        $rolesB = Badges::ADAPTATION_BADGES;
+        $parentB = array_keys($rolesB)[0];
+        $children = array_keys($rolesB[$parentB]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $moduleBadges, $parentB, $children);
+        GameElement::addGameElement($this->course->getId(), Badges::ID);
+
+        $moduleProfile = Profile::ID;
+        $rolesP = Profile::ADAPTATION_PROFILE;
+        $parentP = array_keys($rolesP)[0];
+        $children = array_keys($rolesP[$parentP]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $moduleProfile, $parentP, $children);
+        GameElement::addGameElement($this->course->getId(), Profile::ID);
+
+        // When
+        $response = Role::getAdaptationCourseRoles($this->course->getId()); // all game elements
+
+        // Then
+        $this->assertIsArray($response);
+        $this->assertEquals([
+            Leaderboard::ID,
+            Badges::ID,
+            Profile::ID,
+            array_keys(Leaderboard::ADAPTATION_LEADERBOARD[array_keys(Leaderboard::ADAPTATION_LEADERBOARD)[0]])[0],
+            array_keys(Leaderboard::ADAPTATION_LEADERBOARD[array_keys(Leaderboard::ADAPTATION_LEADERBOARD)[0]])[1],
+            array_keys(Badges::ADAPTATION_BADGES[array_keys(Badges::ADAPTATION_BADGES)[0]])[0],
+            array_keys(Badges::ADAPTATION_BADGES[array_keys(Badges::ADAPTATION_BADGES)[0]])[1],
+            array_keys(Profile::ADAPTATION_PROFILE[array_keys(Profile::ADAPTATION_PROFILE)[0]])[0],
+            array_keys(Profile::ADAPTATION_PROFILE[array_keys(Profile::ADAPTATION_PROFILE)[0]])[1],
+            array_keys(Profile::ADAPTATION_PROFILE[array_keys(Profile::ADAPTATION_PROFILE)[0]])[2]
+        ] ,$response);
+
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getAdaptationCourseRolesOnlyParents(){
+        // Given
+        $this->course->setRolesHierarchy([]);
+        $this->course->setRoles([]);
+        Core::database()->resetAutoIncrement(Role::TABLE_ROLE);
+        Role::addDefaultRolesToCourse($this->course->getId());
+
+        $moduleLeaderboard = Leaderboard::ID;
+        $rolesLB = Leaderboard::ADAPTATION_LEADERBOARD;
+        $parentLB = array_keys($rolesLB)[0];
+        $children = array_keys($rolesLB[$parentLB]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $moduleLeaderboard, $parentLB, $children);
+        GameElement::addGameElement($this->course->getId(), Leaderboard::ID);
+
+        $moduleBadges = Badges::ID;
+        $rolesB = Badges::ADAPTATION_BADGES;
+        $parentB = array_keys($rolesB)[0];
+        $children = array_keys($rolesB[$parentB]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $moduleBadges, $parentB, $children);
+        GameElement::addGameElement($this->course->getId(), Badges::ID);
+
+        $moduleProfile = Profile::ID;
+        $rolesP = Profile::ADAPTATION_PROFILE;
+        $parentP = array_keys($rolesP)[0];
+        $children = array_keys($rolesP[$parentP]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $moduleProfile, $parentP, $children);
+        GameElement::addGameElement($this->course->getId(), Profile::ID);
+
+        // When
+        $response = Role::getAdaptationCourseRoles($this->course->getId(), true); // all game elements
+
+        // Then
+        $this->assertIsArray($response);
+        $this->assertEquals([
+            Leaderboard::ID,
+            Badges::ID,
+            Profile::ID
+        ] ,$response);
+
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function removeAdaptationRolesFromCourse()
+    {
+        // Given
+        $this->course->setRolesHierarchy([]);
+        $this->course->setRoles([]);
+        Core::database()->resetAutoIncrement(Role::TABLE_ROLE);
+        Role::addDefaultRolesToCourse($this->course->getId());
+
+        $moduleLeaderboard = Leaderboard::ID;
+        $rolesLB = Leaderboard::ADAPTATION_LEADERBOARD;
+        $parentLB = array_keys($rolesLB)[0];
+        $children = array_keys($rolesLB[$parentLB]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $moduleLeaderboard, $parentLB, $children);
+
+        $moduleBadges = Badges::ID;
+        $rolesB = Badges::ADAPTATION_BADGES;
+        $parentB = array_keys($rolesB)[0];
+        $children = array_keys($rolesB[$parentB]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $moduleBadges, $parentB, $children);
+
+        $moduleProfile = Profile::ID;
+        $rolesP = Profile::ADAPTATION_PROFILE;
+        $parentP = array_keys($rolesP)[0];
+        $children = array_keys($rolesP[$parentP]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $moduleProfile, $parentP, $children);
+
+        // When
+        Role::removeAdaptationRolesFromCourse($this->course->getId(), $moduleLeaderboard, $parentLB);
+        Role::removeAdaptationRolesFromCourse($this->course->getId(), $moduleBadges, $parentB);
+        Role::removeAdaptationRolesFromCourse($this->course->getId(), $moduleProfile, $parentP);
+
+        // Then
+        $roles = $this->course->getRoles();
+        $this->assertIsArray($roles);
+        $this->assertEquals([
+            Role::DEFAULT_ROLES[0],
+            Role::DEFAULT_ROLES[1],
+            Role::DEFAULT_ROLES[2],
+            Role::ADAPTATION_ROLE], $roles);
+
+        $hierarchy = $this->course->getRolesHierarchy();
+        $this->assertIsArray($hierarchy);
+        $this->assertEquals([
+            ["name" => Role::DEFAULT_ROLES[0]],
+            ["name" => Role::DEFAULT_ROLES[1],
+                "children" => [ [ "name" => Role::ADAPTATION_ROLE,
+                    "children" => []
+                ] ]
+            ],
+            ["name" => Role::DEFAULT_ROLES[2]]
+        ], $hierarchy);
+
+    }
 
     /**
      * @test

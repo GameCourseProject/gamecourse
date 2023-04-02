@@ -3,10 +3,16 @@ namespace API;
 
 use Event\Event;
 use Event\EventType;
+use GameCourse\Adaptation\GameElement;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Badges\Badges;
 use GameCourse\Module\Fenix\Fenix;
+use GameCourse\Module\Leaderboard\Leaderboard;
+use GameCourse\Module\Module;
 use GameCourse\Module\Moodle\Moodle;
+use GameCourse\Module\Profile\Profile;
+use GameCourse\Role\Role;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\CreationMode;
 use GameCourse\Views\Dictionary\CollectionLibrary;
@@ -184,13 +190,45 @@ class DocsController
     public function setupPages()
     {
         $leaderboard = json_decode(file_get_contents(ROOT_PATH . "/temp/leaderboard.txt"), true);
+        $awards = json_decode(file_get_contents(MODULES_FOLDER . "/Awards/templates/userAwardsList.txt"), true);
+        $spendings = json_decode(file_get_contents(MODULES_FOLDER . "/VirtualCurrency/templates/userSpendingsList.txt"), true);
         $profile = json_decode(file_get_contents(ROOT_PATH . "/temp/profile.txt"), true);
         $badges = json_decode(file_get_contents(ROOT_PATH . "/temp/badges.txt"), true);
 
-        Page::addPage(9, CreationMode::BY_VALUE, "Leaderboard", $leaderboard);
-        Page::addPage(9, CreationMode::BY_VALUE, "Profile", $profile);
-        Page::addPage(9, CreationMode::BY_VALUE, "Badges", $badges);
-        Page::addPage(9, CreationMode::BY_VALUE, "Skill Tree", [["aspect" => ["viewerRole" => null, "userRole" => "Student"], "type" => "block"]]);
-        Page::addPage(9, CreationMode::BY_VALUE, "Streaks", [["aspect" => ["viewerRole" => null, "userRole" => "Student"], "type" => "block"]]);
+        Page::addPage(1, CreationMode::BY_VALUE, "Leaderboard", $leaderboard);
+        Page::addPage(1, CreationMode::BY_VALUE, "Awards", $awards);
+        Page::addPage(1, CreationMode::BY_VALUE, "Spendings", $spendings);
+        Page::addPage(1, CreationMode::BY_VALUE, "Profile", $profile);
+        Page::addPage(1, CreationMode::BY_VALUE, "Badges", $badges);
+        Page::addPage(1, CreationMode::BY_VALUE, "Skill Tree", [["aspect" => ["viewerRole" => null, "userRole" => "Student"], "type" => "block"]]);
+        Page::addPage(1, CreationMode::BY_VALUE, "Streaks", [["aspect" => ["viewerRole" => null, "userRole" => "Student"], "type" => "block"]]);
+    }
+
+
+    public function addAdaptation(array $roles, int $course, string $moduleId){
+        $parent = array_keys($roles)[0];
+        $versions = array_keys($roles[$parent]);
+
+        Role::addAdaptationRolesToCourse($course, $moduleId, $parent, $versions);
+        foreach ($roles[$parent] as $key => $value){
+            $roleId = Role::getRoleId($key, $course);
+            GameElement::addGameElementDescription($roleId, $value[0]);
+        }
+    }
+
+    public function createAdaptationRoles()
+    {
+        $course = new Course(2);
+
+        $this->addAdaptation(Badges::ADAPTATION_BADGES, $course->getId(), Badges::ID);
+        GameElement::addGameElement($course->getId(), Badges::ID);
+
+        $this->addAdaptation(Leaderboard::ADAPTATION_LEADERBOARD, $course->getId(), Leaderboard::ID);
+        GameElement::addGameElement($course->getId(), Leaderboard::ID);
+
+        $this->addAdaptation(Profile::ADAPTATION_PROFILE, $course->getId(), Profile::ID);
+        GameElement::addGameElement($course->getId(), Profile::ID);
+
+
     }
 }

@@ -2,6 +2,7 @@
 namespace API;
 
 use Exception;
+
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
@@ -200,7 +201,6 @@ class CourseController
         $isVisible = API::getValue("isVisible", "bool");
         $course->setVisible($isVisible);
     }
-
 
     /*** --------------------------------------------- ***/
     /*** --------------- Course Users ---------------- ***/
@@ -571,6 +571,38 @@ class CourseController
     /**
      * @throws Exception
      */
+    public function getAdaptationRoles()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCourseAdminPermission($course);
+
+        $onlyParents = API::getValue("onlyParents", "bool") ?? false;
+
+        $roles = Role::getAdaptationCourseRoles($courseId, $onlyParents);
+        API::response($roles);
+    }
+
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function getAdaptationGeneralParent(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCourseAdminPermission($course);
+
+        $response = Role::getAdaptationGeneralParent($courseId);
+        API::response($response);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function getRoles()
     {
         API::requireValues("courseId");
@@ -604,7 +636,6 @@ class CourseController
         $course->updateRoles($roles);
         $course->setRolesHierarchy($hierarchy);
     }
-
 
     /*** --------------------------------------------- ***/
     /*** ------------------ Modules ------------------ ***/

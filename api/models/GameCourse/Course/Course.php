@@ -398,6 +398,7 @@ class Course
 
         // Add default roles
         Role::addDefaultRolesToCourse($id);
+
         $teacherRoleId = Role::getRoleId("Teacher", $id);
 
         // Add current user as a teacher of the course
@@ -597,6 +598,30 @@ class Course
         return !empty($this->getData("id"));
     }
 
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------- Course Rules ------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+
+    /**
+     * Adds a given rule to a course.
+     * Returns the newly created course rule.
+     *
+     * @param int $ruleId
+     * @param bool $isActive
+     * @return CourseRule
+     * @throws Exception
+     */
+    public function addRuleToCourse(int $ruleId, bool $isActive = true) : CourseRule
+    {
+        // CHECK THIS -- INCOMPLETE
+        return CourseRule::addCourseRule($ruleId, $this->id, $isActive);
+    }
+
+    public function getTags(int $courseId, bool $active): array
+    {
+        return [];
+    }
 
     /*** ---------------------------------------------------- ***/
     /*** ------------------- Course Users ------------------- ***/

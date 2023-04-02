@@ -15,6 +15,7 @@ import { SkillPageComponent } from "./pages/modules/skills/skill-page/skill-page
 import {
   SubmitParticipationPageComponent
 } from "./pages/modules/qr/submit-participation-page/submit-participation-page.component";
+import { AdaptationComponent } from "./settings/adaptation/adaptation.component";
 
 const routes: Routes = [
   {
@@ -69,8 +70,16 @@ const routes: Routes = [
       {
         path: 'themes',
         component: ComingSoonComponent
+      },
+      {
+        path: 'adaptation',
+        component: AdaptationComponent
       }
     ]
+  },
+  {
+    path: 'adaptation',
+    component: AdaptationComponent
   },
   {
     path: 'pages/:id',
@@ -103,6 +112,7 @@ const routes: Routes = [
     path: 'participation/:key',
     component: SubmitParticipationPageComponent
   },
+
   { path: '', redirectTo: 'main', pathMatch: 'full' }
 ];
 

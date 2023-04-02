@@ -8,4 +8,4 @@ rule: Lab King
 		lvl = compute_lvl(nlogs, 1)
 
 	then:
-		award_badge(target, "Lab King", lvl, logs)
+		award_badge(target, "Lab King", lvl, logs, nlogs)

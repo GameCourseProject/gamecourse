@@ -75,6 +75,7 @@ export class TableData implements OnInit {
     | 'neutral' | 'info' | 'success' | 'warning' | 'error';     // Button color
   buttonStyle?: 'default' | 'outline' = 'default';              // Button style
   buttonIcon?: string;                                          // Button icon
+  buttonDisable?: boolean;                              // Make it disabled
 
   // Type: AVATAR
   avatar: ResourceManager;                                      // Triggers avatar update
@@ -213,6 +214,7 @@ export class TableData implements OnInit {
       this.buttonColor = this.data.buttonColor ?? null;
       this.buttonStyle = this.data.buttonStyle ?? null;
       this.buttonIcon = this.data.buttonIcon ?? null;
+      this.buttonDisable = this.data.buttonDisable;
 
     } else if (this.type === TableDataType.AVATAR) {
       this.avatarTitle = this.data.avatarTitle;

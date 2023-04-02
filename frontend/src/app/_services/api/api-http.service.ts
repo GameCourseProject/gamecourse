@@ -7,7 +7,6 @@ import {ApiEndpointsService} from "./api-endpoints.service";
 
 import {QueryStringParameters} from "../../_utils/api/query-string-parameters";
 
-import {Notification} from "../../_domain/notifications/notification";
 import {AuthType} from "../../_domain/auth/auth-type";
 import {Course} from "../../_domain/courses/course";
 import {User} from "../../_domain/users/user";
@@ -60,6 +59,18 @@ import {SetupData} from "../../_views/setup/setup/setup.component";
 import {
   DataSourceStatus
 } from "../../_views/restricted/courses/course/settings/modules/config/data-source-status/data-source-status.component";
+import {Rule} from "../../_domain/rules/rule";
+import {
+  RuleManageData, SectionManageData, TagManageData
+} from "../../_views/restricted/courses/course/settings/rules/rules.component";
+import { RuleSection } from "../../_domain/rules/RuleSection";
+import { RuleTag } from "../../_domain/rules/RuleTag";
+import { Notification } from "../../_domain/notifications/notification";
+import { GameElement } from "../../_domain/adaptation/GameElement";
+import {
+  GameElementManageData,
+  QuestionnaireManageData
+} from 'src/app/_views/restricted/courses/course/settings/adaptation/adaptation.component';
 import { Streak } from 'src/app/_views/restricted/courses/course/pages/course-page/course-page.component';
 
 @Injectable({
@@ -79,8 +90,11 @@ export class ApiHttpService {
   static readonly MODULE: string = 'Module';
   static readonly THEME: string = 'Theme';
   static readonly USER: string = 'User';
+  static readonly VIEWS: string = 'Views';
+  static readonly RULES_SYSTEM: string = 'RuleSystem';
   static readonly PAGE: string = 'Page';
   static readonly NOTIFICATION_SYSTEM: string = 'Notification';
+  static readonly ADAPTATION_SYSTEM: string= "Adaptation";
   // NOTE: insert here new controllers & update cache dependencies
 
   static readonly GOOGLESHEETS: string = 'GoogleSheets';
@@ -749,8 +763,193 @@ export class ApiHttpService {
       .pipe( map((res: any) => 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data'])) );
   }
 
+  // Adaptation
+  public getGameElements(courseID: number, isActive?: boolean, onlyNames?: boolean): Observable<GameElement[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'getGameElements');
+      qs.push('courseId', courseID);
+      if (isActive !== undefined) qs.push('isActive', isActive);
+      if (onlyNames !== undefined) qs.push('onlyNames', onlyNames);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data'].map(obj => GameElement.fromDatabase(obj))));
+  }
+
+  public setGameElementActive(courseID: number, moduleID: string, isActive: boolean, notify: boolean): Observable<GameElement>{
+    const data = {
+      "courseId" : courseID,
+      "moduleId" : moduleID,
+      "isActive" : isActive,
+      "notify"   : notify
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'setGameElementActive');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => GameElement.fromDatabase(res['data'])));
+
+  }
+
+  public isQuestionnaireAnswered(courseID: number, userID: number, gameElementID: number): Observable<boolean>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'isQuestionnaireAnswered');
+      qs.push('courseId', courseID);
+      qs.push('userId', userID);
+      qs.push('gameElementId', gameElementID);
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data']));
+  }
+
+  public submitGameElementQuestionnaire(questionnaireData: QuestionnaireManageData): Observable<void>{
+    const data = {
+      course: questionnaireData.course,
+      user: questionnaireData.user,
+      q1: questionnaireData.q1,
+      element: questionnaireData.element,
+      q2: questionnaireData.q2,
+      q3: questionnaireData.q3
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'submitGameElementQuestionnaire');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => res));
+  }
+
+  public getChildrenGameElement(courseID: number, module: string): Observable<{[gameElement: string]: {version: string}}[]>{
+    const params = (qs:QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'getChildrenGameElement');
+      qs.push('courseId', courseID);
+      qs.push('moduleId', module);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public getPreviousPreference(courseID: number, userID: number, module: string): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'getPreviousPreference');
+      qs.push('courseId', courseID);
+      qs.push('userId', userID);
+      qs.push('moduleId', module);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data']));
+  }
+
+  public updateUserPreference(courseID: number, userID: number, module: string, previousPreference: string, newPreference: string, date: Date = null): Observable<void> {
+    const data = {
+      course: courseID,
+      user: userID,
+      moduleId: module,
+      previousPreference: previousPreference,
+      newPreference: newPreference,
+      date: date
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'updateUserPreference');
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res));
+  }
+
+  public getElementStatistics(courseID: number, gameElementID: number): Observable<{ questionNr: { parameter: string, value: number }[] | string[] }> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'getElementStatistics');
+      qs.push('courseId', courseID);
+      qs.push('gameElementId', gameElementID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map ((res: any) => res['data']));
+  }
+
+  public getNrAnswersQuestionnaire(courseID: number, gameElementID: number): Observable<number> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'getNrAnswersQuestionnaire');
+      qs.push('courseId', courseID);
+      qs.push('gameElementId', gameElementID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map ((res: any) => res['data']));
+  }
+
+  public exportAnswersQuestionnaire(courseID: number, gameElementID: number): Observable<string>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.ADAPTATION_SYSTEM);
+      qs.push('request', 'exportAnswersQuestionnaire');
+      qs.push('courseId', courseID);
+      qs.push('gameElementId', gameElementID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, null, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data'])) );
+  }
 
   // Roles
+
+  public getAdaptationRoles(courseID: number, onlyParents?: boolean): Observable<string[]>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getAdaptationRoles');
+      qs.push('courseId', courseID);
+      if (onlyParents !== undefined) qs.push('onlyParents', onlyParents);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public getAdaptationGeneralParent(courseID: number): Observable<string>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getAdaptationGeneralParent');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
 
   public getDefaultRoles(courseID: number): Observable<string[]> {
     const params = (qs: QueryStringParameters) => {
@@ -982,7 +1181,6 @@ export class ApiHttpService {
   }
 
 
-
   /*** --------------------------------------------- ***/
   /*** ------------------- Module ------------------ ***/
   /*** --------------------------------------------- ***/
@@ -1090,6 +1288,252 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe(map((res: any) => Notification.fromDatabase(res['data'])));
+  }
+
+  /*** -------------------------------------------------- ***/
+  /*** ------------------- RULE SYSTEM ------------------ ***/
+  /*** -------------------------------------------------- ***/
+
+  // Sections
+  public createSection(sectionData: SectionManageData): Observable<RuleSection> {
+    const data = {
+      course : sectionData.course,
+      name: sectionData.name,
+      position: sectionData.position
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'createSection');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => RuleSection.fromDatabase(res['data'])));
+  }
+
+  public editSection(sectionData: SectionManageData): Observable<RuleSection> {
+    const data = {
+      id: sectionData.id,
+      course: sectionData.course,
+      name: sectionData.name,
+      position: sectionData.position
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'editSection');
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => RuleSection.fromDatabase(res['data'])));
+  }
+
+  public deleteSection(sectionID: number, rules: Rule[]) : Observable<void>{
+    const data = { sectionId: sectionID, rules: rules };
+
+    const params = (qs:QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'deleteSection');
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => res));
+  }
+
+  public getCourseSections(courseID: number): Observable<RuleSection[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'getCourseSections');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => RuleSection.fromDatabase(obj))) );
+  }
+
+  // Rules
+
+  public createRule(ruleData: RuleManageData): Observable<Rule> {
+    const data = {
+      course: ruleData.course,
+      section: ruleData.section,
+      name: ruleData.name,
+      description: ruleData.description,
+      whenClause: ruleData.whenClause,
+      thenClause: ruleData.thenClause,
+      position: ruleData.position,
+      isActive: ruleData.isActive,
+      tags: ruleData.tags
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'createRule');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Rule.fromDatabase(res['data'])) );
+  }
+
+  public editRule(ruleData: RuleManageData): Observable<Rule> {
+    const data = {
+      id: ruleData.id,
+      course: ruleData.course,
+      name: ruleData.name,
+      description: ruleData.description,
+      whenClause: ruleData.whenClause,
+      thenClause: ruleData.thenClause,
+      position: ruleData.position,
+      isActive: ruleData.isActive,
+      tags: ruleData.tags
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'editRule');
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => Rule.fromDatabase(res['data'])));
+
+  }
+
+  public deleteRule(section: number, ruleID: number) : Observable<void> {
+    const data = {section: section, ruleId: ruleID };
+
+    const params = (qs:QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'removeRuleFromSection');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => res));
+  }
+
+  public getRulesOfSection(courseID: number, section: number, active?: boolean) : Observable<Rule[]>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'getRulesOfSection');
+      qs.push('courseId', courseID);
+      qs.push('section', section);
+      if (active !== undefined) qs.push('active', active);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => Rule.fromDatabase(obj))) );
+
+  }
+
+  public getCourseRules(courseID: number, active?: boolean): Observable<Rule[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'getCourseRules');
+      qs.push('courseId', courseID);
+      if (active !== undefined) qs.push('active', active);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => Rule.fromDatabase(obj))) );
+  }
+
+  public setCourseRuleActive(courseID: number, ruleID: number, isActive: boolean): Observable<void> {
+    const data = {
+      "courseId": courseID,
+      "ruleId": ruleID,
+      "isActive": isActive
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'setCourseRuleActive');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public importCourseRules(courseID: number, file: string | ArrayBuffer, replace: boolean): Observable<number> {
+    const data = {courseId: courseID, file, replace};
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'importCourseRules');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => parseInt(res['data'])) );
+  }
+
+  public exportCourseRules(courseID: number, rulesIDs: number[]): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'exportCourseRules');
+      qs.push('courseId', courseID);
+      qs.push('rulesIds', rulesIDs);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, null, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data'])) );
+  }
+
+  // Tags
+
+  public createTag(tagData: TagManageData) : Observable<RuleTag> {
+    const data = {
+      course: tagData.course,
+      name: tagData.name,
+      color: tagData.color
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'createTag');
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => RuleTag.fromDatabase(res['data'])));
+  }
+
+  public getRuleTags(courseID: number, ruleID: number) : Observable<RuleTag[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'getRuleTags');
+      qs.push('courseId', courseID);
+      qs.push('ruleId', ruleID);
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data'].map(obj => RuleTag.fromDatabase(obj))));
+  }
+
+  public getTags(courseID: number) : Observable<RuleTag[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'getTags');
+      qs.push('courseId', courseID);
+    }
+      const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+      return this.get(url, ApiHttpService.httpOptions)
+        .pipe(map((res:any) => res['data'].map(obj => RuleTag.fromDatabase(obj))));
   }
 
   // Configuration

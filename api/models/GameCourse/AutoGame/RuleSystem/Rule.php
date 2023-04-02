@@ -15,6 +15,9 @@ class Rule
     const TABLE_RULE = "rule";
     const TABLE_RULE_TAGS = "rule_tags";
 
+    const HEADERS = [   // headers for import/export functionality
+        "name", "isActive"
+    ];
     protected $id;
 
     public function __construct(int $id)
@@ -696,7 +699,7 @@ class Rule
      * @param string|null $fieldName
      * @return array|bool|int|mixed|null
      */
-    private static function parse(array $rule = null, $field = null, string $fieldName = null)
+    public static function parse(array $rule = null, $field = null, string $fieldName = null)
     {
         $intValues = ["id", "course", "section", "position"];
         $boolValues = ["isActive"];

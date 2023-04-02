@@ -9,7 +9,7 @@
          [ngStyle]="size !== 'sm' && size !== 'md' && size !== 'lg' ? {'max-width': '42rem'} : {}">
 
     <!-- Close X button -->
-    <label [for]="id" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+    <label *ngIf="xButton" [for]="id" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
            (click)="btnClicked = 'close'; closeBtnClicked.emit()">
       <ng-icon name="feather-x" size="1rem"></ng-icon>
     </label>
@@ -34,7 +34,7 @@
     <div class="modal-action px-1">
 
       <!-- Close button (left) -->
-      <label [for]="id" class="btn btn-ghost {{closeBtnColor ? colors[closeBtnColor].btn : ''}}"
+      <label *ngIf="closeBtn" [for]="id" class="btn btn-ghost {{closeBtnColor ? colors[closeBtnColor].btn : ''}}"
              (click)="btnClicked = 'close'; closeBtnClicked.emit()">
         {{closeBtnText}}
       </label>
@@ -54,13 +54,13 @@
       <!-- Submit button (right) -->
       <button *ngIf="submitBtnText" class="btn {{submitBtnOutline ? 'btn-outline' : ''}} {{submitBtnColor ? colors[submitBtnColor].btn : ''}}"
               [disabled]="submitBtnDisabled" type="button" (click)="btnClicked = 'submit'; submitBtnClicked.emit()">
-
         <!-- Spinner -->
         <ng-container *ngIf="actionInProgress && btnClicked == 'submit'">
           <app-spinner [size]="'sm'" [color]="submitBtnOutline ? submitBtnColor : colors[submitBtnColor].btnText" [classList]="'mr-3'"></app-spinner>
         </ng-container>
 
         {{submitBtnText}}
+        <ng-icon class="ml-3" *ngIf="submitBtnIcon" [name]="submitBtnIcon" size="1.5rem"></ng-icon>
       </button>
     </div>
 

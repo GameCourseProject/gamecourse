@@ -24,6 +24,7 @@ export class RolesComponent implements OnInit {
     action: false
   }
 
+  showAlert: boolean = false;
   course: Course;
   originalRolesHierarchy: Role[];
 
@@ -34,6 +35,9 @@ export class RolesComponent implements OnInit {
   visiblePages: {value: string, text: string}[];
   defaultRoleNames: string[];
   rolesHierarchySmart: {[roleName: string]: {role: Role, parent: Role, children: Role[]}};
+
+  adaptationRoleNames: string[];
+  adaptationTitle: string;
 
   constructor(
     private api: ApiHttpService,
@@ -73,7 +77,13 @@ export class RolesComponent implements OnInit {
   }
 
   async getRoles(courseID: number): Promise<void> {
+    // default roles
     this.defaultRoleNames = await this.api.getDefaultRoles(courseID).toPromise();
+
+    // adaptation roles
+    this.adaptationRoleNames = await this.api.getAdaptationRoles(courseID, false).toPromise();
+    this.adaptationTitle = await this.api.getAdaptationGeneralParent(courseID).toPromise();
+
     this.originalRolesHierarchy = _.cloneDeep(this.course.roleHierarchy);
     this.initRolesHierarchySmart();
   }
@@ -137,6 +147,7 @@ export class RolesComponent implements OnInit {
 
   removeRole(role: Role): void {
     if (this.isDefaultRole(role.name)) return;
+    if (this.isAdaptationRole(role.name)) return;
 
     const parent = this.rolesHierarchySmart[role.name].parent;
     if (parent) {
@@ -155,6 +166,7 @@ export class RolesComponent implements OnInit {
   discard() {
     this.course.roleHierarchy = _.cloneDeep(this.originalRolesHierarchy);
     this.initRolesHierarchySmart();
+    this.showAlert = false;
   }
 
   async save(): Promise<void> {
@@ -164,27 +176,52 @@ export class RolesComponent implements OnInit {
     // @ts-ignore
     const hierarchy = list.nestable('serialize');
 
-    await this.api.updateRoles(this.course.id, getRoles(hierarchy, []), hierarchy).toPromise();
-    this.originalRolesHierarchy = this.course.roleHierarchy;
+    if (this.adaptationTitle) {
+      let adaptationInStudent = false;
+
+      for (let i = 0; i < hierarchy.length; i++){
+        if (hierarchy[i].name === "Student"){
+
+          if (!hierarchy[i].children){ break; }
+          for (let j = 0; j < Object.keys(hierarchy[i].children).length; j++){
+            if (this.isAdaptationTitle(hierarchy[i].children[j].name)){
+              adaptationInStudent = true;
+              break;
+            }
+          }
+          break;
+        }
+      }
+
+      if (!adaptationInStudent){
+        this.showAlert = true;
+      }
+    } else {
+      if (this.showAlert) {this.showAlert = false;}
+      await this.api.updateRoles(this.course.id, getRoles(hierarchy, []), hierarchy).toPromise();
+      this.originalRolesHierarchy = this.course.roleHierarchy;
+
+      function getRoles(hierarchy: Role[], roles: Role[]) {
+        for (const role of hierarchy) {
+          role['landingPage'] = role['landingpage'];
+          delete role['landingpage'];
+
+          // @ts-ignore
+          const copiedRole = _.cloneDeep(role);
+          delete role['id'];
+          delete role['landingPage'];
+
+          roles.push(copiedRole);
+          if (role.children?.length > 0)
+            roles = [...new Set(roles.concat(getRoles(role.children, roles)))]
+        }
+        return roles;
+      }
+
+      AlertService.showAlert(AlertType.SUCCESS, 'Roles saved');
+    }
 
     this.loading.action = false;
-    AlertService.showAlert(AlertType.SUCCESS, 'Roles saved');
-
-    function getRoles(hierarchy: Role[], roles: Role[]) {
-      for (const role of hierarchy) {
-        role['landingPage'] = role['landingpage'];
-        delete role['landingpage'];
-
-        const copiedRole = _.cloneDeep(role);
-        delete role['id'];
-        delete role['landingPage'];
-
-        roles.push(copiedRole);
-        if (role.children?.length > 0)
-          roles = [...new Set(roles.concat(getRoles(role.children, roles)))]
-      }
-      return roles;
-    }
   }
 
 
@@ -228,6 +265,14 @@ export class RolesComponent implements OnInit {
 
   isDefaultRole(roleName): boolean {
     return this.defaultRoleNames.includes(roleName);
+  }
+
+  isAdaptationRole(roleName): boolean {
+    return this.adaptationRoleNames.includes(roleName);
+  }
+
+  isAdaptationTitle(roleName): boolean {
+    return roleName === this.adaptationTitle;
   }
 
 }

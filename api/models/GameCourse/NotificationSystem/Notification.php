@@ -311,6 +311,16 @@ class Notification
         return $notifications;
     }
 
+    public static function isNotificationInDB(int $course, int $user, string $message): bool
+    {
+        $table = self::TABLE_NOTIFICATION;
+        $where = ["course" => $course, "user" => $user, "message" => $message];
+        $notification = Core::database()->select($table, $where);
+
+        if ($notification) return true;
+        else return false;
+    }
+
     /*** ---------------------------------------------------- ***/
     /*** ------------------ Import/Export ------------------- ***/
     /*** ---------------------------------------------------- ***/

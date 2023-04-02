@@ -9,7 +9,6 @@ import { ModulesComponent } from './modules/modules.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { SettingsComponent } from './settings/settings.component';
 
-
 @NgModule({
   declarations: [
      GlobalComponent,

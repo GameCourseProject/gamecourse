@@ -105,7 +105,6 @@ CREATE TABLE user_role(
     FOREIGN key(role) REFERENCES role(id) ON DELETE CASCADE
 );
 
-
 /*** ---------------------------------------------------- ***/
 /*** ------------------ Module tables ------------------- ***/
 /*** ---------------------------------------------------- ***/
@@ -144,6 +143,71 @@ CREATE TABLE course_module(
     PRIMARY key(module, course),
     FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE,
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+);
+
+/*** ---------------------------------------------------- ***/
+/*** -------------- Adaptation tables ------------------- ***/
+/*** ---------------------------------------------------- ***/
+
+CREATE TABLE adaptation_game_element(
+    id          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course      int unsigned NOT NULL,
+    module      varchar(50) NOT NULL,
+    isActive    boolean NOT NULL DEFAULT FALSE,
+    notify      boolean DEFAULT FALSE,
+
+    UNIQUE key(course, module),
+    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN KEY (module) REFERENCES module(id) ON DELETE CASCADE
+);
+
+CREATE TABLE adaptation_user_preferences(
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course                      int unsigned NOT NULL,
+    user                        int unsigned NOT NULL,
+    module                      varchar(50) NOT NULL,
+    previousPreference          int unsigned,
+    newPreference               int unsigned NOT NULL,
+    date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE key(user, previousPreference, date),
+    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (module) REFERENCES module(id) ON DELETE CASCADE,
+    FOREIGN KEY (newPreference) REFERENCES role(id) ON DELETE CASCADE
+);
+
+CREATE TABLE adaptation_questionnaire_answers(
+    id          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    course      int unsigned NOT NULL,
+    user        int unsigned NOT NULL,
+    question1   boolean NOT NULL DEFAULT FALSE,
+    question2   varchar(250),   /* default here is null */
+    question3   int unsigned,   /* default here is 0 */
+    element     int unsigned NOT NULL,
+    date        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE(course, user, element),
+    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (element) REFERENCES adaptation_game_element(id) ON DELETE CASCADE
+);
+
+CREATE TABLE adaptation_user_notification(
+     element     int unsigned NOT NULL,
+     user        int unsigned NOT NULL,
+
+     PRIMARY key(element, user),
+     FOREIGN KEY (element) REFERENCES adaptation_game_element(id) ON DELETE CASCADE,
+     FOREIGN KEY (user) REFERENCES course_user(id) ON DELETE CASCADE
+);
+
+CREATE TABLE adaptation_element_descriptions(
+    element         int unsigned NOT NULL,
+    description     varchar(150) NOT NULL,
+
+    PRIMARY KEY (element),
+    FOREIGN KEY (element) REFERENCES role(id) ON DELETE CASCADE
 );
 
 
@@ -346,8 +410,8 @@ CREATE TABLE notification(
      dateCreated    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
      dateSeen       TIMESTAMP NULL DEFAULT NULL,
 
-     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
-     FOREIGN key(user) REFERENCES user(id) ON DELETE CASCADE
+    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+    FOREIGN key(user) REFERENCES user(id) ON DELETE CASCADE
 );
 
 /*** ---------------------------------------------------- ***/

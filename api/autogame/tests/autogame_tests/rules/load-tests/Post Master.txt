@@ -11,4 +11,4 @@ rule: Post Master
 		# Compute the level of the badge that the student deserves
 		lvl = compute_lvl(nlogs, 20, 30, 50)
 	then:
-		award_badge(target, "Post Master", lvl, logs)
+		award_badge(target, "Post Master", lvl, logs, nlogs)

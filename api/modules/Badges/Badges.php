@@ -1,7 +1,10 @@
 <?php
 namespace GameCourse\Module\Badges;
 
+use Event\Event;
+use Event\EventType;
 use Exception;
+use GameCourse\Adaptation\GameElement;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -14,8 +17,10 @@ use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\Moodle\Moodle;
+use GameCourse\Module\Profiling\Profiling;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
+use Google\Service\DriveActivity\Edit;
 use GameCourse\Views\Dictionary\ReturnType;
 use Utils\Cache;
 use Utils\Utils;
@@ -64,6 +69,12 @@ class Badges extends Module
     const DATA_FOLDER = 'badges';
     const RULE_SECTION = "Badges";
 
+    // FIXME -> Change later (profiling_adaptation_role_connection should not be hardcoded)
+    // NOTE: profiling_adaptation_role_connection not really used at the moment
+    // Structure is: [ Game_element => [ "VersionA" => [ description, profiling_adaptation_role_connection ] ] ]
+    const ADAPTATION_BADGES = [ "Badges" => [
+        "B001" => ["Badges displayed in alphabetic order", [ "Regular", "Achiever" ]],
+        "B002" => ["Badges displayed with achieved first", [ "Halfhearted", "Underachiever" ] ] ] ];
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -82,6 +93,12 @@ class Badges extends Module
 
         // Init config
         Core::database()->insert(self::TABLE_BADGE_CONFIG, ["course" => $this->course->getId()]);
+
+        // Add adaptation roles
+        // FIXME: Debug only
+         $this->addAdaptationRolesToCourse(self::ADAPTATION_BADGES);
+        // initEvents(); // FIXME: Debug only
+         GameElement::addGameElement($this->course->getId(), self::ID);
     }
 
     public function providers(): array
@@ -168,6 +185,8 @@ class Badges extends Module
      */
     public function disable()
     {
+        $this->removeAdaptationRolesFromCourse(self::ADAPTATION_BADGES);
+        GameElement::removeGameElement($this->course->getId(), self::ID);
         $this->cleanDatabase();
         $this->removeDataFolder();
         $this->removeTemplates();

@@ -79,6 +79,36 @@ class Profiling extends Module
         $hierarchy[$studentIndex]["children"][] = ["name" => self::PROFILING_ROLE];
         $this->course->setRolesHierarchy($hierarchy);
 
+        // Create cluster roles
+        $hierarchy = $this->course->getRolesHierarchy();
+        //$profilingIndex = array_search(self::PROFILING_ROLE, $hierarchy[$studentIndex]["children"]);
+        $clusterNames = $this->getClusterNames();
+        $profilingInCourses = Core::database()->select(self::TABLE_COURSE_MODULE, ["module" => $this->id, "isEnabled" => true], "count(course)");
+
+        foreach ($clusterNames as $name) {
+            if (!$this->course->hasRole($name)) {
+                $this->course->addRole($name, null, null, $this->id);
+
+                // Update hierarchy
+                foreach($hierarchy[$studentIndex]["children"] as $key => $value){
+                    if ($value["name"] == self::PROFILING_ROLE){
+                        $hierarchy[$studentIndex]["children"][$key]["children"][] = ["name" => $name];
+                        break;
+                    }
+                }
+
+                // add profiling clusters to system if not enabled in any course
+                if (intval($profilingInCourses) <= 1) {
+                    // NOTE: add role to system, otherwise transferring views w/
+                    //       this role's aspects will fail
+                    Core::database()->setForeignKeyChecks(false);
+                    (new Course(0))->addRole($name, null, null, $this->id);
+                    Core::database()->setForeignKeyChecks(true);
+                }
+            }
+        }
+        $this->course->setRolesHierarchy($hierarchy);
+
         // NOTE: add role to system, otherwise transferring views w/
         //       this role's aspects will fail
         Core::database()->setForeignKeyChecks(false);
@@ -101,7 +131,6 @@ class Profiling extends Module
     public function disable()
     {
         $this->cleanDatabase();
-
         // Remove all profiling roles
         $hierarchy = $this->course->getRolesHierarchy();
         $studentIndex = array_search("Student", Role::DEFAULT_ROLES);
@@ -112,12 +141,13 @@ class Profiling extends Module
             }
         }
         $this->course->setRolesHierarchy($hierarchy);
+
         $this->course->removeRole(null, null, self::ID);
 
         // Remove profiling roles from system if not enabled in any course
-        if(empty(Core::database()->select(self::TABLE_COURSE_MODULE, ["module" => $this->id, "isEnabled" => true])))
+        if(empty(Core::database()->select(self::TABLE_COURSE_MODULE, ["module" => $this->id, "isEnabled" => true]))) {
             (new Course(0))->removeRole(null, null, self::ID);
-
+        }
         // Remove logs
         if (file_exists($this->getPredictorLogsPath())) unlink($this->getPredictorLogsPath());
         if (file_exists($this->getProfilerLogsPath())) unlink($this->getProfilerLogsPath());
@@ -505,30 +535,10 @@ class Profiling extends Module
     {
         if (empty($clusters)) return;
 
-        // Create cluster roles
-        $hierarchy = $this->course->getRolesHierarchy();
-        $studentIndex = array_search("Student", Role::DEFAULT_ROLES);
-        $profilingIndex = array_search(self::PROFILING_ROLE, $hierarchy[$studentIndex]["children"]);
-        $clusterNames = $this->getClusterNames();
-        foreach ($clusterNames as $name) {
-            if (!$this->course->hasRole($name)) {
-                $this->course->addRole($name, null, null, $this->id);
-                $hierarchy[$studentIndex]["children"][$profilingIndex]["children"][] = ["name" => $name];
-
-                // NOTE: add role to system, otherwise transferring views w/
-                //       this role's aspects will fail
-                Core::database()->setForeignKeyChecks(false);
-                (new Course(0))->addRole($name, null, null, $this->id);
-                Core::database()->setForeignKeyChecks(true);
-            }
-        }
-        $this->course->setRolesHierarchy($hierarchy);
-
         // Update students cluster
         $date = date("Y-m-d H:i:s");
         $students = $this->course->getStudents();
 
-        // $clusters = $this->parseClusters($clusters);
         foreach ($students as $student) {
             $student = $this->course->getCourseUserById($student["id"]);
 

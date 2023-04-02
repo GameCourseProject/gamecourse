@@ -2,11 +2,13 @@
 namespace GameCourse\Module\Leaderboard;
 
 use Exception;
+use GameCourse\Adaptation\GameElement;
 use GameCourse\Course\Course;
 use GameCourse\Module\Badges\Badges;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\Module\Profiling\Profiling;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\Views\Dictionary\ReturnType;
 
@@ -45,6 +47,12 @@ class Leaderboard extends Module
 
     const RESOURCES = [];
 
+    // FIXME -> Change later (profiling_adaptation_role_connection should not be hardcoded)
+    // NOTE: profiling_adaptation_role_connection not really used at the moment
+    // Structure is: [ Game_element => [ "VersionA" => [ description, profiling_adaptation_role_connection ] ] ]
+    const ADAPTATION_LEADERBOARD = [ "Leaderboard" =>
+        ["LB001" => ["Shows entire leaderboard", [ "Regular", "Achiever" ]],
+         "LB002" => ["Leaderboard is snapped and shows 5 people above and below you", [ "Halfhearted", "Underachiever" ]]]];
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -56,6 +64,11 @@ class Leaderboard extends Module
     public function init()
     {
         $this->initTemplates();
+        // FIXME: Debug only
+        $this->addAdaptationRolesToCourse(self::ADAPTATION_LEADERBOARD);
+        // parent::initEvents();  // FIXME: Debug only
+        GameElement::addGameElement($this->course->getId(), self::ID);
+
         $this->initProviders();
     }
 
@@ -224,6 +237,8 @@ class Leaderboard extends Module
      */
     public function disable()
     {
+        $this->removeAdaptationRolesFromCourse(self::ADAPTATION_LEADERBOARD);
+        GameElement::removeGameElement($this->course->getId(), self::ID);
         $this->removeTemplates();
         $this->removeProviders();
     }

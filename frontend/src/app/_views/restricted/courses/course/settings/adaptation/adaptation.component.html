@@ -1,0 +1,329 @@
+<div class="w-full relative">
+  <!-- Header -->
+  <app-header [title] = "'Adaptation'" [icon] = "'tabler-puzzle'"
+              [loading] = "loading.action" ></app-header>
+
+  <ng-container *ngIf="!loading.page">
+    <!-- Admin Template -->
+    <ng-container *ngIf="isAdminOrTeacher" [ngTemplateOutlet]="ADMIN"></ng-container>
+
+    <!-- Non-Admin Template -->
+    <ng-container *ngIf="!isAdminOrTeacher" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
+  </ng-container>
+</div>
+
+<!-- Admin Template -->
+<ng-template #ADMIN>
+  <div class="w-full">
+    <app-table
+      [id] = "'gameElements'"
+      [classList]="'mt-5'"
+      [headers] = "headersAdmin"
+      [data] = "data"
+      [options] = "tableOptionsAdmin"
+      [loading] = "loading.table"
+      (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
+      (valueChanged)="doActionOnTable('value changed game element', $event.row, $event.col, $event.value)">
+    </app-table>
+
+    <!-- Loader -->
+    <app-loader [loading] = "loading.page"></app-loader>
+  </div>
+</ng-template>
+
+<app-modal *ngIf="adminMode && gameElementToManage"
+   [id] = "'manage-game-element'"
+   [templateRef]="MANAGE_GAME_ELEMENT"
+   [size] = "'md'"
+   [header] = "adminMode?.capitalize() + ' ' + gameElementToManage.module + '?'"
+   [submitBtnText]="adminMode?.capitalize()"
+   [actionInProgress]="loading.action"
+   (submitBtnClicked)="f.onSubmit(null); toggleActive()"
+   (onClose)="resetGameElementManage(); buildTable(tableType[0])">
+</app-modal>
+
+<ng-template #MANAGE_GAME_ELEMENT>
+  <form #f="ngForm">
+    <div class="w-full flex flex-wrap mt-3">
+      <span>By doing so:<br>- <i>{{gameElementToManage.module}} Preference Questionnaire </i> <strong>will
+        <span *ngIf="(this.gameElementToManage.isActive).toString() !== '0' && this.gameElementToManage.isActive !== false">
+          no longer</span> be available</strong> to students.<br>
+        - {{gameElementToManage.module}} will be
+        <strong *ngIf="(this.gameElementToManage.isActive).toString() !== '1' && this.gameElementToManage.isActive !== true">open</strong>
+        <strong *ngIf="(this.gameElementToManage.isActive).toString() !== '0' && this.gameElementToManage.isActive !== false">closed</strong>
+        to customization.
+      </span>
+      <div *ngIf="(this.gameElementToManage.isActive).toString() !== '1' && this.gameElementToManage.isActive !== true">
+        <!-- Notification -->
+        <div class="sm:pr-7 w-full">
+          <app-input-checkbox
+            [id]="'notification'"
+            [form] = "f"
+            [(value)]="gameElementToManage.notify"
+            [color]="'accent'"
+            [classList]="'mt-2'"
+            [label]="'Notify students'"
+            [labelPosition]="'right'"
+          ></app-input-checkbox>
+        </div>
+        <span class="flex text-xs justify-end mt-2 -mb-1">These changes will be removed once {{gameElementToManage.module}} is deactivated</span>
+      </div>
+    </div>
+
+  </form>
+</ng-template>
+
+<app-modal *ngIf="adminMode && gameElementToManage"
+  [id]="'questionnaire-statistics'"
+  [templateRef]="QUESTIONNAIRES_STATISTICS"
+  [size]="'lg'"
+  [header]="gameElementToManage.module + ' ' + adminMode?.toLowerCase()"
+  [actionInProgress]="loading.action"
+  [submitBtnText]="'Done'"
+  [closeBtn]="false"
+  (onClose)="closeStatistics()"
+  (submitBtnClicked)="closeStatistics()"
+></app-modal>
+
+<ng-template #QUESTIONNAIRES_STATISTICS>
+
+  <div class="alert shadow-md mb-6">
+    <div>
+      <ng-icon name="feather-users" size="1rem" class="{{nrAnswers === course.nrStudents ? 'text-success' : 'text-info'}}"></ng-icon>
+      <span class="{{nrAnswers === course.nrStudents ? 'text-success' : ''}}"><strong>So far: {{nrAnswers}}/{{course.nrStudents}} answers</strong></span>
+    </div>
+  </div>
+
+  <div *ngIf="nrAnswers > 0">
+    <div class="w-full mb-6" *ngIf="!refreshing">
+      <span class="w-full"><strong>{{statistics.q1.title}} </strong> {{statistics.q1.subtitle}}</span>
+      <app-pie-chart
+        [id]="'question1'"
+        [classList]="'justify-center flex mt-4 scale-110'"
+        [series]="statistics.q1.series"
+        [labels]="statistics.q1.labels"
+        [colors]="statistics.q1.colors"
+        [legend]="true"
+        [legendPosition]="'right'"
+      ></app-pie-chart>
+    </div>
+
+    <div class="w-full mb-6">
+      <span class="w-full"><strong>{{statistics.q2.title}} </strong> {{statistics.q2.subtitle}}</span>
+      <div class="px-28">
+        <app-table
+          [id]="'question2'"
+          [classList]="'mt-4'"
+          [headers]="statistics.q2.tableHeaders"
+          [options]="statistics.q2.tableOptions"
+          [data]="statistics.q2.tableData"
+          [hasColumnFiltering]="false"
+          [loading]="loading.table"
+          (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
+        ></app-table>
+      </div>
+    </div>
+
+    <div class="w-full" *ngIf="!refreshing">
+      <span class="w-full"><strong>{{statistics.q3.title}} </strong> {{statistics.q3.subtitle}}</span>
+      <app-bar-chart
+        [id]="'question3'"
+        [classList]="'justify-center px-10 scale-90'"
+        [series]="statistics.q3.series"
+        [XAxisCategories]="statistics.q3.categories"
+        [XAxisLabel]="'Number of students'"
+        [YAxisLabel]="'Level of enjoyment'"
+        [orientation]="'horizontal'"
+        [dataLabels]="true"
+        [XAxisGrid]="true"
+        [highlight]="statistics.q3.highlights"
+      ></app-bar-chart>
+    </div>
+  </div>
+
+  <div *ngIf="nrAnswers === 0">
+    <span class="text-gray-300 justify-center flex">No data to show for now.</span>
+  </div>
+
+  <!-- Loader -->
+  <app-loader [loading] = "loading.page"></app-loader>
+</ng-template>
+
+
+<!-- Non-Admin Template -->
+<ng-template #NON_ADMIN>
+  <div *ngIf="isQuestionnaire === false">
+    <div class="justify-center flex">
+      <!-- md:w-1/2 lg:w-3/5 -->
+      <div class="card w-full bg-base-100 shadow-xl">
+        <div class="card-body">
+          <div class="card-title">
+            <app-simple-helper [text]="'Select game elements and customize them by choosing one of the available options!'" [position]="'right'"></app-simple-helper>
+            <h2>Customize your own game elements</h2></div>
+          <div class="mt-4 w-full">
+            <app-input-select
+              [id]="'game-elements'"
+              [(value)] = "selectedGameElement"
+              [options] = "availableGameElementsSelect"
+              [multiple] = "false"
+              [search] = "true"
+              [placeholder]="'Select game element'"
+              (valueChange)="selectedGameElement = $event ?? []; preparePreferences(selectedGameElement)"
+            ></app-input-select>
+          </div>
+          <div *ngIf="selectedGameElement && selectedGameElement !== 'undefined'">
+            <div class="mt-3">
+              <div class="btn-group flex justify-start">
+                <span><strong>Options available:</strong></span>
+                <div *ngFor="let option of getVersions(); let i = index" class="pl-4 mb-3">
+                  <div class="indicator">
+                  <span *ngIf="option === previousPreference"
+                        class="indicator-item badge badge-xs badge-success text-white border border-2 border-green-900 py-1.5">
+                    <strong>✓</strong>
+                  </span>
+                    <input type = "button"
+                           class="btn-sm rounded-lg btn-{{getButtonColor(option)}} px-2 text-white"
+                           value="Option {{i+1}}"
+                           (click) = "setButtonActive(option); doAction('set option', option)"/>
+                  </div>
+                </div>
+              </div>
+              <span *ngIf="option === activeButton && activeButton" class="mt-3"><strong>Description:</strong> {{gameElementChildren[option]}}</span>
+              <div *ngIf="activeButton" class="justify-center flex">
+                <img class="w-8/12 pt-3 pb-3"  src="assets/imgs/adaptation/{{selectedGameElement}}-{{option}}-{{getTheme()}}.png" alt="">
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card-actions justify-end">
+              <button type="submit" class="btn btn-primary" (click)="updatePreference()">
+                <!-- Spinner -->
+                <ng-container *ngIf="loading.action">
+                  <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+                </ng-container>
+                Save preferences
+              </button>
+            </div>
+            <p class="flex text-xs mt-2 justify-end">Above action will only affect the current game element</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--<div *ngIf = "selectedGameElement" class="w-full flex flex-wrap mt-7">
+
+      <div class="sm:w-5/12">
+        <strong *ngIf="message">CURRENT</strong>
+        <div *ngIf="!message">
+          <strong>CURRENT - [OPTION {{previousPreference}}]</strong>
+          <img class="p-3 pt-5 rounded max-w-md" src="assets/imgs/no-image.png" alt="previous user preference"/>
+        </div>
+
+        <div *ngIf="message && previousPreference">{{message}}
+        </div>
+      </div>
+
+      <div class="divider divider-horizontal rounded bg-base-200"></div>
+
+      <div class="sm:w-5/12">
+        <div *ngIf="gameElementChildren">
+          <div class="btn-group flex justify-start sm:mr-[6rem]">
+            <strong class="mr-1">NEW -</strong>Options available:
+            <div *ngFor="let option of gameElementChildren; let i = index" class="pl-2">
+              <input type = "button"
+                     class="btn-sm rounded-lg btn-{{getButtonColor(i)}} px-2 text-white"
+                     value="{{option}}"
+                     (click) = "setButtonActive(i); doAction('set option', option)"/>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!gameElementChildren"><strong>NEW</strong></div>
+
+        <img *ngIf="gameElementChildren && activeButton !== null" class="p-3 rounded max-w-sm" src="assets/imgs/no-image.png" alt="previous user preference"/>
+      </div>
+
+    </div>
+
+
+    <div *ngIf="selectedGameElement" style="position:relative; bottom:0; right: 0;">
+      <div class="flex items-center justify-end mt-6 sm:mr-[6rem]">
+        <button type="button" class="btn btn-ghost mr-2" (click)="activeButton= null;">Discard</button>
+        <button type="submit" class="btn btn-primary" (click)="updatePreference()">
+
+          <ng-container *ngIf="loading.action">
+            <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+          </ng-container>
+          Save preferences
+        </button>
+      </div>
+
+    </div>-->
+  </div>
+
+
+  <div *ngIf="isQuestionnaire" class="w-full flex-wrap flex mb-6">
+    <app-header class="w-full" [classList]="'mt-2'" [subHeader]="true" [title]="'Welcome to Adaptation page!'"></app-header>
+    <span class="w-full">Here you will be able to <strong>custom</strong> different game elements in GameCourse.</span>
+    <span *ngIf="questionnaires.length > 0" class="w-full">But first... you have some unanswered questionnaires!</span>
+    <span *ngIf="questionnaires.length === 0" class="w-full">But there's nothing to see here yet. Come back later!</span>
+  </div>
+
+  <div *ngIf="isQuestionnaire === false" class="w-full flex-wrap flex mb-3 mt-14">
+    <span class="w-full"><strong>Your questionnaires:</strong></span>
+  </div>
+
+  <app-table
+    *ngIf="questionnaires.length > 0"
+    class="w-full"
+    [id] = "'gameElements'"
+    [classList]="'mt-5'"
+    [headers] = "headers"
+    [data] = "data"
+    [options] = "tableOptions"
+    [loading] = "loading.table"
+    [hasColumnFiltering] = "false"
+    [hasFooters]="false"
+    (btnClicked)="doActionOnTable('answer questionnaire', $event.row, $event.col)">
+  </app-table>
+</ng-template>
+
+<app-preference-questionnaire
+  *ngIf="mode"
+  [course] = "course"
+  [user] = "user"
+  [gameElement]="gameElementToActOn"
+  [questionnaires]="questionnaires"
+  (questionnairesAfterSubmit)="this.questionnaires = $event; doAction('prepare non-admin page')">
+</app-preference-questionnaire>
+
+<app-modal
+  [id] = "'all-questionnaires-submitted'"
+  [templateRef]="ALL_QUESTIONNAIRES_SUBMITTED"
+  [size] = "'md'"
+  [header]="'You answered all your questionnaires!'"
+  [actionInProgress] = "loading.action"
+  (submitBtnClicked)="doAction('show game elements')"
+  [submitBtnText]="'Ok'"
+  [headerMarginBottom]="false"
+  [closeBtn]="false"
+  [xButton]="false"
+  [static]="true"
+></app-modal>
+
+<ng-template #ALL_QUESTIONNAIRES_SUBMITTED>
+  <div class="w-full flex flex-wrap">
+    <div class="w-full flex flex-wrap border-b border-gray-200 mb-4">
+      <span class="text-sm mb-2">Thank you for your feedback!</span>
+    </div>
+    <span>You can customize your own game elements now. Beware, this option might not always be available. Have fun!</span>
+  </div>
+</ng-template>
+
+
+
+
+
+
+
+
