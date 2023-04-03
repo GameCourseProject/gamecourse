@@ -252,7 +252,7 @@ class GameElement
         Core::database()->insert($table,[
             "course" => $course,
             "user" => $user,
-            "question1" => $q1,
+            "question1" => +$q1,
             "question2" => $q2,
             "question3" => $q3,
             "element" => $element,
