@@ -262,13 +262,13 @@ export class SidebarComponent implements OnInit {
                 link: path + 'settings/themes',
                 name: 'Themes',
                 icon: 'tabler-color-swatch'
-              },
-              {
-                link: path + 'overview',
-                name: 'Overview',
-                icon: 'feather-info'
               }
             ]
+          },
+          {
+            link: path + 'overview',
+            name: 'Overview',
+            icon: 'feather-info'
           }
         ];
         navigation = navigation.concat(fixed);

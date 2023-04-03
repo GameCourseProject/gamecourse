@@ -2,9 +2,11 @@
 
 namespace GameCourse\NotificationSystem;
 
+use DateTime;
 use Exception;
 use GameCourse\Core\AuthService;
 use GameCourse\Core\Core;
+use Google\Service\AdMob\Date;
 use Mockery\Matcher\Not;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
@@ -229,7 +231,8 @@ class NotificationTest extends TestCase
     public function setShowed()
     {
         $notification = Notification::addNotification($this->courseId, $this->userId, "Notification Message");
-        $notification->setShowed(true);
+        $timeSeen = new DateTime();
+        $notification->setShowed(true, $timeSeen->format("Y-m-d H:i:s"));
         $this->assertTrue($notification->isShowed());
     }
 
@@ -240,7 +243,8 @@ class NotificationTest extends TestCase
     public function setNotShowed()
     {
         $notification = Notification::addNotification($this->courseId, $this->userId, "Notification Message");
-        $notification->setShowed(false);
+        $timeSeen = new DateTime();
+        $notification->setShowed(false, $timeSeen->format("Y-m-d H:i:s")); // FIXME
         $this->assertFalse($notification->isShowed());
     }
 
@@ -258,6 +262,8 @@ class NotificationTest extends TestCase
         $fieldValues["id"] = $notification->getId();
         $fieldValues["course"] = $notification->getCourse();
         $fieldValues["user"] = $notification->getUser();
+        $fieldValues["dateCreated"] = $notification->getDateCreated();
+        $fieldValues["dateSeen"] = null;
         $this->assertEquals($notification->getData(), $fieldValues);
     }
 
@@ -275,7 +281,7 @@ class NotificationTest extends TestCase
 
         } catch (Exception $e) {
             $this->assertEquals(["id" => 1, "course" => $this->courseId, "user" => $this->userId, "message" => "NOTIFICATION MESSAGE",
-                "isShowed" => 0], $notification->getData());
+                "isShowed" => 0, "dateCreated" => $notification->getDateCreated(), "dateSeen" => null], $notification->getData());
         }
     }
 
@@ -292,7 +298,7 @@ class NotificationTest extends TestCase
         $this->assertIsArray($notifications);
         $this->assertCount(2, $notifications);
 
-        $keys = ["id", "course", "user", "message", "isShowed"];
+        $keys = ["id", "course", "user", "message", "isShowed", "dateCreated", "dateSeen"];
         $nrKeys = count($keys);
         foreach ($keys as $key){
             foreach ($notifications as $i => $notification) {
@@ -332,7 +338,7 @@ class NotificationTest extends TestCase
         $this->assertIsArray($notifications);
         $this->assertCount(2, $notifications);
 
-        $keys = ["id", "course", "user", "message", "isShowed"];
+        $keys = ["id", "course", "user", "message", "isShowed", "dateCreated", "dateSeen"];
         $nrKeys = count($keys);
         foreach ($keys as $key){
             foreach ($notifications as $i => $notification) {
@@ -362,7 +368,7 @@ class NotificationTest extends TestCase
         $this->assertIsArray($notifications);
         $this->assertCount(2, $notifications);
 
-        $keys = ["id", "course", "user", "message", "isShowed"];
+        $keys = ["id", "course", "user", "message", "isShowed", "dateCreated", "dateSeen"];
         $nrKeys = count($keys);
         foreach ($keys as $key){
             foreach ($notifications as $i => $notification) {
@@ -387,7 +393,8 @@ class NotificationTest extends TestCase
         $this->assertCount(1, $notifications);
         $this->assertEquals($notification->getId(), $notifications[0]["id"]);
 
-        $notificationData = ["id" => 1, "course" => $this->courseId, "user" => $this->userId, "message" => $message, "isShowed" => $isShowed];
+        $notificationData = ["id" => 1, "course" => $this->courseId, "user" => $this->userId, "message" => $message, "isShowed" => $isShowed,
+            "dateCreated" => $notification->getDateCreated(), "dateSeen" => null];
         $this->assertEquals($notificationData, $notification->getData());
         $this->assertEquals($notificationData, $notifications[0]);
 
