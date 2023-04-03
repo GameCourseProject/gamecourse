@@ -1,8 +1,8 @@
 rule: Artist
 # Show creativity and quality
-#   lvl.1: get four skills of at least four points
-#   lvl.2: get six skills of at least four points
-#   lvl.3: get twelve skills of at least four points
+#   lvl.1: get two skills of at least four points
+#   lvl.2: get four skills of at least four points
+#   lvl.3: get six skills of at least four points
 
     when:
         # Get target progress in badge
@@ -11,7 +11,7 @@ rule: Artist
         progress = len(logs)
 
         # Compute badge level the target deserves
-        lvl = compute_lvl(progress, 4, 6, 12)
+        lvl = compute_lvl(progress, 2, 4, 6)
 
     then:
         award_badge(target, "Artist", lvl, logs, progress)
