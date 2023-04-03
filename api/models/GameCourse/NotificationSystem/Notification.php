@@ -2,6 +2,7 @@
 
 namespace GameCourse\NotificationSystem;
 
+use DateTime;
 use Event\Event;
 use Event\EventType;
 use Exception;
@@ -56,6 +57,14 @@ class Notification
     public function isShowed(): bool
     {
         return $this->getData("isShowed");
+    }
+
+    public function getDateCreated(): string {
+        return $this->getData("dateCreated");
+    }
+
+    public function getDateSeen(): string {
+        return $this->getData("dateSeen");
     }
 
     /*** ---------------------------------------------------- ***/
@@ -120,11 +129,13 @@ class Notification
         self::validateNotification($message, $isShowed);
 
         // Insert in database
+        $dateCreated = new DateTime();
         $id = Core::database()->insert(self::TABLE_NOTIFICATION, [
             "course" => $courseId,
             "user" => $userId,
             "message" => $message,
-            "isShowed" => $isShowed
+            "isShowed" => +$isShowed,
+            "dateCreated" => $dateCreated->format("Y-m-d H:i:s")
         ]);
 
         // Event::trigger(EventType::NOTIFICATION_ADDED, $id);
@@ -148,7 +159,7 @@ class Notification
             "course" => $courseId,
             "user" => $userId,
             "message" => $message,
-            "isShowed" => $isShowed,
+            "isShowed" => +$isShowed,
         ]);
 
         return $this;
