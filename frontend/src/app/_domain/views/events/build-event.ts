@@ -19,7 +19,7 @@ import {ShowTooltipEvent} from "./actions/show-tooltip-event";
 export function buildEvent(type: EventType, eventStr: string): Event {
   eventStr = eventStr.replace(/[{}]|\bactions.\b/g, '');
   const action: EventAction = eventStr.split('(')[0] as EventAction;
-  const args: string[] = eventStr.split('(')[1].split(',').map(arg => arg.noWhiteSpace('').replace(')', ''));
+  const args: string[] = eventStr.split('(')[1].split(',').map(arg => arg.trim().replace(')', ''));
 
   if (action === EventAction.GO_TO_PAGE) return new GoToPageEvent(type, args[0], args[1] || null);
   if (action === EventAction.SHOW_TOOLTIP) return new ShowTooltipEvent(type, args[0], args[1]);
