@@ -405,11 +405,10 @@ class GameElement
      * @param string $module
      * @param int|null $previousPreference
      * @param int $newPreference
-     * @param string $date
      * @return void
      * @throws Exception
      */
-    public static function updateUserPreference(int $courseId, int $userId, string $module, ?int $previousPreference, int $newPreference, string $date){
+    public static function updateUserPreference(int $courseId, int $userId, string $module, ?int $previousPreference, int $newPreference){
         $course = new Course($courseId);
         $courseUser = $course->getCourseUserById($userId);
         $userRoles = Role::getUserRoles($userId, $courseId);
@@ -417,7 +416,13 @@ class GameElement
         $table = self::TABLE_ADAPTATION_USER_PREFERENCES;
         $where = ["course" => $courseId, "user" => $userId, "newPreference" => $previousPreference];
 
-        $data = ["course" => $courseId, "user" => $userId, "module" => $module, "previousPreference" =>  $previousPreference, "newPreference" => $newPreference, "date" => $date];
+        $date = new DateTime();
+        $data = ["course" => $courseId,
+                 "user" => $userId,
+                 "module" => $module,
+                 "previousPreference" =>  $previousPreference,
+                 "newPreference" => $newPreference,
+                 "date" => $date->format("Y-m-d H:i:s")];
 
         $lastPreference = Core::database()->select($table, $where, "*", "date desc");
         // NOTE: if lastPreference date was less than 1 day ago and student had already chosen something: it does not save another entry, just updates it

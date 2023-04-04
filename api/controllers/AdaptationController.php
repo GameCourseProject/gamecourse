@@ -192,7 +192,7 @@ class AdaptationController
      */
     public function updateUserPreference()
     {
-        API::requireValues('course', 'user', 'moduleId', 'previousPreference', 'newPreference', 'date');
+        API::requireValues('course', 'user', 'moduleId', 'previousPreference', 'newPreference');
 
         $courseId = API::getValue('course', "int");
         $course = API::verifyCourseExists($courseId);
@@ -206,12 +206,11 @@ class AdaptationController
         // Get rest of the values
         $previousPreference = API::getValue('previousPreference');
         $newPreference = API::getValue('newPreference');
-        $date = API::getValue('date') ?? date("Y-m-d h:i:sa");
 
         if ($previousPreference) { $previousPreference = Role::getRoleId($previousPreference, $courseId);}
         $newPreferenceArg = Role::getRoleId($newPreference, $courseId);
 
-        GameElement::updateUserPreference($courseId, $userId, $moduleId, $previousPreference, $newPreferenceArg, $date);
+        GameElement::updateUserPreference($courseId, $userId, $moduleId, $previousPreference, $newPreferenceArg);
     }
 
     /**

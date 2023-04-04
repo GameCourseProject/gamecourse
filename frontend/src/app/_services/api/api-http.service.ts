@@ -862,14 +862,13 @@ export class ApiHttpService {
       .pipe(map((res: any) => res['data']));
   }
 
-  public updateUserPreference(courseID: number, userID: number, module: string, previousPreference: string, newPreference: string, date: Date = null): Observable<void> {
+  public updateUserPreference(courseID: number, userID: number, module: string, previousPreference: string, newPreference: string): Observable<void> {
     const data = {
       course: courseID,
       user: userID,
       moduleId: module,
       previousPreference: previousPreference,
-      newPreference: newPreference,
-      date: date
+      newPreference: newPreference
     };
 
     const params = (qs: QueryStringParameters) => {
