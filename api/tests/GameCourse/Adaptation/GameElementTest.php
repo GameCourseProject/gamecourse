@@ -69,6 +69,10 @@ class GameElementTest extends TestCase
         $parent = array_keys($rolesB)[0];
         $children = array_keys($rolesB[$parent]);
         Role::addAdaptationRolesToCourse($this->course->getId(), $badgesModule->getId(), $parent, $children);
+        foreach ($rolesB[$parent] as $key => $value){
+            $roleId = Role::getRoleId($key, $this->course->getId());
+            GameElement::addGameElementDescription($roleId, $value[0]);
+        }
         $this->badgesGameElement = GameElement::addGameElement($this->course->getId(), $badgesModule->getId());
 
         $leaderboardModule = new Leaderboard($course);
@@ -76,6 +80,10 @@ class GameElementTest extends TestCase
         $parent = array_keys($rolesLB)[0];
         $children = array_keys($rolesLB[$parent]);
         Role::addAdaptationRolesToCourse($this->course->getId(), $leaderboardModule->getId(), $parent, $children);
+        foreach ($rolesLB[$parent] as $key => $value){
+            $roleId = Role::getRoleId($key, $this->course->getId());
+            GameElement::addGameElementDescription($roleId, $value[0]);
+        }
         $this->leaderboardGameElement = GameElement::addGameElement($this->course->getId(), $leaderboardModule->getId());
 
         $profileModule = new Profile($course);
@@ -83,6 +91,10 @@ class GameElementTest extends TestCase
         $parent = array_keys($rolesP)[0];
         $children = array_keys($rolesP[$parent]);
         Role::addAdaptationRolesToCourse($this->course->getId(), $profileModule->getId(), $parent, $children);
+        foreach ($rolesP[$parent] as $key => $value){
+            $roleId = Role::getRoleId($key, $this->course->getId());
+            GameElement::addGameElementDescription($roleId, $value[0]);
+        }
         $this->profileGameElement = GameElement::addGameElement($this->course->getId(), $profileModule->getId());
     }
 
@@ -514,4 +526,118 @@ class GameElementTest extends TestCase
             ["id" => "3", "course" => "1", "module" => "Profile", "isActive" => "0", "notify" => "0"]],
             $elements);
     }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getGameElementByModule(){
+        // Given
+        $moduleBadges = "Badges";
+        $moduleLeaderboard = "Leaderboard";
+        $moduleProfile = "Profile";
+
+        // When
+        $gameElement1 = GameElement::getGameElementByModule($this->course->getId(), $moduleBadges);
+        $gameElement2 = GameElement::getGameElementByModule($this->course->getId(), $moduleLeaderboard);
+        $gameElement3 = GameElement::getGameElementByModule($this->course->getId(), $moduleProfile);
+        $gameElement4 = GameElement::getGameElementByModule($this->course->getId(), "whatever");
+
+        // Then
+        $this->assertEquals($gameElement1, $this->badgesGameElement);
+        $this->assertEquals($gameElement2, $this->leaderboardGameElement);
+        $this->assertEquals($gameElement3, $this->profileGameElement);
+        $this->assertEquals(null, $gameElement4);
+
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getGameElementChildren(){
+        // Given
+        $this->badgesGameElement->setActive(true);
+        $this->leaderboardGameElement->setActive(true);
+        $this->profileGameElement->setActive(true);
+
+        // When
+        $badgesChildren = $this->badgesGameElement->getGameElementChildren();
+        $leaderboardChildren = $this->leaderboardGameElement->getGameElementChildren();
+        $profileChildren = $this->profileGameElement->getGameElementChildren();
+
+        // Then
+        $this->assertIsArray($badgesChildren);
+        $this->assertIsArray($leaderboardChildren);
+        $this->assertIsArray($profileChildren);
+
+        $this->assertCount(2, $badgesChildren);
+        $this->assertCount(2, $leaderboardChildren);
+        $this->assertCount(3, $profileChildren);
+
+        $this->assertEquals([
+            "B001" => "Badges displayed in alphabetic order",
+            "B002" => "Badges displayed with achieved first"], $badgesChildren);
+
+        $this->assertEquals([
+            "LB001" => "Shows entire leaderboard",
+            "LB002" => "Leaderboard is snapped and shows 5 people above and below you"], $leaderboardChildren);
+        $this->assertEquals([
+            "P001" => "Profile displays graphs comparing yourself vs. everyone else",
+            "P002" => "Profile displays graphs comparing yourself vs. people with similar progress as you",
+            "P003" => "Profile displays graphs with your progress (not comparing with anyone else)"], $profileChildren);
+
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function submitGameElementQuestionnaire(){
+        // Given
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user = $this->course->addUserToCourse($user->getId());
+        $user->addRole("Student");
+
+        $q1 = false;
+        $element = $this->badgesGameElement->getId();
+
+        // When
+        GameElement::submitGameElementQuestionnaire($this->course->getId(), $user->getId(), $q1, null, null, $element);
+
+        // Then
+        $entry = GameElement::isQuestionnaireAnswered($this->course->getId(), $user->getId(), $this->badgesGameElement->getId());
+        $this->assertTrue($entry);
+
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getGameElementStatistics(){
+        // Given
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user = $this->course->addUserToCourse($user->getId());
+        $user->addRole("Student");
+
+        $q1 = false;
+        $element = $this->badgesGameElement->getId();
+        GameElement::submitGameElementQuestionnaire($this->course->getId(), $user->getId(), $q1, null, null, $element);
+
+        // When
+        $statistics = GameElement::getElementStatistics($this->course, $this->badgesGameElement->getId());
+
+        // Then
+        $this->assertIsArray($statistics);
+        $this->assertCount(3, $statistics);
+        $this->assertEquals([
+            "question1" => ["false" => "1", "true" => "0"],
+            "question2" => [null],
+            "question3" => [1 => "0", 2 => "0", 3 => "0", 4 => "0", 5 => "0", 6 => "0", 7 => "0", 8 => "0", 9 => "0", 10 => "0"]
+        ], $statistics);
+    }
+
 }
