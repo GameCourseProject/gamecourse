@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\Adaptation;
 
+use DateTime;
 use Exception;
 use GameCourse\Course\Course;
 use GameCourse\NotificationSystem\Notification;
@@ -90,6 +91,10 @@ class GameElement
      * @throws Exception
      */
     public function setNotify(bool $notify){
+        if ($notify && !$this->isActive()){
+            throw new Exception("Cannot send notification with game element still inactive");
+        }
+
         $this->setData(["notify" => +$notify]);
         if ($notify) $this->sendNotification();
      }
@@ -243,13 +248,15 @@ class GameElement
      */
     public static function submitGameElementQuestionnaire(int $course, int $user, bool $q1, ?string $q2, ?int $q3, int $element){
         $table = self::TABLE_ADAPTATION_QUESTIONNAIRE_ANSWERS;
+        $date = new DateTime();
         Core::database()->insert($table,[
             "course" => $course,
             "user" => $user,
-            "question1" => $q1,
+            "question1" => +$q1,
             "question2" => $q2,
             "question3" => $q3,
-            "element" => $element
+            "element" => $element,
+            "date" => $date->format("Y-m-d H:i:s")
         ]);
     }
 
@@ -398,11 +405,10 @@ class GameElement
      * @param string $module
      * @param int|null $previousPreference
      * @param int $newPreference
-     * @param string $date
      * @return void
      * @throws Exception
      */
-    public static function updateUserPreference(int $courseId, int $userId, string $module, ?int $previousPreference, int $newPreference, string $date){
+    public static function updateUserPreference(int $courseId, int $userId, string $module, ?int $previousPreference, int $newPreference){
         $course = new Course($courseId);
         $courseUser = $course->getCourseUserById($userId);
         $userRoles = Role::getUserRoles($userId, $courseId);
@@ -410,7 +416,13 @@ class GameElement
         $table = self::TABLE_ADAPTATION_USER_PREFERENCES;
         $where = ["course" => $courseId, "user" => $userId, "newPreference" => $previousPreference];
 
-        $data = ["course" => $courseId, "user" => $userId, "module" => $module, "previousPreference" =>  $previousPreference, "newPreference" => $newPreference, "date" => $date];
+        $date = new DateTime();
+        $data = ["course" => $courseId,
+                 "user" => $userId,
+                 "module" => $module,
+                 "previousPreference" =>  $previousPreference,
+                 "newPreference" => $newPreference,
+                 "date" => $date->format("Y-m-d H:i:s")];
 
         $lastPreference = Core::database()->select($table, $where, "*", "date desc");
         // NOTE: if lastPreference date was less than 1 day ago and student had already chosen something: it does not save another entry, just updates it
@@ -538,14 +550,18 @@ class GameElement
         // add all courseUsers to table element_user
         if ($isActive) {
             foreach ($users as $user){
-                Core::database()->insert(self::TABLE_ADAPTATION_USER_NOTIFICATION, ["element" => $gameElement, "user" => $user["id"]]);
+                if (Role::userHasRole($user["id"], $course, "Student")){    // only add notification to students
+                    Core::database()->insert(self::TABLE_ADAPTATION_USER_NOTIFICATION, ["element" => $gameElement, "user" => $user["id"]]);
+                }
             }
         }
 
         // remove all courseUsers from table element_user
         else {
             foreach ($users as $user){
-                Core::database()->delete(self::TABLE_ADAPTATION_USER_NOTIFICATION, ["element" => $gameElement, "user" => $user["id"]]);
+                if (Role::userHasRole($user["id"], $course, "Student")){
+                    Core::database()->delete(self::TABLE_ADAPTATION_USER_NOTIFICATION, ["element" => $gameElement, "user" => $user["id"]]);
+                }
             }
         }
     }

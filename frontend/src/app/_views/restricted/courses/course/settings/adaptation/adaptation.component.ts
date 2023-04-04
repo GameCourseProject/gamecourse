@@ -395,11 +395,10 @@ export class AdaptationComponent implements OnInit {
         AlertService.showAlert(AlertType.WARNING, 'Nothing new to update');
 
       } else {
-        let date = new Date();
         if (this.previousPreference === "none") { this.previousPreference = null; }
 
         await this.api.updateUserPreference(this.course.id, this.user.id,
-          this.selectedGameElement, this.previousPreference, newPreference, date).toPromise();
+          this.selectedGameElement, this.previousPreference, newPreference).toPromise();
 
         this.previousPreference = newPreference;
         AlertService.showAlert(AlertType.SUCCESS, 'New preference saved');
