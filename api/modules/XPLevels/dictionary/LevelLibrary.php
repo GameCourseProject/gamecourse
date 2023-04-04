@@ -30,7 +30,53 @@ class LevelLibrary extends Library
     // TODO: descriptions
     public function getFunctions(): ?array
     {
-        return [];
+        return [
+            new DFunction("id",
+                "Gets a given level's ID in the system.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("minXP",
+                "Gets a given level's minimum XP.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("description",
+                "Gets a given level's description.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("number",
+                "Gets a given level's number.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getLevelById",
+                "Gets a level by its ID.",
+                ReturnType::OBJECT,
+                $this
+            ),
+            new DFunction("getLevelByMinXP",
+                "Gets a level by its minimum XP.",
+                ReturnType::OBJECT,
+                $this
+            ),
+            new DFunction("getLevelByXP",
+                "Gets a level by its corresponding XP.",
+                ReturnType::OBJECT,
+                $this
+            ),
+            new DFunction("getLevelByNumber",
+                "Gets a level by its number.",
+                ReturnType::OBJECT,
+                $this
+            ),
+            new DFunction("getLevels",
+                "Gets levels of course. Option to order by a given parameter.",
+                ReturnType::COLLECTION,
+                $this
+            )
+        ];
     }
 
     // NOTE: add new library functions bellow & update its
@@ -106,16 +152,20 @@ class LevelLibrary extends Library
      *
      * @param int $levelId
      * @return ValueNode
+     * @throws Exception
      */
     public function getLevelById(int $levelId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock level
             $level = [];
 
-        } else {
-            $level = Level::getLevelById($levelId);
-        }
+        } else $level = Level::getLevelById($levelId);
         return new ValueNode($level, $this);
     }
 
@@ -124,17 +174,20 @@ class LevelLibrary extends Library
      *
      * @param int $minXP
      * @return ValueNode
+     * @throws Exception
      */
     public function getLevelByMinXP(int $minXP): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock level
             $level = [];
 
-        } else {
-            $courseId = Core::dictionary()->getCourse()->getId();
-            $level = Level::getLevelByMinXP($courseId, $minXP);
-        }
+        } else $level = Level::getLevelByMinXP($courseId, $minXP);
         return new ValueNode($level, $this);
     }
 
@@ -147,14 +200,16 @@ class LevelLibrary extends Library
      */
     public function getLevelByXP(int $xp): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock level
             $level = [];
 
-        } else {
-            $courseId = Core::dictionary()->getCourse()->getId();
-            $level = Level::getLevelByXP($courseId, $xp);
-        }
+        } else $level = Level::getLevelByXP($courseId, $xp);
         return new ValueNode($level, $this);
     }
 
@@ -167,14 +222,16 @@ class LevelLibrary extends Library
      */
     public function getLevelByNumber(int $number): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock level
             $level = [];
 
-        } else {
-            $courseId = Core::dictionary()->getCourse()->getId();
-            $level = Level::getLevelByNumber($courseId, $number);
-        }
+        } else $level = Level::getLevelByNumber($courseId, $number);
         return new ValueNode($level, $this);
     }
 
@@ -183,17 +240,20 @@ class LevelLibrary extends Library
      *
      * @param string $orderBy
      * @return ValueNode
+     * @throws Exception
      */
     public function getLevels(string $orderBy = "minXP"): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock levels
             $levels = [];
 
-        } else {
-            $courseId = Core::dictionary()->getCourse()->getId();
-            $levels = Level::getLevels($courseId, $orderBy);
-        }
+        } else $levels = Level::getLevels($courseId, $orderBy);
         return new ValueNode($levels, $this);
     }
 }

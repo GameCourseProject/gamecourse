@@ -30,7 +30,48 @@ class XPLibrary extends Library
     // TODO: descriptions
     public function getFunctions(): ?array
     {
-        return [];
+        return [
+            new DFunction("getMaxXP",
+                "Gets maximum XP each student can earn in total.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getMaxExtraCredit",
+                "Gets maximum extra credit each student can earn in total.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getUserXP",
+                "Gets total XP for a given user.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getUserExtraCreditXP",
+                "Gets total extra credit XP for a given user.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getUserXPByType",
+                "Gets total XP for a given user of a specific type of award.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getUserBadgesXP",
+                "Gets total badges XP for a given user. Some options available.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getUserSkillsXP",
+                "Gets total skills XP for a given user. Some options available.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getUserStreaksXP",
+                "Gets total streaks XP for a given user. Some options available.",
+                ReturnType::NUMBER,
+                $this
+            )
+        ];
     }
 
     // NOTE: add new library functions bellow & update its
@@ -39,7 +80,7 @@ class XPLibrary extends Library
     /*** ---------- Config ---------- ***/
 
     /**
-     * TODO: description
+     * Gets maximum XP each student can earn in total.
      *
      * @return ValueNode
      * @throws Exception
@@ -57,7 +98,7 @@ class XPLibrary extends Library
     }
 
     /**
-     * TODO: description
+     * Gets maximum extra credit each student can earn in total.
      *
      * @return ValueNode
      * @throws Exception
@@ -86,11 +127,16 @@ class XPLibrary extends Library
      */
     public function getUserXP(int $userId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $userXP = Core::dictionary()->faker()->numberBetween(0, 20000);
 
         } else {
-            $XPModule = new XPLevels(Core::dictionary()->getCourse());
+            $XPModule = new XPLevels($course);
             $userXP = $XPModule->getUserXP($userId);
         }
         return new ValueNode($userXP, Core::dictionary()->getLibraryById(MathLibrary::ID));
@@ -105,11 +151,16 @@ class XPLibrary extends Library
      */
     public function getUserExtraCreditXP(int $userId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $extraCredit = Core::dictionary()->faker()->numberBetween(0, 3000);
 
         } else {
-            $XPModule = new XPLevels(Core::dictionary()->getCourse());
+            $XPModule = new XPLevels($course);
             $extraCredit = $XPModule->getUserExtraCreditXP($userId);
         }
         return new ValueNode($extraCredit, Core::dictionary()->getLibraryById(MathLibrary::ID));
@@ -126,11 +177,16 @@ class XPLibrary extends Library
      */
     public function getUserXPByType(int $userId, string $type): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $userXPByType = Core::dictionary()->faker()->numberBetween(0, 3000);
 
         } else {
-            $XPModule = new XPLevels(Core::dictionary()->getCourse());
+            $XPModule = new XPLevels($course);
             $userXPByType = $XPModule->getUserXPByType($userId, $type);
         }
         return new ValueNode($userXPByType, Core::dictionary()->getLibraryById(MathLibrary::ID));
@@ -150,11 +206,16 @@ class XPLibrary extends Library
      */
     public function getUserBadgesXP(int $userId, bool $extra = null): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $userBadgesXP = Core::dictionary()->faker()->numberBetween(0, 3000);
 
         } else {
-            $XPModule = new XPLevels(Core::dictionary()->getCourse());
+            $XPModule = new XPLevels($course);
             $userBadgesXP = $XPModule->getUserBadgesXP($userId, $extra);
         }
         return new ValueNode($userBadgesXP, Core::dictionary()->getLibraryById(MathLibrary::ID));
@@ -168,17 +229,22 @@ class XPLibrary extends Library
      *  - if true --> gets total XP only for skills that are collab
      *
      * @param int $userId
-     * @param bool|null $collab
+     * @param bool|null $extra
      * @return ValueNode
      * @throws Exception
      */
     public function getUserSkillsXP(int $userId, bool $extra = null): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $userSkillsXP = Core::dictionary()->faker()->numberBetween(0, 3000);
 
         } else {
-            $XPModule = new XPLevels(Core::dictionary()->getCourse());
+            $XPModule = new XPLevels($course);
             $userSkillsXP = $XPModule->getUserSkillsXP($userId, $extra);
         }
         return new ValueNode($userSkillsXP, Core::dictionary()->getLibraryById(MathLibrary::ID));
@@ -198,11 +264,16 @@ class XPLibrary extends Library
      */
     public function getUserStreaksXP(int $userId, bool $extra = null): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $userStreaksXP = Core::dictionary()->faker()->numberBetween(0, 3000);
 
         } else {
-            $XPModule = new XPLevels(Core::dictionary()->getCourse());
+            $XPModule = new XPLevels($course);
             $userStreaksXP = $XPModule->getUserStreaksXP($userId, $extra);
         }
         return new ValueNode($userStreaksXP, Core::dictionary()->getLibraryById(MathLibrary::ID));

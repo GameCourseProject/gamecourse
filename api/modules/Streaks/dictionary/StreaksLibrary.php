@@ -31,7 +31,46 @@ class StreaksLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
-            // TODO
+            new DFunction("getMaxXP",
+                "Gets maximum XP each student can earn with streaks.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getMaxExtraCredit",
+                "Gets maximum extra credit each student can earn with streaks.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getStreaks",
+                "Gets streaks of course.",
+                ReturnType::COLLECTION,
+                $this
+            ),
+            new DFunction("getUsersWithStreak",
+                "Gets users who have earned a given streak at least once.",
+                ReturnType::COLLECTION,
+                $this
+            ),
+            new DFunction("getUserStreaks",
+                "Gets streaks earned by a given user.",
+                ReturnType::COLLECTION,
+                $this
+            ),
+            new DFunction("getUserStreakProgression",
+                "Gets user progression on a given streak.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getUserStreakCompletions",
+                "Gets how many times a given user has completed a specific streak.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getUserStreakDeadline",
+                "Gets streak deadline for a given user.",
+                ReturnType::TIME,
+                $this
+            )
         ];
     }
 
@@ -41,7 +80,7 @@ class StreaksLibrary extends Library
     /*** ---------- Config ---------- ***/
 
     /**
-     * TODO: description
+     * Gets maximum XP each student can earn with streaks.
      *
      * @return ValueNode
      * @throws Exception
@@ -59,7 +98,7 @@ class StreaksLibrary extends Library
     }
 
     /**
-     * TODO: description
+     * Gets maximum extra credit each student can earn with streaks.
      *
      * @return ValueNode
      * @throws Exception
@@ -84,17 +123,20 @@ class StreaksLibrary extends Library
      *
      * @param bool|null $active
      * @return ValueNode
+     * @throws Exception
      */
     public function getStreaks(bool $active = null): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock streaks
             $streaks = [];
 
-        } else {
-            $courseId = Core::dictionary()->getCourse()->getId();
-            $streaks = Streak::getStreaks($courseId, $active);
-        }
+        } else $streaks = Streak::getStreaks($courseId, $active);
         return new ValueNode($streaks, $this);
     }
 
@@ -107,12 +149,17 @@ class StreaksLibrary extends Library
      */
     public function getUsersWithStreak(int $streakId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock users
             $users = [];
 
         } else {
-            $streaksModule = new Streaks(Core::dictionary()->getCourse());
+            $streaksModule = new Streaks($course);
             $users = $streaksModule->getUsersWithStreak($streakId);
         }
         return new ValueNode($users, Core::dictionary()->getLibraryById(UsersLibrary::ID));
@@ -129,12 +176,17 @@ class StreaksLibrary extends Library
      */
     public function getUserStreaks(int $userId, bool $isExtra = null, bool $isRepeatable = null): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock streaks
             $streaks = [];
 
         } else {
-            $streaksModule = new Streaks(Core::dictionary()->getCourse());
+            $streaksModule = new Streaks($course);
             $streaks = $streaksModule->getUserStreaks($userId, $isExtra, $isRepeatable);
         }
         return new ValueNode($streaks, $this);
@@ -150,11 +202,16 @@ class StreaksLibrary extends Library
      */
     public function getUserStreakProgression(int $userId, int $streakId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $progression = Core::dictionary()->faker()->numberBetween(0, 10);
 
         } else {
-            $streaksModule = new Streaks(Core::dictionary()->getCourse());
+            $streaksModule = new Streaks($course);
             $progression = $streaksModule->getUserStreakProgression($userId, $streakId);
         }
         return new ValueNode($progression, Core::dictionary()->getLibraryById(MathLibrary::ID));
@@ -170,11 +227,16 @@ class StreaksLibrary extends Library
      */
     public function getUserStreakCompletions(int $userId, int $streakId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $completions = Core::dictionary()->faker()->numberBetween(0, 5);
 
         } else {
-            $streaksModule = new Streaks(Core::dictionary()->getCourse());
+            $streaksModule = new Streaks($course);
             $completions = $streaksModule->getUserStreakCompletions($userId, $streakId);
         }
         return new ValueNode($completions, Core::dictionary()->getLibraryById(MathLibrary::ID));
@@ -190,11 +252,16 @@ class StreaksLibrary extends Library
      */
     public function getUserStreakDeadline(int $userId, int $streakId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $deadline = Core::dictionary()->faker()->dateTimeBetween("now", "+1 week")->format("Y-m-d H:i:s");
 
         } else {
-            $streaksModule = new Streaks(Core::dictionary()->getCourse());
+            $streaksModule = new Streaks($course);
             $deadline = $streaksModule->getUserStreakDeadline($userId, $streakId);
         }
         return new ValueNode($deadline, Core::dictionary()->getLibraryById(MathLibrary::ID));

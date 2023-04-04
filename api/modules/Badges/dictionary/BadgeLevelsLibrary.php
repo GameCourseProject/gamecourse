@@ -30,7 +30,41 @@ class BadgeLevelsLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
-            // TODO
+            new DFunction("number",
+                "Gets a given level's number.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("goal",
+                "Gets a given level's goal.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("description",
+                "Gets a given level's description.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("reward",
+                "Gets a given level's reward.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("tokens",
+                "Gets a given level's tokens.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("image",
+                "Gets a given level's image URL.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("getLevelByNumber",
+                "Gets a level by its number.",
+                ReturnType::OBJECT,
+                $this
+            )
         ];
     }
 
@@ -132,9 +166,15 @@ class BadgeLevelsLibrary extends Library
      * @param int $number
      * @param int $badgeId
      * @return ValueNode
+     * @throws Exception
      */
     public function getLevelByNumber(int $number, int $badgeId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock badge level
             $level = [];

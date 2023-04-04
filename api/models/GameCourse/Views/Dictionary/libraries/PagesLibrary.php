@@ -30,7 +30,16 @@ class PagesLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
-            // TODO
+            new DFunction("id",
+                "Gets a given page's ID in the system.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getPageByName",
+                "Gets a page by its name.",
+                ReturnType::OBJECT,
+                $this
+            )
         ];
     }
 
@@ -48,7 +57,7 @@ class PagesLibrary extends Library
      */
     public function id($page): ValueNode
     {
-        // NOTE: on mock data, user will be mocked
+        // NOTE: on mock data, page will be mocked
         if (is_array($page)) $pageId = $page["id"];
         else $pageId = $page->getId();
         return new ValueNode($pageId, Core::dictionary()->getLibraryById(MathLibrary::ID));
@@ -66,12 +75,16 @@ class PagesLibrary extends Library
      */
     public function getPageByName(string $name): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getPageByName", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock page
             $page = [];
 
         } else {
-            $courseId = Core::dictionary()->getCourse()->getId();
             $page = Page::getPageByName($courseId, $name);
             if (!$page) $this->throwError("getPageByName", "page '$name' doesn't exist in course with ID = $courseId");
         }

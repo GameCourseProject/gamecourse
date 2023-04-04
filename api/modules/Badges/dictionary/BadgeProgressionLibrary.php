@@ -29,7 +29,16 @@ class BadgeProgressionLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
-            // TODO
+            new DFunction("description",
+                "Gets a given progression's description.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("link",
+                "Gets a given progression's link.",
+                ReturnType::TEXT,
+                $this
+            )
         ];
     }
 

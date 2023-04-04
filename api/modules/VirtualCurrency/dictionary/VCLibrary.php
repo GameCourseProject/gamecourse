@@ -30,7 +30,46 @@ class VCLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
-            // TODO
+            new DFunction("getVCName",
+                "Gets Virtual Currency name.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("getImage",
+                "Gets Virtual Currency image URL.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("getUserTokens",
+                "Gets total tokens for a given user.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("description",
+                "Gets a given spending's description.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("amount",
+                "Gets a given spending's amount.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("date",
+                "Gets a given spending's date.",
+                ReturnType::TIME,
+                $this
+            ),
+            new DFunction("getUserSpending",
+                "Gets spending for a given user.",
+                ReturnType::COLLECTION,
+                $this
+            ),
+            new DFunction("exchangeTokensForXP",
+                "Exchanges a given user's tokens for XP according to a specific ratio and threshold.",
+                ReturnType::VOID,
+                $this
+            )
         ];
     }
 
@@ -48,7 +87,12 @@ class VCLibrary extends Library
      */
     public function getVCName(): ValueNode
     {
-        $VCModule = new VirtualCurrency(Core::dictionary()->getCourse());
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
+        $VCModule = new VirtualCurrency($course);
         return new ValueNode($VCModule->getVCName(), Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -60,7 +104,12 @@ class VCLibrary extends Library
      */
     public function getImage(): ValueNode
     {
-        $VCModule = new VirtualCurrency(Core::dictionary()->getCourse());
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
+        $VCModule = new VirtualCurrency($course);
         return new ValueNode($VCModule->getImage(), Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -76,11 +125,16 @@ class VCLibrary extends Library
      */
     public function getUserTokens(int $userId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $userTokens = Core::dictionary()->faker()->numberBetween(0, 500);
 
         } else {
-            $VCModule = new VirtualCurrency(Core::dictionary()->getCourse());
+            $VCModule = new VirtualCurrency($course);
             $userTokens = $VCModule->getUserTokens($userId);
         }
         return new ValueNode($userTokens, Core::dictionary()->getLibraryById(MathLibrary::ID));
@@ -104,7 +158,7 @@ class VCLibrary extends Library
     }
 
     /**
-     * Gets a given spending's reward.
+     * Gets a given spending's amount.
      *
      * @param $spending
      * @return ValueNode
@@ -136,15 +190,21 @@ class VCLibrary extends Library
      *
      * @param int $userId
      * @return ValueNode
+     * @throws Exception
      */
     public function getUserSpending(int $userId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock spending
             $spending = [];
 
         } else {
-            $VCModule = new VirtualCurrency(Core::dictionary()->getCourse());
+            $VCModule = new VirtualCurrency($course);
             $spending = $VCModule->getUserSpending($userId);
         }
         return new ValueNode($spending, $this);
@@ -156,7 +216,6 @@ class VCLibrary extends Library
     /**
      * Exchanges a given user's tokens for XP according to
      * a specific ratio and threshold.
-     * Returns the total amount of XP earned.
      *
      * @param int $userId
      * @param float $ratio
@@ -166,11 +225,17 @@ class VCLibrary extends Library
      */
     public function exchangeTokensForXP(int $userId, float $ratio = 1, ?int $threshold = null): ?ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
-           // Do nothing
+            // Do nothing
+            return null;
 
         } else {
-            $VCModule = new VirtualCurrency(Core::dictionary()->getCourse());
+            $VCModule = new VirtualCurrency($course);
             $VCModule->exchangeTokensForXP($userId, $ratio, $threshold);
         }
         return null;

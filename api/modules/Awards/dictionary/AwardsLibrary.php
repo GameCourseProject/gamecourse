@@ -30,7 +30,101 @@ class AwardsLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
-            // TODO
+            new DFunction("id",
+                "Gets a given award's ID in the system.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("description",
+                "Gets a given award's description.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("type",
+                "Gets a given award's type.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("instance",
+                "Gets a given award's module instance.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("reward",
+                "Gets a given award's reward.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("date",
+                "Gets a given award's date.",
+                ReturnType::TIME,
+                $this
+            ),
+            new DFunction("icon",
+                "Gets a given award's icon.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("image",
+                "Gets a given award's image URL.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("getIconOfType",
+                "Gets icon for a given type of award.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("getImageOfType",
+                "Gets image for a given type of award.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("getUserAwards",
+                "Gets awards for a given user.",
+                ReturnType::COLLECTION,
+                $this
+            ),
+            new DFunction("getUserAwardsByType",
+                "Gets awards for a given user of a specific type of award.",
+                ReturnType::COLLECTION,
+                $this
+            ),
+            new DFunction("getUserBadgesAwards",
+                "Gets badges awards for a given user. Some options available.",
+                ReturnType::COLLECTION,
+                $this
+            ),
+            new DFunction("getUserSkillsAwards",
+                "Gets badges awards for a given user. Some options available.",
+                ReturnType::COLLECTION,
+                $this
+            ),
+            new DFunction("getUserStreaksAwards",
+                "Gets badges awards for a given user. Some options available.",
+                ReturnType::COLLECTION,
+                $this
+            ),
+            new DFunction("getUserTotalRewardByType",
+                "Gets total reward for a given user of a specific type of award.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getUserBadgesTotalReward",
+                "Gets total badges reward for a given user. Some options available.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getUserSkillsTotalReward",
+                "Gets total skills reward for a given user. Some options available.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getUserStreaksTotalReward",
+                "Gets total streaks reward for a given user. Some options available.",
+                ReturnType::NUMBER,
+                $this
+            )
         ];
     }
 
@@ -160,7 +254,7 @@ class AwardsLibrary extends Library
     /*** ---------- Config ---------- ***/
 
     /**
-     * TODO: description
+     * Gets icon for a given type of award.
      *
      * @param string $type
      * @return ValueNode
@@ -174,7 +268,7 @@ class AwardsLibrary extends Library
     }
 
     /**
-     * TODO: description
+     * Gets image for a given type of award.
      *
      * @param string $type
      * @param string $style
@@ -197,15 +291,21 @@ class AwardsLibrary extends Library
      *
      * @param int $userId
      * @return ValueNode
+     * @throws Exception
      */
     public function getUserAwards(int $userId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock awards
             $awards = [];
 
         } else {
-            $awardsModule = new Awards(Core::dictionary()->getCourse());
+            $awardsModule = new Awards($course);
             $awards = $awardsModule->getUserAwards($userId);
         }
         return new ValueNode($awards, $this);
@@ -221,12 +321,17 @@ class AwardsLibrary extends Library
      */
     public function getUserAwardsByType(int $userId, string $type): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock awards
             $awards = [];
 
         } else {
-            $awardsModule = new Awards(Core::dictionary()->getCourse());
+            $awardsModule = new Awards($course);
             $awards = $awardsModule->getUserAwardsByType($userId, $type);
         }
         return new ValueNode($awards, $this);
@@ -253,19 +358,23 @@ class AwardsLibrary extends Library
     public function getUserBadgesAwards(int $userId, bool $extra = null, bool $bragging = null, bool $count = null,
                                         bool $post = null, bool $point = null, bool $active = null): ValueNode
     {
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock awards
             $awards = [];
 
         } else {
-            $awardsModule = new Awards(Core::dictionary()->getCourse());
+            $awardsModule = new Awards($course);
             $awards = $awardsModule->getUserBadgesAwards($userId, $extra, $bragging, $count, $post, $point, $active);
         }
         return new ValueNode($awards, $this);
     }
 
     /**
-     * Gets total skills reward for a given user.
+     * Gets skill awards for a given user.
      * Option for collaborative:
      *  - if null --> gets total reward for all skills
      *  - if false --> gets total reward only for skills that are not collaborative
@@ -273,7 +382,7 @@ class AwardsLibrary extends Library
      * (same for other options)
      *
      * @param int $userId
-     * @param bool|null $repeatable
+     * @param bool|null $collab
      * @param bool|null $extra
      * @param bool|null $active
      * @return ValueNode
@@ -281,12 +390,17 @@ class AwardsLibrary extends Library
      */
     public function getUserSkillsAwards(int $userId, bool $collab = null, bool $extra = null, bool $active = null): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock awards
             $awards = [];
 
         } else {
-            $awardsModule = new Awards(Core::dictionary()->getCourse());
+            $awardsModule = new Awards($course);
             $awards = $awardsModule->getUserSkillsAwards($userId, $collab, $extra, $active);
         }
         return new ValueNode($awards, $this);
@@ -298,6 +412,7 @@ class AwardsLibrary extends Library
      *  - if null --> gets awards for all streaks
      *  - if false --> gets awards only for streaks that are not extra credit
      *  - if true --> gets awards only for streaks that are extra credit
+     * (same for other options)
      *
      * @param int $userId
      * @param bool|null $repeatable
@@ -308,12 +423,17 @@ class AwardsLibrary extends Library
      */
     public function getUserStreaksAwards(int $userId, bool $repeatable = null, bool $extra = null, bool $active = null): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock awards
             $awards = [];
 
         } else {
-            $awardsModule = new Awards(Core::dictionary()->getCourse());
+            $awardsModule = new Awards($course);
             $awards = $awardsModule->getUserStreaksAwards($userId, $repeatable, $extra, $active);
         }
         return new ValueNode($awards, $this);
@@ -332,11 +452,16 @@ class AwardsLibrary extends Library
      */
     public function getUserTotalRewardByType(int $userId, string $type): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $reward = Core::dictionary()->faker()->numberBetween(0, 3000);
 
         } else {
-            $awardsModule = new Awards(Core::dictionary()->getCourse());
+            $awardsModule = new Awards($course);
             $reward = $awardsModule->getUserTotalRewardByType($userId, $type);
         }
         return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
@@ -363,11 +488,16 @@ class AwardsLibrary extends Library
     public function getUserBadgesTotalReward(int $userId, bool $extra = null, bool $bragging = null, bool $count = null,
                                              bool $post = null, bool $point = null, bool $active = null): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $reward = Core::dictionary()->faker()->numberBetween(0, 3000);
 
         } else {
-            $awardsModule = new Awards(Core::dictionary()->getCourse());
+            $awardsModule = new Awards($course);
             $reward = $awardsModule->getUserBadgesTotalReward($userId, $extra, $bragging, $count, $post, $point, $active);
         }
         return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
@@ -390,11 +520,16 @@ class AwardsLibrary extends Library
      */
     public function getUserSkillsTotalReward(int $userId, bool $collab = null, bool $extra = null, bool $active = null): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $reward = Core::dictionary()->faker()->numberBetween(0, 3000);
 
         } else {
-            $awardsModule = new Awards(Core::dictionary()->getCourse());
+            $awardsModule = new Awards($course);
             $reward = $awardsModule->getUserSkillsTotalReward($userId, $collab, $extra, $active);
         }
         return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
@@ -416,11 +551,16 @@ class AwardsLibrary extends Library
      */
     public function getUserStreaksTotalReward(int $userId, bool $repeatable = null, bool $extra = null, bool $active = null): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $reward = Core::dictionary()->faker()->numberBetween(0, 3000);
 
         } else {
-            $awardsModule = new Awards(Core::dictionary()->getCourse());
+            $awardsModule = new Awards($course);
             $reward = $awardsModule->getUserStreaksTotalReward($userId, $repeatable, $active, $active);
         }
         return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));

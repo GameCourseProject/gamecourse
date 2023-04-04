@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\Views\Dictionary;
 
+use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
@@ -28,7 +29,18 @@ class CoursesLibrary extends Library
 
     public function getFunctions(): ?array
     {
-        return [];
+        return [
+            new DFunction("color",
+                "Gets a given courses's color.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("getCourseById",
+                "Gets a course by its ID.",
+                ReturnType::OBJECT,
+                $this
+            )
+        ];
     }
 
     // NOTE: add new library functions bellow & update its
@@ -41,7 +53,7 @@ class CoursesLibrary extends Library
      *
      * @param $course
      * @return ValueNode
-     * @throws \Exception
+     * @throws Exception
      */
     public function color($course): ValueNode
     {
@@ -59,16 +71,19 @@ class CoursesLibrary extends Library
      *
      * @param int $courseId
      * @return ValueNode
+     * @throws Exception
      */
     public function getCourseById(int $courseId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock course
             $course = [];
 
-        } else {
-            $course = Course::getCourseById($courseId);
-        }
+        } else $course = Course::getCourseById($courseId);
         return new ValueNode($course, $this);
     }
 }

@@ -30,7 +30,26 @@ class TreeLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
-            // TODO
+            new DFunction("maxReward",
+                "Gets skill tree's maximum reward.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getSkillTreeById",
+                "Gets a skill tree by its ID in the system.",
+                ReturnType::OBJECT,
+                $this
+            ),
+            new DFunction("getSkillTreeByName",
+                "Gets a skill tree by its name.",
+                ReturnType::OBJECT,
+                $this
+            ),
+            new DFunction("getSkillTrees",
+                "Gets all skill trees of course.",
+                ReturnType::COLLECTION,
+                $this
+            )
         ];
     }
 
@@ -59,20 +78,24 @@ class TreeLibrary extends Library
     /*** --------- General ---------- ***/
 
     /**
-     * Gets a skill tree by its ID.
+     * Gets a skill tree by its ID in the system.
      *
      * @param int $skillTreeId
      * @return ValueNode
+     * @throws Exception
      */
     public function getSkillTreeById(int $skillTreeId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock skill tree
             $skillTree = [];
 
-        } else {
-            $skillTree = SkillTree::getSkillTreeById($skillTreeId);
-        }
+        } else $skillTree = SkillTree::getSkillTreeById($skillTreeId);
         return new ValueNode($skillTree, $this);
     }
 
@@ -81,17 +104,20 @@ class TreeLibrary extends Library
      *
      * @param string $name
      * @return ValueNode
+     * @throws Exception
      */
     public function getSkillTreeByName(string $name): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock skill tree
             $skillTree = [];
 
-        } else {
-            $courseId = Core::dictionary()->getCourse()->getId();
-            $skillTree = SkillTree::getSkillTreeByName($courseId, $name);
-        }
+        } else $skillTree = SkillTree::getSkillTreeByName($courseId, $name);
         return new ValueNode($skillTree, $this);
     }
 
@@ -99,17 +125,20 @@ class TreeLibrary extends Library
      * Gets all skill trees of course.
      *
      * @return ValueNode
+     * @throws Exception
      */
     public function getSkillTrees(): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock skill trees
             $skillTrees = [];
 
-        } else {
-            $courseId = Core::dictionary()->getCourse()->getId();
-            $skillTrees = SkillTree::getSkillTrees($courseId);
-        }
+        } else $skillTrees = SkillTree::getSkillTrees($courseId);
         return new ValueNode($skillTrees, $this);
     }
 }

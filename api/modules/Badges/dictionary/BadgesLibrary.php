@@ -31,7 +31,121 @@ class BadgesLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
-            // TODO
+            new DFunction("id",
+                "Gets a given badge's ID in the system.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("name",
+                "Gets a given badge's name.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("description",
+                "Gets a given badge's description.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("image",
+                "Gets a given badge's image.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("levels",
+                "Gets a given badge's levels.",
+                ReturnType::COLLECTION,
+                $this
+            ),
+            new DFunction("isExtra",
+                "Checks whether a given badge is extra credit.",
+                ReturnType::BOOLEAN,
+                $this
+            ),
+            new DFunction("isBragging",
+                "Checks whether a given badge is bragging.",
+                ReturnType::BOOLEAN,
+                $this
+            ),
+            new DFunction("isBasedOnCounts",
+                "Checks whether a given badge is based on counting ocurrences of a given type.",
+                ReturnType::BOOLEAN,
+                $this
+            ),
+            new DFunction("isLinkable",
+                "Checks whether a given badge is linkable.",
+                ReturnType::BOOLEAN,
+                $this
+            ),
+            new DFunction("isBasedOnPoints",
+                "Checks whether a given badge is based on earning a certain amount of points.",
+                ReturnType::BOOLEAN,
+                $this
+            ),
+            new DFunction("getMaxXP",
+                "Gets maximum XP each student can earn with badges.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getMaxExtraCredit",
+                "Gets maximum extra credit each student can earn with badges.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getBlankImage",
+                "Gets blank badge image.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("getBlankImage",
+                "Gets blank badge image.",
+                ReturnType::TEXT,
+                $this
+            ),
+            new DFunction("getBadgeById",
+                "Gets a badge by its ID.",
+                ReturnType::OBJECT,
+                $this
+            ),
+            new DFunction("getBadgeByName",
+                "Gets a badge by its name.",
+                ReturnType::OBJECT,
+                $this
+            ),
+            new DFunction("getBadges",
+                "Gets badges of course. Option to filter by badge state.",
+                ReturnType::COLLECTION,
+                $this
+            ),
+            new DFunction("getUsersWithBadge",
+                "Gets users who have earned a given badge up to a certain level.",
+                ReturnType::COLLECTION,
+                $this
+            ),
+            new DFunction("getUserBadges",
+                "Gets badges earned by a given user.",
+                ReturnType::COLLECTION,
+                $this
+            ),
+            new DFunction("getUserBadgeProgression",
+                "Gets user progression on a given badge.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getUserBadgeProgressionInfo",
+                "Gets user progression information on a given badge, e.g. description and links to posts.",
+                ReturnType::OBJECT,
+                $this
+            ),
+            new DFunction("getUserBadgeLevel",
+                "Gets level earned by a given user on a specific badge.",
+                ReturnType::NUMBER,
+                $this
+            ),
+            new DFunction("getUserBadgeNextLevel",
+                "Gets the next level user can earn on a specific badge.",
+                ReturnType::NUMBER,
+                $this
+            )
         ];
     }
 
@@ -146,13 +260,13 @@ class BadgesLibrary extends Library
     }
 
     /**
-     * Checks whether a given badge is extra credit.
+     * Checks whether a given badge is based on counting ocurrences of a given type.
      *
      * @param $badge
      * @return ValueNode
      * @throws Exception
      */
-    public function isCount($badge): ValueNode
+    public function isBasedOnCounts($badge): ValueNode
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($badge)) $isCount = $badge["isCount"];
@@ -161,13 +275,13 @@ class BadgesLibrary extends Library
     }
 
     /**
-     * Checks whether a given badge is extra credit.
+     * Checks whether a given badge is linkable.
      *
      * @param $badge
      * @return ValueNode
      * @throws Exception
      */
-    public function isPost($badge): ValueNode
+    public function isLinkable($badge): ValueNode
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($badge)) $isPost = $badge["isPost"];
@@ -176,13 +290,13 @@ class BadgesLibrary extends Library
     }
 
     /**
-     * Checks whether a given badge is extra credit.
+     * Checks whether a given badge is based on earning a certain amount of points.
      *
      * @param $badge
      * @return ValueNode
      * @throws Exception
      */
-    public function isPoint($badge): ValueNode
+    public function isBasedOnPoints($badge): ValueNode
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($badge)) $isPoint= $badge["isPoint"];
@@ -194,43 +308,53 @@ class BadgesLibrary extends Library
     /*** ---------- Config ---------- ***/
 
     /**
-     * TODO: description
+     * Gets maximum XP each student can earn with badges.
      *
      * @return ValueNode
      * @throws Exception
      */
     public function getMaxXP(): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $maxXP = Core::dictionary()->faker()->numberBetween(20000, 22000);
 
         } else {
-            $badgesModule = new Badges(Core::dictionary()->getCourse());
+            $badgesModule = new Badges($course);
             $maxXP = $badgesModule->getMaxXP();
         }
         return new ValueNode($maxXP, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
     /**
-     * TODO: description
+     * Gets maximum extra credit each student can earn with badges.
      *
      * @return ValueNode
      * @throws Exception
      */
     public function getMaxExtraCredit(): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $maxExtraCredit = Core::dictionary()->faker()->numberBetween(1000, 5000);
 
         } else {
-            $badgesModule = new Badges(Core::dictionary()->getCourse());
+            $badgesModule = new Badges($course);
             $maxExtraCredit = $badgesModule->getMaxExtraCredit();
         }
         return new ValueNode($maxExtraCredit, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
     /**
-     * TODO: description
+     * Gets blank badge image.
      *
      * @return ValueNode
      * @throws Exception
@@ -250,16 +374,20 @@ class BadgesLibrary extends Library
      *
      * @param int $badgeId
      * @return ValueNode
+     * @throws Exception
      */
     public function getBadgeById(int $badgeId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock badge
             $badge = [];
 
-        } else {
-            $badge = Badge::getBadgeById($badgeId);
-        }
+        } else $badge = Badge::getBadgeById($badgeId);
         return new ValueNode($badge, $this);
     }
 
@@ -268,17 +396,20 @@ class BadgesLibrary extends Library
      *
      * @param string $name
      * @return ValueNode
+     * @throws Exception
      */
     public function getBadgeByName(string $name): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock badge
             $badge = [];
 
-        } else {
-            $courseId = Core::dictionary()->getCourse()->getId();
-            $badge = Badge::getBadgeByName($courseId, $name);
-        }
+        } else $badge = Badge::getBadgeByName($courseId, $name);
         return new ValueNode($badge, $this);
     }
 
@@ -287,17 +418,20 @@ class BadgesLibrary extends Library
      *
      * @param bool|null $active
      * @return ValueNode
+     * @throws Exception
      */
     public function getBadges(bool $active = null): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock badges
             $badges = [];
 
-        } else {
-            $courseId = Core::dictionary()->getCourse()->getId();
-            $badges = Badge::getBadges($courseId, $active);
-        }
+        } else $badges = Badge::getBadges($courseId, $active);
         return new ValueNode($badges, $this);
     }
 
@@ -311,12 +445,17 @@ class BadgesLibrary extends Library
      */
     public function getUsersWithBadge(int $badgeId, int $level): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock users
             $users = [];
 
         } else {
-            $badgesModule = new Badges(Core::dictionary()->getCourse());
+            $badgesModule = new Badges($course);
             $users = $badgesModule->getUsersWithBadge($badgeId, $level);
         }
         return new ValueNode($users, Core::dictionary()->getLibraryById(UsersLibrary::ID));
@@ -337,12 +476,17 @@ class BadgesLibrary extends Library
     public function getUserBadges(int $userId, bool $isExtra = null, bool $isBragging = null, bool $isCount = null,
                                   bool $isPost = null, bool $isPoint = null): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock badges
             $badges = [];
 
         } else {
-            $badgesModule = new Badges(Core::dictionary()->getCourse());
+            $badgesModule = new Badges($course);
             $badges = $badgesModule->getUserBadges($userId, $isExtra, $isBragging, $isCount, $isPost, $isPoint);
         }
         return new ValueNode($badges, $this);
@@ -358,11 +502,16 @@ class BadgesLibrary extends Library
      */
     public function getUserBadgeProgression(int $userId, int $badgeId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $progression = Core::dictionary()->faker()->numberBetween(0, 10);
 
         } else {
-            $badgesModule = new Badges(Core::dictionary()->getCourse());
+            $badgesModule = new Badges($course);
             $progression = $badgesModule->getUserBadgeProgression($userId, $badgeId);
         }
         return new ValueNode($progression, Core::dictionary()->getLibraryById(MathLibrary::ID));
@@ -379,12 +528,17 @@ class BadgesLibrary extends Library
      */
     public function getUserBadgeProgressionInfo(int $userId, int $badgeId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             // TODO: mock progression
             $progression = [];
 
         } else {
-            $badgesModule = new Badges(Core::dictionary()->getCourse());
+            $badgesModule = new Badges($course);
             $progression = $badgesModule->getUserBadgeProgressionInfo($userId, $badgeId);
         }
         return new ValueNode($progression, Core::dictionary()->getLibraryById(BadgeProgressionLibrary::ID));
@@ -400,11 +554,16 @@ class BadgesLibrary extends Library
      */
     public function getUserBadgeLevel(int $userId, int $badgeId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $level = Core::dictionary()->faker()->numberBetween(0, 3);
 
         } else {
-            $badgesModule = new Badges(Core::dictionary()->getCourse());
+            $badgesModule = new Badges($course);
             $level = $badgesModule->getUserBadgeLevel($userId, $badgeId);
         }
 
@@ -421,12 +580,17 @@ class BadgesLibrary extends Library
      */
     public function getUserBadgeNextLevel(int $userId, int $badgeId): ValueNode
     {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
         if (Core::dictionary()->mockData()) {
             $userLevel = Core::dictionary()->faker()->numberBetween(0, 3);
             $nrLevels = Core::dictionary()->faker()->numberBetween(1, 3);
 
         } else {
-            $badgesModule = new Badges(Core::dictionary()->getCourse());
+            $badgesModule = new Badges($course);
             $userLevel = $badgesModule->getUserBadgeLevel($userId, $badgeId);
             $nrLevels = Badge::getBadgeById($badgeId)->getNrLevels();
         }

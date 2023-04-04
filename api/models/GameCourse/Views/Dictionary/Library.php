@@ -2,6 +2,8 @@
 namespace GameCourse\Views\Dictionary;
 
 use Exception;
+use GameCourse\Course\Course;
+use GameCourse\User\User;
 
 /**
  * This is the Library model, which implements the necessary methods
@@ -166,5 +168,53 @@ abstract class Library
     public function throwError(string $funcName, string $errorMsg)
     {
         throw new Exception("On '$funcName' function in " . $this->name . " library: $errorMsg.");
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ----------------- Permissions ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    /**
+     * Only allow access to admins and users of the course.
+     *
+     * @param string $funcName
+     * @param int $courseId
+     * @param int $viewerId
+     * @return void
+     * @throws Exception
+     */
+    public function requireCoursePermission(string $funcName, int $courseId, int $viewerId)
+    {
+        $viewer = User::getUserById($viewerId);
+        if (!$viewer)
+            $this->throwError($funcName, "you don't have permission to access this course - viewer not found on GameCourse");
+
+        $course = Course::getCourseById($courseId);
+        $courseUser = $course->getCourseUserById($viewerId);
+        if (!$viewer->isAdmin() && (!$courseUser || (!$course->isVisible() && !$courseUser->isTeacher())))
+            $this->throwError($funcName, "you don't have permission to access this course");
+    }
+
+    /**
+     * Only allow access to admins and teachers of the course.
+     *
+     * @param string $funcName
+     * @param int $courseId
+     * @param int $viewerId
+     * @return void
+     * @throws Exception
+     */
+    public function requireCourseAdminPermission(string $funcName, int $courseId, int $viewerId)
+    {
+        $viewer = User::getUserById($viewerId);
+        if (!$viewer)
+            $this->throwError($funcName, "you don't have permission to request this - viewer not found on GameCourse");
+
+        $course = Course::getCourseById($courseId);
+        $courseUser = $course->getCourseUserById($viewerId);
+        $courseAdmin = $courseUser && $courseUser->isTeacher();
+        if (!$viewer->isAdmin() && !$courseAdmin)
+            $this->throwError($funcName, "you don't have permission to request this - only course Admins can");
     }
 }
