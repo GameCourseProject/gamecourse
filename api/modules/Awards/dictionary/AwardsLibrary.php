@@ -316,10 +316,11 @@ class AwardsLibrary extends Library
      *
      * @param int $userId
      * @param string $type
+     * @param int|null $instance
      * @return ValueNode
      * @throws Exception
      */
-    public function getUserAwardsByType(int $userId, string $type): ValueNode
+    public function getUserAwardsByType(int $userId, string $type, ?int $instance = null): ValueNode
     {
         // Check permissions
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
@@ -332,7 +333,7 @@ class AwardsLibrary extends Library
 
         } else {
             $awardsModule = new Awards($course);
-            $awards = $awardsModule->getUserAwardsByType($userId, $type);
+            $awards = $awardsModule->getUserAwardsByType($userId, $type, $instance);
         }
         return new ValueNode($awards, $this);
     }
@@ -447,10 +448,11 @@ class AwardsLibrary extends Library
      *
      * @param int $userId
      * @param string $type
+     * @param int|null $instance
      * @return ValueNode
      * @throws Exception
      */
-    public function getUserTotalRewardByType(int $userId, string $type): ValueNode
+    public function getUserTotalRewardByType(int $userId, string $type, ?int $instance = null): ValueNode
     {
         // Check permissions
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
@@ -462,7 +464,7 @@ class AwardsLibrary extends Library
 
         } else {
             $awardsModule = new Awards($course);
-            $reward = $awardsModule->getUserTotalRewardByType($userId, $type);
+            $reward = $awardsModule->getUserTotalRewardByType($userId, $type, $instance);
         }
         return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }

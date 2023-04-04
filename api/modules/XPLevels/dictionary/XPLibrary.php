@@ -172,10 +172,11 @@ class XPLibrary extends Library
      *
      * @param int $userId
      * @param string $type
+     * @param int|null $instance
      * @return ValueNode
      * @throws Exception
      */
-    public function getUserXPByType(int $userId, string $type): ValueNode
+    public function getUserXPByType(int $userId, string $type, ?int $instance = null): ValueNode
     {
         // Check permissions
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
@@ -187,7 +188,7 @@ class XPLibrary extends Library
 
         } else {
             $XPModule = new XPLevels($course);
-            $userXPByType = $XPModule->getUserXPByType($userId, $type);
+            $userXPByType = $XPModule->getUserXPByType($userId, $type, $instance);
         }
         return new ValueNode($userXPByType, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }

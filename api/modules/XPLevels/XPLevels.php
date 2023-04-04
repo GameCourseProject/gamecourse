@@ -729,13 +729,14 @@ class XPLevels extends Module
      *
      * @param int $userId
      * @param string $type
+     * @param int|null $instance
      * @return int
      * @throws Exception
      */
-    public function getUserXPByType(int $userId, string $type): int
+    public function getUserXPByType(int $userId, string $type, ?int $instance = null): int
     {
         $awardsModule = new Awards($this->course);
-        return $awardsModule->getUserTotalRewardByType($userId, $type);
+        return $awardsModule->getUserTotalRewardByType($userId, $type, $instance);
     }
 
     /**

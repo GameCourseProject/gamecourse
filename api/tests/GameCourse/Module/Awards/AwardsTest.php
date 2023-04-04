@@ -227,6 +227,43 @@ class AwardsTest extends TestCase
      * @test
      * @throws Exception
      */
+    public function getUserAwardsByTypeWithInstance()
+    {
+        // Given
+        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BADGE, 1, "Badge 1", 500);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BADGE, 2, "Badge 2", 200);
+
+        // When
+        $awards = $this->module->getUserAwardsByType($user->getId(), AwardType::BADGE, 1);
+
+        // Then
+        $this->assertIsArray($awards);
+        $this->assertCount(1, $awards);
+
+        $keys = ["id", "user", "course", "description", "type", "moduleInstance", "reward", "date"];
+        $nrKeys = count($keys);
+        foreach ($keys as $key) {
+            $this->assertCount($nrKeys, array_keys($awards[0]));
+            $this->assertArrayHasKey($key, $awards[0]);
+
+            if ($key === "date") continue;
+            else $this->assertEquals($awards[0][$key], [
+                "id" => 1,
+                "user" => $user->getId(),
+                "course" => $this->course->getId(),
+                "description" => "Badge 1",
+                "type" => AwardType::BADGE,
+                "moduleInstance" => 1,
+                "reward" => 500
+            ][$key]);
+        }
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
     public function getUserAwardsByTypeNoAwards()
     {
         // Given
@@ -1088,6 +1125,21 @@ class AwardsTest extends TestCase
 
         // Then
         $this->assertEquals(500, $this->module->getUserTotalRewardByType($user->getId(), AwardType::BONUS));
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getUserTotalRewardByTypeWithInstance()
+    {
+        // Given
+        $user = CourseUser::getCourseUserById($this->course->getStudents(true)[0]["id"], $this->course);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BADGE, 1, "Badge 1", 500);
+        $this->insertAward($this->course->getId(), $user->getId(), AwardType::BADGE, 2, "Badge 2", 200);
+
+        // Then
+        $this->assertEquals(500, $this->module->getUserTotalRewardByType($user->getId(), AwardType::BADGE, 1));
     }
 
     /**

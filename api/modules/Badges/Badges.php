@@ -1,14 +1,13 @@
 <?php
 namespace GameCourse\Module\Badges;
 
-use Event\Event;
-use Event\EventType;
 use Exception;
 use GameCourse\Adaptation\GameElement;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
+use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\Config\Action;
 use GameCourse\Module\Config\ActionScope;
 use GameCourse\Module\Config\DataType;
@@ -17,10 +16,8 @@ use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\Moodle\Moodle;
-use GameCourse\Module\Profiling\Profiling;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
-use Google\Service\DriveActivity\Edit;
 use GameCourse\Views\Dictionary\ReturnType;
 use Utils\Cache;
 use Utils\Utils;
@@ -1056,8 +1053,7 @@ class Badges extends Module
     public function getUserBadges(int $userId, bool $isExtra = null, bool $isBragging = null, bool $isCount = null,
                                   bool $isPost = null, bool $isPoint = null): array
     {
-        $course = $this->getCourse();
-        $awardsModule = new Awards($course);
+        $awardsModule = new Awards($this->getCourse());
         $userBadgeAwards = $awardsModule->getUserBadgesAwards($userId, $isExtra, $isBragging, $isCount, $isPost, $isPoint);
 
         // Group by badge ID
@@ -1170,10 +1166,8 @@ class Badges extends Module
      */
     public function getUserBadgeLevel(int $userId, int $badgeId): int
     {
-        $userBadges = $this->getUserBadges($userId);
-        foreach ($userBadges as $badge) {
-            if ($badge["id"] == $badgeId) return $badge["level"];
-        }
-        return 0;
+        $awardsModule = new Awards($this->getCourse());
+        $badgeAwards = $awardsModule->getUserAwardsByType($userId, AwardType::BADGE, $badgeId);
+        return count($badgeAwards);
     }
 }

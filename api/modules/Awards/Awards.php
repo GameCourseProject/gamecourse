@@ -151,20 +151,21 @@ class Awards extends Module
      *
      * @param int $userId
      * @param string $type
+     * @param int|null $instance
      * @return array
      * @throws Exception
      */
-    public function getUserAwardsByType(int $userId, string $type): array
+    public function getUserAwardsByType(int $userId, string $type, ?int $instance = null): array
     {
-        if ($type === AwardType::BADGE) return $this->getUserBadgesAwards($userId);
-        elseif ($type === AwardType::SKILL) return $this->getUserSkillsAwards($userId);
-        elseif ($type === AwardType::STREAK) return $this->getUserStreaksAwards($userId);
+        if (is_null($instance)) {
+            if ($type === AwardType::BADGE) return $this->getUserBadgesAwards($userId);
+            elseif ($type === AwardType::SKILL) return $this->getUserSkillsAwards($userId);
+            elseif ($type === AwardType::STREAK) return $this->getUserStreaksAwards($userId);
+        }
 
-        $awards = Core::database()->selectMultiple(self::TABLE_AWARD, [
-            "course" => $this->course->getId(),
-            "user" => $userId,
-            "type" => $type
-        ], "*", "date");
+        $where = ["course" => $this->course->getId(), "user" => $userId, "type" => $type];
+        if (!is_null($instance)) $where["moduleInstance"] = $instance;
+        $awards = Core::database()->selectMultiple(self::TABLE_AWARD, $where, "*", "date");
         foreach ($awards as &$award) { $award = self::parse($award); }
         return $awards;
     }
@@ -295,12 +296,13 @@ class Awards extends Module
      *
      * @param int $userId
      * @param string $type
+     * @param int|null $instance
      * @return int
      * @throws Exception
      */
-    public function getUserTotalRewardByType(int $userId, string $type): int
+    public function getUserTotalRewardByType(int $userId, string $type, ?int $instance = null): int
     {
-        return array_sum(array_column($this->getUserAwardsByType($userId, $type), "reward"));
+        return array_sum(array_column($this->getUserAwardsByType($userId, $type, $instance), "reward"));
     }
 
     /**
