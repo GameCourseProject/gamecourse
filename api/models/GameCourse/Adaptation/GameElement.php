@@ -482,6 +482,7 @@ class GameElement
         $gameElements = self::getGameElements($courseId);
 
         foreach ($gameElements as $gameElement){
+            $gameElement = GameElement::getGameElementByModule($courseId, $gameElement);
             Core::database()->insert(self::TABLE_ADAPTATION_USER_NOTIFICATION, ["element" => $gameElement->getId(), "user" => $studentId]);
         }
     }
@@ -526,7 +527,8 @@ class GameElement
             $users = array_map(function ($user) {return $user["user"];}, $users);
 
             foreach ($users as $user){
-                if (!Notification::isNotificationInDB($this->getCourse(), $user, $message)){
+                if (!Notification::isNotificationInDB($this->getCourse(), $user, $message) &&
+                    Role::userHasRole($user["id"], $this->getCourse(), "Student") && $user->isActive()){
                     Notification::addNotification($this->getCourse(), $user, $message);
                 }
             }
@@ -550,7 +552,7 @@ class GameElement
         // add all courseUsers to table element_user
         if ($isActive) {
             foreach ($users as $user){
-                if (Role::userHasRole($user["id"], $course, "Student")){    // only add notification to students
+                if (Role::userHasRole($user["id"], $course, "Student") && $user->isActive()){    // only add notification to students
                     Core::database()->insert(self::TABLE_ADAPTATION_USER_NOTIFICATION, ["element" => $gameElement, "user" => $user["id"]]);
                 }
             }
@@ -559,7 +561,7 @@ class GameElement
         // remove all courseUsers from table element_user
         else {
             foreach ($users as $user){
-                if (Role::userHasRole($user["id"], $course, "Student")){
+                if (Role::userHasRole($user["id"], $course, "Student") && $user->isActive()){
                     Core::database()->delete(self::TABLE_ADAPTATION_USER_NOTIFICATION, ["element" => $gameElement, "user" => $user["id"]]);
                 }
             }

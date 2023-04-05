@@ -489,6 +489,24 @@ class CourseController
     }
 
     /**
+     * Gets number of active students in a specific course
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getActiveStudents(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $response = $course->getStudents(true);
+        API::response($response);
+    }
+
+    /**
      * @throws Exception
      */
     public function refreshCourseUserActivity()

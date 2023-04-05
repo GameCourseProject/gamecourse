@@ -254,8 +254,6 @@ class AdaptationController
     /**
      * Export questionnaires answers of a specific game element given a course and game element id into a .csv file.
      *
-     * @param $courseId
-     * @param $gameElementId
      * @throws Exception
      */
     public function exportAnswersQuestionnaire(){
