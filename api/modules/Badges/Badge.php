@@ -19,7 +19,7 @@ class Badge
     const TABLE_BADGE_PROGRESSION = 'badge_progression';
 
     const HEADERS = [   // headers for import/export functionality
-        "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPost", "isPoint", "isActive"
+        "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPoint", "isActive"
     ];
     const LEVEL_HEADERS = [
         "badge_name", "number", "goal", "description", "reward", "tokens"
@@ -91,11 +91,6 @@ class Badge
     public function isCount(): bool
     {
         return $this->getData("isCount");
-    }
-
-    public function isPost(): bool
-    {
-        return $this->getData("isPost");
     }
 
     public function isPoint(): bool
@@ -177,14 +172,6 @@ class Badge
     public function setCount(bool $isCount)
     {
         $this->setData(["isCount" => +$isCount]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function setPost(bool $isPost)
-    {
-        $this->setData(["isPost" => +$isPost]);
     }
 
     /**
@@ -354,17 +341,16 @@ class Badge
      * @param bool $isExtra
      * @param bool $isBragging
      * @param bool $isCount
-     * @param bool $isPost
      * @param bool $isPoint
      * @param array $levels
      * @return Badge
      * @throws Exception
      */
     public static function addBadge(int $courseId, string $name, string $description, bool $isExtra,
-                                    bool $isBragging, bool $isCount, bool $isPost, bool $isPoint, array $levels): Badge
+                                    bool $isBragging, bool $isCount, bool $isPoint, array $levels): Badge
     {
         self::trim($name, $description);
-        self::validateBadge($courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels);
+        self::validateBadge($courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPoint, $levels);
 
         // Create badge rule
         $rule = self::addRule($courseId, $name, $description, $isPoint, $levels);
@@ -377,7 +363,6 @@ class Badge
             "isExtra" => +$isExtra,
             "isBragging" => +$isBragging,
             "isCount" => +$isCount,
-            "isPost" => +$isPost,
             "isPoint" => +$isPoint,
             "rule" => $rule->getId()
         ]);
@@ -401,7 +386,6 @@ class Badge
      * @param bool $isExtra
      * @param bool $isBragging
      * @param bool $isCount
-     * @param bool $isPost
      * @param bool $isPoint
      * @param bool $isActive
      * @param array $levels
@@ -409,7 +393,7 @@ class Badge
      * @throws Exception
      */
     public function editBadge(string $name, string $description, bool $isExtra, bool $isBragging,
-                              bool $isCount, bool $isPost, bool $isPoint, bool $isActive, array $levels): Badge
+                              bool $isCount, bool $isPoint, bool $isActive, array $levels): Badge
     {
         $this->setData([
             "name" => $name,
@@ -417,7 +401,6 @@ class Badge
             "isExtra" => +$isExtra,
             "isBragging" => +$isBragging,
             "isCount" => +$isCount,
-            "isPost" => +$isPost,
             "isPoint" => +$isPoint,
             "isActive" => +$isActive
         ]);
@@ -439,7 +422,7 @@ class Badge
         // Copy badge
         $levels = $this->getLevels();
         $copiedBadge = self::addBadge($copyTo->getId(), $badgeInfo["name"], $badgeInfo["description"], $badgeInfo["isExtra"],
-            $badgeInfo["isBragging"], $badgeInfo["isCount"], $badgeInfo["isPost"], $badgeInfo["isPoint"], $levels);
+            $badgeInfo["isBragging"], $badgeInfo["isCount"], $badgeInfo["isPoint"], $levels);
         $copiedBadge->setActive($badgeInfo["isActive"]);
 
         // Copy image
@@ -543,7 +526,7 @@ class Badge
         Core::database()->update(self::TABLE_BADGE, ["nrLevels" => count($levels)], ["id" => $this->id]);
 
         // Update badge rule
-        self::updateRule($this->getRule()->getId(), $this->getName(), $this->getDescription(), $this->isPost(), $levels);
+        self::updateRule($this->getRule()->getId(), $this->getName(), $this->getDescription(), $this->isPoint(), $levels);
     }
 
 
@@ -788,7 +771,6 @@ class Badge
             $isExtra = self::parse(null, $badge[$indexes["isExtra"]], "isExtra");
             $isBragging = self::parse(null, $badge[$indexes["isBragging"]], "isBragging");
             $isCount = self::parse(null, $badge[$indexes["isCount"]], "isCount");
-            $isPost = self::parse(null, $badge[$indexes["isPost"]], "isPost");
             $isPoint = self::parse(null, $badge[$indexes["isPoint"]], "isPoint");
             $isActive = self::parse(null, $badge[$indexes["isActive"]], "isActive");
 
@@ -796,11 +778,11 @@ class Badge
             $image = $images[$name] ?? null;
             if ($badge) {  // badge already exists
                 if ($replace) {  // replace
-                    $badge->editBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $isActive, $levels[$name]);
+                    $badge->editBadge($name, $description, $isExtra, $isBragging, $isCount, $isPoint, $isActive, $levels[$name]);
                     if ($image) copy($image, $badge->getDataFolder() . "/badge.png");
                 }
             } else {  // badge doesn't exist
-                $badge = self::addBadge($courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels[$name]);
+                $badge = self::addBadge($courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPoint, $levels[$name]);
                 if ($image) copy($image, $badge->getDataFolder() . "/badge.png");
                 return 1;
             }
@@ -842,7 +824,7 @@ class Badge
         $badgesToExport = array_values(array_filter(self::getBadges($courseId), function ($badge) use ($badgeIds) { return in_array($badge["id"], $badgeIds); }));
         $zip->addFromString("badges.csv", Utils::exportToCSV($badgesToExport, function ($badge) {
             return [$badge["name"], $badge["description"], $badge["nrLevels"], +$badge["isExtra"], +$badge["isBragging"],
-                +$badge["isCount"], +$badge["isPost"], +$badge["isPoint"], +$badge["isActive"]];
+                +$badge["isCount"], +$badge["isPoint"], +$badge["isActive"]];
         }, self::HEADERS));
 
         // Add images folder
@@ -885,20 +867,18 @@ class Badge
      * @param $isExtra
      * @param $isBragging
      * @param $isCount
-     * @param $isPost
      * @param $isPoint
      * @param $levels
      * @return void
      * @throws Exception
      */
-    private static function validateBadge(int $courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels)
+    private static function validateBadge(int $courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPoint, $levels)
     {
         self::validateName($courseId, $name);
         self::validateDescription($description);
         if (!is_bool($isExtra)) throw new Exception("'isExtra' must be either true or false.");
         if (!is_bool($isBragging)) throw new Exception("'isBragging' must be either true or false.");
         if (!is_bool($isCount)) throw new Exception("'isCount' must be either true or false.");
-        if (!is_bool($isPost)) throw new Exception("'isPost' must be either true or false.");
         if (!is_bool($isPoint)) throw new Exception("'isPoint' must be either true or false.");
         self::validateLevels($levels, $isBragging);
     }
@@ -1023,7 +1003,7 @@ class Badge
     private static function parse(array $badge = null, $field = null, string $fieldName = null)
     {
         $intValues = ["id", "course", "nrLevels", "rule"];
-        $boolValues = ["isExtra", "isBragging", "isCount", "isPost", "isPoint", "isActive"];
+        $boolValues = ["isExtra", "isBragging", "isCount", "isPoint", "isActive"];
 
         return Utils::parse(["int" => $intValues, "bool" => $boolValues], $badge, $field, $fieldName);
     }

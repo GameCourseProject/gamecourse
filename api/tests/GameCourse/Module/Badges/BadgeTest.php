@@ -10,7 +10,6 @@ use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\User\User;
-use PDOException;
 use PHPUnit\Framework\TestCase;
 use TestingUtils;
 use Throwable;
@@ -202,29 +201,29 @@ class BadgeTest extends TestCase
     public function badgeSuccessProvider(): array
     {
         return [
-            "default" => ["Badge Name", "Perform action", false, false, false, false, false, [
+            "default" => ["Badge Name", "Perform action", false, false, false, false, [
                 ["description" => "one time", "goal" => 1, "reward" => 100],
                 ["description" => "two times", "goal" => 2, "reward" => 100],
                 ["description" => "three times", "goal" => 3, "reward" => 100]
             ]],
-            "two levels" => ["Badge Name", "Perform action", false, false, false, false, false, [
+            "two levels" => ["Badge Name", "Perform action", false, false, false, false, [
                 ["description" => "one time", "goal" => 1, "reward" => 100],
                 ["description" => "two times", "goal" => 2, "reward" => 100]
             ]],
-            "one level" => ["Badge Name", "Perform action", false, false, false, false, false, [
+            "one level" => ["Badge Name", "Perform action", false, false, false, false, [
                 ["description" => "one time", "goal" => 1, "reward" => 100]
             ]],
-            "based on counts" => ["Badge Name", "Perform action", false, false, true, false, false, [
+            "based on counts" => ["Badge Name", "Perform action", false, false, true, false, [
                 ["description" => "one time", "goal" => 1, "reward" => 100],
                 ["description" => "two times", "goal" => 2, "reward" => 100],
                 ["description" => "three times", "goal" => 3, "reward" => 100]
             ]],
-            "based on points" => ["Badge Name", "Perform action", false, false, false, false, true, [
+            "based on points" => ["Badge Name", "Perform action", false, false, false, true, [
                 ["description" => "one time", "goal" => 1, "reward" => 100],
                 ["description" => "two times", "goal" => 2, "reward" => 100],
                 ["description" => "three times", "goal" => 3, "reward" => 100]
             ]],
-            "tokens" => ["Badge Name", "Perform action", false, false, false, false, false, [
+            "tokens" => ["Badge Name", "Perform action", false, false, false, false, [
                 ["description" => "one time", "goal" => 1, "reward" => 100, "tokens" => 10],
                 ["description" => "two times", "goal" => 2, "reward" => 100, "tokens" => 10],
                 ["description" => "three times", "goal" => 3, "reward" => 100, "tokens" => 10]
@@ -235,41 +234,41 @@ class BadgeTest extends TestCase
     public function badgeFailureProvider(): array
     {
         return [
-            "invalid name" => [null, "Perform action", false, false, false, false, false, []],
-            "invalid description" => ["Badge Name", null, false, false, false, false, false, []],
-            "no levels" => ["Badge Name", "Perform action", false, false, false, false, false, []],
-            "excess levels" => ["Badge Name", "Perform action", false, false, false, false, false, [
+            "invalid name" => [null, "Perform action", false, false, false, false, []],
+            "invalid description" => ["Badge Name", null, false, false, false, false, []],
+            "no levels" => ["Badge Name", "Perform action", false, false, false, false, []],
+            "excess levels" => ["Badge Name", "Perform action", false, false, false, false, [
                 ["description" => "one time", "goal" => 1, "reward" => 100],
                 ["description" => "two times", "goal" => 2, "reward" => 100],
                 ["description" => "three times", "goal" => 3, "reward" => 100],
                 ["description" => "four times", "goal" => 4, "reward" => 100]
             ]],
-            "no description" => ["Badge Name", "Perform action", false, false, false, false, false, [
+            "no description" => ["Badge Name", "Perform action", false, false, false, false, [
                 ["description" => "", "goal" => 1, "reward" => 100],
                 ["description" => "two times", "goal" => 2, "reward" => 100],
                 ["description" => "three times", "goal" => 3, "reward" => 100]
             ]],
-            "no goal" => ["Badge Name", "Perform action", false, false, false, false, false, [
+            "no goal" => ["Badge Name", "Perform action", false, false, false, false, [
                 ["description" => "one time", "goal" => 1, "reward" => 100],
                 ["description" => "two times", "goal" => null, "reward" => 100],
                 ["description" => "three times", "goal" => 3, "reward" => 100]
             ]],
-            "no reward" => ["Badge Name", "Perform action", false, false, false, false, false, [
+            "no reward" => ["Badge Name", "Perform action", false, false, false, false, [
                 ["description" => "", "goal" => 1, "reward" => 100],
                 ["description" => "two times", "goal" => 2, "reward" => 100],
                 ["description" => "three times", "goal" => 3, "reward" => null]
             ]],
-            "unordered goals" => ["Badge Name", "Perform action", false, false, false, false, false, [
+            "unordered goals" => ["Badge Name", "Perform action", false, false, false, false, [
                 ["description" => "three times", "goal" => 3, "reward" => 100],
                 ["description" => "two times", "goal" => 2, "reward" => 100],
                 ["description" => "one time", "goal" => 1, "reward" => 100]
             ]],
-            "negative goals" => ["Badge Name", "Perform action", false, false, false, false, false, [
+            "negative goals" => ["Badge Name", "Perform action", false, false, false, false, [
                 ["description" => "one time", "goal" => -1, "reward" => 100],
                 ["description" => "two times", "goal" => -2, "reward" => 100],
                 ["description" => "three times", "goal" => -3, "reward" => 100]
             ]],
-            "same goals" => ["Badge Name", "Perform action", false, false, false, false, false, [
+            "same goals" => ["Badge Name", "Perform action", false, false, false, false, [
                 ["description" => "one time", "goal" => 0, "reward" => 100],
                 ["description" => "two times", "goal" => 0, "reward" => 100],
                 ["description" => "three times", "goal" => 0, "reward" => 100]
@@ -302,7 +301,7 @@ class BadgeTest extends TestCase
      */
     public function getId()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -317,7 +316,7 @@ class BadgeTest extends TestCase
      */
     public function getCourse()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -331,7 +330,7 @@ class BadgeTest extends TestCase
      */
     public function getBadgeName()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -345,7 +344,7 @@ class BadgeTest extends TestCase
      */
     public function getDescription()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -359,7 +358,7 @@ class BadgeTest extends TestCase
      */
     public function getNrLevels()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -373,7 +372,7 @@ class BadgeTest extends TestCase
      */
     public function getImage()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -389,7 +388,7 @@ class BadgeTest extends TestCase
      */
     public function getImageDefault()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -404,7 +403,7 @@ class BadgeTest extends TestCase
      */
     public function getImageExtra()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", true, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", true, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -419,7 +418,7 @@ class BadgeTest extends TestCase
      */
     public function hasImage()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -439,7 +438,7 @@ class BadgeTest extends TestCase
      */
     public function isExtra()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", true, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", true, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -453,7 +452,7 @@ class BadgeTest extends TestCase
      */
     public function isNotExtra()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -467,7 +466,7 @@ class BadgeTest extends TestCase
      */
     public function isBragging()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, true, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, true, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -481,7 +480,7 @@ class BadgeTest extends TestCase
      */
     public function isNotBragging()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -495,7 +494,7 @@ class BadgeTest extends TestCase
      */
     public function isCount()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, true, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, true, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -509,7 +508,7 @@ class BadgeTest extends TestCase
      */
     public function isNotCount()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -521,37 +520,9 @@ class BadgeTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function isPost()
-    {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, true, false, [
-            ["description" => "one time", "goal" => 1, "reward" => 100],
-            ["description" => "two times", "goal" => 2, "reward" => 100],
-            ["description" => "three times", "goal" => 3, "reward" => 100]
-        ]);
-        $this->assertTrue($badge->isPost());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function isNotPost()
-    {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
-            ["description" => "one time", "goal" => 1, "reward" => 100],
-            ["description" => "two times", "goal" => 2, "reward" => 100],
-            ["description" => "three times", "goal" => 3, "reward" => 100]
-        ]);
-        $this->assertFalse($badge->isPost());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
     public function isPoint()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, true, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, true, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -565,7 +536,7 @@ class BadgeTest extends TestCase
      */
     public function isNotPoint()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -579,7 +550,7 @@ class BadgeTest extends TestCase
      */
     public function isActive()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -593,7 +564,7 @@ class BadgeTest extends TestCase
      */
     public function isInactive()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -608,14 +579,14 @@ class BadgeTest extends TestCase
      */
     public function getData()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
         $this->assertEquals(["id" => 1, "course" => $this->courseId, "name" => "Badge", "description" => "Perform action",
-            "nrLevels" => 3, "isExtra" => false, "isBragging" => false, "isCount" => false, "isPost" => false,
-            "isPoint" => false, "isActive" => true, "rule" => $badge->getRule()->getId()], $badge->getData());
+            "nrLevels" => 3, "isExtra" => false, "isBragging" => false, "isCount" => false, "isPoint" => false,
+            "isActive" => true, "rule" => $badge->getRule()->getId()], $badge->getData());
     }
 
 
@@ -628,7 +599,7 @@ class BadgeTest extends TestCase
      */
     public function setBadgeNameSuccess(string $name)
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -651,7 +622,7 @@ class BadgeTest extends TestCase
      */
     public function setBadgeNameFailure($name)
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -674,12 +645,12 @@ class BadgeTest extends TestCase
      */
     public function setBadgeNameDuplicateName()
     {
-        $badge1 = Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, false, [
+        $badge1 = Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badge2 = Badge::addBadge($this->courseId, "Badge2", "Perform action", false, false, false, false, false, [
+        $badge2 = Badge::addBadge($this->courseId, "Badge2", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -703,7 +674,7 @@ class BadgeTest extends TestCase
      */
     public function setDescriptionSuccess(string $description)
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -722,7 +693,7 @@ class BadgeTest extends TestCase
      */
     public function setDescriptionFailure($description)
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -744,7 +715,7 @@ class BadgeTest extends TestCase
      */
     public function setImage(string $base64)
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -759,7 +730,7 @@ class BadgeTest extends TestCase
      */
     public function setExtra()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -782,7 +753,7 @@ class BadgeTest extends TestCase
      */
     public function setNotExtra()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", true, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", true, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -797,7 +768,7 @@ class BadgeTest extends TestCase
      */
     public function setBragging()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -815,7 +786,7 @@ class BadgeTest extends TestCase
      */
     public function setNotBragging()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, true, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, true, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -830,7 +801,7 @@ class BadgeTest extends TestCase
      */
     public function setCount()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -845,7 +816,7 @@ class BadgeTest extends TestCase
      */
     public function setNotCount()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, true, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, true, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -858,39 +829,9 @@ class BadgeTest extends TestCase
      * @test
      * @throws Exception
      */
-    public function setPost()
-    {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
-            ["description" => "one time", "goal" => 1, "reward" => 100],
-            ["description" => "two times", "goal" => 2, "reward" => 100],
-            ["description" => "three times", "goal" => 3, "reward" => 100]
-        ]);
-        $badge->setPost(true);
-        $this->assertTrue($badge->isPost());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
-    public function setNotPost()
-    {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, true, false, [
-            ["description" => "one time", "goal" => 1, "reward" => 100],
-            ["description" => "two times", "goal" => 2, "reward" => 100],
-            ["description" => "three times", "goal" => 3, "reward" => 100]
-        ]);
-        $badge->setPost(false);
-        $this->assertFalse($badge->isPost());
-    }
-
-    /**
-     * @test
-     * @throws Exception
-     */
     public function setPoint()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -905,7 +846,7 @@ class BadgeTest extends TestCase
      */
     public function setNotPoint()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, true, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, true, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -920,7 +861,7 @@ class BadgeTest extends TestCase
      */
     public function setActive()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -937,7 +878,7 @@ class BadgeTest extends TestCase
      */
     public function setInactive()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -956,7 +897,7 @@ class BadgeTest extends TestCase
      */
     public function getBadgeById()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -978,7 +919,7 @@ class BadgeTest extends TestCase
      */
     public function getBadgeByName()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1001,12 +942,12 @@ class BadgeTest extends TestCase
      */
     public function getAllBadges()
     {
-        $badge1 = Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, false, [
+        $badge1 = Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badge2 = Badge::addBadge($this->courseId, "Badge2", "Perform action", false, false, false, false, false, [
+        $badge2 = Badge::addBadge($this->courseId, "Badge2", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1016,8 +957,9 @@ class BadgeTest extends TestCase
         $this->assertIsArray($badges);
         $this->assertCount(2, $badges);
 
-        $keys = ["id", "course", "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPost", "isPoint",
-            "isActive", "rule", "image", "desc1", "goal1", "reward1", "tokens1", "desc2", "goal2", "reward2", "tokens2", "desc3", "goal3", "reward3", "tokens3",];
+        $keys = ["id", "course", "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPoint",
+            "isActive", "rule", "image", "desc1", "goal1", "reward1", "tokens1", "desc2", "goal2", "reward2", "tokens2",
+            "desc3", "goal3", "reward3", "tokens3",];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($badges as $i => $badge) {
@@ -1038,12 +980,12 @@ class BadgeTest extends TestCase
      */
     public function getAllActiveBadges()
     {
-        $badge1 = Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, false, [
+        $badge1 = Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badge2 = Badge::addBadge($this->courseId, "Badge2", "Perform action", false, false, false, false, false, [
+        $badge2 = Badge::addBadge($this->courseId, "Badge2", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1054,8 +996,9 @@ class BadgeTest extends TestCase
         $this->assertIsArray($badges);
         $this->assertCount(1, $badges);
 
-        $keys = ["id", "course", "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPost", "isPoint",
-            "isActive", "rule", "image", "desc1", "goal1", "reward1", "tokens1", "desc2", "goal2", "reward2", "tokens2", "desc3", "goal3", "reward3", "tokens3",];
+        $keys = ["id", "course", "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPoint",
+            "isActive", "rule", "image", "desc1", "goal1", "reward1", "tokens1", "desc2", "goal2", "reward2", "tokens2",
+            "desc3", "goal3", "reward3", "tokens3",];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($badges as $badge) {
@@ -1076,12 +1019,12 @@ class BadgeTest extends TestCase
      */
     public function getAllInactiveBadges()
     {
-        Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, false, [
+        Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badge2 = Badge::addBadge($this->courseId, "Badge2", "Perform action", false, false, false, false, false, [
+        $badge2 = Badge::addBadge($this->courseId, "Badge2", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1092,8 +1035,9 @@ class BadgeTest extends TestCase
         $this->assertIsArray($badges);
         $this->assertCount(1, $badges);
 
-        $keys = ["id", "course", "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPost", "isPoint",
-            "isActive", "rule", "image", "desc1", "goal1", "reward1", "tokens1", "desc2", "goal2", "reward2", "tokens2", "desc3", "goal3", "reward3", "tokens3"];
+        $keys = ["id", "course", "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPoint",
+            "isActive", "rule", "image", "desc1", "goal1", "reward1", "tokens1", "desc2", "goal2", "reward2", "tokens2",
+            "desc3", "goal3", "reward3", "tokens3"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($badges as $badge) {
@@ -1117,9 +1061,9 @@ class BadgeTest extends TestCase
      * @throws Exception
      */
     public function addBadgeSuccess(string $name, string $description, bool $isExtra, bool $isBragging, bool $isCount,
-                                    bool $isPost, bool $isPoint, array $levels)
+                                    bool $isPoint, array $levels)
     {
-        $badge = Badge::addBadge($this->courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels);
+        $badge = Badge::addBadge($this->courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPoint, $levels);
 
         // Check is added to database
         $badgeDB = Badge::getBadges($this->courseId)[0];
@@ -1198,10 +1142,10 @@ tags:
      * @dataProvider badgeFailureProvider
      * @throws Exception
      */
-    public function addBadgeFailure($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels)
+    public function addBadgeFailure($name, $description, $isExtra, $isBragging, $isCount, $isPoint, $levels)
     {
         try {
-            Badge::addBadge($this->courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels);
+            Badge::addBadge($this->courseId, $name, $description, $isExtra, $isBragging, $isCount, $isPoint, $levels);
             $this->fail("Error should have been thrown on 'addBadgeFailure'");
 
         } catch (Exception|TypeError $e) {
@@ -1217,13 +1161,13 @@ tags:
      */
     public function addBadgeDuplicateName()
     {
-        Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, false, [
+        Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
         try {
-            Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, false, [
+            Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, [
                 ["description" => "one time", "goal" => 1, "reward" => 100],
                 ["description" => "two times", "goal" => 2, "reward" => 100],
                 ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1245,14 +1189,14 @@ tags:
      * @throws Exception
      */
     public function editBadgeSuccess(string $name, string $description, bool $isExtra, bool $isBragging, bool $isCount,
-                                     bool $isPost, bool $isPoint, array $levels)
+                                     bool $isPoint, array $levels)
     {
-        $badge = Badge::addBadge($this->courseId, "NAME", "DESCRIPTION", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "NAME", "DESCRIPTION", false, false, false, false, [
             ["description" => "DESC1", "goal" => 0, "reward" => 100],
             ["description" => "DESC2", "goal" => 1, "reward" => 100],
             ["description" => "DESC3", "goal" => 2, "reward" => 100]
         ]);
-        $badge->editBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, true, $levels);
+        $badge->editBadge($name, $description, $isExtra, $isBragging, $isCount, $isPoint, true, $levels);
 
         // Check is updated
         $this->assertEquals($name, $badge->getName());
@@ -1260,7 +1204,6 @@ tags:
         $this->assertEquals($isExtra, $badge->isExtra());
         $this->assertEquals($isBragging, $badge->isBragging());
         $this->assertEquals($isCount, $badge->isCount());
-        $this->assertEquals($isPost, $badge->isPost());
         $this->assertEquals($isPoint, $badge->isPoint());
         $this->assertTrue($badge->isActive());
 
@@ -1317,15 +1260,15 @@ tags:
      * @dataProvider badgeFailureProvider
      * @throws Exception
      */
-    public function editBadgeFailure($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, $levels)
+    public function editBadgeFailure($name, $description, $isExtra, $isBragging, $isCount, $isPoint, $levels)
     {
-        $badge = Badge::addBadge($this->courseId, "NAME", "DESCRIPTION", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "NAME", "DESCRIPTION", false, false, false, false, [
             ["description" => "DESC1", "goal" => 0, "reward" => 100],
             ["description" => "DESC2", "goal" => 1, "reward" => 100],
             ["description" => "DESC3", "goal" => 2, "reward" => 100]
         ]);
         try {
-            $badge->editBadge($name, $description, $isExtra, $isBragging, $isCount, $isPost, $isPoint, true, $levels);
+            $badge->editBadge($name, $description, $isExtra, $isBragging, $isCount, $isPoint, true, $levels);
             $this->fail("Error should have been thrown on 'editBadgeFailure'");
 
         } catch (Exception|TypeError $e) {
@@ -1341,18 +1284,18 @@ tags:
      */
     public function editBadgeDuplicateName()
     {
-        Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, false, [
+        Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badge = Badge::addBadge($this->courseId, "Badge2", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge2", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
         try {
-            $badge->editBadge("Badge1", "Perform action", false, false, false, false, false, true, [
+            $badge->editBadge("Badge1", "Perform action", false, false, false, false, true, [
                 ["description" => "one time", "goal" => 1, "reward" => 100],
                 ["description" => "two times", "goal" => 2, "reward" => 100],
                 ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1398,13 +1341,13 @@ tags:
         (new XPLevels($copyTo))->setEnabled(true);
         (new Badges($copyTo))->setEnabled(true);
 
-        $badge1 = Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, false, [
+        $badge1 = Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
         $badge1->setImage($this->badgeImageProvider()["png"][0]);
-        $badge2 = Badge::addBadge($this->courseId, "Badge2", "Perform action", false, false, false, false, false, [
+        $badge2 = Badge::addBadge($this->courseId, "Badge2", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1424,7 +1367,6 @@ tags:
             $this->assertEquals($badge["isExtra"], $copiedBadges[$i]["isExtra"]);
             $this->assertEquals($badge["isBragging"], $copiedBadges[$i]["isBragging"]);
             $this->assertEquals($badge["isCount"], $copiedBadges[$i]["isCount"]);
-            $this->assertEquals($badge["isPost"], $copiedBadges[$i]["isPost"]);
             $this->assertEquals($badge["isPoint"], $copiedBadges[$i]["isPoint"]);
             $this->assertEquals($badge["isActive"], $copiedBadges[$i]["isActive"]);
 
@@ -1449,12 +1391,12 @@ tags:
      */
     public function deleteBadge()
     {
-        $badge1 = Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, false, [
+        $badge1 = Badge::addBadge($this->courseId, "Badge1", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badge2 = Badge::addBadge($this->courseId, "Badge2", "Perform action", false, false, false, false, false, [
+        $badge2 = Badge::addBadge($this->courseId, "Badge2", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1490,7 +1432,7 @@ tags:
      */
     public function badgeExists()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1516,7 +1458,7 @@ tags:
      */
     public function getLevels()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1574,7 +1516,7 @@ tags:
      */
     public function getLevelsWithTokens()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100, "tokens" => 10],
             ["description" => "two times", "goal" => 2, "reward" => 100, "tokens" => 10],
             ["description" => "three times", "goal" => 3, "reward" => 100, "tokens" => 10]
@@ -1644,7 +1586,7 @@ tags:
      */
     public function setLevels()
     {
-        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, "Badge", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1687,7 +1629,7 @@ tags:
      * @throws Exception
      */
     public function generateRuleParamsFresh(string $name, string $description, bool $isExtra, bool $isBragging, bool $isCount,
-                                            bool $isPost, bool $isPoint, array $levels)
+                                            bool $isPoint, array $levels)
     {
         $params = Badge::generateRuleParams($name, $description, $isPoint, $levels);
 
@@ -1722,7 +1664,7 @@ lvl = compute_lvl(progress, " . $levels[0]["goal"] . (count($levels) >= 2 ? ", "
      * @throws Exception
      */
     public function generateRuleParamsNotFresh(string $name, string $description, bool $isExtra, bool $isBragging, bool $isCount,
-                                               bool $isPost, bool $isPoint, array $levels)
+                                               bool $isPoint, array $levels)
     {
         // Given
         $description = $description . "\n\tlvl.1: " . $levels[0]["description"] .
@@ -1776,7 +1718,7 @@ award_badge(target, \"New Name\", lvl, logs)", $params["then"]);
      */
     public function getDataFolder(string $name)
     {
-        $badge = Badge::addBadge($this->courseId, $name, "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, $name, "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1792,7 +1734,7 @@ award_badge(target, \"New Name\", lvl, logs)", $params["then"]);
      */
     public function createDataFolder(string $name)
     {
-        $badge = Badge::addBadge($this->courseId, $name, "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, $name, "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1809,7 +1751,7 @@ award_badge(target, \"New Name\", lvl, logs)", $params["then"]);
      */
     public function removeDataFolder(string $name)
     {
-        $badge = Badge::addBadge($this->courseId, $name, "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->courseId, $name, "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]

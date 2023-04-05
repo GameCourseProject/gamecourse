@@ -641,6 +641,28 @@ export class ConfigComponent implements OnInit {
     this.fImport.resetForm();
   }
 
+  resetUnpickedRadios(group: string, picked: string) {
+    if (this.itemToManage && this.itemToManage.item) {
+      // Find other radio options in the same group
+      const options: string[] = getRadioOptionsOfGroup(group, this.itemToManage.list[this.getConfigKey()].contents, []);
+
+      // Reset radio options unpicked
+      for (const option of options) {
+        if (option === picked) continue;
+        this.itemToManage.item[option] = null;
+      }
+    }
+
+    function getRadioOptionsOfGroup(group: string, contents: (ConfigInputContainer|ConfigInputItem)[], options: string[]): string[] {
+      for (const artifact of contents) {
+        if (artifact.contentType === 'item') {
+          if (artifact.type === InputType.RADIO && artifact.options['group'] === group) options.push(artifact.id);
+        } else options = getRadioOptionsOfGroup(group, artifact.contents, options);
+      }
+      return options;
+    }
+  }
+
 }
 
 export interface ConfigSection {

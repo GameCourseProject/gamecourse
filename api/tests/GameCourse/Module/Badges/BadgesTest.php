@@ -136,12 +136,12 @@ class BadgesTest extends TestCase
 
         $this->module->updateMaxXP(1000);
         $this->module->updateMaxExtraCredit(500);
-        $badge1 = Badge::addBadge($this->course->getId(), "Badge1", "Perform action", false, false, false, false, false, [
+        $badge1 = Badge::addBadge($this->course->getId(), "Badge1", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badge2 = Badge::addBadge($this->course->getId(), "Badge2", "Perform action", false, false, false, false, false, [
+        $badge2 = Badge::addBadge($this->course->getId(), "Badge2", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -163,7 +163,6 @@ class BadgesTest extends TestCase
             $this->assertEquals($badge["isExtra"], $copiedBadges[$i]["isExtra"]);
             $this->assertEquals($badge["isBragging"], $copiedBadges[$i]["isBragging"]);
             $this->assertEquals($badge["isCount"], $copiedBadges[$i]["isCount"]);
-            $this->assertEquals($badge["isPost"], $copiedBadges[$i]["isPost"]);
             $this->assertEquals($badge["isPoint"], $copiedBadges[$i]["isPoint"]);
             $this->assertEquals($badge["isActive"], $copiedBadges[$i]["isActive"]);
 
@@ -266,12 +265,12 @@ class BadgesTest extends TestCase
         $this->course->addUserToCourse($user2->getId(), "Student");
         $this->course->addUserToCourse($user3->getId(), "Student", null, false);
 
-        $badge1 = Badge::addBadge($this->course->getId(), "Badge1", "Perform action", false, false, false, false, false, [
+        $badge1 = Badge::addBadge($this->course->getId(), "Badge1", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badge2 = Badge::addBadge($this->course->getId(), "Badge2", "Perform action", false, false, false, false, false, [
+        $badge2 = Badge::addBadge($this->course->getId(), "Badge2", "Perform action", false, false, false, false, [
             ["description" => "five times", "goal" => 5, "reward" => 500],
             ["description" => "ten times", "goal" => 10, "reward" => 500],
             ["description" => "twelve times", "goal" => 12, "reward" => 500]
@@ -310,12 +309,12 @@ class BadgesTest extends TestCase
         $this->course->addUserToCourse($user1->getId(), "Student");
         $this->course->addUserToCourse($user2->getId(), "Student");
 
-        $badge1 = Badge::addBadge($this->course->getId(), "Badge1", "Perform action", false, false, false, false, false, [
+        $badge1 = Badge::addBadge($this->course->getId(), "Badge1", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badge2 = Badge::addBadge($this->course->getId(), "Badge2", "Perform action", false, false, false, false, false, [
+        $badge2 = Badge::addBadge($this->course->getId(), "Badge2", "Perform action", false, false, false, false, [
             ["description" => "five times", "goal" => 5, "reward" => 500],
             ["description" => "ten times", "goal" => 10, "reward" => 500],
             ["description" => "twelve times", "goal" => 12, "reward" => 500]
@@ -325,7 +324,8 @@ class BadgesTest extends TestCase
         $this->insertAward($this->course->getId(), $user1->getId(),$badge1->getId(), "Award 2", 100);
         $this->insertAward($this->course->getId(), $user1->getId(), $badge2->getId(), "Award 3", 500);
 
-        $keys = ["id", "course", "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPost", "isPoint", "isActive", "rule", "level"];
+        $keys = ["id", "course", "name", "description", "nrLevels", "isExtra", "isBragging", "isCount", "isPoint",
+            "isActive", "rule", "level"];
         $nrKeys = count($keys);
 
         // Has badges
@@ -362,12 +362,12 @@ class BadgesTest extends TestCase
         $this->course->addUserToCourse($user1->getId(), "Student");
         $this->course->addUserToCourse($user2->getId(), "Student");
 
-        $badge1 = Badge::addBadge($this->course->getId(), "Badge1", "Perform action", false, false, false, false, false, [
+        $badge1 = Badge::addBadge($this->course->getId(), "Badge1", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badge2 = Badge::addBadge($this->course->getId(), "Badge2", "Perform action", false, false, false, false, false, [
+        $badge2 = Badge::addBadge($this->course->getId(), "Badge2", "Perform action", false, false, false, false, [
             ["description" => "five times", "goal" => 5, "reward" => 500],
             ["description" => "ten times", "goal" => 10, "reward" => 500],
             ["description" => "twelve times", "goal" => 12, "reward" => 500]

@@ -285,7 +285,7 @@
           [helperText]="$any(artifact.helper) ?? null"
           [helperPosition]="getHelperPosition(artifact.width ?? 'full', index)"
           [required]="$any(artifact.options.required) ?? null"
-          (valueChange)="setItemToManage(artifact, $event)">
+          (valueChange)="setItemToManage(artifact, $event); resetUnpickedRadios($any(artifact.options.group) ?? null, artifact.id)">
         </app-input-radio>
       </ng-container>
 

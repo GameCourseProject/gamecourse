@@ -350,14 +350,13 @@ class AwardsLibrary extends Library
      * @param bool|null $extra
      * @param bool|null $bragging
      * @param bool|null $count
-     * @param bool|null $post
      * @param bool|null $point
      * @param bool|null $active
      * @return ValueNode
      * @throws Exception
      */
     public function getUserBadgesAwards(int $userId, bool $extra = null, bool $bragging = null, bool $count = null,
-                                        bool $post = null, bool $point = null, bool $active = null): ValueNode
+                                        bool $point = null, bool $active = null): ValueNode
     {
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
         $course = Core::dictionary()->getCourse();
@@ -369,7 +368,7 @@ class AwardsLibrary extends Library
 
         } else {
             $awardsModule = new Awards($course);
-            $awards = $awardsModule->getUserBadgesAwards($userId, $extra, $bragging, $count, $post, $point, $active);
+            $awards = $awardsModule->getUserBadgesAwards($userId, $extra, $bragging, $count, $point, $active);
         }
         return new ValueNode($awards, $this);
     }
@@ -481,14 +480,13 @@ class AwardsLibrary extends Library
      * @param bool|null $extra
      * @param bool|null $bragging
      * @param bool|null $count
-     * @param bool|null $post
      * @param bool|null $point
      * @param bool|null $active
      * @return ValueNode
      * @throws Exception
      */
     public function getUserBadgesTotalReward(int $userId, bool $extra = null, bool $bragging = null, bool $count = null,
-                                             bool $post = null, bool $point = null, bool $active = null): ValueNode
+                                             bool $point = null, bool $active = null): ValueNode
     {
         // Check permissions
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
@@ -500,7 +498,7 @@ class AwardsLibrary extends Library
 
         } else {
             $awardsModule = new Awards($course);
-            $reward = $awardsModule->getUserBadgesTotalReward($userId, $extra, $bragging, $count, $post, $point, $active);
+            $reward = $awardsModule->getUserBadgesTotalReward($userId, $extra, $bragging, $count, $point, $active);
         }
         return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }

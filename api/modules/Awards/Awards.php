@@ -182,14 +182,13 @@ class Awards extends Module
      * @param bool|null $extra
      * @param bool|null $bragging
      * @param bool|null $count
-     * @param bool|null $post
      * @param bool|null $point
      * @param bool|null $active
      * @return array
      * @throws Exception
      */
     public function getUserBadgesAwards(int $userId, bool $extra = null, bool $bragging = null, bool $count = null,
-                                        bool $post = null, bool $point = null, bool $active = null): array
+                                        bool $point = null, bool $active = null): array
     {
         $this->checkDependency(Badges::ID);
         $table = self::TABLE_AWARD . " a LEFT JOIN " . Badges::TABLE_BADGE . " b on a.moduleInstance=b.id";
@@ -197,7 +196,6 @@ class Awards extends Module
         if ($extra !== null) $where["b.isExtra"] = $extra;
         if ($bragging !== null) $where["b.isBragging"] = $bragging;
         if ($count !== null) $where["b.isCount"] = $count;
-        if ($post !== null) $where["b.isPost"] = $post;
         if ($point !== null) $where["b.isPoint"] = $point;
         if ($active !== null) $where["b.isActive"] = $active;
 
@@ -317,17 +315,16 @@ class Awards extends Module
      * @param bool|null $extra
      * @param bool|null $bragging
      * @param bool|null $count
-     * @param bool|null $post
      * @param bool|null $point
      * @param bool|null $active
      * @return int
      * @throws Exception
      */
     public function getUserBadgesTotalReward(int $userId, bool $extra = null, bool $bragging = null, bool $count = null,
-                                             bool $post = null, bool $point = null, bool $active = null): int
+                                             bool $point = null, bool $active = null): int
     {
         $this->checkDependency(Badges::ID);
-        return array_sum(array_column($this->getUserBadgesAwards($userId, $extra, $bragging, $count, $post, $point, $active), "reward"));
+        return array_sum(array_column($this->getUserBadgesAwards($userId, $extra, $bragging, $count, $point, $active), "reward"));
     }
 
     /**

@@ -71,11 +71,6 @@ class BadgesLibrary extends Library
                 ReturnType::BOOLEAN,
                 $this
             ),
-            new DFunction("isLinkable",
-                "Checks whether a given badge is linkable.",
-                ReturnType::BOOLEAN,
-                $this
-            ),
             new DFunction("isBasedOnPoints",
                 "Checks whether a given badge is based on earning a certain amount of points.",
                 ReturnType::BOOLEAN,
@@ -275,21 +270,6 @@ class BadgesLibrary extends Library
     }
 
     /**
-     * Checks whether a given badge is linkable.
-     *
-     * @param $badge
-     * @return ValueNode
-     * @throws Exception
-     */
-    public function isLinkable($badge): ValueNode
-    {
-        // NOTE: on mock data, level will be mocked
-        if (is_array($badge)) $isPost = $badge["isPost"];
-        else $isPost = $badge->isPost();
-        return new ValueNode($isPost, Core::dictionary()->getLibraryById(BoolLibrary::ID));
-    }
-
-    /**
      * Checks whether a given badge is based on earning a certain amount of points.
      *
      * @param $badge
@@ -468,13 +448,12 @@ class BadgesLibrary extends Library
      * @param bool|null $isExtra
      * @param bool|null $isBragging
      * @param bool|null $isCount
-     * @param bool|null $isPost
      * @param bool|null $isPoint
      * @return ValueNode
      * @throws Exception
      */
     public function getUserBadges(int $userId, bool $isExtra = null, bool $isBragging = null, bool $isCount = null,
-                                  bool $isPost = null, bool $isPoint = null): ValueNode
+                                  bool $isPoint = null): ValueNode
     {
         // Check permissions
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
@@ -487,7 +466,7 @@ class BadgesLibrary extends Library
 
         } else {
             $badgesModule = new Badges($course);
-            $badges = $badgesModule->getUserBadges($userId, $isExtra, $isBragging, $isCount, $isPost, $isPoint);
+            $badges = $badgesModule->getUserBadges($userId, $isExtra, $isBragging, $isCount, $isPoint);
         }
         return new ValueNode($badges, $this);
     }
