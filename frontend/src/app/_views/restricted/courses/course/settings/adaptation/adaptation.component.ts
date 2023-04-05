@@ -38,6 +38,7 @@ export class AdaptationComponent implements OnInit {
 
   /** -- ADMIN VARIABLES -- **/
   nrAnswers: number = 0;
+  nrStudents: number = 0;
   gameElementToManage: GameElementManageData = this.initGameElementToManage();
   adminMode: 'questionnaire statistics' | 'activate' | 'deactivate';
 
@@ -124,6 +125,8 @@ export class AdaptationComponent implements OnInit {
 
   async getCourse(courseID: number): Promise<void> {
     this.course = await this.api.getCourseById(courseID).toPromise();
+    const students = await this.api.getActiveStudents(this.course.id).toPromise();
+    this.nrStudents = Object.keys(students).length;
   }
 
   async getUser(): Promise<void> {

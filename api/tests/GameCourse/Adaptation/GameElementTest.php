@@ -640,4 +640,214 @@ class GameElementTest extends TestCase
         ], $statistics);
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getNrAnswersQuestionnaire(){
+        // Given
+        $this->badgesGameElement->setActive(true);
+
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user = $this->course->addUserToCourse($user->getId());
+        $user->addRole("Student");
+
+        $q1 = false;
+        $element = $this->badgesGameElement->getId();
+        GameElement::submitGameElementQuestionnaire($this->course->getId(), $user->getId(), $q1, null, null, $element);
+
+        // When
+        $nrAnswers = GameElement::getNrAnswersQuestionnaire($this->course, $this->badgesGameElement->getId());
+
+        // Then
+        $this->assertIsInt($nrAnswers);
+        $this->assertEquals(1, $nrAnswers);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function exportAnswersQuestionnaire(){
+        // Given
+        $this->badgesGameElement->setActive(true);
+
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user = $this->course->addUserToCourse($user->getId());
+        $user->addRole("Student");
+
+        $q1 = false;
+        $element = $this->badgesGameElement->getId();
+        GameElement::submitGameElementQuestionnaire($this->course->getId(), $user->getId(), $q1, null, null, $element);
+
+        $submission = Core::database()->select(GameElement::TABLE_ADAPTATION_QUESTIONNAIRE_ANSWERS);
+        $expectedFile = "course,user,question1,question2,question3,element,date\n";
+        $expectedFile .= "\"" . $this->course->getId() ."\",\"" . $user->getId() ."\",\"0\",,,\"1\",\"". $submission["date"] . "\"";
+
+        // When
+        $export = GameElement::exportAnswersQuestionnaire($this->course->getId(), $this->badgesGameElement->getId());
+        //$this->assertEquals(".csv", $export["extension"]);
+        $this->assertEquals($expectedFile, $export);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function removeAndAddGameElement(){
+
+        // When
+        GameElement::removeGameElement($this->course->getId(), $this->badgesGameElement->getModule());
+        $gameElements = GameElement::getGameElements($this->course->getId());
+
+        // Then
+        $this->assertCount(2, $gameElements);
+        $this->assertEquals(["Leaderboard", "Profile"], $gameElements);
+
+        // When
+        $badgesModule = new Badges($this->course);
+        $rolesB = Badges::ADAPTATION_BADGES;
+        $parent = array_keys($rolesB)[0];
+        $children = array_keys($rolesB[$parent]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $badgesModule->getId(), $parent, $children);
+
+        $this->badgesGameElement = GameElement::addGameElement($this->course->getId(), $badgesModule->getId());
+        $gameElements = GameElement::getGameElements($this->course->getId());
+
+        // Then
+        $this->assertCount(3, $gameElements);
+        $this->assertEquals(["Leaderboard", "Profile", "Badges"], $gameElements);
+    }
+
+    /**
+     * NOTE: This tests both updateUserPreference() and getPreviousPreference()
+     * @test
+     * @throws Exception
+     */
+    public function userPreference(){
+        // Given
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user = $this->course->addUserToCourse($user->getId());
+        $user->addRole("Student");
+
+        $preference1 = Role::getRoleId("B001",$this->course->getId());
+        $preference2 = Role::getRoleId("B002",$this->course->getId());
+
+        // When
+        $entry = GameElement::getPreviousUserPreference($this->course->getId(), $user->getId(), "Badges");
+
+        // Then
+        $this->assertIsString($entry);
+        $this->assertEquals("No data for current preference.", $entry);
+
+
+        // When #2
+        GameElement::updateUserPreference($this->course->getId(), $user->getId(), "Badges", null, $preference1);
+
+        // Then #2
+        $entry = GameElement::getPreviousUserPreference($this->course->getId(), $user->getId(), "Badges");
+        $this->assertIsString($entry);
+        $this->assertEquals("B001", $entry);
+
+
+        // When #3
+        GameElement::updateUserPreference($this->course->getId(), $user->getId(), "Badges",$preference1, $preference2);
+
+        // Then #2
+        $entry = GameElement::getPreviousUserPreference($this->course->getId(), $user->getId(), "Badges");
+        $this->assertIsString($entry);
+        $this->assertEquals("B002", $entry);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function removeGameElementDescription(){
+        // Given
+        $badgesModule = new Badges($this->course);
+        $rolesB = Badges::ADAPTATION_BADGES;
+        $parent = array_keys($rolesB)[0];
+        $children = array_keys($rolesB[$parent]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $badgesModule->getId(), $parent, $children);
+
+        // When
+        foreach ($rolesB[$parent] as $key => $value){
+            $roleId = Role::getRoleId($key, $this->course->getId());
+            GameElement::removeGameElementDescription($roleId, $value[0]);
+        }
+
+        // Then
+        $entries = Core::database()->selectMultiple(GameElement::TABLE_ADAPTATION_ELEMENT_DESCRIPTIONS, ["element" => $this->badgesGameElement->getId()]);
+        $this->assertIsArray($entries);
+        $this->assertCount(0, $entries);
+        $this->assertEquals([], $entries);
+
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function addStudentToEdit(){
+        // Given
+        $user = User::addUser("Johanna Smith Doe", "ist654321", AuthService::FENIX, "johannadoe@email.com",
+            654321, "Johanna Doe", "MEIC-A", false, true);
+        $user = $this->course->addUserToCourse($user->getId());
+        $user->addRole("Student");
+
+        // When
+        GameElement::addStudentToEdit($this->course->getId(), $user->getId());
+
+        // Then
+        $entries = Core::database()->selectMultiple(GameElement::TABLE_ADAPTATION_USER_NOTIFICATION);
+        $this->assertIsArray($entries);
+        $this->assertCount(3, $entries);
+        $this->assertEquals([
+            ["element" => $this->badgesGameElement->getId(), "user" => $user->getId()],
+            ["element" => $this->leaderboardGameElement->getId(), "user" => $user->getId()],
+            ["element" => $this->profileGameElement->getId(), "user" => $user->getId()],
+            ], $entries);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function removeStudentToEdit(){
+        // Given
+        $this->addStudentToEdit();
+
+        // When
+        GameElement::removeStudentToEdit(2);
+
+        // Then
+        $entries = Core::database()->selectMultiple(GameElement::TABLE_ADAPTATION_USER_NOTIFICATION);
+        $this->assertIsArray($entries);
+        $this->assertCount(0, $entries);
+        $this->assertEquals([], $entries);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function gameElementExists()
+    {
+        // Given
+        $badgesModule = new Badges($this->course);
+        $rolesB = Badges::ADAPTATION_BADGES;
+        $parent = array_keys($rolesB)[0];
+        $children = array_keys($rolesB[$parent]);
+        Role::addAdaptationRolesToCourse($this->course->getId(), $badgesModule->getId(), $parent, $children);
+        $this->removeAndAddGameElement();
+
+        // Then
+        $this->assertTrue($this->badgesGameElement->exists());
+
+    }
+
 }
