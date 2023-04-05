@@ -725,6 +725,19 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
+  public getActiveStudents(courseID: number): Observable<number>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getActiveStudents');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
   public static refreshCourseUserActivity(courseID: number): Observable<Moment> {
     const data = { courseId: courseID };
     const module = ApiHttpService.COURSE;
