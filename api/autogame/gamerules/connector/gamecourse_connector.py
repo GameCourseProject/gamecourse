@@ -2241,7 +2241,8 @@ def has_wildcard_available(target, skill_tree_id, wildcard_tier):
 
     # Get all wildcard skill IDs
     query = "SELECT s.id FROM skill s LEFT JOIN skill_tier t on s.tier = t.id " \
-            "WHERE s.course = %s AND t.skillTree = %s AND t.name = '%s';" % (config.COURSE, skill_tree_id, wildcard_tier)
+            "WHERE s.course = %s AND t.skillTree = %s AND t.name = '%s' AND t.isActive = True AND s.isActive = True;" \
+            % (config.COURSE, skill_tree_id, wildcard_tier)
     wildcards_ids = [item for sublist in gc_db.data_broker.get(gc_db, config.COURSE, query) for item in sublist]
 
     # Get completed skill wildcards
@@ -2256,7 +2257,7 @@ def has_wildcard_available(target, skill_tree_id, wildcard_tier):
             "WHERE a.course = %s AND a.user = %s AND a.type = %s;"
     nr_used_wildcards = int(gc_db.execute_query(query, (config.COURSE, target, award_type))[0][0])
 
-    return nr_completed_wildcards > 0 and nr_used_wildcards <= nr_completed_wildcards
+    return nr_completed_wildcards - nr_used_wildcards > 0
 
 
 
