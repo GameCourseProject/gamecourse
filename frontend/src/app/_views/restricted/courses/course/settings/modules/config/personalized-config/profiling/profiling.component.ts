@@ -233,7 +233,7 @@ export class ProfilingComponent implements OnInit {
 
   async getClusters(){
     await this.getSavedClusters();        // { "saved" (uncommitted changes), "names" (cluster names) }
-    await this.checkProfilerStatus();     // { "clusters": { studentId: {name, cluster} }, "names" (cluster names -> not sure?) }
+    await this.checkProfilerStatus();     // { "clusters": { studentId: {name, cluster} }, "names" (cluster names) }
 
     this.buildResultsTable();
   }

@@ -55,7 +55,8 @@
 
         <div class="flex items-center w-[calc(100%-6rem)]">
             <!-- Move -->
-            <div *ngIf="!isDefaultRole(role.name) && !isAdaptationRole(role.name)" class="tooltip align-middle absolute -left-10" data-tip="Move">
+            <div *ngIf="!isDefaultRole(role.name) && !isAdaptationRole(role.name)"
+                 class="tooltip align-middle absolute -left-10" data-tip="Move">
               <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
                 <ng-icon name="feather-move" size="1.2rem">
                 </ng-icon>

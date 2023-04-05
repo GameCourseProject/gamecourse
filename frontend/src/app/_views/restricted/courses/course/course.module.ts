@@ -25,6 +25,7 @@ import { ProfilingComponent } from './settings/modules/config/personalized-confi
 import { DataSourceStatusComponent } from "./settings/modules/config/data-source-status/data-source-status.component";
 import { SubmitParticipationPageComponent } from './pages/modules/qr/submit-participation-page/submit-participation-page.component';
 import { SkillPageComponent } from './pages/modules/skills/skill-page/skill-page.component';
+import {DragDropModule} from "@angular/cdk/drag-drop";
 
 
 @NgModule({
@@ -51,10 +52,11 @@ import { SkillPageComponent } from './pages/modules/skills/skill-page/skill-page
     SubmitParticipationPageComponent,
     SkillPageComponent
   ],
-  imports: [
-    CommonModule,
-    CourseRoutingModule,
-    SharedModule
-  ]
+    imports: [
+        CommonModule,
+        CourseRoutingModule,
+        SharedModule,
+        DragDropModule
+    ]
 })
 export class CourseModule { }

@@ -6,7 +6,7 @@
   <!-- Search -->
   <app-input-search
     [id] = "'sections-search'"
-    [items] = "sections"
+    [items] = "originalSections"
     [classList]="'lg:w-1/2 mx-auto'"
     (onSearch)="filteredSections = $event">
   </app-input-search>
@@ -18,15 +18,18 @@
     ]"
   -->
 
-  <div class="py-6 border-b-2 border-gray-300 ">
+  <div class=" {{ originalSections.length > 0 ? 'border-b-2 border-gray-300 py-6' : ''}}">
     <app-top-actions
-      [rightActions]="[{action: 'Add section', icon: 'feather-plus-circle', color: 'primary'}]"
+      [rightActions]="sectionActions"
       (btnClicked)="doAction($event)">
     </app-top-actions>
+
+    <span *ngIf="originalSections.length === 0" class="py-3 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
   </div>
 
+
   <!-- Sections and Rules -->
-  <div *ngFor="let section of sections">
+  <div *ngFor="let section of originalSections">
     <app-header [subHeader]="true" [title]="section.name" [icon] ="'jam-box'" [classList]="'mt-10'"></app-header>
 
     <div class="w-full relative">
@@ -274,6 +277,46 @@
   </form>
 </ng-template>
 
+
+<app-modal *ngIf="mode === 'manage sections priority'"
+           [id] = "'manage-sections-priority'"
+           [templateRef]="MANAGE_SECTION_PRIORITY"
+           [size] = "'lg'"
+           [header] = "mode?.capitalize()"
+           [submitBtnText]="'Save'"
+           [closeBtnText]="'Discard changes'"
+           [actionInProgress] = "loading.action"
+           (submitBtnClicked)="saveSectionPriority()">
+</app-modal>
+
+<ng-template #MANAGE_SECTION_PRIORITY>
+  <!-- Subheader -->
+  <div class="w-full flex flex-wrap -mt-2">
+    <span><strong>Rearrange sections</strong> to give them a higher or lower priority. Higher priority will <strong>execute earlier</strong> than the rest</span>
+  </div>
+
+  <div cdkDropList [id]="'sections-list'" class="dd max-w-none ml-16 mt-8" (cdkDropListDropped)="drop($event)">
+    <div class="dd-item" *ngFor="let section of sections" cdkDrag>
+      <div class="flex items-center mb-3">
+        <div class="flex items-center w-[calc(100%-6rem)]">
+          <!-- Move -->
+          <div class="tooltip align-middle absolute -left-10" data-tip="Move">
+            <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
+              <ng-icon name="feather-move" size="1.2rem">
+              </ng-icon>
+              <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
+            </button>
+          </div>
+
+          <!-- Section -->
+          <div class="dd-content" [ngClass]="{'!border-primary !border-opacity-75 text-primary font-semibold': section.name}">
+            {{section.name}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
 
 
 <!-- Delete Verification Modal -->

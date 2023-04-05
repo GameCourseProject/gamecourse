@@ -16,6 +16,7 @@ import {
   SubmitParticipationPageComponent
 } from "./pages/modules/qr/submit-participation-page/submit-participation-page.component";
 import { AdaptationComponent } from "./settings/adaptation/adaptation.component";
+import {RulesComponent} from "./settings/rules/rules.component";
 
 const routes: Routes = [
   {
@@ -45,7 +46,7 @@ const routes: Routes = [
       },
       {
         path: 'rule-system',
-        component: ComingSoonComponent
+        component: RulesComponent
       },
       {
         path: 'modules',
