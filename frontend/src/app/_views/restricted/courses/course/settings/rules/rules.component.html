@@ -4,12 +4,15 @@
               [loading]="loading.action"></app-header>
 
   <!-- Search -->
-  <app-input-search
-    [id] = "'sections-search'"
-    [items] = "originalSections"
-    [classList]="'lg:w-1/2 mx-auto'"
-    (onSearch)="filteredSections = $event">
-  </app-input-search>
+  <div class="border-b border-gray-200 mb-4">
+    <app-input-search
+      [id] = "'sections-search'"
+      [items] = "originalSections"
+      [classList]="'lg:w-1/2 mx-auto mb-4'"
+      [placeholder]="'Search for sections...'"
+      (onSearch)="filteredSections = $event">
+    </app-input-search>
+  </div>
 
   <!--
     [leftActions]="[
@@ -18,53 +21,63 @@
     ]"
   -->
 
-  <div class=" {{ originalSections.length > 0 ? 'border-b-2 border-gray-300 py-6' : ''}}">
+  <div class="mt-5">
     <app-top-actions
       [rightActions]="sectionActions"
       (btnClicked)="doAction($event)">
     </app-top-actions>
 
-    <span *ngIf="originalSections.length === 0" class="py-3 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
+    <span *ngIf="originalSections.length === 0" class="mt-16 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
   </div>
 
 
   <!-- Sections and Rules -->
   <div *ngFor="let section of originalSections">
-    <app-header [subHeader]="true" [title]="section.name" [icon] ="'jam-box'" [classList]="'mt-10'"></app-header>
+    <div class="justify-center flex">
+      <div class="card w-full bg-base-100 shadow-xl mt-5">
+        <div class="card-body">
+          <!-- Header -->
+          <div class="flex items-center">
+            <app-header [title]="section.name" [icon] ="'jam-box'"></app-header>
+          </div>
 
-    <div class="w-full relative">
-      <ng-container *ngIf="!loading.page">
-        <div *ngFor="let section of filterSections(section)">
-          <!-- Actions for rules -->
-          <app-top-actions
-            [leftActions]="[{action: 'Edit Section', icon: 'jam-pencil-f'},
+          <div class="w-full relative">
+            <ng-container *ngIf="!loading.page">
+              <div *ngFor="let section of filterSections(section)">
+
+                <!-- Actions for rules -->
+                <app-top-actions
+                  [leftActions]="[{action: 'Edit Section', icon: 'jam-pencil-f'},
                             {action: 'Remove Section', icon: 'jam-trash-f'}]"
-            [rightActions]="[{action: 'Create rule', icon: 'tabler-clipboard-list', color: 'primary', outline: true},
+                  [rightActions]="[{action: 'Create rule', icon: 'tabler-clipboard-list', color: 'primary', outline: true},
                              {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
                               {action: Action.IMPORT + ' rule', icon:'jam-download'},
                               {action: Action.EXPORT + ' all rules', icon:'jam-upload'}
                             ]}]"
-            (btnClicked)="doAction($event, section)">
-          </app-top-actions>
+                  (btnClicked)="doAction($event, section)">
+                </app-top-actions>
 
-          <!-- Section Table -->
-          <app-table
-              [id] = "'rules'"
-              [classList]="'mt-5'"
-              [headers] = "headers"
-              [data] = "data"
-              [options] = "tableOptions"
-              [loading] = "loading.table"
-              (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
-              (valueChanged)="doActionOnTable('value changed rule', $event.row, $event.col, $event.value)">
-            </app-table>
+                <!-- Section Table -->
+                <app-table
+                  [id] = "'rules'"
+                  [classList]="'mt-5'"
+                  [headers] = "headers"
+                  [data] = "data"
+                  [options] = "tableOptions"
+                  [loading] = "loading.table"
+                  (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
+                  (valueChanged)="doActionOnTable('value changed rule', $event.row, $event.col, $event.value)">
+                </app-table>
 
-          <!-- Loader -->
-          <app-loader [loading]="loading.page"></app-loader>
+                <!-- Loader -->
+                <app-loader [loading]="loading.page"></app-loader>
 
-        <span *ngIf="filterSections(section).length === 0" class="text-error px-4">No Sections</span>
+                <span *ngIf="filterSections(section).length === 0" class="text-error px-4">No Sections</span>
+              </div>
+            </ng-container>
+          </div>
         </div>
-      </ng-container>
+      </div>
     </div>
   </div>
 </div>
@@ -126,8 +139,8 @@
           [id] = "'rule-name'"
           [form] = "r"
           [(value)] = "ruleToManage.name"
-          [placeholder]="'Rule Name'"
-          [topLabel]="'Name'"
+          [placeholder]="'e.g. Amphitheatre Lover, Lab Master ...'"
+          [topLabel]="'Rule Name'"
           [pattern]="'(?!^\\d+$)^.+$'"
           [patternErrorMessage]="'Rule name can\'t be composed of only numbers'"
           [required]="true"
@@ -141,8 +154,8 @@
           [id] = "'rule-description'"
           [form] = "r"
           [(value)] = "ruleToManage.description"
-          [placeholder]="'Rule Description'"
-          [label] = "'Description'"
+          [placeholder]="'Write here a small description for this rule ...'"
+          [label] = "'Rule Description'"
           [required]="false"
           [maxLength]="100"
           [maxLengthErrorMessage]="'Rule description is too long: maximum of 100 characters'">
@@ -160,10 +173,9 @@
             [multiple] = "true"
             [search]="false"
             [placeholder]="'Select tags for rule'"
-            [topLabel]="'Tags'"
+            [topLabel]="'Rule Tags'"
             [required]="false"
-            (valueChange)="selectedTags = $event ?? []"
-          >
+            (valueChange)="selectedTags = $event ?? []">
           </app-input-select>
         </div>
 
@@ -204,6 +216,8 @@
     </div>
   </form>
 </ng-template>
+
+
 
 <!-- New / Edit tag modal -->
 <app-modal *ngIf="tagMode && tagToManage"
@@ -292,7 +306,8 @@
 <ng-template #MANAGE_SECTION_PRIORITY>
   <!-- Subheader -->
   <div class="w-full flex flex-wrap -mt-2">
-    <span><strong>Rearrange sections</strong> to give them a higher or lower priority. Higher priority will <strong>execute earlier</strong> than the rest</span>
+    <span class="w-full"><strong>Rearrange sections</strong> to give them a higher or lower priority.</span>
+    <span class="w-full">Higher priority will <strong>execute earlier</strong> than the rest.</span>
   </div>
 
   <div cdkDropList [id]="'sections-list'" class="dd max-w-none ml-16 mt-8" (cdkDropListDropped)="drop($event)">
@@ -302,7 +317,7 @@
           <!-- Move -->
           <div class="tooltip align-middle absolute -left-10" data-tip="Move">
             <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
-              <ng-icon name="feather-move" size="1.2rem">
+              <ng-icon name="tabler-arrows-vertical" size="1.2rem">
               </ng-icon>
               <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
             </button>
@@ -322,9 +337,12 @@
 <!-- Delete Verification Modal -->
 <app-simple-modal *ngIf="mode && (ruleToDelete || sectionToDelete)"
                   [id]="'delete-verification'"
-                  [title]="mode?.capitalize()"
+                  [title]="mode === 'remove rule' ? mode?.capitalize() + ' \'' + (ruleToDelete.name).capitalize() + '\'?' :
+                           mode?.capitalize() + ' \'' + (sectionToDelete.name).capitalize() + '\'?'"
+
                   [text]=" mode === 'remove rule' ? 'Are you sure you want to remove rule \'' + ruleToDelete?.name +
                                                     '\' from this section? You won\'t be able to undo this action.' :
+
                                                     'Are you sure you want to remove section \'' + sectionToDelete?.name +
                                                     '\' and its current rules? You won\'t be able to undo this action.'"
                   [submitBtnText]="'Remove'"

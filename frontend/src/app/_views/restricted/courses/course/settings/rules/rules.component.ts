@@ -49,7 +49,7 @@ export class RulesComponent implements OnInit {
   sectionActions:
     {action: Action | string, icon?: string, outline?: boolean, dropdown?: {action: Action | string, icon?: string}[],
       color?: "ghost" | "primary" | "secondary" | "accent" | "neutral" | "info" | "success" | "warning" | "error", disable?: boolean}[]  =
-    [ {action: 'manage sections\' priority', icon: 'tabler-selector', color: 'secondary', disable: true},
+    [ {action: 'sections\' priorities', icon: 'jam-box', color: 'secondary', disable: true},
       {action: 'Add section', icon: 'feather-plus-circle', color: 'primary'}
       ];
 
@@ -225,7 +225,6 @@ export class RulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   doAction(action: string, section?: RuleSection) {
-    console.log(action);
     if (action === Action.IMPORT){
       ModalService.openModal('import');
 
@@ -239,7 +238,7 @@ export class RulesComponent implements OnInit {
 
       ModalService.openModal('manage-section');
 
-    } else if ( action === 'manage sections\' priority'){
+    } else if (action === 'sections\' priorities'){
       this.mode = 'manage sections priority';
       this.sections = _.cloneDeep(this.originalSections);
       ModalService.openModal('manage-sections-priority');
