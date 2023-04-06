@@ -420,6 +420,28 @@ def filter_preloaded_skill_logs(targets_ids):
             filtered_logs, tokens_received = filter_logs_by_cost(skill_logs, costs, tokens_received)
             logs_by_skill[skill_name] = filtered_logs
 
+            # Send notification for each skill attempt that couldn't be paid
+            for i in range(0, len(skill_logs)):
+                skill_log = skill_logs[i]
+                cant_pay = len([log for log in filtered_logs if log[config.LOG_ID_COL] == skill_log[config.LOG_ID_COL]]) == 0
+                if cant_pay:
+                    # Get VC name
+                    query = "SELECT name FROM virtual_currency_config WHERE course = %s;" % config.COURSE
+                    VC_name = gc_db.data_broker.get(gc_db, config.COURSE, query)[0][0].decode()
+
+                    # Send notification, if not sent already
+                    attempt_nr = i + 1
+                    message = 'You don\'t have enough %s to pay for attempt #%s of skill \'%s\'. ' \
+                              'This attempt won\'t count for your progress in the course until you have enough %s to pay for it.' \
+                              % (VC_name, attempt_nr, skill_name, VC_name)
+
+                    query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s;"
+                    already_sent = int(gc_db.execute_query(query, (config.COURSE, target, message))[0][0]) > 0
+
+                    if not already_sent:
+                        query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s,%s,%s,%s);"
+                        gc_db.execute_query(query, (config.COURSE, target, message, 0), "commit")
+
         # Update preloaded logs
         for log in logs:
             skill_name = log[config.LOG_DESCRIPTION_COL].replace('Skill Tree, Re: ', '')
