@@ -261,6 +261,31 @@ class RuleSystemController
     }
 
     /**
+     * Edit a tag in the system given a course, tag id and new tag information
+     *
+     * @throws Exception
+     */
+    public function editTag(){
+        API::requireValues('courseId', 'tagId', 'name', 'color');
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        // Get values
+        $tagId = API::getValue("tagId", "int");
+        $name = API::getValue("name");
+        $color = API::getValue("color");
+
+        $tag = Tag::getTagById($tagId);
+        $tag->editTag($name, $color);
+
+        $response = $tag->getData();
+        API::response($response);
+    }
+
+    /**
      * Gets all tag from a rule
      *
      * @throws Exception

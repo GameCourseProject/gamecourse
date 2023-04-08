@@ -649,7 +649,6 @@ export class RulesComponent implements OnInit {
     return ruleData;
   }
 
-
   resetImport(){
     this.importData = {file:null, replace: true};
     this.fImport.resetForm();
@@ -666,8 +665,6 @@ export class RulesComponent implements OnInit {
     this.sectionToManage = this.initSectionToManage();
     this.s.resetForm();
   }
-
-
 
 }
 

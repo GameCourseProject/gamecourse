@@ -6,50 +6,11 @@
            [header]="'Manage Tags'"
            [actionInProgress] = "loading.management"
            [submitBtnText] = "'Done'"
-           [closeBtn]="false">
+           [closeBtn]="false"
+           (submitBtnClicked)="closeManagement()">
 </app-modal>
 
 <ng-template #MANAGE_TAGS>
-  <!--<form #t="ngForm">-->
-  <div class="mb-6 form-control">
-
-    <!--<span class="font-semibold justify-start mb-2">Create New Tag</span>
-    <div class="w-full flex flex-wrap">
-      <div class="w-2/5">
-        <app-input-text
-          [id]="'new-tag-name'"
-          [placeholder]="'Tag name'"
-          [maxLength]="50"
-          [minLength]="1"
-          [size]="'sm'"
-          [(value)]="newTag.name"
-        ></app-input-text>
-      </div>
-      <div class="w-2/5 sm:pl-3">
-        <app-input-color
-          [id] = "'new-tag-color'"
-          [placeholder]="'Tag color'"
-          [size]="'sm'"
-          [colors]="colors"
-          [(value)]="newTag.color"
-        ></app-input-color>
-      </div>
-      <div class="w-1/5 sm:pl-3 sm:pr-5">
-        <button class="btn btn square btn-sm" (click)="doAction('create')">Create</button>
-      </div>
-    </div>-->
-
-    <!--<app-input-text
-      [id]="'new-tag'"
-      [size]="'sm'"
-      [placeholder]="'Tag name'"
-      [topLabel]="'Create New Tag'"
-      [btnText]="'Pick color'"
-      (btnClicked)="doAction('choose color')">
-    </app-input-text>-->
-  </div>
-
-  <span class="font-semibold justify-start gap-2">Available tags</span>
   <div class="dd max-w-none mt-2 overflow-y-auto" [style]="'max-height: 20rem'">
     <div *ngFor="let tag of tags">
       <div class="justify-center flex items-center">
@@ -60,14 +21,14 @@
 
           <!-- Actions -->
           <div class="flex items-center">
-            <div class="tooltip align-middle" data-tip="Edit" (click)="doAction('edit', tag)">
+            <div class="tooltip align-middle" data-tip="Edit" (click)="prepareModal('edit', tag)">
 
               <button class="btn btn-sm btn-ghost btn-circle">
                 <ng-icon name="jam-pencil-f" size="1.5rem" class="text-warning"></ng-icon>
               </button>
             </div>
 
-            <div class="tooltip align-middle" data-tip="Delete" (click)="doAction('delete', tag)">
+            <div class="tooltip align-middle" data-tip="Delete" (click)="prepareModal('delete', tag)">
               <button class="btn btn-sm btn-ghost btn-circle">
                 <ng-icon name="jam-trash-f" size="1.5rem" class="text-error"></ng-icon>
               </button>
@@ -76,11 +37,6 @@
         </div>
       </div>
     </div>
-
-      <!--<app-top-actions
-        [leftActions]="[{action: 'Create new tag', icon: 'feather-plus-circle'}]"
-        (btnClicked)="doAction($event)">
-      </app-top-actions>-->
 
       <!--<div *ngIf="this.selectedTags?.length > 0" class="w-full justify-center pb-3">
         <p>Your tags:</p>
@@ -131,25 +87,25 @@
         </div>
 
       </div>-->
-    <div class="w-full">
-      <button class="w-full btn btn-primary square btn-sm" (click)="doAction('create')">Create New Tag</button>
+    <div class="justify-center flex items-center mt-2.5">
+      <button class="flex items-center md:w-5/12 btn btn-outline btn-primary rounded rounded-lg btn-sm" (click)="prepareModal('create')">
+        Create New Tag
+      </button>
     </div>
   </div>
-
-  <!--</form>-->
 </ng-template>
 
 
 <!-- Delete tag -->
 <app-modal *ngIf="mode === 'remove tag' && tagToManage"
-           [id]="'delete-tag'"
+           [id]="'remove tag'"
            [templateRef]="DELETE_TAG"
            [size]="'sm'"
            [header]="'Delete \'' + tagToManage.name + '\'?'"
            [actionInProgress]="loading.action"
            [submitBtnText]="'Delete'"
            [closeBtnText]="'Cancel'"
-           (submitBtnClicked)="deleteTag()"
+           (submitBtnClicked)="doAction(mode)"
            (closeBtnClicked)="mode = 'manage tags'">
 </app-modal>
 
@@ -157,4 +113,61 @@
   <div class="w-full flex flex-wrap">
     <span>Are you sure you want to <strong>delete</strong> this tag? It will be <strong>removed from all rules</strong> it is associated to.</span>
   </div>
+</ng-template>
+
+
+<!-- Create / Edit tag -->
+<app-modal *ngIf="(mode === 'edit tag' || mode === 'add tag') && tagToManage"
+           [id]="'create-and-edit-tag'"
+           [templateRef]="CREATE_AND_EDIT_TAG"
+           [size]="'md'"
+           [header]="mode === 'edit tag' ? 'Edit ' + tagEdit : 'Create New Tag'"
+           [actionInProgress]="loading.action"
+           [submitBtnText]="mode === 'edit tag' ? 'Save' : 'Create'"
+           [closeBtnText]="'Cancel'"
+           (submitBtnClicked)="doAction(mode)"
+>
+</app-modal>
+
+<ng-template #CREATE_AND_EDIT_TAG>
+  <form #t="ngForm">
+    <div class="form-control">
+
+      <div class="w-full flex flex-wrap mb-6 ">
+        <div class="w-1/2">
+          <app-input-text
+            [id]="'new-tag-name'"
+            [form]="t"
+            [placeholder]="'e.g. extra credit, ...'"
+            [topLabel]="'Tag name'"
+            [maxLength]="50"
+            [required]="true"
+            [(value)]="tagToManage.name"
+          ></app-input-text>
+        </div>
+        <div class="w-1/2 sm:pl-3">
+          <app-input-color
+            [id] = "'new-tag-color'"
+            [form]="t"
+            [placeholder]="'Select one of the possibilities'"
+            [topLabel]="'Tag color'"
+            [colors]="colors"
+            [required]="true"
+            [(value)]="tagToManage.color"
+          ></app-input-color>
+        </div>
+      </div>
+
+      <div class="w-full">
+        <app-input-select
+          [id]="'rules-tag'"
+          [form]="t"
+          [(value)]="rules"
+          [options]="ruleNames"
+          [placeholder]="'Select rules to assign this tag to'"
+          [topLabel]="'Assign rules ...'">
+        </app-input-select>
+      </div>
+    </div>
+  </form>
 </ng-template>

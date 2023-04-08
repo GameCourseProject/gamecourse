@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, ViewChild} from "@angular/core";
+import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from "@angular/core";
 import {ApiHttpService} from "../../../../../../../_services/api/api-http.service";
 import {NgForm} from "@angular/forms";
 import {Course} from "../../../../../../../_domain/courses/course";
@@ -8,6 +8,7 @@ import {ThemingService} from "../../../../../../../_services/theming/theming.ser
 import {clearEmptyValues} from "../../../../../../../_utils/misc/misc";
 import {AlertService, AlertType} from "../../../../../../../_services/alert.service";
 import {ModalService} from "../../../../../../../_services/modal.service";
+import {Rule} from "../../../../../../../_domain/rules/rule";
 
 @Component({
   selector: 'app-rule-tags',
@@ -17,7 +18,11 @@ export class RuleTagsComponent implements OnInit {
 
   @Input() course: Course;
   @Input() mode: 'manage tags' | 'add tag' | 'remove tag' | 'edit tag';
+
   @Input() tags: RuleTag[];
+  @Input() rules: Rule[];
+
+  @Output() newTags = new EventEmitter<RuleTag[]>();
 
   // FIXME -- Should consider light and dark theme
   colors: string[] = ["#5E72E4", "#EA6FAC", "#1EA896", "#38BFF8", "#36D399", "#FBBD23", "#EF6060"];
@@ -26,8 +31,10 @@ export class RuleTagsComponent implements OnInit {
     management: false,
     action: false
   };
+
   tagToManage: TagManageData;
-  newTag: TagManageData;
+  tagEdit: string = "";
+  ruleNames: {value: any, text: string}[];
 
   @ViewChild('t', {static: false}) t: NgForm;       // tag form
 
@@ -37,51 +44,107 @@ export class RuleTagsComponent implements OnInit {
     public themeService: ThemingService
   ) { }
 
+
+  /*** --------------------------------------------- ***/
+  /*** -------------------- Init ------------------- ***/
+  /*** --------------------------------------------- ***/
+
   ngOnInit(): void {
     this.route.parent.params.subscribe();
-    this.newTag = this.initTagToManage();
+    this.ruleNames = this.getRuleNames();
   }
 
-  async doAction(action: string, tag?: RuleTag){
+  getRuleNames(): {value: any, text: string}[] {
+    return Object.values(this.rules).map(rule => {
+      return {value: rule.name, text: (rule.name).capitalize()}
+    });
+  }
 
-    if (action === 'create'){
-      const color = this.colors.find(color => color === this.newTag.color);
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Actions ------------------ ***/
+  /*** --------------------------------------------- ***/
 
-      if (color){
-        // Update DB
-        const tag = await this.api.createTag(clearEmptyValues(this.newTag)).toPromise();
+  prepareModal(action: string, tag?: RuleTag){
+    this.tagToManage = this.initTagToManage(tag);
 
-        // Update UI
-        this.tags.push(tag);
+    this.mode = switchMode(action);
 
-        AlertService.showAlert(AlertType.SUCCESS, 'Tag created successfully');
-        this.newTag = this.initTagToManage();
-
-      } else AlertService.showAlert(AlertType.ERROR, 'Tag must have a name and a color (choose one color from the available options).');
-
-    } else if (action === 'edit'){
-      console.log(tag);
-
-    } else if (action === 'delete'){
-      this.tagToManage = this.initTagToManage(tag);
-      this.mode = 'remove tag';
-      ModalService.openModal('delete-tag');
+    function switchMode(action?: string) {
+      switch (action) {
+        case "create" : return 'add tag';
+        case "edit" : return 'edit tag';
+        case "delete" : return 'remove tag';
+      }
+      return "manage tags";
     }
 
+    if (this.mode === "add tag" || this.mode === "edit tag") {
+      ModalService.openModal('create-and-edit-tag');
+      this.tagEdit = JSON.stringify(this.tagToManage.name);
+
+    } else {
+      ModalService.openModal(this.mode);
+    }
   }
 
-  async deleteTag(): Promise<void>{
-    // remove from DB
-    await this.api.removeTag(this.course.id, this.tagToManage.id).toPromise();
+  async doAction(action: string): Promise<void> {
 
-    // remove from UI
-    const index = this.tags.findIndex(tag => tag.id === this.tagToManage.id);
-    this.tags.splice(index, 1);
+    if (action === 'remove tag') {
+      // remove from DB
+      await this.api.removeTag(this.course.id, this.tagToManage.id).toPromise();
 
-    ModalService.closeModal('delete-tag');
-    this.tagToManage = this.initTagToManage();
-    AlertService.showAlert(AlertType.SUCCESS, 'Tag deleted successfully');
+      // remove from UI
+      const index = this.tags.findIndex(tag => tag.id === this.tagToManage.id);
+      this.tags.splice(index, 1);
+
+      AlertService.showAlert(AlertType.SUCCESS, "Tag deleted successfully");
+      ModalService.closeModal(action);
+
+    } else if (action === 'add tag') {
+      if (this.t.valid){
+        const color = this.colors.find(color => color === this.tagToManage.color);
+
+        if (color) {
+          const tag = await this.api.createTag(clearEmptyValues(this.tagToManage)).toPromise(); // Update DB
+          this.tags.push(tag); // Update UI
+
+          AlertService.showAlert(AlertType.SUCCESS, "Tag created successfully");
+          ModalService.closeModal('create-and-edit-tag');
+          this.resetTagManage();
+
+        } else { AlertService.showAlert(AlertType.ERROR, "Tag must have a name and a color (choose one color from the available options)."); }
+
+      } else { AlertService.showAlert(AlertType.ERROR, "Invalid form"); }
+
+    } else if (action === 'edit tag'){
+      if (this.t.valid){
+        const color = this.colors.find(color => color === this.tagToManage.color);
+
+        if (color) {
+          const editedTag = await this.api.editTag(this.tagToManage).toPromise(); // Update DB
+
+          // Update UI
+          const index = this.tags.findIndex(tag => tag.id === this.tagToManage.id);
+          this.tags.splice(index, 1, editedTag);
+
+          AlertService.showAlert(AlertType.SUCCESS, "Tag edited successfully");
+          ModalService.closeModal('create-and-edit-tag');
+          this.resetTagManage();
+
+        } else { AlertService.showAlert(AlertType.ERROR, "Tag must have a name and a color (choose one color from the available options)."); }
+      } else { AlertService.showAlert(AlertType.ERROR, "Invalid form"); }
+    }
   }
+
+  closeManagement(){
+    ModalService.closeModal('manage tags');
+    this.mode = null;
+    this.newTags.emit(this.tags);
+  }
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
 
   hexaToColor(color: string) : string {
     if (this.themeService.getTheme() === "light"){
@@ -109,12 +172,11 @@ export class RuleTagsComponent implements OnInit {
     return "";
   }
 
-
   initTagToManage(tag?: RuleTag): TagManageData {
     const tagData: TagManageData = {
       course: tag?.course ?? this.course.id,
       name : tag?.name ?? null,
-      color : tag?.color ?? null
+      color : tag?.color ?? this.colors[0]
     };
     if (tag) { tagData.id = tag.id; }
     return tagData;
@@ -125,7 +187,6 @@ export class RuleTagsComponent implements OnInit {
     this.t.resetForm();
   }
 }
-
 
 export interface TagManageData {
   id?: number,

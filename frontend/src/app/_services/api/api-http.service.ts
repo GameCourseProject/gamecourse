@@ -1523,6 +1523,24 @@ export class ApiHttpService {
       .pipe(map((res:any) => RuleTag.fromDatabase(res['data'])));
   }
 
+  public editTag(tagData: TagManageData): Observable<RuleTag> {
+    const data = {
+      courseId: tagData.course,
+      tagId: tagData.id,
+      name: tagData.name,
+      color: tagData.color
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'editTag');
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => RuleTag.fromDatabase(res['data'])));
+  }
+
   public getRuleTags(courseID: number, ruleID: number) : Observable<RuleTag[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULES_SYSTEM);
