@@ -112,8 +112,7 @@ export class RuleTagsComponent implements OnInit {
           ModalService.closeModal('create-and-edit-tag');
           this.resetTagManage();
 
-        } else { AlertService.showAlert(AlertType.ERROR, "Tag must have a name and a color (choose one color from the available options)."); }
-
+        } else { AlertService.showAlert(AlertType.ERROR, "Tag color must be selected from one of the available options"); }
       } else { AlertService.showAlert(AlertType.ERROR, "Invalid form"); }
 
     } else if (action === 'edit tag'){
@@ -131,7 +130,7 @@ export class RuleTagsComponent implements OnInit {
           ModalService.closeModal('create-and-edit-tag');
           this.resetTagManage();
 
-        } else { AlertService.showAlert(AlertType.ERROR, "Tag must have a name and a color (choose one color from the available options)."); }
+        } else { AlertService.showAlert(AlertType.ERROR, "Tag color must be selected from one of the available options"); }
       } else { AlertService.showAlert(AlertType.ERROR, "Invalid form"); }
     }
   }
