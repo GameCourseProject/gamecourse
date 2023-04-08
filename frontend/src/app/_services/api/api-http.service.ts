@@ -61,8 +61,9 @@ import {
 } from "../../_views/restricted/courses/course/settings/modules/config/data-source-status/data-source-status.component";
 import {Rule} from "../../_domain/rules/rule";
 import {
-  RuleManageData, SectionManageData, TagManageData
+  RuleManageData, SectionManageData
 } from "../../_views/restricted/courses/course/settings/rules/rules.component";
+import { TagManageData } from "../../_views/restricted/courses/course/settings/rules/tags/rule-tags.component"
 import { RuleSection } from "../../_domain/rules/RuleSection";
 import { RuleTag } from "../../_domain/rules/RuleTag";
 import { Notification } from "../../_domain/notifications/notification";
@@ -1546,6 +1547,20 @@ export class ApiHttpService {
 
       return this.get(url, ApiHttpService.httpOptions)
         .pipe(map((res:any) => res['data'].map(obj => RuleTag.fromDatabase(obj))));
+  }
+
+  public removeTag(courseID: number, tagID: number): Observable<void> {
+    const data = {courseId: courseID, tagId: tagID };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'removeTag');
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => res));
   }
 
   // Configuration

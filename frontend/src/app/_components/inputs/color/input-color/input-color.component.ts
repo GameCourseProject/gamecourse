@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
 
-import { InputGroupSize } from '../../InputSizes';
+import { InputSize, InputGroupSize } from '../../InputSizes';
 import {InputColor, InputGroupBtnColor, InputGroupLabelColor } from "../../InputColors";
 
 import Pickr from "@simonwep/pickr";
@@ -26,6 +26,7 @@ export class InputColorComponent implements OnInit, AfterViewInit {
     'info' | 'success' | 'warning' | 'error';
   @Input() classList?: string;                                        // Classes to add
   @Input() disabled?: boolean;                                        // Make it disabled
+  @Input() colors?: string[];                                   // Custom swatches of colors
 
   @Input() topLabel?: string;                                         // Top label text
   @Input() leftLabel?: string;                                        // Text on prepended label
@@ -79,11 +80,11 @@ export class InputColorComponent implements OnInit, AfterViewInit {
       lockOpacity: true,
       comparison: false,
       components: {
-        preview: true,
+        preview: this.colors == null,
         opacity: false,
-        hue: true,
+        hue: this.colors == null,
       },
-      swatches: [
+      swatches: this.colors ?? [
         '#E57373', '#EF5350', '#F44336', '#E53935', '#D32F2F', '#C62828', '#B71C1C',
         '#F06292', '#EC407A', '#E91E63', '#D81B60', '#C2185B', '#AD1457', '#880E4F',
         '#BA68C8', '#AB47BC', '#9C27B0', '#8E24AA', '#7B1FA2', '#6A1B9A', '#4A148C',
@@ -131,6 +132,10 @@ export class InputColorComponent implements OnInit, AfterViewInit {
 
     const picker = document.getElementById('color-picker');
     picker.classList.add('hidden');
+  }
+
+  get InputSize(): typeof InputSize {
+    return InputSize;
   }
 
   get InputGroupSize(): typeof InputGroupSize {

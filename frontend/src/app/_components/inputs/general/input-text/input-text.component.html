@@ -63,7 +63,7 @@
     <span *ngIf="rightLabel" class="min-w-fit {{InputGroupLabelColor[color]}}">{{rightLabel}}</span>
 
     <!-- Button -->
-    <button *ngIf="btnText || btnIcon" type="button" class="btn {{btnIcon ? 'btn-square' : ''}} {{InputGroupBtnColor[color]}}" (click)="btnClicked.emit()">
+    <button *ngIf="btnText || btnIcon" type="button" class="btn {{btnIcon ? 'btn-square' : ''}} btn-{{size}} {{InputGroupBtnColor[color]}}" (click)="btnClicked.emit()">
       <span *ngIf="btnText" class="bg-transparent">{{btnText}}</span>
       <ng-icon *ngIf="btnIcon" [name]="btnIcon" size="1.5rem"></ng-icon>
     </button>

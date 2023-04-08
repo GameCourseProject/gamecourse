@@ -22,7 +22,7 @@
       type="text"
       id="{{id}}"
       name="{{id}}"
-      class="input input-bordered {{InputColor[color]}} {{value ? 'pl-9' : ''}} {{!leftLabel ? '!rounded-l-md' : ''}} w-full cursor-text"
+      class="input input-bordered {{InputSize[size]}} {{InputColor[color]}} {{value ? 'pl-9' : ''}} {{!leftLabel ? '!rounded-l-md' : ''}} w-full cursor-text"
       placeholder="{{placeholder}}"
       [(ngModel)]="value"
       (ngModelChange)="pickr.setColor(value); valueChange.emit(value)"
@@ -37,7 +37,7 @@
 
     <div class="dropdown dropdown-end" (clickedOutside)="this.closePicker()">
       <!-- Button -->
-      <button type="button" class="btn btn-square !rounded-r-md !rounded-l-none {{InputGroupBtnColor[color]}}" tabindex="0" (click)="openPicker()">
+      <button type="button" class="btn btn-square !rounded-r-md !rounded-l-none {{InputGroupBtnColor[color]}} btn-{{size}}" tabindex="0" (click)="openPicker()">
         <ng-icon [name]="'tabler-color-swatch'" size="1.5rem"></ng-icon>
       </button>
 

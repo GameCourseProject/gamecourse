@@ -1,0 +1,160 @@
+<!-- Manage tags -->
+<app-modal *ngIf="mode"
+           [id]="'manage tags'"
+           [templateRef]="MANAGE_TAGS"
+           [size]="'md'"
+           [header]="'Manage Tags'"
+           [actionInProgress] = "loading.management"
+           [submitBtnText] = "'Done'"
+           [closeBtn]="false">
+</app-modal>
+
+<ng-template #MANAGE_TAGS>
+  <!--<form #t="ngForm">-->
+  <div class="mb-6 form-control">
+
+    <!--<span class="font-semibold justify-start mb-2">Create New Tag</span>
+    <div class="w-full flex flex-wrap">
+      <div class="w-2/5">
+        <app-input-text
+          [id]="'new-tag-name'"
+          [placeholder]="'Tag name'"
+          [maxLength]="50"
+          [minLength]="1"
+          [size]="'sm'"
+          [(value)]="newTag.name"
+        ></app-input-text>
+      </div>
+      <div class="w-2/5 sm:pl-3">
+        <app-input-color
+          [id] = "'new-tag-color'"
+          [placeholder]="'Tag color'"
+          [size]="'sm'"
+          [colors]="colors"
+          [(value)]="newTag.color"
+        ></app-input-color>
+      </div>
+      <div class="w-1/5 sm:pl-3 sm:pr-5">
+        <button class="btn btn square btn-sm" (click)="doAction('create')">Create</button>
+      </div>
+    </div>-->
+
+    <!--<app-input-text
+      [id]="'new-tag'"
+      [size]="'sm'"
+      [placeholder]="'Tag name'"
+      [topLabel]="'Create New Tag'"
+      [btnText]="'Pick color'"
+      (btnClicked)="doAction('choose color')">
+    </app-input-text>-->
+  </div>
+
+  <span class="font-semibold justify-start gap-2">Available tags</span>
+  <div class="dd max-w-none mt-2 overflow-y-auto" [style]="'max-height: 20rem'">
+    <div *ngFor="let tag of tags">
+      <div class="justify-center flex items-center">
+        <div class="flex items-center md:w-5/12">
+          <div class="badge badge-lg badge-{{hexaToColor(tag.color)}} px-3 py-2.5 w-full font-semibold text-white">
+            {{tag.name}}
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center">
+            <div class="tooltip align-middle" data-tip="Edit" (click)="doAction('edit', tag)">
+
+              <button class="btn btn-sm btn-ghost btn-circle">
+                <ng-icon name="jam-pencil-f" size="1.5rem" class="text-warning"></ng-icon>
+              </button>
+            </div>
+
+            <div class="tooltip align-middle" data-tip="Delete" (click)="doAction('delete', tag)">
+              <button class="btn btn-sm btn-ghost btn-circle">
+                <ng-icon name="jam-trash-f" size="1.5rem" class="text-error"></ng-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <!--<app-top-actions
+        [leftActions]="[{action: 'Create new tag', icon: 'feather-plus-circle'}]"
+        (btnClicked)="doAction($event)">
+      </app-top-actions>-->
+
+      <!--<div *ngIf="this.selectedTags?.length > 0" class="w-full justify-center pb-3">
+        <p>Your tags:</p>
+        <ng-container *ngFor="let tag of this.selectedTags">
+            <div class="inline-flex items-center rounded-lg py-1
+                    px-2 mr-2 text-sm bg-{{tag.color}} text-white">{{ tag.name }}
+              <button type="button"
+                      (click)="removeTag(tag)"
+                      class="inline-flex items-center p-0.5 ml-2 text-sm
+                      bg-transparent rounded-lg hover:bg-blue-200 hover:text-blue-900
+                      dark:hover:bg-blue-300 dark:hover:text-blue-900">
+                <ng-icon name="feather-x" color="white" size="1rem" class="text-info"></ng-icon>
+              </button>
+            </div>
+        </ng-container>
+      </div>
+
+      <div class="w-full flex flex-wrap" style="align-items: self-end">
+         Tag Name
+        <div class="sm:w-1/2 sm:pr-3">
+          <app-input-text
+            [id] = "'tag-name'"
+            [form] = "t"
+            [(value)] = "tagToManage.name"
+            [placeholder]="'Tag Name'"
+            [topLabel]="'Name'"
+            [pattern]="'(?!^\\d+$)^.+$'"
+            [patternErrorMessage]="'Name name can\'t be composed of only numbers'"
+            [required]="true"
+            [maxLength]="60"
+            [maxLengthErrorMessage]="'Rule name is too long: maximum of 60 characters'">
+          </app-input-text>
+        </div>
+
+         Tag Color
+        <div class="sm:w-1/2 sm:pr-3">
+          <app-input-select
+            [id]="'tag-color'"
+            [form] = "t"
+            [(value)] = "tagToManage.color"
+            [options] = "getColors()"
+            [multiple] = "false"
+            [search]="false"
+            [placeholder]="'Choose a color'"
+            [topLabel]="'Tag Color'"
+            [required]="true">
+          </app-input-select>
+        </div>
+
+      </div>-->
+    <div class="w-full">
+      <button class="w-full btn btn-primary square btn-sm" (click)="doAction('create')">Create New Tag</button>
+    </div>
+  </div>
+
+  <!--</form>-->
+</ng-template>
+
+
+<!-- Delete tag -->
+<app-modal *ngIf="mode === 'remove tag' && tagToManage"
+           [id]="'delete-tag'"
+           [templateRef]="DELETE_TAG"
+           [size]="'sm'"
+           [header]="'Delete \'' + tagToManage.name + '\'?'"
+           [actionInProgress]="loading.action"
+           [submitBtnText]="'Delete'"
+           [closeBtnText]="'Cancel'"
+           (submitBtnClicked)="deleteTag()"
+           (closeBtnClicked)="mode = 'manage tags'">
+</app-modal>
+
+<ng-template #DELETE_TAG>
+  <div class="w-full flex flex-wrap">
+    <span>Are you sure you want to <strong>delete</strong> this tag? It will be <strong>removed from all rules</strong> it is associated to.</span>
+  </div>
+</ng-template>

@@ -39,7 +39,6 @@ export class PreferenceQuestionnaireComponent implements OnInit{
   ngOnInit(): void {
     this.route.parent.params.subscribe();
     this.questionnaireToManage = this.initQuestionnaireToManage();
-    //this.questionnaireToManage.element = this.gameElement.module;
   }
 
   async submitQuestionnaire(){

@@ -94,7 +94,6 @@
   (submitBtnClicked)="s.onSubmit(null); mode === 'add section' ? createSection() : editSection()"
   (onClose)="resetSectionManage()">
 </app-modal>
-
 <ng-template #MANAGE_SECTION>
   <form #s="ngForm">
     <div class="w-full flex-wrap mt-3">
@@ -119,15 +118,20 @@
            [id]="'manage-rule'"
            [templateRef]="MANAGE_RULE"
            [size]="'lg'"
-           [header]="mode === 'add rule' ? mode?.capitalize() + ' to \'' + findSectionName(ruleToManage) + '\' :' :
-                                           mode?.capitalize() + 'of \'' + findSectionName(ruleToManage) + '\' :'"
+           [header]="mode?.capitalize()"
+           [headerMarginBottom] = "false"
            [submitBtnText]="mode?.capitalize()"
            [actionInProgress] = "loading.action"
            (submitBtnClicked)="r.onSubmit(null); mode === 'add rule' ? createRule() : editRule()"
            (onClose)="resetRuleManage()">
 </app-modal>
-
 <ng-template #MANAGE_RULE>
+  <div class="border-b border-gray-200 mb-4">
+    <span *ngIf="mode === 'add rule'" class="text-sm -mt-1">
+      This rule will be added <strong>into section '{{findSectionName(ruleToManage)}}'</strong>
+    </span>
+  </div>
+
   <form #r="ngForm">
 
     <div class="flex flex-wrap mt-3">
@@ -164,7 +168,7 @@
 
       <div class="w-full flex flex-wrap mt-3" style="align-items: flex-end">
         <div class="sm:w-10/12">
-          <!-- Tags -->
+          <!-- Tags
           <app-input-select
             [id]="'rule-tags'"
             [form] = "r"
@@ -176,7 +180,7 @@
             [topLabel]="'Rule Tags'"
             [required]="false"
             (valueChange)="selectedTags = $event ?? []">
-          </app-input-select>
+          </app-input-select>-->
         </div>
 
         <div class="sm:w-2/12 sm:pl-3">
@@ -217,81 +221,15 @@
   </form>
 </ng-template>
 
+<app-rule-tags
+  *ngIf="tagMode"
+  [course] = "course"
+  [mode] = "tagMode"
+  [tags] = "tags"
+></app-rule-tags>
 
 
-<!-- New / Edit tag modal -->
-<app-modal *ngIf="tagMode && tagToManage"
-           [id]="'manage-tag'"
-           [templateRef]="MANAGE_TAG"
-           [size]="'md'"
-           [header]="mode?.capitalize()"
-           [actionInProgress] = "loading.action"
-           [submitBtnText] = "'Done'"
-           (submitBtnClicked)="t.onSubmit(null); createTag();"
-           (closeBtnClicked)="resetTagManage();">
-</app-modal>
-
-<ng-template #MANAGE_TAG>
-  <form #t="ngForm">
-    <div class="w-full flex flex-wrap mt-3">
-
-      <!--<div *ngIf="this.selectedTags?.length > 0" class="w-full justify-center pb-3">
-        <p>Your tags:</p>
-        <ng-container *ngFor="let tag of this.selectedTags">
-            <div class="inline-flex items-center rounded-lg py-1
-                    px-2 mr-2 text-sm bg-{{tag.color}} text-white">{{ tag.name }}
-              <button type="button"
-                      (click)="removeTag(tag)"
-                      class="inline-flex items-center p-0.5 ml-2 text-sm
-                      bg-transparent rounded-lg hover:bg-blue-200 hover:text-blue-900
-                      dark:hover:bg-blue-300 dark:hover:text-blue-900">
-                <ng-icon name="feather-x" color="white" size="1rem" class="text-info"></ng-icon>
-              </button>
-            </div>
-        </ng-container>
-      </div>-->
-
-      <div class="w-full flex flex-wrap" style="align-items: self-end">
-        <!-- Tag Name -->
-        <div class="sm:w-1/2 sm:pr-3">
-          <app-input-text
-            [id] = "'tag-name'"
-            [form] = "t"
-            [(value)] = "tagToManage.name"
-            [placeholder]="'Tag Name'"
-            [topLabel]="'Name'"
-            [pattern]="'(?!^\\d+$)^.+$'"
-            [patternErrorMessage]="'Name name can\'t be composed of only numbers'"
-            [required]="true"
-            [maxLength]="60"
-            [maxLengthErrorMessage]="'Rule name is too long: maximum of 60 characters'">
-          </app-input-text>
-        </div>
-
-        <!-- Tag Color -->
-        <div class="sm:w-1/2 sm:pr-3">
-          <app-input-select
-            [id]="'tag-color'"
-            [form] = "t"
-            [(value)] = "tagToManage.color"
-            [options] = "getColors()"
-            [multiple] = "false"
-            [search]="false"
-            [placeholder]="'Choose a color'"
-            [topLabel]="'Tag Color'"
-            [required]="true">
-          </app-input-select>
-        </div>
-
-        <!--<div class="sm:w-1/6">
-          <button type="button" class="btn-md rounded-lg btn-primary" (click) = "createTag()">Create!</button>
-        </div>-->
-      </div>
-    </div>
-  </form>
-</ng-template>
-
-
+<!-- Manage sections priorities -->
 <app-modal *ngIf="mode === 'manage sections priority'"
            [id] = "'manage-sections-priority'"
            [templateRef]="MANAGE_SECTION_PRIORITY"
@@ -302,7 +240,6 @@
            [actionInProgress] = "loading.action"
            (submitBtnClicked)="saveSectionPriority()">
 </app-modal>
-
 <ng-template #MANAGE_SECTION_PRIORITY>
   <!-- Subheader -->
   <div class="w-full flex flex-wrap -mt-2">
@@ -324,7 +261,7 @@
           </div>
 
           <!-- Section -->
-          <div class="dd-content" [ngClass]="{'!border-primary !border-opacity-75 text-primary font-semibold': section.name}">
+          <div class="dd-content border-primary border-opacity-75 text-primary font-semibold">
             {{section.name}}
           </div>
         </div>
@@ -332,7 +269,6 @@
     </div>
   </div>
 </ng-template>
-
 
 <!-- Delete Verification Modal -->
 <app-simple-modal *ngIf="mode && (ruleToDelete || sectionToDelete)"

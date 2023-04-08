@@ -302,4 +302,20 @@ class RuleSystemController
         API::response($tags);
     }
 
+    /**
+     * Removes a specific tag from a course given tag id
+     *
+     * @throws Exception
+     */
+    public function removeTag(){
+        API::requireValues("courseId", "tagId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCourseAdminPermission($course);
+
+        $tagId = API::getValue("tagId", "int");
+        Tag::deleteTag($tagId);
+    }
+
 }

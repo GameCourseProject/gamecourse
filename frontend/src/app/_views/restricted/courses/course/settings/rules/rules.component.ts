@@ -38,10 +38,11 @@ export class RulesComponent implements OnInit {
   courseRules: Rule[];                    // all rules relating to course
   filteredRules: Rule[];                  // rule search
 
-  nameTags : {value: string, text: string}[] = [];  // move to backend later maybe?;
+  //nameTags : {value: string, text: string}[] = [];  // move to backend later maybe?;
   //defaultTag: RuleTag = this.initTagToManage();
-  selectedTags: string[];
-  availableTags: any[] = [];
+  //selectedTags: string[];
+  //availableTags: any[] = [];
+  tags: RuleTag[];
 
   originalSections: RuleSection[] = [];
   sections: RuleSection[] = [];                // sections of page
@@ -50,25 +51,24 @@ export class RulesComponent implements OnInit {
     {action: Action | string, icon?: string, outline?: boolean, dropdown?: {action: Action | string, icon?: string}[],
       color?: "ghost" | "primary" | "secondary" | "accent" | "neutral" | "info" | "success" | "warning" | "error", disable?: boolean}[]  =
     [ {action: 'sections\' priorities', icon: 'jam-box', color: 'secondary', disable: true},
+      {action: 'manage tags', icon: 'tabler-tags', color: 'secondary'},
       {action: 'Add section', icon: 'feather-plus-circle', color: 'primary'}
       ];
 
   mode: 'add section' | 'edit section' | 'remove section' | 'add rule' | 'edit rule' | 'remove rule' | 'manage sections priority';
-  tagMode : 'add tag' | 'edit tag';
+  tagMode : 'manage tags' | 'add tag' | 'remove tag' | 'edit tag';
 
   // MANAGE DATA
   sectionToManage: SectionManageData = this.initSectionToManage();
   sectionToDelete: RuleSection;
   ruleToManage: RuleManageData = this.initRuleToManage();
   ruleToDelete: Rule;
-  tagToManage: TagManageData = this.initTagToManage();
 
   reduce = new Reduce();
   searchQuery: string;
 
   @ViewChild('s', {static: false}) s: NgForm;       // section form
   @ViewChild('r', {static: false}) r: NgForm;       // rule form
-  @ViewChild('t', {static: false}) t: NgForm;       // tag form
   importData: {file: File, replace: boolean} = {file: null, replace: true};
   @ViewChild('fImport', { static: false }) fImport: NgForm;
 
@@ -130,7 +130,7 @@ export class RulesComponent implements OnInit {
   }
 
   async getTags(courseID: number): Promise<void> {
-    this.availableTags = await this.api.getTags(courseID).toPromise();
+    this.tags = await this.api.getTags(courseID).toPromise();
   }
 
   /*** --------------------------------------------- ***/
@@ -176,7 +176,6 @@ export class RulesComponent implements OnInit {
                 '</div>', searchBy: rule.tags.map(tag => tag.name).join(' ') }},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: rule.isActive}},
         {type: TableDataType.ACTIONS, content: {actions: [
-          Action.VIEW,
           Action.EDIT,
           {action: 'Duplicate', icon: 'tabler-copy', color: 'primary'},
           {action: 'Increase priority', icon: 'tabler-arrow-narrow-up', color: 'primary'},
@@ -199,6 +198,7 @@ export class RulesComponent implements OnInit {
 
     } else if (action === Action.REMOVE) {
       this.ruleToDelete = ruleToActOn;
+      this.mode = 'remove rule';
       ModalService.openModal('delete-verification');
 
     } else if (action === Action.EDIT) {
@@ -206,7 +206,7 @@ export class RulesComponent implements OnInit {
       this.ruleToManage = this.initRuleToManage(ruleToActOn);
 
       // for the input-select
-      if (!this.selectedTags) {
+      /*if (!this.selectedTags) {
         let tagSelect = this.getTagNames(this.ruleToManage.tags);
         this.selectedTags = [];
 
@@ -215,7 +215,7 @@ export class RulesComponent implements OnInit {
         }
 
       }
-      if (!this.availableTags) this.getTags(this.course.id);
+      if (!this.availableTags) this.getTags(this.course.id);*/
       ModalService.openModal('manage-rule')
     }
   }
@@ -252,10 +252,9 @@ export class RulesComponent implements OnInit {
 
       ModalService.openModal('manage-rule');
 
-    } else if (action === 'add tag') {
-      this.tagMode = 'add tag';
-      this.tagToManage = this.initTagToManage();
-      ModalService.openModal('manage-tag');
+    } else if (action === 'manage tags' || action === 'add tag' || action === 'remove tag' || action === 'edit tag'){
+      this.tagMode = action;
+      ModalService.openModal(action);
 
     } else if (action === 'Edit Section') {
       this.mode = 'edit section';
@@ -358,7 +357,7 @@ export class RulesComponent implements OnInit {
       const sectionRules = await this.getRulesOfSection(this.course.id, this.ruleToManage.section);
       this.ruleToManage.position = sectionRules.length + 1;
 
-      this.findTag();   // sets tags for rule creation
+      //this.findTag();   // sets tags for rule creation
       const newRule = await this.api.createRule(clearEmptyValues(this.ruleToManage)).toPromise();
       newRule.tags = await this.api.getRuleTags(newRule.course, newRule.id).toPromise();
 
@@ -377,7 +376,7 @@ export class RulesComponent implements OnInit {
     if (this.r.valid) {
       this.loading.action = true;
 
-      this.findTag();     // set tags for rule edition
+      //this.findTag();     // set tags for rule edition
 
       const ruleEdited = await this.api.editRule(clearEmptyValues(this.ruleToManage)).toPromise();
       ruleEdited.tags = await this.api.getRuleTags(ruleEdited.course, ruleEdited.id).toPromise();
@@ -451,7 +450,7 @@ export class RulesComponent implements OnInit {
   /*** -------------------- Tags ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  getTagNames(tags: RuleTag[]): {value: string, text: string}[] {
+  /*getTagNames(tags: RuleTag[]): {value: string, text: string}[] {
     this.nameTags = [];
     for (let i = 0; i < tags.length ; i++){
       this.nameTags.push({value: tags[i].id + '-' + tags[i].name, text: tags[i].name});
@@ -504,7 +503,7 @@ export class RulesComponent implements OnInit {
 
     this.ruleToManage.tags = tags;
   }
-
+*/
   /* async createDefaultTag(courseID: number): Promise<void> {
      const defaultTag = this.initTagToManage();
      defaultTag.course = courseID;
@@ -650,15 +649,6 @@ export class RulesComponent implements OnInit {
     return ruleData;
   }
 
-  initTagToManage(tag?: RuleTag): TagManageData {
-    const tagData: TagManageData = {
-      course: tag?.course ?? null,
-      name : tag?.name ?? null,
-      color : tag?.color ?? null
-    };
-    if (tag) { tagData.id = tag.id; }
-    return tagData;
-  }
 
   resetImport(){
     this.importData = {file:null, replace: true};
@@ -677,10 +667,7 @@ export class RulesComponent implements OnInit {
     this.s.resetForm();
   }
 
-  resetTagManage() {
-    this.tagToManage = this.initTagToManage();
-    this.t.resetForm();
-  }
+
 
 }
 
@@ -704,9 +691,4 @@ export interface SectionManageData {
   position?: number
 }
 
-export interface TagManageData {
-  id?: number,
-  course?: number,
-  name?: string,
-  color?: string
-}
+

@@ -49,7 +49,7 @@
 
       <!-- Button w/ dropdown -->
       <div *ngIf="action.dropdown" class="dropdown dropdown-hover dropdown-end">
-        <label tabindex="0" class="btn {{buttonColors[action.color]}} gap-2 m-1 {{action.disable ? 'btn-disabled' : ''}}" [ngClass]="{'btn-outline': action.outline}">
+        <label tabindex="0" class="btn {{buttonColors[action.color]}} gap-2 m-1" [ngClass]="{'btn-outline': action.outline}">
           {{action.action.capitalize()}}
           <ng-icon *ngIf="action.icon" [name]="action.icon" size="1.2rem" color="fillCurrent"></ng-icon>
         </label>
