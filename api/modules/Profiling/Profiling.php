@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\Module\Profiling;
 
+use DateTime;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -393,6 +394,9 @@ class Profiling extends Module
         return $path;
     }
 
+    /**
+     * @throws Exception
+     */
     public function runProfiler(int $nrClusters, int $minClusterSize, string $endDate)
     {
         $dbHost = DB_HOST;
@@ -406,6 +410,10 @@ class Profiling extends Module
 
         $cmd = "python3 \"$profilerPath\" $courseId $nrClusters $minClusterSize \"$endDate\" \"$logsPath\" \"$dbHost\" \"$dbName\" \"$dbUser\" \" $dbPass \" > /dev/null &";
         system($cmd);
+
+        // update time of the last run on bd
+        $date = new DateTime($endDate);
+        Core::database()->update(self::TABLE_PROFILING_CONFIG, ["lastRun" => $date->format("Y-m-d H:i:s")], ["course" => $this->course->getId()]);
     }
 
     /**
@@ -446,8 +454,6 @@ class Profiling extends Module
                                 $i++;
                             }
                         }
-                        // update time of the last run on bd
-                        Core::database()->update(self::TABLE_PROFILING_CONFIG, ["lastRun" => date('Y-m-d H:i:s')], ["course" => $this->course->getId()]);
 
                         return $this->createClusterList($namedClusters, $assignedClusters);
                     }
@@ -510,6 +516,11 @@ class Profiling extends Module
         // Delete profiling results
         $resultsPath = $this->getProfilerLogsPath();
         if (file_exists($resultsPath)) unlink($resultsPath);
+
+        // Change last run date
+        $date = Core::database()->select(self::TABLE_PROFILING_USER_PROFILE, [], "date", "date desc");
+        Core::database()->update(self::TABLE_PROFILING_CONFIG, ["lastRun" => $date], ["course" => $this->course->getId()]);
+
     }
 
     /**
@@ -536,10 +547,10 @@ class Profiling extends Module
         if (empty($clusters)) return;
 
         // Update students cluster
-        $date = date("Y-m-d H:i:s");
         $students = $this->course->getStudents();
 
         foreach ($students as $student) {
+            $date = $this->getLastRun();
             $student = $this->course->getCourseUserById($student["id"]);
 
             // Remove old cluster
