@@ -1,7 +1,9 @@
 <div class="w-full relative">
   <!-- Header -->
-  <app-header [title]="'Rules'" [icon]="'tabler-clipboard-list'"
-              [loading]="loading.action"></app-header>
+  <app-header [title]="'Rules'"
+    [icon]="'tabler-clipboard-list'"
+    [loading]="loading.action">
+  </app-header>
 
   <!-- Search -->
   <div class="border-b border-gray-200 mb-4">
@@ -14,13 +16,7 @@
     </app-input-search>
   </div>
 
-  <!--
-    [leftActions]="[
-      {action: Action.IMPORT, icon:'jam-download'},
-      {action: Action.EXPORT, icon:'jam-upload'}
-    ]"
-  -->
-
+  <!-- Actions -->
   <div class="mt-5">
     <app-top-actions
       [rightActions]="sectionActions"
@@ -29,7 +25,6 @@
 
     <span *ngIf="originalSections.length === 0" class="mt-16 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
   </div>
-
 
   <!-- Sections and Rules -->
   <div *ngFor="let section of originalSections">
@@ -82,7 +77,6 @@
   </div>
 </div>
 
-
 <!-- New / Edit section modal -->
 <app-modal *ngIf="mode && sectionToManage"
   [id]="'manage-section'"
@@ -127,8 +121,8 @@
 </app-modal>
 <ng-template #MANAGE_RULE>
   <div class="border-b border-gray-200 mb-4">
-    <span *ngIf="mode === 'add rule'" class="text-sm -mt-1">
-      This rule will be added <strong>into section '{{findSectionName(ruleToManage)}}'</strong>
+    <span *ngIf="mode === 'add rule'" class="text-sm -mt-4">
+      Into section '<strong>{{findSectionName(ruleToManage)}}</strong>'
     </span>
   </div>
 
@@ -221,6 +215,7 @@
   </form>
 </ng-template>
 
+<!-- Tags Management -->
 <app-rule-tags
   *ngIf="tagMode"
   [course] = "course"
@@ -229,7 +224,6 @@
   (newTags)="this.tags = $event; tagMode = null;"
   [rules] = "courseRules"
 ></app-rule-tags>
-
 
 <!-- Manage sections priorities -->
 <app-modal *ngIf="mode === 'manage sections priority'"
