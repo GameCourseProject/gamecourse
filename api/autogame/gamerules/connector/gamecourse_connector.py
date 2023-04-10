@@ -1664,7 +1664,7 @@ def award_badge(target, name, lvl, logs, progress=None):
                 message = "You are " + str(instances) + " events away from achieving '" + name + "' badge! : " \
                           + badge_description + " - " + level_description
 
-                query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s;"
+                query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s ORDER BY message ASC;"
                 already_sent = int(gc_db.execute_query(query, (config.COURSE, target, message))[0][0]) > 0
 
                 if not already_sent:
@@ -2030,7 +2030,7 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
             message = "You can't be awarded skill '%s' yet... Almost there! There are some dependencies missing: %s" \
                       % (name, dependencies_names_string)
 
-            query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s;"
+            query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s ORDER BY message ASC;"
             already_sent = int(gc_db.execute_query(query, (config.COURSE, target, message))[0][0]) > 0
 
             # Add notification to table
