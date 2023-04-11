@@ -2279,7 +2279,7 @@ def has_wildcard_available(target, skill_tree_id, wildcard_tier):
             "WHERE a.course = %s AND a.user = %s AND a.type = %s;"
     nr_used_wildcards = int(gc_db.execute_query(query, (config.COURSE, target, award_type))[0][0])
 
-    return nr_completed_wildcards - nr_used_wildcards > 0
+    return nr_completed_wildcards > 0 and nr_used_wildcards <= nr_completed_wildcards
 
 
 
