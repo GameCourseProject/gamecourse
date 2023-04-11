@@ -411,9 +411,6 @@ class Profiling extends Module
         $cmd = "python3 \"$profilerPath\" $courseId $nrClusters $minClusterSize \"$endDate\" \"$logsPath\" \"$dbHost\" \"$dbName\" \"$dbUser\" \" $dbPass \" > /dev/null &";
         system($cmd);
 
-        // update time of the last run on bd
-        $date = new DateTime($endDate);
-        Core::database()->update(self::TABLE_PROFILING_CONFIG, ["lastRun" => $date->format("Y-m-d H:i:s")], ["course" => $this->course->getId()]);
     }
 
     /**
@@ -454,6 +451,9 @@ class Profiling extends Module
                                 $i++;
                             }
                         }
+
+                        // update time of the last run on bd
+                        Core::database()->update(self::TABLE_PROFILING_CONFIG, ["lastRun" => date('Y-m-d H:i:s')], ["course" => $this->course->getId()]);
 
                         return $this->createClusterList($namedClusters, $assignedClusters);
                     }
@@ -517,10 +517,6 @@ class Profiling extends Module
         $resultsPath = $this->getProfilerLogsPath();
         if (file_exists($resultsPath)) unlink($resultsPath);
 
-        // Change last run date
-        $date = Core::database()->select(self::TABLE_PROFILING_USER_PROFILE, [], "date", "date desc");
-        Core::database()->update(self::TABLE_PROFILING_CONFIG, ["lastRun" => $date], ["course" => $this->course->getId()]);
-
     }
 
     /**
@@ -548,9 +544,9 @@ class Profiling extends Module
 
         // Update students cluster
         $students = $this->course->getStudents();
+        $date = $this->getLastRun();
 
         foreach ($students as $student) {
-            $date = $this->getLastRun();
             $student = $this->course->getCourseUserById($student["id"]);
 
             // Remove old cluster
