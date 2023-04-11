@@ -137,17 +137,19 @@ class ProfilingTest extends TestCase
             $this->assertTrue(Core::database()->tableExists($table));
         }
 
+        $children = $this->module->getClusterNames();
         $this->assertEquals([
             ["name" => "Teacher"],
             ["name" => "Student", "children" => [
                 ["name" => "StudentA"],
                 ["name" => "StudentB"],
-                ["name" => $this->module::PROFILING_ROLE]
+                ["name" => Role::ADAPTATION_ROLE, "children" => [["name" => "Badges", "children" => [["name"=> "B001"], ["name" => "B002"]]]]],
+                ["name" => $this->module::PROFILING_ROLE, "children" => [["name" => $children[0]] , ["name" => $children[1]], ["name" => $children[2]], ["name" => $children[3]]]]
             ]],
             ["name" => "Watcher"],
         ], $this->course->getRolesHierarchy());
         $roles = $this->course->getRoles();
-        $this->assertCount(6, $roles);
+        $this->assertCount(14, $roles);
         $this->assertContains($this->module::PROFILING_ROLE, $roles);
     }
 
@@ -163,6 +165,7 @@ class ProfilingTest extends TestCase
             ["name" => "Student", "children" => [
                 ["name" => "StudentA"],
                 ["name" => "StudentB"],
+                ["name" => Role::ADAPTATION_ROLE, "children" => [["name" => "Badges", "children" => [["name"=> "B001"], ["name" => "B002"]]]]],
                 ["name" => $this->module::PROFILING_ROLE, "children" => [
                     ["name" => "Achiever"],
                     ["name" => "Regular", "children" => [
@@ -201,12 +204,13 @@ class ProfilingTest extends TestCase
             ["name" => "Teacher"],
             ["name" => "Student", "children" => [
                 ["name" => "StudentA"],
-                ["name" => "StudentB"]
+                ["name" => "StudentB"],
+                ["name" => Role::ADAPTATION_ROLE, "children" => [["name" => "Badges", "children" => [["name"=> "B001"], ["name" => "B002"]]]]]
             ]],
             ["name" => "Watcher"],
         ], $this->course->getRolesHierarchy());
         $roles = $this->course->getRoles();
-        $this->assertCount(5, $roles);
+        $this->assertCount(9, $roles);
         $this->assertNotContains($this->module::PROFILING_ROLE, $roles);
         $this->assertNotContains("Achiever", $roles);
         $this->assertNotContains("Regular", $roles);
