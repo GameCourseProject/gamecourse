@@ -300,14 +300,15 @@ class SkillsController
         foreach (SkillTree::getSkillTreeById($skillTreeId)->getSkills(true) as $skill) {
             $skill = Skill::getSkillById($skill["id"]);
             $dependencies = $skill->getDependencies();
+            $completed = !empty(array_filter($userSkillAwards, function ($award) use ($skill) {
+                return $award["type"] === AwardType::SKILL && $award["description"] == $skill->getName() && $award["moduleInstance"] == $skill->getId();
+            }));
             $info[$skill->getId()] = [
-                "available" => empty($dependencies) || $this->dependenciesMet($course, $userId, $skillTreeId, $userSkillAwards, $dependencies),
+                "available" => $completed || empty($dependencies) || $this->dependenciesMet($course, $userId, $skillTreeId, $userSkillAwards, $dependencies),
                 "attempts" => count(array_filter(AutoGame::getParticipations($courseId, $userId, "graded post"),
                     function ($item) use ($skill) { return $item["description"] === "Skill Tree, Re: " . $skill->getName(); })),
                 "cost" => $skill->getSkillCostForUser($userId),
-                "completed" => !empty(array_filter($userSkillAwards, function ($award) use ($skill) {
-                    return $award["type"] === AwardType::SKILL && $award["description"] == $skill->getName() && $award["moduleInstance"] == $skill->getId();
-                }))
+                "completed" => $completed
             ];
         }
         API::response($info);
