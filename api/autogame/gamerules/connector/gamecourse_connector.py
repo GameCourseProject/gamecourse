@@ -34,12 +34,12 @@ def autogame_init(course):
         raise Exception("AutoGame is already running for this course.")
 
     # Initialize AutoGame
-    query = "UPDATE autogame SET isRunning = %s WHERE course = %s;"
-    gc_db.execute_query(query, (True, course), "commit")
+    query = "UPDATE autogame SET isRunning = 1, runNext = 0, checkpoint = %s WHERE course = %s;"
+    gc_db.execute_query(query, (None, course), "commit")
 
     return checkpoint
 
-def autogame_terminate(course, checkpoint, start_date=None, finish_date=None):
+def autogame_terminate(course, start_date=None, finish_date=None):
     """
     Finishes execution of AutoGame and notifies server to
     close the socket.
@@ -47,13 +47,7 @@ def autogame_terminate(course, checkpoint, start_date=None, finish_date=None):
 
     # Terminate AutoGame
     if not config.TEST_MODE:
-        # Verify if checkpoint changed while AutoGame was running
-        query = "SELECT checkpoint FROM autogame WHERE course = %s;"
-        old_checkpoint = gc_db.execute_query(query, course)[0][0]
-
         query = "UPDATE autogame SET isRunning = 0"
-        if old_checkpoint == checkpoint:
-            query += ", runNext = 0"
         if start_date is not None and finish_date is not None:
             query += ", startedRunning = '%s', finishedRunning = '%s'" % (start_date, finish_date)
         query += " WHERE course = %s;"
