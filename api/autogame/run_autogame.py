@@ -106,7 +106,7 @@ def log_end():
 if __name__ == "__main__":
     # General variables
     error_msg = None
-    course, checkpoint, start_date, finish_date = None, None, None, None
+    course, start_date, finish_date = None, None, None
 
     try:
         if len(sys.argv) != 9:
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     finally:
         # Terminate AutoGame
         if course:
-            autogame_terminate(course, checkpoint, start_date, finish_date)
+            autogame_terminate(course, start_date, finish_date)
 
         # Close database connections
         from gamerules.connector.db_connector import close_all_connections

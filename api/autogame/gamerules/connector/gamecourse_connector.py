@@ -34,12 +34,12 @@ def autogame_init(course):
         raise Exception("AutoGame is already running for this course.")
 
     # Initialize AutoGame
-    query = "UPDATE autogame SET isRunning = %s WHERE course = %s;"
-    gc_db.execute_query(query, (True, course), "commit")
+    query = "UPDATE autogame SET isRunning = 1, runNext = 0, checkpoint = %s WHERE course = %s;"
+    gc_db.execute_query(query, (None, course), "commit")
 
     return checkpoint
 
-def autogame_terminate(course, checkpoint, start_date=None, finish_date=None):
+def autogame_terminate(course, start_date=None, finish_date=None):
     """
     Finishes execution of AutoGame and notifies server to
     close the socket.
@@ -47,13 +47,7 @@ def autogame_terminate(course, checkpoint, start_date=None, finish_date=None):
 
     # Terminate AutoGame
     if not config.TEST_MODE:
-        # Verify if checkpoint changed while AutoGame was running
-        query = "SELECT checkpoint FROM autogame WHERE course = %s;"
-        old_checkpoint = gc_db.execute_query(query, course)[0][0]
-
         query = "UPDATE autogame SET isRunning = 0"
-        if old_checkpoint == checkpoint:
-            query += ", runNext = 0"
         if start_date is not None and finish_date is not None:
             query += ", startedRunning = '%s', finishedRunning = '%s'" % (start_date, finish_date)
         query += " WHERE course = %s;"
@@ -1664,7 +1658,7 @@ def award_badge(target, name, lvl, logs, progress=None):
                 message = "You are " + str(instances) + " events away from achieving '" + name + "' badge! : " \
                           + badge_description + " - " + level_description
 
-                query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s ORDER BY message ASC;"
+                query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s;"
                 already_sent = int(gc_db.execute_query(query, (config.COURSE, target, message))[0][0]) > 0
 
                 if not already_sent:
@@ -2024,13 +2018,18 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
             # Removes duplicates
             dependencies_names_unique = list(set([el[0].decode() for el in dependencies_names]))
 
+            # Filter dependencies already awarded
+            dependencies_missing = [dep_name for dep_name in dependencies_names_unique
+                                    if not award_received(target, award_type, dep_name)]
+
             # Transform array into string with commas
-            dependencies_names_string = ','.join(dependencies_names_unique)
+            dependencies_missing.sort()
+            dependencies_missing_string = ', '.join(dependencies_missing)
 
             message = "You can't be awarded skill '%s' yet... Almost there! There are some dependencies missing: %s" \
-                      % (name, dependencies_names_string)
+                      % (name, dependencies_missing_string)
 
-            query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s ORDER BY message ASC;"
+            query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s;"
             already_sent = int(gc_db.execute_query(query, (config.COURSE, target, message))[0][0]) > 0
 
             # Add notification to table
