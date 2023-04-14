@@ -202,6 +202,15 @@
                               ],
                               [
                                 {
+                                  "type": "text",
+                                  "class": "float-right font-medium text-success",
+                                  "visibilityType": "conditional",
+                                  "visibilityCondition": "{%finished}",
+                                  "text": "Completed!"
+                                }
+                              ],
+                              [
+                                {
                                   "type": "block",
                                   "class": "float-right items-center gap-3",
                                   "visibilityType": "conditional",
@@ -238,7 +247,7 @@
                                           [
                                             {
                                               "type": "text",
-                                              "class": "font-medium text-success text-sm",
+                                              "class": "font-medium text-warning text-sm",
                                               "visibilityType": "conditional",
                                               "visibilityCondition": "{%badge.isBragging}",
                                               "text": "bragging rights"
@@ -301,6 +310,8 @@
                                       {
                                         "type": "text",
                                         "class": "text-sm",
+                                        "visibilityType": "conditional",
+                                        "visibilityCondition": "{%progression.description}",
                                         "loopData": "{badges.getUserBadgeProgressionInfo(%user, %badge.id)}",
                                         "text": "[{%progression.description}]",
                                         "link": "{system.if(!%progression.link, null, %progression.link)}",
@@ -334,7 +345,7 @@
                                     [
                                       {
                                         "type": "text",
-                                        "class": "font-semibold",
+                                        "class": "font-semibold text-sm",
                                         "text": "Lvl. {%level.number}: {%level.description}"
                                       }
                                     ],
