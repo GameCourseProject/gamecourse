@@ -898,7 +898,7 @@ class Course
      * @return void
      * @throws Exception
      */
-    public function updateRoles(array $roles)
+    public function updateCourseRoles(array $roles)
     {
         Role::updateCourseRoles($this->id, $roles);
     }

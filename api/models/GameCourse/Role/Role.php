@@ -7,6 +7,7 @@ use Exception;
 use GameCourse\Adaptation\GameElement;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\User\CourseUser;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Page\Page;
 use Utils\Utils;
@@ -636,6 +637,41 @@ class Role
     }
 
     /**
+     * Updates user's roles in the database, without fully replacing them.
+     *
+     * @param int $userId
+     * @param int $courseId
+     * @param array $rolesNames
+     * @return void
+     * @throws Exception
+     */
+    public static function updateUserRoles(int $userId,  int $courseId, array $rolesNames)
+    {
+        // Remove roles that got deleted
+        $oldRoles = Role::getUserRoles($userId, $courseId, false);
+        foreach ($oldRoles as $oldRole){
+            $exists = !empty(array_filter($rolesNames, function ($role) use ($oldRole, $courseId) {
+                $roleId = Role::getRoleId($role, $courseId);
+                return $roleId && $roleId == $oldRole["id"];
+            }));
+            if (!$exists){
+                self::removeRoleFromUser($userId, $courseId, $oldRole["name"], $oldRole["id"]);
+            }
+        }
+
+        $beforeUpdateRoles = Role::getUserRoles($userId, $courseId, false);
+        $beforeUpdateRolesIds = array_map(function ($element) { return $element["id"]; }, $beforeUpdateRoles);
+
+        foreach ($rolesNames as $role){
+            $roleId = Role::getRoleId($role, $courseId);
+
+            if (!in_array($roleId, $beforeUpdateRolesIds)) { // add role
+                self::addRoleToUser($userId, $courseId, $role, $roleId);
+            }
+        }
+    }
+
+    /**
      * Adds a new role to a given user in a given course if it isn't
      * already added. Option to pass either role name or role ID.
      *
@@ -651,6 +687,8 @@ class Role
         if ($roleName === null && $roleId === null)
             throw new Exception("Need either role name or ID to add new role to a user.");
 
+        if ($roleName === null) $roleName = self::getRoleName($roleId);
+
         if (!self::courseHasRole($courseId, $roleName, $roleId))
             throw new Exception("Role with " . ($roleName ? "name '" . $roleName . "'" : "ID = " . $roleId) . " doesn't exist in course with ID = " . $courseId . ".");
 
@@ -661,6 +699,23 @@ class Role
                 "course" => $courseId,
                 "role" => $roleId
             ]);
+
+
+            // Adds parents
+            $hierarchy = self::getCourseRoles($courseId, false, true);
+            $parents = self::getParentNamesOfRole($hierarchy, $roleName);
+
+            foreach ($parents as $parent){
+                $parentId = Role::getRoleId($parent, $courseId);
+                if (!self::userHasRole($userId, $courseId, $parent, $parentId)){
+                    Core::database()->insert(self::TABLE_USER_ROLE, [
+                        "user" => $userId,
+                        "course" => $courseId,
+                        "role" => $parentId
+                    ]);
+                }
+            }
+
 
             // Trigger student added event
             if (!$roleName) $roleName = Role::getRoleName($roleId);
@@ -718,7 +773,6 @@ class Role
         $where = ["user" => $userId, "course" => $courseId, "role" => $roleId];
         return !empty(Core::database()->select(self::TABLE_USER_ROLE, $where));
     }
-
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Validations ------------------- ***/
@@ -826,6 +880,42 @@ class Role
             }
         }, $children);
         return $children;
+    }
+
+    /**
+     * Gets parent names of a given role.
+     * Option to pass either role name or role ID, and to only
+     * retrieve direct parent of role.
+     *
+     * @param array $hierarchy
+     * @param string|null $roleName
+     * @param int|null $roleId
+     * @param bool $onlyDirectParent
+     * @return array
+     * @throws Exception
+     */
+    public static function getParentNamesOfRole(array $hierarchy, string $roleName = null, int $roleId = null, bool $onlyDirectParent = false): array
+    {
+        if ($roleName === null && $roleId === null)
+            throw new Exception("Need either role name or ID to get children of a role.");
+
+        if ($roleName === null) $roleName = self::getRoleName($roleId);
+
+        $parents = [];
+        $isParent = false;
+        self::traverseRoles($hierarchy, function ($role, $parent, $key, $hasChildren, $continue, &...$data) use ($roleName, $hierarchy) {
+            if ($role["name"] == $roleName) $data[1] = true;
+            else if ($hasChildren && !$data[1]) {
+                $continue(...$data);
+                if ($data[1]) $data[0][] = $role["name"];
+            }
+
+            if ($hierarchy === $parent) $data[1] = false;
+
+        }, $parents, $isParent);
+
+        if (count($parents) > 1 && $onlyDirectParent) return [$parents[0]];
+        return $parents;
     }
 
     /**
