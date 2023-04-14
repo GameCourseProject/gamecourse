@@ -433,7 +433,7 @@ class GameElement
                 // Updates roles of user
                 $oldRoleIndex = array_search(Role::getRoleName($previousPreference), $userRoles);
                 array_splice($userRoles, $oldRoleIndex, 1, Role::getRoleName($newPreference));
-                $courseUser->setRoles($userRoles);
+                $courseUser->updateCourseUserRoles($userRoles);
 
                 return;
             }
@@ -441,7 +441,7 @@ class GameElement
 
         Core::database()->insert($table, $data); // add to db
         array_push($userRoles, Role::getRoleName($newPreference));
-        $courseUser->setRoles($userRoles);
+        $courseUser->updateCourseUserRoles($userRoles);
     }
 
     /**
@@ -552,7 +552,7 @@ class GameElement
         // add all courseUsers to table element_user
         if ($isActive) {
             foreach ($users as $user){
-                if (Role::userHasRole($user["id"], $course, "Student") && $user->isActive()){    // only add notification to students
+                if (Role::userHasRole($user["id"], $course, "Student") && $user["isActive"]){    // only add notification to students
                     Core::database()->insert(self::TABLE_ADAPTATION_USER_NOTIFICATION, ["element" => $gameElement, "user" => $user["id"]]);
                 }
             }
@@ -561,7 +561,7 @@ class GameElement
         // remove all courseUsers from table element_user
         else {
             foreach ($users as $user){
-                if (Role::userHasRole($user["id"], $course, "Student") && $user->isActive()){
+                if (Role::userHasRole($user["id"], $course, "Student") && $user["isActive"]){
                     Core::database()->delete(self::TABLE_ADAPTATION_USER_NOTIFICATION, ["element" => $gameElement, "user" => $user["id"]]);
                 }
             }
