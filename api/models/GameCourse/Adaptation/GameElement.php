@@ -526,10 +526,11 @@ class GameElement
             $users = Core::database()->selectMultiple(self::TABLE_ADAPTATION_USER_NOTIFICATION, ["element" => $this->id], "user");
             $users = array_map(function ($user) {return $user["user"];}, $users);
 
-            foreach ($users as $user){
-                if (!Notification::isNotificationInDB($this->getCourse(), $user, $message) &&
-                    Role::userHasRole($user["id"], $this->getCourse(), "Student") && $user->isActive()){
-                    Notification::addNotification($this->getCourse(), $user, $message);
+            foreach ($users as $element){
+                $user = new User($element);
+                if (!Notification::isNotificationInDB($this->getCourse(), $user->getId(), $message) &&
+                    Role::userHasRole($user->getId(), $this->getCourse(), "Student") && $user->isActive()){
+                        Notification::addNotification($this->getCourse(), $user->getId(), $message);
                 }
             }
         }

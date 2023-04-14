@@ -104,8 +104,8 @@ export class AdaptationComponent implements OnInit {
   ngOnInit(): void {
     this.route.parent.params.subscribe(async params => {
       const courseID = parseInt(params.id);
+      await this.getUser(courseID);
       await this.getCourse(courseID);
-      await this.getUser();
 
       await this.getGameElements(courseID);
       this.loading.page = false;
@@ -125,14 +125,17 @@ export class AdaptationComponent implements OnInit {
 
   async getCourse(courseID: number): Promise<void> {
     this.course = await this.api.getCourseById(courseID).toPromise();
-    const students = await this.api.getActiveStudents(this.course.id).toPromise();
-    this.nrStudents = Object.keys(students).length;
+
+    if (this.isAdminOrTeacher){
+      const students = await this.api.getActiveStudents(this.course.id).toPromise();
+      this.nrStudents = Object.keys(students).length;
+    }
   }
 
-  async getUser(): Promise<void> {
+  async getUser(courseID: number): Promise<void> {
     this.user = await this.api.getLoggedUser().toPromise();
 
-    this.isAdminOrTeacher = this.user.isAdmin || await this.api.isTeacher(this.course.id, this.user.id).toPromise();
+    this.isAdminOrTeacher = this.user.isAdmin || await this.api.isTeacher(courseID, this.user.id).toPromise();
   }
 
   async getGameElements(courseID: number): Promise<void> {
