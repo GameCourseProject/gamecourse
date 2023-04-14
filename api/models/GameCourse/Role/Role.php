@@ -829,6 +829,41 @@ class Role
     }
 
     /**
+     * Gets parent names of a given role.
+     * Option to pass either role name or role ID, and to only
+     * retrieve direct parent of role.
+     *
+     * @param array $hierarchy
+     * @param string|null $roleName
+     * @param int|null $roleId
+     * @param bool $onlyDirectParent
+     * @return array
+     * @throws Exception
+     */
+    public static function getParentNamesOfRole(array $hierarchy, string $roleName = null, int $roleId = null, bool $onlyDirectParent = false): array
+    {
+        if ($roleName === null && $roleId === null)
+            throw new Exception("Need either role name or ID to get children of a role.");
+
+        if ($roleName === null) $roleName = self::getRoleName($roleId);
+
+        $parents = [];
+        $isParent = false;
+        self::traverseRoles($hierarchy, function ($role, $parent, $key, $hasChildren, $continue, &...$data) use ($roleName, $hierarchy) {
+            if ($role["name"] == $roleName) $data[1] = true;
+            else if ($hasChildren) {
+                $continue(...$data);
+                if ($data[1]) $data[0][] = $role["name"];
+            }
+
+            if ($hierarchy === $parent) $data[1] = false;
+        }, $parents, $isParent);
+
+        if (count($parents) > 1 && $onlyDirectParent) return [$parents[0]];
+        return $parents;
+    }
+
+    /**
      * Parses a role coming from the database to appropriate types.
      * Option to pass a specific field to parse instead.
      *
