@@ -262,6 +262,7 @@
   [id]="'manage-roles'"
   [templateRef]="MANAGE_ROLES"
   [header]="'Manage roles'"
+  [headerMarginBottom]="false"
   [submitBtnText]="'Save'"
   [loading]="loading.roles"
   [actionInProgress]="loading.action"
@@ -271,6 +272,10 @@
 
 <ng-template #MANAGE_ROLES>
   <form #f="ngForm" *ngIf="mode === 'roles'">
+    <!-- Subheader -->
+    <div class="w-full flex flex-wrap border-b border-gray-200 mb-4">
+      <span class="text-sm mb-2">User: {{userToManage.name}}</span>
+    </div>
 
     <app-input-select
       [id]="'manage-user-roles'"

@@ -12,7 +12,9 @@ use GameCourse\Module\Leaderboard\Leaderboard;
 use GameCourse\Module\Module;
 use GameCourse\Module\Moodle\Moodle;
 use GameCourse\Module\Profile\Profile;
+use GameCourse\NotificationSystem\Notification;
 use GameCourse\Role\Role;
+use GameCourse\User\User;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\CreationMode;
 use GameCourse\Views\Dictionary\CollectionLibrary;
@@ -231,4 +233,24 @@ class DocsController
 
 
     }
+
+
+    public function sendReminder(){
+        $course = new Course(9);
+        $message = "Don't forget to answer your preference questionnaires! Go to 'Adaptation' tab for more";
+        $users = $course->getStudents(true);
+
+        foreach ($users as $user){
+
+            $responseBadges = GameElement::isQuestionnaireAnswered($course->getId(), $user["id"], 1);
+            $responseLeaderboard = GameElement::isQuestionnaireAnswered($course->getId(), $user["id"], 4);
+            $responseProfile = GameElement::isQuestionnaireAnswered($course->getId(), $user["id"], 7);
+
+            if (!$responseBadges || !$responseLeaderboard || !$responseProfile){
+                Notification::addNotification($course->getId(), $user["id"], $message);
+            }
+
+        }
+    }
+
 }
