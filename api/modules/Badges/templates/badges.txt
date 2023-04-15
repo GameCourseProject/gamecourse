@@ -16,6 +16,10 @@
         "value": "{courses.getCourseById(%course).color}"
       },
       {
+        "name": "nrStudents",
+        "value": "{users.getStudents(true).count}"
+      },
+      {
         "name": "userBadges",
         "value": "{awards.getUserBadgesAwards(%user).count}"
       },
@@ -247,7 +251,7 @@
                                           [
                                             {
                                               "type": "text",
-                                              "class": "font-medium text-warning text-sm",
+                                              "class": "font-medium text-info text-sm",
                                               "visibilityType": "conditional",
                                               "visibilityCondition": "{%badge.isBragging}",
                                               "text": "bragging rights"
@@ -359,27 +363,48 @@
                                     [
                                       {
                                         "type": "block",
-                                        "class": "gap-2 flex-wrap mt-2",
                                         "visibilityType": "conditional",
                                         "visibilityCondition": "{%usersWithLevel.count > 0}",
-                                        "direction": "horizontal",
                                         "children": [
                                           [
                                             {
-                                              "type": "image",
-                                              "class": "rounded-full h-9 w-9",
-                                              "loopData": "{%usersWithLevel}",
-                                              "src": "{%item.image}",
-                                              "events": [
-                                                {
-                                                  "type": "click",
-                                                  "action": "{actions.goToPage(pages.getPageByName(\"Profile\").id, %item.id)}"
-                                                },
-                                                {
-                                                  "type": "mouseover",
-                                                  "action": "{actions.showTooltip(%item.name)}"
-                                                }
+                                              "type": "block",
+                                              "class": "gap-2 flex-wrap mt-2",
+                                              "direction": "horizontal",
+                                              "children": [
+                                                [
+                                                  {
+                                                    "type": "image",
+                                                    "class": "rounded-full h-9 w-9",
+                                                    "loopData": "{%usersWithLevel}",
+                                                    "src": "{%item.image}",
+                                                    "variables": [
+                                                      {
+                                                        "name": "tooltip",
+                                                        "value": "#{%index + 1} - {%item.name}"
+                                                      }
+                                                    ],
+                                                    "events": [
+                                                      {
+                                                        "type": "click",
+                                                        "action": "{actions.goToPage(pages.getPageByName(\"Profile\").id, %item.id)}"
+                                                      },
+                                                      {
+                                                        "type": "mouseover",
+                                                        "action": "{actions.showTooltip(%tooltip)}"
+                                                      }
+                                                    ]
+                                                  }
+                                                ]
                                               ]
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "type": "text",
+                                              "class": "text-sm",
+                                              "style": "color: {%courseColor}",
+                                              "text": "{%usersWithLevel.count} out of {%nrStudents} students"
                                             }
                                           ]
                                         ]

@@ -112,7 +112,7 @@ class BadgesLibrary extends Library
                 $this
             ),
             new DFunction("getUsersWithBadge",
-                "Gets users who have earned a given badge up to a certain level.",
+                "Gets users who have earned a given badge up to a certain level. Option to order users by the date they acquired badge level.",
                 ReturnType::COLLECTION,
                 $this
             ),
@@ -417,13 +417,15 @@ class BadgesLibrary extends Library
 
     /**
      * Gets users who have earned a given badge up to a certain level.
+     * Option to order users by the date they acquired badge level.
      *
      * @param int $badgeId
      * @param int $level
+     * @param bool $orderByDate
      * @return ValueNode
      * @throws Exception
      */
-    public function getUsersWithBadge(int $badgeId, int $level): ValueNode
+    public function getUsersWithBadge(int $badgeId, int $level, bool $orderByDate = true): ValueNode
     {
         // Check permissions
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
@@ -436,7 +438,7 @@ class BadgesLibrary extends Library
 
         } else {
             $badgesModule = new Badges($course);
-            $users = $badgesModule->getUsersWithBadge($badgeId, $level);
+            $users = $badgesModule->getUsersWithBadge($badgeId, $level, $orderByDate);
         }
         return new ValueNode($users, Core::dictionary()->getLibraryById(UsersLibrary::ID));
     }

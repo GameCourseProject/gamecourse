@@ -1019,19 +1019,32 @@ class Badges extends Module
 
     /**
      * Gets users who have earned a given badge up to a certain level.
+     * Option to order users by the date they acquired badge level.
      *
      * @param int $badgeId
      * @param int $level
+     * @param bool $orderByDate
      * @return array
      * @throws Exception
      */
-    public function getUsersWithBadge(int $badgeId, int $level): array
+    public function getUsersWithBadge(int $badgeId, int $level, bool $orderByDate = true): array
     {
         $users = [];
         foreach ($this->getCourse()->getStudents() as $student) {
             $badgeLevel = $this->getUserBadgeLevel($student["id"], $badgeId);
-            if ($badgeLevel >= $level) $users[] = $student;
+            if ($badgeLevel >= $level) {
+                if ($orderByDate) {
+                    $awardsModule = new Awards($this->getCourse());
+                    $awardDate = array_values(array_filter($awardsModule->getUserAwardsByType($student["id"], AwardType::BADGE, $badgeId), function ($award) use ($level) {
+                        return Utils::strEndsWith($award["description"], "(level $level)");
+                    }))[0]["date"];
+                    $student["awardDate"] = $awardDate;
+                }
+                $users[] = $student;
+            }
         }
+
+        if ($orderByDate) usort($users, function ($a, $b) { return strcmp($a["awardDate"], $b["awardDate"]); });
         return $users;
     }
 
