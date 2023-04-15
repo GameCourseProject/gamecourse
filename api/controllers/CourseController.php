@@ -365,7 +365,7 @@ class CourseController
         $nickname = API::getValue("nickname");
         $major = API::getValue("major");
         $image = API::getValue("image");
-        $rolesNames = API::getValue("roles");
+        $rolesNames = API::getValue("roles", "array");
 
         // Edit user
         $user->editUser($name, $username, $authService, $email, $studentNumber, $nickname, $major, $user->isAdmin(), $user->isActive());
@@ -373,7 +373,7 @@ class CourseController
 
         // Edit user roles
         $courseUser = $course->getCourseUserById($userId);
-        $courseUser->setRoles($rolesNames);
+        $courseUser->updateCourseUserRoles($rolesNames);
 
         $courseUserInfo = $courseUser->getData();
         $courseUserInfo["image"] = $courseUser->getImage();
@@ -651,7 +651,7 @@ class CourseController
         $hierarchy = API::getValue("hierarchy");
         $roles = API::getValue("roles");
 
-        $course->updateRoles($roles);
+        $course->updateCourseRoles($roles);
         $course->setRolesHierarchy($hierarchy);
     }
 

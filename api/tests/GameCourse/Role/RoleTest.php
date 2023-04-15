@@ -562,17 +562,14 @@ class RoleTest extends TestCase
         $this->assertEquals([
             Role::DEFAULT_ROLES[0],
             Role::DEFAULT_ROLES[1],
-            Role::DEFAULT_ROLES[2],
-            Role::ADAPTATION_ROLE], $roles);
+            Role::DEFAULT_ROLES[2]], $roles);
 
         $hierarchy = $this->course->getRolesHierarchy();
         $this->assertIsArray($hierarchy);
         $this->assertEquals([
             ["name" => Role::DEFAULT_ROLES[0]],
             ["name" => Role::DEFAULT_ROLES[1],
-                "children" => [ [ "name" => Role::ADAPTATION_ROLE,
-                    "children" => []
-                ] ]
+                "children" => [ ]
             ],
             ["name" => Role::DEFAULT_ROLES[2]]
         ], $hierarchy);
@@ -1209,6 +1206,26 @@ class RoleTest extends TestCase
         }
     }
 
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function updateUserRolesByNames(){
+        // Given
+        Role::setUserRoles($this->courseUser->getId(), $this->course->getId(),["Student", "StudentA"]);
+
+        // When
+        Role::updateUserRoles($this->courseUser->getId(), $this->course->getId(), ["Student", "StudentA", "StudentB"]);
+
+        // Then
+        $rolesNames = Role::getUserRoles($this->courseUser->getId(), $this->course->getId());
+
+        $this->assertIsArray($rolesNames);
+        $this->assertCount(3, $rolesNames);
+        $this->assertContains("Student", $rolesNames);
+        $this->assertContains("StudentA", $rolesNames);
+        $this->assertContains("StudentB", $rolesNames);
+    }
 
     /**
      * @test
@@ -1266,7 +1283,6 @@ class RoleTest extends TestCase
         Role::addRoleToUser($this->courseUser->getId(), $this->course->getId());
     }
 
-
     /**
      * @test
      * @throws Exception
@@ -1299,7 +1315,6 @@ class RoleTest extends TestCase
         $this->expectException(Exception::class);
         Role::removeRoleFromUser($this->courseUser->getId(), $this->course->getId());
     }
-
 
     /**
      * @test
@@ -1352,6 +1367,59 @@ class RoleTest extends TestCase
         $this->assertEquals(["Teacher", "StudentA", "Student", "Watcher"], $sorted);
     }
 
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getAllParentNamesOfRole(){
+        // Given
+        $this->course->setRolesHierarchy([
+            ["name" => "Teacher"],
+            ["name" => "Student", "children" => [
+                ["name" => "StudentA", "children" => [
+                    ["name" => "StudentA1"]
+                ]],
+                ["name" => "StudentB"]
+            ]],
+            ["name" => "Watcher"]
+        ]);
+
+        // When
+        $parents = Role::getParentNamesOfRole($this->course->getRolesHierarchy(), "StudentA1");
+
+        // Then
+        $this->assertIsArray($parents);
+        $this->assertCount(2, $parents);
+        $this->assertContains("StudentA", $parents);
+        $this->assertContains("Student", $parents);
+    }
+
+    /**
+     * @test
+     * @throws Exception
+     */
+    public function getDirectParentNamesOfRole(){
+        // Given
+        $this->course->setRolesHierarchy([
+            ["name" => "Teacher"],
+            ["name" => "Student", "children" => [
+                ["name" => "StudentA", "children" => [
+                    ["name" => "StudentA1"]
+                ]],
+                ["name" => "StudentB"]
+            ]],
+            ["name" => "Watcher"]
+        ]);
+
+        // When
+        $parents = Role::getParentNamesOfRole($this->course->getRolesHierarchy(), "StudentA1", null, true);
+
+        // Then
+        $this->assertIsArray($parents);
+        $this->assertCount(1, $parents);
+        $this->assertEquals(["StudentA"], $parents);
+    }
 
     /**
      * @test

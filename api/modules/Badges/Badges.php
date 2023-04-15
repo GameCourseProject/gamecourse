@@ -270,6 +270,13 @@ class Badges extends Module
     public function getLists(): array
     {
         $badges = Badge::getBadges($this->course->getId());
+        foreach ($badges as &$badge) {
+            $isCount = $badge["isCount"];
+            $isPoint = $badge["isPoint"];
+            $badge["isCount"] = $isCount ? "isCount" : "isPoint";
+            $badge["isPoint"] = $isPoint ? "isPoint" : "isCount";
+        }
+
         $lists = [
             [
                 "name" => "Badges",
@@ -379,32 +386,28 @@ class Badges extends Module
                                 [
                                     "contentType" => "item",
                                     "width" => "1/3",
-                                    "type" => InputType::TOGGLE,
+                                    "type" => InputType::RADIO,
                                     "id" => "isCount",
                                     "options" => [
-                                        "label" => "Based on counts"
+                                        "group" => "badge-type",
+                                        "optionValue" => "isCount",
+                                        "label" => "Based on counts",
+                                        "required" => true
                                     ],
                                     "helper" => "Whether badge is earned by counting ocurrences of some type"
                                 ],
                                 [
                                     "contentType" => "item",
                                     "width" => "1/3",
-                                    "type" => InputType::TOGGLE,
+                                    "type" => InputType::RADIO,
                                     "id" => "isPoint",
                                     "options" => [
-                                        "label" => "Based on points"
+                                        "group" => "badge-type",
+                                        "optionValue" => "isPoint",
+                                        "label" => "Based on points",
+                                        "required" => true
                                     ],
                                     "helper" => "Whether badge is earned by earning a certain amount of points"
-                                ],
-                                [
-                                    "contentType" => "item",
-                                    "width" => "1/3",
-                                    "type" => InputType::TOGGLE,
-                                    "id" => "isPost",
-                                    "options" => [
-                                        "label" => "Linkable"
-                                    ],
-                                    "helper" => "Whether badge ocurrences refer to a URL link"
                                 ]
                             ]
                         ],
@@ -604,35 +607,30 @@ class Badges extends Module
                                 [
                                     "contentType" => "item",
                                     "width" => "1/3",
-                                    "type" => InputType::TOGGLE,
+                                    "type" => InputType::RADIO,
                                     "scope" => ActionScope::ALL,
                                     "id" => "isCount",
                                     "options" => [
-                                        "label" => "Based on counts"
+                                        "group" => "badge-type",
+                                        "optionValue" => "isCount",
+                                        "label" => "Based on counts",
+                                        "required" => true
                                     ],
                                     "helper" => "Whether badge is earned by counting ocurrences of some type"
                                 ],
                                 [
                                     "contentType" => "item",
                                     "width" => "1/3",
-                                    "type" => InputType::TOGGLE,
+                                    "type" => InputType::RADIO,
                                     "scope" => ActionScope::ALL,
                                     "id" => "isPoint",
                                     "options" => [
-                                        "label" => "Based on points"
+                                        "group" => "badge-type",
+                                        "optionValue" => "isPoint",
+                                        "label" => "Based on points",
+                                        "required" => true
                                     ],
                                     "helper" => "Whether badge is earned by earning a certain amount of points"
-                                ],
-                                [
-                                    "contentType" => "item",
-                                    "width" => "1/3",
-                                    "type" => InputType::TOGGLE,
-                                    "scope" => ActionScope::ALL,
-                                    "id" => "isPost",
-                                    "options" => [
-                                        "label" => "Linkable"
-                                    ],
-                                    "helper" => "Whether badge ocurrences refer to a URL link"
                                 ]
                             ]
                         ],
@@ -922,8 +920,7 @@ class Badges extends Module
                     if ($action == Action::DUPLICATE) $name .= " (Copy)";
 
                     $badge = Badge::addBadge($courseId, $name, $item["description"], $item["isExtra"] ?? false,
-                        $item["isBragging"] ?? false, $item["isCount"] ?? false, $item["isPost"] ?? false,
-                        $item["isPoint"] ?? false, $levels);
+                        $item["isBragging"] ?? false, $item["isCount"] === "isCount", $item["isPoint"] === "isPoint", $levels);
 
                     if ($action == Action::DUPLICATE)
                         Utils::copyDirectory(Badge::getBadgeByName($courseId, $item["name"])->getDataFolder() . "/", $badge->getDataFolder() . "/");
@@ -931,8 +928,8 @@ class Badges extends Module
                 } else {
                     $badge = Badge::getBadgeById($item["id"]);
                     $badge->editBadge($item["name"], $item["description"], $item["isExtra"] ?? false,
-                        $item["isBragging"] ?? false, $item["isCount"] ?? false, $item["isPost"] ?? false,
-                        $item["isPoint"] ?? false, $item["isActive"] ?? false, $levels);
+                        $item["isBragging"] ?? false, $item["isCount"] === "isCount", $item["isPoint"] === "isPoint",
+                        $item["isActive"] ?? false, $levels);
                 }
 
                 if (isset($item["image"]) && !Utils::strStartsWith($item["image"], API_URL))
@@ -1045,16 +1042,15 @@ class Badges extends Module
      * @param bool|null $isExtra
      * @param bool|null $isBragging
      * @param bool|null $isCount
-     * @param bool|null $isPost
      * @param bool|null $isPoint
      * @return array
      * @throws Exception
      */
     public function getUserBadges(int $userId, bool $isExtra = null, bool $isBragging = null, bool $isCount = null,
-                                  bool $isPost = null, bool $isPoint = null): array
+                                  bool $isPoint = null): array
     {
         $awardsModule = new Awards($this->getCourse());
-        $userBadgeAwards = $awardsModule->getUserBadgesAwards($userId, $isExtra, $isBragging, $isCount, $isPost, $isPoint);
+        $userBadgeAwards = $awardsModule->getUserBadgesAwards($userId, $isExtra, $isBragging, $isCount, $isPoint);
 
         // Group by badge ID
         $awards = [];

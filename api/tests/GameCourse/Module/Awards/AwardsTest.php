@@ -288,7 +288,7 @@ class AwardsTest extends TestCase
         // Given
         $badgesModule = new Badges($this->course);
         $badgesModule->setEnabled(true);
-        $badge = Badge::addBadge($this->course->getId(), "Bagde", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->course->getId(), "Bagde", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -335,12 +335,12 @@ class AwardsTest extends TestCase
         // Given
         $badgesModule = new Badges($this->course);
         $badgesModule->setEnabled(true);
-        $badgeExtra = Badge::addBadge($this->course->getId(), "Bagde Extra", "Perform action", true, false, false, false, false, [
+        $badgeExtra = Badge::addBadge($this->course->getId(), "Bagde Extra", "Perform action", true, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badgeNotExtra = Badge::addBadge($this->course->getId(), "Bagde Not Extra", "Perform action", false, false, false, false, false, [
+        $badgeNotExtra = Badge::addBadge($this->course->getId(), "Bagde Not Extra", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -386,12 +386,12 @@ class AwardsTest extends TestCase
         // Given
         $badgesModule = new Badges($this->course);
         $badgesModule->setEnabled(true);
-        $badgeExtra = Badge::addBadge($this->course->getId(), "Bagde Extra", "Perform action", true, false, false, false, false, [
+        $badgeExtra = Badge::addBadge($this->course->getId(), "Bagde Extra", "Perform action", true, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badgeNotExtra = Badge::addBadge($this->course->getId(), "Bagde Not Extra", "Perform action", false, false, false, false, false, [
+        $badgeNotExtra = Badge::addBadge($this->course->getId(), "Bagde Not Extra", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -437,12 +437,12 @@ class AwardsTest extends TestCase
         // Given
         $badgesModule = new Badges($this->course);
         $badgesModule->setEnabled(true);
-        $badgeActive = Badge::addBadge($this->course->getId(), "Bagde Active", "Perform action", false, false, false, false, false, [
+        $badgeActive = Badge::addBadge($this->course->getId(), "Bagde Active", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badgeNotActive = Badge::addBadge($this->course->getId(), "Bagde Not Active", "Perform action", false, false, false, false, false, [
+        $badgeNotActive = Badge::addBadge($this->course->getId(), "Bagde Not Active", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -455,7 +455,7 @@ class AwardsTest extends TestCase
 
         // When
         $badgeNotActive->setActive(false);
-        $awards = $this->module->getUserBadgesAwards($user->getId(), null, null, null, null, null, true);
+        $awards = $this->module->getUserBadgesAwards($user->getId(), null, null, null, null, true);
 
         // Then
         $this->assertIsArray($awards);
@@ -1166,7 +1166,7 @@ class AwardsTest extends TestCase
         // Given
         $badgesModule = new Badges($this->course);
         $badgesModule->setEnabled(true);
-        $badge = Badge::addBadge($this->course->getId(), "Bagde", "Perform action", false, false, false, false, false, [
+        $badge = Badge::addBadge($this->course->getId(), "Bagde", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1190,12 +1190,12 @@ class AwardsTest extends TestCase
         // Given
         $badgesModule = new Badges($this->course);
         $badgesModule->setEnabled(true);
-        $badgeExtra = Badge::addBadge($this->course->getId(), "Bagde Extra", "Perform action", true, false, false, false, false, [
+        $badgeExtra = Badge::addBadge($this->course->getId(), "Bagde Extra", "Perform action", true, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badgeNotExtra = Badge::addBadge($this->course->getId(), "Bagde Not Extra", "Perform action", false, false, false, false, false, [
+        $badgeNotExtra = Badge::addBadge($this->course->getId(), "Bagde Not Extra", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1219,12 +1219,12 @@ class AwardsTest extends TestCase
         // Given
         $badgesModule = new Badges($this->course);
         $badgesModule->setEnabled(true);
-        $badgeExtra = Badge::addBadge($this->course->getId(), "Bagde Extra", "Perform action", true, false, false, false, false, [
+        $badgeExtra = Badge::addBadge($this->course->getId(), "Bagde Extra", "Perform action", true, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badgeNotExtra = Badge::addBadge($this->course->getId(), "Bagde Not Extra", "Perform action", false, false, false, false, false, [
+        $badgeNotExtra = Badge::addBadge($this->course->getId(), "Bagde Not Extra", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1248,12 +1248,12 @@ class AwardsTest extends TestCase
         // Given
         $badgesModule = new Badges($this->course);
         $badgesModule->setEnabled(true);
-        $badgeActive = Badge::addBadge($this->course->getId(), "Bagde Active", "Perform action", false, false, false, false, false, [
+        $badgeActive = Badge::addBadge($this->course->getId(), "Bagde Active", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
         ]);
-        $badgeNotActive = Badge::addBadge($this->course->getId(), "Bagde Not Active", "Perform action", false, false, false, false, false, [
+        $badgeNotActive = Badge::addBadge($this->course->getId(), "Bagde Not Active", "Perform action", false, false, false, false, [
             ["description" => "one time", "goal" => 1, "reward" => 100],
             ["description" => "two times", "goal" => 2, "reward" => 100],
             ["description" => "three times", "goal" => 3, "reward" => 100]
@@ -1268,7 +1268,7 @@ class AwardsTest extends TestCase
         $badgeNotActive->setActive(false);
 
         // Then
-        $this->assertEquals(200, $this->module->getUserBadgesTotalReward($user->getId(), null, null, null, null, null, true));
+        $this->assertEquals(200, $this->module->getUserBadgesTotalReward($user->getId(), null, null, null, null, true));
     }
 
     /**

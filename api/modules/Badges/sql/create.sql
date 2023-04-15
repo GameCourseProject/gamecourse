@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS badge(
 	isExtra                     boolean NOT NULL DEFAULT FALSE,
 	isBragging                  boolean NOT NULL DEFAULT FALSE,
 	isCount                     boolean NOT NULL DEFAULT FALSE,
-	isPost                      boolean NOT NULL DEFAULT FALSE,
 	isPoint                     boolean NOT NULL DEFAULT FALSE,
 	isActive                    boolean NOT NULL DEFAULT TRUE,
     rule                        int unsigned NOT NULL,

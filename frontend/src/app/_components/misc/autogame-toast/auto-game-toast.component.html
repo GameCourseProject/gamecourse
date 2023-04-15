@@ -1,7 +1,7 @@
-<div *ngIf="!loading && lastRun" class="toast">
+<div *ngIf="!loading && lastRun" id="autogame-toast" class="toast z-50" [ngClass]="{'invisible': this.hide}">
   <div class="alert bg-base-100 font-semibold text-sm text-primary shadow-xl">
     <div>
-      <span>Last update: {{lastRun.fromNow()}}</span>
+      <span>Last update: {{now().diff(lastRun, 'days') >= 1 ? lastRun.format('DD/MM/YYYY HH:mm') : lastRun.fromNow()}}</span>
     </div>
   </div>
 </div>

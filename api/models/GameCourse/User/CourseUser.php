@@ -403,6 +403,17 @@ class CourseUser extends User
     }
 
     /**
+     * Updates user's roles in the database.
+     *
+     * @param array $rolesNames
+     * @return void
+     * @throws Exception
+     */
+    public function updateCourseUserRoles(array $rolesNames){
+        Role::updateUserRoles($this->id, $this->course->getId(), $rolesNames);
+    }
+
+    /**
      * Adds a new role to user if it isn't already added.
      * Option to pass either role name or role ID.
      *

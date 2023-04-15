@@ -567,10 +567,10 @@ class Moodle extends Module
                 "assignment grades" => "AssignmentGrades"
             ];
             foreach ($import as $itemStr => $item) {
-                $info = $this->{"import".$item}();
-                if ($info) {
-                    $AutoGameCheckpoint = min($AutoGameCheckpoint, $info["oldestRecordTimestamp"]) ?? $info["oldestRecordTimestamp"];
-                    $timestamps[] = $info["lastRecordTimestamp"];
+                $newData = $this->{"import".$item}();
+                if ($newData) {
+                    $AutoGameCheckpoint = min($AutoGameCheckpoint, $newData["oldestRecordTimestamp"]) ?? $newData["oldestRecordTimestamp"];
+                    $timestamps[] = $newData["lastRecordTimestamp"];
                     self::log($this->course->getId(), "Imported new $itemStr.", "SUCCESS");
                 }
             }
@@ -748,31 +748,17 @@ class Moodle extends Module
     public function importForumGrades(): ?array
     {
         $forumGrades = $this->getForumGrades();
-        $info1 = $this->saveForumGrades($forumGrades);
+        $newData1 = $this->saveForumGrades($forumGrades);
 
         $peergradedForumGrades = $this->getPeergradedForumGrades();
-        $info2 = $this->saveForumGrades($peergradedForumGrades, true);
+        $newData2 = $this->saveForumGrades($peergradedForumGrades, true);
 
-        if ($info1) {
-            if ($info2) {
-                return [
-                    "oldestRecordTimestamp" => min($info1["oldestRecordTimestamp"], $info2["oldestRecordTimestamp"]),
-                    "lastRecordTimestamp" => max($info1["lastRecordTimestamp"], $info2["lastRecordTimestamp"])
-                ];
-
-            } else {
-                return [
-                    "oldestRecordTimestamp" => $info1["oldestRecordTimestamp"],
-                    "lastRecordTimestamp" => $info1["lastRecordTimestamp"]
-                ];
-            }
-
-        } else if ($info2) {
-            return [
-                "oldestRecordTimestamp" => $info2["oldestRecordTimestamp"],
-                "lastRecordTimestamp" => $info2["lastRecordTimestamp"]
-            ];
-        }
+        if ($newData1 && $newData2) return [
+            "oldestRecordTimestamp" => min($newData1["oldestRecordTimestamp"], $newData2["oldestRecordTimestamp"]),
+            "lastRecordTimestamp" => max($newData1["lastRecordTimestamp"], $newData2["lastRecordTimestamp"])
+        ];
+        if ($newData1) return $newData1;
+        if ($newData2) return $newData2;
         return null;
     }
 
@@ -1037,9 +1023,10 @@ class Moodle extends Module
                             "\"" . date("Y-m-d H:i:s", $log['timestamp']) . "\""
                         ];
                         $values[] = "(" . implode(", ", $params) . ")";
+
+                        $oldestRecordTimestamp = min($oldestRecordTimestamp, $log["timestamp"]) ?? $log["timestamp"];
+                        $lastRecordTimestamp = max($log["timestamp"], $lastRecordTimestamp);
                     }
-                    $oldestRecordTimestamp = min($oldestRecordTimestamp, $log["timestamp"]) ?? $log["timestamp"];
-                    $lastRecordTimestamp = max($log["timestamp"], $lastRecordTimestamp);
 
                 } else if ($log["username"] !== "admin") {
                     // Ignore admins that are not enrolled in course
