@@ -41,24 +41,59 @@
             [
               {
                 "type": "block",
-                "class": "gap-3 items-center mb-4",
+                "class": "gap-6",
                 "direction": "horizontal",
+                "columns": 2,
+                "responsive": false,
                 "children": [
                   [
                     {
-                      "type": "icon",
-                      "class": "mt-1",
-                      "style": "color: {%courseColor}",
-                      "icon": "tabler-award",
-                      "size": "1.8rem"
+                      "type": "block",
+                      "class": "gap-3 items-center mb-4",
+                      "direction": "horizontal",
+                      "children": [
+                        [
+                          {
+                            "type": "icon",
+                            "class": "mt-1",
+                            "style": "color: {%courseColor}",
+                            "icon": "tabler-award",
+                            "size": "1.8rem"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "text",
+                            "class": "font-bold",
+                            "style": "font-size: 1.5rem",
+                            "text": "Badges"
+                          }
+                        ]
+                      ]
                     }
                   ],
                   [
                     {
-                      "type": "text",
-                      "class": "font-bold",
-                      "style": "font-size: 1.5rem",
-                      "text": "Badges"
+                      "type": "block",
+                      "class": "float-right mt-2 gap-1 items-center font-semibold",
+                      "direction": "horizontal",
+                      "responsive": false,
+                      "children": [
+                        [
+                          {
+                            "type": "text",
+                            "class": "text-neutral/75",
+                            "text": "Total:"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "text",
+                            "style": "color: {%courseColor}",
+                            "text": "{awards.getUserBadgesTotalReward(%user)} XP"
+                          }
+                        ]
+                      ]
                     }
                   ]
                 ]

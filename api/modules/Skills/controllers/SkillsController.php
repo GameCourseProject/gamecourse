@@ -311,6 +311,7 @@ class SkillsController
                 "completed" => $completed
             ];
         }
+        $info["total"] = (new Awards($course))->getUserSkillsTotalReward($userId);
         API::response($info);
     }
 
@@ -383,6 +384,7 @@ class SkillsController
             ];
         }
 
-        API::response($userStreaks);
+        $info = ["info" => $userStreaks, "total" => $awardsModule->getUserStreaksTotalReward($userId)];
+        API::response($info);
     }
 }

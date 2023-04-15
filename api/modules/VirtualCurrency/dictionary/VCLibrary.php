@@ -65,6 +65,11 @@ class VCLibrary extends Library
                 ReturnType::COLLECTION,
                 $this
             ),
+            new DFunction("getUserTotalSpending",
+                "Gets total spending for a given user.",
+                ReturnType::NUMBER,
+                $this
+            ),
             new DFunction("exchangeTokensForXP",
                 "Exchanges a given user's tokens for XP according to a specific ratio and threshold.",
                 ReturnType::VOID,
@@ -208,6 +213,30 @@ class VCLibrary extends Library
             $spending = $VCModule->getUserSpending($userId);
         }
         return new ValueNode($spending, $this);
+    }
+
+    /**
+     * Gets total spending for a given user.
+     *
+     * @param int $userId
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getUserTotalSpending(int $userId): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $userSpending = Core::dictionary()->faker()->numberBetween(0, 500);
+
+        } else {
+            $VCModule = new VirtualCurrency($course);
+            $userSpending = $VCModule->getUserTotalSpending($userId);
+        }
+        return new ValueNode($userSpending, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
 
