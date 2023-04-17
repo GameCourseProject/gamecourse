@@ -21,7 +21,8 @@ import {ThemingService} from "../../../../../../_services/theming/theming.servic
 import * as _ from "lodash";
 @Component({
   selector: 'app-rules',
-  templateUrl: './rules.component.html'
+  templateUrl: './rules.component.html',
+  styleUrls: ['./rules.component.scss']
 })
 export class RulesComponent implements OnInit {
 
@@ -48,10 +49,10 @@ export class RulesComponent implements OnInit {
   sections: RuleSection[] = [];                // sections of page
   filteredSections: RuleSection[] = [];        // section search
   sectionActions: {action: Action | string, icon?: string, outline?: boolean, dropdown?: {action: Action | string, icon?: string}[],
-      color?: "ghost" | "primary" | "secondary" | "accent" | "neutral" | "info" | "success" | "warning" | "error", disable?: boolean}[]  = [ {action: 'sections\' priorities', icon: 'jam-box', color: 'secondary', disable: true},
+      color?: "ghost" | "primary" | "secondary" | "accent" | "neutral" | "info" | "success" | "warning" | "error", disable?: boolean}[]  = [
+      {action: 'sections\' priorities', icon: 'jam-box', color: 'secondary', disable: true},
       {action: 'manage tags', icon: 'tabler-tags', color: 'secondary'},
-      {action: 'add section', icon: 'feather-plus-circle', color: 'primary'}
-      ];
+      {action: 'add section', icon: 'feather-plus-circle', color: 'primary'}];
 
   mode: 'add rule' | 'edit rule' | 'remove rule';
   tagMode : 'manage tags' | 'add tag' | 'remove tag' | 'edit tag';
@@ -151,7 +152,6 @@ export class RulesComponent implements OnInit {
       info[this.originalSections[i].id - 1] = [];
     }
     this.data = info;
-    console.log(this.data);
     //this.data = this.originalSections.map(section => { return {[section.id - 1]: []}});
   }
 
@@ -170,12 +170,10 @@ export class RulesComponent implements OnInit {
   }
 
   /*** --------------------------------------------- ***/
-  /*** ------------------ Table ----------------- ***/
+  /*** ------------------- Table ------------------- ***/
   /*** --------------------------------------------- ***/
 
   async buildTable(section: RuleSection) {
-    this.refreshing = true;
-    setTimeout(() => this.refreshing = false, 0);
 
     this.loading.table = true;
 
@@ -203,16 +201,10 @@ export class RulesComponent implements OnInit {
     });
 
     this.data[section.id - 1] = _.cloneDeep(table);
-    console.log(this.data[section.id-1]);
     this.loading.table = false;
-    return table;
   }
 
-  dataValues(sectionId: number){
-    return Object.values(this.data[sectionId - 1]);
-  }
-
-  async hey (event: RuleSection[]) {
+  async closeSectionManagement(event: RuleSection[]) {
     this.originalSections = event;
 
     if (this.sectionMode === 'add section') {
@@ -225,7 +217,7 @@ export class RulesComponent implements OnInit {
     this.sections = null;
   }
 
-  doActionOnTable(action: string, row: number, col: number, value?: any): void{
+  doActionOnTable(section: RuleSection, action: string, row: number, col: number, value?: any): void{
     const ruleToActOn = this.courseRules[row];
 
     if (action === 'value changed rule'){
@@ -234,7 +226,7 @@ export class RulesComponent implements OnInit {
     } else if (action === Action.REMOVE) {
       this.ruleToDelete = ruleToActOn;
       this.mode = 'remove rule';
-      ModalService.openModal('delete-verification');
+      ModalService.openModal('delete-rule');
 
     } else if (action === Action.EDIT) {
       this.mode = 'edit rule';
@@ -252,6 +244,14 @@ export class RulesComponent implements OnInit {
       }
       if (!this.availableTags) this.getTags(this.course.id);*/
       ModalService.openModal('manage-rule')
+    } else if ( action === Action.DUPLICATE){
+      // TODO
+    } else if (action === Action.MOVE_UP){
+      // TODO
+    } else if ( action === Action.MOVE_DOWN) {
+      // TODO
+    } else if (action === Action.EXPORT){
+      // TODO
     }
   }
 
@@ -266,22 +266,16 @@ export class RulesComponent implements OnInit {
     } else if (action === Action.EXPORT) {
       await this.exportRules(this.courseRules);
 
-    } else if (action === 'add section' || action === 'edit section' || action === 'sections\' priorities') {
+    } else if (action === 'add section' || action === 'edit section' || action === 'remove section' ||
+      action === 'sections\' priorities') {
 
-      let modal;
       this.sections = _.cloneDeep(this.originalSections);
-
-      if (action === 'add section' || action === 'edit section'){
-        this.sectionMode = action;
-        modal = 'manage-section';
-
-      } else if (action === 'sections\' priorities') {
-        this.sectionMode = 'manage sections priority';
-        modal = 'manage-sections-priority';
-      }
-
+      this.sectionMode = (action === 'sections\' priorities') ? 'manage sections priority' : action;
       this.sectionToManage = this.initSectionToManage(section);
-      if (modal) ModalService.openModal(modal);
+
+      let modal = (action === 'remove section') ? action : (action === 'sections\' priorities') ?
+        'manage-sections-priority' : 'manage-section';
+      ModalService.openModal(modal);
 
     } else if (action === 'Create rule') {
       this.mode = 'add rule';
@@ -297,10 +291,6 @@ export class RulesComponent implements OnInit {
       this.tagMode = action;
       ModalService.openModal(action);
 
-    } else if (action === 'Remove Section') {
-      //this.mode = 'remove section';
-      //this.sectionToDelete = section;
-      //ModalService.openModal('delete-verification');
     }
 
   }
@@ -317,33 +307,11 @@ export class RulesComponent implements OnInit {
     await this.buildTable(section);
 
     this.loading.action = false;
-    ModalService.closeModal('delete-verification');
+    ModalService.closeModal('delete-rule');
     this.mode = null;
     this.ruleToDelete = null;
 
     AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + rule.name + '\' removed');
-  }
-
-  async deleteSection(section: RuleSection): Promise<void> {
-    this.loading.action = true;
-
-    const rules = await this.api.getRulesOfSection(this.course.id,section.id).toPromise();
-    await this.api.deleteSection(section.id, rules).toPromise();
-
-    const index = this.originalSections.findIndex(el => el.id === section.id);
-    this.originalSections.removeAtIndex(index);
-
-    if (this.originalSections.length <= 1){
-      this.sectionActions[0].disable = true;
-    }
-
-    this.loading.action = false;
-    ModalService.closeModal('delete-verification');
-    this.mode = null;
-    //this.sectionToDelete = null;
-
-    AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + section.name + '\' removed');
-
   }
 
   async toggleActive(rule: Rule){

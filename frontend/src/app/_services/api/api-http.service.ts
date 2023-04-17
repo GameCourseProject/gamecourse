@@ -1341,8 +1341,8 @@ export class ApiHttpService {
       .pipe(map((res:any) => RuleSection.fromDatabase(res['data'])));
   }
 
-  public deleteSection(sectionID: number, rules: Rule[]) : Observable<void>{
-    const data = { sectionId: sectionID, rules: rules };
+  public deleteSection(sectionID: number) : Observable<void>{
+    const data = { sectionId: sectionID};
 
     const params = (qs:QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULES_SYSTEM);

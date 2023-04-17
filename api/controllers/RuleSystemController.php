@@ -92,14 +92,11 @@ class RuleSystemController
      * @throws Exception
      */
     public function deleteSection(){
-        API::requireValues('sectionId', 'rules');
+        API::requireValues('sectionId');
 
         $sectionId = API::getValue("sectionId", "int");
-        $rules = API::getValue("rules");
-
         Section::deleteSection($sectionId);
 
-        // remove rules?
 
     }
 

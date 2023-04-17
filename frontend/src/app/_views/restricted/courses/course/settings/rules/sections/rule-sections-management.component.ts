@@ -58,6 +58,8 @@ export class RuleSectionsManagementComponent implements OnInit{
       await this.createSection()
     } else if (action === 'edit section'){
       await this.editSection();
+    } else if (action === 'remove section'){
+      await this.removeSection();
     }
   }
 
@@ -72,9 +74,7 @@ export class RuleSectionsManagementComponent implements OnInit{
       this.sections.push(newSection);
       //this.buildTable();
 
-      if (this.sections.length > 1){
-        this.sectionActions[0].disable = false;
-      }
+      this.toggleSectionPriority();
 
       this.loading.action = false;
 
@@ -110,6 +110,26 @@ export class RuleSectionsManagementComponent implements OnInit{
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
+  async removeSection(): Promise<void> {
+    this.loading.action = true;
+
+    //const rules = await this.api.getRulesOfSection(this.course.id,this.sectionToManage.id).toPromise();
+    await this.api.deleteSection(this.sectionToManage.id).toPromise();
+
+    const index = this.sections.findIndex(el => el.id === this.sectionToManage.id);
+    this.sections.removeAtIndex(index);
+
+    this.toggleSectionPriority();
+
+    this.loading.action = false;
+    ModalService.closeModal('remove section ');
+    this.mode = null;
+    //this.sectionToDelete = null;
+
+    AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + this.sectionToManage.name + '\' removed');
+
+  }
+
   saveSectionPriority(){
     this.newSections.emit(this.sections);
     AlertService.showAlert(AlertType.SUCCESS, 'Sections\' priority saved successfully');
@@ -137,6 +157,10 @@ export class RuleSectionsManagementComponent implements OnInit{
 
   drop(event: CdkDragDrop<string[]>) {
     moveItemInArray(this.sections, event.previousIndex, event.currentIndex);
+  }
+
+  toggleSectionPriority(){
+    this.sectionActions[0].disable = this.sections.length <= 1;
   }
 
 }

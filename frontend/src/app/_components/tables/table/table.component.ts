@@ -91,7 +91,6 @@ export class TableComponent implements OnInit, OnChanges {
   }
 
   buildDatatable(): void {
-    console.log(this.data);
     // Reset table
     if (this.datatable) {
       this.datatable.destroy();

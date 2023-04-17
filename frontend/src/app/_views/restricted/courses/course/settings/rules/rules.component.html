@@ -54,21 +54,15 @@
 
                 <!-- Section Table -->
                 <app-table
-                  *ngIf="!refreshing"
                   [id] = "'rules-' + section.id"
                   [classList]="'mt-5'"
                   [headers] = "headers"
                   [data] = "data[section.id - 1]"
                   [options] = "tableOptions"
                   [loading] = "loading.table"
-                  (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
-                  (valueChanged)="doActionOnTable('value changed rule', $event.row, $event.col, $event.value)">
+                  (btnClicked)="doActionOnTable(section, $event.type, $event.row, $event.col)"
+                  (valueChanged)="doActionOnTable(section, 'value changed rule', $event.row, $event.col, $event.value)">
                 </app-table>
-
-                <!-- Spinner -->
-                <div *ngIf="refreshing" class="flex justify-center items-center">
-                  <app-spinner></app-spinner>
-                </div>
 
                 <!-- Loader -->
                 <app-loader [loading]="loading.page"></app-loader>
@@ -165,14 +159,29 @@
       <div class="w-full flex flex-wrap mt-16" style="align-items: flex-end">
         <!-- When clause -->
         <div class="sm:w-1/2">
-          <app-input-text
+          <app-input-code
+            [id]="'rule-when'"
+            [title]="'When'"
+            [classList]="'expression form__input'"
+            [placeholder]="'Rule When Clause'"
+            [options]="{
+              lineNumbers: false,
+              styleActiveLine: true,
+              autohint: true,
+              lineWrapping: true,
+              theme: 'default'
+            }"
+            [init]="ruleToManage.whenClause"
+            (valueChange)="ruleToManage.whenClause = $event"
+          ></app-input-code>
+          <!--<app-input-text
             [id]="'rule-whenClause'"
             [form] = "r"
             [(value)] = "ruleToManage.whenClause"
             [placeholder]="'Rule When Clause'"
             [required]="true"
             [topLabel]="'When'">
-          </app-input-text>
+          </app-input-text>-->
        </div>
 
         <!-- Then clause -->
@@ -190,6 +199,20 @@
     </div>
   </form>
 </ng-template>
+
+<!-- Delete rule Modal -->
+<app-simple-modal *ngIf="mode === 'remove rule' && ruleToDelete"
+                  [id]="'delete-rule'"
+                  [title]="mode?.capitalize() + ' \'' + (ruleToDelete.name).capitalize() + '\'?'"
+
+                  [text]="'Are you sure you want to remove rule \'' + ruleToDelete?.name +
+                          '\' from this section? You won\'t be able to undo this action.'"
+                  [submitBtnText]="'Remove'"
+                  [submitBtnColor]="'error'"
+                  [actionInProgress]="loading.action"
+                  (submitBtnClicked)="deleteRule(ruleToDelete)"
+                  (onClose)="ruleToDelete = null">
+</app-simple-modal>
 
 <!-- Tags Management -->
 <app-rule-tags-management
@@ -209,24 +232,6 @@
   [sections] = "sections"
   [sectionActions]="sectionActions"
   [sectionToManage]="sectionToManage"
-  (newSections)="hey($event)"
+  (newSections)="closeSectionManagement($event)"
   (newSectionActions)="this.sectionActions = $event">
 </app-rule-sections-management>
-
-<!-- Delete Verification Modal
-<app-simple-modal *ngIf="mode && (ruleToDelete || sectionToDelete)"
-                  [id]="'delete-verification'"
-                  [title]="mode === 'remove rule' ? mode?.capitalize() + ' \'' + (ruleToDelete.name).capitalize() + '\'?' :
-                           mode?.capitalize() + ' \'' + (sectionToDelete.name).capitalize() + '\'?'"
-
-                  [text]=" mode === 'remove rule' ? 'Are you sure you want to remove rule \'' + ruleToDelete?.name +
-                                                    '\' from this section? You won\'t be able to undo this action.' :
-
-                                                    'Are you sure you want to remove section \'' + sectionToDelete?.name +
-                                                    '\' and its current rules? You won\'t be able to undo this action.'"
-                  [submitBtnText]="'Remove'"
-                  [submitBtnColor]="'error'"
-                  [actionInProgress]="loading.action"
-                  (submitBtnClicked)="mode === 'remove rule' ? deleteRule(ruleToDelete): deleteSection(sectionToDelete)"
-                  (onClose)="ruleToDelete = null">
-</app-simple-modal>-->
