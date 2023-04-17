@@ -8,7 +8,8 @@ import { CoursePageComponent } from './pages/course-page/course-page.component';
 import { UsersComponent } from './settings/users/users.component';
 import { RolesComponent } from "./settings/roles/roles.component";
 import { RulesComponent } from "./settings/rules/rules.component";
-import { RuleTagsComponent } from "./settings/rules/tags/rule-tags.component";
+import { RuleTagsManagementComponent } from "./settings/rules/tags/rule-tags-management.component";
+import { RuleSectionsManagementComponent } from "./settings/rules/sections/rule-sections-management.component";
 import { MainComponent } from './main/main.component';
 import { ViewsComponent } from "./settings/views/views/views.component";
 import { ViewsEditorComponent } from './settings/views/views-editor/views-editor.component';
@@ -37,7 +38,8 @@ import {DragDropModule} from "@angular/cdk/drag-drop";
     RolesComponent,
     ModulesComponent,
     RulesComponent,
-    RuleTagsComponent,
+    RuleSectionsManagementComponent,
+    RuleTagsManagementComponent,
     ViewsComponent,
     ViewsEditorComponent,
     CoursePageComponent,

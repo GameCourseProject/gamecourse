@@ -123,7 +123,8 @@ class RuleSystemController
 
         $sectionRules = Rule::getRulesOfSection($section, $active);
         foreach ($sectionRules as &$sectionRuleInfo) {
-            Rule::getRuleById($sectionRuleInfo["id"]);
+            $rule = Rule::getRuleById($sectionRuleInfo["id"]);
+            $sectionRuleInfo["tags"] = $rule->getTags();
         }
         API::response($sectionRules);
     }
@@ -143,7 +144,8 @@ class RuleSystemController
 
         $courseRules = Rule::getRules($courseId, $active);
         foreach ($courseRules as &$courseRuleInfo) {
-            Rule::getRuleById($courseRuleInfo["id"]);
+            $rule = Rule::getRuleById($courseRuleInfo["id"]);
+            $courseRuleInfo["tags"] = $rule->getTags();
         }
         API::response($courseRules);
     }

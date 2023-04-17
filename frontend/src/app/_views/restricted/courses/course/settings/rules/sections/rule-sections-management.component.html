@@ -1,0 +1,70 @@
+<!-- New / Edit section modal -->
+<app-modal *ngIf="mode && sectionToManage"
+           [id]="'manage-section'"
+           [templateRef]="MANAGE_SECTION"
+           [size]="'md'"
+           [header]="mode?.capitalize()"
+           [submitBtnText]="mode?.capitalize()"
+           [actionInProgress] = "loading.action"
+           (submitBtnClicked)="s.onSubmit(null); doAction(mode)"
+           (onClose)="resetSectionManage()">
+</app-modal>
+<ng-template #MANAGE_SECTION>
+  <form #s="ngForm">
+    <div class="w-full flex-wrap mt-3">
+      <app-input-text
+        [id] = "'section-name'"
+        [form] = "s"
+        [(value)] = "sectionToManage.name"
+        [placeholder]="'Section Name'"
+        [topLabel]="'Name'"
+        [pattern]="'(?!^\\d+$)^.+$'"
+        [patternErrorMessage]="'Section name can\'t be composed of only numbers'"
+        [required]="true"
+        [maxLength]="60"
+        [maxLengthErrorMessage]="'Section name is too long: maximum of 60 characters'">
+      </app-input-text>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Manage sections priorities -->
+<app-modal *ngIf="mode === 'manage sections priority'"
+           [id] = "'manage-sections-priority'"
+           [templateRef]="MANAGE_SECTION_PRIORITY"
+           [size] = "'lg'"
+           [header] = "mode?.capitalize()"
+           [submitBtnText]="'Save'"
+           [closeBtnText]="'Discard changes'"
+           [actionInProgress] = "loading.action"
+           (submitBtnClicked)="saveSectionPriority()">
+</app-modal>
+<ng-template #MANAGE_SECTION_PRIORITY>
+  <!-- Subheader -->
+  <div class="w-full flex flex-wrap -mt-2">
+    <span class="w-full"><strong>Rearrange sections</strong> to give them a higher or lower priority.</span>
+    <span class="w-full">Higher priority will <strong>execute earlier</strong> than the rest.</span>
+  </div>
+
+  <div cdkDropList [id]="'sections-list'" class="dd max-w-none ml-16 mt-8" (cdkDropListDropped)="drop($event)">
+    <div class="dd-item" *ngFor="let section of sections" cdkDrag>
+      <div class="flex items-center mb-3">
+        <div class="flex items-center w-[calc(100%-6rem)]">
+          <!-- Move -->
+          <div class="tooltip align-middle absolute -left-10" data-tip="Move">
+            <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
+              <ng-icon name="tabler-arrows-vertical" size="1.2rem">
+              </ng-icon>
+              <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
+            </button>
+          </div>
+
+          <!-- Section -->
+          <div class="dd-content border-primary border-opacity-75 text-primary font-semibold">
+            {{section.name}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>

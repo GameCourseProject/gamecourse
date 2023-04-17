@@ -42,8 +42,8 @@
 
                 <!-- Actions for rules -->
                 <app-top-actions
-                  [leftActions]="[{action: 'Edit Section', icon: 'jam-pencil-f'},
-                            {action: 'Remove Section', icon: 'jam-trash-f'}]"
+                  [leftActions]="[{action: 'edit section', icon: 'jam-pencil-f'},
+                            {action: 'remove section', icon: 'jam-trash-f'}]"
                   [rightActions]="[{action: 'Create rule', icon: 'tabler-clipboard-list', color: 'primary', outline: true},
                              {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
                               {action: Action.IMPORT + ' rule', icon:'jam-download'},
@@ -54,15 +54,21 @@
 
                 <!-- Section Table -->
                 <app-table
-                  [id] = "'rules'"
+                  *ngIf="!refreshing"
+                  [id] = "'rules-' + section.id"
                   [classList]="'mt-5'"
                   [headers] = "headers"
-                  [data] = "data"
+                  [data] = "data[section.id - 1]"
                   [options] = "tableOptions"
                   [loading] = "loading.table"
                   (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
                   (valueChanged)="doActionOnTable('value changed rule', $event.row, $event.col, $event.value)">
                 </app-table>
+
+                <!-- Spinner -->
+                <div *ngIf="refreshing" class="flex justify-center items-center">
+                  <app-spinner></app-spinner>
+                </div>
 
                 <!-- Loader -->
                 <app-loader [loading]="loading.page"></app-loader>
@@ -76,36 +82,6 @@
     </div>
   </div>
 </div>
-
-<!-- New / Edit section modal -->
-<app-modal *ngIf="mode && sectionToManage"
-  [id]="'manage-section'"
-  [templateRef]="MANAGE_SECTION"
-  [size]="'md'"
-  [header]="mode?.capitalize()"
-  [submitBtnText]="mode?.capitalize()"
-  [actionInProgress] = "loading.action"
-  (submitBtnClicked)="s.onSubmit(null); mode === 'add section' ? createSection() : editSection()"
-  (onClose)="resetSectionManage()">
-</app-modal>
-<ng-template #MANAGE_SECTION>
-  <form #s="ngForm">
-    <div class="w-full flex-wrap mt-3">
-      <app-input-text
-        [id] = "'section-name'"
-        [form] = "s"
-        [(value)] = "sectionToManage.name"
-        [placeholder]="'Section Name'"
-        [topLabel]="'Name'"
-        [pattern]="'(?!^\\d+$)^.+$'"
-        [patternErrorMessage]="'Section name can\'t be composed of only numbers'"
-        [required]="true"
-        [maxLength]="60"
-        [maxLengthErrorMessage]="'Section name is too long: maximum of 60 characters'">
-      </app-input-text>
-    </div>
-  </form>
-</ng-template>
 
 <!-- New / Edit rule modal -->
 <app-modal *ngIf="mode && ruleToManage"
@@ -162,19 +138,19 @@
 
       <div class="w-full flex flex-wrap mt-3" style="align-items: flex-end">
         <div class="sm:w-10/12">
-          <!-- Tags
+          <!-- Tags -->
           <app-input-select
             [id]="'rule-tags'"
             [form] = "r"
             [(value)] = "selectedTags"
-            [options] = "getTagNames(availableTags)"
+            [options] = "getTagNames(tags)"
             [multiple] = "true"
             [search]="false"
             [placeholder]="'Select tags for rule'"
             [topLabel]="'Rule Tags'"
             [required]="false"
             (valueChange)="selectedTags = $event ?? []">
-          </app-input-select>-->
+          </app-input-select>
         </div>
 
         <div class="sm:w-2/12 sm:pl-3">
@@ -216,57 +192,28 @@
 </ng-template>
 
 <!-- Tags Management -->
-<app-rule-tags
+<app-rule-tags-management
   *ngIf="tagMode"
   [course] = "course"
   [mode] = "tagMode"
   [tags] = "tags"
   (newTags)="this.tags = $event; tagMode = null;"
   [rules] = "courseRules"
-></app-rule-tags>
+></app-rule-tags-management>
 
-<!-- Manage sections priorities -->
-<app-modal *ngIf="mode === 'manage sections priority'"
-           [id] = "'manage-sections-priority'"
-           [templateRef]="MANAGE_SECTION_PRIORITY"
-           [size] = "'lg'"
-           [header] = "mode?.capitalize()"
-           [submitBtnText]="'Save'"
-           [closeBtnText]="'Discard changes'"
-           [actionInProgress] = "loading.action"
-           (submitBtnClicked)="saveSectionPriority()">
-</app-modal>
-<ng-template #MANAGE_SECTION_PRIORITY>
-  <!-- Subheader -->
-  <div class="w-full flex flex-wrap -mt-2">
-    <span class="w-full"><strong>Rearrange sections</strong> to give them a higher or lower priority.</span>
-    <span class="w-full">Higher priority will <strong>execute earlier</strong> than the rest.</span>
-  </div>
+<!-- Sections Management -->
+<app-rule-sections-management
+  *ngIf = "sectionMode"
+  [course] = "course"
+  [mode] = "sectionMode"
+  [sections] = "sections"
+  [sectionActions]="sectionActions"
+  [sectionToManage]="sectionToManage"
+  (newSections)="hey($event)"
+  (newSectionActions)="this.sectionActions = $event">
+</app-rule-sections-management>
 
-  <div cdkDropList [id]="'sections-list'" class="dd max-w-none ml-16 mt-8" (cdkDropListDropped)="drop($event)">
-    <div class="dd-item" *ngFor="let section of sections" cdkDrag>
-      <div class="flex items-center mb-3">
-        <div class="flex items-center w-[calc(100%-6rem)]">
-          <!-- Move -->
-          <div class="tooltip align-middle absolute -left-10" data-tip="Move">
-            <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
-              <ng-icon name="tabler-arrows-vertical" size="1.2rem">
-              </ng-icon>
-              <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
-            </button>
-          </div>
-
-          <!-- Section -->
-          <div class="dd-content border-primary border-opacity-75 text-primary font-semibold">
-            {{section.name}}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</ng-template>
-
-<!-- Delete Verification Modal -->
+<!-- Delete Verification Modal
 <app-simple-modal *ngIf="mode && (ruleToDelete || sectionToDelete)"
                   [id]="'delete-verification'"
                   [title]="mode === 'remove rule' ? mode?.capitalize() + ' \'' + (ruleToDelete.name).capitalize() + '\'?' :
@@ -282,4 +229,4 @@
                   [actionInProgress]="loading.action"
                   (submitBtnClicked)="mode === 'remove rule' ? deleteRule(ruleToDelete): deleteSection(sectionToDelete)"
                   (onClose)="ruleToDelete = null">
-</app-simple-modal>
+</app-simple-modal>-->

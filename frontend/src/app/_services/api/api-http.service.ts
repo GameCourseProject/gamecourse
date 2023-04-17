@@ -60,10 +60,8 @@ import {
   DataSourceStatus
 } from "../../_views/restricted/courses/course/settings/modules/config/data-source-status/data-source-status.component";
 import {Rule} from "../../_domain/rules/rule";
-import {
-  RuleManageData, SectionManageData
-} from "../../_views/restricted/courses/course/settings/rules/rules.component";
-import { TagManageData } from "../../_views/restricted/courses/course/settings/rules/tags/rule-tags.component"
+import { RuleManageData, SectionManageData } from "../../_views/restricted/courses/course/settings/rules/rules.component";
+import { TagManageData } from "../../_views/restricted/courses/course/settings/rules/tags/rule-tags-management.component"
 import { RuleSection } from "../../_domain/rules/RuleSection";
 import { RuleTag } from "../../_domain/rules/RuleTag";
 import { Notification } from "../../_domain/notifications/notification";

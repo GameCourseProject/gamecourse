@@ -11,10 +11,10 @@ import {ModalService} from "../../../../../../../_services/modal.service";
 import {Rule} from "../../../../../../../_domain/rules/rule";
 
 @Component({
-  selector: 'app-rule-tags',
-  templateUrl: './rule-tags.component.html'
+  selector: 'app-rule-tags-management',
+  templateUrl: './rule-tags-management.component.html'
 })
-export class RuleTagsComponent implements OnInit {
+export class RuleTagsManagementComponent implements OnInit {
 
   @Input() course: Course;
   @Input() mode: 'manage tags' | 'add tag' | 'remove tag' | 'edit tag';

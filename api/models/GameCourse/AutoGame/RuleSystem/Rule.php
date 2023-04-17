@@ -212,7 +212,11 @@ class Rule
     public static function getRuleById(int $id): ?Rule
     {
         $rule = new Rule($id);
-        if ($rule->exists()) return $rule;
+        if ($rule->exists()){
+            $rule1 = (array)$rule;
+            array_push($rule1, "tags");
+            return $rule;
+        }
         else return null;
     }
 
