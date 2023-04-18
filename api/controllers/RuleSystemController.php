@@ -97,7 +97,6 @@ class RuleSystemController
         $sectionId = API::getValue("sectionId", "int");
         Section::deleteSection($sectionId);
 
-
     }
 
     /*** --------------------------------------------- ***/

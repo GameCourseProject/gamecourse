@@ -144,7 +144,8 @@ export class RuleSectionsManagementComponent implements OnInit{
     const sectionData: SectionManageData = {
       course: section?.course ?? null,
       name: section?.name ?? null,
-      position: section?.position ?? null
+      position: section?.position ?? null,
+      data: null
     };
     if (section) sectionData.id = section.id;
     return sectionData;

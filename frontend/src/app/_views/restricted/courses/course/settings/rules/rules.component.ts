@@ -32,13 +32,13 @@ export class RulesComponent implements OnInit {
     table: false,
     list: false
   }
-  refreshing: boolean = true;
+  //refreshing: boolean = true;
 
   course: Course;
   courseRules: Rule[];                    // all rules relating to course
   filteredRules: Rule[];                  // rule search
 
-  //nameTags : {value: string, text: string}[] = [];  // move to backend later maybe?;
+  nameTags : {value: string, text: string}[];
   //defaultTag: RuleTag = this.initTagToManage();
   //selectedTags: string[];
   //availableTags: any[] = [];
@@ -128,7 +128,8 @@ export class RulesComponent implements OnInit {
   }
 
   async getCourseRules(courseID: number): Promise<void> {
-    this.courseRules = (await this.api.getCourseRules(courseID).toPromise()).sort((a, b) => a.name.localeCompare(b.name));
+    this.courseRules = (await this.api.getCourseRules(courseID).toPromise()).sort(function (a, b) {
+      return a.position - b.position; });
 
     // Get tags for each rule -> Tags are on different table (RULE_TAGS)
     /*for (let i=0; i < this.courseRules.length; i++){
@@ -155,10 +156,10 @@ export class RulesComponent implements OnInit {
     //this.data = this.originalSections.map(section => { return {[section.id - 1]: []}});
   }
 
-
-
   async getTags(courseID: number): Promise<void> {
     this.tags = await this.api.getTags(courseID).toPromise();
+
+    this.getTagNames();
   }
 
   /*** --------------------------------------------- ***/
@@ -182,11 +183,11 @@ export class RulesComponent implements OnInit {
     const rules = await this.api.getRulesOfSection(this.course.id, section.id).toPromise();
     rules.forEach(rule => {
       table.push([
-        {type: TableDataType.NUMBER, content: {value: rule.position ?? 1, valueFormat: 'none'}}, // FIXME -- should not have '?? 1'
+        {type: TableDataType.NUMBER, content: {value: rule.position, valueFormat: 'none'}},
         {type: TableDataType.TEXT, content: {text: rule.name}},
-        {type: TableDataType.CUSTOM, content: {html: '<div class="gap-2">' +
+        {type: TableDataType.CUSTOM, content: {html: '<div class="flex flex-col gap-2">' +
               rule.tags.sort((a,b) => a.name.localeCompare(b.name))
-                .map(tag => '<div class="badge badge-sm badge-' + this.hexaToColor(tag.color) + '">' + tag.name + '</div>').join('') +
+                .map(tag => '<div class="badge badge-md badge-' + this.hexaToColor(tag.color) + '">' + tag.name + '</div>').join('') +
                 '</div>', searchBy: rule.tags.map(tag => tag.name).join(' ') }},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: rule.isActive}},
         {type: TableDataType.ACTIONS, content: {actions: [
@@ -233,16 +234,8 @@ export class RulesComponent implements OnInit {
       this.ruleToManage = this.initRuleToManage(ruleToActOn);
 
       // for the input-select
-      /*if (!this.selectedTags) {
-        let tagSelect = this.getTagNames(this.ruleToManage.tags);
-        this.selectedTags = [];
+      this.selectedTags = this.ruleToManage.tags.map(tag => {return tag.id + '-' + tag.name});
 
-        for (let i = 0; i < tagSelect.length; i++){
-          this.selectedTags.push(tagSelect[i].value);
-        }
-
-      }
-      if (!this.availableTags) this.getTags(this.course.id);*/
       ModalService.openModal('manage-rule')
     } else if ( action === Action.DUPLICATE){
       // TODO
@@ -259,7 +252,7 @@ export class RulesComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  async doAction(action: string, section?: RuleSection) {
+  async prepareModal(action: string, section?: RuleSection) {
     if (action === Action.IMPORT){
       ModalService.openModal('import');
 
@@ -295,9 +288,33 @@ export class RulesComponent implements OnInit {
 
   }
 
-  async deleteRule(rule: Rule): Promise<void> {
+  async doAction(action: string, rule?: Rule){
     this.loading.action = true;
+    if (action === 'add rule' || action === 'edit rule'){
+      if (this.r.valid) {
 
+        this.assignTags();
+        let rule = (action === 'add rule') ? await this.createRule() : await this.editRule();
+
+        ModalService.closeModal('manage-rule');
+        this.resetRuleManage();
+        AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + rule.name + '\' added');
+
+      } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+    } else if (action === 'delete rule'){
+
+      await this.deleteRule(rule);
+
+      ModalService.closeModal('delete-rule');
+      this.mode = null;
+      this.ruleToDelete = null;
+
+      AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + rule.name + '\' removed');
+    }
+    this.loading.action = false;
+  }
+
+  async deleteRule(rule: Rule): Promise<void> {
     let section = this.originalSections.find(section => section.id === rule.section);
 
     await this.api.deleteRule(rule.section, rule.id).toPromise();
@@ -305,13 +322,6 @@ export class RulesComponent implements OnInit {
     this.courseRules.removeAtIndex(index);
 
     await this.buildTable(section);
-
-    this.loading.action = false;
-    ModalService.closeModal('delete-rule');
-    this.mode = null;
-    this.ruleToDelete = null;
-
-    AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + rule.name + '\' removed');
   }
 
   async toggleActive(rule: Rule){
@@ -356,15 +366,12 @@ export class RulesComponent implements OnInit {
     }
   }
 
-  async createRule(): Promise<void> {
-    if (this.r.valid) {
-      this.loading.action = true;
+  async createRule(): Promise<Rule> {
 
       // FIXME create position --- NEEDS ABSTRACTION
       const sectionRules = await this.api.getRulesOfSection(this.course.id, this.ruleToManage.section).toPromise();
       this.ruleToManage.position = sectionRules.length + 1;
 
-      //this.findTag();   // sets tags for rule creation
       const newRule = await this.api.createRule(clearEmptyValues(this.ruleToManage)).toPromise();
       newRule.tags = await this.api.getRuleTags(newRule.course, newRule.id).toPromise();
 
@@ -373,19 +380,10 @@ export class RulesComponent implements OnInit {
       const section = this.originalSections.find(section => section.id === newRule.section);
       await this.buildTable(section);
 
-      this.loading.action = false;
-      ModalService.closeModal('manage-rule');
-      this.resetRuleManage();
-      AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + newRule.name + '\' added');
-
-    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+      return newRule;
   }
 
-  async editRule(): Promise<void> {
-    if (this.r.valid) {
-      this.loading.action = true;
-
-      //this.findTag();     // set tags for rule edition
+  async editRule(): Promise<Rule> {
 
       const ruleEdited = await this.api.editRule(clearEmptyValues(this.ruleToManage)).toPromise();
       ruleEdited.tags = await this.api.getRuleTags(ruleEdited.course, ruleEdited.id).toPromise();
@@ -396,12 +394,7 @@ export class RulesComponent implements OnInit {
       const section = this.originalSections.find(section => section.id === ruleEdited.section);
       await this.buildTable(section);
 
-      this.loading.action = false;
-      ModalService.closeModal('manage-rule');
-      this.resetRuleManage();
-      AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + ruleEdited.name + '\' edited');
-
-    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+      return ruleEdited;
   }
 
   /*** --------------------------------------------- ***/
@@ -414,15 +407,22 @@ export class RulesComponent implements OnInit {
   /*** -------------------- Tags ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  getTagNames(tags: RuleTag[]): {value: string, text: string}[] {
+  getTagNames() {
     let nameTags = [];
-    for (let i = 0; i < tags.length ; i++){
-      nameTags.push({value: tags[i].id + '-' + tags[i].name, text: tags[i].name});
+    for (let i = 0; i < this.tags.length ; i++){
+      nameTags.push({value: this.tags[i].id + '-' + this.tags[i].name, text: this.tags[i].name});
     }
-    return nameTags;
+    this.nameTags = nameTags;
   }
 
-/*
+  async assignRules(event: Rule[]){
+    for (let i = 0; i < event.length; i++){
+      this.ruleToManage = this.initRuleToManage(event[i]);
+      await this.editRule();
+    }
+  }
+
+  /*
   async createTag(): Promise<void> {
     if (this.t.valid) {
       this.loading.action = true;
@@ -445,29 +445,20 @@ export class RulesComponent implements OnInit {
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
-
-  findTag() {
-    let tags = [];
-    let obj;
-
-    // should be changed if there is a very high amount of tags per course!
-    for (let i = 0; i < this.selectedTags.length; i++){
-      // if tag "3-extra-credit", "id" will be 3 and "name" will be "extra-credit"
-      const myString = this.selectedTags[i].split(/-(.*)/s);
-      const id = myString[0];
-      const name = myString[1];
-
-      for (let j = 0; j < this.availableTags.length; j++){
-        if (this.availableTags[j].id === id && this.availableTags[j].name === name){
-          obj = RuleTag.toJason(this.availableTags[j]);
-          tags.push(obj);
-        }
-      }
-    }
-
-    this.ruleToManage.tags = tags;
-  }
 */
+
+  assignTags() {
+    if (this.selectedTags.length > 0){
+      let tags = [];
+      for (let i = 0;  i < this.selectedTags.length; i++){
+        const data = this.selectedTags[i].split(/-(.*)/s);
+        const tag = this.tags.find(element => element.id === parseInt(data[0]) && element.name === data[1]);
+        tags.push(RuleTag.toJason(tag));
+      }
+      this.ruleToManage.tags = tags;
+    }
+  }
+
   /* async createDefaultTag(courseID: number): Promise<void> {
      const defaultTag = this.initTagToManage();
      defaultTag.course = courseID;
@@ -580,7 +571,6 @@ export class RulesComponent implements OnInit {
     return this.filteredRules.filter(rule => rule.name === ruleSearch.name);
   }
 
-
   initRuleToManage(rule?: Rule): RuleManageData {
     const ruleData: RuleManageData = {
       course: rule?.course ?? null,
@@ -614,7 +604,8 @@ export class RulesComponent implements OnInit {
     const sectionData: SectionManageData = {
       course: section?.course ?? this.course.id,
       name: section?.name ?? null,
-      position: section?.position ?? null
+      position: section?.position ?? null,
+      data: null
     };
     if (section) sectionData.id = section.id;
     return sectionData;
@@ -639,6 +630,7 @@ export interface SectionManageData {
   id?: number,
   course?: number,
   name?: string,
-  position?: number
+  position?: number,
+  data: {type: TableDataType, content: any}[][]
 }
 

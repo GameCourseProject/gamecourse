@@ -162,8 +162,9 @@
         <app-input-select
           [id]="'rules-tag'"
           [form]="t"
-          [(value)]="rules"
+          [(value)]="tagRules"
           [options]="ruleNames"
+          [multiple] = "true"
           [placeholder]="'Select rules to assign this tag to'"
           [topLabel]="'Assign rules ...'">
         </app-input-select>

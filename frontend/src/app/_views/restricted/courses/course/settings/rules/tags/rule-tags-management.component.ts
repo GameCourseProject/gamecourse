@@ -10,6 +10,8 @@ import {AlertService, AlertType} from "../../../../../../../_services/alert.serv
 import {ModalService} from "../../../../../../../_services/modal.service";
 import {Rule} from "../../../../../../../_domain/rules/rule";
 
+import * as _ from "lodash";
+
 @Component({
   selector: 'app-rule-tags-management',
   templateUrl: './rule-tags-management.component.html'
@@ -23,6 +25,7 @@ export class RuleTagsManagementComponent implements OnInit {
   @Input() rules: Rule[];
 
   @Output() newTags = new EventEmitter<RuleTag[]>();
+  @Output() newRules = new EventEmitter<Rule[]>();
 
   // FIXME -- Should consider light and dark theme
   colors: string[] = ["#5E72E4", "#EA6FAC", "#1EA896", "#38BFF8", "#36D399", "#FBBD23", "#EF6060"];
@@ -34,6 +37,7 @@ export class RuleTagsManagementComponent implements OnInit {
 
   tagToManage: TagManageData;
   tagEdit: string = "";
+  tagRules: string[] = [];
   ruleNames: {value: any, text: string}[];
 
   @ViewChild('t', {static: false}) t: NgForm;       // tag form
@@ -51,7 +55,7 @@ export class RuleTagsManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.parent.params.subscribe();
-    this.ruleNames = this.getRuleNames();
+    this.ruleNames = _.cloneDeep(this.getRuleNames());
   }
 
   getRuleNames(): {value: any, text: string}[] {
@@ -108,6 +112,8 @@ export class RuleTagsManagementComponent implements OnInit {
           const tag = await this.api.createTag(clearEmptyValues(this.tagToManage)).toPromise(); // Update DB
           this.tags.push(tag); // Update UI
 
+          this.assignRules(tag);
+
           AlertService.showAlert(AlertType.SUCCESS, "Tag created successfully");
           ModalService.closeModal('create-and-edit-tag');
           this.resetTagManage();
@@ -125,6 +131,8 @@ export class RuleTagsManagementComponent implements OnInit {
           // Update UI
           const index = this.tags.findIndex(tag => tag.id === this.tagToManage.id);
           this.tags.splice(index, 1, editedTag);
+
+          this.assignRules(editedTag);
 
           AlertService.showAlert(AlertType.SUCCESS, "Tag edited successfully");
           ModalService.closeModal('create-and-edit-tag');
@@ -171,6 +179,16 @@ export class RuleTagsManagementComponent implements OnInit {
     return "";
   }
 
+  assignRules(tag: RuleTag): void{
+    let rulesToEmit: Rule[] = [];
+    for (let i = 0; i< this.tagRules.length; i++){
+      const rule = this.rules.find(element => element.name === this.tagRules[i]);
+      rule.tags.push(tag);
+      rulesToEmit.push(rule);
+    }
+    if (rulesToEmit.length > 0) this.newRules.emit(rulesToEmit);
+  }
+
   initTagToManage(tag?: RuleTag): TagManageData {
     const tagData: TagManageData = {
       course: tag?.course ?? this.course.id,
@@ -183,6 +201,7 @@ export class RuleTagsManagementComponent implements OnInit {
 
   resetTagManage() {
     this.tagToManage = this.initTagToManage();
+    this.tagRules = [];
     this.t.resetForm();
   }
 }
