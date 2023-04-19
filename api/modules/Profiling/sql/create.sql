@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS profiling_config(
     course                      int unsigned PRIMARY KEY,
     lastRun                     TIMESTAMP NULL DEFAULT NULL,
+    lastRunUntil                TIMESTAMP NULL DEFAULT NULL,
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
