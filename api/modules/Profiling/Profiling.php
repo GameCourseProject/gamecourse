@@ -386,6 +386,11 @@ class Profiling extends Module
         return Core::database()->select(self::TABLE_PROFILING_CONFIG, ["course" => $this->course->getId()], "lastRun");
     }
 
+    public function getLastRunUntil(): ?string
+    {
+        return Core::database()->select(self::TABLE_PROFILING_CONFIG, ["course" => $this->course->getId()], "lastRunUntil");
+    }
+
     public function getProfilerLogsPath(bool $fullPath = true): string
     {
         $path = self::LOGS_FOLDER . "/profiling_results_" . $this->course->getId() . ".txt";
@@ -410,6 +415,11 @@ class Profiling extends Module
 
         $cmd = "python3 \"$profilerPath\" $courseId $nrClusters $minClusterSize \"$endDate\" \"$logsPath\" \"$dbHost\" \"$dbName\" \"$dbUser\" \" $dbPass \" > /dev/null &";
         system($cmd);
+
+        // update time of the last run until on bd
+        $date = new DateTime($endDate);
+        Core::database()->update(self::TABLE_PROFILING_CONFIG, ["lastRunUntil" => $date->format('Y-m-d H:i:s')], ["course" => $this->course->getId()]);
+
 
     }
 
@@ -544,7 +554,7 @@ class Profiling extends Module
 
         // Update students cluster
         $students = $this->course->getStudents();
-        $date = $this->getLastRun();
+        $date = $this->getLastRunUntil();
 
         foreach ($students as $student) {
             $student = $this->course->getCourseUserById($student["id"]);
@@ -553,8 +563,10 @@ class Profiling extends Module
             $oldCluster = Core::database()->select(self::TABLE_PROFILING_USER_PROFILE, [
                 "course" => $this->getCourse()->getId(),
                 "user" => $student->getId()
-            ], "cluster");
-            if ($oldCluster) $student->removeRole(null, $oldCluster);
+            ], "cluster", "date desc");
+            if ($oldCluster) {
+                $student->removeRole(null, $oldCluster);
+            }
 
             // Assign new cluster
             if ($student->isActive()) {
