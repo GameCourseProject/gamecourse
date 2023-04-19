@@ -874,6 +874,20 @@ class VirtualCurrency extends Module
         return $spending;
     }
 
+    /**
+     * Gets total spending for a given user.
+     *
+     * @param int $userId
+     * @return array
+     */
+    public function getUserTotalSpending(int $userId): int
+    {
+        return Core::database()->select(self::TABLE_VC_SPENDING, [
+            "course" => $this->course->getId(),
+            "user" => $userId
+        ], "SUM(amount)") ?? 0;
+    }
+
 
     /*** ---- Exchanging Tokens ----- ***/
 

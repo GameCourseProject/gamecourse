@@ -46,6 +46,7 @@ export class CoursePageComponent implements OnInit {
   // FIXME: hard-coded Streaks
   streaks: Streak[] = [];
   userStreaksInfo: {id: number, nrCompletions: number, progress: number, deadline: Moment}[];
+  streaksTotal: number;
 
   constructor(
     private api: ApiHttpService,
@@ -112,7 +113,9 @@ export class CoursePageComponent implements OnInit {
 
     } else if (this.page.name === "Streaks") {
       this.streaks = await this.api.getStreaks(this.course.id).toPromise();
-      this.userStreaksInfo = await this.api.getUserStreaksInfo(this.course.id, this.user?.id || this.viewer.id).toPromise();
+      const info = await this.api.getUserStreaksInfo(this.course.id, this.user?.id || this.viewer.id).toPromise();
+      this.userStreaksInfo = info.info;
+      this.streaksTotal = info.total;
     }
   }
 

@@ -661,7 +661,6 @@
                                                   {
                                                     "type": "text",
                                                     "class": "overflow-hidden whitespace-nowrap",
-                                                    "style": "max-width: 150px; text-overflow: ellipsis",
                                                     "text": "{%award.description}"
                                                   }
                                                 ]

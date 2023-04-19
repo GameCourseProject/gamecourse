@@ -61,6 +61,7 @@ export class BBTableComponent implements OnInit {
         if (header.type === ViewType.TEXT) // NOTE: only allows text headers
           this.headers.push({label: (header as ViewText).text, align: 'middle'});
       }
+      if (!this.view.ordering) this.headers.push({label: 'sorting'});
     }
 
     // Get data
@@ -109,6 +110,10 @@ export class BBTableComponent implements OnInit {
             });
           }
         });
+        if (!this.view.ordering) rowData.push({
+          type: TableDataType.NUMBER,
+          content: {value: i}
+        });
         rowData = rowData.concat(sortingData);
         table.push(rowData);
       }
@@ -122,11 +127,17 @@ export class BBTableComponent implements OnInit {
     this.tableOptions['info'] = this.view.info;
     this.tableOptions['columnDefs'][0]['targets'] = Array.from(Array(this.headers.length).keys());
     this.tableOptions['columnDefs'][2]['orderable'] = this.view.ordering;
-    if (!this.view.ordering) this.tableOptions['columnDefs'][2]['targets'] = Array.from(Array(this.headers.length).keys());
-    this.tableOptions['order'] = this.view.orderingBy.split(',').map(o => {
-      const parts = o.trim().split(':');
-      return [parseInt(parts[1].trim()), parts[0].trim().toLowerCase()];
-    });
+    if (!this.view.ordering) {
+      this.tableOptions['columnDefs'][2]['targets'] = Array.from(Array(this.headers.length).keys());
+      this.tableOptions['columnDefs'].push({target: this.headers.length - 1, visible: false, searchable: false});
+      this.tableOptions['order'][0][0] = this.headers.length - 1;
+
+    } else {
+      this.tableOptions['order'] = this.view.orderingBy.split(',').map(o => {
+        const parts = o.trim().split(':');
+        return [parseInt(parts[1].trim()), parts[0].trim().toLowerCase()];
+      });
+    }
 
     this.loading = false;
 

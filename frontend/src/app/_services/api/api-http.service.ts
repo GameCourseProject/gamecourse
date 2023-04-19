@@ -2924,7 +2924,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']));
   }
 
-  public getSkillsExtraInfo(courseID: number, userID: number, skillTreeID: number): Observable<{[skillID: number]: {available: boolean, attempts: number, cost: number, completed: boolean}}> {
+  public getSkillsExtraInfo(courseID: number, userID: number, skillTreeID: number): Observable<{[skillID: number | string]: {available: boolean, attempts: number, cost: number, completed: boolean}}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.SKILLS);
       qs.push('request', 'getSkillsExtraInfo');
@@ -2967,7 +2967,7 @@ export class ApiHttpService {
       })));
   }
 
-  public getUserStreaksInfo(courseID: number, userID: number): Observable<{id: number, nrCompletions: number, progress: number, deadline: Moment}[]> {
+  public getUserStreaksInfo(courseID: number, userID: number): Observable<{info: {id: number, nrCompletions: number, progress: number, deadline: Moment}[], total: number}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.SKILLS);
       qs.push('request', 'getUserStreaksInfo');
@@ -2978,14 +2978,17 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data'].map(obj => {
-        return {
-          id: obj.id,
-          nrCompletions: obj.nrCompletions,
-          progress: obj.progress,
-          deadline: dateFromDatabase(obj.deadline),
-        };
-      })));
+      .pipe( map((res: any) => {
+        res['data']['info'] = res['data']['info'].map(obj => {
+          return {
+            id: obj.id,
+            nrCompletions: obj.nrCompletions,
+            progress: obj.progress,
+            deadline: dateFromDatabase(obj.deadline),
+          };
+        });
+        return res['data'];
+      }));
   }
 
 
