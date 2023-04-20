@@ -152,46 +152,44 @@ class CollectionLibrary extends Library
                 $orderKeyPairs[$key] = $order;
             }
 
-            // Compile & evaluate keys that are expressions
-            $i = 0;
-            foreach ($orderKeyPairs as $key => $order) {
-                $k = $key;
+            // Sort collection
+            $itemIndex = -1;
+            usort($collection, function ($a, $b) use ($orderKeyPairs, &$itemIndex) {
+                $itemIndex++;
+                $keyIndex = -1;
 
-                if (!array_key_exists($k, $collection[0])) {
-                    // Get library of collection items
-                    $library = $collection[0]["libraryOfItem"];
+                foreach ($orderKeyPairs as $key => $order) {
+                    $keyIndex++;
 
-                    // Compile expression
-                    if (strpos($k, "{") !== 0) $k = "{" . $k . "}";
-                    ViewHandler::compileExpression($k);
+                    // Compile & evaluate key, if key is an expression
+                    $itemsToProcess = [];
+                    if (!array_key_exists($key, $a) && !array_key_exists("sort$keyIndex", $a)) $itemsToProcess[0] = &$a;
+                    if (!array_key_exists($key, $b) && !array_key_exists("sort$keyIndex", $b)) $itemsToProcess[1] = &$b;
+                    if (!empty($itemsToProcess)) {
+                        $k = $key;
 
-                    // Evaluate expression
-                    $visitor = Core::dictionary()->getVisitor();
-                    foreach ($collection as &$item) {
-                        $ky = $k;
-                        $itemVisitor = $visitor->copy();
-                        $itemVisitor->addParam("item", new ValueNode($item, $library));
-                        $itemVisitor->addParam("index", $i);
-                        Core::dictionary()->setVisitor($itemVisitor);
-                        ViewHandler::evaluateNode($ky, $itemVisitor);
-                        $item["sort$i"] = $ky;
+                        // Get library of collection items
+                        $library = $itemsToProcess[0]["libraryOfItem"];
+
+                        // Compile expression
+                        if (strpos($k, "{") !== 0) $k = "{" . $k . "}";
+                        ViewHandler::compileExpression($k);
+
+                        // Evaluate expression
+                        $visitor = Core::dictionary()->getVisitor();
+                        foreach ($itemsToProcess as $j => &$item) {
+                            $ky = $k;
+                            $itemVisitor = $visitor->copy();
+                            $itemVisitor->addParam("item", new ValueNode($item, $library));
+                            $itemVisitor->addParam("index", $itemIndex + $j);
+                            Core::dictionary()->setVisitor($itemVisitor);
+                            ViewHandler::evaluateNode($ky, $itemVisitor);
+                            $item["sort$keyIndex"] = $ky;
+                        }
                     }
 
-                    // Update order key
-                    $keyIndex = array_search($key, array_keys($orderKeyPairs));
-                    $orderKeyPairs = array_merge(
-                        array_splice($orderKeyPairs, 0, $keyIndex),
-                        ["sort$i" => $order],
-                        array_slice($orderKeyPairs, $keyIndex)
-                    );
-                    unset($orderKeyPairs[$key]);
-                }
-                $i++;
-            }
-
-            // Sort collection
-            usort($collection, function ($a, $b) use ($orderKeyPairs) {
-                foreach ($orderKeyPairs as $key => &$order) {
+                    // Sort items
+                    $key = !array_key_exists($key, $a) ? "sort$keyIndex" : $key;
                     $order = strtolower($order);
                     if ($order === "asc" || $order === "ascending") {
                         if (is_string($a[$key]) && is_string($b[$key])) { // string
@@ -217,6 +215,7 @@ class CollectionLibrary extends Library
 
                     } else $this->throwError("sort", "order '$order' not available");
                 }
+
                 return 0;
             });
         }
