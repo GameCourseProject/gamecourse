@@ -40,7 +40,7 @@ export class CoursePageComponent implements OnInit {
     skills: Skill[]
   }[] = [];
   availableWildcards: number;
-  info: {[skillID: number]: {available: boolean, attempts: number, cost: number, completed: boolean}};
+  info: {[skillID: number]: {available: boolean, attempts: number, cost: number, completed: boolean, wildcardsUsed: number}};
   vcIcon: string = environment.apiEndpoint + '/modules/VirtualCurrency/assets/default.png';
 
   // FIXME: hard-coded Streaks

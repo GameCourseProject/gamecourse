@@ -58,6 +58,9 @@
                       </div>
                     </div>
 
+                    <!-- Wildcard usage -->
+                    <p *ngIf="info[skill.id].wildcardsUsed > 0" class="prose font-semibold text-sm text-center text-error mt-1">{{info[skill.id].wildcardsUsed}} wilcard{{info[skill.id].wildcardsUsed !== 1 ? 's' : ''}} used</p>
+
                     <!-- Skill dependencies -->
                     <div *ngIf="skill.dependencies.length > 0" class="mt-1 lg:mb-5">
                       <p *ngFor="let combo of skill.dependencies; let last = last" class="prose text-xs text-center" [ngClass]="{'mb-0.5': !last}">{{getComboText(combo)}}</p>
