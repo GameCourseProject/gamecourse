@@ -72,7 +72,7 @@
 <!-- Remove section -->
 <app-simple-modal *ngIf="mode && sectionToManage"
                   [id]="'remove section'"
-                  [title]="mode?.capitalize() + ' \'' + (sectionToManage.name).capitalize() + '\'?'"
+                  [title]="mode?.capitalize() + ' \'' + (sectionToManage.name)?.capitalize() + '\'?'"
 
                   [text]="'Are you sure you want to remove section \'' + sectionToManage?.name +
                           '\' and its current rules? You won\'t be able to undo this action.'"

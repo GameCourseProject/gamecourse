@@ -67,22 +67,18 @@ export class RuleSectionsManagementComponent implements OnInit{
     if (this.s.valid) {
       this.loading.action = true;
 
-      // create position --- NEEDS ABSTRACTION
+      // FIXME : create position --- NEEDS ABSTRACTION
       this.sectionToManage.position = this.sections.length + 1;
 
       const newSection = await this.api.createSection(clearEmptyValues(this.sectionToManage)).toPromise();
       this.sections.push(newSection);
-      //this.buildTable();
 
       this.toggleSectionPriority();
-
-      this.loading.action = false;
-
       this.resetSectionManage();
 
-      console.log("Section management :", this.sections);
       this.newSections.emit(this.sections);
       this.newSectionActions.emit(this.sectionActions);
+      this.loading.action = false;
 
       AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + newSection.name + '\' added');
       ModalService.closeModal('manage-section');
@@ -145,7 +141,23 @@ export class RuleSectionsManagementComponent implements OnInit{
       course: section?.course ?? null,
       name: section?.name ?? null,
       position: section?.position ?? null,
-      data: null
+      headers: [
+        {label: 'Execution Order', align: 'left'},
+        {label: 'Name', align: 'left'},
+        {label: 'Tags', align: 'middle'},
+        {label: 'Active', align: 'middle'},
+        {label: 'Actions'}],
+      data: section?.data ?? [],
+      options: {
+        order: [ 0, 'asc' ],        // default order -> column 0 ascendant
+        columnDefs: [
+          { type: 'natural', targets: [0,1] },
+          { searchable: false, targets: [2,3] },
+          { orderable: false, targets: [2,3] }
+        ]
+      },
+      loadingTable: false,
+      showTable: false,
     };
     if (section) sectionData.id = section.id;
     return sectionData;

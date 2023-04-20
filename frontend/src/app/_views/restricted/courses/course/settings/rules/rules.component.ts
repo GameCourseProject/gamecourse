@@ -1,5 +1,4 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-
 import {Reduce} from "../../../../../../_utils/lists/reduce";
 import {Action} from 'src/app/_domain/modules/config/Action';
 import {TableDataType} from "../../../../../../_components/tables/table-data/table-data.component";
@@ -29,8 +28,7 @@ export class RulesComponent implements OnInit {
   loading = {
     page: true,
     action: false,
-    table: false,
-    list: false
+    //table: false
   }
   //refreshing: boolean = true;
 
@@ -66,7 +64,7 @@ export class RulesComponent implements OnInit {
 
   reduce = new Reduce();
   searchQuery: string;
-
+/*
   headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
     {label: 'Execution Order', align: 'left'},
     {label: 'Name', align: 'left'},
@@ -83,7 +81,7 @@ export class RulesComponent implements OnInit {
     ]
   }
   data: {[sectionId: number]: {type: TableDataType, content: any}[][]};
-
+*/
   @ViewChild('r', {static: false}) r: NgForm;       // rule form
   importData: {file: File, replace: boolean} = {file: null, replace: true};
   @ViewChild('fImport', { static: false }) fImport: NgForm;
@@ -103,11 +101,15 @@ export class RulesComponent implements OnInit {
       await this.getCourseRules(courseID);
       await this.getTags(courseID);
 
+      /*
       for (let i = 0; i < this.originalSections.length; i++ ){
         await this.buildTable(this.originalSections[i]);
       }
+      console.log(this.originalSections);
+      */
 
       this.loading.page = false;
+
     });
   }
 
@@ -148,11 +150,20 @@ export class RulesComponent implements OnInit {
     }
 
     // initialize information for tables
+    const auxSection = this.initSectionToManage();
+    for (let i = 0; i <  this.originalSections.length; i++){
+      this.originalSections[i].headers = auxSection.headers;
+      this.originalSections[i].data = auxSection.data;
+      this.originalSections[i].options = auxSection.options;
+      this.originalSections[i].loadingTable = auxSection.loadingTable;
+      this.originalSections[i].showTable = auxSection.showTable;
+    }
+/*
     let info = {}
     for (let i = 0 ; i < this.originalSections.length; i++){
-      info[this.originalSections[i].id - 1] = [];
+      info[this.originalSections[i].id] = [];
     }
-    this.data = info;
+    this.data = info;*/
     //this.data = this.originalSections.map(section => { return {[section.id - 1]: []}});
   }
 
@@ -175,8 +186,7 @@ export class RulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async buildTable(section: RuleSection) {
-
-    this.loading.table = true;
+    section.loadingTable = true;
 
     const table: { type: TableDataType; content: any }[][] = [];
 
@@ -201,8 +211,10 @@ export class RulesComponent implements OnInit {
       ]);
     });
 
-    this.data[section.id - 1] = _.cloneDeep(table);
-    this.loading.table = false;
+    section.data = _.cloneDeep(table);
+    //this.data[section.id] = _.cloneDeep(table);
+    section.loadingTable = false;
+    section.showTable = true;
   }
 
   async closeSectionManagement(event: RuleSection[]) {
@@ -210,7 +222,7 @@ export class RulesComponent implements OnInit {
 
     if (this.sectionMode === 'add section') {
       // NOTE: If new section is added, is at the end (also considering 1 section added per action)
-      await this.buildTable(this.originalSections[-1]);
+      await this.buildTable(this.originalSections[this.originalSections.length - 1]);
     }
 
     this.sectionToManage = null;
@@ -301,7 +313,7 @@ export class RulesComponent implements OnInit {
         AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + rule.name + '\' added');
 
       } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
-    } else if (action === 'delete rule'){
+    } else if (action === 'remove rule'){
 
       await this.deleteRule(rule);
 
@@ -605,7 +617,23 @@ export class RulesComponent implements OnInit {
       course: section?.course ?? this.course.id,
       name: section?.name ?? null,
       position: section?.position ?? null,
-      data: null
+      headers: [
+        {label: 'Execution Order', align: 'left'},
+        {label: 'Name', align: 'left'},
+        {label: 'Tags', align: 'middle'},
+        {label: 'Active', align: 'middle'},
+        {label: 'Actions'}],
+      data: section?.data ?? [],
+      options: {
+        order: [ 0, 'asc' ],        // default order -> column 0 ascendant
+        columnDefs: [
+          { type: 'natural', targets: [0,1] },
+          { searchable: false, targets: [2,3] },
+          { orderable: false, targets: [2,3] }
+        ]
+      },
+      loadingTable: false,
+      showTable: false
     };
     if (section) sectionData.id = section.id;
     return sectionData;
@@ -631,6 +659,10 @@ export interface SectionManageData {
   course?: number,
   name?: string,
   position?: number,
-  data: {type: TableDataType, content: any}[][]
+  headers: {label: string, align?: 'left' | 'middle' | 'right'}[],
+  data: {type: TableDataType, content: any}[][],
+  options?: any,
+  loadingTable: boolean,
+  showTable: boolean
 }
 

@@ -40,29 +40,38 @@
             <ng-container *ngIf="!loading.page">
               <div *ngFor="let section of filterSections(section)">
 
-                <!-- Actions for rules -->
-                <app-top-actions
-                  [leftActions]="[{action: 'edit section', icon: 'jam-pencil-f'},
+                <!-- NOTE: for loop doesnt render well tables. This is a workaround to avoid information display problems -->
+                <div *ngIf="!section.showTable" class="justify-center flex items-center my-10">
+                  <button class="flex items-center md:w-4/12 btn btn-outline rounded rounded-lg btn-sm" (click)="buildTable(section)">
+                    Load section
+                  </button>
+                </div>
+
+                <div *ngIf="section.showTable">
+                  <!-- Actions for rules -->
+                  <app-top-actions
+                    [leftActions]="[{action: 'edit section', icon: 'jam-pencil-f'},
                             {action: 'remove section', icon: 'jam-trash-f'}]"
-                  [rightActions]="[{action: 'Create rule', icon: 'tabler-clipboard-list', color: 'primary', outline: true},
+                    [rightActions]="[{action: 'Create rule', icon: 'tabler-clipboard-list', color: 'primary', outline: true},
                              {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
                               {action: Action.IMPORT + ' rule', icon:'jam-download'},
                               {action: Action.EXPORT + ' all rules', icon:'jam-upload'}
                             ]}]"
-                  (btnClicked)="prepareModal($event, section)">
-                </app-top-actions>
+                    (btnClicked)="prepareModal($event, section)">
+                  </app-top-actions>
 
-                <!-- Section Table -->
-                <app-table
-                  [id] = "'rules-' + section.id"
-                  [classList]="'mt-5'"
-                  [headers] = "headers"
-                  [data] = "data[section.id - 1]"
-                  [options] = "tableOptions"
-                  [loading] = "loading.table"
-                  (btnClicked)="doActionOnTable(section, $event.type, $event.row, $event.col)"
-                  (valueChanged)="doActionOnTable(section, 'value changed rule', $event.row, $event.col, $event.value)">
-                </app-table>
+                  <!-- Section Table-->
+                  <app-table
+                     [id] = "'rules-' + section.id"
+                     [classList]="'mt-5'"
+                     [headers] = "section.headers"
+                     [data] = "section.data"
+                     [options] = "section.options"
+                     [loading] = "section.loadingTable"
+                     (btnClicked)="doActionOnTable(section, $event.type, $event.row, $event.col)"
+                     (valueChanged)="doActionOnTable(section, 'value changed rule', $event.row, $event.col, $event.value)">
+                  </app-table>
+                </div>
 
                 <!-- Loader -->
                 <app-loader [loading]="loading.page"></app-loader>
