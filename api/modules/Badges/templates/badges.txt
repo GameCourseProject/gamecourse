@@ -8,10 +8,6 @@
     "class": "card bg-base-100 shadow-xl",
     "variables": [
       {
-        "name": "pageUser",
-        "value": "{users.getUserById(%user)}"
-      },
-      {
         "name": "courseColor",
         "value": "{courses.getCourseById(%course).color}"
       },
@@ -22,10 +18,6 @@
       {
         "name": "userBadges",
         "value": "{awards.getUserBadgesAwards(%user).count}"
-      },
-      {
-        "name": "totalBadges",
-        "value": "{badges.getBadges(true).count}"
       },
       {
         "name": "blankBadge",
