@@ -103,22 +103,31 @@ def get_targets(course, checkpoint=None, all_targets=False, targets_list=None):
             table = gc_db.execute_query(query, course)
 
         else:
-            query = "SELECT u.id, u.name, u.studentNumber " \
-                    "FROM participation p LEFT JOIN user_role ur ON p.user = ur.user " \
-                    "LEFT JOIN role r ON ur.role = r.id " \
-                    "LEFT JOIN course_user cu on ur.user = cu.id " \
-                    "LEFT JOIN user u on ur.user = u.id " \
-                    "WHERE p.course = %s AND cu.isActive = 1 AND r.name = 'Student'"
+            params = ["user", "evaluator"]  # Params to look for targets
 
-            if checkpoint is None:
-                # Running for targets w/ data in course
-                query += ";"
-                table = gc_db.execute_query(query, course)
+            query = ""
+            for i in range(0, len(params)):
+                param = params[i]
+                query += "SELECT DISTINCT u.id, u.name, u.studentNumber " \
+                         "FROM participation p LEFT JOIN user_role ur ON p." + param + " = ur.user " \
+                         "LEFT JOIN role r ON ur.role = r.id " \
+                         "LEFT JOIN course_user cu on ur.user = cu.id " \
+                         "LEFT JOIN user u on ur.user = u.id " \
+                         "WHERE p.course = " + str(course) + " AND cu.isActive = 1 AND r.name = 'Student'"
 
-            else:
-                # Running for targets w/ new data in course
-                query += " AND p.date >= %s;"
-                table = gc_db.execute_query(query, (course, checkpoint))
+                if checkpoint is None:
+                    # Running for targets w/ data in course
+                    query += ""
+
+                else:
+                    # Running for targets w/ new data in course
+                    query += " AND p.date >= '%s'" % checkpoint
+
+                if i != len(params) - 1:
+                    query += " UNION "
+
+            query += ";"
+            table = gc_db.execute_query(query)
 
     targets = {}
     for row in table:
