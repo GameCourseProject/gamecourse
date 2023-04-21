@@ -141,6 +141,36 @@
       </div>
     </div>
   </ng-container>
+
+  <!-- FIXME: this is hard-coded -->
+  <ng-container *ngIf="page.name === 'Gold Exchange'"> <!-- Gold Exchange -->
+    <div class="card w-full bg-base-100 shadow-xl">
+      <div class="card-body overflow-x-auto">
+
+        <!-- Header -->
+        <app-header [title]="'Gold Exchange'" [color]="course.color" [icon]="'tabler-coin'"></app-header>
+
+        <!-- Gold Exchange -->
+        <div class="prose">
+          <p>You can exchange your beloved Gold for some XP. You have a total of <span class="font-semibold" [style]="'color: ' + course.color">{{wallet}} Gold</span>.</p>
+          <p>Here's the current exchange ratio: <span class="font-semibold text-success">3 Gold = 1 XP.</span></p>
+          <div class="flex">
+            <ng-icon class="text-warning mt-1 mr-2" name="feather-alert-triangle" size="1.1rem"></ng-icon>
+            <p class="mt-0"><span class="text-warning">But beware!</span> You can only exchange Gold once and up to 1000 Gold and no more.</p>
+          </div>
+          <button class="btn btn-success btn-block mt-4" [disabled]="hasExchanged" (click)="exchange()">
+            <!-- Spinner -->
+            <ng-container *ngIf="exchanging">
+              <app-spinner [size]="'sm'" [color]="'success-content'" [classList]="'mr-3'"></app-spinner>
+            </ng-container>
+            Exchange Gold
+          </button>
+          <p *ngIf="hasExchanged" class="text-sm text-error text-center mt-2">You have already exchanged your Gold</p>
+        </div>
+
+      </div>
+    </div>
+  </ng-container>
 </div>
 
 <!-- Spinner -->
