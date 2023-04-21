@@ -161,16 +161,21 @@ if __name__ == "__main__":
             # Clear all progression before calculating again
             clear_progression(students.keys())
 
-            # Fire Rule System
-            rs = RuleSystem(config.RULES_PATH, config.AUTOSAVE)
-            rs_output = rs.fire(students, logs, scope)
+            try:
+                # Fire Rule System
+                rs = RuleSystem(config.RULES_PATH, config.AUTOSAVE)
+                rs_output = rs.fire(students, logs, scope)
 
-            # Update all progression
-            update_progression()
+            except Exception as e:
+                raise e
 
-            # Calculate new grade for each target
-            for student in students.keys():
-                calculate_grade(student)
+            finally:
+                # Update all progression
+                update_progression()
+
+                # Calculate new grade for each target
+                for student in students.keys():
+                    calculate_grade(student)
 
             # Save the end date
             finish_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
