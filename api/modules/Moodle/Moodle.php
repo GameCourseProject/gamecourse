@@ -534,17 +534,16 @@ class Moodle extends Module
 
     /**
      * Imports Moodle data into the system.
-     * Returns the datetime of the oldest record imported
-     * if new data was imported, null otherwise.
+     * Returns which targets had new data imported.
      *
-     * @return string|null
+     * @return array
      * @throws Exception
      */
-    public function importData(): ?string
+    public function importData(): array
     {
         if ($this->isRunning()) {
             self::log($this->course->getId(), "Already importing data from " . self::NAME . ".", "WARNING");
-            return false;
+            return [];
         }
 
         $this->setStartedRunning(date("Y-m-d H:i:s", time()));
@@ -552,9 +551,8 @@ class Moodle extends Module
         self::log($this->course->getId(), "Importing data from " . self::NAME . "...", "INFO");
 
         try {
-            // NOTE: AutoGame will run for targets with new data after checkpoint
-            $AutoGameCheckpoint = null; // Timestamp of oldest record imported
             $timestamps = []; // Timestamps of last record imported on each item
+            $targets = []; // Which targets to run AutoGame for, based on new Moodle data imported
 
             // Initialize Moodle database
             $this->database();
@@ -569,15 +567,15 @@ class Moodle extends Module
             foreach ($import as $itemStr => $item) {
                 $newData = $this->{"import".$item}();
                 if ($newData) {
-                    $AutoGameCheckpoint = min($AutoGameCheckpoint, $newData["oldestRecordTimestamp"]) ?? $newData["oldestRecordTimestamp"];
                     $timestamps[] = $newData["lastRecordTimestamp"];
+                    $targets = array_unique(array_merge($targets, $newData["targets"]));
                     self::log($this->course->getId(), "Imported new $itemStr.", "SUCCESS");
                 }
             }
 
             if (!empty($timestamps)) $this->setCheckpoint(date("Y-m-d H:i:s", max($timestamps)));
             self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
-            return $AutoGameCheckpoint ? date("Y-m-d H:i:s", $AutoGameCheckpoint) : null;
+            return array_unique($targets);
 
         } finally {
             $this->setIsRunning(false);
@@ -625,7 +623,7 @@ class Moodle extends Module
 
     /**
      * Saves Moodle assignment grades into the system.
-     * Returns oldest and last record timestamp if new data
+     * Returns last record timestamp and targets if new data
      * was imported, null otherwise.
      *
      * @param array $assignmentGrades
@@ -639,8 +637,8 @@ class Moodle extends Module
         $sql = "INSERT INTO " . AutoGame::TABLE_PARTICIPATION . " (user, course, source, description, type, post, date, rating, evaluator) VALUES ";
         $values = [];
 
-        $oldestRecordTimestamp = null; // Timestamp of the oldest record imported
         $lastRecordTimestamp = null; // Timestamp of the last record imported
+        $targets = []; // Which users to run AutoGame for, based on new data imported
 
         foreach ($assignmentGrades as $assignmentGrade) {
             self::parseAssignmentGrade($assignmentGrade);
@@ -670,8 +668,8 @@ class Moodle extends Module
                             "evaluator" => $grader->getId()
                         ], ["id" => $this->getAssignmentGradeParticipationId($courseUser->getId(), $assignmentGrade["assignmentId"], $grader->getId())]);
                     }
-                    $oldestRecordTimestamp = min($oldestRecordTimestamp, $assignmentGrade["submissionTimestamp"]) ?? $assignmentGrade["submissionTimestamp"];
                     $lastRecordTimestamp = max($assignmentGrade["submissionTimestamp"], $lastRecordTimestamp);
+                    $targets = array_merge($targets, [$courseUser->getId(), $grader->getId()]);
 
                 } else self::log($this->course->getId(), "(While importing assignment grades) No user with username '" . $assignmentGrade["grader"] . "' enrolled in the course.", "WARNING");
 
@@ -682,7 +680,7 @@ class Moodle extends Module
             $sql .= implode(", ", $values);
             Core::database()->executeQuery($sql);
         }
-        return $oldestRecordTimestamp && $lastRecordTimestamp ? ["oldestRecordTimestamp" => $oldestRecordTimestamp, "lastRecordTimestamp" => $lastRecordTimestamp] : null;
+        return $lastRecordTimestamp ? ["lastRecordTimestamp" => $lastRecordTimestamp, "targets" => array_unique($targets)] : null;
     }
 
     /**
@@ -754,8 +752,8 @@ class Moodle extends Module
         $newData2 = $this->saveForumGrades($peergradedForumGrades, true);
 
         if ($newData1 && $newData2) return [
-            "oldestRecordTimestamp" => min($newData1["oldestRecordTimestamp"], $newData2["oldestRecordTimestamp"]),
-            "lastRecordTimestamp" => max($newData1["lastRecordTimestamp"], $newData2["lastRecordTimestamp"])
+            "lastRecordTimestamp" => max($newData1["lastRecordTimestamp"], $newData2["lastRecordTimestamp"]),
+            "targets" => array_unique(array_merge($newData1["targets"], $newData2["targets"]))
         ];
         if ($newData1) return $newData1;
         if ($newData2) return $newData2;
@@ -806,7 +804,7 @@ class Moodle extends Module
 
     /**
      * Saves Moodle forum grades into the system.
-     * Returns oldest and last record timestamp if new data
+     * Returns last record timestamp and targets if new data
      * was imported, null otherwise.
      *
      * @param array $forumGrades
@@ -821,8 +819,8 @@ class Moodle extends Module
         $sql = "INSERT INTO " . AutoGame::TABLE_PARTICIPATION . " (user, course, source, description, type, post, date, rating, evaluator) VALUES ";
         $values = [];
 
-        $oldestRecordTimestamp = null; // Timestamp of the oldest record imported
         $lastRecordTimestamp = null; // Timestamp of the last record imported
+        $targets = []; // Which users to run AutoGame for, based on new data imported
 
         foreach ($forumGrades as $forumGrade) {
             self::parseForumGrade($forumGrade);
@@ -852,8 +850,8 @@ class Moodle extends Module
                             "evaluator" => $grader->getId()
                         ], ["id" => $this->getForumGradeParticipationId($courseUser->getId(), $forumGrade["discussionId"], $forumGrade["gradeId"], $grader->getId())]);
                     }
-                    $oldestRecordTimestamp = min($oldestRecordTimestamp, $forumGrade["submissionTimestamp"]) ?? $forumGrade["submissionTimestamp"];
                     $lastRecordTimestamp = max($forumGrade["submissionTimestamp"], $lastRecordTimestamp);
+                    $targets = array_merge($targets, [$courseUser->getId(), $grader->getId()]);
 
                 } else self::log($this->course->getId(), "(While importing forum grades) No user with username '" . $forumGrade["grader"] . "' enrolled in the course.", "WARNING");
 
@@ -864,7 +862,7 @@ class Moodle extends Module
             $sql .= implode(", ", $values);
             Core::database()->executeQuery($sql);
         }
-        return $oldestRecordTimestamp && $lastRecordTimestamp ? ["oldestRecordTimestamp" => $oldestRecordTimestamp, "lastRecordTimestamp" => $lastRecordTimestamp] : null;
+        return $lastRecordTimestamp ? ["lastRecordTimestamp" => $lastRecordTimestamp, "targets" => array_unique($targets)] : null;
     }
 
     /**
@@ -990,7 +988,7 @@ class Moodle extends Module
 
     /**
      * Saves Moodle logs into the system.
-     * Returns oldest and last record timestamp if new data
+     * Returns last record timestamp and targets if new data
      * was imported, null otherwise.
      *
      * @param array $logs
@@ -1004,8 +1002,8 @@ class Moodle extends Module
         $sql = "INSERT INTO " . AutoGame::TABLE_PARTICIPATION . " (user, course, source, description, type, post, date) VALUES ";
         $values = [];
 
-        $oldestRecordTimestamp = null; // Timestamp of the oldest record imported
         $lastRecordTimestamp = null; // Timestamp of the last record imported
+        $targets = []; // Which users to run AutoGame for, based on new data imported
 
         foreach ($logs as $log) {
             $this->parseLog($log);
@@ -1024,8 +1022,8 @@ class Moodle extends Module
                         ];
                         $values[] = "(" . implode(", ", $params) . ")";
 
-                        $oldestRecordTimestamp = min($oldestRecordTimestamp, $log["timestamp"]) ?? $log["timestamp"];
                         $lastRecordTimestamp = max($log["timestamp"], $lastRecordTimestamp);
+                        $targets[] = $courseUser->getId();
                     }
 
                 } else if ($log["username"] !== "admin") {
@@ -1043,7 +1041,7 @@ class Moodle extends Module
             $sql .= implode(", ", $values);
             Core::database()->executeQuery($sql);
         }
-        return $oldestRecordTimestamp && $lastRecordTimestamp ? ["oldestRecordTimestamp" => $oldestRecordTimestamp, "lastRecordTimestamp" => $lastRecordTimestamp] : null;
+        return $lastRecordTimestamp ? ["lastRecordTimestamp" => $lastRecordTimestamp, "targets" => array_unique($targets)] : null;
     }
 
     /**
@@ -1409,7 +1407,7 @@ class Moodle extends Module
 
     /**
      * Saves Moodle peergrades into the system.
-     * Returns oldest and last record timestamp if new data
+     * Returns last record timestamp and targets if new data
      * was imported, null otherwise.
      *
      * @param array $peergrades
@@ -1423,8 +1421,8 @@ class Moodle extends Module
         $sql = "INSERT INTO " . AutoGame::TABLE_PARTICIPATION . " (user, course, source, description, type, post, date, rating, evaluator) VALUES ";
         $values = [];
 
-        $oldestRecordTimestamp = null; // Timestamp of the oldest record imported
         $lastRecordTimestamp = null; // Timestamp of the last record imported
+        $targets = []; // Which targets to run AutoGame for, based on new data imported
 
         foreach ($peergrades as $peergrade) {
             self::parsePeergrade($peergrade);
@@ -1454,8 +1452,8 @@ class Moodle extends Module
                             "evaluator" => $grader->getId()
                         ], ["id" => $this->getPeergradeParticipationId($courseUser->getId(), $peergrade["discussionId"], $peergrade["peergradeId"], $grader->getId())]);
                     }
-                    $oldestRecordTimestamp = min($oldestRecordTimestamp, $peergrade["timestamp"]) ?? $peergrade["timestamp"];
                     $lastRecordTimestamp = max($peergrade["timestamp"], $lastRecordTimestamp);
+                    $targets = array_merge($targets, [$courseUser->getId(), $grader->getId()]);
 
                 } else self::log($this->course->getId(), "(While importing peergrades) No user with username '" . $peergrade["grader"] . "' enrolled in the course.", "WARNING");
 
@@ -1466,7 +1464,7 @@ class Moodle extends Module
             $sql .= implode(", ", $values);
             Core::database()->executeQuery($sql);
         }
-        return $oldestRecordTimestamp && $lastRecordTimestamp ? ["oldestRecordTimestamp" => $oldestRecordTimestamp, "lastRecordTimestamp" => $lastRecordTimestamp] : null;
+        return $lastRecordTimestamp ? ["lastRecordTimestamp" => $lastRecordTimestamp, "targets" => array_unique($targets)] : null;
     }
 
     /**
@@ -1559,7 +1557,7 @@ class Moodle extends Module
 
     /**
      * Saves Moodle quiz grades into the system.
-     * Returns oldest and last record timestamp if new data
+     * Returns last record timestamp and targets if new data
      * was imported, null otherwise.
      *
      * @param array $quizGrades
@@ -1573,8 +1571,8 @@ class Moodle extends Module
         $sql = "INSERT INTO " . AutoGame::TABLE_PARTICIPATION . " (user, course, source, description, type, post, date, rating) VALUES ";
         $values = [];
 
-        $oldestRecordTimestamp = null; // Timestamp of the oldest record imported
         $lastRecordTimestamp = null; // Timestamp of the last record imported
+        $targets = []; // Which targets to run AutoGame for, based on new data imported
 
         foreach ($quizGrades as $quizGrade) {
             self::parseQuizGrade($quizGrade);
@@ -1600,8 +1598,8 @@ class Moodle extends Module
                         "rating" => $quizGrade["grade"]
                     ], ["id" => $this->getQuizGradeParticipationId($courseUser->getId(), $quizGrade["quizzId"])]);
                 }
-                $oldestRecordTimestamp = min($oldestRecordTimestamp, $quizGrade["timestamp"]) ?? $quizGrade["timestamp"];
                 $lastRecordTimestamp = max($quizGrade["timestamp"], $lastRecordTimestamp);
+                $targets[] = $courseUser->getId();
 
             } else self::log($this->course->getId(), "(While importing quiz grades) No user with username '" . $quizGrade["username"] . "' enrolled in the course.", "WARNING");
         }
@@ -1610,7 +1608,7 @@ class Moodle extends Module
             $sql .= implode(", ", $values);
             Core::database()->executeQuery($sql);
         }
-        return $oldestRecordTimestamp && $lastRecordTimestamp ? ["oldestRecordTimestamp" => $oldestRecordTimestamp, "lastRecordTimestamp" => $lastRecordTimestamp] : null;
+        return $lastRecordTimestamp ? ["lastRecordTimestamp" => $lastRecordTimestamp, "targets" => array_unique($targets)] : null;
     }
 
     /**

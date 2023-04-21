@@ -125,10 +125,10 @@ if __name__ == "__main__":
 
         # Initialize AutoGame
         start_date, finish_date = None, None
-        checkpoint = autogame_init(course)
+        autogame_init(course)
 
         # Get targets to run
-        students = get_targets(course, checkpoint, all_targets, targets_list)
+        students = get_targets(course, all_targets, targets_list)
         if students:
 
             # Import custom course functions

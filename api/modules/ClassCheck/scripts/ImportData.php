@@ -22,8 +22,8 @@ try {
     $classCheck = $course->getModuleById(ClassCheck::ID);
 
     // Import new data
-    $checkpoint = $classCheck->importData();
-    if ($checkpoint) AutoGame::setToRun($courseId, $checkpoint);
+    $targets = $classCheck->importData();
+    if (!empty($targets)) AutoGame::setToRun($courseId, $targets);
 
 } catch (Throwable $e) {
     ClassCheck::log($courseId, $e->getMessage() . "\n" . $e->getTraceAsString(), "ERROR");

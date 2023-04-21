@@ -22,8 +22,8 @@ try {
     $googlesheets = $course->getModuleById(GoogleSheets::ID);
 
     // Import new data
-    $checkpoint = $googlesheets->importData();
-    if ($checkpoint) AutoGame::setToRun($courseId, $checkpoint);
+    $targets = $googlesheets->importData();
+    if (!empty($targets)) AutoGame::setToRun($courseId, $targets);
 
 } catch (Throwable $e) {
     GoogleSheets::log($courseId, $e->getMessage() . "\n" . $e->getTraceAsString(), "ERROR");

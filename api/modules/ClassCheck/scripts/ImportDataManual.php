@@ -28,8 +28,8 @@ if ($nrArgs >= 0) {
         $classcheck = $course->getModuleById(ClassCheck::ID);
 
         // Import new data
-        $checkpoint = $classcheck->importData();
-        if ($checkpoint) AutoGame::setToRun($courseId, $checkpoint);
+        $targets = $classcheck->importData();
+        if (!empty($targets)) AutoGame::setToRun($courseId, $targets);
 
     } catch (Throwable $e) {
         ClassCheck::log($courseId, $e->getMessage() . "\n" . $e->getTraceAsString(), "ERROR");

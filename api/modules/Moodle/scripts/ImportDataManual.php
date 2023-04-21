@@ -28,8 +28,8 @@ if ($nrArgs >= 0) {
         $moodle = $course->getModuleById(Moodle::ID);
 
         // Import new data
-        $checkpoint = $moodle->importData();
-        if ($checkpoint) AutoGame::setToRun($courseId, $checkpoint);
+        $targets = $moodle->importData();
+        if (!empty($targets)) AutoGame::setToRun($courseId, $targets);
 
     } catch (Throwable $e) {
         Moodle::log($courseId, $e->getMessage() . "\n" . $e->getTraceAsString(), "ERROR");

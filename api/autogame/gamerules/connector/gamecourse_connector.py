@@ -21,23 +21,18 @@ from gamerules.connector.db_connector import gc_db
 def autogame_init(course):
     """
     Checks AutoGame status for a given course and initializes it.
-
-    Returns AutoGame's checkpoint which is used to find targets
-    to run - targets with new data after checkpoint.
     """
 
-    query = "SELECT checkpoint, isRunning FROM autogame WHERE course = %s;"
-    checkpoint, is_running = gc_db.execute_query(query, course)[0]
+    query = "SELECT isRunning FROM autogame WHERE course = %s;"
+    is_running = gc_db.execute_query(query, course)[0][0]
 
     # Check AutoGame status
     if is_running:
         raise Exception("AutoGame is already running for this course.")
 
     # Initialize AutoGame
-    query = "UPDATE autogame SET isRunning = 1, runNext = 0, checkpoint = %s WHERE course = %s;"
-    gc_db.execute_query(query, (None, course), "commit")
-
-    return checkpoint
+    query = "UPDATE autogame SET isRunning = 1, runNext = 0 WHERE course = %s;"
+    gc_db.execute_query(query, (course,), "commit")
 
 def autogame_terminate(course, start_date=None, finish_date=None):
     """
@@ -79,7 +74,7 @@ def autogame_terminate(course, start_date=None, finish_date=None):
                 print("\nInterrupt: You pressed CTRL+C!")
                 exit()
 
-def get_targets(course, checkpoint=None, all_targets=False, targets_list=None):
+def get_targets(course, all_targets=False, targets_list=None):
     """
     Returns targets (students) to fire rules for.
     """
@@ -103,31 +98,18 @@ def get_targets(course, checkpoint=None, all_targets=False, targets_list=None):
             table = gc_db.execute_query(query, course)
 
         else:
-            params = ["user", "evaluator"]  # Params to look for targets
+            # Running for targets w/ new data in course
+            query = "SELECT u.id, u.name, u.studentNumber " \
+                    "FROM autogame_target at LEFT JOIN user_role ur ON at.target = ur.user " \
+                    "LEFT JOIN role r ON ur.role = r.id " \
+                    "LEFT JOIN course_user cu on ur.user = cu.id " \
+                    "LEFT JOIN user u on ur.user = u.id " \
+                    "WHERE at.course = %s AND cu.isActive = 1 AND r.name = 'Student';"
+            table = gc_db.execute_query(query, course)
 
-            query = ""
-            for i in range(0, len(params)):
-                param = params[i]
-                query += "SELECT DISTINCT u.id, u.name, u.studentNumber " \
-                         "FROM participation p LEFT JOIN user_role ur ON p." + param + " = ur.user " \
-                         "LEFT JOIN role r ON ur.role = r.id " \
-                         "LEFT JOIN course_user cu on ur.user = cu.id " \
-                         "LEFT JOIN user u on ur.user = u.id " \
-                         "WHERE p.course = " + str(course) + " AND cu.isActive = 1 AND r.name = 'Student'"
-
-                if checkpoint is None:
-                    # Running for targets w/ data in course
-                    query += ""
-
-                else:
-                    # Running for targets w/ new data in course
-                    query += " AND p.date >= '%s'" % checkpoint
-
-                if i != len(params) - 1:
-                    query += " UNION "
-
-            query += ";"
-            table = gc_db.execute_query(query)
+            # Clear targets
+            query = "DELETE FROM autogame_target WHERE course = %s;"
+            gc_db.execute_query(query, (course,), "commit")
 
     targets = {}
     for row in table:
