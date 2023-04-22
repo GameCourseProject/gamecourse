@@ -469,7 +469,7 @@ tags:
 		dependencies = combo1 or combo2
 		
 		logs = get_skill_logs(target, \"Skill3\")
-		rating = get_rating(logs)
+		rating = get_best_rating(logs)
 
 	then:
 		award_skill(target, \"Skill3\", rating, logs, dependencies)"), $this->trim($skill3->getRule()->getText()));
@@ -1082,7 +1082,7 @@ tags:
 
 	when:
 		logs = get_skill_logs(target, \"$name\")
-		rating = get_rating(logs)
+		rating = get_best_rating(logs)
 
 	then:
 		award_skill(target, \"$name\", rating, logs)"), $this->trim($rule->getText()));
@@ -1168,7 +1168,7 @@ tags:
 		use_wildcard = False if skill_based else True
 		
 		logs = get_skill_logs(target, \"Skill2\")
-		rating = get_rating(logs)
+		rating = get_best_rating(logs)
 
 	then:
 		award_skill(target, \"Skill2\", rating, logs, dependencies, use_wildcard)"), $this->trim($rule->getText()));
@@ -1282,7 +1282,7 @@ tags:
 
 	when:
 		logs = get_skill_logs(target, \"Skill Wildcard\")
-		rating = get_rating(logs)
+		rating = get_best_rating(logs)
 
 	then:
 		award_skill(target, \"Skill Wildcard\", rating, logs)"), $this->trim($rule->getText()));
@@ -2453,7 +2453,7 @@ tags:
         // When
         $this->assertTrue(isset($params["when"]));
         $this->assertEquals("logs = get_skill_logs(target, \"$skillName\")
-rating = get_rating(logs)", $params["when"]);
+rating = get_best_rating(logs)", $params["when"]);
 
         // Then
         $this->assertTrue(isset($params["then"]));
@@ -2489,7 +2489,7 @@ combo3 = skill_completed(target, \"Skill2\")
 dependencies = combo1 or combo2 or combo3
 
 logs = get_skill_logs(target, \"$skillName\")
-rating = get_rating(logs)"), $this->trim($params["when"]));
+rating = get_best_rating(logs)"), $this->trim($params["when"]));
 
         // Then
         $this->assertTrue(isset($params["then"]));
@@ -2532,7 +2532,7 @@ skill_based = combo1
 use_wildcard = False if skill_based else True
 
 logs = get_skill_logs(target, \"$skillName\")
-rating = get_rating(logs)"), $this->trim($params["when"]));
+rating = get_best_rating(logs)"), $this->trim($params["when"]));
 
         // Then
         $this->assertTrue(isset($params["then"]));
