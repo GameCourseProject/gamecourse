@@ -71,7 +71,7 @@ class VCLibrary extends Library
                 $this
             ),
             new DFunction("exchangeTokensForXP",
-                "Exchanges a given user's tokens for XP according to a specific ratio and threshold.",
+                "Exchanges a given user's tokens for XP according to a specific ratio and threshold. Option to give XP as extra credit.",
                 ReturnType::VOID,
                 $this
             )
@@ -244,15 +244,17 @@ class VCLibrary extends Library
 
     /**
      * Exchanges a given user's tokens for XP according to
-     * a specific ratio and threshold.
+     * a specific ratio and threshold. Option to give XP as
+     * extra credit.
      *
      * @param int $userId
      * @param float $ratio
      * @param int|null $threshold
+     * @param bool|null $extra
      * @return ValueNode
      * @throws Exception
      */
-    public function exchangeTokensForXP(int $userId, float $ratio = 1, ?int $threshold = null): ?ValueNode
+    public function exchangeTokensForXP(int $userId, float $ratio = 1, ?int $threshold = null, ?bool $extra = true): ?ValueNode
     {
         // Check permissions
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
@@ -265,7 +267,7 @@ class VCLibrary extends Library
 
         } else {
             $VCModule = new VirtualCurrency($course);
-            $VCModule->exchangeTokensForXP($userId, $ratio, $threshold);
+            $VCModule->exchangeTokensForXP($userId, $ratio, $threshold, $extra);
         }
         return null;
     }

@@ -2446,12 +2446,13 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  public exchangeUserTokens(courseID: number, userId: number, ratio: string, threshold: number): Observable<number> {
+  public exchangeUserTokens(courseID: number, userId: number, ratio: string, threshold: number, extra: boolean): Observable<number> {
     const data = {
       courseId: courseID,
       userId: userId,
       ratio,
-      threshold
+      threshold,
+      extra
     };
 
     const params = (qs: QueryStringParameters) => {

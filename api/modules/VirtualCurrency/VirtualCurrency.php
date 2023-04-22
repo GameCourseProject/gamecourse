@@ -548,7 +548,7 @@ class VirtualCurrency extends Module
                                         "pattern" => "^\\d+:\\d+$",
                                         "patternErrorMessage" => "Ratio format must be 'number:number' (ex: 2:1, 1:1, ...)"
                                     ],
-                                    "helper" => "How many XP per 1 " . $name
+                                    "helper" => "How many XP per $name; Format: '<XP>:<$name>'"
                                 ],
                                 [
                                     "contentType" => "item",
@@ -563,6 +563,16 @@ class VirtualCurrency extends Module
                                     "helper" => "Max. $name that can be exchanged"
                                 ]
                             ]
+                        ],
+                        [
+                            "contentType" => "item",
+                            "type" => InputType::CHECKBOX,
+                            "scope" => ActionScope::ALL,
+                            "id" => "extra",
+                            "options" => [
+                                "label" => "Extra Credit"
+                            ],
+                            "helper" => "Count XP exchanged as extra credit"
                         ]
                     ]
                 ],
@@ -599,6 +609,16 @@ class VirtualCurrency extends Module
                                         "topLabel" => "Threshold"
                                     ],
                                     "helper" => "Max. $name that can be exchanged"
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "type" => InputType::CHECKBOX,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "extra",
+                                    "options" => [
+                                        "label" => "Extra Credit"
+                                    ],
+                                    "helper" => "Count XP exchanged as extra credit"
                                 ]
                             ]
                         ]
@@ -656,7 +676,8 @@ class VirtualCurrency extends Module
                         $parts = explode(":", $item["ratio"]);
                         $ratio = intval($parts[0]) / intval($parts[1]);
                         $threshold = $item["threshold"] ?? null;
-                        $earnedXP = self::exchangeTokensForXP($userId, $ratio, $threshold);
+                        $extra = $item["extra"] ?? false;
+                        $earnedXP = self::exchangeTokensForXP($userId, $ratio, $threshold, $extra);
 
                         if ($action == "Exchange $name") return $item["name"] . " earned $earnedXP XP";
                     }
@@ -893,7 +914,8 @@ class VirtualCurrency extends Module
 
     /**
      * Exchanges a given user's tokens for XP according to
-     * a specific ratio and threshold.
+     * a specific ratio and threshold. Option to give XP as
+     * extra credit (according to its limits).
      * Returns the total amount of XP earned.
      *
      * NOTE: threshold is related to tokens, not XP
@@ -901,10 +923,11 @@ class VirtualCurrency extends Module
      * @param int $userId
      * @param float $ratio
      * @param int|null $threshold
+     * @param bool|null $extra
      * @return int
      * @throws Exception
      */
-    public function exchangeTokensForXP(int $userId, float $ratio = 1, ?int $threshold = null): int
+    public function exchangeTokensForXP(int $userId, float $ratio = 1, ?int $threshold = null, ?bool $extra = true): int
     {
         $this->checkDependency(XPLevels::ID);
 
@@ -914,6 +937,13 @@ class VirtualCurrency extends Module
 
         $totalTokens = $this->getUserTokens($userId);
         $exchangeableTokens = min($totalTokens, $threshold ?? PHP_INT_MAX);
+        if ($extra) {
+            $xpLevels = new XPLevels($this->course);
+            $userExtraCredit = $xpLevels->getUserExtraCreditXP($userId);
+            $extraCreditLimit = $xpLevels->getMaxExtraCredit();
+            if (!is_null($extraCreditLimit))
+                $exchangeableTokens = min($exchangeableTokens, $extraCreditLimit - $userExtraCredit);
+        }
         $earnedXP = intval(round($exchangeableTokens * $ratio));
 
         // Remove tokens & set flag
