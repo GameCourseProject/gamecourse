@@ -9,8 +9,11 @@ import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
 import {Action} from "../../../../../../../_domain/modules/config/Action";
 import {ModalService} from "../../../../../../../_services/modal.service";
 import {Course} from "../../../../../../../_domain/courses/course";
-import {SectionManageData} from "../rules.component";
-export {SectionManageData} from "../rules.component";
+import {SectionManageData, RuleManageData, initRuleToManage, editRule, buildTable } from "../rules.component";
+import {Rule} from "../../../../../../../_domain/rules/rule";
+import {DownloadManager} from "../../../../../../../_utils/download/download-manager";
+import {RuleTag} from "../../../../../../../_domain/rules/RuleTag";
+export {SectionManageData, RuleManageData} from "../rules.component";
 
 @Component({
   selector: 'app-rule-sections-management',
@@ -19,27 +22,43 @@ export {SectionManageData} from "../rules.component";
 })
 export class RuleSectionsManagementComponent implements OnInit{
 
-  @Input() course: Course;
-  @Input() sections: RuleSection[];
-  @Input() sectionToManage: SectionManageData;
-  @Input() mode: 'add section' | 'edit section' | 'remove section' | 'manage sections priority';
+  @Input() course: Course;                                          // Specific course in which rule system is being manipulated
+  @Input() courseRules: Rule[];                                     // Rules of course
+  @Input() sections: RuleSection[];                                 // Sections
+  @Input() section?: RuleSection;                                   // Section (comes from DB - used for seeing details inside like rules etc, not manipulating the section itself)
+  @Input() sectionToManage?: SectionManageData;                     // Section to manipulate (edit/remove/add/change priority)
+
+  @Input() mode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'manage sections priority';                                  // Available modes regarding section management
 
   @Input() sectionActions: {action: Action | string, icon?: string, outline?: boolean, dropdown?: {action: Action | string, icon?: string}[],
-    color?: "ghost" | "primary" | "secondary" | "accent" | "neutral" | "info" | "success" | "warning" | "error", disable?: boolean}[];
+    color?: "ghost" | "primary" | "secondary" | "accent" | "neutral" | "info" | "success" | "warning" | "error", disable?: boolean}[];            // Available actions when listing sections
 
-  @Output() newSections = new EventEmitter<RuleSection[]>();
-  @Output() newSectionActions = new EventEmitter<any[]>();
+  @Output() newSections = new EventEmitter<RuleSection[]>();        // Changed sections to be emitted
+  @Output() newSectionActions = new EventEmitter<any[]>();          // Changed section actions to be emitted
+  @Output() newCourseRules = new EventEmitter<Rule[]>();            // Changed section rules to be emitted
 
   loading = {
+    page: false,
     action: false
   };
 
-  @ViewChild('s', {static: false}) s: NgForm;       // section form
+  ruleMode: 'add rule' | 'edit rule' | 'remove rule';
+  ruleTags: string[];
+  ruleToManage: RuleManageData;
+  ruleToDelete: Rule;
+
+  // FIXME -- could be reduced to one?
+  @ViewChild('s', {static: false}) s: NgForm;       // Section form
+  @ViewChild('r', {static: false}) r: NgForm;       // rule form
 
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
   ) { }
+
+  get Action(): typeof Action {
+    return Action;
+  }
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Init ------------------- ***/
@@ -53,13 +72,80 @@ export class RuleSectionsManagementComponent implements OnInit{
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  async doAction(action: string): Promise<void>{
+  async prepareModal(action: string){
+    if (action === Action.IMPORT){
+      ModalService.openModal('import');
+
+    } else if (action === Action.EXPORT) {
+      await this.exportRules(this.courseRules);
+
+    } else if (action === 'Create rule') {
+      this.ruleMode = 'add rule';
+      this.ruleTags = [];
+      this.ruleToManage = initRuleToManage();
+
+      this.ruleToManage.section = this.section.id;
+      this.ruleToManage.course = this.course.id;
+
+      ModalService.openModal('manage-rule');
+
+    }
+  }
+
+  async exportRules(rules: Rule[]): Promise<void> {
+    if (rules.length === 0)
+      AlertService.showAlert(AlertType.WARNING, 'There are no rules in the course to export');
+
+    else {
+      this.loading.action = true;
+
+      const contents = await this.api.exportCourseRules(this.course.id, rules.map(rule => rule.id)).toPromise();
+      DownloadManager.downloadAsCSV((this.course.short ?? this.course.name) + '-' + (rules.length === 1 ? rules[0].name : 'rules'), contents);
+
+      this.loading.action = false;
+    }
+  }
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------- Table ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+
+  doActionOnTable(section: RuleSection, action: string, row: number, col: number, value?: any){
+    // TODO -- will contain actions inside table related to rules of a specific section
+
+  }
+
+  async doAction(action: string, rule?: Rule): Promise<void>{
     if (action === 'add section'){
-      await this.createSection()
+      await this.createSection();
     } else if (action === 'edit section'){
       await this.editSection();
     } else if (action === 'remove section'){
       await this.removeSection();
+    } else if (action === 'add rule' || 'edit rule'){
+      if (this.r.valid) {
+        this.loading.action = true;
+        await this.assignTags();
+        let rule = (action === 'add rule') ? await this.createRule() : await editRule();
+
+        ModalService.closeModal('manage-rule');
+        this.resetRuleManage();
+        AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + rule.name + '\' added');
+        this.loading.action = false;
+
+      } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+
+    } else if (action === 'remove rule'){
+      this.loading.action = true;
+      await this.deleteRule(rule);
+
+      ModalService.closeModal('delete-rule');
+      this.mode = null;
+      this.ruleToDelete = null;
+
+      AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + rule.name + '\' removed');
+      this.loading.action = false;
     }
   }
 
@@ -117,13 +203,13 @@ export class RuleSectionsManagementComponent implements OnInit{
 
     this.toggleSectionPriority();
 
+    this.newSections.emit(this.sections);
+    this.newSectionActions.emit(this.sectionActions);
     this.loading.action = false;
-    ModalService.closeModal('remove section ');
-    this.mode = null;
-    //this.sectionToDelete = null;
 
     AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + this.sectionToManage.name + '\' removed');
-
+    ModalService.closeModal('remove section');
+    this.mode = null;
   }
 
   saveSectionPriority(){
@@ -132,41 +218,51 @@ export class RuleSectionsManagementComponent implements OnInit{
     ModalService.closeModal('manage-sections-priority');
   }
 
+  async createRule(): Promise<Rule> {
+
+    // FIXME create position --- NEEDS ABSTRACTION
+    const sectionRules = await this.api.getRulesOfSection(this.course.id, this.ruleToManage.section).toPromise();
+    this.ruleToManage.position = sectionRules.length + 1;
+
+    const newRule = await this.api.createRule(clearEmptyValues(this.ruleToManage)).toPromise();
+    newRule.tags = await this.api.getRuleTags(newRule.course, newRule.id).toPromise();
+
+    this.courseRules.push(newRule);
+
+    const section = this.sections.find(section => section.id === newRule.section);
+    await buildTable(section);
+
+    return newRule;
+  }
+
+
+  async deleteRule(rule: Rule): Promise<void> {
+    let section = this.sections.find(section => section.id === rule.section);
+
+    await this.api.deleteRule(rule.section, rule.id).toPromise();
+    const index = this.courseRules.findIndex(el => el.id === rule.id);
+    this.courseRules.removeAtIndex(index);
+
+    await buildTable(section);
+  }
+
+  async assignTags() {
+    if (this.ruleTags.length > 0){
+      let courseTags = await this.api.getTags(this.course.id).toPromise();
+      let tags = [];
+
+      for (let i = 0;  i < this.ruleTags.length; i++){
+        const data = this.ruleTags[i].split(/-(.*)/s);
+        const tag = courseTags.find(element => element.id === parseInt(data[0]) && element.name === data[1]);
+        tags.push(RuleTag.toJason(tag));
+      }
+      this.ruleToManage.tags = tags;
+    }
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
-
-  initSectionToManage(section?: RuleSection): SectionManageData {
-    const sectionData: SectionManageData = {
-      course: section?.course ?? null,
-      name: section?.name ?? null,
-      position: section?.position ?? null,
-      headers: [
-        {label: 'Execution Order', align: 'left'},
-        {label: 'Name', align: 'left'},
-        {label: 'Tags', align: 'middle'},
-        {label: 'Active', align: 'middle'},
-        {label: 'Actions'}],
-      data: section?.data ?? [],
-      options: {
-        order: [ 0, 'asc' ],        // default order -> column 0 ascendant
-        columnDefs: [
-          { type: 'natural', targets: [0,1] },
-          { searchable: false, targets: [2,3] },
-          { orderable: false, targets: [2,3] }
-        ]
-      },
-      loadingTable: false,
-      showTable: false,
-    };
-    if (section) sectionData.id = section.id;
-    return sectionData;
-  }
-
-  resetSectionManage(){
-    //this.mode = null;
-    this.s.resetForm();
-  }
 
   drop(event: CdkDragDrop<string[]>) {
     moveItemInArray(this.sections, event.previousIndex, event.currentIndex);
@@ -176,4 +272,20 @@ export class RuleSectionsManagementComponent implements OnInit{
     this.sectionActions[0].disable = this.sections.length <= 1;
   }
 
+  /*** --------------------------------------------- ***/
+  /*** -------------- Data Management -------------- ***/
+  /*** --------------------------------------------- ***/
+
+  resetSectionManage(){
+    this.mode = null;
+    this.s.resetForm();
+  }
+
+  resetRuleManage(){
+    this.ruleMode = null;
+    this.ruleToManage = initRuleToManage();
+    this.r.resetForm();
+  }
+
 }
+

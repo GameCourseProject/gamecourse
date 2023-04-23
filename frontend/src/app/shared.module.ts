@@ -106,6 +106,7 @@ import { ScrollingModule } from "@angular/cdk/scrolling";
 // Icons
 import {
   FeatherAlertTriangle,
+  FeatherArrowRightCircle,
   FeatherCheckCircle,
   FeatherHome,
   FeatherInfo,
@@ -147,6 +148,7 @@ import {
   TablerArchive,
   TablerArrowBackUp,
   TablerArrowNarrowRight,
+  TablerArrowNarrowLeft,
   TablerArrowNarrowDown,
   TablerArrowNarrowUp,
   TablerArrowsUpDown,
@@ -368,6 +370,7 @@ import {
 
     NgIconsModule.withIcons({
       FeatherAlertTriangle,
+      FeatherArrowRightCircle,
       FeatherCheckCircle,
       FeatherHome,
       FeatherInfo,
@@ -406,6 +409,7 @@ import {
       TablerArchive,
       TablerArrowBackUp,
       TablerArrowNarrowRight,
+      TablerArrowNarrowLeft,
       TablerArrowNarrowDown,
       TablerArrowNarrowUp,
       TablerArrowsUpDown,

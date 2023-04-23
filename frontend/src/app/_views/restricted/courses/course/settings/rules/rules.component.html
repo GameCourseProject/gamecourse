@@ -1,227 +1,114 @@
 <div class="w-full relative">
   <!-- Header -->
-  <app-header [title]="'Rules'"
+  <app-header [classList]="'text-md'"
+    [title]="'Rule Editor'"
     [icon]="'tabler-clipboard-list'"
     [loading]="loading.action">
   </app-header>
 
-  <!-- Search -->
-  <div class="border-b border-gray-200 mb-4">
+  <ng-container *ngIf="sectionMode !== 'see section'">
+
+    <div class="flex flex-wrap justify-center">
+      <span class="text-base-content text-xl font-semibold">Existing Sections</span>
+    </div>
+
+    <!-- Search -->
     <app-input-search
       [id] = "'sections-search'"
       [items] = "originalSections"
-      [classList]="'lg:w-1/2 mx-auto mb-4'"
-      [placeholder]="'Search for sections...'"
+      [classList]="'w-[55%] mx-auto mt-5'"
+      [placeholder]="'Search for specific section...'"
       (onSearch)="filteredSections = $event">
     </app-input-search>
-  </div>
 
-  <!-- Actions -->
-  <div class="mt-5">
-    <app-top-actions
-      [rightActions]="sectionActions"
-      (btnClicked)="prepareModal($event)">
-    </app-top-actions>
+    <!-- Actions
+    <div class="border-b border-gray-200 mb-4">
+      <div class="mt-5 mb-5">
+        <app-top-actions
+          [rightActions]="sectionActions"
+          (btnClicked)="prepareManagement($event)">
+        </app-top-actions>
+      </div>
+    </div>-->
 
-    <span *ngIf="originalSections.length === 0" class="mt-16 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
-  </div>
 
-  <!-- Sections and Rules -->
-  <div *ngFor="let section of originalSections">
-    <div class="justify-center flex">
-      <div class="card w-full bg-base-100 shadow-xl mt-5">
-        <div class="card-body">
-          <!-- Header -->
-          <div class="flex items-center">
-            <app-header [title]="section.name" [icon] ="'jam-box'"></app-header>
-          </div>
+    <span *ngIf="originalSections.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
 
-          <div class="w-full relative">
+    <!-- Sections and Rules -->
+    <div *ngFor="let section of originalSections">
+      <div class="justify-center flex">
+        <div class="card w-[55%] bg-base-100 shadow-xl mt-5">
+          <div class="card-body">
             <ng-container *ngIf="!loading.page">
-              <div *ngFor="let section of filterSections(section)">
 
-                <!-- NOTE: for loop doesnt render well tables. This is a workaround to avoid information display problems -->
-                <div *ngIf="!section.showTable" class="justify-center flex items-center my-10">
-                  <button class="flex items-center md:w-4/12 btn btn-outline rounded rounded-lg btn-sm" (click)="buildTable(section)">
-                    Load section
-                  </button>
+              <div class="flex items-start mt-2 justify-between">
+                <app-header [subHeader]="true" [classList]="'flex flex-wrap items-start'" [title]="section.name" [icon] ="'jam-box'"></app-header>
+
+                <div>
+                  <div class="tooltip align-middle mx-1.5" data-tip="Edit">
+                    <button class="btn btn-sm btn-ghost btn-circle" (click)="prepareManagement('edit section', section)">
+                      <ng-icon name="jam-pencil-f" size="1.5rem" class="text-warning"></ng-icon>
+                    </button>
+                  </div>
+
+                  <div class="tooltip align-middle mx-1.5" data-tip="Delete">
+                    <button class="btn btn-sm btn-ghost btn-circle" (click)="prepareManagement('remove section', section)">
+                      <ng-icon name="jam-trash-f" size="1.5rem" class="text-error"></ng-icon>
+                    </button>
+                  </div>
+
+                  <div class="tooltip align-middle mx-1.5" data-tip="See more details">
+                    <button class="btn btn-sm btn-ghost btn-circle" (click)="prepareManagement('see section', section)">
+                      <ng-icon name="feather-arrow-right-circle" size="1.5rem" class="text-primary"></ng-icon>
+                    </button>
+                  </div>
                 </div>
 
-                <div *ngIf="section.showTable">
-                  <!-- Actions for rules -->
-                  <app-top-actions
-                    [leftActions]="[{action: 'edit section', icon: 'jam-pencil-f'},
-                            {action: 'remove section', icon: 'jam-trash-f'}]"
-                    [rightActions]="[{action: 'Create rule', icon: 'tabler-clipboard-list', color: 'primary', outline: true},
-                             {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
-                              {action: Action.IMPORT + ' rule', icon:'jam-download'},
-                              {action: Action.EXPORT + ' all rules', icon:'jam-upload'}
-                            ]}]"
-                    (btnClicked)="prepareModal($event, section)">
-                  </app-top-actions>
-
-                  <!-- Section Table-->
-                  <app-table
-                     [id] = "'rules-' + section.id"
-                     [classList]="'mt-5'"
-                     [headers] = "section.headers"
-                     [data] = "section.data"
-                     [options] = "section.options"
-                     [loading] = "section.loadingTable"
-                     (btnClicked)="doActionOnTable(section, $event.type, $event.row, $event.col)"
-                     (valueChanged)="doActionOnTable(section, 'value changed rule', $event.row, $event.col, $event.value)">
-                  </app-table>
-                </div>
-
-                <!-- Loader -->
-                <app-loader [loading]="loading.page"></app-loader>
-
-                <span *ngIf="filterSections(section).length === 0" class="text-error px-4">No Sections</span>
               </div>
+
+              <!-- Loader -->
+              <app-loader [loading]="loading.page"></app-loader>
+
             </ng-container>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- New / Edit rule modal -->
-<app-modal *ngIf="mode && ruleToManage"
-           [id]="'manage-rule'"
-           [templateRef]="MANAGE_RULE"
-           [size]="'lg'"
-           [header]="mode?.capitalize()"
-           [headerMarginBottom] = "false"
-           [submitBtnText]="mode?.capitalize()"
-           [actionInProgress] = "loading.action"
-           (submitBtnClicked)="r.onSubmit(null); doAction(mode)"
-           (onClose)="resetRuleManage()">
-</app-modal>
-<ng-template #MANAGE_RULE>
-  <div class="border-b border-gray-200 mb-4">
-    <span *ngIf="mode === 'add rule'" class="text-sm -mt-4">
-      Into section '<strong>{{findSectionName(ruleToManage)}}</strong>'
-    </span>
-  </div>
-
-  <form #r="ngForm">
-
-    <div class="flex flex-wrap mt-3">
-
-      <div class="w-full border-b-2 border-gray-300">
-      <div class="w-full sm:pr-7">
-        <!-- Name -->
-        <app-input-text
-          [id] = "'rule-name'"
-          [form] = "r"
-          [(value)] = "ruleToManage.name"
-          [placeholder]="'e.g. Amphitheatre Lover, Lab Master ...'"
-          [topLabel]="'Rule Name'"
-          [pattern]="'(?!^\\d+$)^.+$'"
-          [patternErrorMessage]="'Rule name can\'t be composed of only numbers'"
-          [required]="true"
-          [maxLength]="60"
-          [maxLengthErrorMessage]="'Rule name is too long: maximum of 60 characters'">
-        </app-input-text>
-      </div>
-      <div class="w-full sm:pr-7 mt-3">
-        <!-- Description -->
-        <app-input-textarea
-          [id] = "'rule-description'"
-          [form] = "r"
-          [(value)] = "ruleToManage.description"
-          [placeholder]="'Write here a small description for this rule ...'"
-          [label] = "'Rule Description'"
-          [required]="false"
-          [maxLength]="100"
-          [maxLengthErrorMessage]="'Rule description is too long: maximum of 100 characters'">
-        </app-input-textarea>
-      </div>
-
-      <div class="w-full flex flex-wrap mt-3" style="align-items: flex-end">
-        <div class="sm:w-10/12">
-          <!-- Tags -->
-          <app-input-select
-            [id]="'rule-tags'"
-            [form] = "r"
-            [(value)] = "selectedTags"
-            [options] = "nameTags"
-            [multiple] = "true"
-            [search]="false"
-            [placeholder]="'Select tags for rule'"
-            [topLabel]="'Rule Tags'"
-            [required]="false"
-            (valueChange)="selectedTags = $event ?? []">
-          </app-input-select>
-        </div>
-
-        <div class="sm:w-2/12 sm:pl-3">
-          <button type="button" class="btn-md rounded-lg btn-primary" (click) = "prepareModal('add tag')">Add new tag</button>
-        </div>
-
-        <p class="pl-1 pb-16"><small> Tag colors will only show in table</small></p>
-
-      </div>
-      </div>
-
-      <div class="w-full flex flex-wrap mt-16" style="align-items: flex-end">
-        <!-- When clause -->
-        <div class="sm:w-1/2">
-          <!--<app-input-code
-            [id]="'rule-when'"
-            [title]="'When'"
-            [classList]="'expression form__input'"
-            [placeholder]="'Rule When Clause'"
-            [options]="{
-              lineNumbers: false,
-              styleActiveLine: true,
-              autohint: true,
-              lineWrapping: true,
-              theme: 'default'
-            }"
-            [init]="ruleToManage.whenClause"
-            (valueChange)="ruleToManage.whenClause = $event"
-          ></app-input-code>-->
-          <app-input-text
-            [id]="'rule-whenClause'"
-            [form] = "r"
-            [(value)] = "ruleToManage.whenClause"
-            [placeholder]="'Rule When Clause'"
-            [required]="true"
-            [topLabel]="'When'">
-          </app-input-text>
-       </div>
-
-        <!-- Then clause -->
-        <div class="sm:w-1/2 sm:pl-3 sm:pr-5">
-          <app-input-text
-            [id]="'rule-thenClause'"
-            [form] = "r"
-            [(value)] = "ruleToManage.thenClause"
-            [placeholder]="'Rule Then Clause'"
-            [required]="true"
-            [topLabel]="'Then'">
-          </app-input-text>
-       </div>
+    <div class="justify-center flex flex-wrap">
+      <div *ngFor="let action of sectionActions" class="flex flex-wrap items-center justify-center">
+        <button class="flex items-center btn btn-{{action.color}} rounded rounded-lg mx-1.5 mt-5 {{action.disable ? 'btn-disabled' : ''}}"
+                (click)="prepareManagement(action.action)">
+          <ng-icon name="{{action.icon}}" size="{{ action.action === 'add section' ? '1.2rem' : '1.5rem' }}" class="mr-0.5"></ng-icon>
+          {{action.action}}
+        </button>
       </div>
     </div>
-  </form>
-</ng-template>
 
-<!-- Delete rule Modal -->
-<app-simple-modal *ngIf="mode === 'remove rule' && ruleToDelete"
-                  [id]="'delete-rule'"
-                  [title]="mode?.capitalize() + ' \'' + (ruleToDelete.name).capitalize() + '\'?'"
+    <!--<div class="mb-5">
+      <app-top-actions
+        [rightActions]="sectionActions"
+        (btnClicked)="prepareManagement($event)">
+      </app-top-actions>
+    </div>-->
+  </ng-container>
 
-                  [text]="'Are you sure you want to remove rule \'' + ruleToDelete?.name +
-                          '\' from this section? You won\'t be able to undo this action.'"
-                  [submitBtnText]="'Remove'"
-                  [submitBtnColor]="'error'"
-                  [actionInProgress]="loading.action"
-                  (submitBtnClicked)="doAction(mode, ruleToDelete)"
-                  (onClose)="ruleToDelete = null">
-</app-simple-modal>
+  <!-- Sections Management -->
+  <app-rule-sections-management
+    *ngIf = "sectionMode"
+    [course] = "course"
+    [courseRules]="courseRules"
+    [mode] = "sectionMode"
+    [sections] = "sections"
+    [sectionActions]="sectionActions"
+    [section]="section"
+    [sectionToManage]="sectionToManage"
+    (newSections)="closeSectionManagement($event)"
+    (newSectionActions)="sectionActions = $event"
+    (newCourseRules)="courseRules = $event">
+  </app-rule-sections-management>
+
+</div>
 
 <!-- Tags Management -->
 <app-rule-tags-management
@@ -233,15 +120,3 @@
   [rules] = "courseRules"
   (newRules) = "assignRules($event)"
 ></app-rule-tags-management>
-
-<!-- Sections Management -->
-<app-rule-sections-management
-  *ngIf = "sectionMode"
-  [course] = "course"
-  [mode] = "sectionMode"
-  [sections] = "sections"
-  [sectionActions]="sectionActions"
-  [sectionToManage]="sectionToManage"
-  (newSections)="closeSectionManagement($event)"
-  (newSectionActions)="this.sectionActions = $event">
-</app-rule-sections-management>

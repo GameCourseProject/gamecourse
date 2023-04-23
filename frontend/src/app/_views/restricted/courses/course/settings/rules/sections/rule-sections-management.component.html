@@ -1,3 +1,53 @@
+<div *ngIf="mode === 'see section'" class="w-full relative">
+
+  <ng-container *ngIf="!loading.page">
+
+    <div class="flex flex-wrap items-center">
+      <button type="button" class="btn btn-sm btn-ghost btn-circle">
+        <ng-icon name="tabler-arrow-narrow-left" size="1.2rem" class="mr-0.5 text-base-content text-opacity-60"></ng-icon>
+      </button>
+      <span class="text-base-content mt-0.5 text-xs text-opacity-60">Back to <i>'Existing Sections'</i></span>
+    </div>
+
+
+    <div class="divider -mt-2">
+      <div class="flex justify-center mx-2">
+        <ng-icon name="jam-box" size="1.5rem" class="text-primary mr-2"></ng-icon>
+        <span class="text-base-content text-xl font-semibold">{{section.name}}</span>
+      </div>
+    </div>
+    <!--<app-header [subHeader]="true" [classList]="'prose flex flex-wrap items-start'" [title]="section.name" [icon] ="'jam-box'"></app-header>
+
+   Actions for rules
+     [leftActions]="[{action: 'edit section', icon: 'jam-pencil-f'},
+                             {action: 'remove section', icon: 'jam-trash-f'}]"-->
+    <app-top-actions
+      [rightActions]="[{action: 'Create rule', icon: 'tabler-clipboard-list', color: 'primary', outline: true},
+                               {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
+                                {action: Action.IMPORT + ' rule', icon:'jam-download'},
+                                {action: Action.EXPORT + ' all rules', icon:'jam-upload'}
+                              ]}]"
+      (btnClicked)="prepareModal($event)">
+    </app-top-actions>
+
+    <!-- Section Table-->
+    <app-table
+      [id] = "'rules-' + section.id"
+      [classList]="'mt-5'"
+      [headers] = "section.headers"
+      [data] = "section.data"
+      [options] = "section.options"
+      [loading] = "section.loadingTable"
+      (btnClicked)="doActionOnTable(section, $event.type, $event.row, $event.col)"
+      (valueChanged)="doActionOnTable(section, 'value changed rule', $event.row, $event.col, $event.value)">
+    </app-table>
+
+    <!-- Loader -->
+    <app-loader [loading]="loading.page"></app-loader>
+  </ng-container>
+</div>
+
+
 <!-- New / Edit section modal -->
 <app-modal *ngIf="mode && sectionToManage"
            [id]="'manage-section'"
@@ -40,10 +90,12 @@
            (submitBtnClicked)="saveSectionPriority()">
 </app-modal>
 <ng-template #MANAGE_SECTION_PRIORITY>
-  <!-- Subheader -->
-  <div class="w-full flex flex-wrap -mt-2">
-    <span class="w-full"><strong>Rearrange sections</strong> to give them a higher or lower priority.</span>
-    <span class="w-full">Higher priority will <strong>execute earlier</strong> than the rest.</span>
+  <!-- Description -->
+  <div class="w-full flex flex-wrap -mt-1">
+    <span>GameCourse's Rule System is arranged by a <strong>set of sections that have rules</strong> inside them.
+      The designated order amongst sections <strong>specifies the priority</strong> of each of them. This means that the <strong>first sections will
+      execute earlier</strong> than the rest.</span>
+    <span class="mt-2">Therefore, keep in consideration in case there's any type of <strong>dependency between each one of them</strong>.</span>
   </div>
 
   <div cdkDropList [id]="'sections-list'" class="dd max-w-none ml-16 mt-8" (cdkDropListDropped)="drop($event)">
@@ -80,4 +132,141 @@
                   [submitBtnColor]="'error'"
                   [actionInProgress]="loading.action"
                   (submitBtnClicked)="doAction(mode)">
+</app-simple-modal>
+
+<!-- New / Edit rule modal -->
+<app-modal *ngIf="mode && ruleToManage"
+           [id]="'manage-rule'"
+           [templateRef]="MANAGE_RULE"
+           [size]="'lg'"
+           [header]="mode?.capitalize()"
+           [headerMarginBottom] = "false"
+           [submitBtnText]="mode?.capitalize()"
+           [actionInProgress] = "loading.action"
+           (submitBtnClicked)="r.onSubmit(null); doAction(mode)"
+           (onClose)="resetRuleManage()">
+</app-modal>
+<ng-template #MANAGE_RULE>
+  <div class="border-b border-gray-200 mb-4">
+    <span *ngIf="mode === 'add rule'" class="text-sm -mt-4">
+      Into section '<strong>{{findSectionName(ruleToManage)}}</strong>'
+    </span>
+  </div>
+
+  <form #r="ngForm">
+
+    <div class="flex flex-wrap mt-3">
+
+      <div class="w-full border-b-2 border-gray-300">
+        <div class="w-full sm:pr-7">
+          <!-- Name -->
+          <app-input-text
+            [id] = "'rule-name'"
+            [form] = "r"
+            [(value)] = "ruleToManage.name"
+            [placeholder]="'e.g. Amphitheatre Lover, Lab Master ...'"
+            [topLabel]="'Rule Name'"
+            [pattern]="'(?!^\\d+$)^.+$'"
+            [patternErrorMessage]="'Rule name can\'t be composed of only numbers'"
+            [required]="true"
+            [maxLength]="60"
+            [maxLengthErrorMessage]="'Rule name is too long: maximum of 60 characters'">
+          </app-input-text>
+        </div>
+        <div class="w-full sm:pr-7 mt-3">
+          <!-- Description -->
+          <app-input-textarea
+            [id] = "'rule-description'"
+            [form] = "r"
+            [(value)] = "ruleToManage.description"
+            [placeholder]="'Write here a small description for this rule ...'"
+            [label] = "'Rule Description'"
+            [required]="false"
+            [maxLength]="100"
+            [maxLengthErrorMessage]="'Rule description is too long: maximum of 100 characters'">
+          </app-input-textarea>
+        </div>
+
+        <div class="w-full flex flex-wrap mt-3" style="align-items: flex-end">
+          <div class="sm:w-10/12">
+            <!-- Tags -->
+            <app-input-select
+              [id]="'rule-tags'"
+              [form] = "r"
+              [(value)] = "ruleTags"
+              [options] = "nameTags"
+              [multiple] = "true"
+              [search]="false"
+              [placeholder]="'Select tags for rule'"
+              [topLabel]="'Rule Tags'"
+              [required]="false"
+              (valueChange)="ruleTags = $event ?? []">
+            </app-input-select>
+          </div>
+
+          <div class="sm:w-2/12 sm:pl-3">
+            <button type="button" class="btn-md rounded-lg btn-primary" (click) = "prepareManagement('add tag')">Add new tag</button>
+          </div>
+
+          <p class="pl-1 pb-16"><small> Tag colors will only show in table</small></p>
+
+        </div>
+      </div>
+
+      <div class="w-full flex flex-wrap mt-16" style="align-items: flex-end">
+        <!-- When clause -->
+        <div class="sm:w-1/2">
+          <!--<app-input-code
+            [id]="'rule-when'"
+            [title]="'When'"
+            [classList]="'expression form__input'"
+            [placeholder]="'Rule When Clause'"
+            [options]="{
+              lineNumbers: false,
+              styleActiveLine: true,
+              autohint: true,
+              lineWrapping: true,
+              theme: 'default'
+            }"
+            [init]="ruleToManage.whenClause"
+            (valueChange)="ruleToManage.whenClause = $event"
+          ></app-input-code>-->
+          <app-input-text
+            [id]="'rule-whenClause'"
+            [form] = "r"
+            [(value)] = "ruleToManage.whenClause"
+            [placeholder]="'Rule When Clause'"
+            [required]="true"
+            [topLabel]="'When'">
+          </app-input-text>
+        </div>
+
+        <!-- Then clause -->
+        <div class="sm:w-1/2 sm:pl-3 sm:pr-5">
+          <app-input-text
+            [id]="'rule-thenClause'"
+            [form] = "r"
+            [(value)] = "ruleToManage.thenClause"
+            [placeholder]="'Rule Then Clause'"
+            [required]="true"
+            [topLabel]="'Then'">
+          </app-input-text>
+        </div>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Delete rule Modal -->
+<app-simple-modal *ngIf="ruleMode === 'remove rule' && ruleToDelete"
+                  [id]="'delete-rule'"
+                  [title]="mode?.capitalize() + ' \'' + (ruleToDelete.name)?.capitalize() + '\'?'"
+
+                  [text]="'Are you sure you want to remove rule \'' + ruleToDelete?.name +
+                          '\' from this section? You won\'t be able to undo this action.'"
+                  [submitBtnText]="'Remove'"
+                  [submitBtnColor]="'error'"
+                  [actionInProgress]="loading.action"
+                  (submitBtnClicked)="doAction(mode, ruleToDelete)"
+                  (onClose)="ruleToDelete = null">
 </app-simple-modal>
