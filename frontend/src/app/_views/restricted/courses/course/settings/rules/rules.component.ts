@@ -18,6 +18,7 @@ import {RuleTag} from "../../../../../../_domain/rules/RuleTag";
 import {ThemingService} from "../../../../../../_services/theming/theming.service";
 
 import * as _ from "lodash";
+import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
 @Component({
   selector: 'app-rules',
   templateUrl: './rules.component.html',
@@ -83,6 +84,8 @@ export class RulesComponent implements OnInit {
   importData: {file: File, replace: boolean} = {file: null, replace: true};
   @ViewChild('fImport', { static: false }) fImport: NgForm;
 
+  @ViewChild('s', {static: false}) s: NgForm;       // Section form
+
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
@@ -97,13 +100,6 @@ export class RulesComponent implements OnInit {
       await this.getCourseSections(courseID);
       await this.getCourseRules(courseID);
       await this.getTags(courseID);
-
-      /*
-      for (let i = 0; i < this.originalSections.length; i++ ){
-        await this.buildTable(this.originalSections[i]);
-      }
-      console.log(this.originalSections);
-      */
 
       this.loading.page = false;
 
@@ -122,12 +118,6 @@ export class RulesComponent implements OnInit {
   async getCourseRules(courseID: number): Promise<void> {
     this.courseRules = (await this.api.getCourseRules(courseID).toPromise()).sort(function (a, b) {
       return a.position - b.position; });
-
-    // Get tags for each rule -> Tags are on different table (RULE_TAGS)
-    /*for (let i=0; i < this.courseRules.length; i++){
-      this.courseRules[i].tags = await this.api.getRuleTags(courseID, this.courseRules[i].id).toPromise();
-    }
-*/
   }
 
   async getCourseSections(courseID: number): Promise<void> {
@@ -147,18 +137,11 @@ export class RulesComponent implements OnInit {
       this.originalSections[i].loadingTable = auxSection.loadingTable;
       this.originalSections[i].showTable = auxSection.showTable;
     }
-/*
-    let info = {}
-    for (let i = 0 ; i < this.originalSections.length; i++){
-      info[this.originalSections[i].id] = [];
-    }
-    this.data = info;*/
-    //this.data = this.originalSections.map(section => { return {[section.id - 1]: []}});
   }
 
   async getTags(courseID: number): Promise<void> {
     this.tags = await this.api.getTags(courseID).toPromise();
-    this.getTagNames();
+    // this.getTagNames();
   }
 
   /*** --------------------------------------------- ***/
@@ -172,7 +155,6 @@ export class RulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------- Table ------------------- ***/
   /*** --------------------------------------------- ***/
-
 
   async closeSectionManagement(event: RuleSection[]) {
     this.originalSections = event;
@@ -234,109 +216,114 @@ export class RulesComponent implements OnInit {
        ModalService.openModal(modal);
 
      }
-     // Actions for manipulation INSIDE sections (seeing details -- aka everything related to the rules)
-     else if (action === 'see section'){
+
+    // Actions for manipulation INSIDE sections (seeing details -- aka everything related to the rules)
+    else if (action === 'see section'){
        this.sections = _.cloneDeep(this.originalSections);
        this.sectionMode = action;
        this.section = section;
 
-       await buildTable(section);
-
-    /*
-    else if (action === 'add section' || action === 'edit section' || action === 'remove section' ||
-      action === 'sections\' priorities' || action === 'see section') {
-
-      this.sections = _.cloneDeep(this.originalSections);
-      this.sectionMode = (action === 'sections\' priorities') ? 'manage sections priority' : action;
-      this.sectionToManage = this.initSectionToManage(section);
-
-      if (action !== 'see section'){
-        let modal = (action === 'remove section') ? action : (action === 'sections\' priorities') ?
-          'manage-sections-priority' : 'manage-section';
-        ModalService.openModal(modal);
-      }
-*/
-    } else if (action === 'manage tags' || action === 'add tag' || action === 'remove tag' || action === 'edit tag'){
-      this.tagMode = action;
-      ModalService.openModal(action);
+       await buildTable(this.api, this.course.id, section);
 
     }
 
+    // Actions related to tags' general manipulation
+    else if (action === 'manage tags' || action === 'add tag' || action === 'remove tag' || action === 'edit tag') {
+       this.tagMode = action;
+       ModalService.openModal(action);
+     }
   }
-/*
+
   async doAction(action: string, rule?: Rule){
-    this.loading.action = true;
-    if (action === 'add rule' || action === 'edit rule'){
-      if (this.r.valid) {
-
-        this.assignTags();
-        let rule = (action === 'add rule') ? await this.createRule() : await this.editRule();
-
-        ModalService.closeModal('manage-rule');
-        this.resetRuleManage();
-        AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + rule.name + '\' added');
-
-      } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
-    } else if (action === 'remove rule'){
-
-      await this.deleteRule(rule);
-
-      ModalService.closeModal('delete-rule');
-      this.mode = null;
-      this.ruleToDelete = null;
-
-      AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + rule.name + '\' removed');
+    if (action === 'add section'){
+      await this.createSection();
+    } else if (action === 'edit section'){
+      await this.editSection();
+    } else if (action === 'remove section'){
+      await this.removeSection();
     }
-    this.loading.action = false;
-  }*/
-
-
-  async toggleActive(rule: Rule){
-    this.loading.action = true;
-
-    rule.isActive = !rule.isActive;
-    await this.api.setCourseRuleActive(this.course.id, rule.id, rule.isActive).toPromise();
-
-    this.loading.action = false;
   }
-
-  async importRules(): Promise<void> {
-    // FIXME -- check if it works
-    if (this.fImport.valid){
-      this.loading.action = true;
-
-      const file = await ResourceManager.getText(this.importData.file);
-      const nrRulesImported = await this.api.importCourseRules(this.course.id, file, this.importData.replace).toPromise();
-
-      await this.getCourseRules(this.course.id);
-      //this.buildTable();
-
-      this.loading.action = false;
-      ModalService.closeModal('import');
-      this.resetImport();
-      AlertService.showAlert(AlertType.SUCCESS, nrRulesImported + 'rule' + (nrRulesImported != 1 ? 's' : '') + 'imported');
-
-    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
-  }
-
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Sections ----------------- ***/
   /*** --------------------------------------------- ***/
 
+  async createSection(): Promise<void> {
+    if (this.s.valid) {
+      this.loading.action = true;
+
+      // FIXME : create position --- NEEDS ABSTRACTION
+      this.sectionToManage.position = this.originalSections.length + 1;
+
+      const newSection = await this.api.createSection(clearEmptyValues(this.sectionToManage)).toPromise();
+      this.originalSections.push(newSection);
+
+      this.toggleSectionPriority();
+      this.resetSectionManage();
+
+      //this.newSections.emit(this.sections);
+      //this.newSectionActions.emit(this.sectionActions);
+      this.loading.action = false;
+
+      AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + newSection.name + '\' added');
+      ModalService.closeModal('manage-section');
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+  }
+
+  async editSection(): Promise<void>{
+    if (this.s.valid) {
+      this.loading.action = true;
+
+      const sectionEdited = await this.api.editSection(clearEmptyValues(this.sectionToManage)).toPromise();
+      const index = this.originalSections.findIndex(section => section.id === sectionEdited.id);
+      this.originalSections.splice(index, 1, sectionEdited);
+
+      //this.newSections.emit(this.sections);
+      //this.newSectionActions.emit(this.sectionActions);
+
+      this.loading.action = false;
+      AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + sectionEdited.name + '\' edited');
+
+      ModalService.closeModal('manage-section');
+      this.resetSectionManage();
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+  }
+
+  async removeSection(): Promise<void> {
+    this.loading.action = true;
+
+    //const rules = await this.api.getRulesOfSection(this.course.id,this.sectionToManage.id).toPromise();
+    await this.api.deleteSection(this.sectionToManage.id).toPromise();
+
+    const index = this.originalSections.findIndex(el => el.id === this.sectionToManage.id);
+    this.originalSections.removeAtIndex(index);
+
+    this.toggleSectionPriority();
+    //this.newSections.emit(this.sections);
+    //this.newSectionActions.emit(this.sectionActions);
+
+    this.loading.action = false;
+    AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + this.sectionToManage.name + '\' removed');
+
+    ModalService.closeModal('remove section');
+    this.resetSectionManage();
+  }
+
+  saveSectionPriority(){
+    //this.newSections.emit(this.sections);
+    this.originalSections = this.sections;
+    this.resetSectionManage();
+
+    AlertService.showAlert(AlertType.SUCCESS, 'Sections\' priority saved successfully');
+    ModalService.closeModal('manage-sections-priority');
+  }
 
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Tags ------------------- ***/
   /*** --------------------------------------------- ***/
-
-  getTagNames() {
-    let nameTags = [];
-    for (let i = 0; i < this.tags.length ; i++){
-      nameTags.push({value: this.tags[i].id + '-' + this.tags[i].name, text: this.tags[i].name});
-    }
-    this.nameTags = nameTags;
-  }
 
   async assignRules(event: Rule[]){
     for (let i = 0; i < event.length; i++){
@@ -409,6 +396,14 @@ export class RulesComponent implements OnInit {
   /*** ------------------- Helpers ----------------- ***/
   /*** --------------------------------------------- ***/
 
+  drop(event: CdkDragDrop<string[]>) {
+    moveItemInArray(this.sections, event.previousIndex, event.currentIndex);
+  }
+
+  toggleSectionPriority(){
+    this.sectionActions[0].disable = this.originalSections.length <= 1;
+  }
+
   getColors(): {value: string, text: string}[]{
     let colors : {value: string, text: string}[] = [];
 
@@ -477,15 +472,6 @@ export class RulesComponent implements OnInit {
     return "";
   }
 
-  findSectionName(search: RuleSection): string{
-    let section = this.originalSections.find(el => el.id === search.id);
-
-    if (section){
-      return section.name;
-    }
-    return "";
-  }
-
   filterSections(sectionSearch: RuleSection): RuleSection[]{
     return this.filteredSections.filter(section => section.name === sectionSearch.name);
   }
@@ -520,6 +506,12 @@ export class RulesComponent implements OnInit {
     };
     if (section) sectionData.id = section.id;
     return sectionData;
+  }
+
+  resetSectionManage(){
+    this.sectionMode = null;
+    this.sections = null;
+    this.s.resetForm();
   }
 
 }
@@ -577,17 +569,17 @@ export async function editRule(): Promise<Rule> {
   this.courseRules.splice(index, 1, ruleEdited);
 
   const section = this.originalSections.find(section => section.id === ruleEdited.section);
-  await this.buildTable(section);
+  await this.buildTable(this.api, this.course.id, section);
 
   return ruleEdited;
 }
 
-export async function buildTable(section: RuleSection) {
+export async function buildTable(api: ApiHttpService, courseId: number, section: RuleSection) {
   section.loadingTable = true;
 
   const table: { type: TableDataType; content: any }[][] = [];
 
-  const rules = await this.api.getRulesOfSection(this.course.id, section.id).toPromise();
+  const rules = await api.getRulesOfSection(courseId, section.id).toPromise();
   rules.forEach(rule => {
     table.push([
       {type: TableDataType.NUMBER, content: {value: rule.position, valueFormat: 'none'}},

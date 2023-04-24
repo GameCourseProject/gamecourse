@@ -1,1 +1,23 @@
-// FIXME -- complete
+.dd-handle.overlay {
+  @apply absolute bg-transparent border-0 hover:bg-transparent hover:border-0 inset-auto;
+}
+
+.dd-content {
+  @apply inline-block align-middle bg-base-100 border-2 border-primary rounded-md px-3 py-2.5 w-full;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.dd-item:last-child {
+  border: none;
+}
+
+.dd.cdk-drop-list-dragging .dd-item:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
