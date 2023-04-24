@@ -141,11 +141,12 @@ export class RuleSectionsManagementComponent implements OnInit{
       if (this.r.valid) {
         this.loading.action = true;
         await this.assignTags();
-        let rule = (action === 'add rule') ? await this.createRule() : await editRule();
+        (action === 'add rule') ? await this.createRule() : await editRule(this.api, this.course.id, this.ruleToManage, this.courseRules, this.sections);
 
+        await buildTable(this.api, this.course.id, this.section);
         ModalService.closeModal('manage-rule');
+        AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + this.ruleToManage.name + '\' added');
         this.resetRuleManage();
-        AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + rule.name + '\' added');
         this.loading.action = false;
 
       } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -172,8 +173,6 @@ export class RuleSectionsManagementComponent implements OnInit{
     newRule.tags = await this.api.getRuleTags(newRule.course, newRule.id).toPromise();
 
     this.courseRules.push(newRule);
-
-    await buildTable(this.api, this.course.id, this.section);
 
     return newRule;
   }

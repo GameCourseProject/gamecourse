@@ -328,7 +328,7 @@ export class RulesComponent implements OnInit {
   async assignRules(event: Rule[]){
     for (let i = 0; i < event.length; i++){
       this.ruleToManage = initRuleToManage(event[i]);
-      await editRule();
+      await editRule(this.api, this.course.id, this.ruleToManage, this.courseRules, this.originalSections);
     }
   }
 
@@ -560,21 +560,19 @@ export function initRuleToManage(rule?: Rule): RuleManageData {
   return ruleData;
 }
 
-export async function editRule(): Promise<Rule> {
+export async function editRule(api: ApiHttpService, courseId: number, ruleToManage: RuleManageData, courseRules: Rule[], sections: RuleSection[]): Promise<void> {
 
-  const ruleEdited = await this.api.editRule(clearEmptyValues(this.ruleToManage)).toPromise();
-  ruleEdited.tags = await this.api.getRuleTags(ruleEdited.course, ruleEdited.id).toPromise();
+  const ruleEdited = await api.editRule(clearEmptyValues(ruleToManage)).toPromise();
+  ruleEdited.tags = await api.getRuleTags(ruleEdited.course, ruleEdited.id).toPromise();
 
-  const index = this.courseRules.findIndex(rule => rule.id === ruleEdited.id);
-  this.courseRules.splice(index, 1, ruleEdited);
+  const index = courseRules.findIndex(rule => rule.id === ruleEdited.id);
+  courseRules.splice(index, 1, ruleEdited);
 
-  const section = this.originalSections.find(section => section.id === ruleEdited.section);
-  await this.buildTable(this.api, this.course.id, section);
+  const section = sections.find(section => section.id === ruleEdited.section);
 
-  return ruleEdited;
 }
 
-export async function buildTable(api: ApiHttpService, courseId: number, section: RuleSection) {
+export async function buildTable(api: ApiHttpService, courseId: number, section: RuleSection): Promise<void> {
   section.loadingTable = true;
 
   const table: { type: TableDataType; content: any }[][] = [];
