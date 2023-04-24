@@ -81,7 +81,21 @@ class PageController
         API::requireCoursePermission($course);
 
         $isVisible = API::getValue("isVisible", "bool");
-        API::response(Page::getPages($courseId, $isVisible));
+        $coursePages = Page::getPages($courseId, $isVisible);
+
+        // Only course admins can access invisible pages
+        if (!$isVisible && !Core::getLoggedUser()->isAdmin()) {
+            $filteredPages = [];
+            $courseUser = $course->getCourseUserById(Core::getLoggedUser()->getId());
+            foreach ($coursePages as $pageInfo) {
+                $page = Page::getPageById($pageInfo["id"]);
+                if ($courseUser->isTeacher() || $page->isVisible())
+                    $filteredPages[] = $pageInfo;
+            }
+            $coursePages = $filteredPages;
+        }
+
+        API::response($coursePages);
     }
 
     /**
@@ -108,7 +122,7 @@ class PageController
         $isVisible = API::getValue("isVisible", "bool");
         $userPages = Page::getUserPages($courseId, $userId, $isVisible);
 
-        // Only course admins can access invisible courses
+        // Only course admins can access invisible pages
         if (!$isVisible && !Core::getLoggedUser()->isAdmin()) {
             $filteredPages = [];
             $courseUser = $course->getCourseUserById(Core::getLoggedUser()->getId());
