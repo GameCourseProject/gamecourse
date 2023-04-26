@@ -899,7 +899,7 @@ class VirtualCurrency extends Module
      * Gets total spending for a given user.
      *
      * @param int $userId
-     * @return array
+     * @return int
      */
     public function getUserTotalSpending(int $userId): int
     {
