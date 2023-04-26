@@ -3,7 +3,7 @@
   <ng-container *ngIf="!loading.page">
 
     <div class="flex flex-wrap items-center">
-      <button type="button" class="btn btn-sm btn-ghost btn-circle">
+      <button type="button" class="btn btn-sm btn-ghost btn-circle" (click)="closeManagement()">
         <ng-icon name="tabler-arrow-narrow-left" size="1.2rem" class="mr-0.5 text-base-content text-opacity-60"></ng-icon>
       </button>
       <span class="text-base-content mt-0.5 text-xs text-opacity-60">Back to <i>'Existing Sections'</i></span>
@@ -48,10 +48,10 @@
 </div>
 
 <!-- New / Edit rule modal -->
-<app-modal *ngIf="ruleMode && ruleToManage"
+<app-modal *ngIf="ruleMode !== 'remove rule' && ruleToManage"
            [id]="'manage-rule'"
            [templateRef]="MANAGE_RULE"
-           [size]="'lg'"
+           [size]="'xl'"
            [header]="ruleMode?.capitalize()"
            [headerMarginBottom] = "false"
            [submitBtnText]="ruleMode?.capitalize()"
@@ -60,10 +60,8 @@
            (onClose)="resetRuleManage()">
 </app-modal>
 <ng-template #MANAGE_RULE>
-  <div class="border-b border-gray-200 mb-4">
-    <span *ngIf="ruleMode === 'add rule'" class="text-sm -mt-4">
-      Into section '<strong>{{section.name}}</strong>'
-    </span>
+  <div class="border-b border-gray-200 mb-4 -mt-2">
+    <span class="text-sm mb-2">Section: <strong>{{section.name}}</strong></span>
   </div>
 
   <form #r="ngForm">
@@ -121,7 +119,7 @@
             <button type="button" class="btn-md rounded-lg btn-primary" (click) = "prepareManagement('add tag')">Add new tag</button>
           </div>-->
 
-          <p class="pl-1 pb-16"><small> Tag colors will only show in table</small></p>
+          <span class="pl-1 pb-16"><small> Tag colors will only show in table</small></span>
 
         </div>
       </div>

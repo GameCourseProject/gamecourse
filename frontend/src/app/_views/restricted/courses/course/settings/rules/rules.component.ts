@@ -28,61 +28,34 @@ export class RulesComponent implements OnInit {
 
   loading = {
     page: true,
-    action: false,
-    //table: false
+    action: false
   }
-  //refreshing: boolean = true;
 
-  course: Course;
-  courseRules: Rule[];                    // all rules relating to course
+  course: Course;                             // Specific course in which rule system is being manipulated
+  courseRules: Rule[];                        // Rules of course
 
-  nameTags : {value: string, text: string}[];
-  //defaultTag: RuleTag = this.initTagToManage();
-  //availableTags: any[] = [];
-  tags: RuleTag[];
+  tags: RuleTag[];                            // Tags of course
 
-  originalSections: RuleSection[] = [];
-  sections: RuleSection[] = [];                // sections of page
-  filteredSections: RuleSection[] = [];        // section search
+  originalSections: RuleSection[] = [];       // Sections of course
+  sections: RuleSection[] = [];               // Copy of original sections (used as auxiliary variable for setting priority)
+  filteredSections: RuleSection[] = [];       // Section search
   sectionActions: {action: Action | string, icon?: string, outline?: boolean, dropdown?: {action: Action | string, icon?: string}[],
       color?: "ghost" | "primary" | "secondary" | "accent" | "neutral" | "info" | "success" | "warning" | "error", disable?: boolean}[]  = [
       {action: 'sections\' priorities', icon: 'jam-box', color: 'secondary', disable: true},
       {action: 'manage tags', icon: 'tabler-tags', color: 'secondary'},
-      {action: 'add section', icon: 'feather-plus-circle', color: 'primary'}];
+      {action: 'add section', icon: 'feather-plus-circle', color: 'primary'}];           // Section actions -- general manipulation (create/edit/remove/set priority/see details)
 
-  tagMode : 'manage tags' | 'add tag' | 'remove tag' | 'edit tag';
-  sectionMode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'manage sections priority'; // FIXME ? -- remove section might not be in here but in the mode variable
+  tagMode : 'manage tags' | 'add tag' | 'remove tag' | 'edit tag';    // available actions for tags
+  sectionMode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'manage sections priority';  // available actions for sections
 
   // MANAGE DATA
   section: RuleSection;
   sectionToManage: SectionManageData;
-  //sectionToDelete: RuleSection;
   ruleToManage: RuleManageData = initRuleToManage();
-  //ruleToDelete: Rule;
 
+  // SEARCH & FILTER
   reduce = new Reduce();
   searchQuery: string;
-/*
-  headers: {label: string, align?: 'left' | 'middle' | 'right'}[] = [
-    {label: 'Execution Order', align: 'left'},
-    {label: 'Name', align: 'left'},
-    {label: 'Tags', align: 'middle'},
-    {label: 'Active', align: 'middle'},
-    {label: 'Actions'}
-  ];
-  tableOptions = {
-    order: [ 0, 'asc' ],        // default order -> column 0 ascendant
-    columnDefs: [
-      { type: 'natural', targets: [0,1] },
-      { searchable: false, targets: [2,3] },
-      { orderable: false, targets: [2,3] }
-    ]
-  }
-  data: {[sectionId: number]: {type: TableDataType, content: any}[][]};
-*/
-
-  importData: {file: File, replace: boolean} = {file: null, replace: true};
-  @ViewChild('fImport', { static: false }) fImport: NgForm;
 
   @ViewChild('s', {static: false}) s: NgForm;       // Section form
 
@@ -121,7 +94,8 @@ export class RulesComponent implements OnInit {
   }
 
   async getCourseSections(courseID: number): Promise<void> {
-    this.originalSections = (await this.api.getCourseSections(courseID).toPromise()).sort((a, b) => a.name.localeCompare(b.name));
+    this.originalSections = (await this.api.getCourseSections(courseID).toPromise()).sort(function (a, b) {
+      return a.position - b.position; });
     this.filteredSections = this.originalSections;
 
     if (this.originalSections.length > 1){
@@ -141,7 +115,6 @@ export class RulesComponent implements OnInit {
 
   async getTags(courseID: number): Promise<void> {
     this.tags = await this.api.getTags(courseID).toPromise();
-    // this.getTagNames();
   }
 
   /*** --------------------------------------------- ***/
@@ -152,23 +125,133 @@ export class RulesComponent implements OnInit {
     this.reduce.search(this.originalSections, query);
   }
 
+  filterSections(sectionSearch: RuleSection): RuleSection[]{
+    return this.filteredSections.filter(section => section.name === sectionSearch.name);
+  }
+
   /*** --------------------------------------------- ***/
-  /*** ------------------- Table ------------------- ***/
+  /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  async prepareManagement(action: string, section?: RuleSection) {
+    // Actions for sections general manipulation (adding/editing/removing/prioritizing actions)
+     if (action === 'sections\' priorities'|| action === 'add section' || action === 'edit section' || action === 'remove section') {
+       this.sections = _.cloneDeep(this.originalSections);
+       this.sectionMode = (action === 'sections\' priorities') ? 'manage sections priority' : action;
+
+       this.sectionToManage = this.initSectionToManage(section);
+
+       let modal = (action === 'remove section') ? action : (action === 'sections\' priorities') ?
+         'manage-sections-priority' : 'manage-section';
+       ModalService.openModal(modal);
+
+     }
+
+    // Actions for manipulation INSIDE sections (seeing details -- aka everything related to the rules)
+    else if (action === 'see section'){
+       this.sections = _.cloneDeep(this.originalSections);
+       this.sectionMode = action;
+       this.section = section;
+
+       await buildTable(this.api, this.course.id, section);
+
+    }
+
+    // Actions related to Tags' general manipulation
+    else if (action === 'manage tags' || action === 'add tag' || action === 'remove tag' || action === 'edit tag') {
+       this.tagMode = action;
+       ModalService.openModal(action);
+     }
+  }
+
+  async doAction(action: string){
+    if (action === 'add section'){
+      await this.createSection();
+    } else if (action === 'edit section'){
+      await this.editSection();
+    } else if (action === 'remove section'){
+      await this.removeSection();
+    }
+  }
+
+  async createSection(): Promise<void> {
+    if (this.s.valid) {
+      this.loading.action = true;
+
+      const newSection = await this.api.createSection(clearEmptyValues(this.sectionToManage)).toPromise();
+      this.originalSections.unshift(newSection);
+
+      this.toggleSectionPriority();
+      this.resetSectionManage();
+
+      this.loading.action = false;
+
+      AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + newSection.name + '\' added');
+      ModalService.closeModal('manage-section');
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+  }
+
+  async editSection(): Promise<void>{
+    if (this.s.valid) {
+      this.loading.action = true;
+
+      const sectionEdited = await this.api.editSection(clearEmptyValues(this.sectionToManage)).toPromise();
+      const index = this.originalSections.findIndex(section => section.id === sectionEdited.id);
+      this.originalSections.splice(index, 1, sectionEdited);
+
+      this.loading.action = false;
+      AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + sectionEdited.name + '\' edited');
+
+      ModalService.closeModal('manage-section');
+      this.resetSectionManage();
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+  }
+
+  async removeSection(): Promise<void> {
+    this.loading.action = true;
+
+    await this.api.deleteSection(this.sectionToManage.id).toPromise();
+
+    const index = this.originalSections.findIndex(el => el.id === this.sectionToManage.id);
+    this.originalSections.removeAtIndex(index);
+
+    this.toggleSectionPriority();
+
+    this.loading.action = false;
+    AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + this.sectionToManage.name + '\' removed');
+
+    ModalService.closeModal('remove section');
+    this.resetSectionManage();
+  }
+
+  async saveSectionPriority(): Promise<void>{
+    this.loading.action = true;
+    this.originalSections = this.sections;
+
+    for (let i = 0; i < this.originalSections.length; i++){
+      this.originalSections[i].position = i;
+      let section = this.initSectionToManage(this.originalSections[i]);
+      await this.api.editSection(section).toPromise();
+    }
+
+    this.resetSectionManage();
+
+    this.loading.action = false;
+    AlertService.showAlert(AlertType.SUCCESS, 'Sections\' priority saved successfully');
+    ModalService.closeModal('manage-sections-priority');
+  }
 
   async closeSectionManagement(event: RuleSection[]) {
     this.originalSections = event;
 
-    /*if (this.sectionMode === 'add section') {
-      // NOTE: If new section is added, is at the end (also considering 1 section added per action)
-      await buildTable(this.originalSections[this.originalSections.length - 1]);
-    }*/
-
-    //this.sectionToManage = null;
+    this.sectionToManage = null;
     this.sectionMode = null;
     this.sections = null;
   }
 
+  // TODO -- delete later
   /*doActionOnTable(section: RuleSection, action: string, row: number, col: number, value?: any): void{
     const ruleToActOn = this.courseRules[row];
 
@@ -200,133 +283,11 @@ export class RulesComponent implements OnInit {
   }*/
 
   /*** --------------------------------------------- ***/
-  /*** ------------------ Actions ------------------ ***/
-  /*** --------------------------------------------- ***/
-
-  async prepareManagement(action: string, section?: RuleSection) {
-    // Actions for sections general manipulation (adding/editing/removing/prioritizing actions)
-     if (action === 'sections\' priorities'|| action === 'add section' || action === 'edit section' || action === 'remove section') {
-       this.sections = _.cloneDeep(this.originalSections);
-       this.sectionMode = (action === 'sections\' priorities') ? 'manage sections priority' : action;
-
-       this.sectionToManage = this.initSectionToManage(section);
-
-       let modal = (action === 'remove section') ? action : (action === 'sections\' priorities') ?
-         'manage-sections-priority' : 'manage-section';
-       ModalService.openModal(modal);
-
-     }
-
-    // Actions for manipulation INSIDE sections (seeing details -- aka everything related to the rules)
-    else if (action === 'see section'){
-       this.sections = _.cloneDeep(this.originalSections);
-       this.sectionMode = action;
-       this.section = section;
-
-       await buildTable(this.api, this.course.id, section);
-
-    }
-
-    // Actions related to tags' general manipulation
-    else if (action === 'manage tags' || action === 'add tag' || action === 'remove tag' || action === 'edit tag') {
-       this.tagMode = action;
-       ModalService.openModal(action);
-     }
-  }
-
-  async doAction(action: string, rule?: Rule){
-    if (action === 'add section'){
-      await this.createSection();
-    } else if (action === 'edit section'){
-      await this.editSection();
-    } else if (action === 'remove section'){
-      await this.removeSection();
-    }
-  }
-
-  /*** --------------------------------------------- ***/
-  /*** ------------------ Sections ----------------- ***/
-  /*** --------------------------------------------- ***/
-
-  async createSection(): Promise<void> {
-    if (this.s.valid) {
-      this.loading.action = true;
-
-      // FIXME : create position --- NEEDS ABSTRACTION
-      this.sectionToManage.position = this.originalSections.length + 1;
-
-      const newSection = await this.api.createSection(clearEmptyValues(this.sectionToManage)).toPromise();
-      this.originalSections.push(newSection);
-
-      this.toggleSectionPriority();
-      this.resetSectionManage();
-
-      //this.newSections.emit(this.sections);
-      //this.newSectionActions.emit(this.sectionActions);
-      this.loading.action = false;
-
-      AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + newSection.name + '\' added');
-      ModalService.closeModal('manage-section');
-
-    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
-  }
-
-  async editSection(): Promise<void>{
-    if (this.s.valid) {
-      this.loading.action = true;
-
-      const sectionEdited = await this.api.editSection(clearEmptyValues(this.sectionToManage)).toPromise();
-      const index = this.originalSections.findIndex(section => section.id === sectionEdited.id);
-      this.originalSections.splice(index, 1, sectionEdited);
-
-      //this.newSections.emit(this.sections);
-      //this.newSectionActions.emit(this.sectionActions);
-
-      this.loading.action = false;
-      AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + sectionEdited.name + '\' edited');
-
-      ModalService.closeModal('manage-section');
-      this.resetSectionManage();
-
-    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
-  }
-
-  async removeSection(): Promise<void> {
-    this.loading.action = true;
-
-    //const rules = await this.api.getRulesOfSection(this.course.id,this.sectionToManage.id).toPromise();
-    await this.api.deleteSection(this.sectionToManage.id).toPromise();
-
-    const index = this.originalSections.findIndex(el => el.id === this.sectionToManage.id);
-    this.originalSections.removeAtIndex(index);
-
-    this.toggleSectionPriority();
-    //this.newSections.emit(this.sections);
-    //this.newSectionActions.emit(this.sectionActions);
-
-    this.loading.action = false;
-    AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + this.sectionToManage.name + '\' removed');
-
-    ModalService.closeModal('remove section');
-    this.resetSectionManage();
-  }
-
-  saveSectionPriority(){
-    //this.newSections.emit(this.sections);
-    this.originalSections = this.sections;
-    this.resetSectionManage();
-
-    AlertService.showAlert(AlertType.SUCCESS, 'Sections\' priority saved successfully');
-    ModalService.closeModal('manage-sections-priority');
-  }
-
-
-  /*** --------------------------------------------- ***/
   /*** -------------------- Tags ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  async assignRules(event: Rule[]){
-    for (let i = 0; i < event.length; i++){
+  async assignRules(event: Rule[]) {
+    for (let i = 0; i < event.length; i++) {
       this.ruleToManage = initRuleToManage(event[i]);
       await editRule(this.api, this.course.id, this.ruleToManage, this.courseRules, this.originalSections);
     }
@@ -472,14 +433,9 @@ export class RulesComponent implements OnInit {
     return "";
   }
 
-  filterSections(sectionSearch: RuleSection): RuleSection[]{
-    return this.filteredSections.filter(section => section.name === sectionSearch.name);
-  }
-
-  resetImport(){
-    this.importData = {file:null, replace: true};
-    this.fImport.resetForm();
-  }
+  /*** --------------------------------------------- ***/
+  /*** ----------------- Manage Data --------------- ***/
+  /*** --------------------------------------------- ***/
 
   initSectionToManage(section?: RuleSection): SectionManageData {
     const sectionData: SectionManageData = {
@@ -568,8 +524,6 @@ export async function editRule(api: ApiHttpService, courseId: number, ruleToMana
   const index = courseRules.findIndex(rule => rule.id === ruleEdited.id);
   courseRules.splice(index, 1, ruleEdited);
 
-  const section = sections.find(section => section.id === ruleEdited.section);
-
 }
 
 export async function buildTable(api: ApiHttpService, courseId: number, section: RuleSection): Promise<void> {
@@ -599,7 +553,6 @@ export async function buildTable(api: ApiHttpService, courseId: number, section:
   });
 
   section.data = _.cloneDeep(table);
-  //this.data[section.id] = _.cloneDeep(table);
   section.loadingTable = false;
   section.showTable = true;
 }

@@ -1429,6 +1429,19 @@ export class ApiHttpService {
       .pipe(map((res:any) => res));
   }
 
+  public duplicateRule(ruleID: number): Observable<Rule>{
+    const data = { ruleId: ruleID }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'duplicateRule');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => Rule.fromDatabase(res['data'])));
+  }
+
   public getRulesOfSection(courseID: number, section: number, active?: boolean) : Observable<Rule[]>{
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULES_SYSTEM);

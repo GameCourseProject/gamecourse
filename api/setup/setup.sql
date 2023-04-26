@@ -171,8 +171,7 @@ CREATE TABLE adaptation_user_preferences(
     date                        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     UNIQUE key(user, previousPreference, date),
-    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
-    FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
     FOREIGN KEY (module) REFERENCES module(id) ON DELETE CASCADE,
     FOREIGN KEY (newPreference) REFERENCES role(id) ON DELETE CASCADE
 );
@@ -188,8 +187,7 @@ CREATE TABLE adaptation_questionnaire_answers(
     date        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     UNIQUE(course, user, element),
-    FOREIGN KEY (course) REFERENCES course(id) ON DELETE CASCADE,
-    FOREIGN KEY (user) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
     FOREIGN KEY (element) REFERENCES adaptation_game_element(id) ON DELETE CASCADE
 );
 
