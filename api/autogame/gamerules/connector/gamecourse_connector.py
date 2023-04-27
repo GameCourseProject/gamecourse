@@ -1959,7 +1959,7 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
             skill_reward = int(table_skill[1])
             award_given = get_award(target, name, award_type, skill_id)
             reward = calculate_extra_credit_reward(target, award_type, skill_reward, award_given[config.AWARD_REWARD_COL] if award_given is not None else 0) if is_extra else skill_reward
-            reward = calculate_skill_tree_reward(reward, reward if award_given is not None else 0)
+            reward = calculate_skill_tree_reward(reward, award_given[config.AWARD_REWARD_COL] if award_given is not None else 0)
 
             # Award skill
             award(target, award_type, name, reward, skill_id)
