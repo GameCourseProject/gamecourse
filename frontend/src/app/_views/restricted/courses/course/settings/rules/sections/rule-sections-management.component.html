@@ -16,22 +16,19 @@
         <span class="text-base-content text-xl font-semibold">{{section.name}}</span>
       </div>
     </div>
-    <!--<app-header [subHeader]="true" [classList]="'prose flex flex-wrap items-start'" [title]="section.name" [icon] ="'jam-box'"></app-header>
 
-   Actions for rules
-     [leftActions]="[{action: 'edit section', icon: 'jam-pencil-f'},
-                             {action: 'remove section', icon: 'jam-trash-f'}]"-->
     <app-top-actions
       [rightActions]="[{action: 'Create rule', icon: 'tabler-clipboard-list', color: 'primary', outline: true},
-                               {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
-                                {action: Action.IMPORT + ' rule', icon:'jam-download'},
-                                {action: Action.EXPORT + ' all rules', icon:'jam-upload'}
-                              ]}]"
+                       {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
+                        {action: Action.IMPORT + ' rule(s)', icon:'jam-download'},
+                        {action: Action.EXPORT + ' all rules', icon:'jam-upload'}
+                      ]}]"
       (btnClicked)="prepareModal($event)">
     </app-top-actions>
 
     <!-- Section Table-->
     <app-table
+      *ngIf="section.showTable"
       [id] = "'rules-' + section.id"
       [classList]="'mt-5'"
       [headers] = "section.headers"
@@ -39,8 +36,13 @@
       [options] = "section.options"
       [loading] = "section.loadingTable"
       (btnClicked)="doActionOnTable(section, $event.type, $event.row, $event.col)"
-      (valueChanged)="doActionOnTable(section, 'value changed rule', $event.row, $event.col, $event.value)">
+      (valueChanged)="doActionOnTable(section, 'value changed rule', $event.row, $event.col)">
     </app-table>
+
+    <!-- Spinner -->
+    <div *ngIf="!section.showTable" class="flex justify-center items-center">
+      <app-spinner></app-spinner>
+    </div>
 
     <!-- Loader -->
     <app-loader [loading]="loading.page"></app-loader>
@@ -170,14 +172,65 @@
 
 <!-- Delete rule Modal -->
 <app-simple-modal *ngIf="ruleMode === 'remove rule' && ruleToManage"
-                  [id]="'delete-rule'"
-                  [title]="ruleMode?.capitalize() + ' \'' + (ruleToManage.name)?.capitalize() + '\'?'"
+  [id]="'delete-rule'"
+  [title]="ruleMode?.capitalize() + ' \'' + (ruleToManage.name)?.capitalize() + '\'?'"
 
-                  [text]="'Are you sure you want to remove rule \'' + ruleToManage?.name +
-                          '\' from this section? You won\'t be able to undo this action.'"
-                  [submitBtnText]="'Remove'"
-                  [submitBtnColor]="'error'"
-                  [actionInProgress]="loading.action"
-                  (submitBtnClicked)="doAction(ruleMode)"
-                  (onClose)="ruleToManage = null">
+  [text]="'Are you sure you want to remove rule \'' + ruleToManage?.name +
+          '\' from this section? You won\'t be able to undo this action.'"
+  [submitBtnText]="'Remove'"
+  [submitBtnColor]="'error'"
+  [actionInProgress]="loading.action"
+  (submitBtnClicked)="doAction(ruleMode)"
+  (onClose)="ruleToManage = null">
 </app-simple-modal>
+
+<app-modal
+  [id]="'import'"
+  [templateRef]="IMPORT"
+  [header]="'Import rules'"
+  [submitBtnText]="'Import'"
+  [actionInProgress]="loading.action"
+  (submitBtnClicked)="fImport.onSubmit(null); importRules()"
+  (onClose)="resetImport()"
+></app-modal>
+<ng-template #IMPORT>
+  <div class="prose flex items-center gap-1 mb-3">
+    <p class="mb-0">Upload a .CSV file containing user information</p>
+    <app-import-helper
+      [id]="'import-helper'"
+      [format]="'.csv'"
+      [requirements]="[
+        'The separator must be comma.',
+        'The encoding must be UTF-8.'
+      ]"
+      [csvHeaders]="['name', 'description', 'whenClause', 'thenClause', 'position', 'isActive', 'tags']"
+      [csvRows]="[['Lab Master', 'Rule for assigning awards when student excels at the labs', '(TODO) when something', '(TODO) trigger something else', '0', 'true', '1,2']]">
+    </app-import-helper>
+
+  </div>
+
+    <form #fImport="ngForm">
+      <!-- File -->
+      <app-input-file
+        [id]="'import-file'"
+        [form]="fImport"
+        [accept]="['.csv', '.txt']"
+        [size]="'sm'"
+        [color]="'primary'"
+        [required]="true"
+        (valueChange)="onFileSelected($event, 'file')">
+      </app-input-file>
+
+      <!-- Replace -->
+      <app-input-checkbox
+        [id]="'import-replace'"
+        [form]="fImport"
+        [(value)]="importData.replace"
+        [color]="'secondary'"
+        [classList]="'mt-2'"
+        [label]="'Replace duplicates'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+
+    </form>
+</ng-template>

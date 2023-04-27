@@ -10,6 +10,9 @@ import {AlertService, AlertType} from "../../../../../../../_services/alert.serv
 import {ModalService} from "../../../../../../../_services/modal.service";
 import {Rule} from "../../../../../../../_domain/rules/rule";
 
+import {initTagToManage, TagManageData} from "../rules.component";
+export {TagManageData} from "../rules.component";
+
 import * as _ from "lodash";
 
 @Component({
@@ -69,7 +72,7 @@ export class RuleTagsManagementComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   prepareModal(action: string, tag?: RuleTag){
-    this.tagToManage = this.initTagToManage(tag);
+    this.tagToManage = initTagToManage(this.course.id, tag);
 
     this.mode = switchMode(action);
 
@@ -179,7 +182,7 @@ export class RuleTagsManagementComponent implements OnInit {
     return "";
   }
 
-  assignRules(tag: RuleTag): void{
+  assignRules(tag: RuleTag): void {
     let rulesToEmit: Rule[] = [];
     for (let i = 0; i< this.tagRules.length; i++){
       const rule = this.rules.find(element => element.name === this.tagRules[i]);
@@ -189,26 +192,11 @@ export class RuleTagsManagementComponent implements OnInit {
     if (rulesToEmit.length > 0) this.newRules.emit(rulesToEmit);
   }
 
-  initTagToManage(tag?: RuleTag): TagManageData {
-    const tagData: TagManageData = {
-      course: tag?.course ?? this.course.id,
-      name : tag?.name ?? null,
-      color : tag?.color ?? this.colors[0]
-    };
-    if (tag) { tagData.id = tag.id; }
-    return tagData;
-  }
-
   resetTagManage() {
-    this.tagToManage = this.initTagToManage();
+    this.tagToManage = initTagToManage(this.course.id);
     this.tagRules = [];
     this.t.resetForm();
   }
 }
 
-export interface TagManageData {
-  id?: number,
-  course?: number,
-  name?: string,
-  color?: string
-}
+

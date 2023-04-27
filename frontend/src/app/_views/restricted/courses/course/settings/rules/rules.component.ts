@@ -8,10 +8,8 @@ import {Course} from "../../../../../../_domain/courses/course";
 import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
 import {ModalService} from "../../../../../../_services/modal.service";
-import {ResourceManager} from "../../../../../../_utils/resources/resource-manager";
 import {AlertService, AlertType} from "../../../../../../_services/alert.service";
 import {NgForm} from "@angular/forms";
-import {DownloadManager} from "../../../../../../_utils/download/download-manager";
 import {clearEmptyValues} from "../../../../../../_utils/misc/misc";
 import {RuleSection} from "../../../../../../_domain/rules/RuleSection";
 import {RuleTag} from "../../../../../../_domain/rules/RuleTag";
@@ -51,7 +49,7 @@ export class RulesComponent implements OnInit {
   // MANAGE DATA
   section: RuleSection;
   sectionToManage: SectionManageData;
-  ruleToManage: RuleManageData = initRuleToManage();
+  ruleToManage: RuleManageData;
 
   // SEARCH & FILTER
   reduce = new Reduce();
@@ -243,12 +241,11 @@ export class RulesComponent implements OnInit {
     ModalService.closeModal('manage-sections-priority');
   }
 
-  async closeSectionManagement(event: RuleSection[]) {
-    this.originalSections = event;
+  async closeSectionManagement(event: Rule[]) {
+    this.courseRules = event;
 
     this.sectionToManage = null;
     this.sectionMode = null;
-    this.sections = null;
   }
 
   // TODO -- delete later
@@ -288,8 +285,14 @@ export class RulesComponent implements OnInit {
 
   async assignRules(event: Rule[]) {
     for (let i = 0; i < event.length; i++) {
-      this.ruleToManage = initRuleToManage(event[i]);
-      await editRule(this.api, this.course.id, this.ruleToManage, this.courseRules, this.originalSections);
+      this.ruleToManage = initRuleToManage(this.course.id, event[i].section, event[i]);
+
+      let tags = [];
+      for (let i= 0; i < event.length; i++){
+        tags.push( (event[i].tags).map(element => {return initTagToManage(this.course.id, element) }) );
+      }
+      this.ruleToManage.tags = tags;
+      await editRule(this.api, this.course.id, this.ruleToManage, this.courseRules);
     }
   }
 
@@ -472,6 +475,14 @@ export class RulesComponent implements OnInit {
 
 }
 
+// DATA MANAGEMENT GLOBAL INTERFACES
+export interface TagManageData {
+  id?: number,
+  course?: number,
+  name?: string,
+  color?: string
+}
+
 export interface SectionManageData {
   id?: number,
   course?: number,
@@ -497,11 +508,23 @@ export interface RuleManageData {
   tags?: any[]
 }
 
-// Rules management
-export function initRuleToManage(rule?: Rule): RuleManageData {
+// GLOBAL FUNCTIONS
+
+
+export function initTagToManage(courseId: number, tag?: RuleTag): TagManageData {
+  const tagData: TagManageData = {
+    course: tag?.course ?? courseId,
+    name : tag?.name ?? null,
+    color : tag?.color ?? "#5E72E4"
+  };
+  if (tag) { tagData.id = tag.id; }
+  return tagData;
+}
+
+export function initRuleToManage(courseId: number, sectionId: number, rule?: Rule): RuleManageData {
   const ruleData: RuleManageData = {
-    course: rule?.course ?? null,
-    section: rule?.section ?? null,
+    course: rule?.course ?? courseId,
+    section: rule?.section ?? sectionId,
     name: rule?.name ?? null,
     description: rule?.description ?? null,
     whenClause: rule?.whenClause ?? null,
@@ -516,7 +539,7 @@ export function initRuleToManage(rule?: Rule): RuleManageData {
   return ruleData;
 }
 
-export async function editRule(api: ApiHttpService, courseId: number, ruleToManage: RuleManageData, courseRules: Rule[], sections: RuleSection[]): Promise<void> {
+export async function editRule(api: ApiHttpService, courseId: number, ruleToManage: RuleManageData, courseRules: Rule[]): Promise<void> {
 
   const ruleEdited = await api.editRule(clearEmptyValues(ruleToManage)).toPromise();
   ruleEdited.tags = await api.getRuleTags(ruleEdited.course, ruleEdited.id).toPromise();
@@ -528,6 +551,9 @@ export async function editRule(api: ApiHttpService, courseId: number, ruleToMana
 
 export async function buildTable(api: ApiHttpService, courseId: number, section: RuleSection): Promise<void> {
   section.loadingTable = true;
+
+  section.showTable = false;
+  setTimeout(() => section.showTable = true, 0);
 
   const table: { type: TableDataType; content: any }[][] = [];
 
@@ -544,8 +570,8 @@ export async function buildTable(api: ApiHttpService, courseId: number, section:
       {type: TableDataType.ACTIONS, content: {actions: [
             Action.EDIT,
             {action: 'Duplicate', icon: 'tabler-copy', color: 'primary'},
-            {action: 'Increase priority', icon: 'tabler-arrow-narrow-up', color: 'primary'},
-            {action: 'Decrease priority', icon: 'tabler-arrow-narrow-down', color: 'primary'},
+            {action: 'Increase priority', icon: 'tabler-arrow-narrow-up', color: 'primary', disabled: rule.position === 0 },
+            {action: 'Decrease priority', icon: 'tabler-arrow-narrow-down', color: 'primary', disabled: rule.position === rules.length - 1 },
             Action.REMOVE,
             Action.EXPORT]}
       }
@@ -554,6 +580,5 @@ export async function buildTable(api: ApiHttpService, courseId: number, section:
 
   section.data = _.cloneDeep(table);
   section.loadingTable = false;
-  section.showTable = true;
 }
 

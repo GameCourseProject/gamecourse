@@ -5,7 +5,9 @@ use Event\Event;
 use Event\EventType;
 use Exception;
 use GameCourse\AutoGame\AutoGame;
+use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\RuleSystem;
+use GameCourse\AutoGame\RuleSystem\Tag;
 use GameCourse\Core\Auth;
 use GameCourse\Core\Core;
 use GameCourse\Module\DependencyMode;
@@ -596,31 +598,6 @@ class Course
     public function exists(): bool
     {
         return !empty($this->getData("id"));
-    }
-
-    /*** ---------------------------------------------------- ***/
-    /*** ------------------- Course Rules ------------------- ***/
-    /*** ---------------------------------------------------- ***/
-
-
-    /**
-     * Adds a given rule to a course.
-     * Returns the newly created course rule.
-     *
-     * @param int $ruleId
-     * @param bool $isActive
-     * @return CourseRule
-     * @throws Exception
-     */
-    public function addRuleToCourse(int $ruleId, bool $isActive = true) : CourseRule
-    {
-        // CHECK THIS -- INCOMPLETE
-        return CourseRule::addCourseRule($ruleId, $this->id, $isActive);
-    }
-
-    public function getTags(int $courseId, bool $active): array
-    {
-        return [];
     }
 
     /*** ---------------------------------------------------- ***/

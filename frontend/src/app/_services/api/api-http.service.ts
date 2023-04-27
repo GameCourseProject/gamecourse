@@ -1430,7 +1430,7 @@ export class ApiHttpService {
   }
 
   public duplicateRule(ruleID: number): Observable<Rule>{
-    const data = { ruleId: ruleID }
+    const data = { ruleId: ruleID };
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULES_SYSTEM);
@@ -1472,9 +1472,8 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(obj => Rule.fromDatabase(obj))) );
   }
 
-  public setCourseRuleActive(courseID: number, ruleID: number, isActive: boolean): Observable<void> {
+  public setCourseRuleActive(ruleID: number, isActive: boolean): Observable<void> {
     const data = {
-      "courseId": courseID,
       "ruleId": ruleID,
       "isActive": isActive
     }
@@ -1489,12 +1488,12 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public importCourseRules(courseID: number, file: string | ArrayBuffer, replace: boolean): Observable<number> {
-    const data = {courseId: courseID, file, replace};
+  public importRules(courseID: number, sectionID: number, file: string | ArrayBuffer, replace: boolean): Observable<number> {
+    const data = {courseId: courseID, sectionId: sectionID, file, replace};
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULES_SYSTEM);
-      qs.push('request', 'importCourseRules');
+      qs.push('request', 'importRules');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
@@ -1502,16 +1501,16 @@ export class ApiHttpService {
       .pipe( map((res: any) => parseInt(res['data'])) );
   }
 
-  public exportCourseRules(courseID: number, rulesIDs: number[]): Observable<string> {
+  public exportRules(courseID: number, ruleIDs: number[]): Observable<string> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULES_SYSTEM);
-      qs.push('request', 'exportCourseRules');
+      qs.push('request', 'exportRules');
       qs.push('courseId', courseID);
-      qs.push('rulesIds', rulesIDs);
+      qs.push('ruleIds', ruleIDs);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, null, ApiHttpService.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data'])) );
   }
 

@@ -16,7 +16,7 @@ class Rule
     const TABLE_RULE_TAGS = "rule_tags";
 
     const HEADERS = [   // headers for import/export functionality
-        "name", "isActive"
+        "name", "description", "whenClause", "thenClause", "isActive", "position", "tags"
     ];
     protected $id;
 
@@ -417,6 +417,21 @@ class Rule
     }
 
     /**
+     * Duplicates rule inside section
+     *
+     * @param int $ruleId
+     * @return Rule
+     * @throws Exception
+     */
+    public static function duplicateRule(int $ruleId): Rule {
+        $rule = self::getRuleById($ruleId);
+        $ruleInfo = $rule->getData();
+
+        return self::addRule($ruleInfo["course"], $ruleInfo["section"], $ruleInfo["name"] . " (Copy)",
+            $ruleInfo["description"], $ruleInfo["whenClause"], $ruleInfo["thenClause"], $ruleInfo["position"], $ruleInfo["isActive"], $rule->getTags());
+    }
+
+    /**
      * Edits an existing rule to be the same as another rule.
      *
      * @param Rule $mirrorTo
@@ -475,6 +490,72 @@ class Rule
         return !empty($this->getData("id"));
     }
 
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------ Import/Export ------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Imports rules for a specific section into the system from a .csv file
+     *
+     * @param int $courseId
+     * @param int $sectionId
+     * @param string $file
+     * @param bool $replace
+     * @return int
+     * @throws Exception
+     */
+    public static function importRules(int $courseId, int $sectionId, string $file, bool $replace = true): int {
+        return Utils::importFromCSV(self::HEADERS, function ($rule, $indexes) use ($replace, $courseId, $sectionId) {
+            $name = Utils::nullify($rule[$indexes["name"]]);
+            $description = Utils::nullify($rule[$indexes["description"]]);
+            $whenClause = Utils::nullify($rule[$indexes["whenClause"]]);
+            $thenClause = Utils::nullify($rule[$indexes["thenClause"]]);
+            $position = self::parse(null, Utils::nullify($rule[$indexes["position"]]), "position");
+            $isActive = self::parse(null, Utils::nullify($rule[$indexes["isActive"]]), "isActive");
+
+            $tags = [];
+            $tagsIds = Utils::nullify($rule[$indexes["tags"]]);
+            if ($tagsIds) {
+                $tagsIds = array_filter(array_map("trim", preg_split("/\s+/", $tagsIds)), function ($tag) use ($courseId) {
+                    return self::courseHasTag($courseId, $tag);
+                });
+
+                foreach ($tagsIds as $tagId){
+                    $tag = Tag::getTagById($tagId);
+                    array_push($tags, $tag);
+                }
+            }
+
+            $rule = self::getRuleByName($courseId, $name);
+            if ($rule) { // rule already exists
+                if ($replace) // replace
+                    $rule->editRule($name, $description, $whenClause, $thenClause, $position, $isActive, $tags);
+
+            } else { // rule doesn't exist
+                Rule::addRule($courseId, $sectionId, $name, $description, $whenClause, $thenClause, $position, $isActive, $tags);
+                return 1;
+            }
+
+            return 0;
+            }, $file);
+    }
+
+
+    /**
+     * @param int $courseId
+     * @param array $ruleIds
+     * @return string
+     */
+    public static function exportRules(int $courseId, array $ruleIds): string {
+        $ruleToExport = array_values(array_filter(self::getRules($courseId), function ($rule) use ($ruleIds) { return in_array($rule["id"], $ruleIds); }));
+        return Utils::exportToCSV(
+            $ruleToExport,
+            function ($rule) {
+                return [$rule["name"], $rule["description"], $rule["whenClause"], $rule["thenClause"], $rule["position"], +$rule["isActive"],
+                    implode(" ", (new Rule($rule["id"]))->getTags())];
+            },
+            self::HEADERS);
+    }
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Tags ----------------------- ***/
@@ -554,6 +635,23 @@ class Rule
         }
     }
 
+    /**
+     * @param int $courseId
+     * @param int|null $tagName
+     * @param int|null $tagId
+     * @return bool
+     * @throws Exception
+     */
+    public static function courseHasTag(int $courseId, int $tagName = null, int $tagId = null): bool{
+
+        if ($tagName === null && $tagId === null)
+            throw new Exception("Need either rule name or ID to check whether a course has a given tag.");
+
+        $where = ["course" => $courseId];
+        if ($tagName) $where["name"] = $tagName;
+        if ($tagId) $where["id"] = $tagId;
+        return !empty(Core::database()->select(self::TABLE_RULE_TAGS, $where));
+    }
 
     /*** ---------------------------------------------------- ***/
     /*** ------------------- Validations -------------------- ***/

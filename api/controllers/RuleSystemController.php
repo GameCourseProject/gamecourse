@@ -44,9 +44,8 @@ class RuleSystemController
         API::requireValues('course', 'name', 'position');
 
         $courseId = API::getValue("course", "int");
-        $course = API::verifyCourseExists($courseId);
 
-        API::requireCourseAdminPermission($course);
+        API::requireAdminPermission();
 
         // Get values
         $name = API::getValue("name");
@@ -69,9 +68,8 @@ class RuleSystemController
         API::requireValues('id', 'course', 'name', 'position');
 
         $courseId = API::getValue("course", "int");
-        $course = API::verifyCourseExists($courseId);
 
-        API::requireAdminPermission($course);
+        API::requireAdminPermission();
 
         $sectionId = API::getValue("id", "int");
         $section = Section::getSectionById($sectionId);
@@ -92,10 +90,52 @@ class RuleSystemController
      * @throws Exception
      */
     public function deleteSection(){
+        API::requireAdminPermission();
         API::requireValues('sectionId');
 
         $sectionId = API::getValue("sectionId", "int");
         Section::deleteSection($sectionId);
+
+    }
+
+    /**
+     * Exports rules from a specific section into a .csv file
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function exportRules(){
+        API::requireValues("courseId", "ruleIds");
+
+        // Get values
+        $courseId = API::getValue("courseId", "int");
+        $ruleIds = API::getValue("ruleIds", "array");
+
+        API::requireAdminPermission();
+        $csv = Rule::exportRules($courseId, $ruleIds);
+
+        API::response($csv);
+    }
+
+    /**
+     *
+     * Imports rules to a specific section inside a course
+     * @return void
+     * @throws Exception
+     */
+    public function importRules(){
+        API::requireAdminPermission();
+        API::requireValues("courseId", "sectionId", "file", "replace");
+
+        // Get values
+        $courseId = API::getValue("courseId", "int");
+        $sectionId = API::getValue("sectionId", "int");
+
+        $file = API::getValue("file");
+        $replace = API::getValue("replace", "bool");
+
+        $nrRulesImported = Rule::importRules($courseId, $sectionId, $file, $replace);
+        API::response($nrRulesImported);
 
     }
 
@@ -220,6 +260,7 @@ class RuleSystemController
      */
     public function removeRuleFromSection()
     {
+        API::requireAdminPermission();
         API::requireValues('section', 'ruleId');
 
         $sectionId = API::getValue('section', "int");
@@ -228,6 +269,42 @@ class RuleSystemController
         $section = Section::getSectionById($sectionId);
         $section->removeRule($ruleId);
     }
+
+    /**
+     * @throws Exception
+     */
+    public function duplicateRule(){
+        API::requireAdminPermission();
+        API::requireValues('ruleId');
+
+        $ruleId = API::getValue('ruleId', "int");
+
+        // Duplicate rule
+        $rule = Rule::duplicateRule($ruleId);
+        $ruleInfo = $rule->getData();
+        API::response($ruleInfo);
+    }
+
+    /**
+     * Changes status from a specific rule
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function setCourseRuleActive(){
+        API::requireAdminPermission();
+        API::requireValues("ruleId", "isActive");
+
+        // Get values
+        $ruleId = API::getValue('ruleId', "int");
+        $isActive = API::getValue('isActive', "bool");
+
+        $rule = Rule::getRuleById($ruleId);
+        $rule->setActive($isActive);
+        $ruleInfo = $rule->getData();
+        API::response($ruleInfo);
+    }
+
 
     /*** --------------------------------------------- ***/
     /*** -------------------- Tags ------------------- ***/
