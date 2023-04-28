@@ -13,6 +13,7 @@ import {Rule} from "../../../../../../../_domain/rules/rule";
 import {initTagToManage, TagManageData} from "../rules.component";
 import * as _ from "lodash";
 import {timeout} from "rxjs/operators";
+import {Subject} from "rxjs";
 
 export {TagManageData} from "../rules.component";
 
@@ -36,13 +37,16 @@ export class RuleTagsManagementComponent implements OnInit {
 
   loading = {
     management: false,
-    action: false
+    action: false,
+    refreshing: false
   };
 
   tagToManage: TagManageData;
   tagEdit: string = "";
   //tagRules: string[] = [];
   ruleNames: {value: any, text: string}[];
+  previousSelected: string[];
+  setRules: Subject<{value: string, text: string, innerHTML?: string, selected: boolean}[]> = new Subject();
 
   @ViewChild('t', {static: false}) t: NgForm;       // tag form
 
@@ -72,8 +76,11 @@ export class RuleTagsManagementComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  async prepareModal(action: string, tag?: RuleTag){
+  async prepareModal(action: string, tag?: RuleTag) {
     this.tagToManage = initTagToManage(this.course.id, tag);
+    this.previousSelected = tag ? this.tagToManage.ruleNames : [];
+
+    console.log("linha 83-AQUI: ", this.tagToManage);
 
     this.mode = switchMode(action);
 
@@ -90,6 +97,8 @@ export class RuleTagsManagementComponent implements OnInit {
       ModalService.openModal(this.mode);
 
     } else if (this.mode === 'add tag' || this.mode === 'edit tag') {
+      this.loading.refreshing = true;
+      setTimeout(() => this.loading.refreshing = false, 0);
       //this.tagRules = [];
 
       if (this.mode === 'edit tag'){
@@ -133,15 +142,16 @@ export class RuleTagsManagementComponent implements OnInit {
           } else {
             tag = await this.api.createTag(clearEmptyValues(this.tagToManage)).toPromise(); // Update DB
             this.tags.push(tag); // Update UI
-
             message = "Tag created successfully";
-          }
 
+          }
           this.assignRules(tag);
 
           AlertService.showAlert(AlertType.SUCCESS, message);
+
           ModalService.closeModal('create-and-edit-tag');
           this.resetTagManage();
+          this.previousSelected = [];
 
         } else { AlertService.showAlert(AlertType.ERROR, "Tag color must be selected from one of the available options"); }
       } else { AlertService.showAlert(AlertType.ERROR, "Invalid form"); }
@@ -179,13 +189,54 @@ export class RuleTagsManagementComponent implements OnInit {
 
   assignRules(tag: RuleTag): void {
     let rulesToEmit: Rule[] = [];
-    for (let i = 0; i< this.tagRules.length; i++){
-      const rule = this.rules.find(rule => rule.name === this.tagRules[i]);
-      rule.tags.push(tag);
+    let ruleNames = this.tagToManage.ruleNames;
+    console.log("TagToManage.ruleNames: ",this.tagToManage.ruleNames);
+
+    for (let i = 0; i < ruleNames.length; i++) {
+      const rule = this.rules.find(rule => rule.name === ruleNames[i]);
+      console.log("HERE: ", rule);
+      //rule.tags.push(tag);
       rulesToEmit.push(rule);
     }
+
+    console.log(rulesToEmit);
     if (rulesToEmit.length > 0) this.newRules.emit(rulesToEmit);
   }
+
+  updateRules(selectedRuleNames: string[]): void {
+    console.log("selectedRuleNames: ", selectedRuleNames);
+    if (selectedRuleNames.length > this.previousSelected.length){ // adding rule
+      const ruleToAdd = selectedRuleNames.filter(ruleName => !this.previousSelected.includes(ruleName))[0];
+
+      if (!selectedRuleNames.includes(ruleToAdd)) selectedRuleNames.push(ruleToAdd);
+
+    } else { // removing rule
+      const ruleToRemove = this.previousSelected.filter(ruleName => !selectedRuleNames.includes(ruleName))[0];
+
+      if (selectedRuleNames.includes(ruleToRemove)) selectedRuleNames.splice(selectedRuleNames.indexOf(ruleToRemove), 1);
+    }
+
+    // Select them
+    this.ruleNames.map(option => {
+      option['selected'] = selectedRuleNames.includes(option.value);
+      return option;
+    });
+
+    this.setRules.next(this.ruleNames as {value: any, text: string, innerHTML: string, selected: boolean}[]);
+    this.previousSelected = selectedRuleNames;
+  }
+
+  /*initSelect(){
+    this.previousSelected = [];
+    return {rulesToAdd: [], ruleNames: []};
+  }
+
+   Comment for now:
+  resetSelect(){
+    this.mode = null;
+    this.initSelect();
+    this.t.resetForm();
+  }*/
 
   /*** --------------------------------------------- ***/
   /*** ----------------- Manage Data --------------- ***/
@@ -193,7 +244,8 @@ export class RuleTagsManagementComponent implements OnInit {
 
   resetTagManage() {
     this.tagToManage = initTagToManage(this.course.id);
-    this.tagRules = [];
+    //this.tagRules = [];
+    //this.initSelect();
     this.t.resetForm();
   }
 }

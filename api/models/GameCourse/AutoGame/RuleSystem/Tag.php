@@ -183,6 +183,10 @@ class Tag
         return $tags;
     }
 
+    public function getRules(): array{
+        return Rule::getRulesWithTag($this->getId());
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------- Tag Manipulation ----------------- ***/
@@ -272,6 +276,29 @@ class Tag
     public function exists(): bool
     {
         return !empty($this->getData("id"));
+    }
+
+    public function updateRules(array $rules) {
+        // remove rules that got removed
+        $oldRules = $this->getRules();
+        foreach ($oldRules as $oldRule) {
+            $exists = !empty(array_filter($rules, function ($rule) use ($oldRule) {
+                return $rule->getId() && $rule->getId() == $oldRule["id"];
+            }));
+
+            if (!$exists) {
+                $rule = Rule::getRuleById($oldRule["id"]);
+                $rule->removeTag($this->getId());
+            };
+        }
+
+
+        // Update rules
+        foreach ($rules as $rule){
+            if (!$rule->hasTag($this->getId()))
+                $rule->addTag($this->getId());
+        }
+
     }
 
 

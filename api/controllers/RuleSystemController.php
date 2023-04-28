@@ -332,6 +332,7 @@ class RuleSystemController
         $tag = Tag::addTag($courseId, $name, $color);
 
         $tagInfo = $tag->getData();
+        $tagInfo["rules"] = Rule::getRulesWithTag($tag->getId());
         API::response($tagInfo);
     }
 
@@ -341,7 +342,7 @@ class RuleSystemController
      * @throws Exception
      */
     public function editTag(){
-        API::requireValues('courseId', 'tagId', 'name', 'color');
+        API::requireValues('courseId', 'tagId', 'name', 'color', 'rules');
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -352,11 +353,21 @@ class RuleSystemController
         $tagId = API::getValue("tagId", "int");
         $name = API::getValue("name");
         $color = API::getValue("color");
+        $ruleNames = API::getValue("rules", "array");
 
         $tag = Tag::getTagById($tagId);
         $tag->editTag($name, $color);
 
+        $rules = [];
+        foreach ($ruleNames as $ruleName){
+            $rule = Rule::getRuleByName($courseId, $ruleName);
+            array_push($rules, $rule);
+        }
+
+        $tag->updateRules($rules);
+
         $response = $tag->getData();
+        $response["rules"] = Rule::getRulesWithTag($tag->getId());
         API::response($response);
     }
 
@@ -366,7 +377,7 @@ class RuleSystemController
      * @throws Exception
      */
     public function getRuleTags(){
-        API::requireValues("courseId","ruleId");
+        API::requireValues("courseId", "ruleId");
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -377,7 +388,8 @@ class RuleSystemController
 
         $ruleTags = Tag::getRuleTags($ruleId);
         foreach ($ruleTags as &$ruleTagInfo) {
-            Tag::getTagById($ruleTagInfo["id"]);
+            $tag = Tag::getTagById($ruleTagInfo["id"]);
+            $ruleTagInfo["rules"] = Rule::getRulesWithTag($tag->getId());
         }
         API::response($ruleTags);
 
@@ -396,8 +408,9 @@ class RuleSystemController
         API::requireCourseAdminPermission($course);
 
         $tags = Tag::getTags($courseId);
-        foreach ($tags as $tagInfo){
-            Tag::getTagById($tagInfo["id"]);
+        foreach ($tags as &$tagInfo){
+            $tag = Tag::getTagById($tagInfo["id"]);
+            $tagInfo["rules"] = Rule::getRulesWithTag($tag->getId());
         }
         API::response($tags);
     }
@@ -418,6 +431,9 @@ class RuleSystemController
         Tag::deleteTag($tagId);
     }
 
+
+
+    // FIXME --  delete later
     /**
      * Returns all rules in the system with a specific tag inside a course
      *

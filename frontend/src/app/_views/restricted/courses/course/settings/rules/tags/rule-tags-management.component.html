@@ -158,17 +158,23 @@
         </div>
       </div>
 
-      <div class="w-full">{{tagRules}}
+      <div class="w-full" *ngIf="!loading.refreshing">{{tagToManage.ruleNames}}
         <app-input-select
           [id]="'tag-rules'"
           [form]="t"
-          [(value)]="tagRules"
+          [(value)]="tagToManage.ruleNames"
           [options]="ruleNames"
           [multiple] = "true"
           [placeholder]="'Select rules to assign this tag to'"
           [topLabel]="'Assign rules ...'"
-          (valueChange)="tagRules = $event ?? []">
+          (valueChange)="tagToManage.ruleNames = $event ?? []; updateRules(tagToManage.ruleNames)"
+          [setData]="setRules">
         </app-input-select>
+
+        <!-- Spinner -->
+        <div *ngIf="loading.refreshing" class="flex justify-center items-center">
+          <app-spinner></app-spinner>
+        </div>
 
       </div>
     </div>
