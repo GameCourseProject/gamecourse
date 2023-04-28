@@ -64,4 +64,56 @@ export class ThemingService {
   private prefersDark(): boolean {
     return !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
+
+  colorToHexa(color: string) : string {
+    if (this.getTheme() === "light"){
+      switch (color) {
+        case "primary" : return "#5E72E4";
+        case "secondary" : return "#EA6FAC";
+        case "accent" : return "#1EA896";
+        case "info" : return "#38BFF8";
+        case "success" : return "#36D399";
+        case "warning" : return "#FBB50A";
+        case "error" : return "#EF6060";
+      }
+    }
+    else {
+      switch (color) {
+        case "primary" : return "#5E72E4";
+        case "secondary" : return "#EA6FAC";
+        case "accent" : return "#1EA896";
+        case "info" : return "#38BFF8";
+        case "success" : return "#36D399";
+        case "warning" : return "#FBBD23";
+        case "error" : return "#EF6060";
+      }
+    }
+    return "";
+  }
+
+  hexaToColor(color: string) : string {
+    if (this.getTheme() === "light"){
+      switch (color) {
+        case "#5E72E4" : return "primary";
+        case "#EA6FAC" : return "secondary";
+        case "#1EA896" : return "accent";
+        case "#38BFF8" : return "info";
+        case "#36D399" : return "success";
+        case "#FBB50A" : return "warning";
+        case "#EF6060" : return "error";
+      }
+    }
+    else {
+      switch (color) {
+        case "#5E72E4" : return "primary";
+        case "#EA6FAC" : return "secondary";
+        case "#1EA896" : return "accent";
+        case "#38BFF8" : return "info";
+        case "#36D399" : return "success";
+        case "#FBBD23" : return "warning";
+        case "#EF6060" : return "error";
+      }
+    }
+    return "";
+  }
 }

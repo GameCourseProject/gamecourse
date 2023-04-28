@@ -7,7 +7,8 @@
            [actionInProgress] = "loading.management"
            [submitBtnText] = "'Done'"
            [closeBtn]="false"
-           (submitBtnClicked)="closeManagement()">
+           (submitBtnClicked)="closeManagement()"
+           (onClose)="closeManagement()">
 </app-modal>
 
 <ng-template #MANAGE_TAGS>
@@ -120,12 +121,12 @@
            [id]="'create-and-edit-tag'"
            [templateRef]="CREATE_AND_EDIT_TAG"
            [size]="'md'"
-           [header]="mode === 'edit tag' ? 'Edit ' + tagEdit : 'Create New Tag'"
+           [header]="mode === 'edit tag' ? 'Edit \'' + tagEdit + '\'' : 'Create New Tag'"
            [actionInProgress]="loading.action"
            [submitBtnText]="mode === 'edit tag' ? 'Save' : 'Create'"
            [closeBtnText]="'Cancel'"
-           (submitBtnClicked)="doAction(mode)"
->
+           (submitBtnClicked)="t.onSubmit(null); doAction(mode)"
+           (onClose)="resetTagManage()">
 </app-modal>
 
 <ng-template #CREATE_AND_EDIT_TAG>
@@ -157,16 +158,18 @@
         </div>
       </div>
 
-      <div class="w-full">
+      <div class="w-full">{{tagRules}}
         <app-input-select
-          [id]="'rules-tag'"
+          [id]="'tag-rules'"
           [form]="t"
           [(value)]="tagRules"
           [options]="ruleNames"
           [multiple] = "true"
           [placeholder]="'Select rules to assign this tag to'"
-          [topLabel]="'Assign rules ...'">
+          [topLabel]="'Assign rules ...'"
+          (valueChange)="tagRules = $event ?? []">
         </app-input-select>
+
       </div>
     </div>
   </form>

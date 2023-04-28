@@ -1577,6 +1577,19 @@ export class ApiHttpService {
         .pipe(map((res:any) => res['data'].map(obj => RuleTag.fromDatabase(obj))));
   }
 
+  public getRulesWithTag(tagID: number): Observable<Rule[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'getRulesWithTag');
+      qs.push('tagId', tagID);
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data'].map(obj => Rule.fromDatabase(obj))));
+  }
+
   public removeTag(courseID: number, tagID: number): Observable<void> {
     const data = {courseId: courseID, tagId: tagID };
 

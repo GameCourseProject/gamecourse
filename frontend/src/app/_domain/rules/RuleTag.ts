@@ -1,15 +1,18 @@
+import {Rule, RuleDatabase} from "./rule";
+
 export class RuleTag{
   private _id: number;
   private _course: number;
   private _name: string;
   private _color: string;
+  private _rules: Rule[];
 
-
-  constructor(id: number, course: number, name: string, color: string){
+  constructor(id: number, course: number, name: string, color: string, rules: Rule[]){
     this._id = id;
     this._course = course;
     this._name = name;
     this._color = color;
+    this._rules = rules;
   }
 
   get id(): number {
@@ -44,6 +47,14 @@ export class RuleTag{
     this._color = value;
   }
 
+  get rules(){
+    return this._rules;
+  }
+
+  set rules(value: Rule[]){
+    this._rules = value;
+  }
+
   /**
    * Custom way to stringfy with class
    * This is needed so that the output of JSON.stringfy()
@@ -65,14 +76,16 @@ export class RuleTag{
       obj.id,
       obj.course,
       obj.name,
-      obj.color
+      obj.color,
+      obj.rules.map(rule => Rule.fromDatabase(rule))
     );
   }
 }
 
-interface RuleTagDatabase {
+export interface RuleTagDatabase {
   id: number,
   course: number,
   name: string,
   color: string,
+  rules?: RuleDatabase[]
 }

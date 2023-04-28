@@ -11,9 +11,10 @@ import {ModalService} from "../../../../../../../_services/modal.service";
 import {Rule} from "../../../../../../../_domain/rules/rule";
 
 import {initTagToManage, TagManageData} from "../rules.component";
-export {TagManageData} from "../rules.component";
-
 import * as _ from "lodash";
+import {timeout} from "rxjs/operators";
+
+export {TagManageData} from "../rules.component";
 
 @Component({
   selector: 'app-rule-tags-management',
@@ -40,7 +41,7 @@ export class RuleTagsManagementComponent implements OnInit {
 
   tagToManage: TagManageData;
   tagEdit: string = "";
-  tagRules: string[] = [];
+  //tagRules: string[] = [];
   ruleNames: {value: any, text: string}[];
 
   @ViewChild('t', {static: false}) t: NgForm;       // tag form
@@ -58,12 +59,12 @@ export class RuleTagsManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.parent.params.subscribe();
-    this.ruleNames = _.cloneDeep(this.getRuleNames());
+    this.ruleNames = _.cloneDeep(this.getRuleNames()); // FIXME -- test if works
   }
 
   getRuleNames(): {value: any, text: string}[] {
     return Object.values(this.rules).map(rule => {
-      return {value: rule.name, text: (rule.name).capitalize()}
+      return {value: rule.name, text: rule.name}
     });
   }
 
@@ -71,7 +72,7 @@ export class RuleTagsManagementComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  prepareModal(action: string, tag?: RuleTag){
+  async prepareModal(action: string, tag?: RuleTag){
     this.tagToManage = initTagToManage(this.course.id, tag);
 
     this.mode = switchMode(action);
@@ -85,12 +86,18 @@ export class RuleTagsManagementComponent implements OnInit {
       return "manage tags";
     }
 
-    if (this.mode === "add tag" || this.mode === "edit tag") {
-      ModalService.openModal('create-and-edit-tag');
-      this.tagEdit = JSON.stringify(this.tagToManage.name);
-
-    } else {
+    if (this.mode === 'remove tag'){
       ModalService.openModal(this.mode);
+
+    } else if (this.mode === 'add tag' || this.mode === 'edit tag') {
+      //this.tagRules = [];
+
+      if (this.mode === 'edit tag'){
+        //this.tagRules = (await this.getRulesWithTag(tag)).map(rule => { return rule.name; });
+        this.tagEdit = _.cloneDeep(this.tagToManage.name);
+      }
+
+      ModalService.openModal('create-and-edit-tag');
     }
   }
 
@@ -107,42 +114,38 @@ export class RuleTagsManagementComponent implements OnInit {
       AlertService.showAlert(AlertType.SUCCESS, "Tag deleted successfully");
       ModalService.closeModal(action);
 
-    } else if (action === 'add tag') {
+    } else if (action === 'add tag' || action === 'edit tag') {
       if (this.t.valid){
         const color = this.colors.find(color => color === this.tagToManage.color);
 
         if (color) {
-          const tag = await this.api.createTag(clearEmptyValues(this.tagToManage)).toPromise(); // Update DB
-          this.tags.push(tag); // Update UI
+          let tag: RuleTag; let message: string;
+
+          if (action === 'edit tag'){
+            tag = await this.api.editTag(this.tagToManage).toPromise(); // Update DB
+
+            // Update UI
+            const index = this.tags.findIndex(tag => tag.id === this.tagToManage.id);
+            this.tags.splice(index, 1, tag);
+
+            message = "Tag edited successfully"
+
+          } else {
+            tag = await this.api.createTag(clearEmptyValues(this.tagToManage)).toPromise(); // Update DB
+            this.tags.push(tag); // Update UI
+
+            message = "Tag created successfully";
+          }
 
           this.assignRules(tag);
 
-          AlertService.showAlert(AlertType.SUCCESS, "Tag created successfully");
+          AlertService.showAlert(AlertType.SUCCESS, message);
           ModalService.closeModal('create-and-edit-tag');
           this.resetTagManage();
 
         } else { AlertService.showAlert(AlertType.ERROR, "Tag color must be selected from one of the available options"); }
       } else { AlertService.showAlert(AlertType.ERROR, "Invalid form"); }
 
-    } else if (action === 'edit tag'){
-      if (this.t.valid){
-        const color = this.colors.find(color => color === this.tagToManage.color);
-
-        if (color) {
-          const editedTag = await this.api.editTag(this.tagToManage).toPromise(); // Update DB
-
-          // Update UI
-          const index = this.tags.findIndex(tag => tag.id === this.tagToManage.id);
-          this.tags.splice(index, 1, editedTag);
-
-          this.assignRules(editedTag);
-
-          AlertService.showAlert(AlertType.SUCCESS, "Tag edited successfully");
-          ModalService.closeModal('create-and-edit-tag');
-          this.resetTagManage();
-
-        } else { AlertService.showAlert(AlertType.ERROR, "Tag color must be selected from one of the available options"); }
-      } else { AlertService.showAlert(AlertType.ERROR, "Invalid form"); }
     }
   }
 
@@ -152,45 +155,41 @@ export class RuleTagsManagementComponent implements OnInit {
     this.newTags.emit(this.tags);
   }
 
+  async getRulesWithTag(tag: RuleTag): Promise<Rule[]>{
+    return await this.api.getRulesWithTag(tag.id).toPromise();
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  hexaToColor(color: string) : string {
-    if (this.themeService.getTheme() === "light"){
-      switch (color) {
-        case "#5E72E4" : return "primary";
-        case "#EA6FAC" : return "secondary";
-        case "#1EA896" : return "accent";
-        case "#38BFF8" : return "info";
-        case "#36D399" : return "success";
-        case "#FBB50A" : return "warning";
-        case "#EF6060" : return "error";
-      }
-    }
-    else {
-      switch (color) {
-        case "#5E72E4" : return "primary";
-        case "#EA6FAC" : return "secondary";
-        case "#1EA896" : return "accent";
-        case "#38BFF8" : return "info";
-        case "#36D399" : return "success";
-        case "#FBBD23" : return "warning";
-        case "#EF6060" : return "error";
-      }
-    }
-    return "";
+  hexaToColor(color:string): string{
+    return this.themeService.hexaToColor(color);
   }
+
+  /*getRuleIds(): number[]{
+    return this.tagRules.map(tagRule => {
+      let rules = this.rules.map(rule => {
+        return rule.name
+      });
+      let ruleIndex = rules.findIndex(element => element === tagRule);
+      return this.rules[ruleIndex].id ?? null
+    });
+  }*/
 
   assignRules(tag: RuleTag): void {
     let rulesToEmit: Rule[] = [];
     for (let i = 0; i< this.tagRules.length; i++){
-      const rule = this.rules.find(element => element.name === this.tagRules[i]);
+      const rule = this.rules.find(rule => rule.name === this.tagRules[i]);
       rule.tags.push(tag);
       rulesToEmit.push(rule);
     }
     if (rulesToEmit.length > 0) this.newRules.emit(rulesToEmit);
   }
+
+  /*** --------------------------------------------- ***/
+  /*** ----------------- Manage Data --------------- ***/
+  /*** --------------------------------------------- ***/
 
   resetTagManage() {
     this.tagToManage = initTagToManage(this.course.id);

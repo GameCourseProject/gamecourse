@@ -418,4 +418,25 @@ class RuleSystemController
         Tag::deleteTag($tagId);
     }
 
+    /**
+     * Returns all rules in the system with a specific tag inside a course
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getRulesWithTag(){
+        API::requireAdminPermission();
+        API::requireValues("tagId");
+
+        // Get values
+        $tagId = API::getValue("tagId", "int");
+
+        $rules = Rule::getRulesWithTag($tagId);
+        foreach ($rules as $ruleInfo) {
+            Rule::getRuleById($ruleInfo["id"]);
+        }
+
+        API::response($rules);
+    }
+
 }

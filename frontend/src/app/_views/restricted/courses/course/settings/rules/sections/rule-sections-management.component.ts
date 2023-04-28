@@ -17,6 +17,7 @@ export {SectionManageData, RuleManageData} from "../rules.component";
 
 import * as _ from "lodash";
 import {ResourceManager} from "../../../../../../../_utils/resources/resource-manager";
+import {ThemingService} from "../../../../../../../_services/theming/theming.service";
 @Component({
   selector: 'app-rule-sections-management',
   templateUrl: './rule-sections-management.component.html'
@@ -51,6 +52,7 @@ export class RuleSectionsManagementComponent implements OnInit{
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
+    private themeService: ThemingService
   ) { }
 
   get Action(): typeof Action {
@@ -95,7 +97,7 @@ export class RuleSectionsManagementComponent implements OnInit{
         await this.assignTags();
         (action === 'add rule') ? await this.createRule() : await editRule(this.api, this.course.id, this.ruleToManage, this.courseRules);
 
-        await buildTable(this.api, this.course.id, this.section);
+        await buildTable(this.api, this.themeService, this.course.id, this.section);
         ModalService.closeModal('manage-rule');
         AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + this.ruleToManage.name + '\' added');
         this.resetRuleManage();
@@ -124,7 +126,6 @@ export class RuleSectionsManagementComponent implements OnInit{
     return newRule;
   }
 
-  // FIXME
   async importRules(): Promise<void> {
     if (this.fImport.valid){
       this.loading.action = true;
@@ -133,7 +134,7 @@ export class RuleSectionsManagementComponent implements OnInit{
       const nrRulesImported = await this.api.importRules(this.course.id, this.section.id, file, this.importData.replace).toPromise();
 
       this.courseRules = await this.api.getCourseRules(this.course.id).toPromise();
-      await buildTable(this.api, this.course.id, this.section);
+      await buildTable(this.api, this.themeService, this.course.id, this.section);
 
       this.loading.action = false;
       ModalService.closeModal('import');
@@ -193,6 +194,7 @@ export class RuleSectionsManagementComponent implements OnInit{
         this.ruleToManage = initRuleToManage(this.course.id, this.section.id, ruleToActOn);
 
         // for the tags in the input-select
+        // FIXME -- not working
         this.getTagNames();
         this.ruleTags = this.ruleToManage.tags.map(tag => {return tag.id + '-' + tag.name});
 
@@ -221,7 +223,7 @@ export class RuleSectionsManagementComponent implements OnInit{
     const index = this.courseRules.findIndex(el => el.id === this.ruleToManage.id);
     this.courseRules.removeAtIndex(index);
 
-    await buildTable(this.api, this.course.id, this.section);
+    await buildTable(this.api, this.themeService, this.course.id, this.section);
   }
 
   async toggleActive(rule: Rule) {
@@ -238,7 +240,7 @@ export class RuleSectionsManagementComponent implements OnInit{
 
     const newRule = await this.api.duplicateRule(rule.id).toPromise();
     this.courseRules.unshift(newRule);
-    await buildTable(this.api, this.course.id, this.section);
+    await buildTable(this.api, this.themeService, this.course.id, this.section);
 
     this.loading.action = false;
     AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + newRule.name + '\' added');
@@ -258,7 +260,7 @@ export class RuleSectionsManagementComponent implements OnInit{
 
     this.courseRules.sort(function (a, b) { return a.position - b.position; });
 
-    await buildTable(this.api, this.course.id, this.section);
+    await buildTable(this.api, this.themeService, this.course.id, this.section);
 
     this.loading.action = false;
     AlertService.showAlert(AlertType.SUCCESS, 'Rule priorities changed successfully');
@@ -303,6 +305,7 @@ export class RuleSectionsManagementComponent implements OnInit{
   /*** --------------------------------------------- ***/
 
   resetRuleManage(){
+    this.ruleTags = [];
     this.ruleMode = null;
     this.ruleToManage = initRuleToManage(this.course.id, this.section.id);
     if (this.r) this.r.resetForm();

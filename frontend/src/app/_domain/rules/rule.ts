@@ -122,7 +122,7 @@ export class Rule {
   }
 }
 
-interface RuleDatabase {
+export interface RuleDatabase {
   id: number,
   course: number,
   section: number,

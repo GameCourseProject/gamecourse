@@ -17,6 +17,7 @@ import {ThemingService} from "../../../../../../_services/theming/theming.servic
 
 import * as _ from "lodash";
 import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
+
 @Component({
   selector: 'app-rules',
   templateUrl: './rules.component.html',
@@ -37,11 +38,13 @@ export class RulesComponent implements OnInit {
   originalSections: RuleSection[] = [];       // Sections of course
   sections: RuleSection[] = [];               // Copy of original sections (used as auxiliary variable for setting priority)
   filteredSections: RuleSection[] = [];       // Section search
+
+  // Section actions -- general manipulation (create/edit/remove/set priority/see details)
   sectionActions: {action: Action | string, icon?: string, outline?: boolean, dropdown?: {action: Action | string, icon?: string}[],
       color?: "ghost" | "primary" | "secondary" | "accent" | "neutral" | "info" | "success" | "warning" | "error", disable?: boolean}[]  = [
       {action: 'sections\' priorities', icon: 'jam-box', color: 'secondary', disable: true},
       {action: 'manage tags', icon: 'tabler-tags', color: 'secondary'},
-      {action: 'add section', icon: 'feather-plus-circle', color: 'primary'}];           // Section actions -- general manipulation (create/edit/remove/set priority/see details)
+      {action: 'add section', icon: 'feather-plus-circle', color: 'primary'}];
 
   tagMode : 'manage tags' | 'add tag' | 'remove tag' | 'edit tag';    // available actions for tags
   sectionMode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'manage sections priority';  // available actions for sections
@@ -151,7 +154,7 @@ export class RulesComponent implements OnInit {
        this.sectionMode = action;
        this.section = section;
 
-       await buildTable(this.api, this.course.id, section);
+       await buildTable(this.api, this.themeService, this.course.id, section);
 
     }
 
@@ -248,37 +251,6 @@ export class RulesComponent implements OnInit {
     this.sectionMode = null;
   }
 
-  // TODO -- delete later
-  /*doActionOnTable(section: RuleSection, action: string, row: number, col: number, value?: any): void{
-    const ruleToActOn = this.courseRules[row];
-
-    if (action === 'value changed rule'){
-      if (col === 5) this.toggleActive(ruleToActOn);
-
-    } else if (action === Action.REMOVE) {
-      this.ruleToDelete = ruleToActOn;
-      this.mode = 'remove rule';
-      ModalService.openModal('delete-rule');
-
-    } else if (action === Action.EDIT) {
-      this.mode = 'edit rule';
-      this.ruleToManage = this.initRuleToManage(ruleToActOn);
-
-      // for the input-select
-      this.selectedTags = this.ruleToManage.tags.map(tag => {return tag.id + '-' + tag.name});
-
-      ModalService.openModal('manage-rule')
-    } else if ( action === Action.DUPLICATE){
-      // TODO
-    } else if (action === Action.MOVE_UP){
-      // TODO
-    } else if ( action === Action.MOVE_DOWN) {
-      // TODO
-    } else if (action === Action.EXPORT){
-      // TODO
-    }
-  }*/
-
   /*** --------------------------------------------- ***/
   /*** -------------------- Tags ------------------- ***/
   /*** --------------------------------------------- ***/
@@ -286,12 +258,9 @@ export class RulesComponent implements OnInit {
   async assignRules(event: Rule[]) {
     for (let i = 0; i < event.length; i++) {
       this.ruleToManage = initRuleToManage(this.course.id, event[i].section, event[i]);
-
-      let tags = [];
-      for (let i= 0; i < event.length; i++){
-        tags.push( (event[i].tags).map(element => {return initTagToManage(this.course.id, element) }) );
-      }
-      this.ruleToManage.tags = tags;
+      this.ruleToManage.tags = (event[i].tags).map(tag => {
+        return initTagToManage(this.course.id, tag)
+      });
       await editRule(this.api, this.course.id, this.ruleToManage, this.courseRules);
     }
   }
@@ -368,6 +337,7 @@ export class RulesComponent implements OnInit {
     this.sectionActions[0].disable = this.originalSections.length <= 1;
   }
 
+  // FIXME -- move to themingService ??
   getColors(): {value: string, text: string}[]{
     let colors : {value: string, text: string}[] = [];
 
@@ -380,60 +350,6 @@ export class RulesComponent implements OnInit {
     colors.push({value: "error", text: "Red"});
 
     return colors;
-  }
-
-  // Backend does not admit 'primary', 'secondary', etc
-  // Function translates it to color in hexadecimal to be sent to backend
-  colorToHexa(color: string) : string {
-    if (this.themeService.getTheme() === "light"){
-      switch (color) {
-        case "primary" : return "#5E72E4";
-        case "secondary" : return "#EA6FAC";
-        case "accent" : return "#1EA896";
-        case "info" : return "#38BFF8";
-        case "success" : return "#36D399";
-        case "warning" : return "#FBB50A";
-        case "error" : return "#EF6060";
-      }
-    }
-    else {
-      switch (color) {
-        case "primary" : return "#5E72E4";
-        case "secondary" : return "#EA6FAC";
-        case "accent" : return "#1EA896";
-        case "info" : return "#38BFF8";
-        case "success" : return "#36D399";
-        case "warning" : return "#FBBD23";
-        case "error" : return "#EF6060";
-      }
-    }
-    return "";
-  }
-
-  hexaToColor(color: string) : string {
-    if (this.themeService.getTheme() === "light"){
-      switch (color) {
-        case "#5E72E4" : return "primary";
-        case "#EA6FAC" : return "secondary";
-        case "#1EA896" : return "accent";
-        case "#38BFF8" : return "info";
-        case "#36D399" : return "success";
-        case "#FBB50A" : return "warning";
-        case "#EF6060" : return "error";
-      }
-    }
-    else {
-      switch (color) {
-        case "#5E72E4" : return "primary";
-        case "#EA6FAC" : return "secondary";
-        case "#1EA896" : return "accent";
-        case "#38BFF8" : return "info";
-        case "#36D399" : return "success";
-        case "#FBBD23" : return "warning";
-        case "#EF6060" : return "error";
-      }
-    }
-    return "";
   }
 
   /*** --------------------------------------------- ***/
@@ -480,7 +396,8 @@ export interface TagManageData {
   id?: number,
   course?: number,
   name?: string,
-  color?: string
+  color?: string,
+  ruleNames?: string[]
 }
 
 export interface SectionManageData {
@@ -510,12 +427,12 @@ export interface RuleManageData {
 
 // GLOBAL FUNCTIONS
 
-
 export function initTagToManage(courseId: number, tag?: RuleTag): TagManageData {
   const tagData: TagManageData = {
     course: tag?.course ?? courseId,
     name : tag?.name ?? null,
-    color : tag?.color ?? "#5E72E4"
+    color : tag?.color ?? "#5E72E4",
+    ruleNames: tag?.rules?.map(rule => rule.name) ?? []
   };
   if (tag) { tagData.id = tag.id; }
   return tagData;
@@ -549,7 +466,7 @@ export async function editRule(api: ApiHttpService, courseId: number, ruleToMana
 
 }
 
-export async function buildTable(api: ApiHttpService, courseId: number, section: RuleSection): Promise<void> {
+export async function buildTable(api: ApiHttpService, themeService: ThemingService ,courseId: number, section: RuleSection): Promise<void> {
   section.loadingTable = true;
 
   section.showTable = false;
@@ -564,7 +481,7 @@ export async function buildTable(api: ApiHttpService, courseId: number, section:
       {type: TableDataType.TEXT, content: {text: rule.name}},
       {type: TableDataType.CUSTOM, content: {html: '<div class="flex flex-col gap-2">' +
             rule.tags.sort((a,b) => a.name.localeCompare(b.name))
-              .map(tag => '<div class="badge badge-md badge-' + this.hexaToColor(tag.color) + '">' + tag.name + '</div>').join('') +
+              .map(tag => '<div class="badge badge-md badge-' + themeService.hexaToColor(tag.color) + '">' + tag.name + '</div>').join('') +
             '</div>', searchBy: rule.tags.map(tag => tag.name).join(' ') }},
       {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: rule.isActive}},
       {type: TableDataType.ACTIONS, content: {actions: [
