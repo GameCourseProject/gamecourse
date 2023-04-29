@@ -12,7 +12,6 @@ import {Rule} from "../../../../../../../_domain/rules/rule";
 
 import {initTagToManage, TagManageData} from "../rules.component";
 import * as _ from "lodash";
-import {timeout} from "rxjs/operators";
 import {Subject} from "rxjs";
 
 export {TagManageData} from "../rules.component";
@@ -23,17 +22,17 @@ export {TagManageData} from "../rules.component";
 })
 export class RuleTagsManagementComponent implements OnInit {
 
-  @Input() course: Course;
-  @Input() mode: 'manage tags' | 'add tag' | 'remove tag' | 'edit tag';
+  @Input() course: Course;                                                    // Specific course in which rule system is being manipulated
+  @Input() mode: 'manage tags' | 'add tag' | 'remove tag' | 'edit tag';       // Available actions regarding tag management
 
-  @Input() tags: RuleTag[];
-  @Input() rules: Rule[];
+  @Input() tags: RuleTag[];                                                   // Course tags
+  @Input() rules: Rule[];                                                     // Course rules
 
-  @Output() newTags = new EventEmitter<RuleTag[]>();
-  @Output() newRules = new EventEmitter<Rule[]>();
+  @Output() newTags = new EventEmitter<RuleTag[]>();                          // Changed tags to be emitted
+  @Output() newRules = new EventEmitter<Rule[]>();                            // Changed rules to be emitted
 
   // FIXME -- Should consider light and dark theme
-  colors: string[] = ["#5E72E4", "#EA6FAC", "#1EA896", "#38BFF8", "#36D399", "#FBBD23", "#EF6060"];
+  colors: string[] = ["#5E72E4", "#EA6FAC", "#1EA896", "#38BFF8", "#36D399", "#FBBD23", "#EF6060"];   // Available colors for tags
 
   loading = {
     management: false,
@@ -41,14 +40,15 @@ export class RuleTagsManagementComponent implements OnInit {
     refreshing: false
   };
 
-  tagToManage: TagManageData;
-  tagEdit: string = "";
-  //tagRules: string[] = [];
-  ruleNames: {value: any, text: string}[];
+  tagToManage: TagManageData;                                                  // Manage Data
+  tagEdit: string = "";                                                        // String with name of tag to be edited
+
+  // Input-select for assigning tags to rules
   previousSelected: string[];
   setRules: Subject<{value: string, text: string, innerHTML?: string, selected: boolean}[]> = new Subject();
+  ruleNames: {value: any, text: string}[];                                     // Rule Names for input-select
 
-  @ViewChild('t', {static: false}) t: NgForm;       // tag form
+  @ViewChild('t', {static: false}) t: NgForm;                                  // tag form
 
   constructor(
     private api: ApiHttpService,
@@ -98,10 +98,8 @@ export class RuleTagsManagementComponent implements OnInit {
     } else if (this.mode === 'add tag' || this.mode === 'edit tag') {
       this.loading.refreshing = true;
       setTimeout(() => this.loading.refreshing = false, 0);
-      //this.tagRules = [];
 
       if (this.mode === 'edit tag'){
-        //this.tagRules = (await this.getRulesWithTag(tag)).map(rule => { return rule.name; });
         this.tagEdit = _.cloneDeep(this.tagToManage.name);
       }
 
@@ -176,16 +174,6 @@ export class RuleTagsManagementComponent implements OnInit {
     return this.themeService.hexaToColor(color);
   }
 
-  /*getRuleIds(): number[]{
-    return this.tagRules.map(tagRule => {
-      let rules = this.rules.map(rule => {
-        return rule.name
-      });
-      let ruleIndex = rules.findIndex(element => element === tagRule);
-      return this.rules[ruleIndex].id ?? null
-    });
-  }*/
-
   assignRules(tag: RuleTag): void {
     let rulesToEmit: Rule[] = [];
     let ruleNames = this.tagToManage.ruleNames;
@@ -221,26 +209,12 @@ export class RuleTagsManagementComponent implements OnInit {
     this.previousSelected = selectedRuleNames;
   }
 
-  /*initSelect(){
-    this.previousSelected = [];
-    return {rulesToAdd: [], ruleNames: []};
-  }
-
-   Comment for now:
-  resetSelect(){
-    this.mode = null;
-    this.initSelect();
-    this.t.resetForm();
-  }*/
-
   /*** --------------------------------------------- ***/
   /*** ----------------- Manage Data --------------- ***/
   /*** --------------------------------------------- ***/
 
   resetTagManage() {
     this.tagToManage = initTagToManage(this.course.id);
-    //this.tagRules = [];
-    //this.initSelect();
     this.t.resetForm();
   }
 }

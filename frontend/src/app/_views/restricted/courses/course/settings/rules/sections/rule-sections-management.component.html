@@ -54,7 +54,7 @@
            [id]="'manage-rule'"
            [templateRef]="MANAGE_RULE"
            [size]="'xl'"
-           [header]="ruleMode?.capitalize()"
+           [header]="ruleMode === 'edit rule' ? 'Edit rule: \'' + ruleEdit + '\'' : ruleMode?.capitalize()"
            [headerMarginBottom] = "false"
            [submitBtnText]="ruleMode?.capitalize()"
            [actionInProgress] = "loading.action"
@@ -70,7 +70,8 @@
 
     <div class="flex flex-wrap mt-3">
 
-      <div class="w-full border-b-2 border-gray-300">
+      <!-- border-b-2 border-gray-300 -->
+      <div class="w-full">
         <div class="w-full sm:pr-7">
           <!-- Name -->
           <app-input-text
@@ -86,8 +87,51 @@
             [maxLengthErrorMessage]="'Rule name is too long: maximum of 60 characters'">
           </app-input-text>
         </div>
+
+        <div class="w-full flex flex-wrap" style="align-items: flex-end">
+          <!-- When clause -->
+          <div class="sm:w-1/2">
+            <!--<app-input-code
+              [id]="'rule-when'"
+              [title]="'When'"
+              [classList]="'expression form__input'"
+              [placeholder]="'Rule When Clause'"
+              [options]="{
+                lineNumbers: false,
+                styleActiveLine: true,
+                autohint: true,
+                lineWrapping: true,
+                theme: 'default'
+              }"
+              [init]="ruleToManage.whenClause"
+              (valueChange)="ruleToManage.whenClause = $event"
+            ></app-input-code>-->
+            <app-input-text
+              [id]="'rule-whenClause'"
+              [form] = "r"
+              [(value)] = "ruleToManage.whenClause"
+              [placeholder]="'Rule When Clause'"
+              [required]="true"
+              [topLabel]="'When'">
+            </app-input-text>
+          </div>
+
+          <!-- Then clause -->
+          <div class="sm:w-1/2 sm:pl-3 sm:pr-5">
+            <app-input-text
+              [id]="'rule-thenClause'"
+              [form] = "r"
+              [(value)] = "ruleToManage.thenClause"
+              [placeholder]="'Rule Then Clause'"
+              [required]="true"
+              [topLabel]="'Then'">
+            </app-input-text>
+          </div>
+        </div>
+
+        <!--
         <div class="w-full sm:pr-7 mt-3">
-          <!-- Description -->
+          Description
           <app-input-textarea
             [id] = "'rule-description'"
             [form] = "r"
@@ -102,7 +146,7 @@
 
         <div class="w-full flex flex-wrap mt-3" style="align-items: flex-end">
           <div class="sm:w-10/12">
-            <!-- Tags -->
+            Tags
             <app-input-select
               [id]="'rule-tags'"
               [form] = "r"
@@ -118,55 +162,16 @@
             </app-input-select>
           </div>
 
-          <!--<div class="sm:w-2/12 sm:pl-3">
+          <div class="sm:w-2/12 sm:pl-3">
             <button type="button" class="btn-md rounded-lg btn-primary" (click) = "prepareManagement('add tag')">Add new tag</button>
-          </div>-->
+          </div>
 
           <span class="pl-1 pb-16"><small> Tag colors will only show in table</small></span>
 
-        </div>
+        </div>-->
       </div>
 
-      <div class="w-full flex flex-wrap mt-16" style="align-items: flex-end">
-        <!-- When clause -->
-        <div class="sm:w-1/2">
-          <!--<app-input-code
-            [id]="'rule-when'"
-            [title]="'When'"
-            [classList]="'expression form__input'"
-            [placeholder]="'Rule When Clause'"
-            [options]="{
-              lineNumbers: false,
-              styleActiveLine: true,
-              autohint: true,
-              lineWrapping: true,
-              theme: 'default'
-            }"
-            [init]="ruleToManage.whenClause"
-            (valueChange)="ruleToManage.whenClause = $event"
-          ></app-input-code>-->
-          <app-input-text
-            [id]="'rule-whenClause'"
-            [form] = "r"
-            [(value)] = "ruleToManage.whenClause"
-            [placeholder]="'Rule When Clause'"
-            [required]="true"
-            [topLabel]="'When'">
-          </app-input-text>
-        </div>
 
-        <!-- Then clause -->
-        <div class="sm:w-1/2 sm:pl-3 sm:pr-5">
-          <app-input-text
-            [id]="'rule-thenClause'"
-            [form] = "r"
-            [(value)] = "ruleToManage.thenClause"
-            [placeholder]="'Rule Then Clause'"
-            [required]="true"
-            [topLabel]="'Then'">
-          </app-input-text>
-        </div>
-      </div>
     </div>
   </form>
 </ng-template>

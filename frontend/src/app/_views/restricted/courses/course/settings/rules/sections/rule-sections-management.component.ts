@@ -38,14 +38,16 @@ export class RuleSectionsManagementComponent implements OnInit{
     action: false
   };
 
+  ruleEdit: string = "";                                            // Name of rule to be edited
   ruleMode: 'add rule' | 'edit rule' | 'remove rule';               // Available actions for rules
   ruleToManage: RuleManageData;                                     // Manage data
   ruleTags: string[];                                               // Tags from a specific rule
 
   nameTags : {value: string, text: string}[];                       // Tags with names formatted for the select-input
 
-  @ViewChild('r', {static: false}) r: NgForm;       // rule form
+  @ViewChild('r', {static: false}) r: NgForm;                       // rule form
 
+  // Importing action
   importData: {file: File, replace: boolean} = {file: null, replace: true};
   @ViewChild('fImport', { static: false }) fImport: NgForm;
 
@@ -176,7 +178,10 @@ export class RuleSectionsManagementComponent implements OnInit{
   /*** --------------------------------------------- ***/
 
   async doActionOnTable(section: RuleSection, action: string, row: number, col: number): Promise<void>{
-    const ruleToActOn = this.courseRules[row];
+    let sectionRules = (await this.api.getRulesOfSection(this.course.id, this.section.id).toPromise()).sort(function (a, b) {
+      return a.position - b.position; });
+    const ruleToActOn = sectionRules[row];
+    console.log(ruleToActOn);
     action = action.toLowerCase();
 
     if (action === 'value changed rule' && col === 3) {
@@ -192,6 +197,7 @@ export class RuleSectionsManagementComponent implements OnInit{
       } else if (action === Action.EDIT) {
         this.ruleMode = 'edit rule';
         this.ruleToManage = initRuleToManage(this.course.id, this.section.id, ruleToActOn);
+        this.ruleEdit = _.cloneDeep(this.ruleToManage.name);
 
         // for the tags in the input-select
         // FIXME -- not working
