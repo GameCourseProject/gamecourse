@@ -80,7 +80,6 @@ export class RuleTagsManagementComponent implements OnInit {
     this.tagToManage = initTagToManage(this.course.id, tag);
     this.previousSelected = tag ? this.tagToManage.ruleNames : [];
 
-    console.log("linha 83-AQUI: ", this.tagToManage);
 
     this.mode = switchMode(action);
 
@@ -190,21 +189,20 @@ export class RuleTagsManagementComponent implements OnInit {
   assignRules(tag: RuleTag): void {
     let rulesToEmit: Rule[] = [];
     let ruleNames = this.tagToManage.ruleNames;
-    console.log("TagToManage.ruleNames: ",this.tagToManage.ruleNames);
 
     for (let i = 0; i < ruleNames.length; i++) {
       const rule = this.rules.find(rule => rule.name === ruleNames[i]);
-      console.log("HERE: ", rule);
       //rule.tags.push(tag);
       rulesToEmit.push(rule);
     }
 
-    console.log(rulesToEmit);
-    if (rulesToEmit.length > 0) this.newRules.emit(rulesToEmit);
+    if (rulesToEmit.length > 0){
+      setTimeout(() => { this.newRules.emit(rulesToEmit); }, 2000);
+
+    }
   }
 
   updateRules(selectedRuleNames: string[]): void {
-    console.log("selectedRuleNames: ", selectedRuleNames);
     if (selectedRuleNames.length > this.previousSelected.length){ // adding rule
       const ruleToAdd = selectedRuleNames.filter(ruleName => !this.previousSelected.includes(ruleName))[0];
 

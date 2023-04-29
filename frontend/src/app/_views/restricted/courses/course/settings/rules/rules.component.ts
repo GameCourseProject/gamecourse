@@ -92,7 +92,6 @@ export class RulesComponent implements OnInit {
   async getCourseRules(courseID: number): Promise<void> {
     this.courseRules = (await this.api.getCourseRules(courseID).toPromise()).sort(function (a, b) {
       return a.position - b.position; });
-    console.log(this.courseRules);
   }
 
   async getCourseSections(courseID: number): Promise<void> {
@@ -257,7 +256,6 @@ export class RulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async assignRules(event: Rule[]) {
-    console.log("rules emitted: ", event);
     for (let i = 0; i < event.length; i++) {
       this.ruleToManage = initRuleToManage(this.course.id, event[i].section, event[i]);
       this.ruleToManage.tags = (event[i].tags).map(tag => {

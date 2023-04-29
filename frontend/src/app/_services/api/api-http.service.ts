@@ -1520,7 +1520,8 @@ export class ApiHttpService {
     const data = {
       course: tagData.course,
       name: tagData.name,
-      color: tagData.color
+      color: tagData.color,
+      rules: tagData.ruleNames
     }
 
     const params = (qs: QueryStringParameters) => {

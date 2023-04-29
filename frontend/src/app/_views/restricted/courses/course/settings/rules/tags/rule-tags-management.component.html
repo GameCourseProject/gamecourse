@@ -158,13 +158,14 @@
         </div>
       </div>
 
-      <div class="w-full" *ngIf="!loading.refreshing">{{tagToManage.ruleNames}}
+      <div class="w-full" *ngIf="!loading.refreshing">
         <app-input-select
           [id]="'tag-rules'"
           [form]="t"
           [(value)]="tagToManage.ruleNames"
           [options]="ruleNames"
           [multiple] = "true"
+          [closeOnSelect]="false"
           [placeholder]="'Select rules to assign this tag to'"
           [topLabel]="'Assign rules ...'"
           (valueChange)="tagToManage.ruleNames = $event ?? []; updateRules(tagToManage.ruleNames)"

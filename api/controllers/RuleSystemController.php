@@ -317,7 +317,7 @@ class RuleSystemController
      */
     public function createTag()
     {
-        API::requireValues('course', 'name', 'color');
+        API::requireValues('course', 'name', 'color', 'rules');
 
         $courseId = API::getValue("course", "int");
         $course = API::verifyCourseExists($courseId);
@@ -327,9 +327,15 @@ class RuleSystemController
         // Get values
         $name = API::getValue("name");
         $color = API::getValue("color");
+        $ruleNames = API::getValue("rules", "array");
 
         // Add tag to system
         $tag = Tag::addTag($courseId, $name, $color);
+
+        foreach ($ruleNames as $ruleName){
+            $rule = Rule::getRuleByName($courseId, $ruleName);
+            $rule->addTag($tag->getId());
+        }
 
         $tagInfo = $tag->getData();
         $tagInfo["rules"] = Rule::getRulesWithTag($tag->getId());
