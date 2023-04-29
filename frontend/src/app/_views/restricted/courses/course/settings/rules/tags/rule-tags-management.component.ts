@@ -192,14 +192,11 @@ export class RuleTagsManagementComponent implements OnInit {
 
     for (let i = 0; i < ruleNames.length; i++) {
       const rule = this.rules.find(rule => rule.name === ruleNames[i]);
-      //rule.tags.push(tag);
+      if (!rule.tags.includes(tag)) rule.tags.push(tag);
       rulesToEmit.push(rule);
     }
 
-    if (rulesToEmit.length > 0){
-      setTimeout(() => { this.newRules.emit(rulesToEmit); }, 2000);
-
-    }
+    if (rulesToEmit.length > 0) this.newRules.emit(rulesToEmit);
   }
 
   updateRules(selectedRuleNames: string[]): void {

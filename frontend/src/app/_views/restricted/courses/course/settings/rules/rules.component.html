@@ -54,6 +54,9 @@
                 </div>
 
               </div>
+              <span class="text-sm text-base-content text-opacity-50 ml-8 -mt-3">
+                ({{nrRules[section.id] > 0 ? nrRules[section.id] : 'No'}} rule{{(nrRules[section.id] && nrRules[section.id] === 1) ? '' : 's'}})
+              </span>
 
               <!-- Loader -->
               <app-loader [loading]="loading.page"></app-loader>

@@ -30,14 +30,15 @@ export class RulesComponent implements OnInit {
     action: false
   }
 
-  course: Course;                             // Specific course in which rule system is being manipulated
-  courseRules: Rule[];                        // Rules of course
+  course: Course;                                   // Specific course in which rule system is being manipulated
+  courseRules: Rule[];                              // Rules of course
 
-  tags: RuleTag[];                            // Tags of course
+  tags: RuleTag[];                                  // Tags of course
 
-  originalSections: RuleSection[] = [];       // Sections of course
-  sections: RuleSection[] = [];               // Copy of original sections (used as auxiliary variable for setting priority)
-  filteredSections: RuleSection[] = [];       // Section search
+  originalSections: RuleSection[] = [];             // Sections of course
+  sections: RuleSection[] = [];                     // Copy of original sections (used as auxiliary variable for setting priority)
+  nrRules: {[sectionId: number]: number} = [];    // Dictionary with number of rules per section
+  filteredSections: RuleSection[] = [];             // Section search
 
   // Section actions -- general manipulation (create/edit/remove/set priority/see details)
   sectionActions: {action: Action | string, icon?: string, outline?: boolean, dropdown?: {action: Action | string, icon?: string}[],
@@ -111,6 +112,9 @@ export class RulesComponent implements OnInit {
       this.originalSections[i].options = auxSection.options;
       this.originalSections[i].loadingTable = auxSection.loadingTable;
       this.originalSections[i].showTable = auxSection.showTable;
+
+      // Get number of rules per section
+      this.nrRules[this.originalSections[i].id] = (await this.api.getRulesOfSection(this.course.id, this.originalSections[i].id).toPromise()).length;
     }
   }
 
@@ -335,21 +339,6 @@ export class RulesComponent implements OnInit {
 
   toggleSectionPriority(){
     this.sectionActions[0].disable = this.originalSections.length <= 1;
-  }
-
-  // FIXME -- move to themingService ??
-  getColors(): {value: string, text: string}[]{
-    let colors : {value: string, text: string}[] = [];
-
-    colors.push({value: "primary", text: "Indigo"});
-    colors.push({value: "secondary", text: "Pink"});
-    colors.push({value: "accent", text: "Teal"});
-    colors.push({value: "info", text: "Blue"});
-    colors.push({value: "success", text: "Green"});
-    colors.push({value: "warning", text: "Amber"});
-    colors.push({value: "error", text: "Red"});
-
-    return colors;
   }
 
   /*** --------------------------------------------- ***/
