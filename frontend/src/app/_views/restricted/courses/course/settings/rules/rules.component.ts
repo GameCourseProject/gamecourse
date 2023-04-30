@@ -132,7 +132,7 @@ export class RulesComponent implements OnInit {
     this.reduce.search(this.originalSections, query);
   }
 
-  filterSections(searchQuery: string) {
+  filterSections(searchQuery?: string) {
     if (searchQuery) {
       let sections: RuleSection[] = [];
       for (let i = 0; i < this.filteredSections.length; i++){
@@ -141,7 +141,6 @@ export class RulesComponent implements OnInit {
       this.sectionsToShow = sections;
     }
     else this.sectionsToShow = this.originalSections;
-
   }
 
   /*** --------------------------------------------- ***/
@@ -251,6 +250,7 @@ export class RulesComponent implements OnInit {
       await this.api.editSection(section).toPromise();
     }
 
+    this.filterSections();
     this.resetSectionManage();
 
     this.loading.action = false;
